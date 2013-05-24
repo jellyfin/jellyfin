@@ -95,15 +95,15 @@ namespace MediaBrowser.Server.Implementations.BdInfo
         private void AddVideoStream(List<MediaStream> streams, TSVideoStream videoStream)
         {
             var mediaStream = new MediaStream
-                {
-                    BitRate = Convert.ToInt32(videoStream.BitRate),
-                    Width = videoStream.Width,
-                    Height = videoStream.Height,
-                    Codec = videoStream.CodecShortName,
-                    ScanType = videoStream.IsInterlaced ? "interlaced" : "progressive",
-                    Type = MediaStreamType.Video,
-                    Index = streams.Count
-                };
+            {
+                BitRate = Convert.ToInt32(videoStream.BitRate),
+                Width = videoStream.Width,
+                Height = videoStream.Height,
+                Codec = videoStream.CodecShortName,
+                ScanType = videoStream.IsInterlaced ? "interlaced" : "progressive",
+                Type = MediaStreamType.Video,
+                Index = streams.Count
+            };
 
             if (videoStream.FrameRateDenominator > 0)
             {
@@ -124,15 +124,15 @@ namespace MediaBrowser.Server.Implementations.BdInfo
         private void AddAudioStream(List<MediaStream> streams, TSAudioStream audioStream)
         {
             streams.Add(new MediaStream
-                {
-                    BitRate = Convert.ToInt32(audioStream.BitRate),
-                    Codec = audioStream.CodecShortName,
-                    Language = audioStream.LanguageCode,
-                    Channels = audioStream.ChannelCount,
-                    SampleRate = audioStream.SampleRate,
-                    Type = MediaStreamType.Audio,
-                    Index = streams.Count
-                });
+            {
+                BitRate = Convert.ToInt32(audioStream.BitRate),
+                Codec = audioStream.CodecShortName,
+                Language = audioStream.LanguageCode,
+                Channels = audioStream.ChannelCount,
+                SampleRate = audioStream.SampleRate,
+                Type = MediaStreamType.Audio,
+                Index = streams.Count
+            });
         }
 
         /// <summary>
@@ -143,12 +143,12 @@ namespace MediaBrowser.Server.Implementations.BdInfo
         private void AddSubtitleStream(List<MediaStream> streams, TSTextStream textStream)
         {
             streams.Add(new MediaStream
-                {
-                    Language = textStream.LanguageCode,
-                    Codec = textStream.CodecShortName,
-                    Type = MediaStreamType.Subtitle,
-                    Index = streams.Count
-                });
+            {
+                Language = textStream.LanguageCode,
+                Codec = textStream.CodecShortName,
+                Type = MediaStreamType.Subtitle,
+                Index = streams.Count
+            });
         }
 
         /// <summary>

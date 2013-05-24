@@ -444,6 +444,14 @@ namespace MediaBrowser.Controller.Dto
                 }
             }
 
+            // Add EpisodeInfo
+            var episode = item as Episode;
+
+            if (episode != null)
+            {
+                dto.IndexNumberEnd = episode.IndexNumberEnd;
+            }
+
             if (fields.Contains(ItemFields.SeriesInfo))
             {
                 // Add SeriesInfo
@@ -455,9 +463,6 @@ namespace MediaBrowser.Controller.Dto
                     dto.AirTime = series.AirTime;
                     dto.Status = series.Status;
                 }
-
-                // Add EpisodeInfo
-                var episode = item as Episode;
 
                 if (episode != null)
                 {

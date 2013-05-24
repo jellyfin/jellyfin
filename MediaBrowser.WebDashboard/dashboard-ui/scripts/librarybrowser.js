@@ -152,14 +152,7 @@
                     html += '<div class="tileName">' + seriesName + '</div>';
                 }
 
-                var name = item.Name;
-
-                if (item.IndexNumber != null) {
-                    name = item.IndexNumber + " - " + name;
-                }
-                if (item.ParentIndexNumber != null) {
-                    name = item.ParentIndexNumber + "." + name;
-                }
+                var name = LibraryBrowser.getPosterViewDisplayName(item);
 
                 html += '<div class="tileName">' + name + '</div>';
 
@@ -531,14 +524,7 @@
 
                 html += '<div class="posterItemImage" style="' + style + '"></div>';
 
-                var name = item.Name;
-
-                if (item.IndexNumber != null) {
-                    name = item.IndexNumber + " - " + name;
-                }
-                if (item.ParentIndexNumber != null) {
-                    name = item.ParentIndexNumber + "." + name;
-                }
+                var name = LibraryBrowser.getPosterViewDisplayName(item);
 
                 if (!imgUrl && !options.showTitle) {
                     html += "<div class='posterItemDefaultText'>";
@@ -578,6 +564,36 @@
             }
 
             return html;
+        },
+        
+        getPosterViewDisplayName: function(item) {
+            
+            var name = item.Name;
+
+            if (item.Type == "Episode" && item.IndexNumber != null && item.ParentIndexNumber != null) {
+
+                var displayIndexNumber = item.IndexNumber < 10 ? "0" + item.IndexNumber : item.IndexNumber;
+
+                var number = item.ParentIndexNumber + "x" + displayIndexNumber;
+
+                if (item.IndexNumberEnd) {
+
+                    displayIndexNumber = item.IndexNumberEnd < 10 ? "0" + item.IndexNumberEnd : item.IndexNumberEnd;
+                    number += "-x" + displayIndexNumber;
+                }
+
+                name = number + " - " + name;
+
+            } else {
+                if (item.IndexNumber != null && item.Type !== "Season") {
+                    name = item.IndexNumber + " - " + name;
+                }
+                if (item.ParentIndexNumber != null && item.Type != "Episode") {
+                    name = item.ParentIndexNumber + "." + name;
+                }
+            }
+
+            return name;
         },
 
         getNewIndicatorHtml: function (item) {
@@ -660,24 +676,7 @@
 
         renderName: function (item, nameElem, linkToElement) {
 
-            var name = item.Name;
-
-            if (item.Type == "Episode" && item.IndexNumber != null && item.ParentIndexNumber != null) {
-
-                var displayIndexNumber = item.IndexNumber < 10 ? "0" + item.IndexNumber : item.IndexNumber;
-
-                name = item.ParentIndexNumber + "x" + displayIndexNumber + " - " + name;
-
-            } else {
-                if (item.IndexNumber != null && item.Type !== "Season") {
-                    name = item.IndexNumber + " - " + name;
-                }
-                if (item.ParentIndexNumber != null && item.Type != "Episode") {
-                    name = item.ParentIndexNumber + "." + name;
-                }
-            }
-
-            Dashboard.setPageTitle(name);
+            Dashboard.setPageTitle(LibraryBrowser.getPosterViewDisplayName(item));
 
             if (linkToElement) {
                 nameElem.html('<a class="detailPageParentLink" href="' + LibraryBrowser.getHref(item) + '">' + name + '</a>').trigger('create');
