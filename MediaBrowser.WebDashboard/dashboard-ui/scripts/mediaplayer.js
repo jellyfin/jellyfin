@@ -285,8 +285,10 @@
 
             var html = '';
 
+            var requiresControls = $.browser.msie || $.browser.android || $.browser.iphone || $.browser.ipad;
+
             // Can't autoplay in these browsers so we need to use the full controls
-            if ($.browser.msie || $.browser.android || $.browser.iphone || $.browser.ipad) {
+            if (requiresControls) {
                 html += '<audio preload="auto" autoplay controls>';
             } else {
                 html += '<audio preload="auto" style="display:none;" autoplay>';
@@ -328,6 +330,10 @@
 
             }).on("play.once", function () {
 
+                if (!requiresControls) {
+                    audioElement.hide();
+                }
+                
                 var duration = this.duration;
                 isStaticStream = duration && !isNaN(duration) && duration != Number.POSITIVE_INFINITY && duration != Number.NEGATIVE_INFINITY;
 

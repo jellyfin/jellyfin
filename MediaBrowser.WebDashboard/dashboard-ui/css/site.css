@@ -775,6 +775,7 @@ progress {
     position: relative;
     top: -10px;
     width: 110px;
+    margin-right: .5em;
 }
 
 .mediaSlider {
@@ -847,7 +848,7 @@ input[type="range"]::-ms-fill-upper {
 
 
 @media all and (max-width: 500px) {
-    .volumeButton, .volumeSlider, .fullscsreenButton {
+    .volumeButton, .volumeSlider, .fullscreenButton {
         display: none!important;
     }
 
@@ -864,174 +865,4 @@ input[type="range"]::-ms-fill-upper {
     .positionSlider {
         width: 50px;
     }
-}
-
-/* VideoJS overrides */
-
-#videoWindow.tubecss .vjs-menu-button {
-    width: 1.5em;
-    border: 0;
-    background: none;
-}
-
-#videoWindow.tubecss .vjs-play-control {
-    width: 2em;
-}
-
-.vjs-quality-button {
-    padding: 0 0.6em !important;
-    width: auto !important;
-}
-
-#videoWindow.tubecss .vjs-menu-button.vjs-quality-button div {
-    background: url("images/media/settings.png");
-    height: 16px;
-    width: 16px;
-    background-size: cover;
-    opacity: 0.5;
-}
-
-    #videoWindow.tubecss .vjs-menu-button.vjs-quality-button div:hover {
-        opacity: 1.0;
-    }
-
-#videoWindow.tubecss .vjs-chapter-button div {
-    background: url("images/media/chapter.png");
-    height: 16px;
-    width: 16px;
-    background-size: cover;
-    opacity: 0.5;
-}
-
-    #videoWindow.tubecss .vjs-chapter-button div:hover {
-        opacity: 1.0;
-    }
-
-.vjs-chapter-button.vjs-menu-button ul {
-    width: auto;
-    max-width: 25em;
-    overflow-y: scroll;
-}
-
-    .vjs-chapter-button.vjs-menu-button ul li {
-        width: auto;
-        white-space: nowrap;
-        font-size: 1.1em;
-        padding-right: 10px;
-    }
-
-#videoWindow.tubecss .vjs-menu-button.vjs-stop-button {
-    float: left;
-    background: none;
-    border: 0;
-    width: 2.5em;
-}
-
-    #videoWindow.tubecss .vjs-menu-button.vjs-stop-button div {
-        background: url("images/media/stop.png");
-        height: 26px;
-        width: 26px;
-        margin: -.7em .5em auto 0;
-        opacity: 0.5;
-    }
-
-        #videoWindow.tubecss .vjs-menu-button.vjs-stop-button div:hover {
-            opacity: 1.0;
-        }
-
-.vjs-subtitle-button div {
-    background-position: -25px -75px !important;
-}
-
-.vjs-subtitle-button.vjs-menu-button ul {
-    width: auto;
-    max-width: 25em;
-    overflow-y: scroll;
-}
-
-    .vjs-subtitle-button.vjs-menu-button ul li {
-        width: auto;
-        white-space: nowrap;
-        font-size: 1.1em;
-        padding-right: 10px;
-    }
-
-#videoWindow.tubecss .vjs-menu-button.vjs-language-button div {
-    background: url("images/media/language.png") !important;
-    height: 16px;
-    width: 16px;
-    background-size: cover!important;
-    opacity: 0.5;
-    margin: .2em;
-}
-
-    #videoWindow.tubecss .vjs-menu-button.vjs-language-button div:hover {
-        opacity: 1.0;
-    }
-
-#videoWindow.tubecss .vjs-menu-button.vjs-subtitle-button div {
-    margin: .2em 0px;
-}
-
-    #videoWindow.tubecss .vjs-menu-button.vjs-subtitle-button div:hover {
-        opacity: 1.0;
-    }
-
-.vjs-language-button.vjs-menu-button ul {
-    width: auto;
-    max-width: 25em;
-    overflow-y: scroll;
-}
-
-    .vjs-language-button.vjs-menu-button ul li {
-        width: auto;
-        white-space: nowrap;
-        font-size: 1.1em;
-        padding-right: 10px;
-    }
-
-
-#videoWindow.tubecss .vjs-mute-control {
-    position: absolute;
-    left: 5.5em;
-}
-
-#videoWindow.tubecss .vjs-volume-control {
-    position: absolute;
-    top: auto;
-    left: 9em;
-}
-
-#videoWindow.tubecss .vjs-time-controls, #videoWindow.tubecss .vjs-time-divider {
-    position: absolute;
-    bottom: 0;
-    top: auto;
-    height: auto;
-    width: 0px;
-}
-
-#videoWindow.tubecss .vjs-time-divider {
-    bottom: 0.4em;
-    left: 25.3em;
-    display: none;
-}
-
-#videoWindow.tubecss .vjs-menu-item {
-    font-size: 1em;
-}
-
-#videoWindow.tubecss .vjs-current-time {
-    left: .1em;
-    top: -2em;
-    z-index: 2;
-}
-
-#videoWindow.tubecss .vjs-duration {
-    right: .1em;
-    text-align: right;
-    z-index: 2;
-}
-
-#videoWindow.tubecss .vjs-progress-holder {
-    margin: 0 5em;
 }
