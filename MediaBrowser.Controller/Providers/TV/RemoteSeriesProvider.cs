@@ -228,15 +228,13 @@ namespace MediaBrowser.Controller.Providers.TV
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var status = ProviderRefreshStatus.Success;
-
             if (!string.IsNullOrEmpty(seriesId))
             {
                 series.SetProviderId(MetadataProviders.Tvdb, seriesId);
 
                 var seriesDataPath = GetSeriesDataPath(ConfigurationManager.ApplicationPaths, seriesId);
 
-                status = await FetchSeriesData(series, seriesId, seriesDataPath, cancellationToken).ConfigureAwait(false);
+                await FetchSeriesData(series, seriesId, seriesDataPath, cancellationToken).ConfigureAwait(false);
             }
 
             BaseProviderInfo data;
@@ -247,8 +245,8 @@ namespace MediaBrowser.Controller.Providers.TV
             }
 
             data.Data = GetComparisonData(item);
-            
-            SetLastRefreshed(item, DateTime.UtcNow, status);
+
+            SetLastRefreshed(item, DateTime.UtcNow);
             return true;
         }
 
@@ -260,10 +258,8 @@ namespace MediaBrowser.Controller.Providers.TV
         /// <param name="seriesDataPath">The series data path.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.Boolean}.</returns>
-        private async Task<ProviderRefreshStatus> FetchSeriesData(Series series, string seriesId, string seriesDataPath, CancellationToken cancellationToken)
+        private async Task FetchSeriesData(Series series, string seriesId, string seriesDataPath, CancellationToken cancellationToken)
         {
-            var status = ProviderRefreshStatus.Success;
-
             var files = Directory.EnumerateFiles(seriesDataPath, "*.xml", SearchOption.TopDirectoryOnly).Select(Path.GetFileName).ToArray();
 
             var seriesXmlFilename = ConfigurationManager.Configuration.PreferredMetadataLanguage.ToLower() + ".xml";
@@ -299,24 +295,6 @@ namespace MediaBrowser.Controller.Providers.TV
                     await _providerManager.SaveToLibraryFilesystem(series, Path.Combine(series.MetaLocation, LocalMetaFileName), ms, cancellationToken).ConfigureAwait(false);
                 }
             }
-
-            // Process images
-            var imagesXmlPath = Path.Combine(seriesDataPath, "banners.xml");
-
-            try
-            {
-                var xmlDoc = new XmlDocument();
-                xmlDoc.Load(imagesXmlPath);
-
-                await FetchImages(series, xmlDoc, cancellationToken).ConfigureAwait(false);
-            }
-            catch (HttpException)
-            {
-                // Have the provider try again next time, but don't let it fail here
-                status = ProviderRefreshStatus.CompletedWithErrors;
-            }
-
-            return status;
         }
 
         /// <summary>
@@ -329,7 +307,7 @@ namespace MediaBrowser.Controller.Providers.TV
         internal async Task DownloadSeriesZip(string seriesId, string seriesDataPath, CancellationToken cancellationToken)
         {
             var url = string.Format(SeriesGetZip, TVUtils.TvdbApiKey, seriesId, ConfigurationManager.Configuration.PreferredMetadataLanguage);
-            
+
             using (var zipStream = await HttpClient.Get(new HttpRequestOptions
             {
                 Url = url,
@@ -485,66 +463,6 @@ namespace MediaBrowser.Controller.Providers.TV
         /// The us culture
         /// </summary>
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
-
-        /// <summary>
-        /// Fetches the images.
-        /// </summary>
-        /// <param name="series">The series.</param>
-        /// <param name="images">The images.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        private async Task FetchImages(Series series, XmlDocument images, CancellationToken cancellationToken)
-        {
-            if (ConfigurationManager.Configuration.RefreshItemImages || !series.HasImage(ImageType.Primary))
-            {
-                var n = images.SelectSingleNode("//Banner[BannerType='poster']");
-                if (n != null)
-                {
-                    n = n.SelectSingleNode("./BannerPath");
-                    if (n != null)
-                    {
-                        series.PrimaryImagePath = await _providerManager.DownloadAndSaveImage(series, TVUtils.BannerUrl + n.InnerText, "folder" + Path.GetExtension(n.InnerText), ConfigurationManager.Configuration.SaveLocalMeta, TvDbResourcePool, cancellationToken).ConfigureAwait(false);
-                    }
-                }
-            }
-
-            if (ConfigurationManager.Configuration.DownloadSeriesImages.Banner && (ConfigurationManager.Configuration.RefreshItemImages || !series.HasImage(ImageType.Banner)))
-            {
-                var n = images.SelectSingleNode("//Banner[BannerType='series']");
-                if (n != null)
-                {
-                    n = n.SelectSingleNode("./BannerPath");
-                    if (n != null)
-                    {
-                        var bannerImagePath = await _providerManager.DownloadAndSaveImage(series, TVUtils.BannerUrl + n.InnerText, "banner" + Path.GetExtension(n.InnerText), ConfigurationManager.Configuration.SaveLocalMeta, TvDbResourcePool, cancellationToken);
-
-                        series.SetImage(ImageType.Banner, bannerImagePath);
-                    }
-                }
-            }
-
-            if (series.BackdropImagePaths.Count < ConfigurationManager.Configuration.MaxBackdrops)
-            {
-                var bdNo = series.BackdropImagePaths.Count;
-                var xmlNodeList = images.SelectNodes("//Banner[BannerType='fanart']");
-                if (xmlNodeList != null)
-                {
-                    foreach (XmlNode b in xmlNodeList)
-                    {
-                        var p = b.SelectSingleNode("./BannerPath");
-
-                        if (p != null)
-                        {
-                            var bdName = "backdrop" + (bdNo > 0 ? bdNo.ToString(UsCulture) : "");
-                            series.BackdropImagePaths.Add(await _providerManager.DownloadAndSaveImage(series, TVUtils.BannerUrl + p.InnerText, bdName + Path.GetExtension(p.InnerText), ConfigurationManager.Configuration.SaveLocalMeta, TvDbResourcePool, cancellationToken).ConfigureAwait(false));
-                            bdNo++;
-                        }
-
-                        if (series.BackdropImagePaths.Count >= ConfigurationManager.Configuration.MaxBackdrops) break;
-                    }
-                }
-            }
-        }
 
         /// <summary>
         /// Determines whether [has local meta] [the specified item].
