@@ -176,6 +176,12 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         /// <summary>
+        /// This is the ending episode number for double episodes.
+        /// </summary>
+        /// <value>The index number.</value>
+        public int? IndexNumberEnd { get; set; }
+
+        /// <summary>
         /// Creates the name of the sort.
         /// </summary>
         /// <returns>System.String.</returns>
