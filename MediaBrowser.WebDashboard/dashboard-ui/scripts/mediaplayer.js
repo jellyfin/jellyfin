@@ -1,6 +1,7 @@
 ﻿(function (document, setTimeout, clearTimeout, screen, localStorage, _V_, $, setInterval, window) {
 
     function mediaPlayer() {
+
         var self = this;
 
         var testableAudioElement = document.createElement('audio');
@@ -87,6 +88,47 @@
             }
         }
 
+        function onPositionSliderChange() {
+
+            isPositionSliderActive = false;
+
+            var element = currentMediaElement;
+
+            var newPercent = parseInt(this.value);
+
+            var newPositionTicks = (newPercent / 100) * currentItem.RunTimeTicks;
+
+            if (isStaticStream) {
+
+                element.currentTime = newPositionTicks / (1000 * 10000);
+
+            } else {
+
+                var currentSrc = element.currentSrc;
+
+                if (currentSrc.toLowerCase().indexOf('starttimeticks') == -1) {
+
+                    currentSrc += "&starttimeticks=" + newPositionTicks;
+
+                } else {
+                    currentSrc = replaceQueryString(currentSrc, 'starttimeticks', newPositionTicks);
+                }
+
+                clearProgressInterval();
+
+                $(element).off('ended.playbackstopped').on("play.onceafterseek", function () {
+
+                    $(this).off('play.onceafterseek').on('ended.playbackstopped', onPlaybackStopped);
+                    startProgressInterval(currentItem.Id);
+                    sendProgressUpdate(currentItem.Id);
+
+                });
+                startTimeTicksOffset = newPositionTicks;
+
+                element.src = currentSrc;
+            }
+        }
+
         $(function () {
 
             muteButton = $('#muteButton');
@@ -103,52 +145,27 @@
 
             $(".jqueryuislider").slider({ orientation: "horizontal" });
 
-            positionSlider = $(".positionSlider").on('change', function () {
+            positionSlider = $(".positionSlider").on('mousedown', function () {
 
                 isPositionSliderActive = true;
 
-                setCurrentTimePercent(parseInt(this.value), currentItem);
-
-            }).on('changed', function () {
-
-                isPositionSliderActive = false;
-
-                var element = currentMediaElement;
-
-                var newPercent = parseInt(this.value);
-
-                var newPositionTicks = (newPercent / 100) * currentItem.RunTimeTicks;
-
-                if (isStaticStream) {
-
-                    element.currentTime = newPositionTicks / (1000 * 10000);
-
-                } else {
-
-                    var currentSrc = element.currentSrc;
-
-                    if (currentSrc.toLowerCase().indexOf('starttimeticks') == -1) {
-
-                        currentSrc += "&starttimeticks=" + newPositionTicks;
-
-                    } else {
-                        currentSrc = replaceQueryString(currentSrc, 'starttimeticks', newPositionTicks);
-                    }
-
-                    clearProgressInterval();
-
-                    $(element).off('ended.playbackstopped').on("play.onceafterseek", function () {
-
-                        $(this).off('play.onceafterseek').on('ended.playbackstopped', onPlaybackStopped);
-                        startProgressInterval(currentItem.Id);
-                        sendProgressUpdate(currentItem.Id);
-
-                    });
-                    startTimeTicksOffset = newPositionTicks;
-
-                    element.src = currentSrc;
-                }
             });
+
+            if ($.browser.mozilla) {
+
+                positionSlider.on('change', onPositionSliderChange);
+
+            } else {
+
+                positionSlider.on('change', function () {
+
+                    isPositionSliderActive = true;
+
+                    setCurrentTimePercent(parseInt(this.value), currentItem);
+
+                }).on('changed', onPositionSliderChange);
+            }
+
 
             (function (el, timeout) {
                 var timer, trig = function () { el.trigger("changed"); };
@@ -482,9 +499,19 @@
         }
 
         self.canPlay = function (item) {
+
+            return self.canPlayMediaType(item.MediaType);
+        };
+
+        self.canPlayMediaType = function (mediaType) {
+
+            if ($.browser.android || $.browser.iphone || $.browser.ipad) {
+                return false;
+            }
+
             var media;
 
-            if (item.MediaType === "Video") {
+            if (mediaType === "Video") {
                 media = testableVideoElement;
                 if (media.canPlayType) {
 
@@ -494,11 +521,11 @@
                 return false;
             }
 
-            if (item.MediaType === "Audio") {
+            if (mediaType === "Audio") {
                 media = testableAudioElement;
                 if (media.canPlayType) {
 
-                    return media.canPlayType('audio/mpeg').replace(/no/, '') || media.canPlayType('audio/webm').replace(/no/, '') || media.canPlayType('audio/aac').replace(/no/, '') || media.canPlayType('audio/ogg').replace(/no/, '');
+                    return media.canPlayType('audio/mpeg').replace(/no/, '') || media.canPlayType('audio/webm').replace(/no/, '') || media.canPlayType('audio/aac').replace(/no/, '');
                 }
 
                 return false;

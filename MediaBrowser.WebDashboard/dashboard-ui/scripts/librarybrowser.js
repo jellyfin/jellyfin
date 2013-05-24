@@ -303,9 +303,11 @@
 
         showPlayMenu: function (positionTo, itemId, mediaType, resumePositionTicks) {
 
+            var canPlay = MediaPlayer.canPlayMediaType(mediaType);
+
             var isPlaying = MediaPlayer.isPlaying();
 
-            if (!isPlaying && !resumePositionTicks) {
+            if (canPlay && !isPlaying && !resumePositionTicks) {
                 MediaPlayer.playById(itemId);
                 return;
             }
@@ -317,15 +319,17 @@
             html += '<ul data-role="listview" style="min-width: 150px;" data-theme="c">';
             html += '<li data-role="list-divider" data-theme="a">Play Menu</li>';
 
-            html += '<li><a href="#" onclick="MediaPlayer.playById(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Play</a></li>';
+            if (canPlay) {
+                html += '<li><a href="#" onclick="MediaPlayer.playById(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Play</a></li>';
 
-            if (resumePositionTicks) {
-                html += '<li><a href="#" onclick="MediaPlayer.playById(\'' + itemId + '\', ' + resumePositionTicks + ');LibraryBrowser.closePlayMenu();">Resume</a></li>';
-            }
+                if (resumePositionTicks) {
+                    html += '<li><a href="#" onclick="MediaPlayer.playById(\'' + itemId + '\', ' + resumePositionTicks + ');LibraryBrowser.closePlayMenu();">Resume</a></li>';
+                }
 
-            if (isPlaying && MediaPlayer.canQueue(mediaType)) {
-                html += '<li><a href="#" onclick="MediaPlayer.playNext(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Play Next</a></li>';
-                html += '<li><a href="#" onclick="MediaPlayer.playLast(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Play Last</a></li>';
+                if (isPlaying && MediaPlayer.canQueue(mediaType)) {
+                    html += '<li><a href="#" onclick="MediaPlayer.playNext(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Play Next</a></li>';
+                    html += '<li><a href="#" onclick="MediaPlayer.playLast(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Play Last</a></li>';
+                }
             }
 
             html += '</ul>';
