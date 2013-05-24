@@ -175,13 +175,22 @@ namespace MediaBrowser.Api.Library
         {
             var duplicate = Directory.EnumerateFiles(appPaths.RootFolderPath, "*.lnk", SearchOption.AllDirectories)
                 .Select(FileSystem.ResolveShortcut)
-                .FirstOrDefault(p => !IsNewPathValid(mediaPath, p));
+                .FirstOrDefault(p => !IsNewPathValid(mediaPath, p, false));
 
             if (!string.IsNullOrEmpty(duplicate))
             {
                 throw new ArgumentException(string.Format("The path cannot be added to the library because {0} already exists.", duplicate));
             }
 
+            duplicate = Directory.EnumerateFiles(currentViewRootFolderPath, "*.lnk", SearchOption.AllDirectories)
+              .Select(FileSystem.ResolveShortcut)
+              .FirstOrDefault(p => !IsNewPathValid(mediaPath, p, true));
+
+            if (!string.IsNullOrEmpty(duplicate))
+            {
+                throw new ArgumentException(string.Format("The path cannot be added to the library because {0} already exists.", duplicate));
+            }
+            
             // Make sure the current root folder doesn't already have a shortcut to the same path
             duplicate = Directory.EnumerateFiles(currentViewRootFolderPath, "*.lnk", SearchOption.AllDirectories)
                 .Select(FileSystem.ResolveShortcut)
@@ -198,16 +207,24 @@ namespace MediaBrowser.Api.Library
         /// </summary>
         /// <param name="newPath">The new path.</param>
         /// <param name="existingPath">The existing path.</param>
+        /// <param name="enforceSubPathRestriction">if set to <c>true</c> [enforce sub path restriction].</param>
         /// <returns><c>true</c> if [is new path valid] [the specified new path]; otherwise, <c>false</c>.</returns>
-        private static bool IsNewPathValid(string newPath, string existingPath)
+        private static bool IsNewPathValid(string newPath, string existingPath, bool enforceSubPathRestriction)
         {
             // Example: D:\Movies is the existing path
             // D:\ cannot be added
+            // Neither can D:\Movies\Kids
             // A D:\Movies duplicate is ok here since that will be caught later
 
             if (newPath.Equals(existingPath, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
+            }
+
+            // Validate the D:\Movies\Kids scenario
+            if (enforceSubPathRestriction && newPath.StartsWith(existingPath.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
             }
 
             // Validate the D:\ scenario

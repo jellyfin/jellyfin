@@ -4,6 +4,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
 using MoreLinq;
 using System;
 using System.Collections.Generic;
@@ -22,6 +23,7 @@ namespace MediaBrowser.ServerApplication.EntryPoints
         private readonly ISessionManager _sessionManager;
         private readonly IServerManager _serverManager;
         private readonly IUserManager _userManager;
+        private readonly ILogger _logger;
 
         /// <summary>
         /// The _library changed sync lock
@@ -195,7 +197,14 @@ namespace MediaBrowser.ServerApplication.EntryPoints
                 var id = userId;
                 var webSockets = currentSessions.Where(u => u.UserId.HasValue && u.UserId.Value == id).SelectMany(i => i.WebSockets).ToList();
 
-                await _serverManager.SendWebSocketMessageAsync("LibraryChanged", () => GetLibraryUpdateInfo(itemsAdded, itemsUpdated, itemsRemoved, foldersAddedTo, foldersRemovedFrom, id), webSockets, cancellationToken).ConfigureAwait(false);
+                try
+                {
+                    await _serverManager.SendWebSocketMessageAsync("LibraryChanged", () => GetLibraryUpdateInfo(itemsAdded, itemsUpdated, itemsRemoved, foldersAddedTo, foldersRemovedFrom, id), webSockets, cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error sending LibraryChanged message", ex);
+                }
             }
         }
 
