@@ -8,8 +8,8 @@ namespace MediaBrowser.Controller.Providers.Music
 {
     public static class LastfmHelper
     {
-        public static string LocalArtistMetaFileName = "mbartist.js";
-        public static string LocalAlbumMetaFileName = "mbalbum.js";
+        public static string LocalArtistMetaFileName = "lastfmartist.json";
+        public static string LocalAlbumMetaFileName = "lastfmalbum.json";
 
         public static void ProcessArtistData(BaseItem artist, LastfmArtist data)
         {
