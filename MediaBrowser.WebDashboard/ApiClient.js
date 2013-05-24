@@ -388,7 +388,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
 
             var url = self.getUrl("Items/" + itemId + "/Refresh", {
 
-                force: force || false,
+                forced: force || false,
                 recursive: recursive || false
 
             });

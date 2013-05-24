@@ -428,16 +428,12 @@ namespace MediaBrowser.Api
 
             try
             {
+                await item.RefreshMetadata(CancellationToken.None, forceRefresh: request.Forced).ConfigureAwait(false);
+
                 if (folder != null)
                 {
-                    await
-                        folder.ValidateChildren(new Progress<double>(), CancellationToken.None, request.Recursive,
+                    await folder.ValidateChildren(new Progress<double>(), CancellationToken.None, request.Recursive,
                                                 request.Forced).ConfigureAwait(false);
-                }
-                else
-                {
-                    await
-                        item.RefreshMetadata(CancellationToken.None, forceRefresh: request.Forced).ConfigureAwait(false);
                 }
             }
             catch (Exception ex)

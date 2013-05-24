@@ -1,25 +1,15 @@
 ﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Logging;
-using System;
 using System.Collections.Generic;
 using System.Threading;
 
 namespace MediaBrowser.Controller.Providers
 {
-    class FanArtProviderException : ApplicationException
-    {
-        public FanArtProviderException(string msg)
-            : base(msg)
-        {
-        }
-
-    }
     /// <summary>
     /// Class FanartBaseProvider
     /// </summary>
     public abstract class FanartBaseProvider : BaseMetadataProvider
     {
-
         protected static readonly SemaphoreSlim FanArtResourcePool = new SemaphoreSlim(3,3);
 
         /// <summary>
