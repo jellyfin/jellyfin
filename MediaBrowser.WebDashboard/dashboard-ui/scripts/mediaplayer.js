@@ -1,4 +1,4 @@
-﻿(function (document, setTimeout, clearTimeout, screen, localStorage, _V_, $, setInterval, window) {
+﻿(function (document, setTimeout, clearTimeout, screen, localStorage, $, setInterval, window) {
 
     function mediaPlayer() {
 
@@ -22,6 +22,34 @@
         self.playing = '';
         self.queue = [];
 
+        function requestFullScreen(element) {
+            // Supports most browsers and their versions.
+            var requestMethod = element.requestFullScreen || element.webkitRequestFullScreen || element.mozRequestFullScreen || element.msRequestFullScreen;
+
+            if (requestMethod) { // Native full screen.
+                requestMethod.call(element);
+            } else if (typeof window.ActiveXObject !== "undefined") { // Older IE.
+                var wscript = new ActiveXObject("WScript.Shell");
+                if (wscript !== null) {
+                    wscript.SendKeys("{F11}");
+                }
+            }
+        }
+        
+        function isFullScreen() {
+            return document.fullscreenEnabled || document.mozFullscreenEnabled || document.webkitIsFullScreen ? true : false;
+        }
+        
+        $(document).on('webkitfullscreenchange mozfullscreenchange fullscreenchange', function() {
+            
+            if (isFullScreen()) {
+                $('.itemVideo').addClass('fullscreenVideo');
+            } else {
+                $('.itemVideo').removeClass('fullscreenVideo');
+            }
+
+        });
+
         function replaceQueryString(url, param, value) {
             var re = new RegExp("([?|&])" + param + "=.*?(&|$)", "i");
             if (url.match(re))
@@ -43,7 +71,6 @@
 
         function onPlaybackStopped() {
 
-            console.log('ended');
             currentTimeElement.hide();
 
             var endTime = this.currentTime;
@@ -258,12 +285,7 @@
 
             var html = '';
 
-            var attributes = "autoplay";
-
-            if ($.browser.ipad || $.browser.iphone || $.browser.android) {
-                attributes += " controls";
-            }
-            html += '<audio preload="auto" ' + attributes + '>';
+            html += '<audio preload="auto" autoplay>';
             html += '<source type="audio/mpeg" src="' + mp3Url + '" />';
             html += '<source type="audio/aac" src="' + aacUrl + '" />';
             html += '<source type="audio/webm" src="' + webmUrl + '" />';
@@ -274,8 +296,11 @@
             $('#stopButton', nowPlayingBar).show();
             $('#playButton', nowPlayingBar).hide();
             $('#pauseButton', nowPlayingBar).show();
-
+            $('#playlistButton', nowPlayingBar).show();
+            $('#previousTrackButton', nowPlayingBar).show();
+            $('#nextTrackButton', nowPlayingBar).show();
             $('#mediaElement', nowPlayingBar).html(html);
+            $('#fullscreenButton', nowPlayingBar).hide();
 
             var audioElement = $("audio", nowPlayingBar);
 
@@ -347,7 +372,6 @@
             var screenWidth = Math.max(screen.height, screen.width);
             var screenHeight = Math.min(screen.height, screen.width);
 
-            var volume = localStorage.getItem("volume") || 0.5;
             var user = Dashboard.getCurrentUser();
             var defaults = { languageIndex: null, subtitleIndex: null };
 
@@ -391,111 +415,134 @@
                 AudioStreamIndex: null
             };
 
-            if (typeof (startPosition) != "undefined") {
-                baseParams['StartTimeTicks'] = startPosition;
+            if (startPosition) {
+                baseParams.StartTimeTicks = startPosition;
             }
 
-            var html = '<video id="videoWindow" class="itemVideo video-js tubecss"></video>';
+            var mp4VideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.mp4', $.extend({}, baseParams, {
+                videoCodec: 'h264',
+                audioCodec: 'aac',
+                profile: 'high',
+                videoBitrate: 2500000
+            }));
 
-            var nowPlayingBar = $('#nowPlayingBar');
-            //hide stop button
-            $('#stopButton', nowPlayingBar).hide();
+            var tsVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.ts', $.extend({}, baseParams, {
+                videoCodec: 'h264',
+                audioCodec: 'aac',
+                profile: 'high',
+                videoBitrate: 2500000
+            }));
 
-            $('#mediaElement', nowPlayingBar).addClass("video").html(html).show();
+            var webmVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.webm', $.extend({}, baseParams, {
+                videoCodec: 'vpx',
+                audioCodec: 'Vorbis',
+                videoBitrate: 2500000
+            }));
 
-            _V_("videoWindow", { 'controls': true, 'autoplay': true, 'preload': 'auto' }, function () {
+            var hlsVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.m3u8', $.extend({}, baseParams, {
+                videoCodec: 'h264',
+                audioCodec: 'aac'
+            }));
 
-                var mp4VideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.mp4', $.extend({}, baseParams, {
-                    videoCodec: 'h264',
-                    audioCodec: 'aac',
-                    profile: 'high',
-                    videoBitrate: 2500000
-                }));
+            var ogvVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.ogv', $.extend({}, baseParams, {
+                videoCodec: 'theora',
+                audioCodec: 'Vorbis'
+            }));
 
-                var tsVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.ts', $.extend({}, baseParams, {
-                    videoCodec: 'h264',
-                    audioCodec: 'aac',
-                    profile: 'high',
-                    videoBitrate: 2500000
-                }));
+            var html = '';
 
-                var webmVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.webm', $.extend({}, baseParams, {
-                    videoCodec: 'vpx',
-                    audioCodec: 'Vorbis',
-                    videoBitrate: 2500000
-                }));
+            // HLS must be at the top for safari
+            // Webm must be ahead of mp4 due to the issue of mp4 playing too fast in chrome
 
-                var hlsVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.m3u8', $.extend({}, baseParams, {
-                    videoCodec: 'h264',
-                    audioCodec: 'aac'
-                }));
+            // Can't autoplay in ie so need to use the full controls
+            if ($.browser.msie) {
+                html += '<video class="itemVideo" preload="auto" autoplay controls>';
+            } else {
+                html += '<video class="itemVideo" preload="auto" autoplay>';
+            }
 
-                var ogvVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.ogv', $.extend({}, baseParams, {
-                    videoCodec: 'theora',
-                    audioCodec: 'Vorbis'
-                }));
+            html += '<source type="application/x-mpegURL" src="' + hlsVideoUrl + '" />';
+            html += '<source type="video/webm" src="' + webmVideoUrl + '" />';
+            html += '<source type="video/mp4" src="' + mp4VideoUrl + '" />';
+            html += '<source type="video/mp2t" src="' + tsVideoUrl + '" />';
+            html += '<source type="video/ogg" src="' + ogvVideoUrl + '" />';
+            html += '</video';
 
-                // HLS must be at the top for safari
-                // Webm must be ahead of mp4 due to the issue of mp4 playing too fast in chrome
+            var nowPlayingBar = $('#nowPlayingBar').show();
+            //show stop button
+            $('#stopButton', nowPlayingBar).show();
+            $('#playButton', nowPlayingBar).hide();
+            $('#pauseButton', nowPlayingBar).show();
+            $('#playlistButton', nowPlayingBar).hide();
+            $('#previousTrackButton', nowPlayingBar).hide();
+            $('#nextTrackButton', nowPlayingBar).hide();
+            $('#mediaElement', nowPlayingBar).html(html);
 
-                (this).src([
-                    { type: "application/x-mpegURL", src: hlsVideoUrl },
-                    { type: "video/webm", src: webmVideoUrl },
-                    { type: "video/mp4", src: mp4VideoUrl },
-                    { type: "video/mp2t; codecs='h264, aac'", src: tsVideoUrl },
-                    { type: "video/ogg", src: ogvVideoUrl }]
-                ).volume(volume);
+            if ($.browser.msie) {
+                $('#fullscreenButton', nowPlayingBar).hide();
+            } else {
+                $('#fullscreenButton', nowPlayingBar).show();
+            }
 
-                videoJSextension.setup_video($('#videoWindow'), item, defaults);
+            var videoElement = $("video", nowPlayingBar);
 
-                (this).addEvent("loadstart", function () {
-                    $(".vjs-remaining-time-display").hide();
-                    $(".vjs-duration-display").hide();
-                });
+            var initialVolume = localStorage.getItem("volume") || 0.5;
 
-                (this).addEvent("durationchange", function () {
-                    if ((this).duration() != "Infinity")
-                        $(".vjs-remaining-time-display").show();
-                });
-
-                (this).addEvent("volumechange", function () {
-                    localStorage.setItem("volume", this.volume());
-                });
-
-                (this).addEvent("play", updateProgress);
-
-                (this).addEvent("ended", function () {
-                    MediaPlayer.stop();
-                });
-
+            videoElement.each(function () {
+                this.volume = initialVolume;
             });
 
-            return $('video', nowPlayingBar)[0];
-        }
+            volumeSlider.val(initialVolume);
+            updateVolumeButtons(initialVolume);
 
-        function updateProgress() {
-            var player = _V_("videoWindow");
-            var itemString = player.tag.src.match(new RegExp("Videos/[0-9a-z\-]+", "g"));
-            var itemId = itemString[0].replace("Videos/", "");
+            videoElement.on("volumechange", function () {
 
-            ApiClient.reportPlaybackStart(Dashboard.getCurrentUserId(), itemId);
+                var vol = this.volume;
 
-            var intervalTime = ApiClient.isWebSocketOpen() ? 10000 : 30000;
+                localStorage.setItem("volume", vol);
 
-            currentProgressInterval = setInterval(function () {
-                var player = _V_("videoWindow");
+                updateVolumeButtons(vol);
 
-                var startTimeTicks = player.tag.src.match(new RegExp("StartTimeTicks=[0-9]+", "g"));
-                var startTime = startTimeTicks[0].replace("StartTimeTicks=", "");
+            }).on("play.once", function () {
 
-                var itemString = player.tag.src.match(new RegExp("Videos/[0-9a-z\-]+", "g"));
-                var itemId = itemString[0].replace("Videos/", "");
+                var duration = this.duration;
+                isStaticStream = duration && !isNaN(duration) && duration != Number.POSITIVE_INFINITY && duration != Number.NEGATIVE_INFINITY;
 
-                var positionTicks = parseInt(startTime) + Math.floor(10000000 * player.currentTime());
+                currentTimeElement.show();
 
-                ApiClient.reportPlaybackProgress(Dashboard.getCurrentUserId(), itemId, positionTicks);
+                videoElement.off("play.once");
 
-            }, intervalTime);
+                ApiClient.reportPlaybackStart(Dashboard.getCurrentUserId(), item.Id);
+
+                startProgressInterval(item.Id);
+
+            }).on("pause", function () {
+
+                $('#playButton', nowPlayingBar).show();
+                $('#pauseButton', nowPlayingBar).hide();
+
+            }).on("playing", function () {
+
+                $('#playButton', nowPlayingBar).hide();
+                $('#pauseButton', nowPlayingBar).show();
+
+            }).on("timeupdate", function () {
+
+                if (!isPositionSliderActive) {
+
+                    var ticks = startTimeTicksOffset + this.currentTime * 1000 * 10000;
+
+                    setCurrentTime(ticks, item, true);
+                }
+
+            }).on("ended.playbackstopped", onPlaybackStopped);
+
+            MediaPlayer.nowPlaying(item);
+
+            currentItem = item;
+            curentDurationTicks = item.RunTimeTicks;
+
+            return videoElement[0];
         }
 
         self.canPlay = function (item) {
@@ -637,6 +684,17 @@
             self.playing = item;
         };
 
+        self.toggleFullscreen = function () {
+
+            if (isFullScreen()) {
+                if (document.cancelFullScreen) { document.cancelFullScreen(); }
+                else if (document.mozCancelFullScreen) { document.mozCancelFullScreen(); }
+                else if (document.webkitCancelFullScreen) { document.webkitCancelFullScreen(); }
+            } else {
+                requestFullScreen(document.body);
+            }
+        };
+
         self.canQueue = function (mediaType) {
             return mediaType == "Audio";
         };
@@ -717,56 +775,16 @@
 
             var elem = currentMediaElement;
 
-            //check if it's a video using VideoJS
-            if ($(elem).hasClass("vjs-tech")) {
-                var player = _V_("videoWindow");
+            elem.pause();
 
-                self.stopVideo();
+            var jelem = $(elem).trigger('ended');
+            elem.src = "";
 
-                if (player.techName == "html5") {
-                    player.tag.src = "";
-                    player.tech.removeTriggers();
-                    player.load();
-                }
-
-                //remove custom buttons
-                delete _V_.ControlBar.prototype.options.components.ResolutionSelectorButton;
-                delete _V_.ControlBar.prototype.options.components.SubtitleSelectorButton;
-                delete _V_.ControlBar.prototype.options.components.LanguageSelectorButton;
-                delete _V_.ControlBar.prototype.options.components.ChapterSelectorButton;
-
-                //player.tech.destroy();
-                player.destroy();
-            } else {
-                elem.pause();
-
-                $(elem).trigger('ended');
-                elem.src = "";
-            }
-
-            $(elem).remove();
+            jelem.remove();
 
             $('#nowPlayingBar').hide();
 
             currentMediaElement = null;
-        };
-
-        self.stopVideo = function () {
-            var player = _V_("videoWindow");
-
-            var startTimeTicks = player.tag.src.match(new RegExp("StartTimeTicks=[0-9]+", "g"));
-            var startTime = startTimeTicks[0].replace("StartTimeTicks=", "");
-
-            var itemString = player.tag.src.match(new RegExp("Videos/[0-9a-z\-]+", "g"));
-            var itemId = itemString[0].replace("Videos/", "");
-
-            var positionTicks = parseInt(startTime) + Math.floor(10000000 * player.currentTime());
-
-            ApiClient.reportPlaybackStopped(Dashboard.getCurrentUserId(), itemId, positionTicks);
-
-            if (currentProgressInterval) {
-                clearTimeout(currentProgressInterval);
-            }
         };
 
         self.isPlaying = function () {
@@ -776,4 +794,4 @@
 
     window.MediaPlayer = new mediaPlayer();
 
-})(document, setTimeout, clearTimeout, screen, localStorage, _V_, $, setInterval, window);
+})(document, setTimeout, clearTimeout, screen, localStorage, $, setInterval, window);

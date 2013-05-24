@@ -1104,7 +1104,7 @@ $(function () {
 
     var footerHtml = '<div id="footer" class="ui-bar-a">';
     footerHtml += '<div id="nowPlayingBar" style="display:none;">';
-    footerHtml += '<a class="imageButton mediaButton" href="playlist.html"><img src="css/images/media/playlist.png" /></a>';
+    footerHtml += '<a id="playlistButton" class="imageButton mediaButton" href="playlist.html"><img src="css/images/media/playlist.png" /></a>';
     footerHtml += '<button id="previousTrackButton" class="imageButton mediaButton" title="Previous Track" type="button"><img src="css/images/media/previoustrack.png" /></button>';
     footerHtml += '<button id="playButton" class="imageButton mediaButton" title="Play" type="button" onclick="MediaPlayer.unpause();"><img src="css/images/media/play.png" /></button>';
     footerHtml += '<button id="pauseButton" class="imageButton mediaButton" title="Pause" type="button" onclick="MediaPlayer.pause();"><img src="css/images/media/pause.png" /></button>';
@@ -1118,6 +1118,7 @@ $(function () {
     footerHtml += '<button id="muteButton" onclick="MediaPlayer.mute();" class="imageButton mediaButton volumeButton" title="Volume" type="button"><img src="css/images/media/volume.png" /></button>';
     footerHtml += '<button id="unmuteButton" onclick="MediaPlayer.unmute();" class="imageButton mediaButton volumeButton" title="Volume" type="button"><img src="css/images/media/mute.png" /></button>';
     footerHtml += '<input type="range" class="mediaSlider volumeSlider" step=".05" min="0" max="1" value="0" />';
+    footerHtml += '<button onclick="MediaPlayer.toggleFullscreen();" id="fullscsreenButton" class="imageButton mediaButton" title="Fullscreen" type="button"><img src="css/images/media/fullscreen.png" /></button>';
 
     footerHtml += '</div>';
 

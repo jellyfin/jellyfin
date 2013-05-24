@@ -723,10 +723,6 @@ progress {
     position: relative;
 }
 
-    #mediaElement.video {
-        width: 270px;
-    }
-
 .nowPlayingMediaInfo div {
     display: inline-block;
 }
@@ -750,18 +746,34 @@ progress {
     height: 24px;
 }
 
-.itemVideo, .itemVideo.video-js {
+.itemVideo {
     position: absolute;
     z-index: 99998;
     height: auto;
-    /*width: 180px;*/
-    bottom: -5px;
+    width: 270px;
+    bottom: 44px;
+    left: -240px;
+    border: 1px solid #666;
+    border-bottom: 0;
+    background: #000;
+}
+
+.fullscreenVideo {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    width: 100%;
+    border: 0;
+    z-index: 99996;
 }
 
 .currentTime {
     display: inline-block;
     position: relative;
     top: -10px;
+    width: 110px;
 }
 
 .mediaSlider {
@@ -805,46 +817,27 @@ progress {
     margin-right: .5em!important;
 }
 
-::-ms-fill-lower {
-    background: #777;
-}
-
-::-ms-fill-upper {
-    background: #777;
-}
-
 ::-ms-thumb {
-    background: #000;
-    border-radius: 5px;
-    border: 1px solid #000;
-}
-
-::-ms-ticks-after {
-    display: none;
-    color: #777!important;
-    background: #777;
-}
-
-::-ms-ticks-before {
-    display: none;
-    color: #777!important;
-    background: #777;
+    background-image: linear-gradient(#fefefe,#dddddd);
+    width: 15px;
 }
 
 ::-ms-track {
     padding: 0;
     border: 0;
+    color: #777;
+}
+
+input[type="range"]::-ms-fill-lower {
+    background-color: #777;
+}
+
+input[type="range"]::-ms-fill-upper {
+    background-color: #777;
 }
 
 ::-ms-tooltip {
     display: none; /* display and visibility only */
-}
-
-@media all and (min-width: 650px) {
-
-    .itemVideo {
-        width: 270px;
-    }
 }
 
 .userProfileIcon {
