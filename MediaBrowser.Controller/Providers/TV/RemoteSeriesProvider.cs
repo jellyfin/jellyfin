@@ -185,8 +185,7 @@ namespace MediaBrowser.Controller.Providers.TV
         /// <returns>Guid.</returns>
         private Guid GetComparisonData(BaseItem item)
         {
-            var series = (Series)item;
-            var seriesId = series.GetProviderId(MetadataProviders.Tvdb);
+            var seriesId = item.GetProviderId(MetadataProviders.Tvdb);
 
             if (!string.IsNullOrEmpty(seriesId))
             {
@@ -206,6 +205,7 @@ namespace MediaBrowser.Controller.Providers.TV
 
             return Guid.Empty;
         }
+
         /// <summary>
         /// Fetches metadata and returns true or false indicating if any work that requires persistence was done
         /// </summary>
