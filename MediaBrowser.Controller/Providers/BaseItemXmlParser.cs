@@ -145,7 +145,7 @@ namespace MediaBrowser.Controller.Providers
 
                 case "Overview":
                 case "Description":
-                    item.Overview = reader.ReadElementContentAsString();
+                    item.Overview = reader.ReadInnerXml();
                     break;
 
                 case "TagLine":
