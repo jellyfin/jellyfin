@@ -103,7 +103,7 @@ namespace MediaBrowser.Controller.Providers.TV
                     newUpdateTime = doc.SafeGetString("//Time");
                 }
 
-                await UpdateSeries(existingDirectories, path, cancellationToken).ConfigureAwait(false);
+                await UpdateSeries(existingDirectories, path, progress, cancellationToken).ConfigureAwait(false);
             }
             else
             {
@@ -111,10 +111,11 @@ namespace MediaBrowser.Controller.Providers.TV
 
                 newUpdateTime = seriesToUpdate.Item2;
 
-                await UpdateSeries(seriesToUpdate.Item1, path, cancellationToken).ConfigureAwait(false);
+                await UpdateSeries(seriesToUpdate.Item1, path, progress, cancellationToken).ConfigureAwait(false);
             }
 
             File.WriteAllText(timestampFile, newUpdateTime, Encoding.UTF8);
+            progress.Report(100);
         }
 
         /// <summary>
@@ -158,11 +159,15 @@ namespace MediaBrowser.Controller.Providers.TV
         /// </summary>
         /// <param name="seriesIds">The series ids.</param>
         /// <param name="seriesDataPath">The series data path.</param>
+        /// <param name="progress">The progress.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        private async Task UpdateSeries(IEnumerable<string> seriesIds, string seriesDataPath, CancellationToken cancellationToken)
+        private async Task UpdateSeries(IEnumerable<string> seriesIds, string seriesDataPath, IProgress<double> progress, CancellationToken cancellationToken)
         {
-            foreach (var seriesId in seriesIds)
+            var list = seriesIds.ToList();
+            var numComplete = 0;
+
+            foreach (var seriesId in list)
             {
                 try
                 {
@@ -171,12 +176,19 @@ namespace MediaBrowser.Controller.Providers.TV
                 catch (HttpException ex)
                 {
                     // Already logged at lower levels, but don't fail the whole operation, unless timed out
-
+                    // We have to fail this to make it run again otherwise new episode data could potentially be missing
                     if (ex.IsTimedOut)
                     {
                         throw;
                     }
                 }
+
+                numComplete++;
+                double percent = numComplete;
+                percent /= list.Count;
+                percent *= 100;
+
+                progress.Report(percent);
             }
         }
 

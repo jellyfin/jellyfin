@@ -10,7 +10,7 @@ namespace MediaBrowser.Controller.Providers
     /// </summary>
     public abstract class FanartBaseProvider : BaseMetadataProvider
     {
-        protected static readonly SemaphoreSlim FanArtResourcePool = new SemaphoreSlim(3,3);
+        internal static readonly SemaphoreSlim FanArtResourcePool = new SemaphoreSlim(3, 3);
 
         /// <summary>
         /// The LOG o_ FILE
@@ -50,9 +50,10 @@ namespace MediaBrowser.Controller.Providers
         /// <summary>
         /// The API key
         /// </summary>
-        protected const string ApiKey = "5c6b04c68e904cfed1e6cbc9a9e683d4";
+        internal const string ApiKey = "5c6b04c68e904cfed1e6cbc9a9e683d4";
 
-        protected FanartBaseProvider(ILogManager logManager, IServerConfigurationManager configurationManager) : base(logManager, configurationManager)
+        protected FanartBaseProvider(ILogManager logManager, IServerConfigurationManager configurationManager)
+            : base(logManager, configurationManager)
         {
         }
 
