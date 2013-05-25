@@ -252,7 +252,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var newSeasonZeroName = ConfigurationManager.Configuration.SeasonZeroDisplayName;
             var seasonZeroNameChanged = !string.Equals(_seasonZeroDisplayName, newSeasonZeroName, StringComparison.CurrentCulture);
-            
+
             RecordConfigurationValues(config);
 
             Task.Run(async () =>
@@ -895,30 +895,28 @@ namespace MediaBrowser.Server.Implementations.Library
 
             await RootFolder.RefreshMetadata(cancellationToken).ConfigureAwait(false);
 
+            progress.Report(.5);
+
             // Start by just validating the children of the root, but go no further
             await RootFolder.ValidateChildren(new Progress<double>(), cancellationToken, recursive: false);
+
+            progress.Report(1);
 
             foreach (var folder in _userManager.Users.Select(u => u.RootFolder).Distinct())
             {
                 await ValidateCollectionFolders(folder, cancellationToken).ConfigureAwait(false);
             }
 
-            // Run prescan tasks
-            foreach (var task in PrescanTasks)
-            {
-                try
-                {
-                    await task.Run(new Progress<double>(), cancellationToken);
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error running prescan task", ex);
-                }
-            }
+            progress.Report(2);
 
+            // Run prescan tasks
+            await RunPrescanTasks(progress, cancellationToken).ConfigureAwait(false);
+
+            progress.Report(15);
+            
             var innerProgress = new ActionableProgress<double>();
 
-            innerProgress.RegisterAction(pct => progress.Report(pct * .8));
+            innerProgress.RegisterAction(pct => progress.Report(15 + pct * .65));
 
             // Now validate the entire media library
             await RootFolder.ValidateChildren(innerProgress, cancellationToken, recursive: true).ConfigureAwait(false);
@@ -930,6 +928,48 @@ namespace MediaBrowser.Server.Implementations.Library
             await ValidateArtists(cancellationToken, innerProgress);
 
             progress.Report(100);
+        }
+
+        /// <summary>
+        /// Runs the prescan tasks.
+        /// </summary>
+        /// <param name="progress">The progress.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        private async Task RunPrescanTasks(IProgress<double> progress, CancellationToken cancellationToken)
+        {
+            var prescanTasks = PrescanTasks.ToList();
+            var progressDictionary = new Dictionary<ILibraryPrescanTask, double>();
+
+            var tasks = prescanTasks.Select(i => Task.Run(async () =>
+            {
+                var innerProgress = new ActionableProgress<double>();
+
+                innerProgress.RegisterAction(pct =>
+                {
+                    lock (progressDictionary)
+                    {
+                        progressDictionary[i] = pct;
+
+                        double percent = progressDictionary.Values.Sum();
+                        percent /= prescanTasks.Count;
+
+                        progress.Report(2 + percent * .13);
+                    }
+                });
+                
+                try
+                {
+                    await i.Run(innerProgress, cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error running prescan task", ex);
+                }
+            }));
+
+            // Run prescan tasks
+            await Task.WhenAll(tasks).ConfigureAwait(false);
         }
 
         /// <summary>
