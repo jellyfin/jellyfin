@@ -4,12 +4,14 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Serialization;
+using MoreLinq;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MoreLinq;
 
 namespace MediaBrowser.Server.Implementations.ScheduledTasks
 {
@@ -18,6 +20,8 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
     /// </summary>
     class ChapterImagesTask : IScheduledTask
     {
+        private readonly IJsonSerializer _jsonSerializer;
+
         /// <summary>
         /// The _kernel
         /// </summary>
@@ -40,18 +44,20 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         /// </summary>
         /// <value>The new item timer.</value>
         private Timer NewItemTimer { get; set; }
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ChapterImagesTask" /> class.
         /// </summary>
         /// <param name="kernel">The kernel.</param>
         /// <param name="logManager">The log manager.</param>
         /// <param name="libraryManager">The library manager.</param>
-        public ChapterImagesTask(Kernel kernel, ILogManager logManager, ILibraryManager libraryManager)
+        /// <param name="jsonSerializer">The json serializer.</param>
+        public ChapterImagesTask(Kernel kernel, ILogManager logManager, ILibraryManager libraryManager, IJsonSerializer jsonSerializer)
         {
             _kernel = kernel;
             _logger = logManager.GetLogger(GetType().Name);
             _libraryManager = libraryManager;
+            _jsonSerializer = jsonSerializer;
 
             libraryManager.ItemAdded += libraryManager_ItemAdded;
             libraryManager.ItemUpdated += libraryManager_ItemAdded;
@@ -93,8 +99,9 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
                 NewItemTimer = null;
             }
 
+            // Limit to video files to reduce changes of ffmpeg crash dialog
             foreach (var item in newItems
-                .Where(i => i.LocationType == LocationType.FileSystem && string.IsNullOrEmpty(i.PrimaryImagePath) && i.MediaStreams.Any(m => m.Type == MediaStreamType.Video))
+                .Where(i => i.LocationType == LocationType.FileSystem && i.VideoType == VideoType.VideoFile && string.IsNullOrEmpty(i.PrimaryImagePath) && i.MediaStreams.Any(m => m.Type == MediaStreamType.Video))
                 .Take(1))
             {
                 try
@@ -135,11 +142,34 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
 
             var numComplete = 0;
 
+            var failHistoryPath = Path.Combine(_kernel.FFMpegManager.VideoImagesDataPath, "failures.json");
+
+            List<string> previouslyFailedImages;
+            
+            try
+            {
+                previouslyFailedImages = _jsonSerializer.DeserializeFromFile<List<string>>(failHistoryPath);
+            }
+            catch (FileNotFoundException)
+            {
+                previouslyFailedImages = new List<string>();
+            }
+
             foreach (var video in videos)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await _kernel.FFMpegManager.PopulateChapterImages(video, cancellationToken, true, true);
+                var key = video.Path + video.DateModified.Ticks;
+
+                var extract = !previouslyFailedImages.Contains(key, StringComparer.OrdinalIgnoreCase);
+
+                var success = await _kernel.FFMpegManager.PopulateChapterImages(video, cancellationToken, extract, true);
+
+                if (!success)
+                {
+                    previouslyFailedImages.Add(key);
+                    _jsonSerializer.SerializeToFile(previouslyFailedImages, failHistoryPath);
+                }
 
                 numComplete++;
                 double percent = numComplete;

@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.IO;
+﻿using System.Collections.Generic;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -145,9 +146,10 @@ namespace MediaBrowser.Controller.MediaInfo
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="extractImages">if set to <c>true</c> [extract images].</param>
         /// <param name="saveItem">if set to <c>true</c> [save item].</param>
+        /// <param name="previouslyFailedExtractions">The previously failed extractions.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public async Task PopulateChapterImages(Video video, CancellationToken cancellationToken, bool extractImages, bool saveItem)
+        public async Task<bool> PopulateChapterImages(Video video, CancellationToken cancellationToken, bool extractImages, bool saveItem)
         {
             if (video.Chapters == null)
             {
@@ -157,9 +159,10 @@ namespace MediaBrowser.Controller.MediaInfo
             // Can't extract images if there are no video streams
             if (video.MediaStreams == null || video.MediaStreams.All(m => m.Type != MediaStreamType.Video))
             {
-                return;
+                return true;
             }
 
+            var success = true;
             var changesMade = false;
 
             foreach (var chapter in video.Chapters)
@@ -201,6 +204,7 @@ namespace MediaBrowser.Controller.MediaInfo
                         }
                         catch
                         {
+                            success = false;
                             break;
                         }
                     }
@@ -216,6 +220,8 @@ namespace MediaBrowser.Controller.MediaInfo
             {
                 await _libraryManager.UpdateItem(video, CancellationToken.None).ConfigureAwait(false);
             }
+
+            return success;
         }
 
         /// <summary>
