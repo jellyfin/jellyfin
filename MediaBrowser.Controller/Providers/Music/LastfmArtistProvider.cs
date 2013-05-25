@@ -1,8 +1,4 @@
-﻿using System;
-using System.Globalization;
-using System.Net;
-using System.Text;
-using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -11,20 +7,41 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
+using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
-using Mediabrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Providers.Music
 {
+    /// <summary>
+    /// Class LastfmArtistProvider
+    /// </summary>
     public class LastfmArtistProvider : LastfmBaseProvider
     {
+        /// <summary>
+        /// The _provider manager
+        /// </summary>
         private readonly IProviderManager _providerManager;
+        /// <summary>
+        /// The _library manager
+        /// </summary>
         private readonly ILibraryManager _libraryManager;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LastfmArtistProvider"/> class.
+        /// </summary>
+        /// <param name="jsonSerializer">The json serializer.</param>
+        /// <param name="httpClient">The HTTP client.</param>
+        /// <param name="logManager">The log manager.</param>
+        /// <param name="configurationManager">The configuration manager.</param>
+        /// <param name="providerManager">The provider manager.</param>
+        /// <param name="libraryManager">The library manager.</param>
         public LastfmArtistProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager, ILibraryManager libraryManager)
             : base(jsonSerializer, httpClient, logManager, configurationManager)
         {
@@ -80,6 +97,11 @@ namespace MediaBrowser.Controller.Providers.Music
             }
         }
 
+        /// <summary>
+        /// Finds the id from music artist entity.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns>System.String.</returns>
         private string FindIdFromMusicArtistEntity(BaseItem item)
         {
             var artist = _libraryManager.RootFolder.RecursiveChildren.OfType<MusicArtist>()
@@ -88,6 +110,12 @@ namespace MediaBrowser.Controller.Providers.Music
             return artist != null ? artist.GetProviderId(MetadataProviders.Musicbrainz) : null;
         }
 
+        /// <summary>
+        /// Finds the id from last fm.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{System.String}.</returns>
         private async Task<string> FindIdFromLastFm(BaseItem item, CancellationToken cancellationToken)
         {
             //Execute the Artist search against our name and assume first one is the one we want
@@ -128,6 +156,12 @@ namespace MediaBrowser.Controller.Providers.Music
             return null;
         }
 
+        /// <summary>
+        /// Finds the id from music brainz.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{System.String}.</returns>
         private async Task<string> FindIdFromMusicBrainz(BaseItem item, CancellationToken cancellationToken)
         {
             // They seem to throw bad request failures on any term with a slash
@@ -166,11 +200,21 @@ namespace MediaBrowser.Controller.Providers.Music
             return null;
         }
 
+        /// <summary>
+        /// Determines whether the specified text has diacritics.
+        /// </summary>
+        /// <param name="text">The text.</param>
+        /// <returns><c>true</c> if the specified text has diacritics; otherwise, <c>false</c>.</returns>
         private bool HasDiacritics(string text)
         {
             return !string.Equals(text, RemoveDiacritics(text), StringComparison.Ordinal);
         }
 
+        /// <summary>
+        /// Removes the diacritics.
+        /// </summary>
+        /// <param name="text">The text.</param>
+        /// <returns>System.String.</returns>
         private string RemoveDiacritics(string text)
         {
             return string.Concat(
@@ -180,10 +224,17 @@ namespace MediaBrowser.Controller.Providers.Music
               ).Normalize(NormalizationForm.FormC);
         }
 
-        protected override async Task FetchLastfmData(BaseItem item, string id, CancellationToken cancellationToken)
+        /// <summary>
+        /// Fetches the lastfm data.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="musicBrainzId">The music brainz id.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        protected override async Task FetchLastfmData(BaseItem item, string musicBrainzId, CancellationToken cancellationToken)
         {
             // Get artist info with provided id
-            var url = RootUrl + string.Format("method=artist.getInfo&mbid={0}&api_key={1}&format=json", UrlEncode(id), ApiKey);
+            var url = RootUrl + string.Format("method=artist.getInfo&mbid={0}&api_key={1}&format=json", UrlEncode(musicBrainzId), ApiKey);
 
             LastfmGetArtistResult result;
 
@@ -221,6 +272,11 @@ namespace MediaBrowser.Controller.Providers.Music
             }
         }
 
+        /// <summary>
+        /// Supportses the specified item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         public override bool Supports(BaseItem item)
         {
             return item is MusicArtist;

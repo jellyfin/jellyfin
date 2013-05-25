@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Logging;
@@ -41,7 +42,7 @@ namespace MediaBrowser.Controller.Providers.TV
         /// <summary>
         /// The _config
         /// </summary>
-        private readonly IConfigurationManager _config;
+        private readonly IServerConfigurationManager _config;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TvdbPrescanTask"/> class.
@@ -49,7 +50,7 @@ namespace MediaBrowser.Controller.Providers.TV
         /// <param name="logger">The logger.</param>
         /// <param name="httpClient">The HTTP client.</param>
         /// <param name="config">The config.</param>
-        public TvdbPrescanTask(ILogger logger, IHttpClient httpClient, IConfigurationManager config)
+        public TvdbPrescanTask(ILogger logger, IHttpClient httpClient, IServerConfigurationManager config)
         {
             _logger = logger;
             _httpClient = httpClient;
@@ -64,6 +65,12 @@ namespace MediaBrowser.Controller.Providers.TV
         /// <returns>Task.</returns>
         public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
+            if (!_config.Configuration.EnableInternetProviders)
+            {
+                progress.Report(100);
+                return;
+            }
+
             var path = RemoteSeriesProvider.GetSeriesDataPath(_config.CommonApplicationPaths);
 
             var timestampFile = Path.Combine(path, "time.txt");
