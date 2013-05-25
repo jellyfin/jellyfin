@@ -249,7 +249,7 @@ namespace MediaBrowser.ServerApplication.EntryPoints
         /// <param name="collections">The collections.</param>
         /// <param name="allRecursiveChildren">All recursive children.</param>
         /// <returns>IEnumerable{``0}.</returns>
-        private IEnumerable<T> TranslatePhysicalItemToUserLibrary<T>(T item, User user, List<BaseItem> collections, Dictionary<Guid, BaseItem> allRecursiveChildren)
+        private IEnumerable<T> TranslatePhysicalItemToUserLibrary<T>(T item, User user, IEnumerable<BaseItem> collections, Dictionary<Guid, BaseItem> allRecursiveChildren)
             where T : BaseItem
         {
             // If the physical root changed, return the user root
@@ -261,7 +261,24 @@ namespace MediaBrowser.ServerApplication.EntryPoints
             // Need to find what user collection folder this belongs to
             if (item.Parent is AggregateFolder)
             {
-                return new T[] { user.RootFolder as T };
+                if (item.LocationType == LocationType.FileSystem)
+                {
+                    return collections.Where(i =>
+                    {
+
+                        try
+                        {
+                            return i.LocationType == LocationType.FileSystem &&
+                                   i.ResolveArgs.PhysicalLocations.Contains(item.Path);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.ErrorException("Error getting ResolveArgs for {0}", ex, i.Path);
+                            return false;
+                        }
+
+                    }).Cast<T>();
+                }
             }
 
             // If it's a user root, return it only if it's the right one
