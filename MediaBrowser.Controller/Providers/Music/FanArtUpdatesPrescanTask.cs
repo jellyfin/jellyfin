@@ -51,6 +51,12 @@ namespace MediaBrowser.Controller.Providers.Music
         /// <returns>Task.</returns>
         public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
+            if (!_config.Configuration.EnableInternetProviders)
+            {
+                progress.Report(100);
+                return;
+            }
+
             var path = FanArtArtistProvider.GetArtistDataPath(_config.CommonApplicationPaths);
 
             var timestampFile = Path.Combine(path, "time.txt");

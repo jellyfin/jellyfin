@@ -381,7 +381,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy "$(SolutionDir)\packages\System.Data.SQLite.1.0.85.0\content\net40\x86\SQLite.Interop.dll" "$(TargetDir)" /y
+    <PostBuildEvent>xcopy "$(SolutionDir)\packages\System.Data.SQLite.1.0.86.0\content\net40\x86\SQLite.Interop.dll" "$(TargetDir)" /y
 
 if $(ConfigurationName) == Release (
 rmdir "$(SolutionDir)..\Deploy\Server\System" /s /q
