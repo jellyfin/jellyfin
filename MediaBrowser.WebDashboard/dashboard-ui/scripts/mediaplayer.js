@@ -381,7 +381,7 @@
             return audioElement[0];
         }
 
-        function playVideo(item, startPosition) {
+        function playVideo(item, startPosition, user) {
 
             //stop/kill videoJS
             if (currentMediaElement) self.stop();
@@ -390,38 +390,6 @@
             var screenWidth = Math.max(screen.height, screen.width);
             var screenHeight = Math.min(screen.height, screen.width);
 
-            var user = Dashboard.getCurrentUser();
-            var defaults = { languageIndex: null, subtitleIndex: null };
-
-            var userConfig = user.Configuration || {};
-            if (item.MediaStreams && item.MediaStreams.length) {
-                $.each(item.MediaStreams, function (i, stream) {
-                    //get default subtitle stream
-                    if (stream.Type == "Subtitle") {
-                        if (userConfig.UseForcedSubtitlesOnly == true && userConfig.SubtitleLanguagePreference && !defaults.subtitleIndex) {
-                            if (stream.Language == userConfig.SubtitleLanguagePreference && stream.IsForced == true) {
-                                defaults.subtitleIndex = i;
-                            }
-                        } else if (userConfig.SubtitleLanguagePreference && !defaults.subtitleIndex) {
-                            if (stream.Language == userConfig.SubtitleLanguagePreference) {
-                                defaults.subtitleIndex = i;
-                            }
-                        } else if (userConfig.UseForcedSubtitlesOnly == true && !defaults.subtitleIndex) {
-                            if (stream.IsForced == true) {
-                                defaults.subtitleIndex = i;
-                            }
-                        }
-                    } else if (stream.Type == "Audio") {
-                        //get default language stream
-                        if (userConfig.AudioLanguagePreference && !defaults.languageIndex) {
-                            if (stream.Language == userConfig.AudioLanguagePreference) {
-                                defaults.languageIndex = i;
-                            }
-                        }
-                    }
-                });
-            }
-
             var baseParams = {
                 audioChannels: 2,
                 audioBitrate: 128000,
@@ -429,8 +397,8 @@
                 maxWidth: screenWidth,
                 maxHeight: screenHeight,
                 StartTimeTicks: 0,
-                SubtitleStreamIndex: null,
-                AudioStreamIndex: null
+                SubtitleStreamIndex: getInitialSubtitleStreamIndex(item.MediaStreams, user),
+                AudioStreamIndex: getInitialAudioStreamIndex(item.MediaStreams, user)
             };
 
             if (startPosition) {
@@ -561,6 +529,62 @@
             curentDurationTicks = item.RunTimeTicks;
 
             return videoElement[0];
+        };
+
+        function getInitialAudioStreamIndex(mediaStreams, user) {
+
+            if (user.Configuration.AudioLanguagePreference) {
+
+                for (var i = 0, length = mediaStreams.length; i < length; i++) {
+                    var mediaStream = mediaStreams[i];
+
+                    if (mediaStream.Type == "Audio" && mediaStream.Language == user.Configuration.AudioLanguagePreference) {
+                        return mediaStream.Index;
+                    }
+
+                }
+            }
+
+            return null;
+        }
+
+        function getInitialSubtitleStreamIndex(mediaStreams, user) {
+
+            var i, length, mediaStream;
+
+            // Find the first forced subtitle stream
+            for (i = 0, length = mediaStreams.length; i < length; i++) {
+                mediaStream = mediaStreams[i];
+
+                if (mediaStream.Type == "Subtitle" && mediaStream.IsForced) {
+                    return mediaStream.Index;
+                }
+
+            }
+
+            // If none then look at user configuration
+            if (user.Configuration.AudioLanguagePreference) {
+
+                for (i = 0, length = mediaStreams.length; i < length; i++) {
+                    mediaStream = mediaStreams[i];
+
+                    if (mediaStream.Type == "Audio" && mediaStream.Language == user.Configuration.AudioLanguagePreference) {
+
+                        if (user.Configuration.UseForcedSubtitlesOnly) {
+
+                            if (mediaStream.IsForced) {
+                                return mediaStream.Index;
+                            }
+
+                        } else {
+                            return mediaStream.Index;
+                        }
+                    }
+
+                }
+            }
+
+            return null;
         }
 
         self.canPlay = function (item) {
@@ -597,59 +621,62 @@
 
         self.play = function (items, startPosition) {
 
-            var item = items[0];
+            Dashboard.getCurrentUser().done(function (user) {
 
-            var videoType = (item.VideoType || "").toLowerCase();
+                var item = items[0];
 
-            if (videoType == "dvd") {
+                var videoType = (item.VideoType || "").toLowerCase();
 
-                self.playWithWarning(items, startPosition, "dvdstreamconfirmed", "Dvd Folder Streaming");
-                return;
-            }
-            else if (videoType == "bluray") {
+                if (videoType == "dvd") {
 
-                self.playWithWarning(items, startPosition, "bluraystreamconfirmed", "Blu-ray Folder Streaming");
-                return;
-            }
-            else if (videoType == "iso") {
-
-                var isoType = (item.IsoType || "").toLowerCase();
-
-                if (isoType == "dvd") {
-
-                    self.playWithWarning(items, startPosition, "dvdisostreamconfirmed", "Dvd Iso Streaming");
+                    self.playWithWarning(items, startPosition, user, "dvdstreamconfirmed", "Dvd Folder Streaming");
                     return;
                 }
-                else if (isoType == "bluray") {
+                else if (videoType == "bluray") {
 
-                    self.playWithWarning(items, startPosition, "blurayisostreamconfirmed", "Blu-ray Iso Streaming");
+                    self.playWithWarning(items, startPosition, user, "bluraystreamconfirmed", "Blu-ray Folder Streaming");
                     return;
                 }
-            }
+                else if (videoType == "iso") {
 
-            self.play(items, startPosition);
+                    var isoType = (item.IsoType || "").toLowerCase();
+
+                    if (isoType == "dvd") {
+
+                        self.playWithWarning(items, startPosition, user, "dvdisostreamconfirmed", "Dvd Iso Streaming");
+                        return;
+                    }
+                    else if (isoType == "bluray") {
+
+                        self.playWithWarning(items, startPosition, user, "blurayisostreamconfirmed", "Blu-ray Iso Streaming");
+                        return;
+                    }
+                }
+
+                self.playInternal(items, startPosition, user);
+            });
         };
 
-        self.playWithWarning = function (items, startPosition, localStorageKeyName, header) {
+        self.playWithWarning = function (items, startPosition, user, localStorageKeyName, header) {
 
             if (localStorage.getItem(localStorageKeyName) == "1") {
-                self.playInternal(items, startPosition);
+                self.playInternal(items, startPosition, user);
                 return;
             }
 
-            Dashboard.confirm("This feature is expiremental. It may not work at all with some titles. Do you wish to continue?", header, function(result) {
-                
+            Dashboard.confirm("This feature is expiremental. It may not work at all with some titles. Do you wish to continue?", header, function (result) {
+
                 if (result) {
 
                     localStorage.setItem(localStorageKeyName, "1");
-                    self.playInternal(items, startPosition);
+                    self.playInternal(items, startPosition, user);
                 }
 
             });
 
         };
 
-        self.playInternal = function (items, startPosition) {
+        self.playInternal = function (items, startPosition, user) {
 
             if (self.isPlaying()) {
                 self.stop();
@@ -661,7 +688,7 @@
 
             if (item.MediaType === "Video") {
 
-                mediaElement = playVideo(item, startPosition);
+                mediaElement = playVideo(item, startPosition, user);
             } else if (item.MediaType === "Audio") {
 
                 mediaElement = playAudio(item);

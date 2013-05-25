@@ -757,10 +757,9 @@ progress {
     z-index: 99998;
     height: auto;
     width: 270px;
-    bottom: 44px;
+    bottom: 45px;
     left: -290px;
     border: 1px solid #666;
-    border-bottom: 0;
     background: #000;
 }
 
