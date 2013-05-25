@@ -83,7 +83,7 @@ namespace MediaBrowser.Controller.Providers.Music
         {
             get
             {
-                return "16";
+                return "17";
             }
         }
 
@@ -106,8 +106,20 @@ namespace MediaBrowser.Controller.Providers.Music
                 return false;
             }
 
+            var comparisonData = Guid.Empty;
+
+            var artistMusicBrainzId = item.Parent.GetProviderId(MetadataProviders.Musicbrainz);
+            
+            if (!string.IsNullOrEmpty(artistMusicBrainzId))
+            {
+                var artistXmlPath = FanArtArtistProvider.GetArtistDataPath(ConfigurationManager.CommonApplicationPaths, artistMusicBrainzId);
+                artistXmlPath = Path.Combine(artistXmlPath, "fanart.xml");
+
+                comparisonData = GetComparisonData(new FileInfo(artistXmlPath));
+            }
+            
             // Refresh anytime the parent mbz id changes
-            if (providerInfo.Data != GetComparisonData(item.Parent.GetProviderId(MetadataProviders.Musicbrainz)))
+            if (providerInfo.Data != comparisonData)
             {
                 return true;
             }
@@ -119,9 +131,9 @@ namespace MediaBrowser.Controller.Providers.Music
         /// Gets the comparison data.
         /// </summary>
         /// <returns>Guid.</returns>
-        private Guid GetComparisonData(string id)
+        private Guid GetComparisonData(FileInfo artistXmlFileInfo)
         {
-            return string.IsNullOrEmpty(id) ? Guid.Empty : id.GetMD5();
+            return artistXmlFileInfo.Exists ? (artistXmlFileInfo.FullName + artistXmlFileInfo.LastWriteTimeUtc.Ticks).GetMD5() : Guid.Empty;
         }
 
         /// <summary>
@@ -145,59 +157,75 @@ namespace MediaBrowser.Controller.Providers.Music
                 item.ProviderData[Id] = data;
             }
 
+            var comparisonData = Guid.Empty;
+
             if (!string.IsNullOrEmpty(artistMusicBrainzId))
             {
-                var album = (MusicAlbum)item;
+                var artistXmlPath = FanArtArtistProvider.GetArtistDataPath(ConfigurationManager.CommonApplicationPaths, artistMusicBrainzId);
+                artistXmlPath = Path.Combine(artistXmlPath, "fanart.xml");
 
-                if (string.IsNullOrEmpty(album.MusicBrainzReleaseGroupId))
+                var artistXmlFileInfo = new FileInfo(artistXmlPath);
+
+                comparisonData = GetComparisonData(artistXmlFileInfo);
+
+                if (artistXmlFileInfo.Exists)
                 {
-                    album.MusicBrainzReleaseGroupId = await GetReleaseGroupId(item.GetProviderId(MetadataProviders.Musicbrainz), cancellationToken).ConfigureAwait(false);
-                }
+                    var album = (MusicAlbum)item;
 
-                // If still empty there's nothing more we can do
-                if (!string.IsNullOrEmpty(album.MusicBrainzReleaseGroupId))
-                {
-                    var artistXmlPath = FanArtArtistProvider.GetArtistDataPath(ConfigurationManager.CommonApplicationPaths, artistMusicBrainzId);
-                    artistXmlPath = Path.Combine(artistXmlPath, "fanart.xml");
+                    var releaseEntryId = item.GetProviderId(MetadataProviders.Musicbrainz);
 
-                    var artistXmlFileInfo = new FileInfo(artistXmlPath);
-
-                    if (artistXmlFileInfo.Exists)
+                    // Fanart uses the release group id so we'll have to get that now using the release entry id
+                    if (string.IsNullOrEmpty(album.MusicBrainzReleaseGroupId))
                     {
-                        var doc = new XmlDocument();
+                        album.MusicBrainzReleaseGroupId = await GetReleaseGroupId(releaseEntryId, cancellationToken).ConfigureAwait(false);
+                    }
 
-                        doc.Load(artistXmlPath);
+                    var doc = new XmlDocument();
 
-                        cancellationToken.ThrowIfCancellationRequested();
+                    doc.Load(artistXmlPath);
 
-                        if (ConfigurationManager.Configuration.DownloadMusicAlbumImages.Disc && !item.HasImage(ImageType.Disc))
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    if (ConfigurationManager.Configuration.DownloadMusicAlbumImages.Disc && !item.HasImage(ImageType.Disc))
+                    {
+                        // Try try with the release entry Id, if that doesn't produce anything try the release group id
+                        var node = doc.SelectSingleNode("//fanart/music/albums/album[@id=\"" + releaseEntryId + "\"]/cdart/@url");
+
+                        if (node == null && !string.IsNullOrEmpty(album.MusicBrainzReleaseGroupId))
                         {
-                            var node = doc.SelectSingleNode("//fanart/music/albums/album[@id=\"" + album.MusicBrainzReleaseGroupId + "\"]/cdart/@url");
-
-                            var path = node != null ? node.Value : null;
-
-                            if (!string.IsNullOrEmpty(path))
-                            {
-                                item.SetImage(ImageType.Disc, await _providerManager.DownloadAndSaveImage(item, path, DiscFile, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
-                            }
+                            node = doc.SelectSingleNode("//fanart/music/albums/album[@id=\"" + album.MusicBrainzReleaseGroupId + "\"]/cdart/@url");
                         }
 
-                        if (ConfigurationManager.Configuration.DownloadMusicAlbumImages.Primary && !item.HasImage(ImageType.Primary))
+                        var path = node != null ? node.Value : null;
+
+                        if (!string.IsNullOrEmpty(path))
                         {
-                            var node = doc.SelectSingleNode("//fanart/music/albums/album[@id=\"" + album.MusicBrainzReleaseGroupId + "\"]/albumcover/@url");
+                            item.SetImage(ImageType.Disc, await _providerManager.DownloadAndSaveImage(item, path, DiscFile, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                        }
+                    }
 
-                            var path = node != null ? node.Value : null;
+                    if (ConfigurationManager.Configuration.DownloadMusicAlbumImages.Primary && !item.HasImage(ImageType.Primary))
+                    {
+                        // Try try with the release entry Id, if that doesn't produce anything try the release group id
+                        var node = doc.SelectSingleNode("//fanart/music/albums/album[@id=\"" + releaseEntryId + "\"]/albumcover/@url");
 
-                            if (!string.IsNullOrEmpty(path))
-                            {
-                                item.SetImage(ImageType.Primary, await _providerManager.DownloadAndSaveImage(item, path, PrimaryFile, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
-                            }
+                        if (node == null && !string.IsNullOrEmpty(album.MusicBrainzReleaseGroupId))
+                        {
+                            node = doc.SelectSingleNode("//fanart/music/albums/album[@id=\"" + album.MusicBrainzReleaseGroupId + "\"]/albumcover/@url");
+                        }
+
+                        var path = node != null ? node.Value : null;
+
+                        if (!string.IsNullOrEmpty(path))
+                        {
+                            item.SetImage(ImageType.Primary, await _providerManager.DownloadAndSaveImage(item, path, PrimaryFile, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                         }
                     }
                 }
+
             }
 
-            data.Data = GetComparisonData(artistMusicBrainzId);
+            data.Data = comparisonData;
             SetLastRefreshed(item, DateTime.UtcNow);
 
             return true;

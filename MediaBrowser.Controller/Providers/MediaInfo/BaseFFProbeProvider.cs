@@ -72,9 +72,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
 
                 if (video != null)
                 {
-                    await
-                        Kernel.Instance.FFMpegManager.PopulateChapterImages(video, cancellationToken, false, false)
-                              .ConfigureAwait(false);
+                    await Kernel.Instance.FFMpegManager.PopulateChapterImages(video, cancellationToken, false, false).ConfigureAwait(false);
                 }
 
                 SetLastRefreshed(item, DateTime.UtcNow);
