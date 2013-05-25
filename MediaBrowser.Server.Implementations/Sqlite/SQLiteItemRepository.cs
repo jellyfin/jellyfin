@@ -227,7 +227,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
 
                     await _saveItemCommand.ExecuteNonQueryAsync(cancellationToken);
                 }
-
+                
                 transaction.Commit();
             }
             catch (OperationCanceledException)

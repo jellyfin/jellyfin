@@ -5,6 +5,7 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Data;
+using System.Data.SQLite;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -43,6 +44,8 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         /// </summary>
         private readonly IApplicationPaths _appPaths;
 
+        private readonly SemaphoreSlim _writeLock = new SemaphoreSlim(1, 1);
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="SQLiteUserDataRepository" /> class.
         /// </summary>
@@ -118,34 +121,51 @@ namespace MediaBrowser.Server.Implementations.Sqlite
 
             var serialized = _jsonSerializer.SerializeToBytes(displayPreferences);
 
-            cancellationToken.ThrowIfCancellationRequested();
+            await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-            using (var cmd = Connection.CreateCommand())
+            SQLiteTransaction transaction = null;
+
+            try
             {
-                cmd.CommandText = "replace into displaypreferences (id, data) values (@1, @2)";
-                cmd.AddParam("@1", displayPreferences.Id);
-                cmd.AddParam("@2", serialized);
+                transaction = Connection.BeginTransaction();
 
-                using (var tran = Connection.BeginTransaction())
+                using (var cmd = Connection.CreateCommand())
                 {
-                    try
-                    {
-                        cmd.Transaction = tran;
+                    cmd.CommandText = "replace into displaypreferences (id, data) values (@1, @2)";
+                    cmd.AddParam("@1", displayPreferences.Id);
+                    cmd.AddParam("@2", serialized);
 
-                        await cmd.ExecuteNonQueryAsync(cancellationToken);
+                    cmd.Transaction = transaction;
 
-                        tran.Commit();
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        tran.Rollback();
-                    }
-                    catch (Exception e)
-                    {
-                        Logger.ErrorException("Failed to commit transaction.", e);
-                        tran.Rollback();
-                    }
+                    await cmd.ExecuteNonQueryAsync(cancellationToken);
                 }
+
+                transaction.Commit();
+            }
+            catch (OperationCanceledException)
+            {
+                if (transaction != null)
+                {
+                    transaction.Rollback();
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.ErrorException("Failed to save display preferences:", e);
+
+                if (transaction != null)
+                {
+                    transaction.Rollback();
+                }
+            }
+            finally
+            {
+                if (transaction != null)
+                {
+                    transaction.Dispose();
+                }
+
+                _writeLock.Release();
             }
         }
 

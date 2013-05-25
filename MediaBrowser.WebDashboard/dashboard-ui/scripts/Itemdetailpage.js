@@ -281,22 +281,33 @@
 
     function renderSimilarItems(page, item) {
 
-        if (item.Type != "Movie" &&
-            item.Type != "Trailer" &&
-            item.Type != "MusicAlbum" &&
-            item.Type != "Series" &&
-            item.MediaType != "Game") {
+        var promise;
 
+        var options = {
+            userId: Dashboard.getCurrentUserId(),
+            limit: item.Type == "MusicAlbum" ? 6 : 8
+        };
+        
+        if (item.Type == "Movie") {
+            promise = ApiClient.getSimilarMovies(item.Id, options);
+        }
+        else if (item.Type == "Trailer") {
+            promise = ApiClient.getSimilarTrailers(item.Id, options);
+        }
+        else if (item.Type == "MusicAlbum") {
+            promise = ApiClient.getSimilarAlbums(item.Id, options);
+        }
+        else if (item.Type == "Series") {
+            promise = ApiClient.getSimilarShows(item.Id, options);
+        }
+        else if (item.MediaType == "Game") {
+            promise = ApiClient.getSimilarGames(item.Id, options);
+        } else {
             $('#similarCollapsible', page).hide();
             return;
         }
 
-        ApiClient.getSimilarItems(item.Id, {
-
-            userId: Dashboard.getCurrentUserId(),
-            limit: item.Type == "MusicAlbum" ? 6 : 8
-
-        }).done(function (result) {
+        promise.done(function (result) {
 
             if (!result.Items.length) {
 

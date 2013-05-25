@@ -65,6 +65,12 @@ namespace MediaBrowser.Api
         }
     }
 
+    [Route("/Shows/{Id}/Similar", "GET")]
+    [Api(Description = "Finds tv shows similar to a given one.")]
+    public class GetSimilarShows : BaseGetSimilarItems
+    {
+    }
+    
     /// <summary>
     /// Class TvShowsService
     /// </summary>
@@ -95,6 +101,23 @@ namespace MediaBrowser.Api
             _userManager = userManager;
             _userDataRepository = userDataRepository;
             _libraryManager = libraryManager;
+        }
+
+        /// <summary>
+        /// Gets the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>System.Object.</returns>
+        public object Get(GetSimilarShows request)
+        {
+            var result = SimilarItemsHelper.GetSimilarItems(_userManager, 
+                _libraryManager, 
+                _userDataRepository, 
+                Logger,
+                request, item => item is Series,
+                SimilarItemsHelper.GetSimiliarityScore);
+
+            return ToOptimizedResult(result);
         }
 
         /// <summary>
