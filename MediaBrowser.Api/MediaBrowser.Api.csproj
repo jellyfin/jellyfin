@@ -64,9 +64,11 @@
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
+    <Compile Include="AlbumsService.cs" />
     <Compile Include="BaseApiService.cs" />
     <Compile Include="DisplayPreferencesService.cs" />
     <Compile Include="EnvironmentService.cs" />
+    <Compile Include="GamesService.cs" />
     <Compile Include="Images\ImageByNameService.cs" />
     <Compile Include="Images\ImageRequest.cs" />
     <Compile Include="Images\ImageService.cs" />
@@ -76,6 +78,7 @@
     <Compile Include="Library\LibraryService.cs" />
     <Compile Include="Library\LibraryStructureService.cs" />
     <Compile Include="LocalizationService.cs" />
+    <Compile Include="MoviesService.cs" />
     <Compile Include="PackageService.cs" />
     <Compile Include="Playback\Hls\AudioHlsService.cs" />
     <Compile Include="Playback\Hls\BaseHlsService.cs" />
@@ -94,7 +97,9 @@
     <Compile Include="ApiEntryPoint.cs" />
     <Compile Include="SearchService.cs" />
     <Compile Include="SessionsService.cs" />
+    <Compile Include="SimilarItemsHelper.cs" />
     <Compile Include="SystemService.cs" />
+    <Compile Include="TrailersService.cs" />
     <Compile Include="TvShowsService.cs" />
     <Compile Include="UserLibrary\ArtistsService.cs" />
     <Compile Include="UserLibrary\BaseItemsByNameService.cs" />

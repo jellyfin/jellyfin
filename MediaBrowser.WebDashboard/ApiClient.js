@@ -257,9 +257,53 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
             });
         };
 
-        self.getSimilarItems = function (itemId, options) {
+        self.getSimilarMovies = function (itemId, options) {
 
-            var url = self.getUrl("Items/" + itemId + "/Similar", options);
+            var url = self.getUrl("Movies/" + itemId + "/Similar", options);
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        self.getSimilarTrailers = function (itemId, options) {
+
+            var url = self.getUrl("Trailers/" + itemId + "/Similar", options);
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        self.getSimilarShows = function (itemId, options) {
+
+            var url = self.getUrl("Shows/" + itemId + "/Similar", options);
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        self.getSimilarAlbums = function (itemId, options) {
+
+            var url = self.getUrl("Albums/" + itemId + "/Similar", options);
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        self.getSimilarGames = function (itemId, options) {
+
+            var url = self.getUrl("Games/" + itemId + "/Similar", options);
 
             return self.ajax({
                 type: "GET",

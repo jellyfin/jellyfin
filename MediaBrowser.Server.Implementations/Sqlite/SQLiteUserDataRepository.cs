@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System.Data.SQLite;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Logging;
@@ -18,6 +19,8 @@ namespace MediaBrowser.Server.Implementations.Sqlite
     public class SQLiteUserDataRepository : SqliteRepository, IUserDataRepository
     {
         private readonly ConcurrentDictionary<string, Task<UserItemData>> _userData = new ConcurrentDictionary<string, Task<UserItemData>>();
+
+        private readonly SemaphoreSlim _writeLock = new SemaphoreSlim(1, 1);
 
         /// <summary>
         /// The repository name
@@ -172,33 +175,52 @@ namespace MediaBrowser.Server.Implementations.Sqlite
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (var cmd = Connection.CreateCommand())
+            await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            SQLiteTransaction transaction = null;
+
+            try
             {
-                cmd.CommandText = "replace into userdata (key, userId, data) values (@1, @2, @3)";
-                cmd.AddParam("@1", key);
-                cmd.AddParam("@2", userId);
-                cmd.AddParam("@3", serialized);
+                transaction = Connection.BeginTransaction();
 
-                using (var tran = Connection.BeginTransaction())
+                using (var cmd = Connection.CreateCommand())
                 {
-                    try
-                    {
-                        cmd.Transaction = tran;
+                    cmd.CommandText = "replace into userdata (key, userId, data) values (@1, @2, @3)";
+                    cmd.AddParam("@1", key);
+                    cmd.AddParam("@2", userId);
+                    cmd.AddParam("@3", serialized);
 
-                        await cmd.ExecuteNonQueryAsync(cancellationToken);
+                    cmd.Transaction = transaction;
 
-                        tran.Commit();
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        tran.Rollback();
-                    }
-                    catch (Exception e)
-                    {
-                        Logger.ErrorException("Failed to commit transaction.", e);
-                        tran.Rollback();
-                    }
+                    await cmd.ExecuteNonQueryAsync(cancellationToken);
                 }
+
+                transaction.Commit();
+            }
+            catch (OperationCanceledException)
+            {
+                if (transaction != null)
+                {
+                    transaction.Rollback();
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.ErrorException("Failed to save user data:", e);
+
+                if (transaction != null)
+                {
+                    transaction.Rollback();
+                }
+            }
+            finally
+            {
+                if (transaction != null)
+                {
+                    transaction.Dispose();
+                }
+
+                _writeLock.Release();
             }
         }
 
