@@ -871,3 +871,17 @@ input[type="range"]::-ms-fill-upper {
         width: 50px;
     }
 }
+
+.installedPluginTitle {
+    max-width: 85px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    display: inline-block;
+}
+
+@media (min-width: 1200px) {
+    .installedPluginTitle {
+        max-width: 110px;
+    }
+}

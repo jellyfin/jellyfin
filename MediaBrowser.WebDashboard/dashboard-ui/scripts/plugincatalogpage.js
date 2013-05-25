@@ -62,7 +62,7 @@
             })[0];
 
             if (installedPlugin) {
-                html += plugin.name + " (Installed)";
+                html += "<span class='installedPluginTitle'>"+ plugin.name + "</span> (Installed)";
             } else {
                 html += plugin.name;
             }
