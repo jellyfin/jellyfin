@@ -6,6 +6,7 @@ using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SQLite;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,6 +23,8 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         /// </summary>
         public const string RepositoryName = "SQLite";
 
+        private readonly SemaphoreSlim _writeLock = new SemaphoreSlim(1, 1);
+        
         /// <summary>
         /// Gets the name of the repository
         /// </summary>
@@ -115,32 +118,51 @@ namespace MediaBrowser.Server.Implementations.Sqlite
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (var cmd = Connection.CreateCommand())
+            await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            SQLiteTransaction transaction = null;
+
+            try
             {
-                cmd.CommandText = "replace into users (guid, data) values (@1, @2)";
-                cmd.AddParam("@1", user.Id);
-                cmd.AddParam("@2", serialized);
+                transaction = Connection.BeginTransaction();
 
-                using (var tran = Connection.BeginTransaction())
+                using (var cmd = Connection.CreateCommand())
                 {
-                    try
-                    {
-                        cmd.Transaction = tran;
+                    cmd.CommandText = "replace into users (guid, data) values (@1, @2)";
+                    cmd.AddParam("@1", user.Id);
+                    cmd.AddParam("@2", serialized);
 
-                        await cmd.ExecuteNonQueryAsync(cancellationToken);
+                    cmd.Transaction = transaction;
 
-                        tran.Commit();
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        tran.Rollback();
-                    }
-                    catch (Exception e)
-                    {
-                        Logger.ErrorException("Failed to commit transaction.", e);
-                        tran.Rollback();
-                    }
+                    await cmd.ExecuteNonQueryAsync(cancellationToken);
                 }
+
+                transaction.Commit();
+            }
+            catch (OperationCanceledException)
+            {
+                if (transaction != null)
+                {
+                    transaction.Rollback();
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.ErrorException("Failed to save user:", e);
+
+                if (transaction != null)
+                {
+                    transaction.Rollback();
+                }
+            }
+            finally
+            {
+                if (transaction != null)
+                {
+                    transaction.Dispose();
+                }
+
+                _writeLock.Release();
             }
         }
 
@@ -175,7 +197,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">user</exception>
-        public Task DeleteUser(User user, CancellationToken cancellationToken)
+        public async Task DeleteUser(User user, CancellationToken cancellationToken)
         {
             if (user == null)
             {
@@ -189,13 +211,52 @@ namespace MediaBrowser.Server.Implementations.Sqlite
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (var cmd = Connection.CreateCommand())
-            {
-                cmd.CommandText = "delete from users where guid=@guid";
-                var guidParam = cmd.Parameters.Add("@guid", DbType.Guid);
-                guidParam.Value = user.Id;
+            await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-                return ExecuteCommand(cmd);
+            SQLiteTransaction transaction = null;
+
+            try
+            {
+                transaction = Connection.BeginTransaction();
+
+                using (var cmd = Connection.CreateCommand())
+                {
+                    cmd.CommandText = "delete from users where guid=@guid";
+
+                    var guidParam = cmd.Parameters.Add("@guid", DbType.Guid);
+                    guidParam.Value = user.Id;
+
+                    cmd.Transaction = transaction;
+
+                    await ExecuteCommand(cmd).ConfigureAwait(false);
+                }
+
+                transaction.Commit();
+            }
+            catch (OperationCanceledException)
+            {
+                if (transaction != null)
+                {
+                    transaction.Rollback();
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.ErrorException("Failed to delete user:", e);
+
+                if (transaction != null)
+                {
+                    transaction.Rollback();
+                }
+            }
+            finally
+            {
+                if (transaction != null)
+                {
+                    transaction.Dispose();
+                }
+
+                _writeLock.Release();
             }
         }
     }
