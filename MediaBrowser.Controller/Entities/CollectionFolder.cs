@@ -79,7 +79,7 @@ namespace MediaBrowser.Controller.Entities
                 {
                     // Accessing ResolveArgs could involve file system access
                     folderIds = ResolveArgs.PhysicalLocations
-                        .Select(f => (f.GetMBId(typeof(Folder))))
+                        .Select(f => f.GetMBId(typeof(Folder)))
                         .ToDictionary(i => i);
                 }
                 catch (IOException ex)
