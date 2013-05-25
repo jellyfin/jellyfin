@@ -1,4 +1,8 @@
-﻿using MediaBrowser.Common.Net;
+﻿using System.IO;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -69,7 +73,7 @@ namespace MediaBrowser.Controller.Providers.Music
         {
             get
             {
-                return "4";
+                return "5";
             }
         }
 
@@ -99,6 +103,41 @@ namespace MediaBrowser.Controller.Providers.Music
         }
 
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
+
+        /// <summary>
+        /// Gets the series data path.
+        /// </summary>
+        /// <param name="appPaths">The app paths.</param>
+        /// <param name="musicBrainzArtistId">The music brainz artist id.</param>
+        /// <returns>System.String.</returns>
+        internal static string GetArtistDataPath(IApplicationPaths appPaths, string musicBrainzArtistId)
+        {
+            var seriesDataPath = Path.Combine(GetArtistDataPath(appPaths), musicBrainzArtistId);
+
+            if (!Directory.Exists(seriesDataPath))
+            {
+                Directory.CreateDirectory(seriesDataPath);
+            }
+
+            return seriesDataPath;
+        }
+
+        /// <summary>
+        /// Gets the series data path.
+        /// </summary>
+        /// <param name="appPaths">The app paths.</param>
+        /// <returns>System.String.</returns>
+        internal static string GetArtistDataPath(IApplicationPaths appPaths)
+        {
+            var dataPath = Path.Combine(appPaths.DataPath, "fanart-music");
+
+            if (!Directory.Exists(dataPath))
+            {
+                Directory.CreateDirectory(dataPath);
+            }
+
+            return dataPath;
+        }
         
         /// <summary>
         /// Fetches metadata and returns true or false indicating if any work that requires persistence was done
@@ -113,12 +152,14 @@ namespace MediaBrowser.Controller.Providers.Music
 
             //var artist = item;
 
-            var url = string.Format(FanArtBaseUrl, ApiKey, item.GetProviderId(MetadataProviders.Musicbrainz));
-            var doc = new XmlDocument();
+            var musicBrainzId = item.GetProviderId(MetadataProviders.Musicbrainz);
+            var url = string.Format(FanArtBaseUrl, ApiKey, musicBrainzId);
 
             var status = ProviderRefreshStatus.Success;
+
+            var xmlPath = Path.Combine(GetArtistDataPath(ConfigurationManager.ApplicationPaths, musicBrainzId), "fanart.xml");
             
-            using (var xml = await HttpClient.Get(new HttpRequestOptions
+            using (var response = await HttpClient.Get(new HttpRequestOptions
             {
                 Url = url,
                 ResourcePool = FanArtResourcePool,
@@ -126,8 +167,14 @@ namespace MediaBrowser.Controller.Providers.Music
 
             }).ConfigureAwait(false))
             {
-                doc.Load(xml);
+                using (var xmlFileStream = new FileStream(xmlPath, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
+                {
+                    await response.CopyToAsync(xmlFileStream).ConfigureAwait(false);
+                }
             }
+
+            var doc = new XmlDocument();
+            doc.Load(xmlPath);
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -135,7 +182,7 @@ namespace MediaBrowser.Controller.Providers.Music
             {
                 string path;
                 var hd = ConfigurationManager.Configuration.DownloadHDFanArt ? "hd" : "";
-                if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Logo && !item.ResolveArgs.ContainsMetaFileByName(LogoFile))
+                if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Logo && !item.HasImage(ImageType.Logo))
                 {
                     var node =
                         doc.SelectSingleNode("//fanart/music/musiclogos/" + hd + "musiclogo/@url") ??
@@ -149,7 +196,7 @@ namespace MediaBrowser.Controller.Providers.Music
                 }
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Backdrops && !item.ResolveArgs.ContainsMetaFileByName(BackdropFile))
+                if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Backdrops && item.BackdropImagePaths.Count == 0)
                 {
                     var nodes = doc.SelectNodes("//fanart/music/artistbackgrounds//@url");
                     if (nodes != null)
