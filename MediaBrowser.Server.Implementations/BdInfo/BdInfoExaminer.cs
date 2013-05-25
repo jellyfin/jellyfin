@@ -123,7 +123,7 @@ namespace MediaBrowser.Server.Implementations.BdInfo
         /// <param name="audioStream">The audio stream.</param>
         private void AddAudioStream(List<MediaStream> streams, TSAudioStream audioStream)
         {
-            streams.Add(new MediaStream
+            var stream = new MediaStream
             {
                 BitRate = Convert.ToInt32(audioStream.BitRate),
                 Codec = audioStream.CodecShortName,
@@ -132,7 +132,14 @@ namespace MediaBrowser.Server.Implementations.BdInfo
                 SampleRate = audioStream.SampleRate,
                 Type = MediaStreamType.Audio,
                 Index = streams.Count
-            });
+            };
+
+            if (audioStream.LFE > 0)
+            {
+                stream.Channels = audioStream.ChannelCount + 1;
+            }
+          
+            streams.Add(stream);
         }
 
         /// <summary>
