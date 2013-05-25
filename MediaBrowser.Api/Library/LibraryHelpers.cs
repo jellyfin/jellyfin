@@ -182,6 +182,8 @@ namespace MediaBrowser.Api.Library
                 throw new ArgumentException(string.Format("The path cannot be added to the library because {0} already exists.", duplicate));
             }
 
+            // Don't allow duplicate sub-paths within the same user library, or it will result in duplicate items
+            // See comments in IsNewPathValid
             duplicate = Directory.EnumerateFiles(currentViewRootFolderPath, "*.lnk", SearchOption.AllDirectories)
               .Select(FileSystem.ResolveShortcut)
               .FirstOrDefault(p => !IsNewPathValid(mediaPath, p, true));
@@ -221,7 +223,7 @@ namespace MediaBrowser.Api.Library
                 return true;
             }
 
-            // Validate the D:\Movies\Kids scenario
+            // If enforceSubPathRestriction is true, validate the D:\Movies\Kids scenario
             if (enforceSubPathRestriction && newPath.StartsWith(existingPath.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
             {
                 return false;

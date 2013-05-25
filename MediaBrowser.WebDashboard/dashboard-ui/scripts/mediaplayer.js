@@ -303,12 +303,19 @@
             $('#stopButton', nowPlayingBar).show();
             $('#playButton', nowPlayingBar).hide();
             $('#pauseButton', nowPlayingBar).show();
-            $('#playlistButton', nowPlayingBar).show();
-            $('#previousTrackButton', nowPlayingBar).show();
-            $('#nextTrackButton', nowPlayingBar).show();
-            $('#mediaElement', nowPlayingBar).html(html);
             $('#fullscreenButton', nowPlayingBar).hide();
 
+            if (requiresControls) {
+                $('#previousTrackButton', nowPlayingBar).hide();
+                $('#nextTrackButton', nowPlayingBar).hide();
+                $('#playlistButton', nowPlayingBar).hide();
+            } else {
+                $('#previousTrackButton', nowPlayingBar).show();
+                $('#nextTrackButton', nowPlayingBar).show();
+                $('#playlistButton', nowPlayingBar).show();
+            }
+
+            $('#mediaElement', nowPlayingBar).html(html);
             var audioElement = $("audio", nowPlayingBar);
 
             var initialVolume = localStorage.getItem("volume") || 0.5;
@@ -333,7 +340,7 @@
                 if (!requiresControls) {
                     audioElement.hide();
                 }
-                
+
                 var duration = this.duration;
                 isStaticStream = duration && !isNaN(duration) && duration != Number.POSITIVE_INFINITY && duration != Number.NEGATIVE_INFINITY;
 
@@ -590,6 +597,60 @@
 
         self.play = function (items, startPosition) {
 
+            var item = items[0];
+
+            var videoType = (item.VideoType || "").toLowerCase();
+
+            if (videoType == "dvd") {
+
+                self.playWithWarning(items, startPosition, "dvdstreamconfirmed", "Dvd Folder Streaming");
+                return;
+            }
+            else if (videoType == "bluray") {
+
+                self.playWithWarning(items, startPosition, "bluraystreamconfirmed", "Blu-ray Folder Streaming");
+                return;
+            }
+            else if (videoType == "iso") {
+
+                var isoType = (item.IsoType || "").toLowerCase();
+
+                if (isoType == "dvd") {
+
+                    self.playWithWarning(items, startPosition, "dvdisostreamconfirmed", "Dvd Iso Streaming");
+                    return;
+                }
+                else if (isoType == "bluray") {
+
+                    self.playWithWarning(items, startPosition, "blurayisostreamconfirmed", "Blu-ray Iso Streaming");
+                    return;
+                }
+            }
+
+            self.play(items, startPosition);
+        };
+
+        self.playWithWarning = function (items, startPosition, localStorageKeyName, header) {
+
+            if (localStorage.getItem(localStorageKeyName) == "1") {
+                self.playInternal(items, startPosition);
+                return;
+            }
+
+            Dashboard.confirm("This feature is expiremental. It may not work at all with some titles. Do you wish to continue?", header, function(result) {
+                
+                if (result) {
+
+                    localStorage.setItem(localStorageKeyName, "1");
+                    self.playInternal(items, startPosition);
+                }
+
+            });
+
+        };
+
+        self.playInternal = function (items, startPosition) {
+
             if (self.isPlaying()) {
                 self.stop();
             }
@@ -670,9 +731,9 @@
 
             html += "<div><a href='itemdetails.html?id=" + item.Id + "'><img class='nowPlayingBarImage ' alt='' title='' src='" + url + "' style='height:36px;display:inline-block;' /></a></div>";
             if (item.Type == "Movie")
-                html += '<div>' + name + '<br/>' + seriesName + '</div>';
+                html += '<div class="nowPlayingText">' + name + '<br/>' + seriesName + '</div>';
             else
-                html += '<div>' + seriesName + '<br/>' + name + '</div>';
+                html += '<div class="nowPlayingText">' + seriesName + '<br/>' + name + '</div>';
 
             $('.nowPlayingMediaInfo', nowPlayingBar).html(html);
         };

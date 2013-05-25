@@ -707,7 +707,7 @@ progress {
     }
 
 .nowPlayingBarImage {
-    border: 1px solid #a7a7a7;
+    border: 1px solid #a7a7a7!important;
     padding: 1px;
     vertical-align: bottom;
 }
@@ -734,6 +734,12 @@ progress {
 
 .nowPlayingMediaInfo {
     display: none;
+}
+
+.nowPlayingText {
+    position: relative;
+    top: -3px;
+    margin-left: 3px;
 }
 
 @media all and (min-width: 650px) {
@@ -847,8 +853,8 @@ input[type="range"]::-ms-fill-upper {
 }
 
 
-@media all and (max-width: 500px) {
-    .volumeButton, .volumeSlider, .fullscreenButton {
+@media all and (max-width: 600px) {
+    .volumeButton, .volumeSlider, .fullscreenButton, .nowPlayingText {
         display: none!important;
     }
 
