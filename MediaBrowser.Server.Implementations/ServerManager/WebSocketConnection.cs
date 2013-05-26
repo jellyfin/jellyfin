@@ -51,6 +51,12 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         public Action<WebSocketMessageInfo> OnReceive { get; set; }
 
         /// <summary>
+        /// Gets the last activity date.
+        /// </summary>
+        /// <value>The last activity date.</value>
+        public DateTime LastActivityDate { get; private set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="WebSocketConnection" /> class.
         /// </summary>
         /// <param name="socket">The socket.</param>
@@ -90,6 +96,8 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         /// <param name="bytes">The bytes.</param>
         private void OnReceiveInternal(byte[] bytes)
         {
+            LastActivityDate = DateTime.UtcNow;
+
             if (OnReceive == null)
             {
                 return;

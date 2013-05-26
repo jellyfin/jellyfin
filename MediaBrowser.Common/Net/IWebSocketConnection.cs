@@ -8,6 +8,12 @@ namespace MediaBrowser.Common.Net
     public interface IWebSocketConnection : IDisposable
     {
         /// <summary>
+        /// Gets the last activity date.
+        /// </summary>
+        /// <value>The last activity date.</value>
+        DateTime LastActivityDate { get; }
+
+        /// <summary>
         /// Gets or sets the receive action.
         /// </summary>
         /// <value>The receive action.</value>

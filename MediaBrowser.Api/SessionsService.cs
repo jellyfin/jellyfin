@@ -51,9 +51,16 @@ namespace MediaBrowser.Api
         /// Artist name, genre name, item Id, etc
         /// </summary>
         /// <value>The item identifier.</value>
-        [ApiMember(Name = "ItemIdentifier", Description = "The Id of the item, unless it is an Artist, Genre, Studio, or Person, in which case it should be the name.", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public string ItemIdentifier { get; set; }
+        [ApiMember(Name = "ItemId", Description = "The Id of the item.", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string ItemId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the name of the item.
+        /// </summary>
+        /// <value>The name of the item.</value>
+        [ApiMember(Name = "ItemName", Description = "The name of the item.", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string ItemName { get; set; }
+        
         /// <summary>
         /// Gets or sets the context (Movies, Music, TvShows, etc)
         /// Applicable to genres, studios and persons only because the context of items and artists can be inferred.
@@ -105,7 +112,7 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="request">The request.</param>
         /// <exception cref="ResourceNotFoundException"></exception>
-        public void Post(BrowseTo request)
+        public async void Post(BrowseTo request)
         {
             var session = _sessionManager.Sessions.FirstOrDefault(i => i.Id == request.Id);
 
@@ -114,14 +121,27 @@ namespace MediaBrowser.Api
                 throw new ResourceNotFoundException(string.Format("Session {0} not found.", request.Id));
             }
 
-            foreach (var socket in session.WebSockets)
-            {
-                socket.SendAsync(new WebSocketMessage<BrowseTo>
-                {
-                    MessageType = "Browse",
-                    Data = request
+            var socket = session.WebSockets.OrderByDescending(i => i.LastActivityDate).FirstOrDefault(i => i.State == WebSocketState.Open);
 
-                }, CancellationToken.None);
+            if (socket != null)
+            {
+                try
+                {
+                    await socket.SendAsync(new WebSocketMessage<BrowseTo>
+                    {
+                        MessageType = "Browse",
+                        Data = request
+
+                    }, CancellationToken.None).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException("Error sending web socket message", ex);
+                }
+            }
+            else
+            {
+                throw new InvalidOperationException("The requested session does not have an open web socket.");
             }
         }
     }
