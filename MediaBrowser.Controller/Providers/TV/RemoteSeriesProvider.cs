@@ -376,7 +376,7 @@ namespace MediaBrowser.Controller.Providers.TV
             series.AirDays = TVUtils.GetAirDays(doc.SafeGetString("//Airs_DayOfWeek"));
             series.AirTime = doc.SafeGetString("//Airs_Time");
             SeriesStatus seriesStatus;
-            if(Enum.TryParse(doc.SafeGetString("//Status"), out seriesStatus))
+            if(Enum.TryParse(doc.SafeGetString("//Status"), true, out seriesStatus))
                 series.Status = seriesStatus;
             series.PremiereDate = doc.SafeGetDateTime("//FirstAired");
             if (series.PremiereDate.HasValue)

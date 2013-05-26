@@ -135,7 +135,7 @@ namespace MediaBrowser.Controller.Extensions
                 var text = rvalNode.InnerText;
                 DateTime date;
                 if (DateTime.TryParse(text, out date))
-                    return date;
+                    return date.ToUniversalTime();
             }
             return defaultDate;
         }
