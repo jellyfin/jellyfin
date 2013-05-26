@@ -663,7 +663,6 @@ progress {
     progress::-moz-progress-bar {
         border-radius: 5px;
         background-image: -moz-linear-gradient( center bottom, rgb(43,194,83) 37%, rgb(84,240,84) 69% );
-        s;
     }
 
     /* Chrome */
@@ -894,6 +893,10 @@ input[type="range"]::-ms-fill-upper {
     width: 250px;
 }
 
+.audioTracksFlyout {
+    width: 250px;
+}
+
 .mediaFlyoutOption {
     display: block;
     text-decoration: none;
@@ -912,13 +915,21 @@ input[type="range"]::-ms-fill-upper {
 
 .mediaFlyoutOptionImage {
     display: inline-block;
-    width: 40%;
+    width: 15%;
     vertical-align: middle;
 }
 
     .mediaFlyoutOptionImage + .mediaFlyoutOptionContent {
         vertical-align: top;
         display: inline-block;
+        width: 85%;
+    }
+
+.chaptersFlyout .mediaFlyoutOptionImage {
+    width: 40%;
+}
+
+    .chaptersFlyout .mediaFlyoutOptionImage + .mediaFlyoutOptionContent {
         width: 60%;
     }
 

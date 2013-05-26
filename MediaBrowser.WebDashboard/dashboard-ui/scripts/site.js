@@ -1118,19 +1118,20 @@ $(function () {
     footerHtml += '<button id="muteButton" onclick="MediaPlayer.mute();" class="imageButton mediaButton volumeButton" title="Volume" type="button"><img src="css/images/media/volume.png" /></button>';
     footerHtml += '<button id="unmuteButton" onclick="MediaPlayer.unmute();" class="imageButton mediaButton volumeButton" title="Volume" type="button"><img src="css/images/media/mute.png" /></button>';
     footerHtml += '<input type="range" class="mediaSlider volumeSlider" step=".05" min="0" max="1" value="0" />';
-    footerHtml += '<button onclick="MediaPlayer.toggleFullscreen();" id="fullscreenButton" class="imageButton mediaButton fullscreenButton" title="Fullscreen" type="button"><img src="css/images/media/fullscreen.png" /></button>';
 
     footerHtml += '<button onclick="MediaPlayer.showQualityFlyout();" id="qualityButton" class="imageButton mediaButton qualityButton" title="Quality" type="button"><img src="css/images/media/quality.png" /></button>';
-    footerHtml += '<div class="mediaFlyoutContainer"><div id="qualityFlyout" style="display:none;" class="mediaPlayerFlyout">Coming soon</div></div>';
+    footerHtml += '<div class="mediaFlyoutContainer"><div id="qualityFlyout" style="display:none;" class="mediaPlayerFlyout"></div></div>';
 
     footerHtml += '<button onclick="MediaPlayer.showAudioTracksFlyout();" id="audioTracksButton" class="imageButton mediaButton audioTracksButton" title="Audio tracks" type="button"><img src="css/images/media/audiotrack.png" /></button>';
-    footerHtml += '<div class="mediaFlyoutContainer"><div id="audioTracksFlyout" style="display:none;" class="mediaPlayerFlyout">Coming soon</div></div>';
+    footerHtml += '<div class="mediaFlyoutContainer"><div id="audioTracksFlyout" style="display:none;" class="mediaPlayerFlyout audioTracksFlyout"></div></div>';
 
     footerHtml += '<button onclick="MediaPlayer.showSubtitleMenu();" id="subtitleButton" class="imageButton mediaButton subtitleButton" title="Subtitles" type="button"><img src="css/images/media/subtitles.png" /></button>';
-    footerHtml += '<div class="mediaFlyoutContainer"><div id="subtitleFlyout" style="display:none;" class="mediaPlayerFlyout">Coming soon</div></div>';
+    footerHtml += '<div class="mediaFlyoutContainer"><div id="subtitleFlyout" style="display:none;" class="mediaPlayerFlyout subtitleFlyout"></div></div>';
 
     footerHtml += '<button onclick="MediaPlayer.showChaptersFlyout();" id="chaptersButton" class="imageButton mediaButton chaptersButton" title="Scenes" type="button"><img src="css/images/media/chapters.png" /></button>';
-    footerHtml += '<div class="mediaFlyoutContainer"><div id="chaptersFlyout" style="display:none;" class="mediaPlayerFlyout chaptersFlyout">Coming soon</div></div>';
+    footerHtml += '<div class="mediaFlyoutContainer"><div id="chaptersFlyout" style="display:none;" class="mediaPlayerFlyout chaptersFlyout"></div></div>';
+
+    footerHtml += '<button onclick="MediaPlayer.toggleFullscreen();" id="fullscreenButton" class="imageButton mediaButton fullscreenButton" title="Fullscreen" type="button"><img src="css/images/media/fullscreen.png" /></button>';
 
     footerHtml += '</div>';
 

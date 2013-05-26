@@ -18,6 +18,7 @@
         var startTimeTicksOffset;
         var curentDurationTicks;
         var isStaticStream;
+        var culturesPromise;
 
         self.playing = '';
         self.queue = [];
@@ -69,6 +70,10 @@
             }
         }
 
+        function getCurrentTicks(mediaElement) {
+            return Math.floor(10000000 * (mediaElement || currentMediaElement).currentTime) + startTimeTicksOffset;
+        }
+
         function onPlaybackStopped() {
 
             currentTimeElement.hide();
@@ -102,9 +107,8 @@
         }
 
         function sendProgressUpdate(itemId) {
-            var position = Math.floor(10000000 * currentMediaElement.currentTime) + startTimeTicksOffset;
 
-            ApiClient.reportPlaybackProgress(Dashboard.getCurrentUserId(), itemId, position);
+            ApiClient.reportPlaybackProgress(Dashboard.getCurrentUserId(), itemId, getCurrentTicks());
         }
 
         function clearProgressInterval() {
@@ -115,24 +119,27 @@
             }
         }
 
-        function seek(ticks) {
+        function changeStream(ticks, params) {
 
             var element = currentMediaElement;
 
-            if (isStaticStream) {
+            if (isStaticStream && params == null) {
 
                 element.currentTime = ticks / (1000 * 10000);
 
             } else {
 
+                params = params || {};
+
                 var currentSrc = element.currentSrc;
 
-                if (currentSrc.toLowerCase().indexOf('starttimeticks') == -1) {
+                currentSrc = replaceQueryString(currentSrc, 'starttimeticks', ticks);
 
-                    currentSrc += "&starttimeticks=" + ticks;
-
-                } else {
-                    currentSrc = replaceQueryString(currentSrc, 'starttimeticks', ticks);
+                if (params.AudioStreamIndex != null) {
+                    currentSrc = replaceQueryString(currentSrc, 'AudioStreamIndex', params.AudioStreamIndex);
+                }
+                if (params.SubtitleStreamIndex != null) {
+                    currentSrc = replaceQueryString(currentSrc, 'SubtitleStreamIndex', params.SubtitleStreamIndex);
                 }
 
                 clearProgressInterval();
@@ -158,7 +165,7 @@
 
             var newPositionTicks = (newPercent / 100) * currentItem.RunTimeTicks;
 
-            seek(newPositionTicks);
+            changeStream(newPositionTicks);
         }
 
         $(function () {
@@ -213,9 +220,31 @@
 
                 var ticks = parseInt(this.getAttribute('data-positionticks'));
 
-                seek(ticks);
-                
+                changeStream(ticks);
+
                 hideFlyout($('#chaptersFlyout'));
+            });
+
+            $('#audioTracksFlyout').on('click', '.mediaFlyoutOption', function () {
+
+                if (!$(this).hasClass('selectedMediaFlyoutOption')) {
+                    var index = parseInt(this.getAttribute('data-index'));
+
+                    changeStream(getCurrentTicks(), { AudioStreamIndex: index });
+                }
+
+                hideFlyout($('#audioTracksFlyout'));
+            });
+
+            $('#subtitleFlyout').on('click', '.mediaFlyoutOption', function () {
+
+                if (!$(this).hasClass('selectedMediaFlyoutOption')) {
+                    var index = parseInt(this.getAttribute('data-index'));
+
+                    changeStream(getCurrentTicks(), { SubtitleStreamIndex: index });
+                }
+
+                hideFlyout($('#subtitleFlyout'));
             });
         });
 
@@ -385,9 +414,7 @@
 
                 if (!isPositionSliderActive) {
 
-                    var ticks = startTimeTicksOffset + this.currentTime * 1000 * 10000;
-
-                    setCurrentTime(ticks, item, true);
+                    setCurrentTime(getCurrentTicks(this), item, true);
                 }
 
             }).on("ended.playbackstopped", onPlaybackStopped);
@@ -484,6 +511,7 @@
             $('#mediaElement', nowPlayingBar).html(html);
 
             $('#qualityButton', nowPlayingBar).show();
+
             $('#audioTracksButton', nowPlayingBar).show();
 
             if (item.MediaStreams.filter(function (i) {
@@ -552,9 +580,7 @@
 
                 if (!isPositionSliderActive) {
 
-                    var ticks = startTimeTicksOffset + this.currentTime * 1000 * 10000;
-
-                    setCurrentTime(ticks, item, true);
+                    setCurrentTime(getCurrentTicks(this), item, true);
                 }
 
             }).on("ended.playbackstopped", onPlaybackStopped);
@@ -569,10 +595,14 @@
 
         function getInitialAudioStreamIndex(mediaStreams, user) {
 
+            var audioStreams = mediaStreams.filter(function (stream) {
+                return stream.Type == "Audio";
+            });
+
             if (user.Configuration.AudioLanguagePreference) {
 
-                for (var i = 0, length = mediaStreams.length; i < length; i++) {
-                    var mediaStream = mediaStreams[i];
+                for (var i = 0, length = audioStreams.length; i < length; i++) {
+                    var mediaStream = audioStreams[i];
 
                     if (mediaStream.Type == "Audio" && mediaStream.Language == user.Configuration.AudioLanguagePreference) {
                         return mediaStream.Index;
@@ -581,7 +611,8 @@
                 }
             }
 
-            return null;
+            // Just use the first audio stream
+            return audioStreams.length ? audioStreams[0].Index : null;
         }
 
         function getInitialSubtitleStreamIndex(mediaStreams, user) {
@@ -951,8 +982,8 @@
 
             var html = '';
 
-            var currentTicks = Math.floor(10000000 * currentMediaElement.currentTime) + startTimeTicksOffset;
-            
+            var currentTicks = getCurrentTicks();
+
             for (var i = 0, length = item.Chapters.length; i < length; i++) {
 
                 var chapter = item.Chapters[i];
@@ -1004,14 +1035,174 @@
             return html;
         }
 
+        function getAudioTracksHtml(item, cultures) {
+
+            var streams = item.MediaStreams.filter(function (i) {
+                return i.Type == "Audio";
+            });
+
+            var currentIndex = getParameterByName('AudioStreamIndex', currentMediaElement.currentSrc);
+
+            var html = '';
+
+            for (var i = 0, length = streams.length; i < length; i++) {
+
+                var stream = streams[i];
+
+                if (stream.Index == currentIndex) {
+                    html += '<div data-index="' + stream.Index + '" class="mediaFlyoutOption selectedMediaFlyoutOption">';
+                } else {
+                    html += '<div data-index="' + stream.Index + '" class="mediaFlyoutOption">';
+                }
+
+                html += '<img class="mediaFlyoutOptionImage" src="css/images/media/audioflyout.png" />';
+
+                html += '<div class="mediaFlyoutOptionContent">';
+
+                var language = null;
+
+                if (stream.Language && stream.Language != "und") {
+
+                    var culture = cultures.filter(function (current) {
+                        return current.ThreeLetterISOLanguageName.toLowerCase() == stream.Language.toLowerCase();
+                    });
+
+                    if (culture.length) {
+                        language = culture[0].DisplayName;
+                    }
+                }
+
+                html += '<div class="mediaFlyoutOptionName">' + (language || 'Unknown language') + '</div>';
+
+                var options = [];
+
+                if (stream.Codec) {
+                    options.push(stream.Codec);
+                }
+                if (stream.Profile) {
+                    options.push(stream.Profile);
+                }
+
+                if (stream.BitRate) {
+                    options.push((parseInt(stream.BitRate / 1000)) + ' kbps');
+                }
+
+                if (stream.Channels) {
+                    options.push(stream.Channels + ' ch');
+                }
+
+                if (options.length) {
+                    html += '<div class="mediaFlyoutOptionSecondaryText">' + options.join('&nbsp;&#149;&nbsp;') + '</div>';
+                }
+
+                options = [];
+
+                if (stream.IsDefault) {
+                    options.push('Default');
+                }
+                if (stream.IsForced) {
+                    options.push('Forced');
+                }
+
+                if (options.length) {
+                    html += '<div class="mediaFlyoutOptionSecondaryText">' + options.join('&nbsp;&#149;&nbsp;') + '</div>';
+                }
+
+                html += "</div>";
+
+                html += "</div>";
+            }
+
+            return html;
+        }
+
+        function getSubtitleTracksHtml(item, cultures) {
+
+            var streams = item.MediaStreams.filter(function (i) {
+                return i.Type == "Subtitle";
+            });
+
+            var currentIndex = getParameterByName('SubtitleStreamIndex', currentMediaElement.currentSrc);
+
+            var html = '';
+
+            for (var i = 0, length = streams.length; i < length; i++) {
+
+                var stream = streams[i];
+
+                if (stream.Index == currentIndex) {
+                    html += '<div data-index="' + stream.Index + '" class="mediaFlyoutOption selectedMediaFlyoutOption">';
+                } else {
+                    html += '<div data-index="' + stream.Index + '" class="mediaFlyoutOption">';
+                }
+
+                html += '<img class="mediaFlyoutOptionImage" src="css/images/media/audioflyout.png" />';
+
+                html += '<div class="mediaFlyoutOptionContent">';
+
+                var language = null;
+
+                if (stream.Language && stream.Language != "und") {
+
+                    var culture = cultures.filter(function (current) {
+                        return current.ThreeLetterISOLanguageName.toLowerCase() == stream.Language.toLowerCase();
+                    });
+
+                    if (culture.length) {
+                        language = culture[0].DisplayName;
+                    }
+                }
+
+                html += '<div class="mediaFlyoutOptionName">' + (language || 'Unknown language') + '</div>';
+
+                var options = [];
+
+                if (stream.Codec) {
+                    options.push(stream.Codec);
+                }
+
+                if (options.length) {
+                    html += '<div class="mediaFlyoutOptionSecondaryText">' + options.join('&nbsp;&#149;&nbsp;') + '</div>';
+                }
+
+                options = [];
+
+                if (stream.IsDefault) {
+                    options.push('Default');
+                }
+                if (stream.IsForced) {
+                    options.push('Forced');
+                }
+                if (stream.IsExternal) {
+                    options.push('External');
+                }
+
+                if (options.length) {
+                    html += '<div class="mediaFlyoutOptionSecondaryText">' + options.join('&nbsp;&#149;&nbsp;') + '</div>';
+                }
+
+                html += "</div>";
+
+                html += "</div>";
+            }
+
+            return html;
+        }
+
         self.showAudioTracksFlyout = function () {
 
             var flyout = $('#audioTracksFlyout');
 
             if (!flyout.is(':visible')) {
 
-                showFlyout(flyout, '#audioTracksButton');
+                culturesPromise = culturesPromise || ApiClient.getCultures();
 
+                culturesPromise.done(function (cultures) {
+
+                    showFlyout(flyout, '#audioTracksButton');
+
+                    flyout.html(getAudioTracksHtml(currentItem, cultures)).scrollTop(0);
+                });
             }
         };
 
@@ -1023,7 +1214,7 @@
 
                 showFlyout(flyout, '#chaptersButton');
 
-                flyout.html(getChaptersFlyoutHtml(currentItem));
+                flyout.html(getChaptersFlyoutHtml(currentItem)).scrollTop(0);
             }
         };
 
@@ -1044,7 +1235,14 @@
 
             if (!flyout.is(':visible')) {
 
-                showFlyout(flyout, '#subtitleButton');
+                culturesPromise = culturesPromise || ApiClient.getCultures();
+
+                culturesPromise.done(function (cultures) {
+
+                    showFlyout(flyout, '#subtitleButton');
+
+                    flyout.html(getSubtitleTracksHtml(currentItem, cultures)).scrollTop(0);
+                });
 
             }
         };
