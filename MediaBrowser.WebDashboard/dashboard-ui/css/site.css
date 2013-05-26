@@ -910,7 +910,11 @@ input[type="range"]::-ms-fill-upper {
     }
 
 .selectedMediaFlyoutOption {
-    background-color: #e4F4FF;
+    background-color: #d9F4FF;
+    background-image: url(images/media/selected.png);
+    background-repeat: no-repeat;
+    background-position: right top;
+    background-size: 16px 16px;
 }
 
 .mediaFlyoutOptionImage {

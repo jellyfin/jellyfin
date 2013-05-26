@@ -38,7 +38,7 @@
         }
 
         function isFullScreen() {
-            return document.fullscreenEnabled || document.mozFullscreenEnabled || document.webkitIsFullScreen ? true : false;
+            return document.fullscreenEnabled || document.mozFullscreenEnabled || document.webkitIsFullScreen || document.mozFullScreen ? true : false;
         }
 
         $(document).on('webkitfullscreenchange mozfullscreenchange fullscreenchange', function () {
@@ -76,7 +76,7 @@
 
         function onPlaybackStopped() {
 
-            currentTimeElement.hide();
+            currentTimeElement.empty();
 
             var endTime = this.currentTime;
 
@@ -140,6 +140,12 @@
                 }
                 if (params.SubtitleStreamIndex != null) {
                     currentSrc = replaceQueryString(currentSrc, 'SubtitleStreamIndex', params.SubtitleStreamIndex);
+                }
+                if (params.MaxWidth != null) {
+                    currentSrc = replaceQueryString(currentSrc, 'MaxWidth', params.MaxWidth);
+                }
+                if (params.VideoBitrate != null) {
+                    currentSrc = replaceQueryString(currentSrc, 'VideoBitrate', params.VideoBitrate);
                 }
 
                 clearProgressInterval();
@@ -245,6 +251,19 @@
                 }
 
                 hideFlyout($('#subtitleFlyout'));
+            });
+
+            $('#qualityFlyout').on('click', '.mediaFlyoutOption', function () {
+
+                if (!$(this).hasClass('selectedMediaFlyoutOption')) {
+
+                    var maxWidth = parseInt(this.getAttribute('data-maxwidth'));
+                    var videoBitrate = parseInt(this.getAttribute('data-videobitrate'));
+
+                    changeStream(getCurrentTicks(), { MaxWidth: maxWidth, VideoBitrate: videoBitrate });
+                }
+
+                hideFlyout($('#qualityFlyout'));
             });
         });
 
@@ -392,8 +411,6 @@
                 var duration = this.duration;
                 isStaticStream = duration && !isNaN(duration) && duration != Number.POSITIVE_INFINITY && duration != Number.NEGATIVE_INFINITY;
 
-                currentTimeElement.show();
-
                 audioElement.off("play.once");
 
                 ApiClient.reportPlaybackStart(Dashboard.getCurrentUserId(), item.Id);
@@ -434,18 +451,31 @@
 
             // Account for screen rotation. Use the larger dimension as the width.
             var screenWidth = Math.max(screen.height, screen.width);
-            var screenHeight = Math.min(screen.height, screen.width);
 
             var baseParams = {
                 audioChannels: 2,
                 audioBitrate: 128000,
-                videoBitrate: 1500000,
-                maxWidth: screenWidth,
-                maxHeight: screenHeight,
+                videoBitrate: 2000000,
+                maxWidth: Math.min(screenWidth, 1280),
                 StartTimeTicks: 0,
                 SubtitleStreamIndex: getInitialSubtitleStreamIndex(item.MediaStreams, user),
                 AudioStreamIndex: getInitialAudioStreamIndex(item.MediaStreams, user)
             };
+
+            var videoStream = item.MediaStreams.filter(function (i) {
+                return i.Type == "Video";
+            })[0];
+
+            if (videoStream && videoStream.Width) {
+
+                if (videoStream.Width >= 1280) {
+                    baseParams.videoBitrate = 2000000;
+                }
+
+                else if (videoStream.Width >= 720) {
+                    baseParams.videoBitrate = 400000;
+                }
+            }
 
             if (startPosition) {
                 baseParams.StartTimeTicks = startPosition;
@@ -454,31 +484,20 @@
             var mp4VideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.mp4', $.extend({}, baseParams, {
                 videoCodec: 'h264',
                 audioCodec: 'aac',
-                profile: 'high',
-                videoBitrate: 2500000
-            }));
-
-            var tsVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.ts', $.extend({}, baseParams, {
-                videoCodec: 'h264',
-                audioCodec: 'aac',
-                profile: 'high',
-                videoBitrate: 2500000
+                profile: 'baseline',
+                level: 3
             }));
 
             var webmVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.webm', $.extend({}, baseParams, {
                 videoCodec: 'vpx',
-                audioCodec: 'Vorbis',
-                videoBitrate: 2500000
+                audioCodec: 'Vorbis'
             }));
 
             var hlsVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.m3u8', $.extend({}, baseParams, {
                 videoCodec: 'h264',
-                audioCodec: 'aac'
-            }));
-
-            var ogvVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.ogv', $.extend({}, baseParams, {
-                videoCodec: 'theora',
-                audioCodec: 'Vorbis'
+                audioCodec: 'aac',
+                profile: 'baseline',
+                level: 3
             }));
 
             var html = '';
@@ -488,16 +507,14 @@
 
             // Can't autoplay in these browsers so we need to use the full controls
             if ($.browser.msie || $.browser.android || $.browser.iphone || $.browser.ipad) {
-                html += '<video class="itemVideo" preload="auto" autoplay controls>';
+                html += '<video class="itemVideo" autoplay controls preload="auto">';
             } else {
-                html += '<video class="itemVideo" preload="auto" autoplay>';
+                html += '<video class="itemVideo" autoplay preload="auto">';
             }
 
             html += '<source type="application/x-mpegURL" src="' + hlsVideoUrl + '" />';
             html += '<source type="video/webm" src="' + webmVideoUrl + '" />';
             html += '<source type="video/mp4" src="' + mp4VideoUrl + '" />';
-            html += '<source type="video/mp2t" src="' + tsVideoUrl + '" />';
-            html += '<source type="video/ogg" src="' + ogvVideoUrl + '" />';
             html += '</video';
 
             var nowPlayingBar = $('#nowPlayingBar').show();
@@ -557,8 +574,6 @@
 
                 var duration = this.duration;
                 isStaticStream = duration && !isNaN(duration) && duration != Number.POSITIVE_INFINITY && duration != Number.NEGATIVE_INFINITY;
-
-                currentTimeElement.show();
 
                 videoElement.off("play.once");
 
@@ -1136,7 +1151,7 @@
                     html += '<div data-index="' + stream.Index + '" class="mediaFlyoutOption">';
                 }
 
-                html += '<img class="mediaFlyoutOptionImage" src="css/images/media/audioflyout.png" />';
+                html += '<img class="mediaFlyoutOptionImage" src="css/images/media/subtitleflyout.png" />';
 
                 html += '<div class="mediaFlyoutOptionContent">';
 
@@ -1189,6 +1204,65 @@
             return html;
         }
 
+        function getQualityFlyoutHtml(item) {
+
+            var html = '';
+
+            var videoStream = item.MediaStreams.filter(function (i) {
+                return i.Type == "Video";
+            })[0];
+
+            var currentVideoBitrate = getParameterByName('videoBitrate', currentMediaElement.currentSrc) || getParameterByName('VideoBitrate', currentMediaElement.currentSrc);
+
+            var maxAllowedWidth = Math.max(screen.height, screen.width);
+
+            var options = [];
+
+            // We have media info
+            if (videoStream && videoStream.Width) {
+
+                maxAllowedWidth = Math.min(videoStream.Width, maxAllowedWidth);
+            }
+
+            // Some 1080- videos are reported as 1912?
+            if (maxAllowedWidth >= 1910) {
+                options.push({ name: '1080p+', maxWidth: 1920, videoBitrate: 4000000 });
+                options.push({ name: '1080p', maxWidth: 1920, videoBitrate: 2500000 });
+            }
+
+            if (maxAllowedWidth >= 1280) {
+                options.push({ name: '720p+', maxWidth: 1280, videoBitrate: 2000000 });
+                options.push({ name: '720p', maxWidth: 1280, videoBitrate: 1000000 });
+            }
+
+            if (maxAllowedWidth >= 480) {
+                options.push({ name: '480p', maxWidth: 720, videoBitrate: 400000 });
+            }
+
+            for (var i = 0, length = options.length; i < length; i++) {
+
+                var option = options[i];
+
+                var cssClass = "mediaFlyoutOption";
+                
+                if (option.videoBitrate == currentVideoBitrate) {
+                    cssClass += " selectedMediaFlyoutOption";
+                }
+
+                html += '<div data-maxwidth="' + option.maxWidth + '" data-videobitrate="' + option.videoBitrate + '" class="' + cssClass + '">';
+
+                html += '<div class="mediaFlyoutOptionContent">';
+
+                html += '<div class="mediaFlyoutOptionName" style="padding:.5em;">' + option.name + '</div>';
+
+                html += "</div>";
+
+                html += "</div>";
+            }
+
+            return html;
+        }
+
         self.showAudioTracksFlyout = function () {
 
             var flyout = $('#audioTracksFlyout');
@@ -1226,6 +1300,7 @@
 
                 showFlyout(flyout, '#qualityButton');
 
+                flyout.html(getQualityFlyoutHtml(currentItem)).scrollTop(0);
             }
         };
 
