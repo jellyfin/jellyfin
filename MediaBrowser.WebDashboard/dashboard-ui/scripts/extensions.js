@@ -207,7 +207,7 @@ function parseISO8601Date(s, options) {
     // year month day    hours minutes seconds
     // dotmilliseconds
     // tzstring plusminus hours minutes
-    var re = /(\d{4})-(\d\d)-(\d\d)T(\d\d):(\d\d):(\d\d)(\.\d+)?(Z|([+-])(\d\d):(\d\d))/;
+    var re = /(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(\.\d+)?(Z|([+-])(\d{2}):(\d{2}))?/;
 
     var d = s.match(re);
 
