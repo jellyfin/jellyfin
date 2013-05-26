@@ -1130,7 +1130,7 @@ $(function () {
     footerHtml += '<div class="mediaFlyoutContainer"><div id="subtitleFlyout" style="display:none;" class="mediaPlayerFlyout">Coming soon</div></div>';
 
     footerHtml += '<button onclick="MediaPlayer.showChaptersFlyout();" id="chaptersButton" class="imageButton mediaButton chaptersButton" title="Scenes" type="button"><img src="css/images/media/chapters.png" /></button>';
-    footerHtml += '<div class="mediaFlyoutContainer"><div id="chaptersFlyout" style="display:none;" class="mediaPlayerFlyout">Coming soon</div></div>';
+    footerHtml += '<div class="mediaFlyoutContainer"><div id="chaptersFlyout" style="display:none;" class="mediaPlayerFlyout chaptersFlyout">Coming soon</div></div>';
 
     footerHtml += '</div>';
 

@@ -885,6 +885,58 @@ input[type="range"]::-ms-fill-upper {
     z-index: 99999;
     bottom: 55px;
     margin-left: -50px;
+    max-height: 300px;
+    overflow-y: auto;
+    font-size: 13px;
+}
+
+.chaptersFlyout {
+    width: 250px;
+}
+
+.mediaFlyoutOption {
+    display: block;
+    text-decoration: none;
+    color: #000;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+}
+
+    .mediaFlyoutOption:hover, .mediaFlyoutOption:focus {
+        background-color: #eee;
+    }
+
+.selectedMediaFlyoutOption {
+    background-color: #e4F4FF;
+}
+
+.mediaFlyoutOptionImage {
+    display: inline-block;
+    width: 40%;
+    vertical-align: middle;
+}
+
+    .mediaFlyoutOptionImage + .mediaFlyoutOptionContent {
+        vertical-align: top;
+        display: inline-block;
+        width: 60%;
+    }
+
+.mediaFlyoutOptionName {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    padding-left: 5px;
+}
+
+.mediaFlyoutOptionSecondaryText {
+    font-size: 11px;
+    color: #999;
+    margin-top: 3px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    padding-left: 5px;
 }
 
 .installedPluginTitle {

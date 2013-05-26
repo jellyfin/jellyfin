@@ -115,19 +115,13 @@
             }
         }
 
-        function onPositionSliderChange() {
-
-            isPositionSliderActive = false;
+        function seek(ticks) {
 
             var element = currentMediaElement;
 
-            var newPercent = parseInt(this.value);
-
-            var newPositionTicks = (newPercent / 100) * currentItem.RunTimeTicks;
-
             if (isStaticStream) {
 
-                element.currentTime = newPositionTicks / (1000 * 10000);
+                element.currentTime = ticks / (1000 * 10000);
 
             } else {
 
@@ -135,10 +129,10 @@
 
                 if (currentSrc.toLowerCase().indexOf('starttimeticks') == -1) {
 
-                    currentSrc += "&starttimeticks=" + newPositionTicks;
+                    currentSrc += "&starttimeticks=" + ticks;
 
                 } else {
-                    currentSrc = replaceQueryString(currentSrc, 'starttimeticks', newPositionTicks);
+                    currentSrc = replaceQueryString(currentSrc, 'starttimeticks', ticks);
                 }
 
                 clearProgressInterval();
@@ -150,10 +144,21 @@
                     sendProgressUpdate(currentItem.Id);
 
                 });
-                startTimeTicksOffset = newPositionTicks;
+                startTimeTicksOffset = ticks;
 
                 element.src = currentSrc;
             }
+        }
+
+        function onPositionSliderChange() {
+
+            isPositionSliderActive = false;
+
+            var newPercent = parseInt(this.value);
+
+            var newPositionTicks = (newPercent / 100) * currentItem.RunTimeTicks;
+
+            seek(newPositionTicks);
         }
 
         $(function () {
@@ -203,6 +208,15 @@
                     timer = setTimeout(trig, timeout);
                 });
             })(positionSlider, 500);
+
+            $('#chaptersFlyout').on('click', '.mediaFlyoutOption', function () {
+
+                var ticks = parseInt(this.getAttribute('data-positionticks'));
+
+                seek(ticks);
+                
+                hideFlyout($('#chaptersFlyout'));
+            });
         });
 
         function endsWith(text, pattern) {
@@ -740,27 +754,29 @@
 
             var url = "";
 
-            if (item.BackdropImageTags && item.BackdropImageTags.length) {
+            if (imageTags.Primary) {
+
+                url = ApiClient.getImageUrl(item.Id, {
+                    type: "Primary",
+                    height: 80,
+                    tag: item.ImageTags.Primary
+                });
+            }
+            else if (item.BackdropImageTags && item.BackdropImageTags.length) {
 
                 url = ApiClient.getImageUrl(item.Id, {
                     type: "Backdrop",
-                    height: 36,
+                    height: 80,
                     tag: item.BackdropImageTags[0]
                 });
             } else if (imageTags.Thumb) {
 
                 url = ApiClient.getImageUrl(item.Id, {
                     type: "Thumb",
-                    height: 36,
+                    height: 80,
                     tag: item.ImageTags.Thumb
                 });
-            } else if (imageTags.Primary) {
 
-                url = ApiClient.getImageUrl(item.Id, {
-                    type: "Primary",
-                    height: 36,
-                    tag: item.ImageTags.Primary
-                });
             } else {
                 url = "css/images/items/detail/video.png";
             }
@@ -908,6 +924,11 @@
             return currentMediaElement;
         };
 
+        function hideFlyout(flyout) {
+            flyout.hide().empty();
+            $(document.body).off("mousedown.hidesearchhints");
+        }
+
         function showFlyout(flyout, button) {
 
             $(document.body).off("mousedown.mediaflyout").on("mousedown.mediaflyout", function (e) {
@@ -918,13 +939,69 @@
                 var safeItems = button + ',#' + flyoutId;
 
                 if (!elem.is(safeItems) && !elem.parents(safeItems).length) {
-                    flyout.hide();
-                    $(document.body).off("mousedown.hidesearchhints");
+                    hideFlyout(flyout);
                 }
 
             });
 
             flyout.show();
+        }
+
+        function getChaptersFlyoutHtml(item) {
+
+            var html = '';
+
+            var currentTicks = Math.floor(10000000 * currentMediaElement.currentTime) + startTimeTicksOffset;
+            
+            for (var i = 0, length = item.Chapters.length; i < length; i++) {
+
+                var chapter = item.Chapters[i];
+
+                var isSelected = false;
+
+                if (currentTicks >= chapter.StartPositionTicks) {
+
+                    var nextChapter = item.Chapters[i + 1];
+
+                    isSelected = !nextChapter || currentTicks < nextChapter.StartPositionTicks;
+                }
+
+                if (isSelected) {
+                    html += '<div data-positionticks="' + chapter.StartPositionTicks + '" class="mediaFlyoutOption selectedMediaFlyoutOption">';
+                } else {
+                    html += '<div data-positionticks="' + chapter.StartPositionTicks + '" class="mediaFlyoutOption">';
+                }
+
+                var imgUrl;
+
+                if (chapter.ImageTag) {
+
+                    imgUrl = ApiClient.getImageUrl(item.Id, {
+                        maxwidth: 200,
+                        tag: chapter.ImageTag,
+                        type: "Chapter",
+                        index: i
+                    });
+
+                } else {
+                    imgUrl = "css/images/media/chapterflyout.png";
+                }
+
+                html += '<img class="mediaFlyoutOptionImage" src="' + imgUrl + '" />';
+
+                html += '<div class="mediaFlyoutOptionContent">';
+
+                var name = chapter.Name || "Chapter " + (i + 1);
+
+                html += '<div class="mediaFlyoutOptionName">' + name + '</div>';
+                html += '<div class="mediaFlyoutOptionSecondaryText">' + DashboardPage.getDisplayText(chapter.StartPositionTicks) + '</div>';
+
+                html += '</div>';
+
+                html += "</div>";
+            }
+
+            return html;
         }
 
         self.showAudioTracksFlyout = function () {
@@ -946,6 +1023,7 @@
 
                 showFlyout(flyout, '#chaptersButton');
 
+                flyout.html(getChaptersFlyoutHtml(currentItem));
             }
         };
 
