@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using System.IO;
+using System.Text.RegularExpressions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -145,7 +146,14 @@ namespace MediaBrowser.Controller.Providers
 
                 case "Overview":
                 case "Description":
-                    item.Overview = reader.ReadInnerXml();
+                    var overview = reader.ReadInnerXml();
+                    const string cdataRegex = @"\<\!\[CDATA\[(?<text>.*)\]\]\>";
+                    if (Regex.IsMatch(overview, cdataRegex))
+                    {
+                        var match = Regex.Match(overview, cdataRegex);
+                        overview = match.Groups["text"].Value;
+                    }
+                    item.Overview = Regex.Replace(overview, @"\<[^\>]*\>", string.Empty);
                     break;
 
                 case "TagLine":
