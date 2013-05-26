@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using System.Net;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
@@ -10,6 +11,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using MediaBrowser.Model.Net;
 
 namespace MediaBrowser.Controller.Providers.TV
 {
@@ -244,15 +246,28 @@ namespace MediaBrowser.Controller.Providers.TV
                     n = n.SelectSingleNode("./BannerPath");
                     if (n != null)
                     {
-                        var bannerImagePath =
-                            await _providerManager.DownloadAndSaveImage(season,
-                                                                             TVUtils.BannerUrl + n.InnerText,
-                                                                             "banner" +
-                                                                             Path.GetExtension(n.InnerText),
-                                                                             ConfigurationManager.Configuration.SaveLocalMeta, RemoteSeriesProvider.Current.TvDbResourcePool, cancellationToken).
-                                               ConfigureAwait(false);
+                        try
+                        {
+                            var bannerImagePath =
+                                await _providerManager.DownloadAndSaveImage(season,
+                                                                                 TVUtils.BannerUrl + n.InnerText,
+                                                                                 "banner" +
+                                                                                 Path.GetExtension(n.InnerText),
+                                                                                 ConfigurationManager.Configuration.SaveLocalMeta, RemoteSeriesProvider.Current.TvDbResourcePool, cancellationToken).
+                                                   ConfigureAwait(false);
 
-                        season.SetImage(ImageType.Banner, bannerImagePath);
+                            season.SetImage(ImageType.Banner, bannerImagePath);
+                        }
+                        catch (HttpException ex)
+                        {
+                            Logger.ErrorException("Error downloading season banner for {0}", ex, season.Path);
+
+                            // Sometimes banners will come up not found even though they're reported in tvdb xml
+                            if (ex.StatusCode.HasValue && ex.StatusCode.Value != HttpStatusCode.NotFound)
+                            {
+                                throw;
+                            }
+                        }
                     }
                 }
             }
