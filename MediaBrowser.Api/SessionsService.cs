@@ -44,7 +44,7 @@ namespace MediaBrowser.Api
         /// Artist, Genre, Studio, Person, or any kind of BaseItem
         /// </summary>
         /// <value>The type of the item.</value>
-        [ApiMember(Name = "ItemType", Description = "Only required if the item is an Artist, Genre, Studio, or Person.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
+        [ApiMember(Name = "ItemType", Description = "Only required if the item is an Artist, Genre, Studio, or Person.", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string ItemType { get; set; }
 
         /// <summary>
@@ -67,7 +67,7 @@ namespace MediaBrowser.Api
         /// This is optional to supply and clients are free to ignore it.
         /// </summary>
         /// <value>The context.</value>
-        [ApiMember(Name = "Context", Description = "The navigation context for the client (movies, music, tvshows, games etc). This is optional to supply and clients are free to ignore it.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
+        [ApiMember(Name = "Context", Description = "The ui context for the client (movies, music, tv, games etc). This is optional to supply and clients are free to ignore it.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string Context { get; set; }
     }
 
