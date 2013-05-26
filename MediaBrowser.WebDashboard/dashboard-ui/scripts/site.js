@@ -898,19 +898,19 @@ var Dashboard = {
 
         var url;
 
-        var type = cmd.ItemType.toLowerCase();
+        var type = (cmd.ItemType || "").toLowerCase();
 
         if (type == "genre") {
-            url = "itembynamedetails.html?genre=" + ApiClient.encodeName(cmd.ItemIdentifier) + "&context=" + context;
+            url = "itembynamedetails.html?genre=" + ApiClient.encodeName(cmd.ItemName) + "&context=" + context;
         }
         else if (type == "studio") {
-            url = "itembynamedetails.html?studio=" + ApiClient.encodeName(cmd.ItemIdentifier) + "&context=" + context;
+            url = "itembynamedetails.html?studio=" + ApiClient.encodeName(cmd.ItemName) + "&context=" + context;
         }
         else if (type == "person") {
-            url = "itembynamedetails.html?person=" + ApiClient.encodeName(cmd.ItemIdentifier) + "&context=" + context;
+            url = "itembynamedetails.html?person=" + ApiClient.encodeName(cmd.ItemName) + "&context=" + context;
         }
         else if (type == "artist") {
-            url = "itembynamedetails.html?artist=" + ApiClient.encodeName(cmd.ItemIdentifier) + "&context=" + (context || "music");
+            url = "itembynamedetails.html?artist=" + ApiClient.encodeName(cmd.ItemName) + "&context=" + (context || "music");
         }
 
         if (url) {
@@ -918,7 +918,7 @@ var Dashboard = {
             return;
         }
 
-        ApiClient.getItem(Dashboard.getCurrentUserId(), cmd.ItemIdentifier).done(function (item) {
+        ApiClient.getItem(Dashboard.getCurrentUserId(), cmd.ItemId).done(function (item) {
 
             Dashboard.navigate(LibraryBrowser.getHref(item, context));
 
@@ -1114,11 +1114,23 @@ $(function () {
     footerHtml += '<div class="currentTime"></div>';
     footerHtml += '<div id="mediaElement"></div>';
     footerHtml += '<div class="nowPlayingMediaInfo"></div>';
-    
+
     footerHtml += '<button id="muteButton" onclick="MediaPlayer.mute();" class="imageButton mediaButton volumeButton" title="Volume" type="button"><img src="css/images/media/volume.png" /></button>';
     footerHtml += '<button id="unmuteButton" onclick="MediaPlayer.unmute();" class="imageButton mediaButton volumeButton" title="Volume" type="button"><img src="css/images/media/mute.png" /></button>';
     footerHtml += '<input type="range" class="mediaSlider volumeSlider" step=".05" min="0" max="1" value="0" />';
     footerHtml += '<button onclick="MediaPlayer.toggleFullscreen();" id="fullscreenButton" class="imageButton mediaButton fullscreenButton" title="Fullscreen" type="button"><img src="css/images/media/fullscreen.png" /></button>';
+
+    footerHtml += '<button onclick="MediaPlayer.showQualityFlyout();" id="qualityButton" class="imageButton mediaButton qualityButton" title="Quality" type="button"><img src="css/images/media/quality.png" /></button>';
+    footerHtml += '<div class="mediaFlyoutContainer"><div id="qualityFlyout" style="display:none;" class="mediaPlayerFlyout">Coming soon</div></div>';
+
+    footerHtml += '<button onclick="MediaPlayer.showAudioTracksFlyout();" id="audioTracksButton" class="imageButton mediaButton audioTracksButton" title="Audio tracks" type="button"><img src="css/images/media/audiotrack.png" /></button>';
+    footerHtml += '<div class="mediaFlyoutContainer"><div id="audioTracksFlyout" style="display:none;" class="mediaPlayerFlyout">Coming soon</div></div>';
+
+    footerHtml += '<button onclick="MediaPlayer.showSubtitleMenu();" id="subtitleButton" class="imageButton mediaButton subtitleButton" title="Subtitles" type="button"><img src="css/images/media/subtitles.png" /></button>';
+    footerHtml += '<div class="mediaFlyoutContainer"><div id="subtitleFlyout" style="display:none;" class="mediaPlayerFlyout">Coming soon</div></div>';
+
+    footerHtml += '<button onclick="MediaPlayer.showChaptersFlyout();" id="chaptersButton" class="imageButton mediaButton chaptersButton" title="Scenes" type="button"><img src="css/images/media/chapters.png" /></button>';
+    footerHtml += '<div class="mediaFlyoutContainer"><div id="chaptersFlyout" style="display:none;" class="mediaPlayerFlyout">Coming soon</div></div>';
 
     footerHtml += '</div>';
 

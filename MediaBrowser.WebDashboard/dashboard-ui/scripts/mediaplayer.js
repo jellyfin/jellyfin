@@ -315,6 +315,11 @@
                 $('#playlistButton', nowPlayingBar).show();
             }
 
+            $('#qualityButton', nowPlayingBar).hide();
+            $('#audioTracksButton', nowPlayingBar).hide();
+            $('#subtitleButton', nowPlayingBar).hide();
+            $('#chaptersButton', nowPlayingBar).hide();
+
             $('#mediaElement', nowPlayingBar).html(html);
             var audioElement = $("audio", nowPlayingBar);
 
@@ -463,6 +468,23 @@
             $('#previousTrackButton', nowPlayingBar).hide();
             $('#nextTrackButton', nowPlayingBar).hide();
             $('#mediaElement', nowPlayingBar).html(html);
+
+            $('#qualityButton', nowPlayingBar).show();
+            $('#audioTracksButton', nowPlayingBar).show();
+
+            if (item.MediaStreams.filter(function (i) {
+                return i.Type == "Subtitle";
+            }).length) {
+                $('#subtitleButton', nowPlayingBar).show();
+            } else {
+                $('#subtitleButton', nowPlayingBar).hide();
+            }
+
+            if (item.Chapters.length) {
+                $('#chaptersButton', nowPlayingBar).show();
+            } else {
+                $('#chaptersButton', nowPlayingBar).hide();
+            }
 
             if ($.browser.msie) {
                 $('#fullscreenButton', nowPlayingBar).hide();
@@ -884,6 +906,69 @@
 
         self.isPlaying = function () {
             return currentMediaElement;
+        };
+
+        function showFlyout(flyout, button) {
+
+            $(document.body).off("mousedown.mediaflyout").on("mousedown.mediaflyout", function (e) {
+
+                var elem = $(e.target);
+
+                var flyoutId = flyout[0].id;
+                var safeItems = button + ',#' + flyoutId;
+
+                if (!elem.is(safeItems) && !elem.parents(safeItems).length) {
+                    flyout.hide();
+                    $(document.body).off("mousedown.hidesearchhints");
+                }
+
+            });
+
+            flyout.show();
+        }
+
+        self.showAudioTracksFlyout = function () {
+
+            var flyout = $('#audioTracksFlyout');
+
+            if (!flyout.is(':visible')) {
+
+                showFlyout(flyout, '#audioTracksButton');
+
+            }
+        };
+
+        self.showChaptersFlyout = function () {
+
+            var flyout = $('#chaptersFlyout');
+
+            if (!flyout.is(':visible')) {
+
+                showFlyout(flyout, '#chaptersButton');
+
+            }
+        };
+
+        self.showQualityFlyout = function () {
+
+            var flyout = $('#qualityFlyout');
+
+            if (!flyout.is(':visible')) {
+
+                showFlyout(flyout, '#qualityButton');
+
+            }
+        };
+
+        self.showSubtitleMenu = function () {
+
+            var flyout = $('#subtitleFlyout');
+
+            if (!flyout.is(':visible')) {
+
+                showFlyout(flyout, '#subtitleButton');
+
+            }
         };
     }
 

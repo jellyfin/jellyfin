@@ -702,7 +702,7 @@ progress {
 }
 
 
-    #nowPlayingBar > *:not(#mediaElement) {
+    #nowPlayingBar > *:not(#mediaElement):not(.mediaFlyoutContainer) {
         margin: 0 1em;
     }
 
@@ -870,6 +870,21 @@ input[type="range"]::-ms-fill-upper {
     .positionSlider {
         width: 50px;
     }
+}
+
+.mediaFlyoutContainer {
+    display: inline-block;
+}
+
+.mediaPlayerFlyout {
+    width: 200px;
+    color: #000;
+    background-color: #fff;
+    border: 1px solid #999;
+    position: absolute;
+    z-index: 99999;
+    bottom: 55px;
+    margin-left: -50px;
 }
 
 .installedPluginTitle {
