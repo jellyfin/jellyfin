@@ -109,6 +109,38 @@ namespace MediaBrowser.Controller.Extensions
         }
 
         /// <summary>
+        /// Safes the get DateTime.
+        /// </summary>
+        /// <param name="doc">The doc.</param>
+        /// <param name="path">The path.</param>
+        /// <returns>System.DateTime.</returns>
+        public static DateTime? SafeGetDateTime(this XmlDocument doc, string path)
+        {
+            return SafeGetDateTime(doc, path, null);
+        }
+
+        /// <summary>
+        /// Safes the get DateTime.
+        /// </summary>
+        /// <param name="doc">The doc.</param>
+        /// <param name="path">The path.</param>
+        /// <param name="defaultDate">The default date.</param>
+        /// <returns>System.DateTime.</returns>
+        public static DateTime? SafeGetDateTime(this XmlDocument doc, string path, DateTime? defaultDate)
+        {
+            var rvalNode = doc.SelectSingleNode(path);
+
+            if (rvalNode != null)
+            {
+                var text = rvalNode.InnerText;
+                DateTime date;
+                if (DateTime.TryParse(text, out date))
+                    return date;
+            }
+            return defaultDate;
+        }
+
+        /// <summary>
         /// Safes the get string.
         /// </summary>
         /// <param name="doc">The doc.</param>

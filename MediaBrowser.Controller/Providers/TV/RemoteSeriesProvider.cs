@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System.Xml.Linq;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
@@ -374,6 +375,14 @@ namespace MediaBrowser.Controller.Providers.TV
             series.CommunityRating = doc.SafeGetSingle("//Rating", 0, 10);
             series.AirDays = TVUtils.GetAirDays(doc.SafeGetString("//Airs_DayOfWeek"));
             series.AirTime = doc.SafeGetString("//Airs_Time");
+            SeriesStatus seriesStatus;
+            if(Enum.TryParse(doc.SafeGetString("//Status"), out seriesStatus))
+                series.Status = seriesStatus;
+            series.PremiereDate = doc.SafeGetDateTime("//FirstAired");
+            if (series.PremiereDate.HasValue)
+                series.ProductionYear = series.PremiereDate.Value.Year;
+            //Runtime is in minutes, and 1 tick = 10000 ms
+            series.RunTimeTicks = doc.SafeGetInt32("//Runtime") * 6;
 
             string s = doc.SafeGetString("//Network");
 
@@ -403,6 +412,27 @@ namespace MediaBrowser.Controller.Providers.TV
                         series.AddGenre(genre);
                     }
                 }
+            }
+
+            if (series.Status == SeriesStatus.Ended) {
+                
+                var document = XDocument.Load(new XmlNodeReader(doc));
+                var dates = document.Descendants("Episode").Where(x => {
+                                                                      var seasonNumber = x.Element("SeasonNumber");
+                                                                      var firstAired = x.Element("FirstAired");
+                                                                      return firstAired != null && seasonNumber != null && (!string.IsNullOrEmpty(seasonNumber.Value) && seasonNumber.Value != "0") && !string.IsNullOrEmpty(firstAired.Value);
+                                                                  }).Select(x => {
+                                                                                DateTime? date = null;
+                                                                                DateTime tempDate;
+                                                                                var firstAired = x.Element("FirstAired");
+                                                                                if (firstAired != null && DateTime.TryParse(firstAired.Value, out tempDate)) 
+                                                                                {
+                                                                                    date = tempDate;
+                                                                                }
+                                                                                return date;
+                                                                            }).ToList();
+                if(dates.Any(x=>x.HasValue))
+                    series.EndDate = dates.Where(x => x.HasValue).Max();
             }
         }
 
