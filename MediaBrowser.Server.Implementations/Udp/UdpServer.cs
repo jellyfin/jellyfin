@@ -50,8 +50,6 @@ namespace MediaBrowser.Server.Implementations.Udp
             _networkManager = networkManager;
             _serverConfigurationManager = serverConfigurationManager;
             _httpServer = httpServer;
-
-            new Timer(state => _logger.Info("Internal address {0}", GetLocalIpAddress()), null, 0, 1000);
         }
 
         /// <summary>
