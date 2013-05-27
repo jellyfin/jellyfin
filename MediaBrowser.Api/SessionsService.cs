@@ -121,6 +121,11 @@ namespace MediaBrowser.Api
                 throw new ResourceNotFoundException(string.Format("Session {0} not found.", request.Id));
             }
 
+            if (!session.SupportsRemoteControl)
+            {
+                throw new ArgumentException(string.Format("Session {0} does not support remote control.", session.Id));
+            }
+
             var socket = session.WebSockets.OrderByDescending(i => i.LastActivityDate).FirstOrDefault(i => i.State == WebSocketState.Open);
 
             if (socket != null)
