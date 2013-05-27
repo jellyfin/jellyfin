@@ -34,7 +34,7 @@ namespace MediaBrowser.Controller.IO
             {
                 var fileInfo = new DirectoryInfo(path);
 
-                if (fileInfo.Exists || path.EndsWith(":\\", StringComparison.OrdinalIgnoreCase))
+                if (fileInfo.Exists)
                 {
                     return fileInfo;
                 }

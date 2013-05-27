@@ -50,7 +50,20 @@ namespace MediaBrowser.Controller.IO
 
                     var data = FileSystem.GetFileSystemInfo(newPath);
 
-                    dict[data.FullName] = data;
+                    if (data.Exists)
+                    {
+                        // Find out if the shortcut is pointing to a directory or file
+                        if (data.Attributes.HasFlag(FileAttributes.Directory))
+                        {
+                            // add to our physical locations
+                            if (args != null)
+                            {
+                                args.AddAdditionalLocation(newPath);
+                            }
+                        }
+
+                        dict[data.FullName] = data;
+                    }
                 }
                 else if (flattenFolderDepth > 0 && isDirectory)
                 {
