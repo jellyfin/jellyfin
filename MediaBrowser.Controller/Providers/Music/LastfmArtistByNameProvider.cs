@@ -82,7 +82,6 @@ namespace MediaBrowser.Controller.Providers.Music
 
             if (musicArtist != null)
             {
-                Logger.Info("Found MusicArtist");
                 LastfmHelper.ProcessArtistData(musicArtist, artist);
             }
             else
