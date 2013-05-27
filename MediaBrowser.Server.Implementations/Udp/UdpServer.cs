@@ -1,13 +1,14 @@
-﻿using System.Linq;
-using MediaBrowser.Common.Implementations.NetworkManagement;
+﻿using MediaBrowser.Common.Implementations.NetworkManagement;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Logging;
 using System;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Reactive.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Udp
@@ -22,8 +23,18 @@ namespace MediaBrowser.Server.Implementations.Udp
         /// </summary>
         private readonly ILogger _logger;
 
+        /// <summary>
+        /// The _network manager
+        /// </summary>
         private readonly INetworkManager _networkManager;
+        /// <summary>
+        /// The _HTTP server
+        /// </summary>
+        private readonly IHttpServer _httpServer;
 
+        /// <summary>
+        /// The _server configuration manager
+        /// </summary>
         private readonly IServerConfigurationManager _serverConfigurationManager;
 
         /// <summary>
@@ -32,11 +43,15 @@ namespace MediaBrowser.Server.Implementations.Udp
         /// <param name="logger">The logger.</param>
         /// <param name="networkManager">The network manager.</param>
         /// <param name="serverConfigurationManager">The server configuration manager.</param>
-        public UdpServer(ILogger logger, INetworkManager networkManager, IServerConfigurationManager serverConfigurationManager)
+        /// <param name="httpServer">The HTTP server.</param>
+        public UdpServer(ILogger logger, INetworkManager networkManager, IServerConfigurationManager serverConfigurationManager, IHttpServer httpServer)
         {
             _logger = logger;
             _networkManager = networkManager;
             _serverConfigurationManager = serverConfigurationManager;
+            _httpServer = httpServer;
+
+            new Timer(state => _logger.Info("Internal address {0}", GetLocalIpAddress()), null, 0, 1000);
         }
 
         /// <summary>
@@ -54,11 +69,39 @@ namespace MediaBrowser.Server.Implementations.Udp
             {
                 _logger.Info("Received UDP server request from " + e.RemoteEndPoint);
 
-                // Send a response back with our ip address and port
-                var response = String.Format("MediaBrowser{0}|{1}:{2}", context, _networkManager.GetLocalIpAddress(), _serverConfigurationManager.Configuration.HttpServerPortNumber);
+                var localAddress = GetLocalIpAddress();
 
-                await SendAsync(Encoding.UTF8.GetBytes(response), e.RemoteEndPoint);
+                if (!string.IsNullOrEmpty(localAddress))
+                {
+                    // Send a response back with our ip address and port
+                    var response = String.Format("MediaBrowser{0}|{1}:{2}", context, GetLocalIpAddress(), _serverConfigurationManager.Configuration.HttpServerPortNumber);
+
+                    await SendAsync(Encoding.UTF8.GetBytes(response), e.RemoteEndPoint);
+                }
+                else
+                {
+                    _logger.Warn("Unable to respond to udp request because the local ip address could not be determined.");
+                }
             }
+        }
+
+        /// <summary>
+        /// Gets the local ip address.
+        /// </summary>
+        /// <returns>System.String.</returns>
+        private string GetLocalIpAddress()
+        {
+            var localAddresses = _networkManager.GetLocalIpAddresses().ToList();
+
+            // Cross-check the local ip addresses with addresses that have been received on with the http server
+            var matchedAddress = _httpServer.LocalEndPoints
+                .ToList()
+                .Select(i => i.Split(':').FirstOrDefault())
+                .Where(i => !string.IsNullOrEmpty(i))
+                .FirstOrDefault(i => localAddresses.Contains(i, StringComparer.OrdinalIgnoreCase));
+
+            // Return the first matched address, if found, or the first known local address
+            return matchedAddress ?? localAddresses.FirstOrDefault();
         }
 
         /// <summary>
@@ -203,6 +246,11 @@ namespace MediaBrowser.Server.Implementations.Udp
         /// <param name="bytes">The bytes.</param>
         /// <param name="remoteEndPoint">The remote end point.</param>
         /// <returns>Task.</returns>
+        /// <exception cref="System.ArgumentNullException">
+        /// bytes
+        /// or
+        /// remoteEndPoint
+        /// </exception>
         public async Task SendAsync(byte[] bytes, string remoteEndPoint)
         {
             if (bytes == null)

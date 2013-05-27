@@ -14,6 +14,7 @@ using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Support;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -75,6 +76,17 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// The _container adapter
         /// </summary>
         private readonly ContainerAdapter _containerAdapter;
+
+        private readonly ConcurrentDictionary<string, string> _localEndPoints = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// Gets the local end points.
+        /// </summary>
+        /// <value>The local end points.</value>
+        public IEnumerable<string> LocalEndPoints
+        {
+            get { return _localEndPoints.Keys.ToList(); }
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpServer" /> class.
@@ -340,15 +352,24 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <param name="ctx">The CTX.</param>
         private void LogHttpRequest(HttpListenerContext ctx)
         {
-            var log = new StringBuilder();
+            var endpoint = ctx.Request.LocalEndPoint;
 
-            log.AppendLine("Url: " + ctx.Request.Url);
-            log.AppendLine("Headers: " + string.Join(",", ctx.Request.Headers.AllKeys.Select(k => k + "=" + ctx.Request.Headers[k])));
+            if (endpoint != null)
+            {
+                var address = endpoint.ToString();
 
-            var type = ctx.Request.IsWebSocketRequest ? "Web Socket" : "HTTP " + ctx.Request.HttpMethod;
+                _localEndPoints.AddOrUpdate(address, address, (key, existing) => address);
+            }
 
             if (EnableHttpRequestLogging)
             {
+                var log = new StringBuilder();
+
+                log.AppendLine("Url: " + ctx.Request.Url);
+                log.AppendLine("Headers: " + string.Join(",", ctx.Request.Headers.AllKeys.Select(k => k + "=" + ctx.Request.Headers[k])));
+
+                var type = ctx.Request.IsWebSocketRequest ? "Web Socket" : "HTTP " + ctx.Request.HttpMethod;
+
                 _logger.LogMultiline(type + " request received from " + ctx.Request.RemoteEndPoint, LogSeverity.Debug, log);
             }
         }
