@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
+using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,6 +14,8 @@ namespace MediaBrowser.Server.Implementations.Library
     /// </summary>
     public class CoreResolutionIgnoreRule : IResolverIgnoreRule
     {
+        private readonly ILogger _logger;
+
         /// <summary>
         /// Any folder named in this list will be ignored - can be added to at runtime for extensibility
         /// </summary>
@@ -26,6 +29,11 @@ namespace MediaBrowser.Server.Implementations.Library
             "adv_obj",
             "extrafanart"
         };
+
+        public CoreResolutionIgnoreRule(ILogger logger)
+        {
+            _logger = logger;
+        }
 
         /// <summary>
         /// Shoulds the ignore.
@@ -51,6 +59,8 @@ namespace MediaBrowser.Server.Implementations.Library
                     {
                         return false;
                     }
+
+                    _logger.Error("Operating system reports drive is not ready: {0}", args.Path);
                 }
 
                 return true;
