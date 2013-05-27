@@ -391,8 +391,10 @@ namespace MediaBrowser.Controller.Entities
                 {
                     var paths = args.FileSystemDictionary.Keys.ToList();
 
-                    foreach (var subPath in paths.Where(subPath => paths.Any(i => subPath.StartsWith(i.TrimEnd(System.IO.Path.DirectorySeparatorChar) + System.IO.Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))))
+                    foreach (var subPath in paths
+                        .Where(subPath => !subPath.EndsWith(":\\", StringComparison.OrdinalIgnoreCase) && paths.Any(i => subPath.StartsWith(i.TrimEnd(System.IO.Path.DirectorySeparatorChar) + System.IO.Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))))
                     {
+                        Logger.Info("Ignoring duplicate path: {0}", subPath);
                         args.FileSystemDictionary.Remove(subPath);
                     }
                 }

@@ -3,7 +3,6 @@ using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 
 namespace MediaBrowser.Controller.IO
 {
@@ -41,28 +40,17 @@ namespace MediaBrowser.Controller.IO
                 if (resolveShortcuts && FileSystem.IsShortcut(entry.FullName))
                 {
                     var newPath = FileSystem.ResolveShortcut(entry.FullName);
+
                     if (string.IsNullOrWhiteSpace(newPath))
                     {
                         //invalid shortcut - could be old or target could just be unavailable
-                        logger.Warn("Encountered invalid shortuct: " + entry.FullName);
+                        logger.Warn("Encountered invalid shortcut: " + entry.FullName);
                         continue;
                     }
+
                     var data = FileSystem.GetFileSystemInfo(newPath);
 
-                    if (data.Exists)
-                    {
-                        // Find out if the shortcut is pointing to a directory or file
-                        if (data.Attributes.HasFlag(FileAttributes.Directory))
-                        {
-                            // add to our physical locations
-                            if (args != null)
-                            {
-                                args.AddAdditionalLocation(newPath);
-                            }
-                        }
-
-                        dict[data.FullName] = data;
-                    }
+                    dict[data.FullName] = data;
                 }
                 else if (flattenFolderDepth > 0 && isDirectory)
                 {
