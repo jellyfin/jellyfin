@@ -153,7 +153,7 @@ namespace MediaBrowser.Controller.Providers
                         var match = Regex.Match(overview, cdataRegex);
                         overview = match.Groups["text"].Value;
                     }
-                    item.Overview = Regex.Replace(overview, @"\<[^\>]*\>", string.Empty);
+                    item.Overview = overview;
                     break;
 
                 case "TagLine":
