@@ -705,11 +705,15 @@ namespace MediaBrowser.Server.Implementations.Library
 
             BaseItem obj;
 
-            if (forceCreation || !_itemsByName.TryGetValue(key, out obj))
+            if (!_itemsByName.TryGetValue(key, out obj))
             {
                 obj = await CreateItemByName<T>(path, name, cancellationToken, allowSlowProviders).ConfigureAwait(false);
 
                 _itemsByName.AddOrUpdate(key, obj, (keyName, oldValue) => obj);
+            }
+            else if (forceCreation)
+            {
+                await obj.RefreshMetadata(cancellationToken, false, allowSlowProviders: allowSlowProviders).ConfigureAwait(false);
             }
 
             return obj as T;
