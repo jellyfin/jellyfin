@@ -19,7 +19,7 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         /// <value>The accept header.</value>
         public string AcceptHeader { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the cancellation token.
         /// </summary>
@@ -45,13 +45,14 @@ namespace MediaBrowser.Common.Net
         public IProgress<double> Progress { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [enable response caching].
+        /// Gets or sets a value indicating whether [enable HTTP compression].
         /// </summary>
-        /// <value><c>true</c> if [enable response caching]; otherwise, <c>false</c>.</value>
-        public bool EnableResponseCache { get; set; }
-
+        /// <value><c>true</c> if [enable HTTP compression]; otherwise, <c>false</c>.</value>
         public bool EnableHttpCompression { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HttpRequestOptions"/> class.
+        /// </summary>
         public HttpRequestOptions()
         {
             EnableHttpCompression = true;

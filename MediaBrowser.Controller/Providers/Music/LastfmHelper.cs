@@ -33,15 +33,17 @@ namespace MediaBrowser.Controller.Providers.Music
             {
                 AddTags(artist, data.tags);
             }
-
-            var entity = artist as Artist;
-
-            if (entity != null)
-            {
-                entity.IsOnTour = string.Equals(data.ontour, "1");
-            }
         }
 
+        public static void ProcessArtistData(MusicArtist source, Artist target)
+        {
+            target.PremiereDate = source.PremiereDate;
+            target.ProductionYear = source.ProductionYear;
+            target.Tags = source.Tags.ToList();
+            target.Overview = source.Overview;
+            target.ProductionLocations = source.ProductionLocations.ToList();
+        }
+        
         public static void ProcessAlbumData(BaseItem item, LastfmAlbum data)
         {
             if (!string.IsNullOrWhiteSpace(data.mbid)) item.SetProviderId(MetadataProviders.Musicbrainz, data.mbid);

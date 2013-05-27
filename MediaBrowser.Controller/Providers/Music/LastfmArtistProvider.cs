@@ -31,7 +31,7 @@ namespace MediaBrowser.Controller.Providers.Music
         /// <summary>
         /// The _library manager
         /// </summary>
-        private readonly ILibraryManager _libraryManager;
+        protected readonly ILibraryManager LibraryManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LastfmArtistProvider"/> class.
@@ -46,7 +46,7 @@ namespace MediaBrowser.Controller.Providers.Music
             : base(jsonSerializer, httpClient, logManager, configurationManager)
         {
             _providerManager = providerManager;
-            _libraryManager = libraryManager;
+            LibraryManager = libraryManager;
             LocalMetaFileName = LastfmHelper.LocalArtistMetaFileName;
         }
 
@@ -104,7 +104,7 @@ namespace MediaBrowser.Controller.Providers.Music
         /// <returns>System.String.</returns>
         private string FindIdFromMusicArtistEntity(BaseItem item)
         {
-            var artist = _libraryManager.RootFolder.RecursiveChildren.OfType<MusicArtist>()
+            var artist = LibraryManager.RootFolder.RecursiveChildren.OfType<MusicArtist>()
                 .FirstOrDefault(i => string.Compare(i.Name, item.Name, CultureInfo.CurrentCulture, CompareOptions.IgnoreNonSpace | CompareOptions.IgnoreCase | CompareOptions.IgnoreSymbols) == 0);
 
             return artist != null ? artist.GetProviderId(MetadataProviders.Musicbrainz) : null;
@@ -126,7 +126,6 @@ namespace MediaBrowser.Controller.Providers.Music
                 Url = url,
                 ResourcePool = LastfmResourcePool,
                 CancellationToken = cancellationToken,
-                EnableResponseCache = true,
                 EnableHttpCompression = false
 
             }).ConfigureAwait(false))
@@ -243,7 +242,6 @@ namespace MediaBrowser.Controller.Providers.Music
                 Url = url,
                 ResourcePool = LastfmResourcePool,
                 CancellationToken = cancellationToken,
-                EnableResponseCache = true,
                 EnableHttpCompression = false
 
             }).ConfigureAwait(false))

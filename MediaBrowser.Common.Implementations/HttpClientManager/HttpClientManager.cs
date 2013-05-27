@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Logging;
@@ -36,7 +35,6 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         private readonly IApplicationPaths _appPaths;
 
         private readonly IJsonSerializer _jsonSerializer;
-        private readonly FileSystemRepository _cacheRepository;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpClientManager" /> class.
@@ -63,8 +61,6 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             _logger = logger;
             _jsonSerializer = jsonSerializer;
             _appPaths = appPaths;
-
-            _cacheRepository = new FileSystemRepository(Path.Combine(_appPaths.CachePath, "downloads"));
         }
 
         /// <summary>
@@ -119,62 +115,10 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         {
             ValidateParams(options.Url, options.CancellationToken);
 
-            HttpResponseInfo cachedInfo = null;
-
-            var urlHash = options.Url.GetMD5().ToString();
-            var cachedInfoPath = _cacheRepository.GetResourcePath(urlHash + ".js");
-            var cachedReponsePath = _cacheRepository.GetResourcePath(urlHash + ".dat");
-
-            if (options.EnableResponseCache)
-            {
-                try
-                {
-                    cachedInfo = _jsonSerializer.DeserializeFromFile<HttpResponseInfo>(cachedInfoPath);
-                }
-                catch (FileNotFoundException)
-                {
-
-                }
-
-                if (cachedInfo != null)
-                {
-                    var now = DateTime.UtcNow;
-
-                    var isCacheValid = cachedInfo.Expires.HasValue ? cachedInfo.Expires.Value > now :
-                        !cachedInfo.MustRevalidate && !string.IsNullOrEmpty(cachedInfo.Etag) && (now - cachedInfo.RequestDate).TotalDays < 5;
-
-                    if (isCacheValid)
-                    {
-                        _logger.Debug("Cache is still valid for {0}", options.Url);
-
-                        try
-                        {
-                            return GetCachedResponse(cachedReponsePath);
-                        }
-                        catch (FileNotFoundException)
-                        {
-
-                        }
-                    }
-                }
-            }
-
             options.CancellationToken.ThrowIfCancellationRequested();
 
             using (var message = GetHttpRequestMessage(options))
             {
-                if (options.EnableResponseCache && cachedInfo != null)
-                {
-                    if (!string.IsNullOrEmpty(cachedInfo.Etag))
-                    {
-                        message.Headers.Add("If-None-Match", cachedInfo.Etag);
-                    }
-                    else if (cachedInfo.LastModified.HasValue)
-                    {
-                        message.Headers.IfModifiedSince = new DateTimeOffset(cachedInfo.LastModified.Value);
-                    }
-                }
-
                 if (options.ResourcePool != null)
                 {
                     await options.ResourcePool.WaitAsync(options.CancellationToken).ConfigureAwait(false);
@@ -188,38 +132,9 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
                     var response = await GetHttpClient(GetHostFromUrl(options.Url), options.EnableHttpCompression).SendAsync(message, HttpCompletionOption.ResponseContentRead, options.CancellationToken).ConfigureAwait(false);
 
-                    if (options.EnableResponseCache)
-                    {
-                        if (response.StatusCode != HttpStatusCode.NotModified)
-                        {
-                            EnsureSuccessStatusCode(response);
-                        }
+                    EnsureSuccessStatusCode(response);
 
-                        options.CancellationToken.ThrowIfCancellationRequested();
-
-                        cachedInfo = UpdateInfoCache(cachedInfo, options.Url, cachedInfoPath, response);
-
-                        if (response.StatusCode == HttpStatusCode.NotModified)
-                        {
-                            _logger.Debug("Server indicates not modified for {0}. Returning cached result.", options.Url);
-
-                            return GetCachedResponse(cachedReponsePath);
-                        }
-
-                        if (!string.IsNullOrEmpty(cachedInfo.Etag) || cachedInfo.LastModified.HasValue ||
-                            (cachedInfo.Expires.HasValue && cachedInfo.Expires.Value > DateTime.UtcNow))
-                        {
-                            await UpdateResponseCache(response, cachedReponsePath).ConfigureAwait(false);
-
-                            return GetCachedResponse(cachedReponsePath);
-                        }
-                    }
-                    else
-                    {
-                        EnsureSuccessStatusCode(response);
-
-                        options.CancellationToken.ThrowIfCancellationRequested();
-                    }
+                    options.CancellationToken.ThrowIfCancellationRequested();
 
                     return await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
                 }
@@ -247,7 +162,6 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                     }
                 }
             }
-
         }
 
         /// <summary>
