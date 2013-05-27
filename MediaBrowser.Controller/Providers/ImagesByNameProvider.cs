@@ -84,12 +84,14 @@ namespace MediaBrowser.Controller.Providers
             // If the IBN location exists return the last modified date of any file in it
             var location = GetLocation(item);
 
-            if (!Directory.Exists(location))
+            var directoryInfo = new DirectoryInfo(location);
+
+            if (!directoryInfo.Exists)
             {
                 return DateTime.MinValue;
             }
 
-            var files = new DirectoryInfo(location).EnumerateFiles().ToList();
+            var files = directoryInfo.EnumerateFiles().ToList();
 
             if (files.Count == 0)
             {
