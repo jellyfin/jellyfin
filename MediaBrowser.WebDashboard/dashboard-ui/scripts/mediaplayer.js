@@ -298,7 +298,11 @@
                     percent *= 100;
 
                     positionSlider.val(percent);
+                    
+                    positionSlider.removeAttr('disabled');
                 }
+            } else {
+                positionSlider.attr('disabled', 'disabled');
             }
 
             currentTimeElement.html(timeText);
@@ -529,7 +533,13 @@
 
             $('#qualityButton', nowPlayingBar).show();
 
-            $('#audioTracksButton', nowPlayingBar).show();
+            if (item.MediaStreams.filter(function(i) {
+                return i.Type == "Audio";
+            }).length) {
+                $('#audioTracksButton', nowPlayingBar).show();
+            } else {
+                $('#audioTracksButton', nowPlayingBar).hide();
+            }
 
             if (item.MediaStreams.filter(function (i) {
                 return i.Type == "Subtitle";
