@@ -15,10 +15,5 @@ namespace MediaBrowser.Controller.Entities.Audio
             return "Artist-" + Name;
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is on tour.
-        /// </summary>
-        /// <value><c>true</c> if this instance is on tour; otherwise, <c>false</c>.</value>
-        public bool IsOnTour { get; set; }
     }
 }

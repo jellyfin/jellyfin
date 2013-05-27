@@ -94,13 +94,6 @@
             reloadItems(page);
         });
 
-        $('#chkIsOnTour', this).on('change', function () {
-
-            query.IsOnTour = this.checked || null;
-
-            reloadItems(page);
-        });
-
         $('.alphabetPicker', this).on('alphaselect', function (e, character) {
 
             query.NameStartsWithOrGreater = character;
@@ -141,8 +134,6 @@
             this.checked = query.SortOrder == this.getAttribute('data-sortorder');
 
         }).checkboxradio('refresh');
-
-        $('#chkIsOnTour', this).checked(query.IsOnTour === true).checkboxradio('refresh');
 
         $('.alphabetPicker', this).alphaValue(query.NameStartsWithOrGreater);
     });
