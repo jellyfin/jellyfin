@@ -32,6 +32,15 @@ namespace MediaBrowser.Server.Implementations.Library
     /// </summary>
     public class LibraryManager : ILibraryManager
     {
+        /// <summary>
+        /// Gets or sets the postscan tasks.
+        /// </summary>
+        /// <value>The postscan tasks.</value>
+        private IEnumerable<ILibraryPostScanTask> PostscanTasks { get; set; }
+        /// <summary>
+        /// Gets or sets the prescan tasks.
+        /// </summary>
+        /// <value>The prescan tasks.</value>
         private IEnumerable<ILibraryPrescanTask> PrescanTasks { get; set; }
 
         /// <summary>
@@ -100,6 +109,9 @@ namespace MediaBrowser.Server.Implementations.Library
         /// </summary>
         private readonly IUserManager _userManager;
 
+        /// <summary>
+        /// The _user data repository
+        /// </summary>
         private readonly IUserDataRepository _userDataRepository;
 
         /// <summary>
@@ -113,11 +125,25 @@ namespace MediaBrowser.Server.Implementations.Library
         /// (typically, multiple user roots).  We store them here and be sure they all reference a
         /// single instance.
         /// </summary>
+        /// <value>The by reference items.</value>
         private ConcurrentDictionary<Guid, BaseItem> ByReferenceItems { get; set; }
 
+        /// <summary>
+        /// The _library items cache
+        /// </summary>
         private ConcurrentDictionary<Guid, BaseItem> _libraryItemsCache;
+        /// <summary>
+        /// The _library items cache sync lock
+        /// </summary>
         private object _libraryItemsCacheSyncLock = new object();
+        /// <summary>
+        /// The _library items cache initialized
+        /// </summary>
         private bool _libraryItemsCacheInitialized;
+        /// <summary>
+        /// Gets the library items cache.
+        /// </summary>
+        /// <value>The library items cache.</value>
         private ConcurrentDictionary<Guid, BaseItem> LibraryItemsCache
         {
             get
@@ -127,6 +153,9 @@ namespace MediaBrowser.Server.Implementations.Library
             }
         }
 
+        /// <summary>
+        /// The _user root folders
+        /// </summary>
         private readonly ConcurrentDictionary<string, UserRootFolder> _userRootFolders =
             new ConcurrentDictionary<string, UserRootFolder>();
 
@@ -161,12 +190,14 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="introProviders">The intro providers.</param>
         /// <param name="itemComparers">The item comparers.</param>
         /// <param name="prescanTasks">The prescan tasks.</param>
+        /// <param name="postscanTasks">The postscan tasks.</param>
         public void AddParts(IEnumerable<IResolverIgnoreRule> rules,
             IEnumerable<IVirtualFolderCreator> pluginFolders,
             IEnumerable<IItemResolver> resolvers,
             IEnumerable<IIntroProvider> introProviders,
             IEnumerable<IBaseItemComparer> itemComparers,
-            IEnumerable<ILibraryPrescanTask> prescanTasks)
+            IEnumerable<ILibraryPrescanTask> prescanTasks,
+            IEnumerable<ILibraryPostScanTask> postscanTasks)
         {
             EntityResolutionIgnoreRules = rules;
             PluginFolderCreators = pluginFolders;
@@ -174,6 +205,7 @@ namespace MediaBrowser.Server.Implementations.Library
             IntroProviders = introProviders;
             Comparers = itemComparers;
             PrescanTasks = prescanTasks;
+            PostscanTasks = postscanTasks;
         }
 
         /// <summary>
@@ -210,11 +242,27 @@ namespace MediaBrowser.Server.Implementations.Library
             }
         }
 
+        /// <summary>
+        /// The _internet providers enabled
+        /// </summary>
         private bool _internetProvidersEnabled;
+        /// <summary>
+        /// The _people image fetching enabled
+        /// </summary>
         private bool _peopleImageFetchingEnabled;
+        /// <summary>
+        /// The _items by name path
+        /// </summary>
         private string _itemsByNamePath;
+        /// <summary>
+        /// The _season zero display name
+        /// </summary>
         private string _seasonZeroDisplayName;
 
+        /// <summary>
+        /// Records the configuration values.
+        /// </summary>
+        /// <param name="configuration">The configuration.</param>
         private void RecordConfigurationValues(ServerConfiguration configuration)
         {
             _seasonZeroDisplayName = ConfigurationManager.Configuration.SeasonZeroDisplayName;
@@ -227,7 +275,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// Configurations the updated.
         /// </summary>
         /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         void ConfigurationUpdated(object sender, EventArgs e)
         {
             var config = ConfigurationManager.Configuration;
@@ -373,7 +421,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <summary>
         /// Ensure supplied item has only one instance throughout
         /// </summary>
-        /// <param name="item"></param>
+        /// <param name="item">The item.</param>
         /// <returns>The proper instance to the item</returns>
         public BaseItem GetOrAddByReferenceItem(BaseItem item)
         {
@@ -800,6 +848,12 @@ namespace MediaBrowser.Server.Implementations.Library
             _logger.Info("People validation complete");
         }
 
+        /// <summary>
+        /// Validates the artists.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="progress">The progress.</param>
+        /// <returns>Task.</returns>
         public async Task ValidateArtists(CancellationToken cancellationToken, IProgress<double> progress)
         {
             const int maxTasks = 25;
@@ -924,11 +978,10 @@ namespace MediaBrowser.Server.Implementations.Library
             // Now validate the entire media library
             await RootFolder.ValidateChildren(innerProgress, cancellationToken, recursive: true).ConfigureAwait(false);
 
-            innerProgress = new ActionableProgress<double>();
-
-            innerProgress.RegisterAction(pct => progress.Report(80 + pct * .2));
-
-            await ValidateArtists(cancellationToken, innerProgress);
+            progress.Report(80);
+            
+            // Run post-scan tasks
+            await RunPostScanTasks(progress, cancellationToken).ConfigureAwait(false);
 
             progress.Report(100);
         }
@@ -971,7 +1024,47 @@ namespace MediaBrowser.Server.Implementations.Library
                 }
             }));
 
-            // Run prescan tasks
+            await Task.WhenAll(tasks).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Runs the post scan tasks.
+        /// </summary>
+        /// <param name="progress">The progress.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        private async Task RunPostScanTasks(IProgress<double> progress, CancellationToken cancellationToken)
+        {
+            var postscanTasks = PostscanTasks.ToList();
+            var progressDictionary = new Dictionary<ILibraryPostScanTask, double>();
+
+            var tasks = postscanTasks.Select(i => Task.Run(async () =>
+            {
+                var innerProgress = new ActionableProgress<double>();
+
+                innerProgress.RegisterAction(pct =>
+                {
+                    lock (progressDictionary)
+                    {
+                        progressDictionary[i] = pct;
+
+                        double percent = progressDictionary.Values.Sum();
+                        percent /= postscanTasks.Count;
+
+                        progress.Report(80 + percent * .2);
+                    }
+                });
+
+                try
+                {
+                    await i.Run(innerProgress, cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error running postscan task", ex);
+                }
+            }));
+
             await Task.WhenAll(tasks).ConfigureAwait(false);
         }
 

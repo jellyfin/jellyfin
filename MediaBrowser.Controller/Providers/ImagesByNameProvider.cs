@@ -155,7 +155,14 @@ namespace MediaBrowser.Controller.Providers
         {
             var location = GetLocation(item);
 
-            var files = new DirectoryInfo(location).EnumerateFiles("*", SearchOption.TopDirectoryOnly).ToList();
+            var directoryInfo = new DirectoryInfo(location);
+
+            if (!directoryInfo.Exists)
+            {
+                return null;
+            }
+
+            var files = directoryInfo.EnumerateFiles("*", SearchOption.TopDirectoryOnly).ToList();
 
             var file = files.FirstOrDefault(i => string.Equals(i.Name, filenameWithoutExtension + ".png", StringComparison.OrdinalIgnoreCase));
 

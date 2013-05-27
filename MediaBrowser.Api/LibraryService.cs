@@ -178,15 +178,15 @@ namespace MediaBrowser.Api
             var items = GetItems(request.UserId).ToList();
 
             var counts = new ItemCounts
-                {
-                    AlbumCount = items.OfType<MusicAlbum>().Count(),
-                    EpisodeCount = items.OfType<Episode>().Count(),
-                    GameCount = items.OfType<BaseGame>().Count(),
-                    MovieCount = items.OfType<Movie>().Count(),
-                    SeriesCount = items.OfType<Series>().Count(),
-                    SongCount = items.OfType<Audio>().Count(),
-                    TrailerCount = items.OfType<Trailer>().Count()
-                };
+            {
+                AlbumCount = items.OfType<MusicAlbum>().Count(),
+                EpisodeCount = items.OfType<Episode>().Count(),
+                GameCount = items.OfType<BaseGame>().Count(),
+                MovieCount = items.OfType<Movie>().Count(),
+                SeriesCount = items.OfType<Series>().Count(),
+                SongCount = items.OfType<Audio>().Count(),
+                TrailerCount = items.OfType<Trailer>().Count()
+            };
 
             return ToOptimizedResult(counts);
         }
