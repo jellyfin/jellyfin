@@ -75,6 +75,7 @@
     <Compile Include="Entities\Audio\MusicAlbumDisc.cs" />
     <Compile Include="Library\ILibraryPostScanTask.cs" />
     <Compile Include="Library\ILibraryPrescanTask.cs" />
+    <Compile Include="Providers\Movies\FanArtMovieUpdatesPrescanTask.cs" />
     <Compile Include="Providers\Movies\MovieDbImagesProvider.cs" />
     <Compile Include="Providers\Music\ArtistsPostScanTask.cs" />
     <Compile Include="Providers\Music\FanArtUpdatesPrescanTask.cs" />

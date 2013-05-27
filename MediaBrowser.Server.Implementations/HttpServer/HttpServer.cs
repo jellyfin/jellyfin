@@ -358,7 +358,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             {
                 var address = endpoint.ToString();
 
-                _localEndPoints.AddOrUpdate(address, address, (key, existing) => address);
+                _localEndPoints.GetOrAdd(address, address);
             }
 
             if (EnableHttpRequestLogging)

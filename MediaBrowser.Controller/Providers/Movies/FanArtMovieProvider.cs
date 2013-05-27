@@ -1,4 +1,6 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -7,6 +9,8 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Globalization;
+using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
@@ -16,7 +20,7 @@ namespace MediaBrowser.Controller.Providers.Movies
     /// <summary>
     /// Class FanArtMovieProvider
     /// </summary>
-    class FanArtMovieProvider : FanartBaseProvider, IDisposable
+    class FanArtMovieProvider : FanartBaseProvider
     {
         /// <summary>
         /// Gets the HTTP client.
@@ -24,9 +28,17 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <value>The HTTP client.</value>
         protected IHttpClient HttpClient { get; private set; }
 
+        /// <summary>
+        /// The _provider manager
+        /// </summary>
         private readonly IProviderManager _providerManager;
 
+        /// <summary>
+        /// The us culture
+        /// </summary>
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
+
+        internal static FanArtMovieProvider Current { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FanArtMovieProvider" /> class.
@@ -45,18 +57,7 @@ namespace MediaBrowser.Controller.Providers.Movies
             }
             HttpClient = httpClient;
             _providerManager = providerManager;
-        }
-
-        /// <summary>
-        /// Releases unmanaged and - optionally - managed resources.
-        /// </summary>
-        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool dispose)
-        {
-            if (dispose)
-            {
-                FanArtResourcePool.Dispose();
-            }
+            Current = this;
         }
 
         /// <summary>
@@ -79,7 +80,7 @@ namespace MediaBrowser.Controller.Providers.Movies
         {
             get
             {
-                return "12";
+                return "13";
             }
         }
 
@@ -140,10 +141,62 @@ namespace MediaBrowser.Controller.Providers.Movies
         /// <summary>
         /// Gets the comparison data.
         /// </summary>
+        /// <param name="id">The id.</param>
         /// <returns>Guid.</returns>
         private Guid GetComparisonData(string id)
         {
-            return string.IsNullOrEmpty(id) ? Guid.Empty : id.GetMD5();
+            if (!string.IsNullOrEmpty(id))
+            {
+                // Process images
+                var path = GetMovieDataPath(ConfigurationManager.ApplicationPaths, id);
+
+                var files = new DirectoryInfo(path)
+                    .EnumerateFiles("*.xml", SearchOption.TopDirectoryOnly)
+                    .Select(i => i.FullName + i.LastWriteTimeUtc.Ticks)
+                    .ToArray();
+
+                if (files.Length > 0)
+                {
+                    return string.Join(string.Empty, files).GetMD5();
+                }
+            }
+
+            return Guid.Empty;
+        }
+
+        /// <summary>
+        /// Gets the movie data path.
+        /// </summary>
+        /// <param name="appPaths">The app paths.</param>
+        /// <param name="tmdbId">The TMDB id.</param>
+        /// <returns>System.String.</returns>
+        internal static string GetMovieDataPath(IApplicationPaths appPaths, string tmdbId)
+        {
+            var dataPath = Path.Combine(GetMoviesDataPath(appPaths), tmdbId);
+
+            if (!Directory.Exists(dataPath))
+            {
+                Directory.CreateDirectory(dataPath);
+            }
+
+            return dataPath;
+        }
+
+        /// <summary>
+        /// Gets the movie data path.
+        /// </summary>
+        /// <param name="appPaths">The app paths.</param>
+        /// <returns>System.String.</returns>
+        internal static string GetMoviesDataPath(IApplicationPaths appPaths)
+        {
+            var dataPath = Path.Combine(appPaths.DataPath, "fanart-movies");
+
+            if (!Directory.Exists(dataPath))
+            {
+                Directory.CreateDirectory(dataPath);
+            }
+
+            return dataPath;
         }
 
         /// <summary>
@@ -165,15 +218,43 @@ namespace MediaBrowser.Controller.Providers.Movies
                 item.ProviderData[Id] = data;
             }
 
-            var status = ProviderRefreshStatus.Success;
+            var movieId = item.GetProviderId(MetadataProviders.Tmdb);
 
-            var movie = item;
+            var movieDataPath = GetMovieDataPath(ConfigurationManager.ApplicationPaths, movieId);
+            var xmlPath = Path.Combine(movieDataPath, "fanart.xml");
 
-            var language = ConfigurationManager.Configuration.PreferredMetadataLanguage.ToLower();
-            var url = string.Format(FanArtBaseUrl, ApiKey, movie.GetProviderId(MetadataProviders.Tmdb));
-            var doc = new XmlDocument();
+            // Only download the xml if it doesn't already exist. The prescan task will take care of getting updates
+            if (!File.Exists(xmlPath))
+            {
+                await DownloadMovieXml(movieDataPath, movieId, cancellationToken).ConfigureAwait(false);
+            }
 
-            using (var xml = await HttpClient.Get(new HttpRequestOptions
+            if (File.Exists(xmlPath))
+            {
+                await FetchFromXml(item, xmlPath, cancellationToken).ConfigureAwait(false);
+            }
+
+            data.Data = GetComparisonData(item.GetProviderId(MetadataProviders.Tmdb));
+            SetLastRefreshed(item, DateTime.UtcNow);
+            return true;
+        }
+
+        /// <summary>
+        /// Downloads the movie XML.
+        /// </summary>
+        /// <param name="movieDataPath">The movie data path.</param>
+        /// <param name="tmdbId">The TMDB id.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        internal async Task DownloadMovieXml(string movieDataPath, string tmdbId, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            string url = string.Format(FanArtBaseUrl, ApiKey, tmdbId);
+
+            var xmlPath = Path.Combine(movieDataPath, "fanart.xml");
+
+            using (var response = await HttpClient.Get(new HttpRequestOptions
             {
                 Url = url,
                 ResourcePool = FanArtResourcePool,
@@ -181,9 +262,27 @@ namespace MediaBrowser.Controller.Providers.Movies
 
             }).ConfigureAwait(false))
             {
-                doc.Load(xml);
+                using (var xmlFileStream = new FileStream(xmlPath, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
+                {
+                    await response.CopyToAsync(xmlFileStream).ConfigureAwait(false);
+                }
             }
+        }
 
+        /// <summary>
+        /// Fetches from XML.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="xmlFilePath">The XML file path.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        private async Task FetchFromXml(BaseItem item, string xmlFilePath, CancellationToken cancellationToken)
+        {
+            var doc = new XmlDocument();
+            doc.Load(xmlFilePath);
+            
+            var language = ConfigurationManager.Configuration.PreferredMetadataLanguage.ToLower();
+            
             cancellationToken.ThrowIfCancellationRequested();
 
             var saveLocal = ConfigurationManager.Configuration.SaveLocalMeta &&
@@ -205,7 +304,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                 path = node != null ? node.Value : null;
                 if (!string.IsNullOrEmpty(path))
                 {
-                    movie.SetImage(ImageType.Logo, await _providerManager.DownloadAndSaveImage(movie, path, LogoFile, saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                    item.SetImage(ImageType.Logo, await _providerManager.DownloadAndSaveImage(item, path, LogoFile, saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                 }
             }
             cancellationToken.ThrowIfCancellationRequested();
@@ -220,7 +319,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                 path = node != null ? node.Value : null;
                 if (!string.IsNullOrEmpty(path))
                 {
-                    movie.SetImage(ImageType.Art, await _providerManager.DownloadAndSaveImage(movie, path, ArtFile, saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                    item.SetImage(ImageType.Art, await _providerManager.DownloadAndSaveImage(item, path, ArtFile, saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                 }
             }
             cancellationToken.ThrowIfCancellationRequested();
@@ -232,7 +331,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                 path = node != null ? node.Value : null;
                 if (!string.IsNullOrEmpty(path))
                 {
-                    movie.SetImage(ImageType.Disc, await _providerManager.DownloadAndSaveImage(movie, path, DiscFile, saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                    item.SetImage(ImageType.Disc, await _providerManager.DownloadAndSaveImage(item, path, DiscFile, saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                 }
             }
 
@@ -245,7 +344,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                 path = node != null ? node.Value : null;
                 if (!string.IsNullOrEmpty(path))
                 {
-                    movie.SetImage(ImageType.Banner, await _providerManager.DownloadAndSaveImage(movie, path, BannerFile, saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                    item.SetImage(ImageType.Banner, await _providerManager.DownloadAndSaveImage(item, path, BannerFile, saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                 }
             }
 
@@ -258,7 +357,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                 path = node != null ? node.Value : null;
                 if (!string.IsNullOrEmpty(path))
                 {
-                    movie.SetImage(ImageType.Thumb, await _providerManager.DownloadAndSaveImage(movie, path, ThumbFile, saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                    item.SetImage(ImageType.Thumb, await _providerManager.DownloadAndSaveImage(item, path, ThumbFile, saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
                 }
             }
 
@@ -277,7 +376,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                         if (!string.IsNullOrEmpty(path))
                         {
                             item.BackdropImagePaths.Add(await _providerManager.DownloadAndSaveImage(item, path, ("backdrop" + (numBackdrops > 0 ? numBackdrops.ToString(UsCulture) : "") + ".jpg"), saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
-                            
+
                             numBackdrops++;
 
                             if (item.BackdropImagePaths.Count >= ConfigurationManager.Configuration.MaxBackdrops) break;
@@ -286,15 +385,6 @@ namespace MediaBrowser.Controller.Providers.Movies
 
                 }
             }
-
-            data.Data = GetComparisonData(item.GetProviderId(MetadataProviders.Tmdb));
-            SetLastRefreshed(movie, DateTime.UtcNow, status);
-            return true;
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
         }
     }
 }
