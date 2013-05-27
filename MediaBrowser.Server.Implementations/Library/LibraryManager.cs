@@ -405,6 +405,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (!fileInfo.Exists)
             {
+                _logger.Error("Path in library does not exist or is unavailable: " + path);
                 return null;
             }
 
@@ -437,8 +438,10 @@ namespace MediaBrowser.Server.Implementations.Library
                 {
                     var paths = args.FileSystemDictionary.Keys.ToList();
 
-                    foreach (var subPath in paths.Where(subPath => paths.Any(i => subPath.StartsWith(i.TrimEnd(System.IO.Path.DirectorySeparatorChar) + System.IO.Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))))
+                    foreach (var subPath in paths
+                        .Where(subPath => !subPath.EndsWith(":\\", StringComparison.OrdinalIgnoreCase) && paths.Any(i => subPath.StartsWith(i.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))))
                     {
+                        _logger.Info("Ignoring duplicate path: {0}", subPath);
                         args.FileSystemDictionary.Remove(subPath);
                     }
                 }
