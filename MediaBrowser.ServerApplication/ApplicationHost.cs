@@ -372,7 +372,8 @@ namespace MediaBrowser.ServerApplication
                     GetExports<IItemResolver>(), 
                     GetExports<IIntroProvider>(),
                     GetExports<IBaseItemComparer>(),
-                    GetExports<ILibraryPrescanTask>()),
+                    GetExports<ILibraryPrescanTask>(),
+                    GetExports<ILibraryPostScanTask>()),
 
                 () => ProviderManager.AddMetadataProviders(GetExports<BaseMetadataProvider>().ToArray())
 

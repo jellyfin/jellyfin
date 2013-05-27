@@ -1,0 +1,132 @@
+﻿using MediaBrowser.Common.Progress;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Entities;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace MediaBrowser.Controller.Providers.Music
+{
+    /// <summary>
+    /// Class ArtistsPostScanTask
+    /// </summary>
+    public class ArtistsPostScanTask : ILibraryPostScanTask
+    {
+        /// <summary>
+        /// The _library manager
+        /// </summary>
+        private readonly ILibraryManager _libraryManager;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ArtistsPostScanTask"/> class.
+        /// </summary>
+        /// <param name="libraryManager">The library manager.</param>
+        public ArtistsPostScanTask(ILibraryManager libraryManager)
+        {
+            _libraryManager = libraryManager;
+        }
+
+        /// <summary>
+        /// Runs the specified progress.
+        /// </summary>
+        /// <param name="progress">The progress.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
+        {
+            var allItems = _libraryManager.RootFolder.RecursiveChildren.ToList();
+
+            var allArtists = await GetAllArtists(allItems).ConfigureAwait(false);
+
+            progress.Report(10);
+
+            var allMusicArtists = allItems.OfType<MusicArtist>().ToList();
+
+            var numComplete = 0;
+
+            foreach (var artist in allArtists)
+            {
+                var musicArtist = FindMusicArtist(artist, allMusicArtists);
+
+                if (musicArtist != null)
+                {
+                    artist.Images = new Dictionary<ImageType, string>(musicArtist.Images);
+
+                    artist.BackdropImagePaths = musicArtist.BackdropImagePaths.ToList();
+                    artist.ScreenshotImagePaths = musicArtist.ScreenshotImagePaths.ToList();
+                    artist.SetProviderId(MetadataProviders.Musicbrainz, musicArtist.GetProviderId(MetadataProviders.Musicbrainz));
+                }
+
+                numComplete++;
+                double percent = numComplete;
+                percent /= allArtists.Length;
+                percent *= 5;
+
+                progress.Report(10 + percent);
+            }
+
+            var innerProgress = new ActionableProgress<double>();
+
+            innerProgress.RegisterAction(pct => progress.Report(15 + pct * .85));
+
+            await _libraryManager.ValidateArtists(cancellationToken, innerProgress).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Gets all artists.
+        /// </summary>
+        /// <param name="allItems">All items.</param>
+        /// <returns>Task{Artist[]}.</returns>
+        private Task<Artist[]> GetAllArtists(IEnumerable<BaseItem> allItems)
+        {
+            var itemsList = allItems.OfType<Audio>().ToList();
+
+            var tasks = itemsList
+                .SelectMany(i =>
+                {
+                    var list = new List<string>();
+
+                    if (!string.IsNullOrEmpty(i.AlbumArtist))
+                    {
+                        list.Add(i.AlbumArtist);
+                    }
+                    if (!string.IsNullOrEmpty(i.Artist))
+                    {
+                        list.Add(i.Artist);
+                    }
+
+                    return list;
+                })
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Select(i => _libraryManager.GetArtist(i));
+
+            return Task.WhenAll(tasks);
+        }
+
+        /// <summary>
+        /// Finds the music artist.
+        /// </summary>
+        /// <param name="artist">The artist.</param>
+        /// <param name="allMusicArtists">All music artists.</param>
+        /// <returns>MusicArtist.</returns>
+        private static MusicArtist FindMusicArtist(Artist artist, IEnumerable<MusicArtist> allMusicArtists)
+        {
+            var musicBrainzId = artist.GetProviderId(MetadataProviders.Musicbrainz);
+
+            return allMusicArtists.FirstOrDefault(i =>
+            {
+                if (!string.IsNullOrWhiteSpace(musicBrainzId) && string.Equals(musicBrainzId, i.GetProviderId(MetadataProviders.Musicbrainz), StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+
+                return string.Compare(i.Name, artist.Name, CultureInfo.CurrentCulture, CompareOptions.IgnoreNonSpace | CompareOptions.IgnoreCase | CompareOptions.IgnoreSymbols) == 0;
+            });
+        }
+    }
+}
