@@ -1,11 +1,11 @@
-﻿using System.Globalization;
-using System.Management;
-using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Net;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
+using System.Management;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
@@ -21,18 +21,16 @@ namespace MediaBrowser.Common.Implementations.NetworkManagement
         /// Gets the machine's local ip address
         /// </summary>
         /// <returns>IPAddress.</returns>
-        public string GetLocalIpAddress()
+        public IEnumerable<string> GetLocalIpAddresses()
         {
             var host = Dns.GetHostEntry(Dns.GetHostName());
 
-            var ip = host.AddressList.LastOrDefault(i => i.AddressFamily == AddressFamily.InterNetwork);
-
-            if (ip == null)
-            {
-                return null;
-            }
-
-            return ip.ToString();
+            // Reverse them because the last one is usually the correct one
+            // It's not fool-proof so ultimately the consumer will have to examine them and decide
+            return host.AddressList
+                .Where(i => i.AddressFamily == AddressFamily.InterNetwork)
+                .Select(i => i.ToString())
+                .Reverse();
         }
 
         /// <summary>

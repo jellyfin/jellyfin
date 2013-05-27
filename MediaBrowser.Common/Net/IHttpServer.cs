@@ -27,6 +27,12 @@ namespace MediaBrowser.Common.Net
         bool SupportsWebSockets { get; }
 
         /// <summary>
+        /// Gets the local end points.
+        /// </summary>
+        /// <value>The local end points.</value>
+        IEnumerable<string> LocalEndPoints { get; }
+
+        /// <summary>
         /// Stops this instance.
         /// </summary>
         void Stop();

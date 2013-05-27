@@ -7,6 +7,9 @@ using System.Net.Sockets;
 
 namespace MediaBrowser.ServerApplication.EntryPoints
 {
+    /// <summary>
+    /// Class UdpServerEntryPoint
+    /// </summary>
     public class UdpServerEntryPoint : IServerEntryPoint
     {
         /// <summary>
@@ -15,20 +18,44 @@ namespace MediaBrowser.ServerApplication.EntryPoints
         /// <value>The UDP server.</value>
         private UdpServer UdpServer { get; set; }
 
+        /// <summary>
+        /// The _logger
+        /// </summary>
         private readonly ILogger _logger;
+        /// <summary>
+        /// The _network manager
+        /// </summary>
         private readonly INetworkManager _networkManager;
+        /// <summary>
+        /// The _server configuration manager
+        /// </summary>
         private readonly IServerConfigurationManager _serverConfigurationManager;
+        /// <summary>
+        /// The _HTTP server
+        /// </summary>
+        private readonly IHttpServer _httpServer;
 
-        public UdpServerEntryPoint(ILogger logger, INetworkManager networkManager, IServerConfigurationManager serverConfigurationManager)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UdpServerEntryPoint"/> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        /// <param name="networkManager">The network manager.</param>
+        /// <param name="serverConfigurationManager">The server configuration manager.</param>
+        /// <param name="httpServer">The HTTP server.</param>
+        public UdpServerEntryPoint(ILogger logger, INetworkManager networkManager, IServerConfigurationManager serverConfigurationManager, IHttpServer httpServer)
         {
             _logger = logger;
             _networkManager = networkManager;
             _serverConfigurationManager = serverConfigurationManager;
+            _httpServer = httpServer;
         }
-        
+
+        /// <summary>
+        /// Runs this instance.
+        /// </summary>
         public void Run()
         {
-            var udpServer = new UdpServer(_logger, _networkManager, _serverConfigurationManager);
+            var udpServer = new UdpServer(_logger, _networkManager, _serverConfigurationManager, _httpServer);
 
             try
             {
@@ -42,11 +69,18 @@ namespace MediaBrowser.ServerApplication.EntryPoints
             }
         }
 
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
         public void Dispose()
         {
             Dispose(true);
         }
 
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected virtual void Dispose(bool dispose)
         {
             if (dispose)
