@@ -79,6 +79,7 @@
     <Compile Include="Providers\Music\ArtistsPostScanTask.cs" />
     <Compile Include="Providers\Music\FanArtUpdatesPrescanTask.cs" />
     <Compile Include="Providers\TV\FanArtSeasonProvider.cs" />
+    <Compile Include="Providers\TV\FanArtTvUpdatesPrescanTask.cs" />
     <Compile Include="Providers\TV\TvdbPrescanTask.cs" />
     <Compile Include="Providers\TV\TvdbSeriesImageProvider.cs" />
     <Compile Include="Session\ISessionManager.cs" />

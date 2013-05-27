@@ -1,10 +1,4 @@
-﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Logging;
-using MediaBrowser.Model.Net;
-using MediaBrowser.Model.Serialization;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -12,12 +6,19 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers.Music;
+using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Serialization;
 
-namespace MediaBrowser.Controller.Providers.Music
+namespace MediaBrowser.Controller.Providers.TV
 {
-    class FanArtUpdatesPrescanTask : ILibraryPrescanTask
+    class FanArtTvUpdatesPrescanTask : ILibraryPrescanTask
     {
-        private const string UpdatesUrl = "http://api.fanart.tv/webservice/newmusic/{0}/{1}/";
+        private const string UpdatesUrl = "http://api.fanart.tv/webservice/newtv/{0}/{1}/";
 
         /// <summary>
         /// The _HTTP client
@@ -35,7 +36,7 @@ namespace MediaBrowser.Controller.Providers.Music
 
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
-        public FanArtUpdatesPrescanTask(IJsonSerializer jsonSerializer, IServerConfigurationManager config, ILogger logger, IHttpClient httpClient)
+        public FanArtTvUpdatesPrescanTask(IJsonSerializer jsonSerializer, IServerConfigurationManager config, ILogger logger, IHttpClient httpClient)
         {
             _jsonSerializer = jsonSerializer;
             _config = config;
@@ -57,7 +58,7 @@ namespace MediaBrowser.Controller.Providers.Music
                 return;
             }
 
-            var path = FanArtArtistProvider.GetArtistDataPath(_config.CommonApplicationPaths);
+            var path = FanArtTvProvider.GetSeriesDataPath(_config.CommonApplicationPaths);
 
             var timestampFile = Path.Combine(path, "time.txt");
 
@@ -76,11 +77,11 @@ namespace MediaBrowser.Controller.Providers.Music
             // If this is our first time, don't do any updates and just record the timestamp
             if (!string.IsNullOrEmpty(lastUpdateTime))
             {
-                var artistsToUpdate = await GetArtistIdsToUpdate(existingDirectories, lastUpdateTime, cancellationToken).ConfigureAwait(false);
+                var seriesToUpdate = await GetSeriesIdsToUpdate(existingDirectories, lastUpdateTime, cancellationToken).ConfigureAwait(false);
 
                 progress.Report(5);
 
-                await UpdateArtists(artistsToUpdate, path, progress, cancellationToken).ConfigureAwait(false);
+                await UpdateSeries(seriesToUpdate, path, progress, cancellationToken).ConfigureAwait(false);
             }
 
             var newUpdateTime = Convert.ToInt64(DateTimeToUnixTimestamp(DateTime.UtcNow)).ToString(UsCulture);
@@ -91,13 +92,13 @@ namespace MediaBrowser.Controller.Providers.Music
         }
 
         /// <summary>
-        /// Gets the artist ids to update.
+        /// Gets the series ids to update.
         /// </summary>
-        /// <param name="existingArtistIds">The existing series ids.</param>
+        /// <param name="existingSeriesIds">The existing series ids.</param>
         /// <param name="lastUpdateTime">The last update time.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{IEnumerable{System.String}}.</returns>
-        private async Task<IEnumerable<string>> GetArtistIdsToUpdate(IEnumerable<string> existingArtistIds, string lastUpdateTime, CancellationToken cancellationToken)
+        private async Task<IEnumerable<string>> GetSeriesIdsToUpdate(IEnumerable<string> existingSeriesIds, string lastUpdateTime, CancellationToken cancellationToken)
         {
             // First get last time
             using (var stream = await _httpClient.Get(new HttpRequestOptions
@@ -119,22 +120,22 @@ namespace MediaBrowser.Controller.Providers.Music
                         return new List<string>();
                     }
 
-                    var updates = _jsonSerializer.DeserializeFromString<List<FanArtUpdate>>(json);
+                    var updates = _jsonSerializer.DeserializeFromString<List<FanArtUpdatesPrescanTask.FanArtUpdate>>(json);
 
-                    return updates.Select(i => i.id).Where(i => existingArtistIds.Contains(i, StringComparer.OrdinalIgnoreCase));
+                    return updates.Select(i => i.id).Where(i => existingSeriesIds.Contains(i, StringComparer.OrdinalIgnoreCase));
                 }
             }
         }
 
         /// <summary>
-        /// Updates the artists.
+        /// Updates the series.
         /// </summary>
         /// <param name="idList">The id list.</param>
-        /// <param name="artistsDataPath">The artists data path.</param>
+        /// <param name="seriesDataPath">The artists data path.</param>
         /// <param name="progress">The progress.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        private async Task UpdateArtists(IEnumerable<string> idList, string artistsDataPath, IProgress<double> progress, CancellationToken cancellationToken)
+        private async Task UpdateSeries(IEnumerable<string> idList, string seriesDataPath, IProgress<double> progress, CancellationToken cancellationToken)
         {
             var list = idList.ToList();
             var numComplete = 0;
@@ -143,7 +144,7 @@ namespace MediaBrowser.Controller.Providers.Music
             {
                 try
                 {
-                    await UpdateArtist(id, artistsDataPath, cancellationToken).ConfigureAwait(false);
+                    await UpdateSeries(id, seriesDataPath, cancellationToken).ConfigureAwait(false);
                 }
                 catch (HttpException ex)
                 {
@@ -163,25 +164,18 @@ namespace MediaBrowser.Controller.Providers.Music
             }
         }
 
-        /// <summary>
-        /// Updates the artist.
-        /// </summary>
-        /// <param name="musicBrainzId">The musicBrainzId.</param>
-        /// <param name="artistsDataPath">The artists data path.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        private Task UpdateArtist(string musicBrainzId, string artistsDataPath, CancellationToken cancellationToken)
+        private Task UpdateSeries(string tvdbId, string seriesDataPath, CancellationToken cancellationToken)
         {
-            _logger.Info("Updating artist " + musicBrainzId);
+            _logger.Info("Updating series " + tvdbId);
 
-            artistsDataPath = Path.Combine(artistsDataPath, musicBrainzId);
+            seriesDataPath = Path.Combine(seriesDataPath, tvdbId);
 
-            if (!Directory.Exists(artistsDataPath))
+            if (!Directory.Exists(seriesDataPath))
             {
-                Directory.CreateDirectory(artistsDataPath);
+                Directory.CreateDirectory(seriesDataPath);
             }
 
-            return FanArtArtistProvider.Current.DownloadArtistXml(artistsDataPath, musicBrainzId, cancellationToken);
+            return FanArtTvProvider.Current.DownloadSeriesXml(seriesDataPath, tvdbId, cancellationToken);
         }
 
         /// <summary>
