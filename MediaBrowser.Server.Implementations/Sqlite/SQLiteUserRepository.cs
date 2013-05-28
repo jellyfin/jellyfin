@@ -145,6 +145,8 @@ namespace MediaBrowser.Server.Implementations.Sqlite
                 {
                     transaction.Rollback();
                 }
+
+                throw;
             }
             catch (Exception e)
             {
@@ -154,6 +156,8 @@ namespace MediaBrowser.Server.Implementations.Sqlite
                 {
                     transaction.Rollback();
                 }
+
+                throw;
             }
             finally
             {
@@ -228,7 +232,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
 
                     cmd.Transaction = transaction;
 
-                    await ExecuteCommand(cmd).ConfigureAwait(false);
+                    await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
                 }
 
                 transaction.Commit();
@@ -239,6 +243,8 @@ namespace MediaBrowser.Server.Implementations.Sqlite
                 {
                     transaction.Rollback();
                 }
+
+                throw;
             }
             catch (Exception e)
             {
@@ -248,6 +254,8 @@ namespace MediaBrowser.Server.Implementations.Sqlite
                 {
                     transaction.Rollback();
                 }
+
+                throw;
             }
             finally
             {

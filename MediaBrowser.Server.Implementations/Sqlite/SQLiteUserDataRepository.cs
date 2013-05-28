@@ -203,6 +203,8 @@ namespace MediaBrowser.Server.Implementations.Sqlite
                 {
                     transaction.Rollback();
                 }
+
+                throw;
             }
             catch (Exception e)
             {
@@ -212,6 +214,8 @@ namespace MediaBrowser.Server.Implementations.Sqlite
                 {
                     transaction.Rollback();
                 }
+
+                throw;
             }
             finally
             {
