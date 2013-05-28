@@ -236,15 +236,19 @@ namespace MediaBrowser.Server.Implementations.Sqlite
                 {
                     transaction.Rollback();
                 }
+
+                throw;
             }
             catch (Exception e)
             {
-                Logger.ErrorException("Failed to save item:", e);
+                Logger.ErrorException("Failed to save items:", e);
 
                 if (transaction != null)
                 {
                     transaction.Rollback();
                 }
+
+                throw;
             }
             finally
             {
@@ -439,15 +443,19 @@ namespace MediaBrowser.Server.Implementations.Sqlite
                 {
                     transaction.Rollback();
                 }
+
+                throw;
             }
             catch (Exception e)
             {
-                Logger.ErrorException("Failed to save item:", e);
+                Logger.ErrorException("Failed to save children:", e);
 
                 if (transaction != null)
                 {
                     transaction.Rollback();
                 }
+
+                throw;
             }
             finally
             {
