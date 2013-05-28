@@ -40,7 +40,7 @@
             $('#fldEndDate', page).hide();
         }
 
-        if (item.Type == "Movie" || item.MediaType == "Game" || item.MediaType == "Trailer") {
+        if (item.Type == "Movie" || item.MediaType == "Game" || item.MediaType == "Trailer" || item.Type == "MusicVideo") {
             $('#fldBudget', page).show();
             $('#fldRevenue', page).show();
         } else {
@@ -56,7 +56,7 @@
             $('#fldGamesDb', page).hide();
         }
 
-        if (item.Type == "Movie" || item.Type == "Trailer") {
+        if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "MusicVideo") {
             $('#fldCriticRating', page).show();
             $('#fldCriticRatingSummary', page).show();
             $('#fldRottenTomatoes', page).show();
@@ -90,7 +90,7 @@
             $('#fldAlbumArtist', page).hide();
         }
 
-        if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "Person" || item.Type == "Series" || item.Type == "Season" || item.Type == "Episode") {
+        if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "Person" || item.Type == "Series" || item.Type == "Season" || item.Type == "Episode" || item.Type == "MusicVideo") {
             $('#fldImdb', page).show();
         } else {
             $('#fldImdb', page).hide();

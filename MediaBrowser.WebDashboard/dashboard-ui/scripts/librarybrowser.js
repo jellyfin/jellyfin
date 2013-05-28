@@ -565,9 +565,9 @@
 
             return html;
         },
-        
-        getPosterViewDisplayName: function(item) {
-            
+
+        getPosterViewDisplayName: function (item) {
+
             var name = item.Name;
 
             if (item.Type == "Episode" && item.IndexNumber != null && item.ParentIndexNumber != null) {
@@ -677,7 +677,7 @@
         renderName: function (item, nameElem, linkToElement) {
 
             var name = LibraryBrowser.getPosterViewDisplayName(item);
-            
+
             Dashboard.setPageTitle(name);
 
             if (linkToElement) {
@@ -740,13 +740,15 @@
             var providerIds = item.ProviderIds || {};
 
             if (providerIds.Imdb) {
-                if (item.Type == "Movie" || item.Type == "Episode" || item.Type == "Trailer")
-                    links.push('<a class="textlink" href="http://www.imdb.com/title/' + providerIds.Imdb + '" target="_blank">IMDb</a>');
-                else if (item.Type == "Person")
+                if (item.Type == "Person") {
                     links.push('<a class="textlink" href="http://www.imdb.com/name/' + providerIds.Imdb + '" target="_blank">IMDb</a>');
+                }
+                else {
+                    links.push('<a class="textlink" href="http://www.imdb.com/title/' + providerIds.Imdb + '" target="_blank">IMDb</a>');
+                }
             }
             if (providerIds.Tmdb) {
-                if (item.Type == "Movie" || item.Type == "Trailer")
+                if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "MusicVideo")
                     links.push('<a class="textlink" href="http://www.themoviedb.org/movie/' + providerIds.Tmdb + '" target="_blank">TheMovieDB</a>');
                 else if (item.Type == "BoxSet")
                     links.push('<a class="textlink" href="http://www.themoviedb.org/collection/' + providerIds.Tmdb + '" target="_blank">TheMovieDB</a>');
@@ -879,7 +881,7 @@
                 }
             }
 
-            if ((item.Type == "Movie" || item.Type == "Trailer") && item.CriticRating != null) {
+            if (item.CriticRating != null) {
 
                 if (item.CriticRating >= 60) {
                     html += '<div class="fresh rottentomatoesicon" title="fresh"></div>';

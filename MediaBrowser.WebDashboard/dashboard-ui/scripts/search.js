@@ -161,6 +161,11 @@
             html += '<div class="searchHintSecondaryText">Movie</div>';
 
         }
+        else if (hint.Type == "MusicVideo") {
+
+            html += '<div class="searchHintSecondaryText">Music Video</div>';
+
+        }
         else if (hint.Type == "Episode") {
 
             html += '<div class="searchHintSecondaryText">Episode</div>';

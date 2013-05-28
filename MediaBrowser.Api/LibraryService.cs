@@ -185,7 +185,8 @@ namespace MediaBrowser.Api
                 MovieCount = items.OfType<Movie>().Count(),
                 SeriesCount = items.OfType<Series>().Count(),
                 SongCount = items.OfType<Audio>().Count(),
-                TrailerCount = items.OfType<Trailer>().Count()
+                TrailerCount = items.OfType<Trailer>().Count(),
+                MusicVideoCount = items.OfType<MusicVideo>().Count()
             };
 
             return ToOptimizedResult(counts);

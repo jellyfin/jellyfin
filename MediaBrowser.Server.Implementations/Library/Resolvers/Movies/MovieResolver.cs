@@ -15,7 +15,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
     /// <summary>
     /// Class MovieResolver
     /// </summary>
-    public class MovieResolver : BaseVideoResolver<Movie>
+    public class MovieResolver : BaseVideoResolver<Video>
     {
         private IServerApplicationPaths ApplicationPaths { get; set; }
         
@@ -43,10 +43,10 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
         /// Resolves the specified args.
         /// </summary>
         /// <param name="args">The args.</param>
-        /// <returns>Movie.</returns>
-        protected override Movie Resolve(ItemResolveArgs args)
+        /// <returns>Video.</returns>
+        protected override Video Resolve(ItemResolveArgs args)
         {
-            // Must be a directory and under a 'Movies' VF
+            // Must be a directory
             if (args.IsDirectory)
             {
                 // Avoid expensive tests against VF's and all their children by not allowing this
@@ -70,8 +70,22 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                     return null;
                 }
 
-                // The movie must be a video file
-                return FindMovie(args);
+                // Since the looping is expensive, this is an optimization to help us avoid it
+                if (args.ContainsMetaFileByName("series.xml") || args.Path.IndexOf("[tvdbid", StringComparison.OrdinalIgnoreCase) != -1)
+                {
+                    return null;
+                }
+
+                if (args.Path.IndexOf("[trailers]", StringComparison.OrdinalIgnoreCase) != -1)
+                {
+                    return FindMovie<Trailer>(args);
+                }
+                if (args.Path.IndexOf("[musicvideos]", StringComparison.OrdinalIgnoreCase) != -1)
+                {
+                    return FindMovie<MusicVideo>(args);
+                }
+
+                return FindMovie<Movie>(args);
             }
 
             return null;
@@ -82,7 +96,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="args">The args.</param>
-        protected override void SetInitialItemValues(Movie item, ItemResolveArgs args)
+        protected override void SetInitialItemValues(Video item, ItemResolveArgs args)
         {
             base.SetInitialItemValues(item, args);
 
@@ -93,7 +107,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
         /// Sets the provider id from path.
         /// </summary>
         /// <param name="item">The item.</param>
-        private void SetProviderIdFromPath(Movie item)
+        private void SetProviderIdFromPath(Video item)
         {
             //we need to only look at the name of this actual item (not parents)
             var justName = Path.GetFileName(item.Path);
@@ -111,18 +125,13 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
         /// </summary>
         /// <param name="args">The args.</param>
         /// <returns>Movie.</returns>
-        private Movie FindMovie(ItemResolveArgs args)
+        private T FindMovie<T>(ItemResolveArgs args)
+            where T : Video, new ()
         {
-            // Since the looping is expensive, this is an optimization to help us avoid it
-            if (args.ContainsMetaFileByName("series.xml") || args.Path.IndexOf("[tvdbid", StringComparison.OrdinalIgnoreCase) != -1)
-            {
-                return null;
-            }
-
             // Optimization to avoid having to resolve every file
             bool? isKnownMovie = null;
 
-            var movies = new List<Movie>();
+            var movies = new List<T>();
 
             // Loop through each child file/folder and see if we find a video
             foreach (var child in args.FileSystemChildren)
@@ -131,7 +140,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                 {
                     if (IsDvdDirectory(child.Name))
                     {
-                        return new Movie
+                        return new T
                         {
                             Path = args.Path,
                             VideoType = VideoType.Dvd
@@ -139,7 +148,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                     }
                     if (IsBluRayDirectory(child.Name))
                     {
-                        return new Movie
+                        return new T
                         {
                             Path = args.Path,
                             VideoType = VideoType.BluRay
@@ -147,7 +156,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                     }
                     if (IsHdDvdDirectory(child.Name))
                     {
-                        return new Movie
+                        return new T
                         {
                             Path = args.Path,
                             VideoType = VideoType.HdDvd
@@ -169,7 +178,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                     Path = child.FullName
                 };
 
-                var item = base.Resolve(childArgs);
+                var item = ResolveVideo<T>(childArgs);
 
                 if (item != null)
                 {

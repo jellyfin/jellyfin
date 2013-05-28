@@ -23,7 +23,14 @@ namespace MediaBrowser.Controller.Providers.Movies
 
         public override bool Supports(BaseItem item)
         {
-            return item is Movie || item is BoxSet;
+            var trailer = item as Trailer;
+
+            if (trailer != null)
+            {
+                return !trailer.IsLocalTrailer;
+            }
+
+            return item is Movie || item is BoxSet || item is MusicVideo;
         }
 
         /// <summary>

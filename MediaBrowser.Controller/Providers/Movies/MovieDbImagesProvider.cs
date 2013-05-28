@@ -82,7 +82,7 @@ namespace MediaBrowser.Controller.Providers.Movies
             }
 
             // Don't support local trailers
-            return item is Movie || item is BoxSet;
+            return item is Movie || item is BoxSet || item is MusicVideo;
         }
 
         /// <summary>

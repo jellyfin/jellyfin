@@ -64,7 +64,7 @@
                 var vals = [item.Type, item.Id, item.Name];
 
                 var context = getParameterByName('context');
-                
+
                 if (context) {
                     vals.push(vals);
                 }
@@ -188,6 +188,12 @@
                 html += '<label for="radioSongs">Songs (' + result.SongCount + ')</label>';
             }
 
+            if (result.MusicVideoCount) {
+
+                html += '<input type="radio" name="ibnMusicVideos" id="radioMusicVideos" value="on" data-mini="true">';
+                html += '<label for="radioMusicVideos">Music Videos (' + result.MusicVideoCount + ')</label>';
+            }
+
             html += '</fieldset>';
 
             var elem = $('#itemTabs', page).html(html).trigger('create');
@@ -206,6 +212,18 @@
     }
 
     function bindRadioEvents(page) {
+
+        $("#radioMusicVideos", page).on("click", function () {
+
+            shape = "poster";
+            loadItems(page, {
+                MediaTypes: "",
+                IncludeItemTypes: "MusicVideo",
+                PersonTypes: "",
+                Artists: ""
+            });
+
+        });
 
         $("#radioMovies", page).on("click", function () {
 
@@ -398,15 +416,15 @@
             }
 
             if (query.IncludeItemTypes == "Audio") {
-                
+
                 html += LibraryBrowser.getSongTableHtml(result.Items, {
                     showAlbum: true,
                     showArtist: true
                 });
-                
+
 
             } else {
-                
+
                 html += LibraryBrowser.getPosterDetailViewHtml({
                     items: result.Items,
                     preferBackdrop: shape == "backdrop",

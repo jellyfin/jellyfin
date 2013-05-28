@@ -489,6 +489,7 @@ namespace MediaBrowser.WebDashboard.Api
                                       "musicartists.js",
                                       "musicgenres.js",
                                       "musicrecommended.js",
+                                      "musicvideos.js",
                                       "playlist.js",
                                       "plugincatalogpage.js",
                                       "pluginspage.js",

@@ -298,7 +298,7 @@
                     percent *= 100;
 
                     positionSlider.val(percent);
-                    
+
                     positionSlider.removeAttr('disabled');
                 }
             } else {
@@ -533,7 +533,7 @@
 
             $('#qualityButton', nowPlayingBar).show();
 
-            if (item.MediaStreams.filter(function(i) {
+            if (item.MediaStreams.filter(function (i) {
                 return i.Type == "Audio";
             }).length) {
                 $('#audioTracksButton', nowPlayingBar).show();
@@ -851,10 +851,12 @@
             }
 
             html += "<div><a href='itemdetails.html?id=" + item.Id + "'><img class='nowPlayingBarImage ' alt='' title='' src='" + url + "' style='height:36px;display:inline-block;' /></a></div>";
-            if (item.Type == "Movie")
-                html += '<div class="nowPlayingText">' + name + '<br/>' + seriesName + '</div>';
-            else
+
+            if (item.SeriesName || item.Album) {
                 html += '<div class="nowPlayingText">' + seriesName + '<br/>' + name + '</div>';
+            } else {
+                html += '<div class="nowPlayingText">' + name + '<br/>' + seriesName + '</div>';
+            }
 
             $('.nowPlayingMediaInfo', nowPlayingBar).html(html);
         };
@@ -1254,7 +1256,7 @@
                 var option = options[i];
 
                 var cssClass = "mediaFlyoutOption";
-                
+
                 if (option.videoBitrate == currentVideoBitrate) {
                     cssClass += " selectedMediaFlyoutOption";
                 }

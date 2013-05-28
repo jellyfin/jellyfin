@@ -70,7 +70,7 @@
         if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "BoxSet") {
             return "movies";
         }
-        if (item.Type == "Audio" || item.Type == "MusicAlbum" || item.Type == "MusicArtist" || item.Type == "Artist") {
+        if (item.Type == "Audio" || item.Type == "MusicAlbum" || item.Type == "MusicArtist" || item.Type == "Artist" || item.Type == "MusicVideo") {
             return "music";
         }
         if (item.MediaType == "Game") {
@@ -85,6 +85,10 @@
 
         if (item.Type == "MusicAlbum") {
             $('#albumTabs', page).show();
+        }
+
+        if (item.Type == "MusicVideo") {
+            $('#musicVideoTabs', page).show();
         }
 
         if (item.Type == "Audio") {
@@ -435,7 +439,7 @@
 
     function renderCriticReviews(page, item, limit) {
 
-        if (item.Type != "Movie" && item.Type != "Trailer") {
+        if (item.Type != "Movie" && item.Type != "Trailer" && item.Type != "MusicVideo") {
             $('#criticReviewsCollapsible', page).hide();
             return;
         }
