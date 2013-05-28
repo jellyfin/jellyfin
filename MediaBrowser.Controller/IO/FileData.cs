@@ -64,6 +64,10 @@ namespace MediaBrowser.Controller.IO
 
                         dict[data.FullName] = data;
                     }
+                    else
+                    {
+                        logger.Warn("Cannot add unavailble/non-existent location {0}", data.FullName);
+                    }
                 }
                 else if (flattenFolderDepth > 0 && isDirectory)
                 {
