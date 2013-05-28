@@ -381,6 +381,14 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             }
             if (contentType.StartsWith("application/", StringComparison.OrdinalIgnoreCase))
             {
+                if (string.Equals(contentType, "application/x-javascript", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+                if (string.Equals(contentType, "application/xml", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
                 return false;
             }
 
