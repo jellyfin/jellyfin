@@ -279,11 +279,59 @@
     }
 
     function editItemMetadataPage() {
+
         var self = this;
 
         self.onSubmit = function () {
 
-            Dashboard.alert('coming soon');
+            var form = this;
+
+            var item = {
+                
+                Id: getParameterByName('id'),
+                Name: $('#txtName', form).val(),
+                SortName: $('#txtSortName', form).val(),
+                DisplayMediaType: $('#txtDisplayMediaType', form).val(),
+                CommunityRating: $('#txtCommunityRating', form).val(),
+                HomePageUrl: $('#txtHomePageUrl', form).val(),
+                Budget: $('#txtBudget', form).val(),
+                Revenue: $('#txtRevenue', form).val(),
+                CriticRating: $('#txtCriticRating', form).val(),
+                CriticRatingSummary: $('#txtCriticRatingSummary', form).val(),
+                IndexNumber: $('#txtIndexNumber', form).val(),
+                ParentIndexNumber: $('#txtParentIndexNumber', form).val(),
+                Players: $('#txtPlayers', form).val(),
+                Album: $('#txtAlbum', form).val(),
+                AlbumArtist: $('#txtAlbumArtist', form).val(),
+                Artists: [$('#txtArtist', form).val()],
+                
+                PremiereDate: $('#txtPremiereDate', form).val(),
+                EndDate: $('#txtEndDate', form).val(),
+                ProductionYear: $('#txtProductionYear', form).val(),
+                AspectRatio: $('#txtOriginalAspectRatio', form).val(),
+                
+                Language: $('#selectLanguage', form).val(),
+                OfficialRating: $('#selectOfficialRating', form).val(),
+                CustomRating: $('#selectCustomRating', form).val(),
+                
+                ProviderIds:
+                {
+                    Gamesdb: $('#txtGamesDb', form).val(),
+                    Imdb: $('#txtImdb', form).val(),
+                    Tmdb: $('#txtTmdb', form).val(),
+                    Tvdb: $('#txtTvdb', form).val(),
+                    Tvcom: $('#txtTvCom', form).val(),
+                    Musicbrainz: $('#txtMusicBrainz', form).val(),
+                    RottenTomatoes: $('#txtRottenTomatoes', form).val()
+                }
+
+            };
+
+            ApiClient.updateItem(item).done(function () {
+
+                Dashboard.alert('Item saved.');
+
+            });
 
             return false;
         };

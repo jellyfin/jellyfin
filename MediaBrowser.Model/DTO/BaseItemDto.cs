@@ -67,6 +67,12 @@ namespace MediaBrowser.Model.Dto
         public string OfficialRating { get; set; }
 
         /// <summary>
+        /// Gets or sets the custom rating.
+        /// </summary>
+        /// <value>The custom rating.</value>
+        public string CustomRating { get; set; }
+        
+        /// <summary>
         /// Gets or sets the overview.
         /// </summary>
         /// <value>The overview.</value>
