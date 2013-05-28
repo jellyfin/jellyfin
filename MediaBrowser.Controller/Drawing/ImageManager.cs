@@ -531,8 +531,21 @@ namespace MediaBrowser.Controller.Drawing
                 throw new ArgumentNullException("item");
             }
 
-            var supportedEnhancers = _kernel.ImageEnhancers.Where(i => i.Supports(item, imageType)).ToList();
+            var supportedEnhancers = _kernel.ImageEnhancers.Where(i =>
+            {
+                try
+                {
+                    return i.Supports(item, imageType);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error in image enhancer: {0}", ex, i.GetType().Name);
 
+                    return false;
+                }
+
+            }).ToList();
+            
             // No enhancement - don't cache
             if (supportedEnhancers.Count == 0)
             {
@@ -609,7 +622,20 @@ namespace MediaBrowser.Controller.Drawing
 
             var dateModified = GetImageDateModified(item, imagePath);
 
-            var supportedEnhancers = _kernel.ImageEnhancers.Where(i => i.Supports(item, imageType));
+            var supportedEnhancers = _kernel.ImageEnhancers.Where(i =>
+            {
+                try
+                {
+                    return i.Supports(item, imageType);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error in image enhancer: {0}", ex, i.GetType().Name);
+
+                    return false;
+                }
+
+            }).ToList();
 
             return GetImageCacheTag(imagePath, dateModified, supportedEnhancers, item, imageType);
         }
