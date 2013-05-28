@@ -222,16 +222,6 @@
 
         renderSeriesAirTime(page, item, context);
 
-        var detailsSection = $('#detailsSection', page);
-        var elem = $('.detailSectionContent', detailsSection)[0];
-        var text = elem.textContent || elem.innerText;
-
-        if (!text.trim()) {
-            detailsSection.addClass('hide');
-        } else {
-            detailsSection.removeClass('hide');
-        }
-
         if (item.Players) {
             $('#players', page).show().html(item.Players + ' Player');
         } else {
@@ -244,6 +234,21 @@
             $('#artist', page).hide();
         }
 
+        var detailsSection = $('#detailsSection', page);
+        var elem = $('.detailSectionContent', detailsSection)[0];
+        var text = elem.textContent || elem.innerText;
+
+        if (!text.trim()) {
+            detailsSection.addClass('hide');
+        } else {
+            detailsSection.removeClass('hide');
+        }
+
+        if (item.Path) {
+            $('.itemPath', page).show().html('Path:&nbsp;&nbsp;' + '<span style="font-size:13px;">' + item.Path + '</span>');
+        } else {
+            $('.itemPath', page).hide();
+        }
     }
 
     function renderSiblingLinks(page, item) {
@@ -291,7 +296,7 @@
             userId: Dashboard.getCurrentUserId(),
             limit: item.Type == "MusicAlbum" ? 6 : 8
         };
-        
+
         if (item.Type == "Movie") {
             promise = ApiClient.getSimilarMovies(item.Id, options);
         }
