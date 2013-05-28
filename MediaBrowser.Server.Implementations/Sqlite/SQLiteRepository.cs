@@ -152,38 +152,6 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         }
 
         /// <summary>
-        /// Executes the command.
-        /// </summary>
-        /// <param name="cmd">The CMD.</param>
-        /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">cmd</exception>
-        public async Task ExecuteCommand(DbCommand cmd)
-        {
-            if (cmd == null)
-            {
-                throw new ArgumentNullException("cmd");
-            }
-
-            using (var tran = Connection.BeginTransaction())
-            {
-                try
-                {
-                    cmd.Connection = Connection;
-                    cmd.Transaction = tran;
-
-                    await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
-
-                    tran.Commit();
-                }
-                catch (Exception e)
-                {
-                    Logger.ErrorException("Failed to commit transaction.", e);
-                    tran.Rollback();
-                }
-            }
-        }
-
-        /// <summary>
         /// Gets a stream from a DataReader at a given ordinal
         /// </summary>
         /// <param name="reader">The reader.</param>
