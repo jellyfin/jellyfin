@@ -127,6 +127,13 @@ namespace MediaBrowser.Api
         public Guid? UserId { get; set; }
     }
 
+    [Route("/Items/{ItemId}", "POST")]
+    [Api(("Updates an item"))]
+    public class UpdateItem : BaseItemDto, IReturnVoid
+    {
+        public string ItemId { get; set; }
+    }
+
     /// <summary>
     /// Class LibraryService
     /// </summary>
@@ -147,6 +154,7 @@ namespace MediaBrowser.Api
         /// <param name="itemRepo">The item repo.</param>
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="userManager">The user manager.</param>
+        /// <param name="userDataRepository">The user data repository.</param>
         public LibraryService(IItemRepository itemRepo, ILibraryManager libraryManager, IUserManager userManager,
                               IUserDataRepository userDataRepository)
         {
@@ -220,6 +228,67 @@ namespace MediaBrowser.Api
             {
                 Logger.ErrorException("Error refreshing library", ex);
             }
+        }
+
+        public void Post(UpdateItem request)
+        {
+            var task = UpdateItem(request);
+
+            Task.WaitAll(task);
+        }
+
+        private Task UpdateItem(UpdateItem request)
+        {
+            var item = DtoBuilder.GetItemByClientId(request.ItemId, _userManager, _libraryManager);
+
+            item.Name = request.Name;
+            item.ForcedSortName = request.SortName;
+            item.DisplayMediaType = request.DisplayMediaType;
+            item.CommunityRating = request.CommunityRating;
+            item.HomePageUrl = request.HomePageUrl;
+            item.Budget = request.Budget;
+            item.Revenue = request.Revenue;
+            item.CriticRating = request.CriticRating;
+            item.CriticRatingSummary = request.CriticRatingSummary;
+            item.IndexNumber = request.IndexNumber;
+            item.ParentIndexNumber = request.ParentIndexNumber;
+
+            item.EndDate = request.EndDate;
+            item.PremiereDate = request.PremiereDate;
+            item.ProductionYear = request.ProductionYear;
+            item.AspectRatio = request.AspectRatio;
+            item.Language = request.Language;
+            item.OfficialRating = request.OfficialRating;
+            item.CustomRating = request.CustomRating;
+
+
+            foreach (var pair in request.ProviderIds.ToList())
+            {
+                if (string.IsNullOrEmpty(pair.Value))
+                {
+                    request.ProviderIds.Remove(pair.Key);
+                }
+            }
+
+            item.ProviderIds = request.ProviderIds;
+
+            var game = item as BaseGame;
+
+            if (game != null)
+            {
+                game.PlayersSupported = request.Players;
+            }
+
+            var song = item as Audio;
+
+            if (song != null)
+            {
+                song.Album = request.Album;
+                song.AlbumArtist = request.AlbumArtist;
+                song.Artist = request.Artists[0];
+            }
+
+            return _libraryManager.UpdateItem(item, CancellationToken.None);
         }
 
         /// <summary>

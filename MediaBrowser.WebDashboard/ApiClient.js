@@ -1714,6 +1714,22 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
             });
         };
 
+        self.updateItem = function (item) {
+
+            if (!item) {
+                throw new Error("null item");
+            }
+
+            var url = self.getUrl("Items/" + item.Id);
+
+            return self.ajax({
+                type: "POST",
+                url: url,
+                data: JSON.stringify(item),
+                contentType: "application/json"
+            });
+        };
+
         /**
          * Updates plugin security info
          */
