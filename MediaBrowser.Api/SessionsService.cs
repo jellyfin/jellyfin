@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Session;
@@ -8,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Api
 {
@@ -44,7 +46,7 @@ namespace MediaBrowser.Api
         /// Artist, Genre, Studio, Person, or any kind of BaseItem
         /// </summary>
         /// <value>The type of the item.</value>
-        [ApiMember(Name = "ItemType", Description = "Only required if the item is an Artist, Genre, Studio, or Person.", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
+        [ApiMember(Name = "ItemType", Description = "The type of item to browse to.", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string ItemType { get; set; }
 
         /// <summary>
@@ -60,7 +62,7 @@ namespace MediaBrowser.Api
         /// <value>The name of the item.</value>
         [ApiMember(Name = "ItemName", Description = "The name of the item.", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string ItemName { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the context (Movies, Music, TvShows, etc)
         /// Applicable to genres, studios and persons only because the context of items and artists can be inferred.
@@ -69,6 +71,39 @@ namespace MediaBrowser.Api
         /// <value>The context.</value>
         [ApiMember(Name = "Context", Description = "The ui context for the client (movies, music, tv, games etc). This is optional to supply and clients are free to ignore it.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string Context { get; set; }
+    }
+
+    [Route("/Sessions/{Id}/Playing", "POST")]
+    [Api(("Instructs a session to play an item"))]
+    public class Play : IReturnVoid
+    {
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Session Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public Guid Id { get; set; }
+
+        /// <summary>
+        /// Artist, Genre, Studio, Person, or any kind of BaseItem
+        /// </summary>
+        /// <value>The type of the item.</value>
+        [ApiMember(Name = "ItemIds", Description = "The ids of the items to play, comma delimited", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST", AllowMultiple = true)]
+        public string ItemIds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the start position ticks that the first item should be played at
+        /// </summary>
+        /// <value>The start position ticks.</value>
+        [ApiMember(Name = "StartPositionTicks", Description = "The starting position of the first item.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public long? StartPositionTicks { get; set; }
+
+        /// <summary>
+        /// Gets or sets the play command.
+        /// </summary>
+        /// <value>The play command.</value>
+        [ApiMember(Name = "PlayCommand", Description = "The type of play command to issue (PlayNow, PlayNext, PlayLast). Clients who have not yet implemented play next and play last may play now.", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public PlayCommand PlayCommand { get; set; }
     }
 
     /// <summary>
@@ -111,8 +146,22 @@ namespace MediaBrowser.Api
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
+        public void Post(BrowseTo request)
+        {
+            var task = BrowseTo(request);
+
+            Task.WaitAll(task);
+        }
+
+        /// <summary>
+        /// Browses to.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>Task.</returns>
         /// <exception cref="ResourceNotFoundException"></exception>
-        public async void Post(BrowseTo request)
+        /// <exception cref="System.ArgumentException"></exception>
+        /// <exception cref="System.InvalidOperationException">The requested session does not have an open web socket.</exception>
+        private async Task BrowseTo(BrowseTo request)
         {
             var session = _sessionManager.Sessions.FirstOrDefault(i => i.Id == request.Id);
 
@@ -136,6 +185,70 @@ namespace MediaBrowser.Api
                     {
                         MessageType = "Browse",
                         Data = request
+
+                    }, CancellationToken.None).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException("Error sending web socket message", ex);
+                }
+            }
+            else
+            {
+                throw new InvalidOperationException("The requested session does not have an open web socket.");
+            }
+        }
+
+        /// <summary>
+        /// Posts the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        public void Post(Play request)
+        {
+            var task = Play(request);
+
+            Task.WaitAll(task);
+        }
+
+        /// <summary>
+        /// Plays the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>Task.</returns>
+        /// <exception cref="ResourceNotFoundException"></exception>
+        /// <exception cref="System.ArgumentException"></exception>
+        /// <exception cref="System.InvalidOperationException">The requested session does not have an open web socket.</exception>
+        private async Task Play(Play request)
+        {
+            var session = _sessionManager.Sessions.FirstOrDefault(i => i.Id == request.Id);
+
+            if (session == null)
+            {
+                throw new ResourceNotFoundException(string.Format("Session {0} not found.", request.Id));
+            }
+
+            if (!session.SupportsRemoteControl)
+            {
+                throw new ArgumentException(string.Format("Session {0} does not support remote control.", session.Id));
+            }
+
+            var socket = session.WebSockets.OrderByDescending(i => i.LastActivityDate).FirstOrDefault(i => i.State == WebSocketState.Open);
+
+            if (socket != null)
+            {
+                try
+                {
+                    await socket.SendAsync(new WebSocketMessage<PlayRequest>
+                    {
+                        MessageType = "Play",
+
+                        Data = new PlayRequest
+                        {
+                            ItemIds = request.ItemIds.Split(',').ToArray(),
+
+                            PlayCommand = request.PlayCommand,
+                            StartPositionTicks = request.StartPositionTicks
+                        }
 
                     }, CancellationToken.None).ConfigureAwait(false);
                 }
