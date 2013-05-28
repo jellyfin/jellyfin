@@ -171,7 +171,7 @@
 
             var newPositionTicks = (newPercent / 100) * currentItem.RunTimeTicks;
 
-            changeStream(newPositionTicks);
+            changeStream(Math.floor(newPositionTicks));
         }
 
         $(function () {
@@ -1111,7 +1111,7 @@
                 }
 
                 if (stream.BitRate) {
-                    options.push((parseInt(stream.BitRate / 1000)) + ' kbps');
+                    options.push((Math.floor(stream.BitRate / 1000)) + ' kbps');
                 }
 
                 if (stream.Channels) {

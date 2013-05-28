@@ -40,7 +40,7 @@
                 views.push({ name: "TV Shows", url: "tvrecommended.html", img: "css/images/items/list/collection.png", background: "#FF870F" });
             }
 
-            if (counts.SongCount) {
+            if (counts.SongCount || counts.MusicVideoCount) {
                 views.push({ name: "Music", url: "musicrecommended.html", img: "css/images/items/list/audiocollection.png", background: "#6FBD45" });
             }
 
