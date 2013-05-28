@@ -17,7 +17,7 @@ namespace MediaBrowser.Model.Session
         /// Only applicable to seek commands.
         /// </summary>
         /// <value>The seek position.</value>
-        public long SeekPosition { get; set; }
+        public long? SeekPosition { get; set; }
     }
 
     /// <summary>
