@@ -13,11 +13,17 @@ namespace MediaBrowser.Model.Session
         public string ItemType { get; set; }
 
         /// <summary>
-        /// Artist name, genre name, item Id, etc
+        /// Gets or sets the item id.
         /// </summary>
-        /// <value>The item identifier.</value>
-        public string ItemIdentifier { get; set; }
+        /// <value>The item id.</value>
+        public string ItemId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the name of the item.
+        /// </summary>
+        /// <value>The name of the item.</value>
+        public string ItemName { get; set; }
+        
         /// <summary>
         /// Gets or sets the context (Movies, Music, Tv, etc)
         /// Applicable to genres, studios and persons only because the context of items and artists can be inferred.
