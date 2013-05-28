@@ -363,8 +363,8 @@ namespace MediaBrowser.Controller.Providers
                         if (!string.IsNullOrWhiteSpace(rating))
                         {
                             float val;
-
-                            if (float.TryParse(rating, out val))
+                            // All external meta is saving this as '.' for decimal I believe...but just to be sure
+                            if (float.TryParse(rating.Replace(',','.'), NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out val))
                             {
                                 item.CommunityRating = val;
                             }
