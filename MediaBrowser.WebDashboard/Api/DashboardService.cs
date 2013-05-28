@@ -409,7 +409,7 @@ namespace MediaBrowser.WebDashboard.Api
             var files = new[]
                             {
                                 "http://code.jquery.com/mobile/1.3.1/jquery.mobile-1.3.1.min.css",
-                                "thirdparty/jqm-icon-pack-3.0/font-awesome/jqm-icon-pack-3.0.0-fa.css",
+                                "thirdparty/jqm-icon-pack-3.0/font-awesome/jqm-icon-pack-3.0.0-fa.css" + versionString,
                                 "css/all.css" + versionString
                             };
 
