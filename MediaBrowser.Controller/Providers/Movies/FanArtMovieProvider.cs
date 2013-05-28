@@ -103,7 +103,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                 return !trailer.IsLocalTrailer;
             }
 
-            return item is Movie || item is BoxSet;
+            return item is Movie || item is BoxSet || item is MusicVideo;
         }
 
         /// <summary>

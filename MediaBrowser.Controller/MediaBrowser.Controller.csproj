@@ -73,6 +73,7 @@
     <Compile Include="Configuration\IServerConfigurationManager.cs" />
     <Compile Include="Dto\SessionInfoDtoBuilder.cs" />
     <Compile Include="Entities\Audio\MusicAlbumDisc.cs" />
+    <Compile Include="Entities\MusicVideo.cs" />
     <Compile Include="Library\ILibraryPostScanTask.cs" />
     <Compile Include="Library\ILibraryPrescanTask.cs" />
     <Compile Include="Providers\Movies\FanArtMovieUpdatesPrescanTask.cs" />

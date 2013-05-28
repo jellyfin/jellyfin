@@ -235,7 +235,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
         /// <param name="video">The video.</param>
         private void AddExternalSubtitles(Video video)
         {
-            var useParent = (video.VideoType == VideoType.VideoFile || video.VideoType == VideoType.Iso) && !(video is Movie);
+            var useParent = (video.VideoType == VideoType.VideoFile || video.VideoType == VideoType.Iso) && !(video is Movie) && !(video is MusicVideo);
 
             if (useParent && video.Parent == null)
             {

@@ -87,7 +87,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                 return !trailer.IsLocalTrailer;
             }
 
-            return item is Movie;
+            return item is Movie || item is MusicVideo;
         }
 
         /// <summary>

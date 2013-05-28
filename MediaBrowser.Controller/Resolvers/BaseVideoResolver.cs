@@ -20,6 +20,18 @@ namespace MediaBrowser.Controller.Resolvers
         /// <returns>`0.</returns>
         protected override T Resolve(ItemResolveArgs args)
         {
+            return ResolveVideo<T>(args);
+        }
+
+        /// <summary>
+        /// Resolves the video.
+        /// </summary>
+        /// <typeparam name="TVideoType">The type of the T video type.</typeparam>
+        /// <param name="args">The args.</param>
+        /// <returns>``0.</returns>
+        protected TVideoType ResolveVideo<TVideoType>(ItemResolveArgs args)
+              where TVideoType : Video, new()
+        {
             // If the path is a file check for a matching extensions
             if (!args.IsDirectory)
             {
@@ -30,7 +42,7 @@ namespace MediaBrowser.Controller.Resolvers
                     var type = string.Equals(extension, ".iso", StringComparison.OrdinalIgnoreCase) || string.Equals(extension, ".img", StringComparison.OrdinalIgnoreCase) ?
                         VideoType.Iso : VideoType.VideoFile;
 
-                    return new T
+                    return new TVideoType
                     {
                         VideoType = type,
                         Path = args.Path
