@@ -658,7 +658,20 @@ namespace MediaBrowser.Api.Images
             // See if we can avoid a file system lookup by looking for the file in ResolveArgs
             var originalFileImageDateModified = kernel.ImageManager.GetImageDateModified(item, request.Type, index);
 
-            var supportedImageEnhancers = kernel.ImageEnhancers.Where(i => i.Supports(item, request.Type)).ToList();
+            var supportedImageEnhancers = kernel.ImageEnhancers.Where(i =>
+            {
+                try
+                {
+                    return i.Supports(item, request.Type);
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException("Error in image enhancer: {0}", ex, i.GetType().Name);
+
+                    return false;
+                }
+
+            }).ToList();
 
             // If the file does not exist GetLastWriteTimeUtc will return jan 1, 1601 as opposed to throwing an exception
             // http://msdn.microsoft.com/en-us/library/system.io.file.getlastwritetimeutc.aspx

@@ -182,11 +182,32 @@ namespace MediaBrowser.Controller.Dto
                 return;
             }
 
-            foreach (var enhancer in Kernel.Instance.ImageEnhancers
-                .Where(i => i.Supports(item, ImageType.Primary)))
+            var supportedEnhancers = Kernel.Instance.ImageEnhancers.Where(i =>
             {
+                try
+                {
+                    return i.Supports(item, ImageType.Primary);
+                }
+                catch (Exception ex)
+                {
+                    logger.ErrorException("Error in image enhancer: {0}", ex, i.GetType().Name);
 
-                size = enhancer.GetEnhancedImageSize(item, ImageType.Primary, 0, size);
+                    return false;
+                }
+
+            }).ToList();
+
+
+            foreach (var enhancer in supportedEnhancers)
+            {
+                try
+                {
+                    size = enhancer.GetEnhancedImageSize(item, ImageType.Primary, 0, size);
+                }
+                catch (Exception ex)
+                {
+                    logger.ErrorException("Error in image enhancer: {0}", ex, enhancer.GetType().Name);
+                }
             }
 
             dto.PrimaryImageAspectRatio = size.Width / size.Height;
