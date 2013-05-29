@@ -2,7 +2,10 @@
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
+using MediaBrowser.Model.Logging;
+using System.ComponentModel;
 using System.Linq;
+using System.Windows;
 
 namespace MediaBrowser.ServerApplication.EntryPoints
 {
@@ -19,6 +22,7 @@ namespace MediaBrowser.ServerApplication.EntryPoints
         /// The _user manager
         /// </summary>
         private readonly IUserManager _userManager;
+        private readonly ILogger _logger;
 
         private readonly IServerConfigurationManager _configurationManager;
 
@@ -52,7 +56,16 @@ namespace MediaBrowser.ServerApplication.EntryPoints
         {
             var user = _userManager.Users.FirstOrDefault(u => u.Configuration.IsAdministrator);
 
-            App.OpenDashboardPage("wizardStart.html", user, _configurationManager);
+            try
+            {
+                App.OpenDashboardPage("wizardStart.html", user, _configurationManager);
+            }
+            catch (Win32Exception ex)
+            {
+                _logger.ErrorException("Error launching startup wizard", ex);
+
+                MessageBox.Show("There was an error launching the Media Browser startup wizard. Please ensure a web browser is installed on the machine and is configured as the default browser.", "Media Browser");
+            }
         }
 
         /// <summary>
