@@ -511,6 +511,12 @@
                 level: 3
             }));
 
+            var ogvVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.ogv', $.extend({}, baseParams, {
+                videoCodec: 'theora',
+                audioCodec: 'Vorbis'
+            }));
+
+
             var html = '';
 
             // HLS must be at the top for safari
@@ -518,15 +524,16 @@
 
             // Can't autoplay in these browsers so we need to use the full controls
             if ($.browser.msie || $.browser.android || $.browser.iphone || $.browser.ipad) {
-                html += '<video class="itemVideo" autoplay controls preload="auto">';
+                html += '<video class="itemVideo" autoplay controls preload="none">';
             } else {
-                html += '<video class="itemVideo" autoplay preload="auto">';
+                html += '<video class="itemVideo" autoplay preload="none">';
             }
 
             html += '<source type="application/x-mpegURL" src="' + hlsVideoUrl + '" />';
             html += '<source type="video/mp2t" src="' + tsVideoUrl + '" />';
             html += '<source type="video/webm" src="' + webmVideoUrl + '" />';
             html += '<source type="video/mp4" src="' + mp4VideoUrl + '" />';
+            html += '<source type="video/ogg" src="' + ogvVideoUrl + '" />';
             html += '</video';
 
             var nowPlayingBar = $('#nowPlayingBar').show();

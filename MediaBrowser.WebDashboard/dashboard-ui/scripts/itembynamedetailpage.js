@@ -464,7 +464,16 @@
         });
     }
 
-    $(document).on('pageshow', "#itemByNameDetailPage", function () {
+    $(document).on('pageinit', "#itemByNameDetailPage", function () {
+
+        var page = this;
+
+        $('#btnRemote', page).on('click', function () {
+
+            RemoteControl.showMenu(page, currentItem);
+        });
+
+    }).on('pageshow', "#itemByNameDetailPage", function () {
 
         var page = this;
 
