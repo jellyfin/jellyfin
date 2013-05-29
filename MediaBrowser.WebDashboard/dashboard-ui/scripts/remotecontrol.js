@@ -95,12 +95,12 @@
                 return s.DeviceId != deviceId;
             });
 
-            renderSessions(sessions, response2[0], elem);
+            renderSessions(sessions, response2[0], item, elem);
 
         });
     }
 
-    function renderSessions(sessions, users, elem) {
+    function renderSessions(sessions, users, item, elem) {
 
         if (!sessions.length) {
             elem.html('<p>There are currently no available media browser sessions to control.</p>');
@@ -114,7 +114,11 @@
         html += '<label for="selectCommand">Select Command</label>';
         html += '<select id="selectCommand" data-mini="true">';
         html += '<option value="Browse">Browse To</label>';
-        html += '<option value="Play">Play</label>';
+
+        if (item.Type != 'Person' && item.Type != 'Genre' && item.Type != 'Studio' && item.Type != 'Artist') {
+            html += '<option value="Play">Play</label>';
+        }
+
         html += '</select>';
         html += '</p>';
 
