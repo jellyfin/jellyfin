@@ -454,6 +454,7 @@ namespace MediaBrowser.WebDashboard.Api
                                       "librarybrowser.js",
 
                                       "aboutpage.js",
+                                      "alphapicker.js",
                                       "addpluginpage.js",
                                       "advancedconfigurationpage.js",
                                       "advancedmetadataconfigurationpage.js",
@@ -494,6 +495,7 @@ namespace MediaBrowser.WebDashboard.Api
                                       "plugincatalogpage.js",
                                       "pluginspage.js",
                                       "pluginupdatespage.js",
+                                      "remotecontrol.js",
                                       "scheduledtaskpage.js",
                                       "scheduledtaskspage.js",
                                       "search.js",
