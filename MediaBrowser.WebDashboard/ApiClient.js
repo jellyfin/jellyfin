@@ -2589,7 +2589,6 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
             });
         };
 
-
         /**
          * Reports a user has stopped playing an item
          * @param {String} userId
@@ -2626,6 +2625,42 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
 
             return self.ajax({
                 type: "DELETE",
+                url: url
+            });
+        };
+
+        self.sendBrowseCommand = function (sessionId, options) {
+
+            if (!sessionId) {
+                throw new Error("null sessionId");
+            }
+
+            if (!options) {
+                throw new Error("null options");
+            }
+
+            var url = self.getUrl("Sessions/" + sessionId + "/Viewing", options);
+
+            return self.ajax({
+                type: "POST",
+                url: url
+            });
+        };
+
+        self.sendPlayCommand = function (sessionId, options) {
+
+            if (!sessionId) {
+                throw new Error("null sessionId");
+            }
+
+            if (!options) {
+                throw new Error("null options");
+            }
+
+            var url = self.getUrl("Sessions/" + sessionId + "/Playing", options);
+
+            return self.ajax({
+                type: "POST",
                 url: url
             });
         };
