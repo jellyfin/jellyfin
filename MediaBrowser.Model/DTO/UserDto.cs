@@ -80,5 +80,10 @@ namespace MediaBrowser.Model.Dto
         /// Occurs when [property changed].
         /// </summary>
         public event PropertyChangedEventHandler PropertyChanged;
+
+        public override string ToString()
+        {
+            return Name ?? base.ToString();
+        }
     }
 }
