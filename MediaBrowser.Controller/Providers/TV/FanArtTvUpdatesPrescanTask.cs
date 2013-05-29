@@ -64,7 +64,8 @@ namespace MediaBrowser.Controller.Providers.TV
 
             var timestampFileInfo = new FileInfo(timestampFile);
 
-            if (_config.Configuration.MetadataRefreshDays > 0 && timestampFileInfo.Exists && (DateTime.UtcNow - timestampFileInfo.LastWriteTimeUtc).TotalDays < _config.Configuration.MetadataRefreshDays)
+            // Don't check for tvdb updates anymore frequently than 24 hours
+            if (timestampFileInfo.Exists && (DateTime.UtcNow - timestampFileInfo.LastWriteTimeUtc).TotalDays < 1)
             {
                 return;
             }

@@ -492,6 +492,13 @@
                 level: 3
             }));
 
+            var tsVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.ts', $.extend({}, baseParams, {
+                videoCodec: 'h264',
+                audioCodec: 'aac',
+                profile: 'baseline',
+                level: 3
+            }));
+
             var webmVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.webm', $.extend({}, baseParams, {
                 videoCodec: 'vpx',
                 audioCodec: 'Vorbis'
@@ -517,6 +524,7 @@
             }
 
             html += '<source type="application/x-mpegURL" src="' + hlsVideoUrl + '" />';
+            html += '<source type="video/mp2t" src="' + tsVideoUrl + '" />';
             html += '<source type="video/webm" src="' + webmVideoUrl + '" />';
             html += '<source type="video/mp4" src="' + mp4VideoUrl + '" />';
             html += '</video';
