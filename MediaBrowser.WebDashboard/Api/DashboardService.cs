@@ -549,6 +549,7 @@ namespace MediaBrowser.WebDashboard.Api
                                       "tileitem.css",
                                       "search.css",
                                       "pluginupdates.css",
+                                      "remotecontrol.css",
                                       "userimage.css"
                                   };
 

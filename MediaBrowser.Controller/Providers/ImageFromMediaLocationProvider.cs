@@ -156,8 +156,6 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="item">The item.</param>
         private void PopulateBaseItemImages(BaseItem item)
         {
-            var screenshotFiles = new List<string>();
-
             // Primary Image
             var image = GetImage(item, "folder") ??
                 GetImage(item, "poster") ??
@@ -230,6 +228,8 @@ namespace MediaBrowser.Controller.Providers
 
             // Screenshot Image
             image = GetImage(item, "screenshot");
+
+            var screenshotFiles = new List<string>();
 
             if (image != null)
             {
