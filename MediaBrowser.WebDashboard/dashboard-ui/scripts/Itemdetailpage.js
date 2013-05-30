@@ -866,7 +866,15 @@
 
         $('#btnRemote', page).on('click', function () {
 
-            RemoteControl.showMenu(page, currentItem);
+            RemoteControl.showMenu({
+                
+                item: currentItem,
+                context: getContext(currentItem),
+                
+                themeSongs: $('#themeSongsCollapsible:visible', page).length > 0,
+
+                themeVideos: $('#themeVideosCollapsible:visible', page).length > 0
+            });
         });
 
     }).on('pageshow', "#itemDetailPage", function () {

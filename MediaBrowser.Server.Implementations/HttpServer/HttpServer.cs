@@ -308,7 +308,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             RaiseReceiveWebRequest(context);
 
-            await Task.Run(() =>
+            await Task.Factory.StartNew(() =>
             {
                 try
                 {
@@ -318,6 +318,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 {
                     _logger.ErrorException("ProcessRequest failure", ex);
                 }
+
             }).ConfigureAwait(false);
         }
 

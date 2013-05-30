@@ -470,7 +470,7 @@
 
         $('#btnRemote', page).on('click', function () {
 
-            RemoteControl.showMenu(page, currentItem, getParameterByName('context') || '');
+            RemoteControl.showMenu({ item: currentItem, context: getParameterByName('context') || '' });
         });
 
     }).on('pageshow', "#itemByNameDetailPage", function () {
