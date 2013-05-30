@@ -185,7 +185,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
             connection.DeviceName = deviceName;
 
-            connection.UserId = user == null ? (Guid?)null : user.Id;
+            connection.User = user;
 
             return connection;
         }

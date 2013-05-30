@@ -1,8 +1,10 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Entities;
 using ServiceStack.ServiceHost;
 using System;
 using System.IO;
+using System.Linq;
 
 namespace MediaBrowser.Api.Images
 {
@@ -98,9 +100,11 @@ namespace MediaBrowser.Api.Images
                                ? "folder"
                                : request.Type;
 
-            var file = Path.Combine(_appPaths.GeneralPath, request.Name, filename + ".jpg");
+            var paths = BaseItem.SupportedImageExtensions.Select(i => Path.Combine(_appPaths.GeneralPath, request.Name, filename + i)).ToList();
 
-            return ToStaticFileResult(File.Exists(file) ? file : Path.ChangeExtension(file, ".png"));
+            var path = paths.FirstOrDefault(File.Exists) ?? paths.FirstOrDefault();
+
+            return ToStaticFileResult(path);
         }
 
         /// <summary>
@@ -114,18 +118,12 @@ namespace MediaBrowser.Api.Images
 
             if (Directory.Exists(themeFolder))
             {
-                var file = Path.Combine(themeFolder, request.Name + ".png");
+                var path = BaseItem.SupportedImageExtensions.Select(i => Path.Combine(themeFolder, request.Name + i))
+                    .FirstOrDefault(File.Exists);
 
-                if (File.Exists(file))
+                if (!string.IsNullOrEmpty(path))
                 {
-                    return ToStaticFileResult(file);
-                }
-
-                file = Path.Combine(themeFolder, request.Name + ".jpg");
-
-                if (File.Exists(file))
-                {
-                    return ToStaticFileResult(file);
+                    return ToStaticFileResult(path);
                 }
             }
 
@@ -133,18 +131,15 @@ namespace MediaBrowser.Api.Images
 
             if (Directory.Exists(allFolder))
             {
-                var file = Path.Combine(allFolder, request.Name + ".png");
+                // Avoid implicitly captured closure
+                var currentRequest = request;
 
-                if (File.Exists(file))
+                var path = BaseItem.SupportedImageExtensions.Select(i => Path.Combine(allFolder, currentRequest.Name + i))
+                    .FirstOrDefault(File.Exists);
+
+                if (!string.IsNullOrEmpty(path))
                 {
-                    return ToStaticFileResult(file);
-                }
-
-                file = Path.Combine(allFolder, request.Name + ".jpg");
-
-                if (File.Exists(file))
-                {
-                    return ToStaticFileResult(file);
+                    return ToStaticFileResult(path);
                 }
             }
 
@@ -162,18 +157,12 @@ namespace MediaBrowser.Api.Images
 
             if (Directory.Exists(themeFolder))
             {
-                var file = Path.Combine(themeFolder, request.Name + ".png");
+                var path = BaseItem.SupportedImageExtensions.Select(i => Path.Combine(themeFolder, request.Name + i))
+                    .FirstOrDefault(File.Exists);
 
-                if (File.Exists(file))
+                if (!string.IsNullOrEmpty(path))
                 {
-                    return ToStaticFileResult(file);
-                }
-
-                file = Path.Combine(themeFolder, request.Name + ".jpg");
-
-                if (File.Exists(file))
-                {
-                    return ToStaticFileResult(file);
+                    return ToStaticFileResult(path);
                 }
             }
 
@@ -181,18 +170,15 @@ namespace MediaBrowser.Api.Images
 
             if (Directory.Exists(allFolder))
             {
-                var file = Path.Combine(allFolder, request.Name + ".png");
+                // Avoid implicitly captured closure
+                var currentRequest = request;
 
-                if (File.Exists(file))
+                var path = BaseItem.SupportedImageExtensions.Select(i => Path.Combine(allFolder, currentRequest.Name + i))
+                    .FirstOrDefault(File.Exists);
+                
+                if (!string.IsNullOrEmpty(path))
                 {
-                    return ToStaticFileResult(file);
-                }
-
-                file = Path.Combine(allFolder, request.Name + ".jpg");
-
-                if (File.Exists(file))
-                {
-                    return ToStaticFileResult(file);
+                    return ToStaticFileResult(path);
                 }
             }
 

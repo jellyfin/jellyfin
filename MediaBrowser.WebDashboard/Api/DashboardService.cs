@@ -208,7 +208,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             var dtoBuilder = new UserDtoBuilder(logger);
 
-            var tasks = userManager.Users.Where(u => connections.Any(c => c.UserId.HasValue && c.UserId.Value == u.Id)).Select(dtoBuilder.GetUserDto);
+            var tasks = userManager.Users.Where(u => connections.Any(c => c.User != null && c.User.Id == u.Id)).Select(dtoBuilder.GetUserDto);
 
             var users = await Task.WhenAll(tasks).ConfigureAwait(false);
 

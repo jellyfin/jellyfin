@@ -36,9 +36,10 @@ namespace MediaBrowser.Controller.Dto
                 dto.NowPlayingItem = DtoBuilder.GetBaseItemInfo(session.NowPlayingItem);
             }
 
-            if (session.UserId.HasValue)
+            if (session.User != null)
             {
-                dto.UserId = session.UserId.Value.ToString("N");
+                dto.UserId = session.User.Id.ToString("N");
+                dto.UserName = session.User.Name;
             }
 
             return dto;

@@ -4,6 +4,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
@@ -175,7 +176,13 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         /// <returns>IEnumerable{System.String}.</returns>
         private IEnumerable<string> GetFiles(string path)
         {
-            return Directory.EnumerateFiles(path, "*.jpg", SearchOption.AllDirectories).Concat(Directory.EnumerateFiles(path, "*.png", SearchOption.AllDirectories));
+            return Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories)
+                .Where(i =>
+                {
+                    var ext = Path.GetExtension(i);
+
+                    return !string.IsNullOrEmpty(ext) && BaseItem.SupportedImageExtensions.Contains(ext, StringComparer.OrdinalIgnoreCase);
+                });
         }
 
         /// <summary>

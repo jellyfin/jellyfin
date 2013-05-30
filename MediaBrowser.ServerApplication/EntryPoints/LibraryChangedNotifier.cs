@@ -190,12 +190,18 @@ namespace MediaBrowser.ServerApplication.EntryPoints
         {
             var currentSessions = _sessionManager.Sessions.ToList();
 
-            var users = currentSessions.Select(i => i.UserId ?? Guid.Empty).Where(i => i != Guid.Empty).Distinct().ToList();
+            var users = currentSessions.Select(i => i.User)
+                .Where(i => i != null)
+                .Select(i => i.Id)
+                .Distinct()
+                .ToList();
 
             foreach (var userId in users)
             {
                 var id = userId;
-                var webSockets = currentSessions.Where(u => u.UserId.HasValue && u.UserId.Value == id).SelectMany(i => i.WebSockets).ToList();
+                var webSockets = currentSessions.Where(u => u.User != null && u.User.Id == id)
+                    .SelectMany(i => i.WebSockets)
+                    .ToList();
 
                 try
                 {

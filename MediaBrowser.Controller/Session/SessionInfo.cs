@@ -27,7 +27,7 @@ namespace MediaBrowser.Controller.Session
         /// Gets or sets the user id.
         /// </summary>
         /// <value>The user id.</value>
-        public Guid? UserId { get; set; }
+        public User User { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the client.
