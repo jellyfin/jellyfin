@@ -146,7 +146,8 @@ namespace MediaBrowser.Controller.Providers
         /// <returns>FileSystemInfo.</returns>
         protected virtual FileSystemInfo GetImage(BaseItem item, string filenameWithoutExtension)
         {
-            return item.ResolveArgs.GetMetaFileByPath(Path.Combine(item.ResolveArgs.Path, filenameWithoutExtension + ".png")) ?? item.ResolveArgs.GetMetaFileByPath(Path.Combine(item.ResolveArgs.Path, filenameWithoutExtension + ".jpg"));
+            return item.ResolveArgs.GetMetaFileByPath(Path.Combine(item.ResolveArgs.Path, filenameWithoutExtension + ".png")) 
+                ?? item.ResolveArgs.GetMetaFileByPath(Path.Combine(item.ResolveArgs.Path, filenameWithoutExtension + ".jpg"));
         }
 
         /// <summary>
@@ -155,11 +156,13 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="item">The item.</param>
         private void PopulateBaseItemImages(BaseItem item)
         {
-            var backdropFiles = new List<string>();
             var screenshotFiles = new List<string>();
 
             // Primary Image
-            var image = GetImage(item, "folder");
+            var image = GetImage(item, "folder") ??
+                GetImage(item, "poster") ??
+                GetImage(item, "cover") ?? 
+                GetImage(item, "default");
 
             if (image != null)
             {
@@ -223,38 +226,7 @@ namespace MediaBrowser.Controller.Providers
             }
 
             // Backdrop Image
-            image = GetImage(item, "backdrop");
-
-            if (image != null)
-            {
-                backdropFiles.Add(image.FullName);
-            }
-
-            var unfound = 0;
-            for (var i = 1; i <= 20; i++)
-            {
-                // Backdrop Image
-                image = GetImage(item, "backdrop" + i);
-
-                if (image != null)
-                {
-                    backdropFiles.Add(image.FullName);
-                }
-                else
-                {
-                    unfound++;
-
-                    if (unfound >= 3)
-                    {
-                        break;
-                    }
-                }
-            }
-
-            if (backdropFiles.Count > 0)
-            {
-                item.BackdropImagePaths = backdropFiles;
-            }
+            PopulateBackdrops(item);
 
             // Screenshot Image
             image = GetImage(item, "screenshot");
@@ -264,7 +236,7 @@ namespace MediaBrowser.Controller.Providers
                 screenshotFiles.Add(image.FullName);
             }
 
-            unfound = 0;
+            var unfound = 0;
             for (var i = 1; i <= 20; i++)
             {
                 // Screenshot Image
@@ -288,6 +260,64 @@ namespace MediaBrowser.Controller.Providers
             if (screenshotFiles.Count > 0)
             {
                 item.ScreenshotImagePaths = screenshotFiles;
+            }
+        }
+
+        /// <summary>
+        /// Populates the backdrops.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        private void PopulateBackdrops(BaseItem item)
+        {
+            var backdropFiles = new List<string>();
+
+            PopulateBackdrops(item, backdropFiles, "backdrop", "backdrop");
+
+            // Support plex/xbmc conventions
+            PopulateBackdrops(item, backdropFiles, "fanart", "fanart-");
+            PopulateBackdrops(item, backdropFiles, "background", "background-");
+
+            if (backdropFiles.Count > 0)
+            {
+                item.BackdropImagePaths = backdropFiles;
+            }
+        }
+
+        /// <summary>
+        /// Populates the backdrops.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="backdropFiles">The backdrop files.</param>
+        /// <param name="filename">The filename.</param>
+        /// <param name="numberedSuffix">The numbered suffix.</param>
+        private void PopulateBackdrops(BaseItem item, List<string> backdropFiles, string filename, string numberedSuffix)
+        {
+            var image = GetImage(item, filename);
+
+            if (image != null)
+            {
+                backdropFiles.Add(image.FullName);
+            }
+
+            var unfound = 0;
+            for (var i = 1; i <= 20; i++)
+            {
+                // Backdrop Image
+                image = GetImage(item, numberedSuffix + i);
+
+                if (image != null)
+                {
+                    backdropFiles.Add(image.FullName);
+                }
+                else
+                {
+                    unfound++;
+
+                    if (unfound >= 3)
+                    {
+                        break;
+                    }
+                }
             }
         }
     }
