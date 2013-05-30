@@ -798,25 +798,27 @@ namespace MediaBrowser.Controller.Entities
                 return new List<Audio.Audio>();
             }
 
+            var files = new List<FileSystemInfo>();
+
             var folder = resolveArgs.GetFileSystemEntryByName(ThemeSongsFolderName);
 
             // Path doesn't exist. No biggie
-            if (folder == null)
+            if (folder != null)
             {
-                return new List<Audio.Audio>();
+                try
+                {
+                    files.AddRange(new DirectoryInfo(folder.FullName).EnumerateFiles());
+                }
+                catch (IOException ex)
+                {
+                    Logger.ErrorException("Error loading theme songs for {0}", ex, Name);
+                }
             }
 
-            IEnumerable<FileSystemInfo> files;
-
-            try
-            {
-                files = new DirectoryInfo(folder.FullName).EnumerateFiles();
-            }
-            catch (IOException ex)
-            {
-                Logger.ErrorException("Error loading theme songs for {0}", ex, Name);
-                return new List<Audio.Audio>();
-            }
+            // Support plex/xbmc convention
+            files.AddRange(resolveArgs.FileSystemChildren
+                .Where(i => string.Equals(System.IO.Path.GetFileNameWithoutExtension(i.FullName), "theme", StringComparison.OrdinalIgnoreCase) && EntityResolutionHelper.IsAudioFile(i.FullName))
+                );
 
             return LibraryManager.ResolvePaths<Audio.Audio>(files, null).Select(audio =>
             {
