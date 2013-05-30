@@ -146,8 +146,7 @@ namespace MediaBrowser.Controller.Providers
         /// <returns>FileSystemInfo.</returns>
         protected virtual FileSystemInfo GetImage(BaseItem item, string filenameWithoutExtension)
         {
-            return item.ResolveArgs.GetMetaFileByPath(Path.Combine(item.ResolveArgs.Path, filenameWithoutExtension + ".png")) 
-                ?? item.ResolveArgs.GetMetaFileByPath(Path.Combine(item.ResolveArgs.Path, filenameWithoutExtension + ".jpg"));
+            return BaseItem.SupportedImageExtensions.Select(i => item.ResolveArgs.GetMetaFileByPath(Path.Combine(item.ResolveArgs.Path, filenameWithoutExtension + i))).FirstOrDefault(i => i != null);
         }
 
         /// <summary>
@@ -159,7 +158,7 @@ namespace MediaBrowser.Controller.Providers
             // Primary Image
             var image = GetImage(item, "folder") ??
                 GetImage(item, "poster") ??
-                GetImage(item, "cover") ?? 
+                GetImage(item, "cover") ??
                 GetImage(item, "default");
 
             if (image != null)
