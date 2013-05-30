@@ -57,9 +57,10 @@
     function loadUser(page, user, loggedInUser, parentalRatingsPromise, allCulturesPromise) {
 
         if (!loggedInUser.Configuration.IsAdministrator) {
-
+            $('#parentalControlDiv', page).hide();
             $('#fldIsAdmin', page).hide();
         } else {
+            $('#parentalControlDiv', page).show();
             $('#fldIsAdmin', page).show();
         }
 

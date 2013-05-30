@@ -25,17 +25,19 @@
                             <label for="chkIsAdmin">Allow this user to manage the server</label>
                         </li>
                     </ul>
-                    <h2>Parental Control</h2>
-                    <ul data-role="listview" class="ulForm">
-                        <li id="fldMaxParentalRating" >
-                            <label for="selectMaxParentalRating">Max parental rating:</label>
-                            <select name="selectMaxParentalRating" id="selectMaxParentalRating"></select>
-                        </li>
-                        <li id="fldBlockNotRated" >
-                            <input type="checkbox" id="chkBlockNotRated" name="chkBlockNotRated" />
-                            <label for="chkBlockNotRated">Block items with no rating information</label>
-                        </li>
-                    </ul>
+                    <div id="parentalControlDiv" style="display: none">
+                        <h2>Parental Control</h2>
+                        <ul data-role="listview" class="ulForm">
+                            <li id="fldMaxParentalRating" >
+                                <label for="selectMaxParentalRating">Max parental rating:</label>
+                                <select name="selectMaxParentalRating" id="selectMaxParentalRating"></select>
+                            </li>
+                            <li id="fldBlockNotRated" >
+                                <input type="checkbox" id="chkBlockNotRated" name="chkBlockNotRated" />
+                                <label for="chkBlockNotRated">Block items with no rating information</label>
+                            </li>
+                        </ul>
+                    </div>
                     <h2>Video Playback Settings</h2>
                     <ul data-role="listview" class="ulForm">
                         <li>
