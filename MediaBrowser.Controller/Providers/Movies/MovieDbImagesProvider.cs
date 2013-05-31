@@ -277,8 +277,6 @@ namespace MediaBrowser.Controller.Providers.Movies
             // backdrops - only download if earlier providers didn't find any (fanart)
             if (images.backdrops != null && images.backdrops.Count > 0 && ConfigurationManager.Configuration.DownloadMovieImages.Backdrops && item.BackdropImagePaths.Count == 0)
             {
-                item.BackdropImagePaths = new List<string>();
-
                 var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
 
                 var tmdbImageUrl = tmdbSettings.images.base_url + ConfigurationManager.Configuration.TmdbFetchedBackdropSize;

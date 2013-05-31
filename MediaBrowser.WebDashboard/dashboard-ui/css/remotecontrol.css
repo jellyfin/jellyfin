@@ -20,13 +20,13 @@
     }
 
     .tblRemoteControl td {
-        padding: 2px 5px;
+        padding: 5px;
         border-top: 1px solid #ccc;
         text-align: left;
     }
 
     .tblRemoteControl th {
-        padding: 2px 5px;
+        padding: 3px 5px;
         text-align: left;
     }
 
