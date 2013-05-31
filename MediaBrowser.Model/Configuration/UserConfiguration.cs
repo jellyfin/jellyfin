@@ -54,7 +54,7 @@ namespace MediaBrowser.Model.Configuration
         public UserConfiguration()
         {
             IsAdministrator = true;
-            BlockNotRated = true;
+            BlockNotRated = false;
         }
     }
 }
