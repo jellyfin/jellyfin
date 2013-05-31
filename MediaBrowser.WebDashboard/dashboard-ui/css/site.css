@@ -865,6 +865,12 @@ input[type="range"]::-ms-fill-upper {
     }
 }
 
+@media all and (max-width: 500px) {
+    .itemVideo:not(.fullscreenVideo) {
+        width: 220px;
+    }
+}
+
 @media all and (max-width: 750px) {
     .positionSlider {
         width: 50px;
