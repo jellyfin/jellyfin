@@ -884,13 +884,12 @@ var Dashboard = {
         else if (msg.MessageType === "Play") {
 
             ApiClient.getItems(Dashboard.getCurrentUserId(), {
-                
-                Ids: msg.Data.ItemIds.join(','),
-                
-                Fields: 'MediaStreams,UserData,DisplayMediaType,SeriesInfo,AudioInfo,Chapters'
-                
-            }).done(function(result) {
 
+                Ids: msg.Data.ItemIds.join(','),
+
+                Fields: 'MediaStreams,UserData,DisplayMediaType,SeriesInfo,AudioInfo,Chapters,Path'
+
+            }).done(function (result) {
                 MediaPlayer.play(result.Items, msg.Data.StartPositionTicks);
 
             });

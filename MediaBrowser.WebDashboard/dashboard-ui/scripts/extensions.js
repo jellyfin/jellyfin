@@ -69,18 +69,24 @@ var WebNotifications = {
             }
         }
         else if (window.Notification) {
-            if (Notification.permissionLevel() === "granted") {
-                var notif = new Notification(data.title, data);
-                notif.show();
 
-                if (data.timeout) {
+            var level = Notification.permissionLevel ? Notification.permissionLevel() : Notification.permission;
+
+            if (level === "granted") {
+                var notif = new Notification(data.title, data);
+
+                if (notif.show) {
+                    notif.show();
+                }
+
+                if (data.timeout && notif.cancel) {
                     setTimeout(function () {
                         notif.cancel();
                     }, data.timeout);
                 }
 
                 return notif;
-            } else if (Notification.permissionLevel() === "default") {
+            } else if (level === "default") {
                 Notification.requestPermission(function () {
                     return WebNotifications.show(data);
                 });
@@ -97,8 +103,10 @@ var WebNotifications = {
             }
         }
         else if (window.Notification) {
-            if (Notification.permissionLevel() === "granted") {
-            } else if (Notification.permissionLevel() === "default") {
+
+            var level = Notification.permissionLevel ? Notification.permissionLevel() : Notification.permission;
+
+            if (level === "default") {
                 Notification.requestPermission(function () {
                 });
             }
