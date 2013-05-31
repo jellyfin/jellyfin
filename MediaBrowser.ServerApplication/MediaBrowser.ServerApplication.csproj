@@ -154,9 +154,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\ServiceStack.Common.3.9.46\lib\net35\ServiceStack.Interfaces.dll</HintPath>
     </Reference>
-    <Reference Include="ServiceStack.OrmLite">
-      <HintPath>..\packages\ServiceStack.OrmLite.SqlServer.3.9.44\lib\ServiceStack.OrmLite.dll</HintPath>
-    </Reference>
     <Reference Include="ServiceStack.OrmLite.SqlServer">
       <HintPath>..\packages\ServiceStack.OrmLite.SqlServer.3.9.44\lib\ServiceStack.OrmLite.SqlServer.dll</HintPath>
     </Reference>
@@ -381,9 +378,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy "$(SolutionDir)\packages\System.Data.SQLite.1.0.86.0\content\net40\x86\SQLite.Interop.dll" "$(TargetDir)" /y
-
-if $(ConfigurationName) == Release (
+    <PostBuildEvent>if $(ConfigurationName) == Release (
 rmdir "$(SolutionDir)..\Deploy\Server\System" /s /q
 mkdir "$(SolutionDir)..\Deploy\Server\System"
 rmdir "$(SolutionDir)..\Deploy\Server\Pismo" /s /q
@@ -403,11 +398,6 @@ xcopy "$(TargetDir)swagger-ui" "$(SolutionDir)..\Deploy\Server\System\swagger-ui
 xcopy "$(TargetDir)$(TargetFileName).config" "$(SolutionDir)..\Deploy\Server\System\" /y
 
 xcopy "$(TargetDir)*.dll" "$(SolutionDir)..\Deploy\Server\System" /y
-mkdir "$(SolutionDir)..\Deploy\Server\System\x64"
-xcopy "$(TargetDir)x64" "$(SolutionDir)..\Deploy\Server\System\x64" /y
-
-mkdir "$(SolutionDir)..\Deploy\Server\System\x86"
-xcopy "$(TargetDir)x86" "$(SolutionDir)..\Deploy\Server\System\x86" /y
 
 mkdir "$(SolutionDir)..\Deploy\Server\System\CorePlugins"
 xcopy "$(TargetDir)CorePlugins" "$(SolutionDir)..\Deploy\Server\System\CorePlugins" /y
