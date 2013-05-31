@@ -226,7 +226,7 @@ namespace MediaBrowser.Controller.Providers.TV
         /// <returns>Task.</returns>
         private async Task FetchImages(Series series, XmlDocument images, CancellationToken cancellationToken)
         {
-            if (ConfigurationManager.Configuration.RefreshItemImages || !series.HasImage(ImageType.Primary))
+            if (!series.HasImage(ImageType.Primary))
             {
                 var n = images.SelectSingleNode("//Banner[BannerType='poster']");
                 if (n != null)
@@ -239,7 +239,7 @@ namespace MediaBrowser.Controller.Providers.TV
                 }
             }
 
-            if (ConfigurationManager.Configuration.DownloadSeriesImages.Banner && (ConfigurationManager.Configuration.RefreshItemImages || !series.HasImage(ImageType.Banner)))
+            if (ConfigurationManager.Configuration.DownloadSeriesImages.Banner && !series.HasImage(ImageType.Banner))
             {
                 var n = images.SelectSingleNode("//Banner[BannerType='series']");
                 if (n != null)

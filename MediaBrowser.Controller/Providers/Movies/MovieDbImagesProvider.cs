@@ -231,10 +231,8 @@ namespace MediaBrowser.Controller.Providers.Movies
 
             var status = ProviderRefreshStatus.Success;
 
-            var hasLocalPoster = item.HasImage(ImageType.Primary);
-
             //        poster
-            if (images.posters != null && images.posters.Count > 0 && (ConfigurationManager.Configuration.RefreshItemImages || !hasLocalPoster))
+            if (images.posters != null && images.posters.Count > 0 && !item.HasImage(ImageType.Primary))
             {
                 var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
 
@@ -281,16 +279,13 @@ namespace MediaBrowser.Controller.Providers.Movies
 
                 var tmdbImageUrl = tmdbSettings.images.base_url + ConfigurationManager.Configuration.TmdbFetchedBackdropSize;
 
-                //backdrops should be in order of rating.  get first n ones
-                var numToFetch = Math.Max(images.backdrops.Count - ConfigurationManager.Configuration.MaxBackdrops, 0);
-
-                for (var i = 0; i < numToFetch; i++)
+                for (var i = 0; i < images.backdrops.Count; i++)
                 {
                     var bdName = "backdrop" + (i == 0 ? "" : i.ToString(CultureInfo.InvariantCulture));
 
                     var hasLocalBackdrop = item.LocationType == LocationType.FileSystem && ConfigurationManager.Configuration.SaveLocalMeta ? item.HasLocalImage(bdName) : item.BackdropImagePaths.Count > i;
 
-                    if (ConfigurationManager.Configuration.RefreshItemImages || !hasLocalBackdrop)
+                    if (!hasLocalBackdrop)
                     {
                         var img = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
                         {
@@ -300,6 +295,11 @@ namespace MediaBrowser.Controller.Providers.Movies
                         }).ConfigureAwait(false);
 
                         item.BackdropImagePaths.Add(await _providerManager.SaveImage(item, img, bdName + Path.GetExtension(images.backdrops[i].file_path), ConfigurationManager.Configuration.SaveLocalMeta && item.LocationType == LocationType.FileSystem, cancellationToken).ConfigureAwait(false));
+                    }
+
+                    if (item.BackdropImagePaths.Count >= ConfigurationManager.Configuration.MaxBackdrops)
+                    {
+                        break;
                     }
                 }
             }

@@ -361,7 +361,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                 }
             }
 
-            if (ConfigurationManager.Configuration.DownloadMovieImages.Backdrops && item.BackdropImagePaths.Count < ConfigurationManager.Configuration.MaxBackdrops)
+            if (ConfigurationManager.Configuration.DownloadMovieImages.Backdrops && item.BackdropImagePaths.Count == 0)
             {
                 var nodes = doc.SelectNodes("//fanart/movie/moviebackgrounds//@url");
 
