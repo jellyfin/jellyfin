@@ -146,7 +146,6 @@ namespace MediaBrowser.Controller.MediaInfo
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="extractImages">if set to <c>true</c> [extract images].</param>
         /// <param name="saveItem">if set to <c>true</c> [save item].</param>
-        /// <param name="previouslyFailedExtractions">The previously failed extractions.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
         public async Task<bool> PopulateChapterImages(Video video, CancellationToken cancellationToken, bool extractImages, bool saveItem)
