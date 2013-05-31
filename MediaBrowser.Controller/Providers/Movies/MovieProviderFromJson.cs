@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
@@ -23,6 +24,11 @@ namespace MediaBrowser.Controller.Providers.Movies
 
         public override bool Supports(BaseItem item)
         {
+            if (item.LocationType != LocationType.FileSystem)
+            {
+                return false;
+            }
+
             var trailer = item as Trailer;
 
             if (trailer != null)

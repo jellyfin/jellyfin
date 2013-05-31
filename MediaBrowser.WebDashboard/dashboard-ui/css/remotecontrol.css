@@ -52,7 +52,13 @@
     height: 50px;
 }
 
-@media all and (max-width: 400px) {
+@media all and (max-width: 550px) {
+    .nowPlayingCell + .nowPlayingCell {
+        display: none;
+    }
+}
+
+@media all and (max-width: 450px) {
     .nowPlayingCell {
         display: none;
     }
@@ -73,6 +79,12 @@
 @media all and (min-height: 800px) {
     .playMenuOptions {
         max-height: 300px;
+    }
+}
+
+@media all and (min-width: 400px) {
+    #remoteControlFlyout {
+        width: 360px;
     }
 }
 
