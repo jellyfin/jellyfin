@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Resolvers;
+﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Resolvers;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -175,7 +176,8 @@ namespace MediaBrowser.Controller.Library
         /// <returns><c>true</c> if [is season folder] [the specified path]; otherwise, <c>false</c>.</returns>
         private static bool IsSeasonFolder(string path)
         {
-            return GetSeasonNumberFromPath(path) != null && !new DirectoryInfo(path).EnumerateFiles().Any(i => EntityResolutionHelper.IsAudioFile(i.FullName));
+            // It's a season folder if it's named as such and does not contain any audio files, apart from theme.mp3
+            return GetSeasonNumberFromPath(path) != null && !new DirectoryInfo(path).EnumerateFiles().Any(i => EntityResolutionHelper.IsAudioFile(i.FullName) && !string.Equals(Path.GetFileNameWithoutExtension(i.Name), BaseItem.ThemeSongFilename));
         }
 
         /// <summary>
