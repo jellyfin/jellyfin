@@ -77,7 +77,8 @@ namespace MediaBrowser.Server.Implementations.Library
                 }
 
                 // Ignore trailer folders but allow it at the collection level
-                if (string.Equals(filename, BaseItem.TrailerFolderName, StringComparison.OrdinalIgnoreCase) && !(args.Parent is AggregateFolder) && !(args.Parent is UserRootFolder))
+                if (string.Equals(filename, BaseItem.TrailerFolderName, StringComparison.OrdinalIgnoreCase) &&
+                    !(args.Parent is AggregateFolder) && !(args.Parent is UserRootFolder))
                 {
                     return true;
                 }
@@ -90,6 +91,18 @@ namespace MediaBrowser.Server.Implementations.Library
                 if (string.Equals(filename, BaseItem.ThemeSongsFolderName, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
+                }
+            }
+            else
+            {
+                if (args.Parent != null)
+                {
+                    var filename = args.FileInfo.Name;
+
+                    if (string.Equals(Path.GetFileNameWithoutExtension(filename), BaseItem.ThemeSongFilename) && EntityResolutionHelper.IsAudioFile(filename))
+                    {
+                        return true;
+                    }
                 }
             }
 
