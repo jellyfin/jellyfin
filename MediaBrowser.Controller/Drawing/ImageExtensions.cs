@@ -52,6 +52,8 @@ namespace MediaBrowser.Controller.Drawing
             }
         }
 
+        private static readonly ImageCodecInfo[] Encoders = ImageCodecInfo.GetImageEncoders();
+
         /// <summary>
         /// Gets the image codec info.
         /// </summary>
@@ -59,9 +61,7 @@ namespace MediaBrowser.Controller.Drawing
         /// <returns>ImageCodecInfo.</returns>
         private static ImageCodecInfo GetImageCodecInfo(string mimeType)
         {
-            var encoders = ImageCodecInfo.GetImageEncoders();
-
-            return encoders.FirstOrDefault(i => i.MimeType.Equals(mimeType, StringComparison.OrdinalIgnoreCase)) ?? encoders.FirstOrDefault();
+            return Encoders.FirstOrDefault(i => i.MimeType.Equals(mimeType, StringComparison.OrdinalIgnoreCase)) ?? Encoders.FirstOrDefault();
         }
 
         /// <summary>

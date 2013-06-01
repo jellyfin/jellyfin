@@ -271,7 +271,7 @@ namespace MediaBrowser.Common.Implementations
 
                 RegisterSingleInstance(TaskManager);
 
-                HttpClient = new HttpClientManager.HttpClientManager(ApplicationPaths, Logger, JsonSerializer);
+                HttpClient = new HttpClientManager.HttpClientManager(ApplicationPaths, Logger);
                 RegisterSingleInstance(HttpClient);
 
                 NetworkManager = new NetworkManager();
