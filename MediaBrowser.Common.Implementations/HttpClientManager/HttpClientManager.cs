@@ -3,7 +3,6 @@ using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
-using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -34,20 +33,17 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         /// </summary>
         private readonly IApplicationPaths _appPaths;
 
-        private readonly IJsonSerializer _jsonSerializer;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpClientManager" /> class.
         /// </summary>
         /// <param name="appPaths">The kernel.</param>
         /// <param name="logger">The logger.</param>
-        /// <param name="jsonSerializer">The json serializer.</param>
         /// <exception cref="System.ArgumentNullException">
         /// appPaths
         /// or
         /// logger
         /// </exception>
-        public HttpClientManager(IApplicationPaths appPaths, ILogger logger, IJsonSerializer jsonSerializer)
+        public HttpClientManager(IApplicationPaths appPaths, ILogger logger)
         {
             if (appPaths == null)
             {
@@ -59,7 +55,6 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             }
 
             _logger = logger;
-            _jsonSerializer = jsonSerializer;
             _appPaths = appPaths;
         }
 
@@ -68,7 +63,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         /// DON'T dispose it after use.
         /// </summary>
         /// <value>The HTTP clients.</value>
-        private readonly ConcurrentDictionary<string, HttpClient> _httpClients = new ConcurrentDictionary<string, HttpClient>();
+        private readonly ConcurrentDictionary<string, HttpClientInfo> _httpClients = new ConcurrentDictionary<string, HttpClientInfo>();
 
         /// <summary>
         /// Gets
@@ -77,14 +72,14 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         /// <param name="enableHttpCompression">if set to <c>true</c> [enable HTTP compression].</param>
         /// <returns>HttpClient.</returns>
         /// <exception cref="System.ArgumentNullException">host</exception>
-        private HttpClient GetHttpClient(string host, bool enableHttpCompression)
+        private HttpClientInfo GetHttpClient(string host, bool enableHttpCompression)
         {
             if (string.IsNullOrEmpty(host))
             {
                 throw new ArgumentNullException("host");
             }
 
-            HttpClient client;
+            HttpClientInfo client;
 
             var key = host + enableHttpCompression;
 
@@ -96,8 +91,13 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                     AutomaticDecompression = enableHttpCompression ? DecompressionMethods.Deflate : DecompressionMethods.None
                 };
 
-                client = new HttpClient(handler);
-                client.Timeout = TimeSpan.FromSeconds(20);
+                client = new HttpClientInfo
+                {
+                    HttpClient = new HttpClient(handler)
+                    {
+                        Timeout = TimeSpan.FromSeconds(20)
+                    }
+                };
                 _httpClients.TryAdd(key, client);
             }
 
@@ -117,6 +117,13 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
             options.CancellationToken.ThrowIfCancellationRequested();
 
+            var client = GetHttpClient(GetHostFromUrl(options.Url), options.EnableHttpCompression);
+
+            if ((DateTime.UtcNow - client.LastTimeout).TotalSeconds < 30)
+            {
+                throw new HttpException(string.Format("Connection to {0} timed out", options.Url)) { IsTimedOut = true };
+            }
+
             using (var message = GetHttpRequestMessage(options))
             {
                 if (options.ResourcePool != null)
@@ -130,7 +137,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                 {
                     options.CancellationToken.ThrowIfCancellationRequested();
 
-                    var response = await GetHttpClient(GetHostFromUrl(options.Url), options.EnableHttpCompression).SendAsync(message, HttpCompletionOption.ResponseContentRead, options.CancellationToken).ConfigureAwait(false);
+                    var response = await client.HttpClient.SendAsync(message, HttpCompletionOption.ResponseContentRead, options.CancellationToken).ConfigureAwait(false);
 
                     EnsureSuccessStatusCode(response);
 
@@ -140,7 +147,16 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                 }
                 catch (OperationCanceledException ex)
                 {
-                    throw GetCancellationException(options.Url, options.CancellationToken, ex);
+                    var exception = GetCancellationException(options.Url, options.CancellationToken, ex);
+
+                    var httpException = exception as HttpException;
+
+                    if (httpException != null && httpException.IsTimedOut)
+                    {
+                        client.LastTimeout = DateTime.UtcNow;
+                    }
+
+                    throw exception;
                 }
                 catch (HttpRequestException ex)
                 {
@@ -193,108 +209,6 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         }
 
         /// <summary>
-        /// Gets the cached response.
-        /// </summary>
-        /// <param name="responsePath">The response path.</param>
-        /// <returns>Stream.</returns>
-        private Stream GetCachedResponse(string responsePath)
-        {
-            return File.OpenRead(responsePath);
-        }
-
-        /// <summary>
-        /// Updates the cache.
-        /// </summary>
-        /// <param name="cachedInfo">The cached info.</param>
-        /// <param name="url">The URL.</param>
-        /// <param name="path">The path.</param>
-        /// <param name="response">The response.</param>
-        private HttpResponseInfo UpdateInfoCache(HttpResponseInfo cachedInfo, string url, string path, HttpResponseMessage response)
-        {
-            var fileExists = true;
-
-            if (cachedInfo == null)
-            {
-                cachedInfo = new HttpResponseInfo();
-                fileExists = false;
-            }
-
-            cachedInfo.Url = url;
-            cachedInfo.RequestDate = DateTime.UtcNow;
-
-            var etag = response.Headers.ETag;
-            if (etag != null)
-            {
-                cachedInfo.Etag = etag.Tag;
-            }
-
-            var modified = response.Content.Headers.LastModified;
-
-            if (modified.HasValue)
-            {
-                cachedInfo.LastModified = modified.Value.UtcDateTime;
-            }
-            else if (response.Headers.Age.HasValue)
-            {
-                cachedInfo.LastModified = DateTime.UtcNow.Subtract(response.Headers.Age.Value);
-            }
-
-            var expires = response.Content.Headers.Expires;
-
-            if (expires.HasValue)
-            {
-                cachedInfo.Expires = expires.Value.UtcDateTime;
-            }
-            else
-            {
-                var cacheControl = response.Headers.CacheControl;
-
-                if (cacheControl != null)
-                {
-                    if (cacheControl.MaxAge.HasValue)
-                    {
-                        var baseline = cachedInfo.LastModified ?? DateTime.UtcNow;
-                        cachedInfo.Expires = baseline.Add(cacheControl.MaxAge.Value);
-                    }
-
-                    cachedInfo.MustRevalidate = cacheControl.MustRevalidate;
-                }
-            }
-
-            if (string.IsNullOrEmpty(cachedInfo.Etag) && !cachedInfo.Expires.HasValue && !cachedInfo.LastModified.HasValue)
-            {
-                // Nothing to cache
-                if (fileExists)
-                {
-                    File.Delete(path);
-                }
-            }
-            else
-            {
-                _jsonSerializer.SerializeToFile(cachedInfo, path);
-            }
-
-            return cachedInfo;
-        }
-
-        /// <summary>
-        /// Updates the response cache.
-        /// </summary>
-        /// <param name="response">The response.</param>
-        /// <param name="path">The path.</param>
-        /// <returns>Task.</returns>
-        private async Task UpdateResponseCache(HttpResponseMessage response, string path)
-        {
-            using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
-            {
-                using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
-                {
-                    await stream.CopyToAsync(fs).ConfigureAwait(false);
-                }
-            }
-        }
-
-        /// <summary>
         /// Performs a POST request
         /// </summary>
         /// <param name="url">The URL.</param>
@@ -330,7 +244,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var msg = await GetHttpClient(GetHostFromUrl(url), false).PostAsync(url, content, cancellationToken).ConfigureAwait(false);
+                var msg = await GetHttpClient(GetHostFromUrl(url), false).HttpClient.PostAsync(url, content, cancellationToken).ConfigureAwait(false);
 
                 EnsureSuccessStatusCode(msg);
 
@@ -391,7 +305,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
                 using (var message = GetHttpRequestMessage(options))
                 {
-                    using (var response = await GetHttpClient(GetHostFromUrl(options.Url), options.EnableHttpCompression).SendAsync(message, HttpCompletionOption.ResponseHeadersRead, options.CancellationToken).ConfigureAwait(false))
+                    using (var response = await GetHttpClient(GetHostFromUrl(options.Url), options.EnableHttpCompression).HttpClient.SendAsync(message, HttpCompletionOption.ResponseHeadersRead, options.CancellationToken).ConfigureAwait(false))
                     {
                         EnsureSuccessStatusCode(response);
 
@@ -574,7 +488,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             {
                 foreach (var client in _httpClients.Values.ToList())
                 {
-                    client.Dispose();
+                    client.HttpClient.Dispose();
                 }
 
                 _httpClients.Clear();
