@@ -146,15 +146,16 @@ namespace MediaBrowser.Controller.Providers
 
                 case "Overview":
                 case "Description":
-                    var overview = reader.ReadInnerXml();
-                    const string cdataRegex = @"\<\!\[CDATA\[(?<text>.*)\]\]\>";
-                    if (Regex.IsMatch(overview, cdataRegex))
                     {
-                        var match = Regex.Match(overview, cdataRegex);
-                        overview = match.Groups["text"].Value;
+                        var val = reader.ReadElementContentAsString();
+
+                        if (!string.IsNullOrWhiteSpace(val))
+                        {
+                            item.Overview = val;
+                        }
+
+                        break;
                     }
-                    item.Overview = overview;
-                    break;
 
                 case "TagLine":
                     {
