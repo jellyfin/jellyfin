@@ -207,7 +207,7 @@ namespace MediaBrowser.Controller.Providers.TV
                 }
 
                 data.Data = GetComparisonData(imagesFileInfo);
-                
+
                 SetLastRefreshed(item, DateTime.UtcNow);
                 return true;
             }
@@ -216,7 +216,7 @@ namespace MediaBrowser.Controller.Providers.TV
         }
 
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
-        
+
         /// <summary>
         /// Fetches the images.
         /// </summary>
@@ -234,7 +234,9 @@ namespace MediaBrowser.Controller.Providers.TV
                     n = n.SelectSingleNode("./BannerPath");
                     if (n != null)
                     {
-                        series.PrimaryImagePath = await _providerManager.DownloadAndSaveImage(series, TVUtils.BannerUrl + n.InnerText, "folder" + Path.GetExtension(n.InnerText), ConfigurationManager.Configuration.SaveLocalMeta, RemoteSeriesProvider.Current.TvDbResourcePool, cancellationToken).ConfigureAwait(false);
+                        var path = await _providerManager.DownloadAndSaveImage(series, TVUtils.BannerUrl + n.InnerText, "folder" + Path.GetExtension(n.InnerText), ConfigurationManager.Configuration.SaveLocalMeta, RemoteSeriesProvider.Current.TvDbResourcePool, cancellationToken).ConfigureAwait(false);
+
+                        series.SetImage(ImageType.Primary, path);
                     }
                 }
             }
@@ -254,7 +256,7 @@ namespace MediaBrowser.Controller.Providers.TV
                 }
             }
 
-            if (series.BackdropImagePaths.Count < ConfigurationManager.Configuration.MaxBackdrops)
+            if (series.BackdropImagePaths.Count == 0)
             {
                 var bdNo = series.BackdropImagePaths.Count;
 
