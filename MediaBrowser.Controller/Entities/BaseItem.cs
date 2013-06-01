@@ -52,6 +52,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         public const string TrailerFolderName = "trailers";
         public const string ThemeSongsFolderName = "theme-music";
+        public const string ThemeSongFilename = "theme";
         public const string ThemeVideosFolderName = "backdrops";
         public const string XbmcTrailerFileSuffix = "-trailer";
 
@@ -822,7 +823,7 @@ namespace MediaBrowser.Controller.Entities
 
             // Support plex/xbmc convention
             files.AddRange(resolveArgs.FileSystemChildren
-                .Where(i => string.Equals(System.IO.Path.GetFileNameWithoutExtension(i.FullName), "theme", StringComparison.OrdinalIgnoreCase) && EntityResolutionHelper.IsAudioFile(i.FullName))
+                .Where(i => string.Equals(System.IO.Path.GetFileNameWithoutExtension(i.FullName), ThemeSongFilename, StringComparison.OrdinalIgnoreCase) && EntityResolutionHelper.IsAudioFile(i.FullName))
                 );
 
             return LibraryManager.ResolvePaths<Audio.Audio>(files, null).Select(audio =>
