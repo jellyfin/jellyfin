@@ -1289,7 +1289,17 @@
 
             var href = "itemgallery.html?" + identifierName + "=" + identifierValue;
 
-            html += "<a href='" + href + "'><img class='itemDetailImage' src='" + url + "' /></a>";
+            var linkToGallery = LibraryBrowser.shouldDisplayGallery(item);
+
+            if (linkToGallery) {
+                html += "<a href='" + href + "'>";
+            }
+            
+            html += "<img class='itemDetailImage' src='" + url + "' />";
+
+            if (linkToGallery) {
+                html += "</a>";
+            }
 
             return html;
         },

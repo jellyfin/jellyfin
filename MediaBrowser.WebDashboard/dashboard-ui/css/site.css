@@ -852,7 +852,7 @@ input[type="range"]::-ms-fill-upper {
 
 
 @media all and (max-width: 600px) {
-    .volumeButton, .volumeSlider, .fullscreenButton, .nowPlayingText {
+    .volumeButton, .volumeSlider, .nowPlayingText {
         display: none!important;
     }
 
@@ -862,12 +862,6 @@ input[type="range"]::-ms-fill-upper {
 
     .itemVideo:not(.fullscreenVideo) {
         left: -300px;
-    }
-}
-
-@media all and (max-width: 500px) {
-    .itemVideo:not(.fullscreenVideo) {
-        width: 220px;
     }
 }
 
