@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -164,8 +163,16 @@ namespace MediaBrowser.Controller.MediaInfo
             var success = true;
             var changesMade = false;
 
+            var runtimeTicks = video.RunTimeTicks ?? 0;
+
             foreach (var chapter in video.Chapters)
             {
+                if (chapter.StartPositionTicks >= runtimeTicks)
+                {
+                    _logger.Info("Stopping chapter extraction for {0} because a chapter was found with a position greater than the runtime.", video.Name);
+                    break;
+                }
+
                 var filename = video.Id + "_" + video.DateModified.Ticks + "_" + chapter.StartPositionTicks;
 
                 var path = VideoImageCache.GetResourcePath(filename, ".jpg");
