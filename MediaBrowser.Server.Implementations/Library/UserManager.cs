@@ -347,14 +347,21 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new ArgumentNullException("user");
             }
 
-            if (Users.FirstOrDefault(u => u.Id == user.Id) == null)
+            var allUsers = Users.ToList();
+
+            if (allUsers.FirstOrDefault(u => u.Id == user.Id) == null)
             {
                 throw new ArgumentException(string.Format("The user cannot be deleted because there is no user with the Name {0} and Id {1}.", user.Name, user.Id));
             }
 
-            if (Users.Count() == 1)
+            if (allUsers.Count == 1)
             {
-                throw new ArgumentException(string.Format("The user '{0}' be deleted because there must be at least one user in the system.", user.Name));
+                throw new ArgumentException(string.Format("The user '{0}' cannot be deleted because there must be at least one user in the system.", user.Name));
+            }
+
+            if (user.Configuration.IsAdministrator && allUsers.Count(i => i.Configuration.IsAdministrator) == 1)
+            {
+                throw new ArgumentException(string.Format("The user '{0}' cannot be deleted because there must be at least one admin user in the system.", user.Name));
             }
 
             await UserRepository.DeleteUser(user, CancellationToken.None).ConfigureAwait(false);
