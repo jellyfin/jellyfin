@@ -3,46 +3,43 @@
     var currentItem;
     var shape;
 
-    function reload(page) {
-
-        Dashboard.showLoadingMsg();
-
-        var getItemPromise;
+    function getPromise() {
 
         var name = getParameterByName('person');
 
         if (name) {
-            getItemPromise = ApiClient.getPerson(name, Dashboard.getCurrentUserId());
-        } else {
-
-            name = getParameterByName('studio');
-
-            if (name) {
-
-                getItemPromise = ApiClient.getStudio(name, Dashboard.getCurrentUserId());
-
-            } else {
-
-                name = getParameterByName('genre');
-
-                if (name) {
-                    getItemPromise = ApiClient.getGenre(name, Dashboard.getCurrentUserId());
-                }
-                else {
-
-                    name = getParameterByName('artist');
-
-                    if (name) {
-                        getItemPromise = ApiClient.getArtist(name, Dashboard.getCurrentUserId());
-                    }
-                    else {
-                        throw new Error('Invalid request');
-                    }
-                }
-            }
+            return ApiClient.getPerson(name, Dashboard.getCurrentUserId());
         }
 
-        getItemPromise.done(function (item) {
+        name = getParameterByName('studio');
+
+        if (name) {
+
+            return ApiClient.getStudio(name, Dashboard.getCurrentUserId());
+
+        }
+
+        name = getParameterByName('genre');
+
+        if (name) {
+            return ApiClient.getGenre(name, Dashboard.getCurrentUserId());
+        }
+
+        name = getParameterByName('artist');
+
+        if (name) {
+            return ApiClient.getArtist(name, Dashboard.getCurrentUserId());
+        }
+        else {
+            throw new Error('Invalid request');
+        }
+    }
+
+    function reload(page) {
+
+        Dashboard.showLoadingMsg();
+
+        getPromise().done(function (item) {
 
             currentItem = item;
 
@@ -204,13 +201,6 @@
         });
     }
 
-    function renderGallery(page, item) {
-
-        var html = LibraryBrowser.getGalleryHtml(item);
-
-        $('#galleryContent', page).html(html).trigger('create');
-    }
-
     function bindRadioEvents(page) {
 
         $("#radioMusicVideos", page).on("click", function () {
@@ -310,13 +300,6 @@
 
         renderUserDataIcons(page, item);
         LibraryBrowser.renderLinks($('#itemLinks', page), item);
-
-        if (LibraryBrowser.shouldDisplayGallery(item)) {
-            $('#galleryCollapsible', page).show();
-            renderGallery(page, item);
-        } else {
-            $('#galleryCollapsible', page).hide();
-        }
 
         if (item.Type == "Person" && item.PremiereDate) {
 

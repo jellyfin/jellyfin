@@ -199,7 +199,7 @@ function humane_elapsed(firstDateStr, secondDateStr) {
 function getParameterByName(name, url) {
     name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
     var regexS = "[\\?&]" + name + "=([^&#]*)";
-    var regex = new RegExp(regexS);
+    var regex = new RegExp(regexS, "i");
     var results = regex.exec(url || window.location.search);
     if (results == null)
         return "";

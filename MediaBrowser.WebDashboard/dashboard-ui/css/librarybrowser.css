@@ -151,7 +151,7 @@
     }
 
 .galleryImage {
-    max-height: 63px;
+    max-height: 300px;
     max-width: 300px;
 }
 
@@ -455,10 +455,6 @@ a.itemTag:hover {
 
     .noBackdrop .lnkSibling {
         bottom: 260px;
-    }
-
-    .galleryImage {
-        max-height: 90px;
     }
 
     .viewMenuTextLink {

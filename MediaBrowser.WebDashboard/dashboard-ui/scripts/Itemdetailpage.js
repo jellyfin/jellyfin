@@ -119,12 +119,6 @@
         else {
             $('#childrenCollapsible', page).addClass('hide');
         }
-        if (LibraryBrowser.shouldDisplayGallery(item)) {
-            $('#galleryCollapsible', page).show();
-            renderGallery(page, item);
-        } else {
-            $('#galleryCollapsible', page).hide();
-        }
 
         if (item.MediaStreams && item.MediaStreams.length) {
             renderMediaInfo(page, item);
@@ -605,13 +599,6 @@
         }
 
         $('#scenesContent', page).html(html).trigger('create');
-    }
-
-    function renderGallery(page, item) {
-
-        var html = LibraryBrowser.getGalleryHtml(item);
-
-        $('#galleryContent', page).html(html).trigger('create');
     }
 
     function renderMediaInfo(page, item) {

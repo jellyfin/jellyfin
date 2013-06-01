@@ -1279,10 +1279,17 @@
                 url = "css/images/items/detail/video.png";
             }
 
-            if (url) {
+            var identifierName = "id";
+            var identifierValue = item.Id;
 
-                html += "<img class='itemDetailImage' src='" + url + "' />";
+            if (item.Type == "Person" || item.Type == "Genre" || item.Type == "Studio" || item.Type == "Artist") {
+                identifierName = item.Type;
+                identifierValue = ApiClient.encodeName(item.Name);
             }
+
+            var href = "itemgallery.html?" + identifierName + "=" + identifierValue;
+
+            html += "<a href='" + href + "'><img class='itemDetailImage' src='" + url + "' /></a>";
 
             return html;
         },
@@ -1512,6 +1519,11 @@
 
             var imageTags = item.ImageTags || {};
 
+            if (imageTags.Primary) {
+
+                return true;
+            }
+
             if (imageTags.Banner) {
 
                 return true;
@@ -1566,6 +1578,11 @@
             var i, length;
 
             var imageTags = item.ImageTags || {};
+
+            if (imageTags.Primary) {
+
+                html += LibraryBrowser.createGalleryImage(item, "Primary", imageTags.Primary);
+            }
 
             if (imageTags.Banner) {
 

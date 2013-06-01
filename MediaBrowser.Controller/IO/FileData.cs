@@ -52,14 +52,10 @@ namespace MediaBrowser.Controller.IO
 
                     if (data.Exists)
                     {
-                        // Find out if the shortcut is pointing to a directory or file
-                        if (data.Attributes.HasFlag(FileAttributes.Directory))
+                        // add to our physical locations
+                        if (args != null)
                         {
-                            // add to our physical locations
-                            if (args != null)
-                            {
-                                args.AddAdditionalLocation(newPath);
-                            }
+                            args.AddAdditionalLocation(newPath);
                         }
 
                         dict[data.FullName] = data;
