@@ -11,6 +11,8 @@
         StartIndex: 0
     };
 
+    var currentItem;
+
     function reloadItems(page) {
 
         Dashboard.showLoadingMsg();
@@ -66,7 +68,11 @@
             Dashboard.hideLoadingMsg();
         });
 
-        ApiClient.getItem(userId, query.ParentId).done(function (item) {
+        var promise = query.ParentId ? ApiClient.getItem(userId, query.ParentId) : ApiClient.getRootFolder(userId);
+
+        promise.done(function (item) {
+
+            currentItem = item;
 
             var name = item.Name;
 
@@ -140,7 +146,7 @@
 
         $('#btnEdit', page).on('click', function () {
 
-            Dashboard.navigate("edititemmetadata.html?id=" + query.ParentId);
+            Dashboard.navigate("edititemmetadata.html?id=" + currentItem.Id);
         });
 
     }).on('pageshow', "#itemListPage", function () {
@@ -177,6 +183,11 @@
         }).checkboxradio('refresh');
 
         $('#selectView', this).val(view).selectmenu('refresh');
+
+    }).on('pagehide', "#itemListPage", function () {
+
+        currentItem = null;
+
     });
 
 })(jQuery, document);

@@ -347,6 +347,12 @@ a.itemTag:hover {
     margin-top: -30px;
 }
 
+    .itemDetailImage:hover {
+        -moz-box-shadow: 0 0 20px 3px #2572EB;
+        -webkit-box-shadow: 0 0 20px 3px #2572EB;
+        box-shadow: 0 0 20px 3px #2572EB;
+    }
+
 .parentName {
     padding: .5em;
     text-align: center;
