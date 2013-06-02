@@ -160,8 +160,7 @@ namespace MediaBrowser.Api.Playback.Progressive
                 args += string.Format(" -r {0}", request.Framerate.Value);
             }
 
-            // Add the audio bitrate
-            var qualityParam = GetVideoQualityParam(request, codec);
+            var qualityParam = GetVideoQualityParam(state, codec);
 
             if (!string.IsNullOrEmpty(qualityParam))
             {
@@ -256,10 +255,10 @@ namespace MediaBrowser.Api.Playback.Progressive
         /// <summary>
         /// Gets the video bitrate to specify on the command line
         /// </summary>
-        /// <param name="request">The request.</param>
+        /// <param name="state">The state.</param>
         /// <param name="videoCodec">The video codec.</param>
         /// <returns>System.String.</returns>
-        private string GetVideoQualityParam(VideoStreamRequest request, string videoCodec)
+        private string GetVideoQualityParam(StreamState state, string videoCodec)
         {
             var args = string.Empty;
 
@@ -284,9 +283,14 @@ namespace MediaBrowser.Api.Playback.Progressive
                 args = "-mbd rd -flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -bf 2";
             } 
             
-            if (request.VideoBitRate.HasValue)
+            if (state.VideoRequest.VideoBitRate.HasValue)
             {
-                args += " -b:v " + request.VideoBitRate;
+                // Make sure we don't request a bitrate higher than the source
+                var currentBitrate = state.VideoStream == null ? state.VideoRequest.VideoBitRate.Value : state.VideoStream.BitRate ?? state.VideoRequest.VideoBitRate.Value;
+
+                var bitrate = Math.Min(currentBitrate, state.VideoRequest.VideoBitRate.Value);
+
+                args += " -b:v " + bitrate;
             }
 
             return args.Trim();
