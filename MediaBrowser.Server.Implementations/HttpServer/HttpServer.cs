@@ -306,6 +306,33 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 return;
             }
 
+            var localPath = context.Request.Url.LocalPath;
+
+            if (string.Equals(localPath, "/mediabrowser/", StringComparison.OrdinalIgnoreCase))
+            {
+                context.Response.Redirect(DefaultRedirectPath);
+                context.Response.Close();
+                return;
+            }
+            if (string.Equals(localPath, "/mediabrowser", StringComparison.OrdinalIgnoreCase))
+            {
+                context.Response.Redirect("mediabrowser/" + DefaultRedirectPath);
+                context.Response.Close();
+                return;
+            }
+            if (string.Equals(localPath, "/", StringComparison.OrdinalIgnoreCase))
+            {
+                context.Response.Redirect("mediabrowser/" + DefaultRedirectPath);
+                context.Response.Close();
+                return;
+            }
+            if (string.IsNullOrEmpty(localPath))
+            {
+                context.Response.Redirect("/mediabrowser/" + DefaultRedirectPath);
+                context.Response.Close();
+                return;
+            }
+
             RaiseReceiveWebRequest(context);
 
             await Task.Factory.StartNew(() =>

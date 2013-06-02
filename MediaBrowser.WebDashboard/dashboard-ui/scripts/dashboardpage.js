@@ -273,6 +273,21 @@
         $('#divRunningTasks', page).html(html).trigger('create');
     },
 
+    bookmarkPageIfSupported: function (url) {
+
+        if (window.sidebar && window.sidebar.addPanel) { // Mozilla Firefox Bookmark
+            window.sidebar.addPanel("Media Browser", url, '');
+
+        } else if (window.external && window.external.AddFavorite) { // IE Favorite
+            window.external.AddFavorite(url, "Media Browser");
+
+        } else { // webkit - safari/chrome
+            return false;
+        }
+
+        return true;
+    },
+
     renderSystemInfo: function (dashboardInfo) {
 
         Dashboard.updateSystemInfo(dashboardInfo.SystemInfo);
@@ -288,6 +303,14 @@
         } else {
             $('#ports', page).html('Running on ports <b>' + port + '</b> and <b>' + dashboardInfo.SystemInfo.WebSocketPortNumber + '</b>');
         }
+
+        $('#programDataPath', page).html(dashboardInfo.SystemInfo.ProgramDataPath);
+
+        var host = ApiClient.serverHostName();
+
+        var url = "http://" + host + ":" + port + "/mediabrowser";
+
+        $('#bookmarkUrl', page).html(url).attr("href", url);
 
         if (dashboardInfo.RunningTasks.filter(function (task) {
 
