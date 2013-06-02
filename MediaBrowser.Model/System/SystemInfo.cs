@@ -62,6 +62,12 @@ namespace MediaBrowser.Model.System
         public string Id { get; set; }
 
         /// <summary>
+        /// Gets or sets the program data path.
+        /// </summary>
+        /// <value>The program data path.</value>
+        public string ProgramDataPath { get; set; }
+        
+        /// <summary>
         /// Initializes a new instance of the <see cref="SystemInfo"/> class.
         /// </summary>
         public SystemInfo()

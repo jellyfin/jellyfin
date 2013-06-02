@@ -191,7 +191,7 @@ namespace MediaBrowser.ServerApplication
         {
             base.OnLoggerLoaded();
 
-            _httpServerCreationTask = Task.Run(() => ServerFactory.CreateServer(this, LogManager, "Media Browser", "index.html"));
+            _httpServerCreationTask = Task.Run(() => ServerFactory.CreateServer(this, LogManager, "Media Browser", "dashboard/index.html"));
         }
 
         /// <summary>
@@ -516,7 +516,8 @@ namespace MediaBrowser.ServerApplication
                 FailedPluginAssemblies = FailedAssemblies.ToArray(),
                 InProgressInstallations = InstallationManager.CurrentInstallations.Select(i => i.Item1).ToArray(),
                 CompletedInstallations = InstallationManager.CompletedInstallations.ToArray(),
-                Id = _systemId
+                Id = _systemId,
+                ProgramDataPath = ApplicationPaths.ProgramDataPath
             };
         }
 

@@ -131,6 +131,16 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                     await options.ResourcePool.WaitAsync(options.CancellationToken).ConfigureAwait(false);
                 }
 
+                if ((DateTime.UtcNow - client.LastTimeout).TotalSeconds < 30)
+                {
+                    if (options.ResourcePool != null)
+                    {
+                        options.ResourcePool.Release();
+                    }
+                    
+                    throw new HttpException(string.Format("Connection to {0} timed out", options.Url)) { IsTimedOut = true };
+                }
+                
                 _logger.Info("HttpClientManager.Get url: {0}", options.Url);
 
                 try
