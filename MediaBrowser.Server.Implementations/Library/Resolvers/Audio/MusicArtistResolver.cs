@@ -33,6 +33,12 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
             if (args.Parent == null) return null;
             if (args.Parent.IsRoot) return null;
 
+            // Don't allow nested artists
+            if (args.Parent is MusicArtist)
+            {
+                return null;
+            }
+
             // If we contain an album assume we are an artist folder
             return args.FileSystemChildren.Where(i => i.Attributes.HasFlag(FileAttributes.Directory)).Any(i => MusicAlbumResolver.IsMusicAlbum(i.FullName)) ? new MusicArtist() : null;
         }
