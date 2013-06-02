@@ -118,7 +118,27 @@
 
         if (clientLowered == "dashboard") {
 
-            return "<img src='css/images/clients/html5.png' alt='Dashboard' title='Dashboard' />";
+            var device = connection.DeviceName.toLowerCase();
+
+            var imgUrl;
+
+            if (device.indexOf('chrome') != -1) {
+                imgUrl = 'css/images/clients/chrome.png';
+            }
+            else if (device.indexOf('firefox') != -1) {
+                imgUrl = 'css/images/clients/firefox.png';
+            }
+            else if (device == 'internet explorer') {
+                imgUrl = 'css/images/clients/ie.png';
+            }
+            else if (device.indexOf('safari') != -1) {
+                imgUrl = 'css/images/clients/safari.png';
+            }
+            else {
+                imgUrl = 'css/images/clients/html5.png';
+            }
+
+            return "<img src='" + imgUrl + "' alt='Dashboard' title='Dashboard' />";
         }
         if (clientLowered == "mb-classic") {
 
