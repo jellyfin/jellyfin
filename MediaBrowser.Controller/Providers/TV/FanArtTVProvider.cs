@@ -70,6 +70,15 @@ namespace MediaBrowser.Controller.Providers.TV
                 return false;
             }
 
+            if (item.HasImage(ImageType.Art) &&
+                item.HasImage(ImageType.Logo) &&
+                item.HasImage(ImageType.Banner) &&
+                item.HasImage(ImageType.Thumb) &&
+                item.BackdropImagePaths.Count > 0)
+            {
+                return false;
+            }
+            
             if (providerInfo.Data != GetComparisonData(item.GetProviderId(MetadataProviders.Tvdb)))
             {
                 return true;

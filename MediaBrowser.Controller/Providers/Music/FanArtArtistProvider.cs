@@ -124,7 +124,7 @@ namespace MediaBrowser.Controller.Providers.Music
               !ConfigurationManager.Configuration.DownloadMusicArtistImages.Logo &&
               !ConfigurationManager.Configuration.DownloadMusicArtistImages.Primary &&
 
-              // The fanart album provider depends on xml downloaded here, so honor it's settings too
+                // The fanart album provider depends on xml downloaded here, so honor it's settings too
                 !ConfigurationManager.Configuration.DownloadMusicAlbumImages.Disc &&
                 !ConfigurationManager.Configuration.DownloadMusicAlbumImages.Primary)
             {

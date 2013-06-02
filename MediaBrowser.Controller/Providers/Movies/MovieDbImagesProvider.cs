@@ -153,7 +153,7 @@ namespace MediaBrowser.Controller.Providers.Movies
             }
 
             // Don't refresh if we already have both poster and backdrop and we're not refreshing images
-            if (!ConfigurationManager.Configuration.RefreshItemImages && item.HasImage(ImageType.Primary) && item.BackdropImagePaths.Count > 0)
+            if (item.HasImage(ImageType.Primary) && item.BackdropImagePaths.Count > 0)
             {
                 return false;
             }

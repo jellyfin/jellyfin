@@ -129,6 +129,16 @@ namespace MediaBrowser.Controller.Providers.Movies
                 return false;
             }
 
+            if (item.HasImage(ImageType.Art) &&
+                item.HasImage(ImageType.Logo) &&
+                item.HasImage(ImageType.Disc) &&
+                item.HasImage(ImageType.Banner) &&
+                item.HasImage(ImageType.Thumb) &&
+                item.BackdropImagePaths.Count > 0)
+            {
+                return false;
+            }
+
             // Refresh if tmdb id has changed
             if (providerInfo.Data != GetComparisonData(item.GetProviderId(MetadataProviders.Tmdb)))
             {
