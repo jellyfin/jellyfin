@@ -120,21 +120,40 @@ namespace MediaBrowser.Controller.Drawing
                 originalImagePath = await GetCroppedImage(originalImagePath, dateModified).ConfigureAwait(false);
             }
 
-            try
+            var supportedEnhancers = _kernel.ImageEnhancers.Where(i =>
             {
-                // Enhance if we have enhancers
-                var ehnancedImagePath = await GetEnhancedImage(originalImagePath, dateModified, entity, imageType, imageIndex).ConfigureAwait(false);
-
-                // If the path changed update dateModified
-                if (!ehnancedImagePath.Equals(originalImagePath, StringComparison.OrdinalIgnoreCase))
+                try
                 {
-                    dateModified = File.GetLastWriteTimeUtc(ehnancedImagePath);
-                    originalImagePath = ehnancedImagePath;
+                    return i.Supports(entity, imageType);
                 }
-            }
-            catch (Exception ex)
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error in image enhancer: {0}", ex, i.GetType().Name);
+
+                    return false;
+                }
+
+            }).ToList();
+
+            // No enhancement - don't cache
+            if (supportedEnhancers.Count > 0)
             {
-                _logger.Error("Error enhancing image", ex);
+                try
+                {
+                    // Enhance if we have enhancers
+                    var ehnancedImagePath = await GetEnhancedImage(originalImagePath, dateModified, entity, imageType, imageIndex, supportedEnhancers).ConfigureAwait(false);
+
+                    // If the path changed update dateModified
+                    if (!ehnancedImagePath.Equals(originalImagePath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        dateModified = File.GetLastWriteTimeUtc(ehnancedImagePath);
+                        originalImagePath = ehnancedImagePath;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error("Error enhancing image", ex);
+                }
             }
 
             var originalImageSize = await GetImageSize(originalImagePath, dateModified).ConfigureAwait(false);
@@ -179,7 +198,7 @@ namespace MediaBrowser.Controller.Drawing
                     {
                         await fileStream.CopyToAsync(memoryStream).ConfigureAwait(false);
 
-                        using (var originalImage = Image.FromStream(fileStream, true, false))
+                        using (var originalImage = Image.FromStream(memoryStream, true, false))
                         {
                             var newWidth = Convert.ToInt32(newSize.Width);
                             var newHeight = Convert.ToInt32(newSize.Height);
@@ -212,9 +231,9 @@ namespace MediaBrowser.Controller.Drawing
                                         var outputTask = toStream.WriteAsync(bytes, 0, bytes.Length);
 
                                         // kick off a task to cache the result
-                                        await CacheResizedImage(cacheFilePath, bytes).ConfigureAwait(false);
+                                        var cacheTask = CacheResizedImage(cacheFilePath, bytes);
 
-                                        await outputTask.ConfigureAwait(false);
+                                        await Task.WhenAll(outputTask, cacheTask).ConfigureAwait(false);
                                     }
                                 }
                             }
@@ -517,9 +536,10 @@ namespace MediaBrowser.Controller.Drawing
         /// <param name="item">The item.</param>
         /// <param name="imageType">Type of the image.</param>
         /// <param name="imageIndex">Index of the image.</param>
+        /// <param name="supportedEnhancers">The supported enhancers.</param>
         /// <returns>System.String.</returns>
         /// <exception cref="System.ArgumentNullException">originalImagePath</exception>
-        public async Task<string> GetEnhancedImage(string originalImagePath, DateTime dateModified, BaseItem item, ImageType imageType, int imageIndex)
+        public async Task<string> GetEnhancedImage(string originalImagePath, DateTime dateModified, BaseItem item, ImageType imageType, int imageIndex, IEnumerable<IImageEnhancer> supportedEnhancers)
         {
             if (string.IsNullOrEmpty(originalImagePath))
             {
@@ -529,27 +549,6 @@ namespace MediaBrowser.Controller.Drawing
             if (item == null)
             {
                 throw new ArgumentNullException("item");
-            }
-
-            var supportedEnhancers = _kernel.ImageEnhancers.Where(i =>
-            {
-                try
-                {
-                    return i.Supports(item, imageType);
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error in image enhancer: {0}", ex, i.GetType().Name);
-
-                    return false;
-                }
-
-            }).ToList();
-            
-            // No enhancement - don't cache
-            if (supportedEnhancers.Count == 0)
-            {
-                return originalImagePath;
             }
 
             var cacheGuid = GetImageCacheTag(originalImagePath, dateModified, supportedEnhancers, item, imageType);
