@@ -48,7 +48,7 @@ namespace MediaBrowser.Common.ScheduledTasks
             if (e.Mode == PowerModes.Resume && SystemEvent == SystemEvent.WakeFromSleep)
             {
                 // This value is a bit arbitrary, but add a delay to help ensure network connections have been restored before running the task
-                await Task.Delay(5000).ConfigureAwait(false);
+                await Task.Delay(10000).ConfigureAwait(false);
 
                 OnTriggered();
             }
