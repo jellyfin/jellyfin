@@ -158,9 +158,14 @@ namespace MediaBrowser.Api.Playback.Hls
 
             if (state.VideoRequest.VideoBitRate.HasValue)
             {
-                args += string.Format(" -b:v {0}", state.VideoRequest.VideoBitRate.Value);
-            }
+                // Make sure we don't request a bitrate higher than the source
+                var currentBitrate = state.VideoStream == null ? state.VideoRequest.VideoBitRate.Value : state.VideoStream.BitRate ?? state.VideoRequest.VideoBitRate.Value;
 
+                var bitrate = Math.Min(currentBitrate, state.VideoRequest.VideoBitRate.Value);
+
+                args += string.Format(" -b:v {0}", bitrate);
+            }
+            
             // Add resolution params, if specified
             if (state.VideoRequest.Width.HasValue || state.VideoRequest.Height.HasValue || state.VideoRequest.MaxHeight.HasValue || state.VideoRequest.MaxWidth.HasValue)
             {
