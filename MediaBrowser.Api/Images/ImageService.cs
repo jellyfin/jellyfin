@@ -658,7 +658,7 @@ namespace MediaBrowser.Api.Images
             // See if we can avoid a file system lookup by looking for the file in ResolveArgs
             var originalFileImageDateModified = kernel.ImageManager.GetImageDateModified(item, request.Type, index);
 
-            var supportedImageEnhancers = kernel.ImageEnhancers.Where(i =>
+            var supportedImageEnhancers = kernel.ImageManager.ImageEnhancers.Where(i =>
             {
                 try
                 {

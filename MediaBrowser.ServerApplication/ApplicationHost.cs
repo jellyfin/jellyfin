@@ -40,7 +40,6 @@ using MediaBrowser.Server.Implementations.Providers;
 using MediaBrowser.Server.Implementations.ServerManager;
 using MediaBrowser.Server.Implementations.Session;
 using MediaBrowser.Server.Implementations.Sqlite;
-using MediaBrowser.Server.Implementations.Udp;
 using MediaBrowser.Server.Implementations.Updates;
 using MediaBrowser.Server.Implementations.WebSocket;
 using MediaBrowser.ServerApplication.Implementations;
@@ -50,7 +49,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net.Sockets;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -88,6 +86,28 @@ namespace MediaBrowser.ServerApplication
             get { return "Server"; }
         }
 
+        /// <summary>
+        /// Gets the name of the web application that can be used for url building.
+        /// All api urls will be of the form {protocol}://{host}:{port}/{appname}/...
+        /// </summary>
+        /// <value>The name of the web application.</value>
+        public string WebApplicationName
+        {
+            get { return "mediabrowser"; }
+        }
+
+        /// <summary>
+        /// Gets the HTTP server URL prefix.
+        /// </summary>
+        /// <value>The HTTP server URL prefix.</value>
+        public string HttpServerUrlPrefix
+        {
+            get
+            {
+                return "http://+:" + ServerConfigurationManager.Configuration.HttpServerPortNumber + "/" + WebApplicationName + "/";
+            }
+        }
+        
         /// <summary>
         /// Gets the configuration manager.
         /// </summary>
@@ -200,7 +220,7 @@ namespace MediaBrowser.ServerApplication
         /// <returns>Task.</returns>
         protected override async Task RegisterResources()
         {
-            ServerKernel = new Kernel(ServerConfigurationManager);
+            ServerKernel = new Kernel();
 
             await base.RegisterResources().ConfigureAwait(false);
 
@@ -261,7 +281,7 @@ namespace MediaBrowser.ServerApplication
             HttpServer = await _httpServerCreationTask.ConfigureAwait(false);
             RegisterSingleInstance(HttpServer, false);
 
-            ServerManager = new ServerManager(this, JsonSerializer, Logger, ServerConfigurationManager, ServerKernel);
+            ServerManager = new ServerManager(this, JsonSerializer, Logger, ServerConfigurationManager);
             RegisterSingleInstance(ServerManager);
 
             var displayPreferencesTask = Task.Run(async () => await ConfigureDisplayPreferencesRepositories().ConfigureAwait(false));
@@ -279,14 +299,15 @@ namespace MediaBrowser.ServerApplication
         /// </summary>
         private void SetKernelProperties()
         {
+            ServerKernel.ImageManager = new ImageManager(ServerKernel, LogManager.GetLogger("ImageManager"),
+                                                         ApplicationPaths);
             Parallel.Invoke(
-                () => ServerKernel.FFMpegManager = new FFMpegManager(ApplicationPaths, MediaEncoder, LibraryManager, Logger),
-                () => ServerKernel.ImageManager = new ImageManager(ServerKernel, LogManager.GetLogger("ImageManager"), ApplicationPaths),
-                () => ServerKernel.WeatherProviders = GetExports<IWeatherProvider>(),
-                () => ServerKernel.ImageEnhancers = GetExports<IImageEnhancer>().OrderBy(e => e.Priority).ToArray(),
-                () => ServerKernel.StringFiles = GetExports<LocalizedStringData>(),
-                SetStaticProperties
-                );
+                 () => ServerKernel.FFMpegManager = new FFMpegManager(ApplicationPaths, MediaEncoder, LibraryManager, Logger),
+                 () => ServerKernel.WeatherProviders = GetExports<IWeatherProvider>(),
+                 () => ServerKernel.ImageManager.ImageEnhancers = GetExports<IImageEnhancer>().OrderBy(e => e.Priority).ToArray(),
+                 () => LocalizedStrings.StringFiles = GetExports<LocalizedStringData>(),
+                 SetStaticProperties
+                 );
         }
 
         /// <summary>
@@ -364,20 +385,16 @@ namespace MediaBrowser.ServerApplication
             ServerManager.AddWebSocketListeners(GetExports<IWebSocketListener>(false));
 
             StartServer(true);
-            
-            Parallel.Invoke(
 
-                () => LibraryManager.AddParts(GetExports<IResolverIgnoreRule>(), 
-                    GetExports<IVirtualFolderCreator>(), 
-                    GetExports<IItemResolver>(), 
-                    GetExports<IIntroProvider>(),
-                    GetExports<IBaseItemComparer>(),
-                    GetExports<ILibraryPrescanTask>(),
-                    GetExports<ILibraryPostScanTask>()),
+            LibraryManager.AddParts(GetExports<IResolverIgnoreRule>(),
+                                    GetExports<IVirtualFolderCreator>(),
+                                    GetExports<IItemResolver>(),
+                                    GetExports<IIntroProvider>(),
+                                    GetExports<IBaseItemComparer>(),
+                                    GetExports<ILibraryPrescanTask>(),
+                                    GetExports<ILibraryPostScanTask>());
 
-                () => ProviderManager.AddMetadataProviders(GetExports<BaseMetadataProvider>().ToArray())
-
-                );
+            ProviderManager.AddMetadataProviders(GetExports<BaseMetadataProvider>().ToArray());
         }
 
         /// <summary>
@@ -414,7 +431,7 @@ namespace MediaBrowser.ServerApplication
         {
             base.OnConfigurationUpdated(sender, e);
 
-            if (!string.Equals(HttpServer.UrlPrefix, ServerKernel.HttpServerUrlPrefix, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(HttpServer.UrlPrefix, HttpServerUrlPrefix, StringComparison.OrdinalIgnoreCase))
             {
                 NotifyPendingRestart();
             }
@@ -553,7 +570,7 @@ namespace MediaBrowser.ServerApplication
                 FileName = tmpFile,
 
                 Arguments = string.Format("{0} {1} {2} {3}", ServerConfigurationManager.Configuration.HttpServerPortNumber,
-                ServerKernel.HttpServerUrlPrefix,
+                HttpServerUrlPrefix,
                 UdpServerPort,
                 ServerConfigurationManager.Configuration.LegacyWebSocketPortNumber),
 

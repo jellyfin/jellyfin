@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -13,7 +14,13 @@ namespace MediaBrowser.Controller.Localization
     public class LocalizedStrings
     {
         public static IServerApplicationPaths ApplicationPaths;
-        
+
+        /// <summary>
+        /// Gets the list of Localized string files
+        /// </summary>
+        /// <value>The string files.</value>
+        public static IEnumerable<LocalizedStringData> StringFiles { get; set; }
+
         /// <summary>
         /// The base prefix
         /// </summary>
@@ -42,7 +49,7 @@ namespace MediaBrowser.Controller.Localization
         {
             _appPaths = appPaths;
 
-            foreach (var stringObject in Kernel.Instance.StringFiles)
+            foreach (var stringObject in StringFiles)
             {
                 AddStringData(LoadFromFile(GetFileName(stringObject),stringObject.GetType()));
             }

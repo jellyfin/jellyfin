@@ -49,7 +49,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         /// <param name="dbPath">The db path.</param>
         /// <returns>Task{System.Boolean}.</returns>
         /// <exception cref="System.ArgumentNullException">dbPath</exception>
-        protected async Task ConnectToDb(string dbPath)
+        protected Task ConnectToDb(string dbPath)
         {
             if (string.IsNullOrEmpty(dbPath))
             {
@@ -68,7 +68,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
 
             Connection = new SQLiteConnection(connectionstr.ConnectionString);
 
-            await Connection.OpenAsync().ConfigureAwait(false);
+            return Connection.OpenAsync();
         }
 
         /// <summary>
@@ -164,7 +164,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
             {
                 throw new ArgumentNullException("reader");
             }
-            
+
             var memoryStream = new MemoryStream();
             var num = 0L;
             var array = new byte[4096];

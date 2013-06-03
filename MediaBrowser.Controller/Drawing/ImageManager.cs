@@ -26,6 +26,13 @@ namespace MediaBrowser.Controller.Drawing
     public class ImageManager
     {
         /// <summary>
+        /// Gets the list of currently registered image processors
+        /// Image processors are specialized metadata providers that run after the normal ones
+        /// </summary>
+        /// <value>The image enhancers.</value>
+        public IEnumerable<IImageEnhancer> ImageEnhancers { get; set; }
+        
+        /// <summary>
         /// Gets the image size cache.
         /// </summary>
         /// <value>The image size cache.</value>
@@ -120,7 +127,7 @@ namespace MediaBrowser.Controller.Drawing
                 originalImagePath = await GetCroppedImage(originalImagePath, dateModified).ConfigureAwait(false);
             }
 
-            var supportedEnhancers = _kernel.ImageEnhancers.Where(i =>
+            var supportedEnhancers = ImageEnhancers.Where(i =>
             {
                 try
                 {
@@ -621,7 +628,7 @@ namespace MediaBrowser.Controller.Drawing
 
             var dateModified = GetImageDateModified(item, imagePath);
 
-            var supportedEnhancers = _kernel.ImageEnhancers.Where(i =>
+            var supportedEnhancers = ImageEnhancers.Where(i =>
             {
                 try
                 {

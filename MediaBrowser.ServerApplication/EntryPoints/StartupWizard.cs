@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Common;
+﻿using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
@@ -17,7 +17,7 @@ namespace MediaBrowser.ServerApplication.EntryPoints
         /// <summary>
         /// The _app host
         /// </summary>
-        private readonly IApplicationHost _appHost;
+        private readonly IServerApplicationHost _appHost;
         /// <summary>
         /// The _user manager
         /// </summary>
@@ -31,7 +31,7 @@ namespace MediaBrowser.ServerApplication.EntryPoints
         /// </summary>
         /// <param name="appHost">The app host.</param>
         /// <param name="userManager">The user manager.</param>
-        public StartupWizard(IApplicationHost appHost, IUserManager userManager, IServerConfigurationManager configurationManager)
+        public StartupWizard(IServerApplicationHost appHost, IUserManager userManager, IServerConfigurationManager configurationManager)
         {
             _appHost = appHost;
             _userManager = userManager;
@@ -58,7 +58,7 @@ namespace MediaBrowser.ServerApplication.EntryPoints
 
             try
             {
-                App.OpenDashboardPage("wizardStart.html", user, _configurationManager);
+                App.OpenDashboardPage("wizardStart.html", user, _configurationManager, _appHost);
             }
             catch (Win32Exception ex)
             {
