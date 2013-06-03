@@ -14,7 +14,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.ApiInteraction
+namespace MediaBrowser.Model.ApiClient
 {
     public interface IApiClient : IDisposable
     {
@@ -23,7 +23,7 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         /// <param name="url">The URL.</param>
         /// <returns>Task{Stream}.</returns>
-        /// <exception cref="System.ArgumentNullException">url</exception>
+        /// <exception cref="ArgumentNullException">url</exception>
         Task<Stream> GetImageStreamAsync(string url);
 
         /// <summary>
@@ -32,7 +32,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="id">The id.</param>
         /// <param name="userId">The user id.</param>
         /// <returns>Task{BaseItemDto}.</returns>
-        /// <exception cref="System.ArgumentNullException">id</exception>
+        /// <exception cref="ArgumentNullException">id</exception>
         Task<BaseItemDto> GetItemAsync(string id, string userId);
 
         /// <summary>
@@ -41,7 +41,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="itemId">The item id.</param>
         /// <param name="userId">The user id.</param>
         /// <returns>Task{System.String[]}.</returns>
-        /// <exception cref="System.ArgumentNullException">id</exception>
+        /// <exception cref="ArgumentNullException">id</exception>
         Task<string[]> GetIntrosAsync(string itemId, string userId);
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         /// <param name="userId">The user id.</param>
         /// <returns>Task{BaseItemDto}.</returns>
-        /// <exception cref="System.ArgumentNullException">userId</exception>
+        /// <exception cref="ArgumentNullException">userId</exception>
         Task<BaseItemDto> GetRootFolderAsync(string userId);
 
         /// <summary>
@@ -69,7 +69,7 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         /// <param name="query">The query.</param>
         /// <returns>Task{ItemsResult}.</returns>
-        /// <exception cref="System.ArgumentNullException">query</exception>
+        /// <exception cref="ArgumentNullException">query</exception>
         Task<ItemsResult> GetItemsAsync(ItemQuery query);
 
         /// <summary>
@@ -77,7 +77,7 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         /// <param name="query">The query.</param>
         /// <returns>Task{ItemsResult}.</returns>
-        /// <exception cref="System.ArgumentNullException">userId</exception>
+        /// <exception cref="ArgumentNullException">userId</exception>
         Task<ItemsResult> GetPeopleAsync(PersonsQuery query);
 
         /// <summary>
@@ -85,7 +85,7 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         /// <param name="query">The query.</param>
         /// <returns>Task{ItemsResult}.</returns>
-        /// <exception cref="System.ArgumentNullException">userId</exception>
+        /// <exception cref="ArgumentNullException">userId</exception>
         Task<ItemsResult> GetArtistsAsync(ArtistsQuery query);
 
         /// <summary>
@@ -93,7 +93,7 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns>Task{BaseItemDto}.</returns>
-        /// <exception cref="System.ArgumentNullException">userId</exception>
+        /// <exception cref="ArgumentNullException">userId</exception>
         Task<BaseItemDto> GetStudioAsync(string name);
 
         /// <summary>
@@ -101,7 +101,7 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns>Task{BaseItemDto}.</returns>
-        /// <exception cref="System.ArgumentNullException">userId</exception>
+        /// <exception cref="ArgumentNullException">userId</exception>
         Task<BaseItemDto> GetGenreAsync(string name);
 
         /// <summary>
@@ -109,7 +109,7 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns>Task{BaseItemDto}.</returns>
-        /// <exception cref="System.ArgumentNullException">name</exception>
+        /// <exception cref="ArgumentNullException">name</exception>
         Task<BaseItemDto> GetArtistAsync(string name);
 
         /// <summary>
@@ -131,7 +131,7 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns>Task{BaseItemDto}.</returns>
-        /// <exception cref="System.ArgumentNullException">userId</exception>
+        /// <exception cref="ArgumentNullException">userId</exception>
         Task<BaseItemDto> GetPersonAsync(string name);
 
         /// <summary>
@@ -139,7 +139,7 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         /// <param name="year">The year.</param>
         /// <returns>Task{BaseItemDto}.</returns>
-        /// <exception cref="System.ArgumentNullException">userId</exception>
+        /// <exception cref="ArgumentNullException">userId</exception>
         Task<BaseItemDto> GetYearAsync(int year);
 
         /// <summary>
@@ -165,7 +165,7 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns>Task{TaskInfo}.</returns>
-        /// <exception cref="System.ArgumentNullException">id</exception>
+        /// <exception cref="ArgumentNullException">id</exception>
         Task<TaskInfo> GetScheduledTaskAsync(Guid id);
 
         /// <summary>
@@ -173,7 +173,7 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns>Task{UserDto}.</returns>
-        /// <exception cref="System.ArgumentNullException">id</exception>
+        /// <exception cref="ArgumentNullException">id</exception>
         Task<UserDto> GetUserAsync(string id);
 
         /// <summary>
@@ -195,7 +195,7 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         /// <param name="location">The location.</param>
         /// <returns>Task{WeatherInfo}.</returns>
-        /// <exception cref="System.ArgumentNullException">location</exception>
+        /// <exception cref="ArgumentNullException">location</exception>
         Task<WeatherInfo> GetWeatherInfoAsync(string location);
 
         /// <summary>
@@ -204,7 +204,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="userId">The user id.</param>
         /// <param name="itemId">The item id.</param>
         /// <returns>Task{ItemsResult}.</returns>
-        /// <exception cref="System.ArgumentNullException">query</exception>
+        /// <exception cref="ArgumentNullException">query</exception>
         Task<BaseItemDto[]> GetLocalTrailersAsync(string userId, string itemId);
 
         /// <summary>
@@ -213,7 +213,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="userId">The user id.</param>
         /// <param name="itemId">The item id.</param>
         /// <returns>Task{BaseItemDto[]}.</returns>
-        /// <exception cref="System.ArgumentNullException">userId</exception>
+        /// <exception cref="ArgumentNullException">userId</exception>
         Task<BaseItemDto[]> GetSpecialFeaturesAsync(string userId, string itemId);
 
         /// <summary>
@@ -238,7 +238,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="userId">The user id.</param>
         /// <param name="wasPlayed">if set to <c>true</c> [was played].</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">itemId</exception>
+        /// <exception cref="ArgumentNullException">itemId</exception>
         Task UpdatePlayedStatusAsync(string itemId, string userId, bool wasPlayed);
 
         /// <summary>
@@ -248,7 +248,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="userId">The user id.</param>
         /// <param name="isFavorite">if set to <c>true</c> [is favorite].</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">itemId</exception>
+        /// <exception cref="ArgumentNullException">itemId</exception>
         Task UpdateFavoriteStatusAsync(string itemId, string userId, bool isFavorite);
 
         /// <summary>
@@ -257,7 +257,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="itemId">The item id.</param>
         /// <param name="userId">The user id.</param>
         /// <returns>Task{UserItemDataDto}.</returns>
-        /// <exception cref="System.ArgumentNullException">itemId</exception>
+        /// <exception cref="ArgumentNullException">itemId</exception>
         Task ReportPlaybackStartAsync(string itemId, string userId);
 
         /// <summary>
@@ -268,7 +268,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="positionTicks">The position ticks.</param>
         /// <param name="isPaused">if set to <c>true</c> [is paused].</param>
         /// <returns>Task{UserItemDataDto}.</returns>
-        /// <exception cref="System.ArgumentNullException">itemId</exception>
+        /// <exception cref="ArgumentNullException">itemId</exception>
         Task ReportPlaybackProgressAsync(string itemId, string userId, long? positionTicks, bool isPaused);
 
         /// <summary>
@@ -278,7 +278,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="userId">The user id.</param>
         /// <param name="positionTicks">The position ticks.</param>
         /// <returns>Task{UserItemDataDto}.</returns>
-        /// <exception cref="System.ArgumentNullException">itemId</exception>
+        /// <exception cref="ArgumentNullException">itemId</exception>
         Task ReportPlaybackStoppedAsync(string itemId, string userId, long? positionTicks);
 
         /// <summary>
@@ -298,7 +298,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="sessionId">The session id.</param>
         /// <param name="request">The request.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">
+        /// <exception cref="ArgumentNullException">
         /// sessionId
         /// or
         /// request
@@ -311,7 +311,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="itemId">The item id.</param>
         /// <param name="userId">The user id.</param>
         /// <returns>Task{UserItemDataDto}.</returns>
-        /// <exception cref="System.ArgumentNullException">itemId</exception>
+        /// <exception cref="ArgumentNullException">itemId</exception>
         Task ClearUserItemRatingAsync(string itemId, string userId);
 
         /// <summary>
@@ -321,7 +321,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="userId">The user id.</param>
         /// <param name="likes">if set to <c>true</c> [likes].</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">itemId</exception>
+        /// <exception cref="ArgumentNullException">itemId</exception>
         Task UpdateUserItemRatingAsync(string itemId, string userId, bool likes);
 
         /// <summary>
@@ -330,7 +330,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="userId">The user id.</param>
         /// <param name="sha1Hash">The sha1 hash.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">userId</exception>
+        /// <exception cref="ArgumentNullException">userId</exception>
         Task AuthenticateUserAsync(string userId, byte[] sha1Hash);
 
         /// <summary>
@@ -338,7 +338,7 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         /// <param name="configuration">The configuration.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">configuration</exception>
+        /// <exception cref="ArgumentNullException">configuration</exception>
         Task UpdateServerConfigurationAsync(ServerConfiguration configuration);
 
         /// <summary>
@@ -347,7 +347,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="id">The id.</param>
         /// <param name="triggers">The triggers.</param>
         /// <returns>Task{RequestResult}.</returns>
-        /// <exception cref="System.ArgumentNullException">id</exception>
+        /// <exception cref="ArgumentNullException">id</exception>
         Task UpdateScheduledTaskTriggersAsync(Guid id, TaskTriggerInfo[] triggers);
 
         /// <summary>
@@ -431,7 +431,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="item">The item.</param>
         /// <param name="options">The options.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">item</exception>
+        /// <exception cref="ArgumentNullException">item</exception>
         string GetImageUrl(BaseItemDto item, ImageOptions options);
 
         /// <summary>
@@ -440,7 +440,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="itemId">The Id of the item</param>
         /// <param name="options">The options.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">itemId</exception>
+        /// <exception cref="ArgumentNullException">itemId</exception>
         string GetImageUrl(string itemId, ImageOptions options);
 
         /// <summary>
@@ -449,7 +449,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="user">The user.</param>
         /// <param name="options">The options.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">user</exception>
+        /// <exception cref="ArgumentNullException">user</exception>
         string GetUserImageUrl(UserDto user, ImageOptions options);
 
         /// <summary>
@@ -458,7 +458,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="userId">The Id of the user</param>
         /// <param name="options">The options.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">userId</exception>
+        /// <exception cref="ArgumentNullException">userId</exception>
         string GetUserImageUrl(string userId, ImageOptions options);
 
         /// <summary>
@@ -467,7 +467,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="item">The item.</param>
         /// <param name="options">The options.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">item</exception>
+        /// <exception cref="ArgumentNullException">item</exception>
         string GetPersonImageUrl(BaseItemPerson item, ImageOptions options);
 
         /// <summary>
@@ -476,7 +476,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="item">The item.</param>
         /// <param name="options">The options.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">item</exception>
+        /// <exception cref="ArgumentNullException">item</exception>
         string GetPersonImageUrl(BaseItemDto item, ImageOptions options);
 
         /// <summary>
@@ -485,7 +485,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="name">The name of the person</param>
         /// <param name="options">The options.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">name</exception>
+        /// <exception cref="ArgumentNullException">name</exception>
         string GetPersonImageUrl(string name, ImageOptions options);
 
         /// <summary>
@@ -494,7 +494,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="item">The item.</param>
         /// <param name="options">The options.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">item</exception>
+        /// <exception cref="ArgumentNullException">item</exception>
         string GetYearImageUrl(BaseItemDto item, ImageOptions options);
 
         /// <summary>
@@ -511,7 +511,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="item">The item.</param>
         /// <param name="options">The options.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">item</exception>
+        /// <exception cref="ArgumentNullException">item</exception>
         string GetGenreImageUrl(BaseItemDto item, ImageOptions options);
 
         /// <summary>
@@ -520,7 +520,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="name">The name.</param>
         /// <param name="options">The options.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">name</exception>
+        /// <exception cref="ArgumentNullException">name</exception>
         string GetGenreImageUrl(string name, ImageOptions options);
 
         /// <summary>
@@ -529,7 +529,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="item">The item.</param>
         /// <param name="options">The options.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">item</exception>
+        /// <exception cref="ArgumentNullException">item</exception>
         string GetStudioImageUrl(BaseItemDto item, ImageOptions options);
 
         /// <summary>
@@ -538,7 +538,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="name">The name.</param>
         /// <param name="options">The options.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">name</exception>
+        /// <exception cref="ArgumentNullException">name</exception>
         string GetStudioImageUrl(string name, ImageOptions options);
 
         /// <summary>
@@ -547,7 +547,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="item">The item.</param>
         /// <param name="options">The options.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">item
+        /// <exception cref="ArgumentNullException">item
         /// or
         /// options</exception>
         string GetArtistImageUrl(BaseItemDto item, ImageOptions options);
@@ -558,7 +558,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="name">The name.</param>
         /// <param name="options">The options.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">name</exception>
+        /// <exception cref="ArgumentNullException">name</exception>
         string GetArtistImageUrl(string name, ImageOptions options);
 
         /// <summary>
@@ -567,7 +567,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="item">A given item.</param>
         /// <param name="options">The options.</param>
         /// <returns>System.String[][].</returns>
-        /// <exception cref="System.ArgumentNullException">item</exception>
+        /// <exception cref="ArgumentNullException">item</exception>
         string[] GetBackdropImageUrls(BaseItemDto item, ImageOptions options);
 
         /// <summary>
@@ -576,7 +576,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="item">A given item.</param>
         /// <param name="options">The options.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">item</exception>
+        /// <exception cref="ArgumentNullException">item</exception>
         string GetLogoImageUrl(BaseItemDto item, ImageOptions options);
 
         /// <summary>
@@ -584,7 +584,7 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         /// <param name="options">The options.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">options</exception>
+        /// <exception cref="ArgumentNullException">options</exception>
         string GetAudioStreamUrl(StreamOptions options);
 
         /// <summary>
@@ -592,7 +592,7 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         /// <param name="options">The options.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">options</exception>
+        /// <exception cref="ArgumentNullException">options</exception>
         string GetVideoStreamUrl(VideoStreamOptions options);
 
         /// <summary>
@@ -600,7 +600,7 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         /// <param name="options">The options.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">options</exception>
+        /// <exception cref="ArgumentNullException">options</exception>
         string GetHlsAudioStreamUrl(StreamOptions options);
 
         /// <summary>
@@ -608,7 +608,7 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         /// <param name="options">The options.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">options</exception>
+        /// <exception cref="ArgumentNullException">options</exception>
         string GetHlsVideoStreamUrl(VideoStreamOptions options);
     }
 }
