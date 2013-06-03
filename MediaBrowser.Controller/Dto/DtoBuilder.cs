@@ -182,7 +182,7 @@ namespace MediaBrowser.Controller.Dto
                 return;
             }
 
-            var supportedEnhancers = Kernel.Instance.ImageEnhancers.Where(i =>
+            var supportedEnhancers = Kernel.Instance.ImageManager.ImageEnhancers.Where(i =>
             {
                 try
                 {

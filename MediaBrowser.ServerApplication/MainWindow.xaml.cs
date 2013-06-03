@@ -29,7 +29,7 @@ namespace MediaBrowser.ServerApplication
         /// <summary>
         /// The _app host
         /// </summary>
-        private readonly IApplicationHost _appHost;
+        private readonly IServerApplicationHost _appHost;
 
         /// <summary>
         /// The _log manager
@@ -57,7 +57,7 @@ namespace MediaBrowser.ServerApplication
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="displayPreferencesManager">The display preferences manager.</param>
         /// <exception cref="System.ArgumentNullException">logger</exception>
-        public MainWindow(ILogManager logManager, IApplicationHost appHost, IServerConfigurationManager configurationManager, IUserManager userManager, ILibraryManager libraryManager, IJsonSerializer jsonSerializer, IDisplayPreferencesManager displayPreferencesManager)
+        public MainWindow(ILogManager logManager, IServerApplicationHost appHost, IServerConfigurationManager configurationManager, IUserManager userManager, ILibraryManager libraryManager, IJsonSerializer jsonSerializer, IDisplayPreferencesManager displayPreferencesManager)
         {
             if (logManager == null)
             {
@@ -189,13 +189,13 @@ namespace MediaBrowser.ServerApplication
         void cmdApiDocs_Click(object sender, EventArgs e)
         {
             App.OpenUrl("http://localhost:" + _configurationManager.Configuration.HttpServerPortNumber + "/" +
-                      Kernel.Instance.WebApplicationName + "/metadata");
+                      _appHost.WebApplicationName + "/metadata");
         }
 
         void cmdSwaggerApiDocs_Click(object sender, EventArgs e)
         {
             App.OpenUrl("http://localhost:" + _configurationManager.Configuration.HttpServerPortNumber + "/" +
-                      Kernel.Instance.WebApplicationName + "/swagger-ui/index.html");
+                      _appHost.WebApplicationName + "/swagger-ui/index.html");
         }
 
         void cmdGithubWiki_Click(object sender, EventArgs e)
@@ -254,7 +254,7 @@ namespace MediaBrowser.ServerApplication
         /// </summary>
         private void OpenDashboard(User loggedInUser)
         {
-            App.OpenDashboardPage("dashboard.html", loggedInUser, _configurationManager);
+            App.OpenDashboardPage("dashboard.html", loggedInUser, _configurationManager, _appHost);
         }
         
         /// <summary>
@@ -275,7 +275,7 @@ namespace MediaBrowser.ServerApplication
         private void cmdBrowseLibrary_click(object sender, RoutedEventArgs e)
         {
             var user = _userManager.Users.FirstOrDefault(u => u.Configuration.IsAdministrator);
-            App.OpenDashboardPage("index.html", user, _configurationManager);
+            App.OpenDashboardPage("index.html", user, _configurationManager, _appHost);
         }
 
         /// <summary>

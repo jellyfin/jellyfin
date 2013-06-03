@@ -59,7 +59,7 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         /// <summary>
         /// The _application host
         /// </summary>
-        private readonly IApplicationHost _applicationHost;
+        private readonly IServerApplicationHost _applicationHost;
 
         /// <summary>
         /// Gets or sets the configuration manager.
@@ -92,20 +92,14 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         private readonly List<IWebSocketListener> _webSocketListeners = new List<IWebSocketListener>();
 
         /// <summary>
-        /// The _kernel
-        /// </summary>
-        private readonly Kernel _kernel;
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="ServerManager" /> class.
         /// </summary>
         /// <param name="applicationHost">The application host.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="configurationManager">The configuration manager.</param>
-        /// <param name="kernel">The kernel.</param>
         /// <exception cref="System.ArgumentNullException">applicationHost</exception>
-        public ServerManager(IApplicationHost applicationHost, IJsonSerializer jsonSerializer, ILogger logger, IServerConfigurationManager configurationManager, Kernel kernel)
+        public ServerManager(IServerApplicationHost applicationHost, IJsonSerializer jsonSerializer, ILogger logger, IServerConfigurationManager configurationManager)
         {
             if (applicationHost == null)
             {
@@ -124,7 +118,6 @@ namespace MediaBrowser.Server.Implementations.ServerManager
             _jsonSerializer = jsonSerializer;
             _applicationHost = applicationHost;
             ConfigurationManager = configurationManager;
-            _kernel = kernel;
 
             ConfigurationManager.ConfigurationUpdated += ConfigurationUpdated;
         }
@@ -161,7 +154,7 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         private void ReloadHttpServer()
         {
             // Only reload if the port has changed, so that we don't disconnect any active users
-            if (HttpServer != null && HttpServer.UrlPrefix.Equals(_kernel.HttpServerUrlPrefix, StringComparison.OrdinalIgnoreCase))
+            if (HttpServer != null && HttpServer.UrlPrefix.Equals(_applicationHost.HttpServerUrlPrefix, StringComparison.OrdinalIgnoreCase))
             {
                 return;
             }
@@ -174,7 +167,7 @@ namespace MediaBrowser.Server.Implementations.ServerManager
             {
                 HttpServer = _applicationHost.Resolve<IHttpServer>();
                 HttpServer.EnableHttpRequestLogging = ConfigurationManager.Configuration.EnableHttpLevelLogging;
-                HttpServer.Start(_kernel.HttpServerUrlPrefix);
+                HttpServer.Start(_applicationHost.HttpServerUrlPrefix);
             }
             catch (HttpListenerException ex)
             {

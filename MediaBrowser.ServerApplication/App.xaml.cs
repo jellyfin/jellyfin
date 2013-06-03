@@ -226,10 +226,13 @@ namespace MediaBrowser.ServerApplication
         /// Opens the dashboard page.
         /// </summary>
         /// <param name="page">The page.</param>
-        public static void OpenDashboardPage(string page, User loggedInUser, IServerConfigurationManager configurationManager)
+        /// <param name="loggedInUser">The logged in user.</param>
+        /// <param name="configurationManager">The configuration manager.</param>
+        /// <param name="appHost">The app host.</param>
+        public static void OpenDashboardPage(string page, User loggedInUser, IServerConfigurationManager configurationManager, IServerApplicationHost appHost)
         {
             var url = "http://localhost:" + configurationManager.Configuration.HttpServerPortNumber + "/" +
-                      Kernel.Instance.WebApplicationName + "/dashboard/" + page;
+                      appHost.WebApplicationName + "/dashboard/" + page;
 
             OpenUrl(url);
         }
