@@ -24,21 +24,6 @@ namespace MediaBrowser.Api
     }
 
     /// <summary>
-    /// Class GetPluginAssembly
-    /// </summary>
-    [Route("/Plugins/{Id}/Assembly", "GET")]
-    [Api(("Gets a plugin assembly file"))]
-    public class GetPluginAssembly
-    {
-        /// <summary>
-        /// Gets or sets the id.
-        /// </summary>
-        /// <value>The id.</value>
-        [ApiMember(Name = "Id", Description = "Plugin Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public Guid Id { get; set; }
-    }
-
-    /// <summary>
     /// Class UninstallPlugin
     /// </summary>
     [Route("/Plugins/{Id}", "DELETE")]
@@ -87,21 +72,6 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <value>The request stream.</value>
         public Stream RequestStream { get; set; }
-    }
-
-    /// <summary>
-    /// Class GetPluginConfigurationFile
-    /// </summary>
-    [Route("/Plugins/{Id}/ConfigurationFile", "GET")]
-    [Api(("Gets a plugin's configuration file, in plain text"))]
-    public class GetPluginConfigurationFile
-    {
-        /// <summary>
-        /// Gets or sets the id.
-        /// </summary>
-        /// <value>The id.</value>
-        [ApiMember(Name = "Id", Description = "Plugin Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public Guid Id { get; set; }
     }
 
     /// <summary>
@@ -206,18 +176,6 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public object Get(GetPluginAssembly request)
-        {
-            var plugin = _appHost.Plugins.First(p => p.Id == request.Id);
-
-            return ResultFactory.GetStaticFileResult(RequestContext, plugin.AssemblyFilePath);
-        }
-
-        /// <summary>
-        /// Gets the specified request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>System.Object.</returns>
         public object Get(GetPluginConfiguration request)
         {
             var plugin = _appHost.Plugins.First(p => p.Id == request.Id);
@@ -227,18 +185,6 @@ namespace MediaBrowser.Api
             var cacheKey = (plugin.Version.ToString() + dateModified.Ticks).GetMD5();
 
             return ToOptimizedResultUsingCache(cacheKey, dateModified, null, () => plugin.Configuration);
-        }
-
-        /// <summary>
-        /// Gets the specified request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>System.Object.</returns>
-        public object Get(GetPluginConfigurationFile request)
-        {
-            var plugin = _appHost.Plugins.First(p => p.Id == request.Id);
-
-            return ResultFactory.GetStaticFileResult(RequestContext, plugin.ConfigurationFilePath);
         }
 
         /// <summary>
