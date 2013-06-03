@@ -53,10 +53,10 @@ namespace MediaBrowser.Model.ApiClient
         Task<BaseItemDto> GetRootFolderAsync(string userId);
 
         /// <summary>
-        /// Gets all Users
+        /// Gets the users async.
         /// </summary>
         /// <returns>Task{UserDto[]}.</returns>
-        Task<UserDto[]> GetAllUsersAsync();
+        Task<UserDto[]> GetUsersAsync();
 
         /// <summary>
         /// Gets active client sessions.
