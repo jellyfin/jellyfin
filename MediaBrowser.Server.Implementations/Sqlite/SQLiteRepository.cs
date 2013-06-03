@@ -63,7 +63,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
                 CacheSize = 40960,
                 SyncMode = SynchronizationModes.Off,
                 DataSource = dbPath,
-                JournalMode = SQLiteJournalModeEnum.Memory
+                JournalMode = SQLiteJournalModeEnum.Wal
             };
 
             Connection = new SQLiteConnection(connectionstr.ConnectionString);
