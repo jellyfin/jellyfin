@@ -304,7 +304,6 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// We attach these to the item so that we only ever have to hit the file system once
         /// (this includes the children of the containing folder)
-        /// Use ResolveArgs.FileSystemDictionary to check for the existence of files instead of File.Exists
         /// </summary>
         /// <value>The resolve args.</value>
         [IgnoreDataMember]

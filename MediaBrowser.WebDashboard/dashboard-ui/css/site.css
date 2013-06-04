@@ -67,6 +67,7 @@ h2 {
 h1 a {
     font-weight: normal!important;
     text-decoration: none;
+    color: #fff!important;
 }
 
     h1 a:hover {

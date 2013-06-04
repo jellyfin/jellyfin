@@ -696,7 +696,8 @@ namespace MediaBrowser.Api.Images
                 Item = item,
                 Request = request,
                 CropWhiteSpace = request.Type == ImageType.Logo || request.Type == ImageType.Art,
-                OriginalImageDateModified = originalFileImageDateModified
+                OriginalImageDateModified = originalFileImageDateModified,
+                Enhancers = supportedImageEnhancers
 
             }, contentType);
         }

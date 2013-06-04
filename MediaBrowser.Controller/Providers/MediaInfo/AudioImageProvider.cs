@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.IO;
+﻿using System.IO;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -156,7 +157,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
 
             var path = ImageCache.GetResourcePath(filename + "_primary", ".jpg");
 
-            if (!ImageCache.ContainsFilePath(path))
+            if (!File.Exists(path))
             {
                 var semaphore = GetLock(path);
 
@@ -164,10 +165,17 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
                 await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
                 // Check again
-                if (!ImageCache.ContainsFilePath(path))
+                if (!File.Exists(path))
                 {
                     try
                     {
+                        var parentPath = Path.GetDirectoryName(path);
+
+                        if (!Directory.Exists(parentPath))
+                        {
+                            Directory.CreateDirectory(parentPath);
+                        }
+
                         await _mediaEncoder.ExtractImage(new[] { item.Path }, InputType.AudioFile, null, path, cancellationToken).ConfigureAwait(false);
                     }
                     finally

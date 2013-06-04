@@ -94,29 +94,20 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         }
 
         /// <summary>
-        /// The _media tools path
+        /// Gets the media tools path.
         /// </summary>
-        private string _mediaToolsPath;
-        /// <summary>
-        /// Gets the folder path to tools
-        /// </summary>
-        /// <value>The media tools path.</value>
-        private string MediaToolsPath
+        /// <param name="create">if set to <c>true</c> [create].</param>
+        /// <returns>System.String.</returns>
+        private string GetMediaToolsPath(bool create)
         {
-            get
+            var path = Path.Combine(_appPaths.ProgramDataPath, "ffmpeg");
+
+            if (create && !Directory.Exists(path))
             {
-                if (_mediaToolsPath == null)
-                {
-                    _mediaToolsPath = Path.Combine(_appPaths.ProgramDataPath, "ffmpeg");
-
-                    if (!Directory.Exists(_mediaToolsPath))
-                    {
-                        Directory.CreateDirectory(_mediaToolsPath);
-                    }
-                }
-
-                return _mediaToolsPath;
+                Directory.CreateDirectory(path);
             }
+
+            return path;
         }
 
         /// <summary>
@@ -185,7 +176,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
 
             var filename = resource.Substring(resource.IndexOf(prefix, StringComparison.OrdinalIgnoreCase) + prefix.Length);
 
-            var versionedDirectoryPath = Path.Combine(MediaToolsPath, Path.GetFileNameWithoutExtension(filename));
+            var versionedDirectoryPath = Path.Combine(GetMediaToolsPath(true), Path.GetFileNameWithoutExtension(filename));
 
             if (!Directory.Exists(versionedDirectoryPath))
             {
@@ -570,14 +561,14 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
             }
 
             var offsetParam = offset.Ticks > 0 ? "-ss " + offset.TotalSeconds + " " : string.Empty;
-            
+
             var process = new Process
             {
                 StartInfo = new ProcessStartInfo
                 {
                     RedirectStandardOutput = false,
                     RedirectStandardError = true,
-                    
+
                     CreateNoWindow = true,
                     UseShellExecute = false,
                     FileName = FFMpegPath,
@@ -744,7 +735,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
 
                     RedirectStandardOutput = false,
                     RedirectStandardError = true,
-                    
+
                     FileName = FFMpegPath,
                     Arguments = string.Format("{0}-i {1} -map 0:{2} -an -vn -c:s ass \"{3}\"", offsetParam, inputPath, subtitleStreamIndex, outputPath),
                     WindowStyle = ProcessWindowStyle.Hidden,
@@ -759,7 +750,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
             var logFilePath = Path.Combine(_appPaths.LogDirectoryPath, "ffmpeg-sub-extract-" + Guid.NewGuid() + ".txt");
 
             var logFileStream = new FileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous);
-            
+
             try
             {
                 process.Start();

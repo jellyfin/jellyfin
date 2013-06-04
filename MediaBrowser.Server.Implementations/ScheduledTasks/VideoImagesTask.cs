@@ -8,14 +8,15 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers.MediaInfo;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
+using MoreLinq;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Logging;
-using MoreLinq;
 
 namespace MediaBrowser.Server.Implementations.ScheduledTasks
 {
@@ -263,7 +264,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
 
             var path = ImageCache.GetResourcePath(filename, ".jpg");
 
-            if (!ImageCache.ContainsFilePath(path))
+            if (!File.Exists(path))
             {
                 var semaphore = GetLock(path);
 
@@ -271,10 +272,17 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
                 await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
                 // Check again
-                if (!ImageCache.ContainsFilePath(path))
+                if (!File.Exists(path))
                 {
                     try
                     {
+                        var parentPath = Path.GetDirectoryName(path);
+
+                        if (!Directory.Exists(parentPath))
+                        {
+                            Directory.CreateDirectory(parentPath);
+                        }
+
                         await ExtractImageInternal(item, path, cancellationToken).ConfigureAwait(false);
                     }
                     finally

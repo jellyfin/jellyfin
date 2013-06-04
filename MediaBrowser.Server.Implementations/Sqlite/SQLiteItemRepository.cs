@@ -471,20 +471,18 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         /// <summary>
         /// Gets the critic reviews path.
         /// </summary>
-        /// <value>The critic reviews path.</value>
-        private string CriticReviewsPath
+        /// <param name="create">if set to <c>true</c> [create].</param>
+        /// <returns>System.String.</returns>
+        private string GetCriticReviewsPath(bool create)
         {
-            get
+            var path = Path.Combine(_appPaths.DataPath, "critic-reviews");
+
+            if (create && !Directory.Exists(path))
             {
-                var path = Path.Combine(_appPaths.DataPath, "critic-reviews");
-
-                if (!Directory.Exists(path))
-                {
-                    Directory.CreateDirectory(path);
-                }
-
-                return path;
+                Directory.CreateDirectory(path);
             }
+
+            return path;
         }
 
         /// <summary>
@@ -499,9 +497,13 @@ namespace MediaBrowser.Server.Implementations.Sqlite
 
                 try
                 {
-                    var path = Path.Combine(CriticReviewsPath, itemId + ".json");
+                    var path = Path.Combine(GetCriticReviewsPath(false), itemId + ".json");
 
                     return _jsonSerializer.DeserializeFromFile<List<ItemReview>>(path);
+                }
+                catch (DirectoryNotFoundException)
+                {
+                    return new List<ItemReview>();
                 }
                 catch (FileNotFoundException)
                 {
@@ -521,7 +523,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         {
             return Task.Run(() =>
             {
-                var path = Path.Combine(CriticReviewsPath, itemId + ".json");
+                var path = Path.Combine(GetCriticReviewsPath(true), itemId + ".json");
 
                 _jsonSerializer.SerializeToFile(criticReviews.ToList(), path);
             });

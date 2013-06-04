@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Common.Extensions;
 using System;
-using System.Collections.Concurrent;
 using System.IO;
 
 namespace MediaBrowser.Common.IO
@@ -11,12 +10,6 @@ namespace MediaBrowser.Common.IO
     /// </summary>
     public class FileSystemRepository
     {
-        /// <summary>
-        /// Contains the list of subfolders under the main directory
-        /// The directory entry is created when the item is first added to the dictionary
-        /// </summary>
-        private readonly ConcurrentDictionary<string, string> _subFolderPaths = new ConcurrentDictionary<string, string>();
-
         /// <summary>
         /// Gets or sets the path.
         /// </summary>
@@ -36,18 +29,6 @@ namespace MediaBrowser.Common.IO
             }
 
             Path = path;
-            Initialize();
-        }
-
-        /// <summary>
-        /// Initializes this instance.
-        /// </summary>
-        protected void Initialize()
-        {
-            if (!Directory.Exists(Path))
-            {
-                Directory.CreateDirectory(Path);
-            }
         }
 
         /// <summary>
@@ -56,17 +37,18 @@ namespace MediaBrowser.Common.IO
         /// <param name="uniqueName">Name of the unique.</param>
         /// <param name="fileExtension">The file extension.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
+        /// <exception cref="System.ArgumentNullException">
+        /// </exception>
         public string GetResourcePath(string uniqueName, string fileExtension)
         {
             if (string.IsNullOrEmpty(uniqueName))
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException("uniqueName");
             }
 
             if (string.IsNullOrEmpty(fileExtension))
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException("fileExtension");
             }
             
             var filename = uniqueName.GetMD5() + fileExtension;
@@ -75,7 +57,7 @@ namespace MediaBrowser.Common.IO
         }
 
         /// <summary>
-        /// Gets the full path of where a file should be stored within the repository
+        /// Gets the resource path.
         /// </summary>
         /// <param name="filename">The filename.</param>
         /// <returns>System.String.</returns>
@@ -84,41 +66,14 @@ namespace MediaBrowser.Common.IO
         {
             if (string.IsNullOrEmpty(filename))
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException("filename");
             }
             
-            return GetInternalResourcePath(filename);
-        }
-
-        /// <summary>
-        /// Takes a filename and returns the full path of where it should be stored
-        /// </summary>
-        /// <param name="filename">The filename.</param>
-        /// <returns>System.String.</returns>
-        private string GetInternalResourcePath(string filename)
-        {
             var prefix = filename.Substring(0, 1);
 
-            var folder = _subFolderPaths.GetOrAdd(prefix, GetCachePath);
-
-            return System.IO.Path.Combine(folder, filename);
-        }
-
-        /// <summary>
-        /// Creates a subfolder under the image cache directory and returns the full path
-        /// </summary>
-        /// <param name="prefix">The prefix.</param>
-        /// <returns>System.String.</returns>
-        private string GetCachePath(string prefix)
-        {
             var path = System.IO.Path.Combine(Path, prefix);
-
-            if (!Directory.Exists(path))
-            {
-                Directory.CreateDirectory(path);
-            }
-
-            return path;
+            
+            return System.IO.Path.Combine(path, filename);
         }
 
         /// <summary>
@@ -144,8 +99,8 @@ namespace MediaBrowser.Common.IO
             {
                 throw new ArgumentNullException();
             }
-            
-            return ContainsFilePath(GetInternalResourcePath(filename));
+
+            return ContainsFilePath(GetResourcePath(filename));
         }
 
         /// <summary>

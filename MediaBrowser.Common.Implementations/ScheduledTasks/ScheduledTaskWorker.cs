@@ -123,9 +123,14 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
                 {
                     try
                     {
-                        return JsonSerializer.DeserializeFromFile<TaskResult>(GetHistoryFilePath());
+                        return JsonSerializer.DeserializeFromFile<TaskResult>(GetHistoryFilePath(false));
                     }
-                    catch (IOException)
+                    catch (DirectoryNotFoundException)
+                    {
+                        // File doesn't exist. No biggie
+                        return null;
+                    }
+                    catch (FileNotFoundException)
                     {
                         // File doesn't exist. No biggie
                         return null;
@@ -414,62 +419,45 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         }
 
         /// <summary>
-        /// The _scheduled tasks configuration directory
-        /// </summary>
-        private string _scheduledTasksConfigurationDirectory;
-        /// <summary>
         /// Gets the scheduled tasks configuration directory.
         /// </summary>
-        /// <value>The scheduled tasks configuration directory.</value>
-        private string ScheduledTasksConfigurationDirectory
+        /// <param name="create">if set to <c>true</c> [create].</param>
+        /// <returns>System.String.</returns>
+        private string GetScheduledTasksConfigurationDirectory(bool create)
         {
-            get
-            {
-                if (_scheduledTasksConfigurationDirectory == null)
-                {
-                    _scheduledTasksConfigurationDirectory = Path.Combine(ApplicationPaths.ConfigurationDirectoryPath, "ScheduledTasks");
+            var path = Path.Combine(ApplicationPaths.ConfigurationDirectoryPath, "ScheduledTasks");
 
-                    if (!Directory.Exists(_scheduledTasksConfigurationDirectory))
-                    {
-                        Directory.CreateDirectory(_scheduledTasksConfigurationDirectory);
-                    }
-                }
-                return _scheduledTasksConfigurationDirectory;
+            if (create && !Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
             }
+
+            return path;
         }
 
         /// <summary>
-        /// The _scheduled tasks data directory
-        /// </summary>
-        private string _scheduledTasksDataDirectory;
-        /// <summary>
         /// Gets the scheduled tasks data directory.
         /// </summary>
-        /// <value>The scheduled tasks data directory.</value>
-        private string ScheduledTasksDataDirectory
+        /// <param name="create">if set to <c>true</c> [create].</param>
+        /// <returns>System.String.</returns>
+        private string GetScheduledTasksDataDirectory(bool create)
         {
-            get
-            {
-                if (_scheduledTasksDataDirectory == null)
-                {
-                    _scheduledTasksDataDirectory = Path.Combine(ApplicationPaths.DataPath, "ScheduledTasks");
+            var path = Path.Combine(ApplicationPaths.DataPath, "ScheduledTasks");
 
-                    if (!Directory.Exists(_scheduledTasksDataDirectory))
-                    {
-                        Directory.CreateDirectory(_scheduledTasksDataDirectory);
-                    }
-                }
-                return _scheduledTasksDataDirectory;
+            if (create && !Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
             }
+            return path;
         }
 
         /// <summary>
         /// Gets the history file path.
         /// </summary>
         /// <value>The history file path.</value>
-        private string GetHistoryFilePath()
+        private string GetHistoryFilePath(bool createDirectory)
         {
-            return Path.Combine(ScheduledTasksDataDirectory, Id + ".js");
+            return Path.Combine(GetScheduledTasksDataDirectory(createDirectory), Id + ".js");
         }
 
         /// <summary>
@@ -478,7 +466,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         /// <returns>System.String.</returns>
         private string GetConfigurationFilePath()
         {
-            return Path.Combine(ScheduledTasksConfigurationDirectory, Id + ".js");
+            return Path.Combine(GetScheduledTasksConfigurationDirectory(false), Id + ".js");
         }
 
         /// <summary>
@@ -493,7 +481,12 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
                 .Select(ScheduledTaskHelpers.GetTrigger)
                 .ToList();
             }
-            catch (IOException)
+            catch (FileNotFoundException)
+            {
+                // File doesn't exist. No biggie. Return defaults.
+                return ScheduledTask.GetDefaultTriggers();
+            }
+            catch (DirectoryNotFoundException)
             {
                 // File doesn't exist. No biggie. Return defaults.
                 return ScheduledTask.GetDefaultTriggers();
@@ -530,7 +523,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
                 Id = Id
             };
 
-            JsonSerializer.SerializeToFile(result, GetHistoryFilePath());
+            JsonSerializer.SerializeToFile(result, GetHistoryFilePath(true));
 
             LastExecutionResult = result;
 
