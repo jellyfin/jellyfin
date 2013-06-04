@@ -45,7 +45,7 @@ namespace MediaBrowser.Common.Implementations
         /// <summary>
         /// Gets the path to the system folder
         /// </summary>
-        public string ProgramSystemPath { get { return Path.Combine(ProgramDataPath, "System"); } }
+        public string ProgramSystemPath { get { return Path.Combine(ProgramDataPath, "system"); } }
 
         /// <summary>
         /// The _data directory
@@ -160,7 +160,7 @@ namespace MediaBrowser.Common.Implementations
             {
                 if (_tempUpdatePath == null)
                 {
-                    _tempUpdatePath = Path.Combine(ProgramDataPath, "Updates");
+                    _tempUpdatePath = Path.Combine(ProgramDataPath, "updates");
                     if (!Directory.Exists(_tempUpdatePath))
                     {
                         Directory.CreateDirectory(_tempUpdatePath);
@@ -220,10 +220,6 @@ namespace MediaBrowser.Common.Implementations
         }
 
         /// <summary>
-        /// The _system configuration file path
-        /// </summary>
-        private string _systemConfigurationFilePath;
-        /// <summary>
         /// Gets the path to the system configuration file
         /// </summary>
         /// <value>The system configuration file path.</value>
@@ -231,7 +227,7 @@ namespace MediaBrowser.Common.Implementations
         {
             get
             {
-                return _systemConfigurationFilePath ?? (_systemConfigurationFilePath = Path.Combine(ConfigurationDirectoryPath, "system.xml"));
+                return Path.Combine(ConfigurationDirectoryPath, "system.xml");
             }
         }
 

@@ -558,6 +558,12 @@ namespace MediaBrowser.Server.Implementations.Library
         public AggregateFolder CreateRootFolder()
         {
             var rootFolderPath = ConfigurationManager.ApplicationPaths.RootFolderPath;
+
+            if (!Directory.Exists(rootFolderPath))
+            {
+                Directory.CreateDirectory(rootFolderPath);
+            }
+
             var rootFolder = RetrieveItem(rootFolderPath.GetMBId(typeof(AggregateFolder))) as AggregateFolder ?? (AggregateFolder)ResolvePath(rootFolderPath);
 
             // Add in the plug-in folders

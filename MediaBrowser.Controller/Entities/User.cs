@@ -28,19 +28,14 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                if (Configuration.UseCustomLibrary)
+                var path = Configuration.UseCustomLibrary ? GetRootFolderPath(Name) : ConfigurationManager.ApplicationPaths.DefaultUserViewsPath;
+
+                if (!Directory.Exists(path))
                 {
-                    var rootFolderPath = GetRootFolderPath(Name);
-
-                    if (!Directory.Exists(rootFolderPath))
-                    {
-                        Directory.CreateDirectory(rootFolderPath);
-                    }
-
-                    return rootFolderPath;
+                    Directory.CreateDirectory(path);
                 }
 
-                return ConfigurationManager.ApplicationPaths.DefaultUserViewsPath;
+                return path;
             }
         }
 
