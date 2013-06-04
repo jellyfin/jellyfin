@@ -577,6 +577,41 @@ namespace MediaBrowser.Controller.Drawing
         }
 
         /// <summary>
+        /// Gets the enhanced image.
+        /// </summary>
+        /// <param name="originalImagePath">The original image path.</param>
+        /// <param name="dateModified">The date modified.</param>
+        /// <param name="item">The item.</param>
+        /// <param name="imageType">Type of the image.</param>
+        /// <param name="imageIndex">Index of the image.</param>
+        /// <returns>Task{System.String}.</returns>
+        /// <exception cref="System.ArgumentNullException">item</exception>
+        public Task<string> GetEnhancedImage(string originalImagePath, DateTime dateModified, BaseItem item, ImageType imageType, int imageIndex)
+        {
+            if (item == null)
+            {
+                throw new ArgumentNullException("item");
+            }
+
+            var supportedImageEnhancers = ImageEnhancers.Where(i =>
+            {
+                try
+                {
+                    return i.Supports(item, imageType);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error in image enhancer: {0}", ex, i.GetType().Name);
+
+                    return false;
+                }
+
+            }).ToList();
+
+            return GetEnhancedImage(originalImagePath, dateModified, item, imageType, imageIndex, supportedImageEnhancers);
+        }
+        
+        /// <summary>
         /// Runs an image through the image enhancers, caches the result, and returns the cached path
         /// </summary>
         /// <param name="originalImagePath">The original image path.</param>
