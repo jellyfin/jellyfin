@@ -625,7 +625,7 @@ var Dashboard = {
                 }
 
             }).done(function (result) {
-                deferred.resolveWith(null, [[result]]);
+                deferred.resolveWith(null, [result]);
             });
 
             Dashboard.getPluginSecurityInfoPromise = deferred;
@@ -715,7 +715,7 @@ var Dashboard = {
 
         if (!$('.supporterIcon', header).length) {
 
-            ApiClient.getPluginSecurityInfo().done(function (pluginSecurityInfo) {
+            Dashboard.getPluginSecurityInfo().done(function (pluginSecurityInfo) {
 
                 if (pluginSecurityInfo.IsMBSupporter) {
                     $('<a class="imageLink supporterIcon" href="supporter.html" title="Thank you for supporting Media Browser."><img src="css/images/supporter/supporterbadge.png" /></a>').insertBefore($('.btnTools', header));
