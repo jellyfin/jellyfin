@@ -331,10 +331,10 @@
             return;
         }
 
-        var html = item.Status == 'Ended' ? 'Aired' : 'Airs';
+        var html = '';
 
         if (item.AirDays && item.AirDays.length) {
-            html += item.AirDays.length == 7 ? 'daily' : ' ' + item.AirDays.map(function (a) {
+            html += item.AirDays.length == 7 ? 'daily' : item.AirDays.map(function (a) {
                 return a + "s";
 
             }).join(',');
@@ -348,7 +348,13 @@
             html += ' at ' + item.AirTime;
         }
 
-        $('#seriesAirTime', page).show().html(html).trigger('create');
+        if (html) {
+            html = (item.Status == 'Ended' ? 'Aired ' : 'Airs ') + html;
+            
+            $('#seriesAirTime', page).show().html(html).trigger('create');
+        } else {
+            $('#seriesAirTime', page).hide();
+        }
     }
 
     function renderTags(page, item) {
@@ -855,10 +861,10 @@
         $('#btnRemote', page).on('click', function () {
 
             RemoteControl.showMenu({
-                
+
                 item: currentItem,
                 context: getContext(currentItem),
-                
+
                 themeSongs: $('#themeSongsCollapsible:visible', page).length > 0,
 
                 themeVideos: $('#themeVideosCollapsible:visible', page).length > 0

@@ -27,10 +27,6 @@ namespace MediaBrowser.Server.Implementations
         }
 #endif
         /// <summary>
-        /// The _root folder path
-        /// </summary>
-        private string _rootFolderPath;
-        /// <summary>
         /// Gets the path to the base root media directory
         /// </summary>
         /// <value>The root folder path.</value>
@@ -38,22 +34,10 @@ namespace MediaBrowser.Server.Implementations
         {
             get
             {
-                if (_rootFolderPath == null)
-                {
-                    _rootFolderPath = Path.Combine(ProgramDataPath, "Root");
-                    if (!Directory.Exists(_rootFolderPath))
-                    {
-                        Directory.CreateDirectory(_rootFolderPath);
-                    }
-                }
-                return _rootFolderPath;
+                return Path.Combine(ProgramDataPath, "root");
             }
         }
 
-        /// <summary>
-        /// The _default user views path
-        /// </summary>
-        private string _defaultUserViewsPath;
         /// <summary>
         /// Gets the path to the default user view directory.  Used if no specific user view is defined.
         /// </summary>
@@ -62,22 +46,10 @@ namespace MediaBrowser.Server.Implementations
         {
             get
             {
-                if (_defaultUserViewsPath == null)
-                {
-                    _defaultUserViewsPath = Path.Combine(RootFolderPath, "Default");
-                    if (!Directory.Exists(_defaultUserViewsPath))
-                    {
-                        Directory.CreateDirectory(_defaultUserViewsPath);
-                    }
-                }
-                return _defaultUserViewsPath;
+                return Path.Combine(RootFolderPath, "default");
             }
         }
 
-        /// <summary>
-        /// The _localization path
-        /// </summary>
-        private string _localizationPath;
         /// <summary>
         /// Gets the path to localization data.
         /// </summary>
@@ -86,15 +58,7 @@ namespace MediaBrowser.Server.Implementations
         {
             get
             {
-                if (_localizationPath == null)
-                {
-                    _localizationPath = Path.Combine(ProgramDataPath, "Localization");
-                    if (!Directory.Exists(_localizationPath))
-                    {
-                        Directory.CreateDirectory(_localizationPath);
-                    }
-                }
-                return _localizationPath;
+                return Path.Combine(ProgramDataPath, "localization");
             }
         }
 
@@ -110,36 +74,14 @@ namespace MediaBrowser.Server.Implementations
         {
             get
             {
-                if (_ibnPath == null)
-                {
-                    _ibnPath = Path.Combine(ProgramDataPath, "ImagesByName");
-                    if (!Directory.Exists(_ibnPath))
-                    {
-                        Directory.CreateDirectory(_ibnPath);
-                    }
-                }
-
-                return _ibnPath;
+                return _ibnPath ?? (_ibnPath = Path.Combine(ProgramDataPath, "ImagesByName"));
             }
             set
             {
                 _ibnPath = value;
-
-                _peoplePath = null;
-                _studioPath = null;
-                _genrePath = null;
-                _yearPath = null;
-                _musicArtistsPath = null;
-                _generalPath = null;
-                _ratingsPath = null;
-                _mediaInfoImagesPath = null;
             }
         }
 
-        /// <summary>
-        /// The _people path
-        /// </summary>
-        private string _peoplePath;
         /// <summary>
         /// Gets the path to the People directory
         /// </summary>
@@ -148,23 +90,10 @@ namespace MediaBrowser.Server.Implementations
         {
             get
             {
-                if (_peoplePath == null)
-                {
-                    _peoplePath = Path.Combine(ItemsByNamePath, "People");
-                    if (!Directory.Exists(_peoplePath))
-                    {
-                        Directory.CreateDirectory(_peoplePath);
-                    }
-                }
-
-                return _peoplePath;
+                return Path.Combine(ItemsByNamePath, "People");
             }
         }
 
-        /// <summary>
-        /// The _genre path
-        /// </summary>
-        private string _genrePath;
         /// <summary>
         /// Gets the path to the Genre directory
         /// </summary>
@@ -173,23 +102,10 @@ namespace MediaBrowser.Server.Implementations
         {
             get
             {
-                if (_genrePath == null)
-                {
-                    _genrePath = Path.Combine(ItemsByNamePath, "Genre");
-                    if (!Directory.Exists(_genrePath))
-                    {
-                        Directory.CreateDirectory(_genrePath);
-                    }
-                }
-
-                return _genrePath;
+                return Path.Combine(ItemsByNamePath, "Genre");
             }
         }
 
-        /// <summary>
-        /// The _studio path
-        /// </summary>
-        private string _studioPath;
         /// <summary>
         /// Gets the path to the Studio directory
         /// </summary>
@@ -198,23 +114,10 @@ namespace MediaBrowser.Server.Implementations
         {
             get
             {
-                if (_studioPath == null)
-                {
-                    _studioPath = Path.Combine(ItemsByNamePath, "Studio");
-                    if (!Directory.Exists(_studioPath))
-                    {
-                        Directory.CreateDirectory(_studioPath);
-                    }
-                }
-
-                return _studioPath;
+                return Path.Combine(ItemsByNamePath, "Studio");
             }
         }
 
-        /// <summary>
-        /// The _year path
-        /// </summary>
-        private string _yearPath;
         /// <summary>
         /// Gets the path to the Year directory
         /// </summary>
@@ -223,23 +126,10 @@ namespace MediaBrowser.Server.Implementations
         {
             get
             {
-                if (_yearPath == null)
-                {
-                    _yearPath = Path.Combine(ItemsByNamePath, "Year");
-                    if (!Directory.Exists(_yearPath))
-                    {
-                        Directory.CreateDirectory(_yearPath);
-                    }
-                }
-
-                return _yearPath;
+                return Path.Combine(ItemsByNamePath, "Year");
             }
         }
 
-        /// <summary>
-        /// The _general path
-        /// </summary>
-        private string _generalPath;
         /// <summary>
         /// Gets the path to the General IBN directory
         /// </summary>
@@ -248,23 +138,10 @@ namespace MediaBrowser.Server.Implementations
         {
             get
             {
-                if (_generalPath == null)
-                {
-                    _generalPath = Path.Combine(ItemsByNamePath, "General");
-                    if (!Directory.Exists(_generalPath))
-                    {
-                        Directory.CreateDirectory(_generalPath);
-                    }
-                }
-
-                return _generalPath;
+                return Path.Combine(ItemsByNamePath, "general");
             }
         }
 
-        /// <summary>
-        /// The _ratings path
-        /// </summary>
-        private string _ratingsPath;
         /// <summary>
         /// Gets the path to the Ratings IBN directory
         /// </summary>
@@ -273,23 +150,10 @@ namespace MediaBrowser.Server.Implementations
         {
             get
             {
-                if (_ratingsPath == null)
-                {
-                    _ratingsPath = Path.Combine(ItemsByNamePath, "Ratings");
-                    if (!Directory.Exists(_ratingsPath))
-                    {
-                        Directory.CreateDirectory(_ratingsPath);
-                    }
-                }
-
-                return _ratingsPath;
+                return Path.Combine(ItemsByNamePath, "ratings");
             }
         }
 
-        /// <summary>
-        /// The _media info images path
-        /// </summary>
-        private string _mediaInfoImagesPath;
         /// <summary>
         /// Gets the media info images path.
         /// </summary>
@@ -298,23 +162,10 @@ namespace MediaBrowser.Server.Implementations
         {
             get
             {
-                if (_mediaInfoImagesPath == null)
-                {
-                    _mediaInfoImagesPath = Path.Combine(ItemsByNamePath, "MediaInfo");
-                    if (!Directory.Exists(_mediaInfoImagesPath))
-                    {
-                        Directory.CreateDirectory(_mediaInfoImagesPath);
-                    }
-                }
-
-                return _mediaInfoImagesPath;
+                return Path.Combine(ItemsByNamePath, "mediainfo");
             }
         }
 
-        /// <summary>
-        /// The _user configuration directory path
-        /// </summary>
-        private string _userConfigurationDirectoryPath;
         /// <summary>
         /// Gets the path to the user configuration directory
         /// </summary>
@@ -323,22 +174,10 @@ namespace MediaBrowser.Server.Implementations
         {
             get
             {
-                if (_userConfigurationDirectoryPath == null)
-                {
-                    _userConfigurationDirectoryPath = Path.Combine(ConfigurationDirectoryPath, "users");
-                    if (!Directory.Exists(_userConfigurationDirectoryPath))
-                    {
-                        Directory.CreateDirectory(_userConfigurationDirectoryPath);
-                    }
-                }
-                return _userConfigurationDirectoryPath;
+                return Path.Combine(ConfigurationDirectoryPath, "users");
             }
         }
 
-        /// <summary>
-        /// The _f F MPEG stream cache path
-        /// </summary>
-        private string _fFMpegStreamCachePath;
         /// <summary>
         /// Gets the FF MPEG stream cache path.
         /// </summary>
@@ -347,24 +186,10 @@ namespace MediaBrowser.Server.Implementations
         {
             get
             {
-                if (_fFMpegStreamCachePath == null)
-                {
-                    _fFMpegStreamCachePath = Path.Combine(CachePath, "encoded-media");
-
-                    if (!Directory.Exists(_fFMpegStreamCachePath))
-                    {
-                        Directory.CreateDirectory(_fFMpegStreamCachePath);
-                    }
-                }
-
-                return _fFMpegStreamCachePath;
+                return Path.Combine(CachePath, "encoded-media");
             }
         }
 
-        /// <summary>
-        /// The _images data path
-        /// </summary>
-        private string _downloadedImagesDataPath;
         /// <summary>
         /// Gets the images data path.
         /// </summary>
@@ -373,24 +198,10 @@ namespace MediaBrowser.Server.Implementations
         {
             get
             {
-                if (_downloadedImagesDataPath == null)
-                {
-                    _downloadedImagesDataPath = Path.Combine(DataPath, "remote-images");
-
-                    if (!Directory.Exists(_downloadedImagesDataPath))
-                    {
-                        Directory.CreateDirectory(_downloadedImagesDataPath);
-                    }
-                }
-
-                return _downloadedImagesDataPath;
+                return Path.Combine(DataPath, "remote-images");
             }
         }
 
-        /// <summary>
-        /// The _music artists path
-        /// </summary>
-        private string _musicArtistsPath;
         /// <summary>
         /// Gets the artists path.
         /// </summary>
@@ -399,16 +210,7 @@ namespace MediaBrowser.Server.Implementations
         {
             get
             {
-                if (_musicArtistsPath == null)
-                {
-                    _musicArtistsPath = Path.Combine(ItemsByNamePath, "Artists");
-                    if (!Directory.Exists(_musicArtistsPath))
-                    {
-                        Directory.CreateDirectory(_musicArtistsPath);
-                    }
-                }
-
-                return _musicArtistsPath;
+                return Path.Combine(ItemsByNamePath, "artists");
             }
         }
     }

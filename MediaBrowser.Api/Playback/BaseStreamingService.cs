@@ -562,6 +562,13 @@ namespace MediaBrowser.Api.Playback
         /// <returns>Task.</returns>
         protected async Task StartFfMpeg(StreamState state, string outputPath)
         {
+            var parentPath = Path.GetDirectoryName(outputPath);
+
+            if (!Directory.Exists(parentPath))
+            {
+                Directory.CreateDirectory(parentPath);
+            }
+
             var video = state.Item as Video;
 
             if (video != null && video.VideoType == VideoType.Iso && video.IsoType.HasValue && IsoManager.CanMount(video.Path))
