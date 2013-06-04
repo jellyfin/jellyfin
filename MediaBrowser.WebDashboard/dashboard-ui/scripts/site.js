@@ -715,7 +715,7 @@ var Dashboard = {
 
         if (!$('.supporterIcon', header).length) {
 
-            Dashboard.getPluginSecurityInfo().done(function (pluginSecurityInfo) {
+            ApiClient.getPluginSecurityInfo().done(function (pluginSecurityInfo) {
 
                 if (pluginSecurityInfo.IsMBSupporter) {
                     $('<a class="imageLink supporterIcon" href="supporter.html" title="Thank you for supporting Media Browser."><img src="css/images/supporter/supporterbadge.png" /></a>').insertBefore($('.btnTools', header));
