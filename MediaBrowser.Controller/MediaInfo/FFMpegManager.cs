@@ -56,10 +56,6 @@ namespace MediaBrowser.Controller.MediaInfo
         }
 
         /// <summary>
-        /// The _video images data path
-        /// </summary>
-        private string _videoImagesDataPath;
-        /// <summary>
         /// Gets the video images data path.
         /// </summary>
         /// <value>The video images data path.</value>
@@ -67,24 +63,10 @@ namespace MediaBrowser.Controller.MediaInfo
         {
             get
             {
-                if (_videoImagesDataPath == null)
-                {
-                    _videoImagesDataPath = Path.Combine(_appPaths.DataPath, "extracted-video-images");
-
-                    if (!Directory.Exists(_videoImagesDataPath))
-                    {
-                        Directory.CreateDirectory(_videoImagesDataPath);
-                    }
-                }
-
-                return _videoImagesDataPath;
+                return Path.Combine(_appPaths.DataPath, "extracted-video-images");
             }
         }
 
-        /// <summary>
-        /// The _audio images data path
-        /// </summary>
-        private string _audioImagesDataPath;
         /// <summary>
         /// Gets the audio images data path.
         /// </summary>
@@ -93,24 +75,10 @@ namespace MediaBrowser.Controller.MediaInfo
         {
             get
             {
-                if (_audioImagesDataPath == null)
-                {
-                    _audioImagesDataPath = Path.Combine(_appPaths.DataPath, "extracted-audio-images");
-
-                    if (!Directory.Exists(_audioImagesDataPath))
-                    {
-                        Directory.CreateDirectory(_audioImagesDataPath);
-                    }
-                }
-
-                return _audioImagesDataPath;
+                return Path.Combine(_appPaths.DataPath, "extracted-audio-images");
             }
         }
 
-        /// <summary>
-        /// The _subtitle cache path
-        /// </summary>
-        private string _subtitleCachePath;
         /// <summary>
         /// Gets the subtitle cache path.
         /// </summary>
@@ -119,17 +87,7 @@ namespace MediaBrowser.Controller.MediaInfo
         {
             get
             {
-                if (_subtitleCachePath == null)
-                {
-                    _subtitleCachePath = Path.Combine(_appPaths.CachePath, "subtitles");
-
-                    if (!Directory.Exists(_subtitleCachePath))
-                    {
-                        Directory.CreateDirectory(_subtitleCachePath);
-                    }
-                }
-
-                return _subtitleCachePath;
+                return Path.Combine(_appPaths.CachePath, "subtitles");
             }
         }
         
@@ -177,7 +135,7 @@ namespace MediaBrowser.Controller.MediaInfo
 
                 var path = VideoImageCache.GetResourcePath(filename, ".jpg");
 
-                if (!VideoImageCache.ContainsFilePath(path))
+                if (!File.Exists(path))
                 {
                     if (extractImages)
                     {
@@ -204,6 +162,13 @@ namespace MediaBrowser.Controller.MediaInfo
 
                         try
                         {
+                            var parentPath = Path.GetDirectoryName(path);
+
+                            if (!Directory.Exists(parentPath))
+                            {
+                                Directory.CreateDirectory(parentPath);
+                            }
+                            
                             await _encoder.ExtractImage(inputPath, type, time, path, cancellationToken).ConfigureAwait(false);
                             chapter.ImagePath = path;
                             changesMade = true;

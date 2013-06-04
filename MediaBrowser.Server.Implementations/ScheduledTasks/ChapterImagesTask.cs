@@ -168,6 +168,14 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
                 if (!success)
                 {
                     previouslyFailedImages.Add(key);
+
+                    var parentPath = Path.GetDirectoryName(failHistoryPath);
+
+                    if (!Directory.Exists(parentPath))
+                    {
+                        Directory.CreateDirectory(parentPath);
+                    }
+
                     _jsonSerializer.SerializeToFile(previouslyFailedImages, failHistoryPath);
                 }
 

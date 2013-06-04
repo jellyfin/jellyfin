@@ -340,6 +340,13 @@ namespace MediaBrowser.Api.Playback
 
                 try
                 {
+                    var parentPath = Path.GetDirectoryName(path);
+
+                    if (!Directory.Exists(parentPath))
+                    {
+                        Directory.CreateDirectory(parentPath);
+                    }
+
                     var task = MediaEncoder.ExtractTextSubtitle(inputPath, type, subtitleStream.Index, offset, path, CancellationToken.None);
 
                     Task.WaitAll(task);
@@ -371,6 +378,13 @@ namespace MediaBrowser.Api.Playback
             {
                 try
                 {
+                    var parentPath = Path.GetDirectoryName(path);
+
+                    if (!Directory.Exists(parentPath))
+                    {
+                        Directory.CreateDirectory(parentPath);
+                    }
+
                     var task = MediaEncoder.ConvertTextSubtitleToAss(subtitleStream.Path, path, offset, CancellationToken.None);
 
                     Task.WaitAll(task);

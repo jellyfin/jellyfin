@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Providers;
 using ServiceStack.Service;
 using ServiceStack.ServiceHost;
 using System;
@@ -14,6 +15,8 @@ namespace MediaBrowser.Api.Images
     /// </summary>
     public class ImageWriter : IStreamWriter, IHasOptions
     {
+        public List<IImageEnhancer> Enhancers;
+
         /// <summary>
         /// Gets or sets the request.
         /// </summary>
@@ -67,7 +70,7 @@ namespace MediaBrowser.Api.Images
         {
             return Kernel.Instance.ImageManager.ProcessImage(Item, Request.Type, Request.Index ?? 0, CropWhiteSpace,
                                                     OriginalImageDateModified, responseStream, Request.Width, Request.Height, Request.MaxWidth,
-                                                    Request.MaxHeight, Request.Quality);
+                                                    Request.MaxHeight, Request.Quality, Enhancers);
         }
     }
 }

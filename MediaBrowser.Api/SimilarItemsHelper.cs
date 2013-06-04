@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
@@ -38,6 +37,29 @@ namespace MediaBrowser.Api
         /// <value>The limit.</value>
         [ApiMember(Name = "Limit", Description = "Optional. The maximum number of records to return", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int? Limit { get; set; }
+
+        /// <summary>
+        /// Fields to return within the items, in addition to basic information
+        /// </summary>
+        /// <value>The fields.</value>
+        [ApiMember(Name = "Fields", Description = "Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: AudioInfo, Budget, Chapters, CriticRatingSummary, DateCreated, DisplayMediaType, EndDate, Genres, HomePageUrl, ItemCounts, IndexOptions, Locations, MediaStreams, Overview, OverviewHtml, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SeriesInfo, SortName, Studios, Taglines, TrailerUrls, UserData", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string Fields { get; set; }
+
+        /// <summary>
+        /// Gets the item fields.
+        /// </summary>
+        /// <returns>IEnumerable{ItemFields}.</returns>
+        public IEnumerable<ItemFields> GetItemFields()
+        {
+            var val = Fields;
+
+            if (string.IsNullOrEmpty(val))
+            {
+                return new ItemFields[] { };
+            }
+
+            return val.Split(',').Select(v => (ItemFields)Enum.Parse(typeof(ItemFields), v, true));
+        }
     }
 
     /// <summary>
@@ -64,8 +86,7 @@ namespace MediaBrowser.Api
                 (request.UserId.HasValue ? user.RootFolder :
                 (Folder)libraryManager.RootFolder) : DtoBuilder.GetItemByClientId(request.Id, userManager, libraryManager, request.UserId);
 
-            // Get everything
-            var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true)).ToList();
+            var fields = request.GetItemFields().ToList();
 
             var dtoBuilder = new DtoBuilder(logger, libraryManager, userDataRepository);
 

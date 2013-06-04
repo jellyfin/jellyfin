@@ -20,10 +20,6 @@ namespace MediaBrowser.Controller.Entities
         public static IXmlSerializer XmlSerializer { get; set; }
 
         /// <summary>
-        /// The _root folder path
-        /// </summary>
-        private string _rootFolderPath;
-        /// <summary>
         /// Gets the root folder path.
         /// </summary>
         /// <value>The root folder path.</value>
@@ -32,23 +28,19 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                if (_rootFolderPath == null)
+                if (Configuration.UseCustomLibrary)
                 {
-                    if (Configuration.UseCustomLibrary)
-                    {
-                        _rootFolderPath = GetRootFolderPath(Name);
+                    var rootFolderPath = GetRootFolderPath(Name);
 
-                        if (!Directory.Exists(_rootFolderPath))
-                        {
-                            Directory.CreateDirectory(_rootFolderPath);
-                        }
-                    }
-                    else
+                    if (!Directory.Exists(rootFolderPath))
                     {
-                        _rootFolderPath = ConfigurationManager.ApplicationPaths.DefaultUserViewsPath;
+                        Directory.CreateDirectory(rootFolderPath);
                     }
+
+                    return rootFolderPath;
                 }
-                return _rootFolderPath;
+
+                return ConfigurationManager.ApplicationPaths.DefaultUserViewsPath;
             }
         }
 
@@ -261,7 +253,6 @@ namespace MediaBrowser.Controller.Entities
 
             // Force these to be lazy loaded again
             _configurationDirectoryPath = null;
-            _rootFolderPath = null;
             RootFolder = null;
 
             // Kick off a task to validate the media library
@@ -378,7 +369,6 @@ namespace MediaBrowser.Controller.Entities
             // Force these to be lazy loaded again
             if (customLibraryChanged)
             {
-                _rootFolderPath = null;
                 RootFolder = null;
             }
         }

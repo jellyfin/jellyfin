@@ -165,7 +165,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
                 var specialFeattures = _itemRepo.GetItems(movie.SpecialFeatureIds).ToList();
                 images = specialFeattures.Aggregate(images, (current, subItem) => current.Concat(GetPathsInUse(subItem)));
             }
-            
+
             return images;
         }
 
@@ -176,13 +176,20 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         /// <returns>IEnumerable{System.String}.</returns>
         private IEnumerable<string> GetFiles(string path)
         {
-            return Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories)
-                .Where(i =>
-                {
-                    var ext = Path.GetExtension(i);
+            try
+            {
+                return Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories)
+                    .Where(i =>
+                    {
+                        var ext = Path.GetExtension(i);
 
-                    return !string.IsNullOrEmpty(ext) && BaseItem.SupportedImageExtensions.Contains(ext, StringComparer.OrdinalIgnoreCase);
-                });
+                        return !string.IsNullOrEmpty(ext) && BaseItem.SupportedImageExtensions.Contains(ext, StringComparer.OrdinalIgnoreCase);
+                    });
+            }
+            catch (DirectoryNotFoundException)
+            {
+                return new string[] { };
+            }
         }
 
         /// <summary>

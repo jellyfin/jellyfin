@@ -328,9 +328,7 @@ namespace MediaBrowser.Server.Implementations.Providers
         public async Task<string> SaveImage(BaseItem item, Stream source, string targetName, bool saveLocally, CancellationToken cancellationToken)
         {
             //download and save locally
-            var localPath = (saveLocally && item.MetaLocation != null) ?
-                Path.Combine(item.MetaLocation, targetName) :
-                _remoteImageCache.GetResourcePath(item.GetType().FullName + item.Path.ToLower(), targetName);
+            var localPath = GetSavePath(item, targetName, saveLocally);
 
             if (saveLocally) // queue to media directories
             {
@@ -374,9 +372,18 @@ namespace MediaBrowser.Server.Implementations.Providers
         /// <returns>System.String.</returns>
         public string GetSavePath(BaseItem item, string targetFileName, bool saveLocally)
         {
-            return (saveLocally && item.MetaLocation != null) ?
+            var path = (saveLocally && item.MetaLocation != null) ?
                 Path.Combine(item.MetaLocation, targetFileName) :
                 _remoteImageCache.GetResourcePath(item.GetType().FullName + item.Id.ToString(), targetFileName);
+
+            var parentPath = Path.GetDirectoryName(path);
+
+            if (!Directory.Exists(parentPath))
+            {
+                Directory.CreateDirectory(parentPath);
+            }
+
+            return path;
         }
 
         /// <summary>

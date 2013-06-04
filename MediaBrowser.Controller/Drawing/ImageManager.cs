@@ -31,7 +31,7 @@ namespace MediaBrowser.Controller.Drawing
         /// </summary>
         /// <value>The image enhancers.</value>
         public IEnumerable<IImageEnhancer> ImageEnhancers { get; set; }
-        
+
         /// <summary>
         /// Gets the image size cache.
         /// </summary>
@@ -106,9 +106,10 @@ namespace MediaBrowser.Controller.Drawing
         /// <param name="maxWidth">Use if a max width is required. Aspect ratio will be preserved.</param>
         /// <param name="maxHeight">Use if a max height is required. Aspect ratio will be preserved.</param>
         /// <param name="quality">Quality level, from 0-100. Currently only applies to JPG. The default value should suffice.</param>
+        /// <param name="enhancers">The enhancers.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">entity</exception>
-        public async Task ProcessImage(BaseItem entity, ImageType imageType, int imageIndex, bool cropWhitespace, DateTime dateModified, Stream toStream, int? width, int? height, int? maxWidth, int? maxHeight, int? quality)
+        public async Task ProcessImage(BaseItem entity, ImageType imageType, int imageIndex, bool cropWhitespace, DateTime dateModified, Stream toStream, int? width, int? height, int? maxWidth, int? maxHeight, int? quality, List<IImageEnhancer> enhancers)
         {
             if (entity == null)
             {
@@ -127,28 +128,13 @@ namespace MediaBrowser.Controller.Drawing
                 originalImagePath = await GetCroppedImage(originalImagePath, dateModified).ConfigureAwait(false);
             }
 
-            var supportedEnhancers = ImageEnhancers.Where(i =>
-            {
-                try
-                {
-                    return i.Supports(entity, imageType);
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error in image enhancer: {0}", ex, i.GetType().Name);
-
-                    return false;
-                }
-
-            }).ToList();
-
             // No enhancement - don't cache
-            if (supportedEnhancers.Count > 0)
+            if (enhancers.Count > 0)
             {
                 try
                 {
                     // Enhance if we have enhancers
-                    var ehnancedImagePath = await GetEnhancedImage(originalImagePath, dateModified, entity, imageType, imageIndex, supportedEnhancers).ConfigureAwait(false);
+                    var ehnancedImagePath = await GetEnhancedImage(originalImagePath, dateModified, entity, imageType, imageIndex, enhancers).ConfigureAwait(false);
 
                     // If the path changed update dateModified
                     if (!ehnancedImagePath.Equals(originalImagePath, StringComparison.OrdinalIgnoreCase))
@@ -174,6 +160,19 @@ namespace MediaBrowser.Controller.Drawing
             }
 
             var cacheFilePath = GetCacheFilePath(originalImagePath, newSize, quality.Value, dateModified);
+
+            try
+            {
+                using (var fileStream = new FileStream(cacheFilePath, FileMode.Open, FileAccess.Read, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
+                {
+                    await fileStream.CopyToAsync(toStream).ConfigureAwait(false);
+                    return;
+                }
+            }
+            catch (IOException)
+            {
+                // Cache file doesn't exist or is currently being written ro
+            }
 
             var semaphore = GetLock(cacheFilePath);
 
@@ -262,6 +261,13 @@ namespace MediaBrowser.Controller.Drawing
         /// <param name="bytes">The bytes.</param>
         private async Task CacheResizedImage(string cacheFilePath, byte[] bytes)
         {
+            var parentPath = Path.GetDirectoryName(cacheFilePath);
+
+            if (!Directory.Exists(parentPath))
+            {
+                Directory.CreateDirectory(parentPath);
+            }
+
             // Save to the cache location
             using (var cacheFileStream = new FileStream(cacheFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
             {
@@ -323,7 +329,7 @@ namespace MediaBrowser.Controller.Drawing
         }
 
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
-        
+
         /// <summary>
         /// Gets the size of the image.
         /// </summary>
@@ -335,24 +341,52 @@ namespace MediaBrowser.Controller.Drawing
             // Now check the file system cache
             var fullCachePath = ImageSizeCache.GetResourcePath(keyName, ".txt");
 
+            try
+            {
+                var result = File.ReadAllText(fullCachePath).Split('|').Select(i => double.Parse(i, UsCulture)).ToArray();
+
+                return new ImageSize { Width = result[0], Height = result[1] };
+            }
+            catch (IOException)
+            {
+                // Cache file doesn't exist or is currently being written to
+            }
+
             var semaphore = GetLock(fullCachePath);
 
             await semaphore.WaitAsync().ConfigureAwait(false);
 
             try
             {
-                try
-                {
-                    var result = File.ReadAllText(fullCachePath).Split('|').Select(i => double.Parse(i, UsCulture)).ToArray();
+                var result = File.ReadAllText(fullCachePath).Split('|').Select(i => double.Parse(i, UsCulture)).ToArray();
 
-                    return new ImageSize { Width = result[0], Height = result[1] };
-                }
-                catch (FileNotFoundException)
-                {
-                    // Cache file doesn't exist no biggie
-                }
+                return new ImageSize { Width = result[0], Height = result[1] };
+            }
+            catch (FileNotFoundException)
+            {
+                // Cache file doesn't exist no biggie
+            }
+            catch (DirectoryNotFoundException)
+            {
+                // Cache file doesn't exist no biggie
+            }
+            catch
+            {
+                semaphore.Release();
 
+                throw;
+            }
+
+            try
+            {
                 var size = await ImageHeader.GetDimensions(imagePath, _logger).ConfigureAwait(false);
+
+                var parentPath = Path.GetDirectoryName(fullCachePath);
+
+                if (!Directory.Exists(parentPath))
+                {
+                    Directory.CreateDirectory(parentPath);
+                }
 
                 // Update the file system cache
                 File.WriteAllText(fullCachePath, size.Width.ToString(UsCulture) + @"|" + size.Height.ToString(UsCulture));
@@ -490,12 +524,12 @@ namespace MediaBrowser.Controller.Drawing
             await semaphore.WaitAsync().ConfigureAwait(false);
 
             // Check again in case of contention
-            if (CroppedImageCache.ContainsFilePath(croppedImagePath))
+            if (File.Exists(croppedImagePath))
             {
                 semaphore.Release();
                 return croppedImagePath;
             }
-            
+
             try
             {
                 using (var fileStream = new FileStream(originalImagePath, FileMode.Open, FileAccess.Read, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, true))
@@ -511,6 +545,13 @@ namespace MediaBrowser.Controller.Drawing
 
                             using (var croppedImage = originalImage.CropWhitespace())
                             {
+                                var parentPath = Path.GetDirectoryName(croppedImagePath);
+
+                                if (!Directory.Exists(parentPath))
+                                {
+                                    Directory.CreateDirectory(parentPath);
+                                }
+
                                 using (var outputStream = new FileStream(croppedImagePath, FileMode.Create, FileAccess.Write, FileShare.Read))
                                 {
                                     croppedImage.Save(outputFormat, outputStream, 100);
@@ -568,7 +609,7 @@ namespace MediaBrowser.Controller.Drawing
             await semaphore.WaitAsync().ConfigureAwait(false);
 
             // Check again in case of contention
-            if (EnhancedImageCache.ContainsFilePath(enhancedImagePath))
+            if (File.Exists(enhancedImagePath))
             {
                 semaphore.Release();
                 return enhancedImagePath;
@@ -588,6 +629,13 @@ namespace MediaBrowser.Controller.Drawing
                             //Pass the image through registered enhancers
                             using (var newImage = await ExecuteImageEnhancers(supportedEnhancers, originalImage, item, imageType, imageIndex).ConfigureAwait(false))
                             {
+                                var parentDirectory = Path.GetDirectoryName(enhancedImagePath);
+
+                                if (!Directory.Exists(parentDirectory))
+                                {
+                                    Directory.CreateDirectory(parentDirectory);
+                                }
+
                                 //And then save it in the cache
                                 using (var outputStream = new FileStream(enhancedImagePath, FileMode.Create, FileAccess.Write, FileShare.Read))
                                 {

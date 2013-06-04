@@ -73,6 +73,34 @@ namespace MediaBrowser.Model.ApiClient
         Task<ItemsResult> GetItemsAsync(ItemQuery query);
 
         /// <summary>
+        /// Gets the similar movies async.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>Task{ItemsResult}.</returns>
+        Task<ItemsResult> GetSimilarMoviesAsync(SimilarItemsQuery query);
+
+        /// <summary>
+        /// Gets the similar series async.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>Task{ItemsResult}.</returns>
+        Task<ItemsResult> GetSimilarSeriesAsync(SimilarItemsQuery query);
+
+        /// <summary>
+        /// Gets the similar albums async.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>Task{ItemsResult}.</returns>
+        Task<ItemsResult> GetSimilarAlbumsAsync(SimilarItemsQuery query);
+
+        /// <summary>
+        /// Gets the similar games async.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>Task{ItemsResult}.</returns>
+        Task<ItemsResult> GetSimilarGamesAsync(SimilarItemsQuery query);
+        
+        /// <summary>
         /// Gets the people async.
         /// </summary>
         /// <param name="query">The query.</param>
