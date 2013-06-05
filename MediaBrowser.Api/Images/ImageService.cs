@@ -691,11 +691,14 @@ namespace MediaBrowser.Api.Images
                 cacheDuration = TimeSpan.FromDays(365);
             }
 
+            // Avoid implicitly captured closure
+            var currentItem = item;
+            var currentRequest = request;
+
             return ToCachedResult(cacheGuid, originalFileImageDateModified, cacheDuration, () => new ImageWriter
             {
-                Item = item,
-                Request = request,
-                CropWhiteSpace = request.Type == ImageType.Logo || request.Type == ImageType.Art,
+                Item = currentItem,
+                Request = currentRequest,
                 OriginalImageDateModified = originalFileImageDateModified,
                 Enhancers = supportedImageEnhancers
 

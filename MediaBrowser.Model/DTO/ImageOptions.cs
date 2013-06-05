@@ -57,5 +57,11 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The hash.</value>
         public Guid? Tag { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [crop whitespace].
+        /// </summary>
+        /// <value><c>null</c> if [crop whitespace] contains no value, <c>true</c> if [crop whitespace]; otherwise, <c>false</c>.</value>
+        public bool? CropWhitespace { get; set; }
     }
 }
