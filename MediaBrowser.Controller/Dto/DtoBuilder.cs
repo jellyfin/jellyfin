@@ -182,6 +182,8 @@ namespace MediaBrowser.Controller.Dto
                 return;
             }
 
+            dto.OriginalPrimaryImageAspectRatio = size.Width / size.Height;
+            
             var supportedEnhancers = Kernel.Instance.ImageManager.ImageEnhancers.Where(i =>
             {
                 try
