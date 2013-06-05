@@ -20,7 +20,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The index of the image.</value>
         public int? ImageIndex { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the width.
         /// </summary>
@@ -63,5 +63,16 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value><c>null</c> if [crop whitespace] contains no value, <c>true</c> if [crop whitespace]; otherwise, <c>false</c>.</value>
         public bool? CropWhitespace { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [enable image enhancers].
+        /// </summary>
+        /// <value><c>true</c> if [enable image enhancers]; otherwise, <c>false</c>.</value>
+        public bool EnableImageEnhancers { get; set; }
+
+        public ImageOptions()
+        {
+            EnableImageEnhancers = true;
+        }
     }
 }

@@ -46,8 +46,16 @@ namespace MediaBrowser.Api.Images
         [ApiMember(Name = "Tag", Description = "Optional. Supply the cache tag from the item object to receive strong caching headers.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string Tag { get; set; }
 
-        [ApiMember(Name = "CropWhitespace", Description = "Specify if whitespace should be cropped out of the image. True/False. If unspecified, whitespace will be cropped from logos and clear art.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        [ApiMember(Name = "CropWhitespace", Description = "Specify if whitespace should be cropped out of the image. True/False. If unspecified, whitespace will be cropped from logos and clear art.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool? CropWhitespace { get; set; }
+
+        [ApiMember(Name = "EnableImageEnhancers", Description = "Enable or disable image enhancers such as cover art.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool EnableImageEnhancers { get; set; }
+
+        public ImageRequest()
+        {
+            EnableImageEnhancers = true;
+        }
     }
 
     /// <summary>

@@ -295,11 +295,17 @@ namespace MediaBrowser.Model.Dto
         public List<string> Tags { get; set; }
         
         /// <summary>
-        /// Gets or sets the primary image aspect ratio.
+        /// Gets or sets the primary image aspect ratio, after image enhancements.
         /// </summary>
         /// <value>The primary image aspect ratio.</value>
         public double? PrimaryImageAspectRatio { get; set; }
 
+        /// <summary>
+        /// Gets or sets the primary image aspect ratio, before image enhancements.
+        /// </summary>
+        /// <value>The original primary image aspect ratio.</value>
+        public double? OriginalPrimaryImageAspectRatio { get; set; }
+        
         /// <summary>
         /// Gets or sets the artists.
         /// </summary>

@@ -1,6 +1,4 @@
-﻿using System.Drawing;
-using System.Text;
-using MediaBrowser.Common.Configuration;
+﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
@@ -17,6 +15,7 @@ using ServiceStack.ServiceHost;
 using ServiceStack.Text.Controller;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -658,7 +657,7 @@ namespace MediaBrowser.Api.Images
             // See if we can avoid a file system lookup by looking for the file in ResolveArgs
             var originalFileImageDateModified = kernel.ImageManager.GetImageDateModified(item, request.Type, index);
 
-            var supportedImageEnhancers = kernel.ImageManager.ImageEnhancers.Where(i =>
+            var supportedImageEnhancers = request.EnableImageEnhancers ? kernel.ImageManager.ImageEnhancers.Where(i =>
             {
                 try
                 {
@@ -671,7 +670,7 @@ namespace MediaBrowser.Api.Images
                     return false;
                 }
 
-            }).ToList();
+            }).ToList() : new List<IImageEnhancer>();
 
             // If the file does not exist GetLastWriteTimeUtc will return jan 1, 1601 as opposed to throwing an exception
             // http://msdn.microsoft.com/en-us/library/system.io.file.getlastwritetimeutc.aspx
