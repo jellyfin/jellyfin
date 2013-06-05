@@ -156,7 +156,7 @@
 
                 html += '<div class="tileName">' + name + '</div>';
 
-                if (item.CommunityRating) {
+                if (item.CommunityRating || item.CriticRating) {
                     html += '<p>' + LibraryBrowser.getRatingHtml(item) + '</p>';
                 }
 

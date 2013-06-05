@@ -175,7 +175,6 @@
 }
 
 .rottentomatoesicon {
-    margin-left: 1em;
     display: inline-block;
     width: 17px;
     height: 17px;
@@ -183,6 +182,10 @@
     background-position: left center;
     background-repeat: no-repeat;
     vertical-align: top;
+}
+
+.starRating + .rottentomatoesicon {
+    margin-left: 1em;
 }
 
 .fresh {
@@ -347,11 +350,11 @@ a.itemTag:hover {
     margin-top: -30px;
 }
 
-    .itemDetailGalleryLink img:hover {
-        -moz-box-shadow: 0 0 20px 3px #2572EB;
-        -webkit-box-shadow: 0 0 20px 3px #2572EB;
-        box-shadow: 0 0 20px 3px #2572EB;
-    }
+.itemDetailGalleryLink img:hover {
+    -moz-box-shadow: 0 0 20px 3px #2572EB;
+    -webkit-box-shadow: 0 0 20px 3px #2572EB;
+    box-shadow: 0 0 20px 3px #2572EB;
+}
 
 .parentName {
     padding: .5em;
