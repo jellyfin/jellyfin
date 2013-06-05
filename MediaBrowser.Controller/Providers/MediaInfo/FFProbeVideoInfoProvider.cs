@@ -249,31 +249,25 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
             var startIndex = video.MediaStreams == null ? 0 : video.MediaStreams.Count;
             var streams = new List<MediaStream>();
 
-            foreach (var file in fileSystemChildren.Where(f => !f.Attributes.HasFlag(FileAttributes.Directory)))
+            foreach (var file in fileSystemChildren
+                .Where(f => !f.Attributes.HasFlag(FileAttributes.Directory) && string.Equals(Path.GetExtension(f.FullName), ".srt", StringComparison.OrdinalIgnoreCase)))
             {
                 var fullName = file.FullName;
-                var extension = Path.GetExtension(fullName);
 
-                if (string.Equals(extension, ".srt", StringComparison.OrdinalIgnoreCase))
+                // The subtitle filename must match video filename
+                if (!string.Equals(Path.GetFileNameWithoutExtension(video.Path), Path.GetFileNameWithoutExtension(fullName)))
                 {
-                    if (video.VideoType == VideoType.VideoFile)
-                    {
-                        // For video files the subtitle filename must match video filename
-                        if (!string.Equals(Path.GetFileNameWithoutExtension(video.Path), Path.GetFileNameWithoutExtension(fullName)))
-                        {
-                            continue;
-                        }
-                    }
-
-                    streams.Add(new MediaStream
-                    {
-                        Index = startIndex++,
-                        Type = MediaStreamType.Subtitle,
-                        IsExternal = true,
-                        Path = fullName,
-                        Codec = "srt"
-                    });
+                    continue;
                 }
+
+                streams.Add(new MediaStream
+                {
+                    Index = startIndex++,
+                    Type = MediaStreamType.Subtitle,
+                    IsExternal = true,
+                    Path = fullName,
+                    Codec = "srt"
+                });
             }
 
             if (video.MediaStreams == null)
