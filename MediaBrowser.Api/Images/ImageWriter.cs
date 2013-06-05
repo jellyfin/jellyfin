@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
 using ServiceStack.Service;
 using ServiceStack.ServiceHost;
 using System;
@@ -27,11 +28,6 @@ namespace MediaBrowser.Api.Images
         /// </summary>
         /// <value>The item.</value>
         public BaseItem Item { get; set; }
-        /// <summary>
-        /// Gets or sets a value indicating whether [crop white space].
-        /// </summary>
-        /// <value><c>true</c> if [crop white space]; otherwise, <c>false</c>.</value>
-        public bool CropWhiteSpace { get; set; }
         /// <summary>
         /// The original image date modified
         /// </summary>
@@ -68,7 +64,14 @@ namespace MediaBrowser.Api.Images
         /// <returns>Task.</returns>
         private Task WriteToAsync(Stream responseStream)
         {
-            return Kernel.Instance.ImageManager.ProcessImage(Item, Request.Type, Request.Index ?? 0, CropWhiteSpace,
+            var cropwhitespace = Request.Type == ImageType.Logo || Request.Type == ImageType.Art;
+
+            if (Request.CropWhitespace.HasValue)
+            {
+                cropwhitespace = Request.CropWhitespace.Value;
+            }
+
+            return Kernel.Instance.ImageManager.ProcessImage(Item, Request.Type, Request.Index ?? 0, cropwhitespace,
                                                     OriginalImageDateModified, responseStream, Request.Width, Request.Height, Request.MaxWidth,
                                                     Request.MaxHeight, Request.Quality, Enhancers);
         }

@@ -54,11 +54,9 @@ namespace MediaBrowser.Controller.Entities.TV
         /// <returns>System.String.</returns>
         public override string GetUserDataKey()
         {
-            if (Series != null)
+            if (Series != null && ParentIndexNumber.HasValue && IndexNumber.HasValue)
             {
-                var seasonNo = Season != null ? Season.IndexNumber ?? 0 : 0;
-                var epNo = IndexNumber ?? 0;
-                return Series.GetUserDataKey() + seasonNo.ToString("000") + epNo.ToString("000");
+                return Series.GetUserDataKey() + ParentIndexNumber.Value.ToString("000") + IndexNumber.Value.ToString("000");
             }
 
             return base.GetUserDataKey();
