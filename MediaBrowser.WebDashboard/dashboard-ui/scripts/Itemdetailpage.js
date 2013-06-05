@@ -377,7 +377,8 @@
     }
 
     function renderChildren(page, item) {
-        var sortBy = item.Type == "Boxset" ? "ProductionYear,SortName" : "SortName";
+        
+        var sortBy = item.Type == "BoxSet" ? "ProductionYear,SortName" : "SortName";
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), {
 

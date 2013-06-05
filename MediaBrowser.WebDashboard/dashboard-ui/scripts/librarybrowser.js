@@ -1294,7 +1294,7 @@
             if (linkToGallery) {
                 html += "<a class='itemDetailGalleryLink' href='" + href + "'>";
             }
-            
+
             html += "<img class='itemDetailImage' src='" + url + "' />";
 
             if (linkToGallery) {
@@ -1357,7 +1357,7 @@
                 else if (item.PremiereDate) {
 
                     try {
-                        text = "-" + parseISO8601Date(item.PremiereDate, { toLocal: true }).getFullYear();
+                        text = parseISO8601Date(item.PremiereDate, { toLocal: true }).getFullYear();
                         miscInfo.push(text);
                     }
                     catch (e) {
