@@ -149,6 +149,20 @@
             Dashboard.navigate("edititemmetadata.html?id=" + currentItem.Id);
         });
 
+        $('.alphabetPicker', this).on('alphaselect', function (e, character) {
+
+            query.NameStartsWithOrGreater = character;
+            query.StartIndex = 0;
+
+            reloadItems(page);
+
+        }).on('alphaclear', function (e) {
+
+            query.NameStartsWithOrGreater = '';
+
+            reloadItems(page);
+        });
+
     }).on('pageshow', "#itemListPage", function () {
 
         query.Limit = LibraryBrowser.getDefaultPageSize();
@@ -157,6 +171,7 @@
         query.SortBy = "SortName";
         query.SortOrder = "Ascending";
         query.StartIndex = 0;
+        query.NameStartsWithOrGreater = '';
 
         reloadItems(this);
 
@@ -183,6 +198,8 @@
         }).checkboxradio('refresh');
 
         $('#selectView', this).val(view).selectmenu('refresh');
+
+        $('.alphabetPicker', this).alphaValue(query.NameStartsWithOrGreater);
 
     }).on('pagehide', "#itemListPage", function () {
 
