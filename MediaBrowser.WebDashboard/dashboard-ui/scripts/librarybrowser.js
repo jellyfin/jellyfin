@@ -1292,7 +1292,7 @@
             var linkToGallery = LibraryBrowser.shouldDisplayGallery(item);
 
             if (linkToGallery) {
-                html += "<a href='" + href + "'>";
+                html += "<a class='itemDetailGalleryLink' href='" + href + "'>";
             }
             
             html += "<img class='itemDetailImage' src='" + url + "' />";
