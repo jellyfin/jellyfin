@@ -1,0 +1,24 @@
+Changes in 1.0.16-rc
+- Fixed: Adding empty content to .NET 4.5, Windows Phone 8, Windows 8 and portable combinations, so that app.config transforms
+  are not applied to projects targeting them.
+
+Changes in 1.0.15-rc
+
+- Fixed: System.Runtime is missing a type forward for Tuple<T1, T2>
+
+Changes in 1.0.14-rc
+
+- Fixed: System.Runtime now has a fixed version for Phone 7.x due to the lack of a way to redirect them to a later version.
+
+Changes in 1.0.13-rc
+
+- Fixed: First-chance exceptions when running on Phone 7.x
+
+Changes in 1.0.12-rc
+
+- Fixed: Microsoft.Bcl.targets are not imported when using NuGet 2.0 to install Microsoft.Bcl
+- Changed: Pulled build targets into a separate package (Microsoft.Bcl.Build) so other BCL packages can depend on it.
+
+Changes in 1.0.11-beta
+
+- Initial release

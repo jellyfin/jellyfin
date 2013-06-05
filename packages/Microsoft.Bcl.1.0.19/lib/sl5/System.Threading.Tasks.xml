@@ -1,0 +1,475 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>System.Threading.Tasks</name>
+    </assembly>
+    <members>
+        <member name="T:System.Runtime.CompilerServices.AsyncMethodBuilderCore">
+            <summary>Holds state related to the builder's IAsyncStateMachine.</summary>
+            <remarks>This is a mutable struct.  Be very delicate with it.</remarks>
+        </member>
+        <member name="F:System.Runtime.CompilerServices.AsyncMethodBuilderCore.m_stateMachine">
+            <summary>A reference to the heap-allocated state machine object associated with this builder.</summary>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start``1(``0@)">
+            <summary>Initiates the builder's execution with the associated state machine.</summary>
+            <typeparam name="TStateMachine">Specifies the type of the state machine.</typeparam>
+            <param name="stateMachine">The state machine instance, passed by reference.</param>
+            <exception cref="T:System.ArgumentNullException">The <paramref name="stateMachine"/> argument is null (Nothing in Visual Basic).</exception>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncMethodBuilderCore.SetStateMachine(System.Runtime.CompilerServices.IAsyncStateMachine)">
+            <summary>Associates the builder with the state machine it represents.</summary>
+            <param name="stateMachine">The heap-allocated state machine object.</param>
+            <exception cref="T:System.ArgumentNullException">The <paramref name="stateMachine"/> argument was null (Nothing in Visual Basic).</exception>
+            <exception cref="T:System.InvalidOperationException">The builder is incorrectly initialized.</exception>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncMethodBuilderCore.GetCompletionAction``2(``0@,``1@)">
+            <summary>
+            Gets the Action to use with an awaiter's OnCompleted or UnsafeOnCompleted method.
+            On first invocation, the supplied state machine will be boxed.
+            </summary>
+            <typeparam name="TMethodBuilder">Specifies the type of the method builder used.</typeparam>
+            <typeparam name="TStateMachine">Specifies the type of the state machine used.</typeparam>
+            <param name="builder">The builder.</param>
+            <param name="stateMachine">The state machine.</param>
+            <returns>An Action to provide to the awaiter.</returns>
+        </member>
+        <member name="T:System.Runtime.CompilerServices.AsyncMethodBuilderCore.MoveNextRunner">
+            <summary>Provides the ability to invoke a state machine's MoveNext method under a supplied ExecutionContext.</summary>
+        </member>
+        <member name="F:System.Runtime.CompilerServices.AsyncMethodBuilderCore.MoveNextRunner.m_context">
+            <summary>The context with which to run MoveNext.</summary>
+        </member>
+        <member name="F:System.Runtime.CompilerServices.AsyncMethodBuilderCore.MoveNextRunner.m_stateMachine">
+            <summary>The state machine whose MoveNext method should be invoked.</summary>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncMethodBuilderCore.MoveNextRunner.#ctor(System.ExecutionContextLightup)">
+            <summary>Initializes the runner.</summary>
+            <param name="context">The context with which to run MoveNext.</param>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncMethodBuilderCore.MoveNextRunner.Run">
+            <summary>Invokes MoveNext under the provided context.</summary>
+        </member>
+        <member name="F:System.Runtime.CompilerServices.AsyncMethodBuilderCore.MoveNextRunner.s_invokeMoveNext">
+            <summary>Cached delegate used with ExecutionContext.Run.</summary>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncMethodBuilderCore.MoveNextRunner.InvokeMoveNext(System.Object)">
+            <summary>Invokes the MoveNext method on the supplied IAsyncStateMachine.</summary>
+            <param name="stateMachine">The IAsyncStateMachine machine instance.</param>
+        </member>
+        <member name="T:System.Runtime.CompilerServices.AsyncMethodTaskCache`1">
+            <summary>Provides a base class used to cache tasks of a specific return type.</summary>
+            <typeparam name="TResult">Specifies the type of results the cached tasks return.</typeparam>
+        </member>
+        <member name="F:System.Runtime.CompilerServices.AsyncMethodTaskCache`1.Singleton">
+            <summary>
+            A singleton cache for this result type.
+            This may be null if there are no cached tasks for this TResult.
+            </summary>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncMethodTaskCache`1.CreateCompleted(`0)">
+            <summary>Creates a non-disposable task.</summary>
+            <param name="result">The result for the task.</param>
+            <returns>The cacheable task.</returns>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncMethodTaskCache`1.CreateCache">
+            <summary>Creates a cache.</summary>
+            <returns>A task cache for this result type.</returns>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncMethodTaskCache`1.FromResult(`0)">
+            <summary>Gets a cached task if one exists.</summary>
+            <param name="result">The result for which we want a cached task.</param>
+            <returns>A cached task if one exists; otherwise, null.</returns>
+        </member>
+        <member name="T:System.Runtime.CompilerServices.AsyncMethodTaskCache`1.AsyncMethodBooleanTaskCache">
+            <summary>Provides a cache for Boolean tasks.</summary>
+        </member>
+        <member name="F:System.Runtime.CompilerServices.AsyncMethodTaskCache`1.AsyncMethodBooleanTaskCache.m_true">
+            <summary>A true task.</summary>
+        </member>
+        <member name="F:System.Runtime.CompilerServices.AsyncMethodTaskCache`1.AsyncMethodBooleanTaskCache.m_false">
+            <summary>A false task.</summary>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncMethodTaskCache`1.AsyncMethodBooleanTaskCache.FromResult(System.Boolean)">
+            <summary>Gets a cached task for the Boolean result.</summary>
+            <param name="result">true or false</param>
+            <returns>A cached task for the Boolean result.</returns>
+        </member>
+        <member name="T:System.Runtime.CompilerServices.AsyncMethodTaskCache`1.AsyncMethodInt32TaskCache">
+            <summary>Provides a cache for zero Int32 tasks.</summary>
+        </member>
+        <member name="F:System.Runtime.CompilerServices.AsyncMethodTaskCache`1.AsyncMethodInt32TaskCache.INCLUSIVE_INT32_MIN">
+            <summary>The minimum value, inclusive, for which we want a cached task.</summary>
+        </member>
+        <member name="F:System.Runtime.CompilerServices.AsyncMethodTaskCache`1.AsyncMethodInt32TaskCache.EXCLUSIVE_INT32_MAX">
+            <summary>The maximum value, exclusive, for which we want a cached task.</summary>
+        </member>
+        <member name="F:System.Runtime.CompilerServices.AsyncMethodTaskCache`1.AsyncMethodInt32TaskCache.Int32Tasks">
+            <summary>The cache of Task{Int32}.</summary>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncMethodTaskCache`1.AsyncMethodInt32TaskCache.CreateInt32Tasks">
+            <summary>Creates an array of cached tasks for the values in the range [INCLUSIVE_MIN,EXCLUSIVE_MAX).</summary>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncMethodTaskCache`1.AsyncMethodInt32TaskCache.FromResult(System.Int32)">
+            <summary>Gets a cached task for the zero Int32 result.</summary>
+            <param name="result">The integer value</param>
+            <returns>A cached task for the Int32 result or null if not cached.</returns>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncServices.ThrowAsync(System.Exception,System.Threading.SynchronizationContext)">
+            <summary>Throws the exception on the ThreadPool.</summary>
+            <param name="exception">The exception to propagate.</param>
+            <param name="targetContext">The target context on which to propagate the exception.  Null to use the ThreadPool.</param>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncServices.PrepareExceptionForRethrow(System.Exception)">
+            <summary>Copies the exception's stack trace so its stack trace isn't overwritten.</summary>
+            <param name="exc">The exception to prepare.</param>
+        </member>
+        <member name="T:System.Runtime.CompilerServices.AsyncTaskMethodBuilder">
+            <summary>
+            Provides a builder for asynchronous methods that return <see cref="T:System.Threading.Tasks.Task"/>.
+            This type is intended for compiler use only.
+            </summary>
+            <remarks>
+            AsyncTaskMethodBuilder is a value type, and thus it is copied by value.
+            Prior to being copied, one of its Task, SetResult, or SetException members must be accessed,
+            or else the copies may end up building distinct Task instances.
+            </remarks>
+        </member>
+        <member name="T:System.Runtime.CompilerServices.IAsyncMethodBuilder">
+            <summary>Represents an asynchronous method builder.</summary>
+        </member>
+        <member name="F:System.Runtime.CompilerServices.AsyncTaskMethodBuilder.s_cachedCompleted">
+            <summary>A cached VoidTaskResult task used for builders that complete synchronously.</summary>
+        </member>
+        <member name="F:System.Runtime.CompilerServices.AsyncTaskMethodBuilder.m_builder">
+            <summary>The generic builder object to which this non-generic instance delegates.</summary>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncTaskMethodBuilder.Create">
+            <summary>Initializes a new <see cref="T:System.Runtime.CompilerServices.AsyncTaskMethodBuilder"/>.</summary>
+            <returns>The initialized <see cref="T:System.Runtime.CompilerServices.AsyncTaskMethodBuilder"/>.</returns>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncTaskMethodBuilder.Start``1(``0@)">
+            <summary>Initiates the builder's execution with the associated state machine.</summary>
+            <typeparam name="TStateMachine">Specifies the type of the state machine.</typeparam>
+            <param name="stateMachine">The state machine instance, passed by reference.</param>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncTaskMethodBuilder.SetStateMachine(System.Runtime.CompilerServices.IAsyncStateMachine)">
+            <summary>Associates the builder with the state machine it represents.</summary>
+            <param name="stateMachine">The heap-allocated state machine object.</param>
+            <exception cref="T:System.ArgumentNullException">The <paramref name="stateMachine"/> argument was null (Nothing in Visual Basic).</exception>
+            <exception cref="T:System.InvalidOperationException">The builder is incorrectly initialized.</exception>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncTaskMethodBuilder.System#Runtime#CompilerServices#IAsyncMethodBuilder#PreBoxInitialization">
+            <summary>Perform any initialization necessary prior to lifting the builder to the heap.</summary>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncTaskMethodBuilder.AwaitOnCompleted``2(``0@,``1@)">
+            <summary>
+            Schedules the specified state machine to be pushed forward when the specified awaiter completes.
+            </summary>
+            <typeparam name="TAwaiter">Specifies the type of the awaiter.</typeparam>
+            <typeparam name="TStateMachine">Specifies the type of the state machine.</typeparam>
+            <param name="awaiter">The awaiter.</param>
+            <param name="stateMachine">The state machine.</param>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncTaskMethodBuilder.AwaitUnsafeOnCompleted``2(``0@,``1@)">
+            <summary>
+            Schedules the specified state machine to be pushed forward when the specified awaiter completes.
+            </summary>
+            <typeparam name="TAwaiter">Specifies the type of the awaiter.</typeparam>
+            <typeparam name="TStateMachine">Specifies the type of the state machine.</typeparam>
+            <param name="awaiter">The awaiter.</param>
+            <param name="stateMachine">The state machine.</param>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncTaskMethodBuilder.SetResult">
+            <summary>
+            Completes the <see cref="T:System.Threading.Tasks.Task"/> in the 
+            <see cref="T:System.Threading.Tasks.TaskStatus">RanToCompletion</see> state.
+            </summary>
+            <exception cref="T:System.InvalidOperationException">The builder is not initialized.</exception>
+            <exception cref="T:System.InvalidOperationException">The task has already completed.</exception>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncTaskMethodBuilder.SetException(System.Exception)">
+            <summary>
+            Completes the <see cref="T:System.Threading.Tasks.Task"/> in the 
+            <see cref="T:System.Threading.Tasks.TaskStatus">Faulted</see> state with the specified exception.
+            </summary>
+            <param name="exception">The <see cref="T:System.Exception"/> to use to fault the task.</param>
+            <exception cref="T:System.ArgumentNullException">The <paramref name="exception"/> argument is null (Nothing in Visual Basic).</exception>
+            <exception cref="T:System.InvalidOperationException">The builder is not initialized.</exception>
+            <exception cref="T:System.InvalidOperationException">The task has already completed.</exception>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncTaskMethodBuilder.SetNotificationForWaitCompletion(System.Boolean)">
+            <summary>
+            Called by the debugger to request notification when the first wait operation
+            (await, Wait, Result, etc.) on this builder's task completes.
+            </summary>
+            <param name="enabled">
+            true to enable notification; false to disable a previously set notification.
+            </param>
+        </member>
+        <member name="P:System.Runtime.CompilerServices.AsyncTaskMethodBuilder.Task">
+            <summary>Gets the <see cref="T:System.Threading.Tasks.Task"/> for this builder.</summary>
+            <returns>The <see cref="T:System.Threading.Tasks.Task"/> representing the builder's asynchronous operation.</returns>
+            <exception cref="T:System.InvalidOperationException">The builder is not initialized.</exception>
+        </member>
+        <member name="P:System.Runtime.CompilerServices.AsyncTaskMethodBuilder.ObjectIdForDebugger">
+            <summary>
+            Gets an object that may be used to uniquely identify this builder to the debugger.
+            </summary>
+            <remarks>
+            This property lazily instantiates the ID in a non-thread-safe manner.  
+            It must only be used by the debugger, and only in a single-threaded manner
+            when no other threads are in the middle of accessing this property or this.Task.
+            </remarks>
+        </member>
+        <member name="T:System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1">
+            <summary>
+            Provides a builder for asynchronous methods that return <see cref="T:System.Threading.Tasks.Task`1"/>.
+            This type is intended for compiler use only.
+            </summary>
+            <remarks>
+            AsyncTaskMethodBuilder{TResult} is a value type, and thus it is copied by value.
+            Prior to being copied, one of its Task, SetResult, or SetException members must be accessed,
+            or else the copies may end up building distinct Task instances.
+            </remarks>
+        </member>
+        <member name="F:System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1.s_defaultResultTask">
+            <summary>A cached task for default(TResult).</summary>
+        </member>
+        <member name="F:System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1.m_coreState">
+            <summary>State related to the IAsyncStateMachine.</summary>
+        </member>
+        <member name="F:System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1.m_task">
+            <summary>The lazily-initialized task.</summary>
+            <remarks>Must be named m_task for debugger step-over to work correctly.</remarks>
+        </member>
+        <member name="F:System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1.m_taskCompletionSource">
+            <summary>The lazily-initialized task completion source.</summary>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1.#cctor">
+            <summary>Temporary support for disabling crashing if tasks go unobserved.</summary>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1.Create">
+            <summary>Initializes a new <see cref="T:System.Runtime.CompilerServices.AsyncTaskMethodBuilder"/>.</summary>
+            <returns>The initialized <see cref="T:System.Runtime.CompilerServices.AsyncTaskMethodBuilder"/>.</returns>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1.Start``1(``0@)">
+            <summary>Initiates the builder's execution with the associated state machine.</summary>
+            <typeparam name="TStateMachine">Specifies the type of the state machine.</typeparam>
+            <param name="stateMachine">The state machine instance, passed by reference.</param>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1.SetStateMachine(System.Runtime.CompilerServices.IAsyncStateMachine)">
+            <summary>Associates the builder with the state machine it represents.</summary>
+            <param name="stateMachine">The heap-allocated state machine object.</param>
+            <exception cref="T:System.ArgumentNullException">The <paramref name="stateMachine"/> argument was null (Nothing in Visual Basic).</exception>
+            <exception cref="T:System.InvalidOperationException">The builder is incorrectly initialized.</exception>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1.System#Runtime#CompilerServices#IAsyncMethodBuilder#PreBoxInitialization">
+            <summary>Perform any initialization necessary prior to lifting the builder to the heap.</summary>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1.AwaitOnCompleted``2(``0@,``1@)">
+            <summary>
+            Schedules the specified state machine to be pushed forward when the specified awaiter completes.
+            </summary>
+            <typeparam name="TAwaiter">Specifies the type of the awaiter.</typeparam>
+            <typeparam name="TStateMachine">Specifies the type of the state machine.</typeparam>
+            <param name="awaiter">The awaiter.</param>
+            <param name="stateMachine">The state machine.</param>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1.AwaitUnsafeOnCompleted``2(``0@,``1@)">
+            <summary>
+            Schedules the specified state machine to be pushed forward when the specified awaiter completes.
+            </summary>
+            <typeparam name="TAwaiter">Specifies the type of the awaiter.</typeparam>
+            <typeparam name="TStateMachine">Specifies the type of the state machine.</typeparam>
+            <param name="awaiter">The awaiter.</param>
+            <param name="stateMachine">The state machine.</param>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1.SetResult(`0)">
+            <summary>
+            Completes the <see cref="T:System.Threading.Tasks.Task`1"/> in the 
+            <see cref="T:System.Threading.Tasks.TaskStatus">RanToCompletion</see> state with the specified result.
+            </summary>
+            <param name="result">The result to use to complete the task.</param>
+            <exception cref="T:System.InvalidOperationException">The task has already completed.</exception>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1.SetResult(System.Threading.Tasks.TaskCompletionSource{`0})">
+            <summary>
+            Completes the builder by using either the supplied completed task, or by completing
+            the builder's previously accessed task using default(TResult).
+            </summary>
+            <param name="completedTask">A task already completed with the value default(TResult).</param>
+            <exception cref="T:System.InvalidOperationException">The task has already completed.</exception>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1.SetException(System.Exception)">
+            <summary>
+            Completes the <see cref="T:System.Threading.Tasks.Task`1"/> in the 
+            <see cref="T:System.Threading.Tasks.TaskStatus">Faulted</see> state with the specified exception.
+            </summary>
+            <param name="exception">The <see cref="T:System.Exception"/> to use to fault the task.</param>
+            <exception cref="T:System.ArgumentNullException">The <paramref name="exception"/> argument is null (Nothing in Visual Basic).</exception>
+            <exception cref="T:System.InvalidOperationException">The task has already completed.</exception>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1.SetNotificationForWaitCompletion(System.Boolean)">
+            <summary>
+            Called by the debugger to request notification when the first wait operation
+            (await, Wait, Result, etc.) on this builder's task completes.
+            </summary>
+            <param name="enabled">
+            true to enable notification; false to disable a previously set notification.
+            </param>
+            <remarks>
+            This should only be invoked from within an asynchronous method,
+            and only by the debugger.
+            </remarks>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1.GetTaskForResult(`0)">
+            <summary>
+            Gets a task for the specified result.  This will either
+            be a cached or new task, never null.
+            </summary>
+            <param name="result">The result for which we need a task.</param>
+            <returns>The completed task containing the result.</returns>
+        </member>
+        <member name="P:System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1.CompletionSource">
+            <summary>Gets the lazily-initialized TaskCompletionSource.</summary>
+        </member>
+        <member name="P:System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1.Task">
+            <summary>Gets the <see cref="T:System.Threading.Tasks.Task`1"/> for this builder.</summary>
+            <returns>The <see cref="T:System.Threading.Tasks.Task`1"/> representing the builder's asynchronous operation.</returns>
+        </member>
+        <member name="P:System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1.ObjectIdForDebugger">
+            <summary>
+            Gets an object that may be used to uniquely identify this builder to the debugger.
+            </summary>
+            <remarks>
+            This property lazily instantiates the ID in a non-thread-safe manner.  
+            It must only be used by the debugger, and only in a single-threaded manner
+            when no other threads are in the middle of accessing this property or this.Task.
+            </remarks>
+        </member>
+        <member name="T:System.Runtime.CompilerServices.AsyncVoidMethodBuilder">
+            <summary>
+            Provides a builder for asynchronous methods that return void.
+            This type is intended for compiler use only.
+            </summary>
+        </member>
+        <member name="F:System.Runtime.CompilerServices.AsyncVoidMethodBuilder.m_synchronizationContext">
+            <summary>The synchronization context associated with this operation.</summary>
+        </member>
+        <member name="F:System.Runtime.CompilerServices.AsyncVoidMethodBuilder.m_coreState">
+            <summary>State related to the IAsyncStateMachine.</summary>
+        </member>
+        <member name="F:System.Runtime.CompilerServices.AsyncVoidMethodBuilder.m_objectIdForDebugger">
+            <summary>An object used by the debugger to uniquely identify this builder.  Lazily initialized.</summary>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncVoidMethodBuilder.#cctor">
+            <summary>Temporary support for disabling crashing if tasks go unobserved.</summary>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncVoidMethodBuilder.PreventUnobservedTaskExceptions">
+            <summary>Registers with UnobservedTaskException to suppress exception crashing.</summary>
+        </member>
+        <member name="F:System.Runtime.CompilerServices.AsyncVoidMethodBuilder.s_preventUnobservedTaskExceptionsInvoked">
+            <summary>Non-zero if PreventUnobservedTaskExceptions has already been invoked.</summary>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncVoidMethodBuilder.Create">
+            <summary>Initializes a new <see cref="T:System.Runtime.CompilerServices.AsyncVoidMethodBuilder"/>.</summary>
+            <returns>The initialized <see cref="T:System.Runtime.CompilerServices.AsyncVoidMethodBuilder"/>.</returns>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncVoidMethodBuilder.#ctor(System.Threading.SynchronizationContext)">
+            <summary>Initializes the <see cref="T:System.Runtime.CompilerServices.AsyncVoidMethodBuilder"/>.</summary>
+            <param name="synchronizationContext">The synchronizationContext associated with this operation. This may be null.</param>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncVoidMethodBuilder.Start``1(``0@)">
+            <summary>Initiates the builder's execution with the associated state machine.</summary>
+            <typeparam name="TStateMachine">Specifies the type of the state machine.</typeparam>
+            <param name="stateMachine">The state machine instance, passed by reference.</param>
+            <exception cref="T:System.ArgumentNullException">The <paramref name="stateMachine"/> argument was null (Nothing in Visual Basic).</exception>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncVoidMethodBuilder.SetStateMachine(System.Runtime.CompilerServices.IAsyncStateMachine)">
+            <summary>Associates the builder with the state machine it represents.</summary>
+            <param name="stateMachine">The heap-allocated state machine object.</param>
+            <exception cref="T:System.ArgumentNullException">The <paramref name="stateMachine"/> argument was null (Nothing in Visual Basic).</exception>
+            <exception cref="T:System.InvalidOperationException">The builder is incorrectly initialized.</exception>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncVoidMethodBuilder.System#Runtime#CompilerServices#IAsyncMethodBuilder#PreBoxInitialization">
+            <summary>Perform any initialization necessary prior to lifting the builder to the heap.</summary>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncVoidMethodBuilder.AwaitOnCompleted``2(``0@,``1@)">
+            <summary>
+            Schedules the specified state machine to be pushed forward when the specified awaiter completes.
+            </summary>
+            <typeparam name="TAwaiter">Specifies the type of the awaiter.</typeparam>
+            <typeparam name="TStateMachine">Specifies the type of the state machine.</typeparam>
+            <param name="awaiter">The awaiter.</param>
+            <param name="stateMachine">The state machine.</param>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncVoidMethodBuilder.AwaitUnsafeOnCompleted``2(``0@,``1@)">
+            <summary>
+            Schedules the specified state machine to be pushed forward when the specified awaiter completes.
+            </summary>
+            <typeparam name="TAwaiter">Specifies the type of the awaiter.</typeparam>
+            <typeparam name="TStateMachine">Specifies the type of the state machine.</typeparam>
+            <param name="awaiter">The awaiter.</param>
+            <param name="stateMachine">The state machine.</param>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncVoidMethodBuilder.SetResult">
+            <summary>Completes the method builder successfully.</summary>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncVoidMethodBuilder.SetException(System.Exception)">
+            <summary>Faults the method builder with an exception.</summary>
+            <param name="exception">The exception that is the cause of this fault.</param>
+            <exception cref="T:System.ArgumentNullException">The <paramref name="exception"/> argument is null (Nothing in Visual Basic).</exception>
+            <exception cref="T:System.InvalidOperationException">The builder is not initialized.</exception>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncVoidMethodBuilder.NotifySynchronizationContextOfCompletion">
+            <summary>Notifies the current synchronization context that the operation completed.</summary>
+        </member>
+        <member name="P:System.Runtime.CompilerServices.AsyncVoidMethodBuilder.ObjectIdForDebugger">
+            <summary>
+            Gets an object that may be used to uniquely identify this builder to the debugger.
+            </summary>
+            <remarks>
+            This property lazily instantiates the ID in a non-thread-safe manner.  
+            It must only be used by the debugger and only in a single-threaded manner.
+            </remarks>
+        </member>
+        <member name="T:System.Runtime.CompilerServices.IAsyncStateMachine">
+            <summary>
+            Represents state machines generated for asynchronous methods.
+            This type is intended for compiler use only.
+            </summary>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.IAsyncStateMachine.MoveNext">
+            <summary>Moves the state machine to its next state.</summary>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.IAsyncStateMachine.SetStateMachine(System.Runtime.CompilerServices.IAsyncStateMachine)">
+            <summary>Configures the state machine with a heap-allocated replica.</summary>
+            <param name="stateMachine">The heap-allocated replica.</param>
+        </member>
+        <member name="T:System.Runtime.CompilerServices.ICriticalNotifyCompletion">
+            <summary>
+            Represents an awaiter used to schedule continuations when an await operation completes.
+            </summary>
+        </member>
+        <member name="T:System.Runtime.CompilerServices.INotifyCompletion">
+            <summary>
+            Represents an operation that will schedule continuations when the operation completes.
+            </summary>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.INotifyCompletion.OnCompleted(System.Action)">
+            <summary>Schedules the continuation action to be invoked when the instance completes.</summary>
+            <param name="continuation">The action to invoke when the operation completes.</param>
+            <exception cref="T:System.ArgumentNullException">The <paramref name="continuation"/> argument is null (Nothing in Visual Basic).</exception>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.ICriticalNotifyCompletion.UnsafeOnCompleted(System.Action)">
+            <summary>Schedules the continuation action to be invoked when the instance completes.</summary>
+            <param name="continuation">The action to invoke when the operation completes.</param>
+            <exception cref="T:System.ArgumentNullException">The <paramref name="continuation"/> argument is null (Nothing in Visual Basic).</exception>
+            <remarks>Unlike OnCompleted, UnsafeOnCompleted need not propagate ExecutionContext information.</remarks>
+        </member>
+        <member name="T:System.Runtime.CompilerServices.VoidTaskResult">
+            <summary>Used with Task(of void)</summary>
+        </member>
+    </members>
+</doc>
