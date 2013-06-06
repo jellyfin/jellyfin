@@ -775,7 +775,7 @@ namespace MediaBrowser.Controller.Providers.Movies
                     var ourRelease = movieData.releases.countries.FirstOrDefault(c => c.iso_3166_1.Equals(ConfigurationManager.Configuration.MetadataCountryCode, StringComparison.OrdinalIgnoreCase)) ?? new Country();
                     var usRelease = movieData.releases.countries.FirstOrDefault(c => c.iso_3166_1.Equals("US", StringComparison.OrdinalIgnoreCase)) ?? new Country();
                     var ratingPrefix = ConfigurationManager.Configuration.MetadataCountryCode.Equals("us", StringComparison.OrdinalIgnoreCase) ? "" : ConfigurationManager.Configuration.MetadataCountryCode +"-";
-                    movie.OfficialRating = ourRelease.certification != null ? ratingPrefix + ourRelease.certification : usRelease.certification;
+                    movie.OfficialRating = !string.IsNullOrEmpty(ourRelease.certification) ? ratingPrefix + ourRelease.certification : !string.IsNullOrEmpty(usRelease.certification) ? usRelease.certification : null;
 
                     if (ourRelease.release_date > new DateTime(1900, 1, 1))
                     {
