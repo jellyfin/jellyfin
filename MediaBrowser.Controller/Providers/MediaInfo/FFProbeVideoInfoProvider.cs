@@ -3,6 +3,7 @@ using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Localization;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
@@ -21,7 +22,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
     /// </summary>
     public class FFProbeVideoInfoProvider : BaseFFProbeProvider<Video>
     {
-        public FFProbeVideoInfoProvider(IIsoManager isoManager, IBlurayExaminer blurayExaminer, IJsonSerializer jsonSerializer, ILogManager logManager, IServerConfigurationManager configurationManager, IMediaEncoder mediaEncoder)
+        public FFProbeVideoInfoProvider(IIsoManager isoManager, IBlurayExaminer blurayExaminer, IJsonSerializer jsonSerializer, ILogManager logManager, IServerConfigurationManager configurationManager, IMediaEncoder mediaEncoder, ILocalizationManager localization)
             : base(logManager, configurationManager, mediaEncoder, jsonSerializer)
         {
             if (isoManager == null)
@@ -34,6 +35,7 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
             }
 
             _blurayExaminer = blurayExaminer;
+            _localization = localization;
             _isoManager = isoManager;
         }
 
@@ -48,6 +50,8 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
         /// </summary>
         private readonly IIsoManager _isoManager;
 
+        private readonly ILocalizationManager _localization;
+        
         /// <summary>
         /// Returns true or false indicating if the provider should refresh when the contents of it's directory changes
         /// </summary>
@@ -249,25 +253,52 @@ namespace MediaBrowser.Controller.Providers.MediaInfo
             var startIndex = video.MediaStreams == null ? 0 : video.MediaStreams.Count;
             var streams = new List<MediaStream>();
 
+            var videoFileNameWithoutExtension = Path.GetFileNameWithoutExtension(video.Path);
+
             foreach (var file in fileSystemChildren
                 .Where(f => !f.Attributes.HasFlag(FileAttributes.Directory) && string.Equals(Path.GetExtension(f.FullName), ".srt", StringComparison.OrdinalIgnoreCase)))
             {
                 var fullName = file.FullName;
 
-                // The subtitle filename must match video filename
-                if (!string.Equals(Path.GetFileNameWithoutExtension(video.Path), Path.GetFileNameWithoutExtension(fullName)))
-                {
-                    continue;
-                }
+                var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fullName);
 
-                streams.Add(new MediaStream
+                // If the subtitle file matches the video file name
+                if (string.Equals(videoFileNameWithoutExtension, fileNameWithoutExtension, StringComparison.OrdinalIgnoreCase))
                 {
-                    Index = startIndex++,
-                    Type = MediaStreamType.Subtitle,
-                    IsExternal = true,
-                    Path = fullName,
-                    Codec = "srt"
-                });
+                    streams.Add(new MediaStream
+                    {
+                        Index = startIndex++,
+                        Type = MediaStreamType.Subtitle,
+                        IsExternal = true,
+                        Path = fullName,
+                        Codec = "srt"
+                    });
+                }
+                else if (fileNameWithoutExtension.StartsWith(videoFileNameWithoutExtension + ".", StringComparison.OrdinalIgnoreCase))
+                {
+                    // Support xbmc naming conventions - 300.spanish.srt
+                    var language = fileNameWithoutExtension.Split('.').LastOrDefault();
+
+                    // Try to translate to three character code
+                    // Be flexible and check against all properties
+                    var culture = _localization.GetCultures()
+                        .FirstOrDefault(i => string.Equals(i.DisplayName, language, StringComparison.OrdinalIgnoreCase) || string.Equals(i.Name, language, StringComparison.OrdinalIgnoreCase) || string.Equals(i.ThreeLetterISOLanguageName, language, StringComparison.OrdinalIgnoreCase) || string.Equals(i.TwoLetterISOLanguageName, language, StringComparison.OrdinalIgnoreCase));
+
+                    if (culture != null)
+                    {
+                        language = culture.ThreeLetterISOLanguageName;
+                    }
+
+                    streams.Add(new MediaStream
+                    {
+                        Index = startIndex++,
+                        Type = MediaStreamType.Subtitle,
+                        IsExternal = true,
+                        Path = fullName,
+                        Codec = "srt",
+                        Language = language
+                    });
+                }
             }
 
             if (video.MediaStreams == null)
