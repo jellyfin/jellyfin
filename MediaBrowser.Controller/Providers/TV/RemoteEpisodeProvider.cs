@@ -49,15 +49,6 @@ namespace MediaBrowser.Controller.Providers.TV
         }
 
         /// <summary>
-        /// The episode query
-        /// </summary>
-        private const string EpisodeQuery = "http://www.thetvdb.com/api/{0}/series/{1}/default/{2}/{3}/{4}.xml";
-        /// <summary>
-        /// The abs episode query
-        /// </summary>
-        private const string AbsEpisodeQuery = "http://www.thetvdb.com/api/{0}/series/{1}/absolute/{2}/{3}.xml";
-
-        /// <summary>
         /// Supportses the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
