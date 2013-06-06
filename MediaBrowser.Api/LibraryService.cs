@@ -295,7 +295,14 @@ namespace MediaBrowser.Api
         /// Deletes the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public async void Delete(DeleteItem request)
+        public void Delete(DeleteItem request)
+        {
+            var task = DeleteItem(request);
+
+            Task.WaitAll(task);
+        }
+
+        private async Task DeleteItem(DeleteItem request)
         {
             var item = DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager);
 
