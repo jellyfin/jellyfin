@@ -1,10 +1,8 @@
 ﻿using MediaBrowser.Controller.Localization;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
-using MoreLinq;
 using ServiceStack.ServiceHost;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 
 namespace MediaBrowser.Api
@@ -42,16 +40,27 @@ namespace MediaBrowser.Api
     public class LocalizationService : BaseApiService
     {
         /// <summary>
+        /// The _localization
+        /// </summary>
+        private readonly ILocalizationManager _localization;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LocalizationService"/> class.
+        /// </summary>
+        /// <param name="localization">The localization.</param>
+        public LocalizationService(ILocalizationManager localization)
+        {
+            _localization = localization;
+        }
+
+        /// <summary>
         /// Gets the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
         public object Get(GetParentalRatings request)
         {
-            var ratings =
-                Ratings.RatingsDict.Select(k => new ParentalRating { Name = k.Key, Value = k.Value });
-
-            var result = ratings.OrderBy(p => p.Value).Where(p => p.Value > 0).ToList();
+            var result = _localization.GetParentalRatings().ToList();
 
             return ToOptimizedResult(result);
         }
@@ -63,22 +72,7 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetCountries request)
         {
-            var result = CultureInfo.GetCultures(CultureTypes.SpecificCultures)
-
-                .Select(c => new RegionInfo(c.LCID))
-                .OrderBy(c => c.DisplayName)
-
-                // Try to eliminate dupes
-                .DistinctBy(c => c.TwoLetterISORegionName)
-
-                .Select(c => new CountryInfo
-                {
-                    Name = c.Name,
-                    DisplayName = c.DisplayName,
-                    TwoLetterISORegionName = c.TwoLetterISORegionName,
-                    ThreeLetterISORegionName = c.ThreeLetterISORegionName
-                })
-                .ToList();
+            var result = _localization.GetCountries().ToList();
 
             return ToOptimizedResult(result);
         }
@@ -90,20 +84,7 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetCultures request)
         {
-            var result = CultureInfo.GetCultures(CultureTypes.AllCultures)
-                .OrderBy(c => c.DisplayName)
-
-                // Try to eliminate dupes
-                .DistinctBy(c => c.TwoLetterISOLanguageName + c.ThreeLetterISOLanguageName)
-
-                .Select(c => new CultureDto
-                {
-                    Name = c.Name,
-                    DisplayName = c.DisplayName,
-                    ThreeLetterISOLanguageName = c.ThreeLetterISOLanguageName,
-                    TwoLetterISOLanguageName = c.TwoLetterISOLanguageName
-                })
-                .ToList();
+            var result = _localization.GetCultures().ToList();
 
             return ToOptimizedResult(result);
         }

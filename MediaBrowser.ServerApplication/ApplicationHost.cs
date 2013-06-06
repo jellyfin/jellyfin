@@ -35,6 +35,7 @@ using MediaBrowser.Server.Implementations.Configuration;
 using MediaBrowser.Server.Implementations.HttpServer;
 using MediaBrowser.Server.Implementations.IO;
 using MediaBrowser.Server.Implementations.Library;
+using MediaBrowser.Server.Implementations.Localization;
 using MediaBrowser.Server.Implementations.MediaEncoder;
 using MediaBrowser.Server.Implementations.Providers;
 using MediaBrowser.Server.Implementations.ServerManager;
@@ -283,6 +284,9 @@ namespace MediaBrowser.ServerApplication
 
             ServerManager = new ServerManager(this, JsonSerializer, Logger, ServerConfigurationManager);
             RegisterSingleInstance(ServerManager);
+
+            var localizationManager = new LocalizationManager();
+            RegisterSingleInstance<ILocalizationManager>(localizationManager);
 
             var displayPreferencesTask = Task.Run(async () => await ConfigureDisplayPreferencesRepositories().ConfigureAwait(false));
             var itemsTask = Task.Run(async () => await ConfigureItemRepositories().ConfigureAwait(false));
