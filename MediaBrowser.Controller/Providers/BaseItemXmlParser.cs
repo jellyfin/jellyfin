@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
@@ -65,19 +66,23 @@ namespace MediaBrowser.Controller.Providers
             item.Genres.Clear();
             item.People.Clear();
 
-            // Use XmlReader for best performance
-            using (var reader = XmlReader.Create(metadataFile, settings))
+            // Use european encoding as it will accept more characters
+            using (var streamReader = new StreamReader(metadataFile, Encoding.GetEncoding("ISO-8859-1")))
             {
-                reader.MoveToContent();
-
-                // Loop through each element
-                while (reader.Read())
+                // Use XmlReader for best performance
+                using (var reader = XmlReader.Create(streamReader, settings))
                 {
-                    cancellationToken.ThrowIfCancellationRequested();
+                    reader.MoveToContent();
 
-                    if (reader.NodeType == XmlNodeType.Element)
+                    // Loop through each element
+                    while (reader.Read())
                     {
-                        FetchDataFromXmlNode(reader, item);
+                        cancellationToken.ThrowIfCancellationRequested();
+
+                        if (reader.NodeType == XmlNodeType.Element)
+                        {
+                            FetchDataFromXmlNode(reader, item);
+                        }
                     }
                 }
             }
