@@ -19,6 +19,7 @@
         var curentDurationTicks;
         var isStaticStream;
         var culturesPromise;
+        var isStopping;
 
         self.playlist = [];
         var currentPlaylistIndex = 0;
@@ -76,6 +77,8 @@
 
         function onPlaybackStopped() {
 
+            isStopping = true;
+            
             currentTimeElement.empty();
 
             var endTime = this.currentTime;
@@ -88,6 +91,8 @@
 
             ApiClient.reportPlaybackStopped(Dashboard.getCurrentUserId(), currentItem.Id, position);
 
+            isStopping = false;
+            
             self.queuePlayNext();
         }
 
@@ -448,9 +453,6 @@
 
         function playVideo(item, startPosition, user) {
 
-            //stop/kill videoJS
-            if (currentMediaElement) self.stop();
-
             // Account for screen rotation. Use the larger dimension as the width.
             var screenWidth = Math.max(screen.height, screen.width);
 
@@ -808,7 +810,7 @@
 
         self.playInternal = function (item, startPosition, user) {
 
-            if (self.isPlaying()) {
+            if (self.isPlaying() && !isStopping) {
                 self.stop();
             }
 
