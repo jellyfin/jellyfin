@@ -375,7 +375,7 @@
 
             html += '</td>';
 
-            html += '<td>' + name + '<br/>' + DashboardPage.getDisplayText(chapter.StartPositionTicks) + '</td>';
+            html += '<td>' + name + '<br/>' + Dashboard.getDisplayTime(chapter.StartPositionTicks) + '</td>';
 
             html += '</tr>';
         }
@@ -524,12 +524,12 @@
 
         if (session.NowPlayingItem) {
 
-            html += DashboardPage.getDisplayText(session.NowPlayingPositionTicks || 0);
+            html += Dashboard.getDisplayTime(session.NowPlayingPositionTicks || 0);
 
             if (session.NowPlayingItem.RunTimeTicks) {
 
                 html += " / ";
-                html += DashboardPage.getDisplayText(session.NowPlayingItem.RunTimeTicks);
+                html += Dashboard.getDisplayTime(session.NowPlayingItem.RunTimeTicks);
             }
         }
 
@@ -592,7 +592,7 @@
             html += '<td>' + video.Name;
 
             if (video.RunTimeTicks) {
-                html += '<br/>' + DashboardPage.getDisplayText(video.RunTimeTicks);
+                html += '<br/>' + Dashboard.getDisplayTime(video.RunTimeTicks);
             }
 
             html += '</td>';

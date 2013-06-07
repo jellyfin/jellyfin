@@ -295,11 +295,11 @@
             // Convert to ticks
             ticks = Math.floor(ticks);
 
-            var timeText = DashboardPage.getDisplayText(ticks);
+            var timeText = Dashboard.getDisplayTime(ticks);
 
             if (curentDurationTicks) {
 
-                timeText += " / " + DashboardPage.getDisplayText(curentDurationTicks);
+                timeText += " / " + Dashboard.getDisplayTime(curentDurationTicks);
 
                 if (updateSlider) {
                     var percent = ticks / curentDurationTicks;
@@ -1116,7 +1116,7 @@
                 var name = chapter.Name || "Chapter " + (i + 1);
 
                 html += '<div class="mediaFlyoutOptionName">' + name + '</div>';
-                html += '<div class="mediaFlyoutOptionSecondaryText">' + DashboardPage.getDisplayText(chapter.StartPositionTicks) + '</div>';
+                html += '<div class="mediaFlyoutOptionSecondaryText">' + Dashboard.getDisplayTime(chapter.StartPositionTicks) + '</div>';
 
                 html += '</div>';
 

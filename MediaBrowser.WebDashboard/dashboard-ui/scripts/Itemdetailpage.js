@@ -595,7 +595,7 @@
             html += '<div class="posterItemText">' + chapterName + '</div>';
             html += '<div class="posterItemText">';
 
-            html += ticks_to_human(chapter.StartPositionTicks);
+            html += Dashboard.getDisplayTime(chapter.StartPositionTicks);
 
             html += '</div>';
 
@@ -737,7 +737,7 @@
             html += '<div class="posterItemText">';
 
             if (item.RunTimeTicks != "") {
-                html += ticks_to_human(item.RunTimeTicks);
+                html += Dashboard.getDisplayTime(item.RunTimeTicks);
             }
             else {
                 html += "&nbsp;";

@@ -197,7 +197,7 @@
         }
 
         else if (hint.RunTimeTicks) {
-            html += '<div class="searchHintSecondaryText">' + DashboardPage.getDisplayText(hint.RunTimeTicks) + '</div>';
+            html += '<div class="searchHintSecondaryText">' + Dashboard.getDisplayTime(hint.RunTimeTicks) + '</div>';
         }
 
         html += '</div></div>';

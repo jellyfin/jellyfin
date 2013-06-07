@@ -278,7 +278,7 @@
                     }
                 }
 
-                var time = DashboardPage.getDisplayText(item.RunTimeTicks || 0);
+                var time = Dashboard.getDisplayTime(item.RunTimeTicks || 0);
 
                 html += '<td class="tabletColumn">' + time + '</td>';
 
@@ -911,7 +911,7 @@
             }
             else if (item.UserData && item.UserData.PlaybackPositionTicks && item.RunTimeTicks) {
 
-                tooltip = DashboardPage.getDisplayText(item.UserData.PlaybackPositionTicks) + " / " + DashboardPage.getDisplayText(item.RunTimeTicks);
+                tooltip = Dashboard.getDisplayTime(item.UserData.PlaybackPositionTicks) + " / " + Dashboard.getDisplayTime(item.RunTimeTicks);
 
                 pct = (item.UserData.PlaybackPositionTicks / item.RunTimeTicks) * 100;
             }
@@ -1365,7 +1365,7 @@
 
                 if (item.Type == "Audio") {
 
-                    miscInfo.push(DashboardPage.getDisplayText(item.RunTimeTicks));
+                    miscInfo.push(Dashboard.getDisplayTime(item.RunTimeTicks));
                 } else {
                     var minutes = item.RunTimeTicks / 600000000;
 
