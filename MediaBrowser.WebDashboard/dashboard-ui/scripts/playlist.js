@@ -44,6 +44,7 @@
             var index = parseInt(this.getAttribute('data-index'));
 
             MediaPlayer.currentPlaylistIndex(index);
+            reloadPlaylist(page);
 
         }).on('click', '.lnkRemove', function () {
 

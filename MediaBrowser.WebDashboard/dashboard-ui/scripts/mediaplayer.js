@@ -19,7 +19,6 @@
         var curentDurationTicks;
         var isStaticStream;
         var culturesPromise;
-        var isStopping;
 
         self.playlist = [];
         var currentPlaylistIndex = 0;
@@ -77,8 +76,8 @@
 
         function onPlaybackStopped() {
 
-            isStopping = true;
-            
+            $(this).off('ended.playbackstopped');
+
             currentTimeElement.empty();
 
             var endTime = this.currentTime;
@@ -90,9 +89,12 @@
             var position = Math.floor(10000000 * endTime) + startTimeTicksOffset;
 
             ApiClient.reportPlaybackStopped(Dashboard.getCurrentUserId(), currentItem.Id, position);
+        }
+        
+        function playNextAfterEnded() {
 
-            isStopping = false;
-            
+            $(this).off('ended.playnext');
+
             self.queuePlayNext();
         }
 
@@ -155,9 +157,10 @@
 
                 clearProgressInterval();
 
-                $(element).off('ended.playbackstopped').on("play.onceafterseek", function () {
+                $(element).off('ended.playbackstopped').off('ended.playnext').on("play.onceafterseek", function () {
 
-                    $(this).off('play.onceafterseek').on('ended.playbackstopped', onPlaybackStopped);
+                    $(this).off('play.onceafterseek').on('ended.playbackstopped', onPlaybackStopped).on('ended.playnext', playNextAfterEnded);
+                    
                     startProgressInterval(currentItem.Id);
                     sendProgressUpdate(currentItem.Id);
 
@@ -443,7 +446,7 @@
                     setCurrentTime(getCurrentTicks(this), item, true);
                 }
 
-            }).on("ended.playbackstopped", onPlaybackStopped);
+            }).on("ended.playbackstopped", onPlaybackStopped).on('ended.playnext', playNextAfterEnded);
 
             currentItem = item;
             curentDurationTicks = item.RunTimeTicks;
@@ -623,7 +626,7 @@
                     setCurrentTime(getCurrentTicks(this), item, true);
                 }
 
-            }).on("ended.playbackstopped", onPlaybackStopped);
+            }).on("ended.playbackstopped", onPlaybackStopped).on('ended.playnext', playNextAfterEnded);
 
             currentItem = item;
             curentDurationTicks = item.RunTimeTicks;
@@ -810,7 +813,7 @@
 
         self.playInternal = function (item, startPosition, user) {
 
-            if (self.isPlaying() && !isStopping) {
+            if (self.isPlaying()) {
                 self.stop();
             }
 
@@ -937,13 +940,13 @@
         };
 
         self.removeFromPlaylist = function (index) {
-            
+
             self.playlist.remove(index);
-            
+
         };
 
         // Gets or sets the current playlist index
-        self.currentPlaylistIndex = function(i) {
+        self.currentPlaylistIndex = function (i) {
 
             if (i == null) {
                 return currentPlaylistIndex;
@@ -954,7 +957,7 @@
             Dashboard.getCurrentUser().done(function (user) {
 
                 self.playInternal(newItem, 0, user);
-                self.currentPlaylistIndex = i;
+                currentPlaylistIndex = i;
             });
         };
 
@@ -966,7 +969,7 @@
             Dashboard.getCurrentUser().done(function (user) {
 
                 self.playInternal(newItem, 0, user);
-                self.currentPlaylistIndex = newIndex;
+                currentPlaylistIndex = newIndex;
             });
         };
 
@@ -1027,14 +1030,16 @@
 
             elem.pause();
 
-            var jelem = $(elem).trigger('ended');
-            elem.src = "";
+            $(elem).off('ended.playnext').on('ended', function () {
 
-            jelem.remove();
+                $(this).remove();
+                elem.src = "";
+                currentMediaElement = null;
+
+            }).trigger('ended');
 
             $('#nowPlayingBar').hide();
 
-            currentMediaElement = null;
         };
 
         self.isPlaying = function () {
