@@ -19,3 +19,11 @@ We also have full .net and javascript wrappers around the api.
 ## Visit our community: ##
 
 http://community.mediabrowser.tv/
+
+## Current Versions ##
+
+Release: 3.0.4906.22507
+
+Beta:
+
+Dev:
