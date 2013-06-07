@@ -247,7 +247,7 @@
 
                 html += '<tr>';
 
-                html += '<td><button class="btnPlay" type="button" data-role="none" onclick="LibraryBrowser.showPlayMenu(this, \'' + item.Id + '\', \'Audio\');"><img src="css/images/media/playCircle.png" style="height: 20px;"></button></td>';
+                html += '<td><button class="btnPlay" type="button" data-role="none" onclick="LibraryBrowser.showPlayMenu(this, \'' + item.Id + '\', \'Audio\', \'Audio\');"><img src="css/images/media/playCircle.png" style="height: 20px;"></button></td>';
 
                 var num = item.IndexNumber;
 
@@ -294,13 +294,11 @@
             return html;
         },
 
-        showPlayMenu: function (positionTo, itemId, mediaType, resumePositionTicks) {
-
-            var canPlay = MediaPlayer.canPlayMediaType(mediaType);
+        showPlayMenu: function (positionTo, itemId, itemType, mediaType, resumePositionTicks) {
 
             var isPlaying = MediaPlayer.isPlaying();
 
-            if (canPlay && !isPlaying && !resumePositionTicks) {
+            if (!isPlaying && !resumePositionTicks) {
                 MediaPlayer.playById(itemId);
                 return;
             }
@@ -312,17 +310,14 @@
             html += '<ul data-role="listview" style="min-width: 150px;" data-theme="c">';
             html += '<li data-role="list-divider" data-theme="a">Play Menu</li>';
 
-            if (canPlay) {
-                html += '<li><a href="#" onclick="MediaPlayer.playById(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Play</a></li>';
+            html += '<li><a href="#" onclick="MediaPlayer.playById(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Play</a></li>';
 
-                if (resumePositionTicks) {
-                    html += '<li><a href="#" onclick="MediaPlayer.playById(\'' + itemId + '\', ' + resumePositionTicks + ');LibraryBrowser.closePlayMenu();">Resume</a></li>';
-                }
+            if (resumePositionTicks) {
+                html += '<li><a href="#" onclick="MediaPlayer.playById(\'' + itemId + '\', ' + resumePositionTicks + ');LibraryBrowser.closePlayMenu();">Resume</a></li>';
+            }
 
-                if (isPlaying && MediaPlayer.canQueue(mediaType)) {
-                    html += '<li><a href="#" onclick="MediaPlayer.playNext(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Play Next</a></li>';
-                    html += '<li><a href="#" onclick="MediaPlayer.playLast(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Play Last</a></li>';
-                }
+            if (isPlaying) {
+                html += '<li><a href="#" onclick="MediaPlayer.queue(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Queue</a></li>';
             }
 
             html += '</ul>';

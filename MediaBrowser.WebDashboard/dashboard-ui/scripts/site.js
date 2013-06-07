@@ -883,11 +883,9 @@ var Dashboard = {
         }
         else if (msg.MessageType === "Play") {
 
-            ApiClient.getItems(Dashboard.getCurrentUserId(), {
+            MediaPlayer.getItemsForPlayback({
 
-                Ids: msg.Data.ItemIds.join(','),
-
-                Fields: 'MediaStreams,UserData,DisplayMediaType,SeriesInfo,AudioInfo,Chapters,Path'
+                Ids: msg.Data.ItemIds.join(',')
 
             }).done(function (result) {
                 MediaPlayer.play(result.Items, msg.Data.StartPositionTicks);

@@ -1,77 +1,64 @@
-﻿(function (window) {
+﻿(function ($, document) {
 
-    function playlist() {
-        var self = this;
+    function reloadPlaylist(page) {
+        
+        var html = '';
 
+        html += '<table class="detailTable">';
 
+        html += '<tr>';
+        html += '<th></th>';
+        html += '<th>Name</th>';
+        html += '<th>Album</th>';
+        html += '<th>Time</th>';
+        html += '<th>Rating</th>';
+        html += '</tr>';
 
+        $.each(MediaPlayer.playlist, function (i, item) {
 
+            var name = LibraryBrowser.getPosterViewDisplayName(item);
 
-        return self;
+            var parentName = item.SeriesName || item.Album || item.ProductionYear || '';
+
+            html += '<tr>';
+            html += '<td><a href="#" data-index="' + i + '" class="lnkPlay"><img src="css/images/media/playCircle.png" style="height: 24px;" /></a></td>';
+            html += '<td>' + name + '</td>';
+            html += '<td>' + parentName + '</td>';
+            html += '<td>' + ticks_to_human(item.RunTimeTicks) + '</td>';
+            html += '<td>' + LibraryBrowser.getUserDataIconsHtml(item) + '</td>';
+            html += '<td><a href="#" data-index="' + i + '" class="lnkRemove"><img src="css/images/media/playCircle.png" style="height: 24px;" /></a></td>';
+            html += '</tr>';
+        });
+
+        html += '</table>';
+
+        $("#playlist", page).html(html).trigger('create');
     }
+    
+    $(document).on('pageinit', "#playlistPage", function () {
 
+        var page = this;
 
-    window.Playlist = new playlist();
-})(window);
+        $(page).on('click', '.lnkPlay', function () {
 
-(function ($, document) {
+            var index = parseInt(this.getAttribute('data-index'));
 
-	$(document).on('pagebeforeshow', "#playlistPage", function () {
+            MediaPlayer.currentPlaylistIndex(index);
 
-		var page = this;
+        }).on('click', '.lnkRemove', function () {
 
-		Dashboard.showLoadingMsg();
+            var index = parseInt(this.getAttribute('data-index'));
 
-		$("#queueTable").html('');
+            MediaPlayer.removeFromPlaylist(index);
+            reloadPlaylist(page);
+        });
 
-		//currently playing item
-		if (MediaPlayer.playing) {
-			var html = '';
-			html += '<tr>';
-			html += '<td></td>';
-			html += '<td>' + MediaPlayer.playing.Name + '</td>';
-			html += '<td>' + MediaPlayer.playing.Album + '</td>';
-			html += '<td>' + ticks_to_human(MediaPlayer.playing.RunTimeTicks) + '</td>';
-			html += '<td>' + LibraryBrowser.getUserDataIconsHtml(MediaPlayer.playing) + '</td>';
-			html += '<td></td>';
-			html += '</tr>';
-			$("#queueTable").append(html);
-		}
+    }).on('pagebeforeshow', "#playlistPage", function () {
 
-		$.each(MediaPlayer.queue, function(i, item){
-			var html = '';
-			var name = item.Name;
+        var page = this;
 
-			if (item.IndexNumber != null) {
-				name = item.IndexNumber + " - " + name;
-			}
-			if (item.ParentIndexNumber != null) {
-				name = item.ParentIndexNumber + "." + name;
-			}
-
-			//$('#itemImage', page).html(LibraryBrowser.getDetailImageHtml(item));
-
-			if (item.SeriesName || item.Album) {
-				var seriesName = item.SeriesName || item.Album;
-			}else {
-				var seriesName = item.ProductionYear;
-			}
-
-			html += '<tr>';
-			html += '<td><img src="css/images/media/playCircle.png" style="height: 28px;cursor:pointer;" data-queue-index="'+i+'" onclick="MediaPlayer.queuePlay(this)" /></td>';
-			html += '<td>' + name + '</td>';
-			html += '<td>' + seriesName + '</td>';
-			html += '<td>' + ticks_to_human(item.RunTimeTicks) + '</td>';
-			html += '<td>' + LibraryBrowser.getUserDataIconsHtml(item) + '</td>';
-			html += '<td><a href="" data-queue-index="'+i+'" onclick="MediaPlayer.queueRemove(this)">remove</a></td>';
-			html += '</tr>';
-
-			$("#queueTable").append(html);
-		});
-
-
-		Dashboard.hideLoadingMsg();
-	});
+        reloadPlaylist(page);
+    });
 
 
 })(jQuery, document);

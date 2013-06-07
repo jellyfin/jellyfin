@@ -20,8 +20,8 @@
         var isStaticStream;
         var culturesPromise;
 
-        self.playing = '';
-        self.queue = [];
+        self.playlist = [];
+        var currentPlaylistIndex = 0;
 
         function requestFullScreen(element) {
             // Supports most browsers and their versions.
@@ -88,7 +88,7 @@
 
             ApiClient.reportPlaybackStopped(Dashboard.getCurrentUserId(), currentItem.Id, position);
 
-            MediaPlayer.queuePlayNext();
+            self.queuePlayNext();
         }
 
         function startProgressInterval(itemId) {
@@ -440,8 +440,6 @@
 
             }).on("ended.playbackstopped", onPlaybackStopped);
 
-            MediaPlayer.nowPlaying(item);
-
             currentItem = item;
             curentDurationTicks = item.RunTimeTicks;
 
@@ -625,8 +623,6 @@
 
             }).on("ended.playbackstopped", onPlaybackStopped);
 
-            MediaPlayer.nowPlaying(item);
-
             currentItem = item;
             curentDurationTicks = item.RunTimeTicks;
 
@@ -696,6 +692,9 @@
 
         self.canPlay = function (item) {
 
+            if (item.Type == "MusicAlbum" || item.Type == "MusicArtist") {
+                return true;
+            }
             return self.canPlayMediaType(item.MediaType);
         };
 
@@ -760,14 +759,19 @@
                     }
                 }
 
-                self.playInternal(items, startPosition, user);
+                self.playInternal(items[0], startPosition, user);
+                self.onPlaybackStarted(items);
             });
         };
 
         self.playWithWarning = function (items, startPosition, user, localStorageKeyName, header) {
 
             if (localStorage.getItem(localStorageKeyName) == "1") {
-                self.playInternal(items, startPosition, user);
+
+                self.playInternal(items[0], startPosition, user);
+
+                self.onPlaybackStarted(items);
+
                 return;
             }
 
@@ -776,20 +780,37 @@
                 if (result) {
 
                     localStorage.setItem(localStorageKeyName, "1");
-                    self.playInternal(items, startPosition, user);
+
+                    self.playInternal(items[0], startPosition, user);
+
+                    self.onPlaybackStarted(items);
                 }
 
             });
 
         };
 
-        self.playInternal = function (items, startPosition, user) {
+        self.onPlaybackStarted = function (items) {
+
+            self.playlist = items;
+            currentPlaylistIndex = 0;
+
+            var nowPlayingBar = $('#nowPlayingBar');
+
+            if (items.length > 1) {
+                $('#previousTrackButton', nowPlayingBar)[0].disabled = false;
+                $('#nextTrackButton', nowPlayingBar)[0].disabled = false;
+            } else {
+                $('#previousTrackButton', nowPlayingBar)[0].disabled = true;
+                $('#nextTrackButton', nowPlayingBar)[0].disabled = true;
+            }
+        };
+
+        self.playInternal = function (item, startPosition, user) {
 
             if (self.isPlaying()) {
                 self.stop();
             }
-
-            var item = items[0];
 
             var mediaElement;
 
@@ -799,25 +820,15 @@
             } else if (item.MediaType === "Audio") {
 
                 mediaElement = playAudio(item);
+            } else {
+                throw new Error("Unrecognized media type");
             }
 
             startTimeTicksOffset = startPosition || 0;
 
-            if (!mediaElement) {
-                return;
-            }
-
             currentMediaElement = mediaElement;
 
             var nowPlayingBar = $('#nowPlayingBar').show();
-
-            if (items.length > 1) {
-                $('#previousTrackButton', nowPlayingBar)[0].disabled = false;
-                $('#nextTrackButton', nowPlayingBar)[0].disabled = false;
-            } else {
-                $('#previousTrackButton', nowPlayingBar)[0].disabled = true;
-                $('#nextTrackButton', nowPlayingBar)[0].disabled = true;
-            }
 
             //display image and title
             var imageTags = item.ImageTags || {};
@@ -876,18 +887,40 @@
             $('.nowPlayingMediaInfo', nowPlayingBar).html(html);
         };
 
+        self.getItemsForPlayback = function (query) {
+
+            var userId = Dashboard.getCurrentUserId();
+
+            query.Limit = query.Limit || 100;
+            query.Fields = "MediaStreams,UserData,DisplayMediaType,SeriesInfo,AudioInfo,Chapters,Path";
+
+            return ApiClient.getItems(userId, query);
+        };
+
         self.playById = function (id, startPositionTicks) {
 
             ApiClient.getItem(Dashboard.getCurrentUserId(), id).done(function (item) {
 
-                self.play([item], startPositionTicks);
+                if (item.IsFolder) {
+
+                    self.getItemsForPlayback({
+
+                        ParentId: id,
+                        Recursive: true,
+                        SortBy: "SortName"
+
+                    }).done(function (result) {
+
+                        self.play(result.Items, startPositionTicks);
+
+                    });
+
+                } else {
+                    self.play([item], startPositionTicks);
+                }
 
             });
 
-        };
-
-        self.nowPlaying = function (item) {
-            self.playing = item;
         };
 
         self.toggleFullscreen = function () {
@@ -901,63 +934,72 @@
             }
         };
 
-        self.canQueue = function (mediaType) {
-            return mediaType == "Audio";
+        self.removeFromPlaylist = function (index) {
+            
+            self.playlist.remove(index);
+            
         };
 
-        self.queueAdd = function (item) {
-            self.queue.push(item);
-        };
+        // Gets or sets the current playlist index
+        self.currentPlaylistIndex = function(i) {
 
-        self.queueRemove = function (elem) {
-            var index = $(elem).attr("data-queue-index");
-
-            self.queue.splice(index, 1);
-
-            $(elem).parent().parent().remove();
-            return false;
-        };
-
-        self.queuePlay = function (elem) {
-            var index = $(elem).attr("data-queue-index");
-
-            MediaPlayer.play(new Array(self.queue[index]));
-            self.queue.splice(index, 1);
-        };
-
-        self.queuePlayNext = function (item) {
-            if (typeof self.queue[0] != "undefined") {
-                MediaPlayer.play(new Array(self.queue[0]));
-                self.queue.shift();
+            if (i == null) {
+                return currentPlaylistIndex;
             }
+
+            var newItem = self.playlist[i];
+
+            Dashboard.getCurrentUser().done(function (user) {
+
+                self.playInternal(newItem, 0, user);
+                self.currentPlaylistIndex = i;
+            });
         };
 
-        self.queueAddNext = function (item) {
-            if (typeof self.queue[0] != "undefined") {
-                self.queue.unshift(item);
-            } else {
-                self.queueAdd(item);
-            }
+        self.queuePlayNext = function () {
+
+            var newIndex = currentPlaylistIndex + 1;
+            var newItem = self.playlist[newIndex];
+
+            Dashboard.getCurrentUser().done(function (user) {
+
+                self.playInternal(newItem, 0, user);
+                self.currentPlaylistIndex = newIndex;
+            });
         };
 
-        self.inQueue = function (item) {
-            $.each(MediaPlayer.queue, function (i, queueItem) {
-                if (item.Id == queueItem.Id) {
-                    return true;
+        self.queueItem = function (item) {
+
+            self.playlist.push(item);
+
+        };
+
+        self.queue = function (id) {
+
+            ApiClient.getItem(Dashboard.getCurrentUserId(), id).done(function (item) {
+
+                if (item.IsFolder) {
+
+                    self.getItemsForPlayback({
+
+                        ParentId: id,
+                        Recursive: true,
+                        SortBy: "SortName"
+
+                    }).done(function (result) {
+
+                        for (var i = 0, length = result.Items.length; i < length; i++) {
+
+                            self.queueItem(result.Items[i]);
+
+                        }
+
+                    });
+
+                } else {
+                    self.queueItem(item);
                 }
-            });
-            return false;
-        };
 
-        self.playLast = function (itemId) {
-            ApiClient.getItem(Dashboard.getCurrentUserId(), itemId).done(function (item) {
-                self.queueAdd(item);
-            });
-        };
-
-        self.playNext = function (itemId) {
-            ApiClient.getItem(Dashboard.getCurrentUserId(), itemId).done(function (item) {
-                self.queueAddNext(item);
             });
         };
 
