@@ -120,10 +120,12 @@ namespace MediaBrowser.Controller.Library
         /// <returns>System.Nullable{System.Int32}.</returns>
         public static int? GetSeasonNumberFromPath(string path)
         {
+            var filename = Path.GetFileName(path);
+
             // Look for one of the season folder names
             foreach (var name in SeasonFolderNames)
             {
-                var index = path.IndexOf(name, StringComparison.OrdinalIgnoreCase);
+                var index = filename.IndexOf(name, StringComparison.OrdinalIgnoreCase);
 
                 if (index != -1)
                 {
