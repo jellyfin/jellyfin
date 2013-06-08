@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Model.Dto
