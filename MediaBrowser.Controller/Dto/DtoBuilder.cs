@@ -527,6 +527,7 @@ namespace MediaBrowser.Controller.Dto
         {
             var rcentlyAddedItemCount = 0;
             var recursiveItemCount = 0;
+            var unplayed = 0;
 
             double totalPercentPlayed = 0;
 
@@ -543,12 +544,16 @@ namespace MediaBrowser.Controller.Dto
                     rcentlyAddedItemCount++;
                 }
 
+                var isUnplayed = true;
+
                 // Incrememt totalPercentPlayed
                 if (userdata != null)
                 {
                     if (userdata.Played)
                     {
                         totalPercentPlayed += 100;
+
+                        isUnplayed = false;
                     }
                     else if (userdata.PlaybackPositionTicks > 0 && child.RunTimeTicks.HasValue && child.RunTimeTicks.Value > 0)
                     {
@@ -557,10 +562,16 @@ namespace MediaBrowser.Controller.Dto
                         totalPercentPlayed += itemPercent;
                     }
                 }
+
+                if (isUnplayed)
+                {
+                    unplayed++;
+                }
             }
 
             dto.RecursiveItemCount = recursiveItemCount;
             dto.RecentlyAddedItemCount = rcentlyAddedItemCount;
+            dto.RecursiveUnplayedItemCount = unplayed;
 
             if (recursiveItemCount > 0)
             {

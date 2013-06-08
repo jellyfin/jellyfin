@@ -235,6 +235,12 @@ namespace MediaBrowser.Model.Dto
         public int? RecursiveItemCount { get; set; }
 
         /// <summary>
+        /// Gets or sets the recursive unplayed item count.
+        /// </summary>
+        /// <value>The recursive unplayed item count.</value>
+        public int? RecursiveUnplayedItemCount { get; set; }
+        
+        /// <summary>
         /// Gets or sets the child count.
         /// </summary>
         /// <value>The child count.</value>
