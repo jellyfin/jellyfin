@@ -84,7 +84,7 @@ namespace MediaBrowser.ServerApplication
         /// <value>The name of the log file prefix.</value>
         protected override string LogFilePrefixName
         {
-            get { return "Server"; }
+            get { return "server"; }
         }
 
         /// <summary>
