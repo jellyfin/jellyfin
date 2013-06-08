@@ -2,11 +2,10 @@
 using MediaBrowser.Model.Net;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using System.Management;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 
@@ -47,103 +46,15 @@ namespace MediaBrowser.Common.Implementations.NetworkManagement
         }
 
         /// <summary>
-        /// Creates the netsh URL registration.
-        /// </summary>
-        public void AuthorizeHttpListening(string url)
-        {
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = "netsh",
-                Arguments = string.Format("http add urlacl url={0} user=\"NT AUTHORITY\\Authenticated Users\"", url),
-                CreateNoWindow = true,
-                WindowStyle = ProcessWindowStyle.Hidden,
-                Verb = "runas",
-                ErrorDialog = false
-            };
-
-            using (var process = Process.Start(startInfo))
-            {
-                process.WaitForExit();
-            }
-        }
-
-        /// <summary>
-        /// Adds the windows firewall rule.
-        /// </summary>
-        /// <param name="port">The port.</param>
-        /// <param name="protocol">The protocol.</param>
-        public void AddSystemFirewallRule(int port, NetworkProtocol protocol)
-        {
-            // First try to remove it so we don't end up creating duplicates
-            RemoveSystemFirewallRule(port, protocol);
-
-            var args = string.Format("advfirewall firewall add rule name=\"Port {0}\" dir=in action=allow protocol={1} localport={0}", port, protocol);
-
-            RunNetsh(args);
-        }
-
-        /// <summary>
-        /// Removes the windows firewall rule.
-        /// </summary>
-        /// <param name="port">The port.</param>
-        /// <param name="protocol">The protocol.</param>
-        public void RemoveSystemFirewallRule(int port, NetworkProtocol protocol)
-        {
-            var args = string.Format("advfirewall firewall delete rule name=\"Port {0}\" protocol={1} localport={0}", port, protocol);
-
-            RunNetsh(args);
-        }
-
-        /// <summary>
-        /// Runs the netsh.
-        /// </summary>
-        /// <param name="args">The args.</param>
-        private void RunNetsh(string args)
-        {
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = "netsh",
-                Arguments = args,
-                CreateNoWindow = true,
-                WindowStyle = ProcessWindowStyle.Hidden,
-                Verb = "runas",
-                ErrorDialog = false
-            };
-
-            using (var process = new Process { StartInfo = startInfo })
-            {
-                process.Start();
-                process.WaitForExit();
-            }
-        }
-
-        /// <summary>
         /// Returns MAC Address from first Network Card in Computer
         /// </summary>
         /// <returns>[string] MAC Address</returns>
         public string GetMacAddress()
         {
-            var mc = new ManagementClass("Win32_NetworkAdapterConfiguration");
-            var moc = mc.GetInstances();
-            var macAddress = String.Empty;
-            foreach (ManagementObject mo in moc)
-            {
-                if (macAddress == String.Empty)  // only return MAC Address from first card
-                {
-                    try
-                    {
-                        if ((bool)mo["IPEnabled"]) macAddress = mo["MacAddress"].ToString();
-                    }
-                    catch
-                    {
-                        mo.Dispose();
-                        return "";
-                    }
-                }
-                mo.Dispose();
-            }
-
-            return macAddress.Replace(":", "");
+            return NetworkInterface.GetAllNetworkInterfaces()
+                .Where(i => i.NetworkInterfaceType != NetworkInterfaceType.Loopback)
+                .Select(i => BitConverter.ToString(i.GetPhysicalAddress().GetAddressBytes()))
+                .FirstOrDefault();
         }
 
         /// <summary>
@@ -339,7 +250,7 @@ namespace MediaBrowser.Common.Implementations.NetworkManagement
         }
 
         protected static readonly CultureInfo UsCulture = new CultureInfo("en-US");
-        
+
         /// <summary>
         /// Gets the port.
         /// </summary>
