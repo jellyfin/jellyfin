@@ -18,25 +18,6 @@ namespace MediaBrowser.Common.Net
         int GetRandomUnusedPort();
 
         /// <summary>
-        /// Creates the netsh URL registration.
-        /// </summary>
-        void AuthorizeHttpListening(string url);
-
-        /// <summary>
-        /// Adds the windows firewall rule.
-        /// </summary>
-        /// <param name="port">The port.</param>
-        /// <param name="protocol">The protocol.</param>
-        void AddSystemFirewallRule(int port, NetworkProtocol protocol);
-
-        /// <summary>
-        /// Removes the windows firewall rule.
-        /// </summary>
-        /// <param name="port">The port.</param>
-        /// <param name="protocol">The protocol.</param>
-        void RemoveSystemFirewallRule(int port, NetworkProtocol protocol);
-
-        /// <summary>
         /// Returns MAC Address from first Network Card in Computer
         /// </summary>
         /// <returns>[string] MAC Address</returns>
