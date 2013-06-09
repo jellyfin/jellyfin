@@ -103,9 +103,6 @@
     <Compile Include="..\MediaBrowser.Model\Entities\DisplayPreferences.cs">
       <Link>Entities\DisplayPreferences.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\Entities\IByReferenceItem.cs">
-      <Link>Entities\IByReferenceItem.cs</Link>
-    </Compile>
     <Compile Include="..\MediaBrowser.Model\Entities\IHasMediaStreams.cs">
       <Link>Entities\IHasMediaStreams.cs</Link>
     </Compile>

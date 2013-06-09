@@ -51,7 +51,6 @@
     <Compile Include="Dto\ItemByNameCounts.cs" />
     <Compile Include="Dto\ItemCounts.cs" />
     <Compile Include="Dto\StudioDto.cs" />
-    <Compile Include="Entities\IByReferenceItem.cs" />
     <Compile Include="Entities\ItemReview.cs" />
     <Compile Include="Entities\MetadataFields.cs" />
     <Compile Include="Net\WebSocketMessage.cs" />
