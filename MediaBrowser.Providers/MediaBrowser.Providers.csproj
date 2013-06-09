@@ -76,6 +76,7 @@
     <Compile Include="Music\LastfmHelper.cs" />
     <Compile Include="Music\MusicArtistProviderFromJson.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Savers\MovieXmlSaver.cs" />
     <Compile Include="TV\EpisodeImageFromMediaLocationProvider.cs" />
     <Compile Include="TV\EpisodeProviderFromXml.cs" />
     <Compile Include="TV\EpisodeXmlParser.cs" />

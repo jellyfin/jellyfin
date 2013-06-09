@@ -5,7 +5,7 @@ using MediaBrowser.Model.Entities;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Server.Implementations.Savers
+namespace MediaBrowser.Providers.Savers
 {
     /// <summary>
     /// Saves movie.xml for movies, trailers and music videos
