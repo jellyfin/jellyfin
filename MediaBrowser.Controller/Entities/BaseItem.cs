@@ -158,6 +158,18 @@ namespace MediaBrowser.Controller.Entities
         public bool DontFetchMeta { get; set; }
 
         /// <summary>
+        /// Gets or sets the locked fields.
+        /// </summary>
+        /// <value>The locked fields.</value>
+        public List<MetadataFields> LockedFields { get; set; }
+
+        /// <summary>
+        /// Gets or sets the locked images.
+        /// </summary>
+        /// <value>The locked images.</value>
+        public List<ImageType> LockedImages { get; set; }
+        
+        /// <summary>
         /// Determines whether the item has a saved local image of the specified name (jpg or png).
         /// </summary>
         /// <param name="name">The name.</param>
