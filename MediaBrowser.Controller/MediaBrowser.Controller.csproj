@@ -78,14 +78,6 @@
     <Compile Include="Library\ILibraryPrescanTask.cs" />
     <Compile Include="Library\IMetadataSaver.cs" />
     <Compile Include="Localization\ILocalizationManager.cs" />
-    <Compile Include="Providers\Movies\FanArtMovieUpdatesPrescanTask.cs" />
-    <Compile Include="Providers\Movies\MovieDbImagesProvider.cs" />
-    <Compile Include="Providers\Music\ArtistsPostScanTask.cs" />
-    <Compile Include="Providers\Music\FanArtUpdatesPrescanTask.cs" />
-    <Compile Include="Providers\TV\FanArtSeasonProvider.cs" />
-    <Compile Include="Providers\TV\FanArtTvUpdatesPrescanTask.cs" />
-    <Compile Include="Providers\TV\TvdbPrescanTask.cs" />
-    <Compile Include="Providers\TV\TvdbSeriesImageProvider.cs" />
     <Compile Include="Session\ISessionManager.cs" />
     <Compile Include="Drawing\ImageExtensions.cs" />
     <Compile Include="Drawing\ImageHeader.cs" />
@@ -122,7 +114,6 @@
     <Compile Include="Entities\Video.cs" />
     <Compile Include="Entities\CollectionFolder.cs" />
     <Compile Include="Entities\Year.cs" />
-    <Compile Include="Extensions\XmlExtensions.cs" />
     <Compile Include="IO\FileSystem.cs" />
     <Compile Include="IO\IDirectoryWatchers.cs" />
     <Compile Include="IO\NativeMethods.cs" />
@@ -131,17 +122,8 @@
     <Compile Include="Dto\DtoBuilder.cs" />
     <Compile Include="Library\SearchHintInfo.cs" />
     <Compile Include="Providers\IProviderManager.cs" />
-    <Compile Include="Providers\MediaInfo\MediaEncoderHelpers.cs" />
+    <Compile Include="MediaInfo\MediaEncoderHelpers.cs" />
     <Compile Include="Providers\MetadataProviderPriority.cs" />
-    <Compile Include="Providers\Movies\OpenMovieDatabaseProvider.cs" />
-    <Compile Include="Providers\Music\FanArtArtistByNameProvider.cs" />
-    <Compile Include="Providers\Music\LastfmAlbumProvider.cs" />
-    <Compile Include="Providers\Music\FanArtAlbumProvider.cs" />
-    <Compile Include="Providers\Music\FanArtArtistProvider.cs" />
-    <Compile Include="Providers\Music\LastfmArtistByNameProvider.cs" />
-    <Compile Include="Providers\Music\LastfmArtistProvider.cs" />
-    <Compile Include="Providers\Music\LastfmHelper.cs" />
-    <Compile Include="Providers\Music\MusicArtistProviderFromJson.cs" />
     <Compile Include="Resolvers\BaseItemResolver.cs" />
     <Compile Include="Resolvers\BaseVideoResolver.cs" />
     <Compile Include="Resolvers\IItemResolver.cs" />
@@ -166,33 +148,8 @@
     <Compile Include="Library\IIntroProvider.cs" />
     <Compile Include="Plugins\IPluginConfigurationPage.cs" />
     <Compile Include="Plugins\IServerEntryPoint.cs" />
-    <Compile Include="Providers\Music\LastfmBaseProvider.cs" />
-    <Compile Include="Providers\FanartBaseProvider.cs" />
     <Compile Include="Providers\IImageEnhancer.cs" />
-    <Compile Include="Providers\ImagesByNameProvider.cs" />
-    <Compile Include="Providers\MediaInfo\BaseFFMpegProvider.cs" />
-    <Compile Include="Providers\MediaInfo\AudioImageProvider.cs" />
-    <Compile Include="Providers\MediaInfo\BaseFFProbeProvider.cs" />
     <Compile Include="Providers\BaseProviderInfo.cs" />
-    <Compile Include="Providers\Movies\FanArtMovieProvider.cs" />
-    <Compile Include="Providers\Movies\MovieDbProvider.cs" />
-    <Compile Include="Providers\Movies\MovieProviderFromJson.cs" />
-    <Compile Include="Providers\Movies\MovieProviderFromXml.cs" />
-    <Compile Include="Providers\Movies\PersonProviderFromJson.cs" />
-    <Compile Include="Providers\Movies\TmdbPersonProvider.cs" />
-    <Compile Include="Providers\TV\EpisodeImageFromMediaLocationProvider.cs" />
-    <Compile Include="Providers\TV\EpisodeProviderFromXml.cs" />
-    <Compile Include="Providers\TV\EpisodeXmlParser.cs" />
-    <Compile Include="Providers\TV\FanArtTVProvider.cs" />
-    <Compile Include="Providers\TV\RemoteEpisodeProvider.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Providers\TV\RemoteSeasonProvider.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Providers\TV\RemoteSeriesProvider.cs" />
-    <Compile Include="Providers\TV\SeriesProviderFromXml.cs" />
-    <Compile Include="Providers\TV\SeriesXmlParser.cs" />
     <Compile Include="Resolvers\IResolverIgnoreRule.cs" />
     <Compile Include="Resolvers\EntityResolutionHelper.cs" />
     <Compile Include="Resolvers\ResolverPriority.cs" />
@@ -202,10 +159,6 @@
     <Compile Include="Kernel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Providers\BaseMetadataProvider.cs" />
-    <Compile Include="Providers\MediaInfo\FFProbeAudioInfoProvider.cs" />
-    <Compile Include="Providers\FolderProviderFromXml.cs" />
-    <Compile Include="Providers\ImageFromMediaLocationProvider.cs" />
-    <Compile Include="Providers\MediaInfo\FFProbeVideoInfoProvider.cs" />
     <Compile Include="Session\SessionInfo.cs" />
     <Compile Include="Sorting\IBaseItemComparer.cs" />
     <Compile Include="Sorting\IUserBaseItemComparer.cs" />
