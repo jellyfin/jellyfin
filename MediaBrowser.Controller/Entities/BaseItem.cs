@@ -40,6 +40,8 @@ namespace MediaBrowser.Controller.Entities
             ThemeSongIds = new List<Guid>();
             ThemeVideoIds = new List<Guid>();
             LocalTrailerIds = new List<Guid>();
+            LockedFields = new List<MetadataFields>();
+            LockedImages = new List<ImageType>();
         }
 
         /// <summary>
