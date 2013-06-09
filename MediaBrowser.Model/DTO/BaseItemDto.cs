@@ -469,7 +469,13 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The locked images.</value>
         public List<ImageType> LockedImages { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [enable internet providers].
+        /// </summary>
+        /// <value><c>true</c> if [enable internet providers]; otherwise, <c>false</c>.</value>
+        public bool? EnableInternetProviders { get; set; }
+
         /// <summary>
         /// Gets a value indicating whether this instance can resume.
         /// </summary>

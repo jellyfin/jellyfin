@@ -233,10 +233,11 @@ namespace MediaBrowser.Controller.Dto
                 dto.DisplayMediaType = item.DisplayMediaType;
             }
 
-            if (fields.Contains(ItemFields.LockedFields))
+            if (fields.Contains(ItemFields.MetadataSettings))
             {
                 dto.LockedFields = item.LockedFields;
                 dto.LockedImages = item.LockedImages;
+                dto.EnableInternetProviders = !item.DontFetchMeta;
             }
             
             if (fields.Contains(ItemFields.Budget))

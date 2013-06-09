@@ -67,9 +67,9 @@ namespace MediaBrowser.Model.Querying
         IndexOptions,
 
         /// <summary>
-        /// The locked fields
+        /// The metadata settings
         /// </summary>
-        LockedFields,
+        MetadataSettings,
 
         /// <summary>
         /// The item overview
