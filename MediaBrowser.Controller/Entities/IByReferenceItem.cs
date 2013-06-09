@@ -1,5 +1,5 @@
 ﻿
-namespace MediaBrowser.Model.Entities
+namespace MediaBrowser.Controller.Entities
 {
     /// <summary>
     /// This is a marker class that tells us that a particular item type may be physically resolved
