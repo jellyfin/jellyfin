@@ -41,7 +41,7 @@ namespace MediaBrowser.Server.Implementations.IO
         /// <summary>
         /// Any file name ending in any of these will be ignored by the watchers
         /// </summary>
-        private readonly List<string> _alwaysIgnoreFiles = new List<string> { "thumbs.db", "small.jpg", "albumart.jpg" };
+        private readonly IReadOnlyList<string> _alwaysIgnoreFiles = new List<string> { "thumbs.db", "small.jpg", "albumart.jpg" };
 
         /// <summary>
         /// The timer lock
@@ -322,8 +322,16 @@ namespace MediaBrowser.Server.Implementations.IO
         /// <param name="e">The <see cref="FileSystemEventArgs" /> instance containing the event data.</param>
         void watcher_Changed(object sender, FileSystemEventArgs e)
         {
+            var name = e.Name;
+
+            // Ignore certain files
+            if (_alwaysIgnoreFiles.Contains(name, StringComparer.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
             // Ignore when someone manually creates a new folder
-            if (e.ChangeType == WatcherChangeTypes.Created && e.Name == "New folder")
+            if (e.ChangeType == WatcherChangeTypes.Created && name == "New folder")
             {
                 return;
             }
@@ -337,12 +345,6 @@ namespace MediaBrowser.Server.Implementations.IO
                 {
                     return;
                 }
-            }
-
-            // Ignore certain files
-            if (_alwaysIgnoreFiles.Any(f => e.Name.EndsWith(f, StringComparison.OrdinalIgnoreCase)))
-            {
-                return;
             }
 
             if (tempIgnorePaths.Contains(e.FullPath, StringComparer.OrdinalIgnoreCase))
