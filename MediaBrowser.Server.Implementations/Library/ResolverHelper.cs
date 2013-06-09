@@ -1,9 +1,10 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Resolvers;
+using System;
 using System.IO;
 using System.Text.RegularExpressions;
-using MediaBrowser.Controller.Resolvers;
 
 namespace MediaBrowser.Server.Implementations.Library
 {
@@ -38,6 +39,8 @@ namespace MediaBrowser.Server.Implementations.Library
 
             // Make sure the item has a name
             EnsureName(item);
+
+            item.DontFetchMeta = item.Path.IndexOf("[dontfetchmeta]", StringComparison.OrdinalIgnoreCase) != -1;
 
             // Make sure DateCreated and DateModified have values
             EntityResolutionHelper.EnsureDates(item, args);

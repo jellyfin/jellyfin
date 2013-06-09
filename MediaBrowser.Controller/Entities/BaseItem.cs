@@ -155,19 +155,7 @@ namespace MediaBrowser.Controller.Entities
         /// Returns true if this item should not attempt to fetch metadata
         /// </summary>
         /// <value><c>true</c> if [dont fetch meta]; otherwise, <c>false</c>.</value>
-        [IgnoreDataMember]
-        public virtual bool DontFetchMeta
-        {
-            get
-            {
-                if (Path != null)
-                {
-                    return Path.IndexOf("[dontfetchmeta]", StringComparison.OrdinalIgnoreCase) != -1;
-                }
-
-                return false;
-            }
-        }
+        public bool DontFetchMeta { get; set; }
 
         /// <summary>
         /// Determines whether the item has a saved local image of the specified name (jpg or png).
