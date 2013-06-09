@@ -110,6 +110,12 @@
         } else {
             $('#fldMusicBrainz', page).hide();
         }
+        
+        if (item.Type == "MusicAlbum") {
+            $('#fldMusicBrainzReleaseGroupId', page).show();
+        } else {
+            $('#fldMusicBrainzReleaseGroupId', page).hide();
+        }
 
         if (item.MediaType == "Video") {
             $('#fldOriginalAspectRatio', page).show();
@@ -252,6 +258,7 @@
         $('#txtTvdb', page).val(providerIds.Tvdb || "");
         $('#txtTvCom', page).val(providerIds.Tvcom || "");
         $('#txtMusicBrainz', page).val(providerIds.Musicbrainz || "");
+        $('#txtMusicBrainzReleaseGroupId', page).val(item.MusicBrainzReleaseGroupId || "");
         $('#txtRottenTomatoes', page).val(providerIds.RottenTomatoes || "");
 
     }
@@ -418,6 +425,7 @@
                     Tvdb: $('#txtTvdb', form).val(),
                     Tvcom: $('#txtTvCom', form).val(),
                     Musicbrainz: $('#txtMusicBrainz', form).val(),
+                    MusicBrainzReleaseGroupId: $('#txtMusicBrainzReleaseGroupId', form).val(),
                     RottenTomatoes: $('#txtRottenTomatoes', form).val()
                 }
 
