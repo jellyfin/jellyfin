@@ -48,7 +48,7 @@
         if (person.PrimaryImageTag) {
 
             imgUrl = ApiClient.getPersonImageUrl(person.Name, {
-                width: 130,
+                height: 280,
                 tag: person.PrimaryImageTag,
                 type: "primary"
             });
