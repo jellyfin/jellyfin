@@ -256,6 +256,7 @@ namespace MediaBrowser.Api
             item.Genres = request.Genres;
             item.Tags = request.Tags;
             item.Studios = request.Studios.Select(x=>x.Name).ToList();
+            item.People = request.People.Select(x=> new PersonInfo{Name = x.Name,Role = x.Role,Type = x.Type}).ToList();
 
             item.EndDate = request.EndDate;
             item.PremiereDate = request.PremiereDate;
