@@ -76,6 +76,7 @@
     <Compile Include="Entities\MusicVideo.cs" />
     <Compile Include="Library\ILibraryPostScanTask.cs" />
     <Compile Include="Library\ILibraryPrescanTask.cs" />
+    <Compile Include="Library\IMetadataSaver.cs" />
     <Compile Include="Localization\ILocalizationManager.cs" />
     <Compile Include="Providers\Movies\FanArtMovieUpdatesPrescanTask.cs" />
     <Compile Include="Providers\Movies\MovieDbImagesProvider.cs" />
