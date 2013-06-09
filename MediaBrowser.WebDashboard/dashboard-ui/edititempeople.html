@@ -1,0 +1,25 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Media Browser</title>
+</head>
+<body>
+    <div id="editItemPeoplePage" data-role="page" class="page libraryPage" data-theme="a">
+        <div class="ui-bar-c parentName" style="display: none;">
+        </div>
+        <div data-role="content">
+            <div class="ehsContent">
+                <h1 class="itemName detailPageName"></h1>
+                <br />
+                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                    <a href="#" data-role="button" onclick="Dashboard.navigate('edititemmetadata.html', true);">Metadata</a>
+                    <a href="#" data-role="button" class="ui-btn-active">People</a>
+                    <a href="#" data-role="button" onclick="Dashboard.navigate('edititemimages.html', true);">Images</a>
+                </div>
+                <button type="button" data-icon="plus" data-inline="true" onclick="EditItemPeoplePage.addPerson();">Add Person</button>
+            </div>
+            <div class="itemsContainer" id="peopleContainer"></div>
+        </div>
+    </div>
+</body>
+</html>

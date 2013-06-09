@@ -30,23 +30,6 @@
 
             Dashboard.hideLoadingMsg();
         });
-
-        $(page).on('click', 'ul[data-role="listview"] li a.removeBtn', function () {
-            var list = $(this).parents('ul[data-role="listview"]');
-            $(this).parent().remove();
-            list.listview('refresh');
-        });
-        
-        $('[data-role="editableListviewContainer"] a[data-action="add"]', page).click(function () {
-            var input = $(this).parent().find('input[type="text"]');
-            var text = input.val();
-            input.val('');
-            if (text == '') return;
-            var list = $(this).parents('[data-role="editableListviewContainer"]').find('ul[data-role="listview"]');
-            var items = editableListViewValues(list);
-            items.push(text);
-            populateListView(list, items);
-        });
     }
 
     function setFieldVisibilities(page, item) {
@@ -202,7 +185,7 @@
         populateAirDays(selectAirDays);
         selectAirDays.val(item.AirDays || "").selectmenu('refresh');
         populateListView($('#listGenres', page), item.Genres);
-        populateListView($('#listStudios', page), item.Studios.map(function (element) { return element.Name; }));
+        populateListView($('#listStudios', page), item.Studios.map(function (element) { return element.Name || ''; }));
         populateListView($('#listTags', page), item.Tags);
         
         $('#txtName', page).val(item.Name || "");
@@ -374,7 +357,7 @@
         items.sort(function(a, b) { return a.toLowerCase().localeCompare(b.toLowerCase()); });
         var html = '';
         for (var i = 0; i < items.length; i++) {
-            html += '<li><a class="data">' + items[i] + '</a><a class="removeBtn"></a></li>';
+            html += '<li><a class="data">' + items[i] + '</a><a onclick="EditItemMetadataPage.RemoveElementFromListview(this)"></a></li>';
         }
         list.html(html).listview('refresh');
     }
@@ -425,6 +408,7 @@
                 Language: $('#selectLanguage', form).val(),
                 OfficialRating: $('#selectOfficialRating', form).val(),
                 CustomRating: $('#selectCustomRating', form).val(),
+                People: currentItem.People,
                 
                 ProviderIds:
                 {
@@ -446,6 +430,22 @@
             });
 
             return false;
+        };
+        self.AddElementToEditableListview = function(source) {
+            var input = $(source).parent().find('input[type="text"]');
+            var text = input.val();
+            input.val('');
+            if (text == '') return;
+            var list = $(source).parents('[data-role="editableListviewContainer"]').find('ul[data-role="listview"]');
+            var items = editableListViewValues(list);
+            items.push(text);
+            populateListView(list, items);
+        };
+
+        self.RemoveElementFromListview = function(source) {
+            var list = $(source).parents('ul[data-role="listview"]');
+            $(source).parent().remove();
+            list.listview('refresh');
         };
     }
 

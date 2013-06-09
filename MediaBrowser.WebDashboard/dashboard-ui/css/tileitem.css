@@ -241,7 +241,7 @@
         height: 150px;
     }
 
-    .backdropTileItem, .squareTileItem {
+    .backdropTileItem, .squareTileItem, .backdropTileItem.posterTileItem {
         width: 31.5%;
     }
 
@@ -264,7 +264,7 @@
         height: 170px;
     }
 
-    .backdropTileItem {
+    .backdropTileItem, .backdropTileItem.posterTileItem {
         width: 32%;
     }
 
@@ -283,7 +283,7 @@
 
 
 @media all and (min-width: 1920px) {
-    .backdropTileItem {
+    .backdropTileItem, .backdropTileItem.posterTileItem {
         width: 31.5%;
     }
 
@@ -309,7 +309,7 @@
 }
 
 @media all and (min-width: 2000px) {
-    .backdropTileItem {
+    .backdropTileItem, .backdropTileItem.posterTileItem {
         width: 23.5%;
     }
 
@@ -335,7 +335,7 @@
 }
 
 @media all and (min-width: 2200px) {
-    .backdropTileItem {
+    .backdropTileItem, .backdropTileItem.posterTileItem {
         width: 24%;
     }
 
@@ -361,7 +361,7 @@
 }
 
 @media all and (min-width: 2540px) {
-    .backdropTileItem {
+    .backdropTileItem, .backdropTileItem.posterTileItem {
         width: 18.75%;
     }
 
