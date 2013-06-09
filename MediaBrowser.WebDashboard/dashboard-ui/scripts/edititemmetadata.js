@@ -30,6 +30,23 @@
 
             Dashboard.hideLoadingMsg();
         });
+
+        $(page).on('click', 'ul[data-role="listview"] li a.removeBtn', function () {
+            var list = $(this).parents('ul[data-role="listview"]');
+            $(this).parent().remove();
+            list.listview('refresh');
+        });
+        
+        $('[data-role="editableListviewContainer"] a[data-action="add"]', page).click(function () {
+            var input = $(this).parent().find('input[type="text"]');
+            var text = input.val();
+            input.val('');
+            if (text == '') return;
+            var list = $(this).parents('[data-role="editableListviewContainer"]').find('ul[data-role="listview"]');
+            var items = editableListViewValues(list);
+            items.push(text);
+            populateListView(list, items);
+        });
     }
 
     function setFieldVisibilities(page, item) {
@@ -78,6 +95,15 @@
         } else {
             $('#fldTvdb', page).hide();
             $('#fldTvCom', page).hide();
+        }
+        if (item.Type == "Series") {
+            $('#fldStatus', page).show();
+            $('#fldAirDays', page).show();
+            $('#fldAirTime', page).show();
+        } else {
+            $('#fldStatus', page).hide();
+            $('#fldAirDays', page).hide();
+            $('#fldAirTime', page).hide();
         }
 
         if (item.Type == "Audio") {
@@ -169,8 +195,18 @@
 
             select.val(item.CustomRating || "").selectmenu('refresh');
         });
-
+        var selectStatus = $('#selectStatus', page);
+        populateStatus(selectStatus);
+        selectStatus.val(item.Status || "").selectmenu('refresh');
+        var selectAirDays = $('#selectAirDays', page);
+        populateAirDays(selectAirDays);
+        selectAirDays.val(item.AirDays || "").selectmenu('refresh');
+        populateListView($('#listGenres', page), item.Genres);
+        populateListView($('#listStudios', page), item.Studios.map(function (element) { return element.Name; }));
+        populateListView($('#listTags', page), item.Tags);
+        
         $('#txtName', page).val(item.Name || "");
+        $('#txtOverview', page).val(item.Overview || "");
         $('#txtSortName', page).val(item.SortName || "");
         $('#txtDisplayMediaType', page).val(item.DisplayMediaType || "");
         $('#txtCommunityRating', page).val(item.CommunityRating || "");
@@ -221,6 +257,7 @@
         }
 
         $('#txtProductionYear', page).val(item.ProductionYear || "");
+        $('#txtAirTime', page).val(convertTo24HourFormat(item.AirTime || ""));
 
         $('#txtOriginalAspectRatio', page).val(item.AspectRatio || "");
 
@@ -236,6 +273,41 @@
 
     }
 
+    function convertTo24HourFormat(time) {
+        if (time == "")
+            return time;
+        var hours = Number(time.match(/^(\d+)/)[1]);
+        var minutes = Number(time.match(/:(\d+)/)[1]);
+        var ampm = time.match(/\s(.*)$/)[1];
+        ampm = ampm.toUpperCase();
+        if (ampm == "PM" && hours < 12) hours = hours + 12;
+        if (ampm == "AM" && hours == 12) hours = 0;
+        var sHours = hours.toString();
+        var sMinutes = minutes.toString();
+        if (hours < 10) sHours = "0" + sHours;
+        if (minutes < 10) sMinutes = "0" + sMinutes;
+        return sHours + ":" + sMinutes;
+    }
+    
+    function convertTo12HourFormat(time) {
+        if (time == "")
+            return time;
+        var hours = Number(time.match(/^(\d+)/)[1]);
+        var minutes = Number(time.match(/:(\d+)/)[1]);
+        var ampm = "AM";
+        if (hours >= 12) {
+            ampm = "PM";
+            hours = hours - 12;
+            hours = hours == 0 ? 12 : hours;
+        }
+        hours = hours == 0 ? 12 : hours;
+        var sHours = hours.toString();
+        var sMinutes = minutes.toString();
+        if (hours < 10) sHours = "0" + sHours;
+        if (minutes < 10) sMinutes = "0" + sMinutes;
+        return sHours + ":" + sMinutes + " " + ampm;
+    }
+    
     function populateLanguages(allCultures, select) {
 
         var html = "";
@@ -278,6 +350,39 @@
         select.html(html).selectmenu("refresh");
     }
 
+    function populateStatus(select) {
+        var html = "";
+
+        html += "<option value=''></option>";
+        html += "<option value='Continuing'>Continuing</option>";
+        html += "<option value='Ended'>Ended</option>";
+        select.html(html).selectmenu("refresh");
+    }
+    
+    function populateAirDays(select) {
+        var days = new Array("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday");
+        var html = "";
+        html += "<option value=''></option>";
+        for (var i = 0; i < days.length; i++) {
+            html += "<option value='" + days[i] + "'>" + days[i] + "</option>";
+        }
+        select.html(html).selectmenu("refresh");
+    }
+
+    function populateListView(list, items) {
+        items = items || new Array();
+        items.sort(function(a, b) { return a.toLowerCase().localeCompare(b.toLowerCase()); });
+        var html = '';
+        for (var i = 0; i < items.length; i++) {
+            html += '<li><a class="data">' + items[i] + '</a><a class="removeBtn"></a></li>';
+        }
+        list.html(html).listview('refresh');
+    }
+
+    function editableListViewValues(list) {
+        return list.find('a.data').map(function () { return $(this).text(); }).get();
+    }
+    
     function editItemMetadataPage() {
 
         var self = this;
@@ -304,7 +409,14 @@
                 Album: $('#txtAlbum', form).val(),
                 AlbumArtist: $('#txtAlbumArtist', form).val(),
                 Artists: [$('#txtArtist', form).val()],
-                
+                Overview: $('#txtOverview', form).val(),
+                Status: $('#selectStatus', form).val(),
+                AirDays: $('#selectAirDays', form).val(),
+                AirTime: convertTo12HourFormat($('#txtAirTime', form).val()),
+                Genres: editableListViewValues($("#listGenres", form)),
+                Tags: editableListViewValues($("#listTags", form)),
+                Studios: editableListViewValues($("#listStudios", form)).map(function (element) { return { Name: element }; }),
+                    
                 PremiereDate: $('#txtPremiereDate', form).val(),
                 EndDate: $('#txtEndDate', form).val(),
                 ProductionYear: $('#txtProductionYear', form).val(),
