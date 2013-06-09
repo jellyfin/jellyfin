@@ -459,6 +459,18 @@ namespace MediaBrowser.Model.Dto
         public double? Revenue { get; set; }
 
         /// <summary>
+        /// Gets or sets the locked fields.
+        /// </summary>
+        /// <value>The locked fields.</value>
+        public List<MetadataFields> LockedFields { get; set; }
+
+        /// <summary>
+        /// Gets or sets the locked images.
+        /// </summary>
+        /// <value>The locked images.</value>
+        public List<ImageType> LockedImages { get; set; }
+        
+        /// <summary>
         /// Gets a value indicating whether this instance can resume.
         /// </summary>
         /// <value><c>true</c> if this instance can resume; otherwise, <c>false</c>.</value>
