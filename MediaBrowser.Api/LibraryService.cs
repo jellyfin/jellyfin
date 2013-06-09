@@ -258,8 +258,8 @@ namespace MediaBrowser.Api
             item.Studios = request.Studios.Select(x=>x.Name).ToList();
             item.People = request.People.Select(x=> new PersonInfo{Name = x.Name,Role = x.Role,Type = x.Type}).ToList();
 
-            item.EndDate = request.EndDate;
-            item.PremiereDate = request.PremiereDate;
+            item.EndDate = request.EndDate != default(DateTime) ? request.EndDate : null;
+            item.PremiereDate = request.PremiereDate != default(DateTime)? request.PremiereDate : null;
             item.ProductionYear = request.ProductionYear;
             item.AspectRatio = request.AspectRatio;
             item.Language = request.Language;
