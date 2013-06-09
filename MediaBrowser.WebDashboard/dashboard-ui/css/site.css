@@ -977,3 +977,7 @@ input[type="range"]::-ms-fill-upper {
         max-width: 110px;
     }
 }
+
+#editItemMetadataPage #txtOverview {
+    height: 70px;
+}

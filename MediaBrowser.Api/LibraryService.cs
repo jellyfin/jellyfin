@@ -252,6 +252,11 @@ namespace MediaBrowser.Api
             item.CriticRatingSummary = request.CriticRatingSummary;
             item.IndexNumber = request.IndexNumber;
             item.ParentIndexNumber = request.ParentIndexNumber;
+            item.Overview = request.Overview;
+            item.Genres = request.Genres;
+            item.Tags = request.Tags;
+            item.Studios = request.Studios.Select(x=>x.Name).ToList();
+            item.People = request.People.Select(x=> new PersonInfo{Name = x.Name,Role = x.Role,Type = x.Type}).ToList();
 
             item.EndDate = request.EndDate;
             item.PremiereDate = request.PremiereDate;
@@ -288,6 +293,20 @@ namespace MediaBrowser.Api
                 song.Artist = request.Artists[0];
             }
 
+            var musicAlbum = item as MusicAlbum;
+
+            if (musicAlbum != null)
+            {
+                musicAlbum.MusicBrainzReleaseGroupId = request.ProviderIds["MusicBrainzReleaseGroupId"];
+            }
+
+            var series = item as Series;
+            if (series != null)
+            {
+                series.Status = request.Status;
+                series.AirDays = request.AirDays;
+                series.AirTime = request.AirTime;
+            }
             return _libraryManager.UpdateItem(item, CancellationToken.None);
         }
 
