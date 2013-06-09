@@ -129,7 +129,7 @@ namespace MediaBrowser.Controller.Library
 
                 if (index != -1)
                 {
-                    return GetSeasonNumberFromPathSubstring(path.Substring(index + name.Length));
+                    return GetSeasonNumberFromPathSubstring(filename.Substring(index + name.Length));
                 }
             }
 
