@@ -1332,7 +1332,13 @@
                     if (item.EndDate) {
 
                         try {
-                            text += "-" + parseISO8601Date(item.EndDate, { toLocal: true }).getFullYear();
+
+                            var endYear = parseISO8601Date(item.EndDate, { toLocal: true }).getFullYear();
+                            
+                            if (endYear != item.ProductionYear) {
+                                text += "-" + parseISO8601Date(item.EndDate, { toLocal: true }).getFullYear();
+                            }
+
                         }
                         catch (e) {
                             console.log("Error parsing date: " + item.EndDate);
