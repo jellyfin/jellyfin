@@ -74,6 +74,12 @@ namespace MediaBrowser.Server.Implementations.Library
         private IEnumerable<IBaseItemComparer> Comparers { get; set; }
 
         /// <summary>
+        /// Gets or sets the savers.
+        /// </summary>
+        /// <value>The savers.</value>
+        private IEnumerable<IMetadataSaver> Savers { get; set; }
+        
+        /// <summary>
         /// Gets the active item repository
         /// </summary>
         /// <value>The item repository.</value>
@@ -191,13 +197,15 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="itemComparers">The item comparers.</param>
         /// <param name="prescanTasks">The prescan tasks.</param>
         /// <param name="postscanTasks">The postscan tasks.</param>
+        /// <param name="savers">The savers.</param>
         public void AddParts(IEnumerable<IResolverIgnoreRule> rules,
             IEnumerable<IVirtualFolderCreator> pluginFolders,
             IEnumerable<IItemResolver> resolvers,
             IEnumerable<IIntroProvider> introProviders,
             IEnumerable<IBaseItemComparer> itemComparers,
             IEnumerable<ILibraryPrescanTask> prescanTasks,
-            IEnumerable<ILibraryPostScanTask> postscanTasks)
+            IEnumerable<ILibraryPostScanTask> postscanTasks,
+            IEnumerable<IMetadataSaver> savers)
         {
             EntityResolutionIgnoreRules = rules;
             PluginFolderCreators = pluginFolders;
@@ -206,6 +214,7 @@ namespace MediaBrowser.Server.Implementations.Library
             Comparers = itemComparers;
             PrescanTasks = prescanTasks;
             PostscanTasks = postscanTasks;
+            Savers = savers;
         }
 
         /// <summary>
@@ -1259,7 +1268,7 @@ namespace MediaBrowser.Server.Implementations.Library
                     }
                     catch (Exception ex)
                     {
-                        _logger.ErrorException("Error in ItemUpdated event handler", ex);
+                        _logger.ErrorException("Error in ItemAdded event handler", ex);
                     }
                 }
             }
@@ -1282,19 +1291,9 @@ namespace MediaBrowser.Server.Implementations.Library
                 UpdateItemInLibraryCache(item);
             }
 
-            if (ItemUpdated != null)
+            foreach (var item in list)
             {
-                foreach (var item in list)
-                {
-                    try
-                    {
-                        ItemUpdated(this, new ItemChangeEventArgs { Item = item });
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.ErrorException("Error in ItemUpdated event handler", ex);
-                    }
-                }
+                await OnItemUpdated(item, CancellationToken.None).ConfigureAwait(false);
             }
         }
 
@@ -1365,6 +1364,42 @@ namespace MediaBrowser.Server.Implementations.Library
             }
 
             return children;
+        }
+
+        /// <summary>
+        /// Called when [item updated].
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        private async Task OnItemUpdated(BaseItem item, CancellationToken cancellationToken)
+        {
+            if (ConfigurationManager.Configuration.SaveLocalMeta)
+            {
+                foreach (var saver in Savers.Where(i => i.Supports(item)))
+                {
+                    try
+                    {
+                        await saver.Save(item, cancellationToken).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.ErrorException("Error in metadata saver", ex);
+                    }
+                }
+            }
+
+            if (ItemUpdated != null)
+            {
+                try
+                {
+                    ItemUpdated(this, new ItemChangeEventArgs { Item = item });
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error in ItemUpdated event handler", ex);
+                }
+            }
         }
     }
 }
