@@ -2,7 +2,6 @@
 using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Providers.MediaInfo;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;

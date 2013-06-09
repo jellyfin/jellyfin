@@ -3,7 +3,6 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Providers.Movies;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
 using System;
@@ -185,7 +184,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                     // If we already know it's a movie, we can stop looping
                     if (!isKnownMovie.HasValue)
                     {
-                        isKnownMovie = args.ContainsMetaFileByName("movie.xml") || args.ContainsMetaFileByName(MovieDbProvider.LocalMetaFileName) || args.Path.IndexOf("[tmdbid", StringComparison.OrdinalIgnoreCase) != -1;
+                        isKnownMovie = args.ContainsMetaFileByName("movie.xml") || args.ContainsMetaFileByName("tmdb3.json") || args.Path.IndexOf("[tmdbid", StringComparison.OrdinalIgnoreCase) != -1;
                     }
 
                     if (isKnownMovie.Value)

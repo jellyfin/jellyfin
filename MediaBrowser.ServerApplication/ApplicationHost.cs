@@ -29,6 +29,7 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Updates;
+using MediaBrowser.Providers;
 using MediaBrowser.Server.Implementations;
 using MediaBrowser.Server.Implementations.BdInfo;
 using MediaBrowser.Server.Implementations.Configuration;
@@ -509,6 +510,9 @@ namespace MediaBrowser.ServerApplication
             // Include composable parts in the Controller assembly 
             yield return typeof(Kernel).Assembly;
 
+            // Include composable parts in the Providers assembly 
+            yield return typeof(ImagesByNameProvider).Assembly;
+            
             // Common implementations
             yield return typeof(TaskManager).Assembly;
 

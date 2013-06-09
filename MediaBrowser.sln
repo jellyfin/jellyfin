@@ -35,6 +35,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Model.net35", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Tests", "MediaBrowser.Tests\MediaBrowser.Tests.csproj", "{E22BFD35-0FCD-4A85-978A-C22DCD73A081}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Providers", "MediaBrowser.Providers\MediaBrowser.Providers.csproj", "{442B5058-DCAF-4263-BB6A-F21E31120A1B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -201,8 +203,25 @@ Global
 		{E22BFD35-0FCD-4A85-978A-C22DCD73A081}.Release|Win32.ActiveCfg = Release|Any CPU
 		{E22BFD35-0FCD-4A85-978A-C22DCD73A081}.Release|x64.ActiveCfg = Release|Any CPU
 		{E22BFD35-0FCD-4A85-978A-C22DCD73A081}.Release|x86.ActiveCfg = Release|Any CPU
+		{442B5058-DCAF-4263-BB6A-F21E31120A1B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{442B5058-DCAF-4263-BB6A-F21E31120A1B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{442B5058-DCAF-4263-BB6A-F21E31120A1B}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{442B5058-DCAF-4263-BB6A-F21E31120A1B}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{442B5058-DCAF-4263-BB6A-F21E31120A1B}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{442B5058-DCAF-4263-BB6A-F21E31120A1B}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{442B5058-DCAF-4263-BB6A-F21E31120A1B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{442B5058-DCAF-4263-BB6A-F21E31120A1B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{442B5058-DCAF-4263-BB6A-F21E31120A1B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{442B5058-DCAF-4263-BB6A-F21E31120A1B}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{442B5058-DCAF-4263-BB6A-F21E31120A1B}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{442B5058-DCAF-4263-BB6A-F21E31120A1B}.Release|Win32.ActiveCfg = Release|Any CPU
+		{442B5058-DCAF-4263-BB6A-F21E31120A1B}.Release|x64.ActiveCfg = Release|Any CPU
+		{442B5058-DCAF-4263-BB6A-F21E31120A1B}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
 	EndGlobalSection
 EndGlobal
