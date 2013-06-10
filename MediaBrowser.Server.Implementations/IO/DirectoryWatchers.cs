@@ -341,7 +341,7 @@ namespace MediaBrowser.Server.Implementations.IO
             if (e.ChangeType == WatcherChangeTypes.Changed)
             {
                 // If the parent of an ignored path has a change event, ignore that too
-                if (tempIgnorePaths.Any(i => string.Equals(Path.GetDirectoryName(i), e.FullPath, StringComparison.OrdinalIgnoreCase)))
+                if (tempIgnorePaths.Any(i => string.Equals(Path.GetDirectoryName(i), e.FullPath, StringComparison.OrdinalIgnoreCase) || string.Equals(i, e.FullPath, StringComparison.OrdinalIgnoreCase)))
                 {
                     return;
                 }
