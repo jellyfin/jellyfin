@@ -71,27 +71,11 @@ namespace MediaBrowser.Providers.Music
         /// <value>The HTTP client.</value>
         protected IHttpClient HttpClient { get; private set; }
 
-        /// <summary>
-        /// The name of the local json meta file for this item type
-        /// </summary>
-        protected string LocalMetaFileName { get; set; }
-
         protected virtual bool SaveLocalMeta
         {
             get
             {
                 return ConfigurationManager.Configuration.SaveLocalMeta;
-            }
-        }
-
-        /// <summary>
-        /// If we save locally, refresh if they delete something
-        /// </summary>
-        protected override bool RefreshOnFileSystemStampChange
-        {
-            get
-            {
-                return SaveLocalMeta;
             }
         }
 
@@ -118,16 +102,6 @@ namespace MediaBrowser.Providers.Music
 
         protected const string RootUrl = @"http://ws.audioscrobbler.com/2.0/?";
         protected static string ApiKey = "7b76553c3eb1d341d642755aecc40a33";
-
-        /// <summary>
-        /// Determines whether [has local meta] [the specified item].
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns><c>true</c> if [has local meta] [the specified item]; otherwise, <c>false</c>.</returns>
-        protected bool HasLocalMeta(BaseItem item)
-        {
-            return item.ResolveArgs.ContainsMetaFileByName(LocalMetaFileName);
-        }
 
         /// <summary>
         /// Fetches the items data.

@@ -272,8 +272,8 @@ namespace MediaBrowser.Providers.TV
                 await DownloadSeriesZip(seriesId, seriesDataPath, cancellationToken).ConfigureAwait(false);
             }
 
-            // Only examine the main info if there's no local metadata
-            if (!HasLocalMeta(series))
+            // Examine if there's no local metadata, or save local is on (to get updates)
+            if (!HasLocalMeta(series) || ConfigurationManager.Configuration.SaveLocalMeta)
             {
                 var seriesXmlPath = Path.Combine(seriesDataPath, seriesXmlFilename);
                 var actorsXmlPath = Path.Combine(seriesDataPath, "actors.xml");
