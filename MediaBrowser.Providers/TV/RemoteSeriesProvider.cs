@@ -469,7 +469,7 @@ namespace MediaBrowser.Providers.TV
                     string actorRole = p.SafeGetString("Role");
                     if (!string.IsNullOrWhiteSpace(actorName))
                     {
-                        series.AddPerson(new PersonInfo { Type = PersonType.Actor, Name = actorName, Role = actorRole });
+                        series.AddPerson(new PersonInfo { Type = PersonType.Actor, Name = actorName.Trim(), Role = actorRole });
 
                         if (ConfigurationManager.Configuration.SaveLocalMeta && actorsNode != null)
                         {
