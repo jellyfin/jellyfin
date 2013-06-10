@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Plugins;
+﻿using System.IO;
+using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
@@ -188,36 +189,10 @@ namespace MediaBrowser.Api
         }
 
         /// <summary>
-        /// Called when [transcoding finished].
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <param name="type">The type.</param>
-        public void OnTranscodingFinished(string path, TranscodingJobType type)
-        {
-            lock (_activeTranscodingJobs)
-            {
-                var job = _activeTranscodingJobs.FirstOrDefault(j => j.Type == type && j.Path.Equals(path, StringComparison.OrdinalIgnoreCase));
-
-                if (job == null)
-                {
-                    return;
-                }
-
-                _activeTranscodingJobs.Remove(job);
-
-                if (job.KillTimer != null)
-                {
-                    job.KillTimer.Dispose();
-                    job.KillTimer = null;
-                }
-            }
-        }
-
-        /// <summary>
         /// Called when [transcode kill timer stopped].
         /// </summary>
         /// <param name="state">The state.</param>
-        private void OnTranscodeKillTimerStopped(object state)
+        private async void OnTranscodeKillTimerStopped(object state)
         {
             var job = (TranscodingJob)state;
 
@@ -253,31 +228,110 @@ namespace MediaBrowser.Api
                 Logger.ErrorException("Error determining if ffmpeg process has exited for {0}", ex, job.Path);
             }
 
-            if (hasExited)
+            if (!hasExited)
             {
-                return;
+                try
+                {
+                    Logger.Info("Killing ffmpeg process for {0}", job.Path);
+
+                    process.Kill();
+
+                    // Need to wait because killing is asynchronous
+                    process.WaitForExit(5000);
+                }
+                catch (Win32Exception ex)
+                {
+                    Logger.ErrorException("Error killing transcoding job for {0}", ex, job.Path);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    Logger.ErrorException("Error killing transcoding job for {0}", ex, job.Path);
+                }
+                catch (NotSupportedException ex)
+                {
+                    Logger.ErrorException("Error killing transcoding job for {0}", ex, job.Path);
+                }
             }
+
+            // Determine if it exited successfully
+            var hasExitedSuccessfully = false;
 
             try
             {
-                Logger.Info("Killing ffmpeg process for {0}", job.Path);
+                hasExitedSuccessfully = process.ExitCode == 0;
+            }
+            catch (InvalidOperationException)
+            {
+                
+            }
+            catch (NotSupportedException)
+            {
 
-                process.Kill();
             }
-            catch (Win32Exception ex)
+
+            // Dispose the process
+            process.Dispose();
+
+            // If it didn't complete successfully cleanup the partial files
+            if (!hasExitedSuccessfully)
             {
-                Logger.ErrorException("Error killing transcoding job for {0}", ex, job.Path);
-            }
-            catch (InvalidOperationException ex)
-            {
-                Logger.ErrorException("Error killing transcoding job for {0}", ex, job.Path);
-            }
-            catch (NotSupportedException ex)
-            {
-                Logger.ErrorException("Error killing transcoding job for {0}", ex, job.Path);
+                Logger.Info("Deleting partial stream file(s) {0}", job.Path);
+
+                await Task.Delay(1000).ConfigureAwait(false);
+
+                try
+                {
+                    if (job.Type == TranscodingJobType.Progressive)
+                    {
+                        DeleteProgressivePartialStreamFiles(job.Path);
+                    }
+                    else
+                    {
+                        DeleteHlsPartialStreamFiles(job.Path);
+                    }
+                }
+                catch (IOException ex)
+                {
+                    Logger.ErrorException("Error deleting partial stream file(s) {0}", ex, job.Path);
+                }
             }
         }
 
+        /// <summary>
+        /// Deletes the progressive partial stream files.
+        /// </summary>
+        /// <param name="outputFilePath">The output file path.</param>
+        private void DeleteProgressivePartialStreamFiles(string outputFilePath)
+        {
+            File.Delete(outputFilePath);
+        }
+
+        /// <summary>
+        /// Deletes the HLS partial stream files.
+        /// </summary>
+        /// <param name="outputFilePath">The output file path.</param>
+        private void DeleteHlsPartialStreamFiles(string outputFilePath)
+        {
+            var directory = Path.GetDirectoryName(outputFilePath);
+            var name = Path.GetFileNameWithoutExtension(outputFilePath);
+
+            var filesToDelete = Directory.EnumerateFiles(directory)
+                .Where(f => f.IndexOf(name, StringComparison.OrdinalIgnoreCase) != -1)
+                .ToList();
+
+            foreach (var file in filesToDelete)
+            {
+                try
+                {
+                    Logger.Info("Deleting HLS file {0}", file);
+                    File.Delete(file);
+                }
+                catch (IOException ex)
+                {
+                    Logger.ErrorException("Error deleting HLS file {0}", ex, file);
+                }
+            }
+        }
     }
 
     /// <summary>

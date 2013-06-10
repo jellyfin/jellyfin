@@ -357,14 +357,5 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             return result;
         }
-
-        /// <summary>
-        /// Deletes the partial stream files.
-        /// </summary>
-        /// <param name="outputFilePath">The output file path.</param>
-        protected override void DeletePartialStreamFiles(string outputFilePath)
-        {
-            File.Delete(outputFilePath);
-        }
     }
 }

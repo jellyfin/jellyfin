@@ -207,32 +207,5 @@ namespace MediaBrowser.Api.Playback.Hls
                 segmentOutputPath
                 ).Trim();
         }
-
-        /// <summary>
-        /// Deletes the partial stream files.
-        /// </summary>
-        /// <param name="outputFilePath">The output file path.</param>
-        protected override void DeletePartialStreamFiles(string outputFilePath)
-        {
-            var directory = Path.GetDirectoryName(outputFilePath);
-            var name = Path.GetFileNameWithoutExtension(outputFilePath);
-
-            var filesToDelete = Directory.EnumerateFiles(directory)
-                .Where(f => f.IndexOf(name, StringComparison.OrdinalIgnoreCase) != -1)
-                .ToList();
-
-            foreach (var file in filesToDelete)
-            {
-                try
-                {
-                    Logger.Info("Deleting HLS file {0}", file);
-                    File.Delete(file);
-                }
-                catch (IOException ex)
-                {
-                    Logger.ErrorException("Error deleting HLS file {0}", ex, file);
-                }
-            }
-        }
     }
 }

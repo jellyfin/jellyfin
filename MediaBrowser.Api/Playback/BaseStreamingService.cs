@@ -674,7 +674,7 @@ namespace MediaBrowser.Api.Playback
         /// </summary>
         /// <param name="process">The process.</param>
         /// <param name="state">The state.</param>
-        protected async void OnFfMpegProcessExited(Process process, StreamState state)
+        protected void OnFfMpegProcessExited(Process process, StreamState state)
         {
             if (state.IsoMount != null)
             {
@@ -686,48 +686,15 @@ namespace MediaBrowser.Api.Playback
 
             state.LogFileStream.Dispose();
 
-            int? exitCode = null;
-
             try
             {
-                exitCode = process.ExitCode;
-                Logger.Info("FFMpeg exited with code {0} for {1}", exitCode.Value, outputFilePath);
+                Logger.Info("FFMpeg exited with code {0} for {1}", process.ExitCode, outputFilePath);
             }
             catch
             {
                 Logger.Info("FFMpeg exited with an error for {0}", outputFilePath);
             }
-
-            process.Dispose();
-
-            ApiEntryPoint.Instance.OnTranscodingFinished(outputFilePath, TranscodingJobType);
-
-            if (!exitCode.HasValue || exitCode.Value != 0)
-            {
-                Logger.Info("Deleting partial stream file(s) {0}", outputFilePath);
-
-                await Task.Delay(1000).ConfigureAwait(false);
-
-                try
-                {
-                    DeletePartialStreamFiles(outputFilePath);
-                }
-                catch (IOException ex)
-                {
-                    Logger.ErrorException("Error deleting partial stream file(s) {0}", ex, outputFilePath);
-                }
-            }
-            else
-            {
-                Logger.Info("FFMpeg completed and exited normally for {0}", outputFilePath);
-            }
         }
-
-        /// <summary>
-        /// Deletes the partial stream files.
-        /// </summary>
-        /// <param name="outputFilePath">The output file path.</param>
-        protected abstract void DeletePartialStreamFiles(string outputFilePath);
 
         /// <summary>
         /// Gets the state.
