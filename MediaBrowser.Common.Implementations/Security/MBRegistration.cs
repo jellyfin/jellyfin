@@ -1,4 +1,4 @@
-﻿using Mediabrowser.Model.Entities;
+﻿using MediaBrowser.Model.Entities;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Serialization;
@@ -8,7 +8,7 @@ using System.Management;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Mediabrowser.Common.Implementations.Security
+namespace MediaBrowser.Common.Implementations.Security
 {
     public static class MBRegistration
     {
