@@ -1,7 +1,7 @@
 Media Browser
 ============
 
-Media Browser Server is a media cataloging and transcoding server built on top of other popular open source technologies such as service stack.
+Media Browser Server is a media cataloging and transcoding server built on top of other popular open source technologies such as **Service Stack**, **jQuery** and **jQuery mobile**.
 
 It features a REST-based api with built-in documention to facilitate plugin development.
 
@@ -22,8 +22,6 @@ http://community.mediabrowser.tv/
 
 ## Current Versions ##
 
-Release: 3.0.4906.22507
-
-Beta:
-
+Release: 3.0.4906.22507<br/>
+Beta:<br/>
 Dev:
