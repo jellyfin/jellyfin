@@ -313,7 +313,7 @@ namespace MediaBrowser.Providers.TV
             {
                 foreach (var person in actors.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries)
                     .Where(i => !string.IsNullOrWhiteSpace(i))
-                    .Select(str => new PersonInfo { Type = PersonType.GuestStar, Name = str }))
+                    .Select(str => new PersonInfo { Type = PersonType.GuestStar, Name = str.Trim() }))
                 {
                     episode.AddPerson(person);
                 }
@@ -325,7 +325,7 @@ namespace MediaBrowser.Providers.TV
             {
                 foreach (var person in directors.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries)
                     .Where(i => !string.IsNullOrWhiteSpace(i))
-                    .Select(str => new PersonInfo { Type = PersonType.Director, Name = str }))
+                    .Select(str => new PersonInfo { Type = PersonType.Director, Name = str.Trim() }))
                 {
                     episode.AddPerson(person);
                 }
@@ -337,7 +337,7 @@ namespace MediaBrowser.Providers.TV
             {
                 foreach (var person in writers.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries)
                      .Where(i => !string.IsNullOrWhiteSpace(i))
-                   .Select(str => new PersonInfo { Type = PersonType.Writer, Name = str }))
+                   .Select(str => new PersonInfo { Type = PersonType.Writer, Name = str.Trim() }))
                 {
                     episode.AddPerson(person);
                 }
