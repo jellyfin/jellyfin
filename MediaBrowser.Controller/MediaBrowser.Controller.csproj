@@ -131,15 +131,9 @@
     <Compile Include="Library\ILibraryManager.cs" />
     <Compile Include="Library\IUserManager.cs" />
     <Compile Include="Library\Profiler.cs" />
-    <Compile Include="Localization\AURatingsDictionary.cs" />
     <Compile Include="Localization\BaseStrings.cs" />
-    <Compile Include="Localization\GBRatingsDictionary.cs" />
     <Compile Include="Localization\LocalizedStringData.cs" />
     <Compile Include="Localization\LocalizedStrings.cs" />
-    <Compile Include="Localization\NLRatingsDictionary.cs" />
-    <Compile Include="Localization\Ratings.cs" />
-    <Compile Include="Localization\RatingsDefinition.cs" />
-    <Compile Include="Localization\USRatingsDictionary.cs" />
     <Compile Include="MediaInfo\FFMpegManager.cs" />
     <Compile Include="Persistence\IDisplayPreferencesRepository.cs" />
     <Compile Include="Persistence\IItemRepository.cs" />

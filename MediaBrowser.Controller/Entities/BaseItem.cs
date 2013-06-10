@@ -143,6 +143,7 @@ namespace MediaBrowser.Controller.Entities
         public static ILibraryManager LibraryManager { get; set; }
         public static IServerConfigurationManager ConfigurationManager { get; set; }
         public static IProviderManager ProviderManager { get; set; }
+        public static ILocalizationManager LocalizationManager { get; set; }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
@@ -1081,9 +1082,10 @@ namespace MediaBrowser.Controller.Entities
         /// Determines if a given user has access to this item
         /// </summary>
         /// <param name="user">The user.</param>
+        /// <param name="localizationManager">The localization manager.</param>
         /// <returns><c>true</c> if [is parental allowed] [the specified user]; otherwise, <c>false</c>.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
-        public bool IsParentalAllowed(User user)
+        /// <exception cref="System.ArgumentNullException">user</exception>
+        public bool IsParentalAllowed(User user, ILocalizationManager localizationManager)
         {
             if (user == null)
             {
@@ -1095,12 +1097,22 @@ namespace MediaBrowser.Controller.Entities
                 return true;
             }
 
-            if (user.Configuration.BlockNotRated && string.IsNullOrEmpty(CustomRating ?? OfficialRating))
+            var rating = CustomRating ?? OfficialRating;
+
+            if (user.Configuration.BlockNotRated && string.IsNullOrEmpty(rating))
             {
                 return false;
             }
 
-            return Ratings.Level(CustomRating ?? OfficialRating) <= user.Configuration.MaxParentalRating.Value;
+            var value = localizationManager.GetRatingLevel(rating);
+
+            // Could not determine the integer value
+            if (!value.HasValue)
+            {
+                return true;
+            }
+
+            return value.Value <= user.Configuration.MaxParentalRating.Value;
         }
 
         /// <summary>
@@ -1117,7 +1129,7 @@ namespace MediaBrowser.Controller.Entities
                 throw new ArgumentNullException("user");
             }
 
-            return IsParentalAllowed(user);
+            return IsParentalAllowed(user, LocalizationManager);
         }
 
         /// <summary>
