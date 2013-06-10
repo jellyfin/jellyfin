@@ -1374,7 +1374,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>Task.</returns>
         private async Task OnItemUpdated(BaseItem item, CancellationToken cancellationToken)
         {
-            if (ConfigurationManager.Configuration.SaveLocalMeta)
+            if (ConfigurationManager.Configuration.SaveLocalMeta && item.LocationType == LocationType.FileSystem)
             {
                 foreach (var saver in Savers.Where(i => i.Supports(item)))
                 {

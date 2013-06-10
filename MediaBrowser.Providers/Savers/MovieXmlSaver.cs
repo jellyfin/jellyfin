@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using System.IO;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
@@ -43,6 +44,12 @@ namespace MediaBrowser.Providers.Savers
         /// <returns>Task.</returns>
         public Task Save(BaseItem item, CancellationToken cancellationToken)
         {
+            var video = (Video)item;
+
+            var directory = video.VideoType == VideoType.Iso || video.VideoType == VideoType.VideoFile ? Path.GetDirectoryName(video.Path) : video.Path;
+
+            var xmlFilePath = Path.Combine(directory, "movie.xml");
+
             return Task.Run(() => { });
         }
     }
