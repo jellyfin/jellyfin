@@ -2,8 +2,8 @@
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Security;
 using MediaBrowser.Model.Serialization;
-using Mediabrowser.Common.Implementations.Security;
-using Mediabrowser.Model.Entities;
+using MediaBrowser.Common.Implementations.Security;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Common.Net;
 using System;
 using System.Threading;

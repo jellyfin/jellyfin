@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using Mediabrowser.Model.Entities;
+using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Common.Security
 {

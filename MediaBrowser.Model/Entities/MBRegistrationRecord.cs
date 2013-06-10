@@ -1,6 +1,6 @@
 using System;
 
-namespace Mediabrowser.Model.Entities
+namespace MediaBrowser.Model.Entities
 {
     public class MBRegistrationRecord
     {

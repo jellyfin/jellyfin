@@ -5,7 +5,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Mediabrowser.Common.Implementations.Security
+namespace MediaBrowser.Common.Implementations.Security
 {
     internal class MBLicenseFile
     {
