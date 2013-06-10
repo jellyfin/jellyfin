@@ -60,6 +60,7 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             get
             {
+                // Need this in case external subtitle files change
                 return true;
             }
         }

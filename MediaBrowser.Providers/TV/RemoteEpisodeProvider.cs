@@ -121,7 +121,8 @@ namespace MediaBrowser.Providers.TV
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
         {
-            if (HasLocalMeta(item))
+            // Don't proceed if there's local metadata and save local is off, as it's likely from another source
+            if (HasLocalMeta(item) && !ConfigurationManager.Configuration.SaveLocalMeta)
             {
                 return false;
             }
@@ -181,7 +182,8 @@ namespace MediaBrowser.Providers.TV
         /// <returns>Task{System.Boolean}.</returns>
         public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
-            if (HasLocalMeta(item))
+            // Don't proceed if there's local metadata and save local is off, as it's likely from another source
+            if (HasLocalMeta(item) && !ConfigurationManager.Configuration.SaveLocalMeta)
             {
                 return false;
             }

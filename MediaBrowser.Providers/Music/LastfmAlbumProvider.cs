@@ -21,7 +21,12 @@ namespace MediaBrowser.Providers.Music
         private static readonly Task<string> BlankId = Task.FromResult("");
 
         private readonly IProviderManager _providerManager;
-        
+
+        /// <summary>
+        /// The name of the local json meta file for this item type
+        /// </summary>
+        protected string LocalMetaFileName { get; set; }
+
         public LastfmAlbumProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager)
             : base(jsonSerializer, httpClient, logManager, configurationManager)
         {
@@ -130,14 +135,6 @@ namespace MediaBrowser.Providers.Music
         public override bool Supports(BaseItem item)
         {
             return item is MusicAlbum;
-        }
-
-        protected override bool RefreshOnFileSystemStampChange
-        {
-            get
-            {
-                return true;
-            }
         }
 
         /// <summary>

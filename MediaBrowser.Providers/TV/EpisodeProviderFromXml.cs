@@ -40,14 +40,6 @@ namespace MediaBrowser.Providers.TV
             get { return MetadataProviderPriority.First; }
         }
 
-        protected override bool RefreshOnFileSystemStampChange
-        {
-            get
-            {
-                return true;
-            }
-        }
-
         /// <summary>
         /// Fetches metadata and returns true or false indicating if any work that requires persistence was done
         /// </summary>

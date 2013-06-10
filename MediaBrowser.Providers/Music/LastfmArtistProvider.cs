@@ -36,6 +36,11 @@ namespace MediaBrowser.Providers.Music
         protected readonly ILibraryManager LibraryManager;
 
         /// <summary>
+        /// The name of the local json meta file for this item type
+        /// </summary>
+        protected string LocalMetaFileName { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="LastfmArtistProvider"/> class.
         /// </summary>
         /// <param name="jsonSerializer">The json serializer.</param>

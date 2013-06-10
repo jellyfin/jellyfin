@@ -116,17 +116,6 @@ namespace MediaBrowser.Providers.Movies
             }
         }
 
-        /// <summary>
-        /// If we save locally, refresh if they delete something
-        /// </summary>
-        protected override bool RefreshOnFileSystemStampChange
-        {
-            get
-            {
-                return ConfigurationManager.Configuration.SaveLocalMeta;
-            }
-        }
-
         protected override bool RefreshOnVersionChange
         {
             get
@@ -272,17 +261,6 @@ namespace MediaBrowser.Providers.Movies
 
             SetLastRefreshed(item, DateTime.UtcNow);
             return true;
-        }
-
-        /// <summary>
-        /// Determines whether [has local meta] [the specified item].
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns><c>true</c> if [has local meta] [the specified item]; otherwise, <c>false</c>.</returns>
-        private bool HasLocalMeta(BaseItem item)
-        {
-            //need at least the xml and folder.jpg/png or a movie.xml put in by someone else
-            return item.LocationType == LocationType.FileSystem && item.ResolveArgs.ContainsMetaFileByName(LocalMetaFileName);
         }
 
         /// <summary>
