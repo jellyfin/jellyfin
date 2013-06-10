@@ -172,6 +172,8 @@ namespace MediaBrowser.ServerApplication
         /// <value>The media encoder.</value>
         private IMediaEncoder MediaEncoder { get; set; }
 
+        private ILocalizationManager LocalizationManager { get; set; }
+
         /// <summary>
         /// Gets or sets the user data repository.
         /// </summary>
@@ -286,8 +288,8 @@ namespace MediaBrowser.ServerApplication
             ServerManager = new ServerManager(this, JsonSerializer, Logger, ServerConfigurationManager);
             RegisterSingleInstance(ServerManager);
 
-            var localizationManager = new LocalizationManager();
-            RegisterSingleInstance<ILocalizationManager>(localizationManager);
+            LocalizationManager = new LocalizationManager(ServerConfigurationManager);
+            RegisterSingleInstance(LocalizationManager);
 
             var displayPreferencesTask = Task.Run(async () => await ConfigureDisplayPreferencesRepositories().ConfigureAwait(false));
             var itemsTask = Task.Run(async () => await ConfigureItemRepositories().ConfigureAwait(false));
@@ -367,9 +369,9 @@ namespace MediaBrowser.ServerApplication
             BaseItem.ConfigurationManager = ServerConfigurationManager;
             BaseItem.LibraryManager = LibraryManager;
             BaseItem.ProviderManager = ProviderManager;
+            BaseItem.LocalizationManager = LocalizationManager;
             User.XmlSerializer = XmlSerializer;
             User.UserManager = UserManager;
-            Ratings.ConfigurationManager = ServerConfigurationManager;
             LocalizedStrings.ApplicationPaths = ApplicationPaths;
         }
 

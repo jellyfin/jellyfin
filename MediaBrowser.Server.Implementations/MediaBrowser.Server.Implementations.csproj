@@ -204,6 +204,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Localization\Ratings\us.txt" />
+    <EmbeddedResource Include="Localization\Ratings\au.txt" />
+    <EmbeddedResource Include="Localization\Ratings\gb.txt" />
+    <EmbeddedResource Include="Localization\Ratings\nl.txt" />
     <Content Include="swagger-ui\css\hightlight.default.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

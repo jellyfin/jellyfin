@@ -24,5 +24,11 @@ namespace MediaBrowser.Controller.Localization
         /// </summary>
         /// <returns>IEnumerable{ParentalRating}.</returns>
         IEnumerable<ParentalRating> GetParentalRatings();
+        /// <summary>
+        /// Gets the rating level.
+        /// </summary>
+        /// <param name="rating">The rating.</param>
+        /// <returns>System.Int32.</returns>
+        int? GetRatingLevel(string rating);
     }
 }

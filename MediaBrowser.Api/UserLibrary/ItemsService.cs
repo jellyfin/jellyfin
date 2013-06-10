@@ -202,6 +202,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         private readonly ILibraryManager _libraryManager;
         private readonly ILibrarySearchEngine _searchEngine;
+        private readonly ILocalizationManager _localization;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemsService" /> class.
@@ -451,17 +452,47 @@ namespace MediaBrowser.Api.UserLibrary
             // Min official rating
             if (!string.IsNullOrEmpty(request.MinOfficialRating))
             {
-                var level = Ratings.Level(request.MinOfficialRating);
+                var level = _localization.GetRatingLevel(request.MinOfficialRating);
 
-                items = items.Where(i => Ratings.Level(i.CustomRating ?? i.OfficialRating) >= level);
+                if (level.HasValue)
+                {
+                    items = items.Where(i =>
+                    {
+                        var rating = i.CustomRating ?? i.OfficialRating;
+
+                        if (string.IsNullOrEmpty(rating))
+                        {
+                            return true;
+                        }
+
+                        var itemLevel = _localization.GetRatingLevel(rating);
+
+                        return !itemLevel.HasValue || itemLevel.Value >= level.Value;
+                    });
+                }
             }
 
             // Max official rating
             if (!string.IsNullOrEmpty(request.MaxOfficialRating))
             {
-                var level = Ratings.Level(request.MaxOfficialRating);
+                var level = _localization.GetRatingLevel(request.MinOfficialRating);
 
-                items = items.Where(i => Ratings.Level(i.CustomRating ?? i.OfficialRating) <= level);
+                if (level.HasValue)
+                {
+                    items = items.Where(i =>
+                    {
+                        var rating = i.CustomRating ?? i.OfficialRating;
+
+                        if (string.IsNullOrEmpty(rating))
+                        {
+                            return true;
+                        }
+
+                        var itemLevel = _localization.GetRatingLevel(rating);
+
+                        return !itemLevel.HasValue || itemLevel.Value <= level.Value;
+                    });
+                }
             }
 
             // Exclude item types
