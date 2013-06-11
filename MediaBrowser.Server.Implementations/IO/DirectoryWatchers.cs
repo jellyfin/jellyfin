@@ -391,8 +391,11 @@ namespace MediaBrowser.Server.Implementations.IO
 
                 Logger.Info("Timer stopped.");
 
-                _updateTimer.Dispose();
-                _updateTimer = null;
+                if (_updateTimer != null)
+                {
+                    _updateTimer.Dispose();
+                    _updateTimer = null;
+                }
             }
 
             var paths = _affectedPaths.Keys.ToList();
