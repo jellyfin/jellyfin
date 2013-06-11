@@ -5,6 +5,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MoreLinq;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -27,6 +28,9 @@ namespace MediaBrowser.Server.Implementations.Localization
         /// The us culture
         /// </summary>
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
+
+        private readonly ConcurrentDictionary<string, Dictionary<string, ParentalRating>> _allParentalRatings =
+            new ConcurrentDictionary<string, Dictionary<string, ParentalRating>>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LocalizationManager"/> class.
@@ -92,7 +96,65 @@ namespace MediaBrowser.Server.Implementations.Localization
         /// <returns>IEnumerable{ParentalRating}.</returns>
         public IEnumerable<ParentalRating> GetParentalRatings()
         {
-            var path = GetRatingsFile();
+            return GetParentalRatingsDictionary().Values.ToList();
+        }
+
+        /// <summary>
+        /// Gets the parental ratings dictionary.
+        /// </summary>
+        /// <returns>Dictionary{System.StringParentalRating}.</returns>
+        private Dictionary<string, ParentalRating> GetParentalRatingsDictionary()
+        {
+            var countryCode = _configurationManager.Configuration.MetadataCountryCode;
+
+            if (string.IsNullOrEmpty(countryCode))
+            {
+                countryCode = "us";
+            }
+
+            var ratings = GetRatings(countryCode);
+
+            if (ratings == null)
+            {
+                ratings = GetRatings("us");
+            }
+
+            return ratings;
+        }
+
+        /// <summary>
+        /// Gets the ratings.
+        /// </summary>
+        /// <param name="countryCode">The country code.</param>
+        private Dictionary<string, ParentalRating> GetRatings(string countryCode)
+        {
+            Dictionary<string, ParentalRating> value;
+
+            if (!_allParentalRatings.TryGetValue(countryCode, out value))
+            {
+                value = LoadRatings(countryCode);
+
+                if (value != null)
+                {
+                    _allParentalRatings.TryAdd(countryCode, value);
+                }
+            }
+
+            return value;
+        }
+
+        /// <summary>
+        /// Loads the ratings.
+        /// </summary>
+        /// <param name="countryCode">The country code.</param>
+        private Dictionary<string, ParentalRating> LoadRatings(string countryCode)
+        {
+            var path = GetRatingsFilePath(countryCode);
+
+            if (string.IsNullOrEmpty(path))
+            {
+                return null;
+            }
 
             return File.ReadAllLines(path).Select(i =>
             {
@@ -115,31 +177,14 @@ namespace MediaBrowser.Server.Implementations.Localization
 
             })
             .Where(i => i != null)
-            .OrderBy(p => p.Value);
-        }
-
-        /// <summary>
-        /// Gets the ratings file.
-        /// </summary>
-        /// <returns>System.String.</returns>
-        private string GetRatingsFile()
-        {
-            var countryCode = _configurationManager.Configuration.MetadataCountryCode;
-
-            if (string.IsNullOrEmpty(countryCode))
-            {
-                countryCode = "us";
-            }
-
-            return GetRatingsFile(countryCode).Result ?? GetRatingsFile("us").Result;
+            .ToDictionary(i => i.Name);
         }
 
         /// <summary>
         /// Gets the ratings file.
         /// </summary>
         /// <param name="countryCode">The country code.</param>
-        /// <returns>Task{System.String}.</returns>
-        private async Task<string> GetRatingsFile(string countryCode)
+        private string GetRatingsFilePath(string countryCode)
         {
             countryCode = countryCode.ToLower();
 
@@ -166,9 +211,9 @@ namespace MediaBrowser.Server.Implementations.Localization
                         Directory.CreateDirectory(parentPath);
                     }
 
-                    using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, true))
+                    using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read))
                     {
-                        await stream.CopyToAsync(fs).ConfigureAwait(false);
+                        stream.CopyTo(fs);
                     }
                 }
             }
@@ -179,9 +224,6 @@ namespace MediaBrowser.Server.Implementations.Localization
         /// <summary>
         /// Gets the rating level.
         /// </summary>
-        /// <param name="rating">The rating.</param>
-        /// <returns>System.Int32.</returns>
-        /// <exception cref="System.ArgumentNullException">rating</exception>
         public int? GetRatingLevel(string rating)
         {
             if (string.IsNullOrEmpty(rating))
@@ -189,17 +231,18 @@ namespace MediaBrowser.Server.Implementations.Localization
                 throw new ArgumentNullException("rating");
             }
 
-            var ratingsDictionary = GetParentalRatings().ToDictionary(i => i.Name);
+            var ratingsDictionary = GetParentalRatingsDictionary();
 
-            if (ratingsDictionary.ContainsKey(rating))
-                return ratingsDictionary[rating].Value;
+            ParentalRating value;
 
-            var stripped = StripCountry(rating);
+            if (!ratingsDictionary.TryGetValue(rating, out value))
+            {
+                var stripped = StripCountry(rating);
 
-            if (ratingsDictionary.ContainsKey(stripped))
-                return ratingsDictionary[stripped].Value;
+                ratingsDictionary.TryGetValue(stripped, out value);
+            }
 
-            return null;
+            return value == null ? (int?)null : value.Value;
         }
 
         /// <summary>

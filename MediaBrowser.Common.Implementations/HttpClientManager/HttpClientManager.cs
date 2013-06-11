@@ -121,7 +121,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
             if ((DateTime.UtcNow - client.LastTimeout).TotalSeconds < 30)
             {
-                throw new HttpException(string.Format("Connection to {0} timed out", options.Url)) { IsTimedOut = true };
+                throw new HttpException(string.Format("Cancelling connection to {0} due to a previous timeout.", options.Url)) { IsTimedOut = true };
             }
 
             using (var message = GetHttpRequestMessage(options))
