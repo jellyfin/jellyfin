@@ -153,9 +153,16 @@ namespace MediaBrowser.Server.Implementations.Providers
                     continue;
                 }
 
-                if (!force && !provider.NeedsRefresh(item))
+                try
                 {
-                    continue;
+                    if (!force && !provider.NeedsRefresh(item))
+                    {
+                        continue;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error("Error determining NeedsRefresh for {0}", ex, item.Path);
                 }
 
                 currentTasks.Add(FetchAsync(provider, item, force, cancellationToken));
