@@ -1298,7 +1298,7 @@
                     tag: item.ImageTags.Disc
                 });
             }
-            else if (item.MediaType == "Audio" || item.Type == "MusicAlbum") {
+            else if (item.MediaType == "Audio" || item.Type == "MusicAlbum" || item.Type == "MusicGenre") {
                 url = "css/images/items/detail/audio.png";
             }
             else if (item.MediaType == "Game") {
@@ -1307,7 +1307,7 @@
             else if (item.Type == "Person") {
                 url = "css/images/items/detail/person.png";
             }
-            else if (item.Type == "Genre" || item.Type == "Studio" || item.Type == "MusicGenre") {
+            else if (item.Type == "Genre" || item.Type == "Studio") {
                 url = "css/images/items/detail/video.png";
             }
             else {
