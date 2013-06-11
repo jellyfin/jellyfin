@@ -135,7 +135,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
             // Loop through each child file/folder and see if we find a video
             foreach (var child in args.FileSystemChildren)
             {
-                if (child.Attributes.HasFlag(FileAttributes.Directory))
+                if ((child.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
                 {
                     if (IsDvdDirectory(child.Name))
                     {

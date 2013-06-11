@@ -207,11 +207,6 @@ namespace MediaBrowser.Api
         {
             var entries = new DirectoryInfo(request.Path).EnumerateFileSystemInfos().Where(i =>
             {
-                if (i.Attributes.HasFlag(FileAttributes.System))
-                {
-                    return false;
-                }
-
                 if (!request.IncludeHidden && i.Attributes.HasFlag(FileAttributes.Hidden))
                 {
                     return false;

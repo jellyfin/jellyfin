@@ -47,20 +47,30 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 var parentFolderName = Path.GetFileName(Path.GetDirectoryName(args.Path));
 
-                if (string.Equals(parentFolderName, BaseItem.ThemeSongsFolderName, StringComparison.OrdinalIgnoreCase) || string.Equals(parentFolderName, BaseItem.ThemeVideosFolderName, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(parentFolderName, BaseItem.ThemeSongsFolderName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+                if (string.Equals(parentFolderName, BaseItem.ThemeVideosFolderName, StringComparison.OrdinalIgnoreCase))
                 {
                     return false;
                 }
 
                 // Drives will sometimes be hidden
-                if (args.Path.EndsWith(":\\", StringComparison.OrdinalIgnoreCase))
+                if (args.Path.EndsWith(Path.VolumeSeparatorChar + "\\", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (new DriveInfo(args.Path).IsReady)
+                    return false;
+                }
+
+                // Shares will sometimes be hidden
+                if (args.Path.StartsWith("\\", StringComparison.OrdinalIgnoreCase))
+                {
+                    // Look for a share, e.g. \\server\movies
+                    // Is there a better way to detect if a path is a share without using native code?
+                    if (args.Path.Substring(2).Split(Path.DirectorySeparatorChar).Length == 2)
                     {
                         return false;
                     }
-
-                    _logger.Error("Operating system reports drive is not ready: {0}", args.Path);
                 }
 
                 return true;

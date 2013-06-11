@@ -26,12 +26,11 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Resolves a path into a BaseItem
         /// </summary>
-        /// <param name="path">The path.</param>
-        /// <param name="parent">The parent.</param>
         /// <param name="fileInfo">The file info.</param>
+        /// <param name="parent">The parent.</param>
         /// <returns>BaseItem.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        BaseItem ResolvePath(string path, Folder parent = null, FileSystemInfo fileInfo = null);
+        BaseItem ResolvePath(FileSystemInfo fileInfo, Folder parent = null);
 
         /// <summary>
         /// Resolves a set of files into a list of BaseItem
