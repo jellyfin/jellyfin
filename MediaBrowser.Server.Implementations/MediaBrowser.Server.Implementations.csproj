@@ -212,6 +212,13 @@
     <EmbeddedResource Include="Localization\Ratings\da.txt" />
     <EmbeddedResource Include="Localization\Ratings\de.txt" />
     <EmbeddedResource Include="Localization\Ratings\mx.txt" />
+    <EmbeddedResource Include="Localization\Ratings\co.txt" />
+    <EmbeddedResource Include="Localization\Ratings\fr.txt" />
+    <EmbeddedResource Include="Localization\Ratings\ie.txt" />
+    <EmbeddedResource Include="Localization\Ratings\jp.txt" />
+    <EmbeddedResource Include="Localization\Ratings\kz.txt" />
+    <EmbeddedResource Include="Localization\Ratings\nz.txt" />
+    <EmbeddedResource Include="Localization\Ratings\ru.txt" />
     <Content Include="swagger-ui\css\hightlight.default.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
