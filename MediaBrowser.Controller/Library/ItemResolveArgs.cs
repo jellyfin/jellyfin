@@ -68,7 +68,7 @@ namespace MediaBrowser.Controller.Library
         {
             get
             {
-                return FileInfo.Attributes.HasFlag(FileAttributes.Directory);
+                return (FileInfo.Attributes & FileAttributes.Directory) == FileAttributes.Directory;
             }
         }
 
@@ -80,7 +80,7 @@ namespace MediaBrowser.Controller.Library
         {
             get
             {
-                return FileInfo.Attributes.HasFlag(FileAttributes.Hidden);
+                return (FileInfo.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden;
             }
         }
 
@@ -92,7 +92,7 @@ namespace MediaBrowser.Controller.Library
         {
             get
             {
-                return FileInfo.Attributes.HasFlag(FileAttributes.System);
+                return (FileInfo.Attributes & FileAttributes.System) == FileAttributes.System;
             }
         }
 
@@ -213,7 +213,7 @@ namespace MediaBrowser.Controller.Library
         /// <exception cref="System.IO.FileNotFoundException"></exception>
         public void AddMetadataFile(string path)
         {
-            var file = FileSystem.GetFileSystemInfo(path);
+            var file = new FileInfo(path);
 
             if (!file.Exists)
             {

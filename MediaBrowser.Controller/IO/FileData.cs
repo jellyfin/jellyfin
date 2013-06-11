@@ -35,7 +35,7 @@ namespace MediaBrowser.Controller.IO
 
             foreach (var entry in entries)
             {
-                var isDirectory = entry.Attributes.HasFlag(FileAttributes.Directory);
+                var isDirectory = (entry.Attributes & FileAttributes.Directory) == FileAttributes.Directory;
 
                 if (resolveShortcuts && FileSystem.IsShortcut(entry.FullName))
                 {

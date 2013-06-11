@@ -96,7 +96,7 @@ namespace MediaBrowser.Controller.Resolvers
             }
 
             // See if a different path came out of the resolver than what went in
-            if (!args.Path.Equals(item.Path, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(args.Path, item.Path, StringComparison.OrdinalIgnoreCase))
             {
                 var childData = args.IsDirectory ? args.GetFileSystemEntryByPath(item.Path) : null;
 

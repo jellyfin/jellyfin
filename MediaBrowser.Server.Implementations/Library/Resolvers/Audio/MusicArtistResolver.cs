@@ -40,7 +40,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
             }
 
             // If we contain an album assume we are an artist folder
-            return args.FileSystemChildren.Where(i => i.Attributes.HasFlag(FileAttributes.Directory)).Any(i => MusicAlbumResolver.IsMusicAlbum(i.FullName)) ? new MusicArtist() : null;
+            return args.FileSystemChildren.Where(i => (i.Attributes & FileAttributes.Directory) == FileAttributes.Directory).Any(i => MusicAlbumResolver.IsMusicAlbum(i.FullName)) ? new MusicArtist() : null;
         }
 
     }

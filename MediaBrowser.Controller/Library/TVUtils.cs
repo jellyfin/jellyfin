@@ -197,12 +197,17 @@ namespace MediaBrowser.Controller.Library
             {
                 var attributes = child.Attributes;
 
-                if (attributes.HasFlag(FileAttributes.Hidden) || attributes.HasFlag(FileAttributes.System))
+                if ((attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
                 {
                     continue;
                 }
 
-                if (attributes.HasFlag(FileAttributes.Directory))
+                if ((attributes & FileAttributes.System) == FileAttributes.System)
+                {
+                    continue;
+                }
+
+                if ((attributes & FileAttributes.Directory) == FileAttributes.Directory)
                 {
                     if (IsSeasonFolder(child.FullName))
                     {

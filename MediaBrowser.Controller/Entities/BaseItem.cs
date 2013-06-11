@@ -279,7 +279,7 @@ namespace MediaBrowser.Controller.Entities
             // Record the name of each file 
             // Need to sort these because accoring to msdn docs, our i/o methods are not guaranteed in any order
             foreach (var file in ResolveArgs.FileSystemChildren
-                .Where(i => !i.Attributes.HasFlag(FileAttributes.System))
+                .Where(i => (i.Attributes & FileAttributes.System) != FileAttributes.System)
                 .OrderBy(f => f.Name))
             {
                 sb.Append(file.Name);
@@ -363,12 +363,15 @@ namespace MediaBrowser.Controller.Entities
                 return new ItemResolveArgs(ConfigurationManager.ApplicationPaths);
             }
 
+            var isDirectory = false;
+
             if (UseParentPathToCreateResolveArgs)
             {
                 path = System.IO.Path.GetDirectoryName(path);
+                isDirectory = true;
             }
 
-            pathInfo = pathInfo ?? FileSystem.GetFileSystemInfo(path);
+            pathInfo = pathInfo ?? (isDirectory ? new DirectoryInfo(path) : FileSystem.GetFileSystemInfo(path));
 
             if (pathInfo == null || !pathInfo.Exists)
             {

@@ -73,23 +73,23 @@ namespace MediaBrowser.Controller.Drawing
         {
             // http://msdn.microsoft.com/en-us/library/system.drawing.graphics.fromimage.aspx
 
-            if (format.HasFlag(PixelFormat.Indexed))
+            if (format == PixelFormat.Indexed)
             {
                 return false;
             }
-            if (format.HasFlag(PixelFormat.Undefined))
+            if (format == PixelFormat.Undefined)
             {
                 return false;
             }
-            if (format.HasFlag(PixelFormat.DontCare))
+            if (format == PixelFormat.DontCare)
             {
                 return false;
             }
-            if (format.HasFlag(PixelFormat.Format16bppArgb1555))
+            if (format == PixelFormat.Format16bppArgb1555)
             {
                 return false;
             }
-            if (format.HasFlag(PixelFormat.Format16bppGrayScale))
+            if (format == PixelFormat.Format16bppGrayScale)
             {
                 return false;
             }
@@ -160,7 +160,7 @@ namespace MediaBrowser.Controller.Drawing
             }
 
             // Graphics.FromImage will throw an exception if the PixelFormat is Indexed, so we need to handle that here
-            var thumbnail = bmp.PixelFormat.HasFlag(PixelFormat.Indexed) ? new Bitmap(croppedWidth, croppedHeight) : new Bitmap(croppedWidth, croppedHeight, bmp.PixelFormat);
+            var thumbnail = bmp.PixelFormat == PixelFormat.Indexed ? new Bitmap(croppedWidth, croppedHeight) : new Bitmap(croppedWidth, croppedHeight, bmp.PixelFormat);
 
             // Preserve the original resolution
             thumbnail.SetResolution(bmp.HorizontalResolution, bmp.VerticalResolution);

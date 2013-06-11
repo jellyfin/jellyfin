@@ -446,24 +446,21 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <summary>
         /// Resolves a path into a BaseItem
         /// </summary>
-        /// <param name="path">The path.</param>
-        /// <param name="parent">The parent.</param>
         /// <param name="fileInfo">The file info.</param>
+        /// <param name="parent">The parent.</param>
         /// <returns>BaseItem.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public BaseItem ResolvePath(string path, Folder parent = null, FileSystemInfo fileInfo = null)
+        public BaseItem ResolvePath(FileSystemInfo fileInfo, Folder parent = null)
         {
-            if (string.IsNullOrEmpty(path))
+            if (fileInfo == null)
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException("fileInfo");
             }
-
-            fileInfo = fileInfo ?? FileSystem.GetFileSystemInfo(path);
 
             var args = new ItemResolveArgs(ConfigurationManager.ApplicationPaths)
             {
                 Parent = parent,
-                Path = path,
+                Path = fileInfo.FullName,
                 FileInfo = fileInfo
             };
 
@@ -534,7 +531,7 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 try
                 {
-                    var item = ResolvePath(f.FullName, parent, f) as T;
+                    var item = ResolvePath(f, parent) as T;
 
                     if (item != null)
                     {
@@ -567,7 +564,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 Directory.CreateDirectory(rootFolderPath);
             }
 
-            var rootFolder = RetrieveItem(rootFolderPath.GetMBId(typeof(AggregateFolder))) as AggregateFolder ?? (AggregateFolder)ResolvePath(rootFolderPath);
+            var rootFolder = RetrieveItem(rootFolderPath.GetMBId(typeof(AggregateFolder))) as AggregateFolder ?? (AggregateFolder)ResolvePath(new DirectoryInfo(rootFolderPath));
 
             // Add in the plug-in folders
             foreach (var child in PluginFolderCreators)
@@ -585,7 +582,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>UserRootFolder.</returns>
         public UserRootFolder GetUserRootFolder(string userRootPath)
         {
-            return _userRootFolders.GetOrAdd(userRootPath, key => RetrieveItem(userRootPath.GetMBId(typeof(UserRootFolder))) as UserRootFolder ?? (UserRootFolder)ResolvePath(userRootPath));
+            return _userRootFolders.GetOrAdd(userRootPath, key => RetrieveItem(userRootPath.GetMBId(typeof(UserRootFolder))) as UserRootFolder ?? (UserRootFolder)ResolvePath(new DirectoryInfo(userRootPath)));
         }
 
         /// <summary>
