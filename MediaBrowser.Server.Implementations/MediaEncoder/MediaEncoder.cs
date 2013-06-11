@@ -560,7 +560,11 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                 throw new ArgumentNullException("outputPath");
             }
 
-            var offsetParam = offset.Ticks > 0 ? "-ss " + offset.TotalSeconds + " " : string.Empty;
+            var fastSeekSeconds = offset.TotalSeconds >= 1 ? offset.TotalSeconds - 1 : 0;
+            var slowSeekSeconds = offset.TotalSeconds >= 1 ? 1 : 0;
+
+            var fastSeekParam = fastSeekSeconds > 0 ? "-ss " + fastSeekSeconds + " " : string.Empty;
+            var slowSeekParam = slowSeekSeconds > 0 ? " -ss " + slowSeekSeconds : string.Empty;
 
             var process = new Process
             {
@@ -572,7 +576,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                     CreateNoWindow = true,
                     UseShellExecute = false,
                     FileName = FFMpegPath,
-                    Arguments = string.Format("{0}-i \"{1}\" \"{2}\"", offsetParam, inputPath, outputPath),
+                    Arguments = string.Format("{0}-i \"{1}\"{2} \"{3}\"", fastSeekParam, inputPath, slowSeekParam, outputPath),
                     WindowStyle = ProcessWindowStyle.Hidden,
                     ErrorDialog = false
                 }
@@ -724,7 +728,11 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                 throw new ArgumentNullException("cancellationToken");
             }
 
-            var offsetParam = offset.Ticks > 0 ? "-ss " + offset.TotalSeconds + " " : string.Empty;
+            var fastSeekSeconds = offset.TotalSeconds >= 1 ? offset.TotalSeconds - 1 : 0;
+            var slowSeekSeconds = offset.TotalSeconds >= 1 ? 1 : 0;
+
+            var fastSeekParam = fastSeekSeconds > 0 ? "-ss " + fastSeekSeconds + " " : string.Empty;
+            var slowSeekParam = slowSeekSeconds > 0 ? " -ss " + slowSeekSeconds : string.Empty;
 
             var process = new Process
             {
@@ -737,7 +745,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                     RedirectStandardError = true,
 
                     FileName = FFMpegPath,
-                    Arguments = string.Format("{0}-i {1} -map 0:{2} -an -vn -c:s ass \"{3}\"", offsetParam, inputPath, subtitleStreamIndex, outputPath),
+                    Arguments = string.Format("{0}-i {1}{2} -map 0:{3} -an -vn -c:s ass \"{4}\"", fastSeekParam, inputPath, slowSeekParam, subtitleStreamIndex, outputPath),
                     WindowStyle = ProcessWindowStyle.Hidden,
                     ErrorDialog = false
                 }
