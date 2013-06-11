@@ -24,4 +24,4 @@ http://community.mediabrowser.tv/
 
 Release: 3.0.4906.22507<br/>
 Beta:<br/>
-Dev:
+Dev: 3.0.4910.17486
