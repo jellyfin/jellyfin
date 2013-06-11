@@ -160,15 +160,18 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (!string.IsNullOrEmpty(val))
             {
+                // Sometimes the artist name is listed here, account for that
                 var studios =
                     val.Split(new[] { '/', '|' }, StringSplitOptions.RemoveEmptyEntries)
-                       .Where(i => !string.Equals(i, audio.Artist, StringComparison.OrdinalIgnoreCase) && !string.Equals(i, audio.AlbumArtist, StringComparison.OrdinalIgnoreCase));
+                    .Where(i => !string.IsNullOrWhiteSpace(i))
+                    .Where(i => !string.Equals(i, audio.Artist, StringComparison.OrdinalIgnoreCase) && !string.Equals(i, audio.AlbumArtist, StringComparison.OrdinalIgnoreCase));
 
                 audio.Studios.Clear();
 
                 foreach (var studio in studios)
                 {
-                    audio.AddStudio(studio);
+                    // Account for sloppy tags by trimming
+                    audio.AddStudio(studio.Trim());
                 }
             }
         }
@@ -190,7 +193,8 @@ namespace MediaBrowser.Providers.MediaInfo
                     .Split(new[] { '/', '|' }, StringSplitOptions.RemoveEmptyEntries)
                     .Where(i => !string.IsNullOrWhiteSpace(i)))
                 {
-                    audio.AddGenre(genre);
+                    // Account for sloppy tags by trimming
+                    audio.AddGenre(genre.Trim());
                 }
             }
         }
