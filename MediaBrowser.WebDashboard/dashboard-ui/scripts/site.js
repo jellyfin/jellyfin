@@ -910,6 +910,9 @@ var Dashboard = {
         if (type == "genre") {
             url = "itembynamedetails.html?genre=" + ApiClient.encodeName(cmd.ItemName) + "&context=" + context;
         }
+        else if (type == "musicgenre") {
+            url = "itembynamedetails.html?musicgenre=" + ApiClient.encodeName(cmd.ItemName) + "&context=" + (context || "music");
+        }
         else if (type == "studio") {
             url = "itembynamedetails.html?studio=" + ApiClient.encodeName(cmd.ItemName) + "&context=" + context;
         }

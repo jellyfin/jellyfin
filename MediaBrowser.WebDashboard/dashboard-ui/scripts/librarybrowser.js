@@ -116,7 +116,7 @@
                     imgUrl = "css/images/items/list/game.png";
                     isDefault = true;
                 }
-                else if (item.Type == "Studio" || item.Type == "Genre") {
+                else if (item.Type == "Studio" || item.Type == "Genre" || item.Type == "MusicGenre") {
 
                     if (options.context == "games") {
 
@@ -180,7 +180,7 @@
 
                     html += '<p class="itemMiscInfo">' + childText + '</p>';
                 }
-                else if (item.Type == "Genre" || item.Type == "Studio" || item.Type == "Person" || item.Type == "Artist") {
+                else if (item.Type == "Genre" || item.Type == "Studio" || item.Type == "Person" || item.Type == "Artist" || item.Type == "MusicGenre") {
 
                     childText = item.ChildCount == 1 ? "1 " + options.countNameSingular : item.ChildCount + " " + options.countNamePlural;
 
@@ -366,6 +366,9 @@
             if (item.Type == "Genre") {
                 return "itembynamedetails.html?genre=" + ApiClient.encodeName(item.Name) + "&context=" + itemByNameContext;
             }
+            if (item.Type == "MusicGenre") {
+                return "itembynamedetails.html?musicgenre=" + ApiClient.encodeName(item.Name) + "&context=" + itemByNameContext;
+            }
             if (item.Type == "Studio") {
                 return "itembynamedetails.html?studio=" + ApiClient.encodeName(item.Name) + "&context=" + itemByNameContext;
             }
@@ -410,6 +413,10 @@
             if (item.Type == "Genre") {
 
                 return ApiClient.getGenreImageUrl(item.Name, options);
+            }
+            if (item.Type == "MusicGenre") {
+
+                return ApiClient.getMusicGenreImageUrl(item.Name, options);
             }
             if (item.Type == "Artist") {
 
@@ -597,7 +604,7 @@
                 return '<div class="posterRibbon">' + item.RecentlyAddedItemCount + ' New</div>';
             }
 
-            if (!item.IsFolder && item.Type !== "Genre" && item.Type !== "Studio" && item.Type !== "Person" && item.Type !== "Artist") {
+            if (!item.IsFolder && item.Type !== "Genre" && item.Type !== "Studio" && item.Type !== "Person" && item.Type !== "Artist" && item.Type !== "MusicGenre") {
 
                 var date = item.DateCreated;
 
@@ -949,6 +956,9 @@
             else if (type == "Genre") {
                 itemId = item.Name;
             }
+            else if (type == "MusicGenre") {
+                itemId = item.Name;
+            }
             else if (type == "Artist") {
                 itemId = item.Name;
             }
@@ -1022,6 +1032,9 @@
             }
             else if (type == "Genre") {
                 ApiClient.updateFavoriteGenreStatus(Dashboard.getCurrentUserId(), id, markAsFavorite);
+            }
+            else if (type == "MusicGenre") {
+                ApiClient.updateFavoriteMusicGenreStatus(Dashboard.getCurrentUserId(), id, markAsFavorite);
             }
             else {
                 ApiClient.updateFavoriteStatus(Dashboard.getCurrentUserId(), id, markAsFavorite);
@@ -1104,6 +1117,9 @@
             else if (type == "Genre") {
                 ApiClient.updateGenreRating(Dashboard.getCurrentUserId(), id, likes);
             }
+            else if (type == "MusicGenre") {
+                ApiClient.updateMusicGenreRating(Dashboard.getCurrentUserId(), id, likes);
+            }
             else {
                 ApiClient.updateUserItemRating(Dashboard.getCurrentUserId(), id, likes);
             }
@@ -1122,6 +1138,9 @@
             }
             else if (type == "Genre") {
                 ApiClient.clearGenreRating(Dashboard.getCurrentUserId(), id);
+            }
+            else if (type == "MusicGenre") {
+                ApiClient.clearMusicGenreRating(Dashboard.getCurrentUserId(), id);
             }
             else {
                 ApiClient.clearUserItemRating(Dashboard.getCurrentUserId(), id);
@@ -1147,6 +1166,13 @@
                 }
                 else if (item.Type == "Genre") {
                     url = ApiClient.getGenreImageUrl(item.Name, {
+                        maxheight: 480,
+                        tag: imageTags.Primary,
+                        type: "Primary"
+                    });
+                }
+                else if (item.Type == "MusicGenre") {
+                    url = ApiClient.getMusicGenreImageUrl(item.Name, {
                         maxheight: 480,
                         tag: imageTags.Primary,
                         type: "Primary"
@@ -1190,6 +1216,13 @@
                         type: "Backdrop"
                     });
                 }
+                else if (item.Type == "MusicGenre") {
+                    url = ApiClient.getMusicGenreImageUrl(item.Name, {
+                        maxheight: 480,
+                        tag: item.BackdropImageTags[0],
+                        type: "Backdrop"
+                    });
+                }
                 else if (item.Type == "Studio") {
                     url = ApiClient.getStudioImageUrl(item.Name, {
                         maxheight: 480,
@@ -1223,6 +1256,13 @@
                 }
                 else if (item.Type == "Genre") {
                     url = ApiClient.getGenreImageUrl(item.Name, {
+                        maxheight: 480,
+                        tag: imageTags.Thumb,
+                        type: "Thumb"
+                    });
+                }
+                else if (item.Type == "MusicGenre") {
+                    url = ApiClient.getMusicGenreImageUrl(item.Name, {
                         maxheight: 480,
                         tag: imageTags.Thumb,
                         type: "Thumb"
@@ -1267,7 +1307,7 @@
             else if (item.Type == "Person") {
                 url = "css/images/items/detail/person.png";
             }
-            else if (item.Type == "Genre" || item.Type == "Studio") {
+            else if (item.Type == "Genre" || item.Type == "Studio" || item.Type == "MusicGenre") {
                 url = "css/images/items/detail/video.png";
             }
             else {
@@ -1277,7 +1317,7 @@
             var identifierName = "id";
             var identifierValue = item.Id;
 
-            if (item.Type == "Person" || item.Type == "Genre" || item.Type == "Studio" || item.Type == "Artist") {
+            if (item.Type == "Person" || item.Type == "Genre" || item.Type == "Studio" || item.Type == "Artist" || item.Type == "MusicGenre") {
                 identifierName = item.Type;
                 identifierValue = ApiClient.encodeName(item.Name);
             }

@@ -111,6 +111,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var items = inputItems.Where(i => !(i is MusicArtist)).ToList();
 
+            // Add search hints based on item name
             hints.AddRange(items.Select(item =>
             {
                 var index = GetIndex(item.Name, searchTerm, terms);
@@ -144,8 +145,9 @@ namespace MediaBrowser.Server.Implementations.Library
                 }
             }
 
-            // Find genres
-            var genres = items.SelectMany(i => i.Genres)
+            // Find genres, from non-audio items
+            var genres = items.Where(i => !(i is Audio) && !(i is MusicAlbum) && !(i is MusicAlbumDisc) && !(i is MusicArtist) && !(i is MusicVideo))
+                .SelectMany(i => i.Genres)
                 .Where(i => !string.IsNullOrEmpty(i))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
@@ -159,6 +161,32 @@ namespace MediaBrowser.Server.Implementations.Library
                     try
                     {
                         var genre = await _libraryManager.GetGenre(item).ConfigureAwait(false);
+
+                        hints.Add(new Tuple<BaseItem, string, int>(genre, index.Item1, index.Item2));
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.ErrorException("Error getting {0}", ex, item);
+                    }
+                }
+            }
+
+            // Find music genres
+            var musicGenres = items.Where(i => (i is Audio) || (i is MusicAlbum) || (i is MusicAlbumDisc) || (i is MusicArtist) || (i is MusicVideo))
+                .SelectMany(i => i.Genres)
+                .Where(i => !string.IsNullOrEmpty(i))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            foreach (var item in musicGenres)
+            {
+                var index = GetIndex(item, searchTerm, terms);
+
+                if (index.Item2 != -1)
+                {
+                    try
+                    {
+                        var genre = await _libraryManager.GetMusicGenre(item).ConfigureAwait(false);
 
                         hints.Add(new Tuple<BaseItem, string, int>(genre, index.Item1, index.Item2));
                     }

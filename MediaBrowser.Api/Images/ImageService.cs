@@ -167,6 +167,19 @@ namespace MediaBrowser.Api.Images
         public string Name { get; set; }
     }
 
+    [Route("/MusicGenres/{Name}/Images/{Type}", "GET")]
+    [Route("/MusicGenres/{Name}/Images/{Type}/{Index}", "GET")]
+    [Api(Description = "Gets a genre image")]
+    public class GetMusicGenreImage : ImageRequest
+    {
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        [ApiMember(Name = "Name", Description = "Genre name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Name { get; set; }
+    }
+    
     /// <summary>
     /// Class GetYearImage
     /// </summary>
@@ -502,6 +515,13 @@ namespace MediaBrowser.Api.Images
         public object Get(GetGenreImage request)
         {
             var item = GetGenre(request.Name, _libraryManager).Result;
+
+            return GetImage(request, item);
+        }
+
+        public object Get(GetMusicGenreImage request)
+        {
+            var item = GetMusicGenre(request.Name, _libraryManager).Result;
 
             return GetImage(request, item);
         }

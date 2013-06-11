@@ -82,6 +82,14 @@ namespace MediaBrowser.Controller.Library
         Task<Genre> GetGenre(string name, bool allowSlowProviders = false);
 
         /// <summary>
+        /// Gets the genre.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
+        /// <returns>Task{MusicGenre}.</returns>
+        Task<MusicGenre> GetMusicGenre(string name, bool allowSlowProviders = false);
+        
+        /// <summary>
         /// Gets a Year
         /// </summary>
         /// <param name="value">The value.</param>

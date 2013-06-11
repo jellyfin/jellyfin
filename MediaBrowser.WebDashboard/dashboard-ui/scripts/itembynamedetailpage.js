@@ -25,6 +25,12 @@
             return ApiClient.getGenre(name, Dashboard.getCurrentUserId());
         }
 
+        name = getParameterByName('musicgenre');
+
+        if (name) {
+            return ApiClient.getMusicGenre(name, Dashboard.getCurrentUserId());
+        }
+
         name = getParameterByName('artist');
 
         if (name) {
@@ -103,7 +109,7 @@
             $('#tvPeopleTabs', page).show();
         }
 
-        if (context == "music" && item.Type == "Genre") {
+        if (context == "music" && item.Type == "MusicGenre") {
             $('#musicGenreTabs', page).show();
         }
         if (context == "music" && item.Type == "Artist") {
@@ -126,6 +132,9 @@
         }
         else if (item.Type == "Genre") {
             promise = ApiClient.getGenreItemCounts(Dashboard.getCurrentUserId(), item.Name);
+        }
+        else if (item.Type == "MusicGenre") {
+            promise = ApiClient.getMusicGenreItemCounts(Dashboard.getCurrentUserId(), item.Name);
         }
         else if (item.Type == "Studio") {
             promise = ApiClient.getStudioItemCounts(Dashboard.getCurrentUserId(), item.Name);
@@ -359,6 +368,9 @@
             query.Person = currentItem.Name;
         }
         else if (currentItem.Type == "Genre") {
+            query.Genres = currentItem.Name;
+        }
+        else if (currentItem.Type == "MusicGenre") {
             query.Genres = currentItem.Name;
         }
         else if (currentItem.Type == "Studio") {
