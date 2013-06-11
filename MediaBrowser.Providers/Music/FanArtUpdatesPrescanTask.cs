@@ -144,18 +144,7 @@ namespace MediaBrowser.Providers.Music
 
             foreach (var id in list)
             {
-                try
-                {
-                    await UpdateArtist(id, artistsDataPath, cancellationToken).ConfigureAwait(false);
-                }
-                catch (HttpException ex)
-                {
-                    // Already logged at lower levels, but don't fail the whole operation, unless something other than a timeout
-                    if (!ex.IsTimedOut)
-                    {
-                        throw;
-                    }
-                }
+                await UpdateArtist(id, artistsDataPath, cancellationToken).ConfigureAwait(false);
 
                 numComplete++;
                 double percent = numComplete;

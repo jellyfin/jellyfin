@@ -145,18 +145,7 @@ namespace MediaBrowser.Providers.TV
 
             foreach (var id in list)
             {
-                try
-                {
-                    await UpdateSeries(id, seriesDataPath, cancellationToken).ConfigureAwait(false);
-                }
-                catch (HttpException ex)
-                {
-                    // Already logged at lower levels, but don't fail the whole operation, unless something other than a timeout
-                    if (!ex.IsTimedOut)
-                    {
-                        throw;
-                    }
-                }
+                await UpdateSeries(id, seriesDataPath, cancellationToken).ConfigureAwait(false);
 
                 numComplete++;
                 double percent = numComplete;
