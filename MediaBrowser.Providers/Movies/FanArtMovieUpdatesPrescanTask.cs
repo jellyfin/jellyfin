@@ -130,18 +130,7 @@ namespace MediaBrowser.Providers.Movies
 
             foreach (var id in list)
             {
-                try
-                {
-                    await UpdateMovie(id, moviesDataPath, cancellationToken).ConfigureAwait(false);
-                }
-                catch (HttpException ex)
-                {
-                    // Already logged at lower levels, but don't fail the whole operation, unless something other than a timeout
-                    if (!ex.IsTimedOut)
-                    {
-                        throw;
-                    }
-                }
+                await UpdateMovie(id, moviesDataPath, cancellationToken).ConfigureAwait(false);
 
                 numComplete++;
                 double percent = numComplete;
