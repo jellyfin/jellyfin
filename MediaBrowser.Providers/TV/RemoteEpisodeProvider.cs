@@ -313,6 +313,7 @@ namespace MediaBrowser.Providers.TV
             var actors = doc.SafeGetString("//GuestStars");
             if (actors != null)
             {
+                // Sometimes tvdb actors have leading spaces
                 foreach (var person in actors.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries)
                     .Where(i => !string.IsNullOrWhiteSpace(i))
                     .Select(str => new PersonInfo { Type = PersonType.GuestStar, Name = str.Trim() }))
@@ -325,6 +326,7 @@ namespace MediaBrowser.Providers.TV
             var directors = doc.SafeGetString("//Director");
             if (directors != null)
             {
+                // Sometimes tvdb actors have leading spaces
                 foreach (var person in directors.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries)
                     .Where(i => !string.IsNullOrWhiteSpace(i))
                     .Select(str => new PersonInfo { Type = PersonType.Director, Name = str.Trim() }))
@@ -337,6 +339,7 @@ namespace MediaBrowser.Providers.TV
             var writers = doc.SafeGetString("//Writer");
             if (writers != null)
             {
+                // Sometimes tvdb actors have leading spaces
                 foreach (var person in writers.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries)
                      .Where(i => !string.IsNullOrWhiteSpace(i))
                    .Select(str => new PersonInfo { Type = PersonType.Writer, Name = str.Trim() }))
