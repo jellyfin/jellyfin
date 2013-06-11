@@ -460,12 +460,6 @@ namespace MediaBrowser.Server.Implementations.Library
 
             fileInfo = fileInfo ?? FileSystem.GetFileSystemInfo(path);
 
-            if (!fileInfo.Exists)
-            {
-                _logger.Error("Path in library does not exist or is unavailable: " + path);
-                return null;
-            }
-
             var args = new ItemResolveArgs(ConfigurationManager.ApplicationPaths)
             {
                 Parent = parent,

@@ -48,22 +48,16 @@ namespace MediaBrowser.Controller.IO
                         continue;
                     }
 
-                    var data = FileSystem.GetFileSystemInfo(newPath);
+                    // Don't check if it exists here because that could return false for network shares.
+                    var data = new DirectoryInfo(newPath);
 
-                    if (data.Exists)
+                    // add to our physical locations
+                    if (args != null)
                     {
-                        // add to our physical locations
-                        if (args != null)
-                        {
-                            args.AddAdditionalLocation(newPath);
-                        }
+                        args.AddAdditionalLocation(newPath);
+                    }
 
-                        dict[data.FullName] = data;
-                    }
-                    else
-                    {
-                        logger.Warn("Cannot add unavailble/non-existent location {0}", data.FullName);
-                    }
+                    dict[data.FullName] = data;
                 }
                 else if (flattenFolderDepth > 0 && isDirectory)
                 {
