@@ -199,10 +199,10 @@ namespace MediaBrowser.Api.Playback.Progressive
             var outputPath = GetOutputFilePath(state);
             var outputPathExists = File.Exists(outputPath);
 
-            var isStatic = request.Static ||
-                           (outputPathExists && !ApiEntryPoint.Instance.HasActiveTranscodingJob(outputPath, TranscodingJobType.Progressive));
+            //var isStatic = request.Static ||
+            //               (outputPathExists && !ApiEntryPoint.Instance.HasActiveTranscodingJob(outputPath, TranscodingJobType.Progressive));
 
-            AddDlnaHeaders(state, responseHeaders, isStatic);
+            //AddDlnaHeaders(state, responseHeaders, isStatic);
 
             if (request.Static)
             {
