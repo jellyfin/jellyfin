@@ -114,7 +114,7 @@ namespace MediaBrowser.Server.Implementations
         {
             get
             {
-                return Path.Combine(ItemsByNamePath, "MusicGenre");
+                return Path.Combine(ItemsByNamePath, "MusicGenres");
             }
         }
         
