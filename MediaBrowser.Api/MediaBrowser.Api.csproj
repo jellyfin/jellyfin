@@ -107,6 +107,7 @@
     <Compile Include="UserLibrary\GenresService.cs" />
     <Compile Include="UserLibrary\ItemByNameUserDataService.cs" />
     <Compile Include="UserLibrary\ItemsService.cs" />
+    <Compile Include="UserLibrary\MusicGenresService.cs" />
     <Compile Include="UserLibrary\PersonsService.cs" />
     <Compile Include="UserLibrary\StudiosService.cs" />
     <Compile Include="UserLibrary\UserLibraryService.cs" />

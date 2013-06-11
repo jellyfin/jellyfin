@@ -16,6 +16,7 @@ namespace MediaBrowser.Api.UserLibrary
     [Route("/Users/{UserId}/Favorites/Persons/{Name}", "POST")]
     [Route("/Users/{UserId}/Favorites/Studios/{Name}", "POST")]
     [Route("/Users/{UserId}/Favorites/Genres/{Name}", "POST")]
+    [Route("/Users/{UserId}/Favorites/MusicGenres/{Name}", "POST")]
     [Api(Description = "Marks something as a favorite")]
     public class MarkItemByNameFavorite : IReturnVoid
     {
@@ -41,6 +42,7 @@ namespace MediaBrowser.Api.UserLibrary
     [Route("/Users/{UserId}/Favorites/Persons/{Name}", "DELETE")]
     [Route("/Users/{UserId}/Favorites/Studios/{Name}", "DELETE")]
     [Route("/Users/{UserId}/Favorites/Genres/{Name}", "DELETE")]
+    [Route("/Users/{UserId}/Favorites/MusicGenres/{Name}", "DELETE")]
     [Api(Description = "Unmarks something as a favorite")]
     public class UnmarkItemByNameFavorite : IReturnVoid
     {
@@ -66,6 +68,7 @@ namespace MediaBrowser.Api.UserLibrary
     [Route("/Users/{UserId}/Ratings/Persons/{Name}", "POST")]
     [Route("/Users/{UserId}/Ratings/Studios/{Name}", "POST")]
     [Route("/Users/{UserId}/Ratings/Genres/{Name}", "POST")]
+    [Route("/Users/{UserId}/Ratings/MusicGenres/{Name}", "POST")]
     [Api(Description = "Updates a user's rating for an item")]
     public class UpdateItemByNameRating : IReturnVoid
     {
@@ -98,6 +101,7 @@ namespace MediaBrowser.Api.UserLibrary
     [Route("/Users/{UserId}/Ratings/Persons/{Name}", "DELETE")]
     [Route("/Users/{UserId}/Ratings/Studios/{Name}", "DELETE")]
     [Route("/Users/{UserId}/Ratings/Genres/{Name}", "DELETE")]
+    [Route("/Users/{UserId}/Ratings/MusicGenres/{Name}", "DELETE")]
     [Api(Description = "Deletes a user's saved personal rating for an item")]
     public class DeleteItemByNameRating : IReturnVoid
     {
@@ -222,6 +226,10 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 item = await GetGenre(name, LibraryManager).ConfigureAwait(false);
             }
+            else if (string.Equals(type, "MusicGenres"))
+            {
+                item = await GetMusicGenre(name, LibraryManager).ConfigureAwait(false);
+            }
             else if (string.Equals(type, "Studios"))
             {
                 item = await GetStudio(name, LibraryManager).ConfigureAwait(false);
@@ -265,6 +273,10 @@ namespace MediaBrowser.Api.UserLibrary
             else if (string.Equals(type, "Genres"))
             {
                 item = await GetGenre(name, LibraryManager).ConfigureAwait(false);
+            }
+            else if (string.Equals(type, "MusicGenres"))
+            {
+                item = await GetMusicGenre(name, LibraryManager).ConfigureAwait(false);
             }
             else if (string.Equals(type, "Studios"))
             {

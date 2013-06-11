@@ -41,6 +41,12 @@ namespace MediaBrowser.Controller
         string GenrePath { get; }
 
         /// <summary>
+        /// Gets the music genre path.
+        /// </summary>
+        /// <value>The music genre path.</value>
+        string MusicGenrePath { get; }
+        
+        /// <summary>
         /// Gets the artists path.
         /// </summary>
         /// <value>The artists path.</value>

@@ -110,6 +110,11 @@ namespace MediaBrowser.Api
             return libraryManager.GetGenre(DeSlugGenreName(name, libraryManager));
         }
 
+        protected Task<MusicGenre> GetMusicGenre(string name, ILibraryManager libraryManager)
+        {
+            return libraryManager.GetMusicGenre(DeSlugGenreName(name, libraryManager));
+        }
+
         protected Task<Person> GetPerson(string name, ILibraryManager libraryManager)
         {
             return libraryManager.GetPerson(DeSlugPersonName(name, libraryManager));

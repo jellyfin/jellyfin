@@ -635,6 +635,17 @@ namespace MediaBrowser.Server.Implementations.Library
         }
 
         /// <summary>
+        /// Gets the genre.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
+        /// <returns>Task{MusicGenre}.</returns>
+        public Task<MusicGenre> GetMusicGenre(string name, bool allowSlowProviders = false)
+        {
+            return GetItemByName<MusicGenre>(ConfigurationManager.ApplicationPaths.MusicGenrePath, name, CancellationToken.None, allowSlowProviders);
+        }
+        
+        /// <summary>
         /// Gets a Genre
         /// </summary>
         /// <param name="name">The name.</param>

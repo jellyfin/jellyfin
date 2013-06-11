@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
@@ -14,18 +13,15 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.UserLibrary
 {
-    /// <summary>
-    /// Class GetGenres
-    /// </summary>
-    [Route("/Genres", "GET")]
-    [Api(Description = "Gets all genres from a given item, folder, or the entire library")]
-    public class GetGenres : GetItemsByName
+    [Route("/MusicGenres", "GET")]
+    [Api(Description = "Gets all music genres from a given item, folder, or the entire library")]
+    public class GetMusicGenres : GetItemsByName
     {
     }
 
-    [Route("/Genres/{Name}/Counts", "GET")]
+    [Route("/MusicGenres/{Name}/Counts", "GET")]
     [Api(Description = "Gets item counts of library items that a genre appears in")]
-    public class GetGenreItemCounts : IReturn<ItemByNameCounts>
+    public class GetMusicGenreItemCounts : IReturn<ItemByNameCounts>
     {
         /// <summary>
         /// Gets or sets the user id.
@@ -42,12 +38,9 @@ namespace MediaBrowser.Api.UserLibrary
         public string Name { get; set; }
     }
 
-    /// <summary>
-    /// Class GetGenre
-    /// </summary>
-    [Route("/Genres/{Name}", "GET")]
-    [Api(Description = "Gets a genre, by name")]
-    public class GetGenre : IReturn<BaseItemDto>
+    [Route("/MusicGenres/{Name}", "GET")]
+    [Api(Description = "Gets a music genre, by name")]
+    public class GetMusicGenre : IReturn<BaseItemDto>
     {
         /// <summary>
         /// Gets or sets the name.
@@ -63,13 +56,10 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "UserId", Description = "Optional. Filter by user id, and attach user data", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public Guid? UserId { get; set; }
     }
-    
-    /// <summary>
-    /// Class GenresService
-    /// </summary>
-    public class GenresService : BaseItemsByNameService<Genre>
+
+    public class MusicGenresService : BaseItemsByNameService<MusicGenre>
     {
-        public GenresService(IUserManager userManager, ILibraryManager libraryManager, IUserDataRepository userDataRepository)
+        public MusicGenresService(IUserManager userManager, ILibraryManager libraryManager, IUserDataRepository userDataRepository)
             : base(userManager, libraryManager, userDataRepository)
         {
         }
@@ -79,7 +69,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public object Get(GetGenre request)
+        public object Get(GetMusicGenre request)
         {
             var result = GetItem(request).Result;
 
@@ -91,9 +81,9 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>Task{BaseItemDto}.</returns>
-        private async Task<BaseItemDto> GetItem(GetGenre request)
+        private async Task<BaseItemDto> GetItem(GetMusicGenre request)
         {
-            var item = await GetGenre(request.Name, LibraryManager).ConfigureAwait(false);
+            var item = await GetMusicGenre(request.Name, LibraryManager).ConfigureAwait(false);
 
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true));
@@ -109,13 +99,13 @@ namespace MediaBrowser.Api.UserLibrary
 
             return await builder.GetBaseItemDto(item, fields.ToList()).ConfigureAwait(false);
         }
-       
+
         /// <summary>
         /// Gets the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public object Get(GetGenres request)
+        public object Get(GetMusicGenres request)
         {
             var result = GetResult(request).Result;
 
@@ -128,14 +118,14 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         /// <param name="items">The items.</param>
         /// <returns>IEnumerable{Tuple{System.StringFunc{System.Int32}}}.</returns>
-        protected override IEnumerable<IbnStub<Genre>> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items)
+        protected override IEnumerable<IbnStub<MusicGenre>> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items)
         {
             var itemsList = items.Where(i => i.Genres != null).ToList();
 
             return itemsList
                 .SelectMany(i => i.Genres)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
-                .Select(name => new IbnStub<Genre>(name, () => itemsList.Where(i => i.Genres.Contains(name, StringComparer.OrdinalIgnoreCase)), GetEntity));
+                .Select(name => new IbnStub<MusicGenre>(name, () => itemsList.Where(i => i.Genres.Contains(name, StringComparer.OrdinalIgnoreCase)), GetEntity));
         }
 
         /// <summary>
@@ -143,9 +133,9 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns>Task{Genre}.</returns>
-        protected Task<Genre> GetEntity(string name)
+        protected Task<MusicGenre> GetEntity(string name)
         {
-            return LibraryManager.GetGenre(name);
+            return LibraryManager.GetMusicGenre(name);
         }
 
         /// <summary>
@@ -153,7 +143,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public object Get(GetGenreItemCounts request)
+        public object Get(GetMusicGenreItemCounts request)
         {
             var name = DeSlugGenreName(request.Name, LibraryManager);
 
@@ -163,13 +153,11 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 TotalCount = items.Count,
 
-                TrailerCount = items.OfType<Trailer>().Count(),
+                SongCount = items.OfType<Audio>().Count(),
 
-                MovieCount = items.OfType<Movie>().Count(),
+                AlbumCount = items.OfType<MusicAlbum>().Count(),
 
-                SeriesCount = items.OfType<Series>().Count(),
-
-                GameCount = items.OfType<BaseGame>().Count()
+                MusicVideoCount = items.OfType<MusicVideo>().Count()
             };
 
             return ToOptimizedResult(counts);

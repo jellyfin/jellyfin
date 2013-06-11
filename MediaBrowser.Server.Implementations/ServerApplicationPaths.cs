@@ -107,6 +107,18 @@ namespace MediaBrowser.Server.Implementations
         }
 
         /// <summary>
+        /// Gets the path to the Genre directory
+        /// </summary>
+        /// <value>The genre path.</value>
+        public string MusicGenrePath
+        {
+            get
+            {
+                return Path.Combine(ItemsByNamePath, "MusicGenre");
+            }
+        }
+        
+        /// <summary>
         /// Gets the path to the Studio directory
         /// </summary>
         /// <value>The studio path.</value>
