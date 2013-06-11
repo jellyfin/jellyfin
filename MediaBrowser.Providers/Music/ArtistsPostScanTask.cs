@@ -46,6 +46,7 @@ namespace MediaBrowser.Providers.Music
             progress.Report(10);
 
             var allMusicArtists = allItems.OfType<MusicArtist>().ToList();
+            var allSongs = allItems.OfType<Audio>().ToList();
 
             var numComplete = 0;
 
@@ -60,6 +61,17 @@ namespace MediaBrowser.Providers.Music
                     artist.BackdropImagePaths = musicArtist.BackdropImagePaths.ToList();
                     artist.ScreenshotImagePaths = musicArtist.ScreenshotImagePaths.ToList();
                     artist.SetProviderId(MetadataProviders.Musicbrainz, musicArtist.GetProviderId(MetadataProviders.Musicbrainz));
+                    artist.Genres = musicArtist.Genres.ToList();
+                }
+                else
+                {
+                    // Avoid implicitly captured closure
+                    var artist1 = artist;
+
+                    artist.Genres = allSongs.Where(i => i.HasArtist(artist1.Name))
+                        .SelectMany(i => i.Genres)
+                        .Distinct(StringComparer.OrdinalIgnoreCase)
+                        .ToList();
                 }
 
                 numComplete++;

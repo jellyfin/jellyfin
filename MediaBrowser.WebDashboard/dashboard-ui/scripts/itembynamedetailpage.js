@@ -301,6 +301,8 @@
         renderUserDataIcons(page, item);
         LibraryBrowser.renderLinks($('#itemLinks', page), item);
 
+        LibraryBrowser.renderGenres($('.itemGenres', page), item, getParameterByName('context'));
+
         if (item.Type == "Person" && item.PremiereDate) {
 
             try {
