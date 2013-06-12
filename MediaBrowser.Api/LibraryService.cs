@@ -415,26 +415,24 @@ namespace MediaBrowser.Api
                            : DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager, request.UserId);
 
             // Get everything
-            var fields =
-                Enum.GetNames(typeof(ItemFields))
+            var fields = Enum.GetNames(typeof(ItemFields))
                     .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
                     .ToList();
 
             var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userDataRepository);
 
-            var items =
-                _itemRepo.GetItems(item.ThemeSongIds)
+            var items = _itemRepo.GetItems(item.ThemeSongIds)
                          .OrderBy(i => i.SortName)
                          .Select(i => dtoBuilder.GetBaseItemDto(i, fields, user))
                          .Select(t => t.Result)
                          .ToArray();
 
             var result = new ThemeSongsResult
-                {
-                    Items = items,
-                    TotalRecordCount = items.Length,
-                    OwnerId = DtoBuilder.GetClientItemId(item)
-                };
+            {
+                Items = items,
+                TotalRecordCount = items.Length,
+                OwnerId = DtoBuilder.GetClientItemId(item)
+            };
 
             return ToOptimizedResult(result);
         }

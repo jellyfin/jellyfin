@@ -1,8 +1,13 @@
-﻿using MediaBrowser.Model.Entities;
+﻿using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Resolvers;
+using MediaBrowser.Model.Entities;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -11,11 +16,16 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class Video : BaseItem, IHasMediaStreams
     {
+        public bool IsMultiPart { get; set; }
+
+        public List<Guid> AdditionalPartIds { get; set; }
+
         public Video()
         {
             MediaStreams = new List<MediaStream>();
             Chapters = new List<ChapterInfo>();
             PlayableStreamFileNames = new List<string>();
+            AdditionalPartIds = new List<Guid>();
         }
 
         /// <summary>
@@ -61,7 +71,7 @@ namespace MediaBrowser.Controller.Entities
         {
             return GetPlayableStreamFiles(Path);
         }
-        
+
         /// <summary>
         /// Gets the playable stream files.
         /// </summary>
@@ -112,5 +122,102 @@ namespace MediaBrowser.Controller.Entities
                 return Model.Entities.MediaType.Video;
             }
         }
+
+        /// <summary>
+        /// Overrides the base implementation to refresh metadata for local trailers
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="forceSave">if set to <c>true</c> [is new item].</param>
+        /// <param name="forceRefresh">if set to <c>true</c> [force].</param>
+        /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
+        /// <returns>true if a provider reports we changed</returns>
+        public override async Task<bool> RefreshMetadata(CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false, bool allowSlowProviders = true)
+        {
+            // Kick off a task to refresh the main item
+            var result = await base.RefreshMetadata(cancellationToken, forceSave, forceRefresh, allowSlowProviders).ConfigureAwait(false);
+
+            var additionalPartsChanged = await RefreshAdditionalParts(cancellationToken, forceSave, forceRefresh, allowSlowProviders).ConfigureAwait(false);
+
+            return additionalPartsChanged || result;
+        }
+
+        /// <summary>
+        /// Refreshes the additional parts.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="forceSave">if set to <c>true</c> [force save].</param>
+        /// <param name="forceRefresh">if set to <c>true</c> [force refresh].</param>
+        /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
+        /// <returns>Task{System.Boolean}.</returns>
+        private async Task<bool> RefreshAdditionalParts(CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false, bool allowSlowProviders = true)
+        {
+            var newItems = LoadAdditionalParts().ToList();
+            var newItemIds = newItems.Select(i => i.Id).ToList();
+
+            var itemsChanged = !AdditionalPartIds.SequenceEqual(newItemIds);
+
+            var tasks = newItems.Select(i => i.RefreshMetadata(cancellationToken, forceSave, forceRefresh, allowSlowProviders));
+
+            var results = await Task.WhenAll(tasks).ConfigureAwait(false);
+
+            AdditionalPartIds = newItemIds;
+
+            return itemsChanged || results.Contains(true);
+        }
+
+        /// <summary>
+        /// Loads the additional parts.
+        /// </summary>
+        /// <returns>IEnumerable{Video}.</returns>
+        private IEnumerable<Video> LoadAdditionalParts()
+        {
+            if (!IsMultiPart || LocationType != LocationType.FileSystem)
+            {
+                return new List<Video>();
+            }
+
+            ItemResolveArgs resolveArgs;
+
+            try
+            {
+                resolveArgs = ResolveArgs;
+            }
+            catch (IOException ex)
+            {
+                Logger.ErrorException("Error getting ResolveArgs for {0}", ex, Path);
+                return new List<Video>();
+            }
+
+            if (!resolveArgs.IsDirectory)
+            {
+                return new List<Video>();
+            }
+
+            var files = resolveArgs.FileSystemChildren.Where(i =>
+            {
+                if ((i.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
+                {
+                    return false;
+                }
+
+                return !string.Equals(i.FullName, Path, StringComparison.OrdinalIgnoreCase) && EntityResolutionHelper.IsVideoFile(i.FullName) && EntityResolutionHelper.IsMultiPartFile(i.FullName);
+            });
+
+            return LibraryManager.ResolvePaths<Video>(files, null).Select(video =>
+            {
+                // Try to retrieve it from the db. If we don't find it, use the resolved version
+                var dbItem = LibraryManager.RetrieveItem(video.Id) as Video;
+
+                if (dbItem != null)
+                {
+                    dbItem.ResolveArgs = video.ResolveArgs;
+                    video = dbItem;
+                }
+
+                return video;
+
+            }).ToList();
+        }
+
     }
 }

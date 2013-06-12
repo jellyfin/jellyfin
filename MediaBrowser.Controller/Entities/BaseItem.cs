@@ -753,7 +753,7 @@ namespace MediaBrowser.Controller.Entities
             // Support xbmc trailers (-trailer suffix on video file names)
             files.AddRange(resolveArgs.FileSystemChildren.Where(i =>
             {
-                if (!i.Attributes.HasFlag(FileAttributes.Directory))
+                if ((i.Attributes & FileAttributes.Directory) != FileAttributes.Directory)
                 {
                     if (System.IO.Path.GetFileNameWithoutExtension(i.Name).EndsWith(XbmcTrailerFileSuffix, StringComparison.OrdinalIgnoreCase) && !string.Equals(Path, i.FullName, StringComparison.OrdinalIgnoreCase))
                     {
@@ -916,14 +916,11 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="forceSave">if set to <c>true</c> [is new item].</param>
         /// <param name="forceRefresh">if set to <c>true</c> [force].</param>
         /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
-        /// <param name="resetResolveArgs">if set to <c>true</c> [reset resolve args].</param>
         /// <returns>true if a provider reports we changed</returns>
-        public virtual async Task<bool> RefreshMetadata(CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false, bool allowSlowProviders = true, bool resetResolveArgs = true)
+        public virtual async Task<bool> RefreshMetadata(CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false, bool allowSlowProviders = true)
         {
-            if (resetResolveArgs)
-            {
-                ResolveArgs = null;
-            }
+            // Reload this
+            ResolveArgs = null;
 
             // Refresh for the item
             var itemRefreshTask = ProviderManager.ExecuteMetadataProviders(this, cancellationToken, forceRefresh, allowSlowProviders);

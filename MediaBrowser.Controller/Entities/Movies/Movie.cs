@@ -62,12 +62,11 @@ namespace MediaBrowser.Controller.Entities.Movies
         /// <param name="forceSave">if set to <c>true</c> [is new item].</param>
         /// <param name="forceRefresh">if set to <c>true</c> [force].</param>
         /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
-        /// <param name="resetResolveArgs">if set to <c>true</c> [reset resolve args].</param>
         /// <returns>Task{System.Boolean}.</returns>
-        public override async Task<bool> RefreshMetadata(CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false, bool allowSlowProviders = true, bool resetResolveArgs = true)
+        public override async Task<bool> RefreshMetadata(CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false, bool allowSlowProviders = true)
         {
             // Kick off a task to refresh the main item
-            var result = await base.RefreshMetadata(cancellationToken, forceSave, forceRefresh, allowSlowProviders, resetResolveArgs).ConfigureAwait(false);
+            var result = await base.RefreshMetadata(cancellationToken, forceSave, forceRefresh, allowSlowProviders).ConfigureAwait(false);
 
             var specialFeaturesChanged = await RefreshSpecialFeatures(cancellationToken, forceSave, forceRefresh, allowSlowProviders).ConfigureAwait(false);
 
@@ -127,7 +126,7 @@ namespace MediaBrowser.Controller.Entities.Movies
             }
             catch (IOException ex)
             {
-                Logger.ErrorException("Error loading trailers for {0}", ex, Name);
+                Logger.ErrorException("Error loading special features for {0}", ex, Name);
                 return new List<Video>();
             }
 

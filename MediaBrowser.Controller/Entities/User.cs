@@ -322,14 +322,11 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="forceSave">if set to <c>true</c> [is new item].</param>
         /// <param name="forceRefresh">if set to <c>true</c> [force].</param>
         /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
-        /// <param name="resetResolveArgs">if set to <c>true</c> [reset resolve args].</param>
         /// <returns>true if a provider reports we changed</returns>
-        public override async Task<bool> RefreshMetadata(CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false, bool allowSlowProviders = true, bool resetResolveArgs = true)
+        public override async Task<bool> RefreshMetadata(CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false, bool allowSlowProviders = true)
         {
-            if (resetResolveArgs)
-            {
-                ResolveArgs = null;
-            }
+            // Reload this
+            ResolveArgs = null;
 
             var changed = await ProviderManager.ExecuteMetadataProviders(this, cancellationToken, forceRefresh, allowSlowProviders).ConfigureAwait(false);
 
