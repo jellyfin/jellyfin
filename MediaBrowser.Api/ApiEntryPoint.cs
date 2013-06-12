@@ -1,10 +1,10 @@
-﻿using System.IO;
-using MediaBrowser.Controller.Plugins;
+﻿using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -278,7 +278,8 @@ namespace MediaBrowser.Api
 
             // If it didn't complete successfully cleanup the partial files
             // Also don't cache output from resume points
-            if (!hasExitedSuccessfully || job.StartTimeTicks.HasValue)
+            // Also don't cache video
+            if (!hasExitedSuccessfully || job.StartTimeTicks.HasValue || job.IsVideo)
             {
                 Logger.Info("Deleting partial stream file(s) {0}", job.Path);
 
