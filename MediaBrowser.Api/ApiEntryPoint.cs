@@ -82,7 +82,9 @@ namespace MediaBrowser.Api
         /// <param name="path">The path.</param>
         /// <param name="type">The type.</param>
         /// <param name="process">The process.</param>
-        public void OnTranscodeBeginning(string path, TranscodingJobType type, Process process)
+        /// <param name="isVideo">if set to <c>true</c> [is video].</param>
+        /// <param name="startTimeTicks">The start time ticks.</param>
+        public void OnTranscodeBeginning(string path, TranscodingJobType type, Process process, bool isVideo, long? startTimeTicks)
         {
             lock (_activeTranscodingJobs)
             {
@@ -91,7 +93,9 @@ namespace MediaBrowser.Api
                     Type = type,
                     Path = path,
                     Process = process,
-                    ActiveRequestCount = 1
+                    ActiveRequestCount = 1,
+                    IsVideo = isVideo,
+                    StartTimeTicks = startTimeTicks
                 });
             }
         }
@@ -262,7 +266,7 @@ namespace MediaBrowser.Api
             }
             catch (InvalidOperationException)
             {
-                
+
             }
             catch (NotSupportedException)
             {
@@ -273,7 +277,8 @@ namespace MediaBrowser.Api
             process.Dispose();
 
             // If it didn't complete successfully cleanup the partial files
-            if (!hasExitedSuccessfully)
+            // Also don't cache output from resume points
+            if (!hasExitedSuccessfully || job.StartTimeTicks.HasValue)
             {
                 Logger.Info("Deleting partial stream file(s) {0}", job.Path);
 
@@ -364,6 +369,9 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <value>The kill timer.</value>
         public Timer KillTimer { get; set; }
+
+        public bool IsVideo { get; set; }
+        public long? StartTimeTicks { get; set; }
     }
 
     /// <summary>
