@@ -187,9 +187,8 @@
         var selectStatus = $('#selectStatus', page);
         populateStatus(selectStatus);
         selectStatus.val(item.Status || "").selectmenu('refresh');
-        var selectAirDays = $('#selectAirDays', page);
-        populateAirDays(selectAirDays);
-        selectAirDays.val(item.AirDays || "").selectmenu('refresh');
+        
+        populateListView($('#listAirDays', page), item.AirDays);
         populateListView($('#listGenres', page), item.Genres);
         populateListView($('#listStudios', page), item.Studios.map(function (element) { return element.Name || ''; }));
         populateListView($('#listTags', page), item.Tags);
@@ -349,19 +348,13 @@
         select.html(html).selectmenu("refresh");
     }
     
-    function populateAirDays(select) {
-        var days = new Array("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday");
-        var html = "";
-        html += "<option value=''></option>";
-        for (var i = 0; i < days.length; i++) {
-            html += "<option value='" + days[i] + "'>" + days[i] + "</option>";
-        }
-        select.html(html).selectmenu("refresh");
-    }
-
-    function populateListView(list, items) {
+    function populateListView(list, items, sortCallback) {
         items = items || new Array();
-        items.sort(function(a, b) { return a.toLowerCase().localeCompare(b.toLowerCase()); });
+        if (typeof(sortCallback) === 'undefined') {
+            items.sort(function (a, b) { return a.toLowerCase().localeCompare(b.toLowerCase()); });
+        } else {
+            items = sortCallback(items);
+        }
         var html = '';
         for (var i = 0; i < items.length; i++) {
             html += '<li><a class="data">' + items[i] + '</a><a onclick="EditItemMetadataPage.RemoveElementFromListview(this)"></a></li>';
@@ -401,7 +394,7 @@
                 Artists: [$('#txtArtist', form).val()],
                 Overview: $('#txtOverview', form).val(),
                 Status: $('#selectStatus', form).val(),
-                AirDays: $('#selectAirDays', form).val(),
+                AirDays: editableListViewValues($("#listAirDays", form)),
                 AirTime: convertTo12HourFormat($('#txtAirTime', form).val()),
                 Genres: editableListViewValues($("#listGenres", form)),
                 Tags: editableListViewValues($("#listTags", form)),
@@ -439,17 +432,23 @@
 
             return false;
         };
-        self.AddElementToEditableListview = function(source) {
-            var input = $(source).parent().find('input[type="text"]');
+        self.AddElementToEditableListview = function(source, sortCallback) {
+            var input = $(source).parent().find('input[type="text"], select');
             var text = input.val();
             input.val('');
             if (text == '') return;
             var list = $(source).parents('[data-role="editableListviewContainer"]').find('ul[data-role="listview"]');
             var items = editableListViewValues(list);
             items.push(text);
-            populateListView(list, items);
+            populateListView(list, items, sortCallback);
         };
 
+        self.sortDaysOfTheWeek = function(list) {
+            var days = new Array("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday");
+            list.sort(function(a, b) { return days.indexOf(a) > days.indexOf(b); });
+            return list;
+        };
+        
         self.RemoveElementFromListview = function(source) {
             var list = $(source).parents('ul[data-role="listview"]');
             $(source).parent().remove();

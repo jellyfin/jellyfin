@@ -93,7 +93,23 @@
                                 </div>
                                 <div data-role="fieldcontain" id="fldAirDays" style="display: none;">
                                     <label for="selectAirDays">Air Days:</label>
-                                    <select name="selectAirDays" id="selectAirDays" data-mini="true"></select>
+                                    <div data-role="editableListviewContainer" style="width: 78%; display: inline-block;">
+                                        <div>
+                                            <select name="selectAirDays" Id="selectAirDays" data-mini="true">
+                                                <option value=''></option>
+                                                <option value='Monday'>Monday</option>
+                                                <option value='Tuesday'>Tuesday</option>
+                                                <option value='Wednesday'>Wednesday</option>
+                                                <option value='Thursday'>Thursday</option>
+                                                <option value='Friday'>Friday</option>
+                                                <option value='Saturday'>Saturday</option>
+                                                <option value='Sunday'>Sunday</option>
+                                            </select>  
+                                            <a data-role="button" data-theme="b" data-inline="true" data-mini="true" data-icon="plus"  onclick="EditItemMetadataPage.AddElementToEditableListview(this,EditItemMetadataPage.sortDaysOfTheWeek)">Add</a>
+                                        </div>
+                                        <ul data-role="listview" data-inset="true" data-split-icon="delete" id="listAirDays"></ul>
+                                    </div>
+                                    
                                 </div>
                                 <div data-role="fieldcontain" id="fldAirTime" style="display: none;">
                                     <label for="txtAirTime">Air Time:</label>
