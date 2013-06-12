@@ -8,6 +8,7 @@ using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
 {
@@ -17,7 +18,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
     public class MovieResolver : BaseVideoResolver<Video>
     {
         private IServerApplicationPaths ApplicationPaths { get; set; }
-        
+
         public MovieResolver(IServerApplicationPaths appPaths)
         {
             ApplicationPaths = appPaths;
@@ -196,8 +197,39 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                 }
             }
 
-            // If there are multiple video files, return null, and let the VideoResolver catch them later as plain videos
+            if (movies.Count > 1)
+            {
+                return GetMultiFileMovie(movies);
+            }
+
             return movies.Count == 1 ? movies[0] : null;
+        }
+
+
+        /// <summary>
+        /// Gets the multi file movie.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="movies">The movies.</param>
+        /// <returns>``0.</returns>
+        private T GetMultiFileMovie<T>(List<T> movies)
+               where T : Video, new()
+        {
+            var multiPartMovies = movies.OrderBy(i => i.Path)
+                .Where(i => EntityResolutionHelper.IsMultiPartFile(i.Path))
+                .ToList();
+
+            // They must all be part of the sequence
+            if (multiPartMovies.Count != movies.Count)
+            {
+                return null;
+            }
+
+            var firstPart = multiPartMovies[0];
+
+            firstPart.IsMultiPart = true;
+
+            return firstPart;
         }
 
         /// <summary>
@@ -209,6 +241,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
         {
             return directoryName.Equals("video_ts", StringComparison.OrdinalIgnoreCase);
         }
+
         /// <summary>
         /// Determines whether [is hd DVD directory] [the specified directory name].
         /// </summary>

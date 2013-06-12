@@ -183,7 +183,7 @@ namespace MediaBrowser.Controller.Dto
             }
 
             dto.OriginalPrimaryImageAspectRatio = size.Width / size.Height;
-            
+
             var supportedEnhancers = Kernel.Instance.ImageManager.ImageEnhancers.Where(i =>
             {
                 try
@@ -239,7 +239,7 @@ namespace MediaBrowser.Controller.Dto
                 dto.LockedImages = item.LockedImages;
                 dto.EnableInternetProviders = !item.DontFetchMeta;
             }
-            
+
             if (fields.Contains(ItemFields.Budget))
             {
                 dto.Budget = item.Budget;
@@ -264,7 +264,7 @@ namespace MediaBrowser.Controller.Dto
             {
                 dto.Tags = item.Tags;
             }
-            
+
             if (fields.Contains(ItemFields.ProductionLocations))
             {
                 dto.ProductionLocations = item.ProductionLocations;
@@ -440,6 +440,8 @@ namespace MediaBrowser.Controller.Dto
                 dto.VideoType = video.VideoType;
                 dto.VideoFormat = video.VideoFormat;
                 dto.IsoType = video.IsoType;
+
+                dto.PartCount = video.AdditionalPartIds.Count + 1;
 
                 if (fields.Contains(ItemFields.Chapters) && video.Chapters != null)
                 {

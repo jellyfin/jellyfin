@@ -222,6 +222,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
 
             items.AddRange(themeVideos);
 
+            items.AddRange(videos.SelectMany(i => _itemRepo.GetItems(i.AdditionalPartIds).Cast<Video>()).ToList());
             items.AddRange(videos.OfType<Movie>().SelectMany(i => _itemRepo.GetItems(i.SpecialFeatureIds).Cast<Video>()).ToList());
 
             return items.Where(i =>

@@ -768,7 +768,7 @@ namespace MediaBrowser.Controller.Entities
                     var child = currentTuple.Item1;
 
                     //refresh it
-                    await child.RefreshMetadata(cancellationToken, resetResolveArgs: child.IsFolder, forceSave: currentTuple.Item2, forceRefresh: forceRefreshMetadata).ConfigureAwait(false);
+                    await child.RefreshMetadata(cancellationToken, forceSave: currentTuple.Item2, forceRefresh: forceRefreshMetadata).ConfigureAwait(false);
 
                     // Refresh children if a folder and the item changed or recursive is set to true
                     var refreshChildren = child.IsFolder && (currentTuple.Item2 || (recursive.HasValue && recursive.Value));

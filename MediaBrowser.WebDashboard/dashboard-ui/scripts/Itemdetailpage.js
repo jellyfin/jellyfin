@@ -148,6 +148,13 @@
             renderCast(page, item, context, 10);
         }
 
+        if (!item.PartCount || item.PartCount < 2) {
+            $('#additionalPartsCollapsible', page).addClass('hide');
+        } else {
+            $('#additionalPartsCollapsible', page).removeClass('hide');
+            renderAdditionalParts(page, item);
+        }
+
         $('#themeSongsCollapsible', page).hide();
         $('#themeVideosCollapsible', page).hide();
 
@@ -350,7 +357,7 @@
 
         if (html) {
             html = (item.Status == 'Ended' ? 'Aired ' : 'Airs ') + html;
-            
+
             $('#seriesAirTime', page).show().html(html).trigger('create');
         } else {
             $('#seriesAirTime', page).hide();
@@ -377,7 +384,7 @@
     }
 
     function renderChildren(page, item) {
-        
+
         var sortBy = item.Type == "BoxSet" ? "ProductionYear,SortName" : "SortName";
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), {
@@ -558,6 +565,21 @@
             }
         });
 
+    }
+
+    function renderAdditionalParts(page, item) {
+
+        ApiClient.getAdditionalVideoParts(Dashboard.getCurrentUserId(), item.Id).done(function (result) {
+
+            if (result.Items.length) {
+
+                $('#additionalPartsCollapsible', page).show();
+
+                $('#additionalPartsContent', page).html(getVideosHtml(result.Items)).trigger('create');
+            } else {
+                $('#additionalPartsCollapsible', page).hide();
+            }
+        });
     }
 
     function renderScenes(page, item, limit) {

@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using System.Text.RegularExpressions;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using System;
 using System.Collections.Generic;
@@ -44,6 +45,20 @@ namespace MediaBrowser.Controller.Resolvers
                 ".webm",
                 ".mts"
         };
+
+        private static readonly Regex MultiFileRegex = new Regex(
+            @"(.*?)([ _.-]*(?:cd|dvd|p(?:ar)?t|dis[ck]|d)[ _.-]*[0-9]+)(.*?)(\.[^.]+)$",
+            RegexOptions.Compiled);
+
+        /// <summary>
+        /// Determines whether [is multi part file] [the specified path].
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns><c>true</c> if [is multi part file] [the specified path]; otherwise, <c>false</c>.</returns>
+        public static bool IsMultiPartFile(string path)
+        {
+            return MultiFileRegex.Match(path).Success;
+        }
 
         /// <summary>
         /// The audio file extensions

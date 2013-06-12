@@ -142,9 +142,15 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
 
             var video = item as Video;
 
-            if (video != null && video.Chapters != null)
+            if (video != null)
             {
-                images = images.Concat(video.Chapters.Where(i => !string.IsNullOrEmpty(i.ImagePath)).Select(i => i.ImagePath));
+                if (video.Chapters != null)
+                {
+                    images = images.Concat(video.Chapters.Where(i => !string.IsNullOrEmpty(i.ImagePath)).Select(i => i.ImagePath));
+                }
+
+                var additionalParts = _itemRepo.GetItems(video.AdditionalPartIds).ToList();
+                images = additionalParts.Aggregate(images, (current, subItem) => current.Concat(GetPathsInUse(subItem)));
             }
 
             var movie = item as Movie;

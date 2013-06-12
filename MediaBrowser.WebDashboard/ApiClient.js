@@ -2047,6 +2047,27 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
             });
         };
 
+        self.getAdditionalVideoParts = function (userId, itemId) {
+
+            if (!itemId) {
+                throw new Error("null itemId");
+            }
+
+            var options = {};
+
+            if (userId) {
+                options.userId = userId;
+            }
+
+            var url = self.getUrl("Videos/" + itemId + "/AdditionalParts", options);
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
         /**
          * Gets theme songs for an item
          */

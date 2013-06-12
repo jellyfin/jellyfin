@@ -1,7 +1,7 @@
 using MediaBrowser.Controller.Library;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace MediaBrowser.Tests.Controller.Library
+namespace MediaBrowser.Tests.Resolvers
 {
     [TestClass]
     public class TvUtilTests

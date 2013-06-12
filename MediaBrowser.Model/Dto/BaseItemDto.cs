@@ -53,7 +53,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The critic rating summary.</value>
         public string CriticRatingSummary { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the path.
         /// </summary>
@@ -71,7 +71,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The custom rating.</value>
         public string CustomRating { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the overview.
         /// </summary>
@@ -119,7 +119,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The players.</value>
         public int? Players { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the index number.
         /// </summary>
@@ -131,7 +131,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The index number end.</value>
         public int? IndexNumberEnd { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the parent index number.
         /// </summary>
@@ -239,7 +239,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The recursive unplayed item count.</value>
         public int? RecursiveUnplayedItemCount { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the child count.
         /// </summary>
@@ -299,7 +299,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The tags.</value>
         public List<string> Tags { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the primary image aspect ratio, after image enhancements.
         /// </summary>
@@ -311,7 +311,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The original primary image aspect ratio.</value>
         public double? OriginalPrimaryImageAspectRatio { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the artists.
         /// </summary>
@@ -347,6 +347,12 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The display type of the media.</value>
         public string DisplayMediaType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the part count.
+        /// </summary>
+        /// <value>The part count.</value>
+        public int? PartCount { get; set; }
 
         /// <summary>
         /// Determines whether the specified type is type.
@@ -385,7 +391,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The screenshot image tags.</value>
         public List<Guid> ScreenshotImageTags { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the parent logo image tag.
         /// </summary>
@@ -515,7 +521,7 @@ namespace MediaBrowser.Model.Dto
         {
             get { return ScreenshotImageTags == null ? 0 : ScreenshotImageTags.Count; }
         }
-        
+
         /// <summary>
         /// Gets a value indicating whether this instance has banner.
         /// </summary>
