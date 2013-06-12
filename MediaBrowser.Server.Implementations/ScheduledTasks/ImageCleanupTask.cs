@@ -125,22 +125,11 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         /// <returns>IEnumerable{System.String}.</returns>
         private IEnumerable<string> GetPathsInUse(BaseItem item)
         {
-            IEnumerable<string> images = new List<string>();
+            IEnumerable<string> images = item.Images.Values.ToList();
 
-            if (item.Images != null)
-            {
-                images = images.Concat(item.Images.Values);
-            }
+            images = images.Concat(item.BackdropImagePaths);
 
-            if (item.BackdropImagePaths != null)
-            {
-                images = images.Concat(item.BackdropImagePaths);
-            }
-
-            if (item.ScreenshotImagePaths != null)
-            {
-                images = images.Concat(item.ScreenshotImagePaths);
-            }
+            images = images.Concat(item.ScreenshotImagePaths);
 
             var localTrailers = _itemRepo.GetItems(item.LocalTrailerIds).ToList();
             images = localTrailers.Aggregate(images, (current, subItem) => current.Concat(GetPathsInUse(subItem)));
@@ -162,8 +151,8 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
 
             if (movie != null)
             {
-                var specialFeattures = _itemRepo.GetItems(movie.SpecialFeatureIds).ToList();
-                images = specialFeattures.Aggregate(images, (current, subItem) => current.Concat(GetPathsInUse(subItem)));
+                var specialFeatures = _itemRepo.GetItems(movie.SpecialFeatureIds).ToList();
+                images = specialFeatures.Aggregate(images, (current, subItem) => current.Concat(GetPathsInUse(subItem)));
             }
 
             return images;

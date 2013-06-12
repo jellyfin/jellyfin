@@ -86,11 +86,6 @@ namespace MediaBrowser.Providers
         /// <param name="item">The item.</param>
         private void ValidateImages(BaseItem item)
         {
-            if (item.Images == null)
-            {
-                return;
-            }
-
             // Only validate paths from the same directory - need to copy to a list because we are going to potentially modify the collection below
             var deletedKeys = item.Images.ToList().Where(image =>
             {
