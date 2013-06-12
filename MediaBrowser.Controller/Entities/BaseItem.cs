@@ -1004,31 +1004,6 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Clear out all metadata properties. Extend for sub-classes.
-        /// </summary>
-        public virtual void ClearMetaValues()
-        {
-            Images.Clear();
-            ForcedSortName = null;
-            PremiereDate = null;
-            BackdropImagePaths.Clear();
-            OfficialRating = null;
-            CustomRating = null;
-            Overview = null;
-            Taglines.Clear();
-            Language = null;
-            Studios.Clear();
-            Genres.Clear();
-            CommunityRating = null;
-            RunTimeTicks = null;
-            AspectRatio = null;
-            ProductionYear = null;
-            ProviderIds.Clear();
-            DisplayMediaType = GetType().Name;
-            ResolveArgs = null;
-        }
-
-        /// <summary>
         /// Gets or sets the trailer URL.
         /// </summary>
         /// <value>The trailer URL.</value>
@@ -1102,9 +1077,9 @@ namespace MediaBrowser.Controller.Entities
 
             var rating = CustomRating ?? OfficialRating;
 
-            if (user.Configuration.BlockNotRated && string.IsNullOrEmpty(rating))
+            if (string.IsNullOrEmpty(rating))
             {
-                return false;
+                return !user.Configuration.BlockNotRated;
             }
 
             var value = localizationManager.GetRatingLevel(rating);
@@ -1450,11 +1425,6 @@ namespace MediaBrowser.Controller.Entities
                 throw new ArgumentException("Screenshots should be accessed using Item.Screenshots");
             }
 
-            if (Images == null)
-            {
-                return null;
-            }
-
             string val;
             Images.TryGetValue(type, out val);
             return val;
@@ -1502,12 +1472,9 @@ namespace MediaBrowser.Controller.Entities
             // If it's null remove the key from the dictionary
             if (string.IsNullOrEmpty(path))
             {
-                if (Images != null)
+                if (Images.ContainsKey(typeKey))
                 {
-                    if (Images.ContainsKey(typeKey))
-                    {
-                        Images.Remove(typeKey);
-                    }
+                    Images.Remove(typeKey);
                 }
             }
             else
