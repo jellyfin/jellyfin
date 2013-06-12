@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.IO;
+﻿using System.Globalization;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -51,7 +52,7 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly IIsoManager _isoManager;
 
         private readonly ILocalizationManager _localization;
-        
+
         /// <summary>
         /// Returns true or false indicating if the provider should refresh when the contents of it's directory changes
         /// </summary>
@@ -232,6 +233,67 @@ namespace MediaBrowser.Providers.MediaInfo
             }
 
             AddExternalSubtitles(video);
+
+            FetchWtvInfo(video, data);
+        }
+
+        /// <summary>
+        /// Fetches the WTV info.
+        /// </summary>
+        /// <param name="video">The video.</param>
+        /// <param name="data">The data.</param>
+        private void FetchWtvInfo(Video video, MediaInfoResult data)
+        {
+            if (data.format.tags == null)
+            {
+                return;
+            }
+
+            var genres = GetDictionaryValue(data.format.tags, "genre");
+
+            if (!string.IsNullOrEmpty(genres))
+            {
+                video.Genres = genres.Split(new[] { ';', '/' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Where(i => !string.IsNullOrWhiteSpace(i))
+                    .Select(i => i.Trim())
+                    .ToList();
+            }
+
+            var overview = GetDictionaryValue(data.format.tags, "WM/SubTitleDescription");
+
+            if (!string.IsNullOrWhiteSpace(overview))
+            {
+                video.Overview = overview;
+            }
+
+            var officialRating = GetDictionaryValue(data.format.tags, "WM/ParentalRating");
+
+            if (!string.IsNullOrWhiteSpace(officialRating))
+            {
+                video.OfficialRating = officialRating;
+            }
+
+            var people = GetDictionaryValue(data.format.tags, "WM/MediaCredits");
+
+            if (!string.IsNullOrEmpty(people))
+            {
+                video.People = people.Split(new[] { ';', '/' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Where(i => !string.IsNullOrWhiteSpace(i))
+                    .Select(i => new PersonInfo { Name = i.Trim(), Type = PersonType.Actor })
+                    .ToList();
+            }
+
+            var year = GetDictionaryValue(data.format.tags, "WM/OriginalReleaseTime");
+
+            if (!string.IsNullOrWhiteSpace(year))
+            {
+                int val;
+
+                if (int.TryParse(year, NumberStyles.Integer, UsCulture, out val))
+                {
+                    video.ProductionYear = val;
+                }
+            }
         }
 
         /// <summary>
