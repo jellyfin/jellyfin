@@ -136,7 +136,7 @@ namespace MediaBrowser.Api
 
             if (request.SupportsRemoteControl.HasValue)
             {
-                result = result.Where(i => i.IsActive == request.SupportsRemoteControl.Value);
+                result = result.Where(i => i.SupportsRemoteControl == request.SupportsRemoteControl.Value);
             }
 
             return ToOptimizedResult(result.Select(SessionInfoDtoBuilder.GetSessionInfoDto).ToList());
