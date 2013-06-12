@@ -280,16 +280,13 @@ namespace MediaBrowser.Controller.Dto
                 dto.Genres = item.Genres;
             }
 
-            if (item.Images != null)
+            dto.ImageTags = new Dictionary<ImageType, Guid>();
+
+            foreach (var image in item.Images)
             {
-                dto.ImageTags = new Dictionary<ImageType, Guid>();
+                var type = image.Key;
 
-                foreach (var image in item.Images)
-                {
-                    var type = image.Key;
-
-                    dto.ImageTags[type] = Kernel.Instance.ImageManager.GetImageCacheTag(item, type, image.Value);
-                }
+                dto.ImageTags[type] = Kernel.Instance.ImageManager.GetImageCacheTag(item, type, image.Value);
             }
 
             dto.Id = GetClientItemId(item);
