@@ -123,7 +123,7 @@ namespace MediaBrowser.Api
 
             return inputItems.Where(i => i.Id != currentItem.Id)
                 .Select(i => new Tuple<BaseItem, int>(i, getSimilarityScore(item, i)))
-                .Where(i => i.Item2 > 0)
+                .Where(i => i.Item2 > 5)
                 .OrderByDescending(i => i.Item2)
                 .ThenByDescending(i => i.Item1.CriticRating ?? 0)
                 .Select(i => i.Item1);
@@ -157,23 +157,23 @@ namespace MediaBrowser.Api
 
             points += item1.People.Where(i => item2PeopleNames.Contains(i.Name, StringComparer.OrdinalIgnoreCase)).Sum(i =>
             {
-                if (string.Equals(i.Name, PersonType.Director, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(i.Type, PersonType.Director, StringComparison.OrdinalIgnoreCase))
                 {
                     return 5;
                 }
-                if (string.Equals(i.Name, PersonType.Actor, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(i.Type, PersonType.Actor, StringComparison.OrdinalIgnoreCase))
                 {
                     return 3;
                 }
-                if (string.Equals(i.Name, PersonType.Composer, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(i.Type, PersonType.Composer, StringComparison.OrdinalIgnoreCase))
                 {
                     return 3;
                 }
-                if (string.Equals(i.Name, PersonType.GuestStar, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(i.Type, PersonType.GuestStar, StringComparison.OrdinalIgnoreCase))
                 {
                     return 3;
                 }
-                if (string.Equals(i.Name, PersonType.Writer, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(i.Type, PersonType.Writer, StringComparison.OrdinalIgnoreCase))
                 {
                     return 2;
                 }
@@ -188,13 +188,13 @@ namespace MediaBrowser.Api
                 // Add if they came out within the same decade
                 if (diff < 10)
                 {
-                    points += 3;
+                    points += 2;
                 }
 
                 // And more if within five years
                 if (diff < 5)
                 {
-                    points += 3;
+                    points += 2;
                 }
             }
 
