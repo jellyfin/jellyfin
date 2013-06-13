@@ -75,22 +75,6 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Ensure this has a value
-        /// </summary>
-        /// <value>The display type of the media.</value>
-        public override string DisplayMediaType
-        {
-            get
-            {
-                return base.DisplayMediaType ?? GetType().Name;
-            }
-            set
-            {
-                base.DisplayMediaType = value;
-            }
-        }
-
-        /// <summary>
         /// The _root folder
         /// </summary>
         private UserRootFolder _rootFolder;

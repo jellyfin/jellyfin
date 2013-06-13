@@ -569,7 +569,19 @@ namespace MediaBrowser.Server.Implementations.Library
             // Add in the plug-in folders
             foreach (var child in PluginFolderCreators)
             {
-                rootFolder.AddVirtualChild(child.GetFolder());
+                var folder = child.GetFolder();
+
+                if (string.IsNullOrEmpty(folder.DisplayMediaType))
+                {
+                    folder.DisplayMediaType = "CollectionFolder";
+                }
+
+                if (folder.Id == Guid.Empty)
+                {
+                    folder.Id = (folder.Path ?? folder.Name ?? folder.GetType().Name).GetMBId(folder.GetType());
+                }
+
+                rootFolder.AddVirtualChild(folder);
             }
 
             return rootFolder;

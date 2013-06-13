@@ -35,7 +35,11 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
             if (args.Parent.IsRoot) return null;
             if (args.Parent is MusicAlbum) return null;
 
-            return IsMusicAlbum(args) ? new MusicAlbum() : null;
+            return IsMusicAlbum(args) ? new MusicAlbum
+            {
+                DisplayMediaType = "Album"
+
+            } : null;
         }
 
 
