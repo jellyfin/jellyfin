@@ -85,6 +85,14 @@ namespace MediaBrowser.Providers.Movies
             }
         }
 
+        public override MetadataProviderPriority Priority
+        {
+            get
+            {
+                return MetadataProviderPriority.Fourth;
+            }
+        }
+
         /// <summary>
         /// The fan art base URL
         /// </summary>

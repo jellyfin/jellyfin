@@ -764,7 +764,7 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }));
 
-            var trailers = LibraryManager.ResolvePaths<Trailer>(files, null).Select(video =>
+            return LibraryManager.ResolvePaths<Trailer>(files, null).Select(video =>
             {
                 // Try to retrieve it from the db. If we don't find it, use the resolved version
                 var dbItem = LibraryManager.RetrieveItem(video.Id) as Trailer;
@@ -776,9 +776,8 @@ namespace MediaBrowser.Controller.Entities
                 }
 
                 return video;
-            }).ToList();
 
-            return trailers;
+            }).ToList();
         }
 
         /// <summary>
