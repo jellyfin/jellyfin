@@ -157,6 +157,17 @@ namespace MediaBrowser.Providers
                 GetImage(item, "cover") ??
                 GetImage(item, "default");
 
+            // Look for a file with the same name as the item
+            if (image == null)
+            {
+                var name = Path.GetFileNameWithoutExtension(item.Path);
+
+                if (!string.IsNullOrEmpty(name))
+                {
+                    image = GetImage(item, name);
+                }
+            }
+
             if (image != null)
             {
                 item.SetImage(ImageType.Primary, image.FullName);
