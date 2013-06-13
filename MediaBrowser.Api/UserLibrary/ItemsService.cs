@@ -211,12 +211,13 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="searchEngine">The search engine.</param>
         /// <param name="userDataRepository">The user data repository.</param>
-        public ItemsService(IUserManager userManager, ILibraryManager libraryManager, ILibrarySearchEngine searchEngine, IUserDataRepository userDataRepository)
+        public ItemsService(IUserManager userManager, ILibraryManager libraryManager, ILibrarySearchEngine searchEngine, IUserDataRepository userDataRepository, ILocalizationManager localization)
         {
             _userManager = userManager;
             _libraryManager = libraryManager;
             _searchEngine = searchEngine;
             _userDataRepository = userDataRepository;
+            _localization = localization;
         }
 
         /// <summary>
