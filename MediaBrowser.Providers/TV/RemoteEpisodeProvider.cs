@@ -350,11 +350,11 @@ namespace MediaBrowser.Providers.TV
 
             if (ConfigurationManager.Configuration.SaveLocalMeta)
             {
-                if (!Directory.Exists(episode.MetaLocation)) Directory.CreateDirectory(episode.MetaLocation);
-                var ms = new MemoryStream();
-                doc.Save(ms);
+                //if (!Directory.Exists(episode.MetaLocation)) Directory.CreateDirectory(episode.MetaLocation);
+                //var ms = new MemoryStream();
+                //doc.Save(ms);
 
-                await _providerManager.SaveToLibraryFilesystem(episode, Path.Combine(episode.MetaLocation, Path.GetFileNameWithoutExtension(episode.Path) + ".xml"), ms, cancellationToken).ConfigureAwait(false);
+                //await _providerManager.SaveToLibraryFilesystem(episode, Path.Combine(episode.MetaLocation, Path.GetFileNameWithoutExtension(episode.Path) + ".xml"), ms, cancellationToken).ConfigureAwait(false);
             }
 
             return status;
