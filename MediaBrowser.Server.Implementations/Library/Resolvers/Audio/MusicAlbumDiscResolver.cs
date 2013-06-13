@@ -27,7 +27,11 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
         {
             if (!args.IsDirectory) return null;
 
-            return args.Parent is MusicAlbum ? new MusicAlbumDisc() : null;
+            return args.Parent is MusicAlbum ? new MusicAlbumDisc
+            {
+                DisplayMediaType = "Disc"
+
+            } : null;
         }
     }
 }

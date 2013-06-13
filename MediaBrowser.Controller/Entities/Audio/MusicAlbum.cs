@@ -165,22 +165,6 @@ namespace MediaBrowser.Controller.Entities.Audio
         }
 
         /// <summary>
-        /// Gets or sets the display type of the media.
-        /// </summary>
-        /// <value>The display type of the media.</value>
-        public override string DisplayMediaType
-        {
-            get
-            {
-                return "Album";
-            }
-            set
-            {
-                base.DisplayMediaType = value;
-            }
-        }
-
-        /// <summary>
         /// Gets or sets the music brainz release group id.
         /// </summary>
         /// <value>The music brainz release group id.</value>

@@ -48,7 +48,7 @@ namespace MediaBrowser.Controller.Entities
         /// The supported image extensions
         /// </summary>
         public static readonly string[] SupportedImageExtensions = new[] { ".png", ".jpg", ".jpeg" };
-        
+
         /// <summary>
         /// The trailer folder name
         /// </summary>
@@ -82,7 +82,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the id.
         /// </summary>
         /// <value>The id.</value>
-        public virtual Guid Id { get; set; }
+        public Guid Id { get; set; }
 
         /// <summary>
         /// Gets or sets the path.
@@ -171,7 +171,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The locked images.</value>
         public List<ImageType> LockedImages { get; set; }
-        
+
         /// <summary>
         /// Determines whether the item has a saved local image of the specified name (jpg or png).
         /// </summary>
@@ -764,7 +764,7 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }));
 
-            var trailers= LibraryManager.ResolvePaths<Trailer>(files, null).Select(video =>
+            var trailers = LibraryManager.ResolvePaths<Trailer>(files, null).Select(video =>
             {
                 // Try to retrieve it from the db. If we don't find it, use the resolved version
                 var dbItem = LibraryManager.RetrieveItem(video.Id) as Trailer;
@@ -964,7 +964,7 @@ namespace MediaBrowser.Controller.Entities
 
             return itemsChanged || results.Contains(true);
         }
-        
+
         private async Task<bool> RefreshThemeVideos(CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false, bool allowSlowProviders = true)
         {
             var newThemeVideos = LoadThemeVideos().ToList();
@@ -980,7 +980,7 @@ namespace MediaBrowser.Controller.Entities
 
             return themeVideosChanged || results.Contains(true);
         }
-        
+
         /// <summary>
         /// Refreshes the theme songs.
         /// </summary>

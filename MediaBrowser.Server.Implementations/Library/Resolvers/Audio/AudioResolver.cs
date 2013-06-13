@@ -30,7 +30,10 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
             {
                 if (EntityResolutionHelper.IsAudioFile(args.Path))
                 {
-                    return new Controller.Entities.Audio.Audio();
+                    return new Controller.Entities.Audio.Audio
+                    {
+                        DisplayMediaType = "Song"
+                    };
                 }
             }
 
