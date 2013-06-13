@@ -154,7 +154,13 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                     { typeof(DirectoryNotFoundException), 404 }
                 },
 
-                DebugMode = true
+                DebugMode = true,
+
+                ServiceName = ServerName,
+
+                LogFactory = LogManager.LogFactory,
+
+                EnableFeatures = Feature.Csv | Feature.Html | Feature.Json | Feature.Jsv | Feature.Metadata | Feature.Xml
             });
 
             container.Adapter = _containerAdapter;
@@ -162,56 +168,64 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             Plugins.Add(new SwaggerFeature());
             Plugins.Add(new CorsFeature());
 
-            ResponseFilters.Add((req, res, dto) =>
+            ResponseFilters.Add(FilterResponse);
+        }
+
+        /// <summary>
+        /// Filters the response.
+        /// </summary>
+        /// <param name="req">The req.</param>
+        /// <param name="res">The res.</param>
+        /// <param name="dto">The dto.</param>
+        private void FilterResponse(IHttpRequest req, IHttpResponse res, object dto)
+        {
+            var exception = dto as Exception;
+
+            if (exception != null)
             {
-                var exception = dto as Exception;
+                _logger.ErrorException("Error processing request for {0}", exception, req.RawUrl);
 
-                if (exception != null)
+                if (!string.IsNullOrEmpty(exception.Message))
                 {
-                    _logger.ErrorException("Error processing request for {0}", exception, req.RawUrl);
+                    var error = exception.Message.Replace(Environment.NewLine, " ");
+                    error = RemoveControlCharacters(error);
 
-                    if (!string.IsNullOrEmpty(exception.Message))
+                    res.AddHeader("X-Application-Error-Code", error);
+                }
+            }
+
+            if (dto is CompressedResult)
+            {
+                // Per Google PageSpeed
+                // This instructs the proxies to cache two versions of the resource: one compressed, and one uncompressed. 
+                // The correct version of the resource is delivered based on the client request header. 
+                // This is a good choice for applications that are singly homed and depend on public proxies for user locality.                        
+                res.AddHeader("Vary", "Accept-Encoding");
+            }
+
+            var hasOptions = dto as IHasOptions;
+
+            if (hasOptions != null)
+            {
+                // Content length has to be explicitly set on on HttpListenerResponse or it won't be happy
+                string contentLength;
+
+                if (hasOptions.Options.TryGetValue("Content-Length", out contentLength) && !string.IsNullOrEmpty(contentLength))
+                {
+                    var length = long.Parse(contentLength, UsCulture);
+
+                    if (length > 0)
                     {
-                        var error = exception.Message.Replace(Environment.NewLine, " ");
-                        error = RemoveControlCharacters(error);
+                        var response = (HttpListenerResponse)res.OriginalResponse;
 
-                        res.AddHeader("X-Application-Error-Code", error);
+                        response.ContentLength64 = length;
+
+                        // Disable chunked encoding. Technically this is only needed when using Content-Range, but
+                        // anytime we know the content length there's no need for it
+                        response.SendChunked = false;
                     }
                 }
-
-                if (dto is CompressedResult)
-                {
-                    // Per Google PageSpeed
-                    // This instructs the proxies to cache two versions of the resource: one compressed, and one uncompressed. 
-                    // The correct version of the resource is delivered based on the client request header. 
-                    // This is a good choice for applications that are singly homed and depend on public proxies for user locality.                        
-                    res.AddHeader("Vary", "Accept-Encoding");
-                }
-
-                var hasOptions = dto as IHasOptions;
-
-                if (hasOptions != null)
-                {
-                    // Content length has to be explicitly set on on HttpListenerResponse or it won't be happy
-                    string contentLength;
-
-                    if (hasOptions.Options.TryGetValue("Content-Length", out contentLength) && !string.IsNullOrEmpty(contentLength))
-                    {
-                        var length = long.Parse(contentLength, UsCulture);
-
-                        if (length > 0)
-                        {
-                            var response = (HttpListenerResponse)res.OriginalResponse;
-
-                            response.ContentLength64 = length;
-
-                            // Disable chunked encoding. Technically this is only needed when using Content-Range, but
-                            // anytime we know the content length there's no need for it
-                            response.SendChunked = false;
-                        }
-                    }
-                }
-            });
+            }
         }
 
         /// <summary>
