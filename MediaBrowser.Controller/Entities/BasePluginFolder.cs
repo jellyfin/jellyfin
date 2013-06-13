@@ -19,5 +19,10 @@ namespace MediaBrowser.Controller.Entities
                 return LocationType.Virtual;
             }
         }
+
+        protected BasePluginFolder()
+        {
+            DisplayMediaType = "CollectionFolder";
+        }
     }
 }
