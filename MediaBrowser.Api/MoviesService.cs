@@ -13,6 +13,13 @@ namespace MediaBrowser.Api
     [Api(Description = "Finds movies and trailers similar to a given movie.")]
     public class GetSimilarMovies : BaseGetSimilarItems
     {
+        [ApiMember(Name = "IncludeTrailers", Description = "Whether or not to include trailers within the results. Defaults to true.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool IncludeTrailers { get; set; }
+
+        public GetSimilarMovies()
+        {
+            IncludeTrailers = true;
+        }
     }
 
     /// <summary>
@@ -58,7 +65,7 @@ namespace MediaBrowser.Api
                 _libraryManager,
                 _userDataRepository,
                 Logger,
-                request, item => item is Movie || item is Trailer,
+                request, item => item is Movie || (item is Trailer && request.IncludeTrailers),
                 SimilarItemsHelper.GetSimiliarityScore);
 
             return ToOptimizedResult(result);
