@@ -269,9 +269,22 @@ namespace MediaBrowser.Controller.Entities
         private Guid GetFileSystemStamp()
         {
             // If there's no path or the item is a file, there's nothing to do
-            if (LocationType != LocationType.FileSystem || !ResolveArgs.IsDirectory)
+            if (LocationType != LocationType.FileSystem)
             {
                 return Guid.Empty;
+            }
+            
+            try
+            {
+                if (!ResolveArgs.IsDirectory)
+                {
+                    return Guid.Empty;
+                }
+            }
+            catch (IOException ex)
+            {
+                Logger.ErrorException("Error determining if path is directory: {0}", ex, ResolveArgs.Path);
+                throw;
             }
 
             var sb = new StringBuilder();
@@ -279,7 +292,6 @@ namespace MediaBrowser.Controller.Entities
             // Record the name of each file 
             // Need to sort these because accoring to msdn docs, our i/o methods are not guaranteed in any order
             foreach (var file in ResolveArgs.FileSystemChildren
-                .Where(i => (i.Attributes & FileAttributes.System) != FileAttributes.System)
                 .OrderBy(f => f.Name))
             {
                 sb.Append(file.Name);
@@ -490,48 +502,6 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The parent.</value>
         [IgnoreDataMember]
         public Folder Parent { get; set; }
-
-        /// <summary>
-        /// Gets the collection folder parent.
-        /// </summary>
-        /// <value>The collection folder parent.</value>
-        [IgnoreDataMember]
-        public Folder CollectionFolder
-        {
-            get
-            {
-                if (this is AggregateFolder)
-                {
-                    return null;
-                }
-
-                if (IsFolder)
-                {
-                    var iCollectionFolder = this as ICollectionFolder;
-
-                    if (iCollectionFolder != null)
-                    {
-                        return (Folder)this;
-                    }
-                }
-
-                var parent = Parent;
-
-                while (parent != null)
-                {
-                    var iCollectionFolder = parent as ICollectionFolder;
-
-                    if (iCollectionFolder != null)
-                    {
-                        return parent;
-                    }
-
-                    parent = parent.Parent;
-                }
-
-                return null;
-            }
-        }
 
         /// <summary>
         /// When the item first debuted. For movies this could be premiere date, episodes would be first aired
