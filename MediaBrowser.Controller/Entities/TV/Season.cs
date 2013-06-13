@@ -1,11 +1,8 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller.IO;
-using MediaBrowser.Controller.Library;
+﻿using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
-using MediaBrowser.Model.Entities;
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Runtime.Serialization;
 
 namespace MediaBrowser.Controller.Entities.TV
@@ -81,13 +78,6 @@ namespace MediaBrowser.Controller.Entities.TV
 
             return base.GetUserDataKey();
         }
-
-        /// <summary>
-        /// We persist the MB Id of our series object so we can always find it no matter
-        /// what context we happen to be loaded from.
-        /// </summary>
-        /// <value>The series item id.</value>
-        public Guid SeriesItemId { get; set; }
 
         /// <summary>
         /// The _series

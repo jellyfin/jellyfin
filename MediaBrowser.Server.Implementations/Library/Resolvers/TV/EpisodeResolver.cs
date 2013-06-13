@@ -2,7 +2,6 @@
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
-using System;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
 {
@@ -70,33 +69,6 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
             }
 
             return null;
-        }
-
-        /// <summary>
-        /// Sets the initial item values.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="args">The args.</param>
-        protected override void SetInitialItemValues(Episode item, ItemResolveArgs args)
-        {
-            base.SetInitialItemValues(item, args);
-
-            //fill in our season and series ids
-            var season = args.Parent as Season;
-            if (season != null)
-            {
-                item.SeasonItemId = season.Id;
-                var series = season.Parent as Series;
-                if (series != null)
-                {
-                    item.SeriesItemId = series.Id;
-                }
-            }
-            else
-            {
-                var series = args.Parent as Series;
-                item.SeriesItemId = series != null ? series.Id : Guid.Empty;
-            }
         }
     }
 }

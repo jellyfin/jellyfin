@@ -1,7 +1,4 @@
-﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Model.Entities;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 
@@ -130,20 +127,6 @@ namespace MediaBrowser.Controller.Entities.TV
                 base.CustomRating = value;
             }
         }
-
-        /// <summary>
-        /// We persist the MB Id of our series object so we can always find it no matter
-        /// what context we happen to be loaded from.
-        /// </summary>
-        /// <value>The series item id.</value>
-        public Guid SeriesItemId { get; set; }
-
-        /// <summary>
-        /// We persist the MB Id of our season object so we can always find it no matter
-        /// what context we happen to be loaded from.
-        /// </summary>
-        /// <value>The season item id.</value>
-        public Guid SeasonItemId { get; set; }
 
         /// <summary>
         /// The _series
