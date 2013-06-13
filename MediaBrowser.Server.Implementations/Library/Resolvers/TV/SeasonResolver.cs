@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
-using System;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
 {
@@ -57,9 +56,6 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
         protected override void SetInitialItemValues(Season item, ItemResolveArgs args)
         {
             base.SetInitialItemValues(item, args);
-
-            var series = args.Parent as Series;
-            item.SeriesItemId = series != null ? series.Id : Guid.Empty;
 
             Season.AddMetadataFiles(args);
         }
