@@ -37,9 +37,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <value>The priority.</value>
         public override MetadataProviderPriority Priority
         {
-            // Give this second priority
-            // Give metadata xml providers a chance to fill in data first, so that we can skip this whenever possible
-            get { return MetadataProviderPriority.Second; }
+            get { return MetadataProviderPriority.First; }
         }
 
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
