@@ -1,13 +1,13 @@
-﻿using System.Globalization;
-using System.IO;
-using System.Text;
-using System.Text.RegularExpressions;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Xml;
 
@@ -226,7 +226,15 @@ namespace MediaBrowser.Controller.Providers
                             int runtime;
                             if (int.TryParse(text.Split(' ')[0], out runtime))
                             {
-                                item.RunTimeTicks = TimeSpan.FromMinutes(runtime).Ticks;
+                                // For audio and video don't replace ffmpeg data
+                                if (item is Video || item is Audio)
+                                {
+                                    item.OriginalRunTimeTicks = TimeSpan.FromMinutes(runtime).Ticks;
+                                }
+                                else
+                                {
+                                    item.RunTimeTicks = TimeSpan.FromMinutes(runtime).Ticks;
+                                }
                             }
                         }
                         break;
@@ -415,10 +423,10 @@ namespace MediaBrowser.Controller.Providers
                 case "IMDB_ID":
                 case "IMDB":
                 case "IMDbId":
-                    var IMDbId = reader.ReadElementContentAsString();
-                    if (!string.IsNullOrWhiteSpace(IMDbId))
+                    var imDbId = reader.ReadElementContentAsString();
+                    if (!string.IsNullOrWhiteSpace(imDbId))
                     {
-                        item.SetProviderId(MetadataProviders.Imdb, IMDbId);
+                        item.SetProviderId(MetadataProviders.Imdb, imDbId);
                     }
                     break;
 
