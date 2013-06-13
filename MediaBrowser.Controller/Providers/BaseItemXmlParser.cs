@@ -594,43 +594,8 @@ namespace MediaBrowser.Controller.Providers
                 {
                     switch (reader.Name)
                     {
-                        case "Value":
-                            {
-                                var ratingString = reader.ReadElementContentAsString();
-
-                                int rating = 7;
-
-                                if (!string.IsNullOrWhiteSpace(ratingString))
-                                {
-                                    int.TryParse(ratingString, out rating);
-                                }
-
-                                switch (rating)
-                                {
-                                    case -1:
-                                        item.OfficialRating = "NR";
-                                        break;
-                                    case 0:
-                                        item.OfficialRating = "UR";
-                                        break;
-                                    case 1:
-                                        item.OfficialRating = "G";
-                                        break;
-                                    case 3:
-                                        item.OfficialRating = "PG";
-                                        break;
-                                    case 4:
-                                        item.OfficialRating = "PG-13";
-                                        break;
-                                    case 5:
-                                        item.OfficialRating = "NC-17";
-                                        break;
-                                    case 6:
-                                        item.OfficialRating = "R";
-                                        break;
-                                }
-                                break;
-                            }
+                            // Removed support for "Value" tag as it conflicted with MPAA rating but leaving this function for possible
+                            // future support of "Description" -ebr
 
                         default:
                             reader.Skip();
