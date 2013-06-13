@@ -571,11 +571,6 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 var folder = child.GetFolder();
 
-                if (string.IsNullOrEmpty(folder.DisplayMediaType))
-                {
-                    folder.DisplayMediaType = "CollectionFolder";
-                }
-
                 if (folder.Id == Guid.Empty)
                 {
                     folder.Id = (folder.Path ?? folder.Name ?? folder.GetType().Name).GetMBId(folder.GetType());
