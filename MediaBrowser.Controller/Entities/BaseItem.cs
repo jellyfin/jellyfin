@@ -519,7 +519,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the display type of the media.
         /// </summary>
         /// <value>The display type of the media.</value>
-        public virtual string DisplayMediaType { get; set; }
+        public string DisplayMediaType { get; set; }
 
         /// <summary>
         /// Gets or sets the backdrop image paths.
