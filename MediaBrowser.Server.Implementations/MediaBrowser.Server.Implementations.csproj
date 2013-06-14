@@ -146,7 +146,6 @@
     <Compile Include="ScheduledTasks\ArtistValidationTask.cs" />
     <Compile Include="ScheduledTasks\PeopleValidationTask.cs" />
     <Compile Include="ScheduledTasks\ChapterImagesTask.cs" />
-    <Compile Include="ScheduledTasks\ImageCleanupTask.cs" />
     <Compile Include="ScheduledTasks\PluginUpdateTask.cs" />
     <Compile Include="ScheduledTasks\RefreshMediaLibraryTask.cs" />
     <Compile Include="ScheduledTasks\VideoImagesTask.cs" />

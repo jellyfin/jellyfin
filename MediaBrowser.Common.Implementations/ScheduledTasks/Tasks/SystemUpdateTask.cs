@@ -53,7 +53,8 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
                 // 1am
                 new DailyTrigger { TimeOfDay = TimeSpan.FromHours(1) },
 
-                new IntervalTrigger { Interval = TimeSpan.FromHours(2)}
+                // Every three hours
+                new IntervalTrigger { Interval = TimeSpan.FromHours(3)}
             };
         }
 
