@@ -976,6 +976,18 @@ input[type="range"]::-ms-fill-upper {
     .installedPluginTitle {
         max-width: 110px;
     }
+    .itemVideo {
+        width: 320px;
+    }
+}
+
+@media (min-width: 1440px) {
+    .installedPluginTitle {
+        max-width: 110px;
+    }
+    .itemVideo {
+        width: 400px;
+    }
 }
 
 #editItemMetadataPage #txtOverview {
