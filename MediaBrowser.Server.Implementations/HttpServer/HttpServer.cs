@@ -161,7 +161,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 LogFactory = LogManager.LogFactory,
 
                 // The Markdown feature causes slow startup times (5 mins+) on cold boots for some users
-                EnableFeatures = Feature.Csv | Feature.Html | Feature.Json | Feature.Jsv | Feature.Metadata | Feature.Xml
+                // Custom format allows images
+                EnableFeatures = Feature.Csv | Feature.Html | Feature.Json | Feature.Jsv | Feature.Metadata | Feature.Xml | Feature.CustomFormat
             });
 
             container.Adapter = _containerAdapter;
