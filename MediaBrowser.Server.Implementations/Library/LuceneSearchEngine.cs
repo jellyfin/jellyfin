@@ -1,5 +1,4 @@
-﻿using System.Text.RegularExpressions;
-using Lucene.Net.Analysis.Standard;
+﻿using Lucene.Net.Analysis.Standard;
 using Lucene.Net.Documents;
 using Lucene.Net.Index;
 using Lucene.Net.QueryParsers;
@@ -112,7 +111,7 @@ namespace MediaBrowser.Server.Implementations.Library
             var items = inputItems.Where(i => !(i is MusicArtist)).ToList();
 
             // Add search hints based on item name
-            hints.AddRange(items.Select(item =>
+            hints.AddRange(items.Where(i => !string.IsNullOrEmpty(i.Name)).Select(item =>
             {
                 var index = GetIndex(item.Name, searchTerm, terms);
 
@@ -264,6 +263,11 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>System.Int32.</returns>
         private Tuple<string, int> GetIndex(string input, string searchInput, string[] searchWords)
         {
+            if (string.IsNullOrEmpty(input))
+            {
+                throw new ArgumentNullException("input");
+            }
+
             if (string.Equals(input, searchInput, StringComparison.OrdinalIgnoreCase))
             {
                 return new Tuple<string, int>(searchInput, 0);
