@@ -265,7 +265,9 @@ namespace MediaBrowser.Api
             item.Language = request.Language;
             item.OfficialRating = request.OfficialRating;
             item.CustomRating = request.CustomRating;
-
+            item.DontFetchMeta = !(request.EnableInternetProviders ?? true);
+            item.LockedFields = request.LockedFields;
+            item.LockedImages = request.LockedImages;
 
             foreach (var pair in request.ProviderIds.ToList())
             {
