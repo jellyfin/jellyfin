@@ -273,19 +273,25 @@
     function convertTo24HourFormat(time) {
         if (time == "")
             return time;
-        var hours = Number(time.match(/^(\d+)/)[1]);
-        var minutes = Number(time.match(/:(\d+)/)[1]);
-        var ampm = time.match(/\s(.*)$/)[1];
-        ampm = ampm.toUpperCase();
-        if (ampm == "PM" && hours < 12) hours = hours + 12;
-        if (ampm == "AM" && hours == 12) hours = 0;
-        var sHours = hours.toString();
-        var sMinutes = minutes.toString();
-        if (hours < 10) sHours = "0" + sHours;
-        if (minutes < 10) sMinutes = "0" + sMinutes;
-        return sHours + ":" + sMinutes;
+        var match = time.match(/^(\d+):(\d+)(.*)$/);
+        if (match)
+        {
+            var hours = Number(match[1]);
+            var minutes = Number(match[2]);
+            var ampm = $.trim(match[3]);
+            ampm = ampm.toUpperCase();
+            if (ampm == "PM" && hours < 12) hours = hours + 12;
+            if (ampm == "AM" && hours == 12) hours = 0;
+            var sHours = hours.toString();
+            var sMinutes = minutes.toString();
+            if (hours < 10) sHours = "0" + sHours;
+            if (minutes < 10) sMinutes = "0" + sMinutes;
+            return sHours + ":" + sMinutes;
+        } else {
+            return time;
+        }
     }
-    
+
     function convertTo12HourFormat(time) {
         if (time == "")
             return time;
