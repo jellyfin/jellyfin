@@ -993,3 +993,7 @@ input[type="range"]::-ms-fill-upper {
 #editItemMetadataPage #txtOverview {
     height: 70px;
 }
+
+#editItemMetadataPage #providerSettingsContainer .ui-slider-switch {
+    width: 8em;
+}

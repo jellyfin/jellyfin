@@ -25,6 +25,14 @@ namespace MediaBrowser.Model.Entities
         /// <summary>
         /// The tags
         /// </summary>
-        Tags
+        Tags,
+        /// <summary>
+        /// The name
+        /// </summary>
+        Name,
+        /// <summary>
+        /// The overview
+        /// </summary>
+        Overview
     }
 }

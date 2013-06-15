@@ -192,6 +192,14 @@
         populateListView($('#listGenres', page), item.Genres);
         populateListView($('#listStudios', page), item.Studios.map(function (element) { return element.Name || ''; }));
         populateListView($('#listTags', page), item.Tags);
+        var enableInternetProviders = (item.EnableInternetProviders || false);
+        $("#enableInternetProviders",page).val('' + enableInternetProviders).slider('refresh');
+        if (enableInternetProviders) {
+            $('#providerSettingsContainer',page).show();
+        } else {
+            $('#providerSettingsContainer',page).hide();
+        }
+        populateInternetProviderSettings(page, item.LockedFields, item.LockedImages);
         
         $('#txtName', page).val(item.Name || "");
         $('#txtOverview', page).val(item.Overview || "");
@@ -357,7 +365,7 @@
         }
         var html = '';
         for (var i = 0; i < items.length; i++) {
-            html += '<li><a class="data">' + items[i] + '</a><a onclick="EditItemMetadataPage.RemoveElementFromListview(this)"></a></li>';
+            html += '<li><a class="data">' + items[i] + '</a><a onclick="EditItemMetadataPage.removeElementFromListview(this)"></a></li>';
         }
         list.html(html).listview('refresh');
     }
@@ -365,7 +373,43 @@
     function editableListViewValues(list) {
         return list.find('a.data').map(function () { return $(this).text(); }).get();
     }
-    
+
+    function generateSliders(fields, type) {
+        var html = '';
+        for (var i = 0; i < fields.length; i++) {
+            var field = fields[i];
+            html += '<div data-role="fieldcontain">';
+            html += '<label for="lock' + field + '">' + field + ':</label>';
+            html += '<select name="lock'+ type +'" id="lock' + field + '" data-role="slider" data-mini="true">';
+            html += '<option value="" selected="selected">Off</option>';
+            html += '<option value="' + field + '">Locked</option>';
+            html += '</select>';
+            html += '</div>';
+        }
+        return html;
+    }
+    function populateInternetProviderSettings(page, lockedFields, lockedImages) {
+        var container = $('#providerSettingsContainer', page);
+        lockedFields = lockedFields || new Array();
+        lockedImages= lockedImages|| new Array();
+        var metadatafields = new Array("Name", "Overview", "Cast", "Genres", "ProductionLocations", "Studios", "Tags");
+        var imageTypes = new Array("Primary", "Art", "Backdrop", "Banner", "Logo", "Thumb", "Disc", "Box", "Screenshot", "Menu", "Chapter", "BoxRear");
+        var html = '';
+        html += "<h3>Fields</h3>";
+        html += generateSliders(metadatafields, 'Fields');
+        html += "<h3>Images</h3>";
+        html += generateSliders(imageTypes, 'Images');
+        container.html(html).trigger('create');
+        for (var fieldIndex = 0; fieldIndex < lockedFields.length; fieldIndex++) {
+            var field = lockedFields[fieldIndex];
+            $('#lock' + field).val(field).slider('refresh');
+        }
+        for (var imageIndex = 0; imageIndex < lockedImages.length; imageIndex++) {
+            var image = lockedImages[imageIndex];
+            $('#lock' + image).val(image).slider('refresh');
+        }
+    }
+
     function editItemMetadataPage() {
 
         var self = this;
@@ -375,7 +419,6 @@
             var form = this;
 
             var item = {
-                
                 Id: getParameterByName('id'),
                 Name: $('#txtName', form).val(),
                 SortName: $('#txtSortName', form).val(),
@@ -398,18 +441,27 @@
                 AirTime: convertTo12HourFormat($('#txtAirTime', form).val()),
                 Genres: editableListViewValues($("#listGenres", form)),
                 Tags: editableListViewValues($("#listTags", form)),
-                Studios: editableListViewValues($("#listStudios", form)).map(function (element) { return { Name: element }; }),
-                    
+                Studios: editableListViewValues($("#listStudios", form)).map(function(element) { return { Name: element }; }),
+
                 PremiereDate: $('#txtPremiereDate', form).val(),
                 EndDate: $('#txtEndDate', form).val(),
                 ProductionYear: $('#txtProductionYear', form).val(),
                 AspectRatio: $('#txtOriginalAspectRatio', form).val(),
-                
+
                 Language: $('#selectLanguage', form).val(),
                 OfficialRating: $('#selectOfficialRating', form).val(),
                 CustomRating: $('#selectCustomRating', form).val(),
                 People: currentItem.People,
-                
+                EnableInternetProviders: $("#enableInternetProviders", form).val(),
+                LockedFields: $('select[name="lockFields"]', form).map(function() {
+                    var value = $(this).val();
+                    if (value != '') return value;
+                }).get(),
+                LockedImages: $('select[name="lockImages"]', form).map(function() {
+                    var value = $(this).val();
+                    if (value != '') return value;
+                }).get(),
+
                 ProviderIds:
                 {
                     Gamesdb: $('#txtGamesDb', form).val(),
@@ -421,7 +473,6 @@
                     MusicBrainzReleaseGroupId: $('#txtMusicBrainzReleaseGroupId', form).val(),
                     RottenTomatoes: $('#txtRottenTomatoes', form).val()
                 }
-
             };
 
             ApiClient.updateItem(item).done(function () {
@@ -431,8 +482,9 @@
             });
 
             return false;
-        };
-        self.AddElementToEditableListview = function(source, sortCallback) {
+}
+    
+        self.addElementToEditableListview = function(source, sortCallback) {
             var input = $(source).parent().find('input[type="text"], select');
             var text = input.val();
             input.val('');
@@ -442,14 +494,22 @@
             items.push(text);
             populateListView(list, items, sortCallback);
         };
-
+        
+        self.setProviderSettingsContainerVisibility = function (source) {
+            if ($(source).val() == "true") {
+                $('#providerSettingsContainer').show();
+            } else {
+                $('#providerSettingsContainer').hide();
+            }
+        };
+        
         self.sortDaysOfTheWeek = function(list) {
             var days = new Array("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday");
             list.sort(function(a, b) { return days.indexOf(a) > days.indexOf(b); });
             return list;
         };
         
-        self.RemoveElementFromListview = function(source) {
+        self.removeElementFromListview = function(source) {
             var list = $(source).parents('ul[data-role="listview"]');
             $(source).parent().remove();
             list.listview('refresh');
