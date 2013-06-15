@@ -193,7 +193,7 @@
         populateListView($('#listStudios', page), item.Studios.map(function (element) { return element.Name || ''; }));
         populateListView($('#listTags', page), item.Tags);
         var enableInternetProviders = (item.EnableInternetProviders || false);
-        $("#enableInternetProviders",page).val('' + enableInternetProviders).slider('refresh');
+        $("#enableInternetProviders", page).attr('checked', enableInternetProviders).checkboxradio('refresh');
         if (enableInternetProviders) {
             $('#providerSettingsContainer',page).show();
         } else {
@@ -384,11 +384,12 @@
         var html = '';
         for (var i = 0; i < fields.length; i++) {
             var field = fields[i];
+            var fieldTitle = $.trim(field.replace(/([A-Z])/g, ' $1'));
             html += '<div data-role="fieldcontain">';
-            html += '<label for="lock' + field + '">' + field + ':</label>';
+            html += '<label for="lock' + field + '">' + fieldTitle + ':</label>';
             html += '<select name="lock'+ type +'" id="lock' + field + '" data-role="slider" data-mini="true">';
-            html += '<option value="" selected="selected">Off</option>';
             html += '<option value="' + field + '">Locked</option>';
+            html += '<option value="" selected="selected">Unlocked</option>';
             html += '</select>';
             html += '</div>';
         }
@@ -458,7 +459,7 @@
                 OfficialRating: $('#selectOfficialRating', form).val(),
                 CustomRating: $('#selectCustomRating', form).val(),
                 People: currentItem.People,
-                EnableInternetProviders: $("#enableInternetProviders", form).val(),
+                EnableInternetProviders: $("#enableInternetProviders", form).prop('checked'),
                 LockedFields: $('select[name="lockFields"]', form).map(function() {
                     var value = $(this).val();
                     if (value != '') return value;
@@ -502,7 +503,7 @@
         };
         
         self.setProviderSettingsContainerVisibility = function (source) {
-            if ($(source).val() == "true") {
+            if ($(source).prop('checked')) {
                 $('#providerSettingsContainer').show();
             } else {
                 $('#providerSettingsContainer').hide();
