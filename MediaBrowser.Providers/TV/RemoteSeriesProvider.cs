@@ -282,12 +282,13 @@ namespace MediaBrowser.Providers.TV
                 seriesDoc.Load(seriesXmlPath);
 
                 FetchMainInfo(series, seriesDoc);
+                if (!series.LockedFields.Contains(MetadataFields.Cast))
+                {
+                    var actorsDoc = new XmlDocument();
+                    actorsDoc.Load(actorsXmlPath);
 
-                var actorsDoc = new XmlDocument();
-                actorsDoc.Load(actorsXmlPath);
-
-                FetchActors(series, actorsDoc, seriesDoc);
-
+                    FetchActors(series, actorsDoc, seriesDoc);
+                }
                 if (ConfigurationManager.Configuration.SaveLocalMeta)
                 {
                     var ms = new MemoryStream();
@@ -370,8 +371,14 @@ namespace MediaBrowser.Providers.TV
         /// <param name="doc">The doc.</param>
         private void FetchMainInfo(Series series, XmlDocument doc)
         {
-            series.Name = doc.SafeGetString("//SeriesName");
-            series.Overview = doc.SafeGetString("//Overview");
+            if (!series.LockedFields.Contains(MetadataFields.Name))
+            {
+                series.Name = doc.SafeGetString("//SeriesName");
+            }
+            if (!series.LockedFields.Contains(MetadataFields.Overview))
+            {
+                series.Overview = doc.SafeGetString("//Overview");
+            }
             series.CommunityRating = doc.SafeGetSingle("//Rating", 0, 10);
             series.AirDays = TVUtils.GetAirDays(doc.SafeGetString("//Airs_DayOfWeek"));
             series.AirTime = doc.SafeGetString("//Airs_Time");
@@ -384,36 +391,39 @@ namespace MediaBrowser.Providers.TV
             //Runtime is in minutes, and 1 tick = 10000 ms
             series.RunTimeTicks = doc.SafeGetInt32("//Runtime") * 6;
 
-            string s = doc.SafeGetString("//Network");
-
-            if (!string.IsNullOrWhiteSpace(s))
+            if (!series.LockedFields.Contains(MetadataFields.Studios))
             {
-                series.Studios.Clear();
+                string s = doc.SafeGetString("//Network");
 
-                foreach (var studio in s.Trim().Split('|'))
+                if (!string.IsNullOrWhiteSpace(s))
                 {
-                    series.AddStudio(studio);
-                }
-            }
+                    series.Studios.Clear();
 
-            series.OfficialRating = doc.SafeGetString("//ContentRating");
-
-            string g = doc.SafeGetString("//Genre");
-
-            if (g != null)
-            {
-                string[] genres = g.Trim('|').Split('|');
-                if (g.Length > 0)
-                {
-                    series.Genres.Clear();
-
-                    foreach (var genre in genres)
+                    foreach (var studio in s.Trim().Split('|'))
                     {
-                        series.AddGenre(genre);
+                        series.AddStudio(studio);
                     }
                 }
             }
+            series.OfficialRating = doc.SafeGetString("//ContentRating");
+            if (!series.LockedFields.Contains(MetadataFields.Genres))
+            {
+                string g = doc.SafeGetString("//Genre");
 
+                if (g != null)
+                {
+                    string[] genres = g.Trim('|').Split('|');
+                    if (g.Length > 0)
+                    {
+                        series.Genres.Clear();
+
+                        foreach (var genre in genres)
+                        {
+                            series.AddGenre(genre);
+                        }
+                    }
+                }
+            }
             if (series.Status == SeriesStatus.Ended) {
                 
                 var document = XDocument.Load(new XmlNodeReader(doc));
