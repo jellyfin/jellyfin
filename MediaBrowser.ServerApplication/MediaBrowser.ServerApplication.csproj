@@ -126,9 +126,23 @@
     <Reference Include="MahApps.Metro">
       <HintPath>..\packages\MahApps.Metro.0.11.0.17-ALPHA\lib\net45\MahApps.Metro.dll</HintPath>
     </Reference>
-    <Reference Include="MediaBrowser.IsoMounter, Version=1.0.4827.21973, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="MediaBrowser.Common, Version=3.0.4912.27515, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\MediaBrowser.IsoMounting.3.0.51\lib\net45\MediaBrowser.IsoMounter.dll</HintPath>
+      <HintPath>..\packages\MediaBrowser.Common.3.0.123\lib\net45\MediaBrowser.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="MediaBrowser.IsoMounter, Version=1.0.4915.20167, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\MediaBrowser.IsoMounting.3.0.52\lib\net45\MediaBrowser.IsoMounter.dll</HintPath>
+    </Reference>
+    <Reference Include="MediaBrowser.Model, Version=3.0.4912.27515, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\MediaBrowser.Common.3.0.123\lib\net45\MediaBrowser.Model.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Threading.Tasks">
+      <HintPath>..\packages\Microsoft.Bcl.Async.1.0.16\lib\net45\Microsoft.Threading.Tasks.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Threading.Tasks.Extensions">
+      <HintPath>..\packages\Microsoft.Bcl.Async.1.0.16\lib\net45\Microsoft.Threading.Tasks.Extensions.dll</HintPath>
     </Reference>
     <Reference Include="MoreLinq, Version=1.0.15631.0, Culture=neutral, PublicKeyToken=384d532d7e88985d, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -140,7 +154,7 @@
     </Reference>
     <Reference Include="pfmclrapi, Version=0.0.0.0, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\MediaBrowser.IsoMounting.3.0.51\lib\net45\pfmclrapi.dll</HintPath>
+      <HintPath>..\packages\MediaBrowser.IsoMounting.3.0.52\lib\net45\pfmclrapi.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack, Version=3.9.46.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -284,17 +298,9 @@
       <Project>{c4d2573a-3fd3-441f-81af-174ac4cd4e1d}</Project>
       <Name>MediaBrowser.Common.Implementations</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">
-      <Project>{9142eefa-7570-41e1-bfcc-468bb571af2f}</Project>
-      <Name>MediaBrowser.Common</Name>
-    </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj">
       <Project>{17e1f4e6-8abd-4fe5-9ecf-43d4b6087ba2}</Project>
       <Name>MediaBrowser.Controller</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj">
-      <Project>{7eeeb4bb-f3e8-48fc-b4c5-70f0fff8329b}</Project>
-      <Name>MediaBrowser.Model</Name>
     </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.Providers\MediaBrowser.Providers.csproj">
       <Project>{442b5058-dcaf-4263-bb6a-f21e31120a1b}</Project>
@@ -424,4 +430,5 @@ del "$(SolutionDir)..\Deploy\MBServer.zip"
     </GetAssemblyIdentity>
     <Exec Command="copy &quot;$(SolutionDir)..\Deploy\MBServer.zip&quot;  &quot;$(SolutionDir)..\Deploy\MBServer_%(CurrentAssembly.Version).zip&quot; /y" Condition="'$(ConfigurationName)' == 'Release'" />
   </Target>
+  <Import Project="..\packages\Microsoft.Bcl.Build.1.0.7\tools\Microsoft.Bcl.Build.targets" />
 </Project>
