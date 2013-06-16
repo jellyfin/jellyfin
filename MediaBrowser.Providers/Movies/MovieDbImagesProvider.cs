@@ -98,18 +98,6 @@ namespace MediaBrowser.Providers.Movies
         }
 
         /// <summary>
-        /// If we save locally, refresh if they delete something
-        /// </summary>
-        /// <value><c>true</c> if [refresh on file system stamp change]; otherwise, <c>false</c>.</value>
-        protected override bool RefreshOnFileSystemStampChange
-        {
-            get
-            {
-                return ConfigurationManager.Configuration.SaveLocalMeta;
-            }
-        }
-
-        /// <summary>
         /// Gets a value indicating whether [refresh on version change].
         /// </summary>
         /// <value><c>true</c> if [refresh on version change]; otherwise, <c>false</c>.</value>
