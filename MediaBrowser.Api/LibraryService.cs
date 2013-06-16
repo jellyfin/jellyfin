@@ -266,9 +266,17 @@ namespace MediaBrowser.Api
             item.OfficialRating = request.OfficialRating;
             item.CustomRating = request.CustomRating;
             item.DontFetchMeta = !(request.EnableInternetProviders ?? true);
-            item.LockedFields = request.LockedFields;
-            item.LockedImages = request.LockedImages;
-
+            if (request.EnableInternetProviders ?? true)
+            {
+                item.LockedFields = request.LockedFields;
+                item.LockedImages = request.LockedImages;
+            }
+            else
+            {
+                item.LockedFields.Clear();
+                item.LockedImages.Clear();
+            }
+            
             foreach (var pair in request.ProviderIds.ToList())
             {
                 if (string.IsNullOrEmpty(pair.Value))

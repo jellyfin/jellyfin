@@ -19,10 +19,11 @@ namespace MediaBrowser.Providers.Music
             if (data.bio != null)
             {
                 Int32.TryParse(data.bio.yearformed, out yearFormed);
-
-                artist.Overview = data.bio.content;
-
-                if (!string.IsNullOrEmpty(data.bio.placeformed))
+                if (!artist.LockedFields.Contains(MetadataFields.Overview))
+                {
+                    artist.Overview = data.bio.content;
+                }
+                if (!string.IsNullOrEmpty(data.bio.placeformed) && !artist.LockedFields.Contains(MetadataFields.ProductionLocations))
                 {
                     artist.AddProductionLocation(data.bio.placeformed);
                 }
@@ -30,7 +31,7 @@ namespace MediaBrowser.Providers.Music
 
             artist.PremiereDate = yearFormed > 0 ? new DateTime(yearFormed, 1, 1, 0, 0, 0, DateTimeKind.Utc) : (DateTime?)null;
             artist.ProductionYear = yearFormed;
-            if (data.tags != null)
+            if (data.tags != null && !artist.LockedFields.Contains(MetadataFields.Tags))
             {
                 AddTags(artist, data.tags);
             }
@@ -52,13 +53,15 @@ namespace MediaBrowser.Providers.Music
 
             var overview = data.wiki != null ? data.wiki.content : null;
 
-            item.Overview = overview;
-
+            if (!item.LockedFields.Contains(MetadataFields.Overview))
+            {
+                item.Overview = overview;
+            }
             DateTime release;
             DateTime.TryParse(data.releasedate, out release);
             item.PremiereDate = release;
             item.ProductionYear = release.Year;
-            if (data.toptags != null)
+            if (data.toptags != null && !item.LockedFields.Contains(MetadataFields.Tags))
             {
                 AddTags(item, data.toptags);
             }

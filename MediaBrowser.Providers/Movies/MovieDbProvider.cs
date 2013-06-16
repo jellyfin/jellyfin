@@ -720,9 +720,14 @@ namespace MediaBrowser.Providers.Movies
         {
             if (movie != null && movieData != null)
             {
-
-                movie.Name = movieData.title ?? movieData.original_title ?? movie.Name;
-                movie.Overview = movieData.overview;
+                if (!movie.LockedFields.Contains(MetadataFields.Name))
+                {
+                    movie.Name = movieData.title ?? movieData.original_title ?? movie.Name;
+                }
+                if (!movie.LockedFields.Contains(MetadataFields.Overview))
+                {
+                    movie.Overview = movieData.overview;
+                }
                 movie.Overview = movie.Overview != null ? movie.Overview.Replace("\n\n", "\n") : null;
                 movie.HomePageUrl = movieData.homepage;
                 movie.Budget = movieData.budget;
@@ -798,7 +803,7 @@ namespace MediaBrowser.Providers.Movies
                     movie.OriginalRunTimeTicks = TimeSpan.FromMinutes(movieData.runtime).Ticks;
 
                 //studios
-                if (movieData.production_companies != null)
+                if (movieData.production_companies != null && !movie.LockedFields.Contains(MetadataFields.Studios))
                 {
                     movie.Studios.Clear();
 
@@ -809,7 +814,7 @@ namespace MediaBrowser.Providers.Movies
                 }
 
                 //genres
-                if (movieData.genres != null)
+                if (movieData.genres != null && !movie.LockedFields.Contains(MetadataFields.Genres))
                 {
                     movie.Genres.Clear();
 
@@ -824,7 +829,7 @@ namespace MediaBrowser.Providers.Movies
 
                 //Actors, Directors, Writers - all in People
                 //actors come from cast
-                if (movieData.casts != null && movieData.casts.cast != null)
+                if (movieData.casts != null && movieData.casts.cast != null && !movie.LockedFields.Contains(MetadataFields.Cast))
                 {
                     foreach (var actor in movieData.casts.cast.OrderBy(a => a.order)) movie.AddPerson(new PersonInfo { Name = actor.name, Role = actor.character, Type = PersonType.Actor });
                 }
@@ -835,7 +840,7 @@ namespace MediaBrowser.Providers.Movies
                     foreach (var person in movieData.casts.crew) movie.AddPerson(new PersonInfo { Name = person.name, Role = person.job, Type = person.department });
                 }
 
-                if (movieData.keywords != null && movieData.keywords.keywords != null)
+                if (movieData.keywords != null && movieData.keywords.keywords != null && !movie.LockedFields.Contains(MetadataFields.Tags))
                 {
                     movie.Tags = movieData.keywords.keywords.Select(i => i.name).ToList();
                 }

@@ -193,7 +193,7 @@
         populateListView($('#listStudios', page), item.Studios.map(function (element) { return element.Name || ''; }));
         populateListView($('#listTags', page), item.Tags);
         var enableInternetProviders = (item.EnableInternetProviders || false);
-        $("#enableInternetProviders",page).val('' + enableInternetProviders).slider('refresh');
+        $("#enableInternetProviders", page).attr('checked', enableInternetProviders).checkboxradio('refresh');
         if (enableInternetProviders) {
             $('#providerSettingsContainer',page).show();
         } else {
@@ -273,19 +273,25 @@
     function convertTo24HourFormat(time) {
         if (time == "")
             return time;
-        var hours = Number(time.match(/^(\d+)/)[1]);
-        var minutes = Number(time.match(/:(\d+)/)[1]);
-        var ampm = time.match(/\s(.*)$/)[1];
-        ampm = ampm.toUpperCase();
-        if (ampm == "PM" && hours < 12) hours = hours + 12;
-        if (ampm == "AM" && hours == 12) hours = 0;
-        var sHours = hours.toString();
-        var sMinutes = minutes.toString();
-        if (hours < 10) sHours = "0" + sHours;
-        if (minutes < 10) sMinutes = "0" + sMinutes;
-        return sHours + ":" + sMinutes;
+        var match = time.match(/^(\d+):(\d+)(.*)$/);
+        if (match)
+        {
+            var hours = Number(match[1]);
+            var minutes = Number(match[2]);
+            var ampm = $.trim(match[3]);
+            ampm = ampm.toUpperCase();
+            if (ampm == "PM" && hours < 12) hours = hours + 12;
+            if (ampm == "AM" && hours == 12) hours = 0;
+            var sHours = hours.toString();
+            var sMinutes = minutes.toString();
+            if (hours < 10) sHours = "0" + sHours;
+            if (minutes < 10) sMinutes = "0" + sMinutes;
+            return sHours + ":" + sMinutes;
+        } else {
+            return time;
+        }
     }
-    
+
     function convertTo12HourFormat(time) {
         if (time == "")
             return time;
@@ -378,11 +384,12 @@
         var html = '';
         for (var i = 0; i < fields.length; i++) {
             var field = fields[i];
+            var fieldTitle = $.trim(field.replace(/([A-Z])/g, ' $1'));
             html += '<div data-role="fieldcontain">';
-            html += '<label for="lock' + field + '">' + field + ':</label>';
+            html += '<label for="lock' + field + '">' + fieldTitle + ':</label>';
             html += '<select name="lock'+ type +'" id="lock' + field + '" data-role="slider" data-mini="true">';
-            html += '<option value="" selected="selected">Off</option>';
             html += '<option value="' + field + '">Locked</option>';
+            html += '<option value="" selected="selected">Unlocked</option>';
             html += '</select>';
             html += '</div>';
         }
@@ -452,7 +459,7 @@
                 OfficialRating: $('#selectOfficialRating', form).val(),
                 CustomRating: $('#selectCustomRating', form).val(),
                 People: currentItem.People,
-                EnableInternetProviders: $("#enableInternetProviders", form).val(),
+                EnableInternetProviders: $("#enableInternetProviders", form).prop('checked'),
                 LockedFields: $('select[name="lockFields"]', form).map(function() {
                     var value = $(this).val();
                     if (value != '') return value;
@@ -496,7 +503,7 @@
         };
         
         self.setProviderSettingsContainerVisibility = function (source) {
-            if ($(source).val() == "true") {
+            if ($(source).prop('checked')) {
                 $('#providerSettingsContainer').show();
             } else {
                 $('#providerSettingsContainer').hide();

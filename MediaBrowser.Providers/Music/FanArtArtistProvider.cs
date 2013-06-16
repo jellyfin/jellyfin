@@ -301,7 +301,7 @@ namespace MediaBrowser.Providers.Music
 
             string path;
             var hd = ConfigurationManager.Configuration.DownloadHDFanArt ? "hd" : "";
-            if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Logo && !item.HasImage(ImageType.Logo))
+            if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Logo && !item.HasImage(ImageType.Logo) && !item.LockedImages.Contains(ImageType.Logo))
             {
                 var node =
                     doc.SelectSingleNode("//fanart/music/musiclogos/" + hd + "musiclogo/@url") ??
@@ -314,7 +314,7 @@ namespace MediaBrowser.Providers.Music
             }
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Backdrops && item.BackdropImagePaths.Count == 0)
+            if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Backdrops && item.BackdropImagePaths.Count == 0 && !item.LockedImages.Contains(ImageType.Backdrop))
             {
                 var nodes = doc.SelectNodes("//fanart/music/artistbackgrounds//@url");
                 if (nodes != null)
@@ -338,7 +338,7 @@ namespace MediaBrowser.Providers.Music
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Art && !item.HasImage(ImageType.Art))
+            if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Art && !item.HasImage(ImageType.Art) && !item.LockedImages.Contains(ImageType.Art))
             {
                 var node =
                     doc.SelectSingleNode("//fanart/music/musicarts/" + hd + "musicart/@url") ??
@@ -351,7 +351,7 @@ namespace MediaBrowser.Providers.Music
             }
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Banner && !item.HasImage(ImageType.Banner))
+            if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Banner && !item.HasImage(ImageType.Banner) && !item.LockedImages.Contains(ImageType.Banner))
             {
                 var node = doc.SelectSingleNode("//fanart/music/musicbanners/" + hd + "musicbanner/@url") ??
                            doc.SelectSingleNode("//fanart/music/musicbanners/musicbanner/@url");
@@ -365,7 +365,7 @@ namespace MediaBrowser.Providers.Music
             cancellationToken.ThrowIfCancellationRequested();
 
             // Artist thumbs are actually primary images (they are square/portrait)
-            if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Primary && !item.HasImage(ImageType.Primary))
+            if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Primary && !item.HasImage(ImageType.Primary) && !item.LockedImages.Contains(ImageType.Primary))
             {
                 var node = doc.SelectSingleNode("//fanart/music/artistthumbs/artistthumb/@url");
                 path = node != null ? node.Value : null;

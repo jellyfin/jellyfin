@@ -216,11 +216,8 @@
                             <h3>Internet Provider Settings</h3>
                             <div>
                                 <div data-role="fieldcontain">
-                                    <label for="enableInternetProviders">Enable internet metadata providers:</label>
-                                    <select name="enableInternetProviders" id="enableInternetProviders" data-role="slider" data-mini="true" onchange="EditItemMetadataPage.setProviderSettingsContainerVisibility(this)">
-                                        <option value="false">Off</option>
-                                        <option value="true">On</option>
-                                    </select>
+                                    <input type="checkbox" name="enableInternetProviders" id="enableInternetProviders" onchange="EditItemMetadataPage.setProviderSettingsContainerVisibility(this)"/>
+                                    <label for="enableInternetProviders">Enable internet metadata providers for this item.</label>
                                 </div>
                                 <div id="providerSettingsContainer" style="display: none">
                                     
