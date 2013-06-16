@@ -403,9 +403,6 @@ xcopy "$(TargetDir)$(TargetFileName).config" "$(SolutionDir)..\Deploy\Server\Sys
 
 xcopy "$(TargetDir)*.dll" "$(SolutionDir)..\Deploy\Server\System" /y
 
-mkdir "$(SolutionDir)..\Deploy\Server\System\CorePlugins"
-xcopy "$(TargetDir)CorePlugins" "$(SolutionDir)..\Deploy\Server\System\CorePlugins" /y
-
 mkdir "$(SolutionDir)..\Deploy\Server\System\dashboard-ui"
 xcopy "$(TargetDir)dashboard-ui" "$(SolutionDir)..\Deploy\Server\System\dashboard-ui" /y /s
 
