@@ -182,12 +182,6 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
 
                 if (item != null)
                 {
-                    // If we already know it's a movie, we can stop looping
-                    if (isKnownMovie)
-                    {
-                        return item;
-                    }
-
                     movies.Add(item);
                 }
             }
@@ -265,7 +259,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                where T : Video, new()
         {
             var multiPartMovies = movies.OrderBy(i => i.Path)
-                .Where(i => EntityResolutionHelper.IsMultiPartFile(i.Name))
+                .Where(i => EntityResolutionHelper.IsMultiPartFile(i.Path))
                 .ToList();
 
             // They must all be part of the sequence
