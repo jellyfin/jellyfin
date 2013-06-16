@@ -265,7 +265,7 @@ namespace MediaBrowser.Providers.Movies
                     //still nothing - just get first one
                     profile = searchResult.profiles[0];
                 }
-                if (profile != null && !person.HasImage(ImageType.Primary))
+                if (profile != null && !person.HasImage(ImageType.Primary) && !person.LockedImages.Contains(ImageType.Primary))
                 {
                     var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
 

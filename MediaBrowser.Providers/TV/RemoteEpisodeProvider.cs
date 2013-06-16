@@ -274,7 +274,7 @@ namespace MediaBrowser.Providers.TV
             var doc = new XmlDocument();
             doc.LoadXml(episodeNode.OuterXml);
 
-            if (!episode.HasImage(ImageType.Primary))
+            if (!episode.HasImage(ImageType.Primary) && !episode.LockedImages.Contains(ImageType.Primary))
             {
                 var p = doc.SafeGetString("//filename");
                 if (p != null)
@@ -291,14 +291,18 @@ namespace MediaBrowser.Providers.TV
                     }
                 }
             }
-
-            episode.Overview = doc.SafeGetString("//Overview");
+            if (!episode.LockedFields.Contains(MetadataFields.Overview))
+            {
+                episode.Overview = doc.SafeGetString("//Overview");
+            }
             if (usingAbsoluteData)
                 episode.IndexNumber = doc.SafeGetInt32("//absolute_number", -1);
             if (episode.IndexNumber < 0)
                 episode.IndexNumber = doc.SafeGetInt32("//EpisodeNumber");
-
-            episode.Name = doc.SafeGetString("//EpisodeName");
+            if (!episode.LockedFields.Contains(MetadataFields.Name))
+            {
+                episode.Name = doc.SafeGetString("//EpisodeName");
+            }
             episode.CommunityRating = doc.SafeGetSingle("//Rating", -1, 10);
             var firstAired = doc.SafeGetString("//FirstAired");
             DateTime airDate;
@@ -307,47 +311,48 @@ namespace MediaBrowser.Providers.TV
                 episode.PremiereDate = airDate.ToUniversalTime();
                 episode.ProductionYear = airDate.Year;
             }
-
-            episode.People.Clear();
-
-            var actors = doc.SafeGetString("//GuestStars");
-            if (actors != null)
+            if (!episode.LockedFields.Contains(MetadataFields.Cast))
             {
-                // Sometimes tvdb actors have leading spaces
-                foreach (var person in actors.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries)
-                    .Where(i => !string.IsNullOrWhiteSpace(i))
-                    .Select(str => new PersonInfo { Type = PersonType.GuestStar, Name = str.Trim() }))
+                episode.People.Clear();
+
+                var actors = doc.SafeGetString("//GuestStars");
+                if (actors != null)
                 {
-                    episode.AddPerson(person);
+                    // Sometimes tvdb actors have leading spaces
+                    foreach (var person in actors.Split(new[] {'|'}, StringSplitOptions.RemoveEmptyEntries)
+                                                 .Where(i => !string.IsNullOrWhiteSpace(i))
+                                                 .Select(str => new PersonInfo {Type = PersonType.GuestStar, Name = str.Trim()}))
+                    {
+                        episode.AddPerson(person);
+                    }
+                }
+
+
+                var directors = doc.SafeGetString("//Director");
+                if (directors != null)
+                {
+                    // Sometimes tvdb actors have leading spaces
+                    foreach (var person in directors.Split(new[] {'|'}, StringSplitOptions.RemoveEmptyEntries)
+                                                    .Where(i => !string.IsNullOrWhiteSpace(i))
+                                                    .Select(str => new PersonInfo {Type = PersonType.Director, Name = str.Trim()}))
+                    {
+                        episode.AddPerson(person);
+                    }
+                }
+
+
+                var writers = doc.SafeGetString("//Writer");
+                if (writers != null)
+                {
+                    // Sometimes tvdb actors have leading spaces
+                    foreach (var person in writers.Split(new[] {'|'}, StringSplitOptions.RemoveEmptyEntries)
+                                                  .Where(i => !string.IsNullOrWhiteSpace(i))
+                                                  .Select(str => new PersonInfo {Type = PersonType.Writer, Name = str.Trim()}))
+                    {
+                        episode.AddPerson(person);
+                    }
                 }
             }
-
-
-            var directors = doc.SafeGetString("//Director");
-            if (directors != null)
-            {
-                // Sometimes tvdb actors have leading spaces
-                foreach (var person in directors.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries)
-                    .Where(i => !string.IsNullOrWhiteSpace(i))
-                    .Select(str => new PersonInfo { Type = PersonType.Director, Name = str.Trim() }))
-                {
-                    episode.AddPerson(person);
-                }
-            }
-
-
-            var writers = doc.SafeGetString("//Writer");
-            if (writers != null)
-            {
-                // Sometimes tvdb actors have leading spaces
-                foreach (var person in writers.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries)
-                     .Where(i => !string.IsNullOrWhiteSpace(i))
-                   .Select(str => new PersonInfo { Type = PersonType.Writer, Name = str.Trim() }))
-                {
-                    episode.AddPerson(person);
-                }
-            }
-
             if (ConfigurationManager.Configuration.SaveLocalMeta)
             {
                 //if (!Directory.Exists(episode.MetaLocation)) Directory.CreateDirectory(episode.MetaLocation);

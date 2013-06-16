@@ -227,7 +227,7 @@ namespace MediaBrowser.Providers.TV
         /// <returns>Task.</returns>
         private async Task FetchImages(Series series, XmlDocument images, CancellationToken cancellationToken)
         {
-            if (!series.HasImage(ImageType.Primary))
+            if (!series.HasImage(ImageType.Primary) && !series.LockedImages.Contains(ImageType.Primary))
             {
                 var n = images.SelectSingleNode("//Banner[BannerType='poster']");
                 if (n != null)
@@ -242,7 +242,7 @@ namespace MediaBrowser.Providers.TV
                 }
             }
 
-            if (ConfigurationManager.Configuration.DownloadSeriesImages.Banner && !series.HasImage(ImageType.Banner))
+            if (ConfigurationManager.Configuration.DownloadSeriesImages.Banner && !series.HasImage(ImageType.Banner) && !series.LockedImages.Contains(ImageType.Banner))
             {
                 var n = images.SelectSingleNode("//Banner[BannerType='series']");
                 if (n != null)
@@ -257,7 +257,7 @@ namespace MediaBrowser.Providers.TV
                 }
             }
 
-            if (series.BackdropImagePaths.Count == 0)
+            if (series.BackdropImagePaths.Count == 0 && !series.LockedImages.Contains(ImageType.Backdrop))
             {
                 var bdNo = series.BackdropImagePaths.Count;
 

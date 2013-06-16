@@ -225,7 +225,7 @@ namespace MediaBrowser.Providers.TV
                 return;
             }
 
-            if (!season.HasImage(ImageType.Primary))
+            if (!season.HasImage(ImageType.Primary) && !season.LockedImages.Contains(ImageType.Primary))
             {
                 var n = images.SelectSingleNode("//Banner[BannerType='season'][BannerType2='season'][Season='" + seasonNumber + "'][Language='" + ConfigurationManager.Configuration.PreferredMetadataLanguage + "']") ??
                         images.SelectSingleNode("//Banner[BannerType='season'][BannerType2='season'][Season='" + seasonNumber + "'][Language='en']");
@@ -238,7 +238,7 @@ namespace MediaBrowser.Providers.TV
                 }
             }
 
-            if (ConfigurationManager.Configuration.DownloadSeasonImages.Banner && !season.HasImage(ImageType.Banner))
+            if (ConfigurationManager.Configuration.DownloadSeasonImages.Banner && !season.HasImage(ImageType.Banner) && !season.LockedImages.Contains(ImageType.Banner))
             {
                 var n = images.SelectSingleNode("//Banner[BannerType='season'][BannerType2='seasonwide'][Season='" + seasonNumber + "'][Language='" + ConfigurationManager.Configuration.PreferredMetadataLanguage + "']") ??
                         images.SelectSingleNode("//Banner[BannerType='season'][BannerType2='seasonwide'][Season='" + seasonNumber + "'][Language='en']");
@@ -273,7 +273,7 @@ namespace MediaBrowser.Providers.TV
                 }
             }
 
-            if (ConfigurationManager.Configuration.DownloadSeasonImages.Backdrops && season.BackdropImagePaths.Count == 0)
+            if (ConfigurationManager.Configuration.DownloadSeasonImages.Backdrops && season.BackdropImagePaths.Count == 0 && !season.LockedImages.Contains(ImageType.Backdrop))
             {
                 var n = images.SelectSingleNode("//Banner[BannerType='fanart'][Season='" + seasonNumber + "']");
                 if (n != null)
