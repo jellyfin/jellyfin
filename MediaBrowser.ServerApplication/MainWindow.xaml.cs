@@ -138,6 +138,7 @@ namespace MediaBrowser.ServerApplication
                 separatorDeveloperTools.Visibility = developerToolsVisibility;
                 cmdReloadServer.Visibility = developerToolsVisibility;
                 cmOpenExplorer.Visibility = developerToolsVisibility;
+                cmShowLogWindow.Visibility = developerToolsVisibility;
             });
         }
 
