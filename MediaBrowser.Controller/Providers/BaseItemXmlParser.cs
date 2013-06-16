@@ -224,7 +224,7 @@ namespace MediaBrowser.Controller.Providers
                         if (!string.IsNullOrWhiteSpace(text))
                         {
                             int runtime;
-                            if (int.TryParse(text.Split(' ')[0], out runtime))
+                            if (int.TryParse(text.Split(' ')[0], NumberStyles.Integer, _usCulture, out runtime))
                             {
                                 // For audio and video don't replace ffmpeg data
                                 if (item is Video || item is Audio)
