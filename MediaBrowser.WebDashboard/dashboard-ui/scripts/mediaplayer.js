@@ -29,11 +29,8 @@
 
             if (requestMethod) { // Native full screen.
                 requestMethod.call(element);
-            } else if (typeof window.ActiveXObject !== "undefined") { // Older IE.
-                var wscript = new ActiveXObject("WScript.Shell");
-                if (wscript !== null) {
-                    wscript.SendKeys("{F11}");
-                }
+            } else{ 
+                $('.itemVideo').addClass('fullscreenVideo');
             }
         }
 
@@ -573,11 +570,7 @@
                 $('#chaptersButton', nowPlayingBar).hide();
             }
 
-            if ($.browser.msie) {
-                $('#fullscreenButton', nowPlayingBar).hide();
-            } else {
-                $('#fullscreenButton', nowPlayingBar).show();
-            }
+            $('#fullscreenButton', nowPlayingBar).show();
 
             var videoElement = $("video", nowPlayingBar);
 
@@ -603,7 +596,7 @@
                 var duration = this.duration;
                 isStaticStream = duration && !isNaN(duration) && duration != Number.POSITIVE_INFINITY && duration != Number.NEGATIVE_INFINITY;
 
-                videoElement.off("play.once");
+                videoElement.off("play.once").removeAttr('controls');
 
                 ApiClient.reportPlaybackStart(Dashboard.getCurrentUserId(), item.Id);
 
@@ -933,7 +926,12 @@
             if (isFullScreen()) {
                 if (document.cancelFullScreen) { document.cancelFullScreen(); }
                 else if (document.mozCancelFullScreen) { document.mozCancelFullScreen(); }
-                else if (document.webkitCancelFullScreen) { document.webkitCancelFullScreen(); }
+                else if (document.webkitCancelFullScreen) {
+                    document.webkitCancelFullScreen();
+                } else {
+                    $('.itemVideo').removeClass('fullscreenVideo');
+
+                }
             } else {
                 requestFullScreen(document.body);
             }
