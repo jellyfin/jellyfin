@@ -388,8 +388,8 @@ namespace MediaBrowser.Providers.TV
             series.PremiereDate = doc.SafeGetDateTime("//FirstAired");
             if (series.PremiereDate.HasValue)
                 series.ProductionYear = series.PremiereDate.Value.Year;
-            //Runtime is in minutes, and 1 tick = 10000 ms
-            series.RunTimeTicks = doc.SafeGetInt32("//Runtime") * 6;
+
+            series.RunTimeTicks = TimeSpan.FromMinutes(doc.SafeGetInt32("//Runtime")).Ticks;
 
             if (!series.LockedFields.Contains(MetadataFields.Studios))
             {

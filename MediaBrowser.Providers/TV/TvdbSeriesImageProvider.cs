@@ -81,18 +81,6 @@ namespace MediaBrowser.Providers.TV
         }
 
         /// <summary>
-        /// Returns true or false indicating if the provider should refresh when the contents of it's directory changes
-        /// </summary>
-        /// <value><c>true</c> if [refresh on file system stamp change]; otherwise, <c>false</c>.</value>
-        protected override bool RefreshOnFileSystemStampChange
-        {
-            get
-            {
-                return ConfigurationManager.Configuration.SaveLocalMeta;
-            }
-        }
-
-        /// <summary>
         /// Gets a value indicating whether [refresh on version change].
         /// </summary>
         /// <value><c>true</c> if [refresh on version change]; otherwise, <c>false</c>.</value>
