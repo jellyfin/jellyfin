@@ -976,7 +976,8 @@ input[type="range"]::-ms-fill-upper {
     .installedPluginTitle {
         max-width: 110px;
     }
-    .itemVideo {
+
+    .itemVideo:not(.fullscreenVideo) {
         width: 320px;
     }
 }
@@ -985,7 +986,8 @@ input[type="range"]::-ms-fill-upper {
     .installedPluginTitle {
         max-width: 110px;
     }
-    .itemVideo {
+
+    .itemVideo:not(.fullscreenVideo) {
         width: 400px;
     }
 }
