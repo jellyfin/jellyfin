@@ -86,7 +86,7 @@ namespace MediaBrowser.Controller.Entities
 
             var allFiles = Directory.EnumerateFiles(rootPath, "*", SearchOption.AllDirectories).ToList();
 
-            return PlayableStreamFileNames.Select(name => allFiles.FirstOrDefault(f => string.Equals(System.IO.Path.GetFileName(f), name, System.StringComparison.OrdinalIgnoreCase)))
+            return PlayableStreamFileNames.Select(name => allFiles.FirstOrDefault(f => string.Equals(System.IO.Path.GetFileName(f), name, StringComparison.OrdinalIgnoreCase)))
                 .Where(f => !string.IsNullOrEmpty(f))
                 .ToList();
         }
@@ -176,32 +176,38 @@ namespace MediaBrowser.Controller.Entities
                 return new List<Video>();
             }
 
-            ItemResolveArgs resolveArgs;
+            IEnumerable<FileSystemInfo> files;
 
-            try
+            if (VideoType == VideoType.BluRay || VideoType == VideoType.Dvd)
             {
-                resolveArgs = ResolveArgs;
+                files = new DirectoryInfo(System.IO.Path.GetDirectoryName(Path))
+                    .EnumerateDirectories()
+                    .Where(i => !string.Equals(i.FullName, Path, StringComparison.OrdinalIgnoreCase) && EntityResolutionHelper.IsMultiPartFile(i.Name));
             }
-            catch (IOException ex)
+            else
             {
-                Logger.ErrorException("Error getting ResolveArgs for {0}", ex, Path);
-                return new List<Video>();
-            }
+                ItemResolveArgs resolveArgs;
 
-            if (!resolveArgs.IsDirectory)
-            {
-                return new List<Video>();
-            }
-
-            var files = resolveArgs.FileSystemChildren.Where(i =>
-            {
-                if ((i.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
+                try
                 {
-                    return false;
+                    resolveArgs = ResolveArgs;
+                }
+                catch (IOException ex)
+                {
+                    Logger.ErrorException("Error getting ResolveArgs for {0}", ex, Path);
+                    return new List<Video>();
                 }
 
-                return !string.Equals(i.FullName, Path, StringComparison.OrdinalIgnoreCase) && EntityResolutionHelper.IsVideoFile(i.FullName) && EntityResolutionHelper.IsMultiPartFile(i.FullName);
-            });
+                files = resolveArgs.FileSystemChildren.Where(i =>
+                {
+                    if ((i.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
+                    {
+                        return false;
+                    }
+
+                    return !string.Equals(i.FullName, Path, StringComparison.OrdinalIgnoreCase) && EntityResolutionHelper.IsVideoFile(i.FullName) && EntityResolutionHelper.IsMultiPartFile(i.Name);
+                });
+            }
 
             return LibraryManager.ResolvePaths<Video>(files, null).Select(video =>
             {

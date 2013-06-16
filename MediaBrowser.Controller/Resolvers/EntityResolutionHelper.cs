@@ -48,7 +48,11 @@ namespace MediaBrowser.Controller.Resolvers
 
         private static readonly Regex MultiFileRegex = new Regex(
             @"(.*?)([ _.-]*(?:cd|dvd|p(?:ar)?t|dis[ck]|d)[ _.-]*[0-9]+)(.*?)(\.[^.]+)$",
-            RegexOptions.Compiled);
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        private static readonly Regex MultiFolderRegex = new Regex(
+            @"(.*?)([ _.-]*(?:cd|dvd|p(?:ar)?t|dis[ck]|d)[ _.-]*[0-9]+)$",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         /// <summary>
         /// Determines whether [is multi part file] [the specified path].
@@ -57,7 +61,7 @@ namespace MediaBrowser.Controller.Resolvers
         /// <returns><c>true</c> if [is multi part file] [the specified path]; otherwise, <c>false</c>.</returns>
         public static bool IsMultiPartFile(string path)
         {
-            return MultiFileRegex.Match(path).Success;
+            return MultiFileRegex.Match(path).Success || MultiFolderRegex.Match(path).Success;
         }
 
         /// <summary>

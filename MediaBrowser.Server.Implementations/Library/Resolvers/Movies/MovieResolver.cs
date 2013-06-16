@@ -50,24 +50,21 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
             if (args.IsDirectory)
             {
                 // Avoid expensive tests against VF's and all their children by not allowing this
-                if (args.Parent == null || args.Parent.IsRoot)
+                if (args.Parent != null)
                 {
-                    return null;
-                }
-
-                // If the parent is not a boxset, the only other allowed parent type is Folder		
-                if (!(args.Parent is BoxSet))
-                {
-                    if (args.Parent.GetType() != typeof(Folder))
+                    if (args.Parent.IsRoot)
                     {
                         return null;
                     }
-                }
 
-                // Optimization to avoid running all these tests against Top folders
-                if (args.Parent != null && args.Parent.IsRoot)
-                {
-                    return null;
+                    // If the parent is not a boxset, the only other allowed parent type is Folder		
+                    if (!(args.Parent is BoxSet))
+                    {
+                        if (args.Parent.GetType() != typeof(Folder))
+                        {
+                            return null;
+                        }
+                    }
                 }
 
                 // Since the looping is expensive, this is an optimization to help us avoid it
@@ -76,16 +73,20 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                     return null;
                 }
 
+                // A shortcut to help us resolve faster in some cases
+                var isKnownMovie = args.ContainsMetaFileByName("movie.xml") || args.ContainsMetaFileByName("tmdb3.json") ||
+                                   args.Path.IndexOf("[tmdbid", StringComparison.OrdinalIgnoreCase) != -1;
+
                 if (args.Path.IndexOf("[trailers]", StringComparison.OrdinalIgnoreCase) != -1)
                 {
-                    return FindMovie<Trailer>(args);
+                    return FindMovie<Trailer>(args.Path, args.FileSystemChildren, isKnownMovie);
                 }
                 if (args.Path.IndexOf("[musicvideos]", StringComparison.OrdinalIgnoreCase) != -1)
                 {
-                    return FindMovie<MusicVideo>(args);
+                    return FindMovie<MusicVideo>(args.Path, args.FileSystemChildren, isKnownMovie);
                 }
 
-                return FindMovie<Movie>(args);
+                return FindMovie<Movie>(args.Path, args.FileSystemChildren, isKnownMovie);
             }
 
             return null;
@@ -123,18 +124,20 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
         /// <summary>
         /// Finds a movie based on a child file system entries
         /// </summary>
-        /// <param name="args">The args.</param>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="path">The path.</param>
+        /// <param name="fileSystemEntries">The file system entries.</param>
+        /// <param name="isKnownMovie">if set to <c>true</c> [is known movie].</param>
         /// <returns>Movie.</returns>
-        private T FindMovie<T>(ItemResolveArgs args)
-            where T : Video, new ()
+        private T FindMovie<T>(string path, IEnumerable<FileSystemInfo> fileSystemEntries, bool isKnownMovie)
+            where T : Video, new()
         {
-            // Optimization to avoid having to resolve every file
-            bool? isKnownMovie = null;
-
             var movies = new List<T>();
 
+            var multiDiscFolders = new List<FileSystemInfo>();
+
             // Loop through each child file/folder and see if we find a video
-            foreach (var child in args.FileSystemChildren)
+            foreach (var child in fileSystemEntries)
             {
                 if ((child.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
                 {
@@ -142,7 +145,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                     {
                         return new T
                         {
-                            Path = args.Path,
+                            Path = path,
                             VideoType = VideoType.Dvd
                         };
                     }
@@ -150,17 +153,14 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                     {
                         return new T
                         {
-                            Path = args.Path,
+                            Path = path,
                             VideoType = VideoType.BluRay
                         };
                     }
-                    if (IsHdDvdDirectory(child.Name))
+
+                    if (EntityResolutionHelper.IsMultiPartFile(child.Name))
                     {
-                        return new T
-                        {
-                            Path = args.Path,
-                            VideoType = VideoType.HdDvd
-                        };
+                        multiDiscFolders.Add(child);
                     }
 
                     continue;
@@ -183,12 +183,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                 if (item != null)
                 {
                     // If we already know it's a movie, we can stop looping
-                    if (!isKnownMovie.HasValue)
-                    {
-                        isKnownMovie = args.ContainsMetaFileByName("movie.xml") || args.ContainsMetaFileByName("tmdb3.json") || args.Path.IndexOf("[tmdbid", StringComparison.OrdinalIgnoreCase) != -1;
-                    }
-
-                    if (isKnownMovie.Value)
+                    if (isKnownMovie)
                     {
                         return item;
                     }
@@ -202,9 +197,63 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                 return GetMultiFileMovie(movies);
             }
 
-            return movies.Count == 1 ? movies[0] : null;
+            if (movies.Count == 1)
+            {
+                return movies[0];
+            }
+
+            if (multiDiscFolders.Count > 0)
+            {
+                return GetMultiDiscMovie<T>(multiDiscFolders);
+            }
+
+            return null;
         }
 
+        /// <summary>
+        /// Gets the multi disc movie.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="folders">The folders.</param>
+        /// <returns>``0.</returns>
+        private T GetMultiDiscMovie<T>(List<FileSystemInfo> folders)
+               where T : Video, new()
+        {
+            var videoType = VideoType.BluRay;
+
+            folders = folders.Where(i =>
+            {
+                var subfolders = Directory.GetDirectories(i.FullName).Select(Path.GetFileName).ToList();
+
+                if (subfolders.Any(IsDvdDirectory))
+                {
+                    videoType = VideoType.Dvd;
+                    return true;
+                }
+                if (subfolders.Any(IsBluRayDirectory))
+                {
+                    videoType = VideoType.BluRay;
+                    return true;
+                }
+
+                return false;
+
+            }).OrderBy(i => i.FullName).ToList();
+
+            if (folders.Count == 0)
+            {
+                return null;
+            }
+
+            return new T
+            {
+                Path = folders[0].FullName,
+
+                IsMultiPart = true,
+
+                VideoType = videoType
+            };
+        }
 
         /// <summary>
         /// Gets the multi file movie.
@@ -216,7 +265,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                where T : Video, new()
         {
             var multiPartMovies = movies.OrderBy(i => i.Path)
-                .Where(i => EntityResolutionHelper.IsMultiPartFile(i.Path))
+                .Where(i => EntityResolutionHelper.IsMultiPartFile(i.Name))
                 .ToList();
 
             // They must all be part of the sequence

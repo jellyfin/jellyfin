@@ -20,7 +20,7 @@ namespace MediaBrowser.Controller.Entities.Movies
         {
             SpecialFeatureIds = new List<Guid>();
         }
-        
+
         /// <summary>
         /// Should be overridden to return the proper folder where metadata lives
         /// </summary>
@@ -30,7 +30,7 @@ namespace MediaBrowser.Controller.Entities.Movies
         {
             get
             {
-                return VideoType == VideoType.VideoFile || VideoType == VideoType.Iso ? System.IO.Path.GetDirectoryName(Path) : Path;
+                return VideoType == VideoType.VideoFile || VideoType == VideoType.Iso || IsMultiPart ? System.IO.Path.GetDirectoryName(Path) : Path;
             }
         }
 
@@ -51,7 +51,7 @@ namespace MediaBrowser.Controller.Entities.Movies
         {
             get
             {
-                return VideoType == VideoType.VideoFile || VideoType == VideoType.Iso;
+                return VideoType == VideoType.VideoFile || VideoType == VideoType.Iso || IsMultiPart;
             }
         }
 
@@ -88,7 +88,7 @@ namespace MediaBrowser.Controller.Entities.Movies
 
             return itemsChanged || results.Contains(true);
         }
-        
+
         /// <summary>
         /// Loads the special features.
         /// </summary>
