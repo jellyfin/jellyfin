@@ -14,7 +14,7 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                return VideoType == VideoType.VideoFile || VideoType == VideoType.Iso ? System.IO.Path.GetDirectoryName(Path) : Path;
+                return VideoType == VideoType.VideoFile || VideoType == VideoType.Iso || IsMultiPart ? System.IO.Path.GetDirectoryName(Path) : Path;
             }
         }
 
@@ -35,7 +35,7 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                return VideoType == VideoType.VideoFile || VideoType == VideoType.Iso;
+                return VideoType == VideoType.VideoFile || VideoType == VideoType.Iso || IsMultiPart;
             }
         }
     }
