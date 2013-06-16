@@ -596,7 +596,7 @@
                 var duration = this.duration;
                 isStaticStream = duration && !isNaN(duration) && duration != Number.POSITIVE_INFINITY && duration != Number.NEGATIVE_INFINITY;
 
-                videoElement.off("play.once").removeAttr('controls');
+                videoElement.off("play.once");
 
                 ApiClient.reportPlaybackStart(Dashboard.getCurrentUserId(), item.Id);
 
