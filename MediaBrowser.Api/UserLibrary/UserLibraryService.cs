@@ -399,7 +399,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userDataRepository);
 
-            var items = _itemRepo.GetItems(movie.SpecialFeatureIds).OrderBy(i => i.SortName).Select(i => dtoBuilder.GetBaseItemDto(i, fields, user)).Select(t => t.Result).ToList();
+            var items = _itemRepo.RetrieveItems<Video>(movie.SpecialFeatureIds).OrderBy(i => i.SortName).Select(i => dtoBuilder.GetBaseItemDto(i, fields, user)).Select(t => t.Result).ToList();
 
             return ToOptimizedResult(items);
         }
@@ -420,7 +420,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userDataRepository);
 
-            var items = _itemRepo.GetItems(item.LocalTrailerIds).OrderBy(i => i.SortName).Select(i => dtoBuilder.GetBaseItemDto(i, fields, user)).Select(t => t.Result).ToList();
+            var items = _itemRepo.RetrieveItems<Trailer>(item.LocalTrailerIds).OrderBy(i => i.SortName).Select(i => dtoBuilder.GetBaseItemDto(i, fields, user)).Select(t => t.Result).ToList();
 
             return ToOptimizedResult(items);
         }
@@ -496,7 +496,7 @@ namespace MediaBrowser.Api.UserLibrary
             // Get the user data for this item
             var key = item.GetUserDataKey();
 
-            var data = _userDataRepository.GetUserData(user.Id, key).Result;
+            var data = _userDataRepository.GetUserData(user.Id, key);
 
             // Set favorite status
             data.IsFavorite = true;
@@ -519,7 +519,7 @@ namespace MediaBrowser.Api.UserLibrary
             var key = item.GetUserDataKey();
 
             // Get the user data for this item
-            var data = _userDataRepository.GetUserData(user.Id, key).Result;
+            var data = _userDataRepository.GetUserData(user.Id, key);
 
             // Set favorite status
             data.IsFavorite = false;
@@ -542,7 +542,7 @@ namespace MediaBrowser.Api.UserLibrary
             var key = item.GetUserDataKey();
 
             // Get the user data for this item
-            var data = _userDataRepository.GetUserData(user.Id, key).Result;
+            var data = _userDataRepository.GetUserData(user.Id, key);
 
             data.Rating = null;
 
@@ -564,7 +564,7 @@ namespace MediaBrowser.Api.UserLibrary
             var key = item.GetUserDataKey();
 
             // Get the user data for this item
-            var data = _userDataRepository.GetUserData(user.Id, key).Result;
+            var data = _userDataRepository.GetUserData(user.Id, key);
 
             data.Likes = request.Likes;
 

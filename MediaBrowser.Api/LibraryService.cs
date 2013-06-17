@@ -431,7 +431,7 @@ namespace MediaBrowser.Api
 
             var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userDataRepository);
 
-            var items = _itemRepo.GetItems(item.ThemeSongIds)
+            var items = _itemRepo.RetrieveItems<Audio>(item.ThemeSongIds)
                          .OrderBy(i => i.SortName)
                          .Select(i => dtoBuilder.GetBaseItemDto(i, fields, user))
                          .Select(t => t.Result)
@@ -471,7 +471,7 @@ namespace MediaBrowser.Api
             var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userDataRepository);
 
             var items =
-                _itemRepo.GetItems(item.ThemeVideoIds)
+                _itemRepo.RetrieveItems<Video>(item.ThemeVideoIds)
                          .OrderBy(i => i.SortName)
                          .Select(i => dtoBuilder.GetBaseItemDto(i, fields, user))
                          .Select(t => t.Result)

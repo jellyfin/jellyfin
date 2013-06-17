@@ -38,10 +38,10 @@ using MediaBrowser.Server.Implementations.IO;
 using MediaBrowser.Server.Implementations.Library;
 using MediaBrowser.Server.Implementations.Localization;
 using MediaBrowser.Server.Implementations.MediaEncoder;
+using MediaBrowser.Server.Implementations.Persistence;
 using MediaBrowser.Server.Implementations.Providers;
 using MediaBrowser.Server.Implementations.ServerManager;
 using MediaBrowser.Server.Implementations.Session;
-using MediaBrowser.Server.Implementations.Sqlite;
 using MediaBrowser.Server.Implementations.Updates;
 using MediaBrowser.Server.Implementations.WebSocket;
 using MediaBrowser.ServerApplication.Implementations;
@@ -244,16 +244,16 @@ namespace MediaBrowser.ServerApplication
             ZipClient = new DotNetZipClient();
             RegisterSingleInstance(ZipClient);
 
-            UserDataRepository = new SQLiteUserDataRepository(ApplicationPaths, JsonSerializer, LogManager);
+            UserDataRepository = new JsonUserDataRepository(ApplicationPaths, JsonSerializer, LogManager);
             RegisterSingleInstance(UserDataRepository);
 
-            UserRepository = new SQLiteUserRepository(ApplicationPaths, JsonSerializer, LogManager);
+            UserRepository = new JsonUserRepository(ApplicationPaths, JsonSerializer, LogManager);
             RegisterSingleInstance(UserRepository);
 
-            DisplayPreferencesRepository = new SQLiteDisplayPreferencesRepository(ApplicationPaths, JsonSerializer, LogManager);
+            DisplayPreferencesRepository = new JsonDisplayPreferencesRepository(ApplicationPaths, JsonSerializer, LogManager);
             RegisterSingleInstance(DisplayPreferencesRepository);
 
-            ItemRepository = new SQLiteItemRepository(ApplicationPaths, JsonSerializer, LogManager);
+            ItemRepository = new JsonItemRepository(ApplicationPaths, JsonSerializer, LogManager);
             RegisterSingleInstance(ItemRepository);
 
             UserManager = new UserManager(Logger, ServerConfigurationManager);

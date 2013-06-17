@@ -27,6 +27,6 @@ namespace MediaBrowser.Controller.Persistence
         /// <param name="userId">The user id.</param>
         /// <param name="key">The key.</param>
         /// <returns>Task{UserItemData}.</returns>
-        Task<UserItemData> GetUserData(Guid userId, string key);
+        UserItemData GetUserData(Guid userId, string key);
     }
 }

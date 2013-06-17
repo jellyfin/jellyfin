@@ -273,7 +273,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 return Guid.Empty;
             }
-            
+
             try
             {
                 if (!ResolveArgs.IsDirectory)
@@ -681,11 +681,6 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>List{Video}.</returns>
         private IEnumerable<Trailer> LoadLocalTrailers()
         {
-            if (LocationType != LocationType.FileSystem)
-            {
-                return new List<Trailer>();
-            }
-
             ItemResolveArgs resolveArgs;
 
             try
@@ -737,7 +732,7 @@ namespace MediaBrowser.Controller.Entities
             return LibraryManager.ResolvePaths<Trailer>(files, null).Select(video =>
             {
                 // Try to retrieve it from the db. If we don't find it, use the resolved version
-                var dbItem = LibraryManager.RetrieveItem(video.Id) as Trailer;
+                var dbItem = LibraryManager.RetrieveItem(video.Id, typeof(Trailer)) as Trailer;
 
                 if (dbItem != null)
                 {
@@ -756,11 +751,6 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>List{Audio.Audio}.</returns>
         private IEnumerable<Audio.Audio> LoadThemeSongs()
         {
-            if (LocationType != LocationType.FileSystem)
-            {
-                return new List<Audio.Audio>();
-            }
-
             ItemResolveArgs resolveArgs;
 
             try
@@ -803,7 +793,7 @@ namespace MediaBrowser.Controller.Entities
             return LibraryManager.ResolvePaths<Audio.Audio>(files, null).Select(audio =>
             {
                 // Try to retrieve it from the db. If we don't find it, use the resolved version
-                var dbItem = LibraryManager.RetrieveItem(audio.Id) as Audio.Audio;
+                var dbItem = LibraryManager.RetrieveItem(audio.Id, typeof(Audio.Audio)) as Audio.Audio;
 
                 if (dbItem != null)
                 {
@@ -821,11 +811,6 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>List{Video}.</returns>
         private IEnumerable<Video> LoadThemeVideos()
         {
-            if (LocationType != LocationType.FileSystem)
-            {
-                return new List<Video>();
-            }
-
             ItemResolveArgs resolveArgs;
 
             try
@@ -866,7 +851,7 @@ namespace MediaBrowser.Controller.Entities
             return LibraryManager.ResolvePaths<Video>(files, null).Select(item =>
             {
                 // Try to retrieve it from the db. If we don't find it, use the resolved version
-                var dbItem = LibraryManager.RetrieveItem(item.Id) as Video;
+                var dbItem = LibraryManager.RetrieveItem(item.Id, typeof(Video)) as Video;
 
                 if (dbItem != null)
                 {
@@ -896,13 +881,20 @@ namespace MediaBrowser.Controller.Entities
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var themeSongsChanged = await RefreshThemeSongs(cancellationToken, forceSave, forceRefresh, allowSlowProviders).ConfigureAwait(false);
+            var themeSongsChanged = false;
 
-            var themeVideosChanged = await RefreshThemeVideos(cancellationToken, forceSave, forceRefresh, allowSlowProviders).ConfigureAwait(false);
+            var themeVideosChanged = false;
 
-            var localTrailersChanged = await RefreshLocalTrailers(cancellationToken, forceSave, forceRefresh, allowSlowProviders).ConfigureAwait(false);
+            var localTrailersChanged = false;
 
-            cancellationToken.ThrowIfCancellationRequested();
+            if (LocationType == LocationType.FileSystem && Parent != null)
+            {
+                themeSongsChanged = await RefreshThemeSongs(cancellationToken, forceSave, forceRefresh, allowSlowProviders).ConfigureAwait(false);
+
+                themeVideosChanged = await RefreshThemeVideos(cancellationToken, forceSave, forceRefresh, allowSlowProviders).ConfigureAwait(false);
+
+                localTrailersChanged = await RefreshLocalTrailers(cancellationToken, forceSave, forceRefresh, allowSlowProviders).ConfigureAwait(false);
+            }
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -1096,8 +1088,7 @@ namespace MediaBrowser.Controller.Entities
                 parent = parent.Parent;
             }
 
-            //not found - load from repo
-            return LibraryManager.RetrieveItem(id);
+            return null;
         }
 
         /// <summary>
@@ -1315,7 +1306,7 @@ namespace MediaBrowser.Controller.Entities
 
             var key = GetUserDataKey();
 
-            var data = await userManager.GetUserData(user.Id, key).ConfigureAwait(false);
+            var data = userManager.GetUserData(user.Id, key);
 
             if (wasPlayed)
             {

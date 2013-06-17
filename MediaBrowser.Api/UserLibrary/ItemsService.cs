@@ -335,7 +335,7 @@ namespace MediaBrowser.Api.UserLibrary
                 case ItemFilter.Likes:
                     return items.Where(item =>
                     {
-                        var userdata = repository.GetUserData(user.Id, item.GetUserDataKey()).Result;
+                        var userdata = repository.GetUserData(user.Id, item.GetUserDataKey());
 
                         return userdata != null && userdata.Likes.HasValue && userdata.Likes.Value;
                     });
@@ -343,7 +343,7 @@ namespace MediaBrowser.Api.UserLibrary
                 case ItemFilter.Dislikes:
                     return items.Where(item =>
                     {
-                        var userdata = repository.GetUserData(user.Id, item.GetUserDataKey()).Result;
+                        var userdata = repository.GetUserData(user.Id, item.GetUserDataKey());
 
                         return userdata != null && userdata.Likes.HasValue && !userdata.Likes.Value;
                     });
@@ -351,7 +351,7 @@ namespace MediaBrowser.Api.UserLibrary
                 case ItemFilter.IsFavorite:
                     return items.Where(item =>
                     {
-                        var userdata = repository.GetUserData(user.Id, item.GetUserDataKey()).Result;
+                        var userdata = repository.GetUserData(user.Id, item.GetUserDataKey());
 
                         return userdata != null && userdata.IsFavorite;
                     });
@@ -362,7 +362,7 @@ namespace MediaBrowser.Api.UserLibrary
                 case ItemFilter.IsResumable:
                     return items.Where(item =>
                     {
-                        var userdata = repository.GetUserData(user.Id, item.GetUserDataKey()).Result;
+                        var userdata = repository.GetUserData(user.Id, item.GetUserDataKey());
 
                         return userdata != null && userdata.PlaybackPositionTicks > 0;
                     });
@@ -370,7 +370,7 @@ namespace MediaBrowser.Api.UserLibrary
                 case ItemFilter.IsPlayed:
                     return items.Where(item =>
                     {
-                        var userdata = repository.GetUserData(user.Id, item.GetUserDataKey()).Result;
+                        var userdata = repository.GetUserData(user.Id, item.GetUserDataKey());
 
                         return userdata != null && userdata.Played;
                     });
@@ -378,7 +378,7 @@ namespace MediaBrowser.Api.UserLibrary
                 case ItemFilter.IsUnplayed:
                     return items.Where(item =>
                     {
-                        var userdata = repository.GetUserData(user.Id, item.GetUserDataKey()).Result;
+                        var userdata = repository.GetUserData(user.Id, item.GetUserDataKey());
 
                         return userdata == null || !userdata.Played;
                     });

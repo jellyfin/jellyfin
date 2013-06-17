@@ -139,7 +139,10 @@ namespace MediaBrowser.Controller.Entities
 
             var additionalPartsChanged = false;
 
-            if (IsMultiPart && LocationType == LocationType.FileSystem)
+            // Must have a parent to have additional parts
+            // In other words, it must be part of the Parent/Child tree
+            // The additional parts won't have additional parts themselves
+            if (IsMultiPart && LocationType == LocationType.FileSystem && Parent != null)
             {
                 try
                 {
@@ -164,11 +167,6 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>Task{System.Boolean}.</returns>
         private async Task<bool> RefreshAdditionalParts(CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false, bool allowSlowProviders = true)
         {
-            if (!IsMultiPart || LocationType != LocationType.FileSystem)
-            {
-                return false;
-            }
-
             var newItems = LoadAdditionalParts().ToList();
 
             var newItemIds = newItems.Select(i => i.Id).ToList();
@@ -214,7 +212,7 @@ namespace MediaBrowser.Controller.Entities
             return LibraryManager.ResolvePaths<Video>(files, null).Select(video =>
             {
                 // Try to retrieve it from the db. If we don't find it, use the resolved version
-                var dbItem = LibraryManager.RetrieveItem(video.Id) as Video;
+                var dbItem = LibraryManager.RetrieveItem(video.Id, typeof(Video)) as Video;
 
                 if (dbItem != null)
                 {

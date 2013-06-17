@@ -41,7 +41,7 @@ namespace MediaBrowser.Providers.MediaInfo
         }
 
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
-        
+
         /// <summary>
         /// Fetches metadata and returns true or false indicating if any work that requires persistence was done
         /// </summary>
@@ -134,7 +134,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="mount">The mount.</param>
         protected virtual void OnPreFetch(T item, IIsoMount mount)
         {
-            
+
         }
 
         /// <summary>
@@ -187,11 +187,15 @@ namespace MediaBrowser.Providers.MediaInfo
             var stream = new MediaStream
             {
                 Codec = streamInfo.codec_name,
-                Language = GetDictionaryValue(streamInfo.tags, "language"),
                 Profile = streamInfo.profile,
                 Level = streamInfo.level,
                 Index = streamInfo.index
             };
+
+            if (streamInfo.tags != null)
+            {
+                stream.Language = GetDictionaryValue(streamInfo.tags, "language");
+            }
 
             if (streamInfo.codec_type.Equals("audio", StringComparison.OrdinalIgnoreCase))
             {

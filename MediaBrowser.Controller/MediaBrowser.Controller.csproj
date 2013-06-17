@@ -80,6 +80,7 @@
     <Compile Include="Library\ILibraryPrescanTask.cs" />
     <Compile Include="Library\IMetadataSaver.cs" />
     <Compile Include="Localization\ILocalizationManager.cs" />
+    <Compile Include="Reflection\TypeMapper.cs" />
     <Compile Include="Session\ISessionManager.cs" />
     <Compile Include="Drawing\ImageExtensions.cs" />
     <Compile Include="Drawing\ImageHeader.cs" />
