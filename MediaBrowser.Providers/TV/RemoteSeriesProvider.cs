@@ -291,10 +291,10 @@ namespace MediaBrowser.Providers.TV
                 }
                 if (ConfigurationManager.Configuration.SaveLocalMeta)
                 {
-                    var ms = new MemoryStream();
-                    seriesDoc.Save(ms);
+                    //var ms = new MemoryStream();
+                    //seriesDoc.Save(ms);
 
-                    await _providerManager.SaveToLibraryFilesystem(series, Path.Combine(series.MetaLocation, LocalMetaFileName), ms, cancellationToken).ConfigureAwait(false);
+                    //await _providerManager.SaveToLibraryFilesystem(series, Path.Combine(series.MetaLocation, LocalMetaFileName), ms, cancellationToken).ConfigureAwait(false);
                 }
             }
         }
