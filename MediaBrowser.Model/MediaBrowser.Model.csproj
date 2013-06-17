@@ -60,6 +60,7 @@
     <Compile Include="Querying\ItemReviewsResult.cs" />
     <Compile Include="Querying\ItemsByNameQuery.cs" />
     <Compile Include="Entities\BaseItemInfo.cs" />
+    <Compile Include="Querying\NextUpQuery.cs" />
     <Compile Include="Querying\SimilarItemsQuery.cs" />
     <Compile Include="Session\BrowseRequest.cs" />
     <Compile Include="Session\PlayRequest.cs" />
