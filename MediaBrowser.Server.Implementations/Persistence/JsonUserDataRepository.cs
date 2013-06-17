@@ -1,31 +1,28 @@
-﻿using System.Data.SQLite;
-using MediaBrowser.Common.Configuration;
+﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Concurrent;
-using System.Data;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Server.Implementations.Sqlite
+namespace MediaBrowser.Server.Implementations.Persistence
 {
-    /// <summary>
-    /// Class SQLiteUserDataRepository
-    /// </summary>
-    public class SQLiteUserDataRepository : SqliteRepository, IUserDataRepository
+    public class JsonUserDataRepository : IUserDataRepository
     {
-        private readonly ConcurrentDictionary<string, Task<UserItemData>> _userData = new ConcurrentDictionary<string, Task<UserItemData>>();
+        private readonly ConcurrentDictionary<string, SemaphoreSlim> _fileLocks = new ConcurrentDictionary<string, SemaphoreSlim>();
 
-        private readonly SemaphoreSlim _writeLock = new SemaphoreSlim(1, 1);
-
-        /// <summary>
-        /// The repository name
-        /// </summary>
-        public const string RepositoryName = "SQLite";
+        private SemaphoreSlim GetLock(string filename)
+        {
+            return _fileLocks.GetOrAdd(filename, key => new SemaphoreSlim(1, 1));
+        }
+        
+        private readonly ConcurrentDictionary<string, UserItemData> _userData = new ConcurrentDictionary<string, UserItemData>();
 
         /// <summary>
         /// Gets the name of the repository
@@ -35,19 +32,18 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         {
             get
             {
-                return RepositoryName;
+                return "Json";
             }
         }
 
         private readonly IJsonSerializer _jsonSerializer;
 
-        /// <summary>
-        /// The _app paths
-        /// </summary>
-        private readonly IApplicationPaths _appPaths;
+        private readonly string _dataPath;
+
+        private readonly ILogger _logger;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SQLiteUserDataRepository" /> class.
+        /// Initializes a new instance of the <see cref="JsonUserDataRepository" /> class.
         /// </summary>
         /// <param name="appPaths">The app paths.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
@@ -57,8 +53,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         /// or
         /// appPaths
         /// </exception>
-        public SQLiteUserDataRepository(IApplicationPaths appPaths, IJsonSerializer jsonSerializer, ILogManager logManager)
-            : base(logManager)
+        public JsonUserDataRepository(IApplicationPaths appPaths, IJsonSerializer jsonSerializer, ILogManager logManager)
         {
             if (jsonSerializer == null)
             {
@@ -69,30 +64,18 @@ namespace MediaBrowser.Server.Implementations.Sqlite
                 throw new ArgumentNullException("appPaths");
             }
 
+            _logger = logManager.GetLogger(GetType().Name);
             _jsonSerializer = jsonSerializer;
-            _appPaths = appPaths;
+            _dataPath = Path.Combine(appPaths.DataPath, "userdata");
         }
 
         /// <summary>
         /// Opens the connection to the database
         /// </summary>
         /// <returns>Task.</returns>
-        public async Task Initialize()
+        public Task Initialize()
         {
-            var dbFile = Path.Combine(_appPaths.DataPath, "userdata.db");
-
-            await ConnectToDb(dbFile).ConfigureAwait(false);
-
-            string[] queries = {
-
-                                "create table if not exists userdata (key nvarchar, userId GUID, data BLOB)",
-                                "create unique index if not exists userdataindex on userdata (key, userId)",
-                                "create table if not exists schema_version (table_name primary key, version)",
-                                //pragmas
-                                "pragma temp_store = memory"
-                               };
-
-            RunQueries(queries);
+            return Task.FromResult(true);
         }
 
         /// <summary>
@@ -135,14 +118,12 @@ namespace MediaBrowser.Server.Implementations.Sqlite
             {
                 await PersistUserData(userId, key, userData, cancellationToken).ConfigureAwait(false);
 
-                var newValue = Task.FromResult(userData);
-
                 // Once it succeeds, put it into the dictionary to make it available to everyone else
-                _userData.AddOrUpdate(GetInternalKey(userId, key), newValue, delegate { return newValue; });
+                _userData.AddOrUpdate(GetInternalKey(userId, key), userData, delegate { return userData; });
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error saving user data", ex);
+                _logger.ErrorException("Error saving user data", ex);
 
                 throw;
             }
@@ -171,60 +152,25 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var serialized = _jsonSerializer.SerializeToBytes(userData);
+            var path = GetUserDataPath(userId, key);
 
-            cancellationToken.ThrowIfCancellationRequested();
+            var parentPath = Path.GetDirectoryName(path);
+            if (!Directory.Exists(parentPath))
+            {
+                Directory.CreateDirectory(parentPath);
+            }
 
-            await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+            var semaphore = GetLock(path);
 
-            SQLiteTransaction transaction = null;
+            await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             try
             {
-                transaction = Connection.BeginTransaction();
-
-                using (var cmd = Connection.CreateCommand())
-                {
-                    cmd.CommandText = "replace into userdata (key, userId, data) values (@1, @2, @3)";
-                    cmd.AddParam("@1", key);
-                    cmd.AddParam("@2", userId);
-                    cmd.AddParam("@3", serialized);
-
-                    cmd.Transaction = transaction;
-
-                    await cmd.ExecuteNonQueryAsync(cancellationToken);
-                }
-
-                transaction.Commit();
-            }
-            catch (OperationCanceledException)
-            {
-                if (transaction != null)
-                {
-                    transaction.Rollback();
-                }
-
-                throw;
-            }
-            catch (Exception e)
-            {
-                Logger.ErrorException("Failed to save user data:", e);
-
-                if (transaction != null)
-                {
-                    transaction.Rollback();
-                }
-
-                throw;
+                _jsonSerializer.SerializeToFile(userData, path);
             }
             finally
             {
-                if (transaction != null)
-                {
-                    transaction.Dispose();
-                }
-
-                _writeLock.Release();
+                semaphore.Release();
             }
         }
 
@@ -239,7 +185,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         /// or
         /// key
         /// </exception>
-        public Task<UserItemData> GetUserData(Guid userId, string key)
+        public UserItemData GetUserData(Guid userId, string key)
         {
             if (userId == Guid.Empty)
             {
@@ -259,31 +205,42 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         /// <param name="userId">The user id.</param>
         /// <param name="key">The key.</param>
         /// <returns>Task{UserItemData}.</returns>
-        private async Task<UserItemData> RetrieveUserData(Guid userId, string key)
+        private UserItemData RetrieveUserData(Guid userId, string key)
         {
-            using (var cmd = Connection.CreateCommand())
+            var path = GetUserDataPath(userId, key);
+
+            try
             {
-                cmd.CommandText = "select data from userdata where key = @key and userId=@userId";
-
-                var idParam = cmd.Parameters.Add("@key", DbType.String);
-                idParam.Value = key;
-
-                var userIdParam = cmd.Parameters.Add("@userId", DbType.Guid);
-                userIdParam.Value = userId;
-
-                using (var reader = await cmd.ExecuteReaderAsync(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult | CommandBehavior.SingleRow).ConfigureAwait(false))
-                {
-                    if (reader.Read())
-                    {
-                        using (var stream = GetStream(reader, 0))
-                        {
-                            return _jsonSerializer.DeserializeFromStream<UserItemData>(stream);
-                        }
-                    }
-                }
-
-                return new UserItemData();
+                return _jsonSerializer.DeserializeFromFile<UserItemData>(path);
             }
+            catch (IOException)
+            {
+                // File doesn't exist or is currently bring written to
+                return new UserItemData { UserId = userId };
+            }
+        }
+
+        private string GetUserDataPath(Guid userId, string key)
+        {
+            var userFolder = Path.Combine(_dataPath, userId.ToString());
+
+            var keyHash = key.GetMD5().ToString();
+
+            var prefix = keyHash.Substring(0, 1);
+
+            return Path.Combine(userFolder, prefix, keyHash + ".json");
+        }
+
+        public void Dispose()
+        {
+            // Wait up to two seconds for any existing writes to finish
+            var locks = _fileLocks.Values.ToList()
+                                  .Where(i => i.CurrentCount == 1)
+                                  .Select(i => i.WaitAsync(2000));
+
+            var task = Task.WhenAll(locks);
+
+            Task.WaitAll(task);
         }
     }
 }

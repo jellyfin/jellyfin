@@ -64,7 +64,7 @@ namespace MediaBrowser.Api
 
             var video = (Video)item;
 
-            var items = _itemRepo.GetItems(video.AdditionalPartIds)
+            var items = _itemRepo.RetrieveItems<Video>(video.AdditionalPartIds)
                          .OrderBy(i => i.SortName)
                          .Select(i => dtoBuilder.GetBaseItemDto(i, fields, user))
                          .Select(t => t.Result)

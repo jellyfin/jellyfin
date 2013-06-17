@@ -68,7 +68,14 @@ namespace MediaBrowser.Controller.Entities.Movies
             // Kick off a task to refresh the main item
             var result = await base.RefreshMetadata(cancellationToken, forceSave, forceRefresh, allowSlowProviders).ConfigureAwait(false);
 
-            var specialFeaturesChanged = await RefreshSpecialFeatures(cancellationToken, forceSave, forceRefresh, allowSlowProviders).ConfigureAwait(false);
+            var specialFeaturesChanged = false;
+
+            // Must have a parent to have special features
+            // In other words, it must be part of the Parent/Child tree
+            if (LocationType == LocationType.FileSystem && Parent != null)
+            {
+                specialFeaturesChanged = await RefreshSpecialFeatures(cancellationToken, forceSave, forceRefresh, allowSlowProviders).ConfigureAwait(false);
+            }
 
             return specialFeaturesChanged || result;
         }
@@ -95,11 +102,6 @@ namespace MediaBrowser.Controller.Entities.Movies
         /// <returns>IEnumerable{Video}.</returns>
         private IEnumerable<Video> LoadSpecialFeatures()
         {
-            if (LocationType != LocationType.FileSystem)
-            {
-                return new List<Video>();
-            }
-
             FileSystemInfo folder;
 
             try
@@ -133,7 +135,7 @@ namespace MediaBrowser.Controller.Entities.Movies
             return LibraryManager.ResolvePaths<Video>(files, null).Select(video =>
             {
                 // Try to retrieve it from the db. If we don't find it, use the resolved version
-                var dbItem = LibraryManager.RetrieveItem(video.Id) as Video;
+                var dbItem = LibraryManager.RetrieveItem(video.Id, typeof(Video)) as Video;
 
                 if (dbItem != null)
                 {

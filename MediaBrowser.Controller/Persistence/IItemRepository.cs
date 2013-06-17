@@ -1,9 +1,10 @@
 ﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Persistence
 {
@@ -19,36 +20,6 @@ namespace MediaBrowser.Controller.Persistence
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task SaveItem(BaseItem item, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Gets an item
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns>BaseItem.</returns>
-        BaseItem GetItem(Guid id);
-
-        /// <summary>
-        /// Gets children of a given Folder
-        /// </summary>
-        /// <param name="parent">The parent.</param>
-        /// <returns>IEnumerable{BaseItem}.</returns>
-        IEnumerable<BaseItem> RetrieveChildren(Folder parent);
-
-        /// <summary>
-        /// Retrieves the items.
-        /// </summary>
-        /// <param name="ids">The ids.</param>
-        /// <returns>IEnumerable{BaseItem}.</returns>
-        IEnumerable<BaseItem> GetItems(IEnumerable<Guid> ids);
-
-        /// <summary>
-        /// Saves children of a given Folder
-        /// </summary>
-        /// <param name="parentId">The parent id.</param>
-        /// <param name="children">The children.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        Task SaveChildren(Guid parentId, IEnumerable<BaseItem> children, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the critic reviews.
@@ -72,5 +43,46 @@ namespace MediaBrowser.Controller.Persistence
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task SaveItems(IEnumerable<BaseItem> items, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Retrieves the item.
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <param name="type">The type.</param>
+        /// <returns>BaseItem.</returns>
+        BaseItem RetrieveItem(Guid id, Type type);
+    }
+
+    /// <summary>
+    /// Class ItemRepositoryExtensions
+    /// </summary>
+    public static class ItemRepositoryExtensions
+    {
+        /// <summary>
+        /// Retrieves the item.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="repository">The repository.</param>
+        /// <param name="id">The id.</param>
+        /// <returns>``0.</returns>
+        public static T RetrieveItem<T>(this IItemRepository repository, Guid id) 
+            where T : BaseItem, new()
+        {
+            return repository.RetrieveItem(id, typeof(T)) as T;
+        }
+
+        /// <summary>
+        /// Retrieves the item.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="repository">The repository.</param>
+        /// <param name="idList">The id list.</param>
+        /// <returns>IEnumerable{``0}.</returns>
+        public static IEnumerable<T> RetrieveItems<T>(this IItemRepository repository, IEnumerable<Guid> idList) 
+            where T : BaseItem, new()
+        {
+            return idList.Select(repository.RetrieveItem<T>).Where(i => i != null);
+        }
     }
 }
+

@@ -337,7 +337,7 @@ namespace MediaBrowser.Api.UserLibrary
         public string Name;
 
         public BaseItem Item;
-        private Task<UserItemData> _userData;
+        private UserItemData _userData;
 
         public List<BaseItem> Items
         {
@@ -353,12 +353,7 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var item = await GetItem().ConfigureAwait(false);
 
-            if (_userData == null)
-            {
-                _userData = repo.GetUserData(userId, item.GetUserDataKey());
-            }
-
-            return await _userData.ConfigureAwait(false);
+            return _userData ?? (_userData = repo.GetUserData(userId, item.GetUserDataKey()));
         }
 
         public IbnStub(string name, Func<IEnumerable<BaseItem>> childItems, Func<string,Task<T>> item)

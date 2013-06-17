@@ -78,6 +78,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Savers\MovieXmlSaver.cs" />
     <Compile Include="TV\EpisodeImageFromMediaLocationProvider.cs" />
+    <Compile Include="TV\EpisodeIndexNumberProvider.cs" />
     <Compile Include="TV\EpisodeProviderFromXml.cs" />
     <Compile Include="TV\EpisodeXmlParser.cs" />
     <Compile Include="TV\FanArtSeasonProvider.cs" />

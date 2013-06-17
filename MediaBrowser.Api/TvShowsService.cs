@@ -70,7 +70,7 @@ namespace MediaBrowser.Api
     public class GetSimilarShows : BaseGetSimilarItems
     {
     }
-    
+
     /// <summary>
     /// Class TvShowsService
     /// </summary>
@@ -110,9 +110,9 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetSimilarShows request)
         {
-            var result = SimilarItemsHelper.GetSimilarItems(_userManager, 
-                _libraryManager, 
-                _userDataRepository, 
+            var result = SimilarItemsHelper.GetSimilarItems(_userManager,
+                _libraryManager,
+                _userDataRepository,
                 Logger,
                 request, item => item is Series,
                 SimilarItemsHelper.GetSimiliarityScore);
@@ -141,20 +141,19 @@ namespace MediaBrowser.Api
         {
             var user = _userManager.GetUserById(request.UserId);
 
-            var tasks = user.RootFolder
+            var itemsArray = user.RootFolder
                 .GetRecursiveChildren(user)
                 .OfType<Series>()
                 .AsParallel()
-                .Select(i => GetNextUp(i, user));
-
-            var itemsArray = await Task.WhenAll(tasks).ConfigureAwait(false);
+                .Select(i => GetNextUp(i, user))
+                .ToArray();
 
             itemsArray = itemsArray
                 .Where(i => i.Item1 != null)
                 .OrderByDescending(i =>
                 {
                     var seriesUserData =
-                        _userDataRepository.GetUserData(user.Id, i.Item1.Series.GetUserDataKey()).Result;
+                        _userDataRepository.GetUserData(user.Id, i.Item1.Series.GetUserDataKey());
 
                     if (seriesUserData.IsFavorite)
                     {
@@ -190,7 +189,7 @@ namespace MediaBrowser.Api
         /// <param name="series">The series.</param>
         /// <param name="user">The user.</param>
         /// <returns>Task{Episode}.</returns>
-        private async Task<Tuple<Episode,DateTime>> GetNextUp(Series series, User user)
+        private Tuple<Episode, DateTime> GetNextUp(Series series, User user)
         {
             var allEpisodes = series.GetRecursiveChildren(user)
                 .OfType<Episode>()
@@ -205,7 +204,7 @@ namespace MediaBrowser.Api
             // Go back starting with the most recent episodes
             foreach (var episode in allEpisodes)
             {
-                var userData = await _userDataRepository.GetUserData(user.Id, episode.GetUserDataKey()).ConfigureAwait(false);
+                var userData = _userDataRepository.GetUserData(user.Id, episode.GetUserDataKey());
 
                 if (userData.Played)
                 {
