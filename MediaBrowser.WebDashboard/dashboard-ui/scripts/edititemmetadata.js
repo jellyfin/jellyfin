@@ -388,8 +388,8 @@
             html += '<div data-role="fieldcontain">';
             html += '<label for="lock' + field + '">' + fieldTitle + ':</label>';
             html += '<select name="lock'+ type +'" id="lock' + field + '" data-role="slider" data-mini="true">';
-            html += '<option value="' + field + '">Locked</option>';
-            html += '<option value="" selected="selected">Unlocked</option>';
+            html += '<option value="' + field + '">Off</option>';
+            html += '<option value="" selected="selected">On</option>';
             html += '</select>';
             html += '</div>';
         }
