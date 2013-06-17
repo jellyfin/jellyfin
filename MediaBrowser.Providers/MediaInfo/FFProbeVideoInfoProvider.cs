@@ -244,7 +244,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="data">The data.</param>
         private void FetchWtvInfo(Video video, MediaInfoResult data)
         {
-            if (data.format.tags == null)
+            if (data.format == null || data.format.tags == null)
             {
                 return;
             }
