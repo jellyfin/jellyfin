@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Library;
+﻿using System.Collections;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
 using System;
@@ -136,7 +137,19 @@ namespace MediaBrowser.Controller.Entities
             // Kick off a task to refresh the main item
             var result = await base.RefreshMetadata(cancellationToken, forceSave, forceRefresh, allowSlowProviders).ConfigureAwait(false);
 
-            var additionalPartsChanged = await RefreshAdditionalParts(cancellationToken, forceSave, forceRefresh, allowSlowProviders).ConfigureAwait(false);
+            var additionalPartsChanged = false;
+
+            if (IsMultiPart && LocationType == LocationType.FileSystem)
+            {
+                try
+                {
+                    additionalPartsChanged = await RefreshAdditionalParts(cancellationToken, forceSave, forceRefresh, allowSlowProviders).ConfigureAwait(false);
+                }
+                catch (IOException ex)
+                {
+                    Logger.ErrorException("Error loading additional parts for {0}.", ex, Name);
+                }
+            }
 
             return additionalPartsChanged || result;
         }
@@ -151,7 +164,13 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>Task{System.Boolean}.</returns>
         private async Task<bool> RefreshAdditionalParts(CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false, bool allowSlowProviders = true)
         {
+            if (!IsMultiPart || LocationType != LocationType.FileSystem)
+            {
+                return false;
+            }
+
             var newItems = LoadAdditionalParts().ToList();
+
             var newItemIds = newItems.Select(i => i.Id).ToList();
 
             var itemsChanged = !AdditionalPartIds.SequenceEqual(newItemIds);
@@ -171,11 +190,6 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>IEnumerable{Video}.</returns>
         private IEnumerable<Video> LoadAdditionalParts()
         {
-            if (!IsMultiPart || LocationType != LocationType.FileSystem)
-            {
-                return new List<Video>();
-            }
-
             IEnumerable<FileSystemInfo> files;
 
             if (VideoType == VideoType.BluRay || VideoType == VideoType.Dvd)
@@ -186,19 +200,7 @@ namespace MediaBrowser.Controller.Entities
             }
             else
             {
-                ItemResolveArgs resolveArgs;
-
-                try
-                {
-                    resolveArgs = ResolveArgs;
-                }
-                catch (IOException ex)
-                {
-                    Logger.ErrorException("Error getting ResolveArgs for {0}", ex, Path);
-                    return new List<Video>();
-                }
-
-                files = resolveArgs.FileSystemChildren.Where(i =>
+                files = ResolveArgs.FileSystemChildren.Where(i =>
                 {
                     if ((i.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
                     {
