@@ -125,6 +125,13 @@ namespace MediaBrowser.Model.ApiClient
         Task<BaseItemDto> GetStudioAsync(string name);
 
         /// <summary>
+        /// Gets the next up async.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>Task{ItemsResult}.</returns>
+        Task<ItemsResult> GetNextUpAsync(NextUpQuery query);
+        
+        /// <summary>
         /// Gets a genre
         /// </summary>
         /// <param name="name">The name.</param>
