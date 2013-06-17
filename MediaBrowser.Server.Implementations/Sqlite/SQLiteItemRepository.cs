@@ -67,6 +67,8 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         /// </summary>
         private SQLiteCommand _saveChildrenCommand;
 
+        private string _criticReviewsPath;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SQLiteUserDataRepository" /> class.
         /// </summary>
@@ -88,6 +90,8 @@ namespace MediaBrowser.Server.Implementations.Sqlite
 
             _appPaths = appPaths;
             _jsonSerializer = jsonSerializer;
+
+            _criticReviewsPath = Path.Combine(_appPaths.DataPath, "critic-reviews");
         }
 
         /// <summary>
@@ -469,23 +473,6 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         }
 
         /// <summary>
-        /// Gets the critic reviews path.
-        /// </summary>
-        /// <param name="create">if set to <c>true</c> [create].</param>
-        /// <returns>System.String.</returns>
-        private string GetCriticReviewsPath(bool create)
-        {
-            var path = Path.Combine(_appPaths.DataPath, "critic-reviews");
-
-            if (create && !Directory.Exists(path))
-            {
-                Directory.CreateDirectory(path);
-            }
-
-            return path;
-        }
-
-        /// <summary>
         /// Gets the critic reviews.
         /// </summary>
         /// <param name="itemId">The item id.</param>
@@ -497,7 +484,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
 
                 try
                 {
-                    var path = Path.Combine(GetCriticReviewsPath(false), itemId + ".json");
+                    var path = Path.Combine(_criticReviewsPath, itemId + ".json");
 
                     return _jsonSerializer.DeserializeFromFile<List<ItemReview>>(path);
                 }
@@ -523,7 +510,12 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         {
             return Task.Run(() =>
             {
-                var path = Path.Combine(GetCriticReviewsPath(true), itemId + ".json");
+                if (!Directory.Exists(_criticReviewsPath))
+                {
+                    Directory.CreateDirectory(_criticReviewsPath);
+                }
+
+                var path = Path.Combine(_criticReviewsPath, itemId + ".json");
 
                 _jsonSerializer.SerializeToFile(criticReviews.ToList(), path);
             });
