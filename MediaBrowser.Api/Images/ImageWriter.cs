@@ -33,6 +33,8 @@ namespace MediaBrowser.Api.Images
         /// </summary>
         public DateTime OriginalImageDateModified;
 
+        public string OriginalImagePath;
+
         /// <summary>
         /// The _options
         /// </summary>
@@ -71,7 +73,7 @@ namespace MediaBrowser.Api.Images
                 cropwhitespace = Request.CropWhitespace.Value;
             }
 
-            return Kernel.Instance.ImageManager.ProcessImage(Item, Request.Type, Request.Index ?? 0, cropwhitespace,
+            return Kernel.Instance.ImageManager.ProcessImage(Item, Request.Type, Request.Index ?? 0, OriginalImagePath, cropwhitespace,
                                                     OriginalImageDateModified, responseStream, Request.Width, Request.Height, Request.MaxWidth,
                                                     Request.MaxHeight, Request.Quality, Enhancers);
         }

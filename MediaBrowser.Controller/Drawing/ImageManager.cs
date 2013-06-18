@@ -96,6 +96,7 @@ namespace MediaBrowser.Controller.Drawing
         /// <param name="entity">The entity that owns the image</param>
         /// <param name="imageType">The image type</param>
         /// <param name="imageIndex">The image index (currently only used with backdrops)</param>
+        /// <param name="originalImagePath">The original image path.</param>
         /// <param name="cropWhitespace">if set to <c>true</c> [crop whitespace].</param>
         /// <param name="dateModified">The last date modified of the original image file</param>
         /// <param name="toStream">The stream to save the new image to</param>
@@ -107,7 +108,7 @@ namespace MediaBrowser.Controller.Drawing
         /// <param name="enhancers">The enhancers.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">entity</exception>
-        public async Task ProcessImage(BaseItem entity, ImageType imageType, int imageIndex, bool cropWhitespace, DateTime dateModified, Stream toStream, int? width, int? height, int? maxWidth, int? maxHeight, int? quality, List<IImageEnhancer> enhancers)
+        public async Task ProcessImage(BaseItem entity, ImageType imageType, int imageIndex, string originalImagePath, bool cropWhitespace, DateTime dateModified, Stream toStream, int? width, int? height, int? maxWidth, int? maxHeight, int? quality, List<IImageEnhancer> enhancers)
         {
             if (entity == null)
             {
@@ -118,8 +119,6 @@ namespace MediaBrowser.Controller.Drawing
             {
                 throw new ArgumentNullException("toStream");
             }
-
-            var originalImagePath = GetImagePath(entity, imageType, imageIndex);
 
             if (cropWhitespace)
             {
