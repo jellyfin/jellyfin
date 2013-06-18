@@ -130,9 +130,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\MediaBrowser.Common.3.0.123\lib\net45\MediaBrowser.Common.dll</HintPath>
     </Reference>
-    <Reference Include="MediaBrowser.IsoMounter, Version=1.0.4915.20167, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="MediaBrowser.IsoMounter, Version=1.0.4917.10402, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\MediaBrowser.IsoMounting.3.0.52\lib\net45\MediaBrowser.IsoMounter.dll</HintPath>
+      <HintPath>..\packages\MediaBrowser.IsoMounting.3.0.53\lib\net45\MediaBrowser.IsoMounter.dll</HintPath>
     </Reference>
     <Reference Include="MediaBrowser.Model, Version=3.0.4912.27515, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -154,7 +154,7 @@
     </Reference>
     <Reference Include="pfmclrapi, Version=0.0.0.0, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\MediaBrowser.IsoMounting.3.0.52\lib\net45\pfmclrapi.dll</HintPath>
+      <HintPath>..\packages\MediaBrowser.IsoMounting.3.0.53\lib\net45\pfmclrapi.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack, Version=3.9.54.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
