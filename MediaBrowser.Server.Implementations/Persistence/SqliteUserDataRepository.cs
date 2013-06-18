@@ -1,28 +1,28 @@
 ﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Concurrent;
+using System.Data;
+using System.Data.SQLite;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Persistence
 {
-    public class JsonUserDataRepository : IUserDataRepository
+    public class SqliteUserDataRepository : SqliteRepository, IUserDataRepository
     {
-        private readonly ConcurrentDictionary<string, SemaphoreSlim> _fileLocks = new ConcurrentDictionary<string, SemaphoreSlim>();
-
-        private SemaphoreSlim GetLock(string filename)
-        {
-            return _fileLocks.GetOrAdd(filename, key => new SemaphoreSlim(1, 1));
-        }
-        
         private readonly ConcurrentDictionary<string, UserItemData> _userData = new ConcurrentDictionary<string, UserItemData>();
+
+        private readonly SemaphoreSlim _writeLock = new SemaphoreSlim(1, 1);
+
+        /// <summary>
+        /// The repository name
+        /// </summary>
+        public const string RepositoryName = "SQLite";
 
         /// <summary>
         /// Gets the name of the repository
@@ -32,18 +32,19 @@ namespace MediaBrowser.Server.Implementations.Persistence
         {
             get
             {
-                return "Json";
+                return RepositoryName;
             }
         }
 
         private readonly IJsonSerializer _jsonSerializer;
 
-        private readonly string _dataPath;
-
-        private readonly ILogger _logger;
+        /// <summary>
+        /// The _app paths
+        /// </summary>
+        private readonly IApplicationPaths _appPaths;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="JsonUserDataRepository" /> class.
+        /// Initializes a new instance of the <see cref="SqliteUserDataRepository"/> class.
         /// </summary>
         /// <param name="appPaths">The app paths.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
@@ -53,7 +54,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// or
         /// appPaths
         /// </exception>
-        public JsonUserDataRepository(IApplicationPaths appPaths, IJsonSerializer jsonSerializer, ILogManager logManager)
+        public SqliteUserDataRepository(IApplicationPaths appPaths, IJsonSerializer jsonSerializer, ILogManager logManager)
+            : base(logManager)
         {
             if (jsonSerializer == null)
             {
@@ -64,18 +66,30 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 throw new ArgumentNullException("appPaths");
             }
 
-            _logger = logManager.GetLogger(GetType().Name);
             _jsonSerializer = jsonSerializer;
-            _dataPath = Path.Combine(appPaths.DataPath, "userdata");
+            _appPaths = appPaths;
         }
 
         /// <summary>
         /// Opens the connection to the database
         /// </summary>
         /// <returns>Task.</returns>
-        public Task Initialize()
+        public async Task Initialize()
         {
-            return Task.FromResult(true);
+            var dbFile = Path.Combine(_appPaths.DataPath, "userdata.db");
+
+            await ConnectToDb(dbFile).ConfigureAwait(false);
+
+            string[] queries = {
+
+                                "create table if not exists userdata (key nvarchar, userId GUID, data BLOB)",
+                                "create unique index if not exists userdataindex on userdata (key, userId)",
+                                "create table if not exists schema_version (table_name primary key, version)",
+                                //pragmas
+                                "pragma temp_store = memory"
+                               };
+
+            RunQueries(queries);
         }
 
         /// <summary>
@@ -118,12 +132,14 @@ namespace MediaBrowser.Server.Implementations.Persistence
             {
                 await PersistUserData(userId, key, userData, cancellationToken).ConfigureAwait(false);
 
+                var newValue = userData;
+
                 // Once it succeeds, put it into the dictionary to make it available to everyone else
-                _userData.AddOrUpdate(GetInternalKey(userId, key), userData, delegate { return userData; });
+                _userData.AddOrUpdate(GetInternalKey(userId, key), newValue, delegate { return newValue; });
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error saving user data", ex);
+                Logger.ErrorException("Error saving user data", ex);
 
                 throw;
             }
@@ -152,25 +168,60 @@ namespace MediaBrowser.Server.Implementations.Persistence
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var path = GetUserDataPath(userId, key);
+            var serialized = _jsonSerializer.SerializeToBytes(userData);
 
-            var parentPath = Path.GetDirectoryName(path);
-            if (!Directory.Exists(parentPath))
-            {
-                Directory.CreateDirectory(parentPath);
-            }
+            cancellationToken.ThrowIfCancellationRequested();
 
-            var semaphore = GetLock(path);
+            await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-            await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+            SQLiteTransaction transaction = null;
 
             try
             {
-                _jsonSerializer.SerializeToFile(userData, path);
+                transaction = Connection.BeginTransaction();
+
+                using (var cmd = Connection.CreateCommand())
+                {
+                    cmd.CommandText = "replace into userdata (key, userId, data) values (@1, @2, @3)";
+                    cmd.AddParam("@1", key);
+                    cmd.AddParam("@2", userId);
+                    cmd.AddParam("@3", serialized);
+
+                    cmd.Transaction = transaction;
+
+                    await cmd.ExecuteNonQueryAsync(cancellationToken);
+                }
+
+                transaction.Commit();
+            }
+            catch (OperationCanceledException)
+            {
+                if (transaction != null)
+                {
+                    transaction.Rollback();
+                }
+
+                throw;
+            }
+            catch (Exception e)
+            {
+                Logger.ErrorException("Failed to save user data:", e);
+
+                if (transaction != null)
+                {
+                    transaction.Rollback();
+                }
+
+                throw;
             }
             finally
             {
-                semaphore.Release();
+                if (transaction != null)
+                {
+                    transaction.Dispose();
+                }
+
+                _writeLock.Release();
             }
         }
 
@@ -207,40 +258,29 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// <returns>Task{UserItemData}.</returns>
         private UserItemData RetrieveUserData(Guid userId, string key)
         {
-            var path = GetUserDataPath(userId, key);
-
-            try
+            using (var cmd = Connection.CreateCommand())
             {
-                return _jsonSerializer.DeserializeFromFile<UserItemData>(path);
+                cmd.CommandText = "select data from userdata where key = @key and userId=@userId";
+
+                var idParam = cmd.Parameters.Add("@key", DbType.String);
+                idParam.Value = key;
+
+                var userIdParam = cmd.Parameters.Add("@userId", DbType.Guid);
+                userIdParam.Value = userId;
+
+                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult | CommandBehavior.SingleRow))
+                {
+                    if (reader.Read())
+                    {
+                        using (var stream = GetStream(reader, 0))
+                        {
+                            return _jsonSerializer.DeserializeFromStream<UserItemData>(stream);
+                        }
+                    }
+                }
+
+                return new UserItemData();
             }
-            catch (IOException)
-            {
-                // File doesn't exist or is currently bring written to
-                return new UserItemData { UserId = userId };
-            }
-        }
-
-        private string GetUserDataPath(Guid userId, string key)
-        {
-            var userFolder = Path.Combine(_dataPath, userId.ToString());
-
-            var keyHash = key.GetMD5().ToString();
-
-            var prefix = keyHash.Substring(0, 1);
-
-            return Path.Combine(userFolder, prefix, keyHash + ".json");
-        }
-
-        public void Dispose()
-        {
-            // Wait up to two seconds for any existing writes to finish
-            var locks = _fileLocks.Values.ToList()
-                                  .Where(i => i.CurrentCount == 1)
-                                  .Select(i => i.WaitAsync(2000));
-
-            var task = Task.WhenAll(locks);
-
-            Task.WaitAll(task);
         }
     }
 }

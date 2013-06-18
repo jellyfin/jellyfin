@@ -244,16 +244,16 @@ namespace MediaBrowser.ServerApplication
             ZipClient = new DotNetZipClient();
             RegisterSingleInstance(ZipClient);
 
-            UserDataRepository = new JsonUserDataRepository(ApplicationPaths, JsonSerializer, LogManager);
+            UserDataRepository = new SqliteUserDataRepository(ApplicationPaths, JsonSerializer, LogManager);
             RegisterSingleInstance(UserDataRepository);
 
-            UserRepository = new JsonUserRepository(ApplicationPaths, JsonSerializer, LogManager);
+            UserRepository = new SqliteUserRepository(ApplicationPaths, JsonSerializer, LogManager);
             RegisterSingleInstance(UserRepository);
 
-            DisplayPreferencesRepository = new JsonDisplayPreferencesRepository(ApplicationPaths, JsonSerializer, LogManager);
+            DisplayPreferencesRepository = new SqliteDisplayPreferencesRepository(ApplicationPaths, JsonSerializer, LogManager);
             RegisterSingleInstance(DisplayPreferencesRepository);
 
-            ItemRepository = new JsonItemRepository(ApplicationPaths, JsonSerializer, LogManager);
+            ItemRepository = new SqliteItemRepository(ApplicationPaths, JsonSerializer, LogManager);
             RegisterSingleInstance(ItemRepository);
 
             UserManager = new UserManager(Logger, ServerConfigurationManager);
