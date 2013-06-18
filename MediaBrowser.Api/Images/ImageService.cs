@@ -8,6 +8,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -291,6 +292,8 @@ namespace MediaBrowser.Api.Images
 
         private readonly IProviderManager _providerManager;
 
+        private readonly IItemRepository _itemRepo;
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="ImageService" /> class.
         /// </summary>
@@ -298,12 +301,13 @@ namespace MediaBrowser.Api.Images
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="appPaths">The app paths.</param>
         /// <param name="providerManager">The provider manager.</param>
-        public ImageService(IUserManager userManager, ILibraryManager libraryManager, IApplicationPaths appPaths, IProviderManager providerManager)
+        public ImageService(IUserManager userManager, ILibraryManager libraryManager, IApplicationPaths appPaths, IProviderManager providerManager, IItemRepository itemRepo)
         {
             _userManager = userManager;
             _libraryManager = libraryManager;
             _appPaths = appPaths;
             _providerManager = providerManager;
+            _itemRepo = itemRepo;
         }
 
         /// <summary>
@@ -404,7 +408,7 @@ namespace MediaBrowser.Api.Images
             {
                 index = 0;
 
-                foreach (var chapter in video.Chapters)
+                foreach (var chapter in _itemRepo.GetChapters(video.Id))
                 {
                     if (!string.IsNullOrEmpty(chapter.ImagePath))
                     {

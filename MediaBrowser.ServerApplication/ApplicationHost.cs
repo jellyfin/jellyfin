@@ -161,12 +161,6 @@ namespace MediaBrowser.ServerApplication
         private IHttpServer HttpServer { get; set; }
 
         /// <summary>
-        /// Gets or sets the display preferences manager.
-        /// </summary>
-        /// <value>The display preferences manager.</value>
-        internal IDisplayPreferencesManager DisplayPreferencesManager { get; set; }
-
-        /// <summary>
         /// Gets or sets the media encoder.
         /// </summary>
         /// <value>The media encoder.</value>
@@ -180,7 +174,7 @@ namespace MediaBrowser.ServerApplication
         /// <value>The user data repository.</value>
         private IUserDataRepository UserDataRepository { get; set; }
         private IUserRepository UserRepository { get; set; }
-        private IDisplayPreferencesRepository DisplayPreferencesRepository { get; set; }
+        internal IDisplayPreferencesRepository DisplayPreferencesRepository { get; set; }
         private IItemRepository ItemRepository { get; set; }
 
         /// <summary>
@@ -271,9 +265,6 @@ namespace MediaBrowser.ServerApplication
             ProviderManager = new ProviderManager(HttpClient, ServerConfigurationManager, DirectoryWatchers, LogManager);
             RegisterSingleInstance(ProviderManager);
 
-            DisplayPreferencesManager = new DisplayPreferencesManager(LogManager.GetLogger("DisplayPreferencesManager"));
-            RegisterSingleInstance(DisplayPreferencesManager);
-
             RegisterSingleInstance<ILibrarySearchEngine>(() => new LuceneSearchEngine(ApplicationPaths, LogManager, LibraryManager));
 
             MediaEncoder = new MediaEncoder(LogManager.GetLogger("MediaEncoder"), ZipClient, ApplicationPaths, JsonSerializer);
@@ -306,10 +297,10 @@ namespace MediaBrowser.ServerApplication
         /// </summary>
         private void SetKernelProperties()
         {
-            ServerKernel.ImageManager = new ImageManager(ServerKernel, LogManager.GetLogger("ImageManager"),
-                                                         ApplicationPaths);
+            ServerKernel.ImageManager = new ImageManager(LogManager.GetLogger("ImageManager"),
+                                                         ApplicationPaths, ItemRepository);
             Parallel.Invoke(
-                 () => ServerKernel.FFMpegManager = new FFMpegManager(ApplicationPaths, MediaEncoder, LibraryManager, Logger),
+                 () => ServerKernel.FFMpegManager = new FFMpegManager(ApplicationPaths, MediaEncoder, LibraryManager, Logger, ItemRepository),
                  () => ServerKernel.WeatherProviders = GetExports<IWeatherProvider>(),
                  () => ServerKernel.ImageManager.ImageEnhancers = GetExports<IImageEnhancer>().OrderBy(e => e.Priority).ToArray(),
                  () => LocalizedStrings.StringFiles = GetExports<LocalizedStringData>(),
@@ -324,8 +315,6 @@ namespace MediaBrowser.ServerApplication
         private async Task ConfigureDisplayPreferencesRepositories()
         {
             await DisplayPreferencesRepository.Initialize().ConfigureAwait(false);
-
-            ((DisplayPreferencesManager)DisplayPreferencesManager).Repository = DisplayPreferencesRepository;
         }
 
         /// <summary>

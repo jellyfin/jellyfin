@@ -29,12 +29,14 @@ namespace MediaBrowser.Api
         /// The _library manager
         /// </summary>
         private readonly ILibraryManager _libraryManager;
+        private readonly IItemRepository _itemRepo;
 
-        public AlbumsService(IUserManager userManager, IUserDataRepository userDataRepository, ILibraryManager libraryManager)
+        public AlbumsService(IUserManager userManager, IUserDataRepository userDataRepository, ILibraryManager libraryManager, IItemRepository itemRepo)
         {
             _userManager = userManager;
             _userDataRepository = userDataRepository;
             _libraryManager = libraryManager;
+            _itemRepo = itemRepo;
         }
 
         /// <summary>
@@ -45,6 +47,7 @@ namespace MediaBrowser.Api
         public object Get(GetSimilarAlbums request)
         {
             var result = SimilarItemsHelper.GetSimilarItems(_userManager,
+                _itemRepo,
                 _libraryManager,
                 _userDataRepository,
                 Logger,

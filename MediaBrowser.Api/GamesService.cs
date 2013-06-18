@@ -33,17 +33,21 @@ namespace MediaBrowser.Api
         /// </summary>
         private readonly ILibraryManager _libraryManager;
 
+        private readonly IItemRepository _itemRepo;
+
         /// <summary>
-        /// Initializes a new instance of the <see cref="GamesService"/> class.
+        /// Initializes a new instance of the <see cref="GamesService" /> class.
         /// </summary>
         /// <param name="userManager">The user manager.</param>
         /// <param name="userDataRepository">The user data repository.</param>
         /// <param name="libraryManager">The library manager.</param>
-        public GamesService(IUserManager userManager, IUserDataRepository userDataRepository, ILibraryManager libraryManager)
+        /// <param name="itemRepo">The item repo.</param>
+        public GamesService(IUserManager userManager, IUserDataRepository userDataRepository, ILibraryManager libraryManager, IItemRepository itemRepo)
         {
             _userManager = userManager;
             _userDataRepository = userDataRepository;
             _libraryManager = libraryManager;
+            _itemRepo = itemRepo;
         }
 
         /// <summary>
@@ -54,6 +58,7 @@ namespace MediaBrowser.Api
         public object Get(GetSimilarGames request)
         {
             var result = SimilarItemsHelper.GetSimilarItems(_userManager,
+                _itemRepo,
                 _libraryManager,
                 _userDataRepository,
                 Logger,

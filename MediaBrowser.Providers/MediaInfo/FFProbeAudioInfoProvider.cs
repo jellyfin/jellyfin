@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.IO;
+﻿using System.Threading.Tasks;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -23,6 +24,27 @@ namespace MediaBrowser.Providers.MediaInfo
         {
         }
 
+        public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
+        {
+            var myItem = (Audio)item;
+
+            OnPreFetch(myItem, null);
+
+            var result = await GetMediaInfo(item, null, cancellationToken).ConfigureAwait(false);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            NormalizeFFProbeResult(result);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            Fetch(myItem, cancellationToken, result);
+
+            SetLastRefreshed(item, DateTime.UtcNow);
+
+            return true;
+        }
+
         /// <summary>
         /// Fetches the specified audio.
         /// </summary>
@@ -31,7 +53,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="data">The data.</param>
         /// <param name="isoMount">The iso mount.</param>
         /// <returns>Task.</returns>
-        protected override void Fetch(Audio audio, CancellationToken cancellationToken, MediaInfoResult data, IIsoMount isoMount)
+        protected void Fetch(Audio audio, CancellationToken cancellationToken, MediaInfoResult data)
         {
             if (data.streams == null)
             {

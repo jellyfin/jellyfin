@@ -90,17 +90,20 @@ namespace MediaBrowser.Api
         /// </summary>
         private readonly ILibraryManager _libraryManager;
 
+        private readonly IItemRepository _itemRepo;
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="TvShowsService" /> class.
         /// </summary>
         /// <param name="userManager">The user manager.</param>
         /// <param name="userDataRepository">The user data repository.</param>
         /// <param name="libraryManager">The library manager.</param>
-        public TvShowsService(IUserManager userManager, IUserDataRepository userDataRepository, ILibraryManager libraryManager)
+        public TvShowsService(IUserManager userManager, IUserDataRepository userDataRepository, ILibraryManager libraryManager, IItemRepository itemRepo)
         {
             _userManager = userManager;
             _userDataRepository = userDataRepository;
             _libraryManager = libraryManager;
+            _itemRepo = itemRepo;
         }
 
         /// <summary>
@@ -111,6 +114,7 @@ namespace MediaBrowser.Api
         public object Get(GetSimilarShows request)
         {
             var result = SimilarItemsHelper.GetSimilarItems(_userManager,
+                _itemRepo,
                 _libraryManager,
                 _userDataRepository,
                 Logger,
@@ -239,7 +243,7 @@ namespace MediaBrowser.Api
         /// <returns>Task.</returns>
         private Task<BaseItemDto[]> GetItemDtos(IEnumerable<BaseItem> pagedItems, User user, List<ItemFields> fields)
         {
-            var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userDataRepository);
+            var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userDataRepository, _itemRepo);
 
             return Task.WhenAll(pagedItems.Select(i => dtoBuilder.GetBaseItemDto(i, fields, user)));
         }

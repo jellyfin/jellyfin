@@ -9,6 +9,7 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using System;
@@ -23,9 +24,12 @@ namespace MediaBrowser.Api.Playback.Progressive
     /// </summary>
     public abstract class BaseProgressiveStreamingService : BaseStreamingService
     {
-        protected BaseProgressiveStreamingService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder) :
+        protected readonly IItemRepository ItemRepository;
+        
+        protected BaseProgressiveStreamingService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IItemRepository itemRepository) :
             base(appPaths, userManager, libraryManager, isoManager, mediaEncoder)
         {
+            ItemRepository = itemRepository;
         }
 
         /// <summary>
@@ -304,7 +308,7 @@ namespace MediaBrowser.Api.Playback.Progressive
                 }
             }
 
-            return new ImageService(UserManager, LibraryManager, ApplicationPaths, null)
+            return new ImageService(UserManager, LibraryManager, ApplicationPaths, null, ItemRepository)
             {
                 Logger = Logger,
                 RequestContext = RequestContext,

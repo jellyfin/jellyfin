@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Common.MediaInfo;
-using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.MediaInfo;
@@ -43,53 +42,6 @@ namespace MediaBrowser.Providers.MediaInfo
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
         /// <summary>
-        /// Fetches metadata and returns true or false indicating if any work that requires persistence was done
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="force">if set to <c>true</c> [force].</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{System.Boolean}.</returns>
-        public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
-        {
-            var myItem = (T)item;
-
-            var isoMount = await MountIsoIfNeeded(myItem, cancellationToken).ConfigureAwait(false);
-
-            try
-            {
-                OnPreFetch(myItem, isoMount);
-
-                var result = await GetMediaInfo(item, isoMount, cancellationToken).ConfigureAwait(false);
-
-                cancellationToken.ThrowIfCancellationRequested();
-
-                NormalizeFFProbeResult(result);
-
-                cancellationToken.ThrowIfCancellationRequested();
-
-                Fetch(myItem, cancellationToken, result, isoMount);
-
-                var video = myItem as Video;
-
-                if (video != null)
-                {
-                    await Kernel.Instance.FFMpegManager.PopulateChapterImages(video, cancellationToken, false, false).ConfigureAwait(false);
-                }
-
-                SetLastRefreshed(item, DateTime.UtcNow);
-            }
-            finally
-            {
-                if (isoMount != null)
-                {
-                    isoMount.Dispose();
-                }
-            }
-
-            return true;
-        }
-
-        /// <summary>
         /// Gets the media info.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -99,7 +51,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <exception cref="System.ArgumentNullException">inputPath
         /// or
         /// cache</exception>
-        private async Task<MediaInfoResult> GetMediaInfo(BaseItem item, IIsoMount isoMount, CancellationToken cancellationToken)
+        protected async Task<MediaInfoResult> GetMediaInfo(BaseItem item, IIsoMount isoMount, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -141,7 +93,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// Normalizes the FF probe result.
         /// </summary>
         /// <param name="result">The result.</param>
-        private void NormalizeFFProbeResult(MediaInfoResult result)
+        protected void NormalizeFFProbeResult(MediaInfoResult result)
         {
             if (result.format != null && result.format.tags != null)
             {
@@ -165,16 +117,6 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
         }
-
-        /// <summary>
-        /// Subclasses must set item values using this
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="result">The result.</param>
-        /// <param name="isoMount">The iso mount.</param>
-        /// <returns>Task.</returns>
-        protected abstract void Fetch(T item, CancellationToken cancellationToken, MediaInfoResult result, IIsoMount isoMount);
 
         /// <summary>
         /// Converts ffprobe stream info to our MediaStream class

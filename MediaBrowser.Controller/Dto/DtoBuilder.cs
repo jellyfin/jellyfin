@@ -31,12 +31,14 @@ namespace MediaBrowser.Controller.Dto
         private readonly ILogger _logger;
         private readonly ILibraryManager _libraryManager;
         private readonly IUserDataRepository _userDataRepository;
+        private readonly IItemRepository _itemRepo;
 
-        public DtoBuilder(ILogger logger, ILibraryManager libraryManager, IUserDataRepository userDataRepository)
+        public DtoBuilder(ILogger logger, ILibraryManager libraryManager, IUserDataRepository userDataRepository, IItemRepository itemRepo)
         {
             _logger = logger;
             _libraryManager = libraryManager;
             _userDataRepository = userDataRepository;
+            _itemRepo = itemRepo;
         }
 
         /// <summary>
@@ -443,9 +445,9 @@ namespace MediaBrowser.Controller.Dto
 
                 dto.PartCount = video.AdditionalPartIds.Count + 1;
 
-                if (fields.Contains(ItemFields.Chapters) && video.Chapters != null)
+                if (fields.Contains(ItemFields.Chapters))
                 {
-                    dto.Chapters = video.Chapters.Select(c => GetChapterInfoDto(c, item)).ToList();
+                    dto.Chapters = _itemRepo.GetChapters(video.Id).Select(c => GetChapterInfoDto(c, item)).ToList();
                 }
             }
 

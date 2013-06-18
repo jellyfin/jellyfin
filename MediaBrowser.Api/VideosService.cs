@@ -60,7 +60,7 @@ namespace MediaBrowser.Api
                     .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
                     .ToList();
 
-            var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userDataRepository);
+            var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userDataRepository, _itemRepo);
 
             var video = (Video)item;
 

@@ -13,17 +13,16 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Persistence
 {
-    public class SqliteUserDataRepository : SqliteRepository, IUserDataRepository
+    public class SqliteUserDataRepository : IUserDataRepository
     {
+        private readonly ILogger _logger;
+        
         private readonly ConcurrentDictionary<string, UserItemData> _userData = new ConcurrentDictionary<string, UserItemData>();
 
         private readonly SemaphoreSlim _writeLock = new SemaphoreSlim(1, 1);
 
-        /// <summary>
-        /// The repository name
-        /// </summary>
-        public const string RepositoryName = "SQLite";
-
+        private SQLiteConnection _connection;
+        
         /// <summary>
         /// Gets the name of the repository
         /// </summary>
@@ -32,7 +31,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         {
             get
             {
-                return RepositoryName;
+                return "SQLite";
             }
         }
 
@@ -55,7 +54,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// appPaths
         /// </exception>
         public SqliteUserDataRepository(IApplicationPaths appPaths, IJsonSerializer jsonSerializer, ILogManager logManager)
-            : base(logManager)
         {
             if (jsonSerializer == null)
             {
@@ -68,6 +66,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             _jsonSerializer = jsonSerializer;
             _appPaths = appPaths;
+            _logger = logManager.GetLogger(GetType().Name);
         }
 
         /// <summary>
@@ -78,7 +77,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         {
             var dbFile = Path.Combine(_appPaths.DataPath, "userdata.db");
 
-            await ConnectToDb(dbFile).ConfigureAwait(false);
+            _connection = await SqliteExtensions.ConnectToDb(dbFile).ConfigureAwait(false);
 
             string[] queries = {
 
@@ -89,7 +88,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                                 "pragma temp_store = memory"
                                };
 
-            RunQueries(queries);
+            _connection.RunQueries(queries, _logger);
         }
 
         /// <summary>
@@ -139,7 +138,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error saving user data", ex);
+                _logger.ErrorException("Error saving user data", ex);
 
                 throw;
             }
@@ -178,9 +177,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             try
             {
-                transaction = Connection.BeginTransaction();
+                transaction = _connection.BeginTransaction();
 
-                using (var cmd = Connection.CreateCommand())
+                using (var cmd = _connection.CreateCommand())
                 {
                     cmd.CommandText = "replace into userdata (key, userId, data) values (@1, @2, @3)";
                     cmd.AddParam("@1", key);
@@ -205,7 +204,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
             catch (Exception e)
             {
-                Logger.ErrorException("Failed to save user data:", e);
+                _logger.ErrorException("Failed to save user data:", e);
 
                 if (transaction != null)
                 {
@@ -258,7 +257,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// <returns>Task{UserItemData}.</returns>
         private UserItemData RetrieveUserData(Guid userId, string key)
         {
-            using (var cmd = Connection.CreateCommand())
+            using (var cmd = _connection.CreateCommand())
             {
                 cmd.CommandText = "select data from userdata where key = @key and userId=@userId";
 
@@ -272,7 +271,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     if (reader.Read())
                     {
-                        using (var stream = GetStream(reader, 0))
+                        using (var stream = reader.GetMemoryStream(0))
                         {
                             return _jsonSerializer.DeserializeFromStream<UserItemData>(stream);
                         }
@@ -280,6 +279,48 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 }
 
                 return new UserItemData();
+            }
+        }
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        private readonly object _disposeLock = new object();
+
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool dispose)
+        {
+            if (dispose)
+            {
+                try
+                {
+                    lock (_disposeLock)
+                    {
+                        if (_connection != null)
+                        {
+                            if (_connection.IsOpen())
+                            {
+                                _connection.Close();
+                            }
+
+                            _connection.Dispose();
+                            _connection = null;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error disposing database", ex);
+                }
             }
         }
     }

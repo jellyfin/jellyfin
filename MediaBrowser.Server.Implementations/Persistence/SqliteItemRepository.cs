@@ -18,13 +18,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
     /// <summary>
     /// Class SQLiteItemRepository
     /// </summary>
-    public class SqliteItemRepository : SqliteRepository, IItemRepository
+    public class SqliteItemRepository : IItemRepository
     {
-        /// <summary>
-        /// The repository name
-        /// </summary>
-        public const string RepositoryName = "SQLite";
+        private SQLiteConnection _connection;
 
+        private readonly ILogger _logger;
+        
         /// <summary>
         /// Gets the name of the repository
         /// </summary>
@@ -33,7 +32,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         {
             get
             {
-                return RepositoryName;
+                return "SQLite";
             }
         }
 
@@ -55,6 +54,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         private readonly string _criticReviewsPath;
 
+        private SqliteChapterRepository _chapterRepository;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
         /// </summary>
@@ -67,7 +68,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// jsonSerializer
         /// </exception>
         public SqliteItemRepository(IApplicationPaths appPaths, IJsonSerializer jsonSerializer, ILogManager logManager)
-            : base(logManager)
         {
             if (appPaths == null)
             {
@@ -82,6 +82,10 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _jsonSerializer = jsonSerializer;
 
             _criticReviewsPath = Path.Combine(_appPaths.DataPath, "critic-reviews");
+
+            _logger = logManager.GetLogger(GetType().Name);
+
+            _chapterRepository = new SqliteChapterRepository(appPaths, logManager);
         }
 
         /// <summary>
@@ -92,20 +96,22 @@ namespace MediaBrowser.Server.Implementations.Persistence
         {
             var dbFile = Path.Combine(_appPaths.DataPath, "library.db");
 
-            await ConnectToDb(dbFile).ConfigureAwait(false);
+            _connection = await SqliteExtensions.ConnectToDb(dbFile).ConfigureAwait(false);
 
             string[] queries = {
 
                                 "create table if not exists baseitems (guid GUID primary key, data BLOB)",
                                 "create index if not exists idx_baseitems on baseitems(guid)",
-                                "create table if not exists schema_version (table_name primary key, version)",
+
                                 //pragmas
                                 "pragma temp_store = memory"
                                };
 
-            RunQueries(queries);
+            _connection.RunQueries(queries, _logger);
 
             PrepareStatements();
+
+            await _chapterRepository.Initialize().ConfigureAwait(false);
         }
 
         /// <summary>
@@ -175,7 +181,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             try
             {
-                transaction = Connection.BeginTransaction();
+                transaction = _connection.BeginTransaction();
 
                 foreach (var item in items)
                 {
@@ -202,7 +208,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
             catch (Exception e)
             {
-                Logger.ErrorException("Failed to save items:", e);
+                _logger.ErrorException("Failed to save items:", e);
 
                 if (transaction != null)
                 {
@@ -237,7 +243,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 throw new ArgumentNullException("id");
             }
 
-            using (var cmd = Connection.CreateCommand())
+            using (var cmd = _connection.CreateCommand())
             {
                 cmd.CommandText = "select data from baseitems where guid = @guid";
                 var guidParam = cmd.Parameters.Add("@guid", DbType.Guid);
@@ -247,7 +253,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     if (reader.Read())
                     {
-                        using (var stream = GetStream(reader, 0))
+                        using (var stream = reader.GetMemoryStream(0))
                         {
                             return _jsonSerializer.DeserializeFromStream(stream, type) as BaseItem;
                         }
@@ -304,6 +310,96 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 _jsonSerializer.SerializeToFile(criticReviews.ToList(), path);
             });
+        }
+
+        /// <summary>
+        /// Gets chapters for an item
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns>IEnumerable{ChapterInfo}.</returns>
+        /// <exception cref="System.ArgumentNullException">id</exception>
+        public IEnumerable<ChapterInfo> GetChapters(Guid id)
+        {
+            return _chapterRepository.GetChapters(id);
+        }
+
+        /// <summary>
+        /// Gets a single chapter for an item
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <param name="index">The index.</param>
+        /// <returns>ChapterInfo.</returns>
+        /// <exception cref="System.ArgumentNullException">id</exception>
+        public ChapterInfo GetChapter(Guid id, int index)
+        {
+            return _chapterRepository.GetChapter(id, index);
+        }
+
+        /// <summary>
+        /// Saves the chapters.
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <param name="chapters">The chapters.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        /// <exception cref="System.ArgumentNullException">
+        /// id
+        /// or
+        /// chapters
+        /// or
+        /// cancellationToken
+        /// </exception>
+        public Task SaveChapters(Guid id, IEnumerable<ChapterInfo> chapters, CancellationToken cancellationToken)
+        {
+            return _chapterRepository.SaveChapters(id, chapters, cancellationToken);
+        }
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        private readonly object _disposeLock = new object();
+
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool dispose)
+        {
+            if (dispose)
+            {
+                try
+                {
+                    lock (_disposeLock)
+                    {
+                        if (_connection != null)
+                        {
+                            if (_connection.IsOpen())
+                            {
+                                _connection.Close();
+                            }
+
+                            _connection.Dispose();
+                            _connection = null;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error disposing database", ex);
+                }
+
+                if (_chapterRepository != null)
+                {
+                    _chapterRepository.Dispose();
+                    _chapterRepository = null;
+                }
+            }
         }
     }
 }
