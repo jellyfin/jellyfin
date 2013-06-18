@@ -102,7 +102,7 @@ namespace MediaBrowser.Api.Playback
         /// </summary>
         /// <param name="state">The state.</param>
         /// <returns>System.String.</returns>
-        protected string GetOutputFilePath(StreamState state)
+        protected virtual string GetOutputFilePath(StreamState state)
         {
             var folder = ApplicationPaths.EncodedMediaCachePath;
 
