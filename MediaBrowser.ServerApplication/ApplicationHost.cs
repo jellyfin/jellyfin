@@ -38,10 +38,10 @@ using MediaBrowser.Server.Implementations.IO;
 using MediaBrowser.Server.Implementations.Library;
 using MediaBrowser.Server.Implementations.Localization;
 using MediaBrowser.Server.Implementations.MediaEncoder;
+using MediaBrowser.Server.Implementations.Persistence;
 using MediaBrowser.Server.Implementations.Providers;
 using MediaBrowser.Server.Implementations.ServerManager;
 using MediaBrowser.Server.Implementations.Session;
-using MediaBrowser.Server.Implementations.Sqlite;
 using MediaBrowser.Server.Implementations.Updates;
 using MediaBrowser.Server.Implementations.WebSocket;
 using MediaBrowser.ServerApplication.Implementations;
@@ -161,12 +161,6 @@ namespace MediaBrowser.ServerApplication
         private IHttpServer HttpServer { get; set; }
 
         /// <summary>
-        /// Gets or sets the display preferences manager.
-        /// </summary>
-        /// <value>The display preferences manager.</value>
-        internal IDisplayPreferencesManager DisplayPreferencesManager { get; set; }
-
-        /// <summary>
         /// Gets or sets the media encoder.
         /// </summary>
         /// <value>The media encoder.</value>
@@ -180,7 +174,7 @@ namespace MediaBrowser.ServerApplication
         /// <value>The user data repository.</value>
         private IUserDataRepository UserDataRepository { get; set; }
         private IUserRepository UserRepository { get; set; }
-        private IDisplayPreferencesRepository DisplayPreferencesRepository { get; set; }
+        internal IDisplayPreferencesRepository DisplayPreferencesRepository { get; set; }
         private IItemRepository ItemRepository { get; set; }
 
         /// <summary>
@@ -244,16 +238,16 @@ namespace MediaBrowser.ServerApplication
             ZipClient = new DotNetZipClient();
             RegisterSingleInstance(ZipClient);
 
-            UserDataRepository = new SQLiteUserDataRepository(ApplicationPaths, JsonSerializer, LogManager);
+            UserDataRepository = new SqliteUserDataRepository(ApplicationPaths, JsonSerializer, LogManager);
             RegisterSingleInstance(UserDataRepository);
 
-            UserRepository = new SQLiteUserRepository(ApplicationPaths, JsonSerializer, LogManager);
+            UserRepository = new SqliteUserRepository(ApplicationPaths, JsonSerializer, LogManager);
             RegisterSingleInstance(UserRepository);
 
-            DisplayPreferencesRepository = new SQLiteDisplayPreferencesRepository(ApplicationPaths, JsonSerializer, LogManager);
+            DisplayPreferencesRepository = new SqliteDisplayPreferencesRepository(ApplicationPaths, JsonSerializer, LogManager);
             RegisterSingleInstance(DisplayPreferencesRepository);
 
-            ItemRepository = new SQLiteItemRepository(ApplicationPaths, JsonSerializer, LogManager);
+            ItemRepository = new SqliteItemRepository(ApplicationPaths, JsonSerializer, LogManager);
             RegisterSingleInstance(ItemRepository);
 
             UserManager = new UserManager(Logger, ServerConfigurationManager);
@@ -270,9 +264,6 @@ namespace MediaBrowser.ServerApplication
 
             ProviderManager = new ProviderManager(HttpClient, ServerConfigurationManager, DirectoryWatchers, LogManager);
             RegisterSingleInstance(ProviderManager);
-
-            DisplayPreferencesManager = new DisplayPreferencesManager(LogManager.GetLogger("DisplayPreferencesManager"));
-            RegisterSingleInstance(DisplayPreferencesManager);
 
             RegisterSingleInstance<ILibrarySearchEngine>(() => new LuceneSearchEngine(ApplicationPaths, LogManager, LibraryManager));
 
@@ -306,10 +297,10 @@ namespace MediaBrowser.ServerApplication
         /// </summary>
         private void SetKernelProperties()
         {
-            ServerKernel.ImageManager = new ImageManager(ServerKernel, LogManager.GetLogger("ImageManager"),
-                                                         ApplicationPaths);
+            ServerKernel.ImageManager = new ImageManager(LogManager.GetLogger("ImageManager"),
+                                                         ApplicationPaths, ItemRepository);
             Parallel.Invoke(
-                 () => ServerKernel.FFMpegManager = new FFMpegManager(ApplicationPaths, MediaEncoder, LibraryManager, Logger),
+                 () => ServerKernel.FFMpegManager = new FFMpegManager(ApplicationPaths, MediaEncoder, LibraryManager, Logger, ItemRepository),
                  () => ServerKernel.WeatherProviders = GetExports<IWeatherProvider>(),
                  () => ServerKernel.ImageManager.ImageEnhancers = GetExports<IImageEnhancer>().OrderBy(e => e.Priority).ToArray(),
                  () => LocalizedStrings.StringFiles = GetExports<LocalizedStringData>(),
@@ -324,8 +315,6 @@ namespace MediaBrowser.ServerApplication
         private async Task ConfigureDisplayPreferencesRepositories()
         {
             await DisplayPreferencesRepository.Initialize().ConfigureAwait(false);
-
-            ((DisplayPreferencesManager)DisplayPreferencesManager).Repository = DisplayPreferencesRepository;
         }
 
         /// <summary>

@@ -175,7 +175,7 @@ namespace MediaBrowser.ServerApplication
 
                 var task = CompositionRoot.RunStartupTasks();
 
-                new MainWindow(CompositionRoot.LogManager, CompositionRoot, CompositionRoot.ServerConfigurationManager, CompositionRoot.UserManager, CompositionRoot.LibraryManager, CompositionRoot.JsonSerializer, CompositionRoot.DisplayPreferencesManager).Show();
+                new MainWindow(CompositionRoot.LogManager, CompositionRoot, CompositionRoot.ServerConfigurationManager, CompositionRoot.UserManager, CompositionRoot.LibraryManager, CompositionRoot.JsonSerializer, CompositionRoot.DisplayPreferencesRepository).Show();
 
                 await task.ConfigureAwait(false);
             }

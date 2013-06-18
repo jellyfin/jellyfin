@@ -1,4 +1,6 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using System.Collections.Generic;
+using System.Xml.Linq;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -258,7 +260,30 @@ namespace MediaBrowser.Providers.TV
             {
                 return status;
             }
+            IEnumerable<XmlDocument> extraEpisodesNode = new XmlDocument[]{};
 
+            if (episode.IndexNumberEnd.HasValue)
+            {
+                var seriesXDocument = XDocument.Load(new XmlNodeReader(seriesXml));
+                if (usingAbsoluteData)
+                {
+                    extraEpisodesNode =
+                        seriesXDocument.Descendants("Episode")
+                                       .Where(
+                                           x =>
+                                           int.Parse(x.Element("absolute_number").Value) > episode.IndexNumber &&
+                                           int.Parse(x.Element("absolute_number").Value) <= episode.IndexNumberEnd.Value).OrderBy(x => x.Element("absolute_number").Value).Select(x => x.ToXmlDocument());
+                }
+                else
+                {
+                    var all =
+                        seriesXDocument.Descendants("Episode").Where(x => int.Parse(x.Element("SeasonNumber").Value) == seasonNumber.Value);
+
+                    var xElements = all.Where(x => int.Parse(x.Element("EpisodeNumber").Value) > episode.IndexNumber && int.Parse(x.Element("EpisodeNumber").Value) <= episode.IndexNumberEnd.Value);
+                    extraEpisodesNode = xElements.OrderBy(x => x.Element("EpisodeNumber").Value).Select(x => x.ToXmlDocument());
+                }
+               
+            }
             var doc = new XmlDocument();
             doc.LoadXml(episodeNode.OuterXml);
 
@@ -281,7 +306,8 @@ namespace MediaBrowser.Providers.TV
             }
             if (!episode.LockedFields.Contains(MetadataFields.Overview))
             {
-                episode.Overview = doc.SafeGetString("//Overview");
+                var extraOverview = extraEpisodesNode.Aggregate("", (current, xmlDocument) => current + ("\r\n\r\n" + xmlDocument.SafeGetString("//Overview")));
+                episode.Overview = doc.SafeGetString("//Overview") + extraOverview;
             }
             if (usingAbsoluteData)
                 episode.IndexNumber = doc.SafeGetInt32("//absolute_number", -1);
@@ -289,7 +315,8 @@ namespace MediaBrowser.Providers.TV
                 episode.IndexNumber = doc.SafeGetInt32("//EpisodeNumber");
             if (!episode.LockedFields.Contains(MetadataFields.Name))
             {
-                episode.Name = doc.SafeGetString("//EpisodeName");
+                var extraNames = extraEpisodesNode.Aggregate("", (current, xmlDocument) => current + (", " + xmlDocument.SafeGetString("//EpisodeName")));
+                episode.Name = doc.SafeGetString("//EpisodeName") + extraNames;
             }
             episode.CommunityRating = doc.SafeGetSingle("//Rating", -1, 10);
             var firstAired = doc.SafeGetString("//FirstAired");
@@ -314,7 +341,18 @@ namespace MediaBrowser.Providers.TV
                         episode.AddPerson(person);
                     }
                 }
-
+                foreach (var xmlDocument in extraEpisodesNode)
+                {
+                    var extraActors = xmlDocument.SafeGetString("//GuestStars");
+                    if (extraActors == null) continue;
+                    // Sometimes tvdb actors have leading spaces
+                    foreach (var person in extraActors.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries)
+                                                      .Where(i => !string.IsNullOrWhiteSpace(i))
+                                                      .Select(str => new PersonInfo { Type = PersonType.GuestStar, Name = str.Trim() }).Where(person => !episode.People.Any(x=>x.Type == person.Type && x.Name == person.Name)))
+                    {
+                        episode.AddPerson(person);
+                    }
+                }
 
                 var directors = doc.SafeGetString("//Director");
                 if (directors != null)

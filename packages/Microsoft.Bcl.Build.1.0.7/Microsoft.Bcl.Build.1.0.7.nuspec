@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>Microsoft.Bcl.Build</id>
+    <version>1.0.7</version>
+    <title>Microsoft BCL Build Components</title>
+    <authors>Microsoft</authors>
+    <owners>Microsoft</owners>
+    <licenseUrl>http://go.microsoft.com/fwlink/?LinkID=296407</licenseUrl>
+    <projectUrl>http://go.microsoft.com/fwlink/?LinkID=296436</projectUrl>
+    <iconUrl>http://go.microsoft.com/fwlink/?LinkID=288859</iconUrl>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <description>This package provides build infrastructure components so that projects referencing specific Microsoft packages can successfully build.</description>
+    <summary>Provides build infrastructure components for Microsoft packages.</summary>
+    <copyright>Copyright © Microsoft Corporation</copyright>
+    <tags>BCL Microsoft</tags>
+  </metadata>
+</package>

@@ -60,11 +60,11 @@ namespace MediaBrowser.Api
                     .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
                     .ToList();
 
-            var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userDataRepository);
+            var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userDataRepository, _itemRepo);
 
             var video = (Video)item;
 
-            var items = _itemRepo.GetItems(video.AdditionalPartIds)
+            var items = _itemRepo.RetrieveItems<Video>(video.AdditionalPartIds)
                          .OrderBy(i => i.SortName)
                          .Select(i => dtoBuilder.GetBaseItemDto(i, fields, user))
                          .Select(t => t.Result)

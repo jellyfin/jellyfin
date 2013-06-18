@@ -3,6 +3,7 @@ using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Controller.Reflection;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
 using System;
@@ -21,6 +22,15 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class Folder : BaseItem
     {
+        private static TypeMapper _typeMapper = new TypeMapper();
+
+        public Folder()
+        {
+            ChildDefinitions = new ConcurrentDictionary<Guid, string>();
+        }
+
+        public ConcurrentDictionary<Guid, string> ChildDefinitions { get; set; }
+
         /// <summary>
         /// Gets a value indicating whether this instance is folder.
         /// </summary>
@@ -108,16 +118,14 @@ namespace MediaBrowser.Controller.Entities
                 item.DateModified = DateTime.Now;
             }
 
-            if (!_children.TryAdd(item.Id, item))
+            if (!_children.TryAdd(item.Id, item) || !ChildDefinitions.TryAdd(item.Id, item.GetType().FullName))
             {
                 throw new InvalidOperationException("Unable to add " + item.Name);
             }
 
-            var newChildren = Children.ToList();
-
             await LibraryManager.CreateItem(item, cancellationToken).ConfigureAwait(false);
 
-            await LibraryManager.SaveChildren(Id, newChildren, cancellationToken).ConfigureAwait(false);
+            await LibraryManager.UpdateItem(this, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -145,19 +153,18 @@ namespace MediaBrowser.Controller.Entities
         public Task RemoveChild(BaseItem item, CancellationToken cancellationToken)
         {
             BaseItem removed;
+            string removedType;
 
-            if (!_children.TryRemove(item.Id, out removed))
+            if (!_children.TryRemove(item.Id, out removed) || !ChildDefinitions.TryRemove(item.Id, out removedType))
             {
                 throw new InvalidOperationException("Unable to remove " + item.Name);
             }
 
             item.Parent = null;
             
-            var newChildren = Children.ToList();
-
             LibraryManager.ReportItemRemoved(item);
 
-            return LibraryManager.SaveChildren(Id, newChildren, cancellationToken);
+            return LibraryManager.UpdateItem(this, cancellationToken);
         }
 
         #region Indexing
@@ -652,7 +659,7 @@ namespace MediaBrowser.Controller.Entities
 
             var options = new ParallelOptions
             {
-                MaxDegreeOfParallelism = 50
+                MaxDegreeOfParallelism = 20
             };
 
             Parallel.ForEach(nonCachedChildren, options, child =>
@@ -702,6 +709,9 @@ namespace MediaBrowser.Controller.Entities
                     }
                     else
                     {
+                        string removedType;
+                        ChildDefinitions.TryRemove(item.Id, out removedType);
+
                         LibraryManager.ReportItemRemoved(item);
                     }
                 }
@@ -716,11 +726,13 @@ namespace MediaBrowser.Controller.Entities
                     }
                     else
                     {
+                        ChildDefinitions.TryAdd(item.Id, item.GetType().FullName);
+                        
                         Logger.Debug("** " + item.Name + " Added to library.");
                     }
                 }
 
-                await LibraryManager.SaveChildren(Id, newChildren, CancellationToken.None).ConfigureAwait(false);
+                await LibraryManager.UpdateItem(this, CancellationToken.None).ConfigureAwait(false);
 
                 //force the indexes to rebuild next time
                 IndexCache.Clear();
@@ -848,9 +860,38 @@ namespace MediaBrowser.Controller.Entities
         /// Get our children from the repo - stubbed for now
         /// </summary>
         /// <returns>IEnumerable{BaseItem}.</returns>
-        protected virtual IEnumerable<BaseItem> GetCachedChildren()
+        protected IEnumerable<BaseItem> GetCachedChildren()
         {
-            return LibraryManager.RetrieveChildren(this).Select(i => i is IByReferenceItem ? LibraryManager.GetOrAddByReferenceItem(i) : i);
+            var items = ChildDefinitions.ToList().Select(RetrieveChild).Where(i => i != null).ToList();
+
+            foreach (var item in items)
+            {
+                item.Parent = this;
+            }
+
+            return items;
+        }
+
+        /// <summary>
+        /// Retrieves the child.
+        /// </summary>
+        /// <param name="child">The child.</param>
+        /// <returns>BaseItem.</returns>
+        private BaseItem RetrieveChild(KeyValuePair<Guid,string> child)
+        {
+            var type = child.Value;
+
+            var itemType = _typeMapper.GetType(type);
+
+            if (itemType == null)
+            {
+                Logger.Error("Cannot find type {0}.  Probably belongs to plug-in that is no longer loaded.", type);
+                return null;
+            }
+
+            var item = LibraryManager.RetrieveItem(child.Key, itemType);
+
+            return item is IByReferenceItem ? LibraryManager.GetOrAddByReferenceItem(item) : item;
         }
 
         /// <summary>

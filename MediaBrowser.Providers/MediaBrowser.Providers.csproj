@@ -45,6 +45,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Extensions\XDocumentExtensions.cs" />
     <Compile Include="Extensions\XmlExtensions.cs" />
     <Compile Include="FanartBaseProvider.cs" />
     <Compile Include="FolderProviderFromXml.cs" />
@@ -78,6 +79,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Savers\MovieXmlSaver.cs" />
     <Compile Include="TV\EpisodeImageFromMediaLocationProvider.cs" />
+    <Compile Include="TV\EpisodeIndexNumberProvider.cs" />
     <Compile Include="TV\EpisodeProviderFromXml.cs" />
     <Compile Include="TV\EpisodeXmlParser.cs" />
     <Compile Include="TV\FanArtSeasonProvider.cs" />
