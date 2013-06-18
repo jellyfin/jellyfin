@@ -679,7 +679,7 @@ namespace MediaBrowser.Api.Images
             }
 
             // See if we can avoid a file system lookup by looking for the file in ResolveArgs
-            var originalFileImageDateModified = kernel.ImageManager.GetImageDateModified(item, request.Type, index);
+            var originalFileImageDateModified = kernel.ImageManager.GetImageDateModified(item, imagePath);
 
             var supportedImageEnhancers = request.EnableImageEnhancers ? kernel.ImageManager.ImageEnhancers.Where(i =>
             {
@@ -723,7 +723,8 @@ namespace MediaBrowser.Api.Images
                 Item = currentItem,
                 Request = currentRequest,
                 OriginalImageDateModified = originalFileImageDateModified,
-                Enhancers = supportedImageEnhancers
+                Enhancers = supportedImageEnhancers,
+                OriginalImagePath = imagePath
 
             }, contentType);
         }
