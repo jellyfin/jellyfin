@@ -787,7 +787,7 @@ namespace MediaBrowser.Controller.Entities
 
             // Support plex/xbmc convention
             files.AddRange(resolveArgs.FileSystemChildren
-                .Where(i => string.Equals(System.IO.Path.GetFileNameWithoutExtension(i.FullName), ThemeSongFilename, StringComparison.OrdinalIgnoreCase) && EntityResolutionHelper.IsAudioFile(i.FullName))
+                .Where(i => string.Equals(System.IO.Path.GetFileNameWithoutExtension(i.Name), ThemeSongFilename, StringComparison.OrdinalIgnoreCase) && EntityResolutionHelper.IsAudioFile(i.Name))
                 );
 
             return LibraryManager.ResolvePaths<Audio.Audio>(files, null).Select(audio =>
