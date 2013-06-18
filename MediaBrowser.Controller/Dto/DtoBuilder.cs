@@ -31,12 +31,14 @@ namespace MediaBrowser.Controller.Dto
         private readonly ILogger _logger;
         private readonly ILibraryManager _libraryManager;
         private readonly IUserDataRepository _userDataRepository;
+        private readonly IItemRepository _itemRepo;
 
-        public DtoBuilder(ILogger logger, ILibraryManager libraryManager, IUserDataRepository userDataRepository)
+        public DtoBuilder(ILogger logger, ILibraryManager libraryManager, IUserDataRepository userDataRepository, IItemRepository itemRepo)
         {
             _logger = logger;
             _libraryManager = libraryManager;
             _userDataRepository = userDataRepository;
+            _itemRepo = itemRepo;
         }
 
         /// <summary>
@@ -73,11 +75,6 @@ namespace MediaBrowser.Controller.Dto
                 tasks.Add(AttachPeople(dto, item));
             }
 
-            if (user != null)
-            {
-                tasks.Add(AttachUserSpecificInfo(dto, item, user, fields));
-            }
-
             if (fields.Contains(ItemFields.PrimaryImageAspectRatio))
             {
                 try
@@ -89,6 +86,11 @@ namespace MediaBrowser.Controller.Dto
                     // Have to use a catch-all unfortunately because some .net image methods throw plain Exceptions
                     _logger.ErrorException("Error generating PrimaryImageAspectRatio for {0}", ex, item.Name);
                 }
+            }
+
+            if (user != null)
+            {
+                AttachUserSpecificInfo(dto, item, user, fields);
             }
 
             AttachBasicFields(dto, item, fields);
@@ -109,7 +111,7 @@ namespace MediaBrowser.Controller.Dto
         /// <param name="item">The item.</param>
         /// <param name="user">The user.</param>
         /// <param name="fields">The fields.</param>
-        private async Task AttachUserSpecificInfo(BaseItemDto dto, BaseItem item, User user, List<ItemFields> fields)
+        private void AttachUserSpecificInfo(BaseItemDto dto, BaseItem item, User user, List<ItemFields> fields)
         {
             if (item.IsFolder && fields.Contains(ItemFields.DisplayPreferencesId))
             {
@@ -127,13 +129,13 @@ namespace MediaBrowser.Controller.Dto
                     // Skip sorting since all we want is a count
                     dto.ChildCount = folder.GetChildren(user).Count();
 
-                    await SetSpecialCounts(folder, user, dto, _userDataRepository).ConfigureAwait(false);
+                    SetSpecialCounts(folder, user, dto, _userDataRepository);
                 }
             }
 
             if (addUserData)
             {
-                var userData = await _userDataRepository.GetUserData(user.Id, item.GetUserDataKey()).ConfigureAwait(false);
+                var userData = _userDataRepository.GetUserData(user.Id, item.GetUserDataKey());
 
                 dto.UserData = GetUserItemDataDto(userData);
 
@@ -443,9 +445,9 @@ namespace MediaBrowser.Controller.Dto
 
                 dto.PartCount = video.AdditionalPartIds.Count + 1;
 
-                if (fields.Contains(ItemFields.Chapters) && video.Chapters != null)
+                if (fields.Contains(ItemFields.Chapters))
                 {
-                    dto.Chapters = video.Chapters.Select(c => GetChapterInfoDto(c, item)).ToList();
+                    dto.Chapters = _itemRepo.GetChapters(video.Id).Select(c => GetChapterInfoDto(c, item)).ToList();
                 }
             }
 
@@ -529,7 +531,7 @@ namespace MediaBrowser.Controller.Dto
         /// <param name="dto">The dto.</param>
         /// <param name="userDataRepository">The user data repository.</param>
         /// <returns>Task.</returns>
-        private static async Task SetSpecialCounts(Folder folder, User user, BaseItemDto dto, IUserDataRepository userDataRepository)
+        private static void SetSpecialCounts(Folder folder, User user, BaseItemDto dto, IUserDataRepository userDataRepository)
         {
             var rcentlyAddedItemCount = 0;
             var recursiveItemCount = 0;
@@ -540,7 +542,7 @@ namespace MediaBrowser.Controller.Dto
             // Loop through each recursive child
             foreach (var child in folder.GetRecursiveChildren(user).Where(i => !i.IsFolder).ToList())
             {
-                var userdata = await userDataRepository.GetUserData(user.Id, child.GetUserDataKey()).ConfigureAwait(false);
+                var userdata = userDataRepository.GetUserData(user.Id, child.GetUserDataKey());
 
                 recursiveItemCount++;
 
@@ -767,7 +769,7 @@ namespace MediaBrowser.Controller.Dto
         {
             if (data == null)
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException("data");
             }
 
             return new UserItemDataDto

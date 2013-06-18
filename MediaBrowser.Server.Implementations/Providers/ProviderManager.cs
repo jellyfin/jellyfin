@@ -106,6 +106,11 @@ namespace MediaBrowser.Server.Implementations.Providers
         /// <returns>Task{System.Boolean}.</returns>
         public async Task<bool> ExecuteMetadataProviders(BaseItem item, CancellationToken cancellationToken, bool force = false, bool allowSlowProviders = true)
         {
+            if (item == null)
+            {
+                throw new ArgumentNullException("item");
+            }
+
             // Allow providers of the same priority to execute in parallel
             MetadataProviderPriority? currentPriority = null;
             var currentTasks = new List<Task<bool>>();

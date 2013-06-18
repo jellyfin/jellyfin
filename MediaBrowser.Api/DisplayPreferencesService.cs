@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Controller.Library;
+﻿using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Serialization;
 using ServiceStack.ServiceHost;
@@ -43,7 +43,7 @@ namespace MediaBrowser.Api
         /// <summary>
         /// The _display preferences manager
         /// </summary>
-        private readonly IDisplayPreferencesManager _displayPreferencesManager;
+        private readonly IDisplayPreferencesRepository _displayPreferencesManager;
         /// <summary>
         /// The _json serializer
         /// </summary>
@@ -54,7 +54,7 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="displayPreferencesManager">The display preferences manager.</param>
-        public DisplayPreferencesService(IJsonSerializer jsonSerializer, IDisplayPreferencesManager displayPreferencesManager)
+        public DisplayPreferencesService(IJsonSerializer jsonSerializer, IDisplayPreferencesRepository displayPreferencesManager)
         {
             _jsonSerializer = jsonSerializer;
             _displayPreferencesManager = displayPreferencesManager;
@@ -66,9 +66,9 @@ namespace MediaBrowser.Api
         /// <param name="request">The request.</param>
         public object Get(GetDisplayPreferences request)
         {
-            var task = _displayPreferencesManager.GetDisplayPreferences(request.Id);
+            var result = _displayPreferencesManager.GetDisplayPreferences(request.Id);
 
-            return ToOptimizedResult(task.Result);
+            return ToOptimizedResult(result);
         }
 
         /// <summary>

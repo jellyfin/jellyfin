@@ -1,7 +1,9 @@
-﻿using MediaBrowser.Common.IO;
+﻿using System.Collections.Generic;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
@@ -34,6 +36,7 @@ namespace MediaBrowser.Controller.MediaInfo
         private readonly IServerApplicationPaths _appPaths;
         private readonly IMediaEncoder _encoder;
         private readonly ILogger _logger;
+        private readonly IItemRepository _itemRepo;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FFMpegManager" /> class.
@@ -42,13 +45,15 @@ namespace MediaBrowser.Controller.MediaInfo
         /// <param name="encoder">The encoder.</param>
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="logger">The logger.</param>
+        /// <param name="itemRepo">The item repo.</param>
         /// <exception cref="System.ArgumentNullException">zipClient</exception>
-        public FFMpegManager(IServerApplicationPaths appPaths, IMediaEncoder encoder, ILibraryManager libraryManager, ILogger logger)
+        public FFMpegManager(IServerApplicationPaths appPaths, IMediaEncoder encoder, ILibraryManager libraryManager, ILogger logger, IItemRepository itemRepo)
         {
             _appPaths = appPaths;
             _encoder = encoder;
             _libraryManager = libraryManager;
             _logger = logger;
+            _itemRepo = itemRepo;
 
             VideoImageCache = new FileSystemRepository(VideoImagesDataPath);
             SubtitleCache = new FileSystemRepository(SubtitleCachePath);
@@ -99,18 +104,14 @@ namespace MediaBrowser.Controller.MediaInfo
         /// Extracts the chapter images.
         /// </summary>
         /// <param name="video">The video.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="chapters">The chapters.</param>
         /// <param name="extractImages">if set to <c>true</c> [extract images].</param>
-        /// <param name="saveItem">if set to <c>true</c> [save item].</param>
+        /// <param name="saveChapters">if set to <c>true</c> [save chapters].</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public async Task<bool> PopulateChapterImages(Video video, CancellationToken cancellationToken, bool extractImages, bool saveItem)
+        public async Task<bool> PopulateChapterImages(Video video, List<ChapterInfo> chapters, bool extractImages, bool saveChapters, CancellationToken cancellationToken)
         {
-            if (video.Chapters == null)
-            {
-                throw new ArgumentNullException();
-            }
-
             // Can't extract images if there are no video streams
             if (video.MediaStreams == null || video.MediaStreams.All(m => m.Type != MediaStreamType.Video))
             {
@@ -122,7 +123,7 @@ namespace MediaBrowser.Controller.MediaInfo
 
             var runtimeTicks = video.RunTimeTicks ?? 0;
 
-            foreach (var chapter in video.Chapters)
+            foreach (var chapter in chapters)
             {
                 if (chapter.StartPositionTicks >= runtimeTicks)
                 {
@@ -186,9 +187,9 @@ namespace MediaBrowser.Controller.MediaInfo
                 }
             }
 
-            if (saveItem && changesMade)
+            if (saveChapters && changesMade)
             {
-                await _libraryManager.UpdateItem(video, CancellationToken.None).ConfigureAwait(false);
+                await _itemRepo.SaveChapters(video.Id, chapters, cancellationToken).ConfigureAwait(false);
             }
 
             return success;

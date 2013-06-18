@@ -240,9 +240,9 @@ namespace MediaBrowser.Api.UserLibrary
             }
 
             var key = item.GetUserDataKey();
-            
+
             // Get the user data for this item
-            var data = await UserDataRepository.GetUserData(userId, key).ConfigureAwait(false);
+            var data = UserDataRepository.GetUserData(userId, key);
 
             // Set favorite status
             data.IsFavorite = isFavorite;
@@ -288,9 +288,9 @@ namespace MediaBrowser.Api.UserLibrary
             }
 
             var key = item.GetUserDataKey();
-            
+
             // Get the user data for this item
-            var data = await UserDataRepository.GetUserData(userId, key).ConfigureAwait(false);
+            var data = UserDataRepository.GetUserData(userId, key);
 
             data.Likes = likes;
 

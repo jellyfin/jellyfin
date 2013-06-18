@@ -29,6 +29,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         protected readonly ILibraryManager LibraryManager;
         protected readonly IUserDataRepository UserDataRepository;
+        protected readonly IItemRepository ItemRepository;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseItemsByNameService{TItemType}" /> class.
@@ -36,11 +37,12 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="userManager">The user manager.</param>
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="userDataRepository">The user data repository.</param>
-        protected BaseItemsByNameService(IUserManager userManager, ILibraryManager libraryManager, IUserDataRepository userDataRepository)
+        protected BaseItemsByNameService(IUserManager userManager, ILibraryManager libraryManager, IUserDataRepository userDataRepository, IItemRepository itemRepository)
         {
             UserManager = userManager;
             LibraryManager = libraryManager;
             UserDataRepository = userDataRepository;
+            ItemRepository = itemRepository;
         }
 
         /// <summary>
@@ -265,8 +267,8 @@ namespace MediaBrowser.Api.UserLibrary
                 return null;
             }
 
-            var dto = user == null ? await new DtoBuilder(Logger, LibraryManager, UserDataRepository).GetBaseItemDto(item, fields).ConfigureAwait(false) :
-                await new DtoBuilder(Logger, LibraryManager, UserDataRepository).GetBaseItemDto(item, fields, user).ConfigureAwait(false);
+            var dto = user == null ? await new DtoBuilder(Logger, LibraryManager, UserDataRepository, ItemRepository).GetBaseItemDto(item, fields).ConfigureAwait(false) :
+                await new DtoBuilder(Logger, LibraryManager, UserDataRepository, ItemRepository).GetBaseItemDto(item, fields, user).ConfigureAwait(false);
 
             if (fields.Contains(ItemFields.ItemCounts))
             {
@@ -337,7 +339,7 @@ namespace MediaBrowser.Api.UserLibrary
         public string Name;
 
         public BaseItem Item;
-        private Task<UserItemData> _userData;
+        private UserItemData _userData;
 
         public List<BaseItem> Items
         {
@@ -353,12 +355,7 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var item = await GetItem().ConfigureAwait(false);
 
-            if (_userData == null)
-            {
-                _userData = repo.GetUserData(userId, item.GetUserDataKey());
-            }
-
-            return await _userData.ConfigureAwait(false);
+            return _userData ?? (_userData = repo.GetUserData(userId, item.GetUserDataKey()));
         }
 
         public IbnStub(string name, Func<IEnumerable<BaseItem>> childItems, Func<string,Task<T>> item)

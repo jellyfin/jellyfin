@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
@@ -6,7 +7,6 @@ using MediaBrowser.Controller.Library;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.Playback.Hls
@@ -19,7 +19,16 @@ namespace MediaBrowser.Api.Playback.Hls
         /// <summary>
         /// The segment file prefix
         /// </summary>
-        public const string SegmentFilePrefix = "segment-";
+        public const string SegmentFilePrefix = "hls-";
+
+        protected override string GetOutputFilePath(StreamState state)
+        {
+            var folder = ApplicationPaths.EncodedMediaCachePath;
+
+            var outputFileExtension = GetOutputFileExtension(state);
+
+            return Path.Combine(folder, SegmentFilePrefix + GetCommandLineArguments("dummy\\dummy", state, false).GetMD5() + (outputFileExtension ?? string.Empty).ToLower());
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseStreamingService" /> class.
@@ -29,7 +38,7 @@ namespace MediaBrowser.Api.Playback.Hls
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="isoManager">The iso manager.</param>
         /// <param name="mediaEncoder">The media encoder.</param>
-        protected BaseHlsService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder) 
+        protected BaseHlsService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder)
             : base(appPaths, userManager, libraryManager, isoManager, mediaEncoder)
         {
         }
@@ -72,7 +81,7 @@ namespace MediaBrowser.Api.Playback.Hls
         protected object ProcessRequest(StreamRequest request)
         {
             var state = GetState(request);
-            
+
             return ProcessRequestAsync(state).Result;
         }
 
@@ -139,23 +148,14 @@ namespace MediaBrowser.Api.Playback.Hls
                 await Task.Delay(25).ConfigureAwait(false);
             }
 
-            // The segement paths within the playlist are phsyical, so strip that out to make it relative
-            fileText = fileText.Replace(Path.GetDirectoryName(playlist) + Path.DirectorySeparatorChar, string.Empty);
-
             fileText = fileText.Replace(SegmentFilePrefix, "segments/").Replace(".ts", "/stream.ts").Replace(".aac", "/stream.aac").Replace(".mp3", "/stream.mp3");
 
             // It's considered live while still encoding (EVENT). Once the encoding has finished, it's video on demand (VOD).
             var playlistType = fileText.IndexOf("#EXT-X-ENDLIST", StringComparison.OrdinalIgnoreCase) == -1 ? "EVENT" : "VOD";
 
-            const string allowCacheAttributeName = "#EXT-X-ALLOW-CACHE";
-
-            // fix this to make the media stream validator happy
-            // https://ffmpeg.org/trac/ffmpeg/ticket/2228
-            fileText = fileText.Replace("#EXT-X-ALLOWCACHE", allowCacheAttributeName);
-
             // Add event type at the top
-            fileText = fileText.Replace(allowCacheAttributeName, "#EXT-X-PLAYLIST-TYPE:" + playlistType + Environment.NewLine + allowCacheAttributeName);
-    
+            //fileText = fileText.Replace(allowCacheAttributeName, "#EXT-X-PLAYLIST-TYPE:" + playlistType + Environment.NewLine + allowCacheAttributeName);
+
             return fileText;
         }
 
@@ -187,14 +187,9 @@ namespace MediaBrowser.Api.Playback.Hls
         /// <returns>System.String.</returns>
         protected override string GetCommandLineArguments(string outputPath, StreamState state, bool performSubtitleConversions)
         {
-            var segmentOutputPath = Path.GetDirectoryName(outputPath);
-            var segmentOutputName = SegmentFilePrefix + Path.GetFileNameWithoutExtension(outputPath);
-
-            segmentOutputPath = Path.Combine(segmentOutputPath, segmentOutputName + "%03d." + GetSegmentFileExtension(state).TrimStart('.'));
-
             var probeSize = GetProbeSizeArgument(state.Item);
 
-            return string.Format("{0} {1} {2} -i {3}{4} -threads 0 {5} {6} {7} -f ssegment -segment_list_flags +live -segment_time 10 -segment_list \"{8}\" \"{9}\"",
+            return string.Format("{0} {1} {2} -i {3}{4} -threads 0 {5} {6} {7} -hls_time 10 -start_number 0 -hls_list_size 1440 \"{8}\"",
                 probeSize,
                 GetUserAgentParam(state.Item),
                 GetFastSeekCommandLineParameter(state.Request),
@@ -203,8 +198,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 GetMapArgs(state),
                 GetVideoArguments(state, performSubtitleConversions),
                 GetAudioArguments(state),
-                outputPath,
-                segmentOutputPath
+                outputPath
                 ).Trim();
         }
     }

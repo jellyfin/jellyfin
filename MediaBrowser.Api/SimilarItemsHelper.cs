@@ -71,6 +71,7 @@ namespace MediaBrowser.Api
         /// Gets the similar items.
         /// </summary>
         /// <param name="userManager">The user manager.</param>
+        /// <param name="itemRepository">The item repository.</param>
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="userDataRepository">The user data repository.</param>
         /// <param name="logger">The logger.</param>
@@ -78,7 +79,7 @@ namespace MediaBrowser.Api
         /// <param name="includeInSearch">The include in search.</param>
         /// <param name="getSimilarityScore">The get similarity score.</param>
         /// <returns>ItemsResult.</returns>
-        internal static ItemsResult GetSimilarItems(IUserManager userManager, ILibraryManager libraryManager, IUserDataRepository userDataRepository, ILogger logger, BaseGetSimilarItems request, Func<BaseItem, bool> includeInSearch, Func<BaseItem, BaseItem, int> getSimilarityScore)
+        internal static ItemsResult GetSimilarItems(IUserManager userManager, IItemRepository itemRepository, ILibraryManager libraryManager, IUserDataRepository userDataRepository, ILogger logger, BaseGetSimilarItems request, Func<BaseItem, bool> includeInSearch, Func<BaseItem, BaseItem, int> getSimilarityScore)
         {
             var user = request.UserId.HasValue ? userManager.GetUserById(request.UserId.Value) : null;
 
@@ -88,7 +89,7 @@ namespace MediaBrowser.Api
 
             var fields = request.GetItemFields().ToList();
 
-            var dtoBuilder = new DtoBuilder(logger, libraryManager, userDataRepository);
+            var dtoBuilder = new DtoBuilder(logger, libraryManager, userDataRepository, itemRepository);
 
             var inputItems = user == null
                                  ? libraryManager.RootFolder.RecursiveChildren

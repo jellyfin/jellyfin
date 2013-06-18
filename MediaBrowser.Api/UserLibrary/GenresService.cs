@@ -69,8 +69,8 @@ namespace MediaBrowser.Api.UserLibrary
     /// </summary>
     public class GenresService : BaseItemsByNameService<Genre>
     {
-        public GenresService(IUserManager userManager, ILibraryManager libraryManager, IUserDataRepository userDataRepository)
-            : base(userManager, libraryManager, userDataRepository)
+        public GenresService(IUserManager userManager, ILibraryManager libraryManager, IUserDataRepository userDataRepository, IItemRepository itemRepo)
+            : base(userManager, libraryManager, userDataRepository, itemRepo)
         {
         }
 
@@ -98,7 +98,7 @@ namespace MediaBrowser.Api.UserLibrary
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true));
 
-            var builder = new DtoBuilder(Logger, LibraryManager, UserDataRepository);
+            var builder = new DtoBuilder(Logger, LibraryManager, UserDataRepository, ItemRepository);
 
             if (request.UserId.HasValue)
             {

@@ -1,5 +1,4 @@
-﻿using System.Data.SQLite;
-using MediaBrowser.Common.Configuration;
+﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Logging;
@@ -7,26 +6,23 @@ using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Concurrent;
 using System.Data;
+using System.Data.SQLite;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Server.Implementations.Sqlite
+namespace MediaBrowser.Server.Implementations.Persistence
 {
-    /// <summary>
-    /// Class SQLiteUserDataRepository
-    /// </summary>
-    public class SQLiteUserDataRepository : SqliteRepository, IUserDataRepository
+    public class SqliteUserDataRepository : IUserDataRepository
     {
-        private readonly ConcurrentDictionary<string, Task<UserItemData>> _userData = new ConcurrentDictionary<string, Task<UserItemData>>();
+        private readonly ILogger _logger;
+        
+        private readonly ConcurrentDictionary<string, UserItemData> _userData = new ConcurrentDictionary<string, UserItemData>();
 
         private readonly SemaphoreSlim _writeLock = new SemaphoreSlim(1, 1);
 
-        /// <summary>
-        /// The repository name
-        /// </summary>
-        public const string RepositoryName = "SQLite";
-
+        private SQLiteConnection _connection;
+        
         /// <summary>
         /// Gets the name of the repository
         /// </summary>
@@ -35,7 +31,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         {
             get
             {
-                return RepositoryName;
+                return "SQLite";
             }
         }
 
@@ -47,7 +43,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         private readonly IApplicationPaths _appPaths;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SQLiteUserDataRepository" /> class.
+        /// Initializes a new instance of the <see cref="SqliteUserDataRepository"/> class.
         /// </summary>
         /// <param name="appPaths">The app paths.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
@@ -57,8 +53,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         /// or
         /// appPaths
         /// </exception>
-        public SQLiteUserDataRepository(IApplicationPaths appPaths, IJsonSerializer jsonSerializer, ILogManager logManager)
-            : base(logManager)
+        public SqliteUserDataRepository(IApplicationPaths appPaths, IJsonSerializer jsonSerializer, ILogManager logManager)
         {
             if (jsonSerializer == null)
             {
@@ -71,6 +66,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
 
             _jsonSerializer = jsonSerializer;
             _appPaths = appPaths;
+            _logger = logManager.GetLogger(GetType().Name);
         }
 
         /// <summary>
@@ -81,7 +77,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         {
             var dbFile = Path.Combine(_appPaths.DataPath, "userdata.db");
 
-            await ConnectToDb(dbFile).ConfigureAwait(false);
+            _connection = await SqliteExtensions.ConnectToDb(dbFile).ConfigureAwait(false);
 
             string[] queries = {
 
@@ -92,7 +88,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
                                 "pragma temp_store = memory"
                                };
 
-            RunQueries(queries);
+            _connection.RunQueries(queries, _logger);
         }
 
         /// <summary>
@@ -135,14 +131,14 @@ namespace MediaBrowser.Server.Implementations.Sqlite
             {
                 await PersistUserData(userId, key, userData, cancellationToken).ConfigureAwait(false);
 
-                var newValue = Task.FromResult(userData);
+                var newValue = userData;
 
                 // Once it succeeds, put it into the dictionary to make it available to everyone else
                 _userData.AddOrUpdate(GetInternalKey(userId, key), newValue, delegate { return newValue; });
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error saving user data", ex);
+                _logger.ErrorException("Error saving user data", ex);
 
                 throw;
             }
@@ -181,9 +177,9 @@ namespace MediaBrowser.Server.Implementations.Sqlite
 
             try
             {
-                transaction = Connection.BeginTransaction();
+                transaction = _connection.BeginTransaction();
 
-                using (var cmd = Connection.CreateCommand())
+                using (var cmd = _connection.CreateCommand())
                 {
                     cmd.CommandText = "replace into userdata (key, userId, data) values (@1, @2, @3)";
                     cmd.AddParam("@1", key);
@@ -208,7 +204,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
             }
             catch (Exception e)
             {
-                Logger.ErrorException("Failed to save user data:", e);
+                _logger.ErrorException("Failed to save user data:", e);
 
                 if (transaction != null)
                 {
@@ -239,7 +235,7 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         /// or
         /// key
         /// </exception>
-        public Task<UserItemData> GetUserData(Guid userId, string key)
+        public UserItemData GetUserData(Guid userId, string key)
         {
             if (userId == Guid.Empty)
             {
@@ -259,9 +255,9 @@ namespace MediaBrowser.Server.Implementations.Sqlite
         /// <param name="userId">The user id.</param>
         /// <param name="key">The key.</param>
         /// <returns>Task{UserItemData}.</returns>
-        private async Task<UserItemData> RetrieveUserData(Guid userId, string key)
+        private UserItemData RetrieveUserData(Guid userId, string key)
         {
-            using (var cmd = Connection.CreateCommand())
+            using (var cmd = _connection.CreateCommand())
             {
                 cmd.CommandText = "select data from userdata where key = @key and userId=@userId";
 
@@ -271,11 +267,11 @@ namespace MediaBrowser.Server.Implementations.Sqlite
                 var userIdParam = cmd.Parameters.Add("@userId", DbType.Guid);
                 userIdParam.Value = userId;
 
-                using (var reader = await cmd.ExecuteReaderAsync(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult | CommandBehavior.SingleRow).ConfigureAwait(false))
+                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult | CommandBehavior.SingleRow))
                 {
                     if (reader.Read())
                     {
-                        using (var stream = GetStream(reader, 0))
+                        using (var stream = reader.GetMemoryStream(0))
                         {
                             return _jsonSerializer.DeserializeFromStream<UserItemData>(stream);
                         }
@@ -283,6 +279,48 @@ namespace MediaBrowser.Server.Implementations.Sqlite
                 }
 
                 return new UserItemData();
+            }
+        }
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        private readonly object _disposeLock = new object();
+
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool dispose)
+        {
+            if (dispose)
+            {
+                try
+                {
+                    lock (_disposeLock)
+                    {
+                        if (_connection != null)
+                        {
+                            if (_connection.IsOpen())
+                            {
+                                _connection.Close();
+                            }
+
+                            _connection.Dispose();
+                            _connection = null;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error disposing database", ex);
+                }
             }
         }
     }

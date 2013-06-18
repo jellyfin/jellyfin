@@ -4,6 +4,7 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.ServerApplication.Logging;
@@ -44,7 +45,7 @@ namespace MediaBrowser.ServerApplication
         private readonly IUserManager _userManager;
         private readonly ILibraryManager _libraryManager;
         private readonly IJsonSerializer _jsonSerializer;
-        private readonly IDisplayPreferencesManager _displayPreferencesManager;
+        private readonly IDisplayPreferencesRepository _displayPreferencesManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MainWindow" /> class.
@@ -57,7 +58,7 @@ namespace MediaBrowser.ServerApplication
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="displayPreferencesManager">The display preferences manager.</param>
         /// <exception cref="System.ArgumentNullException">logger</exception>
-        public MainWindow(ILogManager logManager, IServerApplicationHost appHost, IServerConfigurationManager configurationManager, IUserManager userManager, ILibraryManager libraryManager, IJsonSerializer jsonSerializer, IDisplayPreferencesManager displayPreferencesManager)
+        public MainWindow(ILogManager logManager, IServerApplicationHost appHost, IServerConfigurationManager configurationManager, IUserManager userManager, ILibraryManager libraryManager, IJsonSerializer jsonSerializer, IDisplayPreferencesRepository displayPreferencesManager)
         {
             if (logManager == null)
             {

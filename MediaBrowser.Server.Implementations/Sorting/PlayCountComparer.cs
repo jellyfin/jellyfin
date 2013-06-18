@@ -35,7 +35,7 @@ namespace MediaBrowser.Server.Implementations.Sorting
         /// <returns>DateTime.</returns>
         private int GetValue(BaseItem x)
         {
-            var userdata = UserDataRepository.GetUserData(User.Id, x.GetUserDataKey()).Result;
+            var userdata = UserDataRepository.GetUserData(User.Id, x.GetUserDataKey());
 
             return userdata == null ? 0 : userdata.PlayCount;
         }

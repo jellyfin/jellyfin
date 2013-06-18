@@ -51,9 +51,6 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
 
                 if (episode != null)
                 {
-                    episode.IndexNumber = TVUtils.GetEpisodeNumberFromFile(args.Path, season != null);
-                    episode.IndexNumberEnd = TVUtils.GetEndingEpisodeNumberFromFile(args.Path);
-
                     if (season != null)
                     {
                         episode.ParentIndexNumber = season.IndexNumber;

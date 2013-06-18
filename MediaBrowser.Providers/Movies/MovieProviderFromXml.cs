@@ -1,12 +1,12 @@
 ﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Logging;
 using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Providers.Movies
 {
@@ -15,7 +15,8 @@ namespace MediaBrowser.Providers.Movies
     /// </summary>
     public class MovieProviderFromXml : BaseMetadataProvider
     {
-        public MovieProviderFromXml(ILogManager logManager, IServerConfigurationManager configurationManager) : base(logManager, configurationManager)
+        public MovieProviderFromXml(ILogManager logManager, IServerConfigurationManager configurationManager)
+            : base(logManager, configurationManager)
         {
         }
 
@@ -78,25 +79,49 @@ namespace MediaBrowser.Providers.Movies
         private async Task<bool> Fetch(BaseItem item, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            
+
             var metadataFile = item.ResolveArgs.GetMetaFileByPath(Path.Combine(item.MetaLocation, "movie.xml"));
 
             if (metadataFile != null)
             {
                 var path = metadataFile.FullName;
-                var boxset = item as BoxSet;
 
                 await XmlParsingResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
 
                 try
                 {
-                    if (boxset != null)
+                    var movie = item as Movie;
+
+                    if (movie != null)
                     {
-                        new BaseItemXmlParser<BoxSet>(Logger).Fetch(boxset, path, cancellationToken);
+                        new BaseItemXmlParser<Movie>(Logger).Fetch(movie, path, cancellationToken);
                     }
                     else
                     {
-                        new BaseItemXmlParser<Movie>(Logger).Fetch((Movie)item, path, cancellationToken);
+                        var boxset = item as BoxSet;
+
+                        if (boxset != null)
+                        {
+                            new BaseItemXmlParser<BoxSet>(Logger).Fetch(boxset, path, cancellationToken);
+                        }
+                        else
+                        {
+                            var musicVideo = item as MusicVideo;
+
+                            if (musicVideo != null)
+                            {
+                                new BaseItemXmlParser<MusicVideo>(Logger).Fetch(musicVideo, path, cancellationToken);
+                            }
+                            else
+                            {
+                                var trailer = item as Trailer;
+
+                                if (trailer != null)
+                                {
+                                    new BaseItemXmlParser<Trailer>(Logger).Fetch(trailer, path, cancellationToken);
+                                }
+                            }
+                        }
                     }
                 }
                 finally

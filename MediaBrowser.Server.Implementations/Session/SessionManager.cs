@@ -215,7 +215,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
             var key = item.GetUserDataKey();
 
-            var data = await _userDataRepository.GetUserData(user.Id, key).ConfigureAwait(false);
+            var data = _userDataRepository.GetUserData(user.Id, key);
 
             data.PlayCount++;
             data.LastPlayedDate = DateTime.UtcNow;
@@ -226,7 +226,7 @@ namespace MediaBrowser.Server.Implementations.Session
             }
 
             await _userDataRepository.SaveUserData(user.Id, key, data, CancellationToken.None).ConfigureAwait(false);
-            
+
             // Nothing to save here
             // Fire events to inform plugins
             EventHelper.QueueEventIfNotNull(PlaybackStart, this, new PlaybackProgressEventArgs
@@ -266,7 +266,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
             if (positionTicks.HasValue)
             {
-                var data = await _userDataRepository.GetUserData(user.Id, key).ConfigureAwait(false);
+                var data = _userDataRepository.GetUserData(user.Id, key);
 
                 UpdatePlayState(item, data, positionTicks.Value);
                 await _userDataRepository.SaveUserData(user.Id, key, data, CancellationToken.None).ConfigureAwait(false);
@@ -307,7 +307,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
             var key = item.GetUserDataKey();
 
-            var data = await _userDataRepository.GetUserData(user.Id, key).ConfigureAwait(false);
+            var data = _userDataRepository.GetUserData(user.Id, key);
 
             if (positionTicks.HasValue)
             {

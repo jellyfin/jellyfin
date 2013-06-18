@@ -216,24 +216,9 @@ namespace MediaBrowser.Controller.Library
         /// Retrieves the item.
         /// </summary>
         /// <param name="id">The id.</param>
-        /// <returns>Task{BaseItem}.</returns>
-        BaseItem RetrieveItem(Guid id);
-
-        /// <summary>
-        /// Saves the children.
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <param name="children">The children.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        Task SaveChildren(Guid id, IEnumerable<BaseItem> children, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Retrieves the children.
-        /// </summary>
-        /// <param name="parent">The parent.</param>
-        /// <returns>IEnumerable{BaseItem}.</returns>
-        IEnumerable<BaseItem> RetrieveChildren(Folder parent);
+        /// <param name="type">The type.</param>
+        /// <returns>BaseItem.</returns>
+        BaseItem RetrieveItem(Guid id, Type type);
 
         /// <summary>
         /// Validates the artists.

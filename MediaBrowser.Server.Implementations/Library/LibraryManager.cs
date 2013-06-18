@@ -564,7 +564,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 Directory.CreateDirectory(rootFolderPath);
             }
 
-            var rootFolder = RetrieveItem(rootFolderPath.GetMBId(typeof(AggregateFolder))) as AggregateFolder ?? (AggregateFolder)ResolvePath(new DirectoryInfo(rootFolderPath));
+            var rootFolder = RetrieveItem(rootFolderPath.GetMBId(typeof(AggregateFolder)), typeof(AggregateFolder)) as AggregateFolder ?? (AggregateFolder)ResolvePath(new DirectoryInfo(rootFolderPath));
 
             // Add in the plug-in folders
             foreach (var child in PluginFolderCreators)
@@ -589,7 +589,8 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>UserRootFolder.</returns>
         public UserRootFolder GetUserRootFolder(string userRootPath)
         {
-            return _userRootFolders.GetOrAdd(userRootPath, key => RetrieveItem(userRootPath.GetMBId(typeof(UserRootFolder))) as UserRootFolder ?? (UserRootFolder)ResolvePath(new DirectoryInfo(userRootPath)));
+            return _userRootFolders.GetOrAdd(userRootPath, key => RetrieveItem(userRootPath.GetMBId(typeof(UserRootFolder)), typeof(UserRootFolder)) as UserRootFolder ?? 
+                (UserRootFolder)ResolvePath(new DirectoryInfo(userRootPath)));
         }
 
         /// <summary>
@@ -779,9 +780,11 @@ namespace MediaBrowser.Server.Implementations.Library
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var id = path.GetMBId(typeof(T));
+            var type = typeof(T);
 
-            var item = RetrieveItem(id) as T;
+            var id = path.GetMBId(type);
+
+            var item = RetrieveItem(id, type) as T;
             if (item == null)
             {
                 item = new T
@@ -816,7 +819,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>Task.</returns>
         public async Task ValidatePeople(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            const int maxTasks = 10;
+            const int maxTasks = 15;
 
             var tasks = new List<Task>();
 
@@ -1166,7 +1169,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 return item;
             }
 
-            return ItemRepository.GetItem(id);
+            return null;
         }
 
         /// <summary>
@@ -1340,39 +1343,11 @@ namespace MediaBrowser.Server.Implementations.Library
         /// Retrieves the item.
         /// </summary>
         /// <param name="id">The id.</param>
-        /// <returns>Task{BaseItem}.</returns>
-        public BaseItem RetrieveItem(Guid id)
+        /// <param name="type">The type.</param>
+        /// <returns>BaseItem.</returns>
+        public BaseItem RetrieveItem(Guid id, Type type)
         {
-            return ItemRepository.GetItem(id);
-        }
-
-        /// <summary>
-        /// Saves the children.
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <param name="children">The children.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        public Task SaveChildren(Guid id, IEnumerable<BaseItem> children, CancellationToken cancellationToken)
-        {
-            return ItemRepository.SaveChildren(id, children, cancellationToken);
-        }
-
-        /// <summary>
-        /// Retrieves the children.
-        /// </summary>
-        /// <param name="parent">The parent.</param>
-        /// <returns>IEnumerable{BaseItem}.</returns>
-        public IEnumerable<BaseItem> RetrieveChildren(Folder parent)
-        {
-            var children = ItemRepository.RetrieveChildren(parent).ToList();
-
-            foreach (var child in children)
-            {
-                child.Parent = parent;
-            }
-
-            return children;
+            return ItemRepository.RetrieveItem(id, type);
         }
 
         /// <summary>
