@@ -37,6 +37,49 @@ namespace MediaBrowser.Server.Implementations.Localization
         public LocalizationManager(IServerConfigurationManager configurationManager)
         {
             _configurationManager = configurationManager;
+
+            ExtractAll();
+        }
+
+        private void ExtractAll()
+        {
+            var type = GetType();
+            var resourcePath = type.Namespace + ".Ratings.";
+
+            var localizationPath = LocalizationPath;
+
+            var existingFiles = Directory.EnumerateFiles(localizationPath, "ratings-*.txt", SearchOption.TopDirectoryOnly)
+                .Select(Path.GetFileName)
+                .ToList();
+
+            if (!Directory.Exists(localizationPath))
+            {
+                Directory.CreateDirectory(localizationPath);
+            }
+
+            // Extract from the assembly
+            foreach (var resource in type.Assembly
+                .GetManifestResourceNames()
+                .Where(i => i.StartsWith(resourcePath)))
+            {
+                var filename = "ratings-" + resource.Substring(resourcePath.Length);
+
+                if (!existingFiles.Contains(filename))
+                {
+                    using (var stream = type.Assembly.GetManifestResourceStream(resource))
+                    {
+                        using (var fs = new FileStream(Path.Combine(localizationPath, filename), FileMode.Create, FileAccess.Write, FileShare.Read))
+                        {
+                            stream.CopyTo(fs);
+                        }
+                    }
+                }
+            }
+
+            foreach (var file in Directory.EnumerateFiles(localizationPath, "ratings-*.txt", SearchOption.TopDirectoryOnly))
+            {
+                LoadRatings(file);
+            }
         }
 
         /// <summary>
@@ -128,15 +171,7 @@ namespace MediaBrowser.Server.Implementations.Localization
         {
             Dictionary<string, ParentalRating> value;
 
-            if (!_allParentalRatings.TryGetValue(countryCode, out value))
-            {
-                value = LoadRatings(countryCode);
-
-                if (value != null)
-                {
-                    _allParentalRatings.TryAdd(countryCode, value);
-                }
-            }
+            _allParentalRatings.TryGetValue(countryCode, out value);
 
             return value;
         }
@@ -144,17 +179,11 @@ namespace MediaBrowser.Server.Implementations.Localization
         /// <summary>
         /// Loads the ratings.
         /// </summary>
-        /// <param name="countryCode">The country code.</param>
-        private Dictionary<string, ParentalRating> LoadRatings(string countryCode)
+        /// <param name="file">The file.</param>
+        /// <returns>Dictionary{System.StringParentalRating}.</returns>
+        private void LoadRatings(string file)
         {
-            var path = GetRatingsFilePath(countryCode);
-
-            if (string.IsNullOrEmpty(path))
-            {
-                return null;
-            }
-
-            return File.ReadAllLines(path).Select(i =>
+            var dict = File.ReadAllLines(file).Select(i =>
             {
                 if (!string.IsNullOrWhiteSpace(i))
                 {
@@ -176,47 +205,10 @@ namespace MediaBrowser.Server.Implementations.Localization
             })
             .Where(i => i != null)
             .ToDictionary(i => i.Name);
-        }
 
-        /// <summary>
-        /// Gets the ratings file.
-        /// </summary>
-        /// <param name="countryCode">The country code.</param>
-        private string GetRatingsFilePath(string countryCode)
-        {
-            countryCode = countryCode.ToLower();
+            var countryCode = Path.GetFileNameWithoutExtension(file).Split('-').Last();
 
-            var path = Path.Combine(LocalizationPath, "ratings-" + countryCode + ".txt");
-
-            if (!File.Exists(path))
-            {
-                // Extract embedded resource
-
-                var type = GetType();
-                var resourcePath = type.Namespace + ".Ratings." + countryCode + ".txt";
-
-                using (var stream = type.Assembly.GetManifestResourceStream(resourcePath))
-                {
-                    if (stream == null)
-                    {
-                        return null;
-                    }
-
-                    var parentPath = Path.GetDirectoryName(path);
-
-                    if (!Directory.Exists(parentPath))
-                    {
-                        Directory.CreateDirectory(parentPath);
-                    }
-
-                    using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read))
-                    {
-                        stream.CopyTo(fs);
-                    }
-                }
-            }
-
-            return path;
+            _allParentalRatings.TryAdd(countryCode, dict);
         }
 
         /// <summary>
@@ -235,23 +227,17 @@ namespace MediaBrowser.Server.Implementations.Localization
 
             if (!ratingsDictionary.TryGetValue(rating, out value))
             {
-                var stripped = StripCountry(rating);
-
-                ratingsDictionary.TryGetValue(stripped, out value);
+                // If we don't find anything check all ratings systems
+                foreach (var dictionary in _allParentalRatings.Values)
+                {
+                    if (dictionary.TryGetValue(rating, out value))
+                    {
+                        return value.Value;
+                    }
+                }
             }
 
             return value == null ? (int?)null : value.Value;
-        }
-
-        /// <summary>
-        /// Strips the country.
-        /// </summary>
-        /// <param name="rating">The rating.</param>
-        /// <returns>System.String.</returns>
-        private static string StripCountry(string rating)
-        {
-            int start = rating.IndexOf('-');
-            return start > 0 ? rating.Substring(start + 1) : rating;
         }
     }
 }
