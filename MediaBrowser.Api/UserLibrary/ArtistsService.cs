@@ -69,13 +69,14 @@ namespace MediaBrowser.Api.UserLibrary
     public class ArtistsService : BaseItemsByNameService<Artist>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ArtistsService"/> class.
+        /// Initializes a new instance of the <see cref="ArtistsService" /> class.
         /// </summary>
         /// <param name="userManager">The user manager.</param>
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="userDataRepository">The user data repository.</param>
-        public ArtistsService(IUserManager userManager, ILibraryManager libraryManager, IUserDataRepository userDataRepository)
-            : base(userManager, libraryManager, userDataRepository)
+        /// <param name="itemRepo">The item repo.</param>
+        public ArtistsService(IUserManager userManager, ILibraryManager libraryManager, IUserDataRepository userDataRepository, IItemRepository itemRepo)
+            : base(userManager, libraryManager, userDataRepository, itemRepo)
         {
         }
 
@@ -103,7 +104,7 @@ namespace MediaBrowser.Api.UserLibrary
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true));
 
-            var builder = new DtoBuilder(Logger, LibraryManager, UserDataRepository);
+            var builder = new DtoBuilder(Logger, LibraryManager, UserDataRepository, ItemRepository);
 
             if (request.UserId.HasValue)
             {

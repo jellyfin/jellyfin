@@ -51,6 +51,30 @@ namespace MediaBrowser.Controller.Persistence
         /// <param name="type">The type.</param>
         /// <returns>BaseItem.</returns>
         BaseItem RetrieveItem(Guid id, Type type);
+
+        /// <summary>
+        /// Gets chapters for an item
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        IEnumerable<ChapterInfo> GetChapters(Guid id);
+
+        /// <summary>
+        /// Gets a single chapter for an item
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        ChapterInfo GetChapter(Guid id, int index);
+
+        /// <summary>
+        /// Saves the chapters.
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <param name="chapters">The chapters.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task SaveChapters(Guid id, IEnumerable<ChapterInfo> chapters, CancellationToken cancellationToken);
     }
 
     /// <summary>

@@ -16,15 +16,14 @@ namespace MediaBrowser.Server.Implementations.Persistence
     /// <summary>
     /// Class SQLiteUserRepository
     /// </summary>
-    public class SqliteUserRepository : SqliteRepository, IUserRepository
+    public class SqliteUserRepository : IUserRepository
     {
-        /// <summary>
-        /// The repository name
-        /// </summary>
-        public const string RepositoryName = "SQLite";
-
+        private readonly ILogger _logger;
+        
         private readonly SemaphoreSlim _writeLock = new SemaphoreSlim(1, 1);
 
+        private SQLiteConnection _connection;
+        
         /// <summary>
         /// Gets the name of the repository
         /// </summary>
@@ -33,7 +32,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         {
             get
             {
-                return RepositoryName;
+                return "SQLite";
             }
         }
 
@@ -56,7 +55,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// <param name="logManager">The log manager.</param>
         /// <exception cref="System.ArgumentNullException">appPaths</exception>
         public SqliteUserRepository(IApplicationPaths appPaths, IJsonSerializer jsonSerializer, ILogManager logManager)
-            : base(logManager)
         {
             if (appPaths == null)
             {
@@ -69,6 +67,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             _appPaths = appPaths;
             _jsonSerializer = jsonSerializer;
+
+            _logger = logManager.GetLogger(GetType().Name);
         }
 
         /// <summary>
@@ -79,7 +79,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         {
             var dbFile = Path.Combine(_appPaths.DataPath, "users.db");
 
-            await ConnectToDb(dbFile).ConfigureAwait(false);
+            _connection = await SqliteExtensions.ConnectToDb(dbFile).ConfigureAwait(false);
 
             string[] queries = {
 
@@ -90,7 +90,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                                 "pragma temp_store = memory"
                                };
 
-            RunQueries(queries);
+            _connection.RunQueries(queries, _logger);
         }
 
         /// <summary>
@@ -124,9 +124,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             try
             {
-                transaction = Connection.BeginTransaction();
+                transaction = _connection.BeginTransaction();
 
-                using (var cmd = Connection.CreateCommand())
+                using (var cmd = _connection.CreateCommand())
                 {
                     cmd.CommandText = "replace into users (guid, data) values (@1, @2)";
                     cmd.AddParam("@1", user.Id);
@@ -150,7 +150,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
             catch (Exception e)
             {
-                Logger.ErrorException("Failed to save user:", e);
+                _logger.ErrorException("Failed to save user:", e);
 
                 if (transaction != null)
                 {
@@ -176,7 +176,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// <returns>IEnumerable{User}.</returns>
         public IEnumerable<User> RetrieveAllUsers()
         {
-            using (var cmd = Connection.CreateCommand())
+            using (var cmd = _connection.CreateCommand())
             {
                 cmd.CommandText = "select data from users";
 
@@ -184,7 +184,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     while (reader.Read())
                     {
-                        using (var stream = GetStream(reader, 0))
+                        using (var stream = reader.GetMemoryStream(0))
                         {
                             var user = _jsonSerializer.DeserializeFromStream<User>(stream);
                             yield return user;
@@ -221,9 +221,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             try
             {
-                transaction = Connection.BeginTransaction();
+                transaction = _connection.BeginTransaction();
 
-                using (var cmd = Connection.CreateCommand())
+                using (var cmd = _connection.CreateCommand())
                 {
                     cmd.CommandText = "delete from users where guid=@guid";
 
@@ -248,7 +248,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
             catch (Exception e)
             {
-                Logger.ErrorException("Failed to delete user:", e);
+                _logger.ErrorException("Failed to delete user:", e);
 
                 if (transaction != null)
                 {
@@ -265,6 +265,48 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 }
 
                 _writeLock.Release();
+            }
+        }
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        private readonly object _disposeLock = new object();
+
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool dispose)
+        {
+            if (dispose)
+            {
+                try
+                {
+                    lock (_disposeLock)
+                    {
+                        if (_connection != null)
+                        {
+                            if (_connection.IsOpen())
+                            {
+                                _connection.Close();
+                            }
+
+                            _connection.Dispose();
+                            _connection = null;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error disposing database", ex);
+                }
             }
         }
     }

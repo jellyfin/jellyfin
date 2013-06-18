@@ -2,6 +2,7 @@
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
@@ -65,10 +66,7 @@ namespace MediaBrowser.Controller.Drawing
         /// </summary>
         private readonly ILogger _logger;
 
-        /// <summary>
-        /// The _kernel
-        /// </summary>
-        private readonly Kernel _kernel;
+        private readonly IItemRepository _itemRepo;
 
         /// <summary>
         /// The _locks
@@ -78,13 +76,13 @@ namespace MediaBrowser.Controller.Drawing
         /// <summary>
         /// Initializes a new instance of the <see cref="ImageManager" /> class.
         /// </summary>
-        /// <param name="kernel">The kernel.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="appPaths">The app paths.</param>
-        public ImageManager(Kernel kernel, ILogger logger, IServerApplicationPaths appPaths)
+        /// <param name="itemRepo">The item repo.</param>
+        public ImageManager(ILogger logger, IServerApplicationPaths appPaths, IItemRepository itemRepo)
         {
             _logger = logger;
-            _kernel = kernel;
+            _itemRepo = itemRepo;
 
             ImageSizeCache = new FileSystemRepository(Path.Combine(appPaths.ImageCachePath, "image-sizes"));
             ResizedImageCache = new FileSystemRepository(Path.Combine(appPaths.ImageCachePath, "resized-images"));
@@ -437,14 +435,7 @@ namespace MediaBrowser.Controller.Drawing
 
             if (imageType == ImageType.Chapter)
             {
-                var video = (Video)item;
-
-                if (video.Chapters == null)
-                {
-                    throw new InvalidOperationException(string.Format("Item {0} does not have any Chapters.", item.Name));
-                }
-
-                return video.Chapters[imageIndex].ImagePath;
+                return _itemRepo.GetChapter(item.Id, imageIndex).ImagePath;
             }
 
             return item.GetImage(imageType);

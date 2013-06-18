@@ -24,6 +24,6 @@ namespace MediaBrowser.Controller.Persistence
         /// </summary>
         /// <param name="displayPreferencesId">The display preferences id.</param>
         /// <returns>Task{DisplayPreferences}.</returns>
-        Task<DisplayPreferences> GetDisplayPreferences(Guid displayPreferencesId);
+        DisplayPreferences GetDisplayPreferences(Guid displayPreferencesId);
     }
 }

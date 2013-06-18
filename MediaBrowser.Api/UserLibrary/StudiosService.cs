@@ -70,8 +70,8 @@ namespace MediaBrowser.Api.UserLibrary
     /// </summary>
     public class StudiosService : BaseItemsByNameService<Studio>
     {
-        public StudiosService(IUserManager userManager, ILibraryManager libraryManager, IUserDataRepository userDataRepository)
-            : base(userManager, libraryManager, userDataRepository)
+        public StudiosService(IUserManager userManager, ILibraryManager libraryManager, IUserDataRepository userDataRepository, IItemRepository itemRepo)
+            : base(userManager, libraryManager, userDataRepository, itemRepo)
         {
         }
 
@@ -99,7 +99,7 @@ namespace MediaBrowser.Api.UserLibrary
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true));
 
-            var builder = new DtoBuilder(Logger, LibraryManager, UserDataRepository);
+            var builder = new DtoBuilder(Logger, LibraryManager, UserDataRepository, ItemRepository);
 
             if (request.UserId.HasValue)
             {

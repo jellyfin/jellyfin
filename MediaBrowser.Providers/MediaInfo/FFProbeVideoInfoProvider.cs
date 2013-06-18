@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.MediaInfo;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -113,6 +114,39 @@ namespace MediaBrowser.Providers.MediaInfo
             base.OnPreFetch(item, mount);
         }
 
+        public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
+        {
+            var myItem = (Video)item;
+
+            var isoMount = await MountIsoIfNeeded(myItem, cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                OnPreFetch(myItem, isoMount);
+
+                var result = await GetMediaInfo(item, isoMount, cancellationToken).ConfigureAwait(false);
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                NormalizeFFProbeResult(result);
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                await Fetch(myItem, cancellationToken, result, isoMount).ConfigureAwait(false);
+
+                SetLastRefreshed(item, DateTime.UtcNow);
+            }
+            finally
+            {
+                if (isoMount != null)
+                {
+                    isoMount.Dispose();
+                }
+            }
+
+            return true;
+        }
+
         /// <summary>
         /// Mounts the iso if needed.
         /// </summary>
@@ -196,7 +230,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="data">The data.</param>
         /// <param name="isoMount">The iso mount.</param>
         /// <returns>Task.</returns>
-        protected override void Fetch(Video video, CancellationToken cancellationToken, MediaInfoResult data, IIsoMount isoMount)
+        protected async Task Fetch(Video video, CancellationToken cancellationToken, MediaInfoResult data, IIsoMount isoMount)
         {
             if (data.format != null)
             {
@@ -216,25 +250,24 @@ namespace MediaBrowser.Providers.MediaInfo
                 .ToList();
             }
 
-            if (data.Chapters != null)
-            {
-                video.Chapters = data.Chapters;
-            }
-
-            if (video.Chapters == null || video.Chapters.Count == 0)
-            {
-                AddDummyChapters(video);
-            }
-
+            var chapters = data.Chapters ?? new List<ChapterInfo>();
+            
             if (video.VideoType == VideoType.BluRay || (video.IsoType.HasValue && video.IsoType.Value == IsoType.BluRay))
             {
                 var inputPath = isoMount != null ? isoMount.MountedPath : video.Path;
-                FetchBdInfo(video, inputPath, cancellationToken);
+                FetchBdInfo(video, chapters, inputPath, cancellationToken);
             }
 
             AddExternalSubtitles(video);
 
             FetchWtvInfo(video, data);
+
+            if (chapters.Count == 0)
+            {
+                AddDummyChapters(video, chapters);
+            }
+
+            await Kernel.Instance.FFMpegManager.PopulateChapterImages(video, chapters, false, true, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -380,7 +413,8 @@ namespace MediaBrowser.Providers.MediaInfo
         /// Adds the dummy chapters.
         /// </summary>
         /// <param name="video">The video.</param>
-        private void AddDummyChapters(Video video)
+        /// <param name="chapters">The chapters.</param>
+        private void AddDummyChapters(Video video, List<ChapterInfo> chapters)
         {
             var runtime = video.RunTimeTicks ?? 0;
 
@@ -391,8 +425,6 @@ namespace MediaBrowser.Providers.MediaInfo
 
             long currentChapterTicks = 0;
             var index = 1;
-
-            var chapters = new List<ChapterInfo>();
 
             while (currentChapterTicks < runtime)
             {
@@ -405,17 +437,16 @@ namespace MediaBrowser.Providers.MediaInfo
                 index++;
                 currentChapterTicks += _dummyChapterDuration;
             }
-
-            video.Chapters = chapters;
         }
 
         /// <summary>
         /// Fetches the bd info.
         /// </summary>
         /// <param name="item">The item.</param>
+        /// <param name="chapters">The chapters.</param>
         /// <param name="inputPath">The input path.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        private void FetchBdInfo(BaseItem item, string inputPath, CancellationToken cancellationToken)
+        private void FetchBdInfo(BaseItem item, List<ChapterInfo> chapters, string inputPath, CancellationToken cancellationToken)
         {
             var video = (Video)item;
 
@@ -438,7 +469,7 @@ namespace MediaBrowser.Providers.MediaInfo
             }
 
             // Fill video properties from the BDInfo result
-            Fetch(video, result);
+            Fetch(video, result, chapters);
 
             videoStream = video.MediaStreams.FirstOrDefault(s => s.Type == MediaStreamType.Video);
 
@@ -466,7 +497,8 @@ namespace MediaBrowser.Providers.MediaInfo
         /// </summary>
         /// <param name="video">The video.</param>
         /// <param name="stream">The stream.</param>
-        private void Fetch(Video video, BlurayDiscInfo stream)
+        /// <param name="chapters">The chapters.</param>
+        private void Fetch(Video video, BlurayDiscInfo stream, List<ChapterInfo> chapters)
         {
             // Check all input for null/empty/zero
 
@@ -481,11 +513,13 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (stream.Chapters != null)
             {
-                video.Chapters = stream.Chapters.Select(c => new ChapterInfo
+                chapters.Clear();
+
+                chapters.AddRange(stream.Chapters.Select(c => new ChapterInfo
                 {
                     StartPositionTicks = TimeSpan.FromSeconds(c).Ticks
 
-                }).ToList();
+                }));
             }
         }
 

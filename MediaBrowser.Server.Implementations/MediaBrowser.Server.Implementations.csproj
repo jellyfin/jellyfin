@@ -119,7 +119,6 @@
     <Compile Include="HttpServer\SwaggerService.cs" />
     <Compile Include="IO\DirectoryWatchers.cs" />
     <Compile Include="Library\CoreResolutionIgnoreRule.cs" />
-    <Compile Include="Library\DisplayPreferencesManager.cs" />
     <Compile Include="Library\LibraryManager.cs" />
     <Compile Include="Library\LuceneSearchEngine.cs" />
     <Compile Include="Library\ResolverHelper.cs" />
@@ -139,8 +138,8 @@
     <Compile Include="Library\UserManager.cs" />
     <Compile Include="Localization\LocalizationManager.cs" />
     <Compile Include="MediaEncoder\MediaEncoder.cs" />
+    <Compile Include="Persistence\SqliteChapterRepository.cs" />
     <Compile Include="Persistence\SqliteExtensions.cs" />
-    <Compile Include="Persistence\SqliteRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Providers\ProviderManager.cs" />
     <Compile Include="ScheduledTasks\ArtistValidationTask.cs" />

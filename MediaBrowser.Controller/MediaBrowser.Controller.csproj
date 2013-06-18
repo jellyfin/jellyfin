@@ -102,7 +102,6 @@
     <Compile Include="Entities\Movies\BoxSet.cs" />
     <Compile Include="Entities\Movies\Movie.cs" />
     <Compile Include="Entities\Person.cs" />
-    <Compile Include="Library\IDisplayPreferencesManager.cs" />
     <Compile Include="Library\ILibrarySearchEngine.cs" />
     <Compile Include="Library\ItemChangeEventArgs.cs" />
     <Compile Include="Library\PlaybackProgressEventArgs.cs" />
