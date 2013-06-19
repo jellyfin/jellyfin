@@ -30,11 +30,6 @@ namespace MediaBrowser.WebDashboard.Api
         /// <value>The task manager.</value>
         private readonly ITaskManager _taskManager;
 
-        /// <summary>
-        /// The _user manager
-        /// </summary>
-        private readonly IUserManager _userManager;
-        private readonly ILibraryManager _libraryManager;
         private readonly ISessionManager _sessionManager;
 
         /// <summary>
@@ -43,15 +38,12 @@ namespace MediaBrowser.WebDashboard.Api
         /// <param name="appHost">The app host.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="taskManager">The task manager.</param>
-        /// <param name="userManager">The user manager.</param>
-        /// <param name="libraryManager">The library manager.</param>
-        public DashboardInfoWebSocketListener(IServerApplicationHost appHost, ILogger logger, ITaskManager taskManager, IUserManager userManager, ILibraryManager libraryManager, ISessionManager sessionManager)
+        /// <param name="sessionManager">The session manager.</param>
+        public DashboardInfoWebSocketListener(IServerApplicationHost appHost, ILogger logger, ITaskManager taskManager, ISessionManager sessionManager)
             : base(logger)
         {
             _appHost = appHost;
             _taskManager = taskManager;
-            _userManager = userManager;
-            _libraryManager = libraryManager;
             _sessionManager = sessionManager;
         }
 
@@ -62,7 +54,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// <returns>Task{IEnumerable{TaskInfo}}.</returns>
         protected override Task<DashboardInfo> GetDataToSend(object state)
         {
-            return DashboardService.GetDashboardInfo(_appHost, Logger, _taskManager, _userManager, _libraryManager, _sessionManager);
+            return Task.FromResult(DashboardService.GetDashboardInfo(_appHost, _taskManager, _sessionManager));
         }
     }
 }

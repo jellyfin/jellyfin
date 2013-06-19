@@ -108,18 +108,9 @@ namespace MediaBrowser.WebDashboard.Api
         private readonly ITaskManager _taskManager;
 
         /// <summary>
-        /// The _user manager
-        /// </summary>
-        private readonly IUserManager _userManager;
-
-        /// <summary>
         /// The _app host
         /// </summary>
         private readonly IServerApplicationHost _appHost;
-        /// <summary>
-        /// The _library manager
-        /// </summary>
-        private readonly ILibraryManager _libraryManager;
 
         /// <summary>
         /// The _server configuration manager
@@ -132,16 +123,13 @@ namespace MediaBrowser.WebDashboard.Api
         /// Initializes a new instance of the <see cref="DashboardService" /> class.
         /// </summary>
         /// <param name="taskManager">The task manager.</param>
-        /// <param name="userManager">The user manager.</param>
         /// <param name="appHost">The app host.</param>
-        /// <param name="libraryManager">The library manager.</param>
         /// <param name="serverConfigurationManager">The server configuration manager.</param>
-        public DashboardService(ITaskManager taskManager, IUserManager userManager, IServerApplicationHost appHost, ILibraryManager libraryManager, IServerConfigurationManager serverConfigurationManager, ISessionManager sessionManager)
+        /// <param name="sessionManager">The session manager.</param>
+        public DashboardService(ITaskManager taskManager, IServerApplicationHost appHost, IServerConfigurationManager serverConfigurationManager, ISessionManager sessionManager)
         {
             _taskManager = taskManager;
-            _userManager = userManager;
             _appHost = appHost;
-            _libraryManager = libraryManager;
             _serverConfigurationManager = serverConfigurationManager;
             _sessionManager = sessionManager;
         }
@@ -182,7 +170,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// <returns>System.Object.</returns>
         public object Get(GetDashboardInfo request)
         {
-            var result = GetDashboardInfo(_appHost, Logger, _taskManager, _userManager, _libraryManager, _sessionManager).Result;
+            var result = GetDashboardInfo(_appHost, _taskManager, _sessionManager);
 
             return ResultFactory.GetOptimizedResult(RequestContext, result);
         }
@@ -191,26 +179,14 @@ namespace MediaBrowser.WebDashboard.Api
         /// Gets the dashboard info.
         /// </summary>
         /// <param name="appHost">The app host.</param>
-        /// <param name="logger">The logger.</param>
         /// <param name="taskManager">The task manager.</param>
-        /// <param name="userManager">The user manager.</param>
-        /// <param name="libraryManager">The library manager.</param>
         /// <param name="connectionManager">The connection manager.</param>
         /// <returns>DashboardInfo.</returns>
-        public static async Task<DashboardInfo> GetDashboardInfo(IServerApplicationHost appHost,
-            ILogger logger,
+        public static DashboardInfo GetDashboardInfo(IServerApplicationHost appHost,
             ITaskManager taskManager,
-            IUserManager userManager,
-            ILibraryManager libraryManager,
             ISessionManager connectionManager)
         {
             var connections = connectionManager.Sessions.Where(i => i.IsActive).ToArray();
-
-            var dtoBuilder = new UserDtoBuilder(logger);
-
-            var tasks = userManager.Users.Where(u => connections.Any(c => c.User != null && c.User.Id == u.Id)).Select(dtoBuilder.GetUserDto);
-
-            var users = await Task.WhenAll(tasks).ConfigureAwait(false);
 
             return new DashboardInfo
             {
@@ -222,9 +198,7 @@ namespace MediaBrowser.WebDashboard.Api
 
                 ApplicationUpdateTaskId = taskManager.ScheduledTasks.First(t => t.ScheduledTask.GetType().Name.Equals("SystemUpdateTask", StringComparison.OrdinalIgnoreCase)).Id,
 
-                ActiveConnections = connections.Select(SessionInfoDtoBuilder.GetSessionInfoDto).ToArray(),
-
-                Users = users.ToArray()
+                ActiveConnections = connections.Select(SessionInfoDtoBuilder.GetSessionInfoDto).ToArray()
             };
         }
 

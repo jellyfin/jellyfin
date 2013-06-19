@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Session;
+﻿using MediaBrowser.Model.Session;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
 using System;
@@ -34,12 +33,6 @@ namespace MediaBrowser.WebDashboard.Api
         /// </summary>
         /// <value>The active connections.</value>
         public SessionInfoDto[] ActiveConnections { get; set; }
-
-        /// <summary>
-        /// Gets or sets the users.
-        /// </summary>
-        /// <value>The users.</value>
-        public UserDto[] Users { get; set; }
     }
 
 }
