@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller;
@@ -67,6 +68,15 @@ namespace MediaBrowser.Api.Playback.Hls
             foreach (var playlist in Directory.EnumerateFiles(ApplicationPaths.EncodedMediaCachePath, "*.m3u8").ToList())
             {
                 ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlist, TranscodingJobType.Hls);
+
+                // Avoid implicitly captured closure
+                var playlist1 = playlist;
+
+                Task.Run(async () =>
+                {
+                    await Task.Delay(2000).ConfigureAwait(false);
+                    ApiEntryPoint.Instance.OnTranscodeEndRequest(playlist1, TranscodingJobType.Hls);
+                });
             }
             
             var file = SegmentFilePrefix + request.SegmentId + Path.GetExtension(RequestContext.PathInfo);
