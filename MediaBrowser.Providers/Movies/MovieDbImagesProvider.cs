@@ -134,12 +134,6 @@ namespace MediaBrowser.Providers.Movies
                 return false;
             }
 
-            // Refresh if tmdb id has changed
-            if (providerInfo.Data != GetComparisonData(item.GetProviderId(MetadataProviders.Tmdb)))
-            {
-                return true;
-            }
-
             // Don't refresh if we already have both poster and backdrop and we're not refreshing images
             if (item.HasImage(ImageType.Primary) && item.BackdropImagePaths.Count > 0)
             {
@@ -170,19 +164,8 @@ namespace MediaBrowser.Providers.Movies
 
             var status = await ProcessImages(item, images, cancellationToken).ConfigureAwait(false);
 
-            data.Data = GetComparisonData(item.GetProviderId(MetadataProviders.Tmdb));
-            
             SetLastRefreshed(item, DateTime.UtcNow, status);
             return true;
-        }
-
-        /// <summary>
-        /// Gets the comparison data.
-        /// </summary>
-        /// <returns>Guid.</returns>
-        private Guid GetComparisonData(string id)
-        {
-            return string.IsNullOrEmpty(id) ? Guid.Empty : id.GetMD5();
         }
 
         /// <summary>
