@@ -3,11 +3,20 @@
     background: none!important;
 }
 
+.ui-mobile [data-role=page], .ui-page {
+    padding-top: 35px !important;
+}
+
 .viewMenuBar {
     background: #444;
     background-image: linear-gradient(#444,#2d2d2d);
     font-size: 13px;
     font-weight: bold;
+    position: fixed;
+    right: 0;
+    left: 0;
+    z-index: 1030;
+    top: 0;
 }
 
 .viewMenuLink {
