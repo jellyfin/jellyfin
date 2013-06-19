@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Linq;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller;
@@ -63,6 +64,11 @@ namespace MediaBrowser.Api.Playback.Hls
         /// <returns>System.Object.</returns>
         public object Get(GetHlsVideoSegment request)
         {
+            foreach (var playlist in Directory.EnumerateFiles(ApplicationPaths.EncodedMediaCachePath, "*.m3u8").ToList())
+            {
+                ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlist, TranscodingJobType.Hls);
+            }
+            
             var file = SegmentFilePrefix + request.SegmentId + Path.GetExtension(RequestContext.PathInfo);
 
             file = Path.Combine(ApplicationPaths.EncodedMediaCachePath, file);
