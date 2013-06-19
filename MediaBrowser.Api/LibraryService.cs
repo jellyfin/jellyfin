@@ -269,12 +269,10 @@ namespace MediaBrowser.Api
             if (request.EnableInternetProviders ?? true)
             {
                 item.LockedFields = request.LockedFields;
-                item.LockedImages = request.LockedImages;
             }
             else
             {
                 item.LockedFields.Clear();
-                item.LockedImages.Clear();
             }
             
             foreach (var pair in request.ProviderIds.ToList())

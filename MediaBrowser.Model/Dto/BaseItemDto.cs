@@ -471,12 +471,6 @@ namespace MediaBrowser.Model.Dto
         public List<MetadataFields> LockedFields { get; set; }
 
         /// <summary>
-        /// Gets or sets the locked images.
-        /// </summary>
-        /// <value>The locked images.</value>
-        public List<ImageType> LockedImages { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether [enable internet providers].
         /// </summary>
         /// <value><c>true</c> if [enable internet providers]; otherwise, <c>false</c>.</value>
