@@ -20,7 +20,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private SQLiteConnection _connection;
 
         private readonly ILogger _logger;
-        
+
         /// <summary>
         /// Gets the name of the repository
         /// </summary>
@@ -192,7 +192,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             var idParam = cmd.Parameters.Add("@id", DbType.Guid);
             idParam.Value = displayPreferencesId;
 
-            using (var reader =  cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult | CommandBehavior.SingleRow))
+            using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult | CommandBehavior.SingleRow))
             {
                 if (reader.Read())
                 {
@@ -203,7 +203,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 }
             }
 
-            return null;
+            return new DisplayPreferences { Id = displayPreferencesId };
         }
 
         /// <summary>

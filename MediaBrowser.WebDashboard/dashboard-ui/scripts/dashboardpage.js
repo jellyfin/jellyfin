@@ -77,10 +77,6 @@
 
             var connection = dashboardInfo.ActiveConnections[i];
 
-            var user = dashboardInfo.Users.filter(function (u) {
-                return u.Id == connection.UserId;
-            })[0];
-
             html += '<tr>';
 
             html += '<td style="text-align:center;">';
@@ -88,11 +84,11 @@
             html += '</td>';
 
             html += '<td>';
-            html += user.Name;
+            html += connection.DeviceName;
             html += '</td>';
 
             html += '<td>';
-            html += connection.DeviceName;
+            html += connection.UserName || '';
             html += '</td>';
 
             html += '<td>';
