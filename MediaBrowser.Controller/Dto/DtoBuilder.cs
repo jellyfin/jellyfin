@@ -238,7 +238,6 @@ namespace MediaBrowser.Controller.Dto
             if (fields.Contains(ItemFields.MetadataSettings))
             {
                 dto.LockedFields = item.LockedFields;
-                dto.LockedImages = item.LockedImages;
                 dto.EnableInternetProviders = !item.DontFetchMeta;
             }
 

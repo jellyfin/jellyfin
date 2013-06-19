@@ -165,7 +165,7 @@ namespace MediaBrowser.Providers.TV
 
             var language = ConfigurationManager.Configuration.PreferredMetadataLanguage.ToLower();
 
-            if (ConfigurationManager.Configuration.DownloadSeasonImages.Thumb && !season.HasImage(ImageType.Thumb) && !season.LockedImages.Contains(ImageType.Thumb))
+            if (ConfigurationManager.Configuration.DownloadSeasonImages.Thumb && !season.HasImage(ImageType.Thumb))
             {
                 var node = doc.SelectSingleNode("//fanart/series/seasonthumbs/seasonthumb[@lang = \"" + language + "\"][@season = \"" + seasonNumber + "\"]/@url") ??
                            doc.SelectSingleNode("//fanart/series/seasonthumbs/seasonthumb[@season = \"" + seasonNumber + "\"]/@url");

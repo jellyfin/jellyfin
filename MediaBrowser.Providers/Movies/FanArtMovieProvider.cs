@@ -310,7 +310,7 @@ namespace MediaBrowser.Providers.Movies
             string path;
             var hd = ConfigurationManager.Configuration.DownloadHDFanArt ? "hd" : "";
 
-            if (ConfigurationManager.Configuration.DownloadMovieImages.Logo && !item.HasImage(ImageType.Logo) && !item.LockedImages.Contains(ImageType.Logo))
+            if (ConfigurationManager.Configuration.DownloadMovieImages.Logo && !item.HasImage(ImageType.Logo))
             {
                 var node =
                     doc.SelectSingleNode("//fanart/movie/movielogos/" + hd + "movielogo[@lang = \"" + language + "\"]/@url") ??
@@ -328,7 +328,7 @@ namespace MediaBrowser.Providers.Movies
             }
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (ConfigurationManager.Configuration.DownloadMovieImages.Art && !item.HasImage(ImageType.Art) && !item.LockedImages.Contains(ImageType.Art))
+            if (ConfigurationManager.Configuration.DownloadMovieImages.Art && !item.HasImage(ImageType.Art))
             {
                 var node =
                     doc.SelectSingleNode("//fanart/movie/moviearts/" + hd + "movieart[@lang = \"" + language + "\"]/@url") ??
@@ -343,7 +343,7 @@ namespace MediaBrowser.Providers.Movies
             }
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (ConfigurationManager.Configuration.DownloadMovieImages.Disc && !item.HasImage(ImageType.Disc) && !item.LockedImages.Contains(ImageType.Disc))
+            if (ConfigurationManager.Configuration.DownloadMovieImages.Disc && !item.HasImage(ImageType.Disc))
             {
                 var node = doc.SelectSingleNode("//fanart/movie/moviediscs/moviedisc[@lang = \"" + language + "\"]/@url") ??
                            doc.SelectSingleNode("//fanart/movie/moviediscs/moviedisc/@url");
@@ -356,7 +356,7 @@ namespace MediaBrowser.Providers.Movies
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (ConfigurationManager.Configuration.DownloadMovieImages.Banner && !item.HasImage(ImageType.Banner) && !item.LockedImages.Contains(ImageType.Banner))
+            if (ConfigurationManager.Configuration.DownloadMovieImages.Banner && !item.HasImage(ImageType.Banner))
             {
                 var node = doc.SelectSingleNode("//fanart/movie/moviebanners/moviebanner[@lang = \"" + language + "\"]/@url") ??
                            doc.SelectSingleNode("//fanart/movie/moviebanners/moviebanner/@url");
@@ -369,7 +369,7 @@ namespace MediaBrowser.Providers.Movies
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (ConfigurationManager.Configuration.DownloadMovieImages.Thumb && !item.HasImage(ImageType.Thumb) && !item.LockedImages.Contains(ImageType.Thumb))
+            if (ConfigurationManager.Configuration.DownloadMovieImages.Thumb && !item.HasImage(ImageType.Thumb))
             {
                 var node = doc.SelectSingleNode("//fanart/movie/moviethumbs/moviethumb[@lang = \"" + language + "\"]/@url") ??
                            doc.SelectSingleNode("//fanart/movie/moviethumbs/moviethumb/@url");

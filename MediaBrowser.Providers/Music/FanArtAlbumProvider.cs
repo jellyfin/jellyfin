@@ -187,7 +187,7 @@ namespace MediaBrowser.Providers.Music
 
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    if (ConfigurationManager.Configuration.DownloadMusicAlbumImages.Disc && !item.HasImage(ImageType.Disc) && !item.LockedImages.Contains(ImageType.Disc))
+                    if (ConfigurationManager.Configuration.DownloadMusicAlbumImages.Disc && !item.HasImage(ImageType.Disc))
                     {
                         // Try try with the release entry Id, if that doesn't produce anything try the release group id
                         var node = doc.SelectSingleNode("//fanart/music/albums/album[@id=\"" + releaseEntryId + "\"]/cdart/@url");
@@ -205,7 +205,7 @@ namespace MediaBrowser.Providers.Music
                         }
                     }
 
-                    if (ConfigurationManager.Configuration.DownloadMusicAlbumImages.Primary && !item.HasImage(ImageType.Primary) && !item.LockedImages.Contains(ImageType.Primary))
+                    if (ConfigurationManager.Configuration.DownloadMusicAlbumImages.Primary && !item.HasImage(ImageType.Primary))
                     {
                         // Try try with the release entry Id, if that doesn't produce anything try the release group id
                         var node = doc.SelectSingleNode("//fanart/music/albums/album[@id=\"" + releaseEntryId + "\"]/albumcover/@url");

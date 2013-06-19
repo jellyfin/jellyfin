@@ -287,7 +287,7 @@ namespace MediaBrowser.Providers.TV
             var doc = new XmlDocument();
             doc.LoadXml(episodeNode.OuterXml);
 
-            if (!episode.HasImage(ImageType.Primary) && !episode.LockedImages.Contains(ImageType.Primary))
+            if (!episode.HasImage(ImageType.Primary))
             {
                 var p = doc.SafeGetString("//filename");
                 if (p != null)

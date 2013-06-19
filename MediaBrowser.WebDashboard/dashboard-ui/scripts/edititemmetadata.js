@@ -110,7 +110,7 @@
         } else {
             $('#fldMusicBrainz', page).hide();
         }
-        
+
         if (item.Type == "MusicAlbum") {
             $('#fldMusicBrainzReleaseGroupId', page).show();
         } else {
@@ -187,7 +187,7 @@
         var selectStatus = $('#selectStatus', page);
         populateStatus(selectStatus);
         selectStatus.val(item.Status || "").selectmenu('refresh');
-        
+
         populateListView($('#listAirDays', page), item.AirDays);
         populateListView($('#listGenres', page), item.Genres);
         populateListView($('#listStudios', page), item.Studios.map(function (element) { return element.Name || ''; }));
@@ -195,12 +195,12 @@
         var enableInternetProviders = (item.EnableInternetProviders || false);
         $("#enableInternetProviders", page).attr('checked', enableInternetProviders).checkboxradio('refresh');
         if (enableInternetProviders) {
-            $('#providerSettingsContainer',page).show();
+            $('#providerSettingsContainer', page).show();
         } else {
-            $('#providerSettingsContainer',page).hide();
+            $('#providerSettingsContainer', page).hide();
         }
-        populateInternetProviderSettings(page, item.LockedFields, item.LockedImages);
-        
+        populateInternetProviderSettings(page, item.LockedFields);
+
         $('#txtName', page).val(item.Name || "");
         $('#txtOverview', page).val(item.Overview || "");
         $('#txtSortName', page).val(item.SortName || "");
@@ -274,8 +274,7 @@
         if (time == "")
             return time;
         var match = time.match(/^(\d+):(\d+)(.*)$/);
-        if (match)
-        {
+        if (match) {
             var hours = Number(match[1]);
             var minutes = Number(match[2]);
             var ampm = $.trim(match[3]);
@@ -310,7 +309,7 @@
         if (minutes < 10) sMinutes = "0" + sMinutes;
         return sHours + ":" + sMinutes + " " + ampm;
     }
-    
+
     function populateLanguages(allCultures, select) {
 
         var html = "";
@@ -361,10 +360,10 @@
         html += "<option value='Ended'>Ended</option>";
         select.html(html).selectmenu("refresh");
     }
-    
+
     function populateListView(list, items, sortCallback) {
         items = items || new Array();
-        if (typeof(sortCallback) === 'undefined') {
+        if (typeof (sortCallback) === 'undefined') {
             items.sort(function (a, b) { return a.toLowerCase().localeCompare(b.toLowerCase()); });
         } else {
             items = sortCallback(items);
@@ -387,7 +386,7 @@
             var fieldTitle = $.trim(field.replace(/([A-Z])/g, ' $1'));
             html += '<div data-role="fieldcontain">';
             html += '<label for="lock' + field + '">' + fieldTitle + ':</label>';
-            html += '<select name="lock'+ type +'" id="lock' + field + '" data-role="slider" data-mini="true">';
+            html += '<select name="lock' + type + '" id="lock' + field + '" data-role="slider" data-mini="true">';
             html += '<option value="' + field + '">Off</option>';
             html += '<option value="" selected="selected">On</option>';
             html += '</select>';
@@ -395,25 +394,17 @@
         }
         return html;
     }
-    function populateInternetProviderSettings(page, lockedFields, lockedImages) {
+    function populateInternetProviderSettings(page, lockedFields) {
         var container = $('#providerSettingsContainer', page);
         lockedFields = lockedFields || new Array();
-        lockedImages= lockedImages|| new Array();
         var metadatafields = new Array("Name", "Overview", "Cast", "Genres", "ProductionLocations", "Studios", "Tags");
-        var imageTypes = new Array("Primary", "Art", "Backdrop", "Banner", "Logo", "Thumb", "Disc", "Box", "Screenshot", "Menu", "Chapter", "BoxRear");
         var html = '';
         html += "<h3>Fields</h3>";
         html += generateSliders(metadatafields, 'Fields');
-        html += "<h3>Images</h3>";
-        html += generateSliders(imageTypes, 'Images');
         container.html(html).trigger('create');
         for (var fieldIndex = 0; fieldIndex < lockedFields.length; fieldIndex++) {
             var field = lockedFields[fieldIndex];
             $('#lock' + field).val(field).slider('refresh');
-        }
-        for (var imageIndex = 0; imageIndex < lockedImages.length; imageIndex++) {
-            var image = lockedImages[imageIndex];
-            $('#lock' + image).val(image).slider('refresh');
         }
     }
 
@@ -448,7 +439,7 @@
                 AirTime: convertTo12HourFormat($('#txtAirTime', form).val()),
                 Genres: editableListViewValues($("#listGenres", form)),
                 Tags: editableListViewValues($("#listTags", form)),
-                Studios: editableListViewValues($("#listStudios", form)).map(function(element) { return { Name: element }; }),
+                Studios: editableListViewValues($("#listStudios", form)).map(function (element) { return { Name: element }; }),
 
                 PremiereDate: $('#txtPremiereDate', form).val(),
                 EndDate: $('#txtEndDate', form).val(),
@@ -460,11 +451,7 @@
                 CustomRating: $('#selectCustomRating', form).val(),
                 People: currentItem.People,
                 EnableInternetProviders: $("#enableInternetProviders", form).prop('checked'),
-                LockedFields: $('select[name="lockFields"]', form).map(function() {
-                    var value = $(this).val();
-                    if (value != '') return value;
-                }).get(),
-                LockedImages: $('select[name="lockImages"]', form).map(function() {
+                LockedFields: $('select[name="lockFields"]', form).map(function () {
                     var value = $(this).val();
                     if (value != '') return value;
                 }).get(),
@@ -489,9 +476,9 @@
             });
 
             return false;
-}
-    
-        self.addElementToEditableListview = function(source, sortCallback) {
+        };
+
+        self.addElementToEditableListview = function (source, sortCallback) {
             var input = $(source).parent().find('input[type="text"], select');
             var text = input.val();
             input.val('');
@@ -501,7 +488,7 @@
             items.push(text);
             populateListView(list, items, sortCallback);
         };
-        
+
         self.setProviderSettingsContainerVisibility = function (source) {
             if ($(source).prop('checked')) {
                 $('#providerSettingsContainer').show();
@@ -509,14 +496,14 @@
                 $('#providerSettingsContainer').hide();
             }
         };
-        
-        self.sortDaysOfTheWeek = function(list) {
+
+        self.sortDaysOfTheWeek = function (list) {
             var days = new Array("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday");
-            list.sort(function(a, b) { return days.indexOf(a) > days.indexOf(b); });
+            list.sort(function (a, b) { return days.indexOf(a) > days.indexOf(b); });
             return list;
         };
-        
-        self.removeElementFromListview = function(source) {
+
+        self.removeElementFromListview = function (source) {
             var list = $(source).parents('ul[data-role="listview"]');
             $(source).parent().remove();
             list.listview('refresh');

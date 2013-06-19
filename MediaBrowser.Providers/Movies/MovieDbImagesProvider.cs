@@ -220,7 +220,7 @@ namespace MediaBrowser.Providers.Movies
             var status = ProviderRefreshStatus.Success;
 
             //        poster
-            if (images.posters != null && images.posters.Count > 0 && !item.HasImage(ImageType.Primary) && !item.LockedImages.Contains(ImageType.Primary))
+            if (images.posters != null && images.posters.Count > 0 && !item.HasImage(ImageType.Primary))
             {
                 var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
 
@@ -261,7 +261,7 @@ namespace MediaBrowser.Providers.Movies
             cancellationToken.ThrowIfCancellationRequested();
 
             // backdrops - only download if earlier providers didn't find any (fanart)
-            if (images.backdrops != null && images.backdrops.Count > 0 && ConfigurationManager.Configuration.DownloadMovieImages.Backdrops && item.BackdropImagePaths.Count == 0 && !item.LockedImages.Contains(ImageType.Backdrop))
+            if (images.backdrops != null && images.backdrops.Count > 0 && ConfigurationManager.Configuration.DownloadMovieImages.Backdrops && item.BackdropImagePaths.Count == 0)
             {
                 var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
 
