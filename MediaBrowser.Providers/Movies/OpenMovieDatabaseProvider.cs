@@ -92,16 +92,6 @@ namespace MediaBrowser.Providers.Movies
         }
 
         /// <summary>
-        /// Gets the comparison data.
-        /// </summary>
-        /// <param name="imdbId">The imdb id.</param>
-        /// <returns>Guid.</returns>
-        private Guid GetComparisonData(string imdbId)
-        {
-            return string.IsNullOrEmpty(imdbId) ? Guid.Empty : imdbId.GetMD5();
-        }
-
-        /// <summary>
         /// Gets the priority.
         /// </summary>
         /// <value>The priority.</value>
@@ -112,23 +102,6 @@ namespace MediaBrowser.Providers.Movies
                 // Run after moviedb and xml providers
                 return MetadataProviderPriority.Last;
             }
-        }
-
-        /// <summary>
-        /// Needses the refresh internal.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="providerInfo">The provider info.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
-        {
-            // Refresh if imdb id has changed
-            if (providerInfo.Data != GetComparisonData(item.GetProviderId(MetadataProviders.Imdb)))
-            {
-                return true;
-            }
-
-            return base.NeedsRefreshInternal(item, providerInfo);
         }
 
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
@@ -147,7 +120,6 @@ namespace MediaBrowser.Providers.Movies
 
             if (string.IsNullOrEmpty(imdbId))
             {
-                data.Data = GetComparisonData(imdbId);
                 data.LastRefreshStatus = ProviderRefreshStatus.Success;
                 return true;
             }
@@ -181,7 +153,6 @@ namespace MediaBrowser.Providers.Movies
                 }
             }
             
-            data.Data = GetComparisonData(item.GetProviderId(MetadataProviders.Imdb));
             data.LastRefreshStatus = ProviderRefreshStatus.Success;
             SetLastRefreshed(item, DateTime.UtcNow);
 

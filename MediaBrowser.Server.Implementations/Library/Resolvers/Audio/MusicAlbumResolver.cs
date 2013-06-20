@@ -53,7 +53,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
             // If list contains at least 2 audio files or at least one and no video files consider it to contain music
             var foundAudio = 0;
 
-            foreach (var fullName in new DirectoryInfo(path).EnumerateFiles().Select(file => file.FullName))
+            foreach (var fullName in Directory.EnumerateFiles(path))
             {
                 if (EntityResolutionHelper.IsAudioFile(fullName)) foundAudio++;
                 if (foundAudio >= 2)
@@ -95,14 +95,14 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
             // If list contains at least 2 audio files or at least one and no video files consider it to contain music
             var foundAudio = 0;
 
-            foreach (var file in list)
+            foreach (var fullName in list.Select(file => file.FullName))
             {
-                if (EntityResolutionHelper.IsAudioFile(file.FullName)) foundAudio++;
+                if (EntityResolutionHelper.IsAudioFile(fullName)) foundAudio++;
                 if (foundAudio >= 2)
                 {
                     return true;
                 }
-                if (EntityResolutionHelper.IsVideoFile(file.FullName)) return false;
+                if (EntityResolutionHelper.IsVideoFile(fullName)) return false;
             }
 
             //  or a single audio file and no video files

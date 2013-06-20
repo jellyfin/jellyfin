@@ -179,7 +179,7 @@ namespace MediaBrowser.Controller.Library
         private static bool IsSeasonFolder(string path)
         {
             // It's a season folder if it's named as such and does not contain any audio files, apart from theme.mp3
-            return GetSeasonNumberFromPath(path) != null && !new DirectoryInfo(path).EnumerateFiles().Any(i => EntityResolutionHelper.IsAudioFile(i.FullName) && !string.Equals(Path.GetFileNameWithoutExtension(i.Name), BaseItem.ThemeSongFilename));
+            return GetSeasonNumberFromPath(path) != null && !Directory.EnumerateFiles(path).Any(i => EntityResolutionHelper.IsAudioFile(i) && !string.Equals(Path.GetFileNameWithoutExtension(i), BaseItem.ThemeSongFilename));
         }
 
         /// <summary>
@@ -223,7 +223,9 @@ namespace MediaBrowser.Controller.Library
                 }
                 else
                 {
-                    if (EntityResolutionHelper.IsVideoFile(child.FullName) && GetEpisodeNumberFromFile(child.FullName, false).HasValue)
+                    var fullName = child.FullName;
+
+                    if (EntityResolutionHelper.IsVideoFile(fullName) && GetEpisodeNumberFromFile(fullName, false).HasValue)
                     {
                         return true;
                     }
@@ -275,7 +277,7 @@ namespace MediaBrowser.Controller.Library
         }
 
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
-        
+
         private static int? ParseEpisodeNumber(string val)
         {
             int num;

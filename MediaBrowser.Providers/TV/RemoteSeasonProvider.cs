@@ -1,18 +1,17 @@
-﻿using System.Net;
-using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Net;
 using System;
 using System.IO;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
-using MediaBrowser.Model.Net;
 
 namespace MediaBrowser.Providers.TV
 {
@@ -95,28 +94,7 @@ namespace MediaBrowser.Providers.TV
             }
         }
 
-        /// <summary>
-        /// Needses the refresh internal.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="providerInfo">The provider info.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
-        {
-            if (GetComparisonData(item) != providerInfo.Data)
-            {
-                return true;
-            }
-
-            return base.NeedsRefreshInternal(item, providerInfo);
-        }
-
-        /// <summary>
-        /// Gets the comparison data.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns>Guid.</returns>
-        private Guid GetComparisonData(BaseItem item)
+        protected override DateTime CompareDate(BaseItem item)
         {
             var season = (Season)item;
             var seriesId = season.Series != null ? season.Series.GetProviderId(MetadataProviders.Tvdb) : null;
@@ -128,24 +106,13 @@ namespace MediaBrowser.Providers.TV
 
                 var imagesFileInfo = new FileInfo(imagesXmlPath);
 
-                return GetComparisonData(imagesFileInfo);
+                if (imagesFileInfo.Exists)
+                {
+                    return imagesFileInfo.LastWriteTimeUtc;
+                }
             }
-
-            return Guid.Empty;
-        }
-
-        /// <summary>
-        /// Gets the comparison data.
-        /// </summary>
-        /// <param name="imagesFileInfo">The images file info.</param>
-        /// <returns>Guid.</returns>
-        private Guid GetComparisonData(FileInfo imagesFileInfo)
-        {
-            var date = imagesFileInfo.Exists ? imagesFileInfo.LastWriteTimeUtc : DateTime.MinValue;
-
-            var key = date.Ticks + imagesFileInfo.FullName;
-
-            return key.GetMD5();
+            
+            return base.CompareDate(item);
         }
 
         /// <summary>
@@ -181,15 +148,6 @@ namespace MediaBrowser.Providers.TV
                     }
                 }
 
-                BaseProviderInfo data;
-                if (!item.ProviderData.TryGetValue(Id, out data))
-                {
-                    data = new BaseProviderInfo();
-                    item.ProviderData[Id] = data;
-                }
-
-                data.Data = GetComparisonData(imagesFileInfo);
-
                 SetLastRefreshed(item, DateTime.UtcNow);
                 return true;
             }
@@ -213,7 +171,7 @@ namespace MediaBrowser.Providers.TV
                 return;
             }
 
-            if (!season.HasImage(ImageType.Primary) && !season.LockedImages.Contains(ImageType.Primary))
+            if (!season.HasImage(ImageType.Primary))
             {
                 var n = images.SelectSingleNode("//Banner[BannerType='season'][BannerType2='season'][Season='" + seasonNumber + "'][Language='" + ConfigurationManager.Configuration.PreferredMetadataLanguage + "']") ??
                         images.SelectSingleNode("//Banner[BannerType='season'][BannerType2='season'][Season='" + seasonNumber + "'][Language='en']");
@@ -226,7 +184,7 @@ namespace MediaBrowser.Providers.TV
                 }
             }
 
-            if (ConfigurationManager.Configuration.DownloadSeasonImages.Banner && !season.HasImage(ImageType.Banner) && !season.LockedImages.Contains(ImageType.Banner))
+            if (ConfigurationManager.Configuration.DownloadSeasonImages.Banner && !season.HasImage(ImageType.Banner))
             {
                 var n = images.SelectSingleNode("//Banner[BannerType='season'][BannerType2='seasonwide'][Season='" + seasonNumber + "'][Language='" + ConfigurationManager.Configuration.PreferredMetadataLanguage + "']") ??
                         images.SelectSingleNode("//Banner[BannerType='season'][BannerType2='seasonwide'][Season='" + seasonNumber + "'][Language='en']");
@@ -261,7 +219,7 @@ namespace MediaBrowser.Providers.TV
                 }
             }
 
-            if (ConfigurationManager.Configuration.DownloadSeasonImages.Backdrops && season.BackdropImagePaths.Count == 0 && !season.LockedImages.Contains(ImageType.Backdrop))
+            if (ConfigurationManager.Configuration.DownloadSeasonImages.Backdrops && season.BackdropImagePaths.Count == 0)
             {
                 var n = images.SelectSingleNode("//Banner[BannerType='fanart'][Season='" + seasonNumber + "']");
                 if (n != null)
