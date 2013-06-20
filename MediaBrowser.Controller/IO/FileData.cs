@@ -37,14 +37,16 @@ namespace MediaBrowser.Controller.IO
             {
                 var isDirectory = (entry.Attributes & FileAttributes.Directory) == FileAttributes.Directory;
 
-                if (resolveShortcuts && FileSystem.IsShortcut(entry.FullName))
+                var fullName = entry.FullName;
+
+                if (resolveShortcuts && FileSystem.IsShortcut(fullName))
                 {
-                    var newPath = FileSystem.ResolveShortcut(entry.FullName);
+                    var newPath = FileSystem.ResolveShortcut(fullName);
 
                     if (string.IsNullOrWhiteSpace(newPath))
                     {
                         //invalid shortcut - could be old or target could just be unavailable
-                        logger.Warn("Encountered invalid shortcut: " + entry.FullName);
+                        logger.Warn("Encountered invalid shortcut: " + fullName);
                         continue;
                     }
 
@@ -57,18 +59,18 @@ namespace MediaBrowser.Controller.IO
                         args.AddAdditionalLocation(newPath);
                     }
 
-                    dict[data.FullName] = data;
+                    dict[newPath] = data;
                 }
                 else if (flattenFolderDepth > 0 && isDirectory)
                 {
-                    foreach (var child in GetFilteredFileSystemEntries(entry.FullName, logger, flattenFolderDepth: flattenFolderDepth - 1, resolveShortcuts: resolveShortcuts))
+                    foreach (var child in GetFilteredFileSystemEntries(fullName, logger, flattenFolderDepth: flattenFolderDepth - 1, resolveShortcuts: resolveShortcuts))
                     {
                         dict[child.Key] = child.Value;
                     }
                 }
                 else
                 {
-                    dict[entry.FullName] = entry;
+                    dict[fullName] = entry;
                 }
             }
 
