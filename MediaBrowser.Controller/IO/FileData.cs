@@ -3,6 +3,7 @@ using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace MediaBrowser.Controller.IO
 {
@@ -29,9 +30,14 @@ namespace MediaBrowser.Controller.IO
                 throw new ArgumentNullException("path");
             }
 
-            var dict = new Dictionary<string, FileSystemInfo>(StringComparer.OrdinalIgnoreCase);
-            
             var entries = new DirectoryInfo(path).EnumerateFileSystemInfos(searchPattern, SearchOption.TopDirectoryOnly);
+
+            if (!resolveShortcuts && flattenFolderDepth == 0)
+            {
+                return entries.ToDictionary(i => i.FullName, StringComparer.OrdinalIgnoreCase);
+            }
+
+            var dict = new Dictionary<string, FileSystemInfo>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var entry in entries)
             {
