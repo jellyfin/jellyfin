@@ -73,26 +73,11 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                Dictionary<Guid,Guid> folderIds;
-
-                try
-                {
-                    // Accessing ResolveArgs could involve file system access
-                    folderIds = ResolveArgs.PhysicalLocations
-                        .Select(f => f.GetMBId(typeof(Folder)))
-                        .ToDictionary(i => i);
-                }
-                catch (IOException ex)
-                {
-                    Logger.ErrorException("Error creating FolderIds for {0}", ex, Path);
-
-                    folderIds = new Dictionary<Guid, Guid>();
-                }
 
                 var ourChildren =
-                    LibraryManager.RootFolder.RecursiveChildren.OfType<Folder>()
-                          .Where(i => folderIds.ContainsKey(i.Id))
-                          .SelectMany(c => c.Children);
+                    LibraryManager.RootFolder.RecursiveChildren
+                    .Where(i => i is Folder && i.Path != null && ResolveArgs.PhysicalLocations.Contains(i.Path, StringComparer.OrdinalIgnoreCase))
+                    .Cast<Folder>().SelectMany(c => c.Children);
 
                 return new ConcurrentDictionary<Guid,BaseItem>(ourChildren.ToDictionary(i => i.Id));
             }
