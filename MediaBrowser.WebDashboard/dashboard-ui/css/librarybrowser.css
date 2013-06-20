@@ -17,6 +17,7 @@
     left: 0;
     z-index: 1000;
     top: 0;
+    border-bottom: 1px solid #111;
 }
 
 .viewMenuLink {
@@ -92,7 +93,7 @@
     text-align: center;
     background-image: linear-gradient(#444,#2d2d2d);
     border-bottom: 1px solid #111;
-    border-top: 1px solid #111;
+    border-top: 0;
 }
 
     .libraryViewNav .ui-btn-active {

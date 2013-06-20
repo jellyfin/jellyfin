@@ -764,6 +764,8 @@
 
         self.playWithWarning = function (items, startPosition, user, localStorageKeyName, header) {
 
+            localStorageKeyName += new Date().getMonth();
+            
             if (localStorage.getItem(localStorageKeyName) == "1") {
 
                 self.playInternal(items[0], startPosition, user);
