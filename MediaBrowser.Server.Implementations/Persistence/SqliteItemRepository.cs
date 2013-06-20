@@ -107,7 +107,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                                 "create index if not exists idx_baseitems on baseitems(guid)",
 
                                 "create table if not exists ChildDefinitions (ParentId GUID, ItemId GUID, Type TEXT, PRIMARY KEY (ParentId, ItemId))",
-                                "create index if not exists idx_baseitems on baseitems(ParentId,ItemId)",
+                                "create index if not exists idx_ChildDefinitions on ChildDefinitions(ParentId,ItemId)",
 
                                 //pragmas
                                 "pragma temp_store = memory"
