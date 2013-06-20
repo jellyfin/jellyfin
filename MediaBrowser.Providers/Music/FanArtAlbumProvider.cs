@@ -107,34 +107,27 @@ namespace MediaBrowser.Providers.Music
                 return false;
             }
 
-            var comparisonData = Guid.Empty;
+            return base.NeedsRefreshInternal(item, providerInfo);
+        }
 
+        protected override DateTime CompareDate(BaseItem item)
+        {
             var artistMusicBrainzId = item.Parent.GetProviderId(MetadataProviders.Musicbrainz);
-            
+
             if (!string.IsNullOrEmpty(artistMusicBrainzId))
             {
                 var artistXmlPath = FanArtArtistProvider.GetArtistDataPath(ConfigurationManager.CommonApplicationPaths, artistMusicBrainzId);
                 artistXmlPath = Path.Combine(artistXmlPath, "fanart.xml");
 
-                comparisonData = GetComparisonData(new FileInfo(artistXmlPath));
-            }
+                var file = new FileInfo(artistXmlPath);
+
+                if (file.Exists)
+                {
+                    return file.LastWriteTimeUtc;
+                }
+            } 
             
-            // Refresh anytime the parent mbz id changes
-            if (providerInfo.Data != comparisonData)
-            {
-                return true;
-            }
-
-            return base.NeedsRefreshInternal(item, providerInfo);
-        }
-
-        /// <summary>
-        /// Gets the comparison data.
-        /// </summary>
-        /// <returns>Guid.</returns>
-        private Guid GetComparisonData(FileInfo artistXmlFileInfo)
-        {
-            return artistXmlFileInfo.Exists ? (artistXmlFileInfo.FullName + artistXmlFileInfo.LastWriteTimeUtc.Ticks).GetMD5() : Guid.Empty;
+            return base.CompareDate(item);
         }
 
         /// <summary>
@@ -158,16 +151,12 @@ namespace MediaBrowser.Providers.Music
                 item.ProviderData[Id] = data;
             }
 
-            var comparisonData = Guid.Empty;
-
             if (!string.IsNullOrEmpty(artistMusicBrainzId))
             {
                 var artistXmlPath = FanArtArtistProvider.GetArtistDataPath(ConfigurationManager.CommonApplicationPaths, artistMusicBrainzId);
                 artistXmlPath = Path.Combine(artistXmlPath, "fanart.xml");
 
                 var artistXmlFileInfo = new FileInfo(artistXmlPath);
-
-                comparisonData = GetComparisonData(artistXmlFileInfo);
 
                 if (artistXmlFileInfo.Exists)
                 {
@@ -226,7 +215,6 @@ namespace MediaBrowser.Providers.Music
 
             }
 
-            data.Data = comparisonData;
             SetLastRefreshed(item, DateTime.UtcNow);
 
             return true;
