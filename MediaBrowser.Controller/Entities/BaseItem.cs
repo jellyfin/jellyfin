@@ -383,7 +383,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 throw new IOException("Unable to retrieve file system info for " + path);
             }
-
+           
             var args = new ItemResolveArgs(ConfigurationManager.ApplicationPaths)
             {
                 FileInfo = pathInfo,
@@ -864,11 +864,15 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="forceSave">if set to <c>true</c> [is new item].</param>
         /// <param name="forceRefresh">if set to <c>true</c> [force].</param>
         /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
+        /// <param name="resetResolveArgs">if set to <c>true</c> [reset resolve args].</param>
         /// <returns>true if a provider reports we changed</returns>
-        public virtual async Task<bool> RefreshMetadata(CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false, bool allowSlowProviders = true)
+        public virtual async Task<bool> RefreshMetadata(CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false, bool allowSlowProviders = true, bool resetResolveArgs = true)
         {
-            // Reload this
-            ResolveArgs = null;
+            if (resetResolveArgs)
+            {
+                // Reload this
+                ResolveArgs = null;
+            }
 
             // Refresh for the item
             var itemRefreshTask = ProviderManager.ExecuteMetadataProviders(this, cancellationToken, forceRefresh, allowSlowProviders);
