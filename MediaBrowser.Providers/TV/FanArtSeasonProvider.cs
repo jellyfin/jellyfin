@@ -45,28 +45,7 @@ namespace MediaBrowser.Providers.TV
             return item is Season;
         }
 
-        /// <summary>
-        /// Needses the refresh internal.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="providerInfo">The provider info.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
-        {
-            if (GetComparisonData(item) != providerInfo.Data)
-            {
-                return true;
-            }
-
-            return base.NeedsRefreshInternal(item, providerInfo);
-        }
-
-        /// <summary>
-        /// Gets the comparison data.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns>Guid.</returns>
-        private Guid GetComparisonData(BaseItem item)
+        protected override DateTime CompareDate(BaseItem item)
         {
             var season = (Season)item;
             var seriesId = season.Series != null ? season.Series.GetProviderId(MetadataProviders.Tvdb) : null;
@@ -78,24 +57,13 @@ namespace MediaBrowser.Providers.TV
 
                 var imagesFileInfo = new FileInfo(imagesXmlPath);
 
-                return GetComparisonData(imagesFileInfo);
+                if (imagesFileInfo.Exists)
+                {
+                    return imagesFileInfo.LastWriteTimeUtc;
+                }
             }
 
-            return Guid.Empty;
-        }
-
-        /// <summary>
-        /// Gets the comparison data.
-        /// </summary>
-        /// <param name="imagesFileInfo">The images file info.</param>
-        /// <returns>Guid.</returns>
-        private Guid GetComparisonData(FileInfo imagesFileInfo)
-        {
-            var date = imagesFileInfo.Exists ? imagesFileInfo.LastWriteTimeUtc : DateTime.MinValue;
-
-            var key = date.Ticks + imagesFileInfo.FullName;
-
-            return key.GetMD5();
+            return base.CompareDate(item);
         }
 
         /// <summary>
@@ -138,8 +106,6 @@ namespace MediaBrowser.Providers.TV
                     item.ProviderData[Id] = data;
                 }
 
-                data.Data = GetComparisonData(imagesFileInfo);
-
                 SetLastRefreshed(item, DateTime.UtcNow);
                 return true;
             }
@@ -165,7 +131,7 @@ namespace MediaBrowser.Providers.TV
 
             var language = ConfigurationManager.Configuration.PreferredMetadataLanguage.ToLower();
 
-            if (ConfigurationManager.Configuration.DownloadSeasonImages.Thumb && !season.HasImage(ImageType.Thumb) && !season.LockedImages.Contains(ImageType.Thumb))
+            if (ConfigurationManager.Configuration.DownloadSeasonImages.Thumb && !season.HasImage(ImageType.Thumb))
             {
                 var node = doc.SelectSingleNode("//fanart/series/seasonthumbs/seasonthumb[@lang = \"" + language + "\"][@season = \"" + seasonNumber + "\"]/@url") ??
                            doc.SelectSingleNode("//fanart/series/seasonthumbs/seasonthumb[@season = \"" + seasonNumber + "\"]/@url");

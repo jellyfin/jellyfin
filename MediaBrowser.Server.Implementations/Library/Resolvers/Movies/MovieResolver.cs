@@ -139,9 +139,11 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
             // Loop through each child file/folder and see if we find a video
             foreach (var child in fileSystemEntries)
             {
+                var filename = child.Name;
+
                 if ((child.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
                 {
-                    if (IsDvdDirectory(child.Name))
+                    if (IsDvdDirectory(filename))
                     {
                         return new T
                         {
@@ -149,7 +151,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                             VideoType = VideoType.Dvd
                         };
                     }
-                    if (IsBluRayDirectory(child.Name))
+                    if (IsBluRayDirectory(filename))
                     {
                         return new T
                         {
@@ -158,7 +160,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                         };
                     }
 
-                    if (EntityResolutionHelper.IsMultiPartFile(child.Name))
+                    if (EntityResolutionHelper.IsMultiPartFile(filename))
                     {
                         multiDiscFolders.Add(child);
                     }
@@ -167,7 +169,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                 }
 
                 // Don't misidentify xbmc trailers as a movie
-                if (child.Name.IndexOf(BaseItem.XbmcTrailerFileSuffix, StringComparison.OrdinalIgnoreCase) != -1)
+                if (filename.IndexOf(BaseItem.XbmcTrailerFileSuffix, StringComparison.OrdinalIgnoreCase) != -1)
                 {
                     continue;
                 }
@@ -215,9 +217,9 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
         {
             var videoType = VideoType.BluRay;
 
-            folders = folders.Where(i =>
+            var folderPaths = folders.Select(i => i.FullName).Where(i =>
             {
-                var subfolders = Directory.GetDirectories(i.FullName).Select(Path.GetFileName).ToList();
+                var subfolders = Directory.GetDirectories(i).Select(Path.GetFileName).ToList();
 
                 if (subfolders.Any(IsDvdDirectory))
                 {
@@ -232,16 +234,16 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
 
                 return false;
 
-            }).OrderBy(i => i.FullName).ToList();
+            }).OrderBy(i => i).ToList();
 
-            if (folders.Count == 0)
+            if (folderPaths.Count == 0)
             {
                 return null;
             }
 
             return new T
             {
-                Path = folders[0].FullName,
+                Path = folderPaths[0],
 
                 IsMultiPart = true,
 

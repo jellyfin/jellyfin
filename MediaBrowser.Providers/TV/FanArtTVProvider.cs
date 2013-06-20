@@ -225,7 +225,7 @@ namespace MediaBrowser.Providers.TV
             var language = ConfigurationManager.Configuration.PreferredMetadataLanguage.ToLower();
             
             var hd = ConfigurationManager.Configuration.DownloadHDFanArt ? "hdtv" : "clear";
-            if (ConfigurationManager.Configuration.DownloadSeriesImages.Logo && !item.HasImage(ImageType.Logo) && !item.LockedImages.Contains(ImageType.Logo))
+            if (ConfigurationManager.Configuration.DownloadSeriesImages.Logo && !item.HasImage(ImageType.Logo))
             {
                 var node = doc.SelectSingleNode("//fanart/series/" + hd + "logos/" + hd + "logo[@lang = \"" + language + "\"]/@url") ??
                             doc.SelectSingleNode("//fanart/series/clearlogos/clearlogo[@lang = \"" + language + "\"]/@url") ??
@@ -241,7 +241,7 @@ namespace MediaBrowser.Providers.TV
             cancellationToken.ThrowIfCancellationRequested();
 
             hd = ConfigurationManager.Configuration.DownloadHDFanArt ? "hd" : "";
-            if (ConfigurationManager.Configuration.DownloadSeriesImages.Art && !item.HasImage(ImageType.Art) && !item.LockedImages.Contains(ImageType.Art))
+            if (ConfigurationManager.Configuration.DownloadSeriesImages.Art && !item.HasImage(ImageType.Art))
             {
                 var node = doc.SelectSingleNode("//fanart/series/" + hd + "cleararts/" + hd + "clearart[@lang = \"" + language + "\"]/@url") ??
                            doc.SelectSingleNode("//fanart/series/cleararts/clearart[@lang = \"" + language + "\"]/@url") ??
@@ -256,7 +256,7 @@ namespace MediaBrowser.Providers.TV
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (ConfigurationManager.Configuration.DownloadSeriesImages.Thumb && !item.HasImage(ImageType.Thumb) && !item.LockedImages.Contains(ImageType.Thumb))
+            if (ConfigurationManager.Configuration.DownloadSeriesImages.Thumb && !item.HasImage(ImageType.Thumb))
             {
                 var node = doc.SelectSingleNode("//fanart/series/tvthumbs/tvthumb[@lang = \"" + language + "\"]/@url") ??
                            doc.SelectSingleNode("//fanart/series/tvthumbs/tvthumb/@url");
@@ -267,7 +267,7 @@ namespace MediaBrowser.Providers.TV
                 }
             }
 
-            if (ConfigurationManager.Configuration.DownloadSeriesImages.Banner && !item.HasImage(ImageType.Banner) && !item.LockedImages.Contains(ImageType.Banner))
+            if (ConfigurationManager.Configuration.DownloadSeriesImages.Banner && !item.HasImage(ImageType.Banner))
             {
                 var node = doc.SelectSingleNode("//fanart/series/tbbanners/tvbanner[@lang = \"" + language + "\"]/@url") ??
                            doc.SelectSingleNode("//fanart/series/tbbanners/tvbanner/@url");
@@ -278,7 +278,7 @@ namespace MediaBrowser.Providers.TV
                 }
             }
 
-            if (ConfigurationManager.Configuration.DownloadMovieImages.Backdrops && item.BackdropImagePaths.Count == 0 && !item.LockedImages.Contains(ImageType.Backdrop))
+            if (ConfigurationManager.Configuration.DownloadMovieImages.Backdrops && item.BackdropImagePaths.Count == 0)
             {
                 var nodes = doc.SelectNodes("//fanart/series/showbackgrounds//@url");
 
