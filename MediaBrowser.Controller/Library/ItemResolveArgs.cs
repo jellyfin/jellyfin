@@ -112,7 +112,7 @@ namespace MediaBrowser.Controller.Library
                     return false;
                 }
 
-                var parentDir = System.IO.Path.GetDirectoryName(FileInfo.FullName) ?? string.Empty;
+                var parentDir = System.IO.Path.GetDirectoryName(Path) ?? string.Empty;
 
                 return (parentDir.Length > _appPaths.RootFolderPath.Length
                     && parentDir.StartsWith(_appPaths.RootFolderPath, StringComparison.OrdinalIgnoreCase));
