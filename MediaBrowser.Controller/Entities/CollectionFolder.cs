@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Extensions;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -7,6 +6,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Library;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -73,11 +73,23 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
+                ItemResolveArgs resolveArgs;
+
+                try
+                {
+                    resolveArgs = ResolveArgs;
+                }
+                catch (IOException ex)
+                {
+                    Logger.ErrorException("Error getting ResolveArgs for {0}", ex, Path);
+                    return new ConcurrentDictionary<Guid, BaseItem>();
+                }
 
                 var ourChildren =
                     LibraryManager.RootFolder.RecursiveChildren
-                    .Where(i => i is Folder && i.Path != null && ResolveArgs.PhysicalLocations.Contains(i.Path, StringComparer.OrdinalIgnoreCase))
-                    .Cast<Folder>().SelectMany(c => c.Children);
+                    .OfType<Folder>()
+                    .Where(i => i.Path != null && resolveArgs.PhysicalLocations.Contains(i.Path, StringComparer.OrdinalIgnoreCase))
+                    .SelectMany(c => c.Children);
 
                 return new ConcurrentDictionary<Guid,BaseItem>(ourChildren.ToDictionary(i => i.Id));
             }
