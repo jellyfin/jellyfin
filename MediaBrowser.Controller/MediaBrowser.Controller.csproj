@@ -74,6 +74,7 @@
     <Compile Include="Dto\SessionInfoDtoBuilder.cs" />
     <Compile Include="Entities\Audio\MusicAlbumDisc.cs" />
     <Compile Include="Entities\Audio\MusicGenre.cs" />
+    <Compile Include="Entities\ChildDefinition.cs" />
     <Compile Include="Entities\IByReferenceItem.cs" />
     <Compile Include="Entities\MusicVideo.cs" />
     <Compile Include="Library\ILibraryPostScanTask.cs" />

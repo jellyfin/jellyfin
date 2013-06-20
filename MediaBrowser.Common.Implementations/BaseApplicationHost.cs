@@ -408,6 +408,18 @@ namespace MediaBrowser.Common.Implementations
         }
 
         /// <summary>
+        /// Gets the export types.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns>IEnumerable{Type}.</returns>
+        public IEnumerable<Type> GetExportTypes<T>()
+        {
+            var currentType = typeof(T);
+
+            return AllConcreteTypes.AsParallel().Where(currentType.IsAssignableFrom);
+        }
+
+        /// <summary>
         /// Gets the exports.
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -415,9 +427,7 @@ namespace MediaBrowser.Common.Implementations
         /// <returns>IEnumerable{``0}.</returns>
         public IEnumerable<T> GetExports<T>(bool manageLiftime = true)
         {
-            var currentType = typeof(T);
-
-            var parts = AllConcreteTypes.AsParallel().Where(currentType.IsAssignableFrom).Select(CreateInstance).Cast<T>().ToArray();
+            var parts = GetExportTypes<T>().Select(CreateInstance).Cast<T>().ToArray();
 
             if (manageLiftime)
             {

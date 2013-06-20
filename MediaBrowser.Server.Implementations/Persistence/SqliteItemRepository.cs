@@ -56,6 +56,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         private SqliteChapterRepository _chapterRepository;
 
+        private SQLiteCommand _deleteChildrenCommand;
+        private SQLiteCommand _saveChildrenCommand;
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
         /// </summary>
@@ -95,13 +98,16 @@ namespace MediaBrowser.Server.Implementations.Persistence
         public async Task Initialize()
         {
             var dbFile = Path.Combine(_appPaths.DataPath, "library.db");
-
+            
             _connection = await SqliteExtensions.ConnectToDb(dbFile).ConfigureAwait(false);
 
             string[] queries = {
 
                                 "create table if not exists baseitems (guid GUID primary key, data BLOB)",
                                 "create index if not exists idx_baseitems on baseitems(guid)",
+
+                                "create table if not exists ChildDefinitions (ParentId GUID, ItemId GUID, Type TEXT, PRIMARY KEY (ParentId, ItemId))",
+                                "create index if not exists idx_baseitems on baseitems(ParentId,ItemId)",
 
                                 //pragmas
                                 "pragma temp_store = memory"
@@ -131,6 +137,22 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             _saveItemCommand.Parameters.Add(new SQLiteParameter("@1"));
             _saveItemCommand.Parameters.Add(new SQLiteParameter("@2"));
+
+            _deleteChildrenCommand = new SQLiteCommand
+            {
+                CommandText = "delete from ChildDefinitions where ParentId=@ParentId"
+            };
+
+            _deleteChildrenCommand.Parameters.Add(new SQLiteParameter("@ParentId"));
+
+            _saveChildrenCommand = new SQLiteCommand
+            {
+                CommandText = "replace into ChildDefinitions (ParentId, ItemId, Type) values (@ParentId, @ItemId, @Type)"
+            };
+
+            _saveChildrenCommand.Parameters.Add(new SQLiteParameter("@ParentId"));
+            _saveChildrenCommand.Parameters.Add(new SQLiteParameter("@ItemId"));
+            _saveChildrenCommand.Parameters.Add(new SQLiteParameter("@Type"));
         }
 
         /// <summary>
@@ -399,6 +421,111 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     _chapterRepository.Dispose();
                     _chapterRepository = null;
                 }
+            }
+        }
+
+        public IEnumerable<ChildDefinition> GetChildren(Guid parentId)
+        {
+            if (parentId == Guid.Empty)
+            {
+                throw new ArgumentNullException("parentId");
+            }
+
+            using (var cmd = _connection.CreateCommand())
+            {
+                cmd.CommandText = "select ItemId,Type from ChildDefinitions where ParentId = @ParentId";
+
+                cmd.Parameters.Add("@ParentId", DbType.Guid).Value = parentId;
+
+                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
+                {
+                    while (reader.Read())
+                    {
+                        yield return new ChildDefinition
+                        {
+                            ItemId = reader.GetGuid(0),
+                            Type = reader.GetString(1)
+                        };
+                    }
+                }
+            }
+        }
+
+        public async Task SaveChildren(Guid parentId, IEnumerable<ChildDefinition> children, CancellationToken cancellationToken)
+        {
+            if (parentId == Guid.Empty)
+            {
+                throw new ArgumentNullException("parentId");
+            }
+
+            if (children == null)
+            {
+                throw new ArgumentNullException("children");
+            }
+
+            if (cancellationToken == null)
+            {
+                throw new ArgumentNullException("cancellationToken");
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            SQLiteTransaction transaction = null;
+
+            try
+            {
+                transaction = _connection.BeginTransaction();
+
+                // First delete 
+                _deleteChildrenCommand.Parameters[0].Value = parentId;
+                _deleteChildrenCommand.Transaction = transaction;
+                await _deleteChildrenCommand.ExecuteNonQueryAsync(cancellationToken);
+
+                foreach (var chapter in children)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    _saveChildrenCommand.Parameters[0].Value = parentId;
+                    _saveChildrenCommand.Parameters[1].Value = chapter.ItemId;
+                    _saveChildrenCommand.Parameters[2].Value = chapter.Type;
+
+                    _saveChildrenCommand.Transaction = transaction;
+
+                    await _saveChildrenCommand.ExecuteNonQueryAsync(cancellationToken);
+                }
+
+                transaction.Commit();
+            }
+            catch (OperationCanceledException)
+            {
+                if (transaction != null)
+                {
+                    transaction.Rollback();
+                }
+
+                throw;
+            }
+            catch (Exception e)
+            {
+                _logger.ErrorException("Failed to save children:", e);
+
+                if (transaction != null)
+                {
+                    transaction.Rollback();
+                }
+
+                throw;
+            }
+            finally
+            {
+                if (transaction != null)
+                {
+                    transaction.Dispose();
+                }
+
+                _writeLock.Release();
             }
         }
     }

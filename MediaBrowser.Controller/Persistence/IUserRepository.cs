@@ -11,6 +11,12 @@ namespace MediaBrowser.Controller.Persistence
     public interface IUserRepository : IRepository
     {
         /// <summary>
+        /// Opens the connection to the repository
+        /// </summary>
+        /// <returns>Task.</returns>
+        Task Initialize();
+
+        /// <summary>
         /// Deletes the user.
         /// </summary>
         /// <param name="user">The user.</param>
