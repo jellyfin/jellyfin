@@ -117,20 +117,10 @@ namespace MediaBrowser.Providers.TV
                 return false;
             }
 
-            if (GetComparisonData(item) != providerInfo.Data)
-            {
-                return true;
-            }
-
             return base.NeedsRefreshInternal(item, providerInfo);
         }
 
-        /// <summary>
-        /// Gets the comparison data.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns>Guid.</returns>
-        private Guid GetComparisonData(BaseItem item)
+        protected override DateTime CompareDate(BaseItem item)
         {
             var episode = (Episode)item;
 
@@ -143,24 +133,13 @@ namespace MediaBrowser.Providers.TV
 
                 var seriesXmlFileInfo = new FileInfo(seriesXmlPath);
 
-                return GetComparisonData(seriesXmlFileInfo);
+                if (seriesXmlFileInfo.Exists)
+                {
+                    return seriesXmlFileInfo.LastWriteTimeUtc;
+                }
             }
-
-            return Guid.Empty;
-        }
-
-        /// <summary>
-        /// Gets the comparison data.
-        /// </summary>
-        /// <param name="seriesXmlFileInfo">The series XML file info.</param>
-        /// <returns>Guid.</returns>
-        private Guid GetComparisonData(FileInfo seriesXmlFileInfo)
-        {
-            var date = seriesXmlFileInfo.Exists ? seriesXmlFileInfo.LastWriteTimeUtc : DateTime.MinValue;
-
-            var key = date.Ticks + seriesXmlFileInfo.FullName;
-
-            return key.GetMD5();
+            
+            return base.CompareDate(item);
         }
 
         /// <summary>
@@ -206,8 +185,6 @@ namespace MediaBrowser.Providers.TV
                     data = new BaseProviderInfo();
                     item.ProviderData[Id] = data;
                 }
-
-                data.Data = GetComparisonData(seriesXmlFileInfo);
 
                 SetLastRefreshed(item, DateTime.UtcNow, status);
                 return true;
