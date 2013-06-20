@@ -109,7 +109,7 @@ namespace MediaBrowser.ServerApplication
                 return "http://+:" + ServerConfigurationManager.Configuration.HttpServerPortNumber + "/" + WebApplicationName + "/";
             }
         }
-        
+
         /// <summary>
         /// Gets the configuration manager.
         /// </summary>
@@ -359,6 +359,7 @@ namespace MediaBrowser.ServerApplication
             BaseItem.LibraryManager = LibraryManager;
             BaseItem.ProviderManager = ProviderManager;
             BaseItem.LocalizationManager = LocalizationManager;
+            BaseItem.ItemRepository = ItemRepository;
             User.XmlSerializer = XmlSerializer;
             User.UserManager = UserManager;
             LocalizedStrings.ApplicationPaths = ApplicationPaths;
@@ -504,7 +505,7 @@ namespace MediaBrowser.ServerApplication
 
             // Include composable parts in the Providers assembly 
             yield return typeof(ImagesByNameProvider).Assembly;
-            
+
             // Common implementations
             yield return typeof(TaskManager).Assembly;
 

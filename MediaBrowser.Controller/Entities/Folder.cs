@@ -22,14 +22,7 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class Folder : BaseItem
     {
-        private static TypeMapper _typeMapper = new TypeMapper();
-
-        public Folder()
-        {
-            ChildDefinitions = new ConcurrentDictionary<Guid, string>();
-        }
-
-        public ConcurrentDictionary<Guid, string> ChildDefinitions { get; set; }
+        private static readonly TypeMapper _typeMapper = new TypeMapper();
 
         /// <summary>
         /// Gets a value indicating whether this instance is folder.
@@ -118,14 +111,19 @@ namespace MediaBrowser.Controller.Entities
                 item.DateModified = DateTime.Now;
             }
 
-            if (!_children.TryAdd(item.Id, item) || !ChildDefinitions.TryAdd(item.Id, item.GetType().FullName))
+            if (!_children.TryAdd(item.Id, item))
             {
                 throw new InvalidOperationException("Unable to add " + item.Name);
             }
 
             await LibraryManager.CreateItem(item, cancellationToken).ConfigureAwait(false);
 
-            await LibraryManager.UpdateItem(this, cancellationToken).ConfigureAwait(false);
+            await ItemRepository.SaveChildren(Id, _children.Values.ToList().Select(i => new ChildDefinition
+            {
+                ItemId = i.Id,
+                Type = i.GetType().FullName
+
+            }), cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -153,18 +151,22 @@ namespace MediaBrowser.Controller.Entities
         public Task RemoveChild(BaseItem item, CancellationToken cancellationToken)
         {
             BaseItem removed;
-            string removedType;
 
-            if (!_children.TryRemove(item.Id, out removed) || !ChildDefinitions.TryRemove(item.Id, out removedType))
+            if (!_children.TryRemove(item.Id, out removed))
             {
                 throw new InvalidOperationException("Unable to remove " + item.Name);
             }
 
             item.Parent = null;
-            
+
             LibraryManager.ReportItemRemoved(item);
 
-            return LibraryManager.UpdateItem(this, cancellationToken);
+            return ItemRepository.SaveChildren(Id, _children.Values.ToList().Select(i => new ChildDefinition
+            {
+                ItemId = i.Id,
+                Type = i.GetType().FullName
+
+            }), cancellationToken);
         }
 
         #region Indexing
@@ -297,7 +299,7 @@ namespace MediaBrowser.Controller.Entities
                     .Where(i => i != null)
                     .Select(a => new IndexFolder(us, a,
                                         songs.Where(i => string.Equals(i.Artist, a.Name, StringComparison.OrdinalIgnoreCase)
-                                        ), currentIndexName)).Concat(indexFolders); 
+                                        ), currentIndexName)).Concat(indexFolders);
                 }
 
                 return indexFolders;
@@ -495,7 +497,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the actual children.
         /// </summary>
         /// <value>The actual children.</value>
-        protected virtual ConcurrentDictionary<Guid,BaseItem> ActualChildren
+        protected virtual ConcurrentDictionary<Guid, BaseItem> ActualChildren
         {
             get
             {
@@ -558,10 +560,10 @@ namespace MediaBrowser.Controller.Entities
         /// We want this sychronous.
         /// </summary>
         /// <returns>ConcurrentBag{BaseItem}.</returns>
-        protected virtual ConcurrentDictionary<Guid,BaseItem> LoadChildren()
+        protected virtual ConcurrentDictionary<Guid, BaseItem> LoadChildren()
         {
             //just load our children from the repo - the library will be validated and maintained in other processes
-            return new ConcurrentDictionary<Guid,BaseItem>(GetCachedChildren().ToDictionary(i => i.Id));
+            return new ConcurrentDictionary<Guid, BaseItem>(GetCachedChildren().ToDictionary(i => i.Id));
         }
 
         /// <summary>
@@ -709,9 +711,6 @@ namespace MediaBrowser.Controller.Entities
                     }
                     else
                     {
-                        string removedType;
-                        ChildDefinitions.TryRemove(item.Id, out removedType);
-
                         LibraryManager.ReportItemRemoved(item);
                     }
                 }
@@ -726,13 +725,16 @@ namespace MediaBrowser.Controller.Entities
                     }
                     else
                     {
-                        ChildDefinitions.TryAdd(item.Id, item.GetType().FullName);
-                        
                         Logger.Debug("** " + item.Name + " Added to library.");
                     }
                 }
 
-                await LibraryManager.UpdateItem(this, CancellationToken.None).ConfigureAwait(false);
+                await ItemRepository.SaveChildren(Id, _children.Values.ToList().Select(i => new ChildDefinition
+                {
+                    ItemId = i.Id,
+                    Type = i.GetType().FullName
+
+                }), cancellationToken).ConfigureAwait(false);
 
                 //force the indexes to rebuild next time
                 IndexCache.Clear();
@@ -804,7 +806,7 @@ namespace MediaBrowser.Controller.Entities
                         {
                             lock (percentages)
                             {
-                                percentages[child.Id] = p/100;
+                                percentages[child.Id] = p / 100;
 
                                 var percent = percentages.Values.Sum();
                                 percent /= list.Count;
@@ -862,7 +864,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>IEnumerable{BaseItem}.</returns>
         protected IEnumerable<BaseItem> GetCachedChildren()
         {
-            var items = ChildDefinitions.ToList().Select(RetrieveChild).Where(i => i != null).ToList();
+            var items = ItemRepository.GetChildren(Id).Select(RetrieveChild).Where(i => i != null).ToList();
 
             foreach (var item in items)
             {
@@ -877,9 +879,9 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <param name="child">The child.</param>
         /// <returns>BaseItem.</returns>
-        private BaseItem RetrieveChild(KeyValuePair<Guid,string> child)
+        private BaseItem RetrieveChild(ChildDefinition child)
         {
-            var type = child.Value;
+            var type = child.Type;
 
             var itemType = _typeMapper.GetType(type);
 
@@ -889,7 +891,7 @@ namespace MediaBrowser.Controller.Entities
                 return null;
             }
 
-            var item = LibraryManager.RetrieveItem(child.Key, itemType);
+            var item = LibraryManager.RetrieveItem(child.ItemId, itemType);
 
             return item is IByReferenceItem ? LibraryManager.GetOrAddByReferenceItem(item) : item;
         }

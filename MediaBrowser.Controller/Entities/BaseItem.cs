@@ -143,6 +143,7 @@ namespace MediaBrowser.Controller.Entities
         public static IServerConfigurationManager ConfigurationManager { get; set; }
         public static IProviderManager ProviderManager { get; set; }
         public static ILocalizationManager LocalizationManager { get; set; }
+        public static IItemRepository ItemRepository { get; set; }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.

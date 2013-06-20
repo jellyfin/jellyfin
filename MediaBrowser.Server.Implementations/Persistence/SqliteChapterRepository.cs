@@ -27,16 +27,13 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private SQLiteCommand _saveChapterCommand;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
+        /// Initializes a new instance of the <see cref="SqliteItemRepository" /> class.
         /// </summary>
         /// <param name="appPaths">The app paths.</param>
-        /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="logManager">The log manager.</param>
-        /// <exception cref="System.ArgumentNullException">
-        /// appPaths
+        /// <exception cref="System.ArgumentNullException">appPaths
         /// or
-        /// jsonSerializer
-        /// </exception>
+        /// jsonSerializer</exception>
         public SqliteChapterRepository(IApplicationPaths appPaths, ILogManager logManager)
         {
             if (appPaths == null)
