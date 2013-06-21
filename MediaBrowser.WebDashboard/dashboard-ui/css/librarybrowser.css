@@ -3,7 +3,7 @@
     background: none!important;
 }
 
-.ui-mobile [data-role=page], .ui-page {
+.libraryPage {
     padding-top: 35px !important;
 }
 
