@@ -148,22 +148,13 @@ namespace MediaBrowser.Providers.Movies
                 return false;
             }
 
-            // Refresh if tmdb id has changed
-            if (providerInfo.Data != GetComparisonData(item.GetProviderId(MetadataProviders.Tmdb)))
-            {
-                return true;
-            }
-
             return base.NeedsRefreshInternal(item, providerInfo);
         }
 
-        /// <summary>
-        /// Gets the comparison data.
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns>Guid.</returns>
-        private Guid GetComparisonData(string id)
+        protected override DateTime CompareDate(BaseItem item)
         {
+            var id = item.GetProviderId(MetadataProviders.Tmdb);
+
             if (!string.IsNullOrEmpty(id))
             {
                 // Process images
@@ -171,16 +162,16 @@ namespace MediaBrowser.Providers.Movies
 
                 var files = new DirectoryInfo(path)
                     .EnumerateFiles("*.xml", SearchOption.TopDirectoryOnly)
-                    .Select(i => i.FullName + i.LastWriteTimeUtc.Ticks)
+                    .Select(i => i.LastWriteTimeUtc)
                     .ToArray();
 
                 if (files.Length > 0)
                 {
-                    return string.Join(string.Empty, files).GetMD5();
+                    return files.Max();
                 }
             }
 
-            return Guid.Empty;
+            return base.CompareDate(item);
         }
 
         /// <summary>
@@ -253,7 +244,6 @@ namespace MediaBrowser.Providers.Movies
                 await FetchFromXml(item, xmlPath, cancellationToken).ConfigureAwait(false);
             }
 
-            data.Data = GetComparisonData(item.GetProviderId(MetadataProviders.Tmdb));
             SetLastRefreshed(item, DateTime.UtcNow);
             return true;
         }

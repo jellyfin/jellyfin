@@ -162,29 +162,7 @@ namespace MediaBrowser.Providers.TV
             }
         }
 
-        /// <summary>
-        /// Needses the refresh internal.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="providerInfo">The provider info.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
-        {
-            // Refresh even if local metadata exists because we need episode infos
-            if (GetComparisonData(item) != providerInfo.Data)
-            {
-                return true;
-            }
-
-            return base.NeedsRefreshInternal(item, providerInfo);
-        }
-
-        /// <summary>
-        /// Gets the comparison data.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns>Guid.</returns>
-        private Guid GetComparisonData(BaseItem item)
+        protected override DateTime CompareDate(BaseItem item)
         {
             var seriesId = item.GetProviderId(MetadataProviders.Tvdb);
 
@@ -195,16 +173,16 @@ namespace MediaBrowser.Providers.TV
 
                 var files = new DirectoryInfo(path)
                     .EnumerateFiles("*.xml", SearchOption.TopDirectoryOnly)
-                    .Select(i => i.FullName + i.LastWriteTimeUtc.Ticks)
+                    .Select(i => i.LastWriteTimeUtc)
                     .ToArray();
 
                 if (files.Length > 0)
                 {
-                    return string.Join(string.Empty, files).GetMD5();
+                    return files.Max();
                 }
             }
 
-            return Guid.Empty;
+            return base.CompareDate(item);
         }
 
         /// <summary>
@@ -244,8 +222,6 @@ namespace MediaBrowser.Providers.TV
                 data = new BaseProviderInfo();
                 item.ProviderData[Id] = data;
             }
-
-            data.Data = GetComparisonData(item);
 
             SetLastRefreshed(item, DateTime.UtcNow);
             return true;
