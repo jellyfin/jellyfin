@@ -27,10 +27,6 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         /// <value>The provider version.</value>
         public string ProviderVersion { get; set; }
-        /// <summary>
-        /// Contains a has of data that can be used to determine if the provider should refresh again
-        /// </summary>
-        public Guid Data { get; set; }
     }
 
     /// <summary>

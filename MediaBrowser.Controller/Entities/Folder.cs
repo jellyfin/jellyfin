@@ -22,7 +22,7 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class Folder : BaseItem
     {
-        private static readonly TypeMapper _typeMapper = new TypeMapper();
+        private static readonly TypeMapper TypeMapper = new TypeMapper();
 
         /// <summary>
         /// Gets a value indicating whether this instance is folder.
@@ -883,7 +883,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var type = child.Type;
 
-            var itemType = _typeMapper.GetType(type);
+            var itemType = TypeMapper.GetType(type);
 
             if (itemType == null)
             {

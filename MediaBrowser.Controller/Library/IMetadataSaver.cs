@@ -17,6 +17,13 @@ namespace MediaBrowser.Controller.Library
         bool Supports(BaseItem item);
 
         /// <summary>
+        /// Gets the save path.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns>System.String.</returns>
+        string GetSavePath(BaseItem item);
+
+        /// <summary>
         /// Saves the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
