@@ -199,7 +199,17 @@ namespace MediaBrowser.ServerApplication
 
             Logger.Info("Core startup complete");
 
-            Parallel.ForEach(GetExports<IServerEntryPoint>(), entryPoint => entryPoint.Run());
+            Parallel.ForEach(GetExports<IServerEntryPoint>(), entryPoint =>
+            {
+                try
+                {
+                    entryPoint.Run();
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException("Error in {0}", ex, entryPoint.GetType().Name);
+                }
+            });
         }
 
         /// <summary>
