@@ -132,20 +132,10 @@ namespace MediaBrowser.Providers.Music
                 return false;
             }
 
-            if (GetComparisonData(item) != providerInfo.Data)
-            {
-                return true;
-            }
-
             return base.NeedsRefreshInternal(item, providerInfo);
         }
 
-        /// <summary>
-        /// Gets the comparison data.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns>Guid.</returns>
-        private Guid GetComparisonData(BaseItem item)
+        protected override DateTime CompareDate(BaseItem item)
         {
             var musicBrainzId = item.GetProviderId(MetadataProviders.Musicbrainz);
 
@@ -156,16 +146,16 @@ namespace MediaBrowser.Providers.Music
 
                 var files = new DirectoryInfo(path)
                     .EnumerateFiles("*.xml", SearchOption.TopDirectoryOnly)
-                    .Select(i => i.FullName + i.LastWriteTimeUtc.Ticks)
+                    .Select(i => i.LastWriteTimeUtc)
                     .ToArray();
 
                 if (files.Length > 0)
                 {
-                    return string.Join(string.Empty, files).GetMD5();
+                    return files.Max();
                 }
             }
 
-            return Guid.Empty;
+            return base.CompareDate(item);
         }
 
         /// <summary>
@@ -248,8 +238,6 @@ namespace MediaBrowser.Providers.Music
                 data = new BaseProviderInfo();
                 item.ProviderData[Id] = data;
             }
-
-            data.Data = GetComparisonData(item);
 
             SetLastRefreshed(item, DateTime.UtcNow);
             return true;

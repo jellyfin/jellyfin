@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
@@ -79,21 +78,14 @@ namespace MediaBrowser.Providers.TV
             {
                 return false;
             }
-            
-            if (providerInfo.Data != GetComparisonData(item.GetProviderId(MetadataProviders.Tvdb)))
-            {
-                return true;
-            }
 
             return base.NeedsRefreshInternal(item, providerInfo);
         }
 
-        /// <summary>
-        /// Gets the comparison data.
-        /// </summary>
-        /// <returns>Guid.</returns>
-        private Guid GetComparisonData(string id)
+        protected override DateTime CompareDate(BaseItem item)
         {
+            var id = item.GetProviderId(MetadataProviders.Tvdb);
+
             if (!string.IsNullOrEmpty(id))
             {
                 // Process images
@@ -101,16 +93,16 @@ namespace MediaBrowser.Providers.TV
 
                 var files = new DirectoryInfo(path)
                     .EnumerateFiles("*.xml", SearchOption.TopDirectoryOnly)
-                    .Select(i => i.FullName + i.LastWriteTimeUtc.Ticks)
+                    .Select(i => i.LastWriteTimeUtc)
                     .ToArray();
 
                 if (files.Length > 0)
                 {
-                    return string.Join(string.Empty, files).GetMD5();
+                    return files.Max();
                 }
             }
 
-            return Guid.Empty;
+            return base.CompareDate(item);
         }
 
         /// <summary>
@@ -202,7 +194,6 @@ namespace MediaBrowser.Providers.TV
                 await FetchFromXml(item, xmlPath, cancellationToken).ConfigureAwait(false);
             }
 
-            data.Data = GetComparisonData(item.GetProviderId(MetadataProviders.Tvdb));
             SetLastRefreshed(item, DateTime.UtcNow);
 
             return true;
