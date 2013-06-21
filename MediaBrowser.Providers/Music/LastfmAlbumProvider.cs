@@ -50,7 +50,7 @@ namespace MediaBrowser.Providers.Music
         {
             // If song metadata has changed and we don't have an mbid, refresh
             if (string.IsNullOrEmpty(item.GetProviderId(MetadataProviders.Musicbrainz)) &&
-                GetComparisonData(item as MusicAlbum) != providerInfo.Data)
+                GetComparisonData(item as MusicAlbum) != providerInfo.FileStamp)
             {
                 return true;
             }
@@ -85,7 +85,7 @@ namespace MediaBrowser.Providers.Music
                 item.ProviderData[Id] = data;
             }
 
-            data.Data = GetComparisonData(item as MusicAlbum);
+            data.FileStamp = GetComparisonData(item as MusicAlbum);
         }
 
         private async Task<LastfmGetAlbumResult> GetAlbumResult(BaseItem item, CancellationToken cancellationToken)

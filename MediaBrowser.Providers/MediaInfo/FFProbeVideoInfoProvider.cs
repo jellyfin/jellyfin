@@ -68,6 +68,18 @@ namespace MediaBrowser.Providers.MediaInfo
         }
 
         /// <summary>
+        /// Gets the filestamp extensions.
+        /// </summary>
+        /// <value>The filestamp extensions.</value>
+        protected override string[] FilestampExtensions
+        {
+            get
+            {
+                return new[] { ".srt" };
+            }
+        }
+
+        /// <summary>
         /// Supports video files and dvd structures
         /// </summary>
         /// <param name="item">The item.</param>
@@ -251,7 +263,7 @@ namespace MediaBrowser.Providers.MediaInfo
             }
 
             var chapters = data.Chapters ?? new List<ChapterInfo>();
-            
+
             if (video.VideoType == VideoType.BluRay || (video.IsoType.HasValue && video.IsoType.Value == IsoType.BluRay))
             {
                 var inputPath = isoMount != null ? isoMount.MountedPath : video.Path;

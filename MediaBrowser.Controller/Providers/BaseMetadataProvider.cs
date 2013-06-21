@@ -1,6 +1,10 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using System.IO;
+using System.Linq;
+using System.Text;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
@@ -39,7 +43,7 @@ namespace MediaBrowser.Controller.Providers
         protected static readonly Task<bool> FalseTaskResult = Task.FromResult(false);
 
         protected static readonly SemaphoreSlim XmlParsingResourcePool = new SemaphoreSlim(5, 5);
-        
+
         /// <summary>
         /// Supportses the specified item.
         /// </summary>
@@ -228,7 +232,7 @@ namespace MediaBrowser.Controller.Providers
             {
                 return true;
             }
-            
+
             return false;
         }
 
@@ -282,6 +286,11 @@ namespace MediaBrowser.Controller.Providers
             }
         }
 
+        protected virtual string[] FilestampExtensions
+        {
+            get { return new string[] { }; }
+        }
+
         /// <summary>
         /// Determines if the parent's file system stamp should be used for comparison
         /// </summary>
@@ -302,10 +311,79 @@ namespace MediaBrowser.Controller.Providers
         {
             if (UseParentFileSystemStamp(item) && item.Parent != null)
             {
-                return item.Parent.FileSystemStamp;
+                return GetFileSystemStamp(item.Parent);
             }
 
-            return item.FileSystemStamp;
+            return GetFileSystemStamp(item);
+        }
+
+        /// <summary>
+        /// Gets the file system stamp.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns>Guid.</returns>
+        private Guid GetFileSystemStamp(BaseItem item)
+        {
+            // If there's no path or the item is a file, there's nothing to do
+            if (item.LocationType != LocationType.FileSystem)
+            {
+                return Guid.Empty;
+            }
+
+            ItemResolveArgs resolveArgs;
+
+            try
+            {
+                resolveArgs = item.ResolveArgs;
+            }
+            catch (IOException ex)
+            {
+                Logger.ErrorException("Error determining if path is directory: {0}", ex, item.Path);
+                throw;
+            }
+
+            if (!resolveArgs.IsDirectory)
+            {
+                return Guid.Empty;
+            }
+
+            var sb = new StringBuilder();
+
+            var extensions = FilestampExtensions;
+
+            // Record the name of each file 
+            // Need to sort these because accoring to msdn docs, our i/o methods are not guaranteed in any order
+            foreach (var file in resolveArgs.FileSystemChildren
+                .Where(i => IncludeInFileStamp(i, extensions))
+                .OrderBy(f => f.Name))
+            {
+                sb.Append(file.Name);
+            }
+
+            foreach (var file in resolveArgs.MetadataFiles
+                .Where(i => IncludeInFileStamp(i, extensions))
+                .OrderBy(f => f.Name))
+            {
+                sb.Append(file.Name);
+            }
+
+            return sb.ToString().GetMD5();
+        }
+
+        /// <summary>
+        /// Includes the in file stamp.
+        /// </summary>
+        /// <param name="file">The file.</param>
+        /// <param name="extensions">The extensions.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
+        private bool IncludeInFileStamp(FileSystemInfo file, string[] extensions)
+        {
+            if ((file.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
+            {
+                return false;
+            }
+
+            return extensions.Length == 0 || extensions.Contains(file.Extension, StringComparer.OrdinalIgnoreCase);
         }
     }
 }

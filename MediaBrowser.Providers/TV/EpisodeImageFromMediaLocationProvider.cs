@@ -53,6 +53,18 @@ namespace MediaBrowser.Providers.TV
         }
 
         /// <summary>
+        /// Gets the filestamp extensions.
+        /// </summary>
+        /// <value>The filestamp extensions.</value>
+        protected override string[] FilestampExtensions
+        {
+            get
+            {
+                return BaseItem.SupportedImageExtensions;
+            }
+        }
+        
+        /// <summary>
         /// Fetches metadata and returns true or false indicating if any work that requires persistence was done
         /// </summary>
         /// <param name="item">The item.</param>

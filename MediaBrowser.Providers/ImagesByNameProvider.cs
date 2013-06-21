@@ -54,7 +54,7 @@ namespace MediaBrowser.Providers
         protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
         {
             // Force a refresh if the IBN path changed
-            if (providerInfo.Data != ConfigurationManager.ApplicationPaths.ItemsByNamePath.GetMD5())
+            if (providerInfo.FileStamp != ConfigurationManager.ApplicationPaths.ItemsByNamePath.GetMD5())
             {
                 return true;
             }
@@ -128,7 +128,7 @@ namespace MediaBrowser.Providers
                 item.ProviderData[Id] = data;
             }
 
-            data.Data = ConfigurationManager.ApplicationPaths.ItemsByNamePath.GetMD5();
+            data.FileStamp = ConfigurationManager.ApplicationPaths.ItemsByNamePath.GetMD5();
             SetLastRefreshed(item, DateTime.UtcNow);
      
             return result;

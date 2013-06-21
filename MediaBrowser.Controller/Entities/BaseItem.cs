@@ -220,29 +220,6 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// The _file system stamp
-        /// </summary>
-        private Guid? _fileSystemStamp;
-        /// <summary>
-        /// Gets a directory stamp, in the form of a string, that can be used for
-        /// comparison purposes to determine if the file system entries for this item have changed.
-        /// </summary>
-        /// <value>The file system stamp.</value>
-        [IgnoreDataMember]
-        public Guid FileSystemStamp
-        {
-            get
-            {
-                if (!_fileSystemStamp.HasValue)
-                {
-                    _fileSystemStamp = GetFileSystemStamp();
-                }
-
-                return _fileSystemStamp.Value;
-            }
-        }
-
-        /// <summary>
         /// Gets the type of the media.
         /// </summary>
         /// <value>The type of the media.</value>
@@ -253,49 +230,6 @@ namespace MediaBrowser.Controller.Entities
             {
                 return null;
             }
-        }
-
-        /// <summary>
-        /// Gets a directory stamp, in the form of a string, that can be used for
-        /// comparison purposes to determine if the file system entries for this item have changed.
-        /// </summary>
-        /// <returns>Guid.</returns>
-        private Guid GetFileSystemStamp()
-        {
-            // If there's no path or the item is a file, there's nothing to do
-            if (LocationType != LocationType.FileSystem)
-            {
-                return Guid.Empty;
-            }
-
-            try
-            {
-                if (!ResolveArgs.IsDirectory)
-                {
-                    return Guid.Empty;
-                }
-            }
-            catch (IOException ex)
-            {
-                Logger.ErrorException("Error determining if path is directory: {0}", ex, ResolveArgs.Path);
-                throw;
-            }
-
-            var sb = new StringBuilder();
-
-            // Record the name of each file 
-            // Need to sort these because accoring to msdn docs, our i/o methods are not guaranteed in any order
-            foreach (var file in ResolveArgs.FileSystemChildren
-                .OrderBy(f => f.Name))
-            {
-                sb.Append(file.Name);
-            }
-            foreach (var file in ResolveArgs.MetadataFiles.OrderBy(f => f.Name))
-            {
-                sb.Append(file.Name);
-            }
-
-            return sb.ToString().GetMD5();
         }
 
         /// <summary>
@@ -338,9 +272,6 @@ namespace MediaBrowser.Controller.Entities
             {
                 _resolveArgs = value;
                 _resolveArgsInitialized = value != null;
-
-                // Null this out so that it can be lazy loaded again
-                _fileSystemStamp = null;
             }
         }
 
