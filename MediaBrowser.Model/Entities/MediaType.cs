@@ -18,5 +18,13 @@ namespace MediaBrowser.Model.Entities
         /// The game
         /// </summary>
         public const string Game = "Game";
+        /// <summary>
+        /// The photo
+        /// </summary>
+        public const string Photo = "Photo";
+        /// <summary>
+        /// The book
+        /// </summary>
+        public const string Book = "Book";
     }
 }
