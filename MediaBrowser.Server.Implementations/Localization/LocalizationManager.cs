@@ -48,14 +48,14 @@ namespace MediaBrowser.Server.Implementations.Localization
 
             var localizationPath = LocalizationPath;
 
-            var existingFiles = Directory.EnumerateFiles(localizationPath, "ratings-*.txt", SearchOption.TopDirectoryOnly)
-                .Select(Path.GetFileName)
-                .ToList();
-
             if (!Directory.Exists(localizationPath))
             {
                 Directory.CreateDirectory(localizationPath);
             }
+
+            var existingFiles = Directory.EnumerateFiles(localizationPath, "ratings-*.txt", SearchOption.TopDirectoryOnly)
+                .Select(Path.GetFileName)
+                .ToList();
 
             // Extract from the assembly
             foreach (var resource in type.Assembly
