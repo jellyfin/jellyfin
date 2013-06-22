@@ -65,6 +65,13 @@ namespace MediaBrowser.Model.ApiClient
         Task<SessionInfoDto[]> GetClientSessionsAsync();
 
         /// <summary>
+        /// Gets the item counts async.
+        /// </summary>
+        /// <param name="userId">The user id.</param>
+        /// <returns>Task{ItemCounts}.</returns>
+        Task<ItemCounts> GetItemCountsAsync(string userId);
+        
+        /// <summary>
         /// Queries for items
         /// </summary>
         /// <param name="query">The query.</param>

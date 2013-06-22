@@ -49,6 +49,12 @@ namespace MediaBrowser.Model.Dto
         public float? CriticRating { get; set; }
 
         /// <summary>
+        /// Gets or sets the game system.
+        /// </summary>
+        /// <value>The game system.</value>
+        public string GameSystem { get; set; }
+        
+        /// <summary>
         /// Gets or sets the critic rating summary.
         /// </summary>
         /// <value>The critic rating summary.</value>
