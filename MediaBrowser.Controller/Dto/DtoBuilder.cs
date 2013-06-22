@@ -519,6 +519,7 @@ namespace MediaBrowser.Controller.Dto
             if (game != null)
             {
                 dto.Players = game.PlayersSupported;
+                dto.GameSystem = game.GameSystem;
             }
         }
 
