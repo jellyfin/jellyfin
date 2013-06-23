@@ -83,12 +83,22 @@ namespace MediaBrowser.Server.Implementations.Providers
             libraryManager.ItemUpdated += libraryManager_ItemUpdated;
         }
 
+        /// <summary>
+        /// Handles the ItemUpdated event of the libraryManager control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="ItemChangeEventArgs"/> instance containing the event data.</param>
         void libraryManager_ItemUpdated(object sender, ItemChangeEventArgs e)
         {
             var item = e.Item;
 
-            if (ConfigurationManager.Configuration.SaveLocalMeta && item.LocationType == LocationType.FileSystem)
+            if (ConfigurationManager.Configuration.SaveLocalMeta)
             {
+                if (item.LocationType != LocationType.FileSystem)
+                {
+                    return;
+                }
+
                 foreach (var saver in _savers.Where(i => i.Supports(item)))
                 {
                     var path = saver.GetSavePath(item);
@@ -109,7 +119,6 @@ namespace MediaBrowser.Server.Implementations.Providers
                     }
                 }
             }
-
         }
 
         /// <summary>

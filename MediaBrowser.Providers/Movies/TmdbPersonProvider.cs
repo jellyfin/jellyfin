@@ -21,11 +21,6 @@ namespace MediaBrowser.Providers.Movies
     /// </summary>
     public class TmdbPersonProvider : BaseMetadataProvider
     {
-        /// <summary>
-        /// The meta file name
-        /// </summary>
-        protected const string MetaFileName = "tmdb3.json";
-
         protected readonly IProviderManager ProviderManager;
         
         public TmdbPersonProvider(IJsonSerializer jsonSerializer, ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager)
@@ -71,6 +66,19 @@ namespace MediaBrowser.Providers.Movies
             }
         }
 
+        protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
+        {
+            if (HasAltMeta(item))
+                return false;
+            
+            return base.NeedsRefreshInternal(item, providerInfo);
+        }
+
+        private bool HasAltMeta(BaseItem item)
+        {
+            return item.LocationType == LocationType.FileSystem && item.ResolveArgs.ContainsMetaFileByName("person.xml");
+        }
+        
         /// <summary>
         /// Fetches metadata and returns true or false indicating if any work that requires persistence was done
         /// </summary>
@@ -183,13 +191,6 @@ namespace MediaBrowser.Providers.Movies
             if (searchResult != null)
             {
                 ProcessInfo(person, searchResult);
-
-                //save locally
-                var memoryStream = new MemoryStream();
-
-                JsonSerializer.SerializeToStream(searchResult, memoryStream);
-
-                await ProviderManager.SaveToLibraryFilesystem(person, Path.Combine(person.MetaLocation, MetaFileName), memoryStream, cancellationToken);
 
                 Logger.Debug("TmdbPersonProvider downloaded and saved information for {0}", person.Name);
 

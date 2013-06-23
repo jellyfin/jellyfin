@@ -62,7 +62,7 @@
     <Compile Include="Movies\MovieDbProvider.cs" />
     <Compile Include="Movies\MovieProviderFromXml.cs" />
     <Compile Include="Movies\OpenMovieDatabaseProvider.cs" />
-    <Compile Include="Movies\PersonProviderFromJson.cs" />
+    <Compile Include="Movies\PersonProviderFromXml.cs" />
     <Compile Include="Movies\TmdbPersonProvider.cs" />
     <Compile Include="Music\ArtistsPostScanTask.cs" />
     <Compile Include="Music\FanArtAlbumProvider.cs" />
@@ -79,6 +79,7 @@
     <Compile Include="Savers\EpisodeXmlSaver.cs" />
     <Compile Include="Savers\FolderXmlSaver.cs" />
     <Compile Include="Savers\MovieXmlSaver.cs" />
+    <Compile Include="Savers\PersonXmlSaver.cs" />
     <Compile Include="Savers\SeriesXmlSaver.cs" />
     <Compile Include="Savers\XmlHelpers.cs" />
     <Compile Include="TV\EpisodeImageFromMediaLocationProvider.cs" />

@@ -199,7 +199,7 @@ namespace MediaBrowser.Providers.Movies
         protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
         {
             if (HasAltMeta(item))
-                return false; //never refresh if has meta from other source
+                return false; 
 
             return base.NeedsRefreshInternal(item, providerInfo);
         }
