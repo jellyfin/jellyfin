@@ -1,21 +1,19 @@
 ﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
 using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Logging;
 
-namespace MediaBrowser.Providers
+namespace MediaBrowser.Providers.Music
 {
-    /// <summary>
-    /// Provides metadata for Folders and all subclasses by parsing folder.xml
-    /// </summary>
-    public class FolderProviderFromXml : BaseMetadataProvider
+    class ArtistProviderFromXml : BaseMetadataProvider
     {
-        public FolderProviderFromXml(ILogManager logManager, IServerConfigurationManager configurationManager)
+        public ArtistProviderFromXml(ILogManager logManager, IServerConfigurationManager configurationManager)
             : base(logManager, configurationManager)
         {
         }
@@ -27,7 +25,7 @@ namespace MediaBrowser.Providers
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         public override bool Supports(BaseItem item)
         {
-            return item is Folder && item.LocationType == LocationType.FileSystem;
+            return (item is Artist || item is MusicArtist) && item.LocationType == LocationType.FileSystem;
         }
 
         /// <summary>
@@ -47,7 +45,7 @@ namespace MediaBrowser.Providers
         /// <returns>DateTime.</returns>
         protected override DateTime CompareDate(BaseItem item)
         {
-            var entry = item.MetaLocation != null ? item.ResolveArgs.GetMetaFileByPath(Path.Combine(item.MetaLocation, "folder.xml")) : null;
+            var entry = item.MetaLocation != null ? item.ResolveArgs.GetMetaFileByPath(Path.Combine(item.MetaLocation, "artist.xml")) : null;
             return entry != null ? entry.LastWriteTimeUtc : DateTime.MinValue;
         }
 
@@ -73,7 +71,7 @@ namespace MediaBrowser.Providers
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var metadataFile = item.ResolveArgs.GetMetaFileByPath(Path.Combine(item.MetaLocation, "folder.xml"));
+            var metadataFile = item.ResolveArgs.GetMetaFileByPath(Path.Combine(item.MetaLocation, "artist.xml"));
 
             if (metadataFile != null)
             {
@@ -83,7 +81,16 @@ namespace MediaBrowser.Providers
 
                 try
                 {
-                    new BaseItemXmlParser<Folder>(Logger).Fetch((Folder)item, path, cancellationToken);
+                    var artist = item as Artist;
+
+                    if (artist != null)
+                    {
+                        new BaseItemXmlParser<Artist>(Logger).Fetch(artist, path, cancellationToken);
+                    }
+                    else
+                    {
+                        new BaseItemXmlParser<MusicArtist>(Logger).Fetch((MusicArtist)item, path, cancellationToken);
+                    }
                 }
                 finally
                 {

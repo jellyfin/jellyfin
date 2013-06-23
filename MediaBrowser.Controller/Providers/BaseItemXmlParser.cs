@@ -65,6 +65,7 @@ namespace MediaBrowser.Controller.Providers
             item.Studios.Clear();
             item.Genres.Clear();
             item.People.Clear();
+            item.Tags.Clear();
 
             // Use european encoding as it will accept more characters
             using (var streamReader = new StreamReader(metadataFile, Encoding.GetEncoding("ISO-8859-1")))
@@ -397,6 +398,7 @@ namespace MediaBrowser.Controller.Providers
                         break;
                     }
 
+                case "PremiereDate":
                 case "FirstAired":
                     {
                         var firstAired = reader.ReadElementContentAsString();
@@ -451,6 +453,10 @@ namespace MediaBrowser.Controller.Providers
 
                 case "Genres":
                     FetchFromGenresNode(reader.ReadSubtree(), item);
+                    break;
+
+                case "Tags":
+                    FetchFromTagsNode(reader.ReadSubtree(), item);
                     break;
 
                 case "Persons":
@@ -527,6 +533,35 @@ namespace MediaBrowser.Controller.Providers
                                 if (!string.IsNullOrWhiteSpace(genre))
                                 {
                                     item.AddGenre(genre);
+                                }
+                                break;
+                            }
+
+                        default:
+                            reader.Skip();
+                            break;
+                    }
+                }
+            }
+        }
+
+        private void FetchFromTagsNode(XmlReader reader, T item)
+        {
+            reader.MoveToContent();
+
+            while (reader.Read())
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    switch (reader.Name)
+                    {
+                        case "Tag":
+                            {
+                                var tag = reader.ReadElementContentAsString();
+
+                                if (!string.IsNullOrWhiteSpace(tag))
+                                {
+                                    item.AddTagline(tag);
                                 }
                                 break;
                             }

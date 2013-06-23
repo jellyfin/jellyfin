@@ -4,7 +4,6 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Controller.Providers.Music;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
@@ -27,36 +26,39 @@ namespace MediaBrowser.Providers.Music
     public class LastfmArtistProvider : LastfmBaseProvider
     {
         /// <summary>
-        /// The _provider manager
-        /// </summary>
-        private readonly IProviderManager _providerManager;
-        /// <summary>
         /// The _library manager
         /// </summary>
         protected readonly ILibraryManager LibraryManager;
 
         /// <summary>
-        /// The name of the local json meta file for this item type
-        /// </summary>
-        protected string LocalMetaFileName { get; set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="LastfmArtistProvider"/> class.
+        /// Initializes a new instance of the <see cref="LastfmArtistProvider" /> class.
         /// </summary>
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="httpClient">The HTTP client.</param>
         /// <param name="logManager">The log manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
-        /// <param name="providerManager">The provider manager.</param>
         /// <param name="libraryManager">The library manager.</param>
-        public LastfmArtistProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager, ILibraryManager libraryManager)
+        public LastfmArtistProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager, ILibraryManager libraryManager)
             : base(jsonSerializer, httpClient, logManager, configurationManager)
         {
-            _providerManager = providerManager;
             LibraryManager = libraryManager;
-            LocalMetaFileName = LastfmHelper.LocalArtistMetaFileName;
         }
 
+        protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
+        {
+            if (HasAltMeta(item))
+            {
+                return false;
+            }
+
+            return base.NeedsRefreshInternal(item, providerInfo);
+        }
+
+        private bool HasAltMeta(BaseItem item)
+        {
+            return item.LocationType == LocationType.FileSystem && item.ResolveArgs.ContainsMetaFileByName("artist.xml");
+        }
+        
         /// <summary>
         /// Finds the id.
         /// </summary>
@@ -259,21 +261,6 @@ namespace MediaBrowser.Providers.Music
             if (result != null && result.artist != null)
             {
                 LastfmHelper.ProcessArtistData(item, result.artist);
-                //And save locally if indicated
-                if (SaveLocalMeta)
-                {
-                    var ms = new MemoryStream();
-                    JsonSerializer.SerializeToStream(result.artist, ms);
-
-                    if (cancellationToken.IsCancellationRequested)
-                    {
-                        ms.Dispose();
-                        cancellationToken.ThrowIfCancellationRequested();
-                    }
-
-                    await _providerManager.SaveToLibraryFilesystem(item, Path.Combine(item.MetaLocation, LocalMetaFileName), ms, cancellationToken).ConfigureAwait(false);
-
-                }
             }
         }
 

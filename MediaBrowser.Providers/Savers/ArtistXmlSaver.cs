@@ -1,6 +1,6 @@
 ﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Providers.Movies;
@@ -11,14 +11,11 @@ using System.Threading;
 
 namespace MediaBrowser.Providers.Savers
 {
-    /// <summary>
-    /// Saves movie.xml for movies, trailers and music videos
-    /// </summary>
-    public class MovieXmlSaver : IMetadataSaver
+    class ArtistXmlSaver : IMetadataSaver
     {
         private readonly IServerConfigurationManager _config;
 
-        public MovieXmlSaver(IServerConfigurationManager config)
+        public ArtistXmlSaver(IServerConfigurationManager config)
         {
             _config = config;
         }
@@ -30,20 +27,17 @@ namespace MediaBrowser.Providers.Savers
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         public bool Supports(BaseItem item)
         {
-            if (!_config.Configuration.SaveLocalMeta || item.LocationType != LocationType.FileSystem)
+            if (item.LocationType != LocationType.FileSystem)
             {
                 return false;
             }
 
-            var trailer = item as Trailer;
-
-            if (trailer != null)
+            if (item is MusicArtist)
             {
-                return !trailer.IsLocalTrailer;
+                return _config.Configuration.SaveLocalMeta;
             }
 
-            // Don't support local trailers
-            return item is Movie || item is MusicVideo;
+            return item is Artist;
         }
 
         /// <summary>
@@ -56,27 +50,28 @@ namespace MediaBrowser.Providers.Savers
         {
             var builder = new StringBuilder();
 
-            builder.Append("<Title>");
+            builder.Append("<Item>");
 
             XmlSaverHelpers.AddCommonNodes(item, builder);
 
-            builder.Append("</Title>");
+            builder.Append("</Item>");
 
             var xmlFilePath = GetSavePath(item);
 
             XmlSaverHelpers.Save(builder, xmlFilePath);
 
             // Set last refreshed so that the provider doesn't trigger after the file save
-            MovieProviderFromXml.Current.SetLastRefreshed(item, DateTime.UtcNow);
+            PersonProviderFromXml.Current.SetLastRefreshed(item, DateTime.UtcNow);
         }
 
+        /// <summary>
+        /// Gets the save path.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns>System.String.</returns>
         public string GetSavePath(BaseItem item)
         {
-            var video = (Video)item;
-
-            var directory = video.VideoType == VideoType.Iso || video.VideoType == VideoType.VideoFile ? Path.GetDirectoryName(video.Path) : video.Path;
-
-            return Path.Combine(directory, "movie.xml");
+            return Path.Combine(item.Path, "artist.xml");
         }
     }
 }

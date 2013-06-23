@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Providers.Music;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Linq;
@@ -9,9 +8,6 @@ namespace MediaBrowser.Providers.Music
 {
     public static class LastfmHelper
     {
-        public static string LocalArtistMetaFileName = "lastfmartist.json";
-        public static string LocalAlbumMetaFileName = "lastfmalbum.json";
-
         public static void ProcessArtistData(BaseItem artist, LastfmArtist data)
         {
             var yearFormed = 0;

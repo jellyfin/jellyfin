@@ -1,4 +1,5 @@
 ﻿using System;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -13,6 +14,13 @@ namespace MediaBrowser.Providers.Savers
 {
     public class SeriesXmlSaver : IMetadataSaver
     {
+        private readonly IServerConfigurationManager _config;
+
+        public SeriesXmlSaver(IServerConfigurationManager config)
+        {
+            _config = config;
+        }
+
         /// <summary>
         /// Supportses the specified item.
         /// </summary>
@@ -20,7 +28,7 @@ namespace MediaBrowser.Providers.Savers
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         public bool Supports(BaseItem item)
         {
-            if (item.LocationType != LocationType.FileSystem)
+            if (!_config.Configuration.SaveLocalMeta || item.LocationType != LocationType.FileSystem)
             {
                 return false;
             }
@@ -78,13 +86,13 @@ namespace MediaBrowser.Providers.Savers
                 builder.Append("<Airs_DayOfWeek>" + SecurityElement.Escape(series.AirDays[0].ToString()) + "</Airs_DayOfWeek>");
             }
 
-            XmlHelpers.AddCommonNodes(item, builder);
+            XmlSaverHelpers.AddCommonNodes(item, builder);
 
             builder.Append("</Series>");
 
             var xmlFilePath = GetSavePath(item);
 
-            XmlHelpers.Save(builder, xmlFilePath);
+            XmlSaverHelpers.Save(builder, xmlFilePath);
 
             // Set last refreshed so that the provider doesn't trigger after the file save
             SeriesProviderFromXml.Current.SetLastRefreshed(item, DateTime.UtcNow);

@@ -1142,6 +1142,19 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        public void AddTag(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                throw new ArgumentNullException("name");
+            }
+
+            if (!Tags.Contains(name, StringComparer.OrdinalIgnoreCase))
+            {
+                Tags.Add(name);
+            }
+        }
+
         /// <summary>
         /// Adds a tagline to the item
         /// </summary>
