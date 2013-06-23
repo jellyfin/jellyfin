@@ -6,6 +6,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Localization;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
@@ -24,7 +25,9 @@ namespace MediaBrowser.Providers.MediaInfo
     /// </summary>
     public class FFProbeVideoInfoProvider : BaseFFProbeProvider<Video>
     {
-        public FFProbeVideoInfoProvider(IIsoManager isoManager, IBlurayExaminer blurayExaminer, IJsonSerializer jsonSerializer, ILogManager logManager, IServerConfigurationManager configurationManager, IMediaEncoder mediaEncoder, ILocalizationManager localization)
+        private readonly IItemRepository _itemRepo;
+
+        public FFProbeVideoInfoProvider(IIsoManager isoManager, IBlurayExaminer blurayExaminer, IJsonSerializer jsonSerializer, ILogManager logManager, IServerConfigurationManager configurationManager, IMediaEncoder mediaEncoder, ILocalizationManager localization, IItemRepository itemRepo)
             : base(logManager, configurationManager, mediaEncoder, jsonSerializer)
         {
             if (isoManager == null)
@@ -38,6 +41,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             _blurayExaminer = blurayExaminer;
             _localization = localization;
+            _itemRepo = itemRepo;
             _isoManager = isoManager;
         }
 
@@ -279,7 +283,9 @@ namespace MediaBrowser.Providers.MediaInfo
                 AddDummyChapters(video, chapters);
             }
 
-            await Kernel.Instance.FFMpegManager.PopulateChapterImages(video, chapters, false, true, cancellationToken).ConfigureAwait(false);
+            await Kernel.Instance.FFMpegManager.PopulateChapterImages(video, chapters, false, false, cancellationToken).ConfigureAwait(false);
+            
+            await _itemRepo.SaveChapters(video.Id, chapters, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
