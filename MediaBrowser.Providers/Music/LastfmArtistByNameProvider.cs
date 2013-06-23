@@ -3,7 +3,6 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
@@ -26,10 +25,9 @@ namespace MediaBrowser.Providers.Music
         /// <param name="httpClient">The HTTP client.</param>
         /// <param name="logManager">The log manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
-        /// <param name="providerManager">The provider manager.</param>
         /// <param name="libraryManager">The library manager.</param>
-        public LastfmArtistByNameProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager, ILibraryManager libraryManager)
-            : base(jsonSerializer, httpClient, logManager, configurationManager, providerManager, libraryManager)
+        public LastfmArtistByNameProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager, ILibraryManager libraryManager)
+            : base(jsonSerializer, httpClient, logManager, configurationManager, libraryManager)
         {
         }
 

@@ -7,12 +7,11 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
+using MoreLinq;
 using System;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MoreLinq;
 
 namespace MediaBrowser.Providers.Music
 {
@@ -20,18 +19,9 @@ namespace MediaBrowser.Providers.Music
     {
         private static readonly Task<string> BlankId = Task.FromResult("");
 
-        private readonly IProviderManager _providerManager;
-
-        /// <summary>
-        /// The name of the local json meta file for this item type
-        /// </summary>
-        protected string LocalMetaFileName { get; set; }
-
-        public LastfmAlbumProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager)
+        public LastfmAlbumProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager)
             : base(jsonSerializer, httpClient, logManager, configurationManager)
         {
-            _providerManager = providerManager;
-            LocalMetaFileName = LastfmHelper.LocalAlbumMetaFileName;
         }
 
         protected override Task<string> FindId(BaseItem item, CancellationToken cancellationToken)
@@ -40,6 +30,11 @@ namespace MediaBrowser.Providers.Music
             return BlankId;
         }
 
+        private bool HasAltMeta(BaseItem item)
+        {
+            return item.LocationType == LocationType.FileSystem && item.ResolveArgs.ContainsMetaFileByName("album.xml");
+        }
+        
         /// <summary>
         /// Needses the refresh internal.
         /// </summary>
@@ -48,6 +43,11 @@ namespace MediaBrowser.Providers.Music
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
         {
+            if (HasAltMeta(item))
+            {
+                return false;
+            }
+
             // If song metadata has changed and we don't have an mbid, refresh
             if (string.IsNullOrEmpty(item.GetProviderId(MetadataProviders.Musicbrainz)) &&
                 GetComparisonData(item as MusicAlbum) != providerInfo.FileStamp)
@@ -65,17 +65,6 @@ namespace MediaBrowser.Providers.Music
             if (result != null && result.album != null)
             {
                 LastfmHelper.ProcessAlbumData(item, result.album);
-                //And save locally if indicated
-                if (ConfigurationManager.Configuration.SaveLocalMeta)
-                {
-                    var ms = new MemoryStream();
-                    JsonSerializer.SerializeToStream(result.album, ms);
-
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    await _providerManager.SaveToLibraryFilesystem(item, Path.Combine(item.MetaLocation, LocalMetaFileName), ms, cancellationToken).ConfigureAwait(false);
-                    
-                }
             }
 
             BaseProviderInfo data;

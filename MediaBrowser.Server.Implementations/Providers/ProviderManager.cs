@@ -83,40 +83,38 @@ namespace MediaBrowser.Server.Implementations.Providers
             libraryManager.ItemUpdated += libraryManager_ItemUpdated;
         }
 
+        private readonly ConcurrentDictionary<string, SemaphoreSlim> _fileLocks = new ConcurrentDictionary<string, SemaphoreSlim>();
+        
         /// <summary>
         /// Handles the ItemUpdated event of the libraryManager control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="ItemChangeEventArgs"/> instance containing the event data.</param>
-        void libraryManager_ItemUpdated(object sender, ItemChangeEventArgs e)
+        async void libraryManager_ItemUpdated(object sender, ItemChangeEventArgs e)
         {
             var item = e.Item;
 
-            if (ConfigurationManager.Configuration.SaveLocalMeta)
+            foreach (var saver in _savers.Where(i => i.Supports(item)))
             {
-                if (item.LocationType != LocationType.FileSystem)
-                {
-                    return;
-                }
+                var path = saver.GetSavePath(item);
 
-                foreach (var saver in _savers.Where(i => i.Supports(item)))
-                {
-                    var path = saver.GetSavePath(item);
+                var semaphore = _fileLocks.GetOrAdd(path, key => new SemaphoreSlim(1, 1));
 
+                await semaphore.WaitAsync().ConfigureAwait(false);
+
+                try
+                {
                     _directoryWatchers.TemporarilyIgnore(path);
-
-                    try
-                    {
-                        saver.Save(item, CancellationToken.None);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.ErrorException("Error in metadata saver", ex);
-                    }
-                    finally
-                    {
-                        _directoryWatchers.RemoveTempIgnore(path);
-                    }
+                    saver.Save(item, CancellationToken.None);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error in metadata saver", ex);
+                }
+                finally
+                {
+                    _directoryWatchers.RemoveTempIgnore(path);
+                    semaphore.Release();
                 }
             }
         }

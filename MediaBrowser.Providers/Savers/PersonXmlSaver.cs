@@ -41,13 +41,13 @@ namespace MediaBrowser.Providers.Savers
 
             builder.Append("<Item>");
 
-            XmlHelpers.AddCommonNodes(item, builder);
+            XmlSaverHelpers.AddCommonNodes(item, builder);
 
             builder.Append("</Item>");
 
             var xmlFilePath = GetSavePath(item);
 
-            XmlHelpers.Save(builder, xmlFilePath);
+            XmlSaverHelpers.Save(builder, xmlFilePath);
 
             // Set last refreshed so that the provider doesn't trigger after the file save
             PersonProviderFromXml.Current.SetLastRefreshed(item, DateTime.UtcNow);

@@ -4,7 +4,6 @@ using MediaBrowser.Model.Entities;
 using System;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Security;
 using System.Text;
 using System.Xml;
@@ -14,7 +13,7 @@ namespace MediaBrowser.Providers.Savers
     /// <summary>
     /// Class XmlHelpers
     /// </summary>
-    public static class XmlHelpers
+    public static class XmlSaverHelpers
     {
         /// <summary>
         /// The us culture
@@ -33,6 +32,13 @@ namespace MediaBrowser.Providers.Savers
 
             //Add the new node to the document.
             xmlDocument.InsertBefore(xmlDocument.CreateXmlDeclaration("1.0", "UTF-8", "yes"), xmlDocument.DocumentElement);
+
+            var parentPath = Path.GetDirectoryName(path);
+
+            if (!Directory.Exists(parentPath))
+            {
+                Directory.CreateDirectory(parentPath);
+            }
 
             using (var streamWriter = new StreamWriter(path, false, Encoding.UTF8))
             {
@@ -93,6 +99,11 @@ namespace MediaBrowser.Providers.Savers
             if (!string.IsNullOrEmpty(item.ForcedSortName))
             {
                 builder.Append("<SortTitle>" + SecurityElement.Escape(item.ForcedSortName) + "</SortTitle>");
+            }
+
+            if (item.PremiereDate.HasValue)
+            {
+                builder.Append("<PremiereDate>" + SecurityElement.Escape(item.PremiereDate.Value.ToString("yyyy-MM-dd")) + "</PremiereDate>");
             }
             
             if (item.Budget.HasValue)
@@ -182,6 +193,13 @@ namespace MediaBrowser.Providers.Savers
                 builder.Append("<RottenTomatoesId>" + SecurityElement.Escape(rt) + "</RottenTomatoesId>");
             }
 
+            var mbz = item.GetProviderId(MetadataProviders.Musicbrainz);
+
+            if (!string.IsNullOrEmpty(mbz))
+            {
+                builder.Append("<MusicbrainzId>" + SecurityElement.Escape(mbz) + "</MusicbrainzId>");
+            }
+            
             var tmdbCollection = item.GetProviderId(MetadataProviders.TmdbCollection);
 
             if (!string.IsNullOrEmpty(tmdbCollection))
@@ -211,6 +229,18 @@ namespace MediaBrowser.Providers.Savers
                 }
 
                 builder.Append("</Studios>");
+            }
+
+            if (item.Tags.Count > 0)
+            {
+                builder.Append("<Tags>");
+
+                foreach (var tag in item.Tags)
+                {
+                    builder.Append("<Tag>" + SecurityElement.Escape(tag) + "</Tag>");
+                }
+
+                builder.Append("</Tags>");
             }
 
             builder.Append("<Added>" + SecurityElement.Escape(item.DateCreated.ToString(UsCulture)) + "</Added>");

@@ -65,14 +65,14 @@ namespace MediaBrowser.Providers.Savers
                 builder.Append("<FirstAired>" + SecurityElement.Escape(episode.PremiereDate.Value.ToString("yyyy-MM-dd")) + "</FirstAired>");
             }
 
-            XmlHelpers.AddCommonNodes(item, builder);
-            XmlHelpers.AppendMediaInfo(episode, builder);
+            XmlSaverHelpers.AddCommonNodes(item, builder);
+            XmlSaverHelpers.AppendMediaInfo(episode, builder);
 
             builder.Append("</Item>");
 
             var xmlFilePath = GetSavePath(item);
 
-            XmlHelpers.Save(builder, xmlFilePath);
+            XmlSaverHelpers.Save(builder, xmlFilePath);
 
             // Set last refreshed so that the provider doesn't trigger after the file save
             EpisodeProviderFromXml.Current.SetLastRefreshed(item, DateTime.UtcNow);

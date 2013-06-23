@@ -1,4 +1,6 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -11,6 +13,13 @@ namespace MediaBrowser.Providers.Savers
 {
     public class FolderXmlSaver : IMetadataSaver
     {
+        private readonly IServerConfigurationManager _config;
+
+        public FolderXmlSaver(IServerConfigurationManager config)
+        {
+            _config = config;
+        }
+
         /// <summary>
         /// Supportses the specified item.
         /// </summary>
@@ -18,12 +27,12 @@ namespace MediaBrowser.Providers.Savers
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         public bool Supports(BaseItem item)
         {
-            if (item.LocationType != LocationType.FileSystem)
+            if (!_config.Configuration.SaveLocalMeta || item.LocationType != LocationType.FileSystem)
             {
                 return false;
             }
 
-            return item is Folder && !(item is Series) && !(item is BoxSet);
+            return item is Folder && !(item is Series) && !(item is BoxSet) && !(item is MusicArtist) && !(item is MusicAlbum);
         }
 
         /// <summary>
@@ -38,13 +47,13 @@ namespace MediaBrowser.Providers.Savers
 
             builder.Append("<Item>");
 
-            XmlHelpers.AddCommonNodes(item, builder);
+            XmlSaverHelpers.AddCommonNodes(item, builder);
 
             builder.Append("</Item>");
 
             var xmlFilePath = GetSavePath(item);
 
-            XmlHelpers.Save(builder, xmlFilePath);
+            XmlSaverHelpers.Save(builder, xmlFilePath);
         }
 
         /// <summary>
