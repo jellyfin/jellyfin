@@ -316,18 +316,6 @@
     <Compile Include="..\MediaBrowser.Model\Updates\PackageVersionInfo.cs">
       <Link>Updates\PackageVersionInfo.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\Weather\WeatherForecast.cs">
-      <Link>Weather\WeatherForecast.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Model\Weather\WeatherInfo.cs">
-      <Link>Weather\WeatherInfo.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Model\Weather\WeatherStatus.cs">
-      <Link>Weather\WeatherStatus.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Model\Weather\WeatherUnits.cs">
-      <Link>Weather\WeatherUnits.cs</Link>
-    </Compile>
     <Compile Include="..\MediaBrowser.Model\Web\QueryStringDictionary.cs">
       <Link>Web\QueryStringDictionary.cs</Link>
     </Compile>

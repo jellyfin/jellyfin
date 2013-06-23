@@ -169,7 +169,7 @@ namespace MediaBrowser.Api.UserLibrary
 
                 SeriesCount = items.OfType<Series>().Count(),
 
-                GameCount = items.OfType<BaseGame>().Count()
+                GameCount = items.OfType<Game>().Count()
             };
 
             return ToOptimizedResult(counts);

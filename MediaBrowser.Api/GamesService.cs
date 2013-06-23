@@ -62,7 +62,7 @@ namespace MediaBrowser.Api
                 _libraryManager,
                 _userDataRepository,
                 Logger,
-                request, item => item is BaseGame,
+                request, item => item is Game,
                 SimilarItemsHelper.GetSimiliarityScore);
 
             return ToOptimizedResult(result);

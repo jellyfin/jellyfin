@@ -189,7 +189,7 @@ namespace MediaBrowser.Api
             {
                 AlbumCount = items.OfType<MusicAlbum>().Count(),
                 EpisodeCount = items.OfType<Episode>().Count(),
-                GameCount = items.OfType<BaseGame>().Count(),
+                GameCount = items.OfType<Game>().Count(),
                 MovieCount = items.OfType<Movie>().Count(),
                 SeriesCount = items.OfType<Series>().Count(),
                 SongCount = items.OfType<Audio>().Count(),
@@ -285,7 +285,7 @@ namespace MediaBrowser.Api
 
             item.ProviderIds = request.ProviderIds;
 
-            var game = item as BaseGame;
+            var game = item as Game;
 
             if (game != null)
             {

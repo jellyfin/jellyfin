@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Weather;
 using System;
 
 namespace MediaBrowser.Model.Configuration
@@ -34,12 +33,6 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableInternetProviders { get; set; }
 
         /// <summary>
-        /// Gets or sets the zip code to use when displaying weather
-        /// </summary>
-        /// <value>The weather location.</value>
-        public string WeatherLocation { get; set; }
-
-        /// <summary>
         /// Gets or sets the item by name path.
         /// </summary>
         /// <value>The item by name path.</value>
@@ -50,12 +43,6 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value>The display name of the season zero.</value>
         public string SeasonZeroDisplayName { get; set; }
-        
-        /// <summary>
-        /// Gets or sets the weather unit to use when displaying weather
-        /// </summary>
-        /// <value>The weather unit.</value>
-        public WeatherUnits WeatherUnit { get; set; }
 
         /// <summary>
         /// Gets or sets the metadata refresh days.
