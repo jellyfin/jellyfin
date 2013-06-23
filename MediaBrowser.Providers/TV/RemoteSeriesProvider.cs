@@ -213,7 +213,7 @@ namespace MediaBrowser.Providers.TV
 
                 var seriesDataPath = GetSeriesDataPath(ConfigurationManager.ApplicationPaths, seriesId);
 
-                await FetchSeriesData(series, seriesId, seriesDataPath, cancellationToken).ConfigureAwait(false);
+                await FetchSeriesData(series, seriesId, seriesDataPath, force, cancellationToken).ConfigureAwait(false);
             }
 
             BaseProviderInfo data;
@@ -233,9 +233,10 @@ namespace MediaBrowser.Providers.TV
         /// <param name="series">The series.</param>
         /// <param name="seriesId">The series id.</param>
         /// <param name="seriesDataPath">The series data path.</param>
+        /// <param name="isForcedRefresh">if set to <c>true</c> [is forced refresh].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.Boolean}.</returns>
-        private async Task FetchSeriesData(Series series, string seriesId, string seriesDataPath, CancellationToken cancellationToken)
+        private async Task FetchSeriesData(Series series, string seriesId, string seriesDataPath, bool isForcedRefresh, CancellationToken cancellationToken)
         {
             var files = Directory.EnumerateFiles(seriesDataPath, "*.xml", SearchOption.TopDirectoryOnly).Select(Path.GetFileName).ToArray();
 
@@ -249,7 +250,7 @@ namespace MediaBrowser.Providers.TV
             }
 
             // Examine if there's no local metadata, or save local is on (to get updates)
-            if (!HasLocalMeta(series) || ConfigurationManager.Configuration.SaveLocalMeta)
+            if (!HasLocalMeta(series) || isForcedRefresh)
             {
                 var seriesXmlPath = Path.Combine(seriesDataPath, seriesXmlFilename);
                 var actorsXmlPath = Path.Combine(seriesDataPath, "actors.xml");
@@ -264,13 +265,6 @@ namespace MediaBrowser.Providers.TV
                     actorsDoc.Load(actorsXmlPath);
 
                     FetchActors(series, actorsDoc, seriesDoc);
-                }
-                if (ConfigurationManager.Configuration.SaveLocalMeta)
-                {
-                    //var ms = new MemoryStream();
-                    //seriesDoc.Save(ms);
-
-                    //await _providerManager.SaveToLibraryFilesystem(series, Path.Combine(series.MetaLocation, LocalMetaFileName), ms, cancellationToken).ConfigureAwait(false);
                 }
             }
         }
