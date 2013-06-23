@@ -1,19 +1,22 @@
-﻿using System;
+﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Providers.TV;
+using System;
 using System.Globalization;
 using System.IO;
 using System.Security;
 using System.Text;
 using System.Threading;
-using MediaBrowser.Providers.TV;
 
 namespace MediaBrowser.Providers.Savers
 {
     public class EpisodeXmlSaver : IMetadataSaver
     {
+        private readonly IServerConfigurationManager _config;
+        
         /// <summary>
         /// Supportses the specified item.
         /// </summary>
@@ -21,7 +24,7 @@ namespace MediaBrowser.Providers.Savers
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         public bool Supports(BaseItem item)
         {
-            if (item.LocationType != LocationType.FileSystem)
+            if (!_config.Configuration.SaveLocalMeta || item.LocationType != LocationType.FileSystem)
             {
                 return false;
             }
@@ -30,6 +33,11 @@ namespace MediaBrowser.Providers.Savers
         }
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
+
+        public EpisodeXmlSaver(IServerConfigurationManager config)
+        {
+            _config = config;
+        }
 
         /// <summary>
         /// Saves the specified item.
