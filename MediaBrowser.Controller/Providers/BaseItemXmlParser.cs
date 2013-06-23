@@ -89,7 +89,7 @@ namespace MediaBrowser.Controller.Providers
         }
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-        
+
         /// <summary>
         /// Fetches metadata from one Xml Element
         /// </summary>
@@ -205,6 +205,17 @@ namespace MediaBrowser.Controller.Providers
                         break;
                     }
 
+                case "MPAADescription":
+                    {
+                        var rating = reader.ReadElementContentAsString();
+
+                        if (!string.IsNullOrWhiteSpace(rating))
+                        {
+                            item.OfficialRatingDescription = rating;
+                        }
+                        break;
+                    }
+                
                 case "CustomRating":
                     {
                         var val = reader.ReadElementContentAsString();
@@ -306,7 +317,7 @@ namespace MediaBrowser.Controller.Providers
                     {
 
                         var actors = reader.ReadInnerXml();
-                        
+
                         if (actors.Contains("<"))
                         {
                             // This is one of the mis-named "Actors" full nodes created by MB2
@@ -378,7 +389,7 @@ namespace MediaBrowser.Controller.Providers
                         {
                             float val;
                             // All external meta is saving this as '.' for decimal I believe...but just to be sure
-                            if (float.TryParse(rating.Replace(',','.'), NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out val))
+                            if (float.TryParse(rating.Replace(',', '.'), NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out val))
                             {
                                 item.CommunityRating = val;
                             }
@@ -409,6 +420,14 @@ namespace MediaBrowser.Controller.Providers
                     if (!string.IsNullOrWhiteSpace(tmdb))
                     {
                         item.SetProviderId(MetadataProviders.Tmdb, tmdb);
+                    }
+                    break;
+
+                case "CollectionNumber":
+                    var tmdbCollection = reader.ReadElementContentAsString();
+                    if (!string.IsNullOrWhiteSpace(tmdbCollection))
+                    {
+                        item.SetProviderId(MetadataProviders.TmdbCollection, tmdbCollection);
                     }
                     break;
 
@@ -602,8 +621,8 @@ namespace MediaBrowser.Controller.Providers
                 {
                     switch (reader.Name)
                     {
-                            // Removed support for "Value" tag as it conflicted with MPAA rating but leaving this function for possible
-                            // future support of "Description" -ebr
+                        // Removed support for "Value" tag as it conflicted with MPAA rating but leaving this function for possible
+                        // future support of "Description" -ebr
 
                         default:
                             reader.Skip();
@@ -679,7 +698,7 @@ namespace MediaBrowser.Controller.Providers
 
             // Only split by comma if there is no pipe in the string
             // We have to be careful to not split names like Matthew, Jr.
-            var separator = value.IndexOf('|') == -1 ? ',' : '|';
+            var separator = value.IndexOf('|') == -1 && value.IndexOf(';') == -1 ? new[] { ',' } : new[] { '|', ';' };
 
             value = value.Trim().Trim(separator);
 
@@ -690,12 +709,12 @@ namespace MediaBrowser.Controller.Providers
         /// Provides an additional overload for string.split
         /// </summary>
         /// <param name="val">The val.</param>
-        /// <param name="separator">The separator.</param>
+        /// <param name="separators">The separators.</param>
         /// <param name="options">The options.</param>
         /// <returns>System.String[][].</returns>
-        private static string[] Split(string val, char separator, StringSplitOptions options)
+        private static string[] Split(string val, char[] separators, StringSplitOptions options)
         {
-            return val.Split(new[] { separator }, options);
+            return val.Split(separators, options);
         }
 
     }
