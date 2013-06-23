@@ -271,7 +271,7 @@ namespace MediaBrowser.ServerApplication
             DirectoryWatchers = new DirectoryWatchers(LogManager, TaskManager, LibraryManager, ServerConfigurationManager);
             RegisterSingleInstance(DirectoryWatchers);
 
-            ProviderManager = new ProviderManager(HttpClient, ServerConfigurationManager, DirectoryWatchers, LogManager);
+            ProviderManager = new ProviderManager(HttpClient, ServerConfigurationManager, DirectoryWatchers, LogManager, LibraryManager);
             RegisterSingleInstance(ProviderManager);
 
             RegisterSingleInstance<ILibrarySearchEngine>(() => new LuceneSearchEngine(ApplicationPaths, LogManager, LibraryManager));
@@ -397,10 +397,10 @@ namespace MediaBrowser.ServerApplication
                                     GetExports<IIntroProvider>(),
                                     GetExports<IBaseItemComparer>(),
                                     GetExports<ILibraryPrescanTask>(),
-                                    GetExports<ILibraryPostScanTask>(),
-                                    GetExports<IMetadataSaver>());
+                                    GetExports<ILibraryPostScanTask>());
 
-            ProviderManager.AddMetadataProviders(GetExports<BaseMetadataProvider>().ToArray());
+            ProviderManager.AddParts(GetExports<BaseMetadataProvider>().ToArray(),
+                                    GetExports<IMetadataSaver>());
         }
 
         /// <summary>

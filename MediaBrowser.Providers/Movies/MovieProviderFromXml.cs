@@ -15,9 +15,12 @@ namespace MediaBrowser.Providers.Movies
     /// </summary>
     public class MovieProviderFromXml : BaseMetadataProvider
     {
+        internal static MovieProviderFromXml Current { get; private set; }
+        
         public MovieProviderFromXml(ILogManager logManager, IServerConfigurationManager configurationManager)
             : base(logManager, configurationManager)
         {
+            Current = this;
         }
 
         /// <summary>

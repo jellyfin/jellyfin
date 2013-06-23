@@ -3,7 +3,9 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Concurrent;
@@ -58,6 +60,8 @@ namespace MediaBrowser.Server.Implementations.Providers
         /// <value>The metadata providers enumerable.</value>
         private BaseMetadataProvider[] MetadataProviders { get; set; }
 
+        private IEnumerable<IMetadataSaver> _savers;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ProviderManager" /> class.
         /// </summary>
@@ -65,7 +69,8 @@ namespace MediaBrowser.Server.Implementations.Providers
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="directoryWatchers">The directory watchers.</param>
         /// <param name="logManager">The log manager.</param>
-        public ProviderManager(IHttpClient httpClient, IServerConfigurationManager configurationManager, IDirectoryWatchers directoryWatchers, ILogManager logManager)
+        /// <param name="libraryManager">The library manager.</param>
+        public ProviderManager(IHttpClient httpClient, IServerConfigurationManager configurationManager, IDirectoryWatchers directoryWatchers, ILogManager logManager, ILibraryManager libraryManager)
         {
             _logger = logManager.GetLogger("ProviderManager");
             _httpClient = httpClient;
@@ -74,6 +79,37 @@ namespace MediaBrowser.Server.Implementations.Providers
             _remoteImageCache = new FileSystemRepository(configurationManager.ApplicationPaths.DownloadedImagesDataPath);
 
             configurationManager.ConfigurationUpdated += configurationManager_ConfigurationUpdated;
+
+            libraryManager.ItemUpdated += libraryManager_ItemUpdated;
+        }
+
+        void libraryManager_ItemUpdated(object sender, ItemChangeEventArgs e)
+        {
+            var item = e.Item;
+
+            if (ConfigurationManager.Configuration.SaveLocalMeta && item.LocationType == LocationType.FileSystem)
+            {
+                foreach (var saver in _savers.Where(i => i.Supports(item)))
+                {
+                    var path = saver.GetSavePath(item);
+
+                    _directoryWatchers.TemporarilyIgnore(path);
+
+                    try
+                    {
+                        saver.Save(item, CancellationToken.None);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.ErrorException("Error in metadata saver", ex);
+                    }
+                    finally
+                    {
+                        _directoryWatchers.RemoveTempIgnore(path);
+                    }
+                }
+            }
+
         }
 
         /// <summary>
@@ -91,9 +127,12 @@ namespace MediaBrowser.Server.Implementations.Providers
         /// Adds the metadata providers.
         /// </summary>
         /// <param name="providers">The providers.</param>
-        public void AddMetadataProviders(IEnumerable<BaseMetadataProvider> providers)
+        /// <param name="savers">The savers.</param>
+        public void AddParts(IEnumerable<BaseMetadataProvider> providers,
+            IEnumerable<IMetadataSaver> savers)
         {
             MetadataProviders = providers.OrderBy(e => e.Priority).ToArray();
+            _savers = savers;
         }
 
         /// <summary>

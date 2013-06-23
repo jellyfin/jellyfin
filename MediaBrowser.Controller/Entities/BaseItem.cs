@@ -314,7 +314,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 throw new IOException("Unable to retrieve file system info for " + path);
             }
-           
+
             var args = new ItemResolveArgs(ConfigurationManager.ApplicationPaths)
             {
                 FileInfo = pathInfo,
@@ -463,6 +463,12 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The official rating.</value>
         public virtual string OfficialRating { get; set; }
+
+        /// <summary>
+        /// Gets or sets the official rating description.
+        /// </summary>
+        /// <value>The official rating description.</value>
+        public string OfficialRatingDescription { get; set; }
 
         /// <summary>
         /// Gets or sets the custom rating.

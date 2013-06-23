@@ -16,8 +16,12 @@ namespace MediaBrowser.Providers.TV
     /// </summary>
     public class SeriesProviderFromXml : BaseMetadataProvider
     {
-        public SeriesProviderFromXml(ILogManager logManager, IServerConfigurationManager configurationManager) : base(logManager, configurationManager)
+        internal static SeriesProviderFromXml Current { get; private set; }
+        
+        public SeriesProviderFromXml(ILogManager logManager, IServerConfigurationManager configurationManager)
+            : base(logManager, configurationManager)
         {
+            Current = this;
         }
 
         /// <summary>

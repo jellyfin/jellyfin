@@ -1,19 +1,15 @@
-﻿using System.Text;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Providers.Movies;
-using System;
 using System.IO;
+using System.Text;
 using System.Threading;
 
 namespace MediaBrowser.Providers.Savers
 {
-    /// <summary>
-    /// Saves movie.xml for movies, trailers and music videos
-    /// </summary>
-    public class MovieXmlSaver : IMetadataSaver
+    public class FolderXmlSaver : IMetadataSaver
     {
         /// <summary>
         /// Supportses the specified item.
@@ -27,15 +23,7 @@ namespace MediaBrowser.Providers.Savers
                 return false;
             }
 
-            var trailer = item as Trailer;
-
-            if (trailer != null)
-            {
-                return !trailer.IsLocalTrailer;
-            }
-
-            // Don't support local trailers
-            return item is Movie || item is MusicVideo;
+            return item is Folder && !(item is Series) && !(item is BoxSet);
         }
 
         /// <summary>
@@ -48,27 +36,25 @@ namespace MediaBrowser.Providers.Savers
         {
             var builder = new StringBuilder();
 
-            builder.Append("<Title>");
+            builder.Append("<Item>");
 
             XmlHelpers.AddCommonNodes(item, builder);
 
-            builder.Append("</Title>");
+            builder.Append("</Item>");
 
             var xmlFilePath = GetSavePath(item);
 
             XmlHelpers.Save(builder, xmlFilePath);
-
-            // Set last refreshed so that the provider doesn't trigger after the file save
-            MovieProviderFromXml.Current.SetLastRefreshed(item, DateTime.UtcNow);
         }
 
+        /// <summary>
+        /// Gets the save path.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns>System.String.</returns>
         public string GetSavePath(BaseItem item)
         {
-            var video = (Video)item;
-
-            var directory = video.VideoType == VideoType.Iso || video.VideoType == VideoType.VideoFile ? Path.GetDirectoryName(video.Path) : video.Path;
-
-            return Path.Combine(directory, "movie.xml");
+            return Path.Combine(item.Path, "folder.xml");
         }
     }
 }

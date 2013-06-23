@@ -180,40 +180,6 @@ namespace MediaBrowser.Providers.Movies
             }
         }
 
-        /// <summary>
-        /// The json provider
-        /// </summary>
-        protected MovieProviderFromJson JsonProvider;
-
-        /// <summary>
-        /// Sets the persisted last refresh date on the item for this provider.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="value">The value.</param>
-        /// <param name="providerVersion">The provider version.</param>
-        /// <param name="status">The status.</param>
-        public override void SetLastRefreshed(BaseItem item, DateTime value, string providerVersion, ProviderRefreshStatus status = ProviderRefreshStatus.Success)
-        {
-            base.SetLastRefreshed(item, value, providerVersion, status);
-
-            if (ConfigurationManager.Configuration.SaveLocalMeta && item.LocationType == LocationType.FileSystem)
-            {
-                //in addition to ours, we need to set the last refreshed time for the local data provider
-                //so it won't see the new files we download and process them all over again
-                if (JsonProvider == null) JsonProvider = new MovieProviderFromJson(LogManager, ConfigurationManager, JsonSerializer, HttpClient, ProviderManager);
-
-                BaseProviderInfo data;
-
-                if (!item.ProviderData.TryGetValue(JsonProvider.Id, out data))
-                {
-                    data = new BaseProviderInfo();
-                }
-
-                data.LastRefreshed = value;
-                item.ProviderData[JsonProvider.Id] = data;
-            }
-        }
-
         private const string TmdbConfigUrl = "http://api.themoviedb.org/3/configuration?api_key={0}";
         private const string Search3 = @"http://api.themoviedb.org/3/search/movie?api_key={1}&query={0}&language={2}";
         private const string AltTitleSearch = @"http://api.themoviedb.org/3/movie/{0}/alternative_titles?api_key={1}&country={2}";
@@ -228,7 +194,6 @@ namespace MediaBrowser.Providers.Movies
             new Regex(@"(?<name>.*)") // last resort matches the whole string as the name
         };
 
-        public const string LocalMetaFileName = "tmdb3.json";
         public const string AltMetaFileName = "movie.xml";
 
         protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
@@ -248,13 +213,6 @@ namespace MediaBrowser.Providers.Movies
         /// <returns>Task{System.Boolean}.</returns>
         public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
-            if (HasAltMeta(item))
-            {
-                Logger.Info("MovieDbProvider - Not fetching because 3rd party meta exists for " + item.Name);
-                SetLastRefreshed(item, DateTime.UtcNow);
-                return true;
-            }
-
             cancellationToken.ThrowIfCancellationRequested();
 
             await FetchMovieData(item, cancellationToken).ConfigureAwait(false);
@@ -638,19 +596,6 @@ namespace MediaBrowser.Providers.Movies
             if (mainResult == null) return;
 
             ProcessMainInfo(item, mainResult);
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            //and save locally
-            if (ConfigurationManager.Configuration.SaveLocalMeta && item.LocationType == LocationType.FileSystem)
-            {
-                var ms = new MemoryStream();
-                JsonSerializer.SerializeToStream(mainResult, ms);
-
-                cancellationToken.ThrowIfCancellationRequested();
-
-                await ProviderManager.SaveToLibraryFilesystem(item, Path.Combine(item.MetaLocation, LocalMetaFileName), ms, cancellationToken).ConfigureAwait(false);
-            }
         }
 
         /// <summary>

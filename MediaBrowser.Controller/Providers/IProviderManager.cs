@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -6,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Providers
 {
+    /// <summary>
+    /// Interface IProviderManager
+    /// </summary>
     public interface IProviderManager
     {
         /// <summary>
@@ -21,8 +25,17 @@ namespace MediaBrowser.Controller.Providers
         /// <exception cref="System.ArgumentNullException">item</exception>
         Task<string> DownloadAndSaveImage(BaseItem item, string source, string targetName, bool saveLocally, SemaphoreSlim resourcePool, CancellationToken cancellationToken);
 
+        /// <summary>
+        /// Saves the image.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="source">The source.</param>
+        /// <param name="targetName">Name of the target.</param>
+        /// <param name="saveLocally">if set to <c>true</c> [save locally].</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{System.String}.</returns>
         Task<string> SaveImage(BaseItem item, Stream source, string targetName, bool saveLocally, CancellationToken cancellationToken);
-        
+
         /// <summary>
         /// Saves to library filesystem.
         /// </summary>
@@ -48,7 +61,9 @@ namespace MediaBrowser.Controller.Providers
         /// Adds the metadata providers.
         /// </summary>
         /// <param name="providers">The providers.</param>
-        void AddMetadataProviders(IEnumerable<BaseMetadataProvider> providers);
+        /// <param name="savers">The savers.</param>
+        void AddParts(IEnumerable<BaseMetadataProvider> providers,
+            IEnumerable<IMetadataSaver> savers);
 
         /// <summary>
         /// Gets the save path.
