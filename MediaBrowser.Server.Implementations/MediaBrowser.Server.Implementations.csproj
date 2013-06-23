@@ -185,7 +185,6 @@
     <Compile Include="Updates\InstallationManager.cs" />
     <Compile Include="WebSocket\AlchemyServer.cs" />
     <Compile Include="WebSocket\AlchemyWebSocket.cs" />
-    <Compile Include="WorldWeatherOnline\WeatherProvider.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MediaBrowser.Common.Implementations\MediaBrowser.Common.Implementations.csproj">

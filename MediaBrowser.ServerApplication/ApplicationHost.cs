@@ -23,7 +23,6 @@ using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Controller.Updates;
-using MediaBrowser.Controller.Weather;
 using MediaBrowser.IsoMounter;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
@@ -311,7 +310,6 @@ namespace MediaBrowser.ServerApplication
                                                          ApplicationPaths, ItemRepository);
             Parallel.Invoke(
                  () => ServerKernel.FFMpegManager = new FFMpegManager(ApplicationPaths, MediaEncoder, LibraryManager, Logger, ItemRepository),
-                 () => ServerKernel.WeatherProviders = GetExports<IWeatherProvider>(),
                  () => ServerKernel.ImageManager.ImageEnhancers = GetExports<IImageEnhancer>().OrderBy(e => e.Priority).ToArray(),
                  () => LocalizedStrings.StringFiles = GetExports<LocalizedStringData>(),
                  SetStaticProperties

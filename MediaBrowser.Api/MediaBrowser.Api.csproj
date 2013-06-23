@@ -115,7 +115,6 @@
     <Compile Include="UserService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VideosService.cs" />
-    <Compile Include="WeatherService.cs" />
     <Compile Include="WebSocket\LogFileWebSocketListener.cs" />
     <Compile Include="WebSocket\SessionInfoWebSocketListener.cs" />
     <Compile Include="WebSocket\SystemInfoWebSocketListener.cs" />

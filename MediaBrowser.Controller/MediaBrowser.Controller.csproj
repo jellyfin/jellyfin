@@ -161,7 +161,6 @@
     <Compile Include="Sorting\IBaseItemComparer.cs" />
     <Compile Include="Sorting\IUserBaseItemComparer.cs" />
     <Compile Include="Updates\IInstallationManager.cs" />
-    <Compile Include="Weather\IWeatherProvider.cs" />
     <Compile Include="Providers\BaseItemXmlParser.cs" />
   </ItemGroup>
   <ItemGroup>

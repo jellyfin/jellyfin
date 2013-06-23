@@ -1246,24 +1246,6 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
         };
 
         /**
-         * Gets weather info
-         * @param {String} location - us zip code / city, state, country / city, country
-         * Omit location to get weather info using stored server configuration value
-         */
-        self.getWeatherInfo = function (location) {
-
-            var url = self.getUrl("weather", {
-                location: location
-            });
-
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
-        };
-
-        /**
          * Gets all users from the server
          */
         self.getUsers = function () {

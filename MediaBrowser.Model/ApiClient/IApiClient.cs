@@ -8,7 +8,6 @@ using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Session;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
-using MediaBrowser.Model.Weather;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -223,22 +222,6 @@ namespace MediaBrowser.Model.ApiClient
         /// </summary>
         /// <returns>Task{List{ParentalRating}}.</returns>
         Task<List<ParentalRating>> GetParentalRatingsAsync();
-
-        /// <summary>
-        /// Gets weather information for the default location as set in configuration
-        /// </summary>
-        /// <returns>Task{WeatherInfo}.</returns>
-        Task<WeatherInfo> GetWeatherInfoAsync();
-
-        /// <summary>
-        /// Gets weather information for a specific location
-        /// Location can be a US zipcode, or "city,state", "city,state,country", "city,country"
-        /// It can also be an ip address, or "latitude,longitude"
-        /// </summary>
-        /// <param name="location">The location.</param>
-        /// <returns>Task{WeatherInfo}.</returns>
-        /// <exception cref="ArgumentNullException">location</exception>
-        Task<WeatherInfo> GetWeatherInfoAsync(string location);
 
         /// <summary>
         /// Gets local trailers for an item

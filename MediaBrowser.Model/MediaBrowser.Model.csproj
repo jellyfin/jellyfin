@@ -134,10 +134,6 @@
     <Compile Include="Tasks\TaskTriggerInfo.cs" />
     <Compile Include="Updates\PackageInfo.cs" />
     <Compile Include="Updates\PackageVersionInfo.cs" />
-    <Compile Include="Weather\WeatherForecast.cs" />
-    <Compile Include="Weather\WeatherInfo.cs" />
-    <Compile Include="Weather\WeatherStatus.cs" />
-    <Compile Include="Weather\WeatherUnits.cs" />
     <Compile Include="Web\QueryStringDictionary.cs" />
     <None Include="FodyWeavers.xml" />
   </ItemGroup>

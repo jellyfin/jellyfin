@@ -514,13 +514,18 @@ namespace MediaBrowser.Controller.Dto
                 }
             }
 
-            var game = item as BaseGame;
+            var game = item as Game;
 
             if (game != null)
             {
-                dto.Players = game.PlayersSupported;
-                dto.GameSystem = game.GameSystem;
+                SetGameProperties(dto, game);
             }
+        }
+
+        private void SetGameProperties(BaseItemDto dto, Game item)
+        {
+            dto.Players = item.PlayersSupported;
+            dto.GameSystem = item.GameSystem;
         }
 
         /// <summary>
