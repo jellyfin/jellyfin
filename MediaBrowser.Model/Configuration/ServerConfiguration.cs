@@ -9,6 +9,18 @@ namespace MediaBrowser.Model.Configuration
     public class ServerConfiguration : BaseApplicationConfiguration
     {
         /// <summary>
+        /// Gets or sets the zip code to use when displaying weather
+        /// </summary>
+        /// <value>The weather location.</value>
+        public string WeatherLocation { get; set; }
+
+        /// <summary>
+        /// Gets or sets the weather unit to use when displaying weather
+        /// </summary>
+        /// <value>The weather unit.</value>
+        public WeatherUnits WeatherUnit { get; set; }
+        
+        /// <summary>
         /// Gets or sets a value indicating whether [enable HTTP level logging].
         /// </summary>
         /// <value><c>true</c> if [enable HTTP level logging]; otherwise, <c>false</c>.</value>

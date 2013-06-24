@@ -316,6 +316,9 @@
     <Compile Include="..\MediaBrowser.Model\Updates\PackageVersionInfo.cs">
       <Link>Updates\PackageVersionInfo.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Weather\WeatherUnits.cs">
+      <Link>Weather\WeatherUnits.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Web\QueryStringDictionary.cs">
       <Link>Web\QueryStringDictionary.cs</Link>
     </Compile>
