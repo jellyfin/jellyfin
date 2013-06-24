@@ -72,6 +72,11 @@ namespace MediaBrowser.Model.Querying
         MetadataSettings,
 
         /// <summary>
+        /// The original run time ticks
+        /// </summary>
+        OriginalRunTimeTicks,
+
+        /// <summary>
         /// The item overview
         /// </summary>
         Overview,
