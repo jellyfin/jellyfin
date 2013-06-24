@@ -2,8 +2,10 @@
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Model.Entities;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Security;
 using System.Text;
 using System.Xml;
@@ -25,8 +27,55 @@ namespace MediaBrowser.Providers.Savers
         /// </summary>
         /// <param name="xml">The XML.</param>
         /// <param name="path">The path.</param>
-        public static void Save(StringBuilder xml, string path)
+        /// <param name="xmlTagsUsed">The XML tags used.</param>
+        public static void Save(StringBuilder xml, string path, IEnumerable<string> xmlTagsUsed)
         {
+            if (File.Exists(path))
+            {
+                var tags = xmlTagsUsed.ToList();
+
+                tags.AddRange(new[]
+                {
+                    "MediaInfo",
+                    "ContentRating",
+                    "MPAARating",
+                    "certification",
+                    "Persons",
+                    "Type",
+                    "Overview",
+                    "CustomRating",
+                    "LocalTitle",
+                    "SortTitle",
+                    "PremiereDate",
+                    "Budget",
+                    "Revenue",
+                    "Rating",
+                    "ProductionYear",
+                    "Website",
+                    "AspectRatio",
+                    "Language",
+                    "RunningTime",
+                    "Runtime",
+                    "TagLine",
+                    "TagLines",
+                    "IMDB_ID",
+                    "IMDB",
+                    "IMDbId",
+                    "TMDbId",
+                    "TVcomId",
+                    "RottenTomatoesId",
+                    "MusicbrainzId",
+                    "CollectionNumber",
+                    "Genres",
+                    "Studios",
+                    "Tags",
+                    "Added"
+                });
+
+                var position = xml.ToString().LastIndexOf("</", StringComparison.OrdinalIgnoreCase);
+                xml.Insert(position, GetCustomTags(path, tags));
+            }
+
             var xmlDocument = new XmlDocument();
             xmlDocument.LoadXml(xml.ToString());
 
@@ -44,6 +93,25 @@ namespace MediaBrowser.Providers.Savers
             {
                 xmlDocument.Save(streamWriter);
             }
+        }
+
+        /// <summary>
+        /// Gets the custom tags.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <param name="xmlTagsUsed">The XML tags used.</param>
+        /// <returns>System.String.</returns>
+        private static string GetCustomTags(string path, ICollection<string> xmlTagsUsed)
+        {
+            var doc = new XmlDocument();
+            doc.Load(path);
+
+            var nodes = doc.DocumentElement.ChildNodes.Cast<XmlNode>()
+                .Where(i => !xmlTagsUsed.Contains(i.Name))
+                .Select(i => i.OuterXml)
+                .ToArray();
+
+            return string.Join(Environment.NewLine, nodes);
         }
 
         /// <summary>
@@ -105,7 +173,7 @@ namespace MediaBrowser.Providers.Savers
             {
                 builder.Append("<PremiereDate>" + SecurityElement.Escape(item.PremiereDate.Value.ToString("yyyy-MM-dd")) + "</PremiereDate>");
             }
-            
+
             if (item.Budget.HasValue)
             {
                 builder.Append("<Budget>" + SecurityElement.Escape(item.Budget.Value.ToString(UsCulture)) + "</Budget>");
@@ -125,7 +193,7 @@ namespace MediaBrowser.Providers.Savers
             {
                 builder.Append("<ProductionYear>" + SecurityElement.Escape(item.ProductionYear.Value.ToString(UsCulture)) + "</ProductionYear>");
             }
-            
+
             if (!string.IsNullOrEmpty(item.HomePageUrl))
             {
                 builder.Append("<Website>" + SecurityElement.Escape(item.HomePageUrl) + "</Website>");
@@ -148,7 +216,7 @@ namespace MediaBrowser.Providers.Savers
                 builder.Append("<RunningTime>" + Convert.ToInt32(timespan.TotalMinutes).ToString(UsCulture) + "</RunningTime>");
                 builder.Append("<Runtime>" + Convert.ToInt32(timespan.TotalMinutes).ToString(UsCulture) + "</Runtime>");
             }
-            
+
             if (item.Taglines.Count > 0)
             {
                 builder.Append("<TagLine>" + SecurityElement.Escape(item.Taglines[0]) + "</TagLine>");
@@ -199,7 +267,7 @@ namespace MediaBrowser.Providers.Savers
             {
                 builder.Append("<MusicbrainzId>" + SecurityElement.Escape(mbz) + "</MusicbrainzId>");
             }
-            
+
             var tmdbCollection = item.GetProviderId(MetadataProviders.TmdbCollection);
 
             if (!string.IsNullOrEmpty(tmdbCollection))
