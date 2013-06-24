@@ -53,7 +53,7 @@ namespace MediaBrowser.Providers.Savers
 
             var xmlFilePath = GetSavePath(item);
 
-            XmlSaverHelpers.Save(builder, xmlFilePath);
+            XmlSaverHelpers.Save(builder, xmlFilePath, new string[] { });
         }
 
         /// <summary>

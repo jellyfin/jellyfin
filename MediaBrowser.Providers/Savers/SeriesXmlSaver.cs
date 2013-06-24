@@ -92,7 +92,15 @@ namespace MediaBrowser.Providers.Savers
 
             var xmlFilePath = GetSavePath(item);
 
-            XmlSaverHelpers.Save(builder, xmlFilePath);
+            XmlSaverHelpers.Save(builder, xmlFilePath, new[]
+                {
+                    "id", 
+                    "SeriesName",
+                    "Status",
+                    "Network",
+                    "Airs_Time",
+                    "Airs_DayOfWeek"
+                });
 
             // Set last refreshed so that the provider doesn't trigger after the file save
             SeriesProviderFromXml.Current.SetLastRefreshed(item, DateTime.UtcNow);
