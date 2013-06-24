@@ -417,6 +417,22 @@ namespace MediaBrowser.Controller.Providers
                         break;
                     }
 
+                case "MusicbrainzId":
+                    var mbz = reader.ReadElementContentAsString();
+                    if (!string.IsNullOrWhiteSpace(mbz))
+                    {
+                        item.SetProviderId(MetadataProviders.Musicbrainz, mbz);
+                    }
+                    break;
+
+                case "RottenTomatoesId":
+                    var rtId = reader.ReadElementContentAsString();
+                    if (!string.IsNullOrWhiteSpace(rtId))
+                    {
+                        item.SetProviderId(MetadataProviders.RottenTomatoes, rtId);
+                    }
+                    break;
+
                 case "TMDbId":
                     var tmdb = reader.ReadElementContentAsString();
                     if (!string.IsNullOrWhiteSpace(tmdb))
@@ -424,7 +440,7 @@ namespace MediaBrowser.Controller.Providers
                         item.SetProviderId(MetadataProviders.Tmdb, tmdb);
                     }
                     break;
-
+                
                 case "CollectionNumber":
                     var tmdbCollection = reader.ReadElementContentAsString();
                     if (!string.IsNullOrWhiteSpace(tmdbCollection))
