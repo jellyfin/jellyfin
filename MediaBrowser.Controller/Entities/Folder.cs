@@ -864,14 +864,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>IEnumerable{BaseItem}.</returns>
         protected IEnumerable<BaseItem> GetCachedChildren()
         {
-            var items = ItemRepository.GetChildren(Id).Select(RetrieveChild).Where(i => i != null).ToList();
-
-            foreach (var item in items)
-            {
-                item.Parent = this;
-            }
-
-            return items;
+            return ItemRepository.GetChildren(Id).Select(RetrieveChild).Where(i => i != null);
         }
 
         /// <summary>
@@ -893,7 +886,13 @@ namespace MediaBrowser.Controller.Entities
 
             var item = LibraryManager.RetrieveItem(child.ItemId, itemType);
 
-            return item is IByReferenceItem ? LibraryManager.GetOrAddByReferenceItem(item) : item;
+            if (item is IByReferenceItem)
+            {
+                return LibraryManager.GetOrAddByReferenceItem(item);
+            }
+
+            item.Parent = this;
+            return item;
         }
 
         /// <summary>
