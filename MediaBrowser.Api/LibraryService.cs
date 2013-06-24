@@ -131,9 +131,50 @@ namespace MediaBrowser.Api
     [Api(("Updates an item"))]
     public class UpdateItem : BaseItemDto, IReturnVoid
     {
+        [ApiMember(Name = "ItemId", Description = "The id of the item", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public string ItemId { get; set; }
     }
 
+    [Route("/Artists/{ArtistName}", "POST")]
+    [Api(("Updates an artist"))]
+    public class UpdateArtist : BaseItemDto, IReturnVoid
+    {
+        [ApiMember(Name = "ArtistName", Description = "The name of the item", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public string ArtistName { get; set; }
+    }
+
+    [Route("/Studios/{StudioName}", "POST")]
+    [Api(("Updates a studio"))]
+    public class UpdateStudio : BaseItemDto, IReturnVoid
+    {
+        [ApiMember(Name = "StudioName", Description = "The name of the item", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public string StudioName { get; set; }
+    }
+
+    [Route("/Persons/{PersonName}", "POST")]
+    [Api(("Updates a person"))]
+    public class UpdatePerson : BaseItemDto, IReturnVoid
+    {
+        [ApiMember(Name = "PersonName", Description = "The name of the item", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public string PersonName { get; set; }
+    }
+
+    [Route("/MusicGenres/{GenreName}", "POST")]
+    [Api(("Updates a music genre"))]
+    public class UpdateMusicGenre : BaseItemDto, IReturnVoid
+    {
+        [ApiMember(Name = "GenreName", Description = "The name of the item", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public string GenreName { get; set; }
+    }
+
+    [Route("/Genres/{GenreName}", "POST")]
+    [Api(("Updates a genre"))]
+    public class UpdateGenre : BaseItemDto, IReturnVoid
+    {
+        [ApiMember(Name = "GenreName", Description = "The name of the item", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public string GenreName { get; set; }
+    }
+    
     /// <summary>
     /// Class LibraryService
     /// </summary>
@@ -241,6 +282,93 @@ namespace MediaBrowser.Api
         {
             var item = DtoBuilder.GetItemByClientId(request.ItemId, _userManager, _libraryManager);
 
+            UpdateItem(request, item);
+            
+            return _libraryManager.UpdateItem(item, CancellationToken.None);
+        }
+
+        public void Post(UpdatePerson request)
+        {
+            var task = UpdateItem(request);
+
+            Task.WaitAll(task);
+        }
+
+        private async Task UpdateItem(UpdatePerson request)
+        {
+            var item = await _libraryManager.GetPerson(request.PersonName).ConfigureAwait(false);
+
+            UpdateItem(request, item);
+
+            await _libraryManager.UpdateItem(item, CancellationToken.None).ConfigureAwait(false);
+        }
+
+        public void Post(UpdateArtist request)
+        {
+            var task = UpdateItem(request);
+
+            Task.WaitAll(task);
+        }
+
+        private async Task UpdateItem(UpdateArtist request)
+        {
+            var item = await _libraryManager.GetArtist(request.ArtistName).ConfigureAwait(false);
+
+            UpdateItem(request, item);
+
+            await _libraryManager.UpdateItem(item, CancellationToken.None).ConfigureAwait(false);
+        }
+
+        public void Post(UpdateStudio request)
+        {
+            var task = UpdateItem(request);
+
+            Task.WaitAll(task);
+        }
+
+        private async Task UpdateItem(UpdateStudio request)
+        {
+            var item = await _libraryManager.GetStudio(request.StudioName).ConfigureAwait(false);
+
+            UpdateItem(request, item);
+
+            await _libraryManager.UpdateItem(item, CancellationToken.None).ConfigureAwait(false);
+        }
+
+        public void Post(UpdateMusicGenre request)
+        {
+            var task = UpdateItem(request);
+
+            Task.WaitAll(task);
+        }
+
+        private async Task UpdateItem(UpdateMusicGenre request)
+        {
+            var item = await _libraryManager.GetMusicGenre(request.GenreName).ConfigureAwait(false);
+
+            UpdateItem(request, item);
+
+            await _libraryManager.UpdateItem(item, CancellationToken.None).ConfigureAwait(false);
+        }
+
+        public void Post(UpdateGenre request)
+        {
+            var task = UpdateItem(request);
+
+            Task.WaitAll(task);
+        }
+
+        private async Task UpdateItem(UpdateGenre request)
+        {
+            var item = await _libraryManager.GetGenre(request.GenreName).ConfigureAwait(false);
+
+            UpdateItem(request, item);
+
+            await _libraryManager.UpdateItem(item, CancellationToken.None).ConfigureAwait(false);
+        }
+
+        private void UpdateItem(BaseItemDto request, BaseItem item)
+        {
             item.Name = request.Name;
             item.ForcedSortName = request.SortName;
             item.DisplayMediaType = request.DisplayMediaType;
@@ -255,11 +383,11 @@ namespace MediaBrowser.Api
             item.Overview = request.Overview;
             item.Genres = request.Genres;
             item.Tags = request.Tags;
-            item.Studios = request.Studios.Select(x=>x.Name).ToList();
-            item.People = request.People.Select(x=> new PersonInfo{Name = x.Name,Role = x.Role,Type = x.Type}).ToList();
+            item.Studios = request.Studios.Select(x => x.Name).ToList();
+            item.People = request.People.Select(x => new PersonInfo { Name = x.Name, Role = x.Role, Type = x.Type }).ToList();
 
             item.EndDate = request.EndDate != default(DateTime) ? request.EndDate : null;
-            item.PremiereDate = request.PremiereDate != default(DateTime)? request.PremiereDate : null;
+            item.PremiereDate = request.PremiereDate != default(DateTime) ? request.PremiereDate : null;
             item.ProductionYear = request.ProductionYear;
             item.AspectRatio = request.AspectRatio;
             item.Language = request.Language;
@@ -274,7 +402,7 @@ namespace MediaBrowser.Api
             {
                 item.LockedFields.Clear();
             }
-            
+
             foreach (var pair in request.ProviderIds.ToList())
             {
                 if (string.IsNullOrEmpty(pair.Value))
@@ -315,9 +443,8 @@ namespace MediaBrowser.Api
                 series.AirDays = request.AirDays;
                 series.AirTime = request.AirTime;
             }
-            return _libraryManager.UpdateItem(item, CancellationToken.None);
         }
-
+        
         /// <summary>
         /// Deletes the specified request.
         /// </summary>

@@ -469,7 +469,28 @@
                 }
             };
 
-            ApiClient.updateItem(item).done(function () {
+            var updatePromise;
+            
+            if (item.Type == "Artist") {
+                updatePromise = ApiClient.updateArtist(item);
+            }
+            else if (item.Type == "Genre") {
+                updatePromise = ApiClient.updateGenre(item);
+            }
+            else if (item.Type == "MusicGenre") {
+                updatePromise = ApiClient.updateMusicGenre(item);
+            }
+            else if (item.Type == "Person") {
+                updatePromise = ApiClient.updatePerson(item);
+            }
+            else if (item.Type == "Studio") {
+                updatePromise = ApiClient.updateStudio(item);
+            }
+            else {
+                updatePromise = ApiClient.updateItem(item);
+            }
+
+            updatePromise.done(function () {
 
                 Dashboard.alert('Item saved.');
 
