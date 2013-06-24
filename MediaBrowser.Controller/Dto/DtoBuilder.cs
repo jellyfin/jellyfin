@@ -230,6 +230,11 @@ namespace MediaBrowser.Controller.Dto
                 dto.DateCreated = item.DateCreated;
             }
 
+            if (fields.Contains(ItemFields.OriginalRunTimeTicks))
+            {
+                dto.OriginalRunTimeTicks = item.OriginalRunTimeTicks;
+            }
+
             if (fields.Contains(ItemFields.DisplayMediaType))
             {
                 dto.DisplayMediaType = item.DisplayMediaType;
