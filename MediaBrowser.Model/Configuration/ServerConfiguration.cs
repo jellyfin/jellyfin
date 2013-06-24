@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Model.Entities;
 using System;
+using MediaBrowser.Model.Weather;
 
 namespace MediaBrowser.Model.Configuration
 {
