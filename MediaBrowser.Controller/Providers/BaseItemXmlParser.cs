@@ -67,8 +67,21 @@ namespace MediaBrowser.Controller.Providers
             item.People.Clear();
             item.Tags.Clear();
 
-            // Use european encoding as it will accept more characters
-            using (var streamReader = new StreamReader(metadataFile, Encoding.GetEncoding("ISO-8859-1")))
+            //Fetch(item, metadataFile, settings, Encoding.GetEncoding("ISO-8859-1"), cancellationToken);
+            Fetch(item, metadataFile, settings, Encoding.UTF8, cancellationToken);
+        }
+
+        /// <summary>
+        /// Fetches the specified item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="metadataFile">The metadata file.</param>
+        /// <param name="settings">The settings.</param>
+        /// <param name="encoding">The encoding.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        private void Fetch(T item, string metadataFile, XmlReaderSettings settings, Encoding encoding, CancellationToken cancellationToken)
+        {
+            using (var streamReader = new StreamReader(metadataFile, encoding))
             {
                 // Use XmlReader for best performance
                 using (var reader = XmlReader.Create(streamReader, settings))
