@@ -45,7 +45,7 @@
                     }
                 }
 
-                var imgUrl;
+                var imgUrl = null   ;
                 var isDefault = false;
 
                 var cssClass = "tileItem";
@@ -160,7 +160,7 @@
                     html += '<p>' + LibraryBrowser.getRatingHtml(item) + '</p>';
                 }
 
-                var childText;
+                var childText = null;
 
                 if (item.Type == "BoxSet") {
 
@@ -443,7 +443,7 @@
                 var item = items[i];
 
                 var imgUrl = null;
-                var background;
+                var background = null;
 
                 if (options.preferBackdrop && item.BackdropImageTags && item.BackdropImageTags.length) {
 
