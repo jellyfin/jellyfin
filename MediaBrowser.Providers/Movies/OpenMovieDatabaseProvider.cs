@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -71,6 +70,17 @@ namespace MediaBrowser.Providers.Movies
             {
                 return true;
             }
+        }
+
+        protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
+        {
+            // These values are now saved in movie.xml, so don't refresh if they're present
+            if (MovieDbProvider.HasAltMeta(item) && item.CriticRating.HasValue && !string.IsNullOrEmpty(item.CriticRatingSummary))
+            {
+                return false;
+            }
+
+            return base.NeedsRefreshInternal(item, providerInfo);
         }
 
         /// <summary>

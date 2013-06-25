@@ -61,6 +61,14 @@ namespace MediaBrowser.Providers.TV
             return item is Episode;
         }
 
+        public override ItemUpdateType ItemUpdateType
+        {
+            get
+            {
+                return ItemUpdateType.ImageUpdate | ItemUpdateType.MetadataEdit;
+            }
+        }
+        
         /// <summary>
         /// Gets the priority.
         /// </summary>

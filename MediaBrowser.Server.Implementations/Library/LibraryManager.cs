@@ -128,6 +128,10 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <value>The by reference items.</value>
         private ConcurrentDictionary<Guid, BaseItem> ByReferenceItems { get; set; }
 
+        private IEnumerable<IMetadataSaver> _savers;
+
+        private readonly Func<IDirectoryWatchers> _directoryWatchersFactory;
+
         /// <summary>
         /// The _library items cache
         /// </summary>
@@ -167,13 +171,14 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="userManager">The user manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="userDataRepository">The user data repository.</param>
-        public LibraryManager(ILogger logger, ITaskManager taskManager, IUserManager userManager, IServerConfigurationManager configurationManager, IUserDataRepository userDataRepository)
+        public LibraryManager(ILogger logger, ITaskManager taskManager, IUserManager userManager, IServerConfigurationManager configurationManager, IUserDataRepository userDataRepository, Func<IDirectoryWatchers> directoryWatchersFactory)
         {
             _logger = logger;
             _taskManager = taskManager;
             _userManager = userManager;
             ConfigurationManager = configurationManager;
             _userDataRepository = userDataRepository;
+            _directoryWatchersFactory = directoryWatchersFactory;
             ByReferenceItems = new ConcurrentDictionary<Guid, BaseItem>();
 
             ConfigurationManager.ConfigurationUpdated += ConfigurationUpdated;
@@ -191,13 +196,15 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="itemComparers">The item comparers.</param>
         /// <param name="prescanTasks">The prescan tasks.</param>
         /// <param name="postscanTasks">The postscan tasks.</param>
+        /// <param name="savers">The savers.</param>
         public void AddParts(IEnumerable<IResolverIgnoreRule> rules,
             IEnumerable<IVirtualFolderCreator> pluginFolders,
             IEnumerable<IItemResolver> resolvers,
             IEnumerable<IIntroProvider> introProviders,
             IEnumerable<IBaseItemComparer> itemComparers,
             IEnumerable<ILibraryPrescanTask> prescanTasks,
-            IEnumerable<ILibraryPostScanTask> postscanTasks)
+            IEnumerable<ILibraryPostScanTask> postscanTasks,
+            IEnumerable<IMetadataSaver> savers)
         {
             EntityResolutionIgnoreRules = rules;
             PluginFolderCreators = pluginFolders;
@@ -206,6 +213,7 @@ namespace MediaBrowser.Server.Implementations.Library
             Comparers = itemComparers;
             PrescanTasks = prescanTasks;
             PostscanTasks = postscanTasks;
+            _savers = savers;
         }
 
         /// <summary>
@@ -326,7 +334,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="newName">The new name.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        private Task UpdateSeasonZeroNames(string newName, CancellationToken cancellationToken)
+        private async Task UpdateSeasonZeroNames(string newName, CancellationToken cancellationToken)
         {
             var seasons = RootFolder.RecursiveChildren
                 .OfType<Season>()
@@ -336,9 +344,16 @@ namespace MediaBrowser.Server.Implementations.Library
             foreach (var season in seasons)
             {
                 season.Name = newName;
-            }
 
-            return UpdateItems(seasons, cancellationToken);
+                try
+                {
+                    await UpdateItem(season, ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error saving {0}", ex, season.Path);
+                }
+            }
         }
 
         /// <summary>
@@ -1278,33 +1293,35 @@ namespace MediaBrowser.Server.Implementations.Library
         }
 
         /// <summary>
-        /// Updates the items.
-        /// </summary>
-        /// <param name="items">The items.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        private async Task UpdateItems(IEnumerable<BaseItem> items, CancellationToken cancellationToken)
-        {
-            var list = items.ToList();
-
-            await ItemRepository.SaveItems(list, cancellationToken).ConfigureAwait(false);
-
-            foreach (var item in list)
-            {
-                UpdateItemInLibraryCache(item);
-                OnItemUpdated(item);
-            }
-        }
-
-        /// <summary>
         /// Updates the item.
         /// </summary>
         /// <param name="item">The item.</param>
+        /// <param name="updateReason">The update reason.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public Task UpdateItem(BaseItem item, CancellationToken cancellationToken)
+        public async Task UpdateItem(BaseItem item, ItemUpdateType updateReason, CancellationToken cancellationToken)
         {
-            return UpdateItems(new[] { item }, cancellationToken);
+            await ItemRepository.SaveItem(item, cancellationToken).ConfigureAwait(false);
+
+            UpdateItemInLibraryCache(item);
+
+            // If metadata was downloaded or edited, save external metadata
+            if ((updateReason & ItemUpdateType.MetadataEdit) == ItemUpdateType.MetadataEdit)
+            {
+                await SaveMetadata(item).ConfigureAwait(false);
+            }
+
+            if (ItemUpdated != null)
+            {
+                try
+                {
+                    ItemUpdated(this, new ItemChangeEventArgs { Item = item });
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error in ItemUpdated event handler", ex);
+                }
+            }
         }
 
         /// <summary>
@@ -1337,22 +1354,38 @@ namespace MediaBrowser.Server.Implementations.Library
             return ItemRepository.RetrieveItem(id, type);
         }
 
+        private readonly ConcurrentDictionary<string, SemaphoreSlim> _fileLocks = new ConcurrentDictionary<string, SemaphoreSlim>();
+
         /// <summary>
-        /// Called when [item updated].
+        /// Saves the metadata.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>Task.</returns>
-        private void OnItemUpdated(BaseItem item)
+        private async Task SaveMetadata(BaseItem item)
         {
-            if (ItemUpdated != null)
+            foreach (var saver in _savers.Where(i => i.Supports(item)))
             {
+                var path = saver.GetSavePath(item);
+
+                var semaphore = _fileLocks.GetOrAdd(path, key => new SemaphoreSlim(1, 1));
+
+                var directoryWatchers = _directoryWatchersFactory();
+
+                await semaphore.WaitAsync().ConfigureAwait(false);
+
                 try
                 {
-                    ItemUpdated(this, new ItemChangeEventArgs { Item = item });
+                    directoryWatchers.TemporarilyIgnore(path);
+                    saver.Save(item, CancellationToken.None);
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error in ItemUpdated event handler", ex);
+                    _logger.ErrorException("Error in metadata saver", ex);
+                }
+                finally
+                {
+                    directoryWatchers.RemoveTempIgnore(path);
+                    semaphore.Release();
                 }
             }
         }

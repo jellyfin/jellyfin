@@ -283,8 +283,8 @@ namespace MediaBrowser.Api
             var item = DtoBuilder.GetItemByClientId(request.ItemId, _userManager, _libraryManager);
 
             UpdateItem(request, item);
-            
-            return _libraryManager.UpdateItem(item, CancellationToken.None);
+
+            return _libraryManager.UpdateItem(item, ItemUpdateType.MetadataEdit, CancellationToken.None);
         }
 
         public void Post(UpdatePerson request)
@@ -300,7 +300,7 @@ namespace MediaBrowser.Api
 
             UpdateItem(request, item);
 
-            await _libraryManager.UpdateItem(item, CancellationToken.None).ConfigureAwait(false);
+            await _libraryManager.UpdateItem(item, ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
         }
 
         public void Post(UpdateArtist request)
@@ -316,7 +316,7 @@ namespace MediaBrowser.Api
 
             UpdateItem(request, item);
 
-            await _libraryManager.UpdateItem(item, CancellationToken.None).ConfigureAwait(false);
+            await _libraryManager.UpdateItem(item, ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
         }
 
         public void Post(UpdateStudio request)
@@ -332,7 +332,7 @@ namespace MediaBrowser.Api
 
             UpdateItem(request, item);
 
-            await _libraryManager.UpdateItem(item, CancellationToken.None).ConfigureAwait(false);
+            await _libraryManager.UpdateItem(item, ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
         }
 
         public void Post(UpdateMusicGenre request)
@@ -348,7 +348,7 @@ namespace MediaBrowser.Api
 
             UpdateItem(request, item);
 
-            await _libraryManager.UpdateItem(item, CancellationToken.None).ConfigureAwait(false);
+            await _libraryManager.UpdateItem(item, ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
         }
 
         public void Post(UpdateGenre request)
@@ -364,13 +364,19 @@ namespace MediaBrowser.Api
 
             UpdateItem(request, item);
 
-            await _libraryManager.UpdateItem(item, CancellationToken.None).ConfigureAwait(false);
+            await _libraryManager.UpdateItem(item, ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
         }
 
         private void UpdateItem(BaseItemDto request, BaseItem item)
         {
             item.Name = request.Name;
-            item.ForcedSortName = request.SortName;
+
+            // Only set the forced value if they changed it, or there's already one
+            if (!string.Equals(item.SortName, request.SortName) || !string.IsNullOrEmpty(item.ForcedSortName))
+            {
+                item.ForcedSortName = request.SortName;
+            }
+
             item.DisplayMediaType = request.DisplayMediaType;
             item.CommunityRating = request.CommunityRating;
             item.HomePageUrl = request.HomePageUrl;

@@ -315,7 +315,9 @@ namespace MediaBrowser.Controller.Entities
                 ResolveArgs = null;
             }
 
-            var changed = await ProviderManager.ExecuteMetadataProviders(this, cancellationToken, forceRefresh, allowSlowProviders).ConfigureAwait(false);
+            var updateReason = await ProviderManager.ExecuteMetadataProviders(this, cancellationToken, forceRefresh, allowSlowProviders).ConfigureAwait(false);
+
+            var changed = updateReason.HasValue;
 
             if (changed || forceSave)
             {

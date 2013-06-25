@@ -60,8 +60,6 @@ namespace MediaBrowser.Server.Implementations.Providers
         /// <value>The metadata providers enumerable.</value>
         private BaseMetadataProvider[] MetadataProviders { get; set; }
 
-        private IEnumerable<IMetadataSaver> _savers;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="ProviderManager" /> class.
         /// </summary>
@@ -79,44 +77,6 @@ namespace MediaBrowser.Server.Implementations.Providers
             _remoteImageCache = new FileSystemRepository(configurationManager.ApplicationPaths.DownloadedImagesDataPath);
 
             configurationManager.ConfigurationUpdated += configurationManager_ConfigurationUpdated;
-
-            libraryManager.ItemUpdated += libraryManager_ItemUpdated;
-        }
-
-        private readonly ConcurrentDictionary<string, SemaphoreSlim> _fileLocks = new ConcurrentDictionary<string, SemaphoreSlim>();
-        
-        /// <summary>
-        /// Handles the ItemUpdated event of the libraryManager control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="ItemChangeEventArgs"/> instance containing the event data.</param>
-        async void libraryManager_ItemUpdated(object sender, ItemChangeEventArgs e)
-        {
-            var item = e.Item;
-
-            foreach (var saver in _savers.Where(i => i.Supports(item)))
-            {
-                var path = saver.GetSavePath(item);
-
-                var semaphore = _fileLocks.GetOrAdd(path, key => new SemaphoreSlim(1, 1));
-
-                await semaphore.WaitAsync().ConfigureAwait(false);
-
-                try
-                {
-                    _directoryWatchers.TemporarilyIgnore(path);
-                    saver.Save(item, CancellationToken.None);
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error in metadata saver", ex);
-                }
-                finally
-                {
-                    _directoryWatchers.RemoveTempIgnore(path);
-                    semaphore.Release();
-                }
-            }
         }
 
         /// <summary>
@@ -134,12 +94,9 @@ namespace MediaBrowser.Server.Implementations.Providers
         /// Adds the metadata providers.
         /// </summary>
         /// <param name="providers">The providers.</param>
-        /// <param name="savers">The savers.</param>
-        public void AddParts(IEnumerable<BaseMetadataProvider> providers,
-            IEnumerable<IMetadataSaver> savers)
+        public void AddParts(IEnumerable<BaseMetadataProvider> providers)
         {
             MetadataProviders = providers.OrderBy(e => e.Priority).ToArray();
-            _savers = savers;
         }
 
         /// <summary>
@@ -150,18 +107,14 @@ namespace MediaBrowser.Server.Implementations.Providers
         /// <param name="force">if set to <c>true</c> [force].</param>
         /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
         /// <returns>Task{System.Boolean}.</returns>
-        public async Task<bool> ExecuteMetadataProviders(BaseItem item, CancellationToken cancellationToken, bool force = false, bool allowSlowProviders = true)
+        public async Task<ItemUpdateType?> ExecuteMetadataProviders(BaseItem item, CancellationToken cancellationToken, bool force = false, bool allowSlowProviders = true)
         {
             if (item == null)
             {
                 throw new ArgumentNullException("item");
             }
 
-            // Allow providers of the same priority to execute in parallel
-            MetadataProviderPriority? currentPriority = null;
-            var currentTasks = new List<Task<bool>>();
-
-            var result = false;
+            ItemUpdateType? result = null;
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -188,15 +141,6 @@ namespace MediaBrowser.Server.Implementations.Providers
                     continue;
                 }
 
-                // When a new priority is reached, await the ones that are currently running and clear the list
-                if (currentPriority.HasValue && currentPriority.Value != provider.Priority && currentTasks.Count > 0)
-                {
-                    var results = await Task.WhenAll(currentTasks).ConfigureAwait(false);
-                    result |= results.Contains(true);
-
-                    currentTasks.Clear();
-                }
-
                 // Put this check below the await because the needs refresh of the next tier of providers may depend on the previous ones running
                 //  This is the case for the fan art provider which depends on the movie and tv providers having run before them
                 if (provider.RequiresInternet && item.DontFetchMeta)
@@ -216,14 +160,19 @@ namespace MediaBrowser.Server.Implementations.Providers
                     _logger.Error("Error determining NeedsRefresh for {0}", ex, item.Path);
                 }
 
-                currentTasks.Add(FetchAsync(provider, item, force, cancellationToken));
-                currentPriority = provider.Priority;
-            }
+                var updateType = await FetchAsync(provider, item, force, cancellationToken).ConfigureAwait(false);
 
-            if (currentTasks.Count > 0)
-            {
-                var results = await Task.WhenAll(currentTasks).ConfigureAwait(false);
-                result |= results.Contains(true);
+                if (updateType.HasValue)
+                {
+                    if (result.HasValue)
+                    {
+                        result = result.Value | updateType.Value;
+                    }
+                    else
+                    {
+                        result = updateType;
+                    }
+                }
             }
 
             return result;
@@ -238,7 +187,7 @@ namespace MediaBrowser.Server.Implementations.Providers
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.Boolean}.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        private async Task<bool> FetchAsync(BaseMetadataProvider provider, BaseItem item, bool force, CancellationToken cancellationToken)
+        private async Task<ItemUpdateType?> FetchAsync(BaseMetadataProvider provider, BaseItem item, bool force, CancellationToken cancellationToken)
         {
             if (item == null)
             {
@@ -256,7 +205,14 @@ namespace MediaBrowser.Server.Implementations.Providers
 
             try
             {
-                return await provider.FetchAsync(item, force, CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, innerCancellationTokenSource.Token).Token).ConfigureAwait(false);
+                var changed = await provider.FetchAsync(item, force, CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, innerCancellationTokenSource.Token).Token).ConfigureAwait(false);
+            
+                if (changed)
+                {
+                    return provider.ItemUpdateType;
+                }
+
+                return null;
             }
             catch (OperationCanceledException ex)
             {
@@ -268,14 +224,15 @@ namespace MediaBrowser.Server.Implementations.Providers
                     throw;
                 }
 
-                return false;
+                return null;
             }
             catch (Exception ex)
             {
                 _logger.ErrorException("{0} failed refreshing {1}", ex, provider.GetType().Name, item.Name);
 
                 provider.SetLastRefreshed(item, DateTime.UtcNow, ProviderRefreshStatus.Failure);
-                return true;
+
+                return ItemUpdateType.Unspecified;
             }
             finally
             {
