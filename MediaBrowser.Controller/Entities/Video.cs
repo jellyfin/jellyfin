@@ -40,6 +40,12 @@ namespace MediaBrowser.Controller.Entities
         public IsoType? IsoType { get; set; }
 
         /// <summary>
+        /// Gets or sets the video3 D format.
+        /// </summary>
+        /// <value>The video3 D format.</value>
+        public Video3DFormat? Video3DFormat { get; set; }
+        
+        /// <summary>
         /// Gets or sets the format of the video.
         /// </summary>
         /// <value>The format of the video.</value>
@@ -101,7 +107,7 @@ namespace MediaBrowser.Controller.Entities
         [IgnoreDataMember]
         public bool Is3D
         {
-            get { return VideoFormat > 0; }
+            get { return Video3DFormat.HasValue; }
         }
 
         /// <summary>

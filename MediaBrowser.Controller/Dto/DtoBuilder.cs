@@ -449,7 +449,7 @@ namespace MediaBrowser.Controller.Dto
             if (video != null)
             {
                 dto.VideoType = video.VideoType;
-                dto.VideoFormat = video.VideoFormat;
+                dto.Video3DFormat = video.Video3DFormat;
                 dto.IsoType = video.IsoType;
 
                 dto.PartCount = video.AdditionalPartIds.Count + 1;

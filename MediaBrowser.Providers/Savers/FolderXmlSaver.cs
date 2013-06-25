@@ -27,12 +27,28 @@ namespace MediaBrowser.Providers.Savers
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         public bool Supports(BaseItem item)
         {
-            if (!_config.Configuration.SaveLocalMeta || item.LocationType != LocationType.FileSystem)
+            if (item.LocationType != LocationType.FileSystem)
             {
                 return false;
             }
 
-            return item is Folder && !(item is Series) && !(item is BoxSet) && !(item is MusicArtist) && !(item is MusicAlbum);
+            if (!(item is Folder))
+            {
+                return false;
+            }
+
+            // For these we can proceed even if save local metadata is off
+            if (item is AggregateFolder || item is UserRootFolder || item is CollectionFolder)
+            {
+                return true;
+            }
+            
+            if (!_config.Configuration.SaveLocalMeta)
+            {
+                return false;
+            }
+
+            return !(item is Series) && !(item is BoxSet) && !(item is MusicArtist) && !(item is MusicAlbum);
         }
 
         /// <summary>

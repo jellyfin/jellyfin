@@ -37,6 +37,12 @@ namespace MediaBrowser.Model.Dto
         public string SortName { get; set; }
 
         /// <summary>
+        /// Gets or sets the video3 D format.
+        /// </summary>
+        /// <value>The video3 D format.</value>
+        public Video3DFormat? Video3DFormat { get; set; }
+        
+        /// <summary>
         /// Gets or sets the premiere date.
         /// </summary>
         /// <value>The premiere date.</value>
