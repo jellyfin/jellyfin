@@ -5,6 +5,7 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -63,6 +64,14 @@ namespace MediaBrowser.Providers.Music
         /// </summary>
         protected string FanArtBaseUrl = "http://api.fanart.tv/webservice/artist/{0}/{1}/xml/all/1/1";
 
+        public override ItemUpdateType ItemUpdateType
+        {
+            get
+            {
+                return ItemUpdateType.ImageUpdate;
+            }
+        }
+        
         /// <summary>
         /// Supportses the specified item.
         /// </summary>

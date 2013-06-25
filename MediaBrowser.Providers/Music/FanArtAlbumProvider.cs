@@ -3,6 +3,7 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -64,6 +65,14 @@ namespace MediaBrowser.Providers.Music
             return item is MusicAlbum;
         }
 
+        public override ItemUpdateType ItemUpdateType
+        {
+            get
+            {
+                return ItemUpdateType.ImageUpdate;
+            }
+        }
+        
         /// <summary>
         /// Gets a value indicating whether [refresh on version change].
         /// </summary>

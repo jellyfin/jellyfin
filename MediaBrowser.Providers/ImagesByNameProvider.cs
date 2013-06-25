@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Logging;
 using System;
@@ -22,6 +23,14 @@ namespace MediaBrowser.Providers
         {
         }
 
+        public override ItemUpdateType ItemUpdateType
+        {
+            get
+            {
+                return ItemUpdateType.ImageUpdate;
+            }
+        }
+        
         /// <summary>
         /// Supportses the specified item.
         /// </summary>

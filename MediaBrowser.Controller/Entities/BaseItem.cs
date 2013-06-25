@@ -834,12 +834,15 @@ namespace MediaBrowser.Controller.Entities
             cancellationToken.ThrowIfCancellationRequested();
 
             // Get the result from the item task
-            var changed = await itemRefreshTask.ConfigureAwait(false);
+            var updateReason = await itemRefreshTask.ConfigureAwait(false);
+
+            var changed = updateReason.HasValue;
 
             if (changed || forceSave || themeSongsChanged || themeVideosChanged || localTrailersChanged)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await LibraryManager.UpdateItem(this, cancellationToken).ConfigureAwait(false);
+
+                await LibraryManager.UpdateItem(this, updateReason ?? ItemUpdateType.Unspecified, cancellationToken).ConfigureAwait(false);
             }
 
             return changed;

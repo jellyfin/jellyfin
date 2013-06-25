@@ -81,6 +81,7 @@
     <Compile Include="Library\ILibraryPostScanTask.cs" />
     <Compile Include="Library\ILibraryPrescanTask.cs" />
     <Compile Include="Library\IMetadataSaver.cs" />
+    <Compile Include="Library\ItemUpdateType.cs" />
     <Compile Include="Localization\ILocalizationManager.cs" />
     <Compile Include="Reflection\TypeMapper.cs" />
     <Compile Include="Session\ISessionManager.cs" />

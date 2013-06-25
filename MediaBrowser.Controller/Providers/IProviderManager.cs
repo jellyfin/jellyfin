@@ -55,15 +55,13 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="force">if set to <c>true</c> [force].</param>
         /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
         /// <returns>Task{System.Boolean}.</returns>
-        Task<bool> ExecuteMetadataProviders(BaseItem item, CancellationToken cancellationToken, bool force = false, bool allowSlowProviders = true);
+        Task<ItemUpdateType?> ExecuteMetadataProviders(BaseItem item, CancellationToken cancellationToken, bool force = false, bool allowSlowProviders = true);
 
         /// <summary>
         /// Adds the metadata providers.
         /// </summary>
         /// <param name="providers">The providers.</param>
-        /// <param name="savers">The savers.</param>
-        void AddParts(IEnumerable<BaseMetadataProvider> providers,
-            IEnumerable<IMetadataSaver> savers);
+        void AddParts(IEnumerable<BaseMetadataProvider> providers);
 
         /// <summary>
         /// Gets the save path.

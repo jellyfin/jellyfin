@@ -59,6 +59,7 @@ namespace MediaBrowser.Providers.Savers
             builder.Append("<Title>");
 
             XmlSaverHelpers.AddCommonNodes(item, builder);
+            XmlSaverHelpers.AppendMediaInfo((Video)item, builder);
 
             builder.Append("</Title>");
 

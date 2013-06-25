@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -66,6 +67,14 @@ namespace MediaBrowser.Providers.Movies
             }
         }
 
+        public override ItemUpdateType ItemUpdateType
+        {
+            get
+            {
+                return ItemUpdateType.ImageUpdate | ItemUpdateType.MetadataEdit;
+            }
+        }
+        
         protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
         {
             if (HasAltMeta(item))

@@ -27,6 +27,11 @@ namespace MediaBrowser.Model.Querying
         CriticRatingSummary,
 
         /// <summary>
+        /// The custom rating
+        /// </summary>
+        CustomRating,
+        
+        /// <summary>
         /// The date created of the item
         /// </summary>
         DateCreated,

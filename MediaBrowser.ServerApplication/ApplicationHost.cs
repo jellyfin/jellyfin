@@ -262,7 +262,7 @@ namespace MediaBrowser.ServerApplication
             UserManager = new UserManager(Logger, ServerConfigurationManager);
             RegisterSingleInstance(UserManager);
 
-            LibraryManager = new LibraryManager(Logger, TaskManager, UserManager, ServerConfigurationManager, UserDataRepository);
+            LibraryManager = new LibraryManager(Logger, TaskManager, UserManager, ServerConfigurationManager, UserDataRepository, () => DirectoryWatchers);
             RegisterSingleInstance(LibraryManager);
 
             InstallationManager = new InstallationManager(HttpClient, PackageManager, JsonSerializer, Logger, this);
@@ -397,10 +397,10 @@ namespace MediaBrowser.ServerApplication
                                     GetExports<IIntroProvider>(),
                                     GetExports<IBaseItemComparer>(),
                                     GetExports<ILibraryPrescanTask>(),
-                                    GetExports<ILibraryPostScanTask>());
-
-            ProviderManager.AddParts(GetExports<BaseMetadataProvider>().ToArray(),
+                                    GetExports<ILibraryPostScanTask>(),
                                     GetExports<IMetadataSaver>());
+
+            ProviderManager.AddParts(GetExports<BaseMetadataProvider>().ToArray());
         }
 
         /// <summary>

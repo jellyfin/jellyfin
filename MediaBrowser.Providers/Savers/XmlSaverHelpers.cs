@@ -89,9 +89,35 @@ namespace MediaBrowser.Providers.Savers
                 Directory.CreateDirectory(parentPath);
             }
 
-            using (var streamWriter = new StreamWriter(path, false, Encoding.UTF8))
+            var wasHidden = false;
+
+            var file = new FileInfo(path);
+
+            // This will fail if the file is hidden
+            if (file.Exists)
             {
-                xmlDocument.Save(streamWriter);
+                if ((file.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
+                {
+                    file.Attributes &= ~FileAttributes.Hidden;
+
+                    wasHidden = true;
+                }
+            }
+
+            using (var filestream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read))
+            {
+                using (var streamWriter = new StreamWriter(filestream, Encoding.UTF8))
+                {
+                    xmlDocument.Save(streamWriter);
+                }
+            }
+
+            if (wasHidden)
+            {
+                file.Refresh();
+
+                // Add back the attribute
+                file.Attributes |= FileAttributes.Hidden;
             }
         }
 
@@ -128,25 +154,21 @@ namespace MediaBrowser.Providers.Savers
                 builder.Append("<certification>" + SecurityElement.Escape(item.OfficialRating) + "</certification>");
             }
 
-            if (item.People.Count > 0)
-            {
-                builder.Append("<Persons>");
-
-                foreach (var person in item.People)
-                {
-                    builder.Append("<Person>");
-                    builder.Append("<Name>" + SecurityElement.Escape(person.Name) + "</Name>");
-                    builder.Append("<Type>" + SecurityElement.Escape(person.Type) + "</Type>");
-                    builder.Append("<Role>" + SecurityElement.Escape(person.Role) + "</Role>");
-                    builder.Append("</Person>");
-                }
-
-                builder.Append("</Persons>");
-            }
+            builder.Append("<Added>" + SecurityElement.Escape(item.DateCreated.ToString(UsCulture)) + "</Added>");
 
             if (!string.IsNullOrEmpty(item.DisplayMediaType))
             {
                 builder.Append("<Type>" + SecurityElement.Escape(item.DisplayMediaType) + "</Type>");
+            }
+
+            if (item.CriticRating.HasValue)
+            {
+                builder.Append("<CriticRating>" + SecurityElement.Escape(item.CriticRating.Value.ToString(UsCulture)) + "</CriticRating>");
+            }
+
+            if (!string.IsNullOrEmpty(item.CriticRatingSummary))
+            {
+                builder.Append("<CriticRatingSummary><![CDATA[" + item.Overview + "]]></CriticRatingSummary>");
             }
 
             if (!string.IsNullOrEmpty(item.Overview))
@@ -209,26 +231,15 @@ namespace MediaBrowser.Providers.Savers
                 builder.Append("<Language>" + SecurityElement.Escape(item.Language) + "</Language>");
             }
 
-            if (item.RunTimeTicks.HasValue)
+            // Use original runtime here, actual file runtime later in MediaInfo
+            var runTimeTicks = item.OriginalRunTimeTicks ?? item.RunTimeTicks;
+
+            if (runTimeTicks.HasValue)
             {
-                var timespan = TimeSpan.FromTicks(item.RunTimeTicks.Value);
+                var timespan = TimeSpan.FromTicks(runTimeTicks.Value);
 
                 builder.Append("<RunningTime>" + Convert.ToInt32(timespan.TotalMinutes).ToString(UsCulture) + "</RunningTime>");
                 builder.Append("<Runtime>" + Convert.ToInt32(timespan.TotalMinutes).ToString(UsCulture) + "</Runtime>");
-            }
-
-            if (item.Taglines.Count > 0)
-            {
-                builder.Append("<TagLine>" + SecurityElement.Escape(item.Taglines[0]) + "</TagLine>");
-
-                builder.Append("<TagLines>");
-
-                foreach (var tagline in item.Taglines)
-                {
-                    builder.Append("<Tagline>" + SecurityElement.Escape(tagline) + "</Tagline>");
-                }
-
-                builder.Append("</TagLines>");
             }
 
             var imdb = item.GetProviderId(MetadataProviders.Imdb);
@@ -275,6 +286,20 @@ namespace MediaBrowser.Providers.Savers
                 builder.Append("<CollectionNumber>" + SecurityElement.Escape(tmdbCollection) + "</CollectionNumber>");
             }
 
+            if (item.Taglines.Count > 0)
+            {
+                builder.Append("<TagLine>" + SecurityElement.Escape(item.Taglines[0]) + "</TagLine>");
+
+                builder.Append("<TagLines>");
+
+                foreach (var tagline in item.Taglines)
+                {
+                    builder.Append("<Tagline>" + SecurityElement.Escape(tagline) + "</Tagline>");
+                }
+
+                builder.Append("</TagLines>");
+            }
+
             if (item.Genres.Count > 0)
             {
                 builder.Append("<Genres>");
@@ -311,7 +336,22 @@ namespace MediaBrowser.Providers.Savers
                 builder.Append("</Tags>");
             }
 
-            builder.Append("<Added>" + SecurityElement.Escape(item.DateCreated.ToString(UsCulture)) + "</Added>");
+            if (item.People.Count > 0)
+            {
+                builder.Append("<Persons>");
+
+                foreach (var person in item.People)
+                {
+                    builder.Append("<Person>");
+                    builder.Append("<Name>" + SecurityElement.Escape(person.Name) + "</Name>");
+                    builder.Append("<Type>" + SecurityElement.Escape(person.Type) + "</Type>");
+                    builder.Append("<Role>" + SecurityElement.Escape(person.Role) + "</Role>");
+                    builder.Append("</Person>");
+                }
+
+                builder.Append("</Persons>");
+            }
+
         }
 
         /// <summary>

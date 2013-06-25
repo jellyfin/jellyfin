@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using System;
@@ -21,6 +22,14 @@ namespace MediaBrowser.Providers.TV
         {
         }
 
+        public override ItemUpdateType ItemUpdateType
+        {
+            get
+            {
+                return ItemUpdateType.ImageUpdate;
+            }
+        }
+        
         /// <summary>
         /// Supportses the specified item.
         /// </summary>

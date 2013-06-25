@@ -4,6 +4,7 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -48,6 +49,14 @@ namespace MediaBrowser.Providers.TV
             return item is Series;
         }
 
+        public override ItemUpdateType ItemUpdateType
+        {
+            get
+            {
+                return ItemUpdateType.ImageUpdate;
+            }
+        }
+        
         /// <summary>
         /// Needses the refresh internal.
         /// </summary>

@@ -75,6 +75,11 @@ namespace MediaBrowser.Controller.Providers
             }
         }
 
+        public virtual ItemUpdateType ItemUpdateType
+        {
+            get { return RequiresInternet ? ItemUpdateType.MetadataEdit : ItemUpdateType.MetadataImport; }
+        }
+
         /// <summary>
         /// Gets a value indicating whether [refresh on version change].
         /// </summary>

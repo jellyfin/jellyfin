@@ -389,6 +389,11 @@ namespace MediaBrowser.Controller.Dto
                 dto.SortName = item.SortName;
             }
 
+            if (fields.Contains(ItemFields.CustomRating))
+            {
+                dto.CustomRating = item.CustomRating;
+            }
+            
             if (fields.Contains(ItemFields.Taglines))
             {
                 dto.Taglines = item.Taglines;

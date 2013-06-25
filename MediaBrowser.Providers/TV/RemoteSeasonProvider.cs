@@ -70,6 +70,14 @@ namespace MediaBrowser.Providers.TV
             }
         }
 
+        public override ItemUpdateType ItemUpdateType
+        {
+            get
+            {
+                return ItemUpdateType.ImageUpdate;
+            }
+        }
+        
         /// <summary>
         /// Gets a value indicating whether [refresh on version change].
         /// </summary>

@@ -152,13 +152,15 @@ namespace MediaBrowser.Controller.Library
         /// <param name="itemComparers">The item comparers.</param>
         /// <param name="prescanTasks">The prescan tasks.</param>
         /// <param name="postscanTasks">The postscan tasks.</param>
+        /// <param name="savers">The savers.</param>
         void AddParts(IEnumerable<IResolverIgnoreRule> rules, 
             IEnumerable<IVirtualFolderCreator> pluginFolders, 
             IEnumerable<IItemResolver> resolvers, 
             IEnumerable<IIntroProvider> introProviders, 
             IEnumerable<IBaseItemComparer> itemComparers,
             IEnumerable<ILibraryPrescanTask> prescanTasks,
-            IEnumerable<ILibraryPostScanTask> postscanTasks);
+            IEnumerable<ILibraryPostScanTask> postscanTasks,
+            IEnumerable<IMetadataSaver> savers);
 
         /// <summary>
         /// Sorts the specified items.
@@ -205,9 +207,10 @@ namespace MediaBrowser.Controller.Library
         /// Updates the item.
         /// </summary>
         /// <param name="item">The item.</param>
+        /// <param name="updateReason">The update reason.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task UpdateItem(BaseItem item, CancellationToken cancellationToken);
+        Task UpdateItem(BaseItem item, ItemUpdateType updateReason, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the item.

@@ -226,7 +226,7 @@ namespace MediaBrowser.Providers.Movies
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns><c>true</c> if [has alt meta] [the specified item]; otherwise, <c>false</c>.</returns>
-        private bool HasAltMeta(BaseItem item)
+        internal static bool HasAltMeta(BaseItem item)
         {
             return item.LocationType == LocationType.FileSystem && item.ResolveArgs.ContainsMetaFileByName(AltMetaFileName);
         }

@@ -124,6 +124,17 @@ namespace MediaBrowser.Controller.Providers
 
                         break;
                     }
+                case "CriticRating":
+                    {
+                        var text = reader.ReadElementContentAsString();
+                        float value;
+                        if (float.TryParse(text, NumberStyles.Any, _usCulture, out value))
+                        {
+                            item.CriticRating = value;
+                        }
+
+                        break;
+                    }
                 case "Budget":
                     {
                         var text = reader.ReadElementContentAsString();
@@ -158,6 +169,18 @@ namespace MediaBrowser.Controller.Providers
                         if (!string.IsNullOrWhiteSpace(val))
                         {
                             item.Overview = val;
+                        }
+
+                        break;
+                    }
+
+                case "CriticRatingSummary":
+                    {
+                        var val = reader.ReadElementContentAsString();
+
+                        if (!string.IsNullOrWhiteSpace(val))
+                        {
+                            item.CriticRatingSummary = val;
                         }
 
                         break;

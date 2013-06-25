@@ -1,5 +1,4 @@
-﻿using System.IO;
-using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -11,6 +10,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Concurrent;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -113,6 +113,14 @@ namespace MediaBrowser.Providers.MediaInfo
             get { return MetadataProviderPriority.Last; }
         }
 
+        public override ItemUpdateType ItemUpdateType
+        {
+            get
+            {
+                return ItemUpdateType.ImageUpdate;
+            }
+        }
+        
         /// <summary>
         /// Fetches metadata and returns true or false indicating if any work that requires persistence was done
         /// </summary>
@@ -193,8 +201,6 @@ namespace MediaBrowser.Providers.MediaInfo
 
             // Image is already in the cache
             item.PrimaryImagePath = path;
-
-            await _libraryManager.UpdateItem(item, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
