@@ -117,8 +117,8 @@ namespace MediaBrowser.Api.UserLibrary
         /// Gets or sets the video formats.
         /// </summary>
         /// <value>The video formats.</value>
-        [ApiMember(Name = "VideoFormats", Description = "Optional filter by VideoFormat (Standard, Digital3D, Sbs3D). Allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
-        public string VideoFormats { get; set; }
+        [ApiMember(Name = "Is3D", Description = "Optional filter by items that are 3D, or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool? Is3D { get; set; }
 
         /// <summary>
         /// Gets or sets the series status.
@@ -535,11 +535,9 @@ namespace MediaBrowser.Api.UserLibrary
             }
 
             // Filter by VideoFormat
-            if (!string.IsNullOrEmpty(request.VideoFormats))
+            if (request.Is3D.HasValue)
             {
-                var formats = request.VideoFormats.Split(',');
-
-                items = items.OfType<Video>().Where(i => formats.Contains(i.VideoFormat.ToString(), StringComparer.OrdinalIgnoreCase));
+                items = items.OfType<Video>().Where(i => request.Is3D.Value == i.Video3DFormat.HasValue);
             }
 
             // Filter by VideoType

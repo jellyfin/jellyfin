@@ -35,7 +35,12 @@ namespace MediaBrowser.Server.Implementations.Library
             }
 
             item.Id = item.Path.GetMBId(item.GetType());
-            item.DisplayMediaType = item.GetType().Name;
+
+            // If the resolver didn't specify this
+            if (string.IsNullOrEmpty(item.DisplayMediaType))
+            {
+                item.DisplayMediaType = item.GetType().Name;
+            }
 
             // Make sure the item has a name
             EnsureName(item);

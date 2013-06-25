@@ -62,7 +62,26 @@ namespace MediaBrowser.Controller.Resolvers
         {
             base.SetInitialItemValues(item, args);
 
-            item.VideoFormat = item.Path.IndexOf("[3d]", StringComparison.OrdinalIgnoreCase) != -1 ? VideoFormat.Digital3D : item.Path.IndexOf("[sbs3d]", StringComparison.OrdinalIgnoreCase) != -1 ? VideoFormat.Sbs3D : VideoFormat.Standard;
+            if (item.Path.IndexOf("[3d]", StringComparison.OrdinalIgnoreCase) != -1 || item.Path.IndexOf("[sbs3d]", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                item.Video3DFormat = Video3DFormat.HalfSideBySide;
+            }
+            else if (item.Path.IndexOf("[hsbs]", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                item.Video3DFormat = Video3DFormat.HalfSideBySide;
+            }
+            else if (item.Path.IndexOf("[fsbs]", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                item.Video3DFormat = Video3DFormat.FullSideBySide;
+            }
+            else if (item.Path.IndexOf("[ftab]", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                item.Video3DFormat = Video3DFormat.FullTopAndBottom;
+            }
+            else if (item.Path.IndexOf("[htab]", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                item.Video3DFormat = Video3DFormat.HalfTopAndBottom;
+            }
         }
     }
 }

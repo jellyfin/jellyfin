@@ -72,7 +72,7 @@ namespace MediaBrowser.Model.Querying
         /// Gets or sets the video formats.
         /// </summary>
         /// <value>The video formats.</value>
-        public VideoFormat[] VideoFormats { get; set; }
+        public bool? Is3D { get; set; }
 
         /// <summary>
         /// Gets or sets the video types.
@@ -188,8 +188,6 @@ namespace MediaBrowser.Model.Querying
             Fields = new ItemFields[] {};
 
             MediaTypes = new string[] {};
-
-            VideoFormats = new VideoFormat[] { };
 
             VideoTypes = new VideoType[] {};
 
