@@ -425,6 +425,27 @@ namespace MediaBrowser.Providers.Savers
                     builder.Append("<Default>" + SecurityElement.Escape(stream.IsDefault.ToString()) + "</Default>");
                     builder.Append("<Forced>" + SecurityElement.Escape(stream.IsForced.ToString()) + "</Forced>");
 
+                    var video = item as Video;
+
+                    if (video != null && video.Video3DFormat.HasValue)
+                    {
+                        switch (video.Video3DFormat.Value)
+                        {
+                            case Video3DFormat.FullSideBySide:
+                                builder.Append("<3DFormat>FSBS</3DFormat>");
+                                break;
+                            case Video3DFormat.FullTopAndBottom:
+                                builder.Append("<3DFormat>FTAB</3DFormat>");
+                                break;
+                            case Video3DFormat.HalfSideBySide:
+                                builder.Append("<3DFormat>HSBS</3DFormat>");
+                                break;
+                            case Video3DFormat.HalfTopAndBottom:
+                                builder.Append("<3DFormat>HTAB</3DFormat>");
+                                break;
+                        }
+                    }
+
                     builder.Append("</Video>");
                 }
                 else if (stream.Type == MediaStreamType.Audio)
