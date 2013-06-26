@@ -3,7 +3,6 @@ using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Persistence;
-using MediaBrowser.Controller.Reflection;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
 using System;
@@ -22,8 +21,6 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class Folder : BaseItem
     {
-        private static readonly TypeMapper TypeMapper = new TypeMapper();
-
         /// <summary>
         /// Gets a value indicating whether this instance is folder.
         /// </summary>
@@ -118,12 +115,7 @@ namespace MediaBrowser.Controller.Entities
 
             await LibraryManager.CreateItem(item, cancellationToken).ConfigureAwait(false);
 
-            await ItemRepository.SaveChildren(Id, _children.Values.ToList().Select(i => new ChildDefinition
-            {
-                ItemId = i.Id,
-                Type = i.GetType().FullName
-
-            }), cancellationToken).ConfigureAwait(false);
+            await ItemRepository.SaveChildren(Id, _children.Values.ToList().Select(i => i.Id), cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -161,12 +153,7 @@ namespace MediaBrowser.Controller.Entities
 
             LibraryManager.ReportItemRemoved(item);
 
-            return ItemRepository.SaveChildren(Id, _children.Values.ToList().Select(i => new ChildDefinition
-            {
-                ItemId = i.Id,
-                Type = i.GetType().FullName
-
-            }), cancellationToken);
+            return ItemRepository.SaveChildren(Id, _children.Values.ToList().Select(i => i.Id), cancellationToken);
         }
 
         #region Indexing
@@ -729,12 +716,7 @@ namespace MediaBrowser.Controller.Entities
                     }
                 }
 
-                await ItemRepository.SaveChildren(Id, _children.Values.ToList().Select(i => new ChildDefinition
-                {
-                    ItemId = i.Id,
-                    Type = i.GetType().FullName
-
-                }), cancellationToken).ConfigureAwait(false);
+                await ItemRepository.SaveChildren(Id, _children.Values.ToList().Select(i => i.Id), cancellationToken).ConfigureAwait(false);
 
                 //force the indexes to rebuild next time
                 IndexCache.Clear();
@@ -872,26 +854,20 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <param name="child">The child.</param>
         /// <returns>BaseItem.</returns>
-        private BaseItem RetrieveChild(ChildDefinition child)
+        private BaseItem RetrieveChild(Guid child)
         {
-            var type = child.Type;
+            var item = LibraryManager.RetrieveItem(child);
 
-            var itemType = TypeMapper.GetType(type);
-
-            if (itemType == null)
+            if (item != null)
             {
-                Logger.Error("Cannot find type {0}.  Probably belongs to plug-in that is no longer loaded.", type);
-                return null;
+                if (item is IByReferenceItem)
+                {
+                    return LibraryManager.GetOrAddByReferenceItem(item);
+                }
+
+                item.Parent = this;
             }
 
-            var item = LibraryManager.RetrieveItem(child.ItemId, itemType);
-
-            if (item is IByReferenceItem)
-            {
-                return LibraryManager.GetOrAddByReferenceItem(item);
-            }
-
-            item.Parent = this;
             return item;
         }
 

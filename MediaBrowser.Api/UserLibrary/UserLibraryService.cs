@@ -399,7 +399,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userDataRepository, _itemRepo);
 
-            var items = _itemRepo.RetrieveItems<Video>(movie.SpecialFeatureIds).OrderBy(i => i.SortName).Select(i => dtoBuilder.GetBaseItemDto(i, fields, user)).Select(t => t.Result).ToList();
+            var items = movie.SpecialFeatureIds.Select(_itemRepo.RetrieveItem).OrderBy(i => i.SortName).Select(i => dtoBuilder.GetBaseItemDto(i, fields, user)).Select(t => t.Result).ToList();
 
             return ToOptimizedResult(items);
         }
@@ -420,7 +420,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userDataRepository, _itemRepo);
 
-            var items = _itemRepo.RetrieveItems<Trailer>(item.LocalTrailerIds).OrderBy(i => i.SortName).Select(i => dtoBuilder.GetBaseItemDto(i, fields, user)).Select(t => t.Result).ToList();
+            var items = item.LocalTrailerIds.Select(_itemRepo.RetrieveItem).OrderBy(i => i.SortName).Select(i => dtoBuilder.GetBaseItemDto(i, fields, user)).Select(t => t.Result).ToList();
 
             return ToOptimizedResult(items);
         }

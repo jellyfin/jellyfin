@@ -2,7 +2,7 @@
 using System.Collections.Concurrent;
 using System.Linq;
 
-namespace MediaBrowser.Controller.Reflection
+namespace MediaBrowser.Server.Implementations.Persistence
 {
     /// <summary>
     /// Class TypeMapper
