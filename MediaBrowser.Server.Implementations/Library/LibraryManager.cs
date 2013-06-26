@@ -573,7 +573,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 Directory.CreateDirectory(rootFolderPath);
             }
 
-            var rootFolder = RetrieveItem(rootFolderPath.GetMBId(typeof(AggregateFolder)), typeof(AggregateFolder)) as AggregateFolder ?? (AggregateFolder)ResolvePath(new DirectoryInfo(rootFolderPath));
+            var rootFolder = RetrieveItem(rootFolderPath.GetMBId(typeof(AggregateFolder))) as AggregateFolder ?? (AggregateFolder)ResolvePath(new DirectoryInfo(rootFolderPath));
 
             // Add in the plug-in folders
             foreach (var child in PluginFolderCreators)
@@ -598,7 +598,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>UserRootFolder.</returns>
         public UserRootFolder GetUserRootFolder(string userRootPath)
         {
-            return _userRootFolders.GetOrAdd(userRootPath, key => RetrieveItem(userRootPath.GetMBId(typeof(UserRootFolder)), typeof(UserRootFolder)) as UserRootFolder ??
+            return _userRootFolders.GetOrAdd(userRootPath, key => RetrieveItem(userRootPath.GetMBId(typeof(UserRootFolder))) as UserRootFolder ??
                 (UserRootFolder)ResolvePath(new DirectoryInfo(userRootPath)));
         }
 
@@ -793,7 +793,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var id = path.GetMBId(type);
 
-            var item = RetrieveItem(id, type) as T;
+            var item = RetrieveItem(id) as T;
             if (item == null)
             {
                 item = new T
@@ -1350,11 +1350,10 @@ namespace MediaBrowser.Server.Implementations.Library
         /// Retrieves the item.
         /// </summary>
         /// <param name="id">The id.</param>
-        /// <param name="type">The type.</param>
         /// <returns>BaseItem.</returns>
-        public BaseItem RetrieveItem(Guid id, Type type)
+        public BaseItem RetrieveItem(Guid id)
         {
-            return ItemRepository.RetrieveItem(id, type);
+            return ItemRepository.RetrieveItem(id);
         }
 
         private readonly ConcurrentDictionary<string, SemaphoreSlim> _fileLocks = new ConcurrentDictionary<string, SemaphoreSlim>();

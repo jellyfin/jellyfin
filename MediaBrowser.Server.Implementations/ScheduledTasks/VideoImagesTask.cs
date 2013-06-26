@@ -210,9 +210,9 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         {
             var allItems = sourceItems.ToList();
 
-            var localTrailers = allItems.SelectMany(i => _itemRepo.RetrieveItems<Trailer>(i.LocalTrailerIds));
+            var localTrailers = allItems.SelectMany(i => i.LocalTrailerIds.Select(_itemRepo.RetrieveItem)).Cast<Video>();
 
-            var themeVideos = allItems.SelectMany(i => _itemRepo.RetrieveItems<Video>(i.ThemeVideoIds));
+            var themeVideos = allItems.SelectMany(i => i.ThemeVideoIds.Select(_itemRepo.RetrieveItem)).Cast<Video>();
 
             var videos = allItems.OfType<Video>().ToList();
 
@@ -222,8 +222,8 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
 
             items.AddRange(themeVideos);
 
-            items.AddRange(videos.SelectMany(i => _itemRepo.RetrieveItems<Video>(i.AdditionalPartIds)).ToList());
-            items.AddRange(videos.OfType<Movie>().SelectMany(i => _itemRepo.RetrieveItems<Video>(i.SpecialFeatureIds)).ToList());
+            items.AddRange(videos.SelectMany(i => i.AdditionalPartIds).Select(_itemRepo.RetrieveItem).Cast<Video>());
+            items.AddRange(videos.OfType<Movie>().SelectMany(i => i.SpecialFeatureIds).Select(_itemRepo.RetrieveItem).Cast<Video>());
 
             return items.Where(i =>
             {

@@ -54,9 +54,8 @@ namespace MediaBrowser.Controller.Persistence
         /// Retrieves the item.
         /// </summary>
         /// <param name="id">The id.</param>
-        /// <param name="type">The type.</param>
         /// <returns>BaseItem.</returns>
-        BaseItem RetrieveItem(Guid id, Type type);
+        BaseItem RetrieveItem(Guid id);
 
         /// <summary>
         /// Gets chapters for an item
@@ -87,7 +86,7 @@ namespace MediaBrowser.Controller.Persistence
         /// </summary>
         /// <param name="parentId">The parent id.</param>
         /// <returns>IEnumerable{ChildDefinition}.</returns>
-        IEnumerable<ChildDefinition> GetChildren(Guid parentId);
+        IEnumerable<Guid> GetChildren(Guid parentId);
 
         /// <summary>
         /// Saves the children.
@@ -96,39 +95,7 @@ namespace MediaBrowser.Controller.Persistence
         /// <param name="children">The children.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SaveChildren(Guid parentId, IEnumerable<ChildDefinition> children, CancellationToken cancellationToken);
-    }
-
-    /// <summary>
-    /// Class ItemRepositoryExtensions
-    /// </summary>
-    public static class ItemRepositoryExtensions
-    {
-        /// <summary>
-        /// Retrieves the item.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="repository">The repository.</param>
-        /// <param name="id">The id.</param>
-        /// <returns>``0.</returns>
-        public static T RetrieveItem<T>(this IItemRepository repository, Guid id) 
-            where T : BaseItem, new()
-        {
-            return repository.RetrieveItem(id, typeof(T)) as T;
-        }
-
-        /// <summary>
-        /// Retrieves the item.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="repository">The repository.</param>
-        /// <param name="idList">The id list.</param>
-        /// <returns>IEnumerable{``0}.</returns>
-        public static IEnumerable<T> RetrieveItems<T>(this IItemRepository repository, IEnumerable<Guid> idList) 
-            where T : BaseItem, new()
-        {
-            return idList.Select(repository.RetrieveItem<T>).Where(i => i != null);
-        }
+        Task SaveChildren(Guid parentId, IEnumerable<Guid> children, CancellationToken cancellationToken);
     }
 }
 

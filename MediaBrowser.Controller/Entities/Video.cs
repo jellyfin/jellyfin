@@ -211,7 +211,7 @@ namespace MediaBrowser.Controller.Entities
             return LibraryManager.ResolvePaths<Video>(files, null).Select(video =>
             {
                 // Try to retrieve it from the db. If we don't find it, use the resolved version
-                var dbItem = LibraryManager.RetrieveItem(video.Id, typeof(Video)) as Video;
+                var dbItem = LibraryManager.RetrieveItem(video.Id) as Video;
 
                 if (dbItem != null)
                 {

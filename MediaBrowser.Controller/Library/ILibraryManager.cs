@@ -216,9 +216,8 @@ namespace MediaBrowser.Controller.Library
         /// Retrieves the item.
         /// </summary>
         /// <param name="id">The id.</param>
-        /// <param name="type">The type.</param>
         /// <returns>BaseItem.</returns>
-        BaseItem RetrieveItem(Guid id, Type type);
+        BaseItem RetrieveItem(Guid id);
 
         /// <summary>
         /// Validates the artists.

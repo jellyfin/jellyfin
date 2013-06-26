@@ -23,6 +23,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private SQLiteConnection _connection;
 
         private readonly ILogger _logger;
+
+        private TypeMapper _typeMapper = new TypeMapper();
         
         /// <summary>
         /// Gets the name of the repository
@@ -103,11 +105,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             string[] queries = {
 
-                                "create table if not exists baseitems (guid GUID primary key, data BLOB)",
-                                "create index if not exists idx_baseitems on baseitems(guid)",
+                                "create table if not exists TypedBaseItems (guid GUID primary key, type TEXT, data BLOB)",
+                                "create index if not exists idx_TypedBaseItems on baseitems(guid)",
 
-                                "create table if not exists ChildDefinitions (ParentId GUID, ItemId GUID, Type TEXT, PRIMARY KEY (ParentId, ItemId))",
-                                "create index if not exists idx_ChildDefinitions on ChildDefinitions(ParentId,ItemId)",
+                                "create table if not exists ChildrenIds (ParentId GUID, ItemId GUID, PRIMARY KEY (ParentId, ItemId))",
+                                "create index if not exists idx_ChildrenIds on ChildrenIds(ParentId,ItemId)",
 
                                 //pragmas
                                 "pragma temp_store = memory"
@@ -132,27 +134,27 @@ namespace MediaBrowser.Server.Implementations.Persistence
         {
             _saveItemCommand = new SQLiteCommand
             {
-                CommandText = "replace into baseitems (guid, data) values (@1, @2)"
+                CommandText = "replace into TypedBaseItems (guid, type, data) values (@1, @2, @3)"
             };
 
             _saveItemCommand.Parameters.Add(new SQLiteParameter("@1"));
             _saveItemCommand.Parameters.Add(new SQLiteParameter("@2"));
+            _saveItemCommand.Parameters.Add(new SQLiteParameter("@3"));
 
             _deleteChildrenCommand = new SQLiteCommand
             {
-                CommandText = "delete from ChildDefinitions where ParentId=@ParentId"
+                CommandText = "delete from ChildrenIds where ParentId=@ParentId"
             };
 
             _deleteChildrenCommand.Parameters.Add(new SQLiteParameter("@ParentId"));
 
             _saveChildrenCommand = new SQLiteCommand
             {
-                CommandText = "replace into ChildDefinitions (ParentId, ItemId, Type) values (@ParentId, @ItemId, @Type)"
+                CommandText = "replace into ChildrenIds (ParentId, ItemId) values (@ParentId, @ItemId)"
             };
 
             _saveChildrenCommand.Parameters.Add(new SQLiteParameter("@ParentId"));
             _saveChildrenCommand.Parameters.Add(new SQLiteParameter("@ItemId"));
-            _saveChildrenCommand.Parameters.Add(new SQLiteParameter("@Type"));
         }
 
         /// <summary>
@@ -210,7 +212,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     cancellationToken.ThrowIfCancellationRequested();
 
                     _saveItemCommand.Parameters[0].Value = item.Id;
-                    _saveItemCommand.Parameters[1].Value = _jsonSerializer.SerializeToBytes(item);
+                    _saveItemCommand.Parameters[1].Value = item.GetType().FullName;
+                    _saveItemCommand.Parameters[2].Value = _jsonSerializer.SerializeToBytes(item);
 
                     _saveItemCommand.Transaction = transaction;
 
@@ -254,11 +257,10 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// Internal retrieve from items or users table
         /// </summary>
         /// <param name="id">The id.</param>
-        /// <param name="type">The type.</param>
         /// <returns>BaseItem.</returns>
         /// <exception cref="System.ArgumentNullException">id</exception>
         /// <exception cref="System.ArgumentException"></exception>
-        public BaseItem RetrieveItem(Guid id, Type type)
+        public BaseItem RetrieveItem(Guid id)
         {
             if (id == Guid.Empty)
             {
@@ -267,7 +269,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             using (var cmd = _connection.CreateCommand())
             {
-                cmd.CommandText = "select data from baseitems where guid = @guid";
+                cmd.CommandText = "select type,data from TypedBaseItems where guid = @guid";
                 var guidParam = cmd.Parameters.Add("@guid", DbType.Guid);
                 guidParam.Value = id;
 
@@ -275,7 +277,18 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     if (reader.Read())
                     {
-                        using (var stream = reader.GetMemoryStream(0))
+                        var typeString = reader.GetString(0);
+
+                        var type = _typeMapper.GetType(typeString);
+
+                        if (type == null)
+                        {
+                            _logger.Debug("Unknown type {0}", typeString);
+
+                            return null;
+                        }
+
+                        using (var stream = reader.GetMemoryStream(1))
                         {
                             return _jsonSerializer.DeserializeFromStream(stream, type) as BaseItem;
                         }
@@ -424,7 +437,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
         }
 
-        public IEnumerable<ChildDefinition> GetChildren(Guid parentId)
+        public IEnumerable<Guid> GetChildren(Guid parentId)
         {
             if (parentId == Guid.Empty)
             {
@@ -433,7 +446,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             using (var cmd = _connection.CreateCommand())
             {
-                cmd.CommandText = "select ItemId,Type from ChildDefinitions where ParentId = @ParentId";
+                cmd.CommandText = "select ItemId from ChildrenIds where ParentId = @ParentId";
 
                 cmd.Parameters.Add("@ParentId", DbType.Guid).Value = parentId;
 
@@ -441,17 +454,13 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     while (reader.Read())
                     {
-                        yield return new ChildDefinition
-                        {
-                            ItemId = reader.GetGuid(0),
-                            Type = reader.GetString(1)
-                        };
+                        yield return reader.GetGuid(0);
                     }
                 }
             }
         }
 
-        public async Task SaveChildren(Guid parentId, IEnumerable<ChildDefinition> children, CancellationToken cancellationToken)
+        public async Task SaveChildren(Guid parentId, IEnumerable<Guid> children, CancellationToken cancellationToken)
         {
             if (parentId == Guid.Empty)
             {
@@ -483,13 +492,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 _deleteChildrenCommand.Transaction = transaction;
                 await _deleteChildrenCommand.ExecuteNonQueryAsync(cancellationToken);
 
-                foreach (var chapter in children)
+                foreach (var id in children)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
                     _saveChildrenCommand.Parameters[0].Value = parentId;
-                    _saveChildrenCommand.Parameters[1].Value = chapter.ItemId;
-                    _saveChildrenCommand.Parameters[2].Value = chapter.Type;
+                    _saveChildrenCommand.Parameters[1].Value = id;
 
                     _saveChildrenCommand.Transaction = transaction;
 

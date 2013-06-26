@@ -74,7 +74,6 @@
     <Compile Include="Dto\SessionInfoDtoBuilder.cs" />
     <Compile Include="Entities\Audio\MusicAlbumDisc.cs" />
     <Compile Include="Entities\Audio\MusicGenre.cs" />
-    <Compile Include="Entities\ChildDefinition.cs" />
     <Compile Include="Entities\Game.cs" />
     <Compile Include="Entities\IByReferenceItem.cs" />
     <Compile Include="Entities\MusicVideo.cs" />
@@ -83,7 +82,6 @@
     <Compile Include="Library\IMetadataSaver.cs" />
     <Compile Include="Library\ItemUpdateType.cs" />
     <Compile Include="Localization\ILocalizationManager.cs" />
-    <Compile Include="Reflection\TypeMapper.cs" />
     <Compile Include="Session\ISessionManager.cs" />
     <Compile Include="Drawing\ImageExtensions.cs" />
     <Compile Include="Drawing\ImageHeader.cs" />
