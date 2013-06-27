@@ -312,6 +312,17 @@ namespace MediaBrowser.Controller.Providers
                         break;
                     }
 
+                case "LockData":
+                    {
+                        var val = reader.ReadElementContentAsString();
+
+                        if (!string.IsNullOrWhiteSpace(val))
+                        {
+                            item.DontFetchMeta = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
+                        }
+                        break;
+                    }
+
                 case "Network":
                     {
                         foreach (var name in SplitNames(reader.ReadElementContentAsString()))

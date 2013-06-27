@@ -75,6 +75,16 @@
                 ApiClient.sendWebSocketMessage("Context", vals.join('|'));
             }
 
+            Dashboard.getCurrentUser().done(function (user) {
+
+                if (user.Configuration.IsAdministrator) {
+                    $('#editButtonContainer', page).show();
+                } else {
+                    $('#editButtonContainer', page).hide();
+                }
+
+            });
+
             Dashboard.hideLoadingMsg();
         });
     }
@@ -468,6 +478,11 @@
         $('#btnRemote', page).on('click', function () {
 
             RemoteControl.showMenu({ item: currentItem, context: getParameterByName('context') || '' });
+        });
+
+        $('#btnEdit', page).on('click', function () {
+
+            Dashboard.navigate("edititemmetadata.html", true);
         });
 
     }).on('pageshow', "#itemByNameDetailPage", function () {

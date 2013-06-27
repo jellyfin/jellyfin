@@ -1178,7 +1178,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 return item;
             }
 
-            return null;
+            return RetrieveItem(id);
         }
 
         /// <summary>

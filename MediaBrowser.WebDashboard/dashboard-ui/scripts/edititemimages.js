@@ -3,13 +3,49 @@
     var currentItem;
     var currentFile;
 
-    function reload(page) {
+    function getPromise() {
 
-        var id = getParameterByName('id');
+        var name = getParameterByName('person');
+
+        if (name) {
+            return ApiClient.getPerson(name, Dashboard.getCurrentUserId());
+        }
+
+        name = getParameterByName('studio');
+
+        if (name) {
+
+            return ApiClient.getStudio(name, Dashboard.getCurrentUserId());
+
+        }
+
+        name = getParameterByName('genre');
+
+        if (name) {
+            return ApiClient.getGenre(name, Dashboard.getCurrentUserId());
+        }
+
+        name = getParameterByName('musicgenre');
+
+        if (name) {
+            return ApiClient.getMusicGenre(name, Dashboard.getCurrentUserId());
+        }
+
+        name = getParameterByName('artist');
+
+        if (name) {
+            return ApiClient.getArtist(name, Dashboard.getCurrentUserId());
+        }
+        else {
+            return ApiClient.getItem(Dashboard.getCurrentUserId(), getParameterByName('id'));
+        }
+    }
+
+    function reload(page) {
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.getItem(Dashboard.getCurrentUserId(), id).done(function (item) {
+        getPromise().done(function (item) {
 
             currentItem = item;
 
