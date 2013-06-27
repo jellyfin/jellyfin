@@ -586,7 +586,28 @@
 
             $('#refreshLoading', page).show();
 
-            ApiClient.refreshItem(currentItem.Id, true, $('#fldRecursive', page).checked()).done(function () {
+            var refreshPromise;
+
+            if (currentItem.Type == "Artist") {
+                refreshPromise = ApiClient.refreshArtist(currentItem.Name, true);
+            }
+            else if (currentItem.Type == "Genre") {
+                refreshPromise = ApiClient.refreshGenre(currentItem.Name, true);
+            }
+            else if (currentItem.Type == "MusicGenre") {
+                refreshPromise = ApiClient.refreshMusicGenre(currentItem.Name, true);
+            }
+            else if (currentItem.Type == "Person") {
+                refreshPromise = ApiClient.refreshPerson(currentItem.Name, true);
+            }
+            else if (currentItem.Type == "Studio") {
+                refreshPromise = ApiClient.refreshStudio(currentItem.Name, true);
+            }
+            else {
+                refreshPromise = ApiClient.refreshItem(currentItem.Id, true, $('#fldRecursive', page).checked());
+            }
+
+            refreshPromise.done(function () {
 
                 reload(page);
 
