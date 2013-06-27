@@ -106,7 +106,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             string[] queries = {
 
                                 "create table if not exists TypedBaseItems (guid GUID primary key, type TEXT, data BLOB)",
-                                "create index if not exists idx_TypedBaseItems on baseitems(guid)",
+                                "create index if not exists idx_TypedBaseItems on TypedBaseItems(guid)",
 
                                 "create table if not exists ChildrenIds (ParentId GUID, ItemId GUID, PRIMARY KEY (ParentId, ItemId))",
                                 "create index if not exists idx_ChildrenIds on ChildrenIds(ParentId,ItemId)",
