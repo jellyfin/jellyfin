@@ -802,7 +802,7 @@ namespace MediaBrowser.Providers.Movies
                         Url = string.Format("http://www.youtube.com/watch?{0}", i.source),
                         IsDirectLink = false,
                         Name = i.name,
-                        IsHD = string.Equals("hd", i.size, StringComparison.OrdinalIgnoreCase)
+                        VideoSize = string.Equals("hd", i.size, StringComparison.OrdinalIgnoreCase) ? VideoSize.HighDefinition : VideoSize.StandardDefinition
 
                     }).ToList();
                 }
