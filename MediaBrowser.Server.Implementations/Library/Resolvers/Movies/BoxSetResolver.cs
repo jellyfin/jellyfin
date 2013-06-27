@@ -29,7 +29,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                     return null;
                 }
 
-                if (filename.IndexOf("[boxset]", StringComparison.OrdinalIgnoreCase) != -1)
+                if (filename.IndexOf("[boxset]", StringComparison.OrdinalIgnoreCase) != -1 || args.ContainsFileSystemEntryByName("collection.xml"))
                 {
                     return new BoxSet();
                 }

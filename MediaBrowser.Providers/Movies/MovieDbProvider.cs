@@ -228,6 +228,10 @@ namespace MediaBrowser.Providers.Movies
         /// <returns><c>true</c> if [has alt meta] [the specified item]; otherwise, <c>false</c>.</returns>
         internal static bool HasAltMeta(BaseItem item)
         {
+            if (item is BoxSet)
+            {
+                return item.LocationType == LocationType.FileSystem && item.ResolveArgs.ContainsMetaFileByName("collection.xml");
+            }
             return item.LocationType == LocationType.FileSystem && item.ResolveArgs.ContainsMetaFileByName(AltMetaFileName);
         }
 

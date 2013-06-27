@@ -1,26 +1,24 @@
 ﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Providers.Movies
+namespace MediaBrowser.Providers.TV
 {
     /// <summary>
-    /// Class MovieProviderFromXml
+    /// Class SeriesProviderFromXml
     /// </summary>
-    public class MovieProviderFromXml : BaseMetadataProvider
+    public class SeasonProviderFromXml : BaseMetadataProvider
     {
-        internal static MovieProviderFromXml Current { get; private set; }
-        
-        public MovieProviderFromXml(ILogManager logManager, IServerConfigurationManager configurationManager)
+        public SeasonProviderFromXml(ILogManager logManager, IServerConfigurationManager configurationManager)
             : base(logManager, configurationManager)
         {
-            Current = this;
         }
 
         /// <summary>
@@ -30,14 +28,7 @@ namespace MediaBrowser.Providers.Movies
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         public override bool Supports(BaseItem item)
         {
-            var trailer = item as Trailer;
-
-            if (trailer != null)
-            {
-                return !trailer.IsLocalTrailer;
-            }
-
-            return item is Movie || item is MusicVideo;
+            return item is Season && item.LocationType == LocationType.FileSystem;
         }
 
         /// <summary>
@@ -46,7 +37,7 @@ namespace MediaBrowser.Providers.Movies
         /// <value>The priority.</value>
         public override MetadataProviderPriority Priority
         {
-            get { return MetadataProviderPriority.Second; }
+            get { return MetadataProviderPriority.First; }
         }
 
         /// <summary>
@@ -57,7 +48,7 @@ namespace MediaBrowser.Providers.Movies
         /// <returns>DateTime.</returns>
         protected override DateTime CompareDate(BaseItem item)
         {
-            var entry = item.ResolveArgs.GetMetaFileByPath(Path.Combine(item.MetaLocation, "movie.xml"));
+            var entry = item.ResolveArgs.GetMetaFileByPath(Path.Combine(item.MetaLocation, "season.xml"));
             return entry != null ? entry.LastWriteTimeUtc : DateTime.MinValue;
         }
 
@@ -83,7 +74,7 @@ namespace MediaBrowser.Providers.Movies
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var metadataFile = item.ResolveArgs.GetMetaFileByPath(Path.Combine(item.MetaLocation, "movie.xml"));
+            var metadataFile = item.ResolveArgs.GetMetaFileByPath(Path.Combine(item.MetaLocation, "season.xml"));
 
             if (metadataFile != null)
             {
@@ -93,30 +84,7 @@ namespace MediaBrowser.Providers.Movies
 
                 try
                 {
-                    var movie = item as Movie;
-
-                    if (movie != null)
-                    {
-                        new BaseItemXmlParser<Movie>(Logger).Fetch(movie, path, cancellationToken);
-                    }
-                    else
-                    {
-                        var musicVideo = item as MusicVideo;
-
-                        if (musicVideo != null)
-                        {
-                            new BaseItemXmlParser<MusicVideo>(Logger).Fetch(musicVideo, path, cancellationToken);
-                        }
-                        else
-                        {
-                            var trailer = item as Trailer;
-
-                            if (trailer != null)
-                            {
-                                new BaseItemXmlParser<Trailer>(Logger).Fetch(trailer, path, cancellationToken);
-                            }
-                        }
-                    }
+                    new BaseItemXmlParser<Season>(Logger).Fetch((Season)item, path, cancellationToken);
                 }
                 finally
                 {
@@ -124,6 +92,7 @@ namespace MediaBrowser.Providers.Movies
                 }
 
                 SetLastRefreshed(item, DateTime.UtcNow);
+
                 return true;
             }
 
