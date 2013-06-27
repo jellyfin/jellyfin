@@ -183,7 +183,7 @@ namespace MediaBrowser.Providers.Movies
         private const string TmdbConfigUrl = "http://api.themoviedb.org/3/configuration?api_key={0}";
         private const string Search3 = @"http://api.themoviedb.org/3/search/movie?api_key={1}&query={0}&language={2}";
         private const string AltTitleSearch = @"http://api.themoviedb.org/3/movie/{0}/alternative_titles?api_key={1}&country={2}";
-        private const string GetMovieInfo3 = @"http://api.themoviedb.org/3/movie/{0}?api_key={1}&language={2}&append_to_response=casts,releases,images,keywords";
+        private const string GetMovieInfo3 = @"http://api.themoviedb.org/3/movie/{0}?api_key={1}&language={2}&append_to_response=casts,releases,images,keywords,trailers";
         private const string GetBoxSetInfo3 = @"http://api.themoviedb.org/3/collection/{0}?api_key={1}&language={2}&append_to_response=images";
 
         internal static string ApiKey = "f6bd687ffa63cd282b6ff2c6877f2669";
