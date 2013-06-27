@@ -143,7 +143,13 @@ var Dashboard = {
         if (info.HasPendingRestart) {
 
             Dashboard.hideDashboardVersionWarning();
-            Dashboard.showServerRestartWarning();
+
+            Dashboard.getCurrentUser().done(function (currentUser) {
+
+                if (currentUser.Configuration.IsAdministrator) {
+                    Dashboard.showServerRestartWarning();
+                }
+            });
 
         } else {
 
@@ -858,24 +864,49 @@ var Dashboard = {
             }
         }
         else if (msg.MessageType === "PackageInstallationCompleted") {
-            Dashboard.showPackageInstallNotification(msg.Data, "completed");
-            Dashboard.refreshSystemInfoFromServer();
+            Dashboard.getCurrentUser().done(function (currentUser) {
+
+                if (currentUser.Configuration.IsAdministrator) {
+                    Dashboard.showPackageInstallNotification(msg.Data, "completed");
+                    Dashboard.refreshSystemInfoFromServer();
+                }
+            });
         }
         else if (msg.MessageType === "PackageInstallationFailed") {
-            Dashboard.showPackageInstallNotification(msg.Data, "failed");
-            Dashboard.refreshSystemInfoFromServer();
+            Dashboard.getCurrentUser().done(function (currentUser) {
+
+                if (currentUser.Configuration.IsAdministrator) {
+                    Dashboard.showPackageInstallNotification(msg.Data, "failed");
+                    Dashboard.refreshSystemInfoFromServer();
+                }
+            });
         }
         else if (msg.MessageType === "PackageInstallationCancelled") {
-            Dashboard.showPackageInstallNotification(msg.Data, "cancelled");
-            Dashboard.refreshSystemInfoFromServer();
+            Dashboard.getCurrentUser().done(function (currentUser) {
+
+                if (currentUser.Configuration.IsAdministrator) {
+                    Dashboard.showPackageInstallNotification(msg.Data, "cancelled");
+                    Dashboard.refreshSystemInfoFromServer();
+                }
+            });
         }
         else if (msg.MessageType === "PackageInstalling") {
-            Dashboard.showPackageInstallNotification(msg.Data, "progress");
-            Dashboard.refreshSystemInfoFromServer();
+            Dashboard.getCurrentUser().done(function (currentUser) {
+
+                if (currentUser.Configuration.IsAdministrator) {
+                    Dashboard.showPackageInstallNotification(msg.Data, "progress");
+                    Dashboard.refreshSystemInfoFromServer();
+                }
+            });
         }
         else if (msg.MessageType === "ScheduledTaskEnded") {
 
-            Dashboard.showTaskCompletionNotification(msg.Data);
+            Dashboard.getCurrentUser().done(function (currentUser) {
+                
+                if (currentUser.Configuration.IsAdministrator) {
+                    Dashboard.showTaskCompletionNotification(msg.Data);
+                }
+            });
         }
         else if (msg.MessageType === "Browse") {
 
