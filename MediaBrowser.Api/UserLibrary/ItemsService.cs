@@ -534,7 +534,7 @@ namespace MediaBrowser.Api.UserLibrary
                 items = items.OfType<Series>().Where(i => i.AirDays != null && days.Any(d => i.AirDays.Contains(d)));
             }
 
-            // Filter by VideoFormat
+            // Filter by Video3DFormat
             if (request.Is3D.HasValue)
             {
                 items = items.OfType<Video>().Where(i => request.Is3D.Value == i.Video3DFormat.HasValue);
