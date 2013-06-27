@@ -79,12 +79,20 @@ namespace MediaBrowser.Controller.Updates
         PackageVersionInfo GetLatestCompatibleVersion(IEnumerable<PackageInfo> availablePackages, string name, PackageVersionClass classification = PackageVersionClass.Release);
 
         /// <summary>
-        /// Gets the available plugin updates.
+        /// Gets the available plugin updates including registration info.
         /// </summary>
         /// <param name="withAutoUpdateEnabled">if set to <c>true</c> [with auto update enabled].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{IEnumerable{PackageVersionInfo}}.</returns>
         Task<IEnumerable<PackageVersionInfo>> GetAvailablePluginUpdates(bool withAutoUpdateEnabled, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the available plugin updates from a static resource (not including registration info).
+        /// </summary>
+        /// <param name="withAutoUpdateEnabled">if set to <c>true</c> [with auto update enabled].</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{IEnumerable{PackageVersionInfo}}.</returns>
+        Task<IEnumerable<PackageVersionInfo>> GetAvailablePluginUpdatesStatic(bool withAutoUpdateEnabled, CancellationToken cancellationToken);
 
         /// <summary>
         /// Installs the package.

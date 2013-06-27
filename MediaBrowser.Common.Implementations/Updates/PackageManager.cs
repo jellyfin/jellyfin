@@ -43,6 +43,12 @@ namespace MediaBrowser.Common.Implementations.Updates
             _logger = logger;
         }
 
+        /// <summary>
+        /// Get all available packages including registration information.
+        /// Use this for the plug-in catalog to provide all information for this installation.
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task<IEnumerable<PackageInfo>> GetAvailablePackages(CancellationToken cancellationToken)
         {
             var data = new Dictionary<string, string> { { "key", _securityManager.SupporterKey }, { "mac", _networkManager.GetMacAddress() } };
@@ -52,15 +58,39 @@ namespace MediaBrowser.Common.Implementations.Updates
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var packages = _jsonSerializer.DeserializeFromStream<List<PackageInfo>>(json).ToList();
-                foreach (var package in packages)
+
+                return FilterVersions(packages);
+            }
+
+        }
+
+        /// <summary>
+        /// Get all available packages using the static file resource.
+        /// Use this for update checks as it will be much less taxing on the server and can be cached.
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<IEnumerable<PackageInfo>> GetAvailablePackagesStatic(CancellationToken cancellationToken)
+        {
+            using (var json = await _httpClient.Get(Constants.Constants.MbAdminUrl + "service/MB3Packages.json", cancellationToken).ConfigureAwait(false))
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var packages = _jsonSerializer.DeserializeFromStream<List<PackageInfo>>(json).ToList();
+
+                return FilterVersions(packages);
+            }
+        }
+
+        private IEnumerable<PackageInfo> FilterVersions(List<PackageInfo> original)
+        {
+                foreach (var package in original)
                 {
                     package.versions = package.versions.Where(v => !string.IsNullOrWhiteSpace(v.sourceUrl))
                         .OrderByDescending(v => v.version).ToList();
                 }
 
-                return packages;
-            }
-
+                return original;
         }
 
         public async Task InstallPackage(IProgress<double> progress, PackageVersionInfo package, CancellationToken cancellationToken)

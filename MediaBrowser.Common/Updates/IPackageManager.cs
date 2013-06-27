@@ -9,11 +9,18 @@ namespace MediaBrowser.Common.Updates
     public interface IPackageManager
     {
         /// <summary>
-        /// Gets all available packages.
+        /// Gets all available packages dynamically.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{List{PackageInfo}}.</returns>
         Task<IEnumerable<PackageInfo>> GetAvailablePackages(CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets all available packages from a static resource.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{List{PackageInfo}}.</returns>
+        Task<IEnumerable<PackageInfo>> GetAvailablePackagesStatic(CancellationToken cancellationToken);
 
         /// <summary>
         /// Installs a package.

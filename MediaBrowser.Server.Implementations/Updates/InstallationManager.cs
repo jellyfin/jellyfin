@@ -171,6 +171,26 @@ namespace MediaBrowser.Server.Implementations.Updates
         {
             var packages = (await _packageManager.GetAvailablePackages(cancellationToken).ConfigureAwait(false)).ToList();
 
+            return FilterPackages(packages, packageType, applicationVersion);
+        }
+
+        /// <summary>
+        /// Gets all available packages.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="packageType">Type of the package.</param>
+        /// <param name="applicationVersion">The application version.</param>
+        /// <returns>Task{List{PackageInfo}}.</returns>
+        protected async Task<IEnumerable<PackageInfo>> GetAvailablePackagesStatic(CancellationToken cancellationToken,
+            PackageType? packageType = null,
+            Version applicationVersion = null)
+        {
+            var packages = (await _packageManager.GetAvailablePackagesStatic(cancellationToken).ConfigureAwait(false)).ToList();
+            return FilterPackages(packages, packageType, applicationVersion);
+        }
+
+        protected IEnumerable<PackageInfo> FilterPackages(List<PackageInfo> packages, PackageType? packageType, Version applicationVersion)
+        {
             if (packageType.HasValue)
             {
                 packages = packages.Where(p => p.type == packageType.Value).ToList();
@@ -265,7 +285,8 @@ namespace MediaBrowser.Server.Implementations.Updates
         }
 
         /// <summary>
-        /// Gets the available plugin updates.
+        /// Gets the available plugin updates including registration information for each one.
+        /// Used with API and catalog.
         /// </summary>
         /// <param name="withAutoUpdateEnabled">if set to <c>true</c> [with auto update enabled].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
@@ -273,7 +294,25 @@ namespace MediaBrowser.Server.Implementations.Updates
         public async Task<IEnumerable<PackageVersionInfo>> GetAvailablePluginUpdates(bool withAutoUpdateEnabled, CancellationToken cancellationToken)
         {
             var catalog = await GetAvailablePackages(cancellationToken).ConfigureAwait(false);
+            return FilterCatalog(catalog, withAutoUpdateEnabled);
+        }
 
+        /// <summary>
+        /// Gets the available plugin updates from a static resource - no registration information.
+        /// Used for update checks.
+        /// </summary>
+        /// <param name="withAutoUpdateEnabled">if set to <c>true</c> [with auto update enabled].</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{IEnumerable{PackageVersionInfo}}.</returns>
+        public async Task<IEnumerable<PackageVersionInfo>> GetAvailablePluginUpdatesStatic(bool withAutoUpdateEnabled, CancellationToken cancellationToken)
+        {
+            var catalog = await GetAvailablePackagesStatic(cancellationToken).ConfigureAwait(false);
+            return FilterCatalog(catalog, withAutoUpdateEnabled);
+        }
+
+        protected IEnumerable<PackageVersionInfo> FilterCatalog(IEnumerable<PackageInfo> catalog, bool withAutoUpdateEnabled)
+        {
+            
             var plugins = ApplicationHost.Plugins;
 
             if (withAutoUpdateEnabled)
