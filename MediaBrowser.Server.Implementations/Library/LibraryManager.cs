@@ -347,7 +347,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 try
                 {
-                    await UpdateItem(season, ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
+                    await UpdateItem(season, ItemUpdateType.MetadataDownload, cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -1311,10 +1311,9 @@ namespace MediaBrowser.Server.Implementations.Library
 
             UpdateItemInLibraryCache(item);
 
-            // If metadata was downloaded or edited, save external metadata
-            if ((updateReason & ItemUpdateType.MetadataEdit) == ItemUpdateType.MetadataEdit)
+            if (item.LocationType == LocationType.FileSystem)
             {
-                await SaveMetadata(item).ConfigureAwait(false);
+                await SaveMetadata(item, updateReason).ConfigureAwait(false);
             }
 
             if (ItemUpdated != null)
@@ -1365,10 +1364,11 @@ namespace MediaBrowser.Server.Implementations.Library
         /// Saves the metadata.
         /// </summary>
         /// <param name="item">The item.</param>
+        /// <param name="updateType">Type of the update.</param>
         /// <returns>Task.</returns>
-        private async Task SaveMetadata(BaseItem item)
+        private async Task SaveMetadata(BaseItem item, ItemUpdateType updateType)
         {
-            foreach (var saver in _savers.Where(i => i.Supports(item)))
+            foreach (var saver in _savers.Where(i => i.IsEnabledFor(item, updateType)))
             {
                 var path = saver.GetSavePath(item);
 

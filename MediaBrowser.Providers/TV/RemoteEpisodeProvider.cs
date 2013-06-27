@@ -65,7 +65,7 @@ namespace MediaBrowser.Providers.TV
         {
             get
             {
-                return ItemUpdateType.ImageUpdate | ItemUpdateType.MetadataEdit;
+                return ItemUpdateType.ImageUpdate | ItemUpdateType.MetadataDownload;
             }
         }
         
@@ -357,14 +357,6 @@ namespace MediaBrowser.Providers.TV
                         episode.AddPerson(person);
                     }
                 }
-            }
-            if (ConfigurationManager.Configuration.SaveLocalMeta)
-            {
-                //if (!Directory.Exists(episode.MetaLocation)) Directory.CreateDirectory(episode.MetaLocation);
-                //var ms = new MemoryStream();
-                //doc.Save(ms);
-
-                //await _providerManager.SaveToLibraryFilesystem(episode, Path.Combine(episode.MetaLocation, Path.GetFileNameWithoutExtension(episode.Path) + ".xml"), ms, cancellationToken).ConfigureAwait(false);
             }
 
             return status;

@@ -604,7 +604,7 @@
                 refreshPromise = ApiClient.refreshStudio(currentItem.Name, true);
             }
             else {
-                refreshPromise = ApiClient.refreshItem(currentItem.Id, true, $('#fldRecursive', page).checked());
+                refreshPromise = ApiClient.refreshItem(currentItem.Id, true, $('#chkRecursive', page).checked());
             }
 
             refreshPromise.done(function () {

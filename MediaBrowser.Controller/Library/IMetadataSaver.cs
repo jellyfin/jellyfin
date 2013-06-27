@@ -9,11 +9,12 @@ namespace MediaBrowser.Controller.Library
     public interface IMetadataSaver
     {
         /// <summary>
-        /// Supportses the specified item.
+        /// Determines whether [is enabled for] [the specified item].
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        bool Supports(BaseItem item);
+        /// <param name="updateType">Type of the update.</param>
+        /// <returns><c>true</c> if [is enabled for] [the specified item]; otherwise, <c>false</c>.</returns>
+        bool IsEnabledFor(BaseItem item, ItemUpdateType updateType);
 
         /// <summary>
         /// Gets the save path.

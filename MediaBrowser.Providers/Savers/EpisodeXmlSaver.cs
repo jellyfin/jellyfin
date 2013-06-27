@@ -2,7 +2,6 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Providers.TV;
 using System;
 using System.Globalization;
@@ -16,20 +15,23 @@ namespace MediaBrowser.Providers.Savers
     public class EpisodeXmlSaver : IMetadataSaver
     {
         private readonly IServerConfigurationManager _config;
-        
+
         /// <summary>
-        /// Supportses the specified item.
+        /// Determines whether [is enabled for] [the specified item].
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        public bool Supports(BaseItem item)
+        /// <param name="updateType">Type of the update.</param>
+        /// <returns><c>true</c> if [is enabled for] [the specified item]; otherwise, <c>false</c>.</returns>
+        public bool IsEnabledFor(BaseItem item, ItemUpdateType updateType)
         {
-            if (!_config.Configuration.SaveLocalMeta || item.LocationType != LocationType.FileSystem)
+            // If new metadata has been downloaded and save local is on, OR metadata was manually edited, proceed
+            if ((_config.Configuration.SaveLocalMeta && (updateType & ItemUpdateType.MetadataDownload) == ItemUpdateType.MetadataDownload)
+                || (updateType & ItemUpdateType.MetadataEdit) == ItemUpdateType.MetadataEdit)
             {
-                return false;
+                return item is Episode;
             }
 
-            return item is Episode;
+            return false;
         }
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
