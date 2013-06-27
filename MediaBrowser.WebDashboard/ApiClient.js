@@ -443,6 +443,96 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
             });
         };
 
+        self.refreshArtist = function (name, force) {
+
+            if (!name) {
+                throw new Error("null name");
+            }
+
+            var url = self.getUrl("Artists/" + name + "/Refresh", {
+
+                forced: force || false
+
+            });
+
+            return self.ajax({
+                type: "POST",
+                url: url
+            });
+        };
+
+        self.refreshGenre = function (name, force) {
+
+            if (!name) {
+                throw new Error("null name");
+            }
+
+            var url = self.getUrl("Genres/" + name + "/Refresh", {
+
+                forced: force || false
+
+            });
+
+            return self.ajax({
+                type: "POST",
+                url: url
+            });
+        };
+
+        self.refreshMusicGenre = function (name, force) {
+
+            if (!name) {
+                throw new Error("null name");
+            }
+
+            var url = self.getUrl("MusicGenres/" + name + "/Refresh", {
+
+                forced: force || false
+
+            });
+
+            return self.ajax({
+                type: "POST",
+                url: url
+            });
+        };
+
+        self.refreshPerson = function (name, force) {
+
+            if (!name) {
+                throw new Error("null name");
+            }
+
+            var url = self.getUrl("Persons/" + name + "/Refresh", {
+
+                forced: force || false
+
+            });
+
+            return self.ajax({
+                type: "POST",
+                url: url
+            });
+        };
+
+        self.refreshStudio = function (name, force) {
+
+            if (!name) {
+                throw new Error("null name");
+            }
+
+            var url = self.getUrl("Studios/" + name + "/Refresh", {
+
+                forced: force || false
+
+            });
+
+            return self.ajax({
+                type: "POST",
+                url: url
+            });
+        };
+
         /**
          * Installs or updates a new plugin
          */
