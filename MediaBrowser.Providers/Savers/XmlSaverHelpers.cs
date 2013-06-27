@@ -70,7 +70,8 @@ namespace MediaBrowser.Providers.Savers
                     "Studios",
                     "Tags",
                     "Added",
-                    "LockData"
+                    "LockData",
+                    "Trailer"
                 });
 
                 var position = xml.ToString().LastIndexOf("</", StringComparison.OrdinalIgnoreCase);
@@ -158,7 +159,7 @@ namespace MediaBrowser.Providers.Savers
             builder.Append("<Added>" + SecurityElement.Escape(item.DateCreated.ToString(UsCulture)) + "</Added>");
 
             builder.Append("<LockData>" + item.DontFetchMeta.ToString().ToLower() + "</LockData>");
-            
+
             if (!string.IsNullOrEmpty(item.DisplayMediaType))
             {
                 builder.Append("<Type>" + SecurityElement.Escape(item.DisplayMediaType) + "</Type>");
@@ -197,6 +198,11 @@ namespace MediaBrowser.Providers.Savers
             if (item.PremiereDate.HasValue && !(item is Episode))
             {
                 builder.Append("<PremiereDate>" + SecurityElement.Escape(item.PremiereDate.Value.ToString("yyyy-MM-dd")) + "</PremiereDate>");
+            }
+
+            if (item.RemoteTrailers.Count > 0)
+            {
+                builder.Append("<Trailer>" + SecurityElement.Escape(item.RemoteTrailers[0].Url) + "</Trailer>");
             }
 
             if (item.Budget.HasValue)
