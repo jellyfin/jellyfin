@@ -406,7 +406,7 @@ namespace MediaBrowser.Controller.Providers
 
                         if (!string.IsNullOrWhiteSpace(val))
                         {
-                            //item.AddTrailerUrl(val);
+                            item.AddTrailerUrl(val, false);
                         }
                         break;
                     }

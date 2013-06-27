@@ -52,6 +52,7 @@
     <Compile Include="Dto\ItemCounts.cs" />
     <Compile Include="Dto\StudioDto.cs" />
     <Compile Include="Entities\ItemReview.cs" />
+    <Compile Include="Entities\MediaUrl.cs" />
     <Compile Include="Entities\MetadataFields.cs" />
     <Compile Include="Entities\Video3DFormat.cs" />
     <Compile Include="Net\WebSocketMessage.cs" />

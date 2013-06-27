@@ -133,6 +133,9 @@
     <Compile Include="..\MediaBrowser.Model\Entities\MediaType.cs">
       <Link>Entities\MediaType.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Entities\MediaUrl.cs">
+      <Link>Entities\MediaUrl.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Entities\MetadataFields.cs">
       <Link>Entities\MetadataFields.cs</Link>
     </Compile>

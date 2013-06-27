@@ -154,7 +154,7 @@ namespace MediaBrowser.Model.Querying
         /// <summary>
         /// The trailer url of the item
         /// </summary>
-        TrailerUrls,
+        RemoteTrailers,
 
         /// <summary>
         /// The user data of the item
