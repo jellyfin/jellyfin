@@ -1429,8 +1429,8 @@
                 miscInfo.push(item.DisplayMediaType);
             }
 
-            if (item.VideoFormat && item.VideoFormat !== 'Standard') {
-                miscInfo.push(item.VideoFormat);
+            if (item.Video3DFormat) {
+                miscInfo.push("3D");
             }
 
             return miscInfo.join('&nbsp;&nbsp;&nbsp;&nbsp;');

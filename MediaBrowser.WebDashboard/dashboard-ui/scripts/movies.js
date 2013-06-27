@@ -152,7 +152,7 @@
         $('#chk3D', this).on('change', function () {
 
             query.StartIndex = 0;
-            query.VideoFormats = this.checked ? this.getAttribute('data-filter') : null;
+            query.Is3D = this.checked ? this.getAttribute('data-filter') : null;
 
             reloadItems(page);
         });
@@ -258,7 +258,7 @@
 
         $('#selectView', this).val(view).selectmenu('refresh');
 
-        $('#chk3D', this).checked(query.VideoFormats == "Digital3D,Sbs3D").checkboxradio('refresh');
+        $('#chk3D', this).checked(query.Is3D == true).checkboxradio('refresh');
 
         $('#chkSubtitle', this).checked(query.HasSubtitles == true).checkboxradio('refresh');
         $('#chkTrailer', this).checked(query.HasTrailer == true).checkboxradio('refresh');
