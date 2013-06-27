@@ -254,7 +254,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var msg = await GetHttpClient(GetHostFromUrl(url), false).HttpClient.PostAsync(url, content, cancellationToken).ConfigureAwait(false);
+                var msg = await GetHttpClient(GetHostFromUrl(url), true).HttpClient.PostAsync(url, content, cancellationToken).ConfigureAwait(false);
 
                 EnsureSuccessStatusCode(msg);
 
