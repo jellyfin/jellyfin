@@ -1,7 +1,5 @@
 ﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
@@ -11,11 +9,11 @@ using System.Threading;
 
 namespace MediaBrowser.Providers.Savers
 {
-    public class FolderXmlSaver : IMetadataSaver
+    public class SeasonXmlSaver : IMetadataSaver
     {
         private readonly IServerConfigurationManager _config;
 
-        public FolderXmlSaver(IServerConfigurationManager config)
+        public SeasonXmlSaver(IServerConfigurationManager config)
         {
             _config = config;
         }
@@ -32,23 +30,12 @@ namespace MediaBrowser.Providers.Savers
                 return false;
             }
 
-            if (!(item is Folder))
-            {
-                return false;
-            }
-
-            // For these we can proceed even if save local metadata is off
-            if (item is AggregateFolder || item is UserRootFolder || item is CollectionFolder)
-            {
-                return true;
-            }
-            
             if (!_config.Configuration.SaveLocalMeta)
             {
                 return false;
             }
 
-            return !(item is Series) && !(item is BoxSet) && !(item is MusicArtist) && !(item is MusicAlbum) && !(item is Season);
+            return item is Season;
         }
 
         /// <summary>
@@ -79,7 +66,7 @@ namespace MediaBrowser.Providers.Savers
         /// <returns>System.String.</returns>
         public string GetSavePath(BaseItem item)
         {
-            return Path.Combine(item.Path, "folder.xml");
+            return Path.Combine(item.Path, "season.xml");
         }
     }
 }

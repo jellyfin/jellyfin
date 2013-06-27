@@ -56,6 +56,7 @@
     <Compile Include="MediaInfo\BaseFFProbeProvider.cs" />
     <Compile Include="MediaInfo\FFProbeAudioInfoProvider.cs" />
     <Compile Include="MediaInfo\FFProbeVideoInfoProvider.cs" />
+    <Compile Include="Movies\BoxSetProviderFromXml.cs" />
     <Compile Include="Movies\FanArtMovieProvider.cs" />
     <Compile Include="Movies\FanArtMovieUpdatesPrescanTask.cs" />
     <Compile Include="Movies\MovieDbImagesProvider.cs" />
@@ -78,10 +79,12 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Savers\AlbumXmlSaver.cs" />
     <Compile Include="Savers\ArtistXmlSaver.cs" />
+    <Compile Include="Savers\BoxSetXmlSaver.cs" />
     <Compile Include="Savers\EpisodeXmlSaver.cs" />
     <Compile Include="Savers\FolderXmlSaver.cs" />
     <Compile Include="Savers\MovieXmlSaver.cs" />
     <Compile Include="Savers\PersonXmlSaver.cs" />
+    <Compile Include="Savers\SeasonXmlSaver.cs" />
     <Compile Include="Savers\SeriesXmlSaver.cs" />
     <Compile Include="Savers\XmlSaverHelpers.cs" />
     <Compile Include="TV\EpisodeImageFromMediaLocationProvider.cs" />
@@ -94,6 +97,7 @@
     <Compile Include="TV\RemoteEpisodeProvider.cs" />
     <Compile Include="TV\RemoteSeasonProvider.cs" />
     <Compile Include="TV\RemoteSeriesProvider.cs" />
+    <Compile Include="TV\SeasonProviderFromXml.cs" />
     <Compile Include="TV\SeriesProviderFromXml.cs" />
     <Compile Include="TV\SeriesXmlParser.cs" />
     <Compile Include="TV\TvdbPrescanTask.cs" />
