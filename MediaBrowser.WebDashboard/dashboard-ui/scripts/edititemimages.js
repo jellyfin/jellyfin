@@ -52,6 +52,12 @@
             LibraryBrowser.renderName(item, $('.itemName', page), true);
             LibraryBrowser.renderParentName(item, $('.parentName', page));
 
+            if (item.Type == "Person" || item.Type == "Studio" || item.Type == "MusicGenre" || item.Type == "Genre" || item.Type == "Artist") {
+                $('#peopleTab', page).hide();
+            } else {
+                $('#peopleTab', page).show();
+            }
+
             ApiClient.getItemImageInfos(currentItem.Id).done(function (imageInfos) {
                 renderStandardImages(page, item, imageInfos);
                 renderBackdrops(page, item, imageInfos);

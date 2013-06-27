@@ -63,6 +63,12 @@
 
             setFieldVisibilities(page, item);
             fillItemInfo(page, item);
+            
+            if (item.Type == "Person" || item.Type == "Studio" || item.Type == "MusicGenre" || item.Type == "Genre" || item.Type == "Artist") {
+                $('#peopleTab', page).hide();
+            } else {
+                $('#peopleTab', page).show();
+            }
 
             Dashboard.hideLoadingMsg();
         });
