@@ -69,7 +69,8 @@ namespace MediaBrowser.Providers.Savers
                     "Genres",
                     "Studios",
                     "Tags",
-                    "Added"
+                    "Added",
+                    "LockData"
                 });
 
                 var position = xml.ToString().LastIndexOf("</", StringComparison.OrdinalIgnoreCase);
@@ -156,6 +157,8 @@ namespace MediaBrowser.Providers.Savers
 
             builder.Append("<Added>" + SecurityElement.Escape(item.DateCreated.ToString(UsCulture)) + "</Added>");
 
+            builder.Append("<LockData>" + item.DontFetchMeta.ToString().ToLower() + "</LockData>");
+            
             if (!string.IsNullOrEmpty(item.DisplayMediaType))
             {
                 builder.Append("<Type>" + SecurityElement.Escape(item.DisplayMediaType) + "</Type>");
@@ -191,7 +194,7 @@ namespace MediaBrowser.Providers.Savers
                 builder.Append("<SortTitle>" + SecurityElement.Escape(item.ForcedSortName) + "</SortTitle>");
             }
 
-            if (item.PremiereDate.HasValue)
+            if (item.PremiereDate.HasValue && !(item is Episode))
             {
                 builder.Append("<PremiereDate>" + SecurityElement.Escape(item.PremiereDate.Value.ToString("yyyy-MM-dd")) + "</PremiereDate>");
             }
