@@ -4,7 +4,7 @@ namespace MediaBrowser.Controller.Entities.Audio
     /// <summary>
     /// Class Artist
     /// </summary>
-    public class Artist : BaseItem
+    public class Artist : BaseItem, IItemByName
     {
         /// <summary>
         /// Gets the user data key.

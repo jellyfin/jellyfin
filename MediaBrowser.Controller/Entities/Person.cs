@@ -4,7 +4,7 @@ namespace MediaBrowser.Controller.Entities
     /// <summary>
     /// This is the full Person object that can be retrieved with all of it's data.
     /// </summary>
-    public class Person : BaseItem
+    public class Person : BaseItem, IItemByName
     {
         /// <summary>
         /// Gets the user data key.

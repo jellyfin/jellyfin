@@ -392,7 +392,10 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="item">The item.</param>
         private void UpdateItemInLibraryCache(BaseItem item)
         {
-            LibraryItemsCache.AddOrUpdate(item.Id, item, delegate { return item; });
+            if (!(item is IItemByName))
+            {
+                LibraryItemsCache.AddOrUpdate(item.Id, item, delegate { return item; });
+            }
         }
 
         /// <summary>

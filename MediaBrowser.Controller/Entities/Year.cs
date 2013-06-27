@@ -4,7 +4,7 @@ namespace MediaBrowser.Controller.Entities
     /// <summary>
     /// Class Year
     /// </summary>
-    public class Year : BaseItem
+    public class Year : BaseItem, IItemByName
     {
         /// <summary>
         /// Gets the user data key.

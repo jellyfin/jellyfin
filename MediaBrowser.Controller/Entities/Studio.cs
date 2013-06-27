@@ -4,7 +4,7 @@ namespace MediaBrowser.Controller.Entities
     /// <summary>
     /// Class Studio
     /// </summary>
-    public class Studio : BaseItem
+    public class Studio : BaseItem, IItemByName
     {
         /// <summary>
         /// Gets the user data key.
