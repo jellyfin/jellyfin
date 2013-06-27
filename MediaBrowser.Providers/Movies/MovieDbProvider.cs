@@ -793,6 +793,19 @@ namespace MediaBrowser.Providers.Movies
                 {
                     movie.Tags = movieData.keywords.keywords.Select(i => i.name).ToList();
                 }
+
+                if (movieData.trailers != null && movieData.trailers.youtube != null &&
+                    movieData.trailers.youtube.Count > 0)
+                {
+                    movie.RemoteTrailers = movieData.trailers.youtube.Select(i => new MediaUrl
+                    {
+                        Url = string.Format("http://www.youtube.com/watch?{0}", i.source),
+                        IsDirectLink = false,
+                        Name = i.name,
+                        IsHD = string.Equals("hd", i.size, StringComparison.OrdinalIgnoreCase)
+
+                    }).ToList();
+                }
             }
 
         }
@@ -1179,6 +1192,19 @@ namespace MediaBrowser.Providers.Movies
             public Casts casts { get; set; }
             public Releases releases { get; set; }
             public Keywords keywords { get; set; }
+            public Trailers trailers { get; set; }
+        }
+
+        public class Trailers
+        {
+            public List<Youtube> youtube { get; set; }
+        }
+
+        public class Youtube
+        {
+            public string name { get; set; }
+            public string size { get; set; }
+            public string source { get; set; }
         }
 
         public class TmdbImageSettings

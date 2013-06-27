@@ -399,9 +399,9 @@ namespace MediaBrowser.Controller.Dto
                 dto.Taglines = item.Taglines;
             }
 
-            if (fields.Contains(ItemFields.TrailerUrls))
+            if (fields.Contains(ItemFields.RemoteTrailers))
             {
-                dto.TrailerUrls = item.TrailerUrls;
+                dto.RemoteTrailers = item.RemoteTrailers;
             }
 
             dto.Type = item.GetType().Name;

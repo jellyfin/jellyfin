@@ -160,7 +160,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the trailer urls.
         /// </summary>
         /// <value>The trailer urls.</value>
-        public List<string> TrailerUrls { get; set; }
+        public List<MediaUrl> RemoteTrailers { get; set; }
 
         /// <summary>
         /// Gets or sets the provider ids.
@@ -612,16 +612,6 @@ namespace MediaBrowser.Model.Dto
         public bool HasMenuImage
         {
             get { return ImageTags != null && ImageTags.ContainsKey(ImageType.Menu); }
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether this instance is video.
-        /// </summary>
-        /// <value><c>true</c> if this instance is video; otherwise, <c>false</c>.</value>
-        [IgnoreDataMember]
-        public bool HasTrailer
-        {
-            get { return LocalTrailerCount > 0 || (TrailerUrls != null && TrailerUrls.Count > 0); }
         }
 
         /// <summary>

@@ -27,7 +27,7 @@ namespace MediaBrowser.Controller.Entities
         protected BaseItem()
         {
             Genres = new List<string>();
-            TrailerUrls = new List<string>();
+            RemoteTrailers = new List<MediaUrl>();
             Studios = new List<string>();
             People = new List<PersonInfo>();
             Taglines = new List<string>();
@@ -903,7 +903,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the trailer URL.
         /// </summary>
         /// <value>The trailer URL.</value>
-        public List<string> TrailerUrls { get; set; }
+        public List<MediaUrl> RemoteTrailers { get; set; }
 
         /// <summary>
         /// Gets or sets the provider ids.
@@ -1180,22 +1180,28 @@ namespace MediaBrowser.Controller.Entities
         /// Adds a TrailerUrl to the item
         /// </summary>
         /// <param name="url">The URL.</param>
-        /// <exception cref="System.ArgumentNullException"></exception>
-        public void AddTrailerUrl(string url)
+        /// <param name="isDirectLink">if set to <c>true</c> [is direct link].</param>
+        /// <exception cref="System.ArgumentNullException">url</exception>
+        public void AddTrailerUrl(string url, bool isDirectLink)
         {
             if (string.IsNullOrWhiteSpace(url))
             {
                 throw new ArgumentNullException("url");
             }
 
-            if (TrailerUrls == null)
-            {
-                TrailerUrls = new List<string>();
-            }
+            var current = RemoteTrailers.FirstOrDefault(i => string.Equals(i.Url, url, StringComparison.OrdinalIgnoreCase));
 
-            if (!TrailerUrls.Contains(url, StringComparer.OrdinalIgnoreCase))
+            if (current != null)
             {
-                TrailerUrls.Add(url);
+                current.IsDirectLink = isDirectLink;
+            }
+            else
+            {
+                RemoteTrailers.Add(new MediaUrl
+                {
+                    Url = url,
+                    IsDirectLink = isDirectLink
+                });
             }
         }
 
