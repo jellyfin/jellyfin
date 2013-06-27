@@ -1,6 +1,4 @@
-﻿using System.Xml.Linq;
-using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -10,6 +8,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Providers.Extensions;
 using System;
 using System.Globalization;
 using System.IO;
@@ -19,7 +18,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
-using MediaBrowser.Providers.Extensions;
+using System.Xml.Linq;
 
 namespace MediaBrowser.Providers.TV
 {
