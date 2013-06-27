@@ -77,7 +77,7 @@ namespace MediaBrowser.Controller.Providers
 
         public virtual ItemUpdateType ItemUpdateType
         {
-            get { return RequiresInternet ? ItemUpdateType.MetadataEdit : ItemUpdateType.MetadataImport; }
+            get { return RequiresInternet ? ItemUpdateType.MetadataDownload : ItemUpdateType.MetadataImport; }
         }
 
         /// <summary>

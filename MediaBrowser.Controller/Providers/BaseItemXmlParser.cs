@@ -706,7 +706,7 @@ namespace MediaBrowser.Controller.Providers
 
                                 if (!string.IsNullOrWhiteSpace(tag))
                                 {
-                                    item.AddTagline(tag);
+                                    item.AddTag(tag);
                                 }
                                 break;
                             }

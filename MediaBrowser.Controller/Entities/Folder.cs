@@ -797,7 +797,7 @@ namespace MediaBrowser.Controller.Entities
                             }
                         });
 
-                        await ((Folder)child).ValidateChildren(innerProgress, cancellationToken, recursive).ConfigureAwait(false);
+                        await ((Folder)child).ValidateChildren(innerProgress, cancellationToken, recursive, forceRefreshMetadata).ConfigureAwait(false);
                     }
                     else
                     {

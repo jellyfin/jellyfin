@@ -71,7 +71,7 @@ namespace MediaBrowser.Providers.Movies
         {
             get
             {
-                return ItemUpdateType.ImageUpdate | ItemUpdateType.MetadataEdit;
+                return ItemUpdateType.ImageUpdate | ItemUpdateType.MetadataDownload;
             }
         }
         

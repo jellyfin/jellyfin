@@ -8,6 +8,7 @@ namespace MediaBrowser.Controller.Library
         Unspecified = 1,
         MetadataImport = 2,
         ImageUpdate = 4,
+        MetadataDownload = 8,
         MetadataEdit = 16
     }
 }

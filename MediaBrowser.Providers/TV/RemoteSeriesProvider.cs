@@ -258,6 +258,7 @@ namespace MediaBrowser.Providers.TV
                 seriesDoc.Load(seriesXmlPath);
 
                 FetchMainInfo(series, seriesDoc);
+
                 if (!series.LockedFields.Contains(MetadataFields.Cast))
                 {
                     var actorsDoc = new XmlDocument();
@@ -424,18 +425,6 @@ namespace MediaBrowser.Providers.TV
         /// <returns>Task.</returns>
         private void FetchActors(Series series, XmlDocument actorsDoc, XmlDocument seriesDoc)
         {
-            XmlNode actorsNode = null;
-            if (ConfigurationManager.Configuration.SaveLocalMeta)
-            {
-                //add to the main seriesDoc for saving
-                var seriesNode = seriesDoc.SelectSingleNode("//Series");
-                if (seriesNode != null)
-                {
-                    actorsNode = seriesDoc.CreateNode(XmlNodeType.Element, "Persons", null);
-                    seriesNode.AppendChild(actorsNode);
-                }
-            }
-
             var xmlNodeList = actorsDoc.SelectNodes("Actors/Actor");
 
             if (xmlNodeList != null)
@@ -450,20 +439,6 @@ namespace MediaBrowser.Providers.TV
                     {
                         // Sometimes tvdb actors have leading spaces
                         series.AddPerson(new PersonInfo { Type = PersonType.Actor, Name = actorName.Trim(), Role = actorRole });
-
-                        if (ConfigurationManager.Configuration.SaveLocalMeta && actorsNode != null)
-                        {
-                            //create in main seriesDoc
-                            var personNode = seriesDoc.CreateNode(XmlNodeType.Element, "Person", null);
-                            foreach (XmlNode subNode in p.ChildNodes)
-                                personNode.AppendChild(seriesDoc.ImportNode(subNode, true));
-                            //need to add the type
-                            var typeNode = seriesDoc.CreateNode(XmlNodeType.Element, "Type", null);
-                            typeNode.InnerText = PersonType.Actor;
-                            personNode.AppendChild(typeNode);
-                            actorsNode.AppendChild(personNode);
-                        }
-
                     }
                 }
             }

@@ -21,34 +21,40 @@ namespace MediaBrowser.Providers.Savers
         }
 
         /// <summary>
-        /// Supportses the specified item.
+        /// Determines whether [is enabled for] [the specified item].
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        public bool Supports(BaseItem item)
+        /// <param name="updateType">Type of the update.</param>
+        /// <returns><c>true</c> if [is enabled for] [the specified item]; otherwise, <c>false</c>.</returns>
+        public bool IsEnabledFor(BaseItem item, ItemUpdateType updateType)
         {
-            if (item.LocationType != LocationType.FileSystem)
-            {
-                return false;
-            }
-
             if (!(item is Folder))
             {
                 return false;
             }
 
-            // For these we can proceed even if save local metadata is off
-            if (item is AggregateFolder || item is UserRootFolder || item is CollectionFolder)
+            // If new metadata has been downloaded and save local is on, OR metadata was manually edited, proceed
+            if ((_config.Configuration.SaveLocalMeta && (updateType & ItemUpdateType.MetadataDownload) == ItemUpdateType.MetadataDownload)
+                || (updateType & ItemUpdateType.MetadataEdit) == ItemUpdateType.MetadataEdit)
             {
-                return true;
-            }
-            
-            if (!_config.Configuration.SaveLocalMeta)
-            {
-                return false;
+                if (!(item is Series) && !(item is BoxSet) && !(item is MusicArtist) && !(item is MusicAlbum) &&
+                    !(item is Season))
+                {
+                    return true;
+                }
             }
 
-            return !(item is Series) && !(item is BoxSet) && !(item is MusicArtist) && !(item is MusicAlbum) && !(item is Season);
+            // If new metadata has been downloaded or metadata was manually edited, proceed
+            if ((updateType & ItemUpdateType.MetadataDownload) == ItemUpdateType.MetadataDownload
+                || (updateType & ItemUpdateType.MetadataEdit) == ItemUpdateType.MetadataEdit)
+            {
+                if (item is AggregateFolder || item is UserRootFolder || item is CollectionFolder)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
