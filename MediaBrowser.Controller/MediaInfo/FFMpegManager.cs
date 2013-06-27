@@ -169,7 +169,7 @@ namespace MediaBrowser.Controller.MediaInfo
                                 Directory.CreateDirectory(parentPath);
                             }
                             
-                            await _encoder.ExtractImage(inputPath, type, time, path, cancellationToken).ConfigureAwait(false);
+                            await _encoder.ExtractImage(inputPath, type, video.Video3DFormat, time, path, cancellationToken).ConfigureAwait(false);
                             chapter.ImagePath = path;
                             changesMade = true;
                         }

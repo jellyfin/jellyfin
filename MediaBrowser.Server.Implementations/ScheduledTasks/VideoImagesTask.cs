@@ -327,7 +327,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
 
                 var inputPath = MediaEncoderHelpers.GetInputArgument(video, isoMount, out type);
 
-                await _mediaEncoder.ExtractImage(inputPath, type, imageOffset, path, cancellationToken).ConfigureAwait(false);
+                await _mediaEncoder.ExtractImage(inputPath, type, video.Video3DFormat, imageOffset, path, cancellationToken).ConfigureAwait(false);
 
                 video.PrimaryImagePath = path;
             }

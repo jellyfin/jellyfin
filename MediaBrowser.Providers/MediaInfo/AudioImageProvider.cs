@@ -186,7 +186,7 @@ namespace MediaBrowser.Providers.MediaInfo
                             Directory.CreateDirectory(parentPath);
                         }
 
-                        await _mediaEncoder.ExtractImage(new[] { item.Path }, InputType.AudioFile, null, path, cancellationToken).ConfigureAwait(false);
+                        await _mediaEncoder.ExtractImage(new[] { item.Path }, InputType.AudioFile, null, null, path, cancellationToken).ConfigureAwait(false);
                     }
                     finally
                     {

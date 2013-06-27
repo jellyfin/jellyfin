@@ -880,12 +880,13 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// </summary>
         /// <param name="inputFiles">The input files.</param>
         /// <param name="type">The type.</param>
+        /// <param name="threedFormat">The threed format.</param>
         /// <param name="offset">The offset.</param>
         /// <param name="outputPath">The output path.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentException">Must use inputPath list overload</exception>
-        public async Task ExtractImage(string[] inputFiles, InputType type, TimeSpan? offset, string outputPath, CancellationToken cancellationToken)
+        public async Task ExtractImage(string[] inputFiles, InputType type, Video3DFormat? threedFormat, TimeSpan? offset, string outputPath, CancellationToken cancellationToken)
         {
             var resourcePool = type == InputType.AudioFile ? _audioImageResourcePool : _videoImageResourcePool;
 
@@ -895,7 +896,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
             {
                 try
                 {
-                    await ExtractImageInternal(inputArgument, type, offset, outputPath, true, resourcePool, cancellationToken).ConfigureAwait(false);
+                    await ExtractImageInternal(inputArgument, type, threedFormat, offset, outputPath, true, resourcePool, cancellationToken).ConfigureAwait(false);
                     return;
                 }
                 catch
@@ -904,7 +905,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                 }
             }
 
-            await ExtractImageInternal(inputArgument, type, offset, outputPath, false, resourcePool, cancellationToken).ConfigureAwait(false);
+            await ExtractImageInternal(inputArgument, type, threedFormat, offset, outputPath, false, resourcePool, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -912,6 +913,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// </summary>
         /// <param name="inputPath">The input path.</param>
         /// <param name="type">The type.</param>
+        /// <param name="threedFormat">The threed format.</param>
         /// <param name="offset">The offset.</param>
         /// <param name="outputPath">The output path.</param>
         /// <param name="useIFrame">if set to <c>true</c> [use I frame].</param>
@@ -922,7 +924,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// or
         /// outputPath</exception>
         /// <exception cref="System.ApplicationException"></exception>
-        private async Task ExtractImageInternal(string inputPath, InputType type, TimeSpan? offset, string outputPath, bool useIFrame, SemaphoreSlim resourcePool, CancellationToken cancellationToken)
+        private async Task ExtractImageInternal(string inputPath, InputType type, Video3DFormat? threedFormat, TimeSpan? offset, string outputPath, bool useIFrame, SemaphoreSlim resourcePool, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(inputPath))
             {
@@ -934,8 +936,25 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                 throw new ArgumentNullException("outputPath");
             }
 
-            var args = useIFrame ? string.Format("-i {0} -threads 0 -v quiet -vframes 1 -filter:v select=\"eq(pict_type\\,I)\" -vf \"scale=iw*sar:ih, scale=600:-1\" -f image2 \"{1}\"", inputPath, outputPath) :
-                string.Format("-i {0} -threads 0 -v quiet -vframes 1 -vf \"scale=iw*sar:ih, scale=600:-1\" -f image2 \"{1}\"", inputPath, outputPath);
+            var vf = "scale=iw*sar:ih, scale=600:-1";
+
+            if (threedFormat.HasValue)
+            {
+                switch (threedFormat.Value)
+                {
+                    case Video3DFormat.HalfSideBySide:
+                    case Video3DFormat.FullSideBySide:
+                        vf = "crop=iw/2:ih:0:0,scale=(iw*2):ih,scale=600:-1";
+                        break;
+                    case Video3DFormat.HalfTopAndBottom:
+                    case Video3DFormat.FullTopAndBottom:
+                        vf = "crop=iw:ih/2:0:0,scale=iw:(ih*2),scale=600:-1";
+                        break;
+                }
+            }
+
+            var args = useIFrame ? string.Format("-i {0} -threads 0 -v quiet -vframes 1 -filter:v select=\"eq(pict_type\\,I)\" -vf \"{2}\" -f image2 \"{1}\"", inputPath, outputPath, vf) :
+                string.Format("-i {0} -threads 0 -v quiet -vframes 1 -vf \"{2}\" -f image2 \"{1}\"", inputPath, outputPath, vf);
 
             var probeSize = GetProbeSizeArgument(type);
 
