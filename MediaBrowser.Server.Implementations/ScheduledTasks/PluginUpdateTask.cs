@@ -60,7 +60,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         {
             progress.Report(0);
 
-            var packagesToInstall = (await _installationManager.GetAvailablePluginUpdatesStatic(true, cancellationToken).ConfigureAwait(false)).ToList();
+            var packagesToInstall = (await _installationManager.GetAvailablePluginUpdatesWithoutRegistrationInfo(true, cancellationToken).ConfigureAwait(false)).ToList();
 
             progress.Report(10);
 

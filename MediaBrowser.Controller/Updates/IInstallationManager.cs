@@ -92,7 +92,7 @@ namespace MediaBrowser.Controller.Updates
         /// <param name="withAutoUpdateEnabled">if set to <c>true</c> [with auto update enabled].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{IEnumerable{PackageVersionInfo}}.</returns>
-        Task<IEnumerable<PackageVersionInfo>> GetAvailablePluginUpdatesStatic(bool withAutoUpdateEnabled, CancellationToken cancellationToken);
+        Task<IEnumerable<PackageVersionInfo>> GetAvailablePluginUpdatesWithoutRegistrationInfo(bool withAutoUpdateEnabled, CancellationToken cancellationToken);
 
         /// <summary>
         /// Installs the package.

@@ -20,7 +20,7 @@ namespace MediaBrowser.Common.Updates
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{List{PackageInfo}}.</returns>
-        Task<IEnumerable<PackageInfo>> GetAvailablePackagesStatic(CancellationToken cancellationToken);
+        Task<IEnumerable<PackageInfo>> GetAvailablePackagesWithoutRegistrationInfo(CancellationToken cancellationToken);
 
         /// <summary>
         /// Installs a package.

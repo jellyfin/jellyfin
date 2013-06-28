@@ -70,7 +70,7 @@ namespace MediaBrowser.Common.Implementations.Updates
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<IEnumerable<PackageInfo>> GetAvailablePackagesStatic(CancellationToken cancellationToken)
+        public async Task<IEnumerable<PackageInfo>> GetAvailablePackagesWithoutRegistrationInfo(CancellationToken cancellationToken)
         {
             using (var json = await _httpClient.Get(Constants.Constants.MbAdminUrl + "service/MB3Packages.json", cancellationToken).ConfigureAwait(false))
             {
