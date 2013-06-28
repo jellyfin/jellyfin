@@ -181,11 +181,11 @@ namespace MediaBrowser.Server.Implementations.Updates
         /// <param name="packageType">Type of the package.</param>
         /// <param name="applicationVersion">The application version.</param>
         /// <returns>Task{List{PackageInfo}}.</returns>
-        protected async Task<IEnumerable<PackageInfo>> GetAvailablePackagesStatic(CancellationToken cancellationToken,
+        protected async Task<IEnumerable<PackageInfo>> GetAvailablePackagesWithoutRegistrationInfo(CancellationToken cancellationToken,
             PackageType? packageType = null,
             Version applicationVersion = null)
         {
-            var packages = (await _packageManager.GetAvailablePackagesStatic(cancellationToken).ConfigureAwait(false)).ToList();
+            var packages = (await _packageManager.GetAvailablePackagesWithoutRegistrationInfo(cancellationToken).ConfigureAwait(false)).ToList();
             return FilterPackages(packages, packageType, applicationVersion);
         }
 
@@ -304,9 +304,9 @@ namespace MediaBrowser.Server.Implementations.Updates
         /// <param name="withAutoUpdateEnabled">if set to <c>true</c> [with auto update enabled].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{IEnumerable{PackageVersionInfo}}.</returns>
-        public async Task<IEnumerable<PackageVersionInfo>> GetAvailablePluginUpdatesStatic(bool withAutoUpdateEnabled, CancellationToken cancellationToken)
+        public async Task<IEnumerable<PackageVersionInfo>> GetAvailablePluginUpdatesWithoutRegistrationInfo(bool withAutoUpdateEnabled, CancellationToken cancellationToken)
         {
-            var catalog = await GetAvailablePackagesStatic(cancellationToken).ConfigureAwait(false);
+            var catalog = await GetAvailablePackagesWithoutRegistrationInfo(cancellationToken).ConfigureAwait(false);
             return FilterCatalog(catalog, withAutoUpdateEnabled);
         }
 
