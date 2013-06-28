@@ -306,7 +306,8 @@ namespace MediaBrowser.Providers.Music
                 path = node != null ? node.Value : null;
                 if (!string.IsNullOrEmpty(path))
                 {
-                    item.SetImage(ImageType.Logo, await _providerManager.DownloadAndSaveImage(item, path, LogoFile, SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                    await _providerManager.SaveImage(item, path, FanArtResourcePool, ImageType.Logo, null, cancellationToken)
+                        .ConfigureAwait(false);
                 }
             }
             cancellationToken.ThrowIfCancellationRequested();
@@ -323,7 +324,8 @@ namespace MediaBrowser.Providers.Music
                         path = node.Value;
                         if (!string.IsNullOrEmpty(path))
                         {
-                            item.BackdropImagePaths.Add(await _providerManager.DownloadAndSaveImage(item, path, ("Backdrop" + (numBackdrops > 0 ? numBackdrops.ToString(UsCulture) : "") + ".jpg"), SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                            await _providerManager.SaveImage(item, path, FanArtResourcePool, ImageType.Backdrop, numBackdrops, cancellationToken)
+                                .ConfigureAwait(false);
                             numBackdrops++;
                             if (numBackdrops >= ConfigurationManager.Configuration.MaxBackdrops) break;
                         }
@@ -343,7 +345,8 @@ namespace MediaBrowser.Providers.Music
                 path = node != null ? node.Value : null;
                 if (!string.IsNullOrEmpty(path))
                 {
-                    item.SetImage(ImageType.Art, await _providerManager.DownloadAndSaveImage(item, path, ArtFile, SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                    await _providerManager.SaveImage(item, path, FanArtResourcePool, ImageType.Art, null, cancellationToken)
+                        .ConfigureAwait(false);
                 }
             }
             cancellationToken.ThrowIfCancellationRequested();
@@ -355,7 +358,8 @@ namespace MediaBrowser.Providers.Music
                 path = node != null ? node.Value : null;
                 if (!string.IsNullOrEmpty(path))
                 {
-                    item.SetImage(ImageType.Banner, await _providerManager.DownloadAndSaveImage(item, path, BannerFile, SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                    await _providerManager.SaveImage(item, path, FanArtResourcePool, ImageType.Banner, null, cancellationToken)
+                        .ConfigureAwait(false);
                 }
             }
 
@@ -368,7 +372,8 @@ namespace MediaBrowser.Providers.Music
                 path = node != null ? node.Value : null;
                 if (!string.IsNullOrEmpty(path))
                 {
-                    item.SetImage(ImageType.Primary, await _providerManager.DownloadAndSaveImage(item, path, PrimaryFile, SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                    await _providerManager.SaveImage(item, path, FanArtResourcePool, ImageType.Primary, null, cancellationToken)
+                        .ConfigureAwait(false);
                 }
             }
         }

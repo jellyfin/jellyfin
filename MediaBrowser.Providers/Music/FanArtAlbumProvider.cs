@@ -199,7 +199,8 @@ namespace MediaBrowser.Providers.Music
 
                         if (!string.IsNullOrEmpty(path))
                         {
-                            item.SetImage(ImageType.Disc, await _providerManager.DownloadAndSaveImage(item, path, DiscFile, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                            await _providerManager.SaveImage(item, path, FanArtResourcePool, ImageType.Disc, null, cancellationToken)
+                                .ConfigureAwait(false);
                         }
                     }
 
@@ -217,7 +218,8 @@ namespace MediaBrowser.Providers.Music
 
                         if (!string.IsNullOrEmpty(path))
                         {
-                            item.SetImage(ImageType.Primary, await _providerManager.DownloadAndSaveImage(item, path, PrimaryFile, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                            await _providerManager.SaveImage(item, path, FanArtResourcePool, ImageType.Primary, null, cancellationToken)
+                                .ConfigureAwait(false);
                         }
                     }
                 }

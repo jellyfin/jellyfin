@@ -276,7 +276,10 @@ namespace MediaBrowser.Providers.TV
 
                     try
                     {
-                        episode.PrimaryImagePath = await _providerManager.DownloadAndSaveImage(episode, TVUtils.BannerUrl + p, Path.GetFileName(p), ConfigurationManager.Configuration.SaveLocalMeta, RemoteSeriesProvider.Current.TvDbResourcePool, cancellationToken);
+                        var url = TVUtils.BannerUrl + p;
+
+                        await _providerManager.SaveImage(episode, url, RemoteSeriesProvider.Current.TvDbResourcePool, ImageType.Primary, null, cancellationToken)
+                          .ConfigureAwait(false);
                     }
                     catch (HttpException)
                     {

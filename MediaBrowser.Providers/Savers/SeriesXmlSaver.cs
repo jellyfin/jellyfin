@@ -82,13 +82,16 @@ namespace MediaBrowser.Providers.Savers
                 builder.Append("<Airs_Time>" + SecurityElement.Escape(series.AirTime) + "</Airs_Time>");
             }
 
-            if (series.AirDays.Count == 7)
+            if (series.AirDays != null)
             {
-                builder.Append("<Airs_DayOfWeek>" + SecurityElement.Escape("Daily") + "</Airs_DayOfWeek>");
-            }
-            else if (series.AirDays.Count > 0)
-            {
-                builder.Append("<Airs_DayOfWeek>" + SecurityElement.Escape(series.AirDays[0].ToString()) + "</Airs_DayOfWeek>");
+                if (series.AirDays.Count == 7)
+                {
+                    builder.Append("<Airs_DayOfWeek>" + SecurityElement.Escape("Daily") + "</Airs_DayOfWeek>");
+                }
+                else if (series.AirDays.Count > 0)
+                {
+                    builder.Append("<Airs_DayOfWeek>" + SecurityElement.Escape(series.AirDays[0].ToString()) + "</Airs_DayOfWeek>");
+                }
             }
 
             XmlSaverHelpers.AddCommonNodes(item, builder);

@@ -234,7 +234,8 @@ namespace MediaBrowser.Providers.TV
                 var path = node != null ? node.Value : null;
                 if (!string.IsNullOrEmpty(path))
                 {
-                    item.SetImage(ImageType.Logo, await _providerManager.DownloadAndSaveImage(item, path, LogoFile, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                    await _providerManager.SaveImage(item, path, FanArtResourcePool, ImageType.Logo, null, cancellationToken)
+                          .ConfigureAwait(false);
                 }
             }
 
@@ -250,7 +251,8 @@ namespace MediaBrowser.Providers.TV
                 var path = node != null ? node.Value : null;
                 if (!string.IsNullOrEmpty(path))
                 {
-                    item.SetImage(ImageType.Art, await _providerManager.DownloadAndSaveImage(item, path, ArtFile, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                    await _providerManager.SaveImage(item, path, FanArtResourcePool, ImageType.Art, null, cancellationToken)
+                          .ConfigureAwait(false);
                 }
             }
 
@@ -263,7 +265,8 @@ namespace MediaBrowser.Providers.TV
                 var path = node != null ? node.Value : null;
                 if (!string.IsNullOrEmpty(path))
                 {
-                    item.SetImage(ImageType.Thumb, await _providerManager.DownloadAndSaveImage(item, path, ThumbFile, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                    await _providerManager.SaveImage(item, path, FanArtResourcePool, ImageType.Thumb, null, cancellationToken)
+                          .ConfigureAwait(false);
                 }
             }
 
@@ -274,7 +277,8 @@ namespace MediaBrowser.Providers.TV
                 var path = node != null ? node.Value : null;
                 if (!string.IsNullOrEmpty(path))
                 {
-                    item.SetImage(ImageType.Banner, await _providerManager.DownloadAndSaveImage(item, path, BannerFile, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                    await _providerManager.SaveImage(item, path, FanArtResourcePool, ImageType.Banner, null, cancellationToken)
+                          .ConfigureAwait(false);
                 }
             }
 
@@ -292,7 +296,8 @@ namespace MediaBrowser.Providers.TV
 
                         if (!string.IsNullOrEmpty(path))
                         {
-                            item.BackdropImagePaths.Add(await _providerManager.DownloadAndSaveImage(item, path, ("backdrop" + (numBackdrops > 0 ? numBackdrops.ToString(UsCulture) : "") + ".jpg"), ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                            await _providerManager.SaveImage(item, path, FanArtResourcePool, ImageType.Backdrop, numBackdrops, cancellationToken)
+                                  .ConfigureAwait(false);
 
                             numBackdrops++;
 

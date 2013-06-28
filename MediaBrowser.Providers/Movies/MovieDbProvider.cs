@@ -32,7 +32,7 @@ namespace MediaBrowser.Providers.Movies
         /// <summary>
         /// The movie db
         /// </summary>
-        private readonly SemaphoreSlim _movieDbResourcePool = new SemaphoreSlim(1,1);
+        private readonly SemaphoreSlim _movieDbResourcePool = new SemaphoreSlim(1, 1);
 
         internal static MovieDbProvider Current { get; private set; }
 
@@ -158,7 +158,7 @@ namespace MediaBrowser.Providers.Movies
                 _tmdbSettingsSemaphore.Release();
                 return _tmdbSettings;
             }
-            
+
             try
             {
                 using (var json = await GetMovieDbResponse(new HttpRequestOptions
@@ -199,7 +199,13 @@ namespace MediaBrowser.Providers.Movies
         protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
         {
             if (HasAltMeta(item))
-                return false; 
+                return false;
+
+            // Boxsets require two passes because we need the children to be refreshed
+            if (item is BoxSet && string.IsNullOrEmpty(item.GetProviderId(MetadataProviders.TmdbCollection)))
+            {
+                return true;
+            }
 
             return base.NeedsRefreshInternal(item, providerInfo);
         }
@@ -291,19 +297,6 @@ namespace MediaBrowser.Providers.Movies
         /// <returns>Task{System.String}.</returns>
         public async Task<string> FindId(BaseItem item, int? productionYear, CancellationToken cancellationToken)
         {
-            string id = null;
-
-            if (item.LocationType == LocationType.FileSystem)
-            {
-                string justName = item.Path != null ? item.Path.Substring(item.Path.LastIndexOf(Path.DirectorySeparatorChar)) : string.Empty;
-                id = justName.GetAttributeValue("tmdbid");
-                if (id != null)
-                {
-                    Logger.Debug("Using tmdb id specified in path.");
-                    return id;
-                }
-            }
-
             int? year;
             string name = item.Name;
             ParseName(name, out name, out year);
@@ -320,25 +313,14 @@ namespace MediaBrowser.Providers.Movies
             var boxset = item as BoxSet;
             if (boxset != null)
             {
-                var firstChild = boxset.Children.FirstOrDefault();
-
-                if (firstChild != null)
-                {
-                    Logger.Debug("MovieDbProvider - Attempting to find boxset ID from: " + firstChild.Name);
-                    string childName;
-                    int? childYear;
-                    ParseName(firstChild.Name, out childName, out childYear);
-                    id = await GetBoxsetIdFromMovie(childName, childYear, language, cancellationToken).ConfigureAwait(false);
-                    if (id != null)
-                    {
-                        Logger.Info("MovieDbProvider - Found Boxset ID: " + id);
-                    }
-                }
-
-                return id;
+               // See if any movies have a collection id already
+                return boxset.Children.OfType<Video>()
+                    .Select(i => i.GetProviderId(MetadataProviders.TmdbCollection))
+                   .FirstOrDefault(i => i != null);
             }
+
             //nope - search for it
-            id = await AttemptFindId(name, year, language, cancellationToken).ConfigureAwait(false);
+            var id = await AttemptFindId(name, year, language, cancellationToken).ConfigureAwait(false);
             if (id == null)
             {
                 //try in english if wasn't before
@@ -509,7 +491,7 @@ namespace MediaBrowser.Providers.Movies
                             DateTime r;
 
                             //These dates are always in this exact format
-                            if (DateTime.TryParseExact(possible.release_date, "yyyy-MM-dd", EnUs, DateTimeStyles.None,  out r))
+                            if (DateTime.TryParseExact(possible.release_date, "yyyy-MM-dd", EnUs, DateTimeStyles.None, out r))
                             {
                                 if (Math.Abs(r.Year - year.Value) > 1) // allow a 1 year tolerance on release date
                                 {
@@ -708,7 +690,7 @@ namespace MediaBrowser.Providers.Movies
                     var ourRelease = movieData.releases.countries.FirstOrDefault(c => c.iso_3166_1.Equals(ConfigurationManager.Configuration.MetadataCountryCode, StringComparison.OrdinalIgnoreCase)) ?? new Country();
                     var usRelease = movieData.releases.countries.FirstOrDefault(c => c.iso_3166_1.Equals("US", StringComparison.OrdinalIgnoreCase)) ?? new Country();
                     var minimunRelease = movieData.releases.countries.OrderBy(c => c.release_date).FirstOrDefault() ?? new Country();
-                    var ratingPrefix = ConfigurationManager.Configuration.MetadataCountryCode.Equals("us", StringComparison.OrdinalIgnoreCase) ? "" : ConfigurationManager.Configuration.MetadataCountryCode +"-";
+                    var ratingPrefix = ConfigurationManager.Configuration.MetadataCountryCode.Equals("us", StringComparison.OrdinalIgnoreCase) ? "" : ConfigurationManager.Configuration.MetadataCountryCode + "-";
                     movie.OfficialRating = !string.IsNullOrEmpty(ourRelease.certification)
                                                ? ratingPrefix + ourRelease.certification
                                                : !string.IsNullOrEmpty(usRelease.certification)
@@ -725,7 +707,7 @@ namespace MediaBrowser.Providers.Movies
                             movie.ProductionYear = ourRelease.release_date.Year;
                         }
                     }
-                    else if(usRelease.release_date != default (DateTime))
+                    else if (usRelease.release_date != default(DateTime))
                     {
                         if (usRelease.release_date.Year != 1)
                         {
@@ -733,7 +715,7 @@ namespace MediaBrowser.Providers.Movies
                             movie.ProductionYear = usRelease.release_date.Year;
                         }
                     }
-                    else if (minimunRelease.release_date != default (DateTime))
+                    else if (minimunRelease.release_date != default(DateTime))
                     {
                         if (minimunRelease.release_date.Year != 1)
                         {
@@ -1099,7 +1081,7 @@ namespace MediaBrowser.Providers.Movies
             /// <value>The total_results.</value>
             public int total_results { get; set; }
         }
-        
+
         protected class BelongsToCollection
         {
             public int id { get; set; }

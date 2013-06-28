@@ -303,9 +303,6 @@ namespace MediaBrowser.Providers.Movies
             
             cancellationToken.ThrowIfCancellationRequested();
 
-            var saveLocal = ConfigurationManager.Configuration.SaveLocalMeta &&
-                            item.LocationType == LocationType.FileSystem;
-
             string path;
             var hd = ConfigurationManager.Configuration.DownloadHDFanArt ? "hd" : "";
 
@@ -322,7 +319,7 @@ namespace MediaBrowser.Providers.Movies
                 path = node != null ? node.Value : null;
                 if (!string.IsNullOrEmpty(path))
                 {
-                    item.SetImage(ImageType.Logo, await _providerManager.DownloadAndSaveImage(item, path, LogoFile, saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                    await _providerManager.SaveImage(item, path, FanArtResourcePool, ImageType.Logo, null, cancellationToken).ConfigureAwait(false);
                 }
             }
             cancellationToken.ThrowIfCancellationRequested();
@@ -337,7 +334,8 @@ namespace MediaBrowser.Providers.Movies
                 path = node != null ? node.Value : null;
                 if (!string.IsNullOrEmpty(path))
                 {
-                    item.SetImage(ImageType.Art, await _providerManager.DownloadAndSaveImage(item, path, ArtFile, saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                    await _providerManager.SaveImage(item, path, FanArtResourcePool, ImageType.Art, null, cancellationToken)
+                                        .ConfigureAwait(false);
                 }
             }
             cancellationToken.ThrowIfCancellationRequested();
@@ -349,7 +347,8 @@ namespace MediaBrowser.Providers.Movies
                 path = node != null ? node.Value : null;
                 if (!string.IsNullOrEmpty(path))
                 {
-                    item.SetImage(ImageType.Disc, await _providerManager.DownloadAndSaveImage(item, path, DiscFile, saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                    await _providerManager.SaveImage(item, path, FanArtResourcePool, ImageType.Disc, null, cancellationToken)
+                                        .ConfigureAwait(false);
                 }
             }
 
@@ -362,7 +361,8 @@ namespace MediaBrowser.Providers.Movies
                 path = node != null ? node.Value : null;
                 if (!string.IsNullOrEmpty(path))
                 {
-                    item.SetImage(ImageType.Banner, await _providerManager.DownloadAndSaveImage(item, path, BannerFile, saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                    await _providerManager.SaveImage(item, path, FanArtResourcePool, ImageType.Banner, null, cancellationToken)
+                                        .ConfigureAwait(false);
                 }
             }
 
@@ -375,7 +375,8 @@ namespace MediaBrowser.Providers.Movies
                 path = node != null ? node.Value : null;
                 if (!string.IsNullOrEmpty(path))
                 {
-                    item.SetImage(ImageType.Thumb, await _providerManager.DownloadAndSaveImage(item, path, ThumbFile, saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                    await _providerManager.SaveImage(item, path, FanArtResourcePool, ImageType.Thumb, null, cancellationToken)
+                                        .ConfigureAwait(false);
                 }
             }
 
@@ -393,7 +394,8 @@ namespace MediaBrowser.Providers.Movies
 
                         if (!string.IsNullOrEmpty(path))
                         {
-                            item.BackdropImagePaths.Add(await _providerManager.DownloadAndSaveImage(item, path, ("backdrop" + (numBackdrops > 0 ? numBackdrops.ToString(UsCulture) : "") + ".jpg"), saveLocal, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                            await _providerManager.SaveImage(item, path, FanArtResourcePool, ImageType.Backdrop, numBackdrops, cancellationToken)
+                                                .ConfigureAwait(false);
 
                             numBackdrops++;
 

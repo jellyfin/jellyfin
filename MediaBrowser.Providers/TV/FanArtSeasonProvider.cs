@@ -149,7 +149,8 @@ namespace MediaBrowser.Providers.TV
                 
                 if (!string.IsNullOrEmpty(path))
                 {
-                    season.SetImage(ImageType.Thumb, await _providerManager.DownloadAndSaveImage(season, path, ThumbFile, ConfigurationManager.Configuration.SaveLocalMeta, FanArtResourcePool, cancellationToken).ConfigureAwait(false));
+                    await _providerManager.SaveImage(season, path, FanArtResourcePool, ImageType.Thumb, null, cancellationToken)
+                                        .ConfigureAwait(false);
                 }
             }
         }

@@ -760,145 +760,45 @@ namespace MediaBrowser.Api.Images
                 var bytes = Convert.FromBase64String(text);
 
                 // Validate first
-                using (var memoryStream = new MemoryStream(bytes))
+                using (var validationStream = new MemoryStream(bytes))
                 {
-                    using (var image = Image.FromStream(memoryStream))
+                    using (var image = Image.FromStream(validationStream))
                     {
                         Logger.Info("New image is {0}x{1}", image.Width, image.Height);
                     }
                 }
 
-                string filename;
+                var memoryStream = new MemoryStream(bytes);
 
-                switch (imageType)
-                {
-                    case ImageType.Art:
-                        filename = "clearart";
-                        break;
-                    case ImageType.Primary:
-                        filename = entity is Episode ? Path.GetFileNameWithoutExtension(entity.Path) : "folder";
-                        break;
-                    case ImageType.Backdrop:
-                        filename = GetBackdropFilenameToSave(entity);
-                        break;
-                    case ImageType.Screenshot:
-                        filename = GetScreenshotFilenameToSave(entity);
-                        break;
-                    default:
-                        filename = imageType.ToString().ToLower();
-                        break;
-                }
+                memoryStream.Position = 0;
 
-
-                var extension = mimeType.Split(';').First().Split('/').Last();
-
-                string oldImagePath;
-                switch (imageType)
-                {
-                    case ImageType.Backdrop:
-                    case ImageType.Screenshot:
-                        oldImagePath = null;
-                        break;
-                    default:
-                        oldImagePath = entity.GetImage(imageType);
-                        break;
-                }
-
-                // Don't save locally if there's no parent (special feature, trailer, etc)
-                var saveLocally = !(entity is Audio) && entity.Parent != null && !string.IsNullOrEmpty(entity.MetaLocation) || entity is User;
-
-                if (imageType != ImageType.Primary)
-                {
-                    if (entity is Episode)
-                    {
-                        saveLocally = false;
-                    }
-                }
-
-                if (entity.LocationType != LocationType.FileSystem)
-                {
-                    saveLocally = false;
-                }
-
-                var imagePath = _providerManager.GetSavePath(entity, filename + "." + extension, saveLocally);
-
-                // Save to file system
-                using (var fs = new FileStream(imagePath, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, true))
-                {
-                    await fs.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
-                }
+                var imageIndex = 0;
 
                 if (imageType == ImageType.Screenshot)
                 {
-                    entity.ScreenshotImagePaths.Add(imagePath);
+                    imageIndex = entity.ScreenshotImagePaths.Count;
                 }
                 else if (imageType == ImageType.Backdrop)
                 {
-                    entity.BackdropImagePaths.Add(imagePath);
+                    imageIndex = entity.BackdropImagePaths.Count;
+                }
+
+                await _providerManager.SaveImage(entity, memoryStream, mimeType, imageType, imageIndex, CancellationToken.None).ConfigureAwait(false);
+
+                var user = entity as User;
+
+                if (user != null)
+                {
+                    await _userManager.UpdateUser(user).ConfigureAwait(false);
                 }
                 else
                 {
-                    // Set the image
-                    entity.SetImage(imageType, imagePath);
+                    await _libraryManager.UpdateItem(entity, ItemUpdateType.ImageUpdate, CancellationToken.None)
+                                       .ConfigureAwait(false);
                 }
 
-                // If the new and old paths are different, delete the old one
-                if (!string.IsNullOrEmpty(oldImagePath) && !oldImagePath.Equals(imagePath, StringComparison.OrdinalIgnoreCase))
-                {
-                    File.Delete(oldImagePath);
-                }
-
-                // Directory watchers should repeat this, but do a quick refresh first
-                await entity.RefreshMetadata(CancellationToken.None, forceSave: true, allowSlowProviders: false).ConfigureAwait(false);
+                await entity.RefreshMetadata(CancellationToken.None, allowSlowProviders: false).ConfigureAwait(false);
             }
-        }
-
-        /// <summary>
-        /// Gets the backdrop filename to save.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns>System.String.</returns>
-        private string GetBackdropFilenameToSave(BaseItem item)
-        {
-            var paths = item.BackdropImagePaths.ToList();
-
-            if (!paths.Any(i => string.Equals(Path.GetFileNameWithoutExtension(i), "backdrop", StringComparison.OrdinalIgnoreCase)))
-            {
-                return "screenshot";
-            }
-
-            var index = 1;
-
-            while (paths.Any(i => string.Equals(Path.GetFileNameWithoutExtension(i), "backdrop" + index, StringComparison.OrdinalIgnoreCase)))
-            {
-                index++;
-            }
-
-            return "backdrop" + index;
-        }
-
-        /// <summary>
-        /// Gets the screenshot filename to save.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns>System.String.</returns>
-        private string GetScreenshotFilenameToSave(BaseItem item)
-        {
-            var paths = item.ScreenshotImagePaths.ToList();
-
-            if (!paths.Any(i => string.Equals(Path.GetFileNameWithoutExtension(i), "screenshot", StringComparison.OrdinalIgnoreCase)))
-            {
-                return "screenshot";
-            }
-
-            var index = 1;
-
-            while (paths.Any(i => string.Equals(Path.GetFileNameWithoutExtension(i), "screenshot" + index, StringComparison.OrdinalIgnoreCase)))
-            {
-                index++;
-            }
-
-            return "screenshot" + index;
         }
     }
 }

@@ -215,13 +215,6 @@ namespace MediaBrowser.Providers.TV
                 await FetchSeriesData(series, seriesId, seriesDataPath, force, cancellationToken).ConfigureAwait(false);
             }
 
-            BaseProviderInfo data;
-            if (!item.ProviderData.TryGetValue(Id, out data))
-            {
-                data = new BaseProviderInfo();
-                item.ProviderData[Id] = data;
-            }
-
             SetLastRefreshed(item, DateTime.UtcNow);
             return true;
         }

@@ -12,6 +12,13 @@ namespace MediaBrowser.Common.Net
     public interface IHttpClient : IDisposable
     {
         /// <summary>
+        /// Gets the response.
+        /// </summary>
+        /// <param name="options">The options.</param>
+        /// <returns>Task{HttpResponseInfo}.</returns>
+        Task<HttpResponseInfo> GetResponse(HttpRequestOptions options);
+
+        /// <summary>
         /// Performs a GET request and returns the resulting stream
         /// </summary>
         /// <param name="url">The URL.</param>
