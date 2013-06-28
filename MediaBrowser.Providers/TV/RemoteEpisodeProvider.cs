@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
@@ -313,9 +314,17 @@ namespace MediaBrowser.Providers.TV
                 if (actors != null)
                 {
                     // Sometimes tvdb actors have leading spaces
-                    foreach (var person in actors.Split(new[] {'|'}, StringSplitOptions.RemoveEmptyEntries)
-                                                 .Where(i => !string.IsNullOrWhiteSpace(i))
-                                                 .Select(str => new PersonInfo {Type = PersonType.GuestStar, Name = str.Trim()}))
+                    var persons = Regex.Matches(actors, @"([^|()]|\([^)]*\)*)+")
+                        .Cast<Match>()
+                        .Select(m => m.Value).Where(i => !string.IsNullOrWhiteSpace(i) && !string.IsNullOrEmpty(i));
+                    foreach (var person in persons.Select(str => {
+                                                              var nameGroup = str.Split(new[] {'('}, 2, StringSplitOptions.RemoveEmptyEntries);
+                                                              var name = nameGroup[0].Trim();
+                                                              var roles = nameGroup.Count() > 1 ? nameGroup[1].Trim() : null;
+                                                              if (roles != null)
+                                                                  roles = roles.EndsWith(")") ? roles.Substring(0, roles.Length - 1) : roles;
+                                                              return new PersonInfo {Type = PersonType.GuestStar, Name = name, Role = roles};
+                                                          }))
                     {
                         episode.AddPerson(person);
                     }
@@ -325,9 +334,18 @@ namespace MediaBrowser.Providers.TV
                     var extraActors = xmlDocument.SafeGetString("//GuestStars");
                     if (extraActors == null) continue;
                     // Sometimes tvdb actors have leading spaces
-                    foreach (var person in extraActors.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries)
-                                                      .Where(i => !string.IsNullOrWhiteSpace(i))
-                                                      .Select(str => new PersonInfo { Type = PersonType.GuestStar, Name = str.Trim() }).Where(person => !episode.People.Any(x=>x.Type == person.Type && x.Name == person.Name)))
+                    var persons = Regex.Matches(extraActors, @"([^|()]|\([^)]*\)*)+")
+                        .Cast<Match>()
+                        .Select(m => m.Value).Where(i => !string.IsNullOrWhiteSpace(i) && !string.IsNullOrEmpty(i));
+                    foreach (var person in persons.Select(str => {
+                                                              var nameGroup = str.Split(new[] {'('}, 2, StringSplitOptions.RemoveEmptyEntries);
+                                                              var name = nameGroup[0].Trim();
+                                                              var roles = nameGroup.Count() > 1 ? nameGroup[1].Trim() : null;
+                                                              if (roles != null)
+                                                                  roles = roles.EndsWith(")") ? roles.Substring(0, roles.Length - 1) : roles;
+                                                              return new PersonInfo {Type = PersonType.GuestStar, Name = name, Role = roles};
+                                                          }).Where(person => !episode.People.Any(x => x.Type == person.Type && x.Name == person.Name))
+                        )
                     {
                         episode.AddPerson(person);
                     }
