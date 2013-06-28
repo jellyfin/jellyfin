@@ -798,6 +798,9 @@ namespace MediaBrowser.Controller.Entities
                         });
 
                         await ((Folder)child).ValidateChildren(innerProgress, cancellationToken, recursive, forceRefreshMetadata).ConfigureAwait(false);
+
+                        // Some folder providers are unable to refresh until children have been refreshed.
+                        await child.RefreshMetadata(cancellationToken, resetResolveArgs: false).ConfigureAwait(false);
                     }
                     else
                     {

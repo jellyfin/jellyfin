@@ -104,6 +104,92 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             return client;
         }
 
+        public async Task<HttpResponseInfo> GetResponse(HttpRequestOptions options)
+        {
+            ValidateParams(options.Url, options.CancellationToken);
+
+            options.CancellationToken.ThrowIfCancellationRequested();
+
+            var client = GetHttpClient(GetHostFromUrl(options.Url), options.EnableHttpCompression);
+
+            if ((DateTime.UtcNow - client.LastTimeout).TotalSeconds < 30)
+            {
+                throw new HttpException(string.Format("Cancelling connection to {0} due to a previous timeout.", options.Url)) { IsTimedOut = true };
+            }
+
+            using (var message = GetHttpRequestMessage(options))
+            {
+                if (options.ResourcePool != null)
+                {
+                    await options.ResourcePool.WaitAsync(options.CancellationToken).ConfigureAwait(false);
+                }
+
+                if ((DateTime.UtcNow - client.LastTimeout).TotalSeconds < 30)
+                {
+                    if (options.ResourcePool != null)
+                    {
+                        options.ResourcePool.Release();
+                    }
+
+                    throw new HttpException(string.Format("Connection to {0} timed out", options.Url)) { IsTimedOut = true };
+                }
+
+                _logger.Info("HttpClientManager.Get url: {0}", options.Url);
+
+                try
+                {
+                    options.CancellationToken.ThrowIfCancellationRequested();
+
+                    var response = await client.HttpClient.SendAsync(message, HttpCompletionOption.ResponseContentRead, options.CancellationToken).ConfigureAwait(false);
+
+                    EnsureSuccessStatusCode(response);
+
+                    options.CancellationToken.ThrowIfCancellationRequested();
+
+                    return new HttpResponseInfo
+                    {
+                        Content = await response.Content.ReadAsStreamAsync().ConfigureAwait(false),
+
+                        StatusCode = response.StatusCode,
+
+                        ContentType = response.Content.Headers.ContentType.MediaType
+                    };
+                }
+                catch (OperationCanceledException ex)
+                {
+                    var exception = GetCancellationException(options.Url, options.CancellationToken, ex);
+
+                    var httpException = exception as HttpException;
+
+                    if (httpException != null && httpException.IsTimedOut)
+                    {
+                        client.LastTimeout = DateTime.UtcNow;
+                    }
+
+                    throw exception;
+                }
+                catch (HttpRequestException ex)
+                {
+                    _logger.ErrorException("Error getting response from " + options.Url, ex);
+
+                    throw new HttpException(ex.Message, ex);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error getting response from " + options.Url, ex);
+
+                    throw;
+                }
+                finally
+                {
+                    if (options.ResourcePool != null)
+                    {
+                        options.ResourcePool.Release();
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Performs a GET request and returns the resulting stream
         /// </summary>

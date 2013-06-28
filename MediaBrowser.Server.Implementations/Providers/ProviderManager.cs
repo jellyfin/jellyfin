@@ -2,11 +2,14 @@
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Net;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -22,11 +25,6 @@ namespace MediaBrowser.Server.Implementations.Providers
     /// </summary>
     public class ProviderManager : IProviderManager
     {
-        /// <summary>
-        /// The remote image cache
-        /// </summary>
-        private readonly FileSystemRepository _remoteImageCache;
-
         /// <summary>
         /// The currently running metadata providers
         /// </summary>
@@ -74,7 +72,6 @@ namespace MediaBrowser.Server.Implementations.Providers
             _httpClient = httpClient;
             ConfigurationManager = configurationManager;
             _directoryWatchers = directoryWatchers;
-            _remoteImageCache = new FileSystemRepository(configurationManager.ApplicationPaths.DownloadedImagesDataPath);
 
             configurationManager.ConfigurationUpdated += configurationManager_ConfigurationUpdated;
         }
@@ -206,7 +203,7 @@ namespace MediaBrowser.Server.Implementations.Providers
             try
             {
                 var changed = await provider.FetchAsync(item, force, CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, innerCancellationTokenSource.Token).Token).ConfigureAwait(false);
-            
+
                 if (changed)
                 {
                     return provider.ItemUpdateType;
@@ -315,90 +312,9 @@ namespace MediaBrowser.Server.Implementations.Providers
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.String}.</returns>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        public async Task<string> DownloadAndSaveImage(BaseItem item, string source, string targetName, bool saveLocally, SemaphoreSlim resourcePool, CancellationToken cancellationToken)
+        public Task<string> DownloadAndSaveImage(BaseItem item, string source, string targetName, bool saveLocally, SemaphoreSlim resourcePool, CancellationToken cancellationToken)
         {
-            if (item == null)
-            {
-                throw new ArgumentNullException("item");
-            }
-            if (string.IsNullOrEmpty(source))
-            {
-                throw new ArgumentNullException("source");
-            }
-            if (string.IsNullOrEmpty(targetName))
-            {
-                throw new ArgumentNullException("targetName");
-            }
-            if (resourcePool == null)
-            {
-                throw new ArgumentNullException("resourcePool");
-            }
-
-            var img = await _httpClient.Get(source, resourcePool, cancellationToken).ConfigureAwait(false);
-
-            //download and save locally
-            return await SaveImage(item, img, targetName, saveLocally, cancellationToken).ConfigureAwait(false);
-        }
-
-        public async Task<string> SaveImage(BaseItem item, Stream source, string targetName, bool saveLocally, CancellationToken cancellationToken)
-        {
-            //download and save locally
-            var localPath = GetSavePath(item, targetName, saveLocally);
-
-            if (saveLocally) // queue to media directories
-            {
-                await SaveToLibraryFilesystem(item, localPath, source, cancellationToken).ConfigureAwait(false);
-            }
-            else
-            {
-                // we can write directly here because it won't affect the watchers
-
-                try
-                {
-                    using (var fs = new FileStream(localPath, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
-                    {
-                        await source.CopyToAsync(fs, StreamDefaults.DefaultCopyToBufferSize, cancellationToken).ConfigureAwait(false);
-                    }
-                }
-                catch (OperationCanceledException)
-                {
-                    throw;
-                }
-                catch (Exception e)
-                {
-                    _logger.ErrorException("Error downloading and saving image " + localPath, e);
-                    throw;
-                }
-                finally
-                {
-                    source.Dispose();
-                }
-
-            }
-            return localPath;
-        }
-
-        /// <summary>
-        /// Gets the save path.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="targetFileName">Name of the target file.</param>
-        /// <param name="saveLocally">if set to <c>true</c> [save locally].</param>
-        /// <returns>System.String.</returns>
-        public string GetSavePath(BaseItem item, string targetFileName, bool saveLocally)
-        {
-            var path = (saveLocally && item.MetaLocation != null) ?
-                Path.Combine(item.MetaLocation, targetFileName) :
-                _remoteImageCache.GetResourcePath(item.GetType().FullName + item.Id.ToString(), targetFileName);
-
-            var parentPath = Path.GetDirectoryName(path);
-
-            if (!Directory.Exists(parentPath))
-            {
-                Directory.CreateDirectory(parentPath);
-            }
-
-            return path;
+            throw new HttpException(string.Empty) { IsTimedOut = true };
         }
 
         /// <summary>
@@ -461,6 +377,46 @@ namespace MediaBrowser.Server.Implementations.Providers
                 //Remove the ignore
                 _directoryWatchers.RemoveTempIgnore(path);
             }
+        }
+
+
+        /// <summary>
+        /// Saves the image.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="url">The URL.</param>
+        /// <param name="resourcePool">The resource pool.</param>
+        /// <param name="type">The type.</param>
+        /// <param name="imageIndex">Index of the image.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        public async Task SaveImage(BaseItem item, string url, SemaphoreSlim resourcePool, ImageType type, int? imageIndex, CancellationToken cancellationToken)
+        {
+            var response = await _httpClient.GetResponse(new HttpRequestOptions
+            {
+                CancellationToken = cancellationToken,
+                ResourcePool = resourcePool,
+                Url = url
+
+            }).ConfigureAwait(false);
+
+            await SaveImage(item, response.Content, response.ContentType, type, imageIndex, cancellationToken)
+                    .ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Saves the image.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="source">The source.</param>
+        /// <param name="mimeType">Type of the MIME.</param>
+        /// <param name="type">The type.</param>
+        /// <param name="imageIndex">Index of the image.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        public Task SaveImage(BaseItem item, Stream source, string mimeType, ImageType type, int? imageIndex, CancellationToken cancellationToken)
+        {
+            return new ImageSaver(ConfigurationManager, _directoryWatchers).SaveImage(item, source, mimeType, type, imageIndex, cancellationToken);
         }
     }
 }

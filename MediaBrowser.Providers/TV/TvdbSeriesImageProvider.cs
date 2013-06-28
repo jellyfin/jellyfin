@@ -197,9 +197,10 @@ namespace MediaBrowser.Providers.TV
                     n = n.SelectSingleNode("./BannerPath");
                     if (n != null)
                     {
-                        var path = await _providerManager.DownloadAndSaveImage(series, TVUtils.BannerUrl + n.InnerText, "folder" + Path.GetExtension(n.InnerText), ConfigurationManager.Configuration.SaveLocalMeta, RemoteSeriesProvider.Current.TvDbResourcePool, cancellationToken).ConfigureAwait(false);
+                        var url = TVUtils.BannerUrl + n.InnerText;
 
-                        series.SetImage(ImageType.Primary, path);
+                        await _providerManager.SaveImage(series, url, RemoteSeriesProvider.Current.TvDbResourcePool, ImageType.Primary, null, cancellationToken)
+                          .ConfigureAwait(false);
                     }
                 }
             }
@@ -212,9 +213,10 @@ namespace MediaBrowser.Providers.TV
                     n = n.SelectSingleNode("./BannerPath");
                     if (n != null)
                     {
-                        var bannerImagePath = await _providerManager.DownloadAndSaveImage(series, TVUtils.BannerUrl + n.InnerText, "banner" + Path.GetExtension(n.InnerText), ConfigurationManager.Configuration.SaveLocalMeta, RemoteSeriesProvider.Current.TvDbResourcePool, cancellationToken);
+                        var url = TVUtils.BannerUrl + n.InnerText;
 
-                        series.SetImage(ImageType.Banner, bannerImagePath);
+                        await _providerManager.SaveImage(series, url, RemoteSeriesProvider.Current.TvDbResourcePool, ImageType.Banner, null, cancellationToken)
+                          .ConfigureAwait(false);
                     }
                 }
             }
@@ -232,8 +234,11 @@ namespace MediaBrowser.Providers.TV
 
                         if (p != null)
                         {
-                            var bdName = "backdrop" + (bdNo > 0 ? bdNo.ToString(UsCulture) : "");
-                            series.BackdropImagePaths.Add(await _providerManager.DownloadAndSaveImage(series, TVUtils.BannerUrl + p.InnerText, bdName + Path.GetExtension(p.InnerText), ConfigurationManager.Configuration.SaveLocalMeta, RemoteSeriesProvider.Current.TvDbResourcePool, cancellationToken).ConfigureAwait(false));
+                            var url = TVUtils.BannerUrl + p.InnerText;
+
+                            await _providerManager.SaveImage(series, url, RemoteSeriesProvider.Current.TvDbResourcePool, ImageType.Backdrop, bdNo, cancellationToken)
+                              .ConfigureAwait(false);
+                            
                             bdNo++;
                         }
 

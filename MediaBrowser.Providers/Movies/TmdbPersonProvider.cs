@@ -279,13 +279,8 @@ namespace MediaBrowser.Providers.Movies
                 {
                     var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
 
-                    var img = await DownloadAndSaveImage(person, tmdbSettings.images.base_url + ConfigurationManager.Configuration.TmdbFetchedProfileSize + profile.file_path,
-                                             "folder" + Path.GetExtension(profile.file_path), cancellationToken).ConfigureAwait(false);
-
-                    if (!string.IsNullOrEmpty(img))
-                    {
-                        person.PrimaryImagePath = img;
-                    }
+                    await DownloadAndSaveImage(person, tmdbSettings.images.base_url + ConfigurationManager.Configuration.TmdbFetchedProfileSize + profile.file_path,
+                                             MimeTypes.GetMimeType(profile.file_path), cancellationToken).ConfigureAwait(false);
                 }
             }
         }
@@ -300,15 +295,12 @@ namespace MediaBrowser.Providers.Movies
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="source">The source.</param>
-        /// <param name="targetName">Name of the target.</param>
+        /// <param name="mimeType">Type of the MIME.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.String}.</returns>
-        private async Task<string> DownloadAndSaveImage(BaseItem item, string source, string targetName, CancellationToken cancellationToken)
+        private async Task DownloadAndSaveImage(BaseItem item, string source, string mimeType, CancellationToken cancellationToken)
         {
-            if (source == null) return null;
-
-            //download and save locally (if not already there)
-            var localPath = Path.Combine(item.MetaLocation, targetName);
+            if (source == null) return;
 
             using (var sourceStream = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
             {
@@ -317,12 +309,11 @@ namespace MediaBrowser.Providers.Movies
 
             }).ConfigureAwait(false))
             {
-                await ProviderManager.SaveToLibraryFilesystem(item, localPath, sourceStream, cancellationToken).ConfigureAwait(false);
+                await ProviderManager.SaveImage(item, sourceStream, mimeType, ImageType.Primary, null, cancellationToken)
+                                   .ConfigureAwait(false);
 
                 Logger.Debug("TmdbPersonProvider downloaded and saved image for {0}", item.Name);
             }
-
-            return localPath;
         }
 
         #region Result Objects

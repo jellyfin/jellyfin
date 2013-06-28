@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Entities;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -12,40 +13,8 @@ namespace MediaBrowser.Controller.Providers
     /// </summary>
     public interface IProviderManager
     {
-        /// <summary>
-        /// Downloads the and save image.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="source">The source.</param>
-        /// <param name="targetName">Name of the target.</param>
-        /// <param name="saveLocally">if set to <c>true</c> [save locally].</param>
-        /// <param name="resourcePool">The resource pool.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{System.String}.</returns>
-        /// <exception cref="System.ArgumentNullException">item</exception>
-        Task<string> DownloadAndSaveImage(BaseItem item, string source, string targetName, bool saveLocally, SemaphoreSlim resourcePool, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Saves the image.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="source">The source.</param>
-        /// <param name="targetName">Name of the target.</param>
-        /// <param name="saveLocally">if set to <c>true</c> [save locally].</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{System.String}.</returns>
-        Task<string> SaveImage(BaseItem item, Stream source, string targetName, bool saveLocally, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Saves to library filesystem.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="path">The path.</param>
-        /// <param name="dataToSave">The data to save.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
-        Task SaveToLibraryFilesystem(BaseItem item, string path, Stream dataToSave, CancellationToken cancellationToken);
+        Task<string> DownloadAndSaveImage(BaseItem item, string source, string targetName, bool saveLocally,
+                                          SemaphoreSlim resourcePool, CancellationToken cancellationToken);
 
         /// <summary>
         /// Executes the metadata providers.
@@ -58,18 +27,33 @@ namespace MediaBrowser.Controller.Providers
         Task<ItemUpdateType?> ExecuteMetadataProviders(BaseItem item, CancellationToken cancellationToken, bool force = false, bool allowSlowProviders = true);
 
         /// <summary>
+        /// Saves the image.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="url">The URL.</param>
+        /// <param name="resourcePool">The resource pool.</param>
+        /// <param name="type">The type.</param>
+        /// <param name="imageIndex">Index of the image.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task SaveImage(BaseItem item, string url, SemaphoreSlim resourcePool, ImageType type, int? imageIndex, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Saves the image.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="source">The source.</param>
+        /// <param name="mimeType">Type of the MIME.</param>
+        /// <param name="type">The type.</param>
+        /// <param name="imageIndex">Index of the image.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task SaveImage(BaseItem item, Stream source, string mimeType, ImageType type, int? imageIndex, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Adds the metadata providers.
         /// </summary>
         /// <param name="providers">The providers.</param>
         void AddParts(IEnumerable<BaseMetadataProvider> providers);
-
-        /// <summary>
-        /// Gets the save path.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="targetFileName">Name of the target file.</param>
-        /// <param name="saveLocally">if set to <c>true</c> [save locally].</param>
-        /// <returns>System.String.</returns>
-        string GetSavePath(BaseItem item, string targetFileName, bool saveLocally);
     }
 }

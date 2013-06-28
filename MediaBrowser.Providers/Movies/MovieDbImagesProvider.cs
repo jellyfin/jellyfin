@@ -93,7 +93,7 @@ namespace MediaBrowser.Providers.Movies
                 return ItemUpdateType.ImageUpdate;
             }
         }
-        
+
         /// <summary>
         /// Gets a value indicating whether [requires internet].
         /// </summary>
@@ -148,7 +148,7 @@ namespace MediaBrowser.Providers.Movies
             {
                 return false;
             }
-            
+
             return base.NeedsRefreshInternal(item, providerInfo);
         }
 
@@ -168,7 +168,7 @@ namespace MediaBrowser.Providers.Movies
                 data = new BaseProviderInfo();
                 item.ProviderData[Id] = data;
             }
-            
+
             var images = await FetchImages(item, item.GetProviderId(MetadataProviders.Tmdb), cancellationToken).ConfigureAwait(false);
 
             var status = await ProcessImages(item, images, cancellationToken).ConfigureAwait(false);
@@ -246,7 +246,9 @@ namespace MediaBrowser.Providers.Movies
 
                     }).ConfigureAwait(false);
 
-                    item.PrimaryImagePath = await _providerManager.SaveImage(item, img, "folder" + Path.GetExtension(poster.file_path), ConfigurationManager.Configuration.SaveLocalMeta && item.LocationType == LocationType.FileSystem, cancellationToken).ConfigureAwait(false);
+                    await _providerManager.SaveImage(item, img, MimeTypes.GetMimeType(poster.file_path), ImageType.Primary, null, cancellationToken)
+                                        .ConfigureAwait(false);
+
                 }
             }
 
@@ -274,7 +276,8 @@ namespace MediaBrowser.Providers.Movies
 
                         }).ConfigureAwait(false);
 
-                        item.BackdropImagePaths.Add(await _providerManager.SaveImage(item, img, bdName + Path.GetExtension(images.backdrops[i].file_path), ConfigurationManager.Configuration.SaveLocalMeta && item.LocationType == LocationType.FileSystem, cancellationToken).ConfigureAwait(false));
+                        await _providerManager.SaveImage(item, img, MimeTypes.GetMimeType(images.backdrops[i].file_path), ImageType.Backdrop, item.BackdropImagePaths.Count, cancellationToken)
+                          .ConfigureAwait(false);
                     }
 
                     if (item.BackdropImagePaths.Count >= ConfigurationManager.Configuration.MaxBackdrops)
