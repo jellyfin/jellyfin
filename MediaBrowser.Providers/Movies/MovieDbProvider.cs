@@ -675,7 +675,7 @@ namespace MediaBrowser.Providers.Movies
                 }
                 if (!movie.LockedFields.Contains(MetadataFields.Overview))
                 {
-                    movie.Overview = System.Web.HttpUtility.HtmlDecode(movieData.overview);
+                    movie.Overview = WebUtility.HtmlDecode(movieData.overview);
                 }
                 movie.Overview = movie.Overview != null ? movie.Overview.Replace("\n\n", "\n") : null;
                 movie.HomePageUrl = movieData.homepage;
