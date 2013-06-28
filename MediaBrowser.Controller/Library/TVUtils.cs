@@ -43,49 +43,49 @@ namespace MediaBrowser.Controller.Library
         private static readonly Regex[] EpisodeExpressions = new[]
                                                                  {
                                                                      new Regex(
-                                                                         @".*\\[s|S]?(?<seasonnumber>\d{1,2})[x|X](?<epnumber>\d{1,3})[^\\]*$",
+                                                                         @".*\\[s|S]?(?<seasonnumber>\d{1,4})[x|X](?<epnumber>\d{1,3})[^\\]*$",
                                                                          RegexOptions.Compiled),
                                                                      new Regex(
-                                                                         @".*\\[s|S](?<seasonnumber>\d{1,2})[x,X]?[e|E](?<epnumber>\d{1,3})[^\\]*$",
+                                                                         @".*\\[s|S](?<seasonnumber>\d{1,4})[x,X]?[e|E](?<epnumber>\d{1,3})[^\\]*$",
                                                                          RegexOptions.Compiled),
                                                                      new Regex(
-                                                                         @".*\\(?<seriesname>((?![s|S]?\d{1,2}[x|X]\d{1,3})[^\\])*)?([s|S]?(?<seasonnumber>\d{1,2})[x|X](?<epnumber>\d{1,3}))[^\\]*$",
+                                                                         @".*\\(?<seriesname>((?![s|S]?\d{1,4}[x|X]\d{1,3})[^\\])*)?([s|S]?(?<seasonnumber>\d{1,4})[x|X](?<epnumber>\d{1,3}))[^\\]*$",
                                                                          RegexOptions.Compiled),
                                                                      new Regex(
-                                                                         @".*\\(?<seriesname>[^\\]*)[s|S](?<seasonnumber>\d{1,2})[x|X|\.]?[e|E](?<epnumber>\d{1,3})[^\\]*$",
+                                                                         @".*\\(?<seriesname>[^\\]*)[s|S](?<seasonnumber>\d{1,4})[x|X|\.]?[e|E](?<epnumber>\d{1,3})[^\\]*$",
                                                                          RegexOptions.Compiled)
                                                                  };
         private static readonly Regex[] MultipleEpisodeExpressions = new[]
                                                                  {
                                                                      new Regex(
-                                                                         @".*\\[s|S]?(?<seasonnumber>\d{1,2})[x|X](?<epnumber>\d{1,3})([ |-]{1,3}\d{1,2}[e|E|x|X](?<endingepnumber>\d{1,3}))+[^\\]*$",
-                                                                         RegexOptions.Compiled),
-                                                                         new Regex(
-                                                                         @".*\\[s|S]?(?<seasonnumber>\d{1,2})[x|X](?<epnumber>\d{1,3})([ |-]{1,3}\d{1,2}[x|X][e|E](?<endingepnumber>\d{1,3}))+[^\\]*$",
-                                                                         RegexOptions.Compiled),
-                                                                         new Regex(
-                                                                         @".*\\[s|S]?(?<seasonnumber>\d{1,2})[x|X](?<epnumber>\d{1,3})([ |-]{0,3}[x|X|e|E](?<endingepnumber>\d{1,3}))+[^\\]*$",
-                                                                         RegexOptions.Compiled),
-                                                                         new Regex(
-                                                                         @".*\\[s|S]?(?<seasonnumber>\d{1,2})[x|X](?<epnumber>\d{1,3})([ |-]{1,3}[x|E]?[e|E]?(?<endingepnumber>\d{1,3}))+[^\\]*$",
+                                                                         @".*\\[s|S]?(?<seasonnumber>\d{1,4})[x|X](?<epnumber>\d{1,3})([ |-]{1,3}\d{1,4}[e|E|x|X](?<endingepnumber>\d{1,3}))+[^\\]*$",
                                                                          RegexOptions.Compiled),
                                                                      new Regex(
-                                                                         @".*\\(?<seriesname>((?![s|S]?\d{1,2}[x|X]\d{1,3})[^\\])*)?([s|S]?(?<seasonnumber>\d{1,2})[x|X](?<epnumber>\d{1,3}))([ |-]{1,3}\d{1,2}[x|X|e|E](?<endingepnumber>\d{1,3}))+[^\\]*$",
-                                                                         RegexOptions.Compiled),
-                                                                         new Regex(
-                                                                         @".*\\(?<seriesname>((?![s|S]?\d{1,2}[x|X]\d{1,3})[^\\])*)?([s|S]?(?<seasonnumber>\d{1,2})[x|X](?<epnumber>\d{1,3}))([ |-]{1,3}\d{1,2}[x|X][e|E](?<endingepnumber>\d{1,3}))+[^\\]*$",
-                                                                         RegexOptions.Compiled),
-                                                                         new Regex(
-                                                                         @".*\\(?<seriesname>((?![s|S]?\d{1,2}[x|X]\d{1,3})[^\\])*)?([s|S]?(?<seasonnumber>\d{1,2})[x|X](?<epnumber>\d{1,3}))([ |-]{0,3}[x|X|e|E](?<endingepnumber>\d{1,3}))+[^\\]*$",
-                                                                         RegexOptions.Compiled),
-                                                                         new Regex(
-                                                                         @".*\\(?<seriesname>((?![s|S]?\d{1,2}[x|X]\d{1,3})[^\\])*)?([s|S]?(?<seasonnumber>\d{1,2})[x|X](?<epnumber>\d{1,3}))([ |-]{1,3}[x|X]?[e|E]?(?<endingepnumber>\d{1,3}))+[^\\]*$",
+                                                                         @".*\\[s|S]?(?<seasonnumber>\d{1,4})[x|X](?<epnumber>\d{1,3})([ |-]{1,3}\d{1,4}[x|X][e|E](?<endingepnumber>\d{1,3}))+[^\\]*$",
                                                                          RegexOptions.Compiled),
                                                                      new Regex(
-                                                                         @".*\\(?<seriesname>[^\\]*)[s|S](?<seasonnumber>\d{1,2})[x|X|\.]?[e|E](?<epnumber>\d{1,3})([ |-]{0,3}[x|X|e|E](?<endingepnumber>\d{1,3}))+[^\\]*$",
+                                                                         @".*\\[s|S]?(?<seasonnumber>\d{1,4})[x|X](?<epnumber>\d{1,3})([ |-]{0,3}[x|X|e|E](?<endingepnumber>\d{1,3}))+[^\\]*$",
                                                                          RegexOptions.Compiled),
-                                                                         new Regex(
-                                                                         @".*\\(?<seriesname>[^\\]*)[s|S](?<seasonnumber>\d{1,2})[x|X|\.]?[e|E](?<epnumber>\d{1,3})([ |-]{1,3}[x|X]?[e|E]?(?<endingepnumber>\d{1,3}))+[^\\]*$",
+                                                                     new Regex(
+                                                                         @".*\\[s|S]?(?<seasonnumber>\d{1,4})[x|X](?<epnumber>\d{1,3})([ |-]{1,3}[x|E]?[e|E]?(?<endingepnumber>\d{1,3}))+[^\\]*$",
+                                                                         RegexOptions.Compiled),
+                                                                     new Regex(
+                                                                         @".*\\(?<seriesname>((?![s|S]?\d{1,4}[x|X]\d{1,3})[^\\])*)?([s|S]?(?<seasonnumber>\d{1,4})[x|X](?<epnumber>\d{1,3}))([ |-]{1,3}\d{1,4}[x|X|e|E](?<endingepnumber>\d{1,3}))+[^\\]*$",
+                                                                         RegexOptions.Compiled),
+                                                                     new Regex(
+                                                                         @".*\\(?<seriesname>((?![s|S]?\d{1,4}[x|X]\d{1,3})[^\\])*)?([s|S]?(?<seasonnumber>\d{1,4})[x|X](?<epnumber>\d{1,3}))([ |-]{1,3}\d{1,4}[x|X][e|E](?<endingepnumber>\d{1,3}))+[^\\]*$",
+                                                                         RegexOptions.Compiled),
+                                                                     new Regex(
+                                                                         @".*\\(?<seriesname>((?![s|S]?\d{1,4}[x|X]\d{1,3})[^\\])*)?([s|S]?(?<seasonnumber>\d{1,4})[x|X](?<epnumber>\d{1,3}))([ |-]{0,3}[x|X|e|E](?<endingepnumber>\d{1,3}))+[^\\]*$",
+                                                                         RegexOptions.Compiled),
+                                                                     new Regex(
+                                                                         @".*\\(?<seriesname>((?![s|S]?\d{1,4}[x|X]\d{1,3})[^\\])*)?([s|S]?(?<seasonnumber>\d{1,4})[x|X](?<epnumber>\d{1,3}))([ |-]{1,3}[x|X]?[e|E]?(?<endingepnumber>\d{1,3}))+[^\\]*$",
+                                                                         RegexOptions.Compiled),
+                                                                     new Regex(
+                                                                         @".*\\(?<seriesname>[^\\]*)[s|S](?<seasonnumber>\d{1,4})[x|X|\.]?[e|E](?<epnumber>\d{1,3})([ |-]{0,3}[x|X|e|E](?<endingepnumber>\d{1,3}))+[^\\]*$",
+                                                                         RegexOptions.Compiled),
+                                                                     new Regex(
+                                                                         @".*\\(?<seriesname>[^\\]*)[s|S](?<seasonnumber>\d{1,4})[x|X|\.]?[e|E](?<epnumber>\d{1,3})([ |-]{1,3}[x|X]?[e|E]?(?<endingepnumber>\d{1,3}))+[^\\]*$",
                                                                          RegexOptions.Compiled)
                                                                  };
 
