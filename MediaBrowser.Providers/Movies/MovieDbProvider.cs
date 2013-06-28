@@ -702,15 +702,22 @@ namespace MediaBrowser.Providers.Movies
                 if (float.TryParse(voteAvg, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out rating))
                     movie.CommunityRating = rating;
 
-                //release date and certification are retrieved based on configured country and we fall back on US if not there
+                //release date and certification are retrieved based on configured country and we fall back on US if not there and to minimun release date if still no match
                 if (movieData.releases != null && movieData.releases.countries != null)
                 {
                     var ourRelease = movieData.releases.countries.FirstOrDefault(c => c.iso_3166_1.Equals(ConfigurationManager.Configuration.MetadataCountryCode, StringComparison.OrdinalIgnoreCase)) ?? new Country();
                     var usRelease = movieData.releases.countries.FirstOrDefault(c => c.iso_3166_1.Equals("US", StringComparison.OrdinalIgnoreCase)) ?? new Country();
+                    var minimunRelease = movieData.releases.countries.OrderBy(c => c.release_date).FirstOrDefault() ?? new Country();
                     var ratingPrefix = ConfigurationManager.Configuration.MetadataCountryCode.Equals("us", StringComparison.OrdinalIgnoreCase) ? "" : ConfigurationManager.Configuration.MetadataCountryCode +"-";
-                    movie.OfficialRating = !string.IsNullOrEmpty(ourRelease.certification) ? ratingPrefix + ourRelease.certification : !string.IsNullOrEmpty(usRelease.certification) ? usRelease.certification : null;
+                    movie.OfficialRating = !string.IsNullOrEmpty(ourRelease.certification)
+                                               ? ratingPrefix + ourRelease.certification
+                                               : !string.IsNullOrEmpty(usRelease.certification)
+                                                     ? usRelease.certification
+                                                     : !string.IsNullOrEmpty(minimunRelease.certification)
+                                                           ? minimunRelease.iso_3166_1 + "-" + minimunRelease.certification
+                                                           : null;
 
-                    if (ourRelease.release_date > new DateTime(1900, 1, 1))
+                    if (ourRelease.release_date != default(DateTime))
                     {
                         if (ourRelease.release_date.Year != 1)
                         {
@@ -718,12 +725,21 @@ namespace MediaBrowser.Providers.Movies
                             movie.ProductionYear = ourRelease.release_date.Year;
                         }
                     }
-                    else
+                    else if(usRelease.release_date != default (DateTime))
                     {
                         if (usRelease.release_date.Year != 1)
                         {
                             movie.PremiereDate = usRelease.release_date.ToUniversalTime();
                             movie.ProductionYear = usRelease.release_date.Year;
+                        }
+                    }
+                    else if (minimunRelease.release_date != default (DateTime))
+                    {
+                        if (minimunRelease.release_date.Year != 1)
+                        {
+
+                            movie.PremiereDate = minimunRelease.release_date.ToUniversalTime();
+                            movie.ProductionYear = minimunRelease.release_date.Year;
                         }
                     }
                 }
