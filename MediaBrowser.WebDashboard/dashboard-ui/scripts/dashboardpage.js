@@ -281,6 +281,12 @@
         }
 
         $('#programDataPath', page).html(dashboardInfo.SystemInfo.ProgramDataPath);
+        
+        if (window.location.toString().toLowerCase().indexOf('localhost') == -1) {
+            $('#pProgramDataPath', page).hide();
+        } else {
+            $('#pProgramDataPath', page).hide();
+        }
 
         var host = ApiClient.serverHostName();
 

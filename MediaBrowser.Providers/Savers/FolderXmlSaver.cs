@@ -33,9 +33,11 @@ namespace MediaBrowser.Providers.Savers
                 return false;
             }
 
+            var wasMetadataEdited = (updateType & ItemUpdateType.MetadataEdit) == ItemUpdateType.MetadataEdit;
+            var wasMetadataDownloaded = (updateType & ItemUpdateType.MetadataDownload) == ItemUpdateType.MetadataDownload;
+            
             // If new metadata has been downloaded and save local is on, OR metadata was manually edited, proceed
-            if ((_config.Configuration.SaveLocalMeta && (updateType & ItemUpdateType.MetadataDownload) == ItemUpdateType.MetadataDownload)
-                || (updateType & ItemUpdateType.MetadataEdit) == ItemUpdateType.MetadataEdit)
+            if ((_config.Configuration.SaveLocalMeta && wasMetadataDownloaded) || wasMetadataEdited)
             {
                 if (!(item is Series) && !(item is BoxSet) && !(item is MusicArtist) && !(item is MusicAlbum) &&
                     !(item is Season))
@@ -45,8 +47,7 @@ namespace MediaBrowser.Providers.Savers
             }
 
             // If new metadata has been downloaded or metadata was manually edited, proceed
-            if ((updateType & ItemUpdateType.MetadataDownload) == ItemUpdateType.MetadataDownload
-                || (updateType & ItemUpdateType.MetadataEdit) == ItemUpdateType.MetadataEdit)
+            if (wasMetadataDownloaded || wasMetadataEdited)
             {
                 if (item is AggregateFolder || item is UserRootFolder || item is CollectionFolder)
                 {
