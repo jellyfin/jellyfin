@@ -307,6 +307,11 @@ namespace MediaBrowser.Server.Implementations.IO
                     Logger.Warn("Network still unavailable...");
                     retries++;
                 }
+                catch (ApplicationException)
+                {
+                    Logger.Warn("Network still unavailable...");
+                    retries++;
+                }
             }
             if (!success)
             {
