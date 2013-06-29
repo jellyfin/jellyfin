@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Dto;
+﻿using System.Linq;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using ServiceStack.ServiceHost;
@@ -221,13 +222,43 @@ namespace MediaBrowser.Api
 
                 if (folder != null)
                 {
-                    await folder.ValidateChildren(new Progress<double>(), CancellationToken.None, request.Recursive,
-                                                request.Forced).ConfigureAwait(false);
+                    // Collection folders don't validate their children so we'll have to simulate that here
+                    var collectionFolder = folder as CollectionFolder;
+
+                    if (collectionFolder != null)
+                    {
+                        await RefreshCollectionFolderChildren(request, collectionFolder).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        await folder.ValidateChildren(new Progress<double>(), CancellationToken.None, request.Recursive, request.Forced).ConfigureAwait(false);
+                    }
                 }
             }
             catch (Exception ex)
             {
                 Logger.ErrorException("Error refreshing library", ex);
+            }
+        }
+
+        /// <summary>
+        /// Refreshes the collection folder children.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <param name="collectionFolder">The collection folder.</param>
+        /// <returns>Task.</returns>
+        private async Task RefreshCollectionFolderChildren(RefreshItem request, CollectionFolder collectionFolder)
+        {
+            foreach (var child in collectionFolder.Children.ToList())
+            {
+                await child.RefreshMetadata(CancellationToken.None, forceRefresh: request.Forced).ConfigureAwait(false);
+
+                var folder = child as Folder;
+
+                if (folder != null)
+                {
+                    await folder.ValidateChildren(new Progress<double>(), CancellationToken.None, request.Recursive, request.Forced).ConfigureAwait(false);
+                }
             }
         }
     }
