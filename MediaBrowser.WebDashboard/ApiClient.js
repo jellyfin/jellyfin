@@ -449,7 +449,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 throw new Error("null name");
             }
 
-            var url = self.getUrl("Artists/" + name + "/Refresh", {
+            var url = self.getUrl("Artists/" + self.encodeName(name) + "/Refresh", {
 
                 forced: force || false
 
@@ -467,7 +467,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 throw new Error("null name");
             }
 
-            var url = self.getUrl("Genres/" + name + "/Refresh", {
+            var url = self.getUrl("Genres/" + self.encodeName(name) + "/Refresh", {
 
                 forced: force || false
 
@@ -485,7 +485,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 throw new Error("null name");
             }
 
-            var url = self.getUrl("MusicGenres/" + name + "/Refresh", {
+            var url = self.getUrl("MusicGenres/" + self.encodeName(name) + "/Refresh", {
 
                 forced: force || false
 
@@ -503,7 +503,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 throw new Error("null name");
             }
 
-            var url = self.getUrl("Persons/" + name + "/Refresh", {
+            var url = self.getUrl("Persons/" + self.encodeName(name) + "/Refresh", {
 
                 forced: force || false
 
@@ -521,7 +521,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 throw new Error("null name");
             }
 
-            var url = self.getUrl("Studios/" + name + "/Refresh", {
+            var url = self.getUrl("Studios/" + self.encodeName(name) + "/Refresh", {
 
                 forced: force || false
 
