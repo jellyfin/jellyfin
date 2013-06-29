@@ -512,20 +512,20 @@
             };
 
             var updatePromise;
-            
-            if (item.Type == "Artist") {
+
+            if (currentItem.Type == "Artist") {
                 updatePromise = ApiClient.updateArtist(item);
             }
-            else if (item.Type == "Genre") {
+            else if (currentItem.Type == "Genre") {
                 updatePromise = ApiClient.updateGenre(item);
             }
-            else if (item.Type == "MusicGenre") {
+            else if (currentItem.Type == "MusicGenre") {
                 updatePromise = ApiClient.updateMusicGenre(item);
             }
-            else if (item.Type == "Person") {
+            else if (currentItem.Type == "Person") {
                 updatePromise = ApiClient.updatePerson(item);
             }
-            else if (item.Type == "Studio") {
+            else if (currentItem.Type == "Studio") {
                 updatePromise = ApiClient.updateStudio(item);
             }
             else {
