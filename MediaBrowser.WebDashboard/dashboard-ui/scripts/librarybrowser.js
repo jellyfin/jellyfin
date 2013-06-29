@@ -45,7 +45,7 @@
                     }
                 }
 
-                var imgUrl = null   ;
+                var imgUrl = null;
                 var isDefault = false;
 
                 var cssClass = "tileItem";
@@ -1374,7 +1374,7 @@
                         try {
 
                             var endYear = parseISO8601Date(item.EndDate, { toLocal: true }).getFullYear();
-                            
+
                             if (endYear != item.ProductionYear) {
                                 text += "-" + parseISO8601Date(item.EndDate, { toLocal: true }).getFullYear();
                             }
@@ -1489,7 +1489,9 @@
                         html += '&nbsp;&nbsp;/&nbsp;&nbsp;';
                     }
 
-                    html += '<a class="textlink" href="itembynamedetails.html?context=' + context + '&genre=' + ApiClient.encodeName(item.Genres[i]) + '">' + item.Genres[i] + '</a>';
+                    var param = item.Type == "Audio" || item.Type == "Artist" || item.Type == "MusicArtist" || item.Type == "MusicAlbum" ? "musicgenre" : "genre;";
+
+                    html += '<a class="textlink" href="itembynamedetails.html?context=' + context + '&' + param + '=' + ApiClient.encodeName(item.Genres[i]) + '">' + item.Genres[i] + '</a>';
                 }
 
                 elem.show().html(html).trigger('create');
