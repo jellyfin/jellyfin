@@ -285,7 +285,7 @@
         if (window.location.toString().toLowerCase().indexOf('localhost') == -1) {
             $('#pProgramDataPath', page).hide();
         } else {
-            $('#pProgramDataPath', page).hide();
+            $('#pProgramDataPath', page).show();
         }
 
         var host = ApiClient.serverHostName();
