@@ -785,19 +785,7 @@ namespace MediaBrowser.Api.Images
 
                 await _providerManager.SaveImage(entity, memoryStream, mimeType, imageType, imageIndex, CancellationToken.None).ConfigureAwait(false);
 
-                var user = entity as User;
-
-                if (user != null)
-                {
-                    await _userManager.UpdateUser(user).ConfigureAwait(false);
-                }
-                else
-                {
-                    await _libraryManager.UpdateItem(entity, ItemUpdateType.ImageUpdate, CancellationToken.None)
-                                       .ConfigureAwait(false);
-                }
-
-                await entity.RefreshMetadata(CancellationToken.None, allowSlowProviders: false).ConfigureAwait(false);
+                await entity.RefreshMetadata(CancellationToken.None, forceRefresh: true, forceSave: true, allowSlowProviders: false).ConfigureAwait(false);
             }
         }
     }
