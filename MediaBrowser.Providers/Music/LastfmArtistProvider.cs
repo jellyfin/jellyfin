@@ -78,16 +78,16 @@ namespace MediaBrowser.Providers.Music
                 }
             }
 
-            // Try to find the id using last fm
-            var result = await FindIdFromLastFm(item, cancellationToken).ConfigureAwait(false);
+            //// Try to find the id using last fm
+            //var result = await FindIdFromLastFm(item, cancellationToken).ConfigureAwait(false);
 
-            if (result != null)
-            {
-                if (!string.IsNullOrEmpty(result))
-                {
-                    return result;
-                }
-            }
+            //if (result != null)
+            //{
+            //    if (!string.IsNullOrEmpty(result))
+            //    {
+            //        return result;
+            //    }
+            //}
 
             try
             {
