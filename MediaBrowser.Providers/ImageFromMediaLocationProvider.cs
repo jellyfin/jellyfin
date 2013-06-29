@@ -218,6 +218,14 @@ namespace MediaBrowser.Providers
                 item.SetImage(ImageType.Art, image.FullName);
             }
 
+            // Disc
+            image = GetImage(item, "disc");
+
+            if (image != null)
+            {
+                item.SetImage(ImageType.Disc, image.FullName);
+            }
+
             // Thumbnail Image
             image = GetImage(item, "thumb");
 
