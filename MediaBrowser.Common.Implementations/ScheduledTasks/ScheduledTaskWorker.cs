@@ -499,7 +499,16 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         /// <param name="triggers">The triggers.</param>
         private void SaveTriggers(IEnumerable<ITaskTrigger> triggers)
         {
-            JsonSerializer.SerializeToFile(triggers.Select(ScheduledTaskHelpers.GetTriggerInfo), GetConfigurationFilePath());
+            var path = GetConfigurationFilePath();
+
+            var parentPath = Path.GetDirectoryName(path);
+
+            if (!Directory.Exists(parentPath))
+            {
+                Directory.CreateDirectory(parentPath);
+            }
+
+            JsonSerializer.SerializeToFile(triggers.Select(ScheduledTaskHelpers.GetTriggerInfo), path);
         }
 
         /// <summary>
