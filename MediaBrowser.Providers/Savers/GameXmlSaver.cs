@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Configuration;
+﻿using System.Security;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Providers.Movies;
@@ -56,14 +57,28 @@ namespace MediaBrowser.Providers.Savers
 
             builder.Append("<Item>");
 
+            var game = (Game)item;
+
+            if (game.PlayersSupported.HasValue)
+            {
+                builder.Append("<Players>" + SecurityElement.Escape(game.PlayersSupported.Value.ToString(UsCulture)) + "</Players>");
+            }
+
+            if (!string.IsNullOrEmpty(game.GameSystem))
+            {
+                builder.Append("<GameSystem><![CDATA[" + game.GameSystem + "]]></GameSystem>");
+            }
+            
             XmlSaverHelpers.AddCommonNodes(item, builder);
 
             builder.Append("</Item>");
 
             var xmlFilePath = GetSavePath(item);
 
-            XmlSaverHelpers.Save(builder, xmlFilePath, new string[]
+            XmlSaverHelpers.Save(builder, xmlFilePath, new[]
                 {
+                    "Players",
+                    "GameSystem"
                 });
 
             // Set last refreshed so that the provider doesn't trigger after the file save
