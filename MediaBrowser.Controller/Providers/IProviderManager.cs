@@ -13,9 +13,6 @@ namespace MediaBrowser.Controller.Providers
     /// </summary>
     public interface IProviderManager
     {
-        Task<string> DownloadAndSaveImage(BaseItem item, string source, string targetName, bool saveLocally,
-                                          SemaphoreSlim resourcePool, CancellationToken cancellationToken);
-
         /// <summary>
         /// Executes the metadata providers.
         /// </summary>
