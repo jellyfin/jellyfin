@@ -282,12 +282,6 @@
 
         $('#programDataPath', page).html(dashboardInfo.SystemInfo.ProgramDataPath);
         
-        if (window.location.toString().toLowerCase().indexOf('localhost') == -1) {
-            $('#pProgramDataPath', page).hide();
-        } else {
-            $('#pProgramDataPath', page).show();
-        }
-
         var host = ApiClient.serverHostName();
 
         var url = "http://" + host + ":" + port + "/mediabrowser";

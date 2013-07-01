@@ -106,6 +106,7 @@
     <Compile Include="ScheduledTasks\WeeklyTrigger.cs" />
     <Compile Include="Security\IRequiresRegistration.cs" />
     <Compile Include="Security\ISecurityManager.cs" />
+    <Compile Include="Updates\IInstallationManager.cs" />
     <Compile Include="Updates\IPackageManager.cs" />
   </ItemGroup>
   <ItemGroup>

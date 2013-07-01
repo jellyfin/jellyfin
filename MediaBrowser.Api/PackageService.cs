@@ -1,6 +1,6 @@
 ﻿using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller.Updates;
+using MediaBrowser.Common.Updates;
 using MediaBrowser.Model.Updates;
 using ServiceStack.ServiceHost;
 using System;

@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Controller.Updates
+namespace MediaBrowser.Common.Updates
 {
     public interface IInstallationManager : IDisposable
     {

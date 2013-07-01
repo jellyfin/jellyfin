@@ -160,7 +160,6 @@
     <Compile Include="Session\SessionInfo.cs" />
     <Compile Include="Sorting\IBaseItemComparer.cs" />
     <Compile Include="Sorting\IUserBaseItemComparer.cs" />
-    <Compile Include="Updates\IInstallationManager.cs" />
     <Compile Include="Providers\BaseItemXmlParser.cs" />
   </ItemGroup>
   <ItemGroup>

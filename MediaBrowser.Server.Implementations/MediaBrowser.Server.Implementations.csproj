@@ -184,7 +184,6 @@
     <Compile Include="Persistence\SqliteUserRepository.cs" />
     <Compile Include="Udp\UdpMessageReceivedEventArgs.cs" />
     <Compile Include="Udp\UdpServer.cs" />
-    <Compile Include="Updates\InstallationManager.cs" />
     <Compile Include="WebSocket\AlchemyServer.cs" />
     <Compile Include="WebSocket\AlchemyWebSocket.cs" />
   </ItemGroup>
@@ -285,6 +284,9 @@
     <Content Include="swagger-ui\swagger-ui.min.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Updates\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
