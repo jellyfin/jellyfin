@@ -68,7 +68,7 @@ namespace MediaBrowser.Api
         [ApiMember(Name = "GenreName", Description = "The name of the item", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public string GenreName { get; set; }
     }
-    
+
     public class ItemUpdateService : BaseApiService
     {
         private readonly ILibraryManager _libraryManager;
@@ -105,7 +105,7 @@ namespace MediaBrowser.Api
 
         private async Task UpdateItem(UpdatePerson request)
         {
-            var item = await _libraryManager.GetPerson(request.PersonName).ConfigureAwait(false);
+            var item = await GetPerson(request.PersonName, _libraryManager).ConfigureAwait(false);
 
             UpdateItem(request, item);
 
@@ -121,7 +121,7 @@ namespace MediaBrowser.Api
 
         private async Task UpdateItem(UpdateArtist request)
         {
-            var item = await _libraryManager.GetArtist(request.ArtistName).ConfigureAwait(false);
+            var item = await GetArtist(request.ArtistName, _libraryManager).ConfigureAwait(false);
 
             UpdateItem(request, item);
 
@@ -137,7 +137,7 @@ namespace MediaBrowser.Api
 
         private async Task UpdateItem(UpdateStudio request)
         {
-            var item = await _libraryManager.GetStudio(request.StudioName).ConfigureAwait(false);
+            var item = await GetStudio(request.StudioName, _libraryManager).ConfigureAwait(false);
 
             UpdateItem(request, item);
 
@@ -153,7 +153,7 @@ namespace MediaBrowser.Api
 
         private async Task UpdateItem(UpdateMusicGenre request)
         {
-            var item = await _libraryManager.GetMusicGenre(request.GenreName).ConfigureAwait(false);
+            var item = await GetMusicGenre(request.GenreName, _libraryManager).ConfigureAwait(false);
 
             UpdateItem(request, item);
 
@@ -169,7 +169,7 @@ namespace MediaBrowser.Api
 
         private async Task UpdateItem(UpdateGameGenre request)
         {
-            var item = await _libraryManager.GetGameGenre(request.GenreName).ConfigureAwait(false);
+            var item = await GetGameGenre(request.GenreName, _libraryManager).ConfigureAwait(false);
 
             UpdateItem(request, item);
 
@@ -185,7 +185,7 @@ namespace MediaBrowser.Api
 
         private async Task UpdateItem(UpdateGenre request)
         {
-            var item = await _libraryManager.GetGenre(request.GenreName).ConfigureAwait(false);
+            var item = await GetGenre(request.GenreName, _libraryManager).ConfigureAwait(false);
 
             UpdateItem(request, item);
 

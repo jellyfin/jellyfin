@@ -117,7 +117,7 @@ namespace MediaBrowser.Api
 
         protected Task<GameGenre> GetGameGenre(string name, ILibraryManager libraryManager)
         {
-            return libraryManager.GetGameGenre(DeSlugGenreName(name, libraryManager));
+            return libraryManager.GetGameGenre(DeSlugGameGenreName(name, libraryManager));
         }
         
         protected Task<Person> GetPerson(string name, ILibraryManager libraryManager)
@@ -174,6 +174,26 @@ namespace MediaBrowser.Api
                 }) ?? name;
         }
 
+        protected string DeSlugGameGenreName(string name, ILibraryManager libraryManager)
+        {
+            if (name.IndexOf(SlugChar) == -1)
+            {
+                return name;
+            }
+
+            return libraryManager.RootFolder.RecursiveChildren
+                .OfType<Game>()
+                .SelectMany(i => i.Genres)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .FirstOrDefault(i =>
+                {
+                    i = _dashReplaceChars.Aggregate(i, (current, c) => current.Replace(c, SlugChar));
+
+                    return string.Equals(i, name, StringComparison.OrdinalIgnoreCase);
+
+                }) ?? name;
+        }
+        
         /// <summary>
         /// Deslugs a studio name by finding the correct entry in the library
         /// </summary>

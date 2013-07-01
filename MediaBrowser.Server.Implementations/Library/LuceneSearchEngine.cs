@@ -145,7 +145,7 @@ namespace MediaBrowser.Server.Implementations.Library
             }
 
             // Find genres, from non-audio items
-            var genres = items.Where(i => !(i is Audio) && !(i is MusicAlbum) && !(i is MusicAlbumDisc) && !(i is MusicArtist) && !(i is MusicVideo))
+            var genres = items.Where(i => !(i is Audio) && !(i is MusicAlbum) && !(i is MusicAlbumDisc) && !(i is MusicArtist) && !(i is MusicVideo) && !(i is Game))
                 .SelectMany(i => i.Genres)
                 .Where(i => !string.IsNullOrEmpty(i))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
@@ -186,6 +186,32 @@ namespace MediaBrowser.Server.Implementations.Library
                     try
                     {
                         var genre = await _libraryManager.GetMusicGenre(item).ConfigureAwait(false);
+
+                        hints.Add(new Tuple<BaseItem, string, int>(genre, index.Item1, index.Item2));
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.ErrorException("Error getting {0}", ex, item);
+                    }
+                }
+            }
+
+            // Find music genres
+            var gameGenres = items.OfType<Game>()
+                .SelectMany(i => i.Genres)
+                .Where(i => !string.IsNullOrEmpty(i))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            foreach (var item in gameGenres)
+            {
+                var index = GetIndex(item, searchTerm, terms);
+
+                if (index.Item2 != -1)
+                {
+                    try
+                    {
+                        var genre = await _libraryManager.GetGameGenre(item).ConfigureAwait(false);
 
                         hints.Add(new Tuple<BaseItem, string, int>(genre, index.Item1, index.Item2));
                     }

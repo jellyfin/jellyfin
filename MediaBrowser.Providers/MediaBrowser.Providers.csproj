@@ -82,6 +82,7 @@
     <Compile Include="Savers\BoxSetXmlSaver.cs" />
     <Compile Include="Savers\EpisodeXmlSaver.cs" />
     <Compile Include="Savers\FolderXmlSaver.cs" />
+    <Compile Include="Savers\GameXmlSaver.cs" />
     <Compile Include="Savers\MovieXmlSaver.cs" />
     <Compile Include="Savers\PersonXmlSaver.cs" />
     <Compile Include="Savers\SeasonXmlSaver.cs" />
