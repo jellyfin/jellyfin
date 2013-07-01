@@ -57,7 +57,7 @@ namespace MediaBrowser.Providers.Savers
                     "RunningTime",
                     "Runtime",
                     "TagLine",
-                    "TagLines",
+                    "Taglines",
                     "IMDB_ID",
                     "IMDB",
                     "IMDbId",
@@ -71,7 +71,9 @@ namespace MediaBrowser.Providers.Savers
                     "Tags",
                     "Added",
                     "LockData",
-                    "Trailer"
+                    "Trailer",
+                    "CriticRating",
+                    "CriticRatingSummary"
                 });
 
                 var position = xml.ToString().LastIndexOf("</", StringComparison.OrdinalIgnoreCase);
@@ -299,14 +301,14 @@ namespace MediaBrowser.Providers.Savers
             {
                 builder.Append("<TagLine>" + SecurityElement.Escape(item.Taglines[0]) + "</TagLine>");
 
-                builder.Append("<TagLines>");
+                builder.Append("<Taglines>");
 
                 foreach (var tagline in item.Taglines)
                 {
                     builder.Append("<Tagline>" + SecurityElement.Escape(tagline) + "</Tagline>");
                 }
 
-                builder.Append("</TagLines>");
+                builder.Append("</Taglines>");
             }
 
             if (item.Genres.Count > 0)
@@ -369,60 +371,73 @@ namespace MediaBrowser.Providers.Savers
         /// <typeparam name="T"></typeparam>
         /// <param name="item">The item.</param>
         /// <param name="builder">The builder.</param>
-        public static void AppendMediaInfo<T>(T item, StringBuilder builder)
+        public static void AddMediaInfo<T>(T item, StringBuilder builder)
             where T : BaseItem, IHasMediaStreams
         {
             builder.Append("<MediaInfo>");
 
             foreach (var stream in item.MediaStreams)
             {
+                builder.Append("<" + stream.Type + ">");
+
+                if (!string.IsNullOrEmpty(stream.Codec))
+                {
+                    builder.Append("<Codec>" + SecurityElement.Escape(stream.Codec) + "</Codec>");
+                    builder.Append("<FFCodec>" + SecurityElement.Escape(stream.Codec) + "</FFCodec>");
+                }
+
+                if (stream.BitRate.HasValue)
+                {
+                    builder.Append("<BitRate>" + stream.BitRate.Value.ToString(UsCulture) + "</BitRate>");
+                }
+
+                if (stream.Width.HasValue)
+                {
+                    builder.Append("<Width>" + stream.Width.Value.ToString(UsCulture) + "</Width>");
+                }
+
+                if (stream.Height.HasValue)
+                {
+                    builder.Append("<Height>" + stream.Height.Value.ToString(UsCulture) + "</Height>");
+                }
+
+                if (!string.IsNullOrEmpty(stream.AspectRatio))
+                {
+                    builder.Append("<AspectRatio>" + SecurityElement.Escape(stream.AspectRatio) + "</AspectRatio>");
+                }
+
+                var framerate = stream.AverageFrameRate ?? stream.RealFrameRate;
+
+                if (framerate.HasValue)
+                {
+                    builder.Append("<FrameRate>" + framerate.Value.ToString(UsCulture) + "</FrameRate>");
+                }
+
+                if (!string.IsNullOrEmpty(stream.Language))
+                {
+                    builder.Append("<Language>" + SecurityElement.Escape(stream.Language) + "</Language>");
+                }
+
+                if (!string.IsNullOrEmpty(stream.ScanType))
+                {
+                    builder.Append("<ScanType>" + SecurityElement.Escape(stream.ScanType) + "</ScanType>");
+                }
+                
+                if (stream.Channels.HasValue)
+                {
+                    builder.Append("<Channels>" + stream.Channels.Value.ToString(UsCulture) + "</Channels>");
+                }
+
+                if (stream.SampleRate.HasValue)
+                {
+                    builder.Append("<SamplingRate>" + stream.SampleRate.Value.ToString(UsCulture) + "</SamplingRate>");
+                }
+
+                builder.Append("<Default>" + SecurityElement.Escape(stream.IsDefault.ToString()) + "</Default>");
+                builder.Append("<Forced>" + SecurityElement.Escape(stream.IsForced.ToString()) + "</Forced>");
+
                 if (stream.Type == MediaStreamType.Video)
                 {
-                    builder.Append("<Video>");
-
-                    if (!string.IsNullOrEmpty(stream.Codec))
-                    {
-                        builder.Append("<Codec>" + SecurityElement.Escape(stream.Codec) + "</Codec>");
-                        builder.Append("<FFCodec>" + SecurityElement.Escape(stream.Codec) + "</FFCodec>");
-                    }
-
-                    if (stream.BitRate.HasValue)
-                    {
-                        builder.Append("<BitRate>" + stream.BitRate.Value.ToString(UsCulture) + "</BitRate>");
-                    }
-
-                    if (stream.Width.HasValue)
-                    {
-                        builder.Append("<Width>" + stream.Width.Value.ToString(UsCulture) + "</Width>");
-                    }
-
-                    if (stream.Height.HasValue)
-                    {
-                        builder.Append("<Height>" + stream.Height.Value.ToString(UsCulture) + "</Height>");
-                    }
-
-                    if (!string.IsNullOrEmpty(stream.AspectRatio))
-                    {
-                        builder.Append("<AspectRatio>" + SecurityElement.Escape(stream.AspectRatio) + "</AspectRatio>");
-                    }
-
-                    var framerate = stream.AverageFrameRate ?? stream.RealFrameRate;
-
-                    if (framerate.HasValue)
-                    {
-                        builder.Append("<FrameRate>" + framerate.Value.ToString(UsCulture) + "</FrameRate>");
-                    }
-
-                    if (!string.IsNullOrEmpty(stream.Language))
-                    {
-                        builder.Append("<Language>" + SecurityElement.Escape(stream.Language) + "</Language>");
-                    }
-
-                    if (!string.IsNullOrEmpty(stream.ScanType))
-                    {
-                        builder.Append("<ScanType>" + SecurityElement.Escape(stream.ScanType) + "</ScanType>");
-                    }
-
                     if (item.RunTimeTicks.HasValue)
                     {
                         var timespan = TimeSpan.FromTicks(item.RunTimeTicks.Value);
@@ -430,9 +445,6 @@ namespace MediaBrowser.Providers.Savers
                         builder.Append("<Duration>" + Convert.ToInt32(timespan.TotalMinutes).ToString(UsCulture) + "</Duration>");
                         builder.Append("<DurationSeconds>" + Convert.ToInt32(timespan.TotalSeconds).ToString(UsCulture) + "</DurationSeconds>");
                     }
-
-                    builder.Append("<Default>" + SecurityElement.Escape(stream.IsDefault.ToString()) + "</Default>");
-                    builder.Append("<Forced>" + SecurityElement.Escape(stream.IsForced.ToString()) + "</Forced>");
 
                     var video = item as Video;
 
@@ -454,58 +466,9 @@ namespace MediaBrowser.Providers.Savers
                                 break;
                         }
                     }
-
-                    builder.Append("</Video>");
                 }
-                else if (stream.Type == MediaStreamType.Audio)
-                {
-                    builder.Append("<Audio>");
-
-                    if (!string.IsNullOrEmpty(stream.Codec))
-                    {
-                        builder.Append("<Codec>" + SecurityElement.Escape(stream.Codec) + "</Codec>");
-                        builder.Append("<FFCodec>" + SecurityElement.Escape(stream.Codec) + "</FFCodec>");
-                    }
-
-                    if (stream.Channels.HasValue)
-                    {
-                        builder.Append("<Channels>" + stream.Channels.Value.ToString(UsCulture) + "</Channels>");
-                    }
-
-                    if (stream.BitRate.HasValue)
-                    {
-                        builder.Append("<BitRate>" + stream.BitRate.Value.ToString(UsCulture) + "</BitRate>");
-                    }
-
-                    if (stream.SampleRate.HasValue)
-                    {
-                        builder.Append("<SamplingRate>" + stream.SampleRate.Value.ToString(UsCulture) + "</SamplingRate>");
-                    }
-
-                    if (!string.IsNullOrEmpty(stream.Language))
-                    {
-                        builder.Append("<Language>" + SecurityElement.Escape(stream.Language) + "</Language>");
-                    }
-
-                    builder.Append("<Default>" + SecurityElement.Escape(stream.IsDefault.ToString()) + "</Default>");
-                    builder.Append("<Forced>" + SecurityElement.Escape(stream.IsForced.ToString()) + "</Forced>");
-
-                    builder.Append("</Audio>");
-                }
-                else if (stream.Type == MediaStreamType.Subtitle)
-                {
-                    builder.Append("<Subtitle>");
-
-                    if (!string.IsNullOrEmpty(stream.Language))
-                    {
-                        builder.Append("<Language>" + SecurityElement.Escape(stream.Language) + "</Language>");
-                    }
-
-                    builder.Append("<Default>" + SecurityElement.Escape(stream.IsDefault.ToString()) + "</Default>");
-                    builder.Append("<Forced>" + SecurityElement.Escape(stream.IsForced.ToString()) + "</Forced>");
-
-                    builder.Append("</Subtitle>");
-                }
+                
+                builder.Append("</" + stream.Type + ">");
             }
 
             builder.Append("</MediaInfo>");

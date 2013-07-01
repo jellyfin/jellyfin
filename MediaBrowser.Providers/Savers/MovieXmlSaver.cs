@@ -1,4 +1,6 @@
-﻿using MediaBrowser.Controller.Configuration;
+﻿using System.Globalization;
+using System.Security;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
@@ -51,6 +53,8 @@ namespace MediaBrowser.Providers.Savers
             return false;
         }
 
+        private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
+        
         /// <summary>
         /// Saves the specified item.
         /// </summary>
@@ -64,13 +68,28 @@ namespace MediaBrowser.Providers.Savers
             builder.Append("<Title>");
 
             XmlSaverHelpers.AddCommonNodes(item, builder);
-            XmlSaverHelpers.AppendMediaInfo((Video)item, builder);
+
+            if (item.CommunityRating.HasValue)
+            {
+                builder.Append("<IMDBrating>" + SecurityElement.Escape(item.CommunityRating.Value.ToString(UsCulture)) + "</IMDBrating>");
+            }
+
+            if (!string.IsNullOrEmpty(item.Overview))
+            {
+                builder.Append("<Description><![CDATA[" + item.Overview + "]]></Description>");
+            }
+            
+            XmlSaverHelpers.AddMediaInfo((Video)item, builder);
 
             builder.Append("</Title>");
 
             var xmlFilePath = GetSavePath(item);
 
-            XmlSaverHelpers.Save(builder, xmlFilePath, new string[] { });
+            XmlSaverHelpers.Save(builder, xmlFilePath, new[]
+                {
+                    "IMDBrating",
+                    "Description"
+                });
 
             // Set last refreshed so that the provider doesn't trigger after the file save
             MovieProviderFromXml.Current.SetLastRefreshed(item, DateTime.UtcNow);
