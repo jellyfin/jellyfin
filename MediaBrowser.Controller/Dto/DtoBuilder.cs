@@ -677,11 +677,6 @@ namespace MediaBrowser.Controller.Dto
         /// <returns>Task.</returns>
         private async Task AttachStudios(BaseItemDto dto, BaseItem item)
         {
-            if (item.Studios == null)
-            {
-                return;
-            }
-
             var studios = item.Studios.ToList();
 
             dto.Studios = new StudioDto[studios.Count];
