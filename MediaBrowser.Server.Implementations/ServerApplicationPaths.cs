@@ -225,5 +225,18 @@ namespace MediaBrowser.Server.Implementations
                 return Path.Combine(ItemsByNamePath, "artists");
             }
         }
+
+
+        /// <summary>
+        /// Gets the game genre path.
+        /// </summary>
+        /// <value>The game genre path.</value>
+        public string GameGenrePath
+        {
+            get
+            {
+                return Path.Combine(ItemsByNamePath, "GameGenre");
+            }
+        }
     }
 }

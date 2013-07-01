@@ -31,6 +31,12 @@
             return ApiClient.getMusicGenre(name, Dashboard.getCurrentUserId());
         }
 
+        name = getParameterByName('gamegenre');
+
+        if (name) {
+            return ApiClient.getGameGenre(name, Dashboard.getCurrentUserId());
+        }
+
         name = getParameterByName('artist');
 
         if (name) {
@@ -52,7 +58,7 @@
             LibraryBrowser.renderName(item, $('.itemName', page), true);
             LibraryBrowser.renderParentName(item, $('.parentName', page));
 
-            if (item.Type == "Person" || item.Type == "Studio" || item.Type == "MusicGenre" || item.Type == "Genre" || item.Type == "Artist") {
+            if (item.Type == "Person" || item.Type == "Studio" || item.Type == "MusicGenre" || item.Type == "Genre" || item.Type == "Artist" || item.Type == "GameGenre") {
                 $('#peopleTab', page).hide();
             } else {
                 $('#peopleTab', page).show();

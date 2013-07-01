@@ -180,7 +180,20 @@ namespace MediaBrowser.Api.Images
         [ApiMember(Name = "Name", Description = "Genre name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Name { get; set; }
     }
-    
+
+    [Route("/GameGenres/{Name}/Images/{Type}", "GET")]
+    [Route("/GameGenres/{Name}/Images/{Type}/{Index}", "GET")]
+    [Api(Description = "Gets a genre image")]
+    public class GetGameGenreImage : ImageRequest
+    {
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        [ApiMember(Name = "Name", Description = "Genre name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Name { get; set; }
+    }
+
     /// <summary>
     /// Class GetYearImage
     /// </summary>
@@ -530,6 +543,13 @@ namespace MediaBrowser.Api.Images
             return GetImage(request, item);
         }
 
+        public object Get(GetGameGenreImage request)
+        {
+            var item = GetGameGenre(request.Name, _libraryManager).Result;
+
+            return GetImage(request, item);
+        }
+        
         /// <summary>
         /// Posts the specified request.
         /// </summary>

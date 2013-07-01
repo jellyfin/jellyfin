@@ -30,6 +30,12 @@
             return ApiClient.getMusicGenre(name, Dashboard.getCurrentUserId());
         }
 
+        name = getParameterByName('gamegenre');
+
+        if (name) {
+            return ApiClient.getGameGenre(name, Dashboard.getCurrentUserId());
+        }
+
         name = getParameterByName('artist');
 
         if (name) {
@@ -522,6 +528,9 @@
             else if (currentItem.Type == "MusicGenre") {
                 updatePromise = ApiClient.updateMusicGenre(item);
             }
+            else if (currentItem.Type == "GameGenre") {
+                updatePromise = ApiClient.updateGameGenre(item);
+            }
             else if (currentItem.Type == "Person") {
                 updatePromise = ApiClient.updatePerson(item);
             }
@@ -596,6 +605,9 @@
             }
             else if (currentItem.Type == "MusicGenre") {
                 refreshPromise = ApiClient.refreshMusicGenre(currentItem.Name, true);
+            }
+            else if (currentItem.Type == "GameGenre") {
+                refreshPromise = ApiClient.refreshGameGenre(currentItem.Name, true);
             }
             else if (currentItem.Type == "Person") {
                 refreshPromise = ApiClient.refreshPerson(currentItem.Name, true);

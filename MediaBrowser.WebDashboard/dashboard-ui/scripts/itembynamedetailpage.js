@@ -31,6 +31,12 @@
             return ApiClient.getMusicGenre(name, Dashboard.getCurrentUserId());
         }
 
+        name = getParameterByName('gamegenre');
+
+        if (name) {
+            return ApiClient.getGameGenre(name, Dashboard.getCurrentUserId());
+        }
+
         name = getParameterByName('artist');
 
         if (name) {
@@ -125,7 +131,7 @@
         if (context == "music" && item.Type == "Artist") {
             $('#artistTabs', page).show();
         }
-        if (context == "games" && item.Type == "Genre") {
+        if (context == "games" && item.Type == "GameGenre") {
             $('#gameGenreTabs', page).show();
         }
         if (context == "games" && item.Type == "Studio") {
@@ -145,6 +151,9 @@
         }
         else if (item.Type == "MusicGenre") {
             promise = ApiClient.getMusicGenreItemCounts(Dashboard.getCurrentUserId(), item.Name);
+        }
+        else if (item.Type == "GameGenre") {
+            promise = ApiClient.getGameGenreItemCounts(Dashboard.getCurrentUserId(), item.Name);
         }
         else if (item.Type == "Studio") {
             promise = ApiClient.getStudioItemCounts(Dashboard.getCurrentUserId(), item.Name);
@@ -381,6 +390,9 @@
             query.Genres = currentItem.Name;
         }
         else if (currentItem.Type == "MusicGenre") {
+            query.Genres = currentItem.Name;
+        }
+        else if (currentItem.Type == "GameGenre") {
             query.Genres = currentItem.Name;
         }
         else if (currentItem.Type == "Studio") {

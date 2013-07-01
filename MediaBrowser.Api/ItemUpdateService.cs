@@ -53,6 +53,14 @@ namespace MediaBrowser.Api
         public string GenreName { get; set; }
     }
 
+    [Route("/GameGenres/{GenreName}", "POST")]
+    [Api(("Updates a game genre"))]
+    public class UpdateGameGenre : BaseItemDto, IReturnVoid
+    {
+        [ApiMember(Name = "GenreName", Description = "The name of the item", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public string GenreName { get; set; }
+    }
+
     [Route("/Genres/{GenreName}", "POST")]
     [Api(("Updates a genre"))]
     public class UpdateGenre : BaseItemDto, IReturnVoid
@@ -146,6 +154,22 @@ namespace MediaBrowser.Api
         private async Task UpdateItem(UpdateMusicGenre request)
         {
             var item = await _libraryManager.GetMusicGenre(request.GenreName).ConfigureAwait(false);
+
+            UpdateItem(request, item);
+
+            await _libraryManager.UpdateItem(item, ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+        }
+
+        public void Post(UpdateGameGenre request)
+        {
+            var task = UpdateItem(request);
+
+            Task.WaitAll(task);
+        }
+
+        private async Task UpdateItem(UpdateGameGenre request)
+        {
+            var item = await _libraryManager.GetGameGenre(request.GenreName).ConfigureAwait(false);
 
             UpdateItem(request, item);
 

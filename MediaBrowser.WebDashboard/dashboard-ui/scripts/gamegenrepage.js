@@ -5,7 +5,6 @@
 
         SortBy: "SortName",
         SortOrder: "Ascending",
-        MediaTypes: "Game",
         Recursive: true,
         Fields: "ItemCounts,DateCreated,UserData",
         StartIndex: 0
@@ -15,7 +14,7 @@
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.getGenres(Dashboard.getCurrentUserId(), query).done(function (result) {
+        ApiClient.getGameGenres(Dashboard.getCurrentUserId(), query).done(function (result) {
 
             // Scroll back up so they can see the results from the beginning
             $(document).scrollTop(0);

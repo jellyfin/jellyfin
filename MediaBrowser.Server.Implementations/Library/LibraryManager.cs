@@ -663,6 +663,17 @@ namespace MediaBrowser.Server.Implementations.Library
         }
 
         /// <summary>
+        /// Gets the game genre.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
+        /// <returns>Task{GameGenre}.</returns>
+        public Task<GameGenre> GetGameGenre(string name, bool allowSlowProviders = false)
+        {
+            return GetItemByName<GameGenre>(ConfigurationManager.ApplicationPaths.GameGenrePath, name, CancellationToken.None, allowSlowProviders);
+        }
+
+        /// <summary>
         /// Gets a Genre
         /// </summary>
         /// <param name="name">The name.</param>

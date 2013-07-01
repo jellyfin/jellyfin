@@ -944,6 +944,9 @@ var Dashboard = {
         else if (type == "musicgenre") {
             url = "itembynamedetails.html?musicgenre=" + ApiClient.encodeName(cmd.ItemName) + "&context=" + (context || "music");
         }
+        else if (type == "gamegenre") {
+            url = "itembynamedetails.html?gamegenre=" + ApiClient.encodeName(cmd.ItemName) + "&context=" + (context || "games");
+        }
         else if (type == "studio") {
             url = "itembynamedetails.html?studio=" + ApiClient.encodeName(cmd.ItemName) + "&context=" + context;
         }
