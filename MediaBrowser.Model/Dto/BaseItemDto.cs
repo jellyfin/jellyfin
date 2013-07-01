@@ -423,12 +423,6 @@ namespace MediaBrowser.Model.Dto
         public List<ChapterInfoDto> Chapters { get; set; }
 
         /// <summary>
-        /// Gets or sets the video format.
-        /// </summary>
-        /// <value>The video format.</value>
-        public VideoFormat? VideoFormat { get; set; }
-
-        /// <summary>
         /// Gets or sets the type of the location.
         /// </summary>
         /// <value>The type of the location.</value>

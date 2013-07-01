@@ -44,12 +44,6 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The video3 D format.</value>
         public Video3DFormat? Video3DFormat { get; set; }
-        
-        /// <summary>
-        /// Gets or sets the format of the video.
-        /// </summary>
-        /// <value>The format of the video.</value>
-        public VideoFormat VideoFormat { get; set; }
 
         /// <summary>
         /// Gets or sets the media streams.
