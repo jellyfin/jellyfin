@@ -1,10 +1,8 @@
-﻿using MediaBrowser.Common;
-using MediaBrowser.Common.Events;
+﻿using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Common.Updates;
-using MediaBrowser.Controller.Updates;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Updates;
@@ -16,7 +14,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Server.Implementations.Updates
+namespace MediaBrowser.Common.Implementations.Updates
 {
     /// <summary>
     /// Manages all install, uninstall and update operations (both plugins and system)

@@ -6,8 +6,10 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Implementations;
 using MediaBrowser.Common.Implementations.ScheduledTasks;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Common.Implementations.Updates;
 using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
@@ -22,7 +24,6 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.Sorting;
-using MediaBrowser.Controller.Updates;
 using MediaBrowser.IsoMounter;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
@@ -41,7 +42,6 @@ using MediaBrowser.Server.Implementations.Persistence;
 using MediaBrowser.Server.Implementations.Providers;
 using MediaBrowser.Server.Implementations.ServerManager;
 using MediaBrowser.Server.Implementations.Session;
-using MediaBrowser.Server.Implementations.Updates;
 using MediaBrowser.Server.Implementations.WebSocket;
 using MediaBrowser.ServerApplication.Implementations;
 using MediaBrowser.WebDashboard.Api;
@@ -118,11 +118,6 @@ namespace MediaBrowser.ServerApplication
             return new ServerConfigurationManager(ApplicationPaths, LogManager, XmlSerializer);
         }
 
-        /// <summary>
-        /// Gets or sets the installation manager.
-        /// </summary>
-        /// <value>The installation manager.</value>
-        private IInstallationManager InstallationManager { get; set; }
         /// <summary>
         /// Gets or sets the server manager.
         /// </summary>
@@ -264,9 +259,6 @@ namespace MediaBrowser.ServerApplication
 
             LibraryManager = new LibraryManager(Logger, TaskManager, UserManager, ServerConfigurationManager, UserDataRepository, () => DirectoryWatchers);
             RegisterSingleInstance(LibraryManager);
-
-            InstallationManager = new InstallationManager(HttpClient, PackageManager, JsonSerializer, Logger, this);
-            RegisterSingleInstance(InstallationManager);
 
             DirectoryWatchers = new DirectoryWatchers(LogManager, TaskManager, LibraryManager, ServerConfigurationManager);
             RegisterSingleInstance(DirectoryWatchers);

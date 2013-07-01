@@ -149,6 +149,12 @@ namespace MediaBrowser.Common.Implementations
         protected IConfigurationManager ConfigurationManager { get; private set; }
 
         /// <summary>
+        /// Gets or sets the installation manager.
+        /// </summary>
+        /// <value>The installation manager.</value>
+        protected IInstallationManager InstallationManager { get; set; }
+        
+        /// <summary>
         /// Initializes a new instance of the <see cref="BaseApplicationHost{TApplicationPathsType}"/> class.
         /// </summary>
         protected BaseApplicationHost()
@@ -282,6 +288,9 @@ namespace MediaBrowser.Common.Implementations
 
                 PackageManager = new PackageManager(SecurityManager, NetworkManager, HttpClient, ApplicationPaths, JsonSerializer, Logger);
                 RegisterSingleInstance(PackageManager);
+
+                InstallationManager = new InstallationManager(HttpClient, PackageManager, JsonSerializer, Logger, this);
+                RegisterSingleInstance(InstallationManager);
             });
         }
 

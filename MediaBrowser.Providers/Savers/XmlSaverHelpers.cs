@@ -156,7 +156,7 @@ namespace MediaBrowser.Providers.Savers
                 builder.Append("<certification>" + SecurityElement.Escape(item.OfficialRating) + "</certification>");
             }
 
-            builder.Append("<Added>" + SecurityElement.Escape(item.DateCreated.ToString(UsCulture)) + "</Added>");
+            builder.Append("<Added>" + SecurityElement.Escape(item.DateCreated.ToString("G")) + "</Added>");
 
             builder.Append("<LockData>" + item.DontFetchMeta.ToString().ToLower() + "</LockData>");
 

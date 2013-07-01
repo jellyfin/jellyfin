@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Security;
-using MediaBrowser.Controller.Updates;
+using MediaBrowser.Common.Updates;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
