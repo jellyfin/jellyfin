@@ -149,7 +149,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>System.Object.</returns>
         public object Get(GetGameGenreItemCounts request)
         {
-            var name = DeSlugGenreName(request.Name, LibraryManager);
+            var name = DeSlugGameGenreName(request.Name, LibraryManager);
 
             var items = GetItems(request.UserId).Where(i => i.Genres != null && i.Genres.Contains(name, StringComparer.OrdinalIgnoreCase)).ToList();
 
