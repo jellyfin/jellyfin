@@ -78,7 +78,7 @@ namespace MediaBrowser.Providers.Savers
             }
 
             XmlSaverHelpers.AddCommonNodes(item, builder);
-            XmlSaverHelpers.AppendMediaInfo(episode, builder);
+            XmlSaverHelpers.AddMediaInfo(episode, builder);
 
             builder.Append("</Item>");
 
