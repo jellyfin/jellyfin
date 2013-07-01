@@ -56,6 +56,17 @@ namespace MediaBrowser.Api
         public string Name { get; set; }
     }
 
+    [Route("/GameGenres/{Name}/Refresh", "POST")]
+    [Api(Description = "Refreshes metadata for a game genre")]
+    public class RefreshGameGenre : IReturnVoid
+    {
+        [ApiMember(Name = "Forced", Description = "Indicates if a normal or forced refresh should occur.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "POST")]
+        public bool Forced { get; set; }
+
+        [ApiMember(Name = "Name", Description = "Name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public string Name { get; set; }
+    }
+
     [Route("/Persons/{Name}/Refresh", "POST")]
     [Api(Description = "Refreshes metadata for a person")]
     public class RefreshPerson : IReturnVoid
@@ -141,6 +152,27 @@ namespace MediaBrowser.Api
         private async Task RefreshMusicGenre(RefreshMusicGenre request)
         {
             var item = await GetMusicGenre(request.Name, _libraryManager).ConfigureAwait(false);
+
+            try
+            {
+                await item.RefreshMetadata(CancellationToken.None, forceRefresh: request.Forced).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error refreshing library", ex);
+            }
+        }
+
+        public void Post(RefreshGameGenre request)
+        {
+            var task = RefreshGameGenre(request);
+
+            Task.WaitAll(task);
+        }
+
+        private async Task RefreshGameGenre(RefreshGameGenre request)
+        {
+            var item = await GetGameGenre(request.Name, _libraryManager).ConfigureAwait(false);
 
             try
             {

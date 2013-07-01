@@ -497,6 +497,24 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
             });
         };
 
+        self.refreshGameGenre = function (name, force) {
+
+            if (!name) {
+                throw new Error("null name");
+            }
+
+            var url = self.getUrl("GameGenres/" + self.encodeName(name) + "/Refresh", {
+
+                forced: force || false
+
+            });
+
+            return self.ajax({
+                type: "POST",
+                url: url
+            });
+        };
+
         self.refreshPerson = function (name, force) {
 
             if (!name) {
@@ -1263,6 +1281,27 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
             });
         };
 
+        self.getGameGenre = function (name, userId) {
+
+            if (!name) {
+                throw new Error("null name");
+            }
+
+            var options = {};
+
+            if (userId) {
+                options.userId = userId;
+            }
+
+            var url = self.getUrl("GameGenres/" + self.encodeName(name), options);
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
         /**
          * Gets an artist
          */
@@ -1540,6 +1579,41 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
             };
 
             var url = "MusicGenres/" + self.encodeName(name) + "/Images/" + options.type;
+
+            if (options.index != null) {
+                url += "/" + options.index;
+            }
+
+            // Don't put these on the query string
+            delete options.type;
+            delete options.index;
+
+            return self.getUrl(url, options);
+        };
+
+        /**
+         * Constructs a url for a genre image
+         * @param {String} name
+         * @param {Object} options
+         * Options supports the following properties:
+         * width - download the image at a fixed width
+         * height - download the image at a fixed height
+         * maxWidth - download the image at a maxWidth
+         * maxHeight - download the image at a maxHeight
+         * quality - A scale of 0-100. This should almost always be omitted as the default will suffice.
+         * For best results do not specify both width and height together, as aspect ratio might be altered.
+         */
+        self.getGameGenreImageUrl = function (name, options) {
+
+            if (!name) {
+                throw new Error("null name");
+            }
+
+            options = options || {
+
+            };
+
+            var url = "GameGenres/" + self.encodeName(name) + "/Images/" + options.type;
 
             if (options.index != null) {
                 url += "/" + options.index;
@@ -1922,13 +1996,29 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
             });
         };
 
-        self.updateMusicGenres = function (item) {
+        self.updateMusicGenre = function (item) {
 
             if (!item) {
                 throw new Error("null item");
             }
 
             var url = self.getUrl("MusicGenres/" + self.encodeName(item.Name));
+
+            return self.ajax({
+                type: "POST",
+                url: url,
+                data: JSON.stringify(item),
+                contentType: "application/json"
+            });
+        };
+
+        self.updateGameGenre = function (item) {
+
+            if (!item) {
+                throw new Error("null item");
+            }
+
+            var url = self.getUrl("GameGenres/" + self.encodeName(item.Name));
 
             return self.ajax({
                 type: "POST",
@@ -2128,6 +2218,24 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
             options.userId = userId;
 
             var url = self.getUrl("MusicGenres", options);
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        self.getGameGenres = function (userId, options) {
+
+            if (!userId) {
+                throw new Error("null userId");
+            }
+
+            options = options || {};
+            options.userId = userId;
+
+            var url = self.getUrl("GameGenres", options);
 
             return self.ajax({
                 type: "GET",
@@ -2484,6 +2592,26 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
             });
         };
 
+        self.updateFavoriteGameGenreStatus = function (userId, name, isFavorite) {
+
+            if (!userId) {
+                throw new Error("null userId");
+            }
+
+            if (!name) {
+                throw new Error("null name");
+            }
+
+            var url = self.getUrl("Users/" + userId + "/Favorites/GameGenres/" + self.encodeName(name));
+
+            var method = isFavorite ? "POST" : "DELETE";
+
+            return self.ajax({
+                type: method,
+                url: url
+            });
+        };
+
         /**
         * Updates a user's rating for an item by name.
         * @param {String} userId
@@ -2590,6 +2718,26 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
             });
         };
 
+        self.updateGameGenreRating = function (userId, name, likes) {
+
+            if (!userId) {
+                throw new Error("null userId");
+            }
+
+            if (!name) {
+                throw new Error("null name");
+            }
+
+            var url = self.getUrl("Users/" + userId + "/Ratings/GameGenres/" + self.encodeName(name), {
+                likes: likes
+            });
+
+            return self.ajax({
+                type: "POST",
+                url: url
+            });
+        };
+
         /**
         * Clears a user's rating for an item by name.
         * @param {String} userId
@@ -2685,6 +2833,24 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
             });
         };
 
+        self.clearGameGenreRating = function (userId, name) {
+
+            if (!userId) {
+                throw new Error("null userId");
+            }
+
+            if (!name) {
+                throw new Error("null name");
+            }
+
+            var url = self.getUrl("Users/" + userId + "/Ratings/GameGenres/" + self.encodeName(name));
+
+            return self.ajax({
+                type: "DELETE",
+                url: url
+            });
+        };
+
         self.getItemCounts = function (userId) {
 
             var options = {};
@@ -2761,6 +2927,27 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
             }
 
             var url = self.getUrl("MusicGenres/" + self.encodeName(name) + "/Counts", {
+                userId: userId
+            });
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        self.getGameGenreItemCounts = function (userId, name) {
+
+            if (!userId) {
+                throw new Error("null userId");
+            }
+
+            if (!name) {
+                throw new Error("null name");
+            }
+
+            var url = self.getUrl("GameGenres/" + self.encodeName(name) + "/Counts", {
                 userId: userId
             });
 
