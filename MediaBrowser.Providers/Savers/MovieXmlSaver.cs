@@ -1,13 +1,12 @@
-﻿using System.Globalization;
-using System.Security;
-using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Providers.Movies;
 using System;
+using System.Globalization;
 using System.IO;
+using System.Security;
 using System.Text;
 using System.Threading;
 
@@ -97,11 +96,12 @@ namespace MediaBrowser.Providers.Savers
 
         public string GetSavePath(BaseItem item)
         {
-            var video = (Video)item;
+            if (item.ResolveArgs.IsDirectory)
+            {
+                return Path.Combine(item.Path, "movie.xml");
+            }
 
-            var directory = video.VideoType == VideoType.Iso || video.VideoType == VideoType.VideoFile ? Path.GetDirectoryName(video.Path) : video.Path;
-
-            return Path.Combine(directory, "movie.xml");
+            return Path.ChangeExtension(item.Path, ".xml");
         }
     }
 }
