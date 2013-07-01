@@ -302,22 +302,6 @@ namespace MediaBrowser.Server.Implementations.Providers
         }
 
         /// <summary>
-        /// Downloads the and save image.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="source">The source.</param>
-        /// <param name="targetName">Name of the target.</param>
-        /// <param name="saveLocally">if set to <c>true</c> [save locally].</param>
-        /// <param name="resourcePool">The resource pool.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{System.String}.</returns>
-        /// <exception cref="System.ArgumentNullException">item</exception>
-        public Task<string> DownloadAndSaveImage(BaseItem item, string source, string targetName, bool saveLocally, SemaphoreSlim resourcePool, CancellationToken cancellationToken)
-        {
-            throw new HttpException(string.Empty) { IsTimedOut = true };
-        }
-
-        /// <summary>
         /// Saves to library filesystem.
         /// </summary>
         /// <param name="item">The item.</param>
