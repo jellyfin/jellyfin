@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Providers.Movies;
 using System;
 using System.Globalization;
@@ -53,7 +54,7 @@ namespace MediaBrowser.Providers.Savers
         }
 
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
-        
+
         /// <summary>
         /// Saves the specified item.
         /// </summary>
@@ -77,7 +78,7 @@ namespace MediaBrowser.Providers.Savers
             {
                 builder.Append("<Description><![CDATA[" + item.Overview + "]]></Description>");
             }
-            
+
             XmlSaverHelpers.AddMediaInfo((Video)item, builder);
 
             builder.Append("</Title>");
@@ -98,7 +99,10 @@ namespace MediaBrowser.Providers.Savers
         {
             if (item.ResolveArgs.IsDirectory)
             {
-                return Path.Combine(item.Path, "movie.xml");
+                var video = (Video)item;
+                var path = video.VideoType == VideoType.VideoFile || video.VideoType == VideoType.Iso ? Path.GetDirectoryName(item.Path) : item.Path;
+
+                return Path.Combine(path, "movie.xml");
             }
 
             return Path.ChangeExtension(item.Path, ".xml");
