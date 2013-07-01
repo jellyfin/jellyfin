@@ -174,5 +174,5 @@ xcopy "$(TargetPath)" "$(SolutionDir)\Nuget\dlls\" /y /d /r /i
   </Target>
   -->
   <Import Project="$(ProjectDir)\..\Tools\Fody\Fody.targets" />
-  <Import Project="..\packages\Microsoft.Bcl.Build.1.0.6\tools\Microsoft.Bcl.Build.targets" />
+  <Import Project="..\packages\Microsoft.Bcl.Build.1.0.7\tools\Microsoft.Bcl.Build.targets" />
 </Project>
