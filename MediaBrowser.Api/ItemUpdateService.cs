@@ -4,6 +4,7 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using ServiceStack.ServiceHost;
 using System;
 using System.Linq;
@@ -239,7 +240,7 @@ namespace MediaBrowser.Api
 
             if (musicAlbum != null)
             {
-                musicAlbum.MusicBrainzReleaseGroupId = request.ProviderIds["MusicBrainzReleaseGroupId"];
+                musicAlbum.MusicBrainzReleaseGroupId = request.GetProviderId("MusicBrainzReleaseGroupId");
             }
 
             var series = item as Series;
