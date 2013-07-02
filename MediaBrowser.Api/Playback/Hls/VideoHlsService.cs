@@ -1,12 +1,12 @@
-﻿using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
-using System;
 using ServiceStack.ServiceHost;
+using System;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.Playback.Hls
 {
@@ -74,7 +74,9 @@ namespace MediaBrowser.Api.Playback.Hls
 
                 Task.Run(async () =>
                 {
-                    await Task.Delay(2000).ConfigureAwait(false);
+                    // This is an arbitrary time period corresponding to when the request completes.
+                    await Task.Delay(30000).ConfigureAwait(false);
+
                     ApiEntryPoint.Instance.OnTranscodeEndRequest(playlist1, TranscodingJobType.Hls);
                 });
             }
