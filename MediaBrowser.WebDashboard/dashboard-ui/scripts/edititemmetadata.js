@@ -262,8 +262,8 @@
         $('#txtCriticRating', page).val(item.CriticRating || "");
         $('#txtCriticRatingSummary', page).val(item.CriticRatingSummary || "");
 
-        $('#txtIndexNumber', page).val(item.IndexNumber || "");
-        $('#txtParentIndexNumber', page).val(item.ParentIndexNumber || "");
+        $('#txtIndexNumber', page).val(('IndexNumber' in item) ? item.IndexNumber : "");
+        $('#txtParentIndexNumber', page).val(('ParentIndexNumber' in item) ? item.ParentIndexNumber : "");
         $('#txtPlayers', page).val(item.Players || "");
 
         $('#txtAlbum', page).val(item.Album || "");
