@@ -150,7 +150,9 @@ namespace MediaBrowser.Providers.Movies
 
                 int tomatoMeter;
 
-                if (!string.IsNullOrEmpty(result.tomatoMeter) && int.TryParse(result.tomatoMeter, NumberStyles.Integer, UsCulture, out tomatoMeter))
+                if (!string.IsNullOrEmpty(result.tomatoMeter)
+                    && int.TryParse(result.tomatoMeter, NumberStyles.Integer, UsCulture, out tomatoMeter)
+                    && tomatoMeter >= 0)
                 {
                     item.CriticRating = tomatoMeter;
                 }
