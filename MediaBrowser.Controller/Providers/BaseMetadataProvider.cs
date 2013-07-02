@@ -152,7 +152,14 @@ namespace MediaBrowser.Controller.Providers
             // Save the file system stamp for future comparisons
             if (RefreshOnFileSystemStampChange && item.LocationType == LocationType.FileSystem)
             {
-                data.FileStamp = GetCurrentFileSystemStamp(item);
+                try
+                {
+                    data.FileStamp = GetCurrentFileSystemStamp(item);
+                }
+                catch (IOException ex)
+                {
+                    Logger.ErrorException("Error getting file stamp for {0}", ex, item.Path);
+                }
             }
 
             item.ProviderData[Id] = data;
