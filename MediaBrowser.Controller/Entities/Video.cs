@@ -27,6 +27,19 @@ namespace MediaBrowser.Controller.Entities
             AdditionalPartIds = new List<Guid>();
         }
 
+        public VideoFormat VideoFormat
+        {
+            get
+            {
+                if (!Video3DFormat.HasValue)
+                {
+                    return VideoFormat.Standard;
+                }
+
+                return VideoFormat.Digital3D;
+            }
+        }
+
         /// <summary>
         /// Gets or sets the type of the video.
         /// </summary>
