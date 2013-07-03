@@ -68,5 +68,10 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value><c>true</c> if [enable image enhancers]; otherwise, <c>false</c>.</value>
         public bool EnableImageEnhancers { get; set; }
+
+        public ImageOptions()
+        {
+            Quality = 100;
+        }
     }
 }
