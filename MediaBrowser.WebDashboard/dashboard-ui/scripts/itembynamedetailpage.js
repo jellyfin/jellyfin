@@ -476,7 +476,7 @@
             $('.selectPageSize', page).on('change', function () {
                 query.Limit = parseInt(this.value);
                 query.StartIndex = 0;
-                loadItems(page);
+                loadItems(page, query);
             });
 
             Dashboard.hideLoadingMsg();
