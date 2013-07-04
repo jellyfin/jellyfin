@@ -2,7 +2,7 @@
 using MediaBrowser.Controller.Plugins;
 using System.Threading;
 
-namespace MediaBrowser.ServerApplication.EntryPoints
+namespace MediaBrowser.Server.Implementations.EntryPoints
 {
     /// <summary>
     /// Class RefreshUsersMetadata

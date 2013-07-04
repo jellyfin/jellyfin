@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 
-namespace MediaBrowser.ServerApplication.EntryPoints
+namespace MediaBrowser.Server.Implementations.EntryPoints
 {
     public class LibraryChangedNotifier : IServerEntryPoint
     {
@@ -48,12 +48,13 @@ namespace MediaBrowser.ServerApplication.EntryPoints
         /// </summary>
         private const int LibraryUpdateDuration = 60000;
 
-        public LibraryChangedNotifier(ILibraryManager libraryManager, ISessionManager sessionManager, IServerManager serverManager, IUserManager userManager)
+        public LibraryChangedNotifier(ILibraryManager libraryManager, ISessionManager sessionManager, IServerManager serverManager, IUserManager userManager, ILogger logger)
         {
             _libraryManager = libraryManager;
             _sessionManager = sessionManager;
             _serverManager = serverManager;
             _userManager = userManager;
+            _logger = logger;
         }
 
         public void Run()
