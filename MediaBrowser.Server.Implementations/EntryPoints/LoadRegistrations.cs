@@ -3,7 +3,7 @@ using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Logging;
 using System;
 
-namespace MediaBrowser.ServerApplication.EntryPoints
+namespace MediaBrowser.Server.Implementations.EntryPoints
 {
     /// <summary>
     /// Class LoadRegistrations

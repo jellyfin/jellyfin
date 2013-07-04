@@ -13,7 +13,7 @@ using MediaBrowser.Model.Tasks;
 using MediaBrowser.Model.Updates;
 using System;
 
-namespace MediaBrowser.ServerApplication.EntryPoints
+namespace MediaBrowser.Server.Implementations.EntryPoints
 {
     /// <summary>
     /// Class WebSocketEvents

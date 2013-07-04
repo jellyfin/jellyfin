@@ -56,11 +56,40 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// </summary>
         /// <param name="conn">The conn.</param>
         /// <returns><c>true</c> if the specified conn is open; otherwise, <c>false</c>.</returns>
-        public static bool IsOpen(this SQLiteConnection conn)
+        public static bool IsOpen(this IDbConnection conn)
         {
             return conn.State == ConnectionState.Open;
         }
 
+        public static IDataParameter GetParameter(this IDbCommand cmd, int index)
+        {
+            return (IDataParameter)cmd.Parameters[index];
+        }
+        
+        public static IDataParameter Add(this IDataParameterCollection paramCollection, IDbCommand cmd, string name, DbType type)
+        {
+            var param = cmd.CreateParameter();
+           
+            param.ParameterName = name;
+            param.DbType = type;
+
+            paramCollection.Add(param);
+
+            return param;
+        }
+
+        public static IDataParameter Add(this IDataParameterCollection paramCollection, IDbCommand cmd, string name)
+        {
+            var param = cmd.CreateParameter();
+
+            param.ParameterName = name;
+
+            paramCollection.Add(param);
+            
+            return param;
+        }
+
+        
         /// <summary>
         /// Gets a stream from a DataReader at a given ordinal
         /// </summary>

@@ -1,11 +1,9 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SQLite;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,7 +12,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 {
     public class SqliteChapterRepository
     {
-        private SQLiteConnection _connection;
+        private IDbConnection _connection;
 
         private readonly ILogger _logger;
 
@@ -23,8 +21,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// </summary>
         private readonly IApplicationPaths _appPaths;
 
-        private SQLiteCommand _deleteChaptersCommand;
-        private SQLiteCommand _saveChapterCommand;
+        private IDbCommand _deleteChaptersCommand;
+        private IDbCommand _saveChapterCommand;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository" /> class.
@@ -80,23 +78,18 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// </summary>
         private void PrepareStatements()
         {
-            _deleteChaptersCommand = new SQLiteCommand
-            {
-                CommandText = "delete from chapters where ItemId=@ItemId"
-            };
+            _deleteChaptersCommand = _connection.CreateCommand();
+            _deleteChaptersCommand.CommandText = "delete from chapters where ItemId=@ItemId";
+            _deleteChaptersCommand.Parameters.Add(_deleteChaptersCommand, "@ItemId");
 
-            _deleteChaptersCommand.Parameters.Add(new SQLiteParameter("@ItemId"));
+            _saveChapterCommand = _connection.CreateCommand();
+            _saveChapterCommand.CommandText = "replace into chapters (ItemId, ChapterIndex, StartPositionTicks, Name, ImagePath) values (@ItemId, @ChapterIndex, @StartPositionTicks, @Name, @ImagePath)";
 
-            _saveChapterCommand = new SQLiteCommand
-            {
-                CommandText = "replace into chapters (ItemId, ChapterIndex, StartPositionTicks, Name, ImagePath) values (@ItemId, @ChapterIndex, @StartPositionTicks, @Name, @ImagePath)"
-            };
-
-            _saveChapterCommand.Parameters.Add(new SQLiteParameter("@ItemId"));
-            _saveChapterCommand.Parameters.Add(new SQLiteParameter("@ChapterIndex"));
-            _saveChapterCommand.Parameters.Add(new SQLiteParameter("@StartPositionTicks"));
-            _saveChapterCommand.Parameters.Add(new SQLiteParameter("@Name"));
-            _saveChapterCommand.Parameters.Add(new SQLiteParameter("@ImagePath"));
+            _saveChapterCommand.Parameters.Add(_saveChapterCommand, "@ItemId");
+            _saveChapterCommand.Parameters.Add(_saveChapterCommand, "@ChapterIndex");
+            _saveChapterCommand.Parameters.Add(_saveChapterCommand, "@StartPositionTicks");
+            _saveChapterCommand.Parameters.Add(_saveChapterCommand, "@Name");
+            _saveChapterCommand.Parameters.Add(_saveChapterCommand, "@ImagePath");
         }
 
         /// <summary>
@@ -116,7 +109,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             {
                 cmd.CommandText = "select StartPositionTicks,Name,ImagePath from Chapters where ItemId = @ItemId order by ChapterIndex asc";
 
-                cmd.Parameters.Add("@ItemId", DbType.Guid).Value = id;
+                cmd.Parameters.Add(cmd, "@ItemId", DbType.Guid).Value = id;
 
                 using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
                 {
@@ -161,8 +154,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
             {
                 cmd.CommandText = "select StartPositionTicks,Name,ImagePath from Chapters where ItemId = @ItemId and ChapterIndex=@ChapterIndex";
 
-                cmd.Parameters.Add("@ItemId", DbType.Guid).Value = id;
-                cmd.Parameters.Add("@ChapterIndex", DbType.Int32).Value = index;
+                cmd.Parameters.Add(cmd, "@ItemId", DbType.Guid).Value = id;
+                cmd.Parameters.Add(cmd, "@ChapterIndex", DbType.Int32).Value = index;
 
                 using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult | CommandBehavior.SingleRow))
                 {
@@ -215,16 +208,18 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-            SQLiteTransaction transaction = null;
+            IDbTransaction transaction = null;
 
             try
             {
                 transaction = _connection.BeginTransaction();
 
                 // First delete chapters
-                _deleteChaptersCommand.Parameters[0].Value = id;
+                _deleteChaptersCommand.GetParameter(0).Value = id;
+
                 _deleteChaptersCommand.Transaction = transaction;
-                await _deleteChaptersCommand.ExecuteNonQueryAsync(cancellationToken);
+
+                _deleteChaptersCommand.ExecuteNonQuery();
 
                 var index = 0;
 
@@ -232,15 +227,15 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    _saveChapterCommand.Parameters[0].Value = id;
-                    _saveChapterCommand.Parameters[1].Value = index;
-                    _saveChapterCommand.Parameters[2].Value = chapter.StartPositionTicks;
-                    _saveChapterCommand.Parameters[3].Value = chapter.Name;
-                    _saveChapterCommand.Parameters[4].Value = chapter.ImagePath;
+                    _saveChapterCommand.GetParameter(0).Value = id;
+                    _saveChapterCommand.GetParameter(1).Value = index;
+                    _saveChapterCommand.GetParameter(2).Value = chapter.StartPositionTicks;
+                    _saveChapterCommand.GetParameter(3).Value = chapter.Name;
+                    _saveChapterCommand.GetParameter(4).Value = chapter.ImagePath;
 
                     _saveChapterCommand.Transaction = transaction;
 
-                    await _saveChapterCommand.ExecuteNonQueryAsync(cancellationToken);
+                    _saveChapterCommand.ExecuteNonQuery();
 
                     index++;
                 }
