@@ -15,7 +15,7 @@ namespace MediaBrowser.Providers.Movies
 {
     public class OpenMovieDatabaseProvider : BaseMetadataProvider
     {
-        private readonly SemaphoreSlim _resourcePool = new SemaphoreSlim(2, 2);
+        private readonly SemaphoreSlim _resourcePool = new SemaphoreSlim(1, 1);
 
         /// <summary>
         /// Gets the json serializer.
@@ -157,6 +157,24 @@ namespace MediaBrowser.Providers.Movies
                     item.CriticRating = tomatoMeter;
                 }
 
+                int voteCount;
+
+                if (!string.IsNullOrEmpty(result.imdbVotes)
+                    && int.TryParse(result.imdbVotes, NumberStyles.Integer, UsCulture, out voteCount)
+                    && voteCount >= 0)
+                {
+                    item.VoteCount = voteCount;
+                }
+
+                float imdbRating;
+
+                if (!string.IsNullOrEmpty(result.imdbRating)
+                    && float.TryParse(result.imdbRating, NumberStyles.Number, UsCulture, out imdbRating)
+                    && imdbRating >= 0)
+                {
+                    item.CommunityRating = imdbRating;
+                }
+                
                 if (!string.IsNullOrEmpty(result.tomatoConsensus)
                     && !string.Equals(result.tomatoConsensus, "n/a", StringComparison.OrdinalIgnoreCase)
                     && !string.Equals(result.tomatoConsensus, "No consensus yet.", StringComparison.OrdinalIgnoreCase))

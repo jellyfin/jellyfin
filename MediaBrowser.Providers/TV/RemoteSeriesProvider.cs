@@ -28,11 +28,6 @@ namespace MediaBrowser.Providers.TV
     class RemoteSeriesProvider : BaseMetadataProvider, IDisposable
     {
         /// <summary>
-        /// The _provider manager
-        /// </summary>
-        private readonly IProviderManager _providerManager;
-
-        /// <summary>
         /// The tv db
         /// </summary>
         internal readonly SemaphoreSlim TvDbResourcePool = new SemaphoreSlim(2, 2);
@@ -60,10 +55,9 @@ namespace MediaBrowser.Providers.TV
         /// <param name="httpClient">The HTTP client.</param>
         /// <param name="logManager">The log manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
-        /// <param name="providerManager">The provider manager.</param>
         /// <param name="zipClient">The zip client.</param>
         /// <exception cref="System.ArgumentNullException">httpClient</exception>
-        public RemoteSeriesProvider(IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager, IZipClient zipClient)
+        public RemoteSeriesProvider(IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager, IZipClient zipClient)
             : base(logManager, configurationManager)
         {
             if (httpClient == null)
@@ -71,7 +65,6 @@ namespace MediaBrowser.Providers.TV
                 throw new ArgumentNullException("httpClient");
             }
             HttpClient = httpClient;
-            _providerManager = providerManager;
             _zipClient = zipClient;
             Current = this;
         }

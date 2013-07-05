@@ -679,10 +679,13 @@ namespace MediaBrowser.Providers.Movies
 
                 float rating;
                 string voteAvg = movieData.vote_average.ToString(CultureInfo.InvariantCulture);
+
                 //tmdb appears to have unified their numbers to always report "7.3" regardless of country
                 // so I removed the culture-specific processing here because it was not working for other countries -ebr
                 if (float.TryParse(voteAvg, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out rating))
                     movie.CommunityRating = rating;
+
+                movie.VoteCount = movieData.vote_count;
 
                 //release date and certification are retrieved based on configured country and we fall back on US if not there and to minimun release date if still no match
                 if (movieData.releases != null && movieData.releases.countries != null)
