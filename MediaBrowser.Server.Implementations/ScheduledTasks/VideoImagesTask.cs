@@ -125,7 +125,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
                 NewItemTimer = null;
             }
 
-            foreach (var item in GetItemsForExtraction(newItems.Take(3)))
+            foreach (var item in GetItemsForExtraction(newItems.Take(5)))
             {
                 try
                 {
