@@ -617,15 +617,15 @@ namespace MediaBrowser.Controller.Entities
             try
             {
                 resolveArgs = ResolveArgs;
+
+                if (!resolveArgs.IsDirectory)
+                {
+                    return new List<Trailer>();
+                }
             }
             catch (IOException ex)
             {
                 Logger.ErrorException("Error getting ResolveArgs for {0}", ex, Path);
-                return new List<Trailer>();
-            }
-
-            if (!resolveArgs.IsDirectory)
-            {
                 return new List<Trailer>();
             }
 
@@ -687,15 +687,15 @@ namespace MediaBrowser.Controller.Entities
             try
             {
                 resolveArgs = ResolveArgs;
+
+                if (!resolveArgs.IsDirectory)
+                {
+                    return new List<Audio.Audio>();
+                }
             }
             catch (IOException ex)
             {
                 Logger.ErrorException("Error getting ResolveArgs for {0}", ex, Path);
-                return new List<Audio.Audio>();
-            }
-
-            if (!resolveArgs.IsDirectory)
-            {
                 return new List<Audio.Audio>();
             }
 
@@ -747,15 +747,15 @@ namespace MediaBrowser.Controller.Entities
             try
             {
                 resolveArgs = ResolveArgs;
+
+                if (!resolveArgs.IsDirectory)
+                {
+                    return new List<Video>();
+                }
             }
             catch (IOException ex)
             {
                 Logger.ErrorException("Error getting ResolveArgs for {0}", ex, Path);
-                return new List<Video>();
-            }
-
-            if (!resolveArgs.IsDirectory)
-            {
                 return new List<Video>();
             }
 

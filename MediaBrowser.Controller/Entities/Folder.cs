@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Progress;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Persistence;
@@ -21,6 +22,11 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class Folder : BaseItem
     {
+        public Folder()
+        {
+            LinkedChildren = new List<LinkedChild>();
+        }
+
         /// <summary>
         /// Gets a value indicating whether this instance is folder.
         /// </summary>
@@ -81,6 +87,13 @@ namespace MediaBrowser.Controller.Entities
         public Guid GetDisplayPreferencesId(Guid userId)
         {
             return (userId + DisplayPreferencesId.ToString()).GetMD5();
+        }
+
+        public List<LinkedChild> LinkedChildren { get; set; }
+
+        protected virtual bool SupportsLinkedChildren
+        {
+            get { return false; }
         }
 
         /// <summary>
@@ -878,10 +891,11 @@ namespace MediaBrowser.Controller.Entities
         /// Gets allowed children of an item
         /// </summary>
         /// <param name="user">The user.</param>
+        /// <param name="includeLinkedChildren">if set to <c>true</c> [include linked children].</param>
         /// <param name="indexBy">The index by.</param>
         /// <returns>IEnumerable{BaseItem}.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public virtual IEnumerable<BaseItem> GetChildren(User user, string indexBy = null)
+        public virtual IEnumerable<BaseItem> GetChildren(User user, bool includeLinkedChildren, string indexBy = null)
         {
             if (user == null)
             {
@@ -889,7 +903,7 @@ namespace MediaBrowser.Controller.Entities
             }
 
             //the true root should return our users root folder children
-            if (IsPhysicalRoot) return user.RootFolder.GetChildren(user, indexBy);
+            if (IsPhysicalRoot) return user.RootFolder.GetChildren(user, includeLinkedChildren, indexBy);
 
             IEnumerable<BaseItem> result = null;
 
@@ -898,24 +912,37 @@ namespace MediaBrowser.Controller.Entities
                 result = GetIndexedChildren(user, indexBy);
             }
 
+            if (result != null)
+            {
+                return result;
+            }
+
+            var children = Children;
+
+            if (includeLinkedChildren)
+            {
+                children = children.Concat(GetLinkedChildren());
+            }
+
             // If indexed is false or the indexing function is null
-            return result ?? (Children.Where(c => c.IsVisible(user)));
+            return children.Where(c => c.IsVisible(user));
         }
 
         /// <summary>
         /// Gets allowed recursive children of an item
         /// </summary>
         /// <param name="user">The user.</param>
+        /// <param name="includeLinkedChildren">if set to <c>true</c> [include linked children].</param>
         /// <returns>IEnumerable{BaseItem}.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public IEnumerable<BaseItem> GetRecursiveChildren(User user)
+        public IEnumerable<BaseItem> GetRecursiveChildren(User user, bool includeLinkedChildren = false)
         {
             if (user == null)
             {
                 throw new ArgumentNullException();
             }
 
-            foreach (var item in GetChildren(user))
+            foreach (var item in GetChildren(user, includeLinkedChildren))
             {
                 yield return item;
 
@@ -923,12 +950,87 @@ namespace MediaBrowser.Controller.Entities
 
                 if (subFolder != null)
                 {
-                    foreach (var subitem in subFolder.GetRecursiveChildren(user))
+                    foreach (var subitem in subFolder.GetRecursiveChildren(user, includeLinkedChildren))
                     {
                         yield return subitem;
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets the linked children.
+        /// </summary>
+        /// <returns>IEnumerable{BaseItem}.</returns>
+        public IEnumerable<BaseItem> GetLinkedChildren()
+        {
+            return LinkedChildren
+                .Select(i => LibraryManager.RootFolder.FindByPath(i.Path))
+                .Where(i => i != null);
+        }
+
+        public override async Task<bool> RefreshMetadata(CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false, bool allowSlowProviders = true, bool resetResolveArgs = true)
+        {
+            var changed = await base.RefreshMetadata(cancellationToken, forceSave, forceRefresh, allowSlowProviders, resetResolveArgs).ConfigureAwait(false);
+
+            return changed || (SupportsLinkedChildren && RefreshLinkedChildren());
+        }
+
+        /// <summary>
+        /// Refreshes the linked children.
+        /// </summary>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
+        private bool RefreshLinkedChildren()
+        {
+            ItemResolveArgs resolveArgs;
+
+            try
+            {
+                resolveArgs = ResolveArgs;
+
+                if (!resolveArgs.IsDirectory)
+                {
+                    return false;
+                }
+            }
+            catch (IOException ex)
+            {
+                Logger.ErrorException("Error getting ResolveArgs for {0}", ex, Path);
+                return false;
+            }
+
+            var currentManualLinks = LinkedChildren.Where(i => i.Type == LinkedChildType.Manual).ToList();
+            var currentShortcutLinks = LinkedChildren.Where(i => i.Type == LinkedChildType.Shortcut).ToList();
+
+            var newShortcutLinks = resolveArgs.FileSystemChildren
+                .Where(i => (i.Attributes & FileAttributes.Directory) != FileAttributes.Directory && FileSystem.IsShortcut(i.FullName))
+                .Select(i =>
+                {
+                    try
+                    {
+                        return new LinkedChild
+                        {
+                            Path = FileSystem.ResolveShortcut(i.FullName),
+                            Type = LinkedChildType.Shortcut
+                        };
+                    }
+                    catch (IOException ex)
+                    {
+                        Logger.ErrorException("Error resolving shortcut {0}", ex, i.FullName);
+                        return null;
+                    }
+                })
+                .Where(i => i != null)
+                .ToList();
+
+            if (!newShortcutLinks.SequenceEqual(currentShortcutLinks))
+            {
+                newShortcutLinks.AddRange(currentManualLinks);
+                LinkedChildren = newShortcutLinks;
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -954,7 +1056,7 @@ namespace MediaBrowser.Controller.Entities
         public override async Task SetPlayedStatus(User user, bool wasPlayed, IUserDataRepository userManager)
         {
             // Sweep through recursively and update status
-            var tasks = GetRecursiveChildren(user).Where(i => !i.IsFolder).Select(c => c.SetPlayedStatus(user, wasPlayed, userManager));
+            var tasks = GetRecursiveChildren(user, true).Where(i => !i.IsFolder).Select(c => c.SetPlayedStatus(user, wasPlayed, userManager));
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
         }

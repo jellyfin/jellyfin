@@ -255,7 +255,14 @@ namespace MediaBrowser.ServerApplication
 
             process.Exited += ProcessExited;
 
-            process.Start();
+            try
+            {
+                process.Start();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("There was an error launching your web browser. Please check your defualt browser settings.");
+            }
         }
 
         /// <summary>

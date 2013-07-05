@@ -90,7 +90,7 @@ namespace MediaBrowser.ServerApplication
             Cursor = Cursors.Wait;
             await Task.Run(() =>
                 {
-                    IEnumerable<BaseItem> children = CurrentUser.Name == "Physical" ? _libraryManager.RootFolder.Children : _libraryManager.RootFolder.GetChildren(CurrentUser);
+                    IEnumerable<BaseItem> children = CurrentUser.Name == "Physical" ? _libraryManager.RootFolder.Children : _libraryManager.RootFolder.GetChildren(CurrentUser, true);
                     children = OrderByName(children, CurrentUser);
 
                     foreach (Folder folder in children)
@@ -102,7 +102,7 @@ namespace MediaBrowser.ServerApplication
                                             var prefs = ddlProfile.SelectedItem != null ? _displayPreferencesManager.GetDisplayPreferences(currentFolder.GetDisplayPreferencesId((ddlProfile.SelectedItem as User).Id)) ?? new DisplayPreferences { SortBy = ItemSortBy.SortName } : new DisplayPreferences { SortBy = ItemSortBy.SortName };
                                             var node = new TreeViewItem { Tag = currentFolder };
 
-                                            var subChildren = currentFolder.GetChildren(CurrentUser, prefs.IndexBy);
+                                            var subChildren = currentFolder.GetChildren(CurrentUser, true, prefs.IndexBy);
                                             subChildren = OrderByName(subChildren, CurrentUser);
                                             AddChildren(node, subChildren, CurrentUser);
                                             node.Header = currentFolder.Name + " (" +
@@ -153,8 +153,8 @@ namespace MediaBrowser.ServerApplication
                 if (subFolder != null)
                 {
                     var prefs = _displayPreferencesManager.GetDisplayPreferences(subFolder.GetDisplayPreferencesId(user.Id));
-                    
-                    AddChildren(node, OrderBy(subFolder.GetChildren(user), user, prefs.SortBy), user);
+
+                    AddChildren(node, OrderBy(subFolder.GetChildren(user, true), user, prefs.SortBy), user);
                     node.Header = item.Name + " (" + node.Items.Count + ")";
                 }
                 else
@@ -374,7 +374,7 @@ namespace MediaBrowser.ServerApplication
                                                             //re-build the current item's children as an index
                                                             prefs.IndexBy = ddlIndexBy.SelectedItem as string;
                                                             treeItem.Items.Clear();
-                                                            AddChildren(treeItem, OrderBy(folder.GetChildren(CurrentUser, prefs.IndexBy), CurrentUser, prefs.SortBy), CurrentUser);
+                                                            AddChildren(treeItem, OrderBy(folder.GetChildren(CurrentUser, true, prefs.IndexBy), CurrentUser, prefs.SortBy), CurrentUser);
                                                             treeItem.Header = folder.Name + "(" +
                                                                               treeItem.Items.Count + ")";
                                                             Cursor = Cursors.Arrow;
@@ -415,7 +415,7 @@ namespace MediaBrowser.ServerApplication
                                                             //re-sort
                                                             prefs.SortBy = ddlSortBy.SelectedItem as string;
                                                             treeItem.Items.Clear();
-                                                            AddChildren(treeItem, OrderBy(folder.GetChildren(CurrentUser, prefs.IndexBy), CurrentUser, prefs.SortBy ?? ItemSortBy.SortName), CurrentUser);
+                                                            AddChildren(treeItem, OrderBy(folder.GetChildren(CurrentUser, true, prefs.IndexBy), CurrentUser, prefs.SortBy ?? ItemSortBy.SortName), CurrentUser);
                                                             treeItem.Header = folder.Name + "(" +
                                                                               treeItem.Items.Count + ")";
                                                             Cursor = Cursors.Arrow;
