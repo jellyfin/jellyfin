@@ -641,6 +641,10 @@ a.itemTag:hover {
     color: #fff;
 }
 
+.offlinePosterRibbon {
+    background-color: #cc3333;
+}
+
 .itemProgress {
     vertical-align: top;
     font-size: 19px;

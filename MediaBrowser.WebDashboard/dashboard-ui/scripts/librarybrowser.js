@@ -203,7 +203,11 @@
 
                 html += '</div>';
 
-                html += LibraryBrowser.getNewIndicatorHtml(item);
+                if (item.LocationType == "Offline") {
+                    html += LibraryBrowser.getOfflineIndicatorHtml(item);
+                } else {
+                    html += LibraryBrowser.getNewIndicatorHtml(item);
+                }
 
                 html += "</a>";
             }
@@ -564,7 +568,9 @@
                     html += "</div>";
                 }
 
-                if (options.showNewIndicator !== false) {
+                if (item.LocationType == "Offline") {
+                    html += LibraryBrowser.getOfflineIndicatorHtml(item);
+                } else if (options.showNewIndicator !== false) {
                     html += LibraryBrowser.getNewIndicatorHtml(item);
                 }
 
@@ -605,6 +611,10 @@
             return name;
         },
 
+        getOfflineIndicatorHtml: function () {
+
+            return '<div class="posterRibbon offlinePosterRibbon">Offline</div>';
+        },
         getNewIndicatorHtml: function (item) {
 
             if (item.RecentlyAddedItemCount) {

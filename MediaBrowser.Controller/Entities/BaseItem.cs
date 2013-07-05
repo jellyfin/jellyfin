@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
@@ -13,7 +12,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -320,8 +318,11 @@ namespace MediaBrowser.Controller.Entities
 
             if (pathInfo == null || !pathInfo.Exists)
             {
+                IsOffline = true;
                 throw new IOException("Unable to retrieve file system info for " + path);
             }
+
+            IsOffline = false;
 
             var args = new ItemResolveArgs(ConfigurationManager.ApplicationPaths)
             {
@@ -331,7 +332,6 @@ namespace MediaBrowser.Controller.Entities
             };
 
             // Gather child folder and files
-
             if (args.IsDirectory)
             {
                 var isPhysicalRoot = args.IsPhysicalRoot;

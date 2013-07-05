@@ -635,8 +635,10 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>Task.</returns>
         protected async virtual Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool? recursive = null, bool forceRefreshMetadata = false)
         {
+            var locationType = LocationType;
+
             // Nothing to do here
-            if (LocationType != LocationType.FileSystem)
+            if (locationType == LocationType.Remote || locationType == LocationType.Virtual)
             {
                 return;
             }
