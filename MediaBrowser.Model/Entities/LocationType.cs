@@ -17,6 +17,10 @@ namespace MediaBrowser.Model.Entities
         /// <summary>
         /// The virtual
         /// </summary>
-        Virtual
+        Virtual,
+        /// <summary>
+        /// The offline
+        /// </summary>
+        Offline
     }
 }
