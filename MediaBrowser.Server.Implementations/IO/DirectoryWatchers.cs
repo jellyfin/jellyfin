@@ -61,8 +61,11 @@ namespace MediaBrowser.Server.Implementations.IO
         /// Removes the temp ignore.
         /// </summary>
         /// <param name="path">The path.</param>
-        public void RemoveTempIgnore(string path)
+        public async void RemoveTempIgnore(string path)
         {
+            // This is an arbitraty amount of time, but delay it because file system writes often trigger events after RemoveTempIgnore has been called. 
+            await Task.Delay(500).ConfigureAwait(false);
+
             string val;
             _tempIgnoredPaths.TryRemove(path, out val);
         }
@@ -358,7 +361,7 @@ namespace MediaBrowser.Server.Implementations.IO
                 return;
             }
 
-            Logger.Info("Watcher sees change of type " + e.ChangeType.ToString() + " to " + e.FullPath);
+            Logger.Info("Watcher sees change of type " + e.ChangeType + " to " + e.FullPath);
 
             //Since we're watching created, deleted and renamed we always want the parent of the item to be the affected path
             var affectedPath = e.FullPath;
