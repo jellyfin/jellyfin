@@ -229,7 +229,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         {
             var user = _userManager.GetUserById(userId);
 
-            var collections = user.RootFolder.GetChildren(user).ToList();
+            var collections = user.RootFolder.GetChildren(user, true).ToList();
 
             var allRecursiveChildren = user.RootFolder.GetRecursiveChildren(user).ToDictionary(i => i.Id);
 

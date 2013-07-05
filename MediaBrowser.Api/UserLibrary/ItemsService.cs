@@ -305,7 +305,7 @@ namespace MediaBrowser.Api.UserLibrary
                 return ((Folder)item).GetRecursiveChildren(user);
             }
 
-            return ((Folder)item).GetChildren(user, request.IndexBy);
+            return ((Folder)item).GetChildren(user, true, request.IndexBy);
         }
 
         /// <summary>
@@ -433,7 +433,7 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 var item = DtoBuilder.GetItemByClientId(request.AdjacentTo, _userManager, _libraryManager);
 
-                var allSiblings = item.Parent.GetChildren(user).OrderBy(i => i.SortName).ToList();
+                var allSiblings = item.Parent.GetChildren(user, true).OrderBy(i => i.SortName).ToList();
 
                 var index = allSiblings.IndexOf(item);
 

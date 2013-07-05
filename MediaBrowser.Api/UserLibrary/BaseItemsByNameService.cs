@@ -73,7 +73,7 @@ namespace MediaBrowser.Api.UserLibrary
 
                 if (request.UserId.HasValue)
                 {
-                    items = request.Recursive ? folder.GetRecursiveChildren(user) : folder.GetChildren(user);
+                    items = request.Recursive ? folder.GetRecursiveChildren(user) : folder.GetChildren(user, true);
                 }
                 else
                 {

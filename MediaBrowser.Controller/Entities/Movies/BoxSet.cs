@@ -6,6 +6,12 @@ namespace MediaBrowser.Controller.Entities.Movies
     /// </summary>
     public class BoxSet : Folder
     {
-
+        protected override bool SupportsLinkedChildren
+        {
+            get
+            {
+                return true;
+            }
+        }
     }
 }

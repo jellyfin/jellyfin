@@ -127,7 +127,7 @@ namespace MediaBrowser.Controller.Dto
                     var folder = (Folder)item;
 
                     // Skip sorting since all we want is a count
-                    dto.ChildCount = folder.GetChildren(user).Count();
+                    dto.ChildCount = folder.GetChildren(user, true).Count();
 
                     SetSpecialCounts(folder, user, dto, _userDataRepository);
                 }
@@ -555,7 +555,7 @@ namespace MediaBrowser.Controller.Dto
             double totalPercentPlayed = 0;
 
             // Loop through each recursive child
-            foreach (var child in folder.GetRecursiveChildren(user).Where(i => !i.IsFolder).ToList())
+            foreach (var child in folder.GetRecursiveChildren(user, true).Where(i => !i.IsFolder).ToList())
             {
                 var userdata = userDataRepository.GetUserData(user.Id, child.GetUserDataKey());
 
@@ -610,11 +610,6 @@ namespace MediaBrowser.Controller.Dto
         /// <returns>Task.</returns>
         private async Task AttachPeople(BaseItemDto dto, BaseItem item)
         {
-            if (item.People == null)
-            {
-                return;
-            }
-
             // Ordering by person type to ensure actors and artists are at the front.
             // This is taking advantage of the fact that they both begin with A
             // This should be improved in the future
@@ -640,7 +635,7 @@ namespace MediaBrowser.Controller.Dto
 
             )).ConfigureAwait(false);
 
-            var dictionary = entities.ToDictionary(i => i.Name, StringComparer.OrdinalIgnoreCase);
+            var dictionary = entities.Where(i => i != null).ToDictionary(i => i.Name, StringComparer.OrdinalIgnoreCase);
 
             for (var i = 0; i < people.Count; i++)
             {
@@ -698,7 +693,7 @@ namespace MediaBrowser.Controller.Dto
 
             )).ConfigureAwait(false);
 
-            var dictionary = entities.ToDictionary(i => i.Name, StringComparer.OrdinalIgnoreCase);
+            var dictionary = entities.Where(i => i != null).ToDictionary(i => i.Name, StringComparer.OrdinalIgnoreCase);
 
             for (var i = 0; i < studios.Count; i++)
             {
@@ -967,7 +962,7 @@ namespace MediaBrowser.Controller.Dto
             values.RemoveRange(0, 2);
 
             // Get the IndexFolder
-            var indexFolder = parentFolder.GetChildren(user, indexBy).FirstOrDefault(i => i.Id == indexFolderId) as Folder;
+            var indexFolder = parentFolder.GetChildren(user, false, indexBy).FirstOrDefault(i => i.Id == indexFolderId) as Folder;
 
             // Nested index folder
             if (values.Count > 0)
