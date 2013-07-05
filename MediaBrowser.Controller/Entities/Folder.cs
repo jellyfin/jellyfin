@@ -646,7 +646,7 @@ namespace MediaBrowser.Controller.Entities
             cancellationToken.ThrowIfCancellationRequested();
 
             //get the current valid children from filesystem (or wherever)
-            var nonCachedChildren = GetNonCachedChildren();
+            var nonCachedChildren = IsOffline ? new BaseItem[] { } : GetNonCachedChildren();
 
             if (nonCachedChildren == null) return; //nothing to validate
 
@@ -722,6 +722,8 @@ namespace MediaBrowser.Controller.Entities
                     else
                     {
                         item.IsOffline = true;
+
+                        validChildren.Add(new Tuple<BaseItem, bool>(item, false));
                     }
                 }
 

@@ -314,7 +314,15 @@ namespace MediaBrowser.Controller.Entities
                 isDirectory = true;
             }
 
-            pathInfo = pathInfo ?? (isDirectory ? new DirectoryInfo(path) : FileSystem.GetFileSystemInfo(path));
+            try
+            {
+                pathInfo = pathInfo ?? (isDirectory ? new DirectoryInfo(path) : FileSystem.GetFileSystemInfo(path));
+            }
+            catch (IOException)
+            {
+                IsOffline = true;
+                throw;
+            }
 
             if (pathInfo == null || !pathInfo.Exists)
             {
