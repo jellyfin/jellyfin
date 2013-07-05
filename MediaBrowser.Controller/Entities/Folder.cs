@@ -703,15 +703,23 @@ namespace MediaBrowser.Controller.Entities
 
                 foreach (var item in itemsRemoved)
                 {
-                    BaseItem removed;
-
-                    if (!_children.TryRemove(item.Id, out removed))
+                    if (IsRootPathAvailable(item.Path))
                     {
-                        Logger.Error("Failed to remove {0}", item.Name);
+                        BaseItem removed;
+
+                        if (!_children.TryRemove(item.Id, out removed))
+                        {
+                            Logger.Error("Failed to remove {0}", item.Name);
+                        }
+                        else
+                        {
+                            LibraryManager.ReportItemRemoved(item);
+                        }
+                        item.IsOffline = false;
                     }
                     else
                     {
-                        LibraryManager.ReportItemRemoved(item);
+                        item.IsOffline = true;
                     }
                 }
 
@@ -833,6 +841,28 @@ namespace MediaBrowser.Controller.Entities
             cancellationToken.ThrowIfCancellationRequested();
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Determines if a path's root is available or not
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        private bool IsRootPathAvailable(string path)
+        {
+            var parent = System.IO.Path.GetDirectoryName(path);
+
+            while (!string.IsNullOrEmpty(parent) && !parent.ToCharArray()[0].Equals(System.IO.Path.DirectorySeparatorChar))
+            {
+                if (Directory.Exists(parent))
+                {
+                    return true;
+                }
+
+                parent = System.IO.Path.GetDirectoryName(path);
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -973,7 +1003,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var changed = await base.RefreshMetadata(cancellationToken, forceSave, forceRefresh, allowSlowProviders, resetResolveArgs).ConfigureAwait(false);
 
-            return changed || (SupportsLinkedChildren && RefreshLinkedChildren());
+            return changed || (SupportsLinkedChildren && LocationType == LocationType.FileSystem && RefreshLinkedChildren());
         }
 
         /// <summary>

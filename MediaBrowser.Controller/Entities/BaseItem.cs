@@ -89,6 +89,9 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The path.</value>
         public virtual string Path { get; set; }
 
+        [IgnoreDataMember]
+        protected internal bool IsOffline { get; set; }
+
         /// <summary>
         /// Gets or sets the type of the location.
         /// </summary>
@@ -97,6 +100,11 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
+                if (IsOffline)
+                {
+                    return LocationType.Offline;
+                }
+
                 if (string.IsNullOrEmpty(Path))
                 {
                     return LocationType.Virtual;
@@ -649,12 +657,19 @@ namespace MediaBrowser.Controller.Entities
             // Support xbmc trailers (-trailer suffix on video file names)
             files.AddRange(resolveArgs.FileSystemChildren.Where(i =>
             {
-                if ((i.Attributes & FileAttributes.Directory) != FileAttributes.Directory)
+                try
                 {
-                    if (System.IO.Path.GetFileNameWithoutExtension(i.Name).EndsWith(XbmcTrailerFileSuffix, StringComparison.OrdinalIgnoreCase) && !string.Equals(Path, i.FullName, StringComparison.OrdinalIgnoreCase))
+                    if ((i.Attributes & FileAttributes.Directory) != FileAttributes.Directory)
                     {
-                        return true;
+                        if (System.IO.Path.GetFileNameWithoutExtension(i.Name).EndsWith(XbmcTrailerFileSuffix, StringComparison.OrdinalIgnoreCase) && !string.Equals(Path, i.FullName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return true;
+                        }
                     }
+                }
+                catch (IOException ex)
+                {
+                    Logger.ErrorException("Error accessing path {0}", ex, i.FullName);
                 }
 
                 return false;

@@ -390,12 +390,21 @@ namespace MediaBrowser.Controller.Providers
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         private bool IncludeInFileStamp(FileSystemInfo file, string[] extensions)
         {
-            if ((file.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
+            try
             {
+                if ((file.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
+                {
+                    return false;
+                }
+
+                return extensions.Length == 0 || extensions.Contains(file.Extension, StringComparer.OrdinalIgnoreCase);
+            }
+            catch (IOException ex)
+            {
+                Logger.ErrorException("Error accessing file attributes for {0}", ex, file.FullName);
+
                 return false;
             }
-
-            return extensions.Length == 0 || extensions.Contains(file.Extension, StringComparer.OrdinalIgnoreCase);
         }
     }
 }
