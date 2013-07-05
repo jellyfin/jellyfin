@@ -575,6 +575,13 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The community rating.</value>
         public float? CommunityRating { get; set; }
+
+        /// <summary>
+        /// Gets or sets the community rating vote count.
+        /// </summary>
+        /// <value>The community rating vote count.</value>
+        public int VoteCount { get; set; }
+
         /// <summary>
         /// Gets or sets the run time ticks.
         /// </summary>
