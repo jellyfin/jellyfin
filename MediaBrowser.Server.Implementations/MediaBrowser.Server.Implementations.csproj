@@ -111,6 +111,8 @@
     <Compile Include="Configuration\ServerConfigurationManager.cs" />
     <Compile Include="EntryPoints\LibraryChangedNotifier.cs" />
     <Compile Include="EntryPoints\LoadRegistrations.cs" />
+    <Compile Include="EntryPoints\Notifications\Notifier.cs" />
+    <Compile Include="EntryPoints\Notifications\WebSocketNotifier.cs" />
     <Compile Include="EntryPoints\RefreshUsersMetadata.cs" />
     <Compile Include="EntryPoints\WebSocketEvents.cs" />
     <Compile Include="HttpServer\HttpResultFactory.cs" />
@@ -144,6 +146,7 @@
     <Compile Include="MediaEncoder\MediaEncoder.cs" />
     <Compile Include="Persistence\SqliteChapterRepository.cs" />
     <Compile Include="Persistence\SqliteExtensions.cs" />
+    <Compile Include="Persistence\SqliteNotificationsRepository.cs" />
     <Compile Include="Persistence\TypeMapper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Providers\ImageSaver.cs" />

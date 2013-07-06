@@ -21,10 +21,10 @@ namespace MediaBrowser.Common.Implementations.Updates
     /// </summary>
     public class InstallationManager : IInstallationManager
     {
-        public event EventHandler<GenericEventArgs<InstallationInfo>> PackageInstalling;
-        public event EventHandler<GenericEventArgs<InstallationInfo>> PackageInstallationCompleted;
-        public event EventHandler<GenericEventArgs<InstallationInfo>> PackageInstallationFailed;
-        public event EventHandler<GenericEventArgs<InstallationInfo>> PackageInstallationCancelled;
+        public event EventHandler<InstallationEventArgs> PackageInstalling;
+        public event EventHandler<InstallationEventArgs> PackageInstallationCompleted;
+        public event EventHandler<InstallationFailedEventArgs> PackageInstallationFailed;
+        public event EventHandler<InstallationEventArgs> PackageInstallationCancelled;
 
         /// <summary>
         /// The current installations
@@ -384,7 +384,13 @@ namespace MediaBrowser.Common.Implementations.Updates
 
             var linkedToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, innerCancellationTokenSource.Token).Token;
 
-            EventHelper.QueueEventIfNotNull(PackageInstalling, this, new GenericEventArgs<InstallationInfo> { Argument = installationInfo }, _logger);
+            var installationEventArgs = new InstallationEventArgs
+            {
+                InstallationInfo = installationInfo,
+                PackageVersionInfo = package
+            };
+
+            EventHelper.QueueEventIfNotNull(PackageInstalling, this, installationEventArgs, _logger);
 
             try
             {
@@ -397,7 +403,7 @@ namespace MediaBrowser.Common.Implementations.Updates
 
                 CompletedInstallations.Add(installationInfo);
 
-                EventHelper.QueueEventIfNotNull(PackageInstallationCompleted, this, new GenericEventArgs<InstallationInfo> { Argument = installationInfo }, _logger);
+                EventHelper.QueueEventIfNotNull(PackageInstallationCompleted, this, installationEventArgs, _logger);
             }
             catch (OperationCanceledException)
             {
@@ -408,7 +414,7 @@ namespace MediaBrowser.Common.Implementations.Updates
 
                 _logger.Info("Package installation cancelled: {0} {1}", package.name, package.versionStr);
 
-                EventHelper.QueueEventIfNotNull(PackageInstallationCancelled, this, new GenericEventArgs<InstallationInfo> { Argument = installationInfo }, _logger);
+                EventHelper.QueueEventIfNotNull(PackageInstallationCancelled, this, installationEventArgs, _logger);
 
                 throw;
             }
@@ -421,7 +427,12 @@ namespace MediaBrowser.Common.Implementations.Updates
                     CurrentInstallations.Remove(tuple);
                 }
 
-                EventHelper.QueueEventIfNotNull(PackageInstallationFailed, this, new GenericEventArgs<InstallationInfo> { Argument = installationInfo }, _logger);
+                EventHelper.QueueEventIfNotNull(PackageInstallationFailed, this, new InstallationFailedEventArgs
+                {
+                    InstallationInfo = installationInfo,
+                    Exception = ex
+
+                }, _logger);
 
                 throw;
             }

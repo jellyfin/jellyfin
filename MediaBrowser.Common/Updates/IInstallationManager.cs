@@ -11,10 +11,10 @@ namespace MediaBrowser.Common.Updates
 {
     public interface IInstallationManager : IDisposable
     {
-        event EventHandler<GenericEventArgs<InstallationInfo>> PackageInstalling;
-        event EventHandler<GenericEventArgs<InstallationInfo>> PackageInstallationCompleted;
-        event EventHandler<GenericEventArgs<InstallationInfo>> PackageInstallationFailed;
-        event EventHandler<GenericEventArgs<InstallationInfo>> PackageInstallationCancelled;
+        event EventHandler<InstallationEventArgs> PackageInstalling;
+        event EventHandler<InstallationEventArgs> PackageInstallationCompleted;
+        event EventHandler<InstallationFailedEventArgs> PackageInstallationFailed;
+        event EventHandler<InstallationEventArgs> PackageInstallationCancelled;
 
         /// <summary>
         /// The current installations

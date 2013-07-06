@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Common.Updates;
-using MediaBrowser.Controller;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using System;
@@ -46,7 +45,9 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
                 // 1:30am
                 new DailyTrigger { TimeOfDay = TimeSpan.FromHours(1.5) },
 
-                new IntervalTrigger { Interval = TimeSpan.FromHours(2)}
+                new IntervalTrigger { Interval = TimeSpan.FromHours(3)},
+
+                new StartupTrigger()
             };
         }
 

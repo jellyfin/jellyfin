@@ -85,6 +85,8 @@
     <Compile Include="Library\IMetadataSaver.cs" />
     <Compile Include="Library\ItemUpdateType.cs" />
     <Compile Include="Localization\ILocalizationManager.cs" />
+    <Compile Include="Notifications\INotificationsRepository.cs" />
+    <Compile Include="Notifications\NotificationUpdateEventArgs.cs" />
     <Compile Include="Session\ISessionManager.cs" />
     <Compile Include="Drawing\ImageExtensions.cs" />
     <Compile Include="Drawing\ImageHeader.cs" />

@@ -445,7 +445,7 @@ var Dashboard = {
             html += '<a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>';
 
             html += '<div class="ui-corner-top ui-bar-a" style="text-align:center;">';
-            html += '<h3>' + user.Name + '</h3>';
+            html += '<h3 style="margin: .5em 0;">' + user.Name + '</h3>';
             html += '</div>';
 
             html += '<div data-role="content" class="ui-corner-bottom ui-content">';
@@ -594,6 +594,8 @@ var Dashboard = {
                 }
             });
         }
+
+        $(Dashboard).trigger('interiorheaderrendered', [header, user]);
     },
 
     ensureToolsMenu: function (page) {

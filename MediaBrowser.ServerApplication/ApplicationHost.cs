@@ -16,6 +16,7 @@ using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.MediaInfo;
+using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Providers;
@@ -44,6 +45,7 @@ using MediaBrowser.ServerApplication.Implementations;
 using MediaBrowser.WebDashboard.Api;
 using System;
 using System.Collections.Generic;
+using System.Data.SQLite;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -166,6 +168,7 @@ namespace MediaBrowser.ServerApplication
         private IUserRepository UserRepository { get; set; }
         internal IDisplayPreferencesRepository DisplayPreferencesRepository { get; set; }
         private IItemRepository ItemRepository { get; set; }
+        private INotificationsRepository NotificationsRepository { get; set; }
 
         /// <summary>
         /// The full path to our startmenu shortcut
@@ -284,6 +287,8 @@ namespace MediaBrowser.ServerApplication
             var userdataTask = Task.Run(async () => await ConfigureUserDataRepositories().ConfigureAwait(false));
             var userTask = Task.Run(async () => await ConfigureUserRepositories().ConfigureAwait(false));
 
+            await ConfigureNotificationsRepository().ConfigureAwait(false);
+
             await Task.WhenAll(itemsTask, userTask, displayPreferencesTask, userdataTask).ConfigureAwait(false);
 
             SetKernelProperties();
@@ -304,6 +309,25 @@ namespace MediaBrowser.ServerApplication
                  );
         }
 
+        /// <summary>
+        /// Configures the repositories.
+        /// </summary>
+        /// <returns>Task.</returns>
+        private async Task ConfigureNotificationsRepository()
+        {
+            var dbFile = Path.Combine(ApplicationPaths.DataPath, "notifications.db");
+
+            var connection = await ConnectToDb(dbFile).ConfigureAwait(false);
+
+            var repo = new SqliteNotificationsRepository(connection, LogManager);
+
+            repo.Initialize();
+
+            NotificationsRepository = repo;
+
+            RegisterSingleInstance(NotificationsRepository);
+        }
+        
         /// <summary>
         /// Configures the repositories.
         /// </summary>
@@ -342,6 +366,35 @@ namespace MediaBrowser.ServerApplication
             await UserRepository.Initialize().ConfigureAwait(false);
 
             ((UserManager)UserManager).UserRepository = UserRepository;
+        }        
+        
+        /// <summary>
+        /// Connects to db.
+        /// </summary>
+        /// <param name="dbPath">The db path.</param>
+        /// <returns>Task{IDbConnection}.</returns>
+        /// <exception cref="System.ArgumentNullException">dbPath</exception>
+        private static async Task<SQLiteConnection> ConnectToDb(string dbPath)
+        {
+            if (string.IsNullOrEmpty(dbPath))
+            {
+                throw new ArgumentNullException("dbPath");
+            }
+
+            var connectionstr = new SQLiteConnectionStringBuilder
+            {
+                PageSize = 4096,
+                CacheSize = 4096,
+                SyncMode = SynchronizationModes.Off,
+                DataSource = dbPath,
+                JournalMode = SQLiteJournalModeEnum.Wal
+            };
+
+            var connection = new SQLiteConnection(connectionstr.ConnectionString);
+
+            await connection.OpenAsync().ConfigureAwait(false);
+
+            return connection;
         }
 
         /// <summary>

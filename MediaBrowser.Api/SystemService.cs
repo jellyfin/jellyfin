@@ -134,7 +134,7 @@ namespace MediaBrowser.Api
             Task.Run(async () =>
             {
                 await Task.Delay(100);
-                _appHost.PerformPendingRestart();
+                _appHost.Restart();
             });
         }
 

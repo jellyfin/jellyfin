@@ -513,24 +513,6 @@ namespace MediaBrowser.Common.Implementations
         }
 
         /// <summary>
-        /// Performs the pending restart.
-        /// </summary>
-        /// <returns>Task.</returns>
-        public void PerformPendingRestart()
-        {
-            if (HasPendingRestart)
-            {
-                Logger.Info("Restarting the application");
-
-                Restart();
-            }
-            else
-            {
-                Logger.Info("PerformPendingRestart - not needed");
-            }
-        }
-
-        /// <summary>
         /// Notifies that the kernel that a change has been made that requires a restart
         /// </summary>
         public void NotifyPendingRestart()

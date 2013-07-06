@@ -73,13 +73,33 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             _appHost.HasPendingRestartChanged += kernel_HasPendingRestartChanged;
 
             _installationManager.PluginUninstalled += InstallationManager_PluginUninstalled;
-            _installationManager.PackageInstalling += installationManager_PackageInstalling;
-            _installationManager.PackageInstallationCancelled += installationManager_PackageInstallationCancelled;
-            _installationManager.PackageInstallationCompleted += installationManager_PackageInstallationCompleted;
-            _installationManager.PackageInstallationFailed += installationManager_PackageInstallationFailed;
+            _installationManager.PackageInstalling += _installationManager_PackageInstalling;
+            _installationManager.PackageInstallationCancelled += _installationManager_PackageInstallationCancelled;
+            _installationManager.PackageInstallationCompleted += _installationManager_PackageInstallationCompleted;
+            _installationManager.PackageInstallationFailed += _installationManager_PackageInstallationFailed;
 
             _taskManager.TaskExecuting += _taskManager_TaskExecuting;
             _taskManager.TaskCompleted += _taskManager_TaskCompleted;
+        }
+
+        void _installationManager_PackageInstalling(object sender, InstallationEventArgs e)
+        {
+            _serverManager.SendWebSocketMessage("PackageInstalling", e.InstallationInfo);
+        }
+
+        void _installationManager_PackageInstallationCancelled(object sender, InstallationEventArgs e)
+        {
+            _serverManager.SendWebSocketMessage("PackageInstallationCancelled", e.InstallationInfo);
+        }
+
+        void _installationManager_PackageInstallationCompleted(object sender, InstallationEventArgs e)
+        {
+            _serverManager.SendWebSocketMessage("PackageInstallationCompleted", e.InstallationInfo);
+        }
+
+        void _installationManager_PackageInstallationFailed(object sender, InstallationFailedEventArgs e)
+        {
+            _serverManager.SendWebSocketMessage("PackageInstallationFailed", e.InstallationInfo);
         }
 
         void _taskManager_TaskCompleted(object sender, GenericEventArgs<TaskResult> e)
@@ -91,46 +111,6 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         {
             var task = (IScheduledTask)sender;
             _serverManager.SendWebSocketMessage("ScheduledTaskStarted", task.Name);
-        }
-
-        /// <summary>
-        /// Installations the manager_ package installation failed.
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The e.</param>
-        void installationManager_PackageInstallationFailed(object sender, GenericEventArgs<InstallationInfo> e)
-        {
-            _serverManager.SendWebSocketMessage("PackageInstallationFailed", e.Argument);
-        }
-
-        /// <summary>
-        /// Installations the manager_ package installation completed.
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The e.</param>
-        void installationManager_PackageInstallationCompleted(object sender, GenericEventArgs<InstallationInfo> e)
-        {
-            _serverManager.SendWebSocketMessage("PackageInstallationCompleted", e.Argument);
-        }
-
-        /// <summary>
-        /// Installations the manager_ package installation cancelled.
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The e.</param>
-        void installationManager_PackageInstallationCancelled(object sender, GenericEventArgs<InstallationInfo> e)
-        {
-            _serverManager.SendWebSocketMessage("PackageInstallationCancelled", e.Argument);
-        }
-
-        /// <summary>
-        /// Installations the manager_ package installing.
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The e.</param>
-        void installationManager_PackageInstalling(object sender, GenericEventArgs<InstallationInfo> e)
-        {
-            _serverManager.SendWebSocketMessage("PackageInstalling", e.Argument);
         }
 
         /// <summary>
@@ -195,10 +175,10 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
                 _userManager.UserUpdated -= userManager_UserUpdated;
 
                 _installationManager.PluginUninstalled -= InstallationManager_PluginUninstalled;
-                _installationManager.PackageInstalling -= installationManager_PackageInstalling;
-                _installationManager.PackageInstallationCancelled -= installationManager_PackageInstallationCancelled;
-                _installationManager.PackageInstallationCompleted -= installationManager_PackageInstallationCompleted;
-                _installationManager.PackageInstallationFailed -= installationManager_PackageInstallationFailed;
+                _installationManager.PackageInstalling -= _installationManager_PackageInstalling;
+                _installationManager.PackageInstallationCancelled -= _installationManager_PackageInstallationCancelled;
+                _installationManager.PackageInstallationCompleted -= _installationManager_PackageInstallationCompleted;
+                _installationManager.PackageInstallationFailed -= _installationManager_PackageInstallationFailed;
 
                 _appHost.HasPendingRestartChanged -= kernel_HasPendingRestartChanged;
             }
