@@ -28,14 +28,16 @@
 
         $('#btnSelectIBNPath', page).on("click.selectDirectory", function () {
 
-            Dashboard.selectDirectory({
+            var picker = new DirectoryBrowser(page);
+
+            picker.show({
 
                 callback: function (path) {
 
                     if (path) {
                         $('#txtItemsByNamePath', page).val(path);
                     }
-                    $('#popupDirectoryPicker', page).popup("close");
+                    picker.close();
                 },
 
                 header: "Select Items By Name Path",

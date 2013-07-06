@@ -435,6 +435,7 @@ namespace MediaBrowser.WebDashboard.Api
                                       "boxsets.js",
                                       "clientsettings.js",
                                       "dashboardpage.js",
+                                      "directorybrowser.js",
                                       "edititemmetadata.js",
                                       "edititempeople.js",
                                       "edititemimages.js",

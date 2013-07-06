@@ -3,7 +3,7 @@
     onPageShow: function () {
 
         MediaLibraryPage.lastVirtualFolderName = "";
-        
+
         MediaLibraryPage.reloadLibrary(this);
     },
 
@@ -30,7 +30,7 @@
                     ApiClient.getVirtualFolders(userId).done(function (result) {
                         MediaLibraryPage.reloadVirtualFolders(page, result);
                     });
-                    
+
                     $(".editing_default", page).hide();
                     $('#divMediaLibrary', page).show();
                 } else {
@@ -68,7 +68,7 @@
         for (var i = 0, length = virtualFolders.length; i < length; i++) {
 
             var virtualFolder = virtualFolders[i];
-            
+
             var isCollapsed = MediaLibraryPage.lastVirtualFolderName != virtualFolder.Name;
 
             html += MediaLibraryPage.getVirtualFolderHtml(virtualFolder, isCollapsed, i);
@@ -123,7 +123,7 @@
 
             user.Configuration.UseCustomLibrary = !useDefaultLibrary;
 
-            ApiClient.updateUser(user).done(function() {
+            ApiClient.updateUser(user).done(function () {
                 MediaLibraryPage.reloadLibrary(page);
             });
 
@@ -138,7 +138,7 @@
             var userId = getParameterByName("userId");
 
             MediaLibraryPage.lastVirtualFolderName = name;
-            
+
             ApiClient.addVirtualFolder(name, userId).done(MediaLibraryPage.processOperationResult);
 
         });
@@ -164,7 +164,11 @@
 
     selectDirectory: function (callback) {
 
-        Dashboard.selectDirectory({callback: callback});
+        var picker = new DirectoryBrowser($.mobile.activePage);
+
+        picker.show({ callback: callback });
+
+        MediaLibraryPage.directoryPicker = picker;
     },
 
     getTextValue: function (header, label, initialValue, callback) {
@@ -177,7 +181,7 @@
         $('label', popup).html(label);
         $('#txtValue', popup).val(initialValue);
 
-        popup.on("popupafteropen",function() {
+        popup.on("popupafteropen", function () {
             $('#textEntryForm input:first', this).focus();
         }).on("popupafterclose", function () {
             $(this).off("popupafterclose").off("click");
@@ -200,7 +204,7 @@
         var virtualFolder = MediaLibraryPage.virtualFolders[folderIndex];
 
         MediaLibraryPage.lastVirtualFolderName = virtualFolder.Name;
-        
+
         MediaLibraryPage.getTextValue(virtualFolder.Name, "Rename " + virtualFolder.Name, virtualFolder.Name, function (newName) {
 
             if (virtualFolder.Name != newName) {
@@ -218,20 +222,20 @@
         var virtualFolder = MediaLibraryPage.virtualFolders[folderIndex];
 
         var parent = $(button).parents('.collapsibleVirtualFolder');
-        
+
         var locations = $('.lnkMediaLocation', parent).map(function () {
             return this.innerHTML;
         }).get();
 
         var msg = "Are you sure you wish to remove " + virtualFolder.Name + "?";
-        
+
         if (locations.length) {
             msg += "<br/><br/>The following media locations will be removed from your library:<br/><br/>";
             msg += locations.join("<br/>");
         }
-        
+
         MediaLibraryPage.lastVirtualFolderName = virtualFolder.Name;
-        
+
         Dashboard.confirm(msg, "Remove Media Folder", function (confirmResult) {
 
             if (confirmResult) {
@@ -272,7 +276,12 @@
         var page = $.mobile.activePage;
 
         $('#popupEnterText', page).popup("close");
-        $('#popupDirectoryPicker', page).popup("close");
+        
+        if (MediaLibraryPage.directoryPicker) {
+            MediaLibraryPage.directoryPicker.close();
+            MediaLibraryPage.directoryPicker = null;
+        }
+
         MediaLibraryPage.reloadLibrary(page);
     }
 };
