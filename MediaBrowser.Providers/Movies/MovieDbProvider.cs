@@ -314,7 +314,7 @@ namespace MediaBrowser.Providers.Movies
             if (boxset != null)
             {
                // See if any movies have a collection id already
-                return boxset.Children.OfType<Video>()
+                return boxset.Children.Concat(boxset.GetLinkedChildren()).OfType<Video>()
                     .Select(i => i.GetProviderId(MetadataProviders.TmdbCollection))
                    .FirstOrDefault(i => i != null);
             }
@@ -744,7 +744,7 @@ namespace MediaBrowser.Providers.Movies
                     var boxset = movie as BoxSet;
                     Logger.Info("MovieDbProvider - Using rating of first child of boxset...");
 
-                    var firstChild = boxset.Children.FirstOrDefault();
+                    var firstChild = boxset.Children.Concat(boxset.GetLinkedChildren()).FirstOrDefault();
 
                     boxset.OfficialRating = firstChild != null ? firstChild.OfficialRating : null;
                 }

@@ -588,7 +588,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the community rating vote count.
         /// </summary>
         /// <value>The community rating vote count.</value>
-        public int VoteCount { get; set; }
+        public int? VoteCount { get; set; }
 
         /// <summary>
         /// Gets or sets the run time ticks.

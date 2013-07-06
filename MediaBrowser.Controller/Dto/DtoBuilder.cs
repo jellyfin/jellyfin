@@ -292,7 +292,12 @@ namespace MediaBrowser.Controller.Dto
             {
                 var type = image.Key;
 
-                dto.ImageTags[type] = Kernel.Instance.ImageManager.GetImageCacheTag(item, type, image.Value);
+                var tag = GetImageCacheTag(item, type, image.Value);
+
+                if (tag.HasValue)
+                {
+                    dto.ImageTags[type] = tag.Value;
+                }
             }
 
             dto.Id = GetClientItemId(item);
@@ -365,7 +370,7 @@ namespace MediaBrowser.Controller.Dto
                 {
                     dto.ParentLogoItemId = GetClientItemId(parentWithLogo);
 
-                    dto.ParentLogoImageTag = Kernel.Instance.ImageManager.GetImageCacheTag(parentWithLogo, ImageType.Logo, parentWithLogo.GetImage(ImageType.Logo));
+                    dto.ParentLogoImageTag = GetImageCacheTag(parentWithLogo, ImageType.Logo, parentWithLogo.GetImage(ImageType.Logo));
                 }
             }
 
@@ -393,7 +398,7 @@ namespace MediaBrowser.Controller.Dto
             {
                 dto.CustomRating = item.CustomRating;
             }
-            
+
             if (fields.Contains(ItemFields.Taglines))
             {
                 dto.Taglines = item.Taglines;
@@ -656,7 +661,7 @@ namespace MediaBrowser.Controller.Dto
 
                     if (!string.IsNullOrEmpty(primaryImagePath))
                     {
-                        baseItemPerson.PrimaryImageTag = Kernel.Instance.ImageManager.GetImageCacheTag(entity, ImageType.Primary, primaryImagePath);
+                        baseItemPerson.PrimaryImageTag = GetImageCacheTag(entity, ImageType.Primary, primaryImagePath);
                     }
                 }
 
@@ -712,7 +717,7 @@ namespace MediaBrowser.Controller.Dto
 
                     if (!string.IsNullOrEmpty(primaryImagePath))
                     {
-                        studioDto.PrimaryImageTag = Kernel.Instance.ImageManager.GetImageCacheTag(entity, ImageType.Primary, primaryImagePath);
+                        studioDto.PrimaryImageTag = GetImageCacheTag(entity, ImageType.Primary, primaryImagePath);
                     }
                 }
 
@@ -805,7 +810,7 @@ namespace MediaBrowser.Controller.Dto
 
             if (!string.IsNullOrEmpty(chapterInfo.ImagePath))
             {
-                dto.ImageTag = Kernel.Instance.ImageManager.GetImageCacheTag(item, ImageType.Chapter, chapterInfo.ImagePath);
+                dto.ImageTag = GetImageCacheTag(item, ImageType.Chapter, chapterInfo.ImagePath);
             }
 
             return dto;
@@ -838,7 +843,13 @@ namespace MediaBrowser.Controller.Dto
 
             if (!string.IsNullOrEmpty(imagePath))
             {
-                info.PrimaryImageTag = Kernel.Instance.ImageManager.GetImageCacheTag(item, ImageType.Primary, imagePath);
+                try
+                {
+                    info.PrimaryImageTag = Kernel.Instance.ImageManager.GetImageCacheTag(item, ImageType.Primary, imagePath);
+                }
+                catch (IOException)
+                {
+                }
             }
 
             return info;
@@ -980,12 +991,11 @@ namespace MediaBrowser.Controller.Dto
         /// <returns>List{System.String}.</returns>
         private List<Guid> GetBackdropImageTags(BaseItem item)
         {
-            if (item.BackdropImagePaths == null)
-            {
-                return new List<Guid>();
-            }
-
-            return item.BackdropImagePaths.Select(p => Kernel.Instance.ImageManager.GetImageCacheTag(item, ImageType.Backdrop, p)).ToList();
+            return item.BackdropImagePaths
+                .Select(p => GetImageCacheTag(item, ImageType.Backdrop, p))
+                .Where(i => i.HasValue)
+                .Select(i => i.Value)
+                .ToList();
         }
 
         /// <summary>
@@ -995,12 +1005,24 @@ namespace MediaBrowser.Controller.Dto
         /// <returns>List{Guid}.</returns>
         private List<Guid> GetScreenshotImageTags(BaseItem item)
         {
-            if (item.ScreenshotImagePaths == null)
-            {
-                return new List<Guid>();
-            }
+            return item.ScreenshotImagePaths
+                .Select(p => GetImageCacheTag(item, ImageType.Screenshot, p))
+                .Where(i => i.HasValue)
+                .Select(i => i.Value)
+                .ToList();
+        }
 
-            return item.ScreenshotImagePaths.Select(p => Kernel.Instance.ImageManager.GetImageCacheTag(item, ImageType.Screenshot, p)).ToList();
+        private Guid? GetImageCacheTag(BaseItem item, ImageType type, string path)
+        {
+            try
+            {
+                return Kernel.Instance.ImageManager.GetImageCacheTag(item, ImageType.Screenshot, path);
+            }
+            catch (IOException ex)
+            {
+                _logger.ErrorException("Error getting {0} image info for {1}", ex, type, path);
+                return null;
+            }
         }
     }
 }

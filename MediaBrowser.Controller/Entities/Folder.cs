@@ -91,7 +91,7 @@ namespace MediaBrowser.Controller.Entities
 
         public List<LinkedChild> LinkedChildren { get; set; }
 
-        protected virtual bool SupportsLinkedChildren
+        protected virtual bool SupportsShortcutChildren
         {
             get { return false; }
         }
@@ -856,6 +856,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var parent = System.IO.Path.GetDirectoryName(path);
 
+            // Depending on whether the path is local or unc, it may return either null or '\' at the top
             while (!string.IsNullOrEmpty(parent) && !parent.ToCharArray()[0].Equals(System.IO.Path.DirectorySeparatorChar))
             {
                 if (Directory.Exists(parent))
@@ -999,15 +1000,32 @@ namespace MediaBrowser.Controller.Entities
         public IEnumerable<BaseItem> GetLinkedChildren()
         {
             return LinkedChildren
-                .Select(i => LibraryManager.RootFolder.FindByPath(i.Path))
+                .Select(GetLinkedChild)
                 .Where(i => i != null);
+        }
+
+        /// <summary>
+        /// Gets the linked child.
+        /// </summary>
+        /// <param name="info">The info.</param>
+        /// <returns>BaseItem.</returns>
+        private BaseItem GetLinkedChild(LinkedChild info)
+        {
+            var item = LibraryManager.RootFolder.FindByPath(info.Path);
+
+            if (item == null)
+            {
+                Logger.Warn("Unable to find linked item at {0}", info.Path);
+            }
+
+            return item;
         }
 
         public override async Task<bool> RefreshMetadata(CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false, bool allowSlowProviders = true, bool resetResolveArgs = true)
         {
             var changed = await base.RefreshMetadata(cancellationToken, forceSave, forceRefresh, allowSlowProviders, resetResolveArgs).ConfigureAwait(false);
 
-            return changed || (SupportsLinkedChildren && LocationType == LocationType.FileSystem && RefreshLinkedChildren());
+            return changed || (SupportsShortcutChildren && LocationType == LocationType.FileSystem && RefreshLinkedChildren());
         }
 
         /// <summary>
@@ -1059,6 +1077,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (!newShortcutLinks.SequenceEqual(currentShortcutLinks))
             {
+                Logger.Info("Shortcut links have changed for {0}", Path);
                 newShortcutLinks.AddRange(currentManualLinks);
                 LinkedChildren = newShortcutLinks;
                 return true;
