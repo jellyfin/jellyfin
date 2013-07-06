@@ -195,6 +195,10 @@
 }
 
 .starRating + .rottentomatoesicon {
+    margin-left: 1em;
+}
+
+.smallPosterTileItem .starRating + .rottentomatoesicon {
     margin-left: .5em;
 }
 
@@ -619,9 +623,6 @@ a.itemTag:hover {
 
 .mediaInfoAttribute {
     color: #fff;
-}
-
-.mediaInfoDetails {
 }
 
 .mediaInfoLabel {

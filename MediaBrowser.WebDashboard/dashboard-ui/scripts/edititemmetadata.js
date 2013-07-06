@@ -165,6 +165,30 @@
             $('#fldMusicBrainzReleaseGroupId', page).hide();
         }
 
+        if (item.Type == "Person" || item.Type == "Genre" || item.Type == "Studio" || item.Type == "GameGenre" || item.Type == "MusicGenre") {
+            $('#fldCommunityRating', page).hide();
+            $('#fldOfficialRating', page).hide();
+            $('#fldCustomRating', page).hide();
+            $('#genresCollapsible', page).hide();
+            $('#studiosCollapsible', page).hide();
+        } else {
+            $('#fldCommunityRating', page).show();
+            $('#fldOfficialRating', page).show();
+            $('#fldCustomRating', page).show();
+            $('#genresCollapsible', page).show();
+            $('#studiosCollapsible', page).show();
+        }
+
+        if (item.Type == "Person") {
+            $('#lblPremiereDate', page).html('Date of birth');
+            $('#lblYear', page).html('Birth year');
+            $('#lblEndDate', page).html('Death date');
+        } else {
+            $('#lblPremiereDate', page).html('Release date');
+            $('#lblYear', page).html('Year');
+            $('#lblEndDate', page).html('End date');
+        }
+
         if (item.MediaType == "Video") {
             $('#fldOriginalAspectRatio', page).show();
         } else {
