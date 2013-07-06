@@ -59,6 +59,11 @@
     <Compile Include="Net\WebSocketMessage.cs" />
     <Compile Include="Net\WebSocketMessageType.cs" />
     <Compile Include="Net\WebSocketState.cs" />
+    <Compile Include="Notifications\Notification.cs" />
+    <Compile Include="Notifications\NotificationLevel.cs" />
+    <Compile Include="Notifications\NotificationQuery.cs" />
+    <Compile Include="Notifications\NotificationResult.cs" />
+    <Compile Include="Notifications\NotificationsSummary.cs" />
     <Compile Include="Querying\ArtistsQuery.cs" />
     <Compile Include="Querying\ItemReviewsResult.cs" />
     <Compile Include="Querying\ItemsByNameQuery.cs" />

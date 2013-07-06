@@ -214,6 +214,18 @@
     <Compile Include="..\MediaBrowser.Model\Net\WebSocketState.cs">
       <Link>Net\WebSocketState.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Notifications\Notification.cs">
+      <Link>Notifications\Notification.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Notifications\NotificationLevel.cs">
+      <Link>Notifications\NotificationLevel.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Notifications\NotificationQuery.cs">
+      <Link>Notifications\NotificationQuery.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Notifications\NotificationResult.cs">
+      <Link>Notifications\NotificationResult.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Plugins\BasePluginConfiguration.cs">
       <Link>Plugins\BasePluginConfiguration.cs</Link>
     </Compile>
@@ -333,6 +345,7 @@
   <ItemGroup>
     <None Include="MediaBrowser.Model.snk" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>if $(ConfigurationName) == Release (

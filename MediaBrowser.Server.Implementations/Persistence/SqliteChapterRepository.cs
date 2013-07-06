@@ -1,10 +1,8 @@
-﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Model.Entities;
+﻿using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -16,30 +14,20 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         private readonly ILogger _logger;
 
-        /// <summary>
-        /// The _app paths
-        /// </summary>
-        private readonly IApplicationPaths _appPaths;
-
         private IDbCommand _deleteChaptersCommand;
         private IDbCommand _saveChapterCommand;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository" /> class.
         /// </summary>
-        /// <param name="appPaths">The app paths.</param>
+        /// <param name="connection">The connection.</param>
         /// <param name="logManager">The log manager.</param>
         /// <exception cref="System.ArgumentNullException">appPaths
         /// or
         /// jsonSerializer</exception>
-        public SqliteChapterRepository(IApplicationPaths appPaths, ILogManager logManager)
+        public SqliteChapterRepository(IDbConnection connection, ILogManager logManager)
         {
-            if (appPaths == null)
-            {
-                throw new ArgumentNullException("appPaths");
-            }
-
-            _appPaths = appPaths;
+            _connection = connection;
 
             _logger = logManager.GetLogger(GetType().Name);
         }
@@ -48,12 +36,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// Opens the connection to the database
         /// </summary>
         /// <returns>Task.</returns>
-        public async Task Initialize()
+        public void Initialize()
         {
-            var dbFile = Path.Combine(_appPaths.DataPath, "chapters.db");
-
-            _connection = await SqliteExtensions.ConnectToDb(dbFile).ConfigureAwait(false);
-
             string[] queries = {
 
                                 "create table if not exists chapters (ItemId GUID, ChapterIndex INT, StartPositionTicks BIGINT, Name TEXT, ImagePath TEXT, PRIMARY KEY (ItemId, ChapterIndex))",

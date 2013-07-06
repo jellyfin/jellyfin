@@ -90,7 +90,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             _logger = logManager.GetLogger(GetType().Name);
 
-            _chapterRepository = new SqliteChapterRepository(appPaths, logManager);
+            var chapterDbFile = Path.Combine(_appPaths.DataPath, "chapters.db");
+
+            var chapterConnection = SqliteExtensions.ConnectToDb(chapterDbFile).Result;
+
+            _chapterRepository = new SqliteChapterRepository(chapterConnection, logManager);
         }
 
         /// <summary>
@@ -119,7 +123,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             PrepareStatements();
 
-            await _chapterRepository.Initialize().ConfigureAwait(false);
+            _chapterRepository.Initialize();
         }
 
         /// <summary>

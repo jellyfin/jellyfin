@@ -36,5 +36,11 @@ namespace MediaBrowser.Model.Tasks
         /// </summary>
         /// <value>The id.</value>
         public Guid Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the error message.
+        /// </summary>
+        /// <value>The error message.</value>
+        public string ErrorMessage { get; set; }
     }
 }

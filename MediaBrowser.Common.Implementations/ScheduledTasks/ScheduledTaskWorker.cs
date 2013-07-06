@@ -343,6 +343,8 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
             TaskCompletionStatus status;
             CurrentExecutionStartTime = DateTime.UtcNow;
 
+            Exception failureException = null;
+
             try
             {
                 await ExecuteTask(CurrentCancellationTokenSource.Token, progress).ConfigureAwait(false);
@@ -357,6 +359,8 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
             {
                 Logger.ErrorException("Error", ex);
 
+                failureException = ex;
+
                 status = TaskCompletionStatus.Failed;
             }
 
@@ -368,7 +372,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
             CurrentCancellationTokenSource = null;
             CurrentProgress = null;
 
-            OnTaskCompleted(startTime, endTime, status);
+            OnTaskCompleted(startTime, endTime, status, failureException);
         }
 
         /// <summary>
@@ -517,7 +521,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         /// <param name="startTime">The start time.</param>
         /// <param name="endTime">The end time.</param>
         /// <param name="status">The status.</param>
-        private void OnTaskCompleted(DateTime startTime, DateTime endTime, TaskCompletionStatus status)
+        private void OnTaskCompleted(DateTime startTime, DateTime endTime, TaskCompletionStatus status, Exception ex)
         {
             var elapsedTime = endTime - startTime;
 
@@ -531,6 +535,11 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
                 Name = Name,
                 Id = Id
             };
+
+            if (ex != null)
+            {
+                result.ErrorMessage = ex.Message;
+            }
 
             JsonSerializer.SerializeToFile(result, GetHistoryFilePath(true));
 
@@ -560,7 +569,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
 
                 if (State == TaskState.Running)
                 {
-                    OnTaskCompleted(CurrentExecutionStartTime, DateTime.UtcNow, TaskCompletionStatus.Aborted);
+                    OnTaskCompleted(CurrentExecutionStartTime, DateTime.UtcNow, TaskCompletionStatus.Aborted, null);
                 }
 
                 if (CurrentCancellationTokenSource != null)

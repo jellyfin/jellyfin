@@ -243,6 +243,61 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
             });
         };
 
+        self.getNotificationSummary = function (userId) {
+
+            if (!userId) {
+                throw new Error("null userId");
+            }
+
+            var url = self.getUrl("Notifications/" + userId + "/Summary");
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        self.getNotifications = function (userId, options) {
+
+            if (!userId) {
+                throw new Error("null userId");
+            }
+
+            var url = self.getUrl("Notifications/" + userId, options || {});
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        self.markNotificationsRead = function (userId, idList, isRead) {
+
+            if (!userId) {
+                throw new Error("null userId");
+            }
+
+            if (!idList || !idList.length) {
+                throw new Error("null idList");
+            }
+
+            var suffix = isRead ? "Read" : "Unread";
+
+            var params = {
+                UserId: userId,
+                Ids: idList.join(',')
+            };
+
+            var url = self.getUrl("Notifications/" + userId + "/" + suffix, params);
+
+            return self.ajax({
+                type: "POST",
+                url: url
+            });
+        };
+
         /**
          * Gets the current server status
          */
@@ -1937,7 +1992,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
             if (!item) {
                 throw new Error("null item");
             }
-            
+
             var url = self.getUrl("Artists/" + self.encodeName(item.Name));
 
             return self.ajax({
