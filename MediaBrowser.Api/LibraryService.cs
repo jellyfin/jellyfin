@@ -226,6 +226,11 @@ namespace MediaBrowser.Api
 
             var parent = item.Parent;
 
+            if (item.LocationType == LocationType.Offline)
+            {
+                throw new InvalidOperationException(string.Format("{0} is currently offline.", item.Name));
+            }
+            
             if (item.LocationType == LocationType.FileSystem)
             {
                 if (Directory.Exists(item.Path))
