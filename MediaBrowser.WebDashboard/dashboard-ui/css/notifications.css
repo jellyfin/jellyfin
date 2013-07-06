@@ -51,19 +51,22 @@
     color: #fff!important;
 }
 
+.notificationsFlyout {
+    width: 300px;
+}
+
 .flyoutNotification {
     border-top: 1px solid #ccc;
     background: #f8f8f8;
     color: #555;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
     .flyoutNotification p {
-        margin: .7em 0;
+        margin: .5em 0;
     }
-
-.notificationsFlyout {
-    width: 300px;
-}
 
 .notificationName {
     font-weight: bold;
@@ -83,8 +86,8 @@
 }
 
 .imgNotification, .imgNotificationInner {
-    width: 60px;
-    height: 60px;
+    width: 40px;
+    height: 40px;
 }
 
 .imgNotificationInner {
@@ -108,9 +111,9 @@
     background-image: linear-gradient(top,#4d90fe,#4787ed);
 }
 
-.imgNotificationNormal .imgNotificationInner {
-    background-image: url(images/notifications/info.png);
-}
+    .imgNotificationNormal .imgNotificationInner {
+        background-image: url(images/notifications/info.png);
+    }
 
 .imgNotificationError {
     background-color: #d14836;
@@ -122,39 +125,66 @@
     background-image: linear-gradient(top,#dd4b39,#d14836);
 }
 
-.imgNotificationError .imgNotificationInner {
-    background-image: url(images/notifications/error.png);
-}
+    .imgNotificationError .imgNotificationInner {
+        background-image: url(images/notifications/error.png);
+    }
 
 .imgNotificationWarning {
     background-color: #FF7537;
 }
 
-.imgNotificationWarning .imgNotificationInner {
-    background-image: url(images/notifications/error.png);
+    .imgNotificationWarning .imgNotificationInner {
+        background-image: url(images/notifications/error.png);
+    }
+
+.notificationContent {
+    padding: 0 .5em;
+}
+
+@media all and (min-width: 350px) {
+    .notificationsFlyout {
+        width: 320px;
+    }
+}
+
+@media all and (min-width: 400px) {
+    .notificationsFlyout {
+        width: 370px;
+    }
+}
+
+@media all and (min-width: 450px) {
+    .notificationsFlyout {
+        width: 400px;
+    }
+
+    .notificationImage {
+        margin: 0 .5em 0 1em;
+        padding: .5em 0;
+        display: inline-block;
+        vertical-align: top;
+    }
+
+    .notificationContent {
+        display: inline-block;
+        vertical-align: top;
+        overflow: hidden;
+    }
 }
 
 @media all and (min-width: 500px) {
     .notificationsFlyout {
-        width: 400px;
+        width: 450px;
+    }
+
+    .imgNotification, .imgNotificationInner {
+        width: 60px;
+        height: 60px;
     }
 }
 
 @media all and (min-width: 600px) {
     .notificationsFlyout {
         width: 500px;
-    }
-
-
-    .notificationImage {
-        display: inline-block;
-        vertical-align: top;
-        margin: 0 1em;
-        padding: .7em 0;
-    }
-
-    .notificationContent {
-        display: inline-block;
-        vertical-align: top;
     }
 }

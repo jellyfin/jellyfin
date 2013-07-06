@@ -26,7 +26,7 @@
 
         var context = this;
 
-        var html = '<div data-role="popup" class="notificationsFlyout" style="min-width:200px;margin-top:30px;margin-right:20px;" class="ui-corner-all">';
+        var html = '<div data-role="popup" class="notificationsFlyout" style="min-width:250px;margin-top:30px;margin-right:20px;background: #f8f8f8;">';
 
         html += '<a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>';
 
@@ -34,7 +34,7 @@
         html += '<h3 style="margin: .5em 0;">Notifications</h3>';
         html += '</div>';
 
-        html += '<div data-role="content" class="ui-corner-bottom ui-content" style="padding: 0;background: #f8f8f8;">';
+        html += '<div data-role="content" class="ui-corner-bottom ui-content" style="padding: 0;">';
 
         html += '<p class="notificationsFlyoutlist">Loading...';
 
@@ -140,6 +140,7 @@
         }
 
         html += '</div>';
+
         html += '</div>';
 
         return html;
