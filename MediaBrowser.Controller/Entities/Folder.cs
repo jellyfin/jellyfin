@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using System.Collections;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
@@ -645,8 +646,18 @@ namespace MediaBrowser.Controller.Entities
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            //get the current valid children from filesystem (or wherever)
-            var nonCachedChildren = IsOffline ? new BaseItem[] { } : GetNonCachedChildren();
+            IEnumerable<BaseItem> nonCachedChildren;
+
+            try
+            {
+                nonCachedChildren = GetNonCachedChildren();
+            }
+            catch (IOException ex)
+            {
+                nonCachedChildren = new BaseItem[] { };
+
+                Logger.ErrorException("Error getting file system entries for {0}", ex, Path);
+            }
 
             if (nonCachedChildren == null) return; //nothing to validate
 
@@ -685,6 +696,8 @@ namespace MediaBrowser.Controller.Entities
                     {
                         validChildren.Add(new Tuple<BaseItem, bool>(currentChild, false));
                     }
+
+                    currentChild.IsOffline = false;
                 }
                 else
                 {
@@ -707,6 +720,8 @@ namespace MediaBrowser.Controller.Entities
                 {
                     if (IsRootPathAvailable(item.Path))
                     {
+                        item.IsOffline = false;
+
                         BaseItem removed;
 
                         if (!_children.TryRemove(item.Id, out removed))
@@ -717,7 +732,6 @@ namespace MediaBrowser.Controller.Entities
                         {
                             LibraryManager.ReportItemRemoved(item);
                         }
-                        item.IsOffline = false;
                     }
                     else
                     {
@@ -854,6 +868,11 @@ namespace MediaBrowser.Controller.Entities
         /// <returns></returns>
         private bool IsRootPathAvailable(string path)
         {
+            if (File.Exists(path))
+            {
+                return true;
+            }
+
             // Depending on whether the path is local or unc, it may return either null or '\' at the top
             while (!string.IsNullOrEmpty(path) && path.Length > 1)
             {
@@ -874,19 +893,13 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>IEnumerable{BaseItem}.</returns>
         protected virtual IEnumerable<BaseItem> GetNonCachedChildren()
         {
-            IEnumerable<FileSystemInfo> fileSystemChildren;
 
-            try
+            if (ResolveArgs == null || ResolveArgs.FileSystemDictionary == null)
             {
-                fileSystemChildren = ResolveArgs.FileSystemChildren;
-            }
-            catch (IOException ex)
-            {
-                Logger.ErrorException("Error getting ResolveArgs for {0}", ex, Path);
-                return new List<BaseItem>();
+                Logger.Error("Null for {0}", Path);
             }
 
-            return LibraryManager.ResolvePaths<BaseItem>(fileSystemChildren, this);
+            return LibraryManager.ResolvePaths<BaseItem>(ResolveArgs.FileSystemChildren, this);
         }
 
         /// <summary>
