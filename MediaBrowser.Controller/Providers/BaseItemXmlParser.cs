@@ -586,7 +586,7 @@ namespace MediaBrowser.Controller.Providers
                 {
                     switch (reader.Name)
                     {
-                        case "3DFormat":
+                        case "Video3DFormat":
                             {
                                 var video = item as Video;
 

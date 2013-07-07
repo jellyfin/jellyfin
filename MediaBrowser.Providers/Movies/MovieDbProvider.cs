@@ -575,7 +575,8 @@ namespace MediaBrowser.Providers.Movies
                 Logger.Info("MoviedbProvider: Ignoring " + item.Name + " because ID forced blank.");
                 return;
             }
-            if (item.GetProviderId(MetadataProviders.Tmdb) == null) item.SetProviderId(MetadataProviders.Tmdb, id);
+            
+            item.SetProviderId(MetadataProviders.Tmdb, id);
 
             var mainResult = await FetchMainResult(item, id, cancellationToken).ConfigureAwait(false);
 
