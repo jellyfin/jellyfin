@@ -66,6 +66,8 @@
 
     .flyoutNotification p {
         margin: .5em 0;
+        white-space: normal;
+        max-width: 95%;
     }
 
 .notificationName {

@@ -9,6 +9,16 @@
 
         DashboardPage.lastAppUpdateCheck = null;
         DashboardPage.lastPluginUpdateCheck = null;
+
+        Dashboard.getPluginSecurityInfo().done(function (pluginSecurityInfo) {
+
+            if (pluginSecurityInfo.IsMBSupporter) {
+                $('#contribute').hide();
+            } else {
+                $('#contribute').show();
+            }
+
+        });
     },
 
     onPageHide: function () {
