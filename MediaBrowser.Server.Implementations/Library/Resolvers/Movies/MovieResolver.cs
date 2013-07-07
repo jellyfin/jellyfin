@@ -74,8 +74,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                 }
 
                 // A shortcut to help us resolve faster in some cases
-                var isKnownMovie = args.ContainsMetaFileByName("movie.xml") || args.ContainsMetaFileByName("tmdb3.json") ||
-                                   args.Path.IndexOf("[tmdbid", StringComparison.OrdinalIgnoreCase) != -1;
+                var isKnownMovie = args.ContainsMetaFileByName("movie.xml");
 
                 if (args.Path.IndexOf("[trailers]", StringComparison.OrdinalIgnoreCase) != -1)
                 {
