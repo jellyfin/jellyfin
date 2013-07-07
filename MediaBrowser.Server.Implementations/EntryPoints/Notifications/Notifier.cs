@@ -2,6 +2,7 @@
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Common.Updates;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Controller.Plugins;
@@ -42,6 +43,28 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
             _installationManager.PluginUninstalled += _installationManager_PluginUninstalled;
 
             _taskManager.TaskCompleted += _taskManager_TaskCompleted;
+
+            _userManager.UserCreated += _userManager_UserCreated;
+        }
+
+        async void _userManager_UserCreated(object sender, GenericEventArgs<User> e)
+        {
+            var notification = new Notification
+            {
+                UserId = e.Argument.Id,
+                Category = "UserCreated",
+                Name = "Welcome to Media Browser!",
+                Description = "Check back here for more notifications."
+            };
+
+            try
+            {
+                await _notificationsRepo.AddNotification(notification, CancellationToken.None).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error adding notification", ex);
+            }
         }
 
         async void _taskManager_TaskCompleted(object sender, GenericEventArgs<TaskResult> e)
@@ -168,6 +191,11 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
         {
             _installationManager.PackageInstallationCompleted -= _installationManager_PackageInstallationCompleted;
             _installationManager.PackageInstallationFailed -= _installationManager_PackageInstallationFailed;
+            _installationManager.PluginUninstalled -= _installationManager_PluginUninstalled;
+
+            _taskManager.TaskCompleted -= _taskManager_TaskCompleted;
+
+            _userManager.UserCreated -= _userManager_UserCreated;
         }
     }
 }

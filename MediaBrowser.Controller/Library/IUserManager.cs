@@ -28,6 +28,8 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         event EventHandler<GenericEventArgs<User>> UserDeleted;
 
+        event EventHandler<GenericEventArgs<User>> UserCreated;
+        
         /// <summary>
         /// Gets a User by Id
         /// </summary>
