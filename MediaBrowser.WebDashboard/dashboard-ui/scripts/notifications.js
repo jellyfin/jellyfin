@@ -88,7 +88,7 @@
         var elem = $('.notificationsFlyoutlist');
 
         if (!totalRecordCount) {
-            elem.html('<p>No unread notifications.</p>');
+            elem.html('<p style="padding:.5em 1em;">No unread notifications.</p>');
             $('.btnMarkReadContainer').hide();
             return;
         }

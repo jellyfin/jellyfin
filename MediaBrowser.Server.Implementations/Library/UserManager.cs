@@ -303,6 +303,8 @@ namespace MediaBrowser.Server.Implementations.Library
             OnUserUpdated(user);
         }
 
+        public event EventHandler<GenericEventArgs<User>> UserCreated;
+        
         /// <summary>
         /// Creates the user.
         /// </summary>
@@ -330,6 +332,8 @@ namespace MediaBrowser.Server.Implementations.Library
 
             await UserRepository.SaveUser(user, CancellationToken.None).ConfigureAwait(false);
 
+            EventHelper.QueueEventIfNotNull(UserCreated, this, new GenericEventArgs<User> { Argument = user }, _logger);
+            
             return user;
         }
 
@@ -439,5 +443,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 DateModified = DateTime.UtcNow
             };
         }
+
+
     }
 }
