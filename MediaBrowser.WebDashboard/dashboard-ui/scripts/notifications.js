@@ -31,7 +31,7 @@
         html += '<a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>';
 
         html += '<div class="ui-corner-top ui-bar-a" style="text-align:center;">';
-        html += '<h3 style="margin: .5em 0;">Messages</h3>';
+        html += '<h3 style="margin: .5em 0;">Notifications</h3>';
         html += '</div>';
 
         html += '<div data-role="content" class="ui-corner-bottom ui-content" style="padding: 0;">';
@@ -171,7 +171,7 @@
 
         userId = user.Id;
 
-        $('<a class="imageLink btnNotifications" href="#" title="Messages">0</a>').insertAfter($('.btnCurrentUser', header)).on('click', showNotificationsFlyout);
+        $('<a class="imageLink btnNotifications" href="#" title="Notifications">0</a>').insertAfter($('.btnCurrentUser', header)).on('click', showNotificationsFlyout);
 
         updateNotificationCount();
     });

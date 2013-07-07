@@ -78,30 +78,22 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// <returns>NotificationResult.</returns>
         public NotificationResult GetNotifications(NotificationQuery query)
         {
-            var whereClause = string.Empty;
-
             var result = new NotificationResult();
 
             using (var cmd = _connection.CreateCommand())
             {
-                if (query.IsRead.HasValue || query.UserId.HasValue)
+                var clauses = new List<string>();
+
+                if (query.IsRead.HasValue)
                 {
-                    var clauses = new List<string>();
-
-                    if (query.IsRead.HasValue)
-                    {
-                        clauses.Add("IsRead=@IsRead");
-                        cmd.Parameters.Add(cmd, "@IsRead", DbType.Boolean).Value = query.IsRead.Value;
-                    }
-
-                    if (query.UserId.HasValue)
-                    {
-                        clauses.Add("UserId=@UserId");
-                        cmd.Parameters.Add(cmd, "@UserId", DbType.Guid).Value = query.UserId.Value;
-                    }
-
-                    whereClause = " where " + string.Join(" And ", clauses.ToArray());
+                    clauses.Add("IsRead=@IsRead");
+                    cmd.Parameters.Add(cmd, "@IsRead", DbType.Boolean).Value = query.IsRead.Value;
                 }
+
+                clauses.Add("UserId=@UserId");
+                cmd.Parameters.Add(cmd, "@UserId", DbType.Guid).Value = query.UserId;
+
+                var whereClause = " where " + string.Join(" And ", clauses.ToArray());
 
                 cmd.CommandText = string.Format("select count(Id) from Notifications{0};select Id,UserId,Date,Name,Description,Url,Level,IsRead,Category,RelatedId from Notifications{0} order by IsRead asc, Date desc", whereClause);
 
@@ -155,7 +147,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     }
 
                     result.UnreadCount = levels.Count;
-                    
+
                     if (levels.Count > 0)
                     {
                         result.MaxUnreadNotificationLevel = levels.Max();
