@@ -49,11 +49,11 @@ namespace MediaBrowser.Model.ApiClient
         Task<NotificationsSummary> GetNotificationsSummary(string userId);
 
         /// <summary>
-        /// Gets the notfiications async.
+        /// Gets the notifications async.
         /// </summary>
         /// <param name="query">The query.</param>
         /// <returns>Task{NotificationResult}.</returns>
-        Task<NotificationResult> GetNotfiicationsAsync(NotificationQuery query);
+        Task<NotificationResult> GetNotificationsAsync(NotificationQuery query);
 
         /// <summary>
         /// Gets an image stream based on a url
