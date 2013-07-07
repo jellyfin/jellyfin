@@ -854,17 +854,15 @@ namespace MediaBrowser.Controller.Entities
         /// <returns></returns>
         private bool IsRootPathAvailable(string path)
         {
-            var parent = System.IO.Path.GetDirectoryName(path);
-
             // Depending on whether the path is local or unc, it may return either null or '\' at the top
-            while (!string.IsNullOrEmpty(parent) && !parent.ToCharArray()[0].Equals(System.IO.Path.DirectorySeparatorChar))
+            while (!string.IsNullOrEmpty(path) && path.Length > 1)
             {
-                if (Directory.Exists(parent))
+                if (Directory.Exists(path))
                 {
                     return true;
                 }
 
-                parent = System.IO.Path.GetDirectoryName(path);
+                path = System.IO.Path.GetDirectoryName(path);
             }
 
             return false;
