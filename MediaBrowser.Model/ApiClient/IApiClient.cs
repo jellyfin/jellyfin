@@ -2,6 +2,7 @@
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.Notifications;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Serialization;
@@ -17,6 +18,43 @@ namespace MediaBrowser.Model.ApiClient
 {
     public interface IApiClient : IDisposable
     {
+        /// <summary>
+        /// Marks the notifications read.
+        /// </summary>
+        /// <param name="userId">The user id.</param>
+        /// <param name="notificationIdList">The notification id list.</param>
+        /// <param name="isRead">if set to <c>true</c> [is read].</param>
+        /// <returns>Task.</returns>
+        Task MarkNotificationsRead(string userId, IEnumerable<Guid> notificationIdList, bool isRead);
+
+        /// <summary>
+        /// Updates the notification.
+        /// </summary>
+        /// <param name="notification">The notification.</param>
+        /// <returns>Task.</returns>
+        Task UpdateNotification(Notification notification);
+
+        /// <summary>
+        /// Adds the notification.
+        /// </summary>
+        /// <param name="notification">The notification.</param>
+        /// <returns>Task{Notification}.</returns>
+        Task<Notification> AddNotification(Notification notification);
+
+        /// <summary>
+        /// Gets the notifications summary.
+        /// </summary>
+        /// <param name="userId">The user id.</param>
+        /// <returns>Task{NotificationsSummary}.</returns>
+        Task<NotificationsSummary> GetNotificationsSummary(string userId);
+
+        /// <summary>
+        /// Gets the notfiications async.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>Task{NotificationResult}.</returns>
+        Task<NotificationResult> GetNotfiicationsAsync(NotificationQuery query);
+
         /// <summary>
         /// Gets an image stream based on a url
         /// </summary>
@@ -69,7 +107,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="userId">The user id.</param>
         /// <returns>Task{ItemCounts}.</returns>
         Task<ItemCounts> GetItemCountsAsync(string userId);
-        
+
         /// <summary>
         /// Queries for items
         /// </summary>
@@ -105,7 +143,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="query">The query.</param>
         /// <returns>Task{ItemsResult}.</returns>
         Task<ItemsResult> GetSimilarGamesAsync(SimilarItemsQuery query);
-        
+
         /// <summary>
         /// Gets the people async.
         /// </summary>
@@ -136,7 +174,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="query">The query.</param>
         /// <returns>Task{ItemsResult}.</returns>
         Task<ItemsResult> GetNextUpAsync(NextUpQuery query);
-        
+
         /// <summary>
         /// Gets a genre
         /// </summary>
