@@ -385,9 +385,8 @@ namespace MediaBrowser.ServerApplication
             {
                 PageSize = 4096,
                 CacheSize = 4096,
-                SyncMode = SynchronizationModes.Off,
-                DataSource = dbPath,
-                JournalMode = SQLiteJournalModeEnum.Wal
+                SyncMode = SynchronizationModes.Normal,
+                DataSource = dbPath
             };
 
             var connection = new SQLiteConnection(connectionstr.ConnectionString);

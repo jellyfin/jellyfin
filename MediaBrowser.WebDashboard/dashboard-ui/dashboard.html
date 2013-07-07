@@ -53,6 +53,23 @@
                         </div>
                         <p><a href="scheduledtasks.html">Manage Scheduled Tasks</a></p>
                     </div>
+
+                    <div style="margin-top: 200px;">
+                        <h3 style="padding-left: 1em;">Help improve Media Browser</h3>
+                        <form name="_xclick" action="https://www.paypal.com/cgi-bin/webscr"
+                            method="post">
+                            <input type="hidden" name="amount" value="10">
+                            <input type="hidden" name="cmd" value="_xclick">
+                            <input type="hidden" name="business" value="donate@mediabrowser3.com">
+                            <input type="hidden" name="currency_code" value="USD">
+                            <input type="hidden" name="item_name" value="Media Browser Supporter">
+                            <input type="hidden" name="item_number" value="MBSupporter">
+                            <input type="hidden" name="notify_url" value="http://mb3admin.com/admin/service/services/ppipn.php">
+                            <input type="hidden" name="return" id="paypalReturnUrl" value="#">
+                            <a data-role="button" onclick="_xclick.submit();">
+                                <img src="css/images/supporter/donatepaypal.png" /></a>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>

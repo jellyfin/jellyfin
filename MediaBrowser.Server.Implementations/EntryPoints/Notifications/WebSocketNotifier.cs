@@ -6,7 +6,7 @@ using System.Linq;
 namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
 {
     /// <summary>
-    /// Sends out messages anytime a notification is added or udpated
+    /// Notifies clients anytime a notification is added or udpated
     /// </summary>
     public class WebSocketNotifier : IServerEntryPoint
     {
