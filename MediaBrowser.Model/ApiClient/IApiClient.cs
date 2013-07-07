@@ -192,12 +192,10 @@ namespace MediaBrowser.Model.ApiClient
         Task<BaseItemDto> GetArtistAsync(string name);
 
         /// <summary>
-        /// Restarts the kernel or the entire server if necessary
-        /// If the server application is restarting this request will fail to return, even if
-        /// the operation is successful.
+        /// Restarts the server.
         /// </summary>
         /// <returns>Task.</returns>
-        Task PerformPendingRestartAsync();
+        Task RestartServerAsync();
 
         /// <summary>
         /// Gets the system status async.
