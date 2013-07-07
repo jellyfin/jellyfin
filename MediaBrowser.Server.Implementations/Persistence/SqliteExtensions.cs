@@ -176,7 +176,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             {
                 PageSize = 4096,
                 CacheSize = 4096,
-                SyncMode = SynchronizationModes.Off,
+                SyncMode = SynchronizationModes.Normal,
                 DataSource = dbPath,
                 JournalMode = SQLiteJournalModeEnum.Wal
             };
