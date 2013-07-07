@@ -453,16 +453,16 @@ namespace MediaBrowser.Providers.Savers
                         switch (video.Video3DFormat.Value)
                         {
                             case Video3DFormat.FullSideBySide:
-                                builder.Append("<Video3DFormat>FSBS</3DFormat>");
+                                builder.Append("<Format3D>FSBS</Format3D>");
                                 break;
                             case Video3DFormat.FullTopAndBottom:
-                                builder.Append("<Video3DFormat>FTAB</3DFormat>");
+                                builder.Append("<Format3D>FTAB</Format3D>");
                                 break;
                             case Video3DFormat.HalfSideBySide:
-                                builder.Append("<Video3DFormat>HSBS</3DFormat>");
+                                builder.Append("<Format3D>HSBS</Format3D>");
                                 break;
                             case Video3DFormat.HalfTopAndBottom:
-                                builder.Append("<Video3DFormat>HTAB</3DFormat>");
+                                builder.Append("<Format3D>HTAB</Format3D>");
                                 break;
                         }
                     }
