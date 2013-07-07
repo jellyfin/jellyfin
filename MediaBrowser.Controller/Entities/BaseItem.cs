@@ -263,11 +263,12 @@ namespace MediaBrowser.Controller.Entities
                 try
                 {
                     LazyInitializer.EnsureInitialized(ref _resolveArgs, ref _resolveArgsInitialized, ref _resolveArgsSyncLock, () => CreateResolveArgs());
-
                 }
                 catch (IOException ex)
                 {
-                    Logger.ErrorException("Error creating resolve args for ", ex, Path);
+                    Logger.ErrorException("Error creating resolve args for {0}", ex, Path);
+
+                    IsOffline = true;
 
                     throw;
                 }
@@ -300,8 +301,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var path = Path;
 
-            // non file-system entries will not have a path
-            if (LocationType != LocationType.FileSystem || string.IsNullOrEmpty(path))
+            if (LocationType == LocationType.Remote || LocationType == LocationType.Virtual)
             {
                 return new ItemResolveArgs(ConfigurationManager.ApplicationPaths);
             }
@@ -314,23 +314,12 @@ namespace MediaBrowser.Controller.Entities
                 isDirectory = true;
             }
 
-            try
-            {
-                pathInfo = pathInfo ?? (isDirectory ? new DirectoryInfo(path) : FileSystem.GetFileSystemInfo(path));
-            }
-            catch (IOException)
-            {
-                IsOffline = true;
-                throw;
-            }
+            pathInfo = pathInfo ?? (isDirectory ? new DirectoryInfo(path) : FileSystem.GetFileSystemInfo(path));
 
             if (pathInfo == null || !pathInfo.Exists)
             {
-                IsOffline = true;
                 throw new IOException("Unable to retrieve file system info for " + path);
             }
-
-            IsOffline = false;
 
             var args = new ItemResolveArgs(ConfigurationManager.ApplicationPaths)
             {
@@ -366,6 +355,8 @@ namespace MediaBrowser.Controller.Entities
 
             //update our dates
             EntityResolutionHelper.EnsureDates(this, args);
+
+            IsOffline = false;
 
             return args;
         }
