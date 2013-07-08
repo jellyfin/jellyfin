@@ -3,7 +3,7 @@
     onPageShow: function () {
         Dashboard.showLoadingMsg();
 
-        var promise1 = ApiClient.getUsers({ IsHidden: false });
+        var promise1 = ApiClient.getPublicUsers();
         var promise2 = ApiClient.getServerConfiguration();
 
         $.when(promise1, promise2).done(function (response1, response2) {
@@ -76,6 +76,8 @@
         }).fail(function () {
 
             $('#pw', '#loginPage').val('');
+            $('#txtManualName', '#loginPage').val('');
+            $('#txtManualPassword', '#loginPage').val('');
 
             Dashboard.hideLoadingMsg();
 

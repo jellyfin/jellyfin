@@ -571,14 +571,8 @@ namespace MediaBrowser.Common.Implementations
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
         /// <returns>Task{CheckForUpdateResult}.</returns>
-        public virtual async Task<CheckForUpdateResult> CheckForApplicationUpdate(CancellationToken cancellationToken, IProgress<double> progress)
-        {
-            var availablePackages = await PackageManager.GetAvailablePackagesWithoutRegistrationInfo(CancellationToken.None).ConfigureAwait(false);
-            var version = InstallationManager.GetLatestCompatibleVersion(availablePackages, Constants.Constants.MbServerPkgName, ConfigurationManager.CommonConfiguration.SystemUpdateLevel);
-
-            return version != null ? new CheckForUpdateResult { AvailableVersion = version.version, IsUpdateAvailable = version.version > ApplicationVersion, Package = version } :
-                       new CheckForUpdateResult { AvailableVersion = ApplicationVersion, IsUpdateAvailable = false };
-        }
+        public abstract Task<CheckForUpdateResult> CheckForApplicationUpdate(CancellationToken cancellationToken,
+                                                                             IProgress<double> progress);
 
         /// <summary>
         /// Updates the application.
