@@ -3,6 +3,7 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Serialization;
+using MediaBrowser.Model.Users;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text.Controller;
 using System;
@@ -19,6 +20,11 @@ namespace MediaBrowser.Api
     [Api(Description = "Gets a list of users")]
     public class GetUsers : IReturn<List<UserDto>>
     {
+        [ApiMember(Name = "IsHidden", Description="Optional filter by IsHidden=true or false", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool? IsHidden { get; set; }
+
+        [ApiMember(Name = "IsDisabled", Description = "Optional filter by IsDisabled=true or false", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool? IsDisabled { get; set; }
     }
 
     /// <summary>
@@ -56,7 +62,7 @@ namespace MediaBrowser.Api
     /// </summary>
     [Route("/Users/{Id}/Authenticate", "POST")]
     [Api(Description = "Authenticates a user")]
-    public class AuthenticateUser : IReturnVoid
+    public class AuthenticateUser : IReturn<AuthenticationResult>
     {
         /// <summary>
         /// Gets or sets the id.
@@ -64,6 +70,28 @@ namespace MediaBrowser.Api
         /// <value>The id.</value>
         [ApiMember(Name = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public Guid Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the password.
+        /// </summary>
+        /// <value>The password.</value>
+        [ApiMember(Name = "Password", IsRequired = true, DataType = "string", ParameterType = "body", Verb = "POST")]
+        public string Password { get; set; }
+    }
+
+    /// <summary>
+    /// Class AuthenticateUser
+    /// </summary>
+    [Route("/Users/{Name}/AuthenticateByName", "POST")]
+    [Api(Description = "Authenticates a user")]
+    public class AuthenticateUserByName : IReturn<AuthenticationResult>
+    {
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "Name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public string Name { get; set; }
 
         /// <summary>
         /// Gets or sets the password.
@@ -168,11 +196,21 @@ namespace MediaBrowser.Api
         {
             var dtoBuilder = new UserDtoBuilder(Logger);
 
-            var tasks = _userManager.Users.OrderBy(u => u.Name).Select(dtoBuilder.GetUserDto);
+            var users = _userManager.Users;
 
-            var users = tasks.Select(i => i.Result).ToList();
+            if (request.IsDisabled.HasValue)
+            {
+                users = users.Where(i => i.Configuration.IsDisabled == request.IsDisabled.Value);
+            }
 
-            return ToOptimizedResult(users);
+            if (request.IsHidden.HasValue)
+            {
+                users = users.Where(i => i.Configuration.IsHidden == request.IsHidden.Value);
+            }
+
+            var tasks = users.OrderBy(u => u.Name).Select(dtoBuilder.GetUserDto).Select(i => i.Result);
+
+            return ToOptimizedResult(tasks.ToList());
         }
 
         /// <summary>
@@ -218,7 +256,21 @@ namespace MediaBrowser.Api
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public void Post(AuthenticateUser request)
+        public object Post(AuthenticateUser request)
+        {
+            var result = AuthenticateUser(request).Result;
+
+            return ToOptimizedResult(result);
+        }
+
+        public object Post(AuthenticateUserByName request)
+        {
+            var user = _userManager.Users.FirstOrDefault(i => string.Equals(request.Name, i.Name, StringComparison.OrdinalIgnoreCase));
+
+            return AuthenticateUser(new AuthenticateUser { Id = user.Id, Password = request.Password }).Result;
+        }
+
+        private async Task<object> AuthenticateUser(AuthenticateUser request)
         {
             var user = _userManager.GetUserById(request.Id);
 
@@ -227,13 +279,20 @@ namespace MediaBrowser.Api
                 throw new ResourceNotFoundException("User not found");
             }
 
-            var success = _userManager.AuthenticateUser(user, request.Password).Result;
+            var success = await _userManager.AuthenticateUser(user, request.Password).ConfigureAwait(false);
 
             if (!success)
             {
                 // Unauthorized
                 throw new UnauthorizedAccessException("Invalid user or password entered.");
             }
+
+            var result = new AuthenticationResult
+            {
+                User = await new UserDtoBuilder(Logger).GetUserDto(user).ConfigureAwait(false)
+            };
+
+            return ToOptimizedResult(result);
         }
 
         /// <summary>
@@ -291,6 +350,15 @@ namespace MediaBrowser.Api
                 if (_userManager.Users.Count(i => i.Configuration.IsAdministrator) == 1)
                 {
                     throw new ArgumentException("There must be at least one user in the system with administrative access.");
+                }
+            }
+
+            // If removing admin access
+            if (dtoUser.Configuration.IsDisabled && !user.Configuration.IsDisabled)
+            {
+                if (_userManager.Users.Count(i => !i.Configuration.IsDisabled) == 1)
+                {
+                    throw new ArgumentException("There must be at least one enabled user in the system.");
                 }
             }
 

@@ -1,6 +1,6 @@
 ﻿using MediaBrowser.Model.Entities;
-using System;
 using MediaBrowser.Model.Weather;
+using System;
 
 namespace MediaBrowser.Model.Configuration
 {
@@ -20,7 +20,7 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value>The weather unit.</value>
         public WeatherUnits WeatherUnit { get; set; }
-        
+
         /// <summary>
         /// Gets or sets a value indicating whether [enable HTTP level logging].
         /// </summary>
@@ -223,6 +223,8 @@ namespace MediaBrowser.Model.Configuration
         /// <value>The dashboard source path.</value>
         public string DashboardSourcePath { get; set; }
 
+        public ManualLoginCategory[] ManualLoginClients { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>
@@ -248,6 +250,8 @@ namespace MediaBrowser.Model.Configuration
 
             EnableInternetProviders = true; //initial installs will need these
             InternetProviderExcludeTypes = new string[] { };
+
+            ManualLoginClients = new ManualLoginCategory[] { };
 
             MetadataRefreshDays = 30;
             PreferredMetadataLanguage = "en";

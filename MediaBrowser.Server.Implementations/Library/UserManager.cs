@@ -1,10 +1,7 @@
-﻿using System.IO;
-using MediaBrowser.Common.Events;
+﻿using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Session;
@@ -12,12 +9,12 @@ using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Session;
 
 namespace MediaBrowser.Server.Implementations.Library
 {
@@ -172,6 +169,11 @@ namespace MediaBrowser.Server.Implementations.Library
             if (user == null)
             {
                 throw new ArgumentNullException("user");
+            }
+
+            if (user.Configuration.IsDisabled)
+            {
+                throw new UnauthorizedAccessException(string.Format("The {0} account is currently disabled. Please consult with your administrator.", user.Name));
             }
 
             var existingPasswordString = string.IsNullOrEmpty(user.Password) ? GetSha1String(string.Empty) : user.Password;
