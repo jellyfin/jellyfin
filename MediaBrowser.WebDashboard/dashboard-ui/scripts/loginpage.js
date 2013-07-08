@@ -17,6 +17,7 @@
 
             }).length || !users.length;
 
+            // Always display users on localhost, just in case they forgot
             showManualForm &= window.location.toString().toLowerCase().indexOf('localhost') == -1;
 
             if (showManualForm) {
@@ -69,9 +70,15 @@
 
         ApiClient.authenticateUserByName(username, password).done(function (result) {
 
-            Dashboard.setCurrentUser(result.User.Id);
+            var user = result.User;
+            
+            Dashboard.setCurrentUser(user.Id);
 
-            window.location = "index.html?u=" + result.User.Id;
+            if (user.Configuration.IsAdministrator) {
+                window.location = "dashboard.html?u=" + user.Id;
+            } else {
+                window.location = "index.html?u=" + user.Id;
+            }
 
         }).fail(function () {
 

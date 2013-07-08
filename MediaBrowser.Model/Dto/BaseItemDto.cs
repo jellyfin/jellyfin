@@ -417,6 +417,18 @@ namespace MediaBrowser.Model.Dto
         public Guid? ParentLogoImageTag { get; set; }
 
         /// <summary>
+        /// If the item does not have a art, this will hold the Id of the Parent that has one.
+        /// </summary>
+        /// <value>The parent art item id.</value>
+        public string ParentArtItemId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the parent art image tag.
+        /// </summary>
+        /// <value>The parent art image tag.</value>
+        public Guid? ParentArtImageTag { get; set; }
+        
+        /// <summary>
         /// Gets or sets the chapters.
         /// </summary>
         /// <value>The chapters.</value>

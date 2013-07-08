@@ -59,7 +59,7 @@
         if (!loggedInUser.Configuration.IsAdministrator) {
             $('#parentalControlDiv', page).hide();
             $('#fldIsAdmin', page).hide();
-            $('#accessControlDiv', page).show();
+            $('#accessControlDiv', page).hide();
         } else {
             $('#parentalControlDiv', page).show();
             $('#accessControlDiv', page).show();
