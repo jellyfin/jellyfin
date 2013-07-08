@@ -27,6 +27,12 @@ namespace MediaBrowser.Api
         public bool? IsDisabled { get; set; }
     }
 
+    [Route("/Users/Public", "GET")]
+    [Api(Description = "Gets a list of publicly visible users for display on a login screen.")]
+    public class GetPublicUsers : IReturn<List<UserDto>>
+    {
+    }
+    
     /// <summary>
     /// Class GetUser
     /// </summary>
@@ -185,6 +191,14 @@ namespace MediaBrowser.Api
             _xmlSerializer = xmlSerializer;
             _userManager = userManager;
             _libraryManager = libraryManager;
+        }
+
+        public object Get(GetPublicUsers request)
+        {
+            return Get(new GetUsers
+            {
+                IsHidden = false
+            });
         }
 
         /// <summary>

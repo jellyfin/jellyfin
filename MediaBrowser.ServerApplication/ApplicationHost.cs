@@ -1,6 +1,8 @@
-﻿using MediaBrowser.Api;
+﻿using System.Threading;
+using MediaBrowser.Api;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Constants;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Implementations;
 using MediaBrowser.Common.Implementations.ScheduledTasks;
@@ -27,6 +29,7 @@ using MediaBrowser.IsoMounter;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.System;
+using MediaBrowser.Model.Updates;
 using MediaBrowser.Providers;
 using MediaBrowser.Server.Implementations;
 using MediaBrowser.Server.Implementations.BdInfo;
@@ -619,6 +622,15 @@ namespace MediaBrowser.ServerApplication
             {
                 process.WaitForExit();
             }
+        }
+
+        public override async Task<CheckForUpdateResult> CheckForApplicationUpdate(CancellationToken cancellationToken, IProgress<double> progress)
+        {
+            var availablePackages = await PackageManager.GetAvailablePackagesWithoutRegistrationInfo(CancellationToken.None).ConfigureAwait(false);
+            var version = InstallationManager.GetLatestCompatibleVersion(availablePackages, Constants.MbServerPkgName, ConfigurationManager.CommonConfiguration.SystemUpdateLevel);
+
+            return version != null ? new CheckForUpdateResult { AvailableVersion = version.version, IsUpdateAvailable = version.version > ApplicationVersion, Package = version } :
+                       new CheckForUpdateResult { AvailableVersion = ApplicationVersion, IsUpdateAvailable = false };
         }
     }
 }

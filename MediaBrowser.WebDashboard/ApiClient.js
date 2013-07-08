@@ -1429,6 +1429,17 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
             });
         };
 
+        self.getPublicUsers = function () {
+
+            var url = self.getUrl("users/public");
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
         /**
          * Gets all users from the server
          */
