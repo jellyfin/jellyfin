@@ -364,13 +364,26 @@ namespace MediaBrowser.Controller.Dto
             // If there is no logo, indicate what parent has one in case the Ui wants to allow inheritance
             if (!dto.HasLogo)
             {
-                var parentWithLogo = GetParentLogoItem(item);
+                var parentWithLogo = GetParentImageItem(item, ImageType.Logo);
 
                 if (parentWithLogo != null)
                 {
                     dto.ParentLogoItemId = GetClientItemId(parentWithLogo);
 
                     dto.ParentLogoImageTag = GetImageCacheTag(parentWithLogo, ImageType.Logo, parentWithLogo.GetImage(ImageType.Logo));
+                }
+            }
+
+            // If there is no art, indicate what parent has one in case the Ui wants to allow inheritance
+            if (!dto.HasArtImage)
+            {
+                var parentWithImage = GetParentImageItem(item, ImageType.Art);
+
+                if (parentWithImage != null)
+                {
+                    dto.ParentLogoItemId = GetClientItemId(parentWithImage);
+
+                    dto.ParentLogoImageTag = GetImageCacheTag(parentWithImage, ImageType.Art, parentWithImage.GetImage(ImageType.Art));
                 }
             }
 
@@ -751,14 +764,15 @@ namespace MediaBrowser.Controller.Dto
         /// If an item does not have a logo, this can be used to find the first parent that does have one
         /// </summary>
         /// <param name="item">The item.</param>
+        /// <param name="type">The type.</param>
         /// <returns>BaseItem.</returns>
-        private BaseItem GetParentLogoItem(BaseItem item)
+        private BaseItem GetParentImageItem(BaseItem item, ImageType type)
         {
             var parent = item.Parent;
 
             while (parent != null)
             {
-                if (parent.HasImage(ImageType.Logo))
+                if (parent.HasImage(type))
                 {
                     return parent;
                 }

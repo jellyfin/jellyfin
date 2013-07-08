@@ -641,6 +641,14 @@ namespace MediaBrowser.Model.ApiClient
         string GetLogoImageUrl(BaseItemDto item, ImageOptions options);
 
         /// <summary>
+        /// Gets the art image URL.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="options">The options.</param>
+        /// <returns>System.String.</returns>
+        string GetArtImageUrl(BaseItemDto item, ImageOptions options);
+        
+        /// <summary>
         /// Gets the url needed to stream an audio file
         /// </summary>
         /// <param name="options">The options.</param>

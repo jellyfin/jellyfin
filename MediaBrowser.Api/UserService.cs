@@ -197,7 +197,8 @@ namespace MediaBrowser.Api
         {
             return Get(new GetUsers
             {
-                IsHidden = false
+                IsHidden = false,
+                IsDisabled = false
             });
         }
 
@@ -367,7 +368,13 @@ namespace MediaBrowser.Api
                 }
             }
 
-            // If removing admin access
+            // If disabling
+            if (dtoUser.Configuration.IsDisabled && user.Configuration.IsAdministrator)
+            {
+                throw new ArgumentException("Administrators cannot be disabled.");
+            }
+
+            // If disabling
             if (dtoUser.Configuration.IsDisabled && !user.Configuration.IsDisabled)
             {
                 if (_userManager.Users.Count(i => !i.Configuration.IsDisabled) == 1)
