@@ -59,8 +59,10 @@
         if (!loggedInUser.Configuration.IsAdministrator) {
             $('#parentalControlDiv', page).hide();
             $('#fldIsAdmin', page).hide();
+            $('#accessControlDiv', page).show();
         } else {
             $('#parentalControlDiv', page).show();
+            $('#accessControlDiv', page).show();
             $('#fldIsAdmin', page).show();
         }
 
@@ -102,6 +104,9 @@
         $('#chkIsAdmin', page).checked(user.Configuration.IsAdministrator || false).checkboxradio("refresh");
         $('#chkBlockNotRated', page).checked(user.Configuration.BlockNotRated || false).checkboxradio("refresh");
 
+        $('#chkDisabled', page).checked(user.Configuration.IsDisabled || false).checkboxradio("refresh");
+        $('#chkIsHidden', page).checked(user.Configuration.IsHidden || false).checkboxradio("refresh");
+
         Dashboard.hideLoadingMsg();
     }
 
@@ -131,6 +136,9 @@
         user.Configuration.SubtitleLanguagePreference = $('#selectSubtitleLanguage', page).val();
         user.Configuration.UseForcedSubtitlesOnly = $('#chkForcedSubtitlesOnly', page).checked();
         user.Configuration.BlockNotRated = $('#chkBlockNotRated', page).checked();
+
+        user.Configuration.IsHidden = $('#chkIsHidden', page).checked();
+        user.Configuration.IsDisabled = $('#chkDisabled', page).checked();
 
         var userId = getParameterByName("userId");
 

@@ -43,6 +43,7 @@
     </Compile>
     <Compile Include="ApiClient\IApiClient.cs" />
     <Compile Include="Configuration\BaseApplicationConfiguration.cs" />
+    <Compile Include="Configuration\ManualLoginCategory.cs" />
     <Compile Include="Configuration\ServerConfiguration.cs" />
     <Compile Include="Dto\BaseItemPerson.cs" />
     <Compile Include="Dto\ChapterInfoDto.cs" />
@@ -141,6 +142,7 @@
     <Compile Include="Tasks\TaskTriggerInfo.cs" />
     <Compile Include="Updates\PackageInfo.cs" />
     <Compile Include="Updates\PackageVersionInfo.cs" />
+    <Compile Include="Users\AuthenticationResult.cs" />
     <Compile Include="Weather\WeatherUnits.cs" />
     <Compile Include="Web\QueryStringDictionary.cs" />
     <None Include="FodyWeavers.xml" />

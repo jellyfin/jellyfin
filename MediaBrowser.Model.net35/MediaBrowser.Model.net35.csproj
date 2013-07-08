@@ -52,6 +52,9 @@
     <Compile Include="..\MediaBrowser.Model\Configuration\BaseApplicationConfiguration.cs">
       <Link>Configuration\BaseApplicationConfiguration.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Configuration\ManualLoginCategory.cs">
+      <Link>Configuration\ManualLoginCategory.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\ServerConfiguration.cs">
       <Link>Configuration\ServerConfiguration.cs</Link>
     </Compile>
@@ -330,6 +333,9 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Updates\PackageVersionInfo.cs">
       <Link>Updates\PackageVersionInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Users\AuthenticationResult.cs">
+      <Link>Users\AuthenticationResult.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Weather\WeatherUnits.cs">
       <Link>Weather\WeatherUnits.cs</Link>

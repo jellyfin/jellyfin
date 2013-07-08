@@ -12,7 +12,7 @@
                     <a href="#" data-role="button" class="ui-btn-active">Profile</a>
                     <a href="#" data-role="button" onclick="Dashboard.navigate('userimage.html', true);">Image</a>
                     <a href="#" data-role="button" onclick="Dashboard.navigate('updatepassword.html', true);">Password</a>
-                    <a href="#" data-role="button" onclick="Dashboard.navigate('library.html', true);" class="lnkMediaLibrary" style="display:none;">Media Library</a>
+                    <a href="#" data-role="button" onclick="Dashboard.navigate('library.html', true);" class="lnkMediaLibrary" style="display: none;">Media Library</a>
                 </div>
                 <form id="editUserProfileForm">
                     <ul data-role="listview" class="ulForm">
@@ -25,14 +25,28 @@
                             <label for="chkIsAdmin">Allow this user to manage the server</label>
                         </li>
                     </ul>
+                    <div id="accessControlDiv" style="display: none">
+                        <h2>Access Control</h2>
+                        <ul data-role="listview" class="ulForm">
+                            <li id="fldIsEnabled">
+                                <input type="checkbox" id="chkDisabled" name="chkDisabled" />
+                                <label for="chkDisabled">Disable this user</label>
+                                <div class="fieldDescription">If disabled the server will not allow any connections from this user. Existing connections will be abruptly terminated.</div>
+                            </li>
+                            <li id="fldIsHidden">
+                                <input type="checkbox" id="chkIsHidden" name="chkIsHidden" />
+                                <label for="chkIsHidden">Hide this user from login screens</label>
+                            </li>
+                        </ul>
+                    </div>
                     <div id="parentalControlDiv" style="display: none">
                         <h2>Parental Control</h2>
                         <ul data-role="listview" class="ulForm">
-                            <li id="fldMaxParentalRating" >
+                            <li id="fldMaxParentalRating">
                                 <label for="selectMaxParentalRating">Max parental rating:</label>
                                 <select name="selectMaxParentalRating" id="selectMaxParentalRating"></select>
                             </li>
-                            <li id="fldBlockNotRated" >
+                            <li id="fldBlockNotRated">
                                 <input type="checkbox" id="chkBlockNotRated" name="chkBlockNotRated" />
                                 <label for="chkBlockNotRated">Block items with no rating information</label>
                             </li>

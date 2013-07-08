@@ -101,6 +101,11 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <exception cref="System.ArgumentNullException">user</exception>
         public Task LogConnectionActivity(string clientType, string deviceId, string deviceName, User user)
         {
+            if (user != null && user.Configuration.IsDisabled)
+            {
+                throw new UnauthorizedAccessException(string.Format("The {0} account is currently disabled. Please consult with your administrator.", user.Name));
+            }
+
             var activityDate = DateTime.UtcNow;
 
             GetConnection(clientType, deviceId, deviceName, user).LastActivityDate = activityDate;

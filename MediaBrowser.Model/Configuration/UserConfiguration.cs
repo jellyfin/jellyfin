@@ -47,7 +47,15 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value><c>true</c> if [use forced subtitles only]; otherwise, <c>false</c>.</value>
         public bool UseForcedSubtitlesOnly { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is hidden.
+        /// </summary>
+        /// <value><c>true</c> if this instance is hidden; otherwise, <c>false</c>.</value>
+        public bool IsHidden { get; set; }
+
+        public bool IsDisabled { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="UserConfiguration" /> class.
         /// </summary>

@@ -3,7 +3,37 @@
     onPageShow: function () {
         Dashboard.showLoadingMsg();
 
-        ApiClient.getUsers().done(LoginPage.loadUserList);
+        var promise1 = ApiClient.getUsers({ IsHidden: false });
+        var promise2 = ApiClient.getServerConfiguration();
+
+        $.when(promise1, promise2).done(function (response1, response2) {
+
+            var users = response1[0];
+            var config = response2[0];
+
+            var showManualForm = config.ManualLoginClients.filter(function (i) {
+
+                return i == "Mobile";
+
+            }).length || !users.length;
+
+            showManualForm &= window.location.toString().toLowerCase().indexOf('localhost') == -1;
+
+            if (showManualForm) {
+
+                $('#divUsers', '#loginPage').hide();
+                $('#manualLoginForm', '#loginPage').show();
+
+            } else {
+
+                $('#divUsers', '#loginPage').show();
+                $('#manualLoginForm', '#loginPage').hide();
+
+                LoginPage.loadUserList(users);
+            }
+
+            Dashboard.hideLoadingMsg();
+        });
     },
 
     getLastSeenText: function (lastActivityDate) {
@@ -33,17 +63,20 @@
         LoginPage.authenticateUser(link.getAttribute('data-username'), link.getAttribute('data-userid'));
     },
 
-    authenticateUser: function (username, userId, password) {
+    authenticateUser: function (username, password) {
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.authenticateUser(userId, password).done(function () {
+        ApiClient.authenticateUserByName(username, password).done(function (result) {
 
-            Dashboard.setCurrentUser(userId);
+            Dashboard.setCurrentUser(result.User.Id);
 
-            window.location = "index.html?u=" + userId;
+            window.location = "index.html?u=" + result.User.Id;
 
         }).fail(function () {
+
+            $('#pw', '#loginPage').val('');
+
             Dashboard.hideLoadingMsg();
 
             setTimeout(function () {
@@ -61,9 +94,9 @@
             var linkId = "lnkUser" + i;
 
             if (user.HasPassword) {
-                html += "<a class='posterItem squarePosterItem' id='" + linkId + "' data-userid='" + user.Id + "' data-username='" + user.Name + "' href='#popupLogin' data-rel='popup' onclick='LoginPage.authenticatingLinkId=this.id;' \">";
+                html += "<a class='posterItem squarePosterItem' id='" + linkId + "' data-username='" + user.Name + "' href='#popupLogin' data-rel='popup' onclick='LoginPage.authenticatingLinkId=this.id;' \">";
             } else {
-                html += "<a class='posterItem squarePosterItem' id='" + linkId + "' data-userid='" + user.Id + "' data-username='" + user.Name + "' href='#' onclick='LoginPage.authenticateUserLink(this);' \">";
+                html += "<a class='posterItem squarePosterItem' id='" + linkId + "' data-username='" + user.Name + "' href='#' onclick='LoginPage.authenticateUserLink(this);' \">";
             }
 
             if (user.PrimaryImageTag) {
@@ -100,15 +133,23 @@
 
         $('#divUsers', '#loginPage').html(html);
 
-        Dashboard.hideLoadingMsg();
     },
 
     onSubmit: function () {
+
         $('#popupLogin', '#loginPage').popup('close');
 
         var link = $('#' + LoginPage.authenticatingLinkId)[0];
 
-        LoginPage.authenticateUser(link.getAttribute('data-username'), link.getAttribute('data-userid'), $('#pw', '#loginPage').val());
+        LoginPage.authenticateUser(link.getAttribute('data-username'), $('#pw', '#loginPage').val());
+
+        // Disable default form submission
+        return false;
+    },
+
+    onManualSubmit: function () {
+
+        LoginPage.authenticateUser($('#txtManualName', '#loginPage').val(), $('#txtManualPassword', '#loginPage').val());
 
         // Disable default form submission
         return false;

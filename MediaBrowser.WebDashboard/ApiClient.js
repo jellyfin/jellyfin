@@ -1432,9 +1432,9 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
         /**
          * Gets all users from the server
          */
-        self.getUsers = function () {
+        self.getUsers = function (options) {
 
-            var url = self.getUrl("users");
+            var url = self.getUrl("users", options || {});
 
             return self.ajax({
                 type: "GET",
@@ -1872,6 +1872,32 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
 
         /**
          * Authenticates a user
+         * @param {String} name
+         * @param {String} password
+         */
+        self.authenticateUserByName = function (name, password) {
+
+            if (!name) {
+                throw new Error("null name");
+            }
+
+            var url = self.getUrl("Users/" + name + "/authenticatebyname");
+
+            var postData = {
+                password: MediaBrowser.SHA1(password || "")
+            };
+
+            return self.ajax({
+                type: "POST",
+                url: url,
+                data: JSON.stringify(postData),
+                dataType: "json",
+                contentType: "application/json"
+            });
+        };
+
+        /**
+         * Authenticates a user
          * @param {String} userId
          * @param {String} password
          */
@@ -1891,6 +1917,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 type: "POST",
                 url: url,
                 data: JSON.stringify(postData),
+                dataType: "json",
                 contentType: "application/json"
             });
         };

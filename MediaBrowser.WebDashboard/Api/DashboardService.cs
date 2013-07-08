@@ -5,7 +5,6 @@ using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Logging;
@@ -221,7 +220,21 @@ namespace MediaBrowser.WebDashboard.Api
         /// <returns>System.Object.</returns>
         public object Get(GetDashboardConfigurationPages request)
         {
-            var pages = ServerEntryPoint.Instance.PluginConfigurationPages;
+            const string unavilableMessage = "The server is still loading. Please try again momentarily.";
+
+            var instance = ServerEntryPoint.Instance;
+
+            if (instance == null)
+            {
+                throw new InvalidOperationException(unavilableMessage);
+            }
+
+            var pages = instance.PluginConfigurationPages;
+
+            if (pages == null)
+            {
+                throw new InvalidOperationException(unavilableMessage);
+            }
 
             if (request.PageType.HasValue)
             {
@@ -428,6 +441,7 @@ namespace MediaBrowser.WebDashboard.Api
                                       "librarybrowser.js",
 
                                       "aboutpage.js",
+                                      "allusersettings.js",
                                       "alphapicker.js",
                                       "addpluginpage.js",
                                       "advancedconfigurationpage.js",

@@ -7,11 +7,28 @@
     <div id="loginPage" data-role="page" class="page standalonePage">
 
         <div data-role="content">
-            <div id="divUsers" style="margin: 50px 0 20px; text-align: center;"></div>
+
+            <form id="manualLoginForm" style="display: none; text-align: center; margin: 0 auto;">
+                <h2 style="text-align: left;">Please sign in</h2>
+
+                <label for="txtManualName" style="text-align: left;">User:</label>
+                <input type="text" name="txtManualName" id="txtManualName" />
+
+                <label for="txtManualPassword" style="text-align: left;">Password:</label>
+                <input type="password" name="txtManualPassword" id="txtManualPassword" placeholder="password" />
+
+                <p>
+                    <button type="submit" data-theme="b" data-icon="ok">
+                        Sign in
+                    </button>
+                </p>
+            </form>
+
+            <div id="divUsers" style="display: none; margin: 50px 0 20px; text-align: center;"></div>
         </div>
 
         <div data-role="popup" id="popupLogin" class="ui-corner-all popup">
-            <form id="loginForm">
+            <form class="loginForm">
                 <div class="ui-corner-top ui-bar-a" style="text-align: center;">
                     <h3>Please sign in</h3>
                 </div>
@@ -33,6 +50,7 @@
 
         <script type="text/javascript">
             $('#loginForm').on('submit', LoginPage.onSubmit);
+            $('#manualLoginForm').on('submit', LoginPage.onManualSubmit);
         </script>
     </div>
 </body>
