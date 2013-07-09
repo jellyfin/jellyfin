@@ -101,6 +101,12 @@ namespace MediaBrowser.Model.ApiClient
         Task<UserDto[]> GetUsersAsync();
 
         /// <summary>
+        /// Gets the public users async.
+        /// </summary>
+        /// <returns>Task{UserDto[]}.</returns>
+        Task<UserDto[]> GetPublicUsersAsync();
+        
+        /// <summary>
         /// Gets active client sessions.
         /// </summary>
         /// <returns>Task{SessionInfoDto[]}.</returns>
@@ -357,6 +363,14 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="context">Optional ui context (movies, music, tv, games, etc). The client is free to ignore this.</param>
         /// <returns>Task.</returns>
         Task SendBrowseCommandAsync(string sessionId, string itemId, string itemName, string itemType, string context);
+
+        /// <summary>
+        /// Sends the playstate command async.
+        /// </summary>
+        /// <param name="sessionId">The session id.</param>
+        /// <param name="request">The request.</param>
+        /// <returns>Task.</returns>
+        Task SendPlaystateCommandAsync(string sessionId, PlayStateRequest request);
 
         /// <summary>
         /// Sends the play command async.

@@ -286,13 +286,21 @@ namespace MediaBrowser.Api
                     }
                 }
 
-                var deviceId = auth["DeviceId"];
-                var device = auth["Device"];
-                var client = auth["Client"];
+                string deviceId;
+                string device;
+                string client;
+                string version;
 
-                if (!string.IsNullOrEmpty(client) && !string.IsNullOrEmpty(deviceId) && !string.IsNullOrEmpty(device))
+                auth.TryGetValue("DeviceId", out deviceId);
+                auth.TryGetValue("Device", out device);
+                auth.TryGetValue("Client", out client);
+                auth.TryGetValue("Version", out version);
+
+                version = version ?? "0.0.0.0";
+
+                if (!string.IsNullOrEmpty(client) && !string.IsNullOrEmpty(deviceId) && !string.IsNullOrEmpty(device) && !string.IsNullOrEmpty(version))
                 {
-                    SessionManager.LogConnectionActivity(client, deviceId, device, user);
+                    SessionManager.LogConnectionActivity(client, version, deviceId, device, user);
                 }
             }
         }

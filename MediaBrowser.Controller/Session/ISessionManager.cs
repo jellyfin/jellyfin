@@ -36,49 +36,42 @@ namespace MediaBrowser.Controller.Session
         /// Logs the user activity.
         /// </summary>
         /// <param name="clientType">Type of the client.</param>
+        /// <param name="appVersion">The app version.</param>
         /// <param name="deviceId">The device id.</param>
         /// <param name="deviceName">Name of the device.</param>
         /// <param name="user">The user.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">user</exception>
-        Task LogConnectionActivity(string clientType, string deviceId, string deviceName, User user);
+        Task<SessionInfo> LogConnectionActivity(string clientType, string appVersion, string deviceId, string deviceName, User user);
 
         /// <summary>
         /// Used to report that playback has started for an item
         /// </summary>
-        /// <param name="user">The user.</param>
         /// <param name="item">The item.</param>
-        /// <param name="clientType">Type of the client.</param>
-        /// <param name="deviceId">The device id.</param>
-        /// <param name="deviceName">Name of the device.</param>
+        /// <param name="sessionId">The session id.</param>
+        /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        Task OnPlaybackStart(User user, BaseItem item, string clientType, string deviceId, string deviceName);
+        Task OnPlaybackStart(BaseItem item, Guid sessionId);
 
         /// <summary>
         /// Used to report playback progress for an item
         /// </summary>
-        /// <param name="user">The user.</param>
         /// <param name="item">The item.</param>
         /// <param name="positionTicks">The position ticks.</param>
         /// <param name="isPaused">if set to <c>true</c> [is paused].</param>
-        /// <param name="clientType">Type of the client.</param>
-        /// <param name="deviceId">The device id.</param>
-        /// <param name="deviceName">Name of the device.</param>
+        /// <param name="sessionId">The session id.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        Task OnPlaybackProgress(User user, BaseItem item, long? positionTicks, bool isPaused, string clientType, string deviceId, string deviceName);
+        Task OnPlaybackProgress(BaseItem item, long? positionTicks, bool isPaused, Guid sessionId);
 
         /// <summary>
         /// Used to report that playback has ended for an item
         /// </summary>
-        /// <param name="user">The user.</param>
         /// <param name="item">The item.</param>
         /// <param name="positionTicks">The position ticks.</param>
-        /// <param name="clientType">Type of the client.</param>
-        /// <param name="deviceId">The device id.</param>
-        /// <param name="deviceName">Name of the device.</param>
+        /// <param name="sessionId">The session id.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        Task OnPlaybackStopped(User user, BaseItem item, long? positionTicks, string clientType, string deviceId, string deviceName);
+        Task OnPlaybackStopped(BaseItem item, long? positionTicks, Guid sessionId);
     }
 }

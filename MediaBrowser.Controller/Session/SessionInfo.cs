@@ -102,6 +102,12 @@ namespace MediaBrowser.Controller.Session
         public List<IWebSocketConnection> WebSockets { get; set; }
 
         /// <summary>
+        /// Gets or sets the application version.
+        /// </summary>
+        /// <value>The application version.</value>
+        public string ApplicationVersion { get; set; }
+
+        /// <summary>
         /// Gets a value indicating whether this instance is active.
         /// </summary>
         /// <value><c>true</c> if this instance is active; otherwise, <c>false</c>.</value>

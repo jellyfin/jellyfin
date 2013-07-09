@@ -70,7 +70,7 @@
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
-    <Compile Include="Configuration\IServerConfigurationManager.cs" />
+    <Compile Include="Notifications\Configuration\IServerConfigurationManager.cs" />
     <Compile Include="Dto\SessionInfoDtoBuilder.cs" />
     <Compile Include="Entities\Audio\MusicAlbumDisc.cs" />
     <Compile Include="Entities\Audio\MusicGenre.cs" />

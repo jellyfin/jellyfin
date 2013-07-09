@@ -1048,7 +1048,7 @@ var Dashboard = {
 
 };
 
-var ApiClient = MediaBrowser.ApiClient.create("Dashboard");
+var ApiClient = MediaBrowser.ApiClient.create("Dashboard", window.dashboardVersion);
 
 $(function () {
 

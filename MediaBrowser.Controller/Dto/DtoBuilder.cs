@@ -381,9 +381,9 @@ namespace MediaBrowser.Controller.Dto
 
                 if (parentWithImage != null)
                 {
-                    dto.ParentLogoItemId = GetClientItemId(parentWithImage);
+                    dto.ParentArtItemId = GetClientItemId(parentWithImage);
 
-                    dto.ParentLogoImageTag = GetImageCacheTag(parentWithImage, ImageType.Art, parentWithImage.GetImage(ImageType.Art));
+                    dto.ParentArtImageTag = GetImageCacheTag(parentWithImage, ImageType.Art, parentWithImage.GetImage(ImageType.Art));
                 }
             }
 

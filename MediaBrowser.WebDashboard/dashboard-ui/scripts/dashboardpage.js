@@ -94,7 +94,9 @@
             html += '</td>';
 
             html += '<td>';
-            html += connection.DeviceName;
+            html += '<div>' + connection.Client + '</div>';
+            html += '<div>' + connection.ApplicationVersion + '</div>';
+            html += '<div>' + connection.DeviceName + '</div>';
             html += '</td>';
 
             html += '<td>';
@@ -291,7 +293,7 @@
         }
 
         $('#programDataPath', page).html(dashboardInfo.SystemInfo.ProgramDataPath);
-        
+
         var host = ApiClient.serverHostName();
 
         var url = "http://" + host + ":" + port + "/mediabrowser";
