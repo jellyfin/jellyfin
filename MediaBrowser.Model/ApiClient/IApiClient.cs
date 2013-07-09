@@ -98,7 +98,7 @@ namespace MediaBrowser.Model.ApiClient
         /// Gets the users async.
         /// </summary>
         /// <returns>Task{UserDto[]}.</returns>
-        Task<UserDto[]> GetUsersAsync();
+        Task<UserDto[]> GetUsersAsync(UserQuery query);
 
         /// <summary>
         /// Gets the public users async.
