@@ -19,6 +19,11 @@ namespace MediaBrowser.Model.ApiClient
     public interface IApiClient : IDisposable
     {
         /// <summary>
+        /// Occurs when [HTTP response received].
+        /// </summary>
+        event EventHandler<HttpResponseEventArgs> HttpResponseReceived;
+
+        /// <summary>
         /// Marks the notifications read.
         /// </summary>
         /// <param name="userId">The user id.</param>

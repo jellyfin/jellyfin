@@ -62,7 +62,12 @@ namespace MediaBrowser.Common.Extensions
         /// <exception cref="System.ArgumentNullException">attrib</exception>
         public static string GetAttributeValue(this string str, string attrib)
         {
-            if (attrib == null)
+            if (string.IsNullOrEmpty(str))
+            {
+                throw new ArgumentNullException("str");
+            }
+
+            if (string.IsNullOrEmpty(attrib))
             {
                 throw new ArgumentNullException("attrib");
             }
