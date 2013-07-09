@@ -62,8 +62,12 @@ namespace MediaBrowser.Server.Implementations.Session
 
                 var client = vals[0];
                 var deviceId = vals[1];
+                var version = vals[2];
 
-                var session = _sessionManager.Sessions.FirstOrDefault(i => string.Equals(i.DeviceId, deviceId) && string.Equals(i.Client, client));
+                var session = _sessionManager.Sessions
+                    .FirstOrDefault(i => string.Equals(i.DeviceId, deviceId) &&
+                        string.Equals(i.Client, client) &&
+                        string.Equals(i.ApplicationVersion, version));
 
                 if (session != null)
                 {
