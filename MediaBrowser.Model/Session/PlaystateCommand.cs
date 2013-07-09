@@ -32,7 +32,7 @@ namespace MediaBrowser.Model.Session
         Seek
     }
 
-    public class PlayStateRequest
+    public class PlaystateRequest
     {
         public PlaystateCommand Command { get; set; }
 

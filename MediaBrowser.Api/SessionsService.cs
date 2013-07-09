@@ -193,11 +193,11 @@ namespace MediaBrowser.Api
             {
                 try
                 {
-                    await socket.SendAsync(new WebSocketMessage<PlayStateRequest>
+                    await socket.SendAsync(new WebSocketMessage<PlaystateRequest>
                     {
                         MessageType = "Playstate",
 
-                        Data = new PlayStateRequest
+                        Data = new PlaystateRequest
                         {
                             Command = request.Command,
                             SeekPosition = request.SeekPosition
