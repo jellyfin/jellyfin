@@ -146,39 +146,39 @@
                 imgUrl = 'css/images/clients/html5.png';
             }
 
-            return "<img src='" + imgUrl + "' alt='Dashboard' title='Dashboard' />";
+            return "<img src='" + imgUrl + "' alt='Dashboard' />";
         }
         if (clientLowered == "mb-classic") {
 
-            return "<img src='css/images/clients/mbc.png' alt='Media Browser Classic' title='Media Browser Classic' />";
+            return "<img src='css/images/clients/mbc.png' alt='Media Browser Classic' />";
         }
         if (clientLowered == "media browser theater") {
 
-            return "<img src='css/images/clients/mb.png' alt='Media Browser Theater' title='Media Browser Theater' />";
+            return "<img src='css/images/clients/mb.png' alt='Media Browser Theater' />";
         }
         if (clientLowered == "android") {
 
-            return "<img src='css/images/clients/android.png' alt='Android' title='Android' />";
+            return "<img src='css/images/clients/android.png' alt='Android' />";
         }
         if (clientLowered == "roku") {
 
-            return "<img src='css/images/clients/roku.jpg' alt='Roku' title='Roku' />";
+            return "<img src='css/images/clients/roku.jpg' alt='Roku' />";
         }
         if (clientLowered == "ios") {
 
-            return "<img src='css/images/clients/ios.png' alt='iOS' title='iOS' />";
+            return "<img src='css/images/clients/ios.png' alt='iOS' />";
         }
         if (clientLowered == "windows rt") {
 
-            return "<img src='css/images/clients/windowsrt.png' alt='Windows RT' title='Windows RT' />";
+            return "<img src='css/images/clients/windowsrt.png' alt='Windows RT' />";
         }
         if (clientLowered == "windows phone") {
 
-            return "<img src='css/images/clients/windowsphone.png' alt='Windows Phone' title='Windows Phone' />";
+            return "<img src='css/images/clients/windowsphone.png' alt='Windows Phone' />";
         }
         if (clientLowered == "dlna") {
 
-            return "<img src='css/images/clients/dlna.png' alt='Dlna' title='Dlna' />";
+            return "<img src='css/images/clients/dlna.png' alt='Dlna' />";
         }
 
         return connection.Client;
@@ -320,6 +320,8 @@
 
         var page = $.mobile.activePage;
 
+        $('#updateFail', page).hide();
+
         if (dashboardInfo.SystemInfo.IsNetworkDeployed && !dashboardInfo.SystemInfo.HasPendingRestart) {
 
             // Only check once every 10 mins
@@ -346,7 +348,7 @@
 
             }).fail(function () {
 
-                Dashboard.showFooterNotification({ html: '<img src="css/images/notifications/error.png" class="notificationIcon" />There was an error connecting to the remote Media Browser repository.', id: "MB3ConnectionError" });
+                $('#updateFail', page).show();
 
             });
 

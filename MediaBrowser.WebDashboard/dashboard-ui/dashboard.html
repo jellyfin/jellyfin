@@ -25,6 +25,7 @@
                                 <p id="newVersionNumber"></p>
                                 <button id="btnUpdateApplication" type="button" data-icon="download" data-theme="b" onclick="DashboardPage.updateApplication();">Update Now</button>
                             </div>
+                            <div id="updateFail" style="color: #cc0000; display: none;">There was an error connecting to the remote Media Browser repository.</div>
                             <p id="ports"></p>
                             <p style="display: none;">Program data path: <span id="programDataPath"></span></p>
                             <p>Bookmark url: <a id="bookmarkUrl" href="#" data-ajax="false" onclick="return !DashboardPage.bookmarkPageIfSupported(this.href);"></a></p>
@@ -54,7 +55,7 @@
                         <p><a href="scheduledtasks.html">Manage Scheduled Tasks</a></p>
                     </div>
 
-                    <div style="display:none;margin-top: 100px;" id="contribute">
+                    <div style="display: none; margin-top: 100px;" id="contribute">
                         <h3 style="padding-left: 1em;">Help improve Media Browser</h3>
                         <form name="_xclick" action="https://www.paypal.com/cgi-bin/webscr"
                             method="post">
