@@ -370,7 +370,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="sessionId">The session id.</param>
         /// <param name="request">The request.</param>
         /// <returns>Task.</returns>
-        Task SendPlaystateCommandAsync(string sessionId, PlayStateRequest request);
+        Task SendPlaystateCommandAsync(string sessionId, PlaystateRequest request);
 
         /// <summary>
         /// Sends the play command async.
