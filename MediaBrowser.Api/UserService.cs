@@ -68,7 +68,7 @@ namespace MediaBrowser.Api
     /// </summary>
     [Route("/Users/{Id}/Authenticate", "POST")]
     [Api(Description = "Authenticates a user")]
-    public class AuthenticateUser : IReturn<AuthenticationResult>
+    public class AuthenticateUser : IReturnVoid
     {
         /// <summary>
         /// Gets or sets the id.
@@ -271,21 +271,22 @@ namespace MediaBrowser.Api
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public object Post(AuthenticateUser request)
+        public void Post(AuthenticateUser request)
         {
+            // No response needed. Will throw an exception on failure.
             var result = AuthenticateUser(request).Result;
-
-            return ToOptimizedResult(result);
         }
 
         public object Post(AuthenticateUserByName request)
         {
             var user = _userManager.Users.FirstOrDefault(i => string.Equals(request.Name, i.Name, StringComparison.OrdinalIgnoreCase));
 
-            return AuthenticateUser(new AuthenticateUser { Id = user.Id, Password = request.Password }).Result;
+            var result = AuthenticateUser(new AuthenticateUser { Id = user.Id, Password = request.Password }).Result;
+
+            return ToOptimizedResult(result);
         }
 
-        private async Task<object> AuthenticateUser(AuthenticateUser request)
+        private async Task<AuthenticationResult> AuthenticateUser(AuthenticateUser request)
         {
             var user = _userManager.GetUserById(request.Id);
 
@@ -307,7 +308,7 @@ namespace MediaBrowser.Api
                 User = await new UserDtoBuilder(Logger).GetUserDto(user).ConfigureAwait(false)
             };
 
-            return ToOptimizedResult(result);
+            return result;
         }
 
         /// <summary>
