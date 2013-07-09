@@ -94,13 +94,32 @@ namespace MediaBrowser.Server.Implementations.Session
         /// Logs the user activity.
         /// </summary>
         /// <param name="clientType">Type of the client.</param>
+        /// <param name="appVersion">The app version.</param>
         /// <param name="deviceId">The device id.</param>
         /// <param name="deviceName">Name of the device.</param>
         /// <param name="user">The user.</param>
         /// <returns>Task.</returns>
+        /// <exception cref="System.UnauthorizedAccessException"></exception>
         /// <exception cref="System.ArgumentNullException">user</exception>
-        public Task LogConnectionActivity(string clientType, string deviceId, string deviceName, User user)
+        public async Task<SessionInfo> LogConnectionActivity(string clientType, string appVersion, string deviceId, string deviceName, User user)
         {
+            if (string.IsNullOrEmpty(clientType))
+            {
+                throw new ArgumentNullException("clientType");
+            }
+            if (string.IsNullOrEmpty(appVersion))
+            {
+                throw new ArgumentNullException("appVersion");
+            }
+            if (string.IsNullOrEmpty(deviceId))
+            {
+                throw new ArgumentNullException("deviceId");
+            }
+            if (string.IsNullOrEmpty(deviceName))
+            {
+                throw new ArgumentNullException("deviceName");
+            }
+
             if (user != null && user.Configuration.IsDisabled)
             {
                 throw new UnauthorizedAccessException(string.Format("The {0} account is currently disabled. Please consult with your administrator.", user.Name));
@@ -108,11 +127,13 @@ namespace MediaBrowser.Server.Implementations.Session
 
             var activityDate = DateTime.UtcNow;
 
-            GetConnection(clientType, deviceId, deviceName, user).LastActivityDate = activityDate;
+            var session = GetSessionInfo(clientType, appVersion, deviceId, deviceName, user);
+            
+            session.LastActivityDate = activityDate;
 
             if (user == null)
             {
-                return _trueTaskResult;
+                return session;
             }
 
             var lastActivityDate = user.LastActivityDate;
@@ -122,50 +143,42 @@ namespace MediaBrowser.Server.Implementations.Session
             // Don't log in the db anymore frequently than 10 seconds
             if (lastActivityDate.HasValue && (activityDate - lastActivityDate.Value).TotalSeconds < 10)
             {
-                return _trueTaskResult;
+                return session;
             }
 
             // Save this directly. No need to fire off all the events for this.
-            return _userRepository.SaveUser(user, CancellationToken.None);
+            await _userRepository.SaveUser(user, CancellationToken.None).ConfigureAwait(false);
+
+            return session;
         }
 
         /// <summary>
         /// Updates the now playing item id.
         /// </summary>
-        /// <param name="user">The user.</param>
-        /// <param name="clientType">Type of the client.</param>
-        /// <param name="deviceId">The device id.</param>
-        /// <param name="deviceName">Name of the device.</param>
+        /// <param name="session">The session.</param>
         /// <param name="item">The item.</param>
         /// <param name="isPaused">if set to <c>true</c> [is paused].</param>
         /// <param name="currentPositionTicks">The current position ticks.</param>
-        private void UpdateNowPlayingItemId(User user, string clientType, string deviceId, string deviceName, BaseItem item, bool isPaused, long? currentPositionTicks = null)
+        private void UpdateNowPlayingItem(SessionInfo session, BaseItem item, bool isPaused, long? currentPositionTicks = null)
         {
-            var conn = GetConnection(clientType, deviceId, deviceName, user);
-
-            conn.IsPaused = isPaused;
-            conn.NowPlayingPositionTicks = currentPositionTicks;
-            conn.NowPlayingItem = item;
-            conn.LastActivityDate = DateTime.UtcNow;
+            session.IsPaused = isPaused;
+            session.NowPlayingPositionTicks = currentPositionTicks;
+            session.NowPlayingItem = item;
+            session.LastActivityDate = DateTime.UtcNow;
         }
 
         /// <summary>
         /// Removes the now playing item id.
         /// </summary>
-        /// <param name="user">The user.</param>
-        /// <param name="clientType">Type of the client.</param>
-        /// <param name="deviceId">The device id.</param>
-        /// <param name="deviceName">Name of the device.</param>
+        /// <param name="session">The session.</param>
         /// <param name="item">The item.</param>
-        private void RemoveNowPlayingItemId(User user, string clientType, string deviceId, string deviceName, BaseItem item)
+        private void RemoveNowPlayingItem(SessionInfo session, BaseItem item)
         {
-            var conn = GetConnection(clientType, deviceId, deviceName, user);
-
-            if (conn.NowPlayingItem != null && conn.NowPlayingItem.Id == item.Id)
+            if (session.NowPlayingItem != null && session.NowPlayingItem.Id == item.Id)
             {
-                conn.NowPlayingItem = null;
-                conn.NowPlayingPositionTicks = null;
-                conn.IsPaused = null;
+                session.NowPlayingItem = null;
+                session.NowPlayingPositionTicks = null;
+                session.IsPaused = null;
             }
         }
 
@@ -173,23 +186,24 @@ namespace MediaBrowser.Server.Implementations.Session
         /// Gets the connection.
         /// </summary>
         /// <param name="clientType">Type of the client.</param>
+        /// <param name="appVersion">The app version.</param>
         /// <param name="deviceId">The device id.</param>
         /// <param name="deviceName">Name of the device.</param>
         /// <param name="user">The user.</param>
         /// <returns>SessionInfo.</returns>
-        private SessionInfo GetConnection(string clientType, string deviceId, string deviceName, User user)
+        private SessionInfo GetSessionInfo(string clientType, string appVersion, string deviceId, string deviceName, User user)
         {
-            var key = clientType + deviceId;
+            var key = clientType + deviceId + appVersion;
 
             var connection = _activeConnections.GetOrAdd(key, keyName => new SessionInfo
             {
                 Client = clientType,
                 DeviceId = deviceId,
+                ApplicationVersion = appVersion,
                 Id = Guid.NewGuid()
             });
 
             connection.DeviceName = deviceName;
-
             connection.User = user;
 
             return connection;
@@ -198,28 +212,25 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <summary>
         /// Used to report that playback has started for an item
         /// </summary>
-        /// <param name="user">The user.</param>
         /// <param name="item">The item.</param>
-        /// <param name="clientType">Type of the client.</param>
-        /// <param name="deviceId">The device id.</param>
-        /// <param name="deviceName">Name of the device.</param>
-        /// <exception cref="System.ArgumentNullException">
-        /// </exception>
-        public async Task OnPlaybackStart(User user, BaseItem item, string clientType, string deviceId, string deviceName)
+        /// <param name="sessionId">The session id.</param>
+        /// <returns>Task.</returns>
+        /// <exception cref="System.ArgumentNullException"></exception>
+        public async Task OnPlaybackStart(BaseItem item, Guid sessionId)
         {
-            if (user == null)
-            {
-                throw new ArgumentNullException();
-            }
             if (item == null)
             {
                 throw new ArgumentNullException();
             }
 
-            UpdateNowPlayingItemId(user, clientType, deviceId, deviceName, item, false);
+            var session = Sessions.First(i => i.Id.Equals(sessionId));
+
+            UpdateNowPlayingItem(session, item, false);
 
             var key = item.GetUserDataKey();
 
+            var user = session.User;
+            
             var data = _userDataRepository.GetUserData(user.Id, key);
 
             data.PlayCount++;
@@ -248,26 +259,24 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <param name="item">The item.</param>
         /// <param name="positionTicks">The position ticks.</param>
         /// <param name="isPaused">if set to <c>true</c> [is paused].</param>
-        /// <param name="clientType">Type of the client.</param>
-        /// <param name="deviceId">The device id.</param>
-        /// <param name="deviceName">Name of the device.</param>
+        /// <param name="sessionId">The session id.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">
         /// </exception>
-        public async Task OnPlaybackProgress(User user, BaseItem item, long? positionTicks, bool isPaused, string clientType, string deviceId, string deviceName)
+        public async Task OnPlaybackProgress(BaseItem item, long? positionTicks, bool isPaused, Guid sessionId)
         {
-            if (user == null)
-            {
-                throw new ArgumentNullException();
-            }
             if (item == null)
             {
                 throw new ArgumentNullException();
             }
 
-            UpdateNowPlayingItemId(user, clientType, deviceId, deviceName, item, isPaused, positionTicks);
+            var session = Sessions.First(i => i.Id.Equals(sessionId));
+
+            UpdateNowPlayingItem(session, item, isPaused, positionTicks);
 
             var key = item.GetUserDataKey();
+
+            var user = session.User;
 
             if (positionTicks.HasValue)
             {
@@ -282,36 +291,33 @@ namespace MediaBrowser.Server.Implementations.Session
                 Item = item,
                 User = user,
                 PlaybackPositionTicks = positionTicks
+
             }, _logger);
         }
 
         /// <summary>
         /// Used to report that playback has ended for an item
         /// </summary>
-        /// <param name="user">The user.</param>
         /// <param name="item">The item.</param>
         /// <param name="positionTicks">The position ticks.</param>
-        /// <param name="clientType">Type of the client.</param>
-        /// <param name="deviceId">The device id.</param>
-        /// <param name="deviceName">Name of the device.</param>
+        /// <param name="sessionId">The session id.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">
-        /// </exception>
-        public async Task OnPlaybackStopped(User user, BaseItem item, long? positionTicks, string clientType, string deviceId, string deviceName)
+        /// <exception cref="System.ArgumentNullException"></exception>
+        public async Task OnPlaybackStopped(BaseItem item, long? positionTicks, Guid sessionId)
         {
-            if (user == null)
-            {
-                throw new ArgumentNullException();
-            }
             if (item == null)
             {
                 throw new ArgumentNullException();
             }
 
-            RemoveNowPlayingItemId(user, clientType, deviceId, deviceName, item);
+            var session = Sessions.First(i => i.Id.Equals(sessionId));
+
+            RemoveNowPlayingItem(session, item);
 
             var key = item.GetUserDataKey();
 
+            var user = session.User;
+            
             var data = _userDataRepository.GetUserData(user.Id, key);
 
             if (positionTicks.HasValue)

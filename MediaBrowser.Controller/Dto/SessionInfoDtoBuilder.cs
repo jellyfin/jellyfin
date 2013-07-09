@@ -28,7 +28,8 @@ namespace MediaBrowser.Controller.Dto
                 NowViewingContext = session.NowViewingContext,
                 NowViewingItemId = session.NowViewingItemId,
                 NowViewingItemName = session.NowViewingItemName,
-                NowViewingItemType = session.NowViewingItemType
+                NowViewingItemType = session.NowViewingItemType,
+                ApplicationVersion = session.ApplicationVersion
             };
 
             if (session.NowPlayingItem != null)

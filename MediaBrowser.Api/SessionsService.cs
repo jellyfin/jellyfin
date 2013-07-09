@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Dto;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Session;
@@ -106,6 +105,31 @@ namespace MediaBrowser.Api
         public PlayCommand PlayCommand { get; set; }
     }
 
+    [Route("/Sessions/{Id}/Playing/{Command}", "POST")]
+    [Api(("Issues a playstate command to a client"))]
+    public class SendPlaystateCommand : IReturnVoid
+    {
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Session Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public Guid Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the position to seek to
+        /// </summary>
+        [ApiMember(Name = "SeekPosition", Description = "The position to seek to.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public long? SeekPosition { get; set; }
+
+        /// <summary>
+        /// Gets or sets the play command.
+        /// </summary>
+        /// <value>The play command.</value>
+        [ApiMember(Name = "Command", Description = "The command to send - stop, pause, unpause, nexttrack, previoustrack, seek.", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public PlaystateCommand Command { get; set; }
+    }
+
     /// <summary>
     /// Class SessionsService
     /// </summary>
@@ -142,6 +166,56 @@ namespace MediaBrowser.Api
             return ToOptimizedResult(result.Select(SessionInfoDtoBuilder.GetSessionInfoDto).ToList());
         }
 
+        public void Post(SendPlaystateCommand request)
+        {
+            var task = SendPlaystateCommand(request);
+
+            Task.WaitAll(task);
+        }
+
+        private async Task SendPlaystateCommand(SendPlaystateCommand request)
+        {
+            var session = _sessionManager.Sessions.FirstOrDefault(i => i.Id == request.Id);
+
+            if (session == null)
+            {
+                throw new ResourceNotFoundException(string.Format("Session {0} not found.", request.Id));
+            }
+
+            if (!session.SupportsRemoteControl)
+            {
+                throw new ArgumentException(string.Format("Session {0} does not support remote control.", session.Id));
+            }
+
+            var socket = session.WebSockets.OrderByDescending(i => i.LastActivityDate).FirstOrDefault(i => i.State == WebSocketState.Open);
+
+            if (socket != null)
+            {
+                try
+                {
+                    await socket.SendAsync(new WebSocketMessage<PlayStateRequest>
+                    {
+                        MessageType = "Playstate",
+
+                        Data = new PlayStateRequest
+                        {
+                            Command = request.Command,
+                            SeekPosition = request.SeekPosition
+                        }
+
+                    }, CancellationToken.None).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException("Error sending web socket message", ex);
+                }
+            }
+            else
+            {
+                throw new InvalidOperationException("The requested session does not have an open web socket.");
+            }
+        }
+        
         /// <summary>
         /// Posts the specified request.
         /// </summary>

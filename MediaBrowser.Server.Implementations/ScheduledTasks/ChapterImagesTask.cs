@@ -121,7 +121,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
                 }
             }
         }
-        
+
         /// <summary>
         /// Creates the triggers that define when the task will run
         /// </summary>
@@ -148,13 +148,15 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
 
             var numComplete = 0;
 
-            var failHistoryPath = Path.Combine(_kernel.FFMpegManager.VideoImagesDataPath, "failures.json");
+            var failHistoryPath = Path.Combine(_kernel.FFMpegManager.VideoImagesDataPath, "failures.txt");
 
             List<string> previouslyFailedImages;
-            
+
             try
             {
-                previouslyFailedImages = _jsonSerializer.DeserializeFromFile<List<string>>(failHistoryPath);
+                previouslyFailedImages = File.ReadAllText(failHistoryPath)
+                    .Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries)
+                    .ToList();
             }
             catch (FileNotFoundException)
             {
@@ -184,7 +186,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
                         Directory.CreateDirectory(parentPath);
                     }
 
-                    _jsonSerializer.SerializeToFile(previouslyFailedImages, failHistoryPath);
+                    File.WriteAllText(failHistoryPath, string.Join("|", previouslyFailedImages.ToArray()));
                 }
 
                 numComplete++;

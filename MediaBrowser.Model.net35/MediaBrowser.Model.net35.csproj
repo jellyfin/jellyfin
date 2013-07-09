@@ -268,6 +268,9 @@
     <Compile Include="..\MediaBrowser.Model\Querying\ThemeSongsResult.cs">
       <Link>Querying\ThemeSongsResult.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Querying\UserQuery.cs">
+      <Link>Querying\UserQuery.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Search\SearchHint.cs">
       <Link>Search\SearchHint.cs</Link>
     </Compile>
@@ -286,8 +289,8 @@
     <Compile Include="..\MediaBrowser.Model\Session\PlayRequest.cs">
       <Link>Session\PlayRequest.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\Session\PlaystateRequest.cs">
-      <Link>Session\PlaystateRequest.cs</Link>
+    <Compile Include="..\MediaBrowser.Model\Session\PlaystateCommand.cs">
+      <Link>Session\PlaystateCommand.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Session\SessionInfoDto.cs">
       <Link>Session\SessionInfoDto.cs</Link>

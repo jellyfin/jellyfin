@@ -22,6 +22,12 @@ namespace MediaBrowser.Model.Session
         /// </summary>
         /// <value>The name of the user.</value>
         public string UserName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the application version.
+        /// </summary>
+        /// <value>The application version.</value>
+        public string ApplicationVersion { get; set; }
         
         /// <summary>
         /// Gets or sets the type of the client.

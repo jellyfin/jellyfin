@@ -103,7 +103,7 @@ namespace MediaBrowser.Server.Implementations.Session
                 {
                     var item = DtoBuilder.GetItemByClientId(message.Data, _userManager, _libraryManager);
 
-                    _sessionManager.OnPlaybackStart(_userManager.GetUserById(session.User.Id), item, session.Client, session.DeviceId, session.DeviceName);
+                    _sessionManager.OnPlaybackStart(item, session.Id);
                 }
             }
             else if (string.Equals(message.MessageType, "PlaybackProgress", StringComparison.OrdinalIgnoreCase))
@@ -130,7 +130,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
                     var isPaused = vals.Length > 2 && string.Equals(vals[2], "true", StringComparison.OrdinalIgnoreCase);
 
-                    _sessionManager.OnPlaybackProgress(_userManager.GetUserById(session.User.Id), item, positionTicks, isPaused, session.Client, session.DeviceId, session.DeviceName);
+                    _sessionManager.OnPlaybackProgress(item, positionTicks, isPaused, session.Id);
                 }
             }
             else if (string.Equals(message.MessageType, "PlaybackStopped", StringComparison.OrdinalIgnoreCase))
@@ -155,7 +155,7 @@ namespace MediaBrowser.Server.Implementations.Session
                         }
                     }
 
-                    _sessionManager.OnPlaybackStopped(_userManager.GetUserById(session.User.Id), item, positionTicks, session.Client, session.DeviceId, session.DeviceName);
+                    _sessionManager.OnPlaybackStopped(item, positionTicks, session.Id);
                 }
             }
 
