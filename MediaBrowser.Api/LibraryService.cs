@@ -52,7 +52,7 @@ namespace MediaBrowser.Api
     /// </summary>
     [Route("/Items/{Id}/ThemeSongs", "GET")]
     [Api(Description = "Gets theme songs for an item")]
-    public class GetThemeSongs : IReturn<ThemeSongsResult>
+    public class GetThemeSongs : IReturn<ThemeMediaResult>
     {
         /// <summary>
         /// Gets or sets the user id.
@@ -67,14 +67,17 @@ namespace MediaBrowser.Api
         /// <value>The id.</value>
         [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Id { get; set; }
+
+        [ApiMember(Name = "InheritFromParent", Description = "Determines whether or not parent items should be searched for theme media.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public bool InheritFromParent { get; set; }
     }
 
     /// <summary>
     /// Class GetThemeVideos
     /// </summary>
     [Route("/Items/{Id}/ThemeVideos", "GET")]
-    [Api(Description = "Gets video backdrops for an item")]
-    public class GetThemeVideos : IReturn<ThemeVideosResult>
+    [Api(Description = "Gets theme videos for an item")]
+    public class GetThemeVideos : IReturn<ThemeMediaResult>
     {
         /// <summary>
         /// Gets or sets the user id.
@@ -89,6 +92,34 @@ namespace MediaBrowser.Api
         /// <value>The id.</value>
         [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Id { get; set; }
+
+        [ApiMember(Name = "InheritFromParent", Description = "Determines whether or not parent items should be searched for theme media.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public bool InheritFromParent { get; set; }
+    }
+
+    /// <summary>
+    /// Class GetThemeVideos
+    /// </summary>
+    [Route("/Items/{Id}/ThemeMedia", "GET")]
+    [Api(Description = "Gets theme videos and songs for an item")]
+    public class GetThemeMedia : IReturn<ThemeMediaResult>
+    {
+        /// <summary>
+        /// Gets or sets the user id.
+        /// </summary>
+        /// <value>The user id.</value>
+        [ApiMember(Name = "UserId", Description = "Optional. Filter by user id, and attach user data", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public Guid? UserId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Id { get; set; }
+
+        [ApiMember(Name = "InheritFromParent", Description = "Determines whether or not parent items should be searched for theme media.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public bool InheritFromParent { get; set; }
     }
 
     [Route("/Library/Refresh", "POST")]
@@ -112,7 +143,7 @@ namespace MediaBrowser.Api
         [ApiMember(Name = "UserId", Description = "Optional. Get counts from a specific user's library.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public Guid? UserId { get; set; }
     }
-    
+
     /// <summary>
     /// Class LibraryService
     /// </summary>
@@ -230,7 +261,7 @@ namespace MediaBrowser.Api
             {
                 throw new InvalidOperationException(string.Format("{0} is currently offline.", item.Name));
             }
-            
+
             if (item.LocationType == LocationType.FileSystem)
             {
                 if (Directory.Exists(item.Path))
@@ -303,12 +334,44 @@ namespace MediaBrowser.Api
             return result;
         }
 
+        public object Get(GetThemeMedia request)
+        {
+            var themeSongs = GetThemeSongs(new GetThemeSongs
+            {
+                InheritFromParent = request.InheritFromParent,
+                Id = request.Id,
+                UserId = request.UserId
+
+            }).Result;
+
+            var themeVideos = GetThemeVideos(new GetThemeVideos
+            {
+                InheritFromParent = request.InheritFromParent,
+                Id = request.Id,
+                UserId = request.UserId
+
+            }).Result;
+
+            return ToOptimizedResult(new AllThemeMediaResult
+            {
+                ThemeSongsResult = themeSongs,
+                ThemeVideosResult = themeVideos
+            });
+        }
+
         /// <summary>
         /// Gets the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
         public object Get(GetThemeSongs request)
+        {
+            var result = GetThemeSongs(request).Result;
+
+            return ToOptimizedResult(result);
+        }
+
+        private async Task<ThemeMediaResult> GetThemeSongs(GetThemeSongs request)
         {
             var user = request.UserId.HasValue ? _userManager.GetUserById(request.UserId.Value) : null;
 
@@ -318,6 +381,11 @@ namespace MediaBrowser.Api
                                   : (Folder)_libraryManager.RootFolder)
                            : DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager, request.UserId);
 
+            while (item.ThemeSongIds.Count == 0 && request.InheritFromParent && item.Parent != null)
+            {
+                item = item.Parent;
+            }
+
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields))
                     .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
@@ -325,20 +393,18 @@ namespace MediaBrowser.Api
 
             var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userDataRepository, _itemRepo);
 
-            var items = item.ThemeSongIds.Select(_itemRepo.RetrieveItem)
-                         .OrderBy(i => i.SortName)
-                         .Select(i => dtoBuilder.GetBaseItemDto(i, fields, user))
-                         .Select(t => t.Result)
-                         .ToArray();
+            var tasks = item.ThemeSongIds.Select(_itemRepo.RetrieveItem)
+                            .OrderBy(i => i.SortName)
+                            .Select(i => dtoBuilder.GetBaseItemDto(i, fields, user));
 
-            var result = new ThemeSongsResult
+            var items = await Task.WhenAll(tasks).ConfigureAwait(false);
+
+            return new ThemeMediaResult
             {
                 Items = items,
                 TotalRecordCount = items.Length,
                 OwnerId = DtoBuilder.GetClientItemId(item)
             };
-
-            return ToOptimizedResult(result);
         }
 
         /// <summary>
@@ -348,6 +414,13 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetThemeVideos request)
         {
+            var result = GetThemeVideos(request).Result;
+
+            return ToOptimizedResult(result);
+        }
+
+        public async Task<ThemeMediaResult> GetThemeVideos(GetThemeVideos request)
+        {
             var user = request.UserId.HasValue ? _userManager.GetUserById(request.UserId.Value) : null;
 
             var item = string.IsNullOrEmpty(request.Id)
@@ -355,6 +428,11 @@ namespace MediaBrowser.Api
                                   ? user.RootFolder
                                   : (Folder)_libraryManager.RootFolder)
                            : DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager, request.UserId);
+
+            while (item.ThemeVideoIds.Count == 0 && request.InheritFromParent && item.Parent != null)
+            {
+                item = item.Parent;
+            }
 
             // Get everything
             var fields =
@@ -364,22 +442,18 @@ namespace MediaBrowser.Api
 
             var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userDataRepository, _itemRepo);
 
-            var items =
-                item.ThemeVideoIds.Select(_itemRepo.RetrieveItem)
-                         .OrderBy(i => i.SortName)
-                         .Select(i => dtoBuilder.GetBaseItemDto(i, fields, user))
-                         .Select(t => t.Result)
-                         .ToArray();
+            var tasks = item.ThemeVideoIds.Select(_itemRepo.RetrieveItem)
+                            .OrderBy(i => i.SortName)
+                            .Select(i => dtoBuilder.GetBaseItemDto(i, fields, user));
 
-            var result = new ThemeVideosResult
-                {
-                    Items = items,
-                    TotalRecordCount = items.Length,
-                    OwnerId = DtoBuilder.GetClientItemId(item)
-                };
+            var items = await Task.WhenAll(tasks).ConfigureAwait(false);
 
-            return ToOptimizedResult(result);
+            return new ThemeMediaResult
+            {
+                Items = items,
+                TotalRecordCount = items.Length,
+                OwnerId = DtoBuilder.GetClientItemId(item)
+            };
         }
-
     }
 }

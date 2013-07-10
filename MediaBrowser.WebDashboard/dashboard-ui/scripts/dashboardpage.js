@@ -429,7 +429,7 @@
 
         }).fail(function () {
 
-            Dashboard.showFooterNotification({ html: '<img src="css/images/notifications/error.png" class="notificationIcon" />There was an error connecting to the remote Media Browser repository.', id: "MB3ConnectionError" });
+            $('#updateFail', page).show();
 
         });
     },

@@ -1,11 +1,10 @@
-﻿using System;
-
+﻿
 namespace MediaBrowser.Model.Querying
 {
     /// <summary>
-    /// Class ThemeSongsResult
+    /// Class ThemeMediaResult
     /// </summary>
-    public class ThemeSongsResult : ItemsResult
+    public class ThemeMediaResult : ItemsResult
     {
         /// <summary>
         /// Gets or sets the owner id.
@@ -14,12 +13,10 @@ namespace MediaBrowser.Model.Querying
         public string OwnerId { get; set; }
     }
 
-    public class ThemeVideosResult : ItemsResult
+    public class AllThemeMediaResult
     {
-        /// <summary>
-        /// Gets or sets the owner id.
-        /// </summary>
-        /// <value>The owner id.</value>
-        public string OwnerId { get; set; }
+        public ThemeMediaResult ThemeVideosResult { get; set; }
+
+        public ThemeMediaResult ThemeSongsResult { get; set; }
     }
 }

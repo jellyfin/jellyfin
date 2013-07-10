@@ -24,6 +24,33 @@ namespace MediaBrowser.Model.ApiClient
         event EventHandler<HttpResponseEventArgs> HttpResponseReceived;
 
         /// <summary>
+        /// Gets the theme songs async.
+        /// </summary>
+        /// <param name="userId">The user id.</param>
+        /// <param name="itemId">The item id.</param>
+        /// <param name="inheritFromParents">if set to <c>true</c> [inherit from parents].</param>
+        /// <returns>Task{ThemeMediaResult}.</returns>
+        Task<ThemeMediaResult> GetThemeSongsAsync(string userId, string itemId, bool inheritFromParents);
+
+        /// <summary>
+        /// Gets the theme videos async.
+        /// </summary>
+        /// <param name="userId">The user id.</param>
+        /// <param name="itemId">The item id.</param>
+        /// <param name="inheritFromParents">if set to <c>true</c> [inherit from parents].</param>
+        /// <returns>Task{ThemeMediaResult}.</returns>
+        Task<ThemeMediaResult> GetThemeVideosAsync(string userId, string itemId, bool inheritFromParents);
+
+        /// <summary>
+        /// Gets all theme media async.
+        /// </summary>
+        /// <param name="userId">The user id.</param>
+        /// <param name="itemId">The item id.</param>
+        /// <param name="inheritFromParents">if set to <c>true</c> [inherit from parents].</param>
+        /// <returns>Task{AllThemeMediaResult}.</returns>
+        Task<AllThemeMediaResult> GetAllThemeMediaAsync(string userId, string itemId, bool inheritFromParents);
+        
+        /// <summary>
         /// Marks the notifications read.
         /// </summary>
         /// <param name="userId">The user id.</param>
