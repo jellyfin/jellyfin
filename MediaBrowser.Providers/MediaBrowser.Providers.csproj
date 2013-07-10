@@ -76,6 +76,7 @@
     <Compile Include="Music\LastfmArtistProvider.cs" />
     <Compile Include="Music\LastfmBaseProvider.cs" />
     <Compile Include="Music\LastfmHelper.cs" />
+    <Compile Include="Music\MusicVideoXmlParser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Savers\AlbumXmlSaver.cs" />
     <Compile Include="Savers\ArtistXmlSaver.cs" />

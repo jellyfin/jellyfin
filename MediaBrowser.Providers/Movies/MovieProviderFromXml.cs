@@ -3,6 +3,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Providers.Music;
 using System;
 using System.IO;
 using System.Threading;
@@ -105,7 +106,7 @@ namespace MediaBrowser.Providers.Movies
 
                         if (musicVideo != null)
                         {
-                            new BaseItemXmlParser<MusicVideo>(Logger).Fetch(musicVideo, path, cancellationToken);
+                            new MusicVideoXmlParser(Logger).Fetch(musicVideo, path, cancellationToken);
                         }
                         else
                         {

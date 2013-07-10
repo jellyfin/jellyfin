@@ -79,6 +79,20 @@ namespace MediaBrowser.Providers.Savers
                 builder.Append("<Description><![CDATA[" + item.Overview + "]]></Description>");
             }
 
+            var musicVideo = item as MusicVideo;
+
+            if (musicVideo != null)
+            {
+                if (!string.IsNullOrEmpty(musicVideo.Artist))
+                {
+                    builder.Append("<Artist>" + SecurityElement.Escape(musicVideo.Artist) + "</Artist>");
+                }
+                if (!string.IsNullOrEmpty(musicVideo.Album))
+                {
+                    builder.Append("<Album>" + SecurityElement.Escape(musicVideo.Album) + "</Album>");
+                }
+            }
+
             XmlSaverHelpers.AddMediaInfo((Video)item, builder);
 
             builder.Append("</Title>");
