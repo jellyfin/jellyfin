@@ -19,6 +19,8 @@
         var curentDurationTicks;
         var isStaticStream;
         var culturesPromise;
+        var timeout;
+        var idleState = true;
 
         self.playlist = [];
         var currentPlaylistIndex = 0;
@@ -687,7 +689,22 @@
 
             return null;
         }
-
+        
+        function idleHandler() {
+            var nowPlayingBar = $("#nowPlayingBar");
+            if (timeout) {
+                window.clearTimeout(timeout);
+            }
+            if (idleState == true) {
+                $(".mediaButton,.currentTime,.nowPlayingMediaInfo,.mediaSlider,.barBackground", nowPlayingBar).addClass("highPosition");
+            }
+            idleState = false;
+            timeout = window.setTimeout(function () {
+                idleState = true;
+                $(".mediaButton,.currentTime,.nowPlayingMediaInfo,.mediaSlider,.barBackground", nowPlayingBar).removeClass("highPosition");
+            }, 4000);
+        }
+        
         self.canPlay = function (item) {
 
             if (item.Type == "MusicAlbum" || item.Type == "MusicArtist") {
@@ -924,7 +941,8 @@
         };
 
         self.toggleFullscreen = function () {
-
+            
+            $('.itemVideo').unbind('mousemove keydown scroll', idleHandler);
             if (isFullScreen()) {
                 if (document.cancelFullScreen) { document.cancelFullScreen(); }
                 else if (document.mozCancelFullScreen) { document.mozCancelFullScreen(); }
@@ -935,6 +953,8 @@
 
                 }
             } else {
+                idleState = true;
+                $('.itemVideo').bind('mousemove keydown scroll', idleHandler).trigger('mousemove');
                 requestFullScreen(document.body);
             }
         };

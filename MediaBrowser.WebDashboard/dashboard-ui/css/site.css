@@ -710,10 +710,23 @@ progress {
     border-top: 2px solid #D7742B;
 }
 
+#nowPlayingBar .highPosition {
+    z-index: 99999;
+    position: relative;
+}
 
-    #nowPlayingBar > *:not(#mediaElement):not(.mediaFlyoutContainer) {
-        margin: 0 1em;
-    }
+#nowPlayingBar .barBackground {
+    border-top: 2px solid #D7742B;
+    background: #4C4C4C;
+    position: absolute;
+    margin: -8px -0.5em !important;
+    width: 100%;
+    height: 100%;
+}
+
+#nowPlayingBar > *:not(#mediaElement):not(.mediaFlyoutContainer) {
+    margin: 0 1em;
+}
 
 .nowPlayingBarImage {
     border: 1px solid #a7a7a7!important;
