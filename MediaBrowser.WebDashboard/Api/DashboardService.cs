@@ -512,7 +512,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             var newLineBytes = Encoding.UTF8.GetBytes(Environment.NewLine);
 
-            var versionString = string.Format("window.dashboardVersion='{0}';", GetType().Assembly.GetName().Version);
+            var versionString = string.Format("window.dashboardVersion='{0}';", _appHost.ApplicationVersion);
             var versionBytes = Encoding.UTF8.GetBytes(versionString);
 
             await memoryStream.WriteAsync(versionBytes, 0, versionBytes.Length).ConfigureAwait(false);

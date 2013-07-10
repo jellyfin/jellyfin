@@ -790,9 +790,8 @@ var Dashboard = {
             });
 
         }
-        else if (msg.MessageType === "UpdatePlaystate") {
+        else if (msg.MessageType === "Playstate") {
 
-            // TODO for Craig
         }
     },
 

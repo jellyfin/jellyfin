@@ -524,8 +524,10 @@
             // HLS must be at the top for safari
             // Webm must be ahead of mp4 due to the issue of mp4 playing too fast in chrome
 
+            var requiresControls = $.browser.msie || $.browser.android || $.browser.iphone || $.browser.ipad;
+
             // Can't autoplay in these browsers so we need to use the full controls
-            if ($.browser.msie || $.browser.android || $.browser.iphone || $.browser.ipad) {
+            if (requiresControls) {
                 html += '<video class="itemVideo" autoplay controls preload="none">';
             } else {
                 html += '<video class="itemVideo" autoplay preload="none">';
@@ -572,7 +574,11 @@
                 $('#chaptersButton', nowPlayingBar).hide();
             }
 
-            $('#fullscreenButton', nowPlayingBar).show();
+            if (requiresControls) {
+                $('#fullscreenButton', nowPlayingBar).hide();
+            } else {
+                $('#fullscreenButton', nowPlayingBar).show();
+            }
 
             var videoElement = $("video", nowPlayingBar);
 
