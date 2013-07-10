@@ -425,6 +425,13 @@ namespace MediaBrowser.Api.UserLibrary
                         return artists.Any(album.HasArtist);
                     }
 
+                    var musicVideo = i as MusicVideo;
+
+                    if (musicVideo != null)
+                    {
+                        return artists.Any(musicVideo.HasArtist);
+                    }
+
                     return false;
                 });
             }
