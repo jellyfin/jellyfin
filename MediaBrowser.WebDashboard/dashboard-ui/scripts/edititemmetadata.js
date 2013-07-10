@@ -138,13 +138,17 @@
         }
 
         if (item.Type == "Audio") {
+            $('#fldAlbumArtist', page).show();
+        } else {
+            $('#fldAlbumArtist', page).hide();
+        }
+
+        if (item.Type == "Audio" || item.Type == "MusicVideo") {
             $('#fldArtist', page).show();
             $('#fldAlbum', page).show();
-            $('#fldAlbumArtist', page).show();
         } else {
             $('#fldArtist', page).hide();
             $('#fldAlbum', page).hide();
-            $('#fldAlbumArtist', page).hide();
         }
 
         if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "Person" || item.Type == "Series" || item.Type == "Season" || item.Type == "Episode" || item.Type == "MusicVideo") {

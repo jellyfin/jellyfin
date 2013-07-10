@@ -272,6 +272,14 @@ namespace MediaBrowser.Api
                 musicAlbum.MusicBrainzReleaseGroupId = request.GetProviderId("MusicBrainzReleaseGroupId");
             }
 
+            var musicVideo = item as MusicVideo;
+
+            if (musicVideo != null)
+            {
+                musicVideo.Artist = request.Artists[0];
+                musicVideo.Album = request.Album;
+            }
+
             var series = item as Series;
             if (series != null)
             {
