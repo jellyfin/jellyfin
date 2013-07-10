@@ -611,6 +611,16 @@ namespace MediaBrowser.Model.Dto
         }
 
         /// <summary>
+        /// Gets a value indicating whether this instance has box image.
+        /// </summary>
+        /// <value><c>true</c> if this instance has box image; otherwise, <c>false</c>.</value>
+        [IgnoreDataMember]
+        public bool HasBoxRearImage
+        {
+            get { return ImageTags != null && ImageTags.ContainsKey(ImageType.BoxRear); }
+        }
+
+        /// <summary>
         /// Gets a value indicating whether this instance has menu image.
         /// </summary>
         /// <value><c>true</c> if this instance has menu image; otherwise, <c>false</c>.</value>
