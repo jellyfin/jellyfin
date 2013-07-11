@@ -682,6 +682,63 @@
             });
 
         }
+
+        $('.btnStop', popup).on('click', function () {
+
+            var id = $('#selectSession', popup).val();
+
+            ApiClient.sendPlayStateCommand(id, 'Stop');
+        });
+
+        $('.btnPause', popup).on('click', function () {
+
+            var id = $('#selectSession', popup).val();
+
+            ApiClient.sendPlayStateCommand(id, 'Pause');
+        });
+
+        $('.btnPlay', popup).on('click', function () {
+
+            var id = $('#selectSession', popup).val();
+
+            ApiClient.sendPlayStateCommand(id, 'Unpause');
+        });
+
+        $('.btnNextTrack', popup).on('click', function () {
+
+            var id = $('#selectSession', popup).val();
+
+            ApiClient.sendPlayStateCommand(id, 'NextTrack');
+        });
+
+        $('.btnPreviousTrack', popup).on('click', function () {
+
+            var id = $('#selectSession', popup).val();
+
+            ApiClient.sendPlayStateCommand(id, 'PreviousTrack');
+        });
+
+        $("#positionSlider", popup).on("slidestart", function () {
+
+            this.isSliding = true;
+
+        }).on("slidestop", function () {
+
+            var id = $('#selectSession', popup).val();
+
+            var percent = $(this).val();
+
+            var duration = parseInt($(this).attr('data-duration'));
+
+            var position = duration * percent / 100;
+
+            ApiClient.sendPlayStateCommand(id, 'Seek',
+                {
+                    SeekPosition: parseInt(position)
+                });
+
+            this.isSliding = false;
+        });
     }
 
     function getPlaybackHtml() {
@@ -700,7 +757,7 @@
         html += '<span class="duration"></span>';
         html += '</div>';
 
-        html += '<input type="range" name="positionSlider" id="positionSlider" min="0" max="100" value="50" style="display:none;" />';
+        html += '<input type="range" name="positionSlider" id="positionSlider" min="0" max="100" value="50" step=".1" style="display:none;" />';
         html += '</div>';
 
         html += '<div style="text-align:center; margin: 0 0 2em;">';
@@ -757,11 +814,11 @@
                 type: 'Primary',
                 tag: item.PrimaryImageTag
             });
-            
+
             if (!img || img.src.toLowerCase().indexOf(imgUrl.toLowerCase()) == -1) {
                 imageContainer.html('<img style="max-height:100px;" src="' + imgUrl + '" />');
             }
-            
+
         } else {
             imageContainer.hide();
         }
@@ -771,7 +828,13 @@
 
         var percent = duration ? 100 * time / duration : 0;
 
-        $('#positionSlider', elem).val(percent).slider('refresh');
+        var slider = $('#positionSlider', elem);
+        
+        if (!slider[0].isSliding) {
+            slider.val(percent).slider('refresh');
+        }
+
+        slider.attr('data-duration', duration);
 
         $('.nowPlayingTime', elem).html(Dashboard.getDisplayTime(time));
         $('.duration', elem).html(Dashboard.getDisplayTime(duration));

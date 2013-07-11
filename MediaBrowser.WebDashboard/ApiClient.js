@@ -3271,6 +3271,24 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 url: url
             });
         };
+
+        self.sendPlayStateCommand = function (sessionId, command, options) {
+
+            if (!sessionId) {
+                throw new Error("null sessionId");
+            }
+
+            if (!command) {
+                throw new Error("null command");
+            }
+
+            var url = self.getUrl("Sessions/" + sessionId + "/Playing/" + command, options || {});
+
+            return self.ajax({
+                type: "POST",
+                url: url
+            });
+        };
     }
 
 }(jQuery, navigator, window.JSON, window.WebSocket, setTimeout);
