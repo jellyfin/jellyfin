@@ -101,7 +101,7 @@
 
             clearProgressInterval();
 
-            var intervalTime = ApiClient.isWebSocketOpen() ? 10000 : 30000;
+            var intervalTime = ApiClient.isWebSocketOpen() ? 5000 : 20000;
 
             currentProgressInterval = setInterval(function () {
 
@@ -831,6 +831,10 @@
 
         self.playInternal = function (item, startPosition, user) {
 
+            if (item == null) {
+                throw new Error("item cannot be null");
+            }
+            
             if (self.isPlaying()) {
                 self.stop();
             }

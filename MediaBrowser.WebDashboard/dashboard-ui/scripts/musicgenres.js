@@ -5,7 +5,7 @@
 
         SortBy: "SortName",
         SortOrder: "Ascending",
-        IncludeItemTypes: "Audio",
+        IncludeItemTypes: "Audio,MusicVideo",
         Recursive: true,
         Fields: "ItemCounts,DateCreated,UserData",
         StartIndex: 0

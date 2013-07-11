@@ -52,6 +52,10 @@
     height: 50px;
 }
 
+.nowPlaying .ui-slider-track {
+    margin-left: 15px!important;
+}
+
 @media all and (max-width: 550px) {
     .nowPlayingCell + .nowPlayingCell {
         display: none;

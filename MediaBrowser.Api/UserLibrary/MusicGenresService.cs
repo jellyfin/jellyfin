@@ -124,7 +124,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>IEnumerable{Tuple{System.StringFunc{System.Int32}}}.</returns>
         protected override IEnumerable<IbnStub<MusicGenre>> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items)
         {
-            var itemsList = items.Where(i => i.Genres != null).ToList();
+            var itemsList = items.ToList();
 
             return itemsList
                 .SelectMany(i => i.Genres)

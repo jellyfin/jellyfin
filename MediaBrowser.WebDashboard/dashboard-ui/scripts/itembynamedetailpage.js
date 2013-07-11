@@ -489,7 +489,7 @@
 
         $('#btnRemote', page).on('click', function () {
 
-            RemoteControl.showMenu({ item: currentItem, context: getParameterByName('context') || '' });
+            RemoteControl.showMenuForItem({ item: currentItem, context: getParameterByName('context') || '' });
         });
 
         $('#btnEdit', page).on('click', function () {

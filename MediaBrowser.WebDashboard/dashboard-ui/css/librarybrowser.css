@@ -484,7 +484,7 @@ a.itemTag:hover {
         display: inline-block;
     }
 
-    .viewMenuImageLink {
+    .viewMenuImageLink:not(.remoteControlMenuLink) {
         display: none;
     }
 

@@ -185,7 +185,7 @@ namespace MediaBrowser.Api.UserLibrary
             var inputPersonTypes = ((GetPersons)request).PersonTypes;
             var personTypes = string.IsNullOrEmpty(inputPersonTypes) ? new string[] { } : inputPersonTypes.Split(',');
 
-            var itemsList = items.Where(i => i.People != null).ToList();
+            var itemsList = items.ToList();
 
             // Either get all people, or all people filtered by a specific person type
             var allPeople = GetAllPeople(itemsList, personTypes);

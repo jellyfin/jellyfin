@@ -27,7 +27,7 @@
 
     }
 
-    function showMenu(options, sessionsPromise) {
+    function showMenuForItem(options, sessionsPromise) {
 
         var playFromRendered;
         var trailersRendered;
@@ -204,11 +204,12 @@
 
             var deviceId = ApiClient.deviceId();
 
+            // don't display the current session
             sessions = sessions.filter(function (s) {
                 return s.DeviceId != deviceId;
             });
 
-            renderSessions(sessions, options, elem);
+            renderSessionsInPlayMenu(sessions, options, elem);
 
             if (ApiClient.isWebSocketOpen()) {
                 ApiClient.sendWebSocketMessage("SessionsStart", "1500,1500");
@@ -216,7 +217,7 @@
                 $(ApiClient).on("websocketmessage.remotecontrol", function (e, msg) {
 
                     if (msg.MessageType === "Sessions") {
-                        refreshSessions(msg.Data, elem);
+                        updateSessionsInPlayMenu(msg.Data, elem);
                     }
                 });
 
@@ -392,7 +393,7 @@
         $('.chkSelectPlayTime:first', elem).checked(true);
     }
 
-    function renderSessions(sessions, options, elem) {
+    function renderSessionsInPlayMenu(sessions, options, elem) {
 
         if (!sessions.length) {
             elem.html('<p>There are currently no available media browser sessions to control.</p>');
@@ -536,7 +537,7 @@
         return html;
     }
 
-    function refreshSessions(sessions, elem) {
+    function updateSessionsInPlayMenu(sessions, elem) {
 
         for (var i = 0, length = sessions.length; i < length; i++) {
 
@@ -612,12 +613,240 @@
         $('.chkSelectItem:first', elem).checked(true);
     }
 
+    function showMenu(sessions) {
+
+        var html = '<div data-role="popup" id="remoteControlFlyout">';
+
+        html += '<div class="ui-corner-top ui-bar-a" style="text-align:center;">';
+        html += '<div style="margin:.5em 0;">Remote Control</div>';
+        html += '</div>';
+
+        html += '<div data-role="content" class="ui-corner-bottom ui-content">';
+
+        html += '<div class="sessionsPopupContent">';
+
+        // Add controls here
+        html += '<div><label for="selectSession">Select session</label>';
+        html += '<select id="selectSession" name="selectSession" data-mini="true"></select></div>';
+
+        html += '</div>';
+
+        html += '<div class="nowPlayingInfo" style="margin:1em 0;">';
+
+        html += '<div class="nowPlaying" style="display:none;">';
+
+        html += getPlaybackHtml();
+
+        html += '</div>';
+
+        html += '<p class="nothingPlaying" style="display:none;">Nothing is currently playing.</p>';
+
+        html += '</div>';
+
+        html += '<p style="text-align:center;margin:.75em 0 0;">';
+
+        html += '<button type="button" data-icon="delete" onclick="$(\'#remoteControlFlyout\').popup(\'close\');" data-theme="a" data-mini="true" data-inline="true">Close</button>';
+
+        html += '</p>';
+
+        html += '</div>';
+
+        html += '</div>';
+
+        $(document.body).append(html);
+
+        var popup = $('#remoteControlFlyout').popup({ history: false, tolerance: 0, corners: false }).trigger('create').popup("open").on("popupafterclose", function () {
+
+            if (ApiClient.isWebSocketOpen()) {
+                ApiClient.sendWebSocketMessage("SessionsStop");
+            }
+
+            $(ApiClient).off("websocketmessage.remotecontrol");
+
+            $(this).off("popupafterclose").remove();
+        });
+
+        renderSessionsInControlMenu(popup, sessions);
+        updateSessionInfo(popup, sessions);
+
+        if (ApiClient.isWebSocketOpen()) {
+            ApiClient.sendWebSocketMessage("SessionsStart", "1500,1500");
+
+            $(ApiClient).on("websocketmessage.remotecontrol", function (e, msg) {
+
+                if (msg.MessageType === "Sessions") {
+
+                    // Update existing data
+                    updateSessionInfo(popup, msg.Data);
+                }
+            });
+
+        }
+    }
+
+    function getPlaybackHtml() {
+
+        var html = '';
+
+        html += '<p class="nowPlayingTitle" style="text-align:center;margin-top:2em;"></p>';
+
+        html += '<p class="nowPlayingImage" style="text-align:center;"></p>';
+
+        html += '<div style="text-align:center;margin: 1em 0 1em;">';
+
+        html += '<div style="text-align:right;vertical-align:middle;padding-right:20px;font-weight: bold;">';
+        html += '<span class="nowPlayingTime"></span>';
+        html += '<span> / </span>';
+        html += '<span class="duration"></span>';
+        html += '</div>';
+
+        html += '<input type="range" name="positionSlider" id="positionSlider" min="0" max="100" value="50" style="display:none;" />';
+        html += '</div>';
+
+        html += '<div style="text-align:center; margin: 0 0 2em;">';
+        html += '<button class="btnPreviousTrack" type="button" data-icon="step-backward" data-inline="true" data-iconpos="notext">Previous track</button>';
+        html += '<span class="btnPauseParent"><button class="btnPause" type="button" data-icon="pause" data-inline="true" data-iconpos="notext">Pause</button></span>';
+        html += '<span class="btnPlayParent"><button class="btnPlay" type="button" data-icon="play" data-inline="true" data-iconpos="notext">Play</button></span>';
+        html += '<button class="btnStop" type="button" data-icon="stop" data-inline="true" data-iconpos="notext">Stop</button>';
+        html += '<button class="btnNextTrack" type="button" data-icon="step-forward" data-inline="true" data-iconpos="notext">Next track</button>';
+        html += '</div>';
+
+
+        return html;
+    }
+
+    function updateSessionInfo(popup, sessions) {
+
+        var id = $('#selectSession', popup).val();
+
+        // don't display the current session
+        var session = sessions.filter(function (s) {
+            return s.Id == id;
+        })[0];
+
+        if (session && session.NowPlayingItem) {
+
+            $('.nothingPlaying', popup).hide();
+
+            var elem = $('.nowPlaying', popup).show();
+
+            updateNowPlaying(elem, session);
+
+        } else {
+
+            $('.nothingPlaying', popup).show();
+            $('.nowPlaying', popup).hide();
+        }
+    }
+
+    function updateNowPlaying(elem, session) {
+
+        var item = session.NowPlayingItem;
+
+        $('.nowPlayingTitle', elem).html(item.Name);
+
+        var imageContainer = $('.nowPlayingImage', elem);
+
+        if (item.PrimaryImageTag) {
+            imageContainer.show();
+
+            var img = $('img', imageContainer)[0];
+
+            var imgUrl = ApiClient.getImageUrl(item.Id, {
+                maxheight: 200,
+                type: 'Primary',
+                tag: item.PrimaryImageTag
+            });
+            
+            if (!img || img.src.toLowerCase().indexOf(imgUrl.toLowerCase()) == -1) {
+                imageContainer.html('<img style="max-height:100px;" src="' + imgUrl + '" />');
+            }
+            
+        } else {
+            imageContainer.hide();
+        }
+
+        var time = session.NowPlayingPositionTicks || 0;
+        var duration = item.RunTimeTicks || 0;
+
+        var percent = duration ? 100 * time / duration : 0;
+
+        $('#positionSlider', elem).val(percent).slider('refresh');
+
+        $('.nowPlayingTime', elem).html(Dashboard.getDisplayTime(time));
+        $('.duration', elem).html(Dashboard.getDisplayTime(duration));
+
+        if (session.IsPaused) {
+            $('.btnPauseParent', elem).hide();
+            $('.btnPlayParent', elem).show();
+        } else {
+            $('.btnPauseParent', elem).show();
+            $('.btnPlayParent', elem).hide();
+        }
+    }
+
+    function renderSessionsInControlMenu(popup, sessions) {
+
+        var deviceId = ApiClient.deviceId();
+
+        // don't display the current session
+        sessions = sessions.filter(function (s) {
+            return s.DeviceId != deviceId && s.SupportsRemoteControl;
+        });
+
+        var elem = $('#selectSession', popup);
+
+        var currentValue = elem.val();
+
+        if (currentValue) {
+
+            // Make sure the session is still active
+            var currentSession = sessions.filter(function (s) {
+                return s.Id == currentValue;
+            })[0];
+
+            if (!currentSession) {
+                currentValue = null;
+            }
+        }
+
+        if (!currentValue && sessions.length) {
+            currentValue = sessions[0].Id;
+        }
+
+        var html = '';
+
+        for (var i = 0, length = sessions.length; i < length; i++) {
+
+            var session = sessions[i];
+
+            var text = session.Client + ' - ' + session.DeviceName;
+
+            if (session.UserName) {
+                text += ' - ' + session.UserName;
+            }
+
+            html += '<option value="' + session.Id + '">' + text + '</option>';
+        }
+
+        elem.html(html).val(currentValue).selectmenu('refresh');
+
+    }
+
     function remoteControl() {
 
         var self = this;
 
-        self.showMenu = function (options) {
-            showMenu(options, ApiClient.getSessions({ SupportsRemoteControl: true }));
+        self.showMenuForItem = function (options) {
+            showMenuForItem(options, ApiClient.getSessions({ SupportsRemoteControl: true }));
+        };
+
+        self.showMenu = function () {
+            ApiClient.getSessions({ SupportsRemoteControl: true }).done(function (sessions) {
+
+                showMenu(sessions);
+
+            });
         };
     }
 

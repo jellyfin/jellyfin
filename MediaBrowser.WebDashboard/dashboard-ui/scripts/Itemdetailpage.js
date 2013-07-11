@@ -883,7 +883,7 @@
 
         $('#btnRemote', page).on('click', function () {
 
-            RemoteControl.showMenu({
+            RemoteControl.showMenuForItem({
 
                 item: currentItem,
                 context: getContext(currentItem),
