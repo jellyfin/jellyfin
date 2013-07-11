@@ -152,7 +152,7 @@
         $('#chk3D', this).on('change', function () {
 
             query.StartIndex = 0;
-            query.Is3D = this.checked ? this.getAttribute('data-filter') : null;
+            query.Is3D = this.checked ? true : null;
 
             reloadItems(page);
         });
