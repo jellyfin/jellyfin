@@ -626,7 +626,7 @@
         html += '<div class="sessionsPopupContent">';
 
         // Add controls here
-        html += '<div><label for="selectSession">Select session</label>';
+        html += '<div><label for="selectSession">Select session to control</label>';
         html += '<select id="selectSession" name="selectSession" data-mini="true"></select></div>';
 
         html += '</div>';
@@ -781,7 +781,13 @@
             return s.Id == id;
         })[0];
 
-        if (session && session.NowPlayingItem) {
+        if (!session) {
+
+            $('.nothingPlaying', popup).hide();
+            $('.nowPlaying', popup).hide();
+
+        }
+        else if (session.NowPlayingItem) {
 
             $('.nothingPlaying', popup).hide();
 
