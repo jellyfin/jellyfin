@@ -896,16 +896,22 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
        * Adds a virtual folder to either the default view or a user view
        * @param {String} name
        */
-        self.addVirtualFolder = function (name, userId) {
+        self.addVirtualFolder = function (name, type, userId) {
 
             if (!name) {
                 throw new Error("null name");
             }
 
+            var options = {};
+
+            if (type) {
+                options.collectionType = type;
+            }
+
             var url = userId ? "Users/" + userId + "/VirtualFolders" : "Library/VirtualFolders";
 
             url += "/" + name;
-            url = self.getUrl(url);
+            url = self.getUrl(url, options);
 
             return self.ajax({
                 type: "POST",

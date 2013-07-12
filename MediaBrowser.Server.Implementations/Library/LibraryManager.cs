@@ -487,7 +487,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 // When resolving the root, we need it's grandchildren (children of user views)
                 var flattenFolderDepth = isPhysicalRoot ? 2 : 0;
 
-                args.FileSystemDictionary = FileData.GetFilteredFileSystemEntries(args.Path, _logger, flattenFolderDepth: flattenFolderDepth, args: args, resolveShortcuts: isPhysicalRoot || args.IsVf);
+                args.FileSystemDictionary = FileData.GetFilteredFileSystemEntries(args.Path, _logger, args, flattenFolderDepth: flattenFolderDepth, resolveShortcuts: isPhysicalRoot || args.IsVf);
 
                 // Need to remove subpaths that may have been resolved from shortcuts
                 // Example: if \\server\movies exists, then strip out \\server\movies\action
@@ -1168,8 +1168,21 @@ namespace MediaBrowser.Server.Implementations.Library
                 .Select(dir => new VirtualFolderInfo
                 {
                     Name = Path.GetFileName(dir),
-                    Locations = Directory.EnumerateFiles(dir, "*.lnk", SearchOption.TopDirectoryOnly).Select(FileSystem.ResolveShortcut).OrderBy(i => i).ToList()
+
+                    Locations = Directory.EnumerateFiles(dir, "*.lnk", SearchOption.TopDirectoryOnly)
+                                .Select(FileSystem.ResolveShortcut)
+                                .OrderBy(i => i)
+                                .ToList(),
+
+                    CollectionType = GetCollectionType(dir)
                 });
+        }
+
+        private string GetCollectionType(string path)
+        {
+            return new DirectoryInfo(path).EnumerateFiles("*.collection", SearchOption.TopDirectoryOnly)
+                .Select(i => Path.GetFileNameWithoutExtension(i.FullName))
+                .FirstOrDefault();
         }
 
         /// <summary>
@@ -1404,6 +1417,48 @@ namespace MediaBrowser.Server.Implementations.Library
                     semaphore.Release();
                 }
             }
+        }
+
+        /// <summary>
+        /// Finds the type of the collection.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns>System.String.</returns>
+        public string FindCollectionType(BaseItem item)
+        {
+            while (!(item.Parent is AggregateFolder) && item.Parent != null)
+            {
+                item = item.Parent;
+            }
+
+            if (item == null)
+            {
+                return null;
+            }
+
+            var collectionTypes = _userManager.Users
+                .Select(i => i.RootFolder)
+                .Distinct()
+                .SelectMany(i => i.Children)
+                .OfType<CollectionFolder>()
+                .Where(i =>
+                {
+                    try
+                    {
+                        return i.LocationType != LocationType.Remote && i.LocationType != LocationType.Virtual &&
+                               i.ResolveArgs.PhysicalLocations.Contains(item.Path);
+                    }
+                    catch (IOException ex)
+                    {
+                        _logger.ErrorException("Error getting resolve args for {0}", ex, i.Path);
+                        return false;
+                    }
+                })
+                .Select(i => i.CollectionType)
+                .Where(i => !string.IsNullOrEmpty(i))
+                .Distinct();
+
+            return collectionTypes.SingleOrDefault();
         }
     }
 }

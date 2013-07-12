@@ -336,7 +336,7 @@ namespace MediaBrowser.Controller.Entities
                 // When resolving the root, we need it's grandchildren (children of user views)
                 var flattenFolderDepth = isPhysicalRoot ? 2 : 0;
 
-                args.FileSystemDictionary = FileData.GetFilteredFileSystemEntries(args.Path, Logger, flattenFolderDepth: flattenFolderDepth, args: args, resolveShortcuts: isPhysicalRoot || args.IsVf);
+                args.FileSystemDictionary = FileData.GetFilteredFileSystemEntries(args.Path, Logger, args, flattenFolderDepth: flattenFolderDepth, resolveShortcuts: isPhysicalRoot || args.IsVf);
 
                 // Need to remove subpaths that may have been resolved from shortcuts
                 // Example: if \\server\movies exists, then strip out \\server\movies\action
@@ -1109,6 +1109,24 @@ namespace MediaBrowser.Controller.Entities
             if (string.IsNullOrWhiteSpace(person.Name))
             {
                 throw new ArgumentNullException();
+            }
+
+            // Normalize
+            if (string.Equals(person.Role, PersonType.GuestStar, StringComparison.OrdinalIgnoreCase))
+            {
+                person.Type = PersonType.GuestStar;
+            }
+            else if (string.Equals(person.Role, PersonType.Director, StringComparison.OrdinalIgnoreCase))
+            {
+                person.Type = PersonType.Director;
+            }
+            else if (string.Equals(person.Role, PersonType.Producer, StringComparison.OrdinalIgnoreCase))
+            {
+                person.Type = PersonType.Producer;
+            }
+            else if (string.Equals(person.Role, PersonType.Writer, StringComparison.OrdinalIgnoreCase))
+            {
+                person.Type = PersonType.Writer;
             }
 
             // If the type is GuestStar and there's already an Actor entry, then update it to avoid dupes

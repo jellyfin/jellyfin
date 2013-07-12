@@ -86,6 +86,16 @@
 
         html += '<h3>' + virtualFolder.Name + '</h3>';
 
+        var typeName = MediaLibraryPage.getCollectionTypeOptions().filter(function(t) {
+
+            return t.value == virtualFolder.CollectionType;
+
+        })[0];
+
+        typeName = typeName ? typeName.name : "General or mixed content";
+
+        html += '<p style="padding-left:.5em;">Collection type: <b>' + typeName + '</b></p>';
+
         html += '<ul class="mediaFolderLocations" data-inset="true" data-role="listview" data-split-icon="minus">';
 
         html += '<li data-role="list-divider" class="mediaLocationsHeader">Media Locations';
@@ -133,13 +143,13 @@
 
     addVirtualFolder: function () {
 
-        MediaLibraryPage.getTextValue("Add Media Collection", "Name (Movies, Music, TV, etc):", "", function (name) {
+        MediaLibraryPage.getTextValue("Add Media Collection", "Name (Movies, Music, TV, etc):", "", true, function (name, type) {
 
             var userId = getParameterByName("userId");
 
             MediaLibraryPage.lastVirtualFolderName = name;
 
-            ApiClient.addVirtualFolder(name, userId).done(MediaLibraryPage.processOperationResult);
+            ApiClient.addVirtualFolder(name, type, userId).done(MediaLibraryPage.processOperationResult);
 
         });
     },
@@ -171,15 +181,23 @@
         MediaLibraryPage.directoryPicker = picker;
     },
 
-    getTextValue: function (header, label, initialValue, callback) {
+    getTextValue: function (header, label, initialValue, showCollectionType, callback) {
 
         var page = $.mobile.activePage;
 
         var popup = $('#popupEnterText', page);
 
         $('h3', popup).html(header);
-        $('label', popup).html(label);
+        $('#lblValue', popup).html(label);
         $('#txtValue', popup).val(initialValue);
+
+        if (showCollectionType) {
+            $('#fldCollectionType', popup).show();
+        } else {
+            $('#fldCollectionType', popup).hide();
+        }
+
+        $('#selectCollectionType', popup).html(MediaLibraryPage.getCollectionTypeOptionsHtml()).selectmenu('refresh');
 
         popup.on("popupafteropen", function () {
             $('#textEntryForm input:first', this).focus();
@@ -191,11 +209,43 @@
         $('#textEntryForm', popup).on('submit', function () {
 
             if (callback) {
-                callback($('#txtValue', popup).val());
+
+                if (showCollectionType) {
+                    callback($('#txtValue', popup).val(), $('#selectCollectionType', popup).val());
+                } else {
+                    callback($('#txtValue', popup).val());
+                }
+
             }
 
             return false;
         });
+    },
+
+    getCollectionTypeOptionsHtml: function () {
+
+        return MediaLibraryPage.getCollectionTypeOptions().map(function (i) {
+
+            return '<option value="' + i.value + '">' + i.name + '</option>';
+
+        }).join("");
+    },
+
+    getCollectionTypeOptions: function () {
+
+        return [
+
+            { name: "General or mixed content", value: "" },
+            { name: "Box sets", value: "boxsets" },
+            { name: "Home videos", value: "homevideos" },
+            { name: "Movies", value: "movies" },
+            { name: "Music", value: "music" },
+            { name: "Music videos", value: "musicvideos" },
+            { name: "Trailers", value: "trailers" },
+            { name: "TV shows", value: "tvshows" }
+
+        ];
+
     },
 
     renameVirtualFolder: function (button) {
@@ -205,7 +255,7 @@
 
         MediaLibraryPage.lastVirtualFolderName = virtualFolder.Name;
 
-        MediaLibraryPage.getTextValue(virtualFolder.Name, "Rename " + virtualFolder.Name, virtualFolder.Name, function (newName) {
+        MediaLibraryPage.getTextValue(virtualFolder.Name, "Rename " + virtualFolder.Name, virtualFolder.Name, false, function (newName) {
 
             if (virtualFolder.Name != newName) {
 
@@ -276,7 +326,7 @@
         var page = $.mobile.activePage;
 
         $('#popupEnterText', page).popup("close");
-        
+
         if (MediaLibraryPage.directoryPicker) {
             MediaLibraryPage.directoryPicker.close();
             MediaLibraryPage.directoryPicker = null;

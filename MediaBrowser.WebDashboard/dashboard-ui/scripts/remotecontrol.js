@@ -212,7 +212,7 @@
             renderSessionsInPlayMenu(sessions, options, elem);
 
             if (ApiClient.isWebSocketOpen()) {
-                ApiClient.sendWebSocketMessage("SessionsStart", "1500,1500");
+                ApiClient.sendWebSocketMessage("SessionsStart", "1000,1000");
 
                 $(ApiClient).on("websocketmessage.remotecontrol", function (e, msg) {
 
@@ -670,7 +670,7 @@
         updateSessionInfo(popup, sessions);
 
         if (ApiClient.isWebSocketOpen()) {
-            ApiClient.sendWebSocketMessage("SessionsStart", "1500,1500");
+            ApiClient.sendWebSocketMessage("SessionsStart", "1000,1000");
 
             $(ApiClient).on("websocketmessage.remotecontrol", function (e, msg) {
 
@@ -745,11 +745,11 @@
 
         var html = '';
 
-        html += '<p class="nowPlayingTitle" style="text-align:center;margin-top:2em;"></p>';
+        html += '<p class="nowPlayingTitle" style="text-align:center;margin:1.5em 0 0;"></p>';
 
-        html += '<p class="nowPlayingImage" style="text-align:center;"></p>';
+        html += '<p class="nowPlayingImage" style="text-align:center;margin-top:.5em;"></p>';
 
-        html += '<div style="text-align:center;margin: 1em 0 1em;">';
+        html += '<div style="text-align:center;margin: 1em 0;">';
 
         html += '<div style="text-align:right;vertical-align:middle;padding-right:20px;font-weight: bold;">';
         html += '<span class="nowPlayingTime"></span>';
@@ -816,13 +816,13 @@
             var img = $('img', imageContainer)[0];
 
             var imgUrl = ApiClient.getImageUrl(item.Id, {
-                maxheight: 200,
+                maxheight: 300,
                 type: 'Primary',
                 tag: item.PrimaryImageTag
             });
 
             if (!img || img.src.toLowerCase().indexOf(imgUrl.toLowerCase()) == -1) {
-                imageContainer.html('<img style="max-height:100px;" src="' + imgUrl + '" />');
+                imageContainer.html('<img style="max-height:150px;" src="' + imgUrl + '" />');
             }
 
         } else {

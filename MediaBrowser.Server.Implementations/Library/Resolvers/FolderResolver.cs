@@ -1,6 +1,9 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
+using System;
+using System.IO;
+using System.Linq;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers
 {
@@ -37,13 +40,24 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
                 }
                 if (args.IsVf)
                 {
-                    return new CollectionFolder();
+                    return new CollectionFolder
+                    {
+                        CollectionType = GetCollectionType(args)
+                    };
                 }
 
                 return new Folder();
             }
 
             return null;
+        }
+
+        private string GetCollectionType(ItemResolveArgs args)
+        {
+            return args.FileSystemChildren
+                .Where(i => (i.Attributes & FileAttributes.Directory) != FileAttributes.Directory && string.Equals(".collection", i.Extension, StringComparison.OrdinalIgnoreCase))
+                .Select(i => Path.GetFileNameWithoutExtension(i.FullName))
+                .FirstOrDefault();
         }
     }
 

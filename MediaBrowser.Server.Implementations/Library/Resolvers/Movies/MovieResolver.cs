@@ -18,10 +18,12 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
     public class MovieResolver : BaseVideoResolver<Video>
     {
         private IServerApplicationPaths ApplicationPaths { get; set; }
+        private readonly ILibraryManager _libraryManager;
 
-        public MovieResolver(IServerApplicationPaths appPaths)
+        public MovieResolver(IServerApplicationPaths appPaths, ILibraryManager libraryManager)
         {
             ApplicationPaths = appPaths;
+            _libraryManager = libraryManager;
         }
 
         /// <summary>
@@ -73,19 +75,27 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                     return null;
                 }
 
-                // A shortcut to help us resolve faster in some cases
-                var isKnownMovie = args.ContainsMetaFileByName("movie.xml");
+                var collectionType = args.Parent == null ? null : _libraryManager.FindCollectionType(args.Parent);
 
-                if (args.Path.IndexOf("[trailers]", StringComparison.OrdinalIgnoreCase) != -1)
+                if (args.Path.IndexOf("[trailers]", StringComparison.OrdinalIgnoreCase) != -1 ||
+                    string.Equals(collectionType, CollectionType.Trailers, StringComparison.OrdinalIgnoreCase))
                 {
-                    return FindMovie<Trailer>(args.Path, args.FileSystemChildren, isKnownMovie);
-                }
-                if (args.Path.IndexOf("[musicvideos]", StringComparison.OrdinalIgnoreCase) != -1)
-                {
-                    return FindMovie<MusicVideo>(args.Path, args.FileSystemChildren, isKnownMovie);
+                    return FindMovie<Trailer>(args.Path, args.FileSystemChildren);
                 }
 
-                return FindMovie<Movie>(args.Path, args.FileSystemChildren, isKnownMovie);
+                if (args.Path.IndexOf("[musicvideos]", StringComparison.OrdinalIgnoreCase) != -1 ||
+                    string.Equals(collectionType, CollectionType.MusicVideos, StringComparison.OrdinalIgnoreCase))
+                {
+                    return FindMovie<MusicVideo>(args.Path, args.FileSystemChildren);
+                }
+
+                if (!string.IsNullOrEmpty(collectionType) && 
+                    !string.Equals(collectionType, CollectionType.Movies, StringComparison.OrdinalIgnoreCase))
+                {
+                    return null;
+                }
+
+                return FindMovie<Movie>(args.Path, args.FileSystemChildren);
             }
 
             return null;
@@ -126,9 +136,8 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
         /// <typeparam name="T"></typeparam>
         /// <param name="path">The path.</param>
         /// <param name="fileSystemEntries">The file system entries.</param>
-        /// <param name="isKnownMovie">if set to <c>true</c> [is known movie].</param>
         /// <returns>Movie.</returns>
-        private T FindMovie<T>(string path, IEnumerable<FileSystemInfo> fileSystemEntries, bool isKnownMovie)
+        private T FindMovie<T>(string path, IEnumerable<FileSystemInfo> fileSystemEntries)
             where T : Video, new()
         {
             var movies = new List<T>();

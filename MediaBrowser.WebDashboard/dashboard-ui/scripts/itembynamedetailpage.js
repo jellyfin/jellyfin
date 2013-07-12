@@ -215,7 +215,7 @@
 
             if (result.MusicVideoCount) {
 
-                html += '<input type="radio" name="ibnMusicVideos" id="radioMusicVideos" value="on" data-mini="true">';
+                html += '<input type="radio" name="ibnItems" id="radioMusicVideos" value="on" data-mini="true">';
                 html += '<label for="radioMusicVideos">Music Videos (' + result.MusicVideoCount + ')</label>';
             }
 
