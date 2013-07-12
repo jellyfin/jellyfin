@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediaBrowser.Controller.Library;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -6,7 +7,6 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Controller.Library;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -28,6 +28,8 @@ namespace MediaBrowser.Controller.Entities
                 return true;
             }
         }
+
+        public string CollectionType { get; set; }
 
         /// <summary>
         /// Allow different display preferences for each collection folder
@@ -69,7 +71,7 @@ namespace MediaBrowser.Controller.Entities
         /// Our children are actually just references to the ones in the physical root...
         /// </summary>
         /// <value>The actual children.</value>
-        protected override ConcurrentDictionary<Guid,BaseItem> ActualChildren
+        protected override ConcurrentDictionary<Guid, BaseItem> ActualChildren
         {
             get
             {
@@ -91,7 +93,7 @@ namespace MediaBrowser.Controller.Entities
                     .Where(i => i.Path != null && resolveArgs.PhysicalLocations.Contains(i.Path, StringComparer.OrdinalIgnoreCase))
                     .SelectMany(c => c.Children);
 
-                return new ConcurrentDictionary<Guid,BaseItem>(ourChildren.ToDictionary(i => i.Id));
+                return new ConcurrentDictionary<Guid, BaseItem>(ourChildren.ToDictionary(i => i.Id));
             }
         }
     }

@@ -125,15 +125,35 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var name = DeSlugArtistName(request.Name, LibraryManager);
 
-            var items = GetItems(request.UserId).OfType<Audio>().Where(i => i.HasArtist(name)).ToList();
+            var items = GetItems(request.UserId).Where(i =>
+            {
+                var song = i as Audio;
+
+                if (song != null)
+                {
+                    return song.HasArtist(name);
+                }
+
+                var musicVideo = i as MusicVideo;
+
+                if (musicVideo != null)
+                {
+                    return musicVideo.HasArtist(name);
+                }
+                
+                return false;
+
+            }).ToList();
 
             var counts = new ItemByNameCounts
             {
                 TotalCount = items.Count,
 
-                SongCount = items.Count(),
+                SongCount = items.OfType<Audio>().Count(),
 
-                AlbumCount = items.Select(i => i.Parent).OfType<MusicAlbum>().Distinct().Count()
+                AlbumCount = items.Select(i => i.Parent).OfType<MusicAlbum>().Distinct().Count(),
+
+                MusicVideoCount = items.OfType<MusicVideo>().Count(i => i.HasArtist(name))
             };
 
             return ToOptimizedResult(counts);

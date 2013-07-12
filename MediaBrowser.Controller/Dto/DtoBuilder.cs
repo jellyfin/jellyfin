@@ -548,6 +548,19 @@ namespace MediaBrowser.Controller.Dto
             {
                 SetGameProperties(dto, game);
             }
+
+            var musicVideo = item as MusicVideo;
+
+            if (musicVideo != null)
+            {
+                SetMusicVideoProperties(dto, musicVideo);
+            }
+        }
+
+        private void SetMusicVideoProperties(BaseItemDto dto, MusicVideo item)
+        {
+            dto.Album = item.Album;
+            dto.Artists = string.IsNullOrEmpty(item.Artist) ? new string[] { } : new[] { item.Artist };
         }
 
         private void SetGameProperties(BaseItemDto dto, Game item)

@@ -254,5 +254,12 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="item">The item.</param>
         void ReportItemRemoved(BaseItem item);
+
+        /// <summary>
+        /// Finds the type of the collection.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns>System.String.</returns>
+        string FindCollectionType(BaseItem item);
     }
 }

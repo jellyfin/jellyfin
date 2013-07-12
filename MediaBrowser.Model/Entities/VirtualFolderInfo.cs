@@ -20,6 +20,12 @@ namespace MediaBrowser.Model.Entities
         public List<string> Locations { get; set; }
 
         /// <summary>
+        /// Gets or sets the type of the collection.
+        /// </summary>
+        /// <value>The type of the collection.</value>
+        public string CollectionType { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="VirtualFolderInfo"/> class.
         /// </summary>
         public VirtualFolderInfo()

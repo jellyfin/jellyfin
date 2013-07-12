@@ -16,10 +16,11 @@ namespace MediaBrowser.Api.Library
         /// Adds the virtual folder.
         /// </summary>
         /// <param name="name">The name.</param>
+        /// <param name="collectionType">Type of the collection.</param>
         /// <param name="user">The user.</param>
         /// <param name="appPaths">The app paths.</param>
         /// <exception cref="System.ArgumentException">There is already a media collection with the name  + name + .</exception>
-        public static void AddVirtualFolder(string name, User user, IServerApplicationPaths appPaths)
+        public static void AddVirtualFolder(string name, string collectionType, User user, IServerApplicationPaths appPaths)
         {
             name = FileSystem.GetValidFilename(name);
 
@@ -32,6 +33,13 @@ namespace MediaBrowser.Api.Library
             }
 
             Directory.CreateDirectory(virtualFolderPath);
+
+            if (!string.IsNullOrEmpty(collectionType))
+            {
+                var path = Path.Combine(virtualFolderPath, collectionType + ".collection");
+
+                File.Create(path);
+            }
         }
 
         /// <summary>

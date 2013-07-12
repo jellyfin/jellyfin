@@ -53,6 +53,7 @@
     <Compile Include="Dto\ItemByNameCounts.cs" />
     <Compile Include="Dto\ItemCounts.cs" />
     <Compile Include="Dto\StudioDto.cs" />
+    <Compile Include="Entities\CollectionType.cs" />
     <Compile Include="Entities\ItemReview.cs" />
     <Compile Include="Entities\MediaUrl.cs" />
     <Compile Include="Entities\MetadataFields.cs" />

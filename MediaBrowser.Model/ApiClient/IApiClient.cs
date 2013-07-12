@@ -162,6 +162,13 @@ namespace MediaBrowser.Model.ApiClient
         Task<ItemsResult> GetSimilarMoviesAsync(SimilarItemsQuery query);
 
         /// <summary>
+        /// Gets the similar trailers async.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>Task{ItemsResult}.</returns>
+        Task<ItemsResult> GetSimilarTrailersAsync(SimilarItemsQuery query);
+        
+        /// <summary>
         /// Gets the similar series async.
         /// </summary>
         /// <param name="query">The query.</param>

@@ -38,6 +38,12 @@ namespace MediaBrowser.Api.Library
         /// </summary>
         /// <value>The name.</value>
         public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the collection.
+        /// </summary>
+        /// <value>The type of the collection.</value>
+        public string CollectionType { get; set; }
     }
 
     [Route("/Library/VirtualFolders/{Name}", "DELETE")]
@@ -196,13 +202,13 @@ namespace MediaBrowser.Api.Library
         {
             if (string.IsNullOrEmpty(request.UserId))
             {
-                LibraryHelpers.AddVirtualFolder(request.Name, null, _appPaths);
+                LibraryHelpers.AddVirtualFolder(request.Name, request.CollectionType, null, _appPaths);
             }
             else
             {
                 var user = _userManager.GetUserById(new Guid(request.UserId));
 
-                LibraryHelpers.AddVirtualFolder(request.Name, user, _appPaths);
+                LibraryHelpers.AddVirtualFolder(request.Name, request.CollectionType, user, _appPaths);
             }
 
             _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);

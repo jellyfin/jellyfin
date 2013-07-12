@@ -102,7 +102,9 @@ namespace MediaBrowser.Providers.Savers
             XmlSaverHelpers.Save(builder, xmlFilePath, new[]
                 {
                     "IMDBrating",
-                    "Description"
+                    "Description",
+                    "Artist",
+                    "Album"
                 });
 
             // Set last refreshed so that the provider doesn't trigger after the file save
