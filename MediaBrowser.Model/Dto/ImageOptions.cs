@@ -71,7 +71,6 @@ namespace MediaBrowser.Model.Dto
 
         public ImageOptions()
         {
-            Quality = 100;
             EnableImageEnhancers = true;
         }
     }
