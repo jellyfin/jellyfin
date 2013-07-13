@@ -55,7 +55,20 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
         private string GetCollectionType(ItemResolveArgs args)
         {
             return args.FileSystemChildren
-                .Where(i => (i.Attributes & FileAttributes.Directory) != FileAttributes.Directory && string.Equals(".collection", i.Extension, StringComparison.OrdinalIgnoreCase))
+                .Where(i =>
+                {
+
+                    try
+                    {
+                        return (i.Attributes & FileAttributes.Directory) != FileAttributes.Directory &&
+                               string.Equals(".collection", i.Extension, StringComparison.OrdinalIgnoreCase);
+                    }
+                    catch (IOException)
+                    {
+                        return false;
+                    }
+
+                })
                 .Select(i => Path.GetFileNameWithoutExtension(i.FullName))
                 .FirstOrDefault();
         }
