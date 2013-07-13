@@ -792,7 +792,7 @@
 
             }
             if (providerIds.Gamesdb)
-                links.push('<a class="textlink" href="http://www.games-db.com/Game/' + providerIds.Gamesdb + '" target="_blank">GamesDB</a>');
+                links.push('<a class="textlink" href="http://thegamesdb.net/game/' + providerIds.Gamesdb + '" target="_blank">GamesDB</a>');
 
 
             if (links.length) {
