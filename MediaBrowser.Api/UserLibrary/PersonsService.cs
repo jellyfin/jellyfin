@@ -168,7 +168,9 @@ namespace MediaBrowser.Api.UserLibrary
 
                 EpisodeCount = items.OfType<Episode>().Count(),
 
-                MusicVideoCount = items.OfType<MusicVideo>().Count()
+                MusicVideoCount = items.OfType<MusicVideo>().Count(),
+
+                AdultVideoCount = items.OfType<AdultVideo>().Count()
             };
 
             return ToOptimizedResult(counts);

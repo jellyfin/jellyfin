@@ -66,6 +66,31 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
+        /// Should be overridden to return the proper folder where metadata lives
+        /// </summary>
+        /// <value>The meta location.</value>
+        [IgnoreDataMember]
+        public override string MetaLocation
+        {
+            get
+            {
+                return VideoType == VideoType.VideoFile || VideoType == VideoType.Iso || IsMultiPart ? System.IO.Path.GetDirectoryName(Path) : Path;
+            }
+        }
+
+        /// <summary>
+        /// Needed because the resolver stops at the movie folder and we find the video inside.
+        /// </summary>
+        /// <value><c>true</c> if [use parent path to create resolve args]; otherwise, <c>false</c>.</value>
+        protected override bool UseParentPathToCreateResolveArgs
+        {
+            get
+            {
+                return VideoType == VideoType.VideoFile || VideoType == VideoType.Iso || IsMultiPart;
+            }
+        }
+
+        /// <summary>
         /// Gets the playable stream files.
         /// </summary>
         /// <param name="rootPath">The root path.</param>

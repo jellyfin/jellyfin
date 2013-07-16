@@ -353,7 +353,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="video">The video.</param>
         private void AddExternalSubtitles(Video video)
         {
-            var useParent = (video.VideoType == VideoType.VideoFile || video.VideoType == VideoType.Iso) && !(video is Movie) && !(video is MusicVideo);
+            var useParent = !video.ResolveArgs.IsDirectory;
 
             if (useParent && video.Parent == null)
             {
