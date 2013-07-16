@@ -385,7 +385,7 @@ namespace MediaBrowser.Api.Playback
                         Directory.CreateDirectory(parentPath);
                     }
 
-                    var task = MediaEncoder.ConvertTextSubtitleToAss(subtitleStream.Path, path, offset, CancellationToken.None);
+                    var task = MediaEncoder.ConvertTextSubtitleToAss(subtitleStream.Path, path, subtitleStream.Language, offset, CancellationToken.None);
 
                     Task.WaitAll(task);
                 }
