@@ -51,10 +51,11 @@ namespace MediaBrowser.Common.MediaInfo
         /// </summary>
         /// <param name="inputPath">The input path.</param>
         /// <param name="outputPath">The output path.</param>
+        /// <param name="language">The language.</param>
         /// <param name="offset">The offset.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task ConvertTextSubtitleToAss(string inputPath, string outputPath, TimeSpan offset, CancellationToken cancellationToken);
+        Task ConvertTextSubtitleToAss(string inputPath, string outputPath, string language, TimeSpan offset, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the media info.
