@@ -272,9 +272,9 @@ form, .readOnlyContent {
         color: #fff!important;
     }
 
-	.invalidEntry {
-		background-color: lightpink!important;
-	}
+.invalidEntry {
+    background-color: lightpink!important;
+}
 
 /* Tabs (e.g. advanced metadata page) */
 .localnav {
@@ -714,23 +714,23 @@ progress {
     border-top: 2px solid #D7742B;
 }
 
-#nowPlayingBar .highPosition {
-    z-index: 99999;
-    position: relative;
-}
+    #nowPlayingBar .highPosition {
+        z-index: 99999;
+        position: relative;
+    }
 
-#nowPlayingBar .barBackground {
-    border-top: 2px solid #D7742B;
-    background: #4C4C4C;
-    position: absolute;
-    margin: -8px -0.5em !important;
-    width: 100%;
-    height: 100%;
-}
+    #nowPlayingBar .barBackground {
+        border-top: 2px solid #D7742B;
+        background: #4C4C4C;
+        position: absolute;
+        margin: -8px -0.5em !important;
+        width: 100%;
+        height: 100%;
+    }
 
-#nowPlayingBar > *:not(#mediaElement):not(.mediaFlyoutContainer) {
-    margin: 0 1em;
-}
+    #nowPlayingBar > *:not(#mediaElement):not(.mediaFlyoutContainer) {
+        margin: 0 1em;
+    }
 
 .nowPlayingBarImage {
     border: 1px solid #a7a7a7!important;
@@ -989,6 +989,16 @@ input[type="range"]::-ms-fill-upper {
     display: inline-block;
 }
 
+@media (min-width: 750px) {
+    .installedPluginTitle {
+        max-width: 110px;
+    }
+
+    .itemVideo:not(.fullscreenVideo) {
+        width: 320px;
+    }
+}
+
 @media (min-width: 1200px) {
     .installedPluginTitle {
         max-width: 110px;
@@ -1006,6 +1016,14 @@ input[type="range"]::-ms-fill-upper {
 
     .itemVideo:not(.fullscreenVideo) {
         width: 400px;
+    }
+
+    .positionSlider {
+        width: 400px;
+    }
+
+    .itemVideo {
+        left: -560px;
     }
 }
 

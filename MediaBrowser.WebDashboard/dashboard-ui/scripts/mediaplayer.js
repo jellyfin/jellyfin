@@ -31,7 +31,7 @@
 
             if (requestMethod) { // Native full screen.
                 requestMethod.call(element);
-            } else{ 
+            } else {
                 $('.itemVideo').addClass('fullscreenVideo');
             }
         }
@@ -89,7 +89,7 @@
 
             ApiClient.reportPlaybackStopped(Dashboard.getCurrentUserId(), currentItem.Id, position);
         }
-        
+
         function playNextAfterEnded() {
 
             $(this).off('ended.playnext');
@@ -159,7 +159,7 @@
                 $(element).off('ended.playbackstopped').off('ended.playnext').on("play.onceafterseek", function () {
 
                     $(this).off('play.onceafterseek').on('ended.playbackstopped', onPlaybackStopped).on('ended.playnext', playNextAfterEnded);
-                    
+
                     startProgressInterval(currentItem.Id);
                     sendProgressUpdate(currentItem.Id);
 
@@ -695,7 +695,7 @@
 
             return null;
         }
-        
+
         function idleHandler() {
             var nowPlayingBar = $("#nowPlayingBar");
             if (timeout) {
@@ -710,7 +710,7 @@
                 $(".mediaButton,.currentTime,.nowPlayingMediaInfo,.mediaSlider,.barBackground", nowPlayingBar).removeClass("highPosition");
             }, 4000);
         }
-        
+
         self.canPlay = function (item) {
 
             if (item.Type == "MusicAlbum" || item.Type == "MusicArtist") {
@@ -788,7 +788,7 @@
         self.playWithWarning = function (items, startPosition, user, localStorageKeyName, header) {
 
             localStorageKeyName += new Date().getMonth();
-            
+
             if (localStorage.getItem(localStorageKeyName) == "1") {
 
                 self.playInternal(items[0], startPosition, user);
@@ -834,7 +834,7 @@
             if (item == null) {
                 throw new Error("item cannot be null");
             }
-            
+
             if (self.isPlaying()) {
                 self.stop();
             }
@@ -951,7 +951,7 @@
         };
 
         self.toggleFullscreen = function () {
-            
+
             $('.itemVideo').unbind('mousemove keydown scroll', idleHandler);
             if (isFullScreen()) {
                 if (document.cancelFullScreen) { document.cancelFullScreen(); }
@@ -996,11 +996,13 @@
             var newIndex = currentPlaylistIndex + 1;
             var newItem = self.playlist[newIndex];
 
-            Dashboard.getCurrentUser().done(function (user) {
+            if (newItem) {
+                Dashboard.getCurrentUser().done(function (user) {
 
-                self.playInternal(newItem, 0, user);
-                currentPlaylistIndex = newIndex;
-            });
+                    self.playInternal(newItem, 0, user);
+                    currentPlaylistIndex = newIndex;
+                });
+            }
         };
 
         self.queueItem = function (item) {
