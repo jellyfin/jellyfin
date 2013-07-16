@@ -38,7 +38,9 @@ namespace MediaBrowser.ServerApplication
         {
             bool createdNew;
 
-            _singleInstanceMutex = new Mutex(true, @"Local\" + typeof(App).Assembly.GetName().Name, out createdNew);
+            var runningPath = Process.GetCurrentProcess().MainModule.FileName.Replace(Path.DirectorySeparatorChar.ToString(), string.Empty);
+
+            _singleInstanceMutex = new Mutex(true, @"Local\" + runningPath, out createdNew);
             
             if (!createdNew)
             {

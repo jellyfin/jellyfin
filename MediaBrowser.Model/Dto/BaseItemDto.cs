@@ -163,6 +163,12 @@ namespace MediaBrowser.Model.Dto
         public List<MediaUrl> RemoteTrailers { get; set; }
 
         /// <summary>
+        /// Gets or sets the soundtrack ids.
+        /// </summary>
+        /// <value>The soundtrack ids.</value>
+        public string[] SoundtrackIds { get; set; }
+        
+        /// <summary>
         /// Gets or sets the provider ids.
         /// </summary>
         /// <value>The provider ids.</value>

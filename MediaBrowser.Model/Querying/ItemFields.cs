@@ -132,6 +132,11 @@ namespace MediaBrowser.Model.Querying
         SeriesInfo,
 
         /// <summary>
+        /// The soundtrack ids
+        /// </summary>
+        SoundtrackIds,
+
+        /// <summary>
         /// The sort name of the item
         /// </summary>
         SortName,
