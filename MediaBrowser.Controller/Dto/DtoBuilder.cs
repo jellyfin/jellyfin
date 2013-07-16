@@ -591,6 +591,20 @@ namespace MediaBrowser.Controller.Dto
                 dto.Album = audio.Album;
                 dto.AlbumArtist = audio.AlbumArtist;
                 dto.Artists = new[] { audio.Artist };
+
+                var albumParent = audio.FindParent<MusicAlbum>();
+
+                if (albumParent != null)
+                {
+                    dto.AlbumId = GetClientItemId(albumParent);
+
+                    var imagePath = albumParent.PrimaryImagePath;
+
+                    if (!string.IsNullOrEmpty(imagePath))
+                    {
+                        dto.AlbumPrimaryImageTag = GetImageCacheTag(albumParent, ImageType.Primary, imagePath);
+                    }
+                }
             }
 
             var album = item as MusicAlbum;
