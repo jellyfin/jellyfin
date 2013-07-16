@@ -479,7 +479,7 @@
         Dashboard.confirm("Are you sure you wish to restart Media Browser Server?", "Restart", function (result) {
             
             if (result) {
-                $(this).button('disable');
+                $('#btnRestartServer').button('disable');
                 Dashboard.restartServer();
             }
 
