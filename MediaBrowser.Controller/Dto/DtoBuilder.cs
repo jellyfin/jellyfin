@@ -275,11 +275,9 @@ namespace MediaBrowser.Controller.Dto
                 dto.DisplayPreferencesId = ((Folder)item).GetDisplayPreferencesId(user.Id).ToString();
             }
 
-            var addUserData = fields.Contains(ItemFields.UserData);
-
             if (item.IsFolder)
             {
-                if (fields.Contains(ItemFields.ItemCounts) || addUserData)
+                if (fields.Contains(ItemFields.ItemCounts))
                 {
                     var folder = (Folder)item;
 
@@ -290,16 +288,13 @@ namespace MediaBrowser.Controller.Dto
                 }
             }
 
-            if (addUserData)
+            var userData = _userDataRepository.GetUserData(user.Id, item.GetUserDataKey());
+
+            dto.UserData = GetUserItemDataDto(userData);
+
+            if (item.IsFolder)
             {
-                var userData = _userDataRepository.GetUserData(user.Id, item.GetUserDataKey());
-
-                dto.UserData = GetUserItemDataDto(userData);
-
-                if (item.IsFolder)
-                {
-                    dto.UserData.Played = dto.PlayedPercentage.HasValue && dto.PlayedPercentage.Value >= 100;
-                }
+                dto.UserData.Played = dto.PlayedPercentage.HasValue && dto.PlayedPercentage.Value >= 100;
             }
         }
 

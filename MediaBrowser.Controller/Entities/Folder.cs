@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Progress;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
@@ -139,6 +140,11 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
+                if (this is Series)
+                {
+                    return base.OfficialRating;
+                }
+
                 return !string.IsNullOrEmpty(base.OfficialRating) ? base.OfficialRating : "None";
             }
             set

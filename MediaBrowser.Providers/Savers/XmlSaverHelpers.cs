@@ -73,7 +73,8 @@ namespace MediaBrowser.Providers.Savers
                     "LockData",
                     "Trailer",
                     "CriticRating",
-                    "CriticRatingSummary"
+                    "CriticRatingSummary",
+                    "GamesDbId"
                 });
 
                 var position = xml.ToString().LastIndexOf("</", StringComparison.OrdinalIgnoreCase);
@@ -269,6 +270,16 @@ namespace MediaBrowser.Providers.Savers
                 builder.Append("<TMDbId>" + SecurityElement.Escape(tmdb) + "</TMDbId>");
             }
 
+            if (!(item is Series))
+            {
+                var tvdb = item.GetProviderId(MetadataProviders.Tvdb);
+
+                if (!string.IsNullOrEmpty(tvdb))
+                {
+                    builder.Append("<TvDbId>" + SecurityElement.Escape(tvdb) + "</TvDbId>");
+                }
+            }
+
             var tvcom = item.GetProviderId(MetadataProviders.Tvcom);
 
             if (!string.IsNullOrEmpty(tvcom))
@@ -288,6 +299,13 @@ namespace MediaBrowser.Providers.Savers
             if (!string.IsNullOrEmpty(mbz))
             {
                 builder.Append("<MusicbrainzId>" + SecurityElement.Escape(mbz) + "</MusicbrainzId>");
+            }
+
+            var gamesdb = item.GetProviderId(MetadataProviders.Gamesdb);
+
+            if (!string.IsNullOrEmpty(gamesdb))
+            {
+                builder.Append("<GamesDbId>" + SecurityElement.Escape(gamesdb) + "</GamesDbId>");
             }
 
             var tmdbCollection = item.GetProviderId(MetadataProviders.TmdbCollection);

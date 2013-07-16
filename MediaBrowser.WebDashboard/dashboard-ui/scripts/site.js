@@ -406,7 +406,7 @@ var Dashboard = {
         Dashboard.suppressAjaxErrors = true;
         Dashboard.showLoadingMsg();
 
-        ApiClient.performPendingRestart().done(function () {
+        ApiClient.restartServer().done(function () {
 
             setTimeout(function () {
                 Dashboard.reloadPageWhenServerAvailable();

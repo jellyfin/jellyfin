@@ -1838,7 +1838,9 @@
 
         html += '</a>';
 
-        html += '<a class="viewMenuLink" href="dashboard.html" title="Dashboard"><img src="css/images/toolswhite.png" alt="Dashboard" /></a>';
+        if (user.Configuration.IsAdministrator) {
+            html += '<a class="viewMenuLink" href="dashboard.html" title="Dashboard"><img src="css/images/toolswhite.png" alt="Dashboard" /></a>';
+        }
 
         html += '</div>';
 

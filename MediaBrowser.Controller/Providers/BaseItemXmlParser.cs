@@ -464,6 +464,22 @@ namespace MediaBrowser.Controller.Providers
                         break;
                     }
 
+                case "TvDbId":
+                    var tvdbId = reader.ReadElementContentAsString();
+                    if (!string.IsNullOrWhiteSpace(tvdbId))
+                    {
+                        item.SetProviderId(MetadataProviders.Tvdb, tvdbId);
+                    }
+                    break;
+
+                case "GamesDbId":
+                    var gamesdbId = reader.ReadElementContentAsString();
+                    if (!string.IsNullOrWhiteSpace(gamesdbId))
+                    {
+                        item.SetProviderId(MetadataProviders.Gamesdb, gamesdbId);
+                    }
+                    break;
+
                 case "MusicbrainzId":
                     var mbz = reader.ReadElementContentAsString();
                     if (!string.IsNullOrWhiteSpace(mbz))
