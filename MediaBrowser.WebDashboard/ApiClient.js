@@ -637,10 +637,9 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
         };
 
         /**
-         * Instructs the server to perform a pending kernel reload or app restart.
-         * If a restart is not currently required, nothing will happen.
+         * Instructs the server to perform a restart.
          */
-        self.performPendingRestart = function () {
+        self.restartServer = function () {
 
             var url = self.getUrl("System/Restart");
 

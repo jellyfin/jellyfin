@@ -992,8 +992,13 @@ namespace MediaBrowser.Controller.Entities
                 return true;
             }
 
-            var rating = CustomRating ?? OfficialRating;
+            var rating = CustomRating;
 
+            if (string.IsNullOrEmpty(rating))
+            {
+                rating = OfficialRating;
+            }
+            
             if (string.IsNullOrEmpty(rating))
             {
                 return !user.Configuration.BlockNotRated;
