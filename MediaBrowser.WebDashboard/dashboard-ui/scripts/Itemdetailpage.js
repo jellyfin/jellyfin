@@ -158,6 +158,13 @@
         $('#themeSongsCollapsible', page).hide();
         $('#themeVideosCollapsible', page).hide();
 
+        if (!item.SoundtrackIds || !item.SoundtrackIds.length) {
+            $('#soundtracksCollapsible', page).hide();
+        } else {
+            $('#soundtracksCollapsible', page).show();
+            renderSoundtracks(page, item);
+        }
+
         renderThemeSongs(page, item);
         renderThemeVideos(page, item);
         renderCriticReviews(page, item, 1);
@@ -240,6 +247,33 @@
         } else {
             $('.itemPath', page).hide();
         }
+    }
+    
+    function renderSoundtracks(page, item) {
+        
+        if (item.Type == "MusicAlbum") {
+            $('#soundtracksHeader', page).html("This album is the soundtrack for ...");
+        } else {
+            $('#soundtracksHeader', page).html("Soundtrack(s)");
+        }
+
+        ApiClient.getItems(Dashboard.getCurrentUserId(), {
+
+            Ids: item.SoundtrackIds.join(","),
+            ItemFields: "PrimaryImageAspectRatio,ItemCounts,DisplayMediaType,DateCreated,UserData,AudioInfo",
+            SortBy: "SortName"
+
+        }).done(function (result) {
+
+            var html = LibraryBrowser.getPosterViewHtml({
+                items: result.Items,
+                useAverageAspectRatio: true,
+                showNewIndicator: true,
+                shape: item.Type == "MusicAlbum" ? "portrait" : "square"
+            });
+
+            $('#soundtracksContent', page).html(html);
+        });
     }
 
     function renderSiblingLinks(page, item) {

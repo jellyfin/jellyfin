@@ -95,6 +95,37 @@ namespace MediaBrowser.Controller.Dto
 
             AttachBasicFields(dto, item, fields);
 
+            if (fields.Contains(ItemFields.SoundtrackIds))
+            {
+                var series = item as Series;
+
+                if (series != null)
+                {
+                    AttachSoundtrackIds(dto, series, user);
+                }
+
+                var movie = item as Movie;
+
+                if (movie != null)
+                {
+                    AttachSoundtrackIds(dto, movie, user);
+                }
+
+                var album = item as MusicAlbum;
+
+                if (album != null)
+                {
+                    AttachSoundtrackIds(dto, album, user);
+                }
+
+                var game = item as Game;
+
+                if (game != null)
+                {
+                    AttachSoundtrackIds(dto, game, user);
+                }
+            }
+            
             // Make sure all the tasks we kicked off have completed.
             if (tasks.Count > 0)
             {
@@ -102,6 +133,132 @@ namespace MediaBrowser.Controller.Dto
             }
 
             return dto;
+        }
+
+        private void AttachSoundtrackIds(BaseItemDto dto, Movie item, User user)
+        {
+            var tmdb = item.GetProviderId(MetadataProviders.Tmdb);
+
+            if (string.IsNullOrEmpty(tmdb))
+            {
+                return;
+            }
+
+            var recursiveChildren = user == null
+                                        ? _libraryManager.RootFolder.RecursiveChildren
+                                        : user.RootFolder.GetRecursiveChildren(user);
+
+            dto.SoundtrackIds = recursiveChildren
+                .Where(i =>
+                {
+                    if (!string.IsNullOrEmpty(tmdb) &&
+                        string.Equals(tmdb, i.GetProviderId(MetadataProviders.Tmdb), StringComparison.OrdinalIgnoreCase) &&
+                        i is MusicAlbum)
+                    {
+                        return true;
+                    }
+                    return false;
+                })
+                .Select(GetClientItemId)
+                .ToArray();
+        }
+
+        private void AttachSoundtrackIds(BaseItemDto dto, Series item, User user)
+        {
+            var tvdb = item.GetProviderId(MetadataProviders.Tvdb);
+
+            if (string.IsNullOrEmpty(tvdb))
+            {
+                return;
+            }
+
+            var recursiveChildren = user == null
+                                        ? _libraryManager.RootFolder.RecursiveChildren
+                                        : user.RootFolder.GetRecursiveChildren(user);
+
+            dto.SoundtrackIds = recursiveChildren
+                .Where(i =>
+                {
+                    if (!string.IsNullOrEmpty(tvdb) &&
+                        string.Equals(tvdb, i.GetProviderId(MetadataProviders.Tvdb), StringComparison.OrdinalIgnoreCase) &&
+                        i is MusicAlbum)
+                    {
+                        return true;
+                    }
+                    return false;
+                })
+                .Select(GetClientItemId)
+                .ToArray();
+        }
+
+        private void AttachSoundtrackIds(BaseItemDto dto, Game item, User user)
+        {
+            var gamesdb = item.GetProviderId(MetadataProviders.Gamesdb);
+
+            if (string.IsNullOrEmpty(gamesdb))
+            {
+                return;
+            }
+
+            var recursiveChildren = user == null
+                                        ? _libraryManager.RootFolder.RecursiveChildren
+                                        : user.RootFolder.GetRecursiveChildren(user);
+
+            dto.SoundtrackIds = recursiveChildren
+                .Where(i =>
+                {
+                    if (!string.IsNullOrEmpty(gamesdb) &&
+                        string.Equals(gamesdb, i.GetProviderId(MetadataProviders.Gamesdb), StringComparison.OrdinalIgnoreCase) &&
+                        i is MusicAlbum)
+                    {
+                        return true;
+                    }
+                    return false;
+                })
+                .Select(GetClientItemId)
+                .ToArray();
+        }
+
+        private void AttachSoundtrackIds(BaseItemDto dto, MusicAlbum item, User user)
+        {
+            var tmdb = item.GetProviderId(MetadataProviders.Tmdb);
+            var tvdb = item.GetProviderId(MetadataProviders.Tvdb);
+            var gamesdb = item.GetProviderId(MetadataProviders.Gamesdb);
+
+            if (string.IsNullOrEmpty(tmdb) && string.IsNullOrEmpty(tvdb) && string.IsNullOrEmpty(gamesdb))
+            {
+                return;
+            }
+
+            var recursiveChildren = user == null
+                                        ? _libraryManager.RootFolder.RecursiveChildren
+                                        : user.RootFolder.GetRecursiveChildren(user);
+
+            dto.SoundtrackIds = recursiveChildren
+                .Where(i =>
+                {
+                    if (!string.IsNullOrEmpty(tmdb) && 
+                        string.Equals(tmdb, i.GetProviderId(MetadataProviders.Tmdb), StringComparison.OrdinalIgnoreCase) &&
+                        i is Movie)
+                    {
+                        return true;
+                    }
+                    if (!string.IsNullOrEmpty(tvdb) &&
+                        string.Equals(tvdb, i.GetProviderId(MetadataProviders.Tvdb), StringComparison.OrdinalIgnoreCase) &&
+                        i is Series)
+                    {
+                        return true;
+                    }
+                    if (!string.IsNullOrEmpty(gamesdb) &&
+                        string.Equals(gamesdb, i.GetProviderId(MetadataProviders.Gamesdb), StringComparison.OrdinalIgnoreCase) &&
+                        i is Game)
+                    {
+                        return true;
+                    }
+                    return false;
+                })
+                .Select(GetClientItemId)
+                .ToArray();
         }
 
         /// <summary>
@@ -235,10 +392,7 @@ namespace MediaBrowser.Controller.Dto
                 dto.OriginalRunTimeTicks = item.OriginalRunTimeTicks;
             }
 
-            if (fields.Contains(ItemFields.DisplayMediaType))
-            {
-                dto.DisplayMediaType = item.DisplayMediaType;
-            }
+            dto.DisplayMediaType = item.DisplayMediaType;
 
             if (fields.Contains(ItemFields.MetadataSettings))
             {
@@ -436,30 +590,27 @@ namespace MediaBrowser.Controller.Dto
             }
 
             // Add audio info
-            if (fields.Contains(ItemFields.AudioInfo))
+            var audio = item as Audio;
+            if (audio != null)
             {
-                var audio = item as Audio;
-                if (audio != null)
-                {
-                    dto.Album = audio.Album;
-                    dto.AlbumArtist = audio.AlbumArtist;
-                    dto.Artists = new[] { audio.Artist };
-                }
+                dto.Album = audio.Album;
+                dto.AlbumArtist = audio.AlbumArtist;
+                dto.Artists = new[] { audio.Artist };
+            }
 
-                var album = item as MusicAlbum;
+            var album = item as MusicAlbum;
 
-                if (album != null)
-                {
-                    var songs = album.RecursiveChildren.OfType<Audio>().ToList();
+            if (album != null)
+            {
+                var songs = album.RecursiveChildren.OfType<Audio>().ToList();
 
-                    dto.AlbumArtist = songs.Select(i => i.AlbumArtist).FirstOrDefault(i => !string.IsNullOrEmpty(i));
+                dto.AlbumArtist = songs.Select(i => i.AlbumArtist).FirstOrDefault(i => !string.IsNullOrEmpty(i));
 
-                    dto.Artists =
-                        songs.Select(i => i.Artist ?? string.Empty)
-                             .Where(i => !string.IsNullOrEmpty(i))
-                             .Distinct(StringComparer.OrdinalIgnoreCase)
-                             .ToArray();
-                }
+                dto.Artists =
+                    songs.Select(i => i.Artist ?? string.Empty)
+                         .Where(i => !string.IsNullOrEmpty(i))
+                         .Distinct(StringComparer.OrdinalIgnoreCase)
+                         .ToArray();
             }
 
             // Add video info
@@ -510,36 +661,33 @@ namespace MediaBrowser.Controller.Dto
                 dto.IndexNumberEnd = episode.IndexNumberEnd;
             }
 
-            if (fields.Contains(ItemFields.SeriesInfo))
+            // Add SeriesInfo
+            var series = item as Series;
+
+            if (series != null)
             {
-                // Add SeriesInfo
-                var series = item as Series;
+                dto.AirDays = series.AirDays;
+                dto.AirTime = series.AirTime;
+                dto.Status = series.Status;
+            }
 
-                if (series != null)
-                {
-                    dto.AirDays = series.AirDays;
-                    dto.AirTime = series.AirTime;
-                    dto.Status = series.Status;
-                }
+            if (episode != null)
+            {
+                series = item.FindParent<Series>();
 
-                if (episode != null)
-                {
-                    series = item.FindParent<Series>();
+                dto.SeriesId = GetClientItemId(series);
+                dto.SeriesName = series.Name;
+            }
 
-                    dto.SeriesId = GetClientItemId(series);
-                    dto.SeriesName = series.Name;
-                }
+            // Add SeasonInfo
+            var season = item as Season;
 
-                // Add SeasonInfo
-                var season = item as Season;
+            if (season != null)
+            {
+                series = item.FindParent<Series>();
 
-                if (season != null)
-                {
-                    series = item.FindParent<Series>();
-
-                    dto.SeriesId = GetClientItemId(series);
-                    dto.SeriesName = series.Name;
-                }
+                dto.SeriesId = GetClientItemId(series);
+                dto.SeriesName = series.Name;
             }
 
             var game = item as Game;

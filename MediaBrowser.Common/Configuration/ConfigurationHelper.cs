@@ -31,7 +31,7 @@ namespace MediaBrowser.Common.Configuration
 
                 configuration = xmlSerializer.DeserializeFromBytes(type, buffer);
             }
-            catch (FileNotFoundException)
+            catch (Exception)
             {
                 configuration = Activator.CreateInstance(type);
             }

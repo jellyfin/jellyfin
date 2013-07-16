@@ -96,12 +96,22 @@
             $('#fldRevenue', page).hide();
         }
 
-        if (item.MediaType == "Game") {
-            $('#fldPlayers', page).show();
+        if (item.Type == "MusicAlbum") {
+            $('#albumAssociationMessage', page).show();
+        } else {
+            $('#albumAssociationMessage', page).hide();
+        }
+
+        if (item.MediaType == "Game" || item.Type == "MusicAlbum") {
             $('#fldGamesDb', page).show();
         } else {
-            $('#fldPlayers', page).hide();
             $('#fldGamesDb', page).hide();
+        }
+
+        if (item.MediaType == "Game") {
+            $('#fldPlayers', page).show();
+        } else {
+            $('#fldPlayers', page).hide();
         }
 
         if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "MusicVideo") {
@@ -114,19 +124,26 @@
             $('#fldRottenTomatoes', page).hide();
         }
 
-        if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "Person" || item.Type == "BoxSet") {
+        if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "Person" || item.Type == "BoxSet" || item.Type == "MusicAlbum") {
             $('#fldTmdb', page).show();
         } else {
             $('#fldTmdb', page).hide();
         }
 
-        if (item.Type == "Series" || item.Type == "Season" || item.Type == "Episode") {
+        if (item.Type == "Series" || item.Type == "Season" || item.Type == "Episode" || item.Type == "MusicAlbum") {
             $('#fldTvdb', page).show();
             $('#fldTvCom', page).show();
         } else {
             $('#fldTvdb', page).hide();
             $('#fldTvCom', page).hide();
         }
+
+        if (item.Type == "Series" || item.Type == "Season" || item.Type == "Episode") {
+            $('#fldTvCom', page).show();
+        } else {
+            $('#fldTvCom', page).hide();
+        }
+        
         if (item.Type == "Series") {
             $('#fldStatus', page).show();
             $('#fldAirDays', page).show();

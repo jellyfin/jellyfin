@@ -178,6 +178,7 @@
                         <div data-role="collapsible">
                             <h3>External Id's</h3>
                             <div>
+                                <p id="albumAssociationMessage" style="display: none;">Associate this album with a movie, tv series and/or game, and we'll be able to link it to other items in your library.</p>
                                 <div data-role="fieldcontain" id="fldGamesDb" style="display: none;">
                                     <label for="txtGamesDb">GamesDb:</label>
                                     <input id="txtGamesDb" name="txtGamesDb" data-mini="true" />
@@ -216,10 +217,10 @@
                             <h3>Internet Provider Settings</h3>
                             <div>
                                 <div data-role="fieldcontain">
-                                    <input type="checkbox" name="enableInternetProviders" id="enableInternetProviders" onchange="EditItemMetadataPage.setProviderSettingsContainerVisibility(this)" />
+                                    <input type="checkbox" name="enableInternetProviders" id="Checkbox1" onchange="EditItemMetadataPage.setProviderSettingsContainerVisibility(this)" />
                                     <label for="enableInternetProviders">Enable internet metadata providers for this item.</label>
                                 </div>
-                                <div id="providerSettingsContainer" style="display: none">
+                                <div id="Div1" style="display: none">
                                 </div>
                             </div>
                         </div>

@@ -48,13 +48,17 @@ var Dashboard = {
     getCurrentUser: function () {
 
         if (!Dashboard.getUserPromise) {
-            Dashboard.getUserPromise = ApiClient.getUser(Dashboard.getCurrentUserId()).fail(Dashboard.logout);
+
+            var userId = Dashboard.getCurrentUserId();
+
+            Dashboard.getUserPromise = ApiClient.getUser(userId).fail(Dashboard.logout);
         }
 
         return Dashboard.getUserPromise;
     },
 
     validateCurrentUser: function (page) {
+
         Dashboard.getUserPromise = null;
 
         if (Dashboard.getCurrentUserId()) {
@@ -68,7 +72,14 @@ var Dashboard = {
         if (header.length) {
             // Re-render the header
             header.remove();
-            Dashboard.ensureHeader(page);
+            
+            if (Dashboard.getUserPromise) {
+                Dashboard.getUserPromise.done(function(user) {
+                    Dashboard.ensureHeader(page, user);
+                });
+            } else {
+                Dashboard.ensureHeader(page);
+            }
         }
     },
 
@@ -508,22 +519,11 @@ var Dashboard = {
         Dashboard.getPluginSecurityInfoPromise = null;
     },
 
-    ensureHeader: function (page) {
+    ensureHeader: function (page, user) {
 
         if (!page.hasClass('libraryPage') && !$('.headerButtons', page).length) {
 
-            var isLoggedIn = Dashboard.getCurrentUserId();
-
-            if (isLoggedIn) {
-
-                Dashboard.getCurrentUser().done(function (user) {
-                    Dashboard.renderHeader(page, user);
-                });
-
-            } else {
-
-                Dashboard.renderHeader(page);
-            }
+            Dashboard.renderHeader(page, user);
         }
     },
 
@@ -768,7 +768,7 @@ var Dashboard = {
         else if (msg.MessageType === "ScheduledTaskEnded") {
 
             Dashboard.getCurrentUser().done(function (currentUser) {
-                
+
                 if (currentUser.Configuration.IsAdministrator) {
                     Dashboard.showTaskCompletionNotification(msg.Data);
                 }
@@ -1098,7 +1098,7 @@ $(function () {
 
 Dashboard.jQueryMobileInit();
 
-$(document).on('pageinit', ".page", function () {
+$(document).on('pagebeforeshow', ".page", function () {
 
     var page = $(this);
 
@@ -1110,7 +1110,12 @@ $(document).on('pageinit', ".page", function () {
         if (this.id !== "loginPage" && !page.hasClass('wizardPage')) {
 
             Dashboard.logout();
+            return;
         }
+        
+        Dashboard.ensureHeader(page);
+        Dashboard.ensurePageTitle(page);
+        Dashboard.refreshSystemInfoFromServer();
     }
 
     else {
@@ -1120,16 +1125,12 @@ $(document).on('pageinit', ".page", function () {
             if (user.Configuration.IsAdministrator) {
                 Dashboard.ensureToolsMenu(page);
             }
+
+            Dashboard.ensureHeader(page, user);
+            Dashboard.ensurePageTitle(page);
         });
+
+        Dashboard.refreshSystemInfoFromServer();
     }
-
-}).on('pagebeforeshow', ".page", function () {
-
-    Dashboard.refreshSystemInfoFromServer();
-
-    var page = $(this);
-
-    Dashboard.ensureHeader(page);
-    Dashboard.ensurePageTitle(page);
 
 });
