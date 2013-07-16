@@ -1,10 +1,9 @@
-﻿using System;
-
+﻿
 namespace MediaBrowser.Model.Notifications
 {
     public class NotificationQuery
     {
-        public Guid UserId { get; set; }
+        public string UserId { get; set; }
 
         public bool? IsRead { get; set; }
 

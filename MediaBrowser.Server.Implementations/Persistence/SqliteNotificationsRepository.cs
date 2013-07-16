@@ -91,7 +91,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 }
 
                 clauses.Add("UserId=@UserId");
-                cmd.Parameters.Add(cmd, "@UserId", DbType.Guid).Value = query.UserId;
+                cmd.Parameters.Add(cmd, "@UserId", DbType.Guid).Value = new Guid(query.UserId);
 
                 var whereClause = " where " + string.Join(" And ", clauses.ToArray());
 
