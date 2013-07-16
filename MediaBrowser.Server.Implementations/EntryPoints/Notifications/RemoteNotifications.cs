@@ -27,7 +27,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
         private readonly INotificationsRepository _notificationsRepo;
         private readonly IUserManager _userManager;
 
-        private readonly TimeSpan _frequency = TimeSpan.FromHours(12);
+        private readonly TimeSpan _frequency = TimeSpan.FromHours(1);
         private readonly TimeSpan _maxAge = TimeSpan.FromDays(31);
 
         public RemoteNotifications(IApplicationPaths appPaths, ILogger logger, IHttpClient httpClient, IJsonSerializer json, INotificationsRepository notificationsRepo, IUserManager userManager)
@@ -58,7 +58,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
 
             var lastRunTime = File.Exists(dataPath) ? File.GetLastWriteTimeUtc(dataPath) : DateTime.MinValue;
 
-            //if ((DateTime.UtcNow - lastRunTime) >= _frequency)
+            if ((DateTime.UtcNow - lastRunTime) >= _frequency)
             {
                 try
                 {
