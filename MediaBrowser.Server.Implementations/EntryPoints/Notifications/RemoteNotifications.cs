@@ -27,7 +27,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
         private readonly INotificationsRepository _notificationsRepo;
         private readonly IUserManager _userManager;
 
-        private readonly TimeSpan _frequency = TimeSpan.FromHours(1);
+        private readonly TimeSpan _frequency = TimeSpan.FromHours(3);
         private readonly TimeSpan _maxAge = TimeSpan.FromDays(31);
 
         public RemoteNotifications(IApplicationPaths appPaths, ILogger logger, IHttpClient httpClient, IJsonSerializer json, INotificationsRepository notificationsRepo, IUserManager userManager)
@@ -58,16 +58,13 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
 
             var lastRunTime = File.Exists(dataPath) ? File.GetLastWriteTimeUtc(dataPath) : DateTime.MinValue;
 
-            if ((DateTime.UtcNow - lastRunTime) >= _frequency)
+            try
             {
-                try
-                {
-                    await DownloadNotifications(dataPath, lastRunTime).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error downloading remote notifications", ex);
-                }
+                await DownloadNotifications(dataPath, lastRunTime).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error downloading remote notifications", ex);
             }
         }
 
@@ -103,7 +100,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
         {
             // Only show notifications that are active, new since last download, and not older than max age
             var notificationList = notifications
-                .Where(i => string.Equals(i.active, "1") && i.date > lastRunTime && (DateTime.Now - i.date) <= _maxAge)
+                .Where(i => string.Equals(i.active, "1") && i.date.ToUniversalTime() > lastRunTime && (DateTime.Now - i.date.ToUniversalTime()) <= _maxAge)
                 .ToList();
 
             foreach (var user in _userManager.Users.ToList())
