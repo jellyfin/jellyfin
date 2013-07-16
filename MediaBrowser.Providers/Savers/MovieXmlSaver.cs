@@ -47,7 +47,7 @@ namespace MediaBrowser.Providers.Savers
                     return !trailer.IsLocalTrailer;
                 }
 
-                return item is Movie || item is MusicVideo;
+                return item is Movie || item is MusicVideo || item is AdultVideo;
             }
 
             return false;

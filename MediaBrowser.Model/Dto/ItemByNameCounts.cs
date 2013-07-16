@@ -11,6 +11,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The total count.</value>
         public int TotalCount { get; set; }
+        public int AdultVideoCount { get; set; }
         /// <summary>
         /// Gets or sets the movie count.
         /// </summary>

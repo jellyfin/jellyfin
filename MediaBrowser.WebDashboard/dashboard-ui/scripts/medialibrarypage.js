@@ -236,6 +236,7 @@
         return [
 
             { name: "General or mixed content", value: "" },
+            { name: "Adult videos", value: "adultvideos" },
             { name: "Box sets", value: "boxsets" },
             { name: "Home videos", value: "homevideos" },
             { name: "Movies", value: "movies" },

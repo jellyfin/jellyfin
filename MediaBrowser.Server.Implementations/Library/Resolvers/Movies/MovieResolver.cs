@@ -89,6 +89,12 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                     return FindMovie<MusicVideo>(args.Path, args.FileSystemChildren);
                 }
 
+                if (args.Path.IndexOf("[adultvideos]", StringComparison.OrdinalIgnoreCase) != -1 ||
+                    string.Equals(collectionType, CollectionType.AdultVideos, StringComparison.OrdinalIgnoreCase))
+                {
+                    return FindMovie<AdultVideo>(args.Path, args.FileSystemChildren);
+                }
+
                 if (!string.IsNullOrEmpty(collectionType) && 
                     !string.Equals(collectionType, CollectionType.Movies, StringComparison.OrdinalIgnoreCase))
                 {
