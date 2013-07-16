@@ -3,7 +3,8 @@
     onPageShow: function () {
         Dashboard.showLoadingMsg();
 
-        var promise1 = ApiClient.getPublicUsers();
+        // Show all users on localhost
+        var promise1 = window.location.toString().toLowerCase().indexOf('localhost') == -1 ? ApiClient.getPublicUsers() : ApiClient.getUsers({ IsDisabled: false });
         var promise2 = ApiClient.getServerConfiguration();
 
         $.when(promise1, promise2).done(function (response1, response2) {
@@ -16,9 +17,6 @@
                 return i == "Mobile";
 
             }).length || !users.length;
-
-            // Always display users on localhost, just in case they forgot
-            showManualForm &= window.location.toString().toLowerCase().indexOf('localhost') == -1;
 
             if (showManualForm) {
 
@@ -71,7 +69,7 @@
         ApiClient.authenticateUserByName(username, password).done(function (result) {
 
             var user = result.User;
-            
+
             Dashboard.setCurrentUser(user.Id);
 
             if (user.Configuration.IsAdministrator) {
