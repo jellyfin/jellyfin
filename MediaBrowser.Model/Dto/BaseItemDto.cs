@@ -349,6 +349,17 @@ namespace MediaBrowser.Model.Dto
         public string Album { get; set; }
 
         /// <summary>
+        /// Gets or sets the album id.
+        /// </summary>
+        /// <value>The album id.</value>
+        public string AlbumId { get; set; }
+        /// <summary>
+        /// Gets or sets the album image tag.
+        /// </summary>
+        /// <value>The album image tag.</value>
+        public Guid? AlbumPrimaryImageTag { get; set; }
+
+        /// <summary>
         /// Gets or sets the album artist.
         /// </summary>
         /// <value>The album artist.</value>
