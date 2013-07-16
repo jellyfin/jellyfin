@@ -13,7 +13,7 @@ namespace MediaBrowser.Api
     public class GetNotifications : IReturn<NotificationResult>
     {
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public Guid UserId { get; set; }
+        public string UserId { get; set; }
 
         [ApiMember(Name = "IsRead", Description = "An optional filter by IsRead", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool? IsRead { get; set; }
