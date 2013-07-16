@@ -20,10 +20,17 @@
             } else {
                 $('.supporterOnly', page).hide();
             }
+            if ((info.LegacyKey || info.SupporterKey) && !info.IsMBSupporter) {
+                $('#txtSupporterKey', page).addClass("invalidEntry");
+                $('.notSupporter', page).show();
+            } else {
+                $('#txtSupporterKey', page).removeClass("invalidEntry");
+                $('.notSupporter', page).hide();
+            }
             Dashboard.hideLoadingMsg();
         });
     },
-
+    
     updateSupporterKey: function () {
 
         Dashboard.showLoadingMsg();
@@ -40,8 +47,7 @@
             ApiClient.updatePluginSecurityInfo(info).done(function () {
                 Dashboard.resetPluginSecurityInfo();
                 Dashboard.hideLoadingMsg();
-                SupporterPage.load();
-
+                SupporterKeyPage.load();
             });
 
         return false;

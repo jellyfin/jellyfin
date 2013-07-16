@@ -272,6 +272,10 @@ form, .readOnlyContent {
         color: #fff!important;
     }
 
+	.invalidEntry {
+		background-color: lightpink!important;
+	}
+
 /* Tabs (e.g. advanced metadata page) */
 .localnav {
     margin-bottom: 40px!important;
