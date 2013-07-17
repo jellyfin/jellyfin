@@ -720,9 +720,9 @@ progress {
         opacity: 0.5;
     }
 
-    #nowPlayingBar .highPosition:hover:not(.barBackground ) {
-        opacity: 0.9;
-    }
+        #nowPlayingBar .highPosition:hover:not(.barBackground ) {
+            opacity: 0.9;
+        }
 
     #nowPlayingBar .barBackground {
         border-top: 2px solid #D7742B;
@@ -886,8 +886,12 @@ input[type="range"]::-ms-fill-upper {
 
 
 @media all and (max-width: 600px) {
-    .volumeButton, .volumeSlider, .nowPlayingText {
+    .volumeButton, .volumeSlider, .nowPlayingText, .chaptersButton, .audioTracksButton {
         display: none!important;
+    }
+
+    #nowPlayingBar > *:not(#mediaElement):not(.mediaFlyoutContainer):not(.barBackground ) {
+        margin: 0 .5em;
     }
 
     .positionSlider {
@@ -895,7 +899,7 @@ input[type="range"]::-ms-fill-upper {
     }
 
     .itemVideo:not(.fullscreenVideo) {
-        left: -300px;
+        left: -250px;
     }
 }
 
