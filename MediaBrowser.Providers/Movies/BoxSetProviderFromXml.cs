@@ -16,9 +16,12 @@ namespace MediaBrowser.Providers.Movies
     /// </summary>
     public class BoxSetProviderFromXml : BaseMetadataProvider
     {
+        public static BoxSetProviderFromXml Current;
+
         public BoxSetProviderFromXml(ILogManager logManager, IServerConfigurationManager configurationManager)
             : base(logManager, configurationManager)
         {
+            Current = this;
         }
 
         /// <summary>

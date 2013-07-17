@@ -2,7 +2,8 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Entities;
+using MediaBrowser.Providers.Movies;
+using System;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -57,6 +58,8 @@ namespace MediaBrowser.Providers.Savers
             var xmlFilePath = GetSavePath(item);
 
             XmlSaverHelpers.Save(builder, xmlFilePath, new string[] { });
+
+            BoxSetProviderFromXml.Current.SetLastRefreshed(item, DateTime.UtcNow);
         }
 
         /// <summary>

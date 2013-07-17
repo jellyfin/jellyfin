@@ -1,10 +1,12 @@
-﻿using MediaBrowser.Controller.Configuration;
+﻿using System;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using System.IO;
 using System.Text;
 using System.Threading;
+using MediaBrowser.Providers.TV;
 
 namespace MediaBrowser.Providers.Savers
 {
@@ -56,6 +58,8 @@ namespace MediaBrowser.Providers.Savers
             var xmlFilePath = GetSavePath(item);
 
             XmlSaverHelpers.Save(builder, xmlFilePath, new string[] { });
+
+            SeasonProviderFromXml.Current.SetLastRefreshed(item, DateTime.UtcNow);
         }
 
         /// <summary>
