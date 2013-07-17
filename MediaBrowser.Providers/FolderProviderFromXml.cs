@@ -2,11 +2,11 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
 using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Providers
 {
@@ -15,9 +15,12 @@ namespace MediaBrowser.Providers
     /// </summary>
     public class FolderProviderFromXml : BaseMetadataProvider
     {
+        public static FolderProviderFromXml Current;
+
         public FolderProviderFromXml(ILogManager logManager, IServerConfigurationManager configurationManager)
             : base(logManager, configurationManager)
         {
+            Current = this;
         }
 
         /// <summary>

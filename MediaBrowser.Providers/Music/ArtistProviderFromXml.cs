@@ -13,9 +13,12 @@ namespace MediaBrowser.Providers.Music
 {
     class ArtistProviderFromXml : BaseMetadataProvider
     {
+        public static ArtistProviderFromXml Current;
+
         public ArtistProviderFromXml(ILogManager logManager, IServerConfigurationManager configurationManager)
             : base(logManager, configurationManager)
         {
+            Current = this;
         }
 
         /// <summary>

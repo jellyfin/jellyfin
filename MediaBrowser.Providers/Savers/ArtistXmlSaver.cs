@@ -8,6 +8,7 @@ using System;
 using System.IO;
 using System.Text;
 using System.Threading;
+using MediaBrowser.Providers.Music;
 
 namespace MediaBrowser.Providers.Savers
 {
@@ -72,7 +73,7 @@ namespace MediaBrowser.Providers.Savers
             XmlSaverHelpers.Save(builder, xmlFilePath, new string[] { });
 
             // Set last refreshed so that the provider doesn't trigger after the file save
-            PersonProviderFromXml.Current.SetLastRefreshed(item, DateTime.UtcNow);
+            ArtistProviderFromXml.Current.SetLastRefreshed(item, DateTime.UtcNow);
         }
 
         /// <summary>
