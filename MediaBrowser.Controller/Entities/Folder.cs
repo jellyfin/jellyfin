@@ -116,11 +116,11 @@ namespace MediaBrowser.Controller.Entities
 
             if (item.DateCreated == DateTime.MinValue)
             {
-                item.DateCreated = DateTime.Now;
+                item.DateCreated = DateTime.UtcNow;
             }
             if (item.DateModified == DateTime.MinValue)
             {
-                item.DateModified = DateTime.Now;
+                item.DateModified = DateTime.UtcNow;
             }
 
             if (!_children.TryAdd(item.Id, item))
