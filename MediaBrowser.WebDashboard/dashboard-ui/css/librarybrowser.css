@@ -210,6 +210,22 @@
     background-image: url(images/rotten.png);
 }
 
+.criticReview {
+    margin: 1.5em 0;
+    background: #222;
+    padding: .8em .8em .8em 55px;
+    border-radius: 5px;
+    position: relative;
+}
+
+    .criticReview:first-child {
+        margin-top: .5em;
+    }
+
+    .criticReview img {
+        width: 30px;
+    }
+
 .criticRating {
     color: #ccc;
     vertical-align: top;
@@ -219,9 +235,14 @@
 }
 
 .criticRatingSummary {
-    background-color: #ffe482!important;
-    background-color: rgba(255,228,130,0.85)!important;
-    color: #000!important;
+    color: #506A16!important;
+    background-color: #F2F0C4;
+    background-image: -webkit-gradient(linear,left top,left bottom,from(#FFE37C),to(#F2F0C4));
+    background-image: -webkit-linear-gradient(top,#FFE37C,#F2F0C4);
+    background-image: -moz-linear-gradient(top,#FFE37C,#F2F0C4);
+    background-image: -ms-linear-gradient(top,#FFE37C,#F2F0C4);
+    background-image: -o-linear-gradient(top,#FFE37C,#F2F0C4);
+    background-image: linear-gradient(top,#FFE37C,#F2F0C4);
 }
 
 .criticRatingScore {
@@ -253,22 +274,6 @@ a.itemTag:hover {
 
     .itemLinks p {
         margin: .5em 0;
-    }
-
-.criticReview {
-    margin: 1.5em 0;
-    background: #222;
-    padding: .8em .8em .8em 55px;
-    border-radius: 5px;
-    position: relative;
-}
-
-    .criticReview:first-child {
-        margin-top: .5em;
-    }
-
-    .criticReview img {
-        width: 30px;
     }
 
 .reviewerName {
