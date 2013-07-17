@@ -92,11 +92,11 @@
             $('.btnMarkReadContainer').hide();
             return;
         }
-        
-        if (notifications.filter(function(n) {
+
+        if (notifications.filter(function (n) {
 
             return !n.IsRead;
-            
+
         }).length) {
             $('.btnMarkReadContainer').show();
         } else {
@@ -114,7 +114,7 @@
 
         }
 
-        elem.html(html);
+        elem.html(html).trigger('create');
     }
 
     function getNotificationHtml(notification) {
@@ -130,7 +130,7 @@
         html += '</div>';
 
         html += '<div class="notificationContent">';
-        
+
         html += '<p class="notificationName">' + notification.Name + '</p>';
 
         html += '<p>' + humane_date(notification.Date) + '</p>';
@@ -139,15 +139,19 @@
             html += '<p>' + notification.Description + '</p>';
         }
 
+        if (notification.Url) {
+            html += '<p><a href="' + notification.Url + '" target="_blank">More information</a></p>';
+        }
+
         html += '</div>';
 
         html += '</div>';
 
         return html;
     }
-    
+
     function getImageHtml(notification) {
-        
+
         if (notification.Level == "Error") {
 
             return '<div class="imgNotification imgNotificationError"><div class="imgNotificationInner imgNotificationIcon"></div></div>';
@@ -158,7 +162,7 @@
             return '<div class="imgNotification imgNotificationWarning"><div class="imgNotificationInner imgNotificationIcon"></div></div>';
 
         }
-        
+
         return '<div class="imgNotification imgNotificationNormal"><div class="imgNotificationInner imgNotificationIcon"></div></div>';
 
     }
