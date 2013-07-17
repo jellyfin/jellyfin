@@ -175,7 +175,7 @@ namespace MediaBrowser.Providers.Savers
 
             if (!string.IsNullOrEmpty(item.CriticRatingSummary))
             {
-                builder.Append("<CriticRatingSummary><![CDATA[" + item.Overview + "]]></CriticRatingSummary>");
+                builder.Append("<CriticRatingSummary><![CDATA[" + item.CriticRatingSummary + "]]></CriticRatingSummary>");
             }
 
             if (!string.IsNullOrEmpty(item.Overview))
