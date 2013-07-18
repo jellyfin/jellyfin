@@ -255,19 +255,23 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <summary>
         /// Used to report playback progress for an item
         /// </summary>
-        /// <param name="user">The user.</param>
         /// <param name="item">The item.</param>
         /// <param name="positionTicks">The position ticks.</param>
         /// <param name="isPaused">if set to <c>true</c> [is paused].</param>
         /// <param name="sessionId">The session id.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">
-        /// </exception>
+        /// <exception cref="System.ArgumentNullException"></exception>
+        /// <exception cref="System.ArgumentOutOfRangeException">positionTicks</exception>
         public async Task OnPlaybackProgress(BaseItem item, long? positionTicks, bool isPaused, Guid sessionId)
         {
             if (item == null)
             {
                 throw new ArgumentNullException();
+            }
+
+            if (positionTicks.HasValue && positionTicks.Value < 0)
+            {
+                throw new ArgumentOutOfRangeException("positionTicks");
             }
 
             var session = Sessions.First(i => i.Id.Equals(sessionId));
@@ -310,6 +314,11 @@ namespace MediaBrowser.Server.Implementations.Session
                 throw new ArgumentNullException();
             }
 
+            if (positionTicks.HasValue && positionTicks.Value < 0)
+            {
+                throw new ArgumentOutOfRangeException("positionTicks");
+            }
+            
             var session = Sessions.First(i => i.Id.Equals(sessionId));
 
             RemoveNowPlayingItem(session, item);
