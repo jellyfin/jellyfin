@@ -41,10 +41,14 @@
         }
 
         $(document).on('webkitfullscreenchange mozfullscreenchange fullscreenchange', function () {
-
+            var nowPlayingBar = ('#nowPlayingBar');
+            $('.itemVideo').unbind('mousemove keydown scroll', idleHandler);
             if (isFullScreen()) {
                 $('.itemVideo').addClass('fullscreenVideo');
+                idleState = true;
+                $('.itemVideo').bind('mousemove keydown scroll', idleHandler).trigger('mousemove');
             } else {
+                $(".mediaButton,.currentTime,.nowPlayingMediaInfo,.mediaSlider,.barBackground", nowPlayingBar).removeClass("highPosition");
                 $('.itemVideo').removeClass('fullscreenVideo');
             }
 
@@ -951,8 +955,6 @@
         };
 
         self.toggleFullscreen = function () {
-
-            $('.itemVideo').unbind('mousemove keydown scroll', idleHandler);
             if (isFullScreen()) {
                 if (document.cancelFullScreen) { document.cancelFullScreen(); }
                 else if (document.mozCancelFullScreen) { document.mozCancelFullScreen(); }
@@ -963,8 +965,6 @@
 
                 }
             } else {
-                idleState = true;
-                $('.itemVideo').bind('mousemove keydown scroll', idleHandler).trigger('mousemove');
                 requestFullScreen(document.body);
             }
         };
