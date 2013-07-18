@@ -1094,6 +1094,10 @@ $(function () {
 
         alert("This is an unsupported version of Internet Explorer. Please consider upgrading to IE10, Chrome, or Firefox.");
     }
+    else if (!window.WebSocket) {
+
+        alert("This browser does not support web sockets. For a better experience, try a newer browser such as Chrome (android, desktop), Firefox, IE10, Safari (iOS) or Opera.");
+    }
 });
 
 Dashboard.jQueryMobileInit();
