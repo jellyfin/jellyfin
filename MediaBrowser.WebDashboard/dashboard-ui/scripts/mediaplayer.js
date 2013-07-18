@@ -1048,6 +1048,10 @@
             currentMediaElement.play();
         };
 
+        self.seek = function (position) {
+            currentMediaElement.currentTime = position / (1000 * 10000);
+        };
+        
         self.mute = function () {
             currentMediaElement.volume = 0;
         };
