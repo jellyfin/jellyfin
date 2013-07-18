@@ -31,6 +31,10 @@ namespace MediaBrowser.Model.Querying
         /// </summary>
         public const string DateCreated = "DateCreated";
         /// <summary>
+        /// The official rating
+        /// </summary>
+        public const string OfficialRating = "OfficialRating";
+        /// <summary>
         /// The date played
         /// </summary>
         public const string DatePlayed = "DatePlayed";
