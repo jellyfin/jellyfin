@@ -712,12 +712,38 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         {
             switch (language.ToLower())
             {
+                case "pol":
+                case "cze":
+                case "ces":
+                case "slo":
+                case "slk":
+                case "hun":
+                case "slv":
+                case "srp":
+                case "hrv":
+                case "rum":
+                case "ron":
+                case "rup":
+                case "alb":
+                case "sqi":
+                    return "-sub_charenc windows-1250";
                 case "ara":
                     return "-sub_charenc windows-1256";
                 case "heb":
                     return "-sub_charenc windows-1255";
+                case "grc":
+                case "gre":
+                    return "-sub_charenc windows-1253";
+                case "crh":
+                case "ota":
+                case "tur":
+                    return "-sub_charenc windows-1254";
+                case "rus":
+                    return "-sub_charenc windows-1251";
+                case "vie":
+                    return "-sub_charenc windows-1258";
                 default:
-                    return string.Empty;
+                    return "-sub_charenc windows-1252";
             }
         }
 
