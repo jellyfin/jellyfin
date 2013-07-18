@@ -47,6 +47,8 @@
 
                 var imgUrl = null;
                 var isDefault = false;
+                var height = null;
+                var width = null;
 
                 var cssClass = "tileItem";
 
@@ -75,12 +77,25 @@
                 }
                 else if (item.ImageTags && item.ImageTags.Primary) {
 
-                    var height = 300;
-                    var width = primaryImageAspectRatio ? parseInt(height * primaryImageAspectRatio) : null;
+                    height = 300;
+                    width = primaryImageAspectRatio ? parseInt(height * primaryImageAspectRatio) : null;
 
                     imgUrl = LibraryBrowser.getImageUrl(item, 'Primary', 0, {
                         height: height,
                         width: width
+                    });
+
+                }
+                else if (item.AlbumId && item.AlbumPrimaryImageTag) {
+
+                    height = 300;
+                    width = primaryImageAspectRatio ? parseInt(height * primaryImageAspectRatio) : null;
+
+                    imgUrl = ApiClient.getImageUrl(item.AlbumId, {
+                        type: "Primary",
+                        height: 100,
+                        width: width,
+                        tag: item.AlbumPrimaryImageTag
                     });
 
                 }
@@ -455,6 +470,8 @@
 
                 var imgUrl = null;
                 var background = null;
+                var width = null;
+                var height = null;
 
                 if (options.preferBackdrop && item.BackdropImageTags && item.BackdropImageTags.length) {
 
@@ -467,8 +484,8 @@
 
                 } else if (item.ImageTags && item.ImageTags.Primary) {
 
-                    var height = 300;
-                    var width = primaryImageAspectRatio ? parseInt(height * primaryImageAspectRatio) : null;
+                    height = 300;
+                    width = primaryImageAspectRatio ? parseInt(height * primaryImageAspectRatio) : null;
 
                     imgUrl = ApiClient.getImageUrl(item.Id, {
                         type: "Primary",
@@ -477,7 +494,21 @@
                         tag: item.ImageTags.Primary
                     });
 
-                } else if (item.BackdropImageTags && item.BackdropImageTags.length) {
+                }
+                else if (item.AlbumId && item.AlbumPrimaryImageTag) {
+
+                    height = 300;
+                    width = primaryImageAspectRatio ? parseInt(height * primaryImageAspectRatio) : null;
+
+                    imgUrl = ApiClient.getImageUrl(item.AlbumId, {
+                        type: "Primary",
+                        height: height,
+                        width: width,
+                        tag: item.AlbumPrimaryImageTag
+                    });
+
+                }
+                else if (item.BackdropImageTags && item.BackdropImageTags.length) {
 
                     imgUrl = ApiClient.getImageUrl(item.Id, {
                         type: "Backdrop",
@@ -1348,6 +1379,15 @@
                     tag: item.ImageTags.Disc
                 });
             }
+            else if (item.AlbumId && item.AlbumPrimaryImageTag) {
+
+                url = ApiClient.getImageUrl(item.AlbumId, {
+                    type: "Primary",
+                    maxheight: 480,
+                    tag: item.AlbumPrimaryImageTag
+                });
+
+            }
             else if (item.MediaType == "Audio" || item.Type == "MusicAlbum" || item.Type == "MusicGenre") {
                 url = "css/images/items/detail/audio.png";
             }
@@ -1540,7 +1580,7 @@
                     }
 
                     var param = item.Type == "Audio" || item.Type == "Artist" || item.Type == "MusicArtist" || item.Type == "MusicAlbum" ? "musicgenre" : "genre";
-                    
+
                     if (item.MediaType == "Game") {
                         param = "gamegenre";
                     }
