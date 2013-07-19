@@ -804,9 +804,10 @@ var Dashboard = {
                 MediaPlayer.seek(msg.Data.SeekPosition);
             }
             else if (msg.Data.Command === 'NextTrack') {
-                MediaPlayer.queuePlayNext();
+                MediaPlayer.nextTrack();
             }
             else if (msg.Data.Command === 'PreviousTrack') {
+                MediaPlayer.previousTrack();
             }
         }
     },
