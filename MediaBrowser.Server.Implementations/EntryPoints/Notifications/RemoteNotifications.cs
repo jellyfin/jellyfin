@@ -100,7 +100,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
         {
             // Only show notifications that are active, new since last download, and not older than max age
             var notificationList = notifications
-                .Where(i => string.Equals(i.active, "1") && i.date.ToUniversalTime() > lastRunTime && (DateTime.Now - i.date.ToUniversalTime()) <= _maxAge)
+                .Where(i => string.Equals(i.active, "1") && i.date.ToUniversalTime() > lastRunTime && (DateTime.UtcNow - i.date.ToUniversalTime()) <= _maxAge)
                 .ToList();
 
             foreach (var user in _userManager.Users.ToList())
