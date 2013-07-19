@@ -36,6 +36,6 @@ namespace MediaBrowser.Model.Session
     {
         public PlaystateCommand Command { get; set; }
 
-        public long? SeekPosition { get; set; }
+        public long? SeekPositionTicks { get; set; }
     }
 }

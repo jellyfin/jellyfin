@@ -119,8 +119,8 @@ namespace MediaBrowser.Api
         /// <summary>
         /// Gets or sets the position to seek to
         /// </summary>
-        [ApiMember(Name = "SeekPosition", Description = "The position to seek to.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public long? SeekPosition { get; set; }
+        [ApiMember(Name = "SeekPositionTicks", Description = "The position to seek to.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public long? SeekPositionTicks { get; set; }
 
         /// <summary>
         /// Gets or sets the play command.
@@ -200,7 +200,7 @@ namespace MediaBrowser.Api
                         Data = new PlaystateRequest
                         {
                             Command = request.Command,
-                            SeekPosition = request.SeekPosition
+                            SeekPositionTicks = request.SeekPositionTicks
                         }
 
                     }, CancellationToken.None).ConfigureAwait(false);
