@@ -801,7 +801,7 @@ var Dashboard = {
                 MediaPlayer.unpause();
             }
             else if (msg.Data.Command === 'Seek') {
-                MediaPlayer.seek(msg.Data.SeekPosition);
+                MediaPlayer.seek(msg.Data.SeekPositionTicks);
             }
             else if (msg.Data.Command === 'NextTrack') {
                 MediaPlayer.nextTrack();
