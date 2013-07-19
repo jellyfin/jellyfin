@@ -97,7 +97,7 @@ namespace MediaBrowser.Providers.TV
         /// <summary>
         /// The LOCA l_ MET a_ FIL e_ NAME
         /// </summary>
-        protected const string LocalMetaFileName = "Series.xml";
+        protected const string LocalMetaFileName = "series.xml";
 
         /// <summary>
         /// Supportses the specified item.

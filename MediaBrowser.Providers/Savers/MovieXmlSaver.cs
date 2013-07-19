@@ -2,7 +2,6 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Providers.Movies;
 using System;
 using System.Globalization;
@@ -113,15 +112,9 @@ namespace MediaBrowser.Providers.Savers
 
         public string GetSavePath(BaseItem item)
         {
-            if (item.ResolveArgs.IsDirectory)
-            {
-                var video = (Video)item;
-                var path = video.VideoType == VideoType.VideoFile || video.VideoType == VideoType.Iso ? Path.GetDirectoryName(item.Path) : item.Path;
-
-                return Path.Combine(path, "movie.xml");
-            }
-
-            return Path.ChangeExtension(item.Path, ".xml");
+            return item.ResolveArgs.IsDirectory ? 
+                Path.Combine(item.MetaLocation, "movie.xml") : 
+                Path.ChangeExtension(item.Path, ".xml");
         }
     }
 }
