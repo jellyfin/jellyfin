@@ -791,7 +791,24 @@ var Dashboard = {
 
         }
         else if (msg.MessageType === "Playstate") {
-
+            if (msg.Data.Command === 'Stop') {
+                MediaPlayer.stop();
+            }
+            else if (msg.Data.Command === 'Pause') {
+                MediaPlayer.pause();
+            }
+            else if (msg.Data.Command === 'Unpause') {
+                MediaPlayer.unpause();
+            }
+            else if (msg.Data.Command === 'Seek') {
+                MediaPlayer.seek(msg.Data.SeekPosition);
+            }
+            else if (msg.Data.Command === 'NextTrack') {
+                MediaPlayer.nextTrack();
+            }
+            else if (msg.Data.Command === 'PreviousTrack') {
+                MediaPlayer.previousTrack();
+            }
         }
     },
 

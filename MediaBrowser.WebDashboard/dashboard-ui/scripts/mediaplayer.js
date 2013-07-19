@@ -98,7 +98,7 @@
 
             $(this).off('ended.playnext');
 
-            self.queuePlayNext();
+            self.nextTrack();
         }
 
         function startProgressInterval(itemId) {
@@ -991,7 +991,7 @@
             });
         };
 
-        self.queuePlayNext = function () {
+        self.nextTrack = function () {
 
             var newIndex = currentPlaylistIndex + 1;
             var newItem = self.playlist[newIndex];
@@ -1002,6 +1002,21 @@
                     self.playInternal(newItem, 0, user);
                     currentPlaylistIndex = newIndex;
                 });
+            }
+        };
+        
+        self.previousTrack = function () {
+            var newIndex = currentPlaylistIndex - 1;
+            if (newIndex >= 0) {
+                var newItem = self.playlist[newIndex];
+
+                if (newItem) {
+                    Dashboard.getCurrentUser().done(function (user) {
+
+                        self.playInternal(newItem, 0, user);
+                        currentPlaylistIndex = newIndex;
+                    });
+                }
             }
         };
 
@@ -1048,6 +1063,10 @@
             currentMediaElement.play();
         };
 
+        self.seek = function (position) {
+            currentMediaElement.currentTime = position / (1000 * 10000);
+        };
+        
         self.mute = function () {
             currentMediaElement.volume = 0;
         };
