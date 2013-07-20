@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
-using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,12 +13,10 @@ namespace MediaBrowser.Server.Implementations.Library
     /// </summary>
     public class CoreResolutionIgnoreRule : IResolverIgnoreRule
     {
-        private readonly ILogger _logger;
-
         /// <summary>
         /// Any folder named in this list will be ignored - can be added to at runtime for extensibility
         /// </summary>
-        private static readonly List<string> IgnoreFolders = new List<string>
+        private static readonly Dictionary<string,string> IgnoreFolders = new List<string>
         {
             "metadata",
             "certificate",
@@ -28,12 +25,8 @@ namespace MediaBrowser.Server.Implementations.Library
             "ps3_vprm",
             "adv_obj",
             "extrafanart"
-        };
 
-        public CoreResolutionIgnoreRule(ILogger logger)
-        {
-            _logger = logger;
-        }
+        }.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Shoulds the ignore.
@@ -81,7 +74,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 var filename = args.FileInfo.Name;
 
                 // Ignore any folders in our list
-                if (IgnoreFolders.Contains(filename, StringComparer.OrdinalIgnoreCase))
+                if (IgnoreFolders.ContainsKey(filename))
                 {
                     return true;
                 }

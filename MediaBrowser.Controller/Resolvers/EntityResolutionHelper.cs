@@ -1,11 +1,11 @@
-﻿using System.Text.RegularExpressions;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
+using MediaBrowser.Controller.Library;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using MediaBrowser.Controller.Library;
+using System.Text.RegularExpressions;
 
 namespace MediaBrowser.Controller.Resolvers
 {
@@ -46,6 +46,8 @@ namespace MediaBrowser.Controller.Resolvers
                 ".mts"
         };
 
+        private static readonly Dictionary<string, string> VideoFileExtensionsDictionary = VideoFileExtensions.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
+
         private static readonly Regex MultiFileRegex = new Regex(
             @"(.*?)([ _.-]*(?:cd|dvd|p(?:ar)?t|dis[ck]|d)[ _.-]*[0-9]+)(.*?)(\.[^.]+)$",
             RegexOptions.Compiled | RegexOptions.IgnoreCase);
@@ -67,7 +69,7 @@ namespace MediaBrowser.Controller.Resolvers
         /// <summary>
         /// The audio file extensions
         /// </summary>
-        private static readonly string[] AudioFileExtensions = new[] { 
+        private static readonly Dictionary<string,string> AudioFileExtensions = new[] { 
             ".mp3",
             ".flac",
             ".wma",
@@ -79,7 +81,8 @@ namespace MediaBrowser.Controller.Resolvers
             ".ape",
             ".ogg",
             ".oga"
-        };
+
+        }.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Determines whether [is audio file] [the specified args].
@@ -88,7 +91,14 @@ namespace MediaBrowser.Controller.Resolvers
         /// <returns><c>true</c> if [is audio file] [the specified args]; otherwise, <c>false</c>.</returns>
         public static bool IsAudioFile(string path)
         {
-            return AudioFileExtensions.Contains(Path.GetExtension(path), StringComparer.OrdinalIgnoreCase);
+            var extension = Path.GetExtension(path);
+
+            if (string.IsNullOrEmpty(extension))
+            {
+                return false;
+            }
+
+            return AudioFileExtensions.ContainsKey(extension);
         }
 
         /// <summary>
@@ -98,8 +108,14 @@ namespace MediaBrowser.Controller.Resolvers
         /// <returns><c>true</c> if [is video file] [the specified path]; otherwise, <c>false</c>.</returns>
         public static bool IsVideoFile(string path)
         {
-            var extension = Path.GetExtension(path) ?? String.Empty;
-            return VideoFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase);
+            var extension = Path.GetExtension(path);
+
+            if (string.IsNullOrEmpty(extension))
+            {
+                return false;
+            }
+
+            return VideoFileExtensionsDictionary.ContainsKey(extension);
         }
 
         /// <summary>
