@@ -198,9 +198,16 @@ namespace MediaBrowser.Providers.Savers
                 builder.Append("<SortTitle>" + SecurityElement.Escape(item.ForcedSortName) + "</SortTitle>");
             }
 
-            if (item.PremiereDate.HasValue && !(item is Episode))
+            if (item.PremiereDate.HasValue)
             {
-                builder.Append("<PremiereDate>" + SecurityElement.Escape(item.PremiereDate.Value.ToString("yyyy-MM-dd")) + "</PremiereDate>");
+                if (item is Person)
+                {
+                    builder.Append("<BirthDate>" + SecurityElement.Escape(item.PremiereDate.Value.ToString("yyyy-MM-dd")) + "</BirthDate>");
+                }
+                else if (!(item is Episode))
+                {
+                    builder.Append("<PremiereDate>" + SecurityElement.Escape(item.PremiereDate.Value.ToString("yyyy-MM-dd")) + "</PremiereDate>");
+                }
             }
 
             if (item.RemoteTrailers.Count > 0)

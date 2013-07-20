@@ -25,5 +25,11 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         /// <value>The status code.</value>
         public HttpStatusCode StatusCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the temp file path.
+        /// </summary>
+        /// <value>The temp file path.</value>
+        public string TempFilePath { get; set; }
     }
 }
