@@ -237,6 +237,14 @@ namespace MediaBrowser.Server.Implementations.Localization
                 }
             }
 
+            // Try and support ratings that are incorrectly prefixed with localization values (GB-PG, which is really just PG)
+            var index = rating.IndexOf('-');
+
+            if (index != -1)
+            {
+                return GetRatingLevel(rating.Substring(index + 1));
+            }
+
             return value == null ? (int?)null : value.Value;
         }
     }
