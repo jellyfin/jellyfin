@@ -375,6 +375,13 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         /// <exception cref="MediaBrowser.Model.Net.HttpException"></exception>
         public async Task<string> GetTempFile(HttpRequestOptions options)
         {
+            var response = await GetTempFileResponse(options).ConfigureAwait(false);
+
+            return response.TempFilePath;
+        }
+
+        public async Task<HttpResponseInfo> GetTempFileResponse(HttpRequestOptions options)
+        {
             ValidateParams(options.Url, options.CancellationToken);
 
             var tempFile = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid() + ".tmp");
@@ -433,13 +440,20 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
                         options.Progress.Report(100);
 
-                        options.CancellationToken.ThrowIfCancellationRequested();
+                        return new HttpResponseInfo
+                        {
+                            TempFilePath = tempFile,
+
+                            StatusCode = response.StatusCode,
+
+                            ContentType = response.Content.Headers.ContentType.MediaType
+                        };
                     }
                 }
             }
             catch (Exception ex)
             {
-                HandleTempFileException(ex, options, tempFile);
+                throw GetTempFileException(ex, options, tempFile);
             }
             finally
             {
@@ -448,8 +462,6 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                     options.ResourcePool.Release();
                 }
             }
-
-            return tempFile;
         }
 
         /// <summary>
@@ -501,7 +513,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         /// <param name="tempFile">The temp file.</param>
         /// <returns>Task.</returns>
         /// <exception cref="HttpException"></exception>
-        private void HandleTempFileException(Exception ex, HttpRequestOptions options, string tempFile)
+        private Exception GetTempFileException(Exception ex, HttpRequestOptions options, string tempFile)
         {
             var operationCanceledException = ex as OperationCanceledException;
 
@@ -513,7 +525,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                     File.Delete(tempFile);
                 }
 
-                throw GetCancellationException(options.Url, options.CancellationToken, operationCanceledException);
+                return GetCancellationException(options.Url, options.CancellationToken, operationCanceledException);
             }
 
             _logger.ErrorException("Error getting response from " + options.Url, ex);
@@ -528,10 +540,10 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
             if (httpRequestException != null)
             {
-                throw new HttpException(ex.Message, ex);
+                return new HttpException(ex.Message, ex);
             }
 
-            throw ex;
+            return ex;
         }
 
         /// <summary>

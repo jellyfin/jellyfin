@@ -72,5 +72,7 @@ namespace MediaBrowser.Common.Net
         /// <exception cref="System.ArgumentNullException">progress</exception>
         /// <exception cref="MediaBrowser.Model.Net.HttpException"></exception>
         Task<string> GetTempFile(HttpRequestOptions options);
+
+        Task<HttpResponseInfo> GetTempFileResponse(HttpRequestOptions options);
     }
 }

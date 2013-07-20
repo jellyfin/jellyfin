@@ -445,6 +445,7 @@ namespace MediaBrowser.Controller.Providers
                         break;
                     }
 
+                case "BirthDate":
                 case "PremiereDate":
                 case "FirstAired":
                     {
