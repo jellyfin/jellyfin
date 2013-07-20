@@ -238,10 +238,12 @@
             { name: "General or mixed content", value: "" },
             { name: "Adult videos", value: "adultvideos" },
             { name: "Box sets", value: "boxsets" },
+            { name: "Games*", value: "games" },
             { name: "Home videos", value: "homevideos" },
             { name: "Movies", value: "movies" },
             { name: "Music", value: "music" },
             { name: "Music videos", value: "musicvideos" },
+            { name: "Photos*", value: "photos" },
             { name: "Trailers", value: "trailers" },
             { name: "TV shows", value: "tvshows" }
 
