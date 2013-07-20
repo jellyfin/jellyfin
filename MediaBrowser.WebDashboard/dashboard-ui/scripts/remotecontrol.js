@@ -734,7 +734,7 @@
 
             ApiClient.sendPlayStateCommand(id, 'Seek',
                 {
-                    SeekPosition: parseInt(position)
+                    SeekPositionTicks: parseInt(position)
                 });
 
             this.isSliding = false;
