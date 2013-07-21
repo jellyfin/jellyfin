@@ -405,10 +405,7 @@ namespace MediaBrowser.Controller.Dto
                 dto.Revenue = item.Revenue;
             }
 
-            if (fields.Contains(ItemFields.EndDate))
-            {
-                dto.EndDate = item.EndDate;
-            }
+            dto.EndDate = item.EndDate;
 
             if (fields.Contains(ItemFields.HomePageUrl))
             {
