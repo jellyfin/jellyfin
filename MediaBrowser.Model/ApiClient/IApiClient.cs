@@ -24,6 +24,15 @@ namespace MediaBrowser.Model.ApiClient
         event EventHandler<HttpResponseEventArgs> HttpResponseReceived;
 
         /// <summary>
+        /// Gets the critic reviews.
+        /// </summary>
+        /// <param name="itemId">The item id.</param>
+        /// <param name="startIndex">The start index.</param>
+        /// <param name="limit">The limit.</param>
+        /// <returns>Task{ItemReviewsResult}.</returns>
+        Task<ItemReviewsResult> GetCriticReviews(string itemId, int? startIndex = null, int? limit = null);
+
+        /// <summary>
         /// Gets the theme songs async.
         /// </summary>
         /// <param name="userId">The user id.</param>
@@ -49,7 +58,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="inheritFromParents">if set to <c>true</c> [inherit from parents].</param>
         /// <returns>Task{AllThemeMediaResult}.</returns>
         Task<AllThemeMediaResult> GetAllThemeMediaAsync(string userId, string itemId, bool inheritFromParents);
-        
+
         /// <summary>
         /// Marks the notifications read.
         /// </summary>
@@ -132,7 +141,7 @@ namespace MediaBrowser.Model.ApiClient
         /// </summary>
         /// <returns>Task{UserDto[]}.</returns>
         Task<UserDto[]> GetPublicUsersAsync();
-        
+
         /// <summary>
         /// Gets active client sessions.
         /// </summary>
@@ -167,7 +176,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="query">The query.</param>
         /// <returns>Task{ItemsResult}.</returns>
         Task<ItemsResult> GetSimilarTrailersAsync(SimilarItemsQuery query);
-        
+
         /// <summary>
         /// Gets the similar series async.
         /// </summary>
@@ -700,7 +709,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="options">The options.</param>
         /// <returns>System.String.</returns>
         string GetArtImageUrl(BaseItemDto item, ImageOptions options);
-        
+
         /// <summary>
         /// Gets the url needed to stream an audio file
         /// </summary>
