@@ -290,17 +290,17 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
                     {
                         semaphore.Release();
                     }
-
-                    // Image is already in the cache
-                    item.PrimaryImagePath = path;
-
-                    await _libraryManager.UpdateItem(item, ItemUpdateType.ImageUpdate, cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
                     semaphore.Release();
                 }
             }
+
+            // Image is already in the cache
+            item.PrimaryImagePath = path;
+
+            await _libraryManager.UpdateItem(item, ItemUpdateType.ImageUpdate, cancellationToken).ConfigureAwait(false);
         }
         
         /// <summary>
