@@ -7,11 +7,6 @@ namespace MediaBrowser.Model.Querying
     public enum ItemFields
     {
         /// <summary>
-        /// Audio properties
-        /// </summary>
-        AudioInfo,
-
-        /// <summary>
         /// The budget
         /// </summary>
         Budget,
@@ -37,19 +32,9 @@ namespace MediaBrowser.Model.Querying
         DateCreated,
 
         /// <summary>
-        /// The display media type
-        /// </summary>
-        DisplayMediaType,
-
-        /// <summary>
         /// Item display preferences
         /// </summary>
         DisplayPreferencesId,
-
-        /// <summary>
-        /// The end date
-        /// </summary>
-        EndDate,
 
         /// <summary>
         /// Genres
@@ -125,11 +110,6 @@ namespace MediaBrowser.Model.Querying
         /// The revenue
         /// </summary>
         Revenue,
-        
-        /// <summary>
-        /// AirDays, status, SeriesName, etc
-        /// </summary>
-        SeriesInfo,
 
         /// <summary>
         /// The soundtrack ids
@@ -160,11 +140,6 @@ namespace MediaBrowser.Model.Querying
         /// The trailer url of the item
         /// </summary>
         RemoteTrailers,
-
-        /// <summary>
-        /// The user data of the item
-        /// </summary>
-        UserData,
 
         /// <summary>
         /// The media streams
