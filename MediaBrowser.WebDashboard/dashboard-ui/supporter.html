@@ -53,7 +53,7 @@
                         <input type="hidden" name="item_number" value="MBSupporter">
                         <input type="hidden" name="notify_url" value="http://mb3admin.com/admin/service/services/ppipn.php">
                         <input type="hidden" name="return" id="paypalReturnUrl" value="#">
-                        <a data-role="button" onclick="_xclick.submit();">
+                        <a data-role="button" onclick="$(this).parents('form')[0].submit();">
                             <img src="css/images/supporter/donatepaypal.png" /></a>
                     </form>
 
