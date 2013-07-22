@@ -108,7 +108,17 @@ namespace MediaBrowser.Api.UserLibrary
                 return new ItemFields[] { };
             }
 
-            return val.Split(',').Select(v => (ItemFields)Enum.Parse(typeof(ItemFields), v, true));
+            return val.Split(',').Select(v =>
+            {
+                ItemFields value;
+
+                if (Enum.TryParse(v, true, out value))
+                {
+                    return (ItemFields?)value;
+                }
+                return null;
+
+            }).Where(i => i.HasValue).Select(i => i.Value);
         }
     }
 }
