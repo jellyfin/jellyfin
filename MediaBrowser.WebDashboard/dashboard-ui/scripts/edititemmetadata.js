@@ -642,26 +642,28 @@
 
             var refreshPromise;
 
+            var force = $('#chkForceRefresh', page).checked();
+
             if (currentItem.Type == "Artist") {
-                refreshPromise = ApiClient.refreshArtist(currentItem.Name, true);
+                refreshPromise = ApiClient.refreshArtist(currentItem.Name, force);
             }
             else if (currentItem.Type == "Genre") {
-                refreshPromise = ApiClient.refreshGenre(currentItem.Name, true);
+                refreshPromise = ApiClient.refreshGenre(currentItem.Name, force);
             }
             else if (currentItem.Type == "MusicGenre") {
-                refreshPromise = ApiClient.refreshMusicGenre(currentItem.Name, true);
+                refreshPromise = ApiClient.refreshMusicGenre(currentItem.Name, force);
             }
             else if (currentItem.Type == "GameGenre") {
-                refreshPromise = ApiClient.refreshGameGenre(currentItem.Name, true);
+                refreshPromise = ApiClient.refreshGameGenre(currentItem.Name, force);
             }
             else if (currentItem.Type == "Person") {
-                refreshPromise = ApiClient.refreshPerson(currentItem.Name, true);
+                refreshPromise = ApiClient.refreshPerson(currentItem.Name, force);
             }
             else if (currentItem.Type == "Studio") {
-                refreshPromise = ApiClient.refreshStudio(currentItem.Name, true);
+                refreshPromise = ApiClient.refreshStudio(currentItem.Name, force);
             }
             else {
-                refreshPromise = ApiClient.refreshItem(currentItem.Id, true, $('#chkRecursive', page).checked());
+                refreshPromise = ApiClient.refreshItem(currentItem.Id, force, $('#chkRecursive', page).checked());
             }
 
             refreshPromise.done(function () {
