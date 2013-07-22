@@ -1210,7 +1210,7 @@ namespace MediaBrowser.Controller.Dto
         {
             try
             {
-                return Kernel.Instance.ImageManager.GetImageCacheTag(item, ImageType.Screenshot, path);
+                return Kernel.Instance.ImageManager.GetImageCacheTag(item, type, path);
             }
             catch (IOException ex)
             {
