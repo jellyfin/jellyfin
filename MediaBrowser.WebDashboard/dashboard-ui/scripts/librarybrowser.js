@@ -747,6 +747,9 @@
             else if (item.AlbumArtist && item.Type == "MusicAlbum") {
                 html.push('<a class="detailPageParentLink" href="itembynamedetails.html?context=music&artist=' + ApiClient.encodeName(item.AlbumArtist) + '">' + item.AlbumArtist + '</a>');
             }
+            else if (item.Artists && item.Artists.length && item.Type == "MusicVideo") {
+                html.push('<a class="detailPageParentLink" href="itembynamedetails.html?context=music&artist=' + ApiClient.encodeName(item.Artists[0]) + '">' + item.Artists[0] + '</a>');
+            }
             else if (item.SeriesName && item.Type == "Episode") {
 
                 html.push('<a class="detailPageParentLink" href="itemdetails.html?id=' + item.SeriesId + '">' + item.SeriesName + '</a>');
@@ -760,8 +763,12 @@
 
                 html.push('<a class="detailPageParentLink" href="itemdetails.html?id=' + item.ParentId + '">Season ' + item.ParentIndexNumber + '</a>');
             }
-            else if (item.Album && item.Type == "Audio" && item.ParentId) {
-                html.push('<a class="detailPageParentLink" href="itemdetails.html?id=' + item.ParentId + '">' + item.Album + '</a>');
+            else if (item.Album && item.Type == "Audio" && (item.AlbumId || item.ParentId)) {
+                html.push('<a class="detailPageParentLink" href="itemdetails.html?id=' + (item.AlbumId || item.ParentId) + '">' + item.Album + '</a>');
+
+            }
+            else if (item.Album && item.Type == "MusicVideo" && item.AlbumId) {
+                html.push('<a class="detailPageParentLink" href="itemdetails.html?id=' + item.AlbumId + '">' + item.Album + '</a>');
 
             }
             else if (item.AlbumArtist && item.Type == "MusicAlbum") {

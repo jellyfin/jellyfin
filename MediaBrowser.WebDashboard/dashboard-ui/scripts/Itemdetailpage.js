@@ -226,7 +226,7 @@
             $('#players', page).hide();
         }
 
-        if (item.Type == "Audio" && item.Artists && item.Artists.length) {
+        if ((item.Type == "Audio" || item.Type == "MusicVideo") && item.Artists && item.Artists.length) {
             $('#artist', page).show().html('Artist:&nbsp;&nbsp;<a class="textlink" href="itembynamedetails.html?context=music&artist=' + ApiClient.encodeName(item.Artists[0]) + '">' + item.Artists[0] + '</a>').trigger('create');
         } else {
             $('#artist', page).hide();

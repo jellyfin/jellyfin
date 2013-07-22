@@ -707,6 +707,19 @@ namespace MediaBrowser.Controller.Dto
 
             if (musicVideo != null)
             {
+                if (!string.IsNullOrEmpty(musicVideo.Album))
+                {
+                    var parentAlbum = _libraryManager.RootFolder
+                        .RecursiveChildren
+                        .OfType<MusicAlbum>()
+                        .FirstOrDefault(i => string.Equals(i.Name, musicVideo.Album, StringComparison.OrdinalIgnoreCase));
+
+                    if (parentAlbum != null)
+                    {
+                        dto.AlbumId = GetClientItemId(parentAlbum);
+                    }
+                }
+                
                 SetMusicVideoProperties(dto, musicVideo);
             }
         }
