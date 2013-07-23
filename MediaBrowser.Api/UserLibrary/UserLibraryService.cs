@@ -598,8 +598,6 @@ namespace MediaBrowser.Api.UserLibrary
             auth.TryGetValue("Client", out client);
             auth.TryGetValue("Version", out version);
 
-            version = version ?? "0.0.0.0";
-
             return _sessionManager.Sessions.First(i => string.Equals(i.DeviceId, deviceId) &&
                 string.Equals(i.Client, client) &&
                 string.Equals(i.ApplicationVersion, version));

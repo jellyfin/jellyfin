@@ -1,5 +1,24 @@
 ﻿(function ($, document, apiClient) {
 
+    function reloadTips(page) {
+
+        var tips = [
+            'Did you know that editing the artist or album of a music video will allow it to appear on the artist page?',
+            'Did you know that editing the tmdb id, tvdb id, and/or games db id of an album will allow media browser to link it to a movie, series or game as a soundtrack?',
+            'Did you know you can re-order your media collections by editing their sort names?'
+        ];
+
+        var random = Math.floor((Math.random() * tips.length * 2));
+
+        var tip = tips[random];
+        
+        if (tip) {
+            $('#tip', page).html(tip).show();
+        } else {
+            $('#tip', page).hide();
+        }
+    }
+    
     function getViewHtml(view) {
 
         var html = '';
@@ -68,6 +87,14 @@
             }));
 
         });
+    });
+
+    $(document).on('pagebeforeshow', "#indexPage", function () {
+
+        var page = this;
+
+        reloadTips(page);
+
     });
 
 })(jQuery, document, ApiClient);

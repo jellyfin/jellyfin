@@ -296,8 +296,6 @@ namespace MediaBrowser.Api
                 auth.TryGetValue("Client", out client);
                 auth.TryGetValue("Version", out version);
 
-                version = version ?? "0.0.0.0";
-
                 if (!string.IsNullOrEmpty(client) && !string.IsNullOrEmpty(deviceId) && !string.IsNullOrEmpty(device) && !string.IsNullOrEmpty(version))
                 {
                     SessionManager.LogConnectionActivity(client, version, deviceId, device, user);

@@ -676,12 +676,12 @@
             }
 
             // If none then look at user configuration
-            if (user.Configuration.AudioLanguagePreference) {
+            if (user.Configuration.SubtitleLanguagePreference) {
 
                 for (i = 0, length = mediaStreams.length; i < length; i++) {
                     mediaStream = mediaStreams[i];
 
-                    if (mediaStream.Type == "Audio" && mediaStream.Language == user.Configuration.AudioLanguagePreference) {
+                    if (mediaStream.Type == "Subtitle" && mediaStream.Language == user.Configuration.SubtitleLanguagePreference) {
 
                         if (user.Configuration.UseForcedSubtitlesOnly) {
 
