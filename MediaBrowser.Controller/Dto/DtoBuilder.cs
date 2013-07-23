@@ -707,25 +707,25 @@ namespace MediaBrowser.Controller.Dto
 
             if (musicVideo != null)
             {
-                if (!string.IsNullOrEmpty(musicVideo.Album))
-                {
-                    var parentAlbum = _libraryManager.RootFolder
-                        .RecursiveChildren
-                        .OfType<MusicAlbum>()
-                        .FirstOrDefault(i => string.Equals(i.Name, musicVideo.Album, StringComparison.OrdinalIgnoreCase));
-
-                    if (parentAlbum != null)
-                    {
-                        dto.AlbumId = GetClientItemId(parentAlbum);
-                    }
-                }
-                
                 SetMusicVideoProperties(dto, musicVideo);
             }
         }
 
         private void SetMusicVideoProperties(BaseItemDto dto, MusicVideo item)
         {
+            if (!string.IsNullOrEmpty(item.Album))
+            {
+                var parentAlbum = _libraryManager.RootFolder
+                    .RecursiveChildren
+                    .OfType<MusicAlbum>()
+                    .FirstOrDefault(i => string.Equals(i.Name, item.Album, StringComparison.OrdinalIgnoreCase));
+
+                if (parentAlbum != null)
+                {
+                    dto.AlbumId = GetClientItemId(parentAlbum);
+                }
+            }
+
             dto.Album = item.Album;
             dto.Artists = string.IsNullOrEmpty(item.Artist) ? new string[] { } : new[] { item.Artist };
         }
