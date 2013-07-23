@@ -23,5 +23,5 @@ http://community.mediabrowser.tv/
 ## Current Versions ##
 
 Release: 3.0.4931.24071<br/>
-Beta: 3.0.4927.41486<br/>
+Beta: 3.0.4951.34257<br/>
 Dev: 3.0.4951.28135
