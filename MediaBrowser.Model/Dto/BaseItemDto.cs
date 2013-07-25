@@ -113,6 +113,12 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The original run time ticks.</value>
         public long? OriginalRunTimeTicks { get; set; }
+
+        /// <summary>
+        /// Gets or sets the cumulative run time ticks.
+        /// </summary>
+        /// <value>The cumulative run time ticks.</value>
+        public long? CumulativeRunTimeTicks { get; set; }
         
         /// <summary>
         /// Gets or sets the run time ticks.

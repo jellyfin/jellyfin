@@ -24,6 +24,7 @@ namespace MediaBrowser.Controller.Resolvers
                 ".m2ts",
                 ".img",
                 ".iso",
+                ".mk3d",
                 ".ts",
                 ".rmvb",
                 ".mov",

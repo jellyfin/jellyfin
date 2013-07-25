@@ -277,12 +277,16 @@ namespace MediaBrowser.Controller.Dto
 
             if (item.IsFolder)
             {
-                if (fields.Contains(ItemFields.ItemCounts))
+                var hasItemCounts = fields.Contains(ItemFields.ItemCounts);
+
+                if (hasItemCounts || fields.Contains(ItemFields.CumulativeRunTimeTicks))
                 {
                     var folder = (Folder)item;
 
-                    // Skip sorting since all we want is a count
-                    dto.ChildCount = folder.GetChildren(user, true).Count();
+                    if (hasItemCounts)
+                    {
+                        dto.ChildCount = folder.GetChildren(user, true).Count();
+                    }
 
                     SetSpecialCounts(folder, user, dto, _userDataRepository);
                 }
@@ -749,6 +753,7 @@ namespace MediaBrowser.Controller.Dto
             var rcentlyAddedItemCount = 0;
             var recursiveItemCount = 0;
             var unplayed = 0;
+            long runtime = 0;
 
             double totalPercentPlayed = 0;
 
@@ -788,6 +793,8 @@ namespace MediaBrowser.Controller.Dto
                 {
                     unplayed++;
                 }
+
+                runtime += child.RunTimeTicks ?? 0;
             }
 
             dto.RecursiveItemCount = recursiveItemCount;
@@ -797,6 +804,11 @@ namespace MediaBrowser.Controller.Dto
             if (recursiveItemCount > 0)
             {
                 dto.PlayedPercentage = totalPercentPlayed / recursiveItemCount;
+            }
+
+            if (runtime > 0)
+            {
+                dto.CumulativeRunTimeTicks = runtime;
             }
         }
 
@@ -833,7 +845,9 @@ namespace MediaBrowser.Controller.Dto
 
             )).ConfigureAwait(false);
 
-            var dictionary = entities.Where(i => i != null).ToDictionary(i => i.Name, StringComparer.OrdinalIgnoreCase);
+            var dictionary = entities.Where(i => i != null)
+                .Distinct()
+                .ToDictionary(i => i.Name, StringComparer.OrdinalIgnoreCase);
 
             for (var i = 0; i < people.Count; i++)
             {
