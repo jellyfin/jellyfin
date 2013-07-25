@@ -22,6 +22,11 @@ namespace MediaBrowser.Model.Querying
         CriticRatingSummary,
 
         /// <summary>
+        /// The cumulative run time ticks
+        /// </summary>
+        CumulativeRunTimeTicks,
+
+        /// <summary>
         /// The custom rating
         /// </summary>
         CustomRating,
