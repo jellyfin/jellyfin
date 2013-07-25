@@ -118,7 +118,7 @@
 
         function sendProgressUpdate(itemId) {
 
-            ApiClient.reportPlaybackProgress(Dashboard.getCurrentUserId(), itemId, getCurrentTicks());
+            ApiClient.reportPlaybackProgress(Dashboard.getCurrentUserId(), itemId, getCurrentTicks(), currentMediaElement.paused);
         }
 
         function clearProgressInterval() {
@@ -1064,7 +1064,9 @@
         };
 
         self.seek = function (position) {
-            currentMediaElement.currentTime = position / (1000 * 10000);
+
+            changeStream(position);
+
         };
         
         self.mute = function () {

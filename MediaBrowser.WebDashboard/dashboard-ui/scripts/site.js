@@ -791,6 +791,7 @@ var Dashboard = {
 
         }
         else if (msg.MessageType === "Playstate") {
+
             if (msg.Data.Command === 'Stop') {
                 MediaPlayer.stop();
             }
