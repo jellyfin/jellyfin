@@ -226,6 +226,12 @@ namespace MediaBrowser.Model.Configuration
         public ManualLoginCategory[] ManualLoginClients { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [enable tv db updates].
+        /// </summary>
+        /// <value><c>true</c> if [enable tv db updates]; otherwise, <c>false</c>.</value>
+        public bool EnableTvDbUpdates { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>
         public ServerConfiguration()

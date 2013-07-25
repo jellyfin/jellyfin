@@ -38,11 +38,12 @@
             return;
         }
 
-        $('#chkEnableInternetProviders', page).checked(config.EnableInternetProviders).checkboxradio("refresh");
         $('#chkSaveLocal', page).checked(config.SaveLocalMeta).checkboxradio("refresh");
         $('#txtRefreshDays', page).val(config.MetadataRefreshDays);
         $('#selectLanguage', page).val(config.PreferredMetadataLanguage).selectmenu("refresh");
         $('#selectCountry', page).val(config.MetadataCountryCode).selectmenu("refresh");
+        $('#chkEnableInternetProviders', page).checked(config.EnableInternetProviders).checkboxradio("refresh");
+        $('#chkEnableTvdbUpdates', page).checked(config.EnableTvDbUpdates).checkboxradio("refresh");
 
         Dashboard.hideLoadingMsg();
     },
@@ -86,6 +87,7 @@
 
         ApiClient.getServerConfiguration().done(function (config) {
 
+            config.EnableTvDbUpdates = $('#chkEnableTvdbUpdates', form).checked();
             config.EnableInternetProviders = $('#chkEnableInternetProviders', form).checked();
             config.SaveLocalMeta = $('#chkSaveLocal', form).checked();
             config.MetadataRefreshDays = $('#txtRefreshDays', form).val();

@@ -235,7 +235,7 @@ namespace MediaBrowser.Providers.TV
             }
 
             // Examine if there's no local metadata, or save local is on (to get updates)
-            if (!HasLocalMeta(series) || isForcedRefresh)
+            if (isForcedRefresh || ConfigurationManager.Configuration.EnableTvDbUpdates || !HasLocalMeta(series))
             {
                 var seriesXmlPath = Path.Combine(seriesDataPath, seriesXmlFilename);
                 var actorsXmlPath = Path.Combine(seriesDataPath, "actors.xml");
