@@ -206,7 +206,7 @@ namespace MediaBrowser.Controller.Entities
                 {LocalizedStrings.Instance.GetString("GenreDispPref"), GetIndexByGenre},
                 {LocalizedStrings.Instance.GetString("DirectorDispPref"), GetIndexByDirector},
                 {LocalizedStrings.Instance.GetString("YearDispPref"), GetIndexByYear},
-                {LocalizedStrings.Instance.GetString("OfficialRatingDispPref"), null},
+                //{LocalizedStrings.Instance.GetString("OfficialRatingDispPref"), null},
                 {LocalizedStrings.Instance.GetString("StudioDispPref"), GetIndexByStudio}
             };
 
