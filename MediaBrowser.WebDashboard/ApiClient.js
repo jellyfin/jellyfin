@@ -1898,10 +1898,11 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 throw new Error("null name");
             }
 
-            var url = self.getUrl("Users/" + name + "/authenticatebyname");
+            var url = self.getUrl("Users/authenticatebyname");
 
             var postData = {
-                password: MediaBrowser.SHA1(password || "")
+                password: MediaBrowser.SHA1(password || ""),
+                Username: name
             };
 
             return self.ajax({
