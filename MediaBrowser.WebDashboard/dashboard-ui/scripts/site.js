@@ -419,7 +419,8 @@ var Dashboard = {
 
     reloadPageWhenServerAvailable: function (retryCount) {
 
-        ApiClient.getSystemInfo().done(function (info) {
+        // Don't use apiclient method because we don't want it reporting authentication under the old version
+        $.getJSON(ApiClient.getUrl("System/Info")).done(function (info) {
 
             // If this is back to false, the restart completed
             if (!info.HasPendingRestart) {
