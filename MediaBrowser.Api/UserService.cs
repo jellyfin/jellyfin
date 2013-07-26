@@ -88,7 +88,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class AuthenticateUser
     /// </summary>
-    [Route("/Users/{Name}/AuthenticateByName", "POST")]
+    [Route("/Users/AuthenticateByName", "POST")]
     [Api(Description = "Authenticates a user")]
     public class AuthenticateUserByName : IReturn<AuthenticationResult>
     {
@@ -96,8 +96,8 @@ namespace MediaBrowser.Api
         /// Gets or sets the id.
         /// </summary>
         /// <value>The id.</value>
-        [ApiMember(Name = "Name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public string Name { get; set; }
+        [ApiMember(Name = "Username", IsRequired = true, DataType = "string", ParameterType = "body", Verb = "POST")]
+        public string Username { get; set; }
 
         /// <summary>
         /// Gets or sets the password.
@@ -279,7 +279,7 @@ namespace MediaBrowser.Api
 
         public object Post(AuthenticateUserByName request)
         {
-            var user = _userManager.Users.FirstOrDefault(i => string.Equals(request.Name, i.Name, StringComparison.OrdinalIgnoreCase));
+            var user = _userManager.Users.FirstOrDefault(i => string.Equals(request.Username, i.Name, StringComparison.OrdinalIgnoreCase));
 
             var result = AuthenticateUser(new AuthenticateUser { Id = user.Id, Password = request.Password }).Result;
 
