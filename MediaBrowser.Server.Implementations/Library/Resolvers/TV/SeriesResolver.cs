@@ -13,6 +13,13 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
     /// </summary>
     public class SeriesResolver : FolderResolver<Series>
     {
+        private readonly ILibraryManager _libraryManager;
+
+        public SeriesResolver(ILibraryManager libraryManager)
+        {
+            _libraryManager = libraryManager;
+        }
+
         /// <summary>
         /// Gets the priority.
         /// </summary>
@@ -46,6 +53,15 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
                     return null;
                 }
 
+                var collectionType = args.Parent == null ? null : _libraryManager.FindCollectionType(args.Parent);
+
+                // If there's a collection type and it's not tv, it can't be a series
+                if (!string.IsNullOrEmpty(collectionType) &&
+                    !string.Equals(collectionType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))
+                {
+                    return null;
+                }
+                
                 // It's a Series if any of the following conditions are met:
                 // series.xml exists
                 // [tvdbid= is present in the path

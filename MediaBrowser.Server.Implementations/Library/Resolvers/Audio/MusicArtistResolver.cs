@@ -1,6 +1,8 @@
 ﻿using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
+using MediaBrowser.Model.Entities;
+using System;
 using System.IO;
 using System.Linq;
 
@@ -11,6 +13,13 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
     /// </summary>
     public class MusicArtistResolver : ItemResolver<MusicArtist>
     {
+        private readonly ILibraryManager _libraryManager;
+
+        public MusicArtistResolver(ILibraryManager libraryManager)
+        {
+            _libraryManager = libraryManager;
+        }
+
         /// <summary>
         /// Gets the priority.
         /// </summary>
@@ -39,6 +48,15 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
                 return null;
             }
 
+            var collectionType = args.Parent == null ? null : _libraryManager.FindCollectionType(args.Parent);
+
+            // If there's a collection type and it's not music, it can't be a series
+            if (!string.IsNullOrEmpty(collectionType) &&
+                !string.Equals(collectionType, CollectionType.Music, StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+            
             // If we contain an album assume we are an artist folder
             return args.FileSystemChildren.Where(i => (i.Attributes & FileAttributes.Directory) == FileAttributes.Directory).Any(i => MusicAlbumResolver.IsMusicAlbum(i.FullName)) ? new MusicArtist() : null;
         }
