@@ -72,7 +72,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The display prefs id.</value>
         [IgnoreDataMember]
-        protected virtual Guid DisplayPreferencesId
+        public virtual Guid DisplayPreferencesId
         {
             get
             {

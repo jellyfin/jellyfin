@@ -21,6 +21,12 @@ namespace MediaBrowser.Api
         /// <value>The id.</value>
         [ApiMember(Name = "DisplayPreferencesId", Description = "DisplayPreferences Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public Guid DisplayPreferencesId { get; set; }
+
+        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public Guid UserId { get; set; }
+
+        [ApiMember(Name = "Client", Description = "Client", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string Client { get; set; }
     }
 
     [Route("/DisplayPreferences/{Id}", "GET")]
@@ -33,6 +39,12 @@ namespace MediaBrowser.Api
         /// <value>The id.</value>
         [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public Guid Id { get; set; }
+
+        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public Guid UserId { get; set; }
+
+        [ApiMember(Name = "Client", Description = "Client", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string Client { get; set; }
     }
     
     /// <summary>
@@ -66,7 +78,7 @@ namespace MediaBrowser.Api
         /// <param name="request">The request.</param>
         public object Get(GetDisplayPreferences request)
         {
-            var result = _displayPreferencesManager.GetDisplayPreferences(request.Id);
+            var result = _displayPreferencesManager.GetDisplayPreferences(request.Id, request.UserId, request.Client);
 
             return ToOptimizedResult(result);
         }
@@ -80,7 +92,7 @@ namespace MediaBrowser.Api
             // Serialize to json and then back so that the core doesn't see the request dto type
             var displayPreferences = _jsonSerializer.DeserializeFromString<DisplayPreferences>(_jsonSerializer.SerializeToString(request));
 
-            var task = _displayPreferencesManager.SaveDisplayPreferences(displayPreferences, CancellationToken.None);
+            var task = _displayPreferencesManager.SaveDisplayPreferences(displayPreferences, request.UserId, request.Client, CancellationToken.None);
 
             Task.WaitAll(task);
         }
