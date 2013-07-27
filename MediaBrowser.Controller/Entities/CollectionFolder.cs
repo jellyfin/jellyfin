@@ -35,7 +35,7 @@ namespace MediaBrowser.Controller.Entities
         /// Allow different display preferences for each collection folder
         /// </summary>
         /// <value>The display prefs id.</value>
-        protected override Guid DisplayPreferencesId
+        public override Guid DisplayPreferencesId
         {
             get
             {

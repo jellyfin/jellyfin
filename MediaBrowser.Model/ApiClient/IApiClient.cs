@@ -477,8 +477,10 @@ namespace MediaBrowser.Model.ApiClient
         /// Gets the display preferences.
         /// </summary>
         /// <param name="id">The id.</param>
+        /// <param name="userId">The user id.</param>
+        /// <param name="client">The client.</param>
         /// <returns>Task{BaseItemDto}.</returns>
-        Task<DisplayPreferences> GetDisplayPreferencesAsync(string id);
+        Task<DisplayPreferences> GetDisplayPreferencesAsync(string id, string userId, string client);
 
         /// <summary>
         /// Updates display preferences for a user
@@ -487,7 +489,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="displayPreferences">The display preferences.</param>
         /// <returns>Task{DisplayPreferences}.</returns>
         /// <exception cref="System.ArgumentNullException">userId</exception>
-        Task UpdateDisplayPreferencesAsync(DisplayPreferences displayPreferences);
+        Task UpdateDisplayPreferencesAsync(DisplayPreferences displayPreferences, string userId, string client);
 
         /// <summary>
         /// Posts a set of data to a url, and deserializes the return stream into T

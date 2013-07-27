@@ -85,9 +85,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             string[] queries = {
 
-                                "create table if not exists displaypreferences (id GUID, data BLOB)",
-                                "create unique index if not exists displaypreferencesindex on displaypreferences (id)",
-                                "create table if not exists schema_version (table_name primary key, version)",
+                                "create table if not exists userdisplaypreferences (id GUID, userId GUID, client text, data BLOB)",
+                                "create unique index if not exists userdisplaypreferencesindex on userdisplaypreferences (id, userId, client)",
                                 //pragmas
                                 "pragma temp_store = memory"
                                };
@@ -99,10 +98,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// Save the display preferences associated with an item in the repo
         /// </summary>
         /// <param name="displayPreferences">The display preferences.</param>
+        /// <param name="userId">The user id.</param>
+        /// <param name="client">The client.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        public async Task SaveDisplayPreferences(DisplayPreferences displayPreferences, CancellationToken cancellationToken)
+        public async Task SaveDisplayPreferences(DisplayPreferences displayPreferences, Guid userId, string client, CancellationToken cancellationToken)
         {
             if (displayPreferences == null)
             {
@@ -131,9 +132,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 using (var cmd = _connection.CreateCommand())
                 {
-                    cmd.CommandText = "replace into displaypreferences (id, data) values (@1, @2)";
+                    cmd.CommandText = "replace into userdisplaypreferences (id, userid, client, data) values (@1, @2, @3, @4)";
                     cmd.AddParam("@1", displayPreferences.Id);
-                    cmd.AddParam("@2", serialized);
+                    cmd.AddParam("@2", userId);
+                    cmd.AddParam("@3", client);
+                    cmd.AddParam("@4", serialized);
 
                     cmd.Transaction = transaction;
 
@@ -177,9 +180,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// Gets the display preferences.
         /// </summary>
         /// <param name="displayPreferencesId">The display preferences id.</param>
+        /// <param name="userId">The user id.</param>
+        /// <param name="client">The client.</param>
         /// <returns>Task{DisplayPreferences}.</returns>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        public DisplayPreferences GetDisplayPreferences(Guid displayPreferencesId)
+        public DisplayPreferences GetDisplayPreferences(Guid displayPreferencesId, Guid userId, string client)
         {
             if (displayPreferencesId == Guid.Empty)
             {
@@ -187,10 +192,16 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
 
             var cmd = _connection.CreateCommand();
-            cmd.CommandText = "select data from displaypreferences where id = @id";
+            cmd.CommandText = "select data from userdisplaypreferences where id = @id and userId=@userId and client=@client";
 
             var idParam = cmd.Parameters.Add("@id", DbType.Guid);
             idParam.Value = displayPreferencesId;
+
+            var userIdParam = cmd.Parameters.Add("@userId", DbType.Guid);
+            userIdParam.Value = userId;
+
+            var clientParam = cmd.Parameters.Add("@client", DbType.String);
+            clientParam.Value = client;
 
             using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult | CommandBehavior.SingleRow))
             {

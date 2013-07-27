@@ -20,16 +20,20 @@ namespace MediaBrowser.Controller.Persistence
         /// Saves display preferences for an item
         /// </summary>
         /// <param name="displayPreferences">The display preferences.</param>
+        /// <param name="userId">The user id.</param>
+        /// <param name="client">The client.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SaveDisplayPreferences(DisplayPreferences displayPreferences,
+        Task SaveDisplayPreferences(DisplayPreferences displayPreferences, Guid userId, string client,
                                     CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the display preferences.
         /// </summary>
         /// <param name="displayPreferencesId">The display preferences id.</param>
+        /// <param name="userId">The user id.</param>
+        /// <param name="client">The client.</param>
         /// <returns>Task{DisplayPreferences}.</returns>
-        DisplayPreferences GetDisplayPreferences(Guid displayPreferencesId);
+        DisplayPreferences GetDisplayPreferences(Guid displayPreferencesId, Guid userId, string client);
     }
 }
