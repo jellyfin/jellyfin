@@ -219,9 +219,10 @@ namespace MediaBrowser.Model.ApiClient
         /// Gets a studio
         /// </summary>
         /// <param name="name">The name.</param>
+        /// <param name="userId">The user id.</param>
         /// <returns>Task{BaseItemDto}.</returns>
         /// <exception cref="ArgumentNullException">userId</exception>
-        Task<BaseItemDto> GetStudioAsync(string name);
+        Task<BaseItemDto> GetStudioAsync(string name, string userId);
 
         /// <summary>
         /// Gets the next up async.
@@ -234,17 +235,19 @@ namespace MediaBrowser.Model.ApiClient
         /// Gets a genre
         /// </summary>
         /// <param name="name">The name.</param>
+        /// <param name="userId">The user id.</param>
         /// <returns>Task{BaseItemDto}.</returns>
         /// <exception cref="ArgumentNullException">userId</exception>
-        Task<BaseItemDto> GetGenreAsync(string name);
+        Task<BaseItemDto> GetGenreAsync(string name, string userId);
 
         /// <summary>
         /// Gets the artist async.
         /// </summary>
         /// <param name="name">The name.</param>
+        /// <param name="userId">The user id.</param>
         /// <returns>Task{BaseItemDto}.</returns>
         /// <exception cref="ArgumentNullException">name</exception>
-        Task<BaseItemDto> GetArtistAsync(string name);
+        Task<BaseItemDto> GetArtistAsync(string name, string userId);
 
         /// <summary>
         /// Restarts the server.
@@ -262,17 +265,10 @@ namespace MediaBrowser.Model.ApiClient
         /// Gets a person
         /// </summary>
         /// <param name="name">The name.</param>
+        /// <param name="userId">The user id.</param>
         /// <returns>Task{BaseItemDto}.</returns>
         /// <exception cref="ArgumentNullException">userId</exception>
-        Task<BaseItemDto> GetPersonAsync(string name);
-
-        /// <summary>
-        /// Gets a year
-        /// </summary>
-        /// <param name="year">The year.</param>
-        /// <returns>Task{BaseItemDto}.</returns>
-        /// <exception cref="ArgumentNullException">userId</exception>
-        Task<BaseItemDto> GetYearAsync(int year);
+        Task<BaseItemDto> GetPersonAsync(string name, string userId);
 
         /// <summary>
         /// Gets a list of plugins installed on the server

@@ -703,6 +703,36 @@ namespace MediaBrowser.Model.Dto
             get { return string.Equals(Type, "AggregateFolder", StringComparison.OrdinalIgnoreCase); }
         }
 
+        [IgnoreDataMember]
+        public bool IsMusicGenre
+        {
+            get { return string.Equals(Type, "MusicGenre", StringComparison.OrdinalIgnoreCase); }
+        }
+
+        [IgnoreDataMember]
+        public bool IsGameGenre
+        {
+            get { return string.Equals(Type, "GameGenre", StringComparison.OrdinalIgnoreCase); }
+        }
+
+        [IgnoreDataMember]
+        public bool IsGenre
+        {
+            get { return string.Equals(Type, "Genre", StringComparison.OrdinalIgnoreCase); }
+        }
+
+        [IgnoreDataMember]
+        public bool IsArtist
+        {
+            get { return string.Equals(Type, "Artist", StringComparison.OrdinalIgnoreCase); }
+        }
+
+        [IgnoreDataMember]
+        public bool IsStudio
+        {
+            get { return string.Equals(Type, "Studio", StringComparison.OrdinalIgnoreCase); }
+        }
+
         /// <summary>
         /// Occurs when [property changed].
         /// </summary>
