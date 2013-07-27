@@ -50,7 +50,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
         {
             return Task.Run(() =>
             {
-                var minDateModified = DateTime.UtcNow.AddDays(-45);
+                var minDateModified = DateTime.UtcNow.AddDays(-30);
 
                 DeleteCacheFilesFromDirectory(cancellationToken, ApplicationPaths.CachePath, minDateModified, progress);
             });
