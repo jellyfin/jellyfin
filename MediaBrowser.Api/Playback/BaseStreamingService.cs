@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using System.Globalization;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller;
@@ -111,6 +112,8 @@ namespace MediaBrowser.Api.Playback
             return Path.Combine(folder, GetCommandLineArguments("dummy\\dummy", state, false).GetMD5() + (outputFileExtension ?? string.Empty).ToLower());
         }
 
+        protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
+        
         /// <summary>
         /// The fast seek offset seconds
         /// </summary>
@@ -132,7 +135,7 @@ namespace MediaBrowser.Api.Playback
 
                 if (seconds > 0)
                 {
-                    return string.Format("-ss {0}", seconds);
+                    return string.Format("-ss {0}", seconds.ToString(UsCulture));
                 }
             }
 
@@ -153,7 +156,7 @@ namespace MediaBrowser.Api.Playback
             {
                 if (TimeSpan.FromTicks(time.Value).TotalSeconds - FastSeekOffsetSeconds > 0)
                 {
-                    return string.Format(" -ss {0}", FastSeekOffsetSeconds);
+                    return string.Format(" -ss {0}", FastSeekOffsetSeconds.ToString(UsCulture));
                 }
             }
 
