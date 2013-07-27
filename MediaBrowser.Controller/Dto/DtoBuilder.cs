@@ -272,7 +272,7 @@ namespace MediaBrowser.Controller.Dto
         {
             if (item.IsFolder && fields.Contains(ItemFields.DisplayPreferencesId))
             {
-                dto.DisplayPreferencesId = ((Folder)item).GetDisplayPreferencesId(user.Id).ToString();
+                dto.DisplayPreferencesId = ((Folder) item).DisplayPreferencesId.ToString("N");
             }
 
             if (item.IsFolder)
