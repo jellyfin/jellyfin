@@ -9,6 +9,7 @@ using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Session;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
+using MediaBrowser.Model.Users;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -454,7 +455,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="sha1Hash">The sha1 hash.</param>
         /// <returns>Task.</returns>
         /// <exception cref="ArgumentNullException">userId</exception>
-        Task AuthenticateUserAsync(string username, byte[] sha1Hash);
+        Task<AuthenticationResult> AuthenticateUserAsync(string username, byte[] sha1Hash);
 
         /// <summary>
         /// Updates the server configuration async.
