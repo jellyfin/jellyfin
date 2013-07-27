@@ -12,6 +12,8 @@
         <description>Contains common model objects and interfaces used by all Media Browser solutions.</description>
         <copyright>Copyright © Media Browser 2013</copyright>
         <dependencies>
+			<group targetFramework=".NETFramework4.5"/>
+            <group targetFramework=".NETFramework3.5"/>
             <group targetFramework=".NETPortable0.0-net45+sl4+wp71+win8">
                 <dependency id="Microsoft.Bcl.Async" version="1.0.16" />
             </group>
