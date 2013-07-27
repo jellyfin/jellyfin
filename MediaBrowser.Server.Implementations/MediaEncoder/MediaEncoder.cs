@@ -580,8 +580,8 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
             var fastSeekSeconds = offset.TotalSeconds >= 1 ? offset.TotalSeconds - 1 : 0;
             var slowSeekSeconds = offset.TotalSeconds >= 1 ? 1 : 0;
 
-            var fastSeekParam = fastSeekSeconds > 0 ? "-ss " + fastSeekSeconds + " " : string.Empty;
-            var slowSeekParam = slowSeekSeconds > 0 ? " -ss " + slowSeekSeconds : string.Empty;
+            var fastSeekParam = fastSeekSeconds > 0 ? "-ss " + fastSeekSeconds.ToString(UsCulture) + " " : string.Empty;
+            var slowSeekParam = slowSeekSeconds > 0 ? " -ss " + slowSeekSeconds.ToString(UsCulture) : string.Empty;
 
             var encodingParam = string.IsNullOrEmpty(language) ? string.Empty :
                 GetSubtitleLanguageEncodingParam(language) + " ";
@@ -798,8 +798,8 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
             var fastSeekSeconds = offset.TotalSeconds >= 1 ? offset.TotalSeconds - 1 : 0;
             var slowSeekSeconds = offset.TotalSeconds >= 1 ? 1 : 0;
 
-            var fastSeekParam = fastSeekSeconds > 0 ? "-ss " + fastSeekSeconds + " " : string.Empty;
-            var slowSeekParam = slowSeekSeconds > 0 ? " -ss " + slowSeekSeconds : string.Empty;
+            var fastSeekParam = fastSeekSeconds > 0 ? "-ss " + fastSeekSeconds.ToString(UsCulture) + " " : string.Empty;
+            var slowSeekParam = slowSeekSeconds > 0 ? " -ss " + slowSeekSeconds.ToString(UsCulture) : string.Empty;
 
             var process = new Process
             {
@@ -1032,7 +1032,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
 
             if (offset.HasValue)
             {
-                args = string.Format("-ss {0} ", Convert.ToInt32(offset.Value.TotalSeconds)) + args;
+                args = string.Format("-ss {0} ", Convert.ToInt32(offset.Value.TotalSeconds)).ToString(UsCulture) + args;
             }
 
             var process = new Process
