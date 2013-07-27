@@ -81,16 +81,6 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        /// <summary>
-        /// Gets the display preferences id.
-        /// </summary>
-        /// <param name="userId">The user id.</param>
-        /// <returns>Guid.</returns>
-        public Guid GetDisplayPreferencesId(Guid userId)
-        {
-            return (userId + DisplayPreferencesId.ToString()).GetMD5();
-        }
-
         public List<LinkedChild> LinkedChildren { get; set; }
 
         protected virtual bool SupportsShortcutChildren
