@@ -7,8 +7,8 @@
     <ProjectGuid>{657B5410-7C3B-4806-9753-D254102CE537}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MediaBrowser.Model.net35</RootNamespace>
-    <AssemblyName>MediaBrowser.Model.net35</AssemblyName>
+    <RootNamespace>MediaBrowser.Model</RootNamespace>
+    <AssemblyName>MediaBrowser.Model</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
@@ -367,7 +367,7 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>if $(ConfigurationName) == Release (
-xcopy "$(TargetPath)" "$(SolutionDir)\Nuget\dlls\" /y /d /r /i
+xcopy "$(TargetPath)" "$(SolutionDir)\Nuget\dlls\net35\" /y /d /r /i
 )</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
