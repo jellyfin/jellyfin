@@ -758,14 +758,16 @@
 
                 var videoType = (item.VideoType || "").toLowerCase();
 
+                var expirementalText = "This feature is expiremental. It may not work at all with some titles. Do you wish to continue?";
+
                 if (videoType == "dvd") {
 
-                    self.playWithWarning(items, startPosition, user, "dvdstreamconfirmed", "Dvd Folder Streaming");
+                    self.playWithWarning(items, startPosition, user, "dvdstreamconfirmed", "Dvd Folder Streaming", expirementalText);
                     return;
                 }
                 else if (videoType == "bluray") {
 
-                    self.playWithWarning(items, startPosition, user, "bluraystreamconfirmed", "Blu-ray Folder Streaming");
+                    self.playWithWarning(items, startPosition, user, "bluraystreamconfirmed", "Blu-ray Folder Streaming", expirementalText);
                     return;
                 }
                 else if (videoType == "iso") {
@@ -774,14 +776,20 @@
 
                     if (isoType == "dvd") {
 
-                        self.playWithWarning(items, startPosition, user, "dvdisostreamconfirmed", "Dvd Iso Streaming");
+                        self.playWithWarning(items, startPosition, user, "dvdisostreamconfirmed", "Dvd Iso Streaming", expirementalText);
                         return;
                     }
                     else if (isoType == "bluray") {
 
-                        self.playWithWarning(items, startPosition, user, "blurayisostreamconfirmed", "Blu-ray Iso Streaming");
+                        self.playWithWarning(items, startPosition, user, "blurayisostreamconfirmed", "Blu-ray Iso Streaming", expirementalText);
                         return;
                     }
+                }
+                else if ($.browser.msie && videoType) {
+                    
+                    self.playWithWarning(items, startPosition, user, "iewebmplugin", "Internet Explorer Playback", "For optimal video playback of Internet Explorer desktop edition, please install google's webm plugin for IE.<br/><br/><a target='_blank' href='https://tools.google.com/dlpage/webmmf'>https://tools.google.com/dlpage/webmmf</a>");
+                    return;
+
                 }
 
                 self.playInternal(items[0], startPosition, user);
@@ -789,7 +797,7 @@
             });
         };
 
-        self.playWithWarning = function (items, startPosition, user, localStorageKeyName, header) {
+        self.playWithWarning = function (items, startPosition, user, localStorageKeyName, header, text) {
 
             localStorageKeyName += new Date().getMonth();
 
@@ -802,7 +810,7 @@
                 return;
             }
 
-            Dashboard.confirm("This feature is expiremental. It may not work at all with some titles. Do you wish to continue?", header, function (result) {
+            Dashboard.confirm(text, header, function (result) {
 
                 if (result) {
 
