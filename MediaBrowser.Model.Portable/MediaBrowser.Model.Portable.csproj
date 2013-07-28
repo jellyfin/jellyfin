@@ -8,8 +8,8 @@
     <ProjectGuid>{D729ADB1-1C01-428D-B680-8EFACD687B2A}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MediaBrowser.Model.Portable</RootNamespace>
-    <AssemblyName>MediaBrowser.Model.Portable</AssemblyName>
+    <RootNamespace>MediaBrowser.Model</RootNamespace>
+    <AssemblyName>MediaBrowser.Model</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>Profile104</TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
@@ -382,7 +382,7 @@
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>if $(ConfigurationName) == Release (
-xcopy "$(TargetPath)" "$(SolutionDir)\Nuget\dlls\" /y /d /r /i
+xcopy "$(TargetPath)" "$(SolutionDir)\Nuget\dlls\portable\" /y /d /r /i
 )</PostBuildEvent>
   </PropertyGroup>
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
