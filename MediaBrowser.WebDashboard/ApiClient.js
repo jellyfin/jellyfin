@@ -3512,7 +3512,7 @@ MediaBrowser.SHA1 = function (msg) {
 			
 		var browser = match[1] || "";
 		
-		if (ua.indexOf("like gecko") != -1 && ua.indexOf('webkit') == -1)
+		if (ua.indexOf("like gecko") != -1 && ua.indexOf('webkit') == -1 && ua.indexOf('opera') == -1)
 		{
 			browser = "msie";
 		}
