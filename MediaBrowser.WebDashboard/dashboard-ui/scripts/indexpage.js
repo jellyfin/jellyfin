@@ -11,7 +11,7 @@
             'Did you know that the trailer plugin can automatically download trailers for existing movies in your collection?'
         ];
 
-        var random = Math.floor((Math.random() * tips.length * 2));
+        var random = Math.floor((Math.random() * tips.length * 1.5));
 
         var tip = tips[random];
         

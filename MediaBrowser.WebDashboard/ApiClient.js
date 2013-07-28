@@ -74,15 +74,24 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
             else if ($.browser.msie) {
                 name = "Internet Explorer";
             }
-            else if ($.browser.firefox || $.browser.mozilla) {
+            else if ($.browser.firefox) {
                 name = "Firefox";
             }
             else if ($.browser.opera) {
                 name = "Opera";
             }
-            else {
-                name = "Web Browser";
-            }
+			
+			if (name)
+			{
+				if ($.browser.version)
+				{
+					name += " " + $.browser.version;
+				}
+			}
+			else			
+			{
+				name = "Web Browser";
+			}
 
             if ($.browser.ipad) {
                 name += " Ipad";
@@ -3500,9 +3509,16 @@ MediaBrowser.SHA1 = function (msg) {
             /(iphone)/.exec(ua) ||
             /(android)/.exec(ua) ||
             [];
+			
+		var browser = match[1] || "";
+		
+		if (ua.indexOf("like gecko") != -1 && ua.indexOf('webkit') == -1)
+		{
+			browser = "msie";
+		}
 
         return {
-            browser: match[1] || "",
+            browser: browser,
             version: match[2] || "0",
             platform: platform_match[0] || ""
         };

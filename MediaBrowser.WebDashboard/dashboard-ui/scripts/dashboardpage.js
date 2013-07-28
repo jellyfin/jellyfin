@@ -136,7 +136,7 @@
             else if (device.indexOf('firefox') != -1) {
                 imgUrl = 'css/images/clients/firefox.png';
             }
-            else if (device == 'internet explorer') {
+            else if (device.indexOf('internet explorer') != -1) {
                 imgUrl = 'css/images/clients/ie.png';
             }
             else if (device.indexOf('safari') != -1) {
