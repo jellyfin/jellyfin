@@ -154,6 +154,12 @@
             $('#fldAirTime', page).hide();
         }
 
+        if (item.MediaType == "Video") {
+            $('#fld3dFormat', page).show();
+        } else {
+            $('#fld3dFormat', page).hide();
+        }
+
         if (item.Type == "Audio") {
             $('#fldAlbumArtist', page).show();
         } else {
@@ -280,6 +286,8 @@
         var selectStatus = $('#selectStatus', page);
         populateStatus(selectStatus);
         selectStatus.val(item.Status || "").selectmenu('refresh');
+
+        $('#select3dFormat', page).val(item.Video3DFormat || "").selectmenu('refresh');
 
         populateListView($('#listAirDays', page), item.AirDays);
         populateListView($('#listGenres', page), item.Genres);
@@ -538,6 +546,7 @@
                 EndDate: $('#txtEndDate', form).val(),
                 ProductionYear: $('#txtProductionYear', form).val(),
                 AspectRatio: $('#txtOriginalAspectRatio', form).val(),
+                Video3DFormat: $('#select3dFormat', form).val(),
 
                 Language: $('#selectLanguage', form).val(),
                 OfficialRating: $('#selectOfficialRating', form).val(),
