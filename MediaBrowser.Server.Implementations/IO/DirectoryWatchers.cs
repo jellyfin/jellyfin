@@ -338,6 +338,13 @@ namespace MediaBrowser.Server.Implementations.IO
                 return;
             }
 
+            var nameFromFullPath = Path.GetFileName(e.FullPath);
+            // Ignore certain files
+            if (!string.IsNullOrEmpty(nameFromFullPath) &&  _alwaysIgnoreFiles.Contains(nameFromFullPath, StringComparer.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
             // Ignore when someone manually creates a new folder
             if (e.ChangeType == WatcherChangeTypes.Created && name == "New folder")
             {
@@ -444,7 +451,15 @@ namespace MediaBrowser.Server.Implementations.IO
                     return false;
                 }
             }
-            catch
+            catch (DirectoryNotFoundException)
+            {
+                return false;
+            }
+            catch (FileNotFoundException)
+            {
+                return false;
+            }
+            catch (IOException)
             {
                 //the file is unavailable because it is:
                 //still being written to
@@ -452,6 +467,10 @@ namespace MediaBrowser.Server.Implementations.IO
                 //or does not exist (has already been processed)
                 Logger.Debug("{0} is locked.", path);
                 return true;
+            }
+            catch
+            {
+                return false;
             }
         }
 
