@@ -46,7 +46,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         /// <summary>
         /// The library update duration
         /// </summary>
-        private const int LibraryUpdateDuration = 60000;
+        private const int LibraryUpdateDuration = 20000;
 
         public LibraryChangedNotifier(ILibraryManager libraryManager, ISessionManager sessionManager, IServerManager serverManager, IUserManager userManager, ILogger logger)
         {
@@ -239,7 +239,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
                 ItemsUpdated = itemsUpdated.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user, collections, allRecursiveChildren)).Select(i => i.Id).Distinct().ToList(),
 
-                ItemsRemoved = itemsRemoved.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user, collections, allRecursiveChildren)).Select(i => i.Id).Distinct().ToList(),
+                ItemsRemoved = itemsRemoved.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user, collections, allRecursiveChildren, true)).Select(i => i.Id).Distinct().ToList(),
 
                 FoldersAddedTo = foldersAddedTo.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user, collections, allRecursiveChildren)).Select(i => i.Id).Distinct().ToList(),
 
@@ -255,14 +255,15 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         /// <param name="user">The user.</param>
         /// <param name="collections">The collections.</param>
         /// <param name="allRecursiveChildren">All recursive children.</param>
+        /// <param name="includeIfNotFound">if set to <c>true</c> [include if not found].</param>
         /// <returns>IEnumerable{``0}.</returns>
-        private IEnumerable<T> TranslatePhysicalItemToUserLibrary<T>(T item, User user, IEnumerable<BaseItem> collections, Dictionary<Guid, BaseItem> allRecursiveChildren)
+        private IEnumerable<T> TranslatePhysicalItemToUserLibrary<T>(T item, User user, IEnumerable<BaseItem> collections, Dictionary<Guid, BaseItem> allRecursiveChildren, bool includeIfNotFound = false)
             where T : BaseItem
         {
             // If the physical root changed, return the user root
             if (item is AggregateFolder)
             {
-                return new T[] { user.RootFolder as T };
+                return new[] { user.RootFolder as T };
             }
 
             // Need to find what user collection folder this belongs to
@@ -300,9 +301,9 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             }
 
             // Return it only if it's in the user's library
-            if (allRecursiveChildren.ContainsKey(item.Id))
+            if (includeIfNotFound || allRecursiveChildren.ContainsKey(item.Id))
             {
-                return new T[] { item };
+                return new[] { item };
             }
 
             return new T[] { };
