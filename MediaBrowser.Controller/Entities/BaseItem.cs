@@ -1009,7 +1009,7 @@ namespace MediaBrowser.Controller.Entities
             // Could not determine the integer value
             if (!value.HasValue)
             {
-                return true;
+                return !user.Configuration.BlockNotRated;
             }
 
             return value.Value <= user.Configuration.MaxParentalRating.Value;
