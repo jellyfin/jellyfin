@@ -1279,11 +1279,6 @@ namespace MediaBrowser.Controller.Entities
                 throw new ArgumentNullException("location");
             }
 
-            if (ProductionLocations == null)
-            {
-                ProductionLocations = new List<string>();
-            }
-
             if (!ProductionLocations.Contains(location, StringComparer.OrdinalIgnoreCase))
             {
                 ProductionLocations.Add(location);

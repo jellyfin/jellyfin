@@ -47,6 +47,7 @@ namespace MediaBrowser.Providers.Savers
                     "LocalTitle",
                     "SortTitle",
                     "PremiereDate",
+                    "EndDate",
                     "Budget",
                     "Revenue",
                     "Rating",
@@ -74,7 +75,9 @@ namespace MediaBrowser.Providers.Savers
                     "Trailer",
                     "CriticRating",
                     "CriticRatingSummary",
-                    "GamesDbId"
+                    "GamesDbId",
+                    "BirthDate",
+                    "DeathDate"
                 });
 
                 var position = xml.ToString().LastIndexOf("</", StringComparison.OrdinalIgnoreCase);
@@ -207,6 +210,18 @@ namespace MediaBrowser.Providers.Savers
                 else if (!(item is Episode))
                 {
                     builder.Append("<PremiereDate>" + SecurityElement.Escape(item.PremiereDate.Value.ToString("yyyy-MM-dd")) + "</PremiereDate>");
+                }
+            }
+
+            if (item.EndDate.HasValue)
+            {
+                if (item is Person)
+                {
+                    builder.Append("<DeathDate>" + SecurityElement.Escape(item.EndDate.Value.ToString("yyyy-MM-dd")) + "</DeathDate>");
+                }
+                else if (!(item is Episode))
+                {
+                    builder.Append("<EndDate>" + SecurityElement.Escape(item.EndDate.Value.ToString("yyyy-MM-dd")) + "</EndDate>");
                 }
             }
 
