@@ -24,7 +24,13 @@
             renderDetails(page, item, context);
             LibraryBrowser.renderDetailPageBackdrop(page, item);
 
-            if (MediaPlayer.canPlay(item)) {
+            if (item.LocationType == "Offline") {
+                $('#offlineIndicator', page).show();
+            } else {
+                $('#offlineIndicator', page).hide();
+            }
+
+            if (MediaPlayer.canPlay(item) && item.LocationType !== "Offline") {
                 $('#playButtonContainer', page).show();
             } else {
                 $('#playButtonContainer', page).hide();
@@ -32,7 +38,7 @@
 
             Dashboard.getCurrentUser().done(function (user) {
 
-                if (user.Configuration.IsAdministrator) {
+                if (user.Configuration.IsAdministrator && item.LocationType !== "Offline") {
                     $('#editButtonContainer', page).show();
                 } else {
                     $('#editButtonContainer', page).hide();

@@ -57,7 +57,7 @@
 
             renderHeader(page, item);
 
-            name = item.Name;
+            var name = item.Name;
 
             $('#itemImage', page).html(LibraryBrowser.getDetailImageHtml(item));
 
@@ -83,7 +83,7 @@
 
             Dashboard.getCurrentUser().done(function (user) {
 
-                if (user.Configuration.IsAdministrator) {
+                if (user.Configuration.IsAdministrator && item.LocationType !== "Offline") {
                     $('#editButtonContainer', page).show();
                 } else {
                     $('#editButtonContainer', page).hide();

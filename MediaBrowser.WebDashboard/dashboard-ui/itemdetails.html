@@ -103,7 +103,10 @@
                 <table class="detailPageContent primaryDetailPageContent">
                     <tr>
                         <td style="vertical-align: top; padding: 10px 1em 10px 0;">
-                            <div id="itemImage" class="itemImageContainer"></div>
+                            <div class="itemImageContainer">
+                                <div id="itemImage">
+                                </div>
+                            </div>
                         </td>
                         <td style="vertical-align: top; padding: 0; position: relative;">
                             <p><span class="itemName"></span><span class="itemMiscInfo" style="display: inline;"></span></p>
@@ -123,6 +126,9 @@
             <a href="#" id="lnkNextItem" class="lnkNextItem lnkSibling hide">Next →</a>
         </div>
         <div class="ui-body-a" style="text-align: center; padding: .25em 0 .5em;">
+            <span id="offlineIndicator" style="margin-left: .5em; display: none;">
+                <span style="background: #cc3333; padding: 5px 1em; border-radius: 5px;">OFFLINE</span>
+            </span>
             <span id="playButtonContainer" style="display: none;">
                 <button id="btnPlay" type="button" data-icon="play" data-inline="true" data-mini="true">Play</button>
             </span>
