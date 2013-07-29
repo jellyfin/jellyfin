@@ -74,11 +74,11 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
             else if ($.browser.msie) {
                 name = "Internet Explorer";
             }
-            else if ($.browser.firefox) {
-                name = "Firefox";
-            }
             else if ($.browser.opera) {
                 name = "Opera";
+            }
+            else if ($.browser.firefox || $.browser.mozilla) {
+                name = "Firefox";
             }
 			
 			if (name)
