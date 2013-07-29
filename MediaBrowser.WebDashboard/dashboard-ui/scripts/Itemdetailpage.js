@@ -171,6 +171,12 @@
             renderSoundtracks(page, item);
         }
 
+        if (item.Type == "MusicAlbum") {
+            renderMusicVideos(page, item);
+        } else {
+            $('#musicVideosCollapsible', page).show();
+        }
+
         renderThemeSongs(page, item);
         renderThemeVideos(page, item);
         renderCriticReviews(page, item, 1);
@@ -254,9 +260,9 @@
             $('.itemPath', page).hide();
         }
     }
-    
+
     function renderSoundtracks(page, item) {
-        
+
         if (item.Type == "MusicAlbum") {
             $('#soundtracksHeader', page).html("This album is the soundtrack for ...");
         } else {
@@ -592,6 +598,29 @@
 
     }
 
+    function renderMusicVideos(page, item) {
+
+        ApiClient.getItems(Dashboard.getCurrentUserId(), {
+
+            SortBy: "SortName",
+            SortOrder: "Ascending",
+            IncludeItemTypes: "MusicVideo",
+            Recursive: true,
+            Fields: "UserData,DisplayMediaType,ItemCounts,DateCreated"
+
+        }).done(function (result) {
+            if (result.Items.length) {
+
+                $('#musicVideosCollapsible', page).show();
+
+                $('#musicVideosContent', page).html(getVideosHtml(result.Items)).trigger('create');
+            } else {
+                $('#musicVideosCollapsible', page).hide();
+            }
+        });
+
+    }
+
     function renderThemeVideos(page, item) {
 
         ApiClient.getThemeVideos(Dashboard.getCurrentUserId(), item.Id).done(function (result) {
@@ -775,7 +804,9 @@
 
             var cssClass = "posterItem smallBackdropPosterItem";
 
-            html += '<a class="' + cssClass + '" href="#" onclick="MediaPlayer.playById(\'' + item.Id + '\');">';
+            var href = "itemdetails.html?id=" + item.Id;
+
+            html += '<a class="' + cssClass + '" href="' + href + '" onclick="MediaPlayer.playById(\'' + item.Id + '\'); return false;">';
 
             var imageTags = item.ImageTags || {};
 
