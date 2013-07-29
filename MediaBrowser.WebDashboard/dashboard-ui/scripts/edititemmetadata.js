@@ -463,7 +463,7 @@
     }
 
     function populateListView(list, items, sortCallback) {
-        items = items || new Array();
+        items = items || [];
         if (typeof (sortCallback) === 'undefined') {
             items.sort(function (a, b) { return a.toLowerCase().localeCompare(b.toLowerCase()); });
         } else {
@@ -471,7 +471,7 @@
         }
         var html = '';
         for (var i = 0; i < items.length; i++) {
-            html += '<li><a class="data">' + items[i] + '</a><a onclick="EditItemMetadataPage.removeElementFromListview(this)"></a></li>';
+            html += '<li><a class="data">' + items[i] + '</a><a href="#" onclick="EditItemMetadataPage.removeElementFromListview(this)"></a></li>';
         }
         list.html(html).listview('refresh');
     }
