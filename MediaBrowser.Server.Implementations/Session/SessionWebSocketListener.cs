@@ -38,13 +38,13 @@ namespace MediaBrowser.Server.Implementations.Session
         /// Initializes a new instance of the <see cref="SessionWebSocketListener" /> class.
         /// </summary>
         /// <param name="sessionManager">The session manager.</param>
-        /// <param name="logger">The logger.</param>
+        /// <param name="logManager">The log manager.</param>
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="userManager">The user manager.</param>
-        public SessionWebSocketListener(ISessionManager sessionManager, ILogger logger, ILibraryManager libraryManager, IUserManager userManager)
+        public SessionWebSocketListener(ISessionManager sessionManager, ILogManager logManager, ILibraryManager libraryManager, IUserManager userManager)
         {
             _sessionManager = sessionManager;
-            _logger = logger;
+            _logger = logManager.GetLogger(GetType().Name);
             _libraryManager = libraryManager;
             _userManager = userManager;
         }
@@ -58,6 +58,8 @@ namespace MediaBrowser.Server.Implementations.Session
         {
             if (string.Equals(message.MessageType, "Identity", StringComparison.OrdinalIgnoreCase))
             {
+                _logger.Debug("Received Identity message");
+
                 var vals = message.Data.Split('|');
 
                 var client = vals[0];
@@ -101,6 +103,8 @@ namespace MediaBrowser.Server.Implementations.Session
             }
             else if (string.Equals(message.MessageType, "PlaybackStart", StringComparison.OrdinalIgnoreCase))
             {
+                _logger.Debug("Received PlaybackStart message");
+                
                 var session = _sessionManager.Sessions.FirstOrDefault(i => i.WebSockets.Contains(message.Connection));
 
                 if (session != null && session.User != null)
@@ -139,6 +143,8 @@ namespace MediaBrowser.Server.Implementations.Session
             }
             else if (string.Equals(message.MessageType, "PlaybackStopped", StringComparison.OrdinalIgnoreCase))
             {
+                _logger.Debug("Received PlaybackStopped message");
+                
                 var session = _sessionManager.Sessions.FirstOrDefault(i => i.WebSockets.Contains(message.Connection));
 
                 if (session != null && session.User != null)
