@@ -54,6 +54,22 @@
 
         });
 
+        $(window).on("beforeunload", function () {
+
+            var item = currentItem;
+            var media = currentMediaElement;
+            
+            // Try to report playback stopped before the browser closes
+            if (item && media && currentProgressInterval) {
+                
+                var endTime = currentMediaElement.currentTime;
+
+                var position = Math.floor(10000000 * endTime) + startTimeTicksOffset;
+
+                ApiClient.reportPlaybackStopped(Dashboard.getCurrentUserId(), currentItem.Id, position);
+            }
+        });
+
         function replaceQueryString(url, param, value) {
             var re = new RegExp("([?|&])" + param + "=.*?(&|$)", "i");
             if (url.match(re))
@@ -528,7 +544,7 @@
             // HLS must be at the top for safari
             // Webm must be ahead of mp4 due to the issue of mp4 playing too fast in chrome
 
-            var requiresControls = $.browser.msie || $.browser.android || $.browser.iphone || $.browser.ipad;
+            var requiresControls = $.browser.msie || $.browser.android || ($.browser.webkit && !$.browser.chrome);
 
             // Can't autoplay in these browsers so we need to use the full controls
             if (requiresControls) {
