@@ -609,15 +609,6 @@ namespace MediaBrowser.Model.ApiClient
         string GetPersonImageUrl(BaseItemPerson item, ImageOptions options);
 
         /// <summary>
-        /// Gets the person image URL.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="options">The options.</param>
-        /// <returns>System.String.</returns>
-        /// <exception cref="ArgumentNullException">item</exception>
-        string GetPersonImageUrl(BaseItemDto item, ImageOptions options);
-
-        /// <summary>
         /// Gets an image url that can be used to download an image from the api
         /// </summary>
         /// <param name="name">The name of the person</param>
@@ -644,15 +635,6 @@ namespace MediaBrowser.Model.ApiClient
         string GetYearImageUrl(int year, ImageOptions options);
 
         /// <summary>
-        /// Gets the genre image URL.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="options">The options.</param>
-        /// <returns>System.String.</returns>
-        /// <exception cref="ArgumentNullException">item</exception>
-        string GetGenreImageUrl(BaseItemDto item, ImageOptions options);
-
-        /// <summary>
         /// Gets an image url that can be used to download an image from the api
         /// </summary>
         /// <param name="name">The name.</param>
@@ -662,14 +644,21 @@ namespace MediaBrowser.Model.ApiClient
         string GetGenreImageUrl(string name, ImageOptions options);
 
         /// <summary>
-        /// Gets the studio image URL.
+        /// Gets the music genre image URL.
         /// </summary>
-        /// <param name="item">The item.</param>
+        /// <param name="name">The name.</param>
         /// <param name="options">The options.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="ArgumentNullException">item</exception>
-        string GetStudioImageUrl(BaseItemDto item, ImageOptions options);
+        string GetMusicGenreImageUrl(string name, ImageOptions options);
 
+        /// <summary>
+        /// Gets the game genre image URL.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="options">The options.</param>
+        /// <returns>System.String.</returns>
+        string GetGameGenreImageUrl(string name, ImageOptions options);
+        
         /// <summary>
         /// Gets an image url that can be used to download an image from the api
         /// </summary>
@@ -678,17 +667,6 @@ namespace MediaBrowser.Model.ApiClient
         /// <returns>System.String.</returns>
         /// <exception cref="ArgumentNullException">name</exception>
         string GetStudioImageUrl(string name, ImageOptions options);
-
-        /// <summary>
-        /// Gets the artist image URL.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="options">The options.</param>
-        /// <returns>System.String.</returns>
-        /// <exception cref="ArgumentNullException">item
-        /// or
-        /// options</exception>
-        string GetArtistImageUrl(BaseItemDto item, ImageOptions options);
 
         /// <summary>
         /// Gets the artist image URL.
