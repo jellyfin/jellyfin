@@ -229,6 +229,7 @@ namespace MediaBrowser.Api
             item.Language = request.Language;
             item.OfficialRating = request.OfficialRating;
             item.CustomRating = request.CustomRating;
+            
             item.DontFetchMeta = !(request.EnableInternetProviders ?? true);
             if (request.EnableInternetProviders ?? true)
             {
@@ -249,6 +250,12 @@ namespace MediaBrowser.Api
 
             item.ProviderIds = request.ProviderIds;
 
+            var video = item as Video;
+            if (video != null)
+            {
+                video.Video3DFormat = request.Video3DFormat;
+            }
+            
             var game = item as Game;
 
             if (game != null)
