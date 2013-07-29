@@ -2,7 +2,7 @@
 
     // The base query options
     var query = {
-        TargetSystems: 'Server,MBTheater,MBClassic'
+        TargetSystems: 'Server'
     };
 
     function reloadList(page) {
@@ -26,16 +26,27 @@
         availablePlugins = availablePlugins.filter(function (p) {
             return p.type == "UserInstalled";
         }).sort(function (a, b) {
-            return a.name > b.name ? 1 : -1;
+
+            var aName = (a.category || "General") + " " + a.name;
+            var bame = (b.category || "General") + " " + b.name;
+
+            return aName > bame ? 1 : -1;
         });
 
-        var serverhtml = '';
-        var theatrehtml = '';
-        var classichtml = "";
+        var pluginhtml = '';
+
+        var currentCategory;
 
         for (var i = 0, length = availablePlugins.length; i < length; i++) {
             var html = '';
             var plugin = availablePlugins[i];
+
+            var category = plugin.category || "General";
+            
+            if (category != currentCategory) {
+                html += '<h2 style="margin: .5em 0 0;">' + category + '</h2>';
+                currentCategory = category;
+            }
 
             html += "<a class='posterItem smallBackdropPosterItem transparentPosterItem borderlessPosterItem' href='addPlugin.html?name=" + encodeURIComponent(plugin.name) + "'>";
 
@@ -62,7 +73,7 @@
             })[0];
 
             if (installedPlugin) {
-                html += "<span class='installedPluginTitle'>"+ plugin.name + "</span> (Installed)";
+                html += "<span class='installedPluginTitle'>" + plugin.name + "</span> (Installed)";
             } else {
                 html += plugin.name;
             }
@@ -71,13 +82,7 @@
 
             html += "</a>";
 
-            if (plugin.targetSystem == "Server") {
-                serverhtml += html;
-            } else if (plugin.targetSystem == "MBTheater") {
-                theatrehtml += html;
-            } else if (plugin.targetSystem == "MBClassic") {
-                classichtml += html;
-            }
+            pluginhtml += html;
 
         }
 
@@ -85,27 +90,7 @@
             $("#noPlugins", page).hide();
         }
 
-        $('#pluginServerTiles', page).html(serverhtml);
-        $('#pluginTheatreTiles', page).html(theatrehtml);
-        $('#pluginClassicTiles', page).html(classichtml);
-
-        if (serverhtml) {
-            $('#pluginServerCollapsible', page).show();
-        } else {
-            $('#pluginServerCollapsible', page).hide();
-        }
-
-        if (theatrehtml) {
-            $('#pluginTheatreCollapsible', page).show();
-        } else {
-            $('#pluginTheatreCollapsible', page).hide();
-        }
-
-        if (classichtml) {
-            $('#pluginClassicCollapsible', page).show();
-        } else {
-            $('#pluginClassicCollapsible', page).hide();
-        }
+        $('#pluginTiles', page).html(pluginhtml);
 
         Dashboard.hideLoadingMsg();
     }
@@ -124,6 +109,12 @@
             } else {
                 query.IsPremium = null;
             }
+            reloadList(page);
+        });
+
+        $('#selectTargetSystem', page).on('change', function () {
+
+            query.TargetSystems = this.value;
             reloadList(page);
         });
 
