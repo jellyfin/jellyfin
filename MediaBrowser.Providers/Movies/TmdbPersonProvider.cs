@@ -23,7 +23,7 @@ namespace MediaBrowser.Providers.Movies
     public class TmdbPersonProvider : BaseMetadataProvider
     {
         protected readonly IProviderManager ProviderManager;
-        
+
         public TmdbPersonProvider(IJsonSerializer jsonSerializer, ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager)
             : base(logManager, configurationManager)
         {
@@ -74,12 +74,12 @@ namespace MediaBrowser.Providers.Movies
                 return ItemUpdateType.ImageUpdate | ItemUpdateType.MetadataDownload;
             }
         }
-        
+
         protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
         {
             if (HasAltMeta(item))
                 return false;
-            
+
             return base.NeedsRefreshInternal(item, providerInfo);
         }
 
@@ -87,7 +87,7 @@ namespace MediaBrowser.Providers.Movies
         {
             return item.LocationType == LocationType.FileSystem && item.ResolveArgs.ContainsMetaFileByName("person.xml");
         }
-        
+
         /// <summary>
         /// Fetches metadata and returns true or false indicating if any work that requires persistence was done
         /// </summary>
@@ -146,7 +146,7 @@ namespace MediaBrowser.Providers.Movies
         }
 
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
-        
+
         /// <summary>
         /// Gets the TMDB id.
         /// </summary>
@@ -233,11 +233,14 @@ namespace MediaBrowser.Providers.Movies
                 person.HomePageUrl = searchResult.homepage;
             }
 
-            if (!string.IsNullOrEmpty(searchResult.place_of_birth))
+            if (!person.LockedFields.Contains(MetadataFields.ProductionLocations))
             {
-                person.AddProductionLocation(searchResult.place_of_birth);
+                if (!string.IsNullOrEmpty(searchResult.place_of_birth))
+                {
+                    person.ProductionLocations = new List<string> { searchResult.place_of_birth };
+                }
             }
-            
+
             person.SetProviderId(MetadataProviders.Tmdb, searchResult.id.ToString(UsCulture));
         }
 

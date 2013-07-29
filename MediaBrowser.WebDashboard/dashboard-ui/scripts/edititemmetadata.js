@@ -69,7 +69,7 @@
 
             setFieldVisibilities(page, item);
             fillItemInfo(page, item);
-            
+
             if (item.Type == "Person" || item.Type == "Studio" || item.Type == "MusicGenre" || item.Type == "Genre" || item.Type == "Artist") {
                 $('#peopleTab', page).hide();
             } else {
@@ -143,7 +143,7 @@
         } else {
             $('#fldTvCom', page).hide();
         }
-        
+
         if (item.Type == "Series") {
             $('#fldStatus', page).show();
             $('#fldAirDays', page).show();
@@ -210,10 +210,12 @@
             $('#lblPremiereDate', page).html('Date of birth');
             $('#lblYear', page).html('Birth year');
             $('#lblEndDate', page).html('Death date');
+            $('#fldPlaceOfBirth', page).show();
         } else {
             $('#lblPremiereDate', page).html('Release date');
             $('#lblYear', page).html('Year');
             $('#lblEndDate', page).html('End date');
+            $('#fldPlaceOfBirth', page).hide();
         }
 
         if (item.MediaType == "Video") {
@@ -355,6 +357,9 @@
 
         $('#txtProductionYear', page).val(item.ProductionYear || "");
         $('#txtAirTime', page).val(convertTo24HourFormat(item.AirTime || ""));
+
+        var placeofBirth = item.ProductionLocations && item.ProductionLocations.length ? item.ProductionLocations[0] : '';
+        $('#txtPlaceOfBirth', page).val(placeofBirth);
 
         $('#txtOriginalAspectRatio', page).val(item.AspectRatio || "");
 
@@ -542,8 +547,8 @@
                 Tags: editableListViewValues($("#listTags", form)),
                 Studios: editableListViewValues($("#listStudios", form)).map(function (element) { return { Name: element }; }),
 
-                PremiereDate: $('#txtPremiereDate', form).val(),
-                EndDate: $('#txtEndDate', form).val(),
+                PremiereDate: $('#txtPremiereDate', form).val() || null,
+                EndDate: $('#txtEndDate', form).val() || null ,
                 ProductionYear: $('#txtProductionYear', form).val(),
                 AspectRatio: $('#txtOriginalAspectRatio', form).val(),
                 Video3DFormat: $('#select3dFormat', form).val(),
@@ -570,6 +575,13 @@
                     RottenTomatoes: $('#txtRottenTomatoes', form).val()
                 }
             };
+
+            if (currentItem.Type == "Person") {
+
+                var placeOfBirth = $('#txtPlaceOfBirth', form).val();
+
+                item.ProductionLocations = placeOfBirth ? [placeOfBirth] : [];
+            }
 
             var updatePromise;
 

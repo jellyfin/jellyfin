@@ -211,6 +211,18 @@ namespace MediaBrowser.Controller.Providers
                         break;
                     }
 
+                case "PlaceOfBirth":
+                    {
+                        var val = reader.ReadElementContentAsString();
+
+                        if (!string.IsNullOrWhiteSpace(val))
+                        {
+                            item.ProductionLocations = new List<string> { val };
+                        }
+
+                        break;
+                    }
+
                 case "Website":
                     {
                         var val = reader.ReadElementContentAsString();
@@ -459,6 +471,24 @@ namespace MediaBrowser.Controller.Providers
                             {
                                 item.PremiereDate = airDate.ToUniversalTime();
                                 item.ProductionYear = airDate.Year;
+                            }
+                        }
+
+                        break;
+                    }
+
+                case "DeathDate":
+                case "EndDate":
+                    {
+                        var firstAired = reader.ReadElementContentAsString();
+
+                        if (!string.IsNullOrWhiteSpace(firstAired))
+                        {
+                            DateTime airDate;
+
+                            if (DateTime.TryParse(firstAired, out airDate) && airDate.Year > 1850)
+                            {
+                                item.EndDate = airDate.ToUniversalTime();
                             }
                         }
 

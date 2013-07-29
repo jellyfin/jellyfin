@@ -3,7 +3,7 @@
     function reloadTips(page) {
 
         var tips = [
-            'Did you know that editing the artist or album of a music video will allow it to appear on the artist page?',
+            'Did you know that editing the artist or album of a music video will allow it to appear on the artist and album pages?',
             'Did you know that editing the tmdb id, tvdb id, and/or games db id of an album will allow media browser to link it to a movie, series or game as a soundtrack?',
             'Did you know that you can re-order your media collections by editing their sort names?',
             'Did you know that series, seasons, games and boxsets can have local trailers?',

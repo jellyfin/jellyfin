@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using System.Security;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Providers.Movies;
 using System;
@@ -23,7 +24,7 @@ namespace MediaBrowser.Providers.Savers
         {
             var wasMetadataEdited = (updateType & ItemUpdateType.MetadataEdit) == ItemUpdateType.MetadataEdit;
             var wasMetadataDownloaded = (updateType & ItemUpdateType.MetadataDownload) == ItemUpdateType.MetadataDownload;
-            
+
             // If new metadata has been downloaded or metadata was manually edited, proceed
             if ((wasMetadataEdited || wasMetadataDownloaded))
             {
@@ -47,11 +48,19 @@ namespace MediaBrowser.Providers.Savers
 
             XmlSaverHelpers.AddCommonNodes(item, builder);
 
+            if (item.ProductionLocations.Count > 0)
+            {
+                builder.Append("<PlaceOfBirth>" + SecurityElement.Escape(item.ProductionLocations[0]) + "</PlaceOfBirth>");
+            }
+
             builder.Append("</Item>");
 
             var xmlFilePath = GetSavePath(item);
 
-            XmlSaverHelpers.Save(builder, xmlFilePath, new string[] { });
+            XmlSaverHelpers.Save(builder, xmlFilePath, new[]
+                {
+                    "PlaceOfBirth"
+                });
 
             // Set last refreshed so that the provider doesn't trigger after the file save
             PersonProviderFromXml.Current.SetLastRefreshed(item, DateTime.UtcNow);
