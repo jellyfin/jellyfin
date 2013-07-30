@@ -41,6 +41,10 @@ namespace MediaBrowser.Model.Querying
         /// <summary>
         /// The dislikes
         /// </summary>
-        Dislikes = 9
+        Dislikes = 9,
+        /// <summary>
+        /// The is favorite or likes
+        /// </summary>
+        IsFavoriteOrLikes = 10,
     }
 }

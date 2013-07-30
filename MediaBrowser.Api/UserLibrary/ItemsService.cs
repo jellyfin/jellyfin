@@ -335,6 +335,22 @@ namespace MediaBrowser.Api.UserLibrary
         {
             switch (filter)
             {
+                case ItemFilter.IsFavoriteOrLikes:
+                    return items.Where(item =>
+                    {
+                        var userdata = repository.GetUserData(user.Id, item.GetUserDataKey());
+
+                        if (userdata == null)
+                        {
+                            return false;
+                        }
+
+                        var likes = userdata.Likes ?? false;
+                        var favorite = userdata.IsFavorite;
+
+                        return likes || favorite;
+                    });
+
                 case ItemFilter.Likes:
                     return items.Where(item =>
                     {

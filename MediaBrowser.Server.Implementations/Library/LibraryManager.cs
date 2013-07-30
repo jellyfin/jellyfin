@@ -850,7 +850,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var people = RootFolder.RecursiveChildren
                 .Where(c => c.People != null)
-                .SelectMany(c => c.People.Where(p => includedPersonTypes.Contains(p.Type)))
+                .SelectMany(c => c.People.Where(p => includedPersonTypes.Contains(p.Type, StringComparer.OrdinalIgnoreCase) || includedPersonTypes.Contains(p.Role, StringComparer.OrdinalIgnoreCase)))
                 .DistinctBy(p => p.Name, StringComparer.OrdinalIgnoreCase)
                 .ToList();
 

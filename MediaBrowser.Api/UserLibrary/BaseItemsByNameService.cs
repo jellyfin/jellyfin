@@ -169,6 +169,24 @@ namespace MediaBrowser.Api.UserLibrary
                 });
             }
 
+            if (filters.Contains(ItemFilter.IsFavoriteOrLikes))
+            {
+                items = items.Where(i =>
+                {
+                    var userdata = i.GetUserItemData(UserDataRepository, user.Id).Result;
+
+                    if (userdata == null)
+                    {
+                        return false;
+                    }
+
+                    var likes = userdata.Likes ?? false;
+                    var favorite = userdata.IsFavorite;
+
+                    return likes || favorite;
+                });
+            }
+            
             if (filters.Contains(ItemFilter.IsFavorite))
             {
                 items = items.Where(i =>
