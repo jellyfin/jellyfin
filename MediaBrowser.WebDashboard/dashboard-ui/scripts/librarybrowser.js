@@ -1518,7 +1518,7 @@
                 }
             }
 
-            if (item.OfficialRating) {
+            if (item.OfficialRating && item.Type !== "Season" && item.Type !== "Episode") {
                 miscInfo.push(item.OfficialRating);
             }
 

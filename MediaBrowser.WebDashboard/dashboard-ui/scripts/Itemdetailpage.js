@@ -174,7 +174,7 @@
         if (item.Type == "MusicAlbum") {
             renderMusicVideos(page, item);
         } else {
-            $('#musicVideosCollapsible', page).show();
+            $('#musicVideosCollapsible', page).hide();
         }
 
         renderThemeSongs(page, item);
