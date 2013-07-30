@@ -310,7 +310,6 @@ namespace MediaBrowser.Common.Implementations.Updates
 
         protected IEnumerable<PackageVersionInfo> FilterCatalog(IEnumerable<PackageInfo> catalog, bool withAutoUpdateEnabled)
         {
-            
             var plugins = ApplicationHost.Plugins;
 
             if (withAutoUpdateEnabled)

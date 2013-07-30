@@ -47,9 +47,10 @@ namespace MediaBrowser.Controller.Dto
         /// <param name="item">The item.</param>
         /// <param name="fields">The fields.</param>
         /// <param name="user">The user.</param>
+        /// <param name="owner">The owner.</param>
         /// <returns>Task{DtoBaseItem}.</returns>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        public async Task<BaseItemDto> GetBaseItemDto(BaseItem item, List<ItemFields> fields, User user = null)
+        public async Task<BaseItemDto> GetBaseItemDto(BaseItem item, List<ItemFields> fields, User user = null, BaseItem owner = null)
         {
             if (item == null)
             {
@@ -93,7 +94,7 @@ namespace MediaBrowser.Controller.Dto
                 AttachUserSpecificInfo(dto, item, user, fields);
             }
 
-            AttachBasicFields(dto, item, fields);
+            AttachBasicFields(dto, item, owner, fields);
 
             if (fields.Contains(ItemFields.SoundtrackIds))
             {
@@ -378,8 +379,9 @@ namespace MediaBrowser.Controller.Dto
         /// </summary>
         /// <param name="dto">The dto.</param>
         /// <param name="item">The item.</param>
+        /// <param name="owner">The owner.</param>
         /// <param name="fields">The fields.</param>
-        private void AttachBasicFields(BaseItemDto dto, BaseItem item, List<ItemFields> fields)
+        private void AttachBasicFields(BaseItemDto dto, BaseItem item, BaseItem owner, List<ItemFields> fields)
         {
             if (fields.Contains(ItemFields.DateCreated))
             {
@@ -495,7 +497,7 @@ namespace MediaBrowser.Controller.Dto
             // If there are no backdrops, indicate what parent has them in case the Ui wants to allow inheritance
             if (dto.BackdropImageTags.Count == 0)
             {
-                var parentWithBackdrop = GetParentBackdropItem(item);
+                var parentWithBackdrop = GetParentBackdropItem(item, owner);
 
                 if (parentWithBackdrop != null)
                 {
@@ -514,7 +516,7 @@ namespace MediaBrowser.Controller.Dto
             // If there is no logo, indicate what parent has one in case the Ui wants to allow inheritance
             if (!dto.HasLogo)
             {
-                var parentWithLogo = GetParentImageItem(item, ImageType.Logo);
+                var parentWithLogo = GetParentImageItem(item, ImageType.Logo, owner);
 
                 if (parentWithLogo != null)
                 {
@@ -527,7 +529,7 @@ namespace MediaBrowser.Controller.Dto
             // If there is no art, indicate what parent has one in case the Ui wants to allow inheritance
             if (!dto.HasArtImage)
             {
-                var parentWithImage = GetParentImageItem(item, ImageType.Art);
+                var parentWithImage = GetParentImageItem(item, ImageType.Art, owner);
 
                 if (parentWithImage != null)
                 {
@@ -936,10 +938,11 @@ namespace MediaBrowser.Controller.Dto
         /// If an item does not any backdrops, this can be used to find the first parent that does have one
         /// </summary>
         /// <param name="item">The item.</param>
+        /// <param name="owner">The owner.</param>
         /// <returns>BaseItem.</returns>
-        private BaseItem GetParentBackdropItem(BaseItem item)
+        private BaseItem GetParentBackdropItem(BaseItem item, BaseItem owner)
         {
-            var parent = item.Parent;
+            var parent = item.Parent ?? owner;
 
             while (parent != null)
             {
@@ -959,10 +962,11 @@ namespace MediaBrowser.Controller.Dto
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="type">The type.</param>
+        /// <param name="owner">The owner.</param>
         /// <returns>BaseItem.</returns>
-        private BaseItem GetParentImageItem(BaseItem item, ImageType type)
+        private BaseItem GetParentImageItem(BaseItem item, ImageType type, BaseItem owner)
         {
-            var parent = item.Parent;
+            var parent = item.Parent ?? owner;
 
             while (parent != null)
             {

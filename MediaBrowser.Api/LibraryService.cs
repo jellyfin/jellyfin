@@ -396,7 +396,7 @@ namespace MediaBrowser.Api
 
             var tasks = item.ThemeSongIds.Select(_itemRepo.RetrieveItem)
                             .OrderBy(i => i.SortName)
-                            .Select(i => dtoBuilder.GetBaseItemDto(i, fields, user));
+                            .Select(i => dtoBuilder.GetBaseItemDto(i, fields, user, item));
 
             var items = await Task.WhenAll(tasks).ConfigureAwait(false);
 
@@ -445,7 +445,7 @@ namespace MediaBrowser.Api
 
             var tasks = item.ThemeVideoIds.Select(_itemRepo.RetrieveItem)
                             .OrderBy(i => i.SortName)
-                            .Select(i => dtoBuilder.GetBaseItemDto(i, fields, user));
+                            .Select(i => dtoBuilder.GetBaseItemDto(i, fields, user, item));
 
             var items = await Task.WhenAll(tasks).ConfigureAwait(false);
 
