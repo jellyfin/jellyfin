@@ -245,7 +245,7 @@ namespace MediaBrowser.Providers.Savers
                 builder.Append("<Rating>" + SecurityElement.Escape(item.CommunityRating.Value.ToString(UsCulture)) + "</Rating>");
             }
 
-            if (item.ProductionYear.HasValue)
+            if (item.ProductionYear.HasValue && !(item is Person))
             {
                 builder.Append("<ProductionYear>" + SecurityElement.Escape(item.ProductionYear.Value.ToString(UsCulture)) + "</ProductionYear>");
             }
