@@ -67,31 +67,39 @@
         Dashboard.showLoadingMsg();
 
         ApiClient.getUser(userId).done(function (user) {
-            
-            ApiClient.authenticateUserByName(user.Name, password).done(function (result) {
 
-                user = result.User;
+            LoginPage.authenticateUserByName(user.Name, password);
+        });
 
-                Dashboard.setCurrentUser(user.Id);
+    },
+    
+    authenticateUserByName: function (username, password) {
 
-                if (user.Configuration.IsAdministrator) {
-                    window.location = "dashboard.html?u=" + user.Id;
-                } else {
-                    window.location = "index.html?u=" + user.Id;
-                }
+        Dashboard.showLoadingMsg();
 
-            }).fail(function () {
+        ApiClient.authenticateUserByName(username, password).done(function (result) {
 
-                $('#pw', '#loginPage').val('');
-                $('#txtManualName', '#loginPage').val('');
-                $('#txtManualPassword', '#loginPage').val('');
+            var user = result.User;
 
-                Dashboard.hideLoadingMsg();
+            Dashboard.setCurrentUser(user.Id);
 
-                setTimeout(function () {
-                    Dashboard.showError("Invalid user or password.");
-                }, 300);
-            });
+            if (user.Configuration.IsAdministrator) {
+                window.location = "dashboard.html?u=" + user.Id;
+            } else {
+                window.location = "index.html?u=" + user.Id;
+            }
+
+        }).fail(function () {
+
+            $('#pw', '#loginPage').val('');
+            $('#txtManualName', '#loginPage').val('');
+            $('#txtManualPassword', '#loginPage').val('');
+
+            Dashboard.hideLoadingMsg();
+
+            setTimeout(function () {
+                Dashboard.showError("Invalid user or password.");
+            }, 300);
         });
 
     },
@@ -160,7 +168,7 @@
 
     onManualSubmit: function () {
 
-        LoginPage.authenticateUser($('#txtManualName', '#loginPage').val(), $('#txtManualPassword', '#loginPage').val());
+        LoginPage.authenticateUserByName($('#txtManualName', '#loginPage').val(), $('#txtManualPassword', '#loginPage').val());
 
         // Disable default form submission
         return false;
