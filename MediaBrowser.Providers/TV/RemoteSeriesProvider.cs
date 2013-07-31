@@ -421,6 +421,7 @@ namespace MediaBrowser.Providers.TV
                 {
                     string actorName = p.SafeGetString("Name");
                     string actorRole = p.SafeGetString("Role");
+
                     if (!string.IsNullOrWhiteSpace(actorName))
                     {
                         // Sometimes tvdb actors have leading spaces
