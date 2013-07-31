@@ -281,6 +281,11 @@ namespace MediaBrowser.Api
         {
             var user = _userManager.Users.FirstOrDefault(i => string.Equals(request.Username, i.Name, StringComparison.OrdinalIgnoreCase));
 
+            if (user == null)
+            {
+                throw new ArgumentException(string.Format("User {0} not found.", request.Username));
+            }
+
             var result = AuthenticateUser(new AuthenticateUser { Id = user.Id, Password = request.Password }).Result;
 
             return ToOptimizedResult(result);
