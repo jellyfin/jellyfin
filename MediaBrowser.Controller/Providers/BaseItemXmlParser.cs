@@ -350,7 +350,7 @@ namespace MediaBrowser.Controller.Providers
 
                 case "Director":
                     {
-                        foreach (var p in SplitNames(reader.ReadElementContentAsString()).Select(v => new PersonInfo { Name = v, Type = PersonType.Director }))
+                        foreach (var p in SplitNames(reader.ReadElementContentAsString()).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonType.Director }))
                         {
                             if (string.IsNullOrWhiteSpace(p.Name))
                             {
@@ -362,7 +362,7 @@ namespace MediaBrowser.Controller.Providers
                     }
                 case "Writer":
                     {
-                        foreach (var p in SplitNames(reader.ReadElementContentAsString()).Select(v => new PersonInfo { Name = v, Type = PersonType.Writer }))
+                        foreach (var p in SplitNames(reader.ReadElementContentAsString()).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonType.Writer }))
                         {
                             if (string.IsNullOrWhiteSpace(p.Name))
                             {
@@ -911,7 +911,7 @@ namespace MediaBrowser.Controller.Providers
                 }
             }
 
-            return names.Select(n => new PersonInfo { Name = n, Role = role, Type = type });
+            return names.Select(n => new PersonInfo { Name = n.Trim(), Role = role, Type = type });
         }
 
         /// <summary>
