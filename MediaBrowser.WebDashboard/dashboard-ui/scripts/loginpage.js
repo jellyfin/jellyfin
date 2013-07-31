@@ -59,37 +59,41 @@
 
     authenticateUserLink: function (link) {
 
-        LoginPage.authenticateUser(link.getAttribute('data-username'), link.getAttribute('data-userid'));
+        LoginPage.authenticateUser(link.getAttribute('data-userid'));
     },
 
-    authenticateUser: function (username, password) {
+    authenticateUser: function (userId, password) {
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.authenticateUserByName(username, password).done(function (result) {
+        ApiClient.getUser(userId).done(function (user) {
+            
+            ApiClient.authenticateUserByName(user.Name, password).done(function (result) {
 
-            var user = result.User;
+                user = result.User;
 
-            Dashboard.setCurrentUser(user.Id);
+                Dashboard.setCurrentUser(user.Id);
 
-            if (user.Configuration.IsAdministrator) {
-                window.location = "dashboard.html?u=" + user.Id;
-            } else {
-                window.location = "index.html?u=" + user.Id;
-            }
+                if (user.Configuration.IsAdministrator) {
+                    window.location = "dashboard.html?u=" + user.Id;
+                } else {
+                    window.location = "index.html?u=" + user.Id;
+                }
 
-        }).fail(function () {
+            }).fail(function () {
 
-            $('#pw', '#loginPage').val('');
-            $('#txtManualName', '#loginPage').val('');
-            $('#txtManualPassword', '#loginPage').val('');
+                $('#pw', '#loginPage').val('');
+                $('#txtManualName', '#loginPage').val('');
+                $('#txtManualPassword', '#loginPage').val('');
 
-            Dashboard.hideLoadingMsg();
+                Dashboard.hideLoadingMsg();
 
-            setTimeout(function () {
-                Dashboard.showError("Invalid user or password.");
-            }, 300);
+                setTimeout(function () {
+                    Dashboard.showError("Invalid user or password.");
+                }, 300);
+            });
         });
+
     },
 
     loadUserList: function (users) {
@@ -101,9 +105,9 @@
             var linkId = "lnkUser" + i;
 
             if (user.HasPassword) {
-                html += "<a class='posterItem squarePosterItem' id='" + linkId + "' data-username='" + user.Name + "' href='#popupLogin' data-rel='popup' onclick='LoginPage.authenticatingLinkId=this.id;' \">";
+                html += "<a class='posterItem squarePosterItem' id='" + linkId + "' data-userid='" + user.Id + "' href='#popupLogin' data-rel='popup' onclick='LoginPage.authenticatingLinkId=this.id;' \">";
             } else {
-                html += "<a class='posterItem squarePosterItem' id='" + linkId + "' data-username='" + user.Name + "' href='#' onclick='LoginPage.authenticateUserLink(this);' \">";
+                html += "<a class='posterItem squarePosterItem' id='" + linkId + "' data-userid='" + user.Id + "' href='#' onclick='LoginPage.authenticateUserLink(this);' \">";
             }
 
             if (user.PrimaryImageTag) {
@@ -148,7 +152,7 @@
 
         var link = $('#' + LoginPage.authenticatingLinkId)[0];
 
-        LoginPage.authenticateUser(link.getAttribute('data-username'), $('#pw', '#loginPage').val());
+        LoginPage.authenticateUser(link.getAttribute('data-userid'), $('#pw', '#loginPage').val());
 
         // Disable default form submission
         return false;
