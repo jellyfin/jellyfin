@@ -3,65 +3,30 @@
     var currentItem;
     var currentFile;
 
-    function getPromise() {
+    function updateTabs(page, item) {
 
-        var name = getParameterByName('person');
+        var query = MetadataEditor.getEditQueryString(item);
 
-        if (name) {
-            return ApiClient.getPerson(name, Dashboard.getCurrentUserId());
-        }
-
-        name = getParameterByName('studio');
-
-        if (name) {
-
-            return ApiClient.getStudio(name, Dashboard.getCurrentUserId());
-
-        }
-
-        name = getParameterByName('genre');
-
-        if (name) {
-            return ApiClient.getGenre(name, Dashboard.getCurrentUserId());
-        }
-
-        name = getParameterByName('musicgenre');
-
-        if (name) {
-            return ApiClient.getMusicGenre(name, Dashboard.getCurrentUserId());
-        }
-
-        name = getParameterByName('gamegenre');
-
-        if (name) {
-            return ApiClient.getGameGenre(name, Dashboard.getCurrentUserId());
-        }
-
-        name = getParameterByName('artist');
-
-        if (name) {
-            return ApiClient.getArtist(name, Dashboard.getCurrentUserId());
-        }
-        else {
-            return ApiClient.getItem(Dashboard.getCurrentUserId(), getParameterByName('id'));
-        }
+        $('#btnEditPeople', page).attr('href', 'edititempeople.html?' + query);
+        $('#btnEditMetadata', page).attr('href', 'edititemmetadata.html?' + query);
     }
 
     function reload(page) {
 
         Dashboard.showLoadingMsg();
 
-        getPromise().done(function (item) {
+        MetadataEditor.getItemPromise().done(function (item) {
 
             currentItem = item;
 
             LibraryBrowser.renderName(item, $('.itemName', page), true);
-            LibraryBrowser.renderParentName(item, $('.parentName', page));
+
+            updateTabs(page, item);
 
             if (item.Type == "Person" || item.Type == "Studio" || item.Type == "MusicGenre" || item.Type == "Genre" || item.Type == "Artist" || item.Type == "GameGenre") {
-                $('#peopleTab', page).hide();
+                $('#btnEditPeople', page).hide();
             } else {
-                $('#peopleTab', page).show();
+                $('#btnEditPeople', page).show();
             }
 
             ApiClient.getItemImageInfos(currentItem.Id).done(function (imageInfos) {
@@ -304,6 +269,22 @@
 
         var page = this;
 
+
+        $('.libraryTree', page).on('itemclicked', function (event, data) {
+
+            if (data.id != currentItem.Id) {
+                
+                MetadataEditor.currentItemId = data.id;
+                MetadataEditor.currentItemName = data.itemName;
+                MetadataEditor.currentItemType = data.itemType;
+                //Dashboard.navigate('edititemmetadata.html?id=' + data.id);
+
+                $.mobile.urlHistory.ignoreNextHashChange = true;
+                window.location.hash = 'editItemImagesPage?id=' + data.id;
+
+                reload(page);
+            }
+        });
 
     }).on('pageshow', "#editItemImagesPage", function () {
 

@@ -1522,10 +1522,6 @@
                 miscInfo.push(item.OfficialRating);
             }
 
-            if (item.MediaType && item.DisplayMediaType && item.DisplayMediaType != item.Type) {
-                miscInfo.push(item.DisplayMediaType);
-            }
-
             if (item.Video3DFormat) {
                 miscInfo.push("3D");
             }

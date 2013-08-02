@@ -4,159 +4,177 @@
     <title>Media Browser</title>
 </head>
 <body>
-    <div id="editItemMetadataPage" data-role="page" class="page libraryPage" data-theme="a">
-        <div class="ui-bar-c parentName" style="display: none;">
-        </div>
-        <div data-role="content">
-            <div class="ehsContent">
-                <h1 class="itemName detailPageName"></h1>
+    <div id="editItemMetadataPage" data-role="page" class="page libraryPage metadataEditorPage" data-theme="a">
+        <div data-role="content editPageContent">
+            <div class="editPageSidebar">
+                <div class="libraryTree">
+                    <ul>
+                    </ul>
+                </div>
+            </div>
+            <div class="editPageInnerContent">
+                <h1 class="itemName detailPageName editPageName">&nbsp;</h1>
                 <br />
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
                     <a href="#" data-role="button" class="ui-btn-active">Metadata</a>
-                    <a id="peopleTab" style="display: none;" href="#" data-role="button" onclick="Dashboard.navigate('edititempeople.html', true);">People</a>
-                    <a href="#" data-role="button" onclick="Dashboard.navigate('edititemimages.html', true);">Images</a>
+                    <a id="btnEditPeople" style="display: none;" href="#" data-role="button">People</a>
+                    <a href="#" data-role="button" id="btnEditImages">Images</a>
                 </div>
 
-                <form id="editItemMetadataForm" class="editMetadataForm">
+                <form id="editItemMetadataForm" class="editMetadataForm" style="margin-top: -20px;">
                     <div class="metadataFormFields">
 
-                        <div data-role="collapsible" data-collapsed="false">
-                            <h3>Basics</h3>
-                            <div>
-                                <div data-role="fieldcontain">
-                                    <label for="txtName">Name:</label>
-                                    <input type="text" id="txtName" name="txtName" required="required" data-mini="true" />
-                                </div>
-                                <div data-role="fieldcontain">
-                                    <label for="txtSortName">Sort name:</label>
-                                    <input type="text" id="txtSortName" name="txtSortName" data-mini="true" />
-                                </div>
-                                <div data-role="fieldcontain">
-                                    <label for="txtDisplayMediaType">Display type:</label>
-                                    <input type="text" id="txtDisplayMediaType" name="txtDisplayMediaType" data-mini="true" />
-                                </div>
-                                <div data-role="fieldcontain" id="fldStatus" style="display: none;">
-                                    <label for="selectStatus">Status:</label>
-                                    <select name="selectStatus" id="selectStatus" data-mini="true"></select>
-                                </div>
-                                <div data-role="fieldcontain" id="fldArtist" style="display: none;">
-                                    <label for="txtArtist">Artist:</label>
-                                    <input type="text" id="txtArtist" name="txtArtist" data-mini="true" />
-                                </div>
-                                <div data-role="fieldcontain" id="fldAlbumArtist" style="display: none;">
-                                    <label for="txtAlbumArtist">Album artist:</label>
-                                    <input type="text" id="txtAlbumArtist" name="txtAlbumArtist" data-mini="true" />
-                                </div>
-                                <div data-role="fieldcontain" id="fldAlbum" style="display: none;">
-                                    <label for="txtAlbum">Album:</label>
-                                    <input type="text" id="txtAlbum" name="txtAlbum" data-mini="true" />
-                                </div>
-                                <div data-role="fieldcontain" id="fldParentIndexNumber" style="display: none;">
-                                    <label id="lblParentIndexNumber" for="txtParentIndexNumber">Parent number:</label>
-                                    <input type="number" id="txtParentIndexNumber" name="txtParentIndexNumber" data-mini="true" pattern="[0-9]*" />
-                                </div>
-                                <div data-role="fieldcontain" id="fldIndexNumber" style="display: none;">
-                                    <label id="lblIndexNumber" for="txtIndexNumber">Number:</label>
-                                    <input type="number" id="txtIndexNumber" name="txtIndexNumber" data-mini="true" pattern="[0-9]*" />
-                                </div>
-                                <div id="fldCommunityRating" style="display: none;" data-role="fieldcontain">
-                                    <label for="txtCommunityRating">Community rating:</label>
-                                    <input type="number" id="txtCommunityRating" name="txtCommunityRating" step=".1" data-mini="true" />
-                                </div>
-                                <div data-role="fieldcontain" id="fldCriticRating" style="display: none;">
-                                    <label for="txtCriticRating">Critic rating:</label>
-                                    <input type="number" id="txtCriticRating" name="txtCriticRating" step=".1" data-mini="true" />
-                                </div>
-                                <div data-role="fieldcontain" id="fldCriticRatingSummary" style="display: none;">
-                                    <label for="txtCriticRatingSummary">Critic rating summary:</label>
-                                    <input type="text" id="txtCriticRatingSummary" name="txtCriticRatingSummary" data-mini="true" />
-                                </div>
-                                <div data-role="fieldcontain">
-                                    <label for="txtHomePageUrl">Website:</label>
-                                    <input type="url" id="txtHomePageUrl" name="txtHomePageUrl" data-mini="true" />
-                                </div>
-                                <div data-role="fieldcontain">
-                                    <label for="txtOverview">Overview:</label>
-                                    <textarea name="txtOverview" id="txtOverview" data-mini="true" data-role="fieldcontain"></textarea>
-                                </div>
-                                <div data-role="fieldcontain">
-                                    <label id="lblPremiereDate" for="txtPremiereDate">Release date:</label>
-                                    <input type="date" id="txtPremiereDate" name="txtPremiereDate" data-mini="true" />
-                                </div>
-                                <div data-role="fieldcontain">
-                                    <label id="lblYear" for="txtProductionYear">Year:</label>
-                                    <input type="number" id="txtProductionYear" name="txtProductionYear" data-mini="true" />
-                                </div>
-                                <div data-role="fieldcontain" id="fldPlaceOfBirth" style="display: none;">
-                                    <label for="txtPlaceOfBirth">Place of birth:</label>
-                                    <input type="text" id="txtPlaceOfBirth" name="txtPlaceOfBirth" data-mini="true" />
-                                </div>
-                                <div data-role="fieldcontain" id="fldEndDate" style="display: none;">
-                                    <label id="lblEndDate" for="txtEndDate">End date:</label>
-                                    <input type="date" id="txtEndDate" name="txtEndDate" data-mini="true" />
-                                </div>
-                                <div data-role="fieldcontain" id="fldAirDays" style="display: none;">
-                                    <label for="selectAirDays">Air Days:</label>
-                                    <div data-role="editableListviewContainer" style="width: 78%; display: inline-block;">
-                                        <div>
-                                            <select name="selectAirDays" id="selectAirDays" data-mini="true">
-                                                <option value=''></option>
-                                                <option value='Monday'>Monday</option>
-                                                <option value='Tuesday'>Tuesday</option>
-                                                <option value='Wednesday'>Wednesday</option>
-                                                <option value='Thursday'>Thursday</option>
-                                                <option value='Friday'>Friday</option>
-                                                <option value='Saturday'>Saturday</option>
-                                                <option value='Sunday'>Sunday</option>
-                                            </select>
-                                            <a data-role="button" data-theme="b" data-inline="true" data-mini="true" data-icon="plus" onclick="EditItemMetadataPage.addElementToEditableListview(this,EditItemMetadataPage.sortDaysOfTheWeek)">Add</a>
-                                        </div>
-                                        <ul data-role="listview" data-inset="true" data-split-icon="delete" id="listAirDays"></ul>
-                                    </div>
+                        <div>
+                            <div id="refreshLoading" style="display: none;">
+                                <div class="circle"></div>
+                                <div class="circle1"></div>
+                                <div style="margin-top: -15px;"></div>
+                            </div>
 
+                            <button id="btnRefresh" type="button" data-icon="refresh" data-mini="true" data-theme="b" data-inline="true">Refresh</button>
+                            <div style="display: inline-block;vertical-align:bottom;">
+                                <label for="chkForceRefresh">Force refresh</label>
+                                <input type="checkbox" id="chkForceRefresh" name="chkForceRefresh" data-mini="true" checked="checked" data-inline="true" />
+                            </div>
+                            <div style="margin: .5em 0 1em;">
+                                <div class="fieldDescription">A force refresh will cause internet metadata to be re-downloaded (if enabled, and dependent on metadata settings).</div>
+                            </div>
+                        </div>
+
+                        <div style="padding: 10px 15px;">
+                            <div data-role="fieldcontain">
+                                <label for="txtName">Name:</label>
+                                <input type="text" id="txtName" name="txtName" required="required" data-mini="true" />
+                            </div>
+                            <div data-role="fieldcontain">
+                                <label for="txtSortName">Sort name:</label>
+                                <input type="text" id="txtSortName" name="txtSortName" data-mini="true" />
+                            </div>
+                            <div data-role="fieldcontain">
+                                <label for="txtDisplayMediaType">Display type:</label>
+                                <input type="text" id="txtDisplayMediaType" name="txtDisplayMediaType" data-mini="true" />
+                            </div>
+                            <div data-role="fieldcontain" id="fldStatus" style="display: none;">
+                                <label for="selectStatus">Status:</label>
+                                <select name="selectStatus" id="selectStatus" data-mini="true"></select>
+                            </div>
+                            <div data-role="fieldcontain" id="fldArtist" style="display: none;">
+                                <label for="txtArtist">Artist:</label>
+                                <input type="text" id="txtArtist" name="txtArtist" data-mini="true" />
+                            </div>
+                            <div data-role="fieldcontain" id="fldAlbumArtist" style="display: none;">
+                                <label for="txtAlbumArtist">Album artist:</label>
+                                <input type="text" id="txtAlbumArtist" name="txtAlbumArtist" data-mini="true" />
+                            </div>
+                            <div data-role="fieldcontain" id="fldAlbum" style="display: none;">
+                                <label for="txtAlbum">Album:</label>
+                                <input type="text" id="txtAlbum" name="txtAlbum" data-mini="true" />
+                            </div>
+                            <div data-role="fieldcontain" id="fldParentIndexNumber" style="display: none;">
+                                <label id="lblParentIndexNumber" for="txtParentIndexNumber">Parent number:</label>
+                                <input type="number" id="txtParentIndexNumber" name="txtParentIndexNumber" data-mini="true" pattern="[0-9]*" />
+                            </div>
+                            <div data-role="fieldcontain" id="fldIndexNumber" style="display: none;">
+                                <label id="lblIndexNumber" for="txtIndexNumber">Number:</label>
+                                <input type="number" id="txtIndexNumber" name="txtIndexNumber" data-mini="true" pattern="[0-9]*" />
+                            </div>
+                            <div id="fldCommunityRating" style="display: none;" data-role="fieldcontain">
+                                <label for="txtCommunityRating">Community rating:</label>
+                                <input type="number" id="txtCommunityRating" name="txtCommunityRating" step=".1" data-mini="true" />
+                            </div>
+                            <div data-role="fieldcontain" id="fldCriticRating" style="display: none;">
+                                <label for="txtCriticRating">Critic rating:</label>
+                                <input type="number" id="txtCriticRating" name="txtCriticRating" step=".1" data-mini="true" />
+                            </div>
+                            <div data-role="fieldcontain" id="fldCriticRatingSummary" style="display: none;">
+                                <label for="txtCriticRatingSummary">Critic rating summary:</label>
+                                <input type="text" id="txtCriticRatingSummary" name="txtCriticRatingSummary" data-mini="true" />
+                            </div>
+                            <div data-role="fieldcontain">
+                                <label for="txtHomePageUrl">Website:</label>
+                                <input type="url" id="txtHomePageUrl" name="txtHomePageUrl" data-mini="true" />
+                            </div>
+                            <div data-role="fieldcontain">
+                                <label for="txtOverview">Overview:</label>
+                                <textarea name="txtOverview" id="txtOverview" data-mini="true" data-role="fieldcontain"></textarea>
+                            </div>
+                            <div data-role="fieldcontain">
+                                <label id="lblPremiereDate" for="txtPremiereDate">Release date:</label>
+                                <input type="date" id="txtPremiereDate" name="txtPremiereDate" data-mini="true" />
+                            </div>
+                            <div data-role="fieldcontain">
+                                <label id="lblYear" for="txtProductionYear">Year:</label>
+                                <input type="number" id="txtProductionYear" name="txtProductionYear" data-mini="true" />
+                            </div>
+                            <div data-role="fieldcontain" id="fldPlaceOfBirth" style="display: none;">
+                                <label for="txtPlaceOfBirth">Place of birth:</label>
+                                <input type="text" id="txtPlaceOfBirth" name="txtPlaceOfBirth" data-mini="true" />
+                            </div>
+                            <div data-role="fieldcontain" id="fldEndDate" style="display: none;">
+                                <label id="lblEndDate" for="txtEndDate">End date:</label>
+                                <input type="date" id="txtEndDate" name="txtEndDate" data-mini="true" />
+                            </div>
+                            <div data-role="fieldcontain" id="fldAirDays" style="display: none;">
+                                <label for="selectAirDays">Air Days:</label>
+                                <div data-role="editableListviewContainer" style="width: 78%; display: inline-block;">
+                                    <div>
+                                        <select name="selectAirDays" id="selectAirDays" data-mini="true">
+                                            <option value=''></option>
+                                            <option value='Monday'>Monday</option>
+                                            <option value='Tuesday'>Tuesday</option>
+                                            <option value='Wednesday'>Wednesday</option>
+                                            <option value='Thursday'>Thursday</option>
+                                            <option value='Friday'>Friday</option>
+                                            <option value='Saturday'>Saturday</option>
+                                            <option value='Sunday'>Sunday</option>
+                                        </select>
+                                        <a data-role="button" data-theme="b" data-inline="true" data-mini="true" data-icon="plus" onclick="EditItemMetadataPage.addElementToEditableListview(this,EditItemMetadataPage.sortDaysOfTheWeek)">Add</a>
+                                    </div>
+                                    <ul data-role="listview" data-inset="true" data-split-icon="delete" id="listAirDays"></ul>
                                 </div>
-                                <div data-role="fieldcontain" id="fldAirTime" style="display: none;">
-                                    <label for="txtAirTime">Air Time:</label>
-                                    <input type="time" id="txtAirTime" name="txtAirTime" data-mini="true" />
-                                </div>
-                                <div data-role="fieldcontain" id="fldOfficialRating" style="display: none;">
-                                    <label for="selectOfficialRating">Official rating:</label>
-                                    <select name="selectOfficialRating" id="selectOfficialRating" data-mini="true"></select>
-                                </div>
-                                <div data-role="fieldcontain" id="fldCustomRating" style="display: none;">
-                                    <label for="selectCustomRating">Custom rating:</label>
-                                    <select name="selectCustomRating" id="selectCustomRating" data-mini="true"></select>
-                                </div>
-                                <div data-role="fieldcontain" id="fldBudget" style="display: none;">
-                                    <label for="txtBudget">Budget ($):</label>
-                                    <input type="number" id="txtBudget" name="txtBudget" data-mini="true" />
-                                </div>
-                                <div data-role="fieldcontain" id="fldRevenue" style="display: none;">
-                                    <label for="txtRevenue">Revenue ($):</label>
-                                    <input type="number" id="txtRevenue" name="txtRevenue" data-mini="true" />
-                                </div>
-                                <div data-role="fieldcontain" id="fldOriginalAspectRatio" style="display: none;">
-                                    <label for="txtOriginalAspectRatio">Original aspect ratio:</label>
-                                    <input type="text" id="txtOriginalAspectRatio" name="txtOriginalAspectRatio" data-mini="true" />
-                                </div>
-                                <div data-role="fieldcontain" style="display: none;">
-                                    <label for="selectLanguage">Original language:</label>
-                                    <select name="selectLanguage" id="selectLanguage" data-mini="true"></select>
-                                </div>
-                                <div data-role="fieldcontain" id="fldPlayers" style="display: none;">
-                                    <label for="txtPlayers">Players:</label>
-                                    <input type="number" id="txtPlayers" name="txtPlayers" data-mini="true" />
-                                </div>
-                                <div data-role="fieldcontain" id="fld3dFormat" style="display: none;">
-                                    <label for="select3dFormat">3D Format:</label>
-                                    <select name="select3dFormat" id="select3dFormat" data-mini="true">
-                                        <option value=""></option>
-                                        <option value="HalfSideBySide">HSBS</option>
-                                        <option value="HalfTopAndBottom">HTAB</option>
-                                        <option value="FullSideBySide">FSBS</option>
-                                        <option value="FullTopAndBottom">FTAB</option>
-                                    </select>
-                                </div>
+
+                            </div>
+                            <div data-role="fieldcontain" id="fldAirTime" style="display: none;">
+                                <label for="txtAirTime">Air Time:</label>
+                                <input type="time" id="txtAirTime" name="txtAirTime" data-mini="true" />
+                            </div>
+                            <div data-role="fieldcontain" id="fldOfficialRating" style="display: none;">
+                                <label for="selectOfficialRating">Official rating:</label>
+                                <select name="selectOfficialRating" id="selectOfficialRating" data-mini="true"></select>
+                            </div>
+                            <div data-role="fieldcontain" id="fldCustomRating" style="display: none;">
+                                <label for="selectCustomRating">Custom rating:</label>
+                                <select name="selectCustomRating" id="selectCustomRating" data-mini="true"></select>
+                            </div>
+                            <div data-role="fieldcontain" id="fldBudget" style="display: none;">
+                                <label for="txtBudget">Budget ($):</label>
+                                <input type="number" id="txtBudget" name="txtBudget" data-mini="true" />
+                            </div>
+                            <div data-role="fieldcontain" id="fldRevenue" style="display: none;">
+                                <label for="txtRevenue">Revenue ($):</label>
+                                <input type="number" id="txtRevenue" name="txtRevenue" data-mini="true" />
+                            </div>
+                            <div data-role="fieldcontain" id="fldOriginalAspectRatio" style="display: none;">
+                                <label for="txtOriginalAspectRatio">Original aspect ratio:</label>
+                                <input type="text" id="txtOriginalAspectRatio" name="txtOriginalAspectRatio" data-mini="true" />
+                            </div>
+                            <div data-role="fieldcontain" style="display: none;">
+                                <label for="selectLanguage">Original language:</label>
+                                <select name="selectLanguage" id="selectLanguage" data-mini="true"></select>
+                            </div>
+                            <div data-role="fieldcontain" id="fldPlayers" style="display: none;">
+                                <label for="txtPlayers">Players:</label>
+                                <input type="number" id="txtPlayers" name="txtPlayers" data-mini="true" />
+                            </div>
+                            <div data-role="fieldcontain" id="fld3dFormat" style="display: none;">
+                                <label for="select3dFormat">3D Format:</label>
+                                <select name="select3dFormat" id="select3dFormat" data-mini="true">
+                                    <option value=""></option>
+                                    <option value="HalfSideBySide">HSBS</option>
+                                    <option value="HalfTopAndBottom">HTAB</option>
+                                    <option value="FullSideBySide">FSBS</option>
+                                    <option value="FullTopAndBottom">FTAB</option>
+                                </select>
                             </div>
                         </div>
                         <div data-role="collapsible" id="genresCollapsible" style="display: none;">
@@ -238,7 +256,6 @@
                                 </div>
                             </div>
                         </div>
-                        <br />
                         <ul data-role="listview" class="ulForm">
                             <li>
                                 <button type="submit" data-theme="b" data-icon="ok">
@@ -247,32 +264,7 @@
                             </li>
                         </ul>
                     </div>
-                    <div class="metadataFormButtons">
 
-                        <div data-role="collapsible" data-content-theme="a" data-collapsed="false">
-                            <h3>Refresh Metadata</h3>
-                            <div>
-                                <div id="refreshLoading" style="display: none;">
-                                    <div class="circle"></div>
-                                    <div class="circle1"></div>
-                                    <div style="margin-top: -15px;"></div>
-                                </div>
-                                <p id="fldRecursive" style="display: none;">
-                                    <label for="chkRecursive">Refresh child items</label>
-                                    <input type="checkbox" id="chkRecursive" name="chkRecursive" data-mini="true" />
-                                </p>
-                                <div style="margin: 1em 0;">
-                                    <label for="chkForceRefresh">Force refresh</label>
-                                    <input type="checkbox" id="chkForceRefresh" name="chkForceRefresh" data-mini="true" checked="checked" />
-                                    <div class="fieldDescription">A force refresh will cause internet metadata to be re-downloaded (if enabled, and dependent on metadata settings).</div>
-                                </div>
-                                <p>
-                                    <button id="btnRefresh" type="button" data-icon="refresh" data-mini="true" data-theme="b">Refresh</button>
-                                </p>
-                            </div>
-                        </div>
-
-                    </div>
                 </form>
             </div>
         </div>

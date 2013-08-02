@@ -1,0 +1,34 @@
+﻿.editPageContent {
+    padding: 0;
+}
+
+.editPageInnerContent {
+    padding: 0 15px 15px;
+}
+
+.editPageName {
+    margin: .5em 0 0;
+}
+
+.editPageSidebar {
+    display: none;
+}
+
+@media all and (min-width: 600px) {
+
+    .editPageSidebar {
+        position: fixed;
+        top: 36px;
+        bottom: 0;
+        left: 0;
+        width: 27.5%;
+        overflow-y: scroll;
+        overflow-x: auto!important;
+        display: block;
+    }
+
+    .editPageInnerContent {
+        float: right;
+        width: 70%;
+    }
+}

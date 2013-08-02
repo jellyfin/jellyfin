@@ -418,7 +418,8 @@ namespace MediaBrowser.WebDashboard.Api
                             {
                                 "http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js", 
                                 "http://code.jquery.com/mobile/1.3.1/jquery.mobile-1.3.1.min.js",
-                                "scripts/all.js" + versionString
+                                "scripts/all.js" + versionString,
+                                "thirdparty/jstree1.0fix2/jquery.jstree.js"
             };
 
             var tags = files.Select(s => string.Format("<script src=\"{0}\"></script>", s)).ToArray();
@@ -546,6 +547,7 @@ namespace MediaBrowser.WebDashboard.Api
                                       "detailtable.css",
                                       "posteritem.css",
                                       "tileitem.css",
+                                      "metadataeditor.css",
                                       "notifications.css",
                                       "search.css",
                                       "pluginupdates.css",

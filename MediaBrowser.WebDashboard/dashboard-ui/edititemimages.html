@@ -4,21 +4,25 @@
     <title>Media Browser</title>
 </head>
 <body>
-    <div id="editItemImagesPage" data-role="page" class="page libraryPage" data-theme="a">
-        <div class="ui-bar-c parentName" style="display: none;">
-        </div>
-        <div data-role="content">
+    <div id="editItemImagesPage" data-role="page" class="page libraryPage metadataEditorPage" data-theme="a">
+        <div data-role="content editPageContent">
+            <div class="editPageSidebar">
+                <div class="libraryTree">
+                    <ul>
+                    </ul>
+                </div>
+            </div>
 
-            <div class="ehsContent">
-                <h1 class="itemName detailPageName"></h1>
+            <div class="editPageInnerContent">
+                <h1 class="itemName detailPageName editPageName">&nbsp;</h1>
                 <br />
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                    <a href="#" data-role="button" onclick="Dashboard.navigate('edititemmetadata.html', true);">Metadata</a>
-                    <a id="peopleTab" style="display: none;" href="#" data-role="button" onclick="Dashboard.navigate('edititempeople.html', true);">People</a>
+                    <a href="#" data-role="button" id="btnEditMetadata">Metadata</a>
+                    <a href="#" data-role="button" id="btnEditPeople">People</a>
                     <a href="#" data-role="button" class="ui-btn-active">Images</a>
                 </div>
 
-                <div style="text-align: center; margin: -25px 0 1em;">
+                <div style="margin: -25px 0 1em;">
                     <a href="#popupUpload" data-rel="popup" data-role="button" data-inline="true" data-icon="plus" data-mini="true" data-transition="pop">Upload Image</a>
                 </div>
 

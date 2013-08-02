@@ -144,6 +144,25 @@ namespace MediaBrowser.Api
         public Guid? UserId { get; set; }
     }
 
+    [Route("/Items/{Id}/Ancestors", "GET")]
+    [Api(Description = "Gets all parents of an item")]
+    public class GetAncestors : IReturn<BaseItemDto[]>
+    {
+        /// <summary>
+        /// Gets or sets the user id.
+        /// </summary>
+        /// <value>The user id.</value>
+        [ApiMember(Name = "UserId", Description = "Optional. Filter by user id, and attach user data", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public Guid? UserId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Id { get; set; }
+    }
+    
     /// <summary>
     /// Class LibraryService
     /// </summary>
@@ -172,6 +191,84 @@ namespace MediaBrowser.Api
             _libraryManager = libraryManager;
             _userManager = userManager;
             _userDataRepository = userDataRepository;
+        }
+
+        /// <summary>
+        /// Gets the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>System.Object.</returns>
+        public object Get(GetAncestors request)
+        {
+            var result = GetAncestors(request).Result;
+
+            return ToOptimizedResult(result);
+        }
+
+        /// <summary>
+        /// Gets the ancestors.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>Task{BaseItemDto[]}.</returns>
+        public async Task<BaseItemDto[]> GetAncestors(GetAncestors request)
+        {
+            var item = DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager);
+
+            var tasks = new List<Task<BaseItemDto>>();
+
+            var user = request.UserId.HasValue ? _userManager.GetUserById(request.UserId.Value) : null;
+
+            // Get everything
+            var fields = Enum.GetNames(typeof(ItemFields))
+                    .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
+                    .ToList();
+
+            var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userDataRepository, _itemRepo);
+            
+            BaseItem parent = item.Parent;
+
+            while (parent != null)
+            {
+                if (user != null)
+                {
+                    parent = TranslateParentItem(parent, user);
+                }
+
+                tasks.Add(dtoBuilder.GetBaseItemDto(parent, fields, user));
+
+                if (parent is UserRootFolder)
+                {
+                    break;
+                }
+
+                parent = parent.Parent;
+            }
+
+            return await Task.WhenAll(tasks).ConfigureAwait(false);
+        }
+
+        private BaseItem TranslateParentItem(BaseItem item, User user)
+        {
+            if (item.Parent is AggregateFolder)
+            {
+                return user.RootFolder.GetChildren(user, true).FirstOrDefault(i =>
+                {
+
+                    try
+                    {
+                        return i.LocationType == LocationType.FileSystem &&
+                               i.ResolveArgs.PhysicalLocations.Contains(item.Path);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.ErrorException("Error getting ResolveArgs for {0}", ex, i.Path);
+                        return false;
+                    }
+
+                });
+            }
+
+            return item;
         }
 
         /// <summary>
@@ -231,8 +328,7 @@ namespace MediaBrowser.Api
         {
             try
             {
-                await
-                    _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None)
+                await _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None)
                                    .ConfigureAwait(false);
             }
             catch (Exception ex)

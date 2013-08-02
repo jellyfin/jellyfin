@@ -1,62 +1,303 @@
 ﻿(function ($, document, window) {
 
+    function getNode(item, folderState) {
+
+        var state = item.IsFolder ? folderState : '';
+
+        var name = item.Name;
+
+        if (item.IndexNumber != null && item.Type != "Season") {
+            name = item.IndexNumber + " - " + name;
+        }
+        var rel = item.IsFolder ? 'folder' : 'default';
+
+        return { attr: { id: item.Id, rel: rel, itemtype: item.Type }, data: name, state: state };
+    }
+
+    function loadNode(page, node, openItems, selectedId, callback) {
+
+        if (node == '-1') {
+
+            ApiClient.getRootFolder(Dashboard.getCurrentUserId()).done(function (folder) {
+
+                callback(getNode(folder, 'open'));
+
+            });
+
+            return;
+        }
+
+        ApiClient.getItems(Dashboard.getCurrentUserId(), {
+
+            ParentId: node.attr("id"),
+            SortBy: 'SortName'
+
+        }).done(function (result) {
+
+            var nodes = result.Items.map(function (i) {
+
+                var state = openItems.indexOf(i.Id) == -1 ? 'closed' : 'open';
+
+                return getNode(i, state);
+
+            });
+
+            callback(nodes);
+
+            if (selectedId && result.Items.filter(function (f) {
+
+                return f.Id == selectedId;
+
+            }).length) {
+
+                selectNode(page, selectedId);
+            }
+
+        });
+
+    }
+
+    function selectNode(page, id) {
+
+        var elem = $('#' + id, page)[0];
+
+        $.jstree._reference(".libraryTree", page).select_node(elem);
+
+        if (elem) {
+            elem.scrollIntoView();
+
+            var sidebar = $('.editPageSidebar', page);
+            sidebar.scrollTop(sidebar.scrollTop() - sidebar.height() / 3);
+        }
+
+        $(document).scrollTop(0);
+    }
+
+    function initializeTree(page, openItems, selectedId) {
+
+        $('.libraryTree', page).jstree({
+
+            "plugins": ["themes", "ui", "json_data"],
+
+            data: function (node, callback) {
+                loadNode(page, node, openItems, selectedId, callback);
+            },
+
+            json_data: {
+
+                data: function (node, callback) {
+                    loadNode(page, node, openItems, selectedId, callback);
+                }
+
+            },
+
+            core: { initially_open: [], load_open: true },
+            ui: { initially_select: [] },
+
+            themes: {
+                theme: 'mb3',
+                url: 'thirdparty/jstree1.0fix2/themes/mb3/style.css?v=' + Dashboard.initialServerVersion
+            }
+
+        }).off('select_node.jstree').on('select_node.jstree', function (event, data) {
+
+            var eventData = {
+                id: data.rslt.obj.attr("id"),
+                itemType: data.rslt.obj.attr("itemtype")
+            };
+
+            $(this).trigger('itemclicked', [eventData]);
+
+        });
+    }
+
+    $(document).on('pagebeforeshow', ".metadataEditorPage", function () {
+
+        window.MetadataEditor = new metadataEditor();
+
+        var page = this;
+
+        var id = MetadataEditor.currentItemId;
+
+        if (id) {
+
+            $.getJSON(ApiClient.getUrl("Items/" + id + "/Ancestors", {
+                userId: Dashboard.getCurrentUserId()
+
+            })).done(function (ancestors) {
+
+                var ids = ancestors.map(function (i) {
+                    return i.Id;
+                });
+
+                initializeTree(page, ids, id);
+            });
+
+        } else {
+            initializeTree(page, []);
+        }
+
+    }).on('pagebeforehide', ".metadataEditorPage", function () {
+
+        var page = this;
+
+        $('.libraryTree', page).off('select_node.jstree');
+
+    });
+
+    function metadataEditor() {
+
+        var self = this;
+
+        function ensureInitialValues() {
+
+            if (self.currentItemType || self.currentItemName || self.currentItemId) {
+                return;
+            }
+
+            var url = window.location.hash || window.location.toString();
+
+            var name = getParameterByName('person', url);
+
+            if (name) {
+                self.currentItemType = "Person";
+                self.currentItemName = name;
+                return;
+            }
+
+            name = getParameterByName('studio', url);
+
+            if (name) {
+                self.currentItemType = "Studio";
+                self.currentItemName = name;
+                return;
+            }
+
+            name = getParameterByName('genre', url);
+
+            if (name) {
+                self.currentItemType = "Genre";
+                self.currentItemName = name;
+                return;
+            }
+
+            name = getParameterByName('musicgenre', url);
+
+            if (name) {
+                self.currentItemType = "MusicGenre";
+                self.currentItemName = name;
+                return;
+            }
+
+            name = getParameterByName('gamegenre', url);
+
+            if (name) {
+                self.currentItemType = "GameGenre";
+                self.currentItemName = name;
+                return;
+            }
+
+            name = getParameterByName('artist', url);
+
+            if (name) {
+                self.currentItemType = "Artist";
+                self.currentItemName = name;
+                return;
+            }
+
+            var id = getParameterByName('id', url);
+
+            if (id) {
+                self.currentItemId = id;
+                self.currentItemType = null;
+            }
+        };
+
+        self.getItemPromise = function () {
+
+            var currentItemType = self.currentItemType;
+            var currentItemName = self.currentItemName;
+            var currentItemId = self.currentItemId;
+
+            if (currentItemType == "Person") {
+                return ApiClient.getPerson(currentItemName, Dashboard.getCurrentUserId());
+            }
+
+            if (currentItemType == "Studio") {
+                return ApiClient.getStudio(currentItemName, Dashboard.getCurrentUserId());
+            }
+
+            if (currentItemType == "Genre") {
+                return ApiClient.getGenre(currentItemName, Dashboard.getCurrentUserId());
+            }
+
+            if (currentItemType == "MusicGenre") {
+                return ApiClient.getMusicGenre(currentItemName, Dashboard.getCurrentUserId());
+            }
+
+            if (currentItemType == "GameGenre") {
+                return ApiClient.getGameGenre(currentItemName, Dashboard.getCurrentUserId());
+            }
+
+            if (currentItemType == "Artist") {
+                return ApiClient.getArtist(currentItemName, Dashboard.getCurrentUserId());
+            }
+
+            if (currentItemId) {
+                return ApiClient.getItem(Dashboard.getCurrentUserId(), currentItemId);
+            }
+
+            return ApiClient.getRootFolder(Dashboard.getCurrentUserId());
+        };
+
+        self.getEditQueryString = function (item) {
+
+            var query;
+
+            if (item.Type == "Person" ||
+                item.Type == "Studio" ||
+                item.Type == "Genre" ||
+                item.Type == "MusicGenre" ||
+                item.Type == "GameGenre" ||
+                item.Type == "Artist") {
+                query = item.Type + "=" + ApiClient.encodeName(item.Name);
+
+            } else {
+                query = "id=" + item.Id;
+            }
+
+            var context = getParameterByName('context');
+
+            if (context) {
+                query += "&context=" + context;
+            }
+
+            return query;
+        };
+
+        ensureInitialValues();
+    }
+
+
+})(jQuery, document, window);
+
+(function ($, document, window) {
+
     var currentItem;
 
-    function getPromise() {
+    function updateTabs(page, item) {
 
-        var name = getParameterByName('person');
+        var query = MetadataEditor.getEditQueryString(item);
 
-        if (name) {
-            return ApiClient.getPerson(name, Dashboard.getCurrentUserId());
-        }
-
-        name = getParameterByName('studio');
-
-        if (name) {
-
-            return ApiClient.getStudio(name, Dashboard.getCurrentUserId());
-
-        }
-
-        name = getParameterByName('genre');
-
-        if (name) {
-            return ApiClient.getGenre(name, Dashboard.getCurrentUserId());
-        }
-
-        name = getParameterByName('musicgenre');
-
-        if (name) {
-            return ApiClient.getMusicGenre(name, Dashboard.getCurrentUserId());
-        }
-
-        name = getParameterByName('gamegenre');
-
-        if (name) {
-            return ApiClient.getGameGenre(name, Dashboard.getCurrentUserId());
-        }
-
-        name = getParameterByName('artist');
-
-        if (name) {
-            return ApiClient.getArtist(name, Dashboard.getCurrentUserId());
-        }
-        else {
-            return ApiClient.getItem(Dashboard.getCurrentUserId(), getParameterByName('id'));
-        }
+        $('#btnEditPeople', page).attr('href', 'edititempeople.html?' + query);
+        $('#btnEditImages', page).attr('href', 'edititemimages.html?' + query);
     }
 
     function reload(page) {
 
         Dashboard.showLoadingMsg();
 
-        getPromise().done(function (item) {
-
-            if (item.IsFolder) {
-                $('#fldRecursive', page).show();
-            } else {
-                $('#fldRecursive', page).hide();
-            }
+        MetadataEditor.getItemPromise().done(function (item) {
 
             $('#btnRefresh', page).button('enable');
 
@@ -65,15 +306,16 @@
             currentItem = item;
 
             LibraryBrowser.renderName(item, $('.itemName', page), true);
-            LibraryBrowser.renderParentName(item, $('.parentName', page));
+
+            updateTabs(page, item);
 
             setFieldVisibilities(page, item);
             fillItemInfo(page, item);
 
             if (item.Type == "Person" || item.Type == "Studio" || item.Type == "MusicGenre" || item.Type == "Genre" || item.Type == "Artist") {
-                $('#peopleTab', page).hide();
+                $('#btnEditPeople', page).hide();
             } else {
-                $('#peopleTab', page).show();
+                $('#btnEditPeople', page).show();
             }
 
             Dashboard.hideLoadingMsg();
@@ -523,7 +765,7 @@
             var form = this;
 
             var item = {
-                Id: getParameterByName('id'),
+                Id: currentItem.Id,
                 Name: $('#txtName', form).val(),
                 SortName: $('#txtSortName', form).val(),
                 DisplayMediaType: $('#txtDisplayMediaType', form).val(),
@@ -548,7 +790,7 @@
                 Studios: editableListViewValues($("#listStudios", form)).map(function (element) { return { Name: element }; }),
 
                 PremiereDate: $('#txtPremiereDate', form).val() || null,
-                EndDate: $('#txtEndDate', form).val() || null ,
+                EndDate: $('#txtEndDate', form).val() || null,
                 ProductionYear: $('#txtProductionYear', form).val(),
                 AspectRatio: $('#txtOriginalAspectRatio', form).val(),
                 Video3DFormat: $('#select3dFormat', form).val(),
@@ -654,7 +896,6 @@
 
         var page = this;
 
-
         $('#btnRefresh', this).on('click', function () {
 
             $(this).button('disable');
@@ -684,7 +925,7 @@
                 refreshPromise = ApiClient.refreshStudio(currentItem.Name, force);
             }
             else {
-                refreshPromise = ApiClient.refreshItem(currentItem.Id, force, $('#chkRecursive', page).checked());
+                refreshPromise = ApiClient.refreshItem(currentItem.Id, force, false);
             }
 
             refreshPromise.done(function () {
@@ -694,17 +935,29 @@
             });
         });
 
-    }).on('pageshow', "#editItemMetadataPage", function () {
+        $('.libraryTree', page).on('itemclicked', function (event, data) {
+
+            if (data.id != currentItem.Id) {
+
+                MetadataEditor.currentItemId = data.id;
+                MetadataEditor.currentItemName = data.itemName;
+                MetadataEditor.currentItemType = data.itemType;
+                //Dashboard.navigate('edititemmetadata.html?id=' + data.id);
+
+                $.mobile.urlHistory.ignoreNextHashChange = true;
+                window.location.hash = 'editItemMetadataPage?id=' + data.id;
+
+                reload(page);
+            }
+        });
+
+    }).on('pagebeforeshow', "#editItemMetadataPage", function () {
 
         var page = this;
 
         reload(page);
 
-    }).on('pagehide', "#editItemMetadataPage", function () {
-
-        var page = this;
-
-        currentItem = null;
     });
 
 })(jQuery, document, window);
+

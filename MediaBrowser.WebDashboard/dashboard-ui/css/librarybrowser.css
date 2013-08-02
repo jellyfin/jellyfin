@@ -507,16 +507,6 @@ a.itemTag:hover {
     .noBackdrop .lnkSibling {
         bottom: 205px;
     }
-
-    .metadataFormFields {
-        float: left;
-        width: 75%;
-    }
-
-    .metadataFormButtons {
-        float: right;
-        width: 23%;
-    }
 }
 
 @media all and (min-width: 650px) {
