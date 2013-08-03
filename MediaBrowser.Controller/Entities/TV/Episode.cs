@@ -73,6 +73,10 @@ namespace MediaBrowser.Controller.Entities.TV
             }
         }
 
+        /// <summary>
+        /// Gets all genres.
+        /// </summary>
+        /// <value>All genres.</value>
         [IgnoreDataMember]
         public override IEnumerable<string> AllGenres
         {
@@ -83,6 +87,10 @@ namespace MediaBrowser.Controller.Entities.TV
             }
         }
 
+        /// <summary>
+        /// Gets all studios.
+        /// </summary>
+        /// <value>All studios.</value>
         [IgnoreDataMember]
         public override IEnumerable<string> AllStudios
         {

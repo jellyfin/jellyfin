@@ -65,9 +65,6 @@
 
         if (elem) {
             elem.scrollIntoView();
-
-            var sidebar = $('.editPageSidebar', page);
-            sidebar.scrollTop(sidebar.scrollTop() - sidebar.height() / 3);
         }
 
         $(document).scrollTop(0);
@@ -121,10 +118,7 @@
 
         if (id) {
 
-            $.getJSON(ApiClient.getUrl("Items/" + id + "/Ancestors", {
-                userId: Dashboard.getCurrentUserId()
-
-            })).done(function (ancestors) {
+            ApiClient.getAncestorItems(id, Dashboard.getCurrentUserId()).done(function (ancestors) {
 
                 var ids = ancestors.map(function (i) {
                     return i.Id;

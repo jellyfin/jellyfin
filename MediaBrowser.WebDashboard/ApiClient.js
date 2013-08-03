@@ -80,18 +80,15 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
             else if ($.browser.firefox || $.browser.mozilla) {
                 name = "Firefox";
             }
-			
-			if (name)
-			{
-				if ($.browser.version)
-				{
-					name += " " + $.browser.version;
-				}
-			}
-			else			
-			{
-				name = "Web Browser";
-			}
+
+            if (name) {
+                if ($.browser.version) {
+                    name += " " + $.browser.version;
+                }
+            }
+            else {
+                name = "Web Browser";
+            }
 
             if ($.browser.ipad) {
                 name += " Ipad";
@@ -1046,17 +1043,41 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
             });
         };
 
-        self.deleteItemImage = function (itemId, imageType, imageIndex) {
-
-            if (!itemId) {
-                throw new Error("null itemId");
-            }
+        self.deleteItemImage = function (itemId, itemType, itemName, imageType, imageIndex) {
 
             if (!imageType) {
                 throw new Error("null imageType");
             }
 
-            var url = self.getUrl("Items/" + itemId + "/Images/" + imageType);
+            if (!itemType) {
+                throw new Error("null itemType");
+            }
+
+            var url;
+
+            if (itemType == "Artist") {
+                url = self.getUrl("Artists/" + self.encodeName(itemName) + "/Images");
+            }
+            else if (itemType == "Genre") {
+                url = self.getUrl("Genres/" + self.encodeName(itemName) + "/Images");
+            }
+            else if (itemType == "GameGenre") {
+                url = self.getUrl("GameGenres/" + self.encodeName(itemName) + "/Images");
+            }
+            else if (itemType == "MusicGenre") {
+                url = self.getUrl("MusicGenres/" + self.encodeName(itemName) + "/Images");
+            }
+            else if (itemType == "Person") {
+                url = self.getUrl("Persons/" + self.encodeName(itemName) + "/Images");
+            }
+            else if (itemType == "Studio") {
+                url = self.getUrl("Studios/" + self.encodeName(itemName) + "/Images");
+            }
+            else {
+                url = self.getUrl("Items/" + itemId + "/Images");
+            }
+
+            url += "/" + imageType;
 
             if (imageIndex != null) {
                 url += "/" + imageIndex;
@@ -1068,17 +1089,41 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
             });
         };
 
-        self.updateItemImageIndex = function (itemId, imageType, imageIndex, newIndex) {
-
-            if (!itemId) {
-                throw new Error("null itemId");
-            }
+        self.updateItemImageIndex = function (itemId, itemType, itemName, imageType, imageIndex, newIndex) {
 
             if (!imageType) {
                 throw new Error("null imageType");
             }
 
-            var url = self.getUrl("Items/" + itemId + "/Images/" + imageType + "/" + imageIndex + "/Index", { newIndex: newIndex });
+            if (!itemType) {
+                throw new Error("null itemType");
+            }
+
+            var url;
+
+            var options = { newIndex: newIndex };
+
+            if (itemType == "Artist") {
+                url = self.getUrl("Artists/" + self.encodeName(itemName) + "/Images/" + imageType + "/" + imageIndex + "/Index", options);
+            }
+            else if (itemType == "Genre") {
+                url = self.getUrl("Genres/" + self.encodeName(itemName) + "/Images/" + imageType + "/" + imageIndex + "/Index", options);
+            }
+            else if (itemType == "GameGenre") {
+                url = self.getUrl("GameGenres/" + self.encodeName(itemName) + "/Images/" + imageType + "/" + imageIndex + "/Index", options);
+            }
+            else if (itemType == "MusicGenre") {
+                url = self.getUrl("MusicGenres/" + self.encodeName(itemName) + "/Images/" + imageType + "/" + imageIndex + "/Index", options);
+            }
+            else if (itemType == "Person") {
+                url = self.getUrl("Persons/" + self.encodeName(itemName) + "/Images/" + imageType + "/" + imageIndex + "/Index", options);
+            }
+            else if (itemType == "Studio") {
+                url = self.getUrl("Studios/" + self.encodeName(itemName) + "/Images/" + imageType + "/" + imageIndex + "/Index", options);
+            }
+            else {
+                url = self.getUrl("Items/" + itemId + "/Images/" + imageType + "/" + imageIndex + "/Index", options);
+            }
 
             return self.ajax({
                 type: "POST",
@@ -1086,13 +1131,35 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
             });
         };
 
-        self.getItemImageInfos = function (itemId) {
+        self.getItemImageInfos = function (itemId, itemType, itemName) {
 
-            if (!itemId) {
-                throw new Error("null itemId");
+            if (!itemType) {
+                throw new Error("null itemType");
             }
 
-            var url = self.getUrl("Items/" + itemId + "/Images");
+            var url;
+
+            if (itemType == "Artist") {
+                url = self.getUrl("Artists/" + self.encodeName(itemName) + "/Images");
+            }
+            else if (itemType == "Genre") {
+                url = self.getUrl("Genres/" + self.encodeName(itemName) + "/Images");
+            }
+            else if (itemType == "GameGenre") {
+                url = self.getUrl("GameGenres/" + self.encodeName(itemName) + "/Images");
+            }
+            else if (itemType == "MusicGenre") {
+                url = self.getUrl("MusicGenres/" + self.encodeName(itemName) + "/Images");
+            }
+            else if (itemType == "Person") {
+                url = self.getUrl("Persons/" + self.encodeName(itemName) + "/Images");
+            }
+            else if (itemType == "Studio") {
+                url = self.getUrl("Studios/" + self.encodeName(itemName) + "/Images");
+            }
+            else {
+                url = self.getUrl("Items/" + itemId + "/Images");
+            }
 
             return self.ajax({
                 type: "GET",
@@ -1191,7 +1258,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
             return deferred.promise();
         };
 
-        self.uploadItemImage = function (itemId, imageType, file) {
+        self.uploadItemImage = function (itemId, itemType, itemName, imageType, file) {
 
             if (!itemId) {
                 throw new Error("null itemId");
@@ -1208,6 +1275,32 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
             if (file.type != "image/png" && file.type != "image/jpeg" && file.type != "image/jpeg") {
                 throw new Error("File must be an image.");
             }
+
+            var url;
+
+            if (itemType == "Artist") {
+                url = self.getUrl("Artists/" + self.encodeName(itemName) + "/Images");
+            }
+            else if (itemType == "Genre") {
+                url = self.getUrl("Genres/" + self.encodeName(itemName) + "/Images");
+            }
+            else if (itemType == "GameGenre") {
+                url = self.getUrl("GameGenres/" + self.encodeName(itemName) + "/Images");
+            }
+            else if (itemType == "MusicGenre") {
+                url = self.getUrl("MusicGenres/" + self.encodeName(itemName) + "/Images");
+            }
+            else if (itemType == "Person") {
+                url = self.getUrl("Persons/" + self.encodeName(itemName) + "/Images");
+            }
+            else if (itemType == "Studio") {
+                url = self.getUrl("Studios/" + self.encodeName(itemName) + "/Images");
+            }
+            else {
+                url = self.getUrl("Items/" + itemId + "/Images");
+            }
+
+            url += "/" + imageType;
 
             var deferred = $.Deferred();
 
@@ -1226,8 +1319,6 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
 
                 // Split by a comma to remove the url: prefix
                 var data = e.target.result.split(',')[1];
-
-                var url = self.getUrl("Items/" + itemId + "/Images/" + imageType);
 
                 self.ajax({
                     type: "POST",
@@ -2240,6 +2331,27 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 url: url,
                 data: JSON.stringify(configuration),
                 contentType: "application/json"
+            });
+        };
+
+        self.getAncestorItems = function (itemId, userId) {
+
+            if (!itemId) {
+                throw new Error("null itemId");
+            }
+
+            var options = {};
+
+            if (userId) {
+                options.userId = userId;
+            }
+
+            var url = self.getUrl("Items/" + itemId + "/Ancestors", options);
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
             });
         };
 
@@ -3509,13 +3621,12 @@ MediaBrowser.SHA1 = function (msg) {
             /(iphone)/.exec(ua) ||
             /(android)/.exec(ua) ||
             [];
-			
-		var browser = match[1] || "";
-		
-		if (ua.indexOf("like gecko") != -1 && ua.indexOf('webkit') == -1 && ua.indexOf('opera') == -1)
-		{
-			browser = "msie";
-		}
+
+        var browser = match[1] || "";
+
+        if (ua.indexOf("like gecko") != -1 && ua.indexOf('webkit') == -1 && ua.indexOf('opera') == -1) {
+            browser = "msie";
+        }
 
         return {
             browser: browser,

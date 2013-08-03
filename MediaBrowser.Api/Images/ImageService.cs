@@ -1,12 +1,9 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
@@ -37,6 +34,23 @@ namespace MediaBrowser.Api.Images
         /// <value>The id.</value>
         [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Id { get; set; }
+    }
+
+    [Route("/Artists/{Name}/Images", "GET")]
+    [Route("/Genres/{Name}/Images", "GET")]
+    [Route("/GameGenres/{Name}/Images", "GET")]
+    [Route("/MusicGenres/{Name}/Images", "GET")]
+    [Route("/Persons/{Name}/Images", "GET")]
+    [Route("/Studios/{Name}/Images", "GET")]
+    [Api(Description = "Gets information about an item's images")]
+    public class GetItemByNameImageInfos : IReturn<List<ImageInfo>>
+    {
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "Name", Description = "Name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Name { get; set; }
     }
 
     [Route("/Items/{Id}/Images/{Type}", "GET")]
@@ -88,126 +102,71 @@ namespace MediaBrowser.Api.Images
         public int NewIndex { get; set; }
     }
 
-    /// <summary>
-    /// Class DeleteItemImage
-    /// </summary>
-    [Route("/Items/{Id}/Images/{Type}", "DELETE")]
-    [Route("/Items/{Id}/Images/{Type}/{Index}", "DELETE")]
-    [Api(Description = "Deletes an item image")]
-    public class DeleteItemImage : DeleteImageRequest, IReturnVoid
+    [Route("/Artists/{Name}/Images/{Type}/{Index}/Index", "POST")]
+    [Route("/Genres/{Name}/Images/{Type}/{Index}/Index", "POST")]
+    [Route("/GameGenres/{Name}/Images/{Type}/{Index}/Index", "POST")]
+    [Route("/MusicGenres/{Name}/Images/{Type}/{Index}/Index", "POST")]
+    [Route("/Persons/{Name}/Images/{Type}/{Index}/Index", "POST")]
+    [Route("/Studios/{Name}/Images/{Type}/{Index}/Index", "POST")]
+    [Route("/Years/{Year}/Images/{Type}/{Index}/Index", "POST")]
+    [Api(Description = "Updates the index for an item image")]
+    public class UpdateItemByNameImageIndex : IReturnVoid
     {
         /// <summary>
         /// Gets or sets the id.
         /// </summary>
         /// <value>The id.</value>
-        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public Guid Id { get; set; }
-    }
+        [ApiMember(Name = "Name", Description = "Item name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public string Name { get; set; }
 
+        /// <summary>
+        /// Gets or sets the type of the image.
+        /// </summary>
+        /// <value>The type of the image.</value>
+        [ApiMember(Name = "Type", Description = "Image Type", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public ImageType Type { get; set; }
+
+        /// <summary>
+        /// Gets or sets the index.
+        /// </summary>
+        /// <value>The index.</value>
+        [ApiMember(Name = "Index", Description = "Image Index", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "POST")]
+        public int Index { get; set; }
+
+        /// <summary>
+        /// Gets or sets the new index.
+        /// </summary>
+        /// <value>The new index.</value>
+        [ApiMember(Name = "NewIndex", Description = "The new image index", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public int NewIndex { get; set; }
+    }
+    
     /// <summary>
     /// Class GetPersonImage
     /// </summary>
-    [Route("/Persons/{Name}/Images/{Type}", "GET")]
-    [Route("/Persons/{Name}/Images/{Type}/{Index}", "GET")]
-    [Api(Description = "Gets a person image")]
-    public class GetPersonImage : ImageRequest
-    {
-        /// <summary>
-        /// Gets or sets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        [ApiMember(Name = "Name", Description = "Person name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string Name { get; set; }
-    }
-
-    /// <summary>
-    /// Class GetArtistImage
-    /// </summary>
     [Route("/Artists/{Name}/Images/{Type}", "GET")]
     [Route("/Artists/{Name}/Images/{Type}/{Index}", "GET")]
-    [Api(Description = "Gets an artist image")]
-    public class GetArtistImage : ImageRequest
-    {
-        /// <summary>
-        /// Gets or sets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        [ApiMember(Name = "Name", Description = "Artist name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string Name { get; set; }
-    }
-
-    /// <summary>
-    /// Class GetStudioImage
-    /// </summary>
-    [Route("/Studios/{Name}/Images/{Type}", "GET")]
-    [Route("/Studios/{Name}/Images/{Type}/{Index}", "GET")]
-    [Api(Description = "Gets a studio image")]
-    public class GetStudioImage : ImageRequest
-    {
-        /// <summary>
-        /// Gets or sets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        [ApiMember(Name = "Name", Description = "Studio name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string Name { get; set; }
-    }
-
-    /// <summary>
-    /// Class GetGenreImage
-    /// </summary>
     [Route("/Genres/{Name}/Images/{Type}", "GET")]
     [Route("/Genres/{Name}/Images/{Type}/{Index}", "GET")]
-    [Api(Description = "Gets a genre image")]
-    public class GetGenreImage : ImageRequest
-    {
-        /// <summary>
-        /// Gets or sets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        [ApiMember(Name = "Name", Description = "Genre name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string Name { get; set; }
-    }
-
-    [Route("/MusicGenres/{Name}/Images/{Type}", "GET")]
-    [Route("/MusicGenres/{Name}/Images/{Type}/{Index}", "GET")]
-    [Api(Description = "Gets a genre image")]
-    public class GetMusicGenreImage : ImageRequest
-    {
-        /// <summary>
-        /// Gets or sets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        [ApiMember(Name = "Name", Description = "Genre name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string Name { get; set; }
-    }
-
     [Route("/GameGenres/{Name}/Images/{Type}", "GET")]
     [Route("/GameGenres/{Name}/Images/{Type}/{Index}", "GET")]
-    [Api(Description = "Gets a genre image")]
-    public class GetGameGenreImage : ImageRequest
+    [Route("/MusicGenres/{Name}/Images/{Type}", "GET")]
+    [Route("/MusicGenres/{Name}/Images/{Type}/{Index}", "GET")]
+    [Route("/Persons/{Name}/Images/{Type}", "GET")]
+    [Route("/Persons/{Name}/Images/{Type}/{Index}", "GET")]
+    [Route("/Studios/{Name}/Images/{Type}", "GET")]
+    [Route("/Studios/{Name}/Images/{Type}/{Index}", "GET")]
+    [Route("/Years/{Year}/Images/{Type}", "GET")]
+    [Route("/Years/{Year}/Images/{Type}/{Index}", "GET")]
+    [Api(Description = "Gets an item by name image")]
+    public class GetItemByNameImage : ImageRequest
     {
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
         /// <value>The name.</value>
-        [ApiMember(Name = "Name", Description = "Genre name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        [ApiMember(Name = "Name", Description = "Item name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Name { get; set; }
-    }
-
-    /// <summary>
-    /// Class GetYearImage
-    /// </summary>
-    [Route("/Years/{Year}/Images/{Type}", "GET")]
-    [Route("/Years/{Year}/Images/{Type}/{Index}", "GET")]
-    [Api(Description = "Gets a year image")]
-    public class GetYearImage : ImageRequest
-    {
-        /// <summary>
-        /// Gets or sets the year.
-        /// </summary>
-        /// <value>The year.</value>
-        [ApiMember(Name = "Year", Description = "Year", IsRequired = true, DataType = "int", ParameterType = "path", Verb = "GET")]
-        public int Year { get; set; }
     }
 
     /// <summary>
@@ -224,6 +183,47 @@ namespace MediaBrowser.Api.Images
         /// <value>The id.</value>
         [ApiMember(Name = "Id", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public Guid Id { get; set; }
+    }
+
+    /// <summary>
+    /// Class DeleteItemImage
+    /// </summary>
+    [Route("/Items/{Id}/Images/{Type}", "DELETE")]
+    [Route("/Items/{Id}/Images/{Type}/{Index}", "DELETE")]
+    [Api(Description = "Deletes an item image")]
+    public class DeleteItemImage : DeleteImageRequest, IReturnVoid
+    {
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
+        public Guid Id { get; set; }
+    }
+
+    [Route("/Artists/{Name}/Images/{Type}", "DELETE")]
+    [Route("/Artists/{Name}/Images/{Type}/{Index}", "DELETE")]
+    [Route("/Genres/{Name}/Images/{Type}", "DELETE")]
+    [Route("/Genres/{Name}/Images/{Type}/{Index}", "DELETE")]
+    [Route("/GameGenres/{Name}/Images/{Type}", "DELETE")]
+    [Route("/GameGenres/{Name}/Images/{Type}/{Index}", "DELETE")]
+    [Route("/MusicGenres/{Name}/Images/{Type}", "DELETE")]
+    [Route("/MusicGenres/{Name}/Images/{Type}/{Index}", "DELETE")]
+    [Route("/Persons/{Name}/Images/{Type}", "DELETE")]
+    [Route("/Persons/{Name}/Images/{Type}/{Index}", "DELETE")]
+    [Route("/Studios/{Name}/Images/{Type}", "DELETE")]
+    [Route("/Studios/{Name}/Images/{Type}/{Index}", "DELETE")]
+    [Route("/Years/{Year}/Images/{Type}", "DELETE")]
+    [Route("/Years/{Year}/Images/{Type}/{Index}", "DELETE")]
+    [Api(Description = "Deletes an item image")]
+    public class DeleteItemByNameImage : DeleteImageRequest, IReturnVoid
+    {
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "Name", Description = "Item name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
+        public string Name { get; set; }
     }
 
     /// <summary>
@@ -286,6 +286,37 @@ namespace MediaBrowser.Api.Images
         public Stream RequestStream { get; set; }
     }
 
+    [Route("/Artists/{Name}/Images/{Type}", "POST")]
+    [Route("/Artists/{Name}/Images/{Type}/{Index}", "POST")]
+    [Route("/Genres/{Name}/Images/{Type}", "POST")]
+    [Route("/Genres/{Name}/Images/{Type}/{Index}", "POST")]
+    [Route("/GameGenres/{Name}/Images/{Type}", "POST")]
+    [Route("/GameGenres/{Name}/Images/{Type}/{Index}", "POST")]
+    [Route("/MusicGenres/{Name}/Images/{Type}", "POST")]
+    [Route("/MusicGenres/{Name}/Images/{Type}/{Index}", "POST")]
+    [Route("/Persons/{Name}/Images/{Type}", "POST")]
+    [Route("/Persons/{Name}/Images/{Type}/{Index}", "POST")]
+    [Route("/Studios/{Name}/Images/{Type}", "POST")]
+    [Route("/Studios/{Name}/Images/{Type}/{Index}", "POST")]
+    [Route("/Years/{Year}/Images/{Type}", "POST")]
+    [Route("/Years/{Year}/Images/{Type}/{Index}", "POST")]
+    [Api(Description = "Posts an item image")]
+    public class PostItemByNameImage : DeleteImageRequest, IRequiresRequestStream, IReturnVoid
+    {
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "Name", Description = "Item name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public string Name { get; set; }
+
+        /// <summary>
+        /// The raw Http Request Input Stream
+        /// </summary>
+        /// <value>The request stream.</value>
+        public Stream RequestStream { get; set; }
+    }
+
     /// <summary>
     /// Class ImageService
     /// </summary>
@@ -306,7 +337,7 @@ namespace MediaBrowser.Api.Images
         private readonly IProviderManager _providerManager;
 
         private readonly IItemRepository _itemRepo;
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ImageService" /> class.
         /// </summary>
@@ -335,6 +366,28 @@ namespace MediaBrowser.Api.Images
             var result = GetItemImageInfos(item).Result;
 
             return ToOptimizedResult(result);
+        }
+
+        public object Get(GetItemByNameImageInfos request)
+        {
+            var result = GetItemByNameImageInfos(request).Result;
+
+            return ToOptimizedResult(result);
+        }
+
+        /// <summary>
+        /// Gets the item by name image infos.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>Task{List{ImageInfo}}.</returns>
+        public async Task<List<ImageInfo>> GetItemByNameImageInfos(GetItemByNameImageInfos request)
+        {
+            var pathInfo = PathInfo.Parse(RequestContext.PathInfo);
+            var type = pathInfo.GetArgumentValue<string>(0);
+
+            var item = await GetItemByName(request.Name, type, _libraryManager).ConfigureAwait(false);
+
+            return await GetItemImageInfos(item).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -476,80 +529,16 @@ namespace MediaBrowser.Api.Images
             return GetImage(request, item);
         }
 
-        /// <summary>
-        /// Gets the specified request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>System.Object.</returns>
-        public object Get(GetYearImage request)
+        public object Get(GetItemByNameImage request)
         {
-            var item = _libraryManager.GetYear(request.Year).Result;
+            var pathInfo = PathInfo.Parse(RequestContext.PathInfo);
+            var type = pathInfo.GetArgumentValue<string>(0);
+
+            var item = GetItemByName(request.Name, type, _libraryManager).Result;
 
             return GetImage(request, item);
         }
 
-        /// <summary>
-        /// Gets the specified request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>System.Object.</returns>
-        public object Get(GetStudioImage request)
-        {
-            var item = GetStudio(request.Name, _libraryManager).Result;
-
-            return GetImage(request, item);
-        }
-
-        /// <summary>
-        /// Gets the specified request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>System.Object.</returns>
-        public object Get(GetPersonImage request)
-        {
-            var item = GetPerson(request.Name, _libraryManager).Result;
-
-            return GetImage(request, item);
-        }
-
-        /// <summary>
-        /// Gets the specified request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>System.Object.</returns>
-        public object Get(GetArtistImage request)
-        {
-            var item = GetArtist(request.Name, _libraryManager).Result;
-
-            return GetImage(request, item);
-        }
-
-        /// <summary>
-        /// Gets the specified request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>System.Object.</returns>
-        public object Get(GetGenreImage request)
-        {
-            var item = GetGenre(request.Name, _libraryManager).Result;
-
-            return GetImage(request, item);
-        }
-
-        public object Get(GetMusicGenreImage request)
-        {
-            var item = GetMusicGenre(request.Name, _libraryManager).Result;
-
-            return GetImage(request, item);
-        }
-
-        public object Get(GetGameGenreImage request)
-        {
-            var item = GetGameGenre(request.Name, _libraryManager).Result;
-
-            return GetImage(request, item);
-        }
-        
         /// <summary>
         /// Posts the specified request.
         /// </summary>
@@ -568,6 +557,21 @@ namespace MediaBrowser.Api.Images
             Task.WaitAll(task);
         }
 
+        public void Post(PostItemByNameImage request)
+        {
+            var pathInfo = PathInfo.Parse(RequestContext.PathInfo);
+            var type = pathInfo.GetArgumentValue<string>(0);
+            var name = pathInfo.GetArgumentValue<string>(1);
+
+            request.Type = (ImageType)Enum.Parse(typeof(ImageType), pathInfo.GetArgumentValue<string>(3), true);
+
+            var item = GetItemByName(name, type, _libraryManager).Result;
+
+            var task = PostImage(item, request.RequestStream, request.Type, RequestContext.ContentType);
+
+            Task.WaitAll(task);
+        }
+        
         /// <summary>
         /// Posts the specified request.
         /// </summary>
@@ -613,12 +617,44 @@ namespace MediaBrowser.Api.Images
         }
 
         /// <summary>
+        /// Deletes the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        public void Delete(DeleteItemByNameImage request)
+        {
+            var pathInfo = PathInfo.Parse(RequestContext.PathInfo);
+            var type = pathInfo.GetArgumentValue<string>(0);
+
+            var item = GetItemByName(request.Name, type, _libraryManager).Result;
+
+            var task = item.DeleteImage(request.Type, request.Index);
+
+            Task.WaitAll(task);
+        }
+
+        /// <summary>
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
         public void Post(UpdateItemImageIndex request)
         {
             var item = _libraryManager.GetItemById(request.Id);
+
+            var task = UpdateItemIndex(item, request.Type, request.Index, request.NewIndex);
+
+            Task.WaitAll(task);
+        }
+
+        /// <summary>
+        /// Posts the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        public void Post(UpdateItemByNameImageIndex request)
+        {
+            var pathInfo = PathInfo.Parse(RequestContext.PathInfo);
+            var type = pathInfo.GetArgumentValue<string>(0);
+
+            var item = GetItemByName(request.Name, type, _libraryManager).Result;
 
             var task = UpdateItemIndex(item, request.Type, request.Index, request.NewIndex);
 
