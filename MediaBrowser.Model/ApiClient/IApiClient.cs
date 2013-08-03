@@ -241,6 +241,34 @@ namespace MediaBrowser.Model.ApiClient
         Task<BaseItemDto> GetGenreAsync(string name, string userId);
 
         /// <summary>
+        /// Gets the genres async.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>Task{ItemsResult}.</returns>
+        Task<ItemsResult> GetGenresAsync(ItemsByNameQuery query);
+
+        /// <summary>
+        /// Gets the music genres async.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>Task{ItemsResult}.</returns>
+        Task<ItemsResult> GetMusicGenresAsync(ItemsByNameQuery query);
+
+        /// <summary>
+        /// Gets the game genres async.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>Task{ItemsResult}.</returns>
+        Task<ItemsResult> GetGameGenresAsync(ItemsByNameQuery query);
+
+        /// <summary>
+        /// Gets the studios async.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>Task{ItemsResult}.</returns>
+        Task<ItemsResult> GetStudiosAsync(ItemsByNameQuery query);
+        
+        /// <summary>
         /// Gets the music genre async.
         /// </summary>
         /// <param name="name">The name.</param>
