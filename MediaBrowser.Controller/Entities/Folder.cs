@@ -126,20 +126,17 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Never want folders to be blocked by "BlockNotRated"
         /// </summary>
-        public override string OfficialRating
+        [IgnoreDataMember]
+        public override string OfficialRatingForComparison
         {
             get
             {
                 if (this is Series)
                 {
-                    return base.OfficialRating;
+                    return base.OfficialRatingForComparison;
                 }
 
-                return !string.IsNullOrEmpty(base.OfficialRating) ? base.OfficialRating : "None";
-            }
-            set
-            {
-                base.OfficialRating = value;
+                return !string.IsNullOrEmpty(base.OfficialRatingForComparison) ? base.OfficialRatingForComparison : "None";
             }
         }
 
@@ -316,9 +313,9 @@ namespace MediaBrowser.Controller.Entities
             {
                 var indexName = LocalizedStrings.Instance.GetString("StudioDispPref");
 
-                var candidates = GetRecursiveChildren(user).Where(i => i.IncludeInIndex && i.Studios != null).ToList();
+                var candidates = GetRecursiveChildren(user).Where(i => i.IncludeInIndex).ToList();
 
-                return candidates.AsParallel().SelectMany(i => i.Studios)
+                return candidates.AsParallel().SelectMany(i => i.AllStudios)
                     .Distinct()
                     .Select(i =>
                     {
@@ -338,7 +335,7 @@ namespace MediaBrowser.Controller.Entities
                         }
                     })
                     .Where(i => i != null)
-                    .Select(ndx => new IndexFolder(this, ndx, candidates.Where(i => i.Studios.Any(s => s.Equals(ndx.Name, StringComparison.OrdinalIgnoreCase))), indexName));
+                    .Select(ndx => new IndexFolder(this, ndx, candidates.Where(i => i.AllStudios.Any(s => s.Equals(ndx.Name, StringComparison.OrdinalIgnoreCase))), indexName));
             }
         }
 
@@ -356,9 +353,9 @@ namespace MediaBrowser.Controller.Entities
                 var indexName = LocalizedStrings.Instance.GetString("GenreDispPref");
 
                 //we need a copy of this so we don't double-recurse
-                var candidates = GetRecursiveChildren(user).Where(i => i.IncludeInIndex && i.Genres != null).ToList();
+                var candidates = GetRecursiveChildren(user).Where(i => i.IncludeInIndex).ToList();
 
-                return candidates.AsParallel().SelectMany(i => i.Genres)
+                return candidates.AsParallel().SelectMany(i => i.AllGenres)
                     .Distinct()
                     .Select(i =>
                         {
@@ -378,7 +375,7 @@ namespace MediaBrowser.Controller.Entities
                             }
                         })
                     .Where(i => i != null)
-                    .Select(genre => new IndexFolder(this, genre, candidates.Where(i => i.Genres.Any(g => g.Equals(genre.Name, StringComparison.OrdinalIgnoreCase))), indexName)
+                    .Select(genre => new IndexFolder(this, genre, candidates.Where(i => i.AllGenres.Any(g => g.Equals(genre.Name, StringComparison.OrdinalIgnoreCase))), indexName)
                 );
             }
         }

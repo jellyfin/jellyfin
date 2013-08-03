@@ -469,7 +469,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the official rating.
         /// </summary>
         /// <value>The official rating.</value>
-        public virtual string OfficialRating { get; set; }
+        public string OfficialRating { get; set; }
 
         /// <summary>
         /// Gets or sets the official rating description.
@@ -481,7 +481,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the custom rating.
         /// </summary>
         /// <value>The custom rating.</value>
-        public virtual string CustomRating { get; set; }
+        public string CustomRating { get; set; }
 
         /// <summary>
         /// Gets or sets the language.
@@ -521,6 +521,18 @@ namespace MediaBrowser.Controller.Entities
             get { return People; }
         }
 
+        [IgnoreDataMember]
+        public virtual IEnumerable<string> AllStudios
+        {
+            get { return Studios; }
+        }
+
+        [IgnoreDataMember]
+        public virtual IEnumerable<string> AllGenres
+        {
+            get { return Genres; }
+        }
+        
         /// <summary>
         /// Gets or sets the studios.
         /// </summary>
@@ -619,6 +631,18 @@ namespace MediaBrowser.Controller.Entities
         public List<Guid> ThemeSongIds { get; set; }
         public List<Guid> ThemeVideoIds { get; set; }
         public List<Guid> LocalTrailerIds { get; set; }
+
+        [IgnoreDataMember]
+        public virtual string OfficialRatingForComparison
+        {
+            get { return OfficialRating; }
+        }
+
+        [IgnoreDataMember]
+        public virtual string CustomRatingForComparison
+        {
+            get { return CustomRating; }
+        }
 
         /// <summary>
         /// Loads local trailers from the file system
@@ -992,11 +1016,11 @@ namespace MediaBrowser.Controller.Entities
                 return true;
             }
 
-            var rating = CustomRating;
+            var rating = CustomRatingForComparison;
 
             if (string.IsNullOrEmpty(rating))
             {
-                rating = OfficialRating;
+                rating = OfficialRatingForComparison;
             }
             
             if (string.IsNullOrEmpty(rating))

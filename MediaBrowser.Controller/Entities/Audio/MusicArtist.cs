@@ -14,9 +14,10 @@ namespace MediaBrowser.Controller.Entities.Audio
             get
             {
                 return Children
-                .SelectMany(i => i.Genres)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToList();
+                    .OfType<MusicAlbum>()
+                    .SelectMany(i => i.Genres)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToList();
             }
             set
             {
