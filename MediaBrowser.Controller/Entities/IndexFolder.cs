@@ -181,7 +181,7 @@ namespace MediaBrowser.Controller.Entities
                 ForcedSortName = ShadowItem.SortName;
                 Genres = ShadowItem.Genres;
                 Studios = ShadowItem.Studios;
-                OfficialRating = ShadowItem.OfficialRating;
+                OfficialRating = ShadowItem.OfficialRatingForComparison;
                 BackdropImagePaths = ShadowItem.BackdropImagePaths;
                 Images = ShadowItem.Images;
                 Overview = ShadowItem.Overview;

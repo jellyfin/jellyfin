@@ -73,59 +73,42 @@ namespace MediaBrowser.Controller.Entities.TV
             }
         }
 
-        /// <summary>
-        /// Gets or sets the studios.
-        /// </summary>
-        /// <value>The studios.</value>
         [IgnoreDataMember]
-        public override List<string> Studios
+        public override IEnumerable<string> AllGenres
         {
             get
             {
-                return Series != null ? Series.Studios : null;
-            }
-            set
-            {
-                base.Studios = value;
+                if (Genres == null) return Series != null ? Series.Genres : Genres;
+                return Series != null && Series.Genres != null ? Genres.Concat(Series.Genres) : base.AllGenres;
             }
         }
 
-        /// <summary>
-        /// Gets or sets the genres.
-        /// </summary>
-        /// <value>The genres.</value>
         [IgnoreDataMember]
-        public override List<string> Genres
+        public override IEnumerable<string> AllStudios
         {
-            get { return Series != null ? Series.Genres : null; }
-            set
+            get
             {
-                base.Genres = value;
+                if (Studios == null) return Series != null ? Series.Studios : Studios;
+                return Series != null && Series.Studios != null ? Studios.Concat(Series.Studios) : base.AllStudios;
             }
         }
 
         /// <summary>
         /// Our rating comes from our series
         /// </summary>
-        public override string OfficialRating
+        [IgnoreDataMember]
+        public override string OfficialRatingForComparison
         {
-            get { return Series != null ? Series.OfficialRating : base.OfficialRating; }
-            set
-            {
-                base.OfficialRating = value;
-            }
+            get { return Series != null ? Series.OfficialRatingForComparison : base.OfficialRatingForComparison; }
         }
 
         /// <summary>
         /// Our rating comes from our series
         /// </summary>
-        public override string CustomRating
+        [IgnoreDataMember]
+        public override string CustomRatingForComparison
         {
-            get { return Series != null ? Series.CustomRating : base.CustomRating; }
-            set
-            {
-                base.CustomRating = value;
-            }
+            get { return Series != null ? Series.CustomRatingForComparison : base.CustomRatingForComparison; }
         }
 
         /// <summary>

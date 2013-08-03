@@ -96,25 +96,19 @@ namespace MediaBrowser.Controller.Entities.TV
         /// <summary>
         /// Our rating comes from our series
         /// </summary>
-        public override string OfficialRating
+        [IgnoreDataMember]
+        public override string OfficialRatingForComparison
         {
-            get { return Series != null ? Series.OfficialRating : base.OfficialRating; }
-            set
-            {
-                base.OfficialRating = value;
-            }
+            get { return Series != null ? Series.OfficialRatingForComparison : base.OfficialRatingForComparison; }
         }
 
         /// <summary>
         /// Our rating comes from our series
         /// </summary>
-        public override string CustomRating
+        [IgnoreDataMember]
+        public override string CustomRatingForComparison
         {
-            get { return Series != null ? Series.CustomRating : base.CustomRating; }
-            set
-            {
-                base.CustomRating = value;
-            }
+            get { return Series != null ? Series.CustomRatingForComparison : base.CustomRatingForComparison; }
         }
 
         /// <summary>
