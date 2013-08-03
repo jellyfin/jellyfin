@@ -86,7 +86,7 @@ namespace MediaBrowser.Server.Implementations.Configuration
 
             var newIbnPath = newConfig.ItemsByNamePath;
 
-            if (!string.IsNullOrEmpty(newIbnPath)
+            if (!string.IsNullOrWhiteSpace(newIbnPath)
                 && !string.Equals(Configuration.ItemsByNamePath ?? string.Empty, newIbnPath))
             {
                 // Validate
