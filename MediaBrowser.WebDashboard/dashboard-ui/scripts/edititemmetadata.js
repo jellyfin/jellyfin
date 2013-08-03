@@ -298,6 +298,12 @@
             $('#refreshLoading', page).hide();
 
             currentItem = item;
+            
+            if (item.IsFolder) {
+                $('#fldRecursive', page).css("display", "inline-block")
+            } else {
+                $('#fldRecursive', page).hide();
+            }
 
             LibraryBrowser.renderName(item, $('.itemName', page), true);
 
@@ -919,7 +925,7 @@
                 refreshPromise = ApiClient.refreshStudio(currentItem.Name, force);
             }
             else {
-                refreshPromise = ApiClient.refreshItem(currentItem.Id, force, false);
+                refreshPromise = ApiClient.refreshItem(currentItem.Id, force, $('#chkRecursive', page).checked());
             }
 
             refreshPromise.done(function () {
