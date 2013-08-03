@@ -1456,9 +1456,10 @@ namespace MediaBrowser.Server.Implementations.Library
                 })
                 .Select(i => i.CollectionType)
                 .Where(i => !string.IsNullOrEmpty(i))
-                .Distinct();
+                .Distinct()
+                .ToList();
 
-            return collectionTypes.SingleOrDefault();
+            return collectionTypes.Count == 1 ? collectionTypes[0] : null;
         }
     }
 }
