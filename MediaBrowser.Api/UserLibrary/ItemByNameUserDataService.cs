@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Library;
+﻿using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text.Controller;
@@ -215,36 +214,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>Task.</returns>
         protected async Task MarkFavorite(Guid userId, string type, string name, bool isFavorite)
         {
-            BaseItem item;
-
-            if (string.Equals(type, "Persons"))
-            {
-                item = await GetPerson(name, LibraryManager).ConfigureAwait(false);
-            }
-            else if (string.Equals(type, "Artists"))
-            {
-                item = await GetArtist(name, LibraryManager).ConfigureAwait(false);
-            }
-            else if (string.Equals(type, "Genres"))
-            {
-                item = await GetGenre(name, LibraryManager).ConfigureAwait(false);
-            }
-            else if (string.Equals(type, "MusicGenres"))
-            {
-                item = await GetMusicGenre(name, LibraryManager).ConfigureAwait(false);
-            }
-            else if (string.Equals(type, "GameGenres"))
-            {
-                item = await GetGameGenre(name, LibraryManager).ConfigureAwait(false);
-            }
-            else if (string.Equals(type, "Studios"))
-            {
-                item = await GetStudio(name, LibraryManager).ConfigureAwait(false);
-            }
-            else
-            {
-                throw new ArgumentException();
-            }
+            var item = await GetItemByName(name, type, LibraryManager).ConfigureAwait(false);
 
             var key = item.GetUserDataKey();
 
@@ -267,36 +237,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>Task.</returns>
         protected async Task MarkLike(Guid userId, string type, string name, bool? likes)
         {
-            BaseItem item;
-
-            if (string.Equals(type, "Persons"))
-            {
-                item = await GetPerson(name, LibraryManager).ConfigureAwait(false);
-            }
-            else if (string.Equals(type, "Artists"))
-            {
-                item = await GetArtist(name, LibraryManager).ConfigureAwait(false);
-            }
-            else if (string.Equals(type, "Genres"))
-            {
-                item = await GetGenre(name, LibraryManager).ConfigureAwait(false);
-            }
-            else if (string.Equals(type, "MusicGenres"))
-            {
-                item = await GetMusicGenre(name, LibraryManager).ConfigureAwait(false);
-            }
-            else if (string.Equals(type, "GameGenres"))
-            {
-                item = await GetGameGenre(name, LibraryManager).ConfigureAwait(false);
-            }
-            else if (string.Equals(type, "Studios"))
-            {
-                item = await GetStudio(name, LibraryManager).ConfigureAwait(false);
-            }
-            else
-            {
-                throw new ArgumentException();
-            }
+            var item = await GetItemByName(name, type, LibraryManager).ConfigureAwait(false);
 
             var key = item.GetUserDataKey();
 

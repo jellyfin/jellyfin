@@ -238,6 +238,54 @@ namespace MediaBrowser.Api
 
                 }) ?? name;
         }
+
+        /// <summary>
+        /// Gets the name of the item by.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="type">The type.</param>
+        /// <param name="libraryManager">The library manager.</param>
+        /// <returns>Task{BaseItem}.</returns>
+        /// <exception cref="System.ArgumentException"></exception>
+        protected async Task<BaseItem> GetItemByName(string name, string type, ILibraryManager libraryManager)
+        {
+            BaseItem item;
+
+            if (type.IndexOf("Person", StringComparison.OrdinalIgnoreCase) == 0)
+            {
+                item = await GetPerson(name, libraryManager).ConfigureAwait(false);
+            }
+            else if (type.IndexOf("Artist", StringComparison.OrdinalIgnoreCase) == 0)
+            {
+                item = await GetArtist(name, libraryManager).ConfigureAwait(false);
+            }
+            else if (type.IndexOf("Genre", StringComparison.OrdinalIgnoreCase) == 0)
+            {
+                item = await GetGenre(name, libraryManager).ConfigureAwait(false);
+            }
+            else if (type.IndexOf("MusicGenre", StringComparison.OrdinalIgnoreCase) == 0)
+            {
+                item = await GetMusicGenre(name, libraryManager).ConfigureAwait(false);
+            }
+            else if (type.IndexOf("GameGenre", StringComparison.OrdinalIgnoreCase) == 0)
+            {
+                item = await GetGameGenre(name, libraryManager).ConfigureAwait(false);
+            }
+            else if (type.IndexOf("Studio", StringComparison.OrdinalIgnoreCase) == 0)
+            {
+                item = await GetStudio(name, libraryManager).ConfigureAwait(false);
+            }
+            else if (type.IndexOf("Year", StringComparison.OrdinalIgnoreCase) == 0)
+            {
+                item = await libraryManager.GetYear(int.Parse(name)).ConfigureAwait(false);
+            }
+            else
+            {
+                throw new ArgumentException();
+            }
+
+            return item;
+        }
     }
 
     /// <summary>
