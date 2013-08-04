@@ -179,28 +179,23 @@ namespace MediaBrowser.Providers.TV
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            BaseProviderInfo data;
-
-            if (!item.ProviderData.TryGetValue(Id, out data))
-            {
-                data = new BaseProviderInfo();
-                item.ProviderData[Id] = data;
-            }
-
             var seriesId = item.GetProviderId(MetadataProviders.Tvdb);
 
-            var seriesDataPath = GetSeriesDataPath(ConfigurationManager.ApplicationPaths, seriesId);
-            var xmlPath = Path.Combine(seriesDataPath, "fanart.xml");
-
-            // Only download the xml if it doesn't already exist. The prescan task will take care of getting updates
-            if (!File.Exists(xmlPath))
+            if (!string.IsNullOrEmpty(seriesId))
             {
-                await DownloadSeriesXml(seriesDataPath, seriesId, cancellationToken).ConfigureAwait(false);
-            }
+                var seriesDataPath = GetSeriesDataPath(ConfigurationManager.ApplicationPaths, seriesId);
+                var xmlPath = Path.Combine(seriesDataPath, "fanart.xml");
 
-            if (File.Exists(xmlPath))
-            {
-                await FetchFromXml(item, xmlPath, cancellationToken).ConfigureAwait(false);
+                // Only download the xml if it doesn't already exist. The prescan task will take care of getting updates
+                if (!File.Exists(xmlPath))
+                {
+                    await DownloadSeriesXml(seriesDataPath, seriesId, cancellationToken).ConfigureAwait(false);
+                }
+
+                if (File.Exists(xmlPath))
+                {
+                    await FetchFromXml(item, xmlPath, cancellationToken).ConfigureAwait(false);
+                }
             }
 
             SetLastRefreshed(item, DateTime.UtcNow);

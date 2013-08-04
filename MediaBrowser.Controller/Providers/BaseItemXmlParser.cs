@@ -235,6 +235,35 @@ namespace MediaBrowser.Controller.Providers
                         break;
                     }
 
+                case "LockedFields":
+                    {
+                        var fields = new List<MetadataFields>();
+
+                        var val = reader.ReadElementContentAsString();
+
+                        if (!string.IsNullOrWhiteSpace(val))
+                        {
+                            var list = val.Split('|').Select(i =>
+                            {
+                                MetadataFields field;
+
+                                if (Enum.TryParse<MetadataFields>(i, true, out field))
+                                {
+                                    return (MetadataFields?)field;
+                                }
+
+                                return null;
+
+                            }).Where(i => i.HasValue).Select(i => i.Value);
+
+                            fields.AddRange(list);
+                        }
+
+                        item.LockedFields = fields;
+
+                        break;
+                    }
+
                 case "TagLines":
                     {
                         FetchFromTaglinesNode(reader.ReadSubtree(), item);

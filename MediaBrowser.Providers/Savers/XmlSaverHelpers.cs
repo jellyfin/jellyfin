@@ -77,7 +77,8 @@ namespace MediaBrowser.Providers.Savers
                     "CriticRatingSummary",
                     "GamesDbId",
                     "BirthDate",
-                    "DeathDate"
+                    "DeathDate",
+                    "LockedFields"
                 });
 
                 var position = xml.ToString().LastIndexOf("</", StringComparison.OrdinalIgnoreCase);
@@ -165,6 +166,11 @@ namespace MediaBrowser.Providers.Savers
             builder.Append("<Added>" + SecurityElement.Escape(item.DateCreated.ToLocalTime().ToString("G")) + "</Added>");
 
             builder.Append("<LockData>" + item.DontFetchMeta.ToString().ToLower() + "</LockData>");
+
+            if (item.LockedFields.Count > 0)
+            {
+                builder.Append("<LockedFields>" + string.Join("|", item.LockedFields.Select(i => i.ToString()).ToArray()) + "</LockedFields>");
+            }
 
             if (!string.IsNullOrEmpty(item.DisplayMediaType))
             {
@@ -462,7 +468,7 @@ namespace MediaBrowser.Providers.Savers
                 {
                     builder.Append("<ScanType>" + SecurityElement.Escape(stream.ScanType) + "</ScanType>");
                 }
-                
+
                 if (stream.Channels.HasValue)
                 {
                     builder.Append("<Channels>" + stream.Channels.Value.ToString(UsCulture) + "</Channels>");
@@ -507,7 +513,7 @@ namespace MediaBrowser.Providers.Savers
                         }
                     }
                 }
-                
+
                 builder.Append("</" + stream.Type + ">");
             }
 

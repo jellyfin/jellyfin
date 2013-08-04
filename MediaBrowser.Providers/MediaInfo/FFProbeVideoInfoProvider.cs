@@ -300,14 +300,17 @@ namespace MediaBrowser.Providers.MediaInfo
                 return;
             }
 
-            var genres = GetDictionaryValue(data.format.tags, "genre");
-
-            if (!string.IsNullOrEmpty(genres))
+            if (!video.LockedFields.Contains(MetadataFields.Genres))
             {
-                video.Genres = genres.Split(new[] { ';', '/' }, StringSplitOptions.RemoveEmptyEntries)
-                    .Where(i => !string.IsNullOrWhiteSpace(i))
-                    .Select(i => i.Trim())
-                    .ToList();
+                var genres = GetDictionaryValue(data.format.tags, "genre");
+
+                if (!string.IsNullOrEmpty(genres))
+                {
+                    video.Genres = genres.Split(new[] { ';', '/' }, StringSplitOptions.RemoveEmptyEntries)
+                        .Where(i => !string.IsNullOrWhiteSpace(i))
+                        .Select(i => i.Trim())
+                        .ToList();
+                }
             }
 
             var overview = GetDictionaryValue(data.format.tags, "WM/SubTitleDescription");
