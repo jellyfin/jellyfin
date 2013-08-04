@@ -107,17 +107,20 @@ namespace MediaBrowser.Providers.MediaInfo
                 audio.Name = title;
             }
 
-            var composer = GetDictionaryValue(tags, "composer");
-
-            if (!string.IsNullOrWhiteSpace(composer))
+            if (!audio.LockedFields.Contains(MetadataFields.Cast))
             {
-                foreach (var person in Split(composer))
-                {
-                    var name = person.Trim();
+                var composer = GetDictionaryValue(tags, "composer");
 
-                    if (!string.IsNullOrEmpty(name))
+                if (!string.IsNullOrWhiteSpace(composer))
+                {
+                    foreach (var person in Split(composer))
                     {
-                        audio.AddPerson(new PersonInfo { Name = name, Type = PersonType.Composer });
+                        var name = person.Trim();
+
+                        if (!string.IsNullOrEmpty(name))
+                        {
+                            audio.AddPerson(new PersonInfo { Name = name, Type = PersonType.Composer });
+                        }
                     }
                 }
             }
@@ -148,12 +151,18 @@ namespace MediaBrowser.Providers.MediaInfo
                 audio.ProductionYear = audio.PremiereDate.Value.ToLocalTime().Year;
             }
 
-            FetchGenres(audio, tags);
+            if (!audio.LockedFields.Contains(MetadataFields.Genres))
+            {
+                FetchGenres(audio, tags);
+            }
 
-            // There's several values in tags may or may not be present
-            FetchStudios(audio, tags, "organization");
-            FetchStudios(audio, tags, "ensemble");
-            FetchStudios(audio, tags, "publisher");
+            if (!audio.LockedFields.Contains(MetadataFields.Studios))
+            {
+                // There's several values in tags may or may not be present
+                FetchStudios(audio, tags, "organization");
+                FetchStudios(audio, tags, "ensemble");
+                FetchStudios(audio, tags, "publisher");
+            }
         }
 
         /// <summary>

@@ -1064,6 +1064,8 @@ namespace MediaBrowser.Controller.Entities
                 {
                     try
                     {
+                        Logger.Debug("Found shortcut at {0}", i.FullName);
+                        
                         return new LinkedChild
                         {
                             Path = FileSystem.ResolveShortcut(i.FullName),
@@ -1082,6 +1084,7 @@ namespace MediaBrowser.Controller.Entities
             if (!newShortcutLinks.SequenceEqual(currentShortcutLinks))
             {
                 Logger.Info("Shortcut links have changed for {0}", Path);
+
                 newShortcutLinks.AddRange(currentManualLinks);
                 LinkedChildren = newShortcutLinks;
                 return true;
