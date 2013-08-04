@@ -116,7 +116,7 @@ namespace MediaBrowser.Server.Implementations.Providers
             cancellationToken.ThrowIfCancellationRequested();
 
             // Run the normal providers sequentially in order of priority
-            foreach (var provider in MetadataProviders.Where(p => p.Supports(item)))
+            foreach (var provider in MetadataProviders.Where(p => ProviderSupportsItem(p, item)))
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -173,6 +173,25 @@ namespace MediaBrowser.Server.Implementations.Providers
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Providers the supports item.
+        /// </summary>
+        /// <param name="provider">The provider.</param>
+        /// <param name="item">The item.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
+        private bool ProviderSupportsItem(BaseMetadataProvider provider, BaseItem item)
+        {
+            try
+            {
+                return provider.Supports(item);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("{0} failed in Supports for type {1}", ex, provider.GetType().Name, item.GetType().Name);
+                return false;
+            }
         }
 
         /// <summary>
