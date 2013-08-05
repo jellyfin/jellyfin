@@ -87,7 +87,7 @@ namespace MediaBrowser.Server.Implementations.Providers
                 }
             }
 
-            if (item.LocationType != LocationType.FileSystem)
+            if (item.LocationType == LocationType.Remote || item.LocationType == LocationType.Virtual)
             {
                 saveLocally = false;
             }
