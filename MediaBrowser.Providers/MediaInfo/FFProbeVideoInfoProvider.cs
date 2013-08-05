@@ -278,7 +278,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             FetchWtvInfo(video, data);
 
-            if (chapters.Count == 0)
+            if (chapters.Count == 0 && video.MediaStreams.Any(i => i.Type == MediaStreamType.Video))
             {
                 AddDummyChapters(video, chapters);
             }
@@ -439,6 +439,11 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             var runtime = video.RunTimeTicks ?? 0;
 
+            if (runtime < 0)
+            {
+                throw new ArgumentException(string.Format("{0} has invalid runtime of {1}", video.Name, runtime));
+            }
+
             if (runtime < _dummyChapterDuration)
             {
                 return;
@@ -447,7 +452,8 @@ namespace MediaBrowser.Providers.MediaInfo
             long currentChapterTicks = 0;
             var index = 1;
 
-            while (currentChapterTicks < runtime)
+            // Limit to 100 chapters just in case there's some incorrect metadata here
+            while (currentChapterTicks < runtime && index < 100)
             {
                 chapters.Add(new ChapterInfo
                 {
