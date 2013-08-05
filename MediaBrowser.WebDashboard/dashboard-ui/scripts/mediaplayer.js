@@ -378,7 +378,7 @@
 
             var html = '';
 
-            var requiresControls = $.browser.android || $.browser.iphone || $.browser.ipad;
+            var requiresControls = $.browser.android || ($.browser.webkit && !$.browser.chrome);
 
             // Can't autoplay in these browsers so we need to use the full controls
             if (requiresControls) {
@@ -398,15 +398,9 @@
             $('#pauseButton', nowPlayingBar).show();
             $('#fullscreenButton', nowPlayingBar).hide();
 
-            if (requiresControls) {
-                $('#previousTrackButton', nowPlayingBar).hide();
-                $('#nextTrackButton', nowPlayingBar).hide();
-                $('#playlistButton', nowPlayingBar).hide();
-            } else {
-                $('#previousTrackButton', nowPlayingBar).show();
-                $('#nextTrackButton', nowPlayingBar).show();
-                $('#playlistButton', nowPlayingBar).show();
-            }
+            $('#previousTrackButton', nowPlayingBar).show();
+            $('#nextTrackButton', nowPlayingBar).show();
+            $('#playlistButton', nowPlayingBar).show();
 
             $('#qualityButton', nowPlayingBar).hide();
             $('#audioTracksButton', nowPlayingBar).hide();
