@@ -14,25 +14,200 @@
         var random = Math.floor((Math.random() * tips.length * 1.5));
 
         var tip = tips[random];
-        
+
         if (tip) {
             $('#tip', page).html(tip).show();
         } else {
             $('#tip', page).hide();
         }
     }
-    
+
     function getViewHtml(view) {
 
         var html = '';
 
-        html += '<a class="posterItem backdropPosterItem" href="' + view.url + '">';
+        html += '<a id="' + view.id + '" class="posterItem backdropPosterItem" href="' + view.url + '">';
 
-        html += '<div class="posterItemImage" style="background-color: ' + view.background + ';background-image:url(\'' + view.img + '\');"></div><div class="posterItemText posterItemTextCentered">' + view.name + '</div>';
+        html += '<div class="posterItemImage" style="padding:1px;"></div><div class="posterItemText posterItemTextCentered">' + view.name + '</div>';
 
         html += '</a>';
 
         return html;
+    }
+
+    function appendViewImages(elem, urls) {
+
+        var html = '';
+
+        for (var i = 0, length = urls.length; i < length; i++) {
+
+            var url = urls[i];
+
+            html += '<div style="display:inline-block;margin: 0 1px 0 0; width: 32.6%; height: 48.5%; background-repeat: no-repeat; background-position: center center; background-size: cover; background-image: url(\'' + url + '\');"></div>';
+
+        }
+
+
+        elem.html(html);
+    }
+
+    function renderMovieViewImages(page, userId) {
+
+        apiClient.getItems(userId, {
+
+            SortBy: "random",
+            IncludeItemTypes: "Movie",
+            Limit: 6,
+            ImageTypes: "Primary",
+            Recursive: true
+
+        }).done(function (result) {
+
+            var urls = [];
+
+            for (var i = 0, length = result.Items.length; i < length; i++) {
+
+                urls.push(LibraryBrowser.getImageUrl(result.Items[i], 'Primary', 0, {
+                    width: 160
+                }));
+
+            }
+
+            appendViewImages($('#moviesView .posterItemImage', page), urls);
+
+        });
+
+    }
+
+    function renderMusicViewImages(page, userId) {
+
+        apiClient.getItems(userId, {
+
+            SortBy: "random",
+            IncludeItemTypes: "MusicAlbum",
+            Limit: 6,
+            ImageTypes: "Primary",
+            Recursive: true
+
+        }).done(function (result) {
+
+            var urls = [];
+
+            for (var i = 0, length = result.Items.length; i < length; i++) {
+
+                urls.push(LibraryBrowser.getImageUrl(result.Items[i], 'Primary', 0, {
+                    width: 160
+                }));
+
+            }
+
+            appendViewImages($('#musicView .posterItemImage', page), urls);
+
+        });
+
+    }
+
+    function renderGamesViewImages(page, userId) {
+
+        apiClient.getItems(userId, {
+
+            SortBy: "random",
+            MediaTypes: "Game",
+            Limit: 6,
+            ImageTypes: "Primary",
+            Recursive: true
+
+        }).done(function (result) {
+
+            var urls = [];
+
+            for (var i = 0, length = result.Items.length; i < length; i++) {
+
+                urls.push(LibraryBrowser.getImageUrl(result.Items[i], 'Primary', 0, {
+                    width: 160
+                }));
+
+            }
+
+            appendViewImages($('#gamesView .posterItemImage', page), urls);
+
+        });
+
+    }
+
+    function renderTvViewImages(page, userId) {
+
+        apiClient.getItems(userId, {
+
+            SortBy: "random",
+            IncludeItemTypes: "Series",
+            Limit: 6,
+            ImageTypes: "Primary",
+            Recursive: true
+
+        }).done(function (result) {
+
+            var urls = [];
+
+            for (var i = 0, length = result.Items.length; i < length; i++) {
+
+                urls.push(LibraryBrowser.getImageUrl(result.Items[i], 'Primary', 0, {
+                    width: 160
+                }));
+
+            }
+
+            appendViewImages($('#tvView .posterItemImage', page), urls);
+
+        });
+
+    }
+
+    function renderViews(page, userId) {
+
+        apiClient.getItemCounts(userId).done(function (counts) {
+
+            var views = [];
+
+            if (counts.MovieCount || counts.TrailerCount) {
+                views.push({ id: "moviesView", name: "Movies", url: "moviesrecommended.html", img: "css/images/items/list/chapter.png", background: "#0094FF" });
+            }
+
+            if (counts.EpisodeCount || counts.SeriesCount) {
+                views.push({ id: "tvView", name: "TV Shows", url: "tvrecommended.html", img: "css/images/items/list/collection.png", background: "#FF870F" });
+            }
+
+            if (counts.SongCount || counts.MusicVideoCount) {
+                views.push({ id: "musicView", name: "Music", url: "musicrecommended.html", img: "css/images/items/list/audiocollection.png", background: "#6FBD45" });
+            }
+
+            if (counts.GameCount) {
+                views.push({ id: "gamesView", name: "Games", url: "gamesrecommended.html", img: "css/images/items/list/gamecollection.png", background: "#E12026" });
+            }
+
+            var html = '';
+
+            for (var i = 0, length = views.length; i < length; i++) {
+
+                html += getViewHtml(views[i]);
+            }
+
+            var elem = $('#views', page).html(html);
+
+            if (counts.MovieCount || counts.TrailerCount) {
+                renderMovieViewImages(elem, userId);
+            }
+            if (counts.EpisodeCount || counts.SeriesCount) {
+                renderTvViewImages(elem, userId);
+            }
+            if (counts.SongCount || counts.MusicVideoCount) {
+                renderMusicViewImages(elem, userId);
+            }
+            if (counts.GameCount) {
+                renderGamesViewImages(elem, userId);
+            }
+        });
+
     }
 
     $(document).on('pagebeforeshow', "#indexPage", function () {
@@ -45,40 +220,12 @@
             return;
         }
 
+        renderViews(page, userId);
+
         var options = {
 
             sortBy: "SortName"
         };
-
-        apiClient.getItemCounts(userId).done(function (counts) {
-
-            var views = [];
-
-            if (counts.MovieCount || counts.TrailerCount) {
-                views.push({ name: "Movies", url: "moviesrecommended.html", img: "css/images/items/list/chapter.png", background: "#0094FF" });
-            }
-
-            if (counts.EpisodeCount || counts.SeriesCount) {
-                views.push({ name: "TV Shows", url: "tvrecommended.html", img: "css/images/items/list/collection.png", background: "#FF870F" });
-            }
-
-            if (counts.SongCount || counts.MusicVideoCount) {
-                views.push({ name: "Music", url: "musicrecommended.html", img: "css/images/items/list/audiocollection.png", background: "#6FBD45" });
-            }
-
-            if (counts.GameCount) {
-                views.push({ name: "Games", url: "gamesrecommended.html", img: "css/images/items/list/gamecollection.png", background: "#E12026" });
-            }
-
-            var html = '';
-
-            for (var i = 0, length = views.length; i < length; i++) {
-
-                html += getViewHtml(views[i]);
-            }
-
-            $('#views', page).html(html);
-        });
 
         apiClient.getItems(userId, options).done(function (result) {
 
