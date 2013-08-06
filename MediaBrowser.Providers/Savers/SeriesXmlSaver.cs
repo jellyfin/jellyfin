@@ -94,6 +94,11 @@ namespace MediaBrowser.Providers.Savers
                 }
             }
 
+            if (series.PremiereDate.HasValue)
+            {
+                builder.Append("<FirstAired>" + SecurityElement.Escape(series.PremiereDate.Value.ToString("yyyy-MM-dd")) + "</FirstAired>");
+            }
+            
             XmlSaverHelpers.AddCommonNodes(item, builder);
 
             builder.Append("</Series>");
@@ -107,7 +112,8 @@ namespace MediaBrowser.Providers.Savers
                     "Status",
                     "Network",
                     "Airs_Time",
-                    "Airs_DayOfWeek"
+                    "Airs_DayOfWeek",
+                    "FirstAired"
                 });
 
             // Set last refreshed so that the provider doesn't trigger after the file save
