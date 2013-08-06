@@ -17,6 +17,12 @@
         MetadataEditor.getItemPromise().done(function (item) {
 
             $('#btnRefresh', page).button('enable');
+            
+            if (item.LocationType == "Offline") {
+                $('#divAddPerson', page).hide();
+            } else {
+                $('#divAddPerson', page).show();
+            }
 
             $('#refreshLoading', page).hide();
 
@@ -25,22 +31,22 @@
             LibraryBrowser.renderName(item, $('.itemName', page), true);
             updateTabs(page, item);
 
-            fillPeopleContainer(item.People, $('#peopleContainer', page));
+            fillPeopleContainer(item, item.People, $('#peopleContainer', page));
             Dashboard.hideLoadingMsg();
         });
     }
 
-    function fillPeopleContainer(people, container) {
+    function fillPeopleContainer(item, people, container) {
         people = people || new Array();
         var html = '';
         for (var i = 0; i < people.length; i++) {
-            html += constructPerson(people[i]);
+            html += constructPerson(item, people[i]);
         }
 
         container.html(html).trigger('create');
     }
 
-    function constructPerson(person) {
+    function constructPerson(item, person) {
         var html = '<div class="tileItem posterTileItem">';
         var imgUrl;
         var name = person.Name || "";
@@ -85,9 +91,14 @@
         html += '</span>';
         html += '</div>';
         html += '<p>';
-        html += '<span class="read">';
-        html += '<button type="button" class="edit" data-mini="true" data-inline="true"  onclick="EditItemPeoplePage.displayEdit(this)">Edit</button>';
-        html += '</span><span style="display:none;" class="edit">';
+        
+        if (item.LocationType !== "Offline") {
+            html += '<span class="read">';
+            html += '<button type="button" class="edit" data-mini="true" data-inline="true"  onclick="EditItemPeoplePage.displayEdit(this)">Edit</button>';
+            html += '</span>';
+        }
+        
+        html += '<span style="display:none;" class="edit">';
         html += '<button type="button" data-mini="true" data-inline="true" onclick="EditItemPeoplePage.hideEdit(this)">Cancel</button>';
         html += '<button type="button" data-icon="check" data-mini="true" data-inline="true" data-theme="b" onclick="EditItemPeoplePage.savePerson(this)">Save</button>';
         html += '<button type="button" data-icon="delete" data-mini="true" data-inline="true" onclick="EditItemPeoplePage.removePerson(this)">Delete</button>';

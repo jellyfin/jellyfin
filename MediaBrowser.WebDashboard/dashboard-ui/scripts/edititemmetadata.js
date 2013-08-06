@@ -9,9 +9,26 @@
         if (item.IndexNumber != null && item.Type != "Season") {
             name = item.IndexNumber + " - " + name;
         }
+
+        var cssClass = "editorNode";
+
+        if (item.LocationType == "Offline") {
+            cssClass += " offlineEditorNode";
+        }
+
+        var htmlName = "<div class='" + cssClass + "'>";
+
+        if (item.DontFetchMeta) {
+            htmlName += '<img src="css/images/editor/lock.png" />';
+        }
+
+        htmlName += name;
+
+        htmlName += "</div>";
+
         var rel = item.IsFolder ? 'folder' : 'default';
 
-        return { attr: { id: item.Id, rel: rel, itemtype: item.Type }, data: name, state: state };
+        return { attr: { id: item.Id, rel: rel, itemtype: item.Type }, data: htmlName, state: state };
     }
 
     function loadNode(page, node, openItems, selectedId, callback) {
@@ -88,7 +105,7 @@
 
             },
 
-            core: { initially_open: [], load_open: true },
+            core: { initially_open: [], load_open: true, html_titles: true },
             ui: { initially_select: [] },
 
             themes: {
@@ -293,12 +310,18 @@
 
         MetadataEditor.getItemPromise().done(function (item) {
 
+            if (item.LocationType == "Offline") {
+                $('#ulSave', page).hide();
+            } else {
+                $('#ulSave', page).show();
+            }
+
             $('#btnRefresh', page).button('enable');
 
             $('#refreshLoading', page).hide();
 
             currentItem = item;
-            
+
             if (item.IsFolder) {
                 $('#fldRecursive', page).css("display", "inline-block")
             } else {

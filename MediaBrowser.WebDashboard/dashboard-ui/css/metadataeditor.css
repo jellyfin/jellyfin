@@ -14,6 +14,18 @@
     display: none;
 }
 
+.offlineEditorNode {
+    color: #cc3333;
+}
+
+.editorNode img {
+    height: 18px;
+    margin: 0 .35em;
+    vertical-align: middle;
+    position: relative;
+    top: -2px;
+}
+
 @media all and (min-width: 600px) {
 
     .editPageSidebar {

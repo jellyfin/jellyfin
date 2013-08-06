@@ -38,7 +38,7 @@
 
             Dashboard.getCurrentUser().done(function (user) {
 
-                if (user.Configuration.IsAdministrator && item.LocationType !== "Offline") {
+                if (user.Configuration.IsAdministrator) {
                     $('#editButtonContainer', page).show();
                 } else {
                     $('#editButtonContainer', page).hide();

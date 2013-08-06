@@ -20,7 +20,9 @@
                     <a href="#" data-role="button" class="ui-btn-active">People</a>
                     <a href="#" data-role="button" id="btnEditImages">Images</a>
                 </div>
-                <button type="button" data-icon="plus" data-inline="true" onclick="EditItemPeoplePage.addPerson();">Add Person</button>
+                <div id="divAddPerson" style="display: none;">
+                    <button type="button" data-icon="plus" data-inline="true" onclick="EditItemPeoplePage.addPerson();">Add Person</button>
+                </div>
                 <div class="itemsContainer" id="peopleContainer" style="text-align: left;"></div>
             </div>
         </div>
