@@ -68,6 +68,7 @@ namespace MediaBrowser.Providers.Savers
                     "MusicbrainzId",
                     "CollectionNumber",
                     "Genres",
+                    "Genre",
                     "Studios",
                     "Tags",
                     "Added",
@@ -367,6 +368,8 @@ namespace MediaBrowser.Providers.Savers
                 }
 
                 builder.Append("</Genres>");
+
+                builder.Append("<Genre>" + SecurityElement.Escape(string.Join("|", item.Genres.ToArray())) + "</Genre>");
             }
 
             if (item.Studios.Count > 0)
