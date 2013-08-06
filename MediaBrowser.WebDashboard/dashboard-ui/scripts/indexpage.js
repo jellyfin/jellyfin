@@ -43,7 +43,7 @@
 
             var url = urls[i];
 
-            html += '<div style="display:inline-block;margin: 0 1px 0 0; width: 32.6%; height: 48.5%; background-repeat: no-repeat; background-position: center center; background-size: cover; background-image: url(\'' + url + '\');"></div>';
+            html += '<div style="display:inline-block;margin: 0 1px 0 0; width: 32.6%; height: 48.5%; background-repeat: no-repeat; background-position: center 15%; background-size: cover; background-image: url(\'' + url + '\');"></div>';
 
         }
 
