@@ -832,5 +832,27 @@ a.itemTag:hover {
     }
 }
 
-@media all and (min-height: 1000px) {
+.viewCollageImage {
+    display: inline-block;
+    margin: 0 1px 0 0;
+    width: 32.6%;
+    height: 49%;
+    background-repeat: no-repeat;
+    background-position: center 15%;
+    background-size: cover;
+}
+
+@media all and (min-width: 650px) {
+
+    .viewCollageImage {
+        width: 32.8%;
+        height: 49.1%;
+    }
+}
+
+@media all and (min-width: 1440px) {
+
+    .viewCollageImage {
+        width: 32.9%;
+    }
 }
