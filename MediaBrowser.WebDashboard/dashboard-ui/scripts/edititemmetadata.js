@@ -18,7 +18,7 @@
 
         var htmlName = "<div class='" + cssClass + "'>";
 
-        if (item.DontFetchMeta) {
+        if (item.EnableInternetProviders === false) {
             htmlName += '<img src="css/images/editor/lock.png" />';
         }
 
@@ -47,7 +47,8 @@
         ApiClient.getItems(Dashboard.getCurrentUserId(), {
 
             ParentId: node.attr("id"),
-            SortBy: 'SortName'
+            SortBy: 'SortName',
+            Fields: 'MetadataSettings'
 
         }).done(function (result) {
 
