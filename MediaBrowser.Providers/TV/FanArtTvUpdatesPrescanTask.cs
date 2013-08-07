@@ -120,9 +120,11 @@ namespace MediaBrowser.Providers.TV
                         return new List<string>();
                     }
 
+                    var existingDictionary = existingSeriesIds.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
+
                     var updates = _jsonSerializer.DeserializeFromString<List<FanArtUpdatesPrescanTask.FanArtUpdate>>(json);
 
-                    return updates.Select(i => i.id).Where(i => existingSeriesIds.Contains(i, StringComparer.OrdinalIgnoreCase));
+                    return updates.Select(i => i.id).Where(existingDictionary.ContainsKey);
                 }
             }
         }

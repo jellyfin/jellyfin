@@ -82,9 +82,9 @@ namespace MediaBrowser.Api
                 .SelectMany(i => new[] { i.AlbumArtist, i.Artist })
                 .Where(i => !string.IsNullOrEmpty(i))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToList();
+                .ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
 
-            return points + artists1.Where(i => artists2.Contains(i, StringComparer.OrdinalIgnoreCase)).Sum(i => 5);
+            return points + artists1.Where(artists2.ContainsKey).Sum(i => 5);
         }
     }
 }

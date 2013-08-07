@@ -30,6 +30,15 @@ namespace MediaBrowser.Providers.Music
             return BlankId;
         }
 
+        /// <summary>
+        /// Gets the priority.
+        /// </summary>
+        /// <value>The priority.</value>
+        public override MetadataProviderPriority Priority
+        {
+            get { return MetadataProviderPriority.Third; }
+        }
+
         private bool HasAltMeta(BaseItem item)
         {
             return item.LocationType == LocationType.FileSystem && item.ResolveArgs.ContainsMetaFileByName("album.xml");

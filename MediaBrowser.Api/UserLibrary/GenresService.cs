@@ -157,7 +157,7 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var name = DeSlugGenreName(request.Name, LibraryManager);
 
-            var items = GetItems(request.UserId).Where(i => i.Genres != null && i.Genres.Contains(name, StringComparer.OrdinalIgnoreCase)).ToList();
+            var items = GetItems(request.UserId).Where(i => i.Genres.Contains(name, StringComparer.OrdinalIgnoreCase)).ToList();
 
             var counts = new ItemByNameCounts
             {

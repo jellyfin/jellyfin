@@ -151,10 +151,12 @@ namespace MediaBrowser.Providers.TV
 
                 var seriesNodes = doc.SelectNodes("//Series");
 
+                var existingDictionary = existingSeriesIds.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
+
                 var seriesList = seriesNodes == null ? new string[] { } :
                     seriesNodes.Cast<XmlNode>()
                     .Select(i => i.InnerText)
-                    .Where(i => !string.IsNullOrWhiteSpace(i) && existingSeriesIds.Contains(i, StringComparer.OrdinalIgnoreCase));
+                    .Where(i => !string.IsNullOrWhiteSpace(i) && existingDictionary.ContainsKey(i));
 
                 return new Tuple<IEnumerable<string>, string>(seriesList, newUpdateTime);
             }

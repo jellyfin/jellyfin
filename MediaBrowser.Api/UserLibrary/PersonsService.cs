@@ -203,7 +203,7 @@ namespace MediaBrowser.Api.UserLibrary
                         return itemsList.Where(i => i.People.Any(p => p.Name.Equals(name, StringComparison.OrdinalIgnoreCase)));
                     }
 
-                    return itemsList.Where(i => i.People.Any(p => p.Name.Equals(name, StringComparison.OrdinalIgnoreCase) && personTypes.Contains(p.Type ?? string.Empty, StringComparer.OrdinalIgnoreCase)));
+                    return itemsList.Where(i => i.People.Any(p => p.Name.Equals(name, StringComparison.OrdinalIgnoreCase) && (personTypes.Contains(p.Type ?? string.Empty, StringComparer.OrdinalIgnoreCase) || personTypes.Contains(p.Role ?? string.Empty, StringComparer.OrdinalIgnoreCase))));
                 }, GetEntity)
             );
         }
@@ -222,7 +222,7 @@ namespace MediaBrowser.Api.UserLibrary
 
                 people :
 
-                people.Where(p => personTypes.Contains(p.Type ?? string.Empty, StringComparer.OrdinalIgnoreCase));
+                people.Where(p => personTypes.Contains(p.Type ?? string.Empty, StringComparer.OrdinalIgnoreCase) || personTypes.Contains(p.Role ?? string.Empty, StringComparer.OrdinalIgnoreCase));
         }
 
         /// <summary>

@@ -119,9 +119,11 @@ namespace MediaBrowser.Providers.Music
                         return new List<string>();
                     }
 
+                    var existingDictionary = existingArtistIds.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
+
                     var updates = _jsonSerializer.DeserializeFromString<List<FanArtUpdate>>(json);
 
-                    return updates.Select(i => i.id).Where(i => existingArtistIds.Contains(i, StringComparer.OrdinalIgnoreCase));
+                    return updates.Select(i => i.id).Where(existingDictionary.ContainsKey);
                 }
             }
         }

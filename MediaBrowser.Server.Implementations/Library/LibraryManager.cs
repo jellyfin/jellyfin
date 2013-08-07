@@ -846,11 +846,12 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var tasks = new List<Task>();
 
-            var includedPersonTypes = new[] { PersonType.Actor, PersonType.Director, PersonType.GuestStar, PersonType.Writer, PersonType.Director, PersonType.Producer };
+            var includedPersonTypes = new[] { PersonType.Actor, PersonType.Director, PersonType.GuestStar, PersonType.Writer, PersonType.Director, PersonType.Producer }
+                .ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
 
             var people = RootFolder.RecursiveChildren
                 .Where(c => c.People != null)
-                .SelectMany(c => c.People.Where(p => includedPersonTypes.Contains(p.Type, StringComparer.OrdinalIgnoreCase) || includedPersonTypes.Contains(p.Role, StringComparer.OrdinalIgnoreCase)))
+                .SelectMany(c => c.People.Where(p => includedPersonTypes.ContainsKey(p.Type ?? string.Empty) || includedPersonTypes.ContainsKey(p.Role ?? string.Empty)))
                 .DistinctBy(p => p.Name, StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
