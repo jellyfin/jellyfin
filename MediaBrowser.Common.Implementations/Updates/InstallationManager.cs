@@ -1,7 +1,10 @@
-﻿using MediaBrowser.Common.Events;
+﻿using System.Security.Cryptography;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Progress;
+using MediaBrowser.Common.Security;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
@@ -30,7 +33,7 @@ namespace MediaBrowser.Common.Implementations.Updates
         /// The current installations
         /// </summary>
         public List<Tuple<InstallationInfo, CancellationTokenSource>> CurrentInstallations { get; set; }
-            
+
         /// <summary>
         /// The completed installations
         /// </summary>
@@ -68,7 +71,7 @@ namespace MediaBrowser.Common.Implementations.Updates
 
             EventHelper.QueueEventIfNotNull(PluginUpdated, this, new GenericEventArgs<Tuple<IPlugin, PackageVersionInfo>> { Argument = new Tuple<IPlugin, PackageVersionInfo>(plugin, newVersion) }, _logger);
 
-            ApplicationHost.NotifyPendingRestart();
+            _applicationHost.NotifyPendingRestart();
         }
         #endregion
 
@@ -87,7 +90,7 @@ namespace MediaBrowser.Common.Implementations.Updates
 
             EventHelper.QueueEventIfNotNull(PluginInstalled, this, new GenericEventArgs<PackageVersionInfo> { Argument = package }, _logger);
 
-            ApplicationHost.NotifyPendingRestart();
+            _applicationHost.NotifyPendingRestart();
         }
         #endregion
 
@@ -96,63 +99,34 @@ namespace MediaBrowser.Common.Implementations.Updates
         /// </summary>
         private readonly ILogger _logger;
 
-        /// <summary>
-        /// The package manager
-        /// </summary>
-        private readonly IPackageManager _packageManager;
-
-        /// <summary>
-        /// Gets the json serializer.
-        /// </summary>
-        /// <value>The json serializer.</value>
-        protected IJsonSerializer JsonSerializer { get; private set; }
-
-        /// <summary>
-        /// Gets the HTTP client.
-        /// </summary>
-        /// <value>The HTTP client.</value>
-        protected IHttpClient HttpClient { get; private set; }
+        private readonly IApplicationPaths _appPaths;
+        private readonly IHttpClient _httpClient;
+        private readonly IJsonSerializer _jsonSerializer;
+        private readonly ISecurityManager _securityManager;
+        private readonly INetworkManager _networkManager;
 
         /// <summary>
         /// Gets the application host.
         /// </summary>
         /// <value>The application host.</value>
-        protected IApplicationHost ApplicationHost { get; private set; }
+        private readonly IApplicationHost _applicationHost;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="InstallationManager" /> class.
-        /// </summary>
-        /// <param name="httpClient">The HTTP client.</param>
-        /// <param name="packageManager">The package manager.</param>
-        /// <param name="jsonSerializer">The json serializer.</param>
-        /// <param name="logger">The logger.</param>
-        /// <param name="appHost">The app host.</param>
-        /// <exception cref="System.ArgumentNullException">zipClient</exception>
-        public InstallationManager(IHttpClient httpClient, IPackageManager packageManager, IJsonSerializer jsonSerializer, ILogger logger, IApplicationHost appHost)
+        public InstallationManager(ILogger logger, IApplicationHost appHost, IApplicationPaths appPaths, IHttpClient httpClient, IJsonSerializer jsonSerializer, ISecurityManager securityManager, INetworkManager networkManager)
         {
-            if (packageManager == null)
-            {
-                throw new ArgumentNullException("packageManager");
-            }
             if (logger == null)
             {
                 throw new ArgumentNullException("logger");
             }
-            if (jsonSerializer == null)
-            {
-                throw new ArgumentNullException("jsonSerializer");
-            }
-            if (httpClient == null)
-            {
-                throw new ArgumentNullException("httpClient");
-            }
 
             CurrentInstallations = new List<Tuple<InstallationInfo, CancellationTokenSource>>();
             CompletedInstallations = new ConcurrentBag<InstallationInfo>();
-            JsonSerializer = jsonSerializer;
-            HttpClient = httpClient;
-            ApplicationHost = appHost;
-            _packageManager = packageManager;
+
+            _applicationHost = appHost;
+            _appPaths = appPaths;
+            _httpClient = httpClient;
+            _jsonSerializer = jsonSerializer;
+            _securityManager = securityManager;
+            _networkManager = networkManager;
             _logger = logger;
         }
 
@@ -167,9 +141,16 @@ namespace MediaBrowser.Common.Implementations.Updates
             PackageType? packageType = null,
             Version applicationVersion = null)
         {
-            var packages = (await _packageManager.GetAvailablePackages(cancellationToken).ConfigureAwait(false)).ToList();
+            var data = new Dictionary<string, string> { { "key", _securityManager.SupporterKey }, { "mac", _networkManager.GetMacAddress() } };
 
-            return FilterPackages(packages, packageType, applicationVersion);
+            using (var json = await _httpClient.Post(Constants.Constants.MbAdminUrl + "service/package/retrieveall", data, cancellationToken).ConfigureAwait(false))
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var packages = _jsonSerializer.DeserializeFromStream<List<PackageInfo>>(json).ToList();
+
+                return FilterPackages(packages, packageType, applicationVersion);
+            }
         }
 
         /// <summary>
@@ -179,16 +160,28 @@ namespace MediaBrowser.Common.Implementations.Updates
         /// <param name="packageType">Type of the package.</param>
         /// <param name="applicationVersion">The application version.</param>
         /// <returns>Task{List{PackageInfo}}.</returns>
-        protected async Task<IEnumerable<PackageInfo>> GetAvailablePackagesWithoutRegistrationInfo(CancellationToken cancellationToken,
+        public async Task<IEnumerable<PackageInfo>> GetAvailablePackagesWithoutRegistrationInfo(CancellationToken cancellationToken,
             PackageType? packageType = null,
             Version applicationVersion = null)
         {
-            var packages = (await _packageManager.GetAvailablePackagesWithoutRegistrationInfo(cancellationToken).ConfigureAwait(false)).ToList();
-            return FilterPackages(packages, packageType, applicationVersion);
+            using (var json = await _httpClient.Get(Constants.Constants.MbAdminUrl + "service/MB3Packages.json", cancellationToken).ConfigureAwait(false))
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var packages = _jsonSerializer.DeserializeFromStream<List<PackageInfo>>(json).ToList();
+
+                return FilterPackages(packages, packageType, applicationVersion);
+            }
         }
 
         protected IEnumerable<PackageInfo> FilterPackages(List<PackageInfo> packages, PackageType? packageType, Version applicationVersion)
         {
+            foreach (var package in packages)
+            {
+                package.versions = package.versions.Where(v => !string.IsNullOrWhiteSpace(v.sourceUrl))
+                    .OrderByDescending(v => v.version).ToList();
+            }
+
             if (packageType.HasValue)
             {
                 packages = packages.Where(p => p.type == packageType.Value).ToList();
@@ -279,7 +272,7 @@ namespace MediaBrowser.Common.Implementations.Updates
 
             return package.versions
                 .OrderByDescending(v => v.version)
-                .FirstOrDefault(v => v.classification <= classification && IsPackageVersionUpToDate(v, ApplicationHost.ApplicationVersion));
+                .FirstOrDefault(v => v.classification <= classification && IsPackageVersionUpToDate(v, _applicationHost.ApplicationVersion));
         }
 
         /// <summary>
@@ -310,7 +303,7 @@ namespace MediaBrowser.Common.Implementations.Updates
 
         protected IEnumerable<PackageVersionInfo> FilterCatalog(IEnumerable<PackageInfo> catalog, bool withAutoUpdateEnabled)
         {
-            var plugins = ApplicationHost.Plugins;
+            var plugins = _applicationHost.Plugins;
 
             if (withAutoUpdateEnabled)
             {
@@ -454,13 +447,13 @@ namespace MediaBrowser.Common.Implementations.Updates
         private async Task InstallPackageInternal(PackageVersionInfo package, IProgress<double> progress, CancellationToken cancellationToken)
         {
             // Do the install
-            await _packageManager.InstallPackage(progress, package, cancellationToken).ConfigureAwait(false);
+            await PerformPackageInstallation(progress, package, cancellationToken).ConfigureAwait(false);
 
             // Do plugin-specific processing
             if (!(Path.GetExtension(package.targetFilename) ?? "").Equals(".zip", StringComparison.OrdinalIgnoreCase))
             {
                 // Set last update time if we were installed before
-                var plugin = ApplicationHost.Plugins.FirstOrDefault(p => p.Name.Equals(package.name, StringComparison.OrdinalIgnoreCase));
+                var plugin = _applicationHost.Plugins.FirstOrDefault(p => p.Name.Equals(package.name, StringComparison.OrdinalIgnoreCase));
 
                 if (plugin != null)
                 {
@@ -470,9 +463,71 @@ namespace MediaBrowser.Common.Implementations.Updates
                 {
                     OnPluginInstalled(package);
                 }
-                
+
             }
         }
+
+        private async Task PerformPackageInstallation(IProgress<double> progress, PackageVersionInfo package, CancellationToken cancellationToken)
+        {
+            // Target based on if it is an archive or single assembly
+            //  zip archives are assumed to contain directory structures relative to our ProgramDataPath
+            var isArchive = string.Equals(Path.GetExtension(package.targetFilename), ".zip", StringComparison.OrdinalIgnoreCase);
+            var target = Path.Combine(isArchive ? _appPaths.TempUpdatePath : _appPaths.PluginsPath, package.targetFilename);
+
+            // Download to temporary file so that, if interrupted, it won't destroy the existing installation
+            var tempFile = await _httpClient.GetTempFile(new HttpRequestOptions
+            {
+                Url = package.sourceUrl,
+                CancellationToken = cancellationToken,
+                Progress = progress
+
+            }).ConfigureAwait(false);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            // Validate with a checksum
+            if (package.checksum != Guid.Empty) // support for legacy uploads for now
+            {
+                using (var crypto = new MD5CryptoServiceProvider())
+                using (var stream = new BufferedStream(File.OpenRead(tempFile), 100000))
+                {
+                    var check = Guid.Parse(BitConverter.ToString(crypto.ComputeHash(stream)).Replace("-", String.Empty));
+                    if (check != package.checksum)
+                    {
+                        throw new ApplicationException(string.Format("Download validation failed for {0}.  Probably corrupted during transfer.", package.name));
+                    }
+                }
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            // Success - move it to the real target 
+            try
+            {
+                File.Copy(tempFile, target, true);
+                //If it is an archive - write out a version file so we know what it is
+                if (isArchive)
+                {
+                    File.WriteAllText(target + ".ver", package.versionStr);
+                }
+            }
+            catch (IOException e)
+            {
+                _logger.ErrorException("Error attempting to move file from {0} to {1}", e, tempFile, target);
+                throw;
+            }
+
+            try
+            {
+                File.Delete(tempFile);
+            }
+            catch (IOException e)
+            {
+                // Don't fail because of this
+                _logger.ErrorException("Error deleting temp file {0]", e, tempFile);
+            }
+        }
+
 
         /// <summary>
         /// Uninstalls a plugin
@@ -484,13 +539,13 @@ namespace MediaBrowser.Common.Implementations.Updates
             plugin.OnUninstalling();
 
             // Remove it the quick way for now
-            ApplicationHost.RemovePlugin(plugin);
+            _applicationHost.RemovePlugin(plugin);
 
             File.Delete(plugin.AssemblyFilePath);
 
             OnPluginUninstalled(plugin);
 
-            ApplicationHost.NotifyPendingRestart();
+            _applicationHost.NotifyPendingRestart();
         }
 
         /// <summary>

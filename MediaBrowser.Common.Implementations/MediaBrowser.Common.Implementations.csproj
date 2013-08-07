@@ -86,7 +86,6 @@
     <Compile Include="Serialization\XmlSerializer.cs" />
     <Compile Include="Updates\ApplicationUpdater.cs" />
     <Compile Include="Updates\InstallationManager.cs" />
-    <Compile Include="Updates\PackageManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">

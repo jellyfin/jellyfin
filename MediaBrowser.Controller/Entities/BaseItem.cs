@@ -60,7 +60,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the name.
         /// </summary>
         /// <value>The name.</value>
-        public virtual string Name
+        public string Name
         {
             get
             {

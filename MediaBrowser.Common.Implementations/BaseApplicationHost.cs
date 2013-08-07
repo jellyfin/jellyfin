@@ -127,11 +127,6 @@ namespace MediaBrowser.Common.Implementations
         /// <value>The security manager.</value>
         protected ISecurityManager SecurityManager { get; private set; }
         /// <summary>
-        /// Gets the package manager.
-        /// </summary>
-        /// <value>The package manager.</value>
-        protected IPackageManager PackageManager { get; private set; }
-        /// <summary>
         /// Gets the HTTP client.
         /// </summary>
         /// <value>The HTTP client.</value>
@@ -286,10 +281,7 @@ namespace MediaBrowser.Common.Implementations
                 SecurityManager = new PluginSecurityManager(this, HttpClient, JsonSerializer, ApplicationPaths);
                 RegisterSingleInstance(SecurityManager);
 
-                PackageManager = new PackageManager(SecurityManager, NetworkManager, HttpClient, ApplicationPaths, JsonSerializer, Logger);
-                RegisterSingleInstance(PackageManager);
-
-                InstallationManager = new InstallationManager(HttpClient, PackageManager, JsonSerializer, Logger, this);
+                InstallationManager = new InstallationManager(Logger, this, ApplicationPaths, HttpClient, JsonSerializer, SecurityManager, NetworkManager);
                 RegisterSingleInstance(InstallationManager);
             });
         }
@@ -583,7 +575,7 @@ namespace MediaBrowser.Common.Implementations
         /// <returns>Task.</returns>
         public async Task UpdateApplication(PackageVersionInfo package, CancellationToken cancellationToken, IProgress<double> progress)
         {
-            await PackageManager.InstallPackage(progress, package, cancellationToken).ConfigureAwait(false);
+            await InstallationManager.InstallPackage(package, progress, cancellationToken).ConfigureAwait(false);
 
             EventHelper.QueueEventIfNotNull(ApplicationUpdated, this, new GenericEventArgs<Version> { Argument = package.version }, Logger);
 
