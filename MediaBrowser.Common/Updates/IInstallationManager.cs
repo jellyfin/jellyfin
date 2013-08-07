@@ -53,6 +53,17 @@ namespace MediaBrowser.Common.Updates
                                                                                   Version applicationVersion = null);
 
         /// <summary>
+        /// Gets all available packages from a static resource.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="packageType">Type of the package.</param>
+        /// <param name="applicationVersion">The application version.</param>
+        /// <returns>Task{List{PackageInfo}}.</returns>
+        Task<IEnumerable<PackageInfo>> GetAvailablePackagesWithoutRegistrationInfo(CancellationToken cancellationToken,
+            PackageType? packageType = null,
+            Version applicationVersion = null);
+        
+        /// <summary>
         /// Gets the package.
         /// </summary>
         /// <param name="name">The name.</param>

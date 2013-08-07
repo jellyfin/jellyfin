@@ -108,7 +108,6 @@
     <Compile Include="Security\ISecurityManager.cs" />
     <Compile Include="Updates\IInstallationManager.cs" />
     <Compile Include="Updates\InstallationEventArgs.cs" />
-    <Compile Include="Updates\IPackageManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

@@ -5,6 +5,7 @@ using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Notifications;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Querying;
+using MediaBrowser.Model.Search;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Session;
 using MediaBrowser.Model.System;
@@ -41,6 +42,17 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="inheritFromParents">if set to <c>true</c> [inherit from parents].</param>
         /// <returns>Task{ThemeMediaResult}.</returns>
         Task<ThemeMediaResult> GetThemeSongsAsync(string userId, string itemId, bool inheritFromParents);
+
+        /// <summary>
+        /// Gets the search hints async.
+        /// </summary>
+        /// <param name="userId">The user id.</param>
+        /// <param name="searchTerm">The search term.</param>
+        /// <param name="startIndex">The start index.</param>
+        /// <param name="limit">The limit.</param>
+        /// <returns>Task{SearchHintResult}.</returns>
+        Task<SearchHintResult> GetSearchHintsAsync(string userId, string searchTerm, int? startIndex = null,
+                                                   int? limit = null);
 
         /// <summary>
         /// Gets the theme videos async.

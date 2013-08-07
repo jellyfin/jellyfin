@@ -235,9 +235,7 @@
     <EmbeddedResource Include="MediaEncoder\ffmpeg20130801.zip" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Updates\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Content Include="swagger-ui\css\hightlight.default.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
