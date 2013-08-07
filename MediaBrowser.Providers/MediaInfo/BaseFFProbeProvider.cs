@@ -139,7 +139,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 stream.Language = GetDictionaryValue(streamInfo.tags, "language");
             }
 
-            if (streamInfo.codec_type.Equals("audio", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(streamInfo.codec_type, "audio", StringComparison.OrdinalIgnoreCase))
             {
                 stream.Type = MediaStreamType.Audio;
 
@@ -150,11 +150,11 @@ namespace MediaBrowser.Providers.MediaInfo
                     stream.SampleRate = int.Parse(streamInfo.sample_rate, UsCulture);
                 }
             }
-            else if (streamInfo.codec_type.Equals("subtitle", StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(streamInfo.codec_type, "subtitle", StringComparison.OrdinalIgnoreCase))
             {
                 stream.Type = MediaStreamType.Subtitle;
             }
-            else if (streamInfo.codec_type.Equals("video", StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(streamInfo.codec_type, "video", StringComparison.OrdinalIgnoreCase))
             {
                 stream.Type = MediaStreamType.Video;
 

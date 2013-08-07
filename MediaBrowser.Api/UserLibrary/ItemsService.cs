@@ -629,7 +629,7 @@ namespace MediaBrowser.Api.UserLibrary
                     items = items.Where(item =>
                             item.People != null &&
                             item.People.Any(p =>
-                                p.Name.Equals(personName, StringComparison.OrdinalIgnoreCase) && types.Contains(p.Type, StringComparer.OrdinalIgnoreCase)));
+                                p.Name.Equals(personName, StringComparison.OrdinalIgnoreCase) && (types.Contains(p.Type, StringComparer.OrdinalIgnoreCase) || types.Contains(p.Role, StringComparer.OrdinalIgnoreCase))));
                 }
             }
 

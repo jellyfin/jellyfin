@@ -56,6 +56,15 @@ namespace MediaBrowser.Providers.Music
         }
 
         /// <summary>
+        /// Gets the priority.
+        /// </summary>
+        /// <value>The priority.</value>
+        public override MetadataProviderPriority Priority
+        {
+            get { return MetadataProviderPriority.Fourth; }
+        }
+
+        /// <summary>
         /// Supportses the specified item.
         /// </summary>
         /// <param name="item">The item.</param>

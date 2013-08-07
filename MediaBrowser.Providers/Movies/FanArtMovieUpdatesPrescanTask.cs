@@ -115,7 +115,9 @@ namespace MediaBrowser.Providers.Movies
 
                     var updates = _jsonSerializer.DeserializeFromString<List<FanArtUpdatesPrescanTask.FanArtUpdate>>(json);
 
-                    return updates.Select(i => i.id).Where(i => existingIds.Contains(i, StringComparer.OrdinalIgnoreCase));
+                    var existingDictionary = existingIds.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
+
+                    return updates.Select(i => i.id).Where(existingDictionary.ContainsKey);
                 }
             }
         }

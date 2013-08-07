@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using MediaBrowser.Common.Extensions;
@@ -361,19 +362,20 @@ namespace MediaBrowser.Controller.Providers
 
             var sb = new StringBuilder();
 
-            var extensions = FilestampExtensions;
+            var extensionsList = FilestampExtensions;
+            var extensions = extensionsList.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
 
             // Record the name of each file 
             // Need to sort these because accoring to msdn docs, our i/o methods are not guaranteed in any order
             foreach (var file in resolveArgs.FileSystemChildren
-                .Where(i => IncludeInFileStamp(i, extensions))
+                .Where(i => IncludeInFileStamp(i, extensions, extensionsList.Length))
                 .OrderBy(f => f.Name))
             {
                 sb.Append(file.Name);
             }
 
             foreach (var file in resolveArgs.MetadataFiles
-                .Where(i => IncludeInFileStamp(i, extensions))
+                .Where(i => IncludeInFileStamp(i, extensions, extensionsList.Length))
                 .OrderBy(f => f.Name))
             {
                 sb.Append(file.Name);
@@ -387,8 +389,9 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         /// <param name="file">The file.</param>
         /// <param name="extensions">The extensions.</param>
+        /// <param name="numExtensions">The num extensions.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        private bool IncludeInFileStamp(FileSystemInfo file, string[] extensions)
+        private bool IncludeInFileStamp(FileSystemInfo file, Dictionary<string,string> extensions, int numExtensions)
         {
             try
             {
@@ -397,7 +400,7 @@ namespace MediaBrowser.Controller.Providers
                     return false;
                 }
 
-                return extensions.Length == 0 || extensions.Contains(file.Extension, StringComparer.OrdinalIgnoreCase);
+                return numExtensions == 0 || extensions.ContainsKey(file.Extension);
             }
             catch (IOException ex)
             {
