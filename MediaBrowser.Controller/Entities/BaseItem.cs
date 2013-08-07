@@ -543,7 +543,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the genres.
         /// </summary>
         /// <value>The genres.</value>
-        public virtual List<string> Genres { get; set; }
+        public List<string> Genres { get; set; }
 
         /// <summary>
         /// Gets or sets the home page URL.

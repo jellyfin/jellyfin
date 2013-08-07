@@ -80,15 +80,6 @@ namespace MediaBrowser.Providers.Music
         }
 
         /// <summary>
-        /// Gets the priority.
-        /// </summary>
-        /// <value>The priority.</value>
-        public override MetadataProviderPriority Priority
-        {
-            get { return MetadataProviderPriority.Second; }
-        }
-
-        /// <summary>
         /// Gets a value indicating whether [requires internet].
         /// </summary>
         /// <value><c>true</c> if [requires internet]; otherwise, <c>false</c>.</value>

@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Model.Entities;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -52,26 +51,6 @@ namespace MediaBrowser.Controller.Entities.Audio
         public override Folder IndexContainer
         {
             get { return Parent as MusicArtist ?? UnknwonArtist; }
-        }
-
-        /// <summary>
-        /// Override to point to first child (song)
-        /// </summary>
-        /// <value>The genres.</value>
-        public override List<string> Genres
-        {
-            get
-            {
-                return Children
-                    .OfType<Audio>()
-                    .SelectMany(i => i.Genres)
-                    .Distinct(StringComparer.OrdinalIgnoreCase)
-                    .ToList();
-            }
-            set
-            {
-                base.Genres = value;
-            }
         }
 
         /// <summary>
