@@ -67,6 +67,7 @@
     <Compile Include="Movies\PersonProviderFromXml.cs" />
     <Compile Include="Movies\TmdbPersonProvider.cs" />
     <Compile Include="Music\AlbumInfoFromSongProvider.cs" />
+    <Compile Include="Music\ArtistInfoFromSongProvider.cs" />
     <Compile Include="Music\ArtistProviderFromXml.cs" />
     <Compile Include="Music\ArtistsPostScanTask.cs" />
     <Compile Include="Music\FanArtAlbumProvider.cs" />

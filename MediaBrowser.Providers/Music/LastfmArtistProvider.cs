@@ -54,6 +54,15 @@ namespace MediaBrowser.Providers.Music
             return base.NeedsRefreshInternal(item, providerInfo);
         }
 
+        /// <summary>
+        /// Gets the priority.
+        /// </summary>
+        /// <value>The priority.</value>
+        public override MetadataProviderPriority Priority
+        {
+            get { return MetadataProviderPriority.Third; }
+        }
+
         private bool HasAltMeta(BaseItem item)
         {
             return item.LocationType == LocationType.FileSystem && item.ResolveArgs.ContainsMetaFileByName("artist.xml");
