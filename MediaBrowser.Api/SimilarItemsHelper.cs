@@ -164,9 +164,11 @@ namespace MediaBrowser.Api
             // Find common studios
             points += item1.Studios.Where(i => item2.Studios.Contains(i, StringComparer.OrdinalIgnoreCase)).Sum(i => 3);
 
-            var item2PeopleNames = item2.People.Select(i => i.Name).ToList();
+            var item2PeopleNames = item2.People.Select(i => i.Name)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
 
-            points += item1.People.Where(i => item2PeopleNames.Contains(i.Name, StringComparer.OrdinalIgnoreCase)).Sum(i =>
+            points += item1.People.Where(i => item2PeopleNames.ContainsKey(i.Name)).Sum(i =>
             {
                 if (string.Equals(i.Type, PersonType.Director, StringComparison.OrdinalIgnoreCase) || string.Equals(i.Role, PersonType.Director, StringComparison.OrdinalIgnoreCase))
                 {
