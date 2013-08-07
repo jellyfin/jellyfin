@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using MoreLinq;
 
 namespace MediaBrowser.Controller.Dto
 {
@@ -830,8 +831,8 @@ namespace MediaBrowser.Controller.Dto
             // Attach People by transforming them into BaseItemPerson (DTO)
             dto.People = new BaseItemPerson[people.Count];
 
-            var entities = await Task.WhenAll(people.Select(p => p.Name).Distinct(StringComparer.OrdinalIgnoreCase).Select(c =>
-
+            var entities = await Task.WhenAll(people.Select(p => p.Name)
+                .Distinct(StringComparer.OrdinalIgnoreCase).Select(c =>
                     Task.Run(async () =>
                     {
                         try
@@ -848,7 +849,7 @@ namespace MediaBrowser.Controller.Dto
             )).ConfigureAwait(false);
 
             var dictionary = entities.Where(i => i != null)
-                .Distinct()
+                .DistinctBy(i => i.Name)
                 .ToDictionary(i => i.Name, StringComparer.OrdinalIgnoreCase);
 
             for (var i = 0; i < people.Count; i++)
@@ -907,7 +908,9 @@ namespace MediaBrowser.Controller.Dto
 
             )).ConfigureAwait(false);
 
-            var dictionary = entities.Where(i => i != null).ToDictionary(i => i.Name, StringComparer.OrdinalIgnoreCase);
+            var dictionary = entities
+                .Where(i => i != null)
+                .ToDictionary(i => i.Name, StringComparer.OrdinalIgnoreCase);
 
             for (var i = 0; i < studios.Count; i++)
             {
