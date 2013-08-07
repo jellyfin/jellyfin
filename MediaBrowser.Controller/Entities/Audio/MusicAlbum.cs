@@ -57,24 +57,6 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// <summary>
         /// Override to point to first child (song)
         /// </summary>
-        /// <value>The production year.</value>
-        public override int? ProductionYear
-        {
-            get
-            {
-                var child = Children.FirstOrDefault();
-
-                return child == null ? base.ProductionYear : child.ProductionYear;
-            }
-            set
-            {
-                base.ProductionYear = value;
-            }
-        }
-
-        /// <summary>
-        /// Override to point to first child (song)
-        /// </summary>
         /// <value>The genres.</value>
         public override List<string> Genres
         {
@@ -89,24 +71,6 @@ namespace MediaBrowser.Controller.Entities.Audio
             set
             {
                 base.Genres = value;
-            }
-        }
-
-        /// <summary>
-        /// Override to point to first child (song)
-        /// </summary>
-        /// <value>The studios.</value>
-        public override List<string> Studios
-        {
-            get
-            {
-                var child = Children.FirstOrDefault();
-
-                return child == null ? base.Studios : child.Studios;
-            }
-            set
-            {
-                base.Studios = value;
             }
         }
 
@@ -147,24 +111,6 @@ namespace MediaBrowser.Controller.Entities.Audio
         public bool HasArtist(string artist)
         {
             return RecursiveChildren.OfType<Audio>().Any(i => i.HasArtist(artist));
-        }
-
-        /// <summary>
-        /// Gets or sets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        public override string Name
-        {
-            get
-            {
-                var song = RecursiveChildren.OfType<Audio>().FirstOrDefault(i => !string.IsNullOrEmpty(i.Album));
-
-                return song == null ? base.Name : song.Album;
-            }
-            set
-            {
-                base.Name = value;
-            }
         }
 
         /// <summary>

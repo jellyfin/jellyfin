@@ -70,20 +70,23 @@ namespace MediaBrowser.Controller.Resolvers
         /// <summary>
         /// The audio file extensions
         /// </summary>
-        private static readonly Dictionary<string,string> AudioFileExtensions = new[] { 
-            ".mp3",
-            ".flac",
-            ".wma",
-            ".aac",
-            ".acc",
-            ".m4a",
-            ".m4b",
-            ".wav",
-            ".ape",
-            ".ogg",
-            ".oga"
+        public static readonly string[] AudioFileExtensions = new[]
+            {
+                ".mp3",
+                ".flac",
+                ".wma",
+                ".aac",
+                ".acc",
+                ".m4a",
+                ".m4b",
+                ".wav",
+                ".ape",
+                ".ogg",
+                ".oga"
 
-        }.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
+            };
+
+        private static readonly Dictionary<string, string> AudioFileExtensionsDictionary = AudioFileExtensions.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Determines whether [is audio file] [the specified args].
@@ -99,7 +102,7 @@ namespace MediaBrowser.Controller.Resolvers
                 return false;
             }
 
-            return AudioFileExtensions.ContainsKey(extension);
+            return AudioFileExtensionsDictionary.ContainsKey(extension);
         }
 
         /// <summary>

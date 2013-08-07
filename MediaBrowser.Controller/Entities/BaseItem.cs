@@ -532,12 +532,12 @@ namespace MediaBrowser.Controller.Entities
         {
             get { return Genres; }
         }
-        
+
         /// <summary>
         /// Gets or sets the studios.
         /// </summary>
         /// <value>The studios.</value>
-        public virtual List<string> Studios { get; set; }
+        public List<string> Studios { get; set; }
 
         /// <summary>
         /// Gets or sets the genres.
@@ -613,7 +613,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the production year.
         /// </summary>
         /// <value>The production year.</value>
-        public virtual int? ProductionYear { get; set; }
+        public int? ProductionYear { get; set; }
 
         /// <summary>
         /// If the item is part of a series, this is it's number in the series.
@@ -1022,7 +1022,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 rating = OfficialRatingForComparison;
             }
-            
+
             if (string.IsNullOrEmpty(rating))
             {
                 return !user.Configuration.BlockNotRated;
