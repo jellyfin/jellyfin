@@ -89,7 +89,7 @@ namespace MediaBrowser.Api
         /// <param name="includeInSearch">The include in search.</param>
         /// <param name="getSimilarityScore">The get similarity score.</param>
         /// <returns>ItemsResult.</returns>
-        internal static ItemsResult GetSimilarItems(IUserManager userManager, IItemRepository itemRepository, ILibraryManager libraryManager, IUserDataRepository userDataRepository, ILogger logger, BaseGetSimilarItems request, Func<BaseItem, bool> includeInSearch, Func<BaseItem, BaseItem, int> getSimilarityScore)
+        internal static ItemsResult GetSimilarItemsResult(IUserManager userManager, IItemRepository itemRepository, ILibraryManager libraryManager, IUserDataRepository userDataRepository, ILogger logger, BaseGetSimilarItems request, Func<BaseItem, bool> includeInSearch, Func<BaseItem, BaseItem, int> getSimilarityScore)
         {
             var user = request.UserId.HasValue ? userManager.GetUserById(request.UserId.Value) : null;
 
@@ -125,7 +125,7 @@ namespace MediaBrowser.Api
         /// <param name="includeInSearch">The include in search.</param>
         /// <param name="getSimilarityScore">The get similarity score.</param>
         /// <returns>IEnumerable{BaseItem}.</returns>
-        private static IEnumerable<BaseItem> GetSimilaritems(BaseItem item, IEnumerable<BaseItem> inputItems, Func<BaseItem, bool> includeInSearch, Func<BaseItem, BaseItem, int> getSimilarityScore)
+        internal static IEnumerable<BaseItem> GetSimilaritems(BaseItem item, IEnumerable<BaseItem> inputItems, Func<BaseItem, bool> includeInSearch, Func<BaseItem, BaseItem, int> getSimilarityScore)
         {
             inputItems = inputItems.Where(includeInSearch);
 

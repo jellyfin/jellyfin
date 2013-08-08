@@ -376,14 +376,15 @@ namespace MediaBrowser.Server.Implementations.Library
 
             // Get all user collection folders
             // Skip BasePluginFolders because we already got them from RootFolder.RecursiveChildren
-            var userFolders =
-                userRootFolders.SelectMany(i => i.Children)
+            var userFolders = userRootFolders.SelectMany(i => i.Children)
                             .Where(i => !(i is BasePluginFolder))
                             .ToList();
 
             items.AddRange(userFolders);
 
-            return new ConcurrentDictionary<Guid, BaseItem>(items.ToDictionary(i => i.Id));
+            var disctinctItems = items.DistinctBy(i => i.Id).ToList();
+
+            return new ConcurrentDictionary<Guid, BaseItem>(disctinctItems.ToDictionary(i => i.Id));
         }
 
         /// <summary>
@@ -846,7 +847,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var tasks = new List<Task>();
 
-            var includedPersonTypes = new[] { PersonType.Actor, PersonType.Director, PersonType.GuestStar, PersonType.Writer, PersonType.Director, PersonType.Producer }
+            var includedPersonTypes = new[] { PersonType.Actor, PersonType.Director, PersonType.GuestStar, PersonType.Writer, PersonType.Producer }
                 .ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
 
             var people = RootFolder.RecursiveChildren
