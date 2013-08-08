@@ -606,7 +606,8 @@
             SortOrder: "Ascending",
             IncludeItemTypes: "MusicVideo",
             Recursive: true,
-            Fields: "UserData,DisplayMediaType,ItemCounts,DateCreated"
+            Fields: "UserData,DisplayMediaType,ItemCounts,DateCreated",
+            Albums: item.Name
 
         }).done(function (result) {
             if (result.Items.length) {

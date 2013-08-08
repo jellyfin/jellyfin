@@ -82,9 +82,12 @@ namespace MediaBrowser.Api.UserLibrary
         /// Gets or sets the studios.
         /// </summary>
         /// <value>The studios.</value>
-        [ApiMember(Name = "Artists", Description = "Optional. If specified, results will be filtered based on studio. This allows multiple, pipe delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        [ApiMember(Name = "Artists", Description = "Optional. If specified, results will be filtered based on artist. This allows multiple, pipe delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string Artists { get; set; }
 
+        [ApiMember(Name = "Albums", Description = "Optional. If specified, results will be filtered based on album. This allows multiple, pipe delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string Albums { get; set; }
+        
         /// <summary>
         /// Limit results to items containing specific years
         /// </summary>
@@ -446,6 +449,38 @@ namespace MediaBrowser.Api.UserLibrary
                     if (musicVideo != null)
                     {
                         return artists.Any(musicVideo.HasArtist);
+                    }
+
+                    return false;
+                });
+            }
+
+            // Albums
+            if (!string.IsNullOrEmpty(request.Albums))
+            {
+                var albums = request.Albums.Split('|');
+
+                items = items.Where(i =>
+                {
+                    var audio = i as Audio;
+
+                    if (audio != null)
+                    {
+                        return albums.Any(a => string.Equals(a, audio.Album, StringComparison.OrdinalIgnoreCase));
+                    }
+
+                    var album = i as MusicAlbum;
+
+                    if (album != null)
+                    {
+                        return albums.Any(a => string.Equals(a, album.Name, StringComparison.OrdinalIgnoreCase));
+                    }
+
+                    var musicVideo = i as MusicVideo;
+
+                    if (musicVideo != null)
+                    {
+                        return albums.Any(a => string.Equals(a, musicVideo.Album, StringComparison.OrdinalIgnoreCase));
                     }
 
                     return false;

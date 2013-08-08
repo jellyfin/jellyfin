@@ -495,7 +495,7 @@ namespace MediaBrowser.Providers.TV
                     foreach (XmlNode node in nodes)
                     {
                         var n = node.SelectSingleNode("./SeriesName");
-                        if (n != null && GetComparableName(n.InnerText) == comparableName)
+                        if (n != null && string.Equals(GetComparableName(n.InnerText), comparableName, StringComparison.OrdinalIgnoreCase))
                         {
                             n = node.SelectSingleNode("./seriesid");
                             if (n != null)
