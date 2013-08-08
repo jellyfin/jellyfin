@@ -46,7 +46,7 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetSimilarAlbums request)
         {
-            var result = SimilarItemsHelper.GetSimilarItems(_userManager,
+            var result = SimilarItemsHelper.GetSimilarItemsResult(_userManager,
                 _itemRepo,
                 _libraryManager,
                 _userDataRepository,
