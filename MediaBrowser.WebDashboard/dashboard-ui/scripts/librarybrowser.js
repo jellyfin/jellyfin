@@ -317,7 +317,7 @@
 
             var isPlaying = MediaPlayer.isPlaying();
 
-            if (!isPlaying && !resumePositionTicks) {
+            if (!isPlaying && !resumePositionTicks && mediaType != "Audio") {
                 MediaPlayer.playById(itemId);
                 return;
             }
@@ -329,14 +329,22 @@
             html += '<ul data-role="listview" style="min-width: 150px;" data-theme="c">';
             html += '<li data-role="list-divider" data-theme="a">Play Menu</li>';
 
-            html += '<li><a href="#" onclick="MediaPlayer.playById(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Play</a></li>';
+            if (itemType == "Artist") {
+                html += '<li><a href="#" onclick="MediaPlayer.playArtist(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Play</a></li>';
+            } else {
+                html += '<li><a href="#" onclick="MediaPlayer.playById(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Play</a></li>';
+            }
 
             if (resumePositionTicks) {
                 html += '<li><a href="#" onclick="MediaPlayer.playById(\'' + itemId + '\', ' + resumePositionTicks + ');LibraryBrowser.closePlayMenu();">Resume</a></li>';
             }
 
             if (isPlaying) {
-                html += '<li><a href="#" onclick="MediaPlayer.queue(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Queue</a></li>';
+                if (itemType == "Artist") {
+                    html += '<li><a href="#" onclick="MediaPlayer.queueArtist(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Queue</a></li>';
+                } else {
+                    html += '<li><a href="#" onclick="MediaPlayer.queue(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Queue</a></li>';
+                }
             }
 
             html += '</ul>';

@@ -727,7 +727,7 @@
 
         self.canPlay = function (item) {
 
-            if (item.Type == "MusicAlbum" || item.Type == "MusicArtist") {
+            if (item.Type == "MusicAlbum" || item.Type == "MusicArtist" || item.Type == "Artist") {
                 return true;
             }
             return self.canPlayMediaType(item.MediaType);
@@ -972,6 +972,23 @@
 
         };
 
+        self.playArtist = function (artist) {
+
+            self.getItemsForPlayback({
+
+                Artists: artist,
+                Recursive: true,
+                SortBy: "Album,SortName",
+                IncludeItemTypes: "Audio"
+
+            }).done(function (result) {
+
+                self.play(result.Items);
+
+            });
+
+        };
+
         self.toggleFullscreen = function () {
             if (isFullScreen()) {
                 if (document.cancelFullScreen) { document.cancelFullScreen(); }
@@ -1071,6 +1088,27 @@
                 }
 
             });
+        };
+
+        self.queueArtist = function (artist) {
+
+            self.getItemsForPlayback({
+
+                Artists: artist,
+                Recursive: true,
+                SortBy: "Album,SortName",
+                IncludeItemTypes: "Audio"
+
+            }).done(function (result) {
+
+                for (var i = 0, length = result.Items.length; i < length; i++) {
+
+                    self.queueItem(result.Items[i]);
+
+                }
+
+            });
+
         };
 
         self.pause = function () {

@@ -81,6 +81,12 @@
                 ApiClient.sendWebSocketMessage("Context", vals.join('|'));
             }
 
+            if (MediaPlayer.canPlay(item)) {
+                $('#playButtonContainer', page).show();
+            } else {
+                $('#playButtonContainer', page).hide();
+            }
+
             Dashboard.getCurrentUser().done(function (user) {
 
                 if (user.Configuration.IsAdministrator && item.LocationType !== "Offline") {
@@ -486,6 +492,11 @@
     $(document).on('pageinit', "#itemByNameDetailPage", function () {
 
         var page = this;
+
+        $('#btnPlay', page).on('click', function () {
+            var userdata = currentItem.UserData || {};
+            LibraryBrowser.showPlayMenu(this, currentItem.Name, currentItem.Type, "Audio", userdata.PlaybackPositionTicks);
+        });
 
         $('#btnRemote', page).on('click', function () {
 

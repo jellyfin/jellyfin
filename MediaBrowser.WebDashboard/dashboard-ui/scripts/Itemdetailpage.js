@@ -945,7 +945,14 @@
 
         $('#btnPlay', page).on('click', function () {
             var userdata = currentItem.UserData || {};
-            LibraryBrowser.showPlayMenu(this, currentItem.Id, currentItem.Type, currentItem.MediaType, userdata.PlaybackPositionTicks);
+
+            var mediaType = currentItem.MediaType;
+            
+            if (currentItem.Type == "MusicArtist" || currentItem.Type == "MusicAlbum") {
+                mediaType = "Audio";
+            }
+            
+            LibraryBrowser.showPlayMenu(this, currentItem.Id, currentItem.Type, mediaType, userdata.PlaybackPositionTicks);
         });
 
         $('#btnEdit', page).on('click', function () {
