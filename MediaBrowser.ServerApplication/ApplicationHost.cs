@@ -507,7 +507,13 @@ namespace MediaBrowser.ServerApplication
         /// <value><c>true</c> if this instance can self update; otherwise, <c>false</c>.</value>
         public override bool CanSelfUpdate
         {
-            get { return ConfigurationManager.CommonConfiguration.EnableAutoUpdate; }
+            get
+            {
+#if DEBUG
+                return false;
+#endif
+                return ConfigurationManager.CommonConfiguration.EnableAutoUpdate;
+            }
         }
 
         /// <summary>
