@@ -1074,11 +1074,11 @@ $(function () {
     footerHtml += '<div id="nowPlayingBar" style="display:none;">';
     footerHtml += '<div class="barBackground"></div>';
     footerHtml += '<a id="playlistButton" class="imageButton mediaButton" href="playlist.html"><img src="css/images/media/playlist.png" /></a>';
-    footerHtml += '<button id="previousTrackButton" class="imageButton mediaButton" title="Previous Track" type="button"><img src="css/images/media/previoustrack.png" /></button>';
+    footerHtml += '<button id="previousTrackButton" class="imageButton mediaButton" title="Previous Track" type="button" onclick="MediaPlayer.previousTrack();"><img src="css/images/media/previoustrack.png" /></button>';
     footerHtml += '<button id="playButton" class="imageButton mediaButton" title="Play" type="button" onclick="MediaPlayer.unpause();"><img src="css/images/media/play.png" /></button>';
     footerHtml += '<button id="pauseButton" class="imageButton mediaButton" title="Pause" type="button" onclick="MediaPlayer.pause();"><img src="css/images/media/pause.png" /></button>';
     footerHtml += '<button id="stopButton" class="imageButton mediaButton" title="Stop" type="button" onclick="MediaPlayer.stop();"><img src="css/images/media/stop.png" /></button>';
-    footerHtml += '<button id="nextTrackButton" class="imageButton mediaButton" title="Next Track" type="button"><img src="css/images/media/nexttrack.png" /></button>';
+    footerHtml += '<button id="nextTrackButton" class="imageButton mediaButton" title="Next Track" type="button" onclick="MediaPlayer.nextTrack();"><img src="css/images/media/nexttrack.png" /></button>';
     footerHtml += '<input type="range" class="mediaSlider positionSlider" step=".001" min="0" max="100" value="0" />';
     footerHtml += '<div class="currentTime"></div>';
     footerHtml += '<div id="mediaElement"></div>';
