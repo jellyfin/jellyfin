@@ -47,5 +47,6 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The music video count.</value>
         public int MusicVideoCount { get; set; }
+        public int BoxSetCount { get; set; }
     }
 }
