@@ -10,11 +10,11 @@ We also have full .net and javascript wrappers around the api.
 
 ## Related Reading ##
 
+[Media library structure](https://github.com/MediaBrowser/MediaBrowser/wiki/Library-Structure "Media library structure")
+
 [How to Build a Server Plugin](https://github.com/MediaBrowser/MediaBrowser/wiki/How-to-build-a-Server-Plugin "How to build a server plugin")
 
-[Automatic Type Discovery](https://github.com/MediaBrowser/MediaBrowser/wiki/Automatic-Type-Discovery "Automatic Type Discovery")
-
-[Dependency Injection](https://github.com/MediaBrowser/MediaBrowser/wiki/Dependency-Injection "Dependency Injection")
+[Api Workflow](https://github.com/MediaBrowser/MediaBrowser/wiki/Locating-the-Server "Api Workflow")
 
 ## Visit our community: ##
 
