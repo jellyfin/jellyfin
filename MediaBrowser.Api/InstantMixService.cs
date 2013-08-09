@@ -66,9 +66,16 @@ namespace MediaBrowser.Api
 
         public object Get(GetInstantMixFromAlbum request)
         {
-            var item = DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager);
+            var album = (MusicAlbum)DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager);
 
-            var result = GetInstantMixResult(request, item.Genres).Result;
+            var genres = album
+               .RecursiveChildren
+               .OfType<Audio>()
+               .SelectMany(i => i.Genres)
+               .Concat(album.Genres)
+               .Distinct(StringComparer.OrdinalIgnoreCase);
+
+            var result = GetInstantMixResult(request, genres).Result;
 
             return ToOptimizedResult(result);
         }
@@ -91,6 +98,7 @@ namespace MediaBrowser.Api
                 .OfType<Audio>()
                 .Where(i => i.HasArtist(artist.Name))
                 .SelectMany(i => i.Genres)
+                .Concat(artist.Genres)
                 .Distinct(StringComparer.OrdinalIgnoreCase);
 
             var result = GetInstantMixResult(request, genres).Result;
