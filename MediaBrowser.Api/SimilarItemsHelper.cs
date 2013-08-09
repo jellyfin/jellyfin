@@ -13,8 +13,18 @@ using System.Linq;
 namespace MediaBrowser.Api
 {
     /// <summary>
-    /// Class BaseGetSimilarItems
+    /// Class BaseGetSimilarItemsFromItem
     /// </summary>
+    public class BaseGetSimilarItemsFromItem : BaseGetSimilarItems
+    {
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Id { get; set; }
+    }
+
     public class BaseGetSimilarItems : IReturn<ItemsResult>
     {
         /// <summary>
@@ -23,13 +33,6 @@ namespace MediaBrowser.Api
         /// <value>The user id.</value>
         [ApiMember(Name = "UserId", Description = "Optional. Filter by user id, and attach user data", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public Guid? UserId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the id.
-        /// </summary>
-        /// <value>The id.</value>
-        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string Id { get; set; }
 
         /// <summary>
         /// The maximum number of items to return
@@ -71,7 +74,7 @@ namespace MediaBrowser.Api
             }).Where(i => i.HasValue).Select(i => i.Value);
         }
     }
-
+    
     /// <summary>
     /// Class SimilarItemsHelper
     /// </summary>
@@ -89,7 +92,7 @@ namespace MediaBrowser.Api
         /// <param name="includeInSearch">The include in search.</param>
         /// <param name="getSimilarityScore">The get similarity score.</param>
         /// <returns>ItemsResult.</returns>
-        internal static ItemsResult GetSimilarItemsResult(IUserManager userManager, IItemRepository itemRepository, ILibraryManager libraryManager, IUserDataRepository userDataRepository, ILogger logger, BaseGetSimilarItems request, Func<BaseItem, bool> includeInSearch, Func<BaseItem, BaseItem, int> getSimilarityScore)
+        internal static ItemsResult GetSimilarItemsResult(IUserManager userManager, IItemRepository itemRepository, ILibraryManager libraryManager, IUserDataRepository userDataRepository, ILogger logger, BaseGetSimilarItemsFromItem request, Func<BaseItem, bool> includeInSearch, Func<BaseItem, BaseItem, int> getSimilarityScore)
         {
             var user = request.UserId.HasValue ? userManager.GetUserById(request.UserId.Value) : null;
 
@@ -105,7 +108,8 @@ namespace MediaBrowser.Api
                                  ? libraryManager.RootFolder.RecursiveChildren
                                  : user.RootFolder.GetRecursiveChildren(user);
 
-            var items = GetSimilaritems(item, inputItems, includeInSearch, getSimilarityScore).ToArray();
+            var items = GetSimilaritems(item, inputItems, includeInSearch, getSimilarityScore)
+                .ToArray();
 
             var result = new ItemsResult
             {

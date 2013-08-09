@@ -77,7 +77,7 @@ namespace MediaBrowser.Api
 
     [Route("/Shows/{Id}/Similar", "GET")]
     [Api(Description = "Finds tv shows similar to a given one.")]
-    public class GetSimilarShows : BaseGetSimilarItems
+    public class GetSimilarShows : BaseGetSimilarItemsFromItem
     {
     }
 
