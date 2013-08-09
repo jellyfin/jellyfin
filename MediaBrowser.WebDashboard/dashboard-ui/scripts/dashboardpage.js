@@ -180,6 +180,10 @@
 
             return "<img src='css/images/clients/dlna.png' alt='Dlna' />";
         }
+        if (clientLowered == "mbkinect") {
+
+            return "<img src='css/images/clients/mbkinect.png' alt='MB Kinect' />";
+        }
 
         return connection.Client;
     },
