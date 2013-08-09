@@ -10,7 +10,7 @@ namespace MediaBrowser.Api
 {
     [Route("/Albums/{Id}/Similar", "GET")]
     [Api(Description = "Finds albums similar to a given album.")]
-    public class GetSimilarAlbums : BaseGetSimilarItems
+    public class GetSimilarAlbums : BaseGetSimilarItemsFromItem
     {
     }
 

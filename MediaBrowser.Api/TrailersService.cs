@@ -11,7 +11,7 @@ namespace MediaBrowser.Api
     /// </summary>
     [Route("/Trailers/{Id}/Similar", "GET")]
     [Api(Description = "Finds movies and trailers similar to a given trailer.")]
-    public class GetSimilarTrailers : BaseGetSimilarItems
+    public class GetSimilarTrailers : BaseGetSimilarItemsFromItem
     {
     }
 

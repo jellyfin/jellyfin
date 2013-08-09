@@ -11,7 +11,7 @@ namespace MediaBrowser.Api
     /// </summary>
     [Route("/Movies/{Id}/Similar", "GET")]
     [Api(Description = "Finds movies and trailers similar to a given movie.")]
-    public class GetSimilarMovies : BaseGetSimilarItems
+    public class GetSimilarMovies : BaseGetSimilarItemsFromItem
     {
         [ApiMember(Name = "IncludeTrailers", Description = "Whether or not to include trailers within the results. Defaults to true.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool IncludeTrailers { get; set; }

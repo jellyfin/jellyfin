@@ -331,8 +331,21 @@
 
             if (itemType == "Artist") {
                 html += '<li><a href="#" onclick="MediaPlayer.playArtist(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Play</a></li>';
-            } else {
+            } else if (itemType != "MusicGenre") {
                 html += '<li><a href="#" onclick="MediaPlayer.playById(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Play</a></li>';
+            }
+
+            if (itemType == "Audio") {
+                html += '<li><a href="#" onclick="MediaPlayer.playInstantMixFromSong(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Instant Mix</a></li>';
+            }
+            else if (itemType == "MusicAlbum") {
+                html += '<li><a href="#" onclick="MediaPlayer.playInstantMixFromAlbum(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Instant Mix</a></li>';
+            }
+            else if (itemType == "Artist") {
+                html += '<li><a href="#" onclick="MediaPlayer.playInstantMixFromArtist(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Instant Mix</a></li>';
+            }
+            else if (itemType == "MusicGenre") {
+                html += '<li><a href="#" onclick="MediaPlayer.playInstantMixFromMusicGenre(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Instant Mix</a></li>';
             }
 
             if (resumePositionTicks) {
@@ -342,7 +355,7 @@
             if (isPlaying) {
                 if (itemType == "Artist") {
                     html += '<li><a href="#" onclick="MediaPlayer.queueArtist(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Queue</a></li>';
-                } else {
+                } else if (itemType != "MusicGenre") {
                     html += '<li><a href="#" onclick="MediaPlayer.queue(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Queue</a></li>';
                 }
             }

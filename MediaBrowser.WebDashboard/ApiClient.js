@@ -319,6 +319,50 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
             });
         };
 
+        self.getInstantMixFromSong = function (itemId, options) {
+
+            var url = self.getUrl("Songs/" + itemId + "/InstantMix", options);
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        self.getInstantMixFromAlbum = function (itemId, options) {
+
+            var url = self.getUrl("Albums/" + itemId + "/InstantMix", options);
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        self.getInstantMixFromArtist = function (name, options) {
+
+            var url = self.getUrl("Artists/" + self.encodeName(name) + "/InstantMix", options);
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        self.getInstantMixFromMusicGenre = function (name, options) {
+
+            var url = self.getUrl("MusicGenres/" + self.encodeName(name) + "/InstantMix", options);
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
         self.getSimilarMovies = function (itemId, options) {
 
             var url = self.getUrl("Movies/" + itemId + "/Similar", options);

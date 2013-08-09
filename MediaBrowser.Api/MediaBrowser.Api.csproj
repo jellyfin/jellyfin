@@ -74,6 +74,7 @@
     <Compile Include="Images\ImageRequest.cs" />
     <Compile Include="Images\ImageService.cs" />
     <Compile Include="Images\ImageWriter.cs" />
+    <Compile Include="InstantMixService.cs" />
     <Compile Include="ItemRefreshService.cs" />
     <Compile Include="ItemUpdateService.cs" />
     <Compile Include="LibraryService.cs" />

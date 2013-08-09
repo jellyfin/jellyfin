@@ -58,10 +58,10 @@
 
             var item = currentItem;
             var media = currentMediaElement;
-            
+
             // Try to report playback stopped before the browser closes
             if (item && media && currentProgressInterval) {
-                
+
                 var endTime = currentMediaElement.currentTime;
 
                 var position = Math.floor(10000000 * endTime) + startTimeTicksOffset;
@@ -727,7 +727,7 @@
 
         self.canPlay = function (item) {
 
-            if (item.Type == "MusicAlbum" || item.Type == "MusicArtist" || item.Type == "Artist") {
+            if (item.Type == "MusicAlbum" || item.Type == "MusicArtist" || item.Type == "Artist" || item.Type == "MusicGenre") {
                 return true;
             }
             return self.canPlayMediaType(item.MediaType);
@@ -796,7 +796,7 @@
                     }
                 }
                 else if ($.browser.msie && videoType) {
-                    
+
                     self.playWithWarning(items, startPosition, user, "iewebmplugin", "Internet Explorer Playback", "For optimal video playback of Internet Explorer desktop edition, please install google's webm plugin for IE.<br/><br/><a target='_blank' href='https://tools.google.com/dlpage/webmmf'>https://tools.google.com/dlpage/webmmf</a>");
                     return;
 
@@ -936,12 +936,14 @@
             $('.nowPlayingMediaInfo', nowPlayingBar).html(html);
         };
 
+        var getItemFields = "MediaStreams,UserData,DisplayMediaType,Chapters,Path";
+
         self.getItemsForPlayback = function (query) {
 
             var userId = Dashboard.getCurrentUserId();
 
             query.Limit = query.Limit || 100;
-            query.Fields = "MediaStreams,UserData,DisplayMediaType,SeriesInfo,AudioInfo,Chapters,Path";
+            query.Fields = getItemFields;
 
             return ApiClient.getItems(userId, query);
         };
@@ -968,6 +970,66 @@
                     self.play([item], startPositionTicks);
                 }
 
+            });
+
+        };
+
+        self.playInstantMixFromSong = function (id) {
+
+            ApiClient.getInstantMixFromSong(id, {
+
+                UserId: Dashboard.getCurrentUserId(),
+                Fields: getItemFields,
+                Limit: 50
+
+            }).done(function (result) {
+
+                self.play(result.Items);
+            });
+
+        };
+
+        self.playInstantMixFromAlbum = function (id) {
+
+            ApiClient.getInstantMixFromAlbum(id, {
+
+                UserId: Dashboard.getCurrentUserId(),
+                Fields: getItemFields,
+                Limit: 50
+
+            }).done(function (result) {
+
+                self.play(result.Items);
+            });
+
+        };
+
+        self.playInstantMixFromArtist = function (name) {
+
+            ApiClient.getInstantMixFromArtist(name, {
+
+                UserId: Dashboard.getCurrentUserId(),
+                Fields: getItemFields,
+                Limit: 50
+
+            }).done(function (result) {
+
+                self.play(result.Items);
+            });
+
+        };
+
+        self.playInstantMixFromMusicGenre = function (name) {
+
+            ApiClient.getInstantMixFromMusicGenre(name, {
+
+                UserId: Dashboard.getCurrentUserId(),
+                Fields: getItemFields,
+                Limit: 50
+
+            }).done(function (result) {
+
+                self.play(result.Items);
             });
 
         };
@@ -1039,7 +1101,7 @@
                 });
             }
         };
-        
+
         self.previousTrack = function () {
             var newIndex = currentPlaylistIndex - 1;
             if (newIndex >= 0) {
@@ -1124,7 +1186,7 @@
             changeStream(position);
 
         };
-        
+
         self.mute = function () {
             currentMediaElement.volume = 0;
         };

@@ -10,7 +10,7 @@ namespace MediaBrowser.Api
     /// </summary>
     [Route("/Games/{Id}/Similar", "GET")]
     [Api(Description = "Finds games similar to a given game.")]
-    public class GetSimilarGames : BaseGetSimilarItems
+    public class GetSimilarGames : BaseGetSimilarItemsFromItem
     {
     }
 
