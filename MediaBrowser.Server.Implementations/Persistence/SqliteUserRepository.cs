@@ -6,8 +6,6 @@ using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SQLite;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -19,11 +17,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
     public class SqliteUserRepository : IUserRepository
     {
         private readonly ILogger _logger;
-        
+
         private readonly SemaphoreSlim _writeLock = new SemaphoreSlim(1, 1);
 
-        private SQLiteConnection _connection;
-        
+        private IDbConnection _connection;
+
         /// <summary>
         /// Gets the name of the repository
         /// </summary>
@@ -50,11 +48,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteUserRepository" /> class.
         /// </summary>
+        /// <param name="connection">The connection.</param>
         /// <param name="appPaths">The app paths.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="logManager">The log manager.</param>
         /// <exception cref="System.ArgumentNullException">appPaths</exception>
-        public SqliteUserRepository(IApplicationPaths appPaths, IJsonSerializer jsonSerializer, ILogManager logManager)
+        public SqliteUserRepository(IDbConnection connection, IApplicationPaths appPaths, IJsonSerializer jsonSerializer, ILogManager logManager)
         {
             if (appPaths == null)
             {
@@ -65,6 +64,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 throw new ArgumentNullException("jsonSerializer");
             }
 
+            _connection = connection;
             _appPaths = appPaths;
             _jsonSerializer = jsonSerializer;
 
@@ -75,12 +75,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// Opens the connection to the database
         /// </summary>
         /// <returns>Task.</returns>
-        public async Task Initialize()
+        public void Initialize()
         {
-            var dbFile = Path.Combine(_appPaths.DataPath, "users.db");
-
-            _connection = await SqliteExtensions.ConnectToDb(dbFile).ConfigureAwait(false);
-
             string[] queries = {
 
                                 "create table if not exists users (guid GUID primary key, data BLOB)",
@@ -120,7 +116,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-            SQLiteTransaction transaction = null;
+            IDbTransaction transaction = null;
 
             try
             {
@@ -129,12 +125,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 using (var cmd = _connection.CreateCommand())
                 {
                     cmd.CommandText = "replace into users (guid, data) values (@1, @2)";
-                    cmd.AddParam("@1", user.Id);
-                    cmd.AddParam("@2", serialized);
+                    cmd.Parameters.Add(cmd, "@1", DbType.Guid).Value = user.Id;
+                    cmd.Parameters.Add(cmd, "@2", DbType.Binary).Value = serialized;
 
                     cmd.Transaction = transaction;
 
-                    await cmd.ExecuteNonQueryAsync(cancellationToken);
+                    cmd.ExecuteNonQuery();
                 }
 
                 transaction.Commit();
@@ -217,7 +213,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-            SQLiteTransaction transaction = null;
+            IDbTransaction transaction = null;
 
             try
             {
@@ -227,12 +223,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     cmd.CommandText = "delete from users where guid=@guid";
 
-                    var guidParam = cmd.Parameters.Add("@guid", DbType.Guid);
-                    guidParam.Value = user.Id;
+                    cmd.Parameters.Add(cmd, "@guid", DbType.Guid).Value = user.Id;
 
                     cmd.Transaction = transaction;
 
-                    await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+                    cmd.ExecuteNonQuery();
                 }
 
                 transaction.Commit();
