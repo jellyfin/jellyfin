@@ -66,6 +66,7 @@
     <Compile Include="Configuration\BaseConfigurationManager.cs" />
     <Compile Include="HttpClientManager\HttpClientInfo.cs" />
     <Compile Include="HttpClientManager\HttpClientManager.cs" />
+    <Compile Include="IO\IsoManager.cs" />
     <Compile Include="Logging\LogHelper.cs" />
     <Compile Include="Logging\NLogger.cs" />
     <Compile Include="Logging\NlogManager.cs" />

@@ -4,6 +4,7 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Constants;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Implementations;
+using MediaBrowser.Common.Implementations.IO;
 using MediaBrowser.Common.Implementations.ScheduledTasks;
 using MediaBrowser.Common.Implementations.Updates;
 using MediaBrowser.Common.IO;
@@ -161,6 +162,8 @@ namespace MediaBrowser.ServerApplication
         /// <value>The media encoder.</value>
         private IMediaEncoder MediaEncoder { get; set; }
 
+        private IIsoManager IsoManager { get; set; }
+
         private ILocalizationManager LocalizationManager { get; set; }
 
         /// <summary>
@@ -238,7 +241,9 @@ namespace MediaBrowser.ServerApplication
 
             RegisterSingleInstance<IWebSocketServer>(() => new AlchemyServer(Logger));
 
-            //RegisterSingleInstance<IIsoManager>(() => new PismoIsoManager(Logger));
+            IsoManager = new IsoManager();
+            RegisterSingleInstance(IsoManager);
+            
             RegisterSingleInstance<IBlurayExaminer>(() => new BdInfoExaminer());
 
             ZipClient = new DotNetZipClient();
@@ -442,6 +447,8 @@ namespace MediaBrowser.ServerApplication
                                     GetExports<IMetadataSaver>());
 
             ProviderManager.AddParts(GetExports<BaseMetadataProvider>().ToArray());
+
+            IsoManager.AddParts(GetExports<IIsoMounter>().ToArray());
         }
 
         /// <summary>
