@@ -177,6 +177,34 @@ namespace MediaBrowser.Model.ApiClient
         Task<ItemsResult> GetItemsAsync(ItemQuery query);
 
         /// <summary>
+        /// Gets the instant mix from song async.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>Task{ItemsResult}.</returns>
+        Task<ItemsResult> GetInstantMixFromSongAsync(SimilarItemsQuery query);
+
+        /// <summary>
+        /// Gets the instant mix from album async.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>Task{ItemsResult}.</returns>
+        Task<ItemsResult> GetInstantMixFromAlbumAsync(SimilarItemsQuery query);
+
+        /// <summary>
+        /// Gets the instant mix from artist async.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>Task{ItemsResult}.</returns>
+        Task<ItemsResult> GetInstantMixFromArtistAsync(SimilarItemsByNameQuery query);
+
+        /// <summary>
+        /// Gets the instant mix from music genre async.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>Task{ItemsResult}.</returns>
+        Task<ItemsResult> GetInstantMixFromMusicGenreAsync(SimilarItemsByNameQuery query);
+        
+        /// <summary>
         /// Gets the similar movies async.
         /// </summary>
         /// <param name="query">The query.</param>

@@ -2,6 +2,7 @@
 using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Controller.MediaInfo
 {

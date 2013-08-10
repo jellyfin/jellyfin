@@ -1,21 +1,21 @@
 ﻿using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Common.IO
+namespace MediaBrowser.Model.IO
 {
-    public interface IIsoManager : IDisposable
+    public interface IIsoMounter : IDisposable
     {
         /// <summary>
         /// Mounts the specified iso path.
         /// </summary>
         /// <param name="isoPath">The iso path.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="visibleToAllProcesses">if set to <c>true</c> [visible to all processes].</param>
         /// <returns>IsoMount.</returns>
-        /// <exception cref="System.ArgumentNullException">isoPath</exception>
-        /// <exception cref="System.IO.IOException">Unable to create mount.</exception>
-        Task<IIsoMount> Mount(string isoPath, CancellationToken cancellationToken, bool visibleToAllProcesses = true);
+        /// <exception cref="ArgumentNullException">isoPath</exception>
+        /// <exception cref="IOException">Unable to create mount.</exception>
+        Task<IIsoMount> Mount(string isoPath, CancellationToken cancellationToken);
 
         /// <summary>
         /// Determines whether this instance can mount the specified path.

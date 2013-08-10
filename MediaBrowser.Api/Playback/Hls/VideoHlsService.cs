@@ -2,6 +2,7 @@
 using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.IO;
 using ServiceStack.ServiceHost;
 using System;
 using System.IO;

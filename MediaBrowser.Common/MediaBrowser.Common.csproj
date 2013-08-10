@@ -65,8 +65,6 @@
     <Compile Include="Events\GenericEventArgs.cs" />
     <Compile Include="Extensions\ResourceNotFoundException.cs" />
     <Compile Include="IO\FileSystemRepository.cs" />
-    <Compile Include="IO\IIsoManager.cs" />
-    <Compile Include="IO\IIsoMount.cs" />
     <Compile Include="IO\ProgressStream.cs" />
     <Compile Include="IO\StreamDefaults.cs" />
     <Compile Include="MediaInfo\MediaInfoResult.cs" />

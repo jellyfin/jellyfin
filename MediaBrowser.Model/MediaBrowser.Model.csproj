@@ -56,6 +56,9 @@
     <Compile Include="Entities\MediaUrl.cs" />
     <Compile Include="Entities\MetadataFields.cs" />
     <Compile Include="Entities\Video3DFormat.cs" />
+    <Compile Include="IO\IIsoManager.cs" />
+    <Compile Include="IO\IIsoMount.cs" />
+    <Compile Include="IO\IIsoMounter.cs" />
     <Compile Include="Net\WebSocketMessage.cs" />
     <Compile Include="Net\WebSocketMessageType.cs" />
     <Compile Include="Net\WebSocketState.cs" />

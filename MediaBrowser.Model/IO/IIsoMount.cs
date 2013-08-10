@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MediaBrowser.Common.IO
+namespace MediaBrowser.Model.IO
 {
     /// <summary>
     /// Interface IIsoMount

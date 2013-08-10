@@ -586,7 +586,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 if (folder.Id == Guid.Empty)
                 {
-                    folder.Id = (folder.Path ?? folder.Name ?? folder.GetType().Name).GetMBId(folder.GetType());
+                    folder.Id = (folder.Path ?? folder.GetType().Name).GetMBId(folder.GetType());
                 }
 
                 rootFolder.AddVirtualChild(folder);
