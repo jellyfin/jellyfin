@@ -97,16 +97,17 @@ namespace MediaBrowser.Server.Implementations.Library
         /// Gets the active user repository
         /// </summary>
         /// <value>The user repository.</value>
-        public IUserRepository UserRepository { get; set; }
+        private IUserRepository UserRepository { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserManager" /> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
         /// <param name="configurationManager">The configuration manager.</param>
-        public UserManager(ILogger logger, IServerConfigurationManager configurationManager)
+        public UserManager(ILogger logger, IServerConfigurationManager configurationManager, IUserRepository userRepository)
         {
             _logger = logger;
+            UserRepository = userRepository;
             ConfigurationManager = configurationManager;
         }
 

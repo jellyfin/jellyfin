@@ -247,7 +247,7 @@ namespace MediaBrowser.ServerApplication
             UserDataRepository = new SqliteUserDataRepository(ApplicationPaths, JsonSerializer, LogManager);
             RegisterSingleInstance(UserDataRepository);
 
-            UserRepository = new SqliteUserRepository(ApplicationPaths, JsonSerializer, LogManager);
+            UserRepository = await GetUserRepository().ConfigureAwait(false);
             RegisterSingleInstance(UserRepository);
 
             DisplayPreferencesRepository = new SqliteDisplayPreferencesRepository(ApplicationPaths, JsonSerializer, LogManager);
@@ -256,7 +256,7 @@ namespace MediaBrowser.ServerApplication
             ItemRepository = new SqliteItemRepository(ApplicationPaths, JsonSerializer, LogManager);
             RegisterSingleInstance(ItemRepository);
 
-            UserManager = new UserManager(Logger, ServerConfigurationManager);
+            UserManager = new UserManager(Logger, ServerConfigurationManager, UserRepository);
             RegisterSingleInstance(UserManager);
 
             LibraryManager = new LibraryManager(Logger, TaskManager, UserManager, ServerConfigurationManager, UserDataRepository, () => DirectoryWatchers);
@@ -288,11 +288,10 @@ namespace MediaBrowser.ServerApplication
             var displayPreferencesTask = Task.Run(async () => await ConfigureDisplayPreferencesRepositories().ConfigureAwait(false));
             var itemsTask = Task.Run(async () => await ConfigureItemRepositories().ConfigureAwait(false));
             var userdataTask = Task.Run(async () => await ConfigureUserDataRepositories().ConfigureAwait(false));
-            var userTask = Task.Run(async () => await ConfigureUserRepositories().ConfigureAwait(false));
 
             await ConfigureNotificationsRepository().ConfigureAwait(false);
 
-            await Task.WhenAll(itemsTask, userTask, displayPreferencesTask, userdataTask).ConfigureAwait(false);
+            await Task.WhenAll(itemsTask, displayPreferencesTask, userdataTask).ConfigureAwait(false);
 
             SetKernelProperties();
         }
@@ -310,6 +309,15 @@ namespace MediaBrowser.ServerApplication
                  () => LocalizedStrings.StringFiles = GetExports<LocalizedStringData>(),
                  SetStaticProperties
                  );
+        }
+
+        private async Task<IUserRepository> GetUserRepository()
+        {
+            var dbFile = Path.Combine(ApplicationPaths.DataPath, "users.db");
+
+            var connection = await ConnectToDb(dbFile).ConfigureAwait(false);
+
+            return new SqliteUserRepository(connection, ApplicationPaths, JsonSerializer, LogManager);
         }
 
         /// <summary>
@@ -358,18 +366,7 @@ namespace MediaBrowser.ServerApplication
         private Task ConfigureUserDataRepositories()
         {
             return UserDataRepository.Initialize();
-        }
-
-        /// <summary>
-        /// Configures the user repositories.
-        /// </summary>
-        /// <returns>Task.</returns>
-        private async Task ConfigureUserRepositories()
-        {
-            await UserRepository.Initialize().ConfigureAwait(false);
-
-            ((UserManager)UserManager).UserRepository = UserRepository;
-        }        
+        }       
         
         /// <summary>
         /// Connects to db.
