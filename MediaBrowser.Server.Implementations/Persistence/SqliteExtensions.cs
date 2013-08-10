@@ -1,9 +1,9 @@
-﻿using System;
+﻿using MediaBrowser.Model.Logging;
+using System;
 using System.Data;
 using System.Data.SQLite;
 using System.IO;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Server.Implementations.Persistence
 {
@@ -41,11 +41,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// <exception cref="System.ArgumentNullException"></exception>
         public static SQLiteParameter AddParam(this SQLiteCommand cmd, string param, object data)
         {
-            if (string.IsNullOrEmpty(param))
-            {
-                throw new ArgumentNullException();
-            }
-
             var sqliteParam = AddParam(cmd, param);
             sqliteParam.Value = data;
             return sqliteParam;

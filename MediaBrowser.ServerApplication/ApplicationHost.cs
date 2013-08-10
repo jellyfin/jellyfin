@@ -238,7 +238,7 @@ namespace MediaBrowser.ServerApplication
 
             RegisterSingleInstance<IWebSocketServer>(() => new AlchemyServer(Logger));
 
-            RegisterSingleInstance<IIsoManager>(() => new PismoIsoManager(Logger));
+            //RegisterSingleInstance<IIsoManager>(() => new PismoIsoManager(Logger));
             RegisterSingleInstance<IBlurayExaminer>(() => new BdInfoExaminer());
 
             ZipClient = new DotNetZipClient();
