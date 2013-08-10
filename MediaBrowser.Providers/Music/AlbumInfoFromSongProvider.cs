@@ -25,6 +25,22 @@ namespace MediaBrowser.Providers.Music
             return item is MusicAlbum;
         }
 
+        protected override bool RefreshOnVersionChange
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        protected override string ProviderVersion
+        {
+            get
+            {
+                return "1";
+            }
+        }
+
         protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
         {
             // If song metadata has changed
@@ -83,7 +99,7 @@ namespace MediaBrowser.Providers.Music
 
             if (!item.LockedFields.Contains(MetadataFields.Name))
             {
-                var name = songs.Select(i => i.Name).FirstOrDefault(i => !string.IsNullOrEmpty(i));
+                var name = songs.Select(i => i.Album).FirstOrDefault(i => !string.IsNullOrEmpty(i));
 
                 if (!string.IsNullOrEmpty(name))
                 {
