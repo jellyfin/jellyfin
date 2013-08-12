@@ -14,6 +14,7 @@ using MediaBrowser.Model.Users;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Model.ApiClient
@@ -113,9 +114,10 @@ namespace MediaBrowser.Model.ApiClient
         /// Gets an image stream based on a url
         /// </summary>
         /// <param name="url">The URL.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{Stream}.</returns>
         /// <exception cref="ArgumentNullException">url</exception>
-        Task<Stream> GetImageStreamAsync(string url);
+        Task<Stream> GetImageStreamAsync(string url, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets a BaseItem
