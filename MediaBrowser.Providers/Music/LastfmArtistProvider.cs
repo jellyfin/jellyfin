@@ -87,17 +87,6 @@ namespace MediaBrowser.Providers.Music
                 }
             }
 
-            //// Try to find the id using last fm
-            //var result = await FindIdFromLastFm(item, cancellationToken).ConfigureAwait(false);
-
-            //if (result != null)
-            //{
-            //    if (!string.IsNullOrEmpty(result))
-            //    {
-            //        return result;
-            //    }
-            //}
-
             try
             {
                 // If we don't get anything, go directly to music brainz
@@ -129,51 +118,6 @@ namespace MediaBrowser.Providers.Music
         }
 
         /// <summary>
-        /// Finds the id from last fm.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{System.String}.</returns>
-        private async Task<string> FindIdFromLastFm(BaseItem item, CancellationToken cancellationToken)
-        {
-            //Execute the Artist search against our name and assume first one is the one we want
-            var url = RootUrl + string.Format("method=artist.search&artist={0}&api_key={1}&format=json", UrlEncode(item.Name), ApiKey);
-
-            using (var json = await HttpClient.Get(new HttpRequestOptions
-            {
-                Url = url,
-                ResourcePool = LastfmResourcePool,
-                CancellationToken = cancellationToken,
-                EnableHttpCompression = false
-
-            }).ConfigureAwait(false))
-            {
-                using (var reader = new StreamReader(json, true))
-                {
-                    var jsonString = await reader.ReadToEndAsync().ConfigureAwait(false);
-
-                    // Sometimes they send back an empty response or just the text "null"
-                    if (!jsonString.StartsWith("{", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return null;
-                    }
-
-                    var searchResult = JsonSerializer.DeserializeFromString<LastfmArtistSearchResults>(jsonString);
-
-                    if (searchResult != null && searchResult.results != null && searchResult.results.artistmatches != null && searchResult.results.artistmatches.artist.Count > 0)
-                    {
-                        var artist = searchResult.results.artistmatches.artist
-                            .FirstOrDefault(i => i.name != null && string.Compare(i.name, item.Name, CultureInfo.CurrentCulture, CompareOptions.IgnoreNonSpace | CompareOptions.IgnoreCase | CompareOptions.IgnoreSymbols) == 0);
-
-                        return artist == null ? null : artist.mbid;
-                    }
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
         /// Finds the id from music brainz.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -190,7 +134,7 @@ namespace MediaBrowser.Providers.Music
 
             var ns = new XmlNamespaceManager(doc.NameTable);
             ns.AddNamespace("mb", "http://musicbrainz.org/ns/mmd-2.0#");
-            var node = doc.SelectSingleNode("//mb:artist-list/mb:artist[@type='Group']/@id", ns);
+            var node = doc.SelectSingleNode("//mb:artist-list/mb:artist/@id", ns);
 
             if (node != null && node.Value != null)
             {
@@ -206,7 +150,7 @@ namespace MediaBrowser.Providers.Music
 
                 ns = new XmlNamespaceManager(doc.NameTable);
                 ns.AddNamespace("mb", "http://musicbrainz.org/ns/mmd-2.0#");
-                node = doc.SelectSingleNode("//mb:artist-list/mb:artist[@type='Group']/@id", ns);
+                node = doc.SelectSingleNode("//mb:artist-list/mb:artist/@id", ns);
 
                 if (node != null && node.Value != null)
                 {
