@@ -41,6 +41,7 @@
     </Compile>
     <Compile Include="ApiClient\HttpResponseEventArgs.cs" />
     <Compile Include="ApiClient\IApiClient.cs" />
+    <Compile Include="ApiClient\ApiClientExtensions.cs" />
     <Compile Include="Configuration\BaseApplicationConfiguration.cs" />
     <Compile Include="Configuration\ManualLoginCategory.cs" />
     <Compile Include="Configuration\ServerConfiguration.cs" />
