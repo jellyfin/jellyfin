@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Providers.TV;
 using System;
 using System.Globalization;
@@ -15,6 +16,7 @@ namespace MediaBrowser.Providers.Savers
     public class EpisodeXmlSaver : IMetadataSaver
     {
         private readonly IServerConfigurationManager _config;
+        private readonly IItemRepository _itemRepository;
 
         /// <summary>
         /// Determines whether [is enabled for] [the specified item].
@@ -38,9 +40,10 @@ namespace MediaBrowser.Providers.Savers
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
-        public EpisodeXmlSaver(IServerConfigurationManager config)
+        public EpisodeXmlSaver(IServerConfigurationManager config, IItemRepository itemRepository)
         {
             _config = config;
+            _itemRepository = itemRepository;
         }
 
         /// <summary>
@@ -79,6 +82,7 @@ namespace MediaBrowser.Providers.Savers
 
             XmlSaverHelpers.AddCommonNodes(item, builder);
             XmlSaverHelpers.AddMediaInfo(episode, builder);
+            XmlSaverHelpers.AddChapters((Video)item, builder, _itemRepository);
 
             builder.Append("</Item>");
 

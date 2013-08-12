@@ -58,6 +58,7 @@
     <Compile Include="MediaInfo\FFProbeAudioInfoProvider.cs" />
     <Compile Include="MediaInfo\FFProbeVideoInfoProvider.cs" />
     <Compile Include="Movies\BoxSetProviderFromXml.cs" />
+    <Compile Include="Movies\MovieXmlParser.cs" />
     <Compile Include="Movies\FanArtMovieProvider.cs" />
     <Compile Include="Movies\FanArtMovieUpdatesPrescanTask.cs" />
     <Compile Include="Movies\MovieDbImagesProvider.cs" />

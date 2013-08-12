@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
@@ -79,7 +80,8 @@ namespace MediaBrowser.Providers.Savers
                     "GamesDbId",
                     "BirthDate",
                     "DeathDate",
-                    "LockedFields"
+                    "LockedFields",
+                    "Chapters"
                 });
 
                 var position = xml.ToString().LastIndexOf("</", StringComparison.OrdinalIgnoreCase);
@@ -411,7 +413,27 @@ namespace MediaBrowser.Providers.Savers
 
                 builder.Append("</Persons>");
             }
+        }
 
+        public static void AddChapters(Video item, StringBuilder builder, IItemRepository repository)
+        {
+            var chapters = repository.GetChapters(item.Id);
+
+            builder.Append("<Chapters>");
+
+            foreach (var chapter in chapters)
+            {
+                builder.Append("<Chapter>");
+                builder.Append("<Name>" + SecurityElement.Escape(chapter.Name) + "</Name>");
+
+                var time = TimeSpan.FromTicks(chapter.StartPositionTicks);
+                var ms = Convert.ToInt64(time.TotalMilliseconds);
+
+                builder.Append("<StartPositionMs>" + SecurityElement.Escape(ms.ToString(UsCulture)) + "</StartPositionMs>");
+                builder.Append("</Chapter>");
+            }
+
+            builder.Append("</Chapters>");
         }
 
         /// <summary>

@@ -1,9 +1,9 @@
 ﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Providers.Music;
 using System;
 using System.IO;
 using System.Threading;
@@ -17,10 +17,12 @@ namespace MediaBrowser.Providers.Movies
     public class MovieProviderFromXml : BaseMetadataProvider
     {
         internal static MovieProviderFromXml Current { get; private set; }
-        
-        public MovieProviderFromXml(ILogManager logManager, IServerConfigurationManager configurationManager)
+        private readonly IItemRepository _itemRepo;
+
+        public MovieProviderFromXml(ILogManager logManager, IServerConfigurationManager configurationManager, IItemRepository itemRepo)
             : base(logManager, configurationManager)
         {
+            _itemRepo = itemRepo;
             Current = this;
         }
 
@@ -94,30 +96,9 @@ namespace MediaBrowser.Providers.Movies
 
                 try
                 {
-                    var movie = item as Movie;
+                    var video = (Video) item;
 
-                    if (movie != null)
-                    {
-                        new BaseItemXmlParser<Movie>(Logger).Fetch(movie, path, cancellationToken);
-                    }
-                    else
-                    {
-                        var musicVideo = item as MusicVideo;
-
-                        if (musicVideo != null)
-                        {
-                            new MusicVideoXmlParser(Logger).Fetch(musicVideo, path, cancellationToken);
-                        }
-                        else
-                        {
-                            var trailer = item as Trailer;
-
-                            if (trailer != null)
-                            {
-                                new BaseItemXmlParser<Trailer>(Logger).Fetch(trailer, path, cancellationToken);
-                            }
-                        }
-                    }
+                    await new MovieXmlParser(Logger, _itemRepo).FetchAsync(video, path, cancellationToken).ConfigureAwait(false);
                 }
                 finally
                 {

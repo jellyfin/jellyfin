@@ -1,13 +1,14 @@
 ﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
 using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Providers.TV
 {
@@ -17,10 +18,12 @@ namespace MediaBrowser.Providers.TV
     public class EpisodeProviderFromXml : BaseMetadataProvider
     {
         internal static EpisodeProviderFromXml Current { get; private set; }
+        private readonly IItemRepository _itemRepo;
 
-        public EpisodeProviderFromXml(ILogManager logManager, IServerConfigurationManager configurationManager)
+        public EpisodeProviderFromXml(ILogManager logManager, IServerConfigurationManager configurationManager, IItemRepository itemRepo)
             : base(logManager, configurationManager)
         {
+            _itemRepo = itemRepo;
             Current = this;
         }
 
@@ -98,7 +101,7 @@ namespace MediaBrowser.Providers.TV
 
             try
             {
-                new EpisodeXmlParser(Logger).Fetch((Episode)item, metadataFile, cancellationToken);
+                await new EpisodeXmlParser(Logger, _itemRepo).FetchAsync((Episode)item, metadataFile, cancellationToken).ConfigureAwait(false);
             }
             finally
             {
