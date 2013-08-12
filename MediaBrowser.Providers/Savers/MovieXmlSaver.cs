@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Providers.Movies;
 using System;
 using System.Globalization;
@@ -18,10 +19,12 @@ namespace MediaBrowser.Providers.Savers
     public class MovieXmlSaver : IMetadataSaver
     {
         private readonly IServerConfigurationManager _config;
+        private readonly IItemRepository _itemRepository;
 
-        public MovieXmlSaver(IServerConfigurationManager config)
+        public MovieXmlSaver(IServerConfigurationManager config, IItemRepository itemRepository)
         {
             _config = config;
+            _itemRepository = itemRepository;
         }
 
         /// <summary>
@@ -93,6 +96,8 @@ namespace MediaBrowser.Providers.Savers
             }
 
             XmlSaverHelpers.AddMediaInfo((Video)item, builder);
+
+            XmlSaverHelpers.AddChapters((Video)item, builder, _itemRepository);
 
             builder.Append("</Title>");
 

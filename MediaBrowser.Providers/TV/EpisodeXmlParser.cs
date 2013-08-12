@@ -1,7 +1,10 @@
 ﻿using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Logging;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Xml;
 
 namespace MediaBrowser.Providers.TV
@@ -11,13 +14,28 @@ namespace MediaBrowser.Providers.TV
     /// </summary>
     public class EpisodeXmlParser : BaseItemXmlParser<Episode>
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="EpisodeXmlParser" /> class.
-        /// </summary>
-        /// <param name="logger">The logger.</param>
-        public EpisodeXmlParser(ILogger logger)
+        private readonly IItemRepository _itemRepo;
+
+        private Task _chaptersTask = null;
+
+        public EpisodeXmlParser(ILogger logger, IItemRepository itemRepo)
             : base(logger)
         {
+            _itemRepo = itemRepo;
+        }
+
+        public async Task FetchAsync(Episode item, string metadataFile, CancellationToken cancellationToken)
+        {
+            _chaptersTask = null;
+
+            Fetch(item, metadataFile, cancellationToken);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (_chaptersTask != null)
+            {
+                await _chaptersTask.ConfigureAwait(false);
+            }
         }
 
         /// <summary>
@@ -29,7 +47,13 @@ namespace MediaBrowser.Providers.TV
         {
             switch (reader.Name)
             {
+                case "Chapters":
+
+                    _chaptersTask = FetchChaptersFromXmlNode(item.Id, reader.ReadSubtree(), _itemRepo, CancellationToken.None);
+                    break;
+
                 case "Episode":
+
                     //MB generated metadata is within an "Episode" node
                     using (var subTree = reader.ReadSubtree())
                     {

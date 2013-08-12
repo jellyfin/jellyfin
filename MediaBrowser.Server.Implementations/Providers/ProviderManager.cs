@@ -2,16 +2,12 @@
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Model.Net;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -25,12 +21,6 @@ namespace MediaBrowser.Server.Implementations.Providers
     /// </summary>
     public class ProviderManager : IProviderManager
     {
-        /// <summary>
-        /// The currently running metadata providers
-        /// </summary>
-        private readonly ConcurrentDictionary<string, Tuple<BaseMetadataProvider, BaseItem, CancellationTokenSource>> _currentlyRunningProviders =
-            new ConcurrentDictionary<string, Tuple<BaseMetadataProvider, BaseItem, CancellationTokenSource>>();
-
         /// <summary>
         /// The _logger
         /// </summary>
@@ -72,19 +62,6 @@ namespace MediaBrowser.Server.Implementations.Providers
             _httpClient = httpClient;
             ConfigurationManager = configurationManager;
             _directoryWatchers = directoryWatchers;
-
-            configurationManager.ConfigurationUpdated += configurationManager_ConfigurationUpdated;
-        }
-
-        /// <summary>
-        /// Handles the ConfigurationUpdated event of the configurationManager control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        void configurationManager_ConfigurationUpdated(object sender, EventArgs e)
-        {
-            // Validate currently executing providers, in the background
-            Task.Run(() => ValidateCurrentlyRunningProviders());
         }
 
         /// <summary>
@@ -217,8 +194,6 @@ namespace MediaBrowser.Server.Implementations.Providers
             // This provides the ability to cancel just this one provider
             var innerCancellationTokenSource = new CancellationTokenSource();
 
-            OnProviderRefreshBeginning(provider, item, innerCancellationTokenSource);
-
             try
             {
                 var changed = await provider.FetchAsync(item, force, CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, innerCancellationTokenSource.Token).Token).ConfigureAwait(false);
@@ -253,70 +228,6 @@ namespace MediaBrowser.Server.Implementations.Providers
             finally
             {
                 innerCancellationTokenSource.Dispose();
-
-                OnProviderRefreshCompleted(provider, item);
-            }
-        }
-
-        /// <summary>
-        /// Notifies the kernal that a provider has begun refreshing
-        /// </summary>
-        /// <param name="provider">The provider.</param>
-        /// <param name="item">The item.</param>
-        /// <param name="cancellationTokenSource">The cancellation token source.</param>
-        public void OnProviderRefreshBeginning(BaseMetadataProvider provider, BaseItem item, CancellationTokenSource cancellationTokenSource)
-        {
-            var key = item.Id + provider.GetType().Name;
-
-            Tuple<BaseMetadataProvider, BaseItem, CancellationTokenSource> current;
-
-            if (_currentlyRunningProviders.TryGetValue(key, out current))
-            {
-                try
-                {
-                    current.Item3.Cancel();
-                }
-                catch (ObjectDisposedException)
-                {
-
-                }
-            }
-
-            var tuple = new Tuple<BaseMetadataProvider, BaseItem, CancellationTokenSource>(provider, item, cancellationTokenSource);
-
-            _currentlyRunningProviders.AddOrUpdate(key, tuple, (k, v) => tuple);
-        }
-
-        /// <summary>
-        /// Notifies the kernal that a provider has completed refreshing
-        /// </summary>
-        /// <param name="provider">The provider.</param>
-        /// <param name="item">The item.</param>
-        public void OnProviderRefreshCompleted(BaseMetadataProvider provider, BaseItem item)
-        {
-            var key = item.Id + provider.GetType().Name;
-
-            Tuple<BaseMetadataProvider, BaseItem, CancellationTokenSource> current;
-
-            if (_currentlyRunningProviders.TryRemove(key, out current))
-            {
-                current.Item3.Dispose();
-            }
-        }
-
-        /// <summary>
-        /// Validates the currently running providers and cancels any that should not be run due to configuration changes
-        /// </summary>
-        private void ValidateCurrentlyRunningProviders()
-        {
-            var enableInternetProviders = ConfigurationManager.Configuration.EnableInternetProviders;
-            var internetProviderExcludeTypes = ConfigurationManager.Configuration.InternetProviderExcludeTypes;
-
-            foreach (var tuple in _currentlyRunningProviders.Values
-                .Where(p => p.Item1.RequiresInternet && (!enableInternetProviders || internetProviderExcludeTypes.Contains(p.Item2.GetType().Name, StringComparer.OrdinalIgnoreCase)))
-                .ToList())
-            {
-                tuple.Item3.Cancel();
             }
         }
 

@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
@@ -9,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Xml;
 
 namespace MediaBrowser.Controller.Providers
@@ -266,7 +268,10 @@ namespace MediaBrowser.Controller.Providers
 
                 case "TagLines":
                     {
-                        FetchFromTaglinesNode(reader.ReadSubtree(), item);
+                        using (var subtree = reader.ReadSubtree())
+                        {
+                            FetchFromTaglinesNode(subtree, item);
+                        }
                         break;
                     }
 
@@ -591,28 +596,58 @@ namespace MediaBrowser.Controller.Providers
                     break;
 
                 case "Genres":
-                    FetchFromGenresNode(reader.ReadSubtree(), item);
-                    break;
+                    {
+                        using (var subtree = reader.ReadSubtree())
+                        {
+                            FetchFromGenresNode(subtree, item);
+                        }
+                        break;
+                    }
 
                 case "Tags":
-                    FetchFromTagsNode(reader.ReadSubtree(), item);
-                    break;
+                    {
+                        using (var subtree = reader.ReadSubtree())
+                        {
+                            FetchFromTagsNode(subtree, item);
+                        }
+                        break;
+                    }
 
                 case "Persons":
-                    FetchDataFromPersonsNode(reader.ReadSubtree(), item);
-                    break;
+                    {
+                        using (var subtree = reader.ReadSubtree())
+                        {
+                            FetchDataFromPersonsNode(subtree, item);
+                        }
+                        break;
+                    }
 
                 case "ParentalRating":
-                    FetchFromParentalRatingNode(reader.ReadSubtree(), item);
-                    break;
+                    {
+                        using (var subtree = reader.ReadSubtree())
+                        {
+                            FetchFromParentalRatingNode(subtree, item);
+                        }
+                        break;
+                    }
 
                 case "Studios":
-                    FetchFromStudiosNode(reader.ReadSubtree(), item);
-                    break;
+                    {
+                        using (var subtree = reader.ReadSubtree())
+                        {
+                            FetchFromStudiosNode(subtree, item);
+                        }
+                        break;
+                    }
 
                 case "MediaInfo":
-                    FetchFromMediaInfoNode(reader.ReadSubtree(), item);
-                    break;
+                    {
+                        using (var subtree = reader.ReadSubtree())
+                        {
+                            FetchFromMediaInfoNode(subtree, item);
+                        }
+                        break;
+                    }
 
                 default:
                     reader.Skip();
@@ -636,8 +671,13 @@ namespace MediaBrowser.Controller.Providers
                     switch (reader.Name)
                     {
                         case "Video":
-                            FetchFromMediaInfoVideoNode(reader.ReadSubtree(), item);
-                            break;
+                            {
+                                using (var subtree = reader.ReadSubtree())
+                                {
+                                    FetchFromMediaInfoVideoNode(subtree, item);
+                                }
+                                break;
+                            }
 
                         default:
                             reader.Skip();
@@ -813,9 +853,12 @@ namespace MediaBrowser.Controller.Providers
                         case "Person":
                         case "Actor":
                             {
-                                foreach (var person in GetPersonsFromXmlNode(reader.ReadSubtree()))
+                                using (var subtree = reader.ReadSubtree())
                                 {
-                                    item.AddPerson(person);
+                                    foreach (var person in GetPersonsFromXmlNode(subtree))
+                                    {
+                                        item.AddPerson(person);
+                                    }
                                 }
                                 break;
                             }
@@ -826,6 +869,86 @@ namespace MediaBrowser.Controller.Providers
                     }
                 }
             }
+        }
+
+        protected async Task FetchChaptersFromXmlNode(Guid itemId, XmlReader reader, IItemRepository repository, CancellationToken cancellationToken)
+        {
+            using (reader)
+            {
+                var chapters = GetChaptersFromXmlNode(reader);
+
+                await repository.SaveChapters(itemId, chapters, cancellationToken).ConfigureAwait(false);
+            }
+        }
+
+        private IEnumerable<ChapterInfo> GetChaptersFromXmlNode(XmlReader reader)
+        {
+            var chapters = new List<ChapterInfo>();
+
+            reader.MoveToContent();
+
+            while (reader.Read())
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    switch (reader.Name)
+                    {
+                        case "Chapter":
+                            {
+                                using (var subtree = reader.ReadSubtree())
+                                {
+                                    chapters.Add(GetChapterInfoFromXmlNode(subtree));
+                                }
+                                break;
+                            }
+
+                        default:
+                            reader.Skip();
+                            break;
+                    }
+                }
+            }
+
+            return chapters;
+        }
+
+        private ChapterInfo GetChapterInfoFromXmlNode(XmlReader reader)
+        {
+            var chapter = new ChapterInfo();
+
+            reader.MoveToContent();
+
+            while (reader.Read())
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    switch (reader.Name)
+                    {
+                        case "StartPositionMs":
+                            {
+                                var val = reader.ReadElementContentAsString();
+
+                                var ms = long.Parse(val, _usCulture);
+
+                                chapter.StartPositionTicks = TimeSpan.FromMilliseconds(ms).Ticks;
+
+                                break;
+                            }
+
+                        case "Name":
+                            {
+                                chapter.Name = reader.ReadElementContentAsString();
+                                break;
+                            }
+
+                        default:
+                            reader.Skip();
+                            break;
+                    }
+                }
+            }
+
+            return chapter;
         }
 
         /// <summary>
