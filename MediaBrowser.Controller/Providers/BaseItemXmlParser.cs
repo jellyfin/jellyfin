@@ -871,13 +871,16 @@ namespace MediaBrowser.Controller.Providers
             }
         }
 
-        protected async Task FetchChaptersFromXmlNode(Guid itemId, XmlReader reader, IItemRepository repository, CancellationToken cancellationToken)
+        protected async Task FetchChaptersFromXmlNode(BaseItem item, XmlReader reader, IItemRepository repository, CancellationToken cancellationToken)
         {
+            var runtime = item.RunTimeTicks ?? 0;
+
             using (reader)
             {
-                var chapters = GetChaptersFromXmlNode(reader);
+                var chapters = GetChaptersFromXmlNode(reader)
+                    .Where(i => i.StartPositionTicks >= 0 && i.StartPositionTicks < runtime);
 
-                await repository.SaveChapters(itemId, chapters, cancellationToken).ConfigureAwait(false);
+                await repository.SaveChapters(item.Id, chapters, cancellationToken).ConfigureAwait(false);
             }
         }
 
