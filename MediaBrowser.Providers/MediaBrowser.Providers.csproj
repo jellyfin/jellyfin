@@ -50,6 +50,7 @@
     <Compile Include="Extensions\XmlExtensions.cs" />
     <Compile Include="FanartBaseProvider.cs" />
     <Compile Include="FolderProviderFromXml.cs" />
+    <Compile Include="Games\GameProviderFromXml.cs" />
     <Compile Include="ImageFromMediaLocationProvider.cs" />
     <Compile Include="ImagesByNameProvider.cs" />
     <Compile Include="MediaInfo\AudioImageProvider.cs" />

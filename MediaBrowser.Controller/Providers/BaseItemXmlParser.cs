@@ -278,6 +278,7 @@ namespace MediaBrowser.Controller.Providers
                 case "ContentRating":
                 case "certification":
                 case "MPAARating":
+                case "ESRBRating":
                     {
                         var rating = reader.ReadElementContentAsString();
 
@@ -475,6 +476,7 @@ namespace MediaBrowser.Controller.Providers
 
                 case "Rating":
                 case "IMDBrating":
+                case "TGDBRating":
                     {
 
                         var rating = reader.ReadElementContentAsString();
