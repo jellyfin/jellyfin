@@ -576,6 +576,7 @@ namespace MediaBrowser.Server.Implementations.IO
                 }
             }
 
+            _fileSystemWatchers.Clear();
             _affectedPaths.Clear();
         }
 
