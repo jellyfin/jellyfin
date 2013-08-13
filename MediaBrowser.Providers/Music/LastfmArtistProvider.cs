@@ -54,6 +54,14 @@ namespace MediaBrowser.Providers.Music
             return base.NeedsRefreshInternal(item, providerInfo);
         }
 
+        protected override string ProviderVersion
+        {
+            get
+            {
+                return "6";
+            }
+        }
+
         /// <summary>
         /// Gets the priority.
         /// </summary>
