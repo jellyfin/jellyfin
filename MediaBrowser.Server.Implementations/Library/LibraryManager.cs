@@ -288,17 +288,6 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             var config = ConfigurationManager.Configuration;
 
-            // Figure out whether or not we should refresh people after the update is finished
-            var refreshPeopleAfterUpdate = !_internetProvidersEnabled && config.EnableInternetProviders;
-
-            // This is true if internet providers has just been turned on, or if People have just been removed from InternetProviderExcludeTypes
-            if (!refreshPeopleAfterUpdate)
-            {
-                var newConfigurationFetchesPeopleImages = config.InternetProviderExcludeTypes == null || !config.InternetProviderExcludeTypes.Contains(typeof(Person).Name, StringComparer.OrdinalIgnoreCase);
-
-                refreshPeopleAfterUpdate = newConfigurationFetchesPeopleImages && !_peopleImageFetchingEnabled;
-            }
-
             var ibnPathChanged = !string.Equals(_itemsByNamePath, ConfigurationManager.ApplicationPaths.ItemsByNamePath, StringComparison.CurrentCulture);
 
             if (ibnPathChanged)
@@ -320,11 +309,6 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 // Any number of configuration settings could change the way the library is refreshed, so do that now
                 _taskManager.CancelIfRunningAndQueue<RefreshMediaLibraryTask>();
-
-                if (refreshPeopleAfterUpdate)
-                {
-                    _taskManager.CancelIfRunningAndQueue<PeopleValidationTask>();
-                }
             });
         }
 
