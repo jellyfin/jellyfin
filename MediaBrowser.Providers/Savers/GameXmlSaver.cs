@@ -1,11 +1,11 @@
-﻿using System.Security;
-using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Providers.Movies;
 using System;
 using System.Globalization;
 using System.IO;
+using System.Security;
 using System.Text;
 using System.Threading;
 
@@ -87,14 +87,7 @@ namespace MediaBrowser.Providers.Savers
 
         public string GetSavePath(BaseItem item)
         {
-            if (item.ResolveArgs.IsDirectory)
-            {
-                var path = Directory.Exists(item.Path) ? item.Path : Path.GetDirectoryName(item.Path);
-
-                return Path.Combine(path, "game.xml");
-            }
-
-            return Path.ChangeExtension(item.Path, ".xml");
+            return Path.Combine(item.MetaLocation, "game.xml");
         }
     }
 }
