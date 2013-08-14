@@ -56,22 +56,37 @@ namespace MediaBrowser.Providers.Music
 
                 if (musicArtist != null)
                 {
-                    artist.Images = new Dictionary<ImageType, string>(musicArtist.Images);
+                    MergeImages(musicArtist.Images, artist.Images);
 
-                    artist.BackdropImagePaths = musicArtist.BackdropImagePaths.ToList();
-                    artist.ScreenshotImagePaths = musicArtist.ScreenshotImagePaths.ToList();
-                    artist.SetProviderId(MetadataProviders.Musicbrainz, musicArtist.GetProviderId(MetadataProviders.Musicbrainz));
-                    artist.Genres = musicArtist.Genres.ToList();
+                    // Merge backdrops
+                    var backdrops = musicArtist.BackdropImagePaths.ToList();
+                    backdrops.InsertRange(0, artist.BackdropImagePaths);
+                    artist.BackdropImagePaths = backdrops.Distinct(StringComparer.OrdinalIgnoreCase)
+                        .ToList();
+
+                    if (!artist.LockedFields.Contains(MetadataFields.Genres))
+                    {
+                        // Merge genres
+                        var genres = musicArtist.Genres.ToList();
+                        genres.InsertRange(0, artist.Genres);
+                        artist.Genres = genres.Distinct(StringComparer.OrdinalIgnoreCase)
+                            .ToList();
+
+                        artist.Genres = musicArtist.Genres.ToList();
+                    }
                 }
                 else
                 {
-                    // Avoid implicitly captured closure
-                    var artist1 = artist;
+                    if (!artist.LockedFields.Contains(MetadataFields.Genres))
+                    {
+                        // Avoid implicitly captured closure
+                        var artist1 = artist;
 
-                    artist.Genres = allSongs.Where(i => i.HasArtist(artist1.Name))
-                        .SelectMany(i => i.Genres)
-                        .Distinct(StringComparer.OrdinalIgnoreCase)
-                        .ToList();
+                        artist.Genres = allSongs.Where(i => i.HasArtist(artist1.Name))
+                            .SelectMany(i => i.Genres)
+                            .Distinct(StringComparer.OrdinalIgnoreCase)
+                            .ToList();
+                    }
                 }
 
                 numComplete++;
@@ -87,6 +102,21 @@ namespace MediaBrowser.Providers.Music
             innerProgress.RegisterAction(pct => progress.Report(15 + pct * .85));
 
             await _libraryManager.ValidateArtists(cancellationToken, innerProgress).ConfigureAwait(false);
+        }
+
+        private void MergeImages(Dictionary<ImageType, string> source, Dictionary<ImageType, string> target)
+        {
+            foreach (var key in source.Keys
+                .ToList()
+                .Where(k => !target.ContainsKey(k)))
+            {
+                string path;
+
+                if (source.TryGetValue(key, out path))
+                {
+                    target[key] = path;
+                }
+            }
         }
 
         /// <summary>

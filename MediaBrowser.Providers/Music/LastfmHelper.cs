@@ -40,7 +40,6 @@ namespace MediaBrowser.Providers.Music
             target.Tags = source.Tags.ToList();
             target.Overview = source.Overview;
             target.ProductionLocations = source.ProductionLocations.ToList();
-            target.Genres = source.Genres.ToList();
         }
         
         public static void ProcessAlbumData(BaseItem item, LastfmAlbum data)
