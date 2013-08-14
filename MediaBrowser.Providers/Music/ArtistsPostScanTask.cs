@@ -71,8 +71,6 @@ namespace MediaBrowser.Providers.Music
                         genres.InsertRange(0, artist.Genres);
                         artist.Genres = genres.Distinct(StringComparer.OrdinalIgnoreCase)
                             .ToList();
-
-                        artist.Genres = musicArtist.Genres.ToList();
                     }
                 }
                 else
