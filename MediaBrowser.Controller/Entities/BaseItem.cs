@@ -354,7 +354,7 @@ namespace MediaBrowser.Controller.Entities
             }
 
             //update our dates
-            EntityResolutionHelper.EnsureDates(this, args);
+            EntityResolutionHelper.EnsureDates(this, args, false);
 
             IsOffline = false;
 

@@ -127,7 +127,8 @@ namespace MediaBrowser.Controller.Resolvers
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="args">The args.</param>
-        public static void EnsureDates(BaseItem item, ItemResolveArgs args)
+        /// <param name="includeCreationTime">if set to <c>true</c> [include creation time].</param>
+        public static void EnsureDates(BaseItem item, ItemResolveArgs args, bool includeCreationTime)
         {
             if (!Path.IsPathRooted(item.Path))
             {
@@ -141,7 +142,11 @@ namespace MediaBrowser.Controller.Resolvers
 
                 if (childData != null)
                 {
-                    item.DateCreated = childData.CreationTimeUtc;
+                    if (includeCreationTime)
+                    {
+                        item.DateCreated = childData.CreationTimeUtc;
+                    }
+
                     item.DateModified = childData.LastWriteTimeUtc;
                 }
                 else
@@ -150,14 +155,20 @@ namespace MediaBrowser.Controller.Resolvers
 
                     if (fileData.Exists)
                     {
-                        item.DateCreated = fileData.CreationTimeUtc;
+                        if (includeCreationTime)
+                        {
+                            item.DateCreated = fileData.CreationTimeUtc;
+                        }
                         item.DateModified = fileData.LastWriteTimeUtc;
                     }
                 }
             }
             else
             {
-                item.DateCreated = args.FileInfo.CreationTimeUtc;
+                if (includeCreationTime)
+                {
+                    item.DateCreated = args.FileInfo.CreationTimeUtc;
+                }
                 item.DateModified = args.FileInfo.LastWriteTimeUtc;
             }
         }
