@@ -681,7 +681,7 @@ namespace MediaBrowser.Controller.Entities
                     //existing item - check if it has changed
                     if (currentChild.HasChanged(child))
                     {
-                        EntityResolutionHelper.EnsureDates(currentChild, child.ResolveArgs);
+                        EntityResolutionHelper.EnsureDates(currentChild, child.ResolveArgs, false);
 
                         validChildren.Add(new Tuple<BaseItem, bool>(currentChild, true));
                     }

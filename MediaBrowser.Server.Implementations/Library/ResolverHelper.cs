@@ -48,7 +48,7 @@ namespace MediaBrowser.Server.Implementations.Library
             item.DontFetchMeta = item.Path.IndexOf("[dontfetchmeta]", StringComparison.OrdinalIgnoreCase) != -1;
 
             // Make sure DateCreated and DateModified have values
-            EntityResolutionHelper.EnsureDates(item, args);
+            EntityResolutionHelper.EnsureDates(item, args, true);
         }
 
         /// <summary>
