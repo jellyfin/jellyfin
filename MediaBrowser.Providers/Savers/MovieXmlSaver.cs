@@ -95,9 +95,11 @@ namespace MediaBrowser.Providers.Savers
                 }
             }
 
-            XmlSaverHelpers.AddMediaInfo((Video)item, builder);
+            var video = (Video)item;
 
-            XmlSaverHelpers.AddChapters((Video)item, builder, _itemRepository);
+            XmlSaverHelpers.AddMediaInfo(video, builder);
+
+            XmlSaverHelpers.AddChapters(video, builder, _itemRepository);
 
             builder.Append("</Title>");
 
@@ -117,9 +119,11 @@ namespace MediaBrowser.Providers.Savers
 
         public string GetSavePath(BaseItem item)
         {
-            return item.ResolveArgs.IsDirectory ? 
-                Path.Combine(item.MetaLocation, "movie.xml") : 
-                Path.ChangeExtension(item.Path, ".xml");
+            var video = (Video)item;
+
+            return video.IsInMixedFolder ?
+                Path.ChangeExtension(item.Path, ".xml") :
+                Path.Combine(item.MetaLocation, "movie.xml");
         }
     }
 }
