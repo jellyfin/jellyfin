@@ -22,6 +22,15 @@ namespace MediaBrowser.Controller.Entities.TV
             }
         }
 
+        [IgnoreDataMember]
+        protected override bool UseParentPathToCreateResolveArgs
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         /// <summary>
         /// We want to group into series not show individually in an index
         /// </summary>

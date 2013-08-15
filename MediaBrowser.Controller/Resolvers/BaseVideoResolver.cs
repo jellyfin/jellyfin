@@ -45,7 +45,8 @@ namespace MediaBrowser.Controller.Resolvers
                     return new TVideoType
                     {
                         VideoType = type,
-                        Path = args.Path
+                        Path = args.Path,
+                        IsInMixedFolder = true
                     };
                 }
             }
