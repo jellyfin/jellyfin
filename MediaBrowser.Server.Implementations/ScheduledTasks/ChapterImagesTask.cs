@@ -38,7 +38,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
 
         private readonly List<Video> _newlyAddedItems = new List<Video>();
 
-        private const int NewItemDelay = 60000;
+        private const int NewItemDelay = 30000;
 
         /// <summary>
         /// The current new item timer
@@ -107,7 +107,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
             // Limit to video files to reduce changes of ffmpeg crash dialog
             foreach (var item in newItems
                 .Where(i => i.LocationType == LocationType.FileSystem && i.VideoType == VideoType.VideoFile && string.IsNullOrEmpty(i.PrimaryImagePath) && i.MediaStreams.Any(m => m.Type == MediaStreamType.Video))
-                .Take(1))
+                .Take(2))
             {
                 try
                 {
