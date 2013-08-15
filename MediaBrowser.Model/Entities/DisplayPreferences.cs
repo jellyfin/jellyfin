@@ -86,6 +86,11 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value>The sort order.</value>
         public SortOrder SortOrder { get; set; }
+        /// <summary>
+        /// Gets or sets a value indicating whether [show sidebar].
+        /// </summary>
+        /// <value><c>true</c> if [show sidebar]; otherwise, <c>false</c>.</value>
+        public bool ShowSidebar { get; set; }
 
         /// <summary>
         /// Increases the size of the image.
