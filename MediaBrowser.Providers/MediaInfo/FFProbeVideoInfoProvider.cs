@@ -7,6 +7,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
@@ -84,6 +85,14 @@ namespace MediaBrowser.Providers.MediaInfo
             }
         }
 
+        public override MetadataProviderPriority Priority
+        {
+            get
+            {
+                return MetadataProviderPriority.Second;
+            }
+        }
+
         /// <summary>
         /// Supports video files and dvd structures
         /// </summary>
@@ -149,7 +158,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await Fetch(myItem, cancellationToken, result, isoMount).ConfigureAwait(false);
+                await Fetch(myItem, force, cancellationToken, result, isoMount).ConfigureAwait(false);
 
                 SetLastRefreshed(item, DateTime.UtcNow);
             }
@@ -243,11 +252,12 @@ namespace MediaBrowser.Providers.MediaInfo
         /// Fetches the specified video.
         /// </summary>
         /// <param name="video">The video.</param>
+        /// <param name="force">if set to <c>true</c> [force].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="data">The data.</param>
         /// <param name="isoMount">The iso mount.</param>
         /// <returns>Task.</returns>
-        protected async Task Fetch(Video video, CancellationToken cancellationToken, MediaInfoResult data, IIsoMount isoMount)
+        protected async Task Fetch(Video video, bool force, CancellationToken cancellationToken, MediaInfoResult data, IIsoMount isoMount)
         {
             if (data.format != null)
             {
@@ -277,7 +287,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             AddExternalSubtitles(video);
 
-            FetchWtvInfo(video, data);
+            FetchWtvInfo(video, force, data);
 
             if (chapters.Count == 0 && video.MediaStreams.Any(i => i.Type == MediaStreamType.Video))
             {
@@ -285,68 +295,94 @@ namespace MediaBrowser.Providers.MediaInfo
             }
 
             await Kernel.Instance.FFMpegManager.PopulateChapterImages(video, chapters, false, false, cancellationToken).ConfigureAwait(false);
-            
-            await _itemRepo.SaveChapters(video.Id, chapters, cancellationToken).ConfigureAwait(false);
+
+            // Only save chapters if forcing or there are not already any saved ones
+            if (force || _itemRepo.GetChapter(video.Id, 0) == null)
+            {
+                await _itemRepo.SaveChapters(video.Id, chapters, cancellationToken).ConfigureAwait(false);
+            }
         }
 
         /// <summary>
         /// Fetches the WTV info.
         /// </summary>
         /// <param name="video">The video.</param>
+        /// <param name="force">if set to <c>true</c> [force].</param>
         /// <param name="data">The data.</param>
-        private void FetchWtvInfo(Video video, MediaInfoResult data)
+        private void FetchWtvInfo(Video video, bool force, MediaInfoResult data)
         {
             if (data.format == null || data.format.tags == null)
             {
                 return;
             }
 
-            if (!video.LockedFields.Contains(MetadataFields.Genres))
+            if (force || video.Genres.Count == 0)
             {
-                var genres = GetDictionaryValue(data.format.tags, "genre");
-
-                if (!string.IsNullOrEmpty(genres))
+                if (!video.LockedFields.Contains(MetadataFields.Genres))
                 {
-                    video.Genres = genres.Split(new[] { ';', '/' }, StringSplitOptions.RemoveEmptyEntries)
-                        .Where(i => !string.IsNullOrWhiteSpace(i))
-                        .Select(i => i.Trim())
-                        .ToList();
+                    var genres = GetDictionaryValue(data.format.tags, "genre");
+
+                    if (!string.IsNullOrEmpty(genres))
+                    {
+                        video.Genres = genres.Split(new[] { ';', '/' }, StringSplitOptions.RemoveEmptyEntries)
+                            .Where(i => !string.IsNullOrWhiteSpace(i))
+                            .Select(i => i.Trim())
+                            .ToList();
+                    }
                 }
             }
 
-            var overview = GetDictionaryValue(data.format.tags, "WM/SubTitleDescription");
-
-            if (!string.IsNullOrWhiteSpace(overview))
+            if (force || string.IsNullOrEmpty(video.Overview))
             {
-                video.Overview = overview;
-            }
-
-            var officialRating = GetDictionaryValue(data.format.tags, "WM/ParentalRating");
-
-            if (!string.IsNullOrWhiteSpace(officialRating))
-            {
-                video.OfficialRating = officialRating;
-            }
-
-            var people = GetDictionaryValue(data.format.tags, "WM/MediaCredits");
-
-            if (!string.IsNullOrEmpty(people))
-            {
-                video.People = people.Split(new[] { ';', '/' }, StringSplitOptions.RemoveEmptyEntries)
-                    .Where(i => !string.IsNullOrWhiteSpace(i))
-                    .Select(i => new PersonInfo { Name = i.Trim(), Type = PersonType.Actor })
-                    .ToList();
-            }
-
-            var year = GetDictionaryValue(data.format.tags, "WM/OriginalReleaseTime");
-
-            if (!string.IsNullOrWhiteSpace(year))
-            {
-                int val;
-
-                if (int.TryParse(year, NumberStyles.Integer, UsCulture, out val))
+                if (!video.LockedFields.Contains(MetadataFields.Overview))
                 {
-                    video.ProductionYear = val;
+                    var overview = GetDictionaryValue(data.format.tags, "WM/SubTitleDescription");
+
+                    if (!string.IsNullOrWhiteSpace(overview))
+                    {
+                        video.Overview = overview;
+                    }
+                }
+            }
+
+            if (force || string.IsNullOrEmpty(video.OfficialRating))
+            {
+                var officialRating = GetDictionaryValue(data.format.tags, "WM/ParentalRating");
+
+                if (!string.IsNullOrWhiteSpace(officialRating))
+                {
+                    video.OfficialRating = officialRating;
+                }
+            }
+
+            if (force || video.People.Count == 0)
+            {
+                if (!video.LockedFields.Contains(MetadataFields.Cast))
+                {
+                    var people = GetDictionaryValue(data.format.tags, "WM/MediaCredits");
+
+                    if (!string.IsNullOrEmpty(people))
+                    {
+                        video.People = people.Split(new[] { ';', '/' }, StringSplitOptions.RemoveEmptyEntries)
+                            .Where(i => !string.IsNullOrWhiteSpace(i))
+                            .Select(i => new PersonInfo { Name = i.Trim(), Type = PersonType.Actor })
+                            .ToList();
+                    }
+                }
+            }
+
+            if (force || !video.ProductionYear.HasValue)
+            {
+                var year = GetDictionaryValue(data.format.tags, "WM/OriginalReleaseTime");
+
+                if (!string.IsNullOrWhiteSpace(year))
+                {
+                    int val;
+
+                    if (int.TryParse(year, NumberStyles.Integer, UsCulture, out val))
+                    {
+                        video.ProductionYear = val;
+                    }
                 }
             }
         }
