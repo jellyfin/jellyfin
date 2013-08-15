@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Common.MediaInfo;
+﻿using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.MediaInfo;
@@ -20,15 +19,17 @@ namespace MediaBrowser.Providers.MediaInfo
     /// Provides a base class for extracting media information through ffprobe
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public abstract class BaseFFProbeProvider<T> : BaseFFMpegProvider<T>
-        where T : BaseItem
+    public abstract class BaseFFProbeProvider<T> : BaseMetadataProvider
+        where T : BaseItem, IHasMediaStreams
     {
         protected BaseFFProbeProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IMediaEncoder mediaEncoder, IJsonSerializer jsonSerializer)
-            : base(logManager, configurationManager, mediaEncoder)
+            : base(logManager, configurationManager)
         {
             JsonSerializer = jsonSerializer;
+            MediaEncoder = mediaEncoder;
         }
 
+        protected readonly IMediaEncoder MediaEncoder;
         protected readonly IJsonSerializer JsonSerializer;
 
         /// <summary>
@@ -41,6 +42,56 @@ namespace MediaBrowser.Providers.MediaInfo
         }
 
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
+
+        /// <summary>
+        /// Supportses the specified item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
+        public override bool Supports(BaseItem item)
+        {
+            return item.LocationType == LocationType.FileSystem && item is T;
+        }
+
+        /// <summary>
+        /// Override this to return the date that should be compared to the last refresh date
+        /// to determine if this provider should be re-fetched.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns>DateTime.</returns>
+        protected override DateTime CompareDate(BaseItem item)
+        {
+            return item.DateModified;
+        }
+
+        /// <summary>
+        /// The null mount task result
+        /// </summary>
+        protected readonly Task<IIsoMount> NullMountTaskResult = Task.FromResult<IIsoMount>(null);
+
+        /// <summary>
+        /// Gets the provider version.
+        /// </summary>
+        /// <value>The provider version.</value>
+        protected override string ProviderVersion
+        {
+            get
+            {
+                return MediaEncoder.Version;
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether [refresh on version change].
+        /// </summary>
+        /// <value><c>true</c> if [refresh on version change]; otherwise, <c>false</c>.</value>
+        protected override bool RefreshOnVersionChange
+        {
+            get
+            {
+                return true;
+            }
+        }
 
         /// <summary>
         /// Gets the media info.

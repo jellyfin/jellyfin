@@ -54,7 +54,6 @@
     <Compile Include="ImageFromMediaLocationProvider.cs" />
     <Compile Include="ImagesByNameProvider.cs" />
     <Compile Include="MediaInfo\AudioImageProvider.cs" />
-    <Compile Include="MediaInfo\BaseFFMpegProvider.cs" />
     <Compile Include="MediaInfo\BaseFFProbeProvider.cs" />
     <Compile Include="MediaInfo\FFProbeAudioInfoProvider.cs" />
     <Compile Include="MediaInfo\FFProbeVideoInfoProvider.cs" />
