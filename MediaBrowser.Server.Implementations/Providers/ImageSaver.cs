@@ -238,9 +238,29 @@ namespace MediaBrowser.Server.Implementations.Providers
 
             filename += "." + extension.ToLower();
 
-            var path = (saveLocally && !string.IsNullOrEmpty(item.MetaLocation)) ?
-                Path.Combine(item.MetaLocation, filename) :
-                _remoteImageCache.GetResourcePath(item.GetType().FullName + item.Id, filename);
+            string path = null;
+
+            if (saveLocally)
+            {
+                var video = item as Video;
+
+                if (video != null && video.IsInMixedFolder)
+                {
+                    var folder = Path.GetDirectoryName(video.Path);
+
+                    path = Path.Combine(folder, Path.GetFileNameWithoutExtension(video.Path) + "-" + filename);
+                }
+
+                if (string.IsNullOrEmpty(path) && !string.IsNullOrEmpty(item.MetaLocation))
+                {
+                    path = Path.Combine(item.MetaLocation, filename);
+                }
+            }
+
+            if (string.IsNullOrEmpty(path))
+            {
+                path = _remoteImageCache.GetResourcePath(item.GetType().FullName + item.Id, filename);
+            }
 
             var parentPath = Path.GetDirectoryName(path);
 
