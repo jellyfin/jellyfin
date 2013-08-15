@@ -242,13 +242,16 @@ namespace MediaBrowser.Server.Implementations.Providers
 
             if (saveLocally)
             {
-                var video = item as Video;
-
-                if (video != null && video.IsInMixedFolder)
+                if (!(item is Episode))
                 {
-                    var folder = Path.GetDirectoryName(video.Path);
+                    var video = item as Video;
 
-                    path = Path.Combine(folder, Path.GetFileNameWithoutExtension(video.Path) + "-" + filename);
+                    if (video != null && video.IsInMixedFolder)
+                    {
+                        var folder = Path.GetDirectoryName(video.Path);
+
+                        path = Path.Combine(folder, Path.GetFileNameWithoutExtension(video.Path) + "-" + filename);
+                    }
                 }
 
                 if (string.IsNullOrEmpty(path) && !string.IsNullOrEmpty(item.MetaLocation))

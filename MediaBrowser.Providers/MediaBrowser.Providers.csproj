@@ -52,6 +52,7 @@
     <Compile Include="FolderProviderFromXml.cs" />
     <Compile Include="Games\GameProviderFromXml.cs" />
     <Compile Include="ImageFromMediaLocationProvider.cs" />
+    <Compile Include="ImageFromMixedMediaLocationProvider.cs" />
     <Compile Include="ImagesByNameProvider.cs" />
     <Compile Include="MediaInfo\AudioImageProvider.cs" />
     <Compile Include="MediaInfo\BaseFFProbeProvider.cs" />
