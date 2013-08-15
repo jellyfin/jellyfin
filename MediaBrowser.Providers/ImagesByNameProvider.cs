@@ -159,9 +159,10 @@ namespace MediaBrowser.Providers
         /// Gets the image.
         /// </summary>
         /// <param name="item">The item.</param>
+        /// <param name="args">The args.</param>
         /// <param name="filenameWithoutExtension">The filename without extension.</param>
         /// <returns>FileSystemInfo.</returns>
-        protected override FileSystemInfo GetImage(BaseItem item, string filenameWithoutExtension)
+        protected override FileSystemInfo GetImage(BaseItem item, ItemResolveArgs args, string filenameWithoutExtension)
         {
             var location = GetLocation(item);
 

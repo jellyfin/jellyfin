@@ -65,8 +65,6 @@ namespace MediaBrowser.Controller.Entities
             return GetPlayableStreamFiles(Path);
         }
 
-        public bool IsInMixedFolder { get; set; }
-
         /// <summary>
         /// Should be overridden to return the proper folder where metadata lives
         /// </summary>

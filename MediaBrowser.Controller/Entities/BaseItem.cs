@@ -55,6 +55,8 @@ namespace MediaBrowser.Controller.Entities
         public const string ThemeVideosFolderName = "backdrops";
         public const string XbmcTrailerFileSuffix = "-trailer";
 
+        public bool IsInMixedFolder { get; set; }
+        
         private string _name;
         /// <summary>
         /// Gets or sets the name.

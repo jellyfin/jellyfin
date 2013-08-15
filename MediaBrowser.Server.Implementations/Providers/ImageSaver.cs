@@ -242,16 +242,9 @@ namespace MediaBrowser.Server.Implementations.Providers
 
             if (saveLocally)
             {
-                if (!(item is Episode))
+                if (item.IsInMixedFolder && !(item is Episode))
                 {
-                    var video = item as Video;
-
-                    if (video != null && video.IsInMixedFolder)
-                    {
-                        var folder = Path.GetDirectoryName(video.Path);
-
-                        path = Path.Combine(folder, Path.GetFileNameWithoutExtension(video.Path) + "-" + filename);
-                    }
+                    path = GetSavePathForItemInMixedFolder(item, type, filename, extension);
                 }
 
                 if (string.IsNullOrEmpty(path) && !string.IsNullOrEmpty(item.MetaLocation))
@@ -260,6 +253,7 @@ namespace MediaBrowser.Server.Implementations.Providers
                 }
             }
 
+            // None of the save local conditions passed, so store it in our internal folders
             if (string.IsNullOrEmpty(path))
             {
                 path = _remoteImageCache.GetResourcePath(item.GetType().FullName + item.Id, filename);
@@ -273,6 +267,17 @@ namespace MediaBrowser.Server.Implementations.Providers
             }
 
             return path;
+        }
+
+        private string GetSavePathForItemInMixedFolder(BaseItem item, ImageType type, string imageFilename, string extension)
+        {
+            if (type == ImageType.Primary)
+            {
+                return Path.ChangeExtension(item.Path, extension);
+            }
+            var folder = Path.GetDirectoryName(item.Path);
+
+            return Path.Combine(folder, Path.GetFileNameWithoutExtension(item.Path) + "-" + imageFilename);
         }
     }
 }

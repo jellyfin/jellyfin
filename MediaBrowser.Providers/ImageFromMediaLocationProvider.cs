@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -38,7 +39,16 @@ namespace MediaBrowser.Providers
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         public override bool Supports(BaseItem item)
         {
-            return item.LocationType == LocationType.FileSystem && item.ResolveArgs.IsDirectory;
+            if (item.LocationType == LocationType.FileSystem)
+            {
+                if (item.ResolveArgs.IsDirectory)
+                {
+                    return true;
+                }
+
+                return item.IsInMixedFolder && !(item is Episode);
+            }
+            return false;
         }
 
         /// <summary>
@@ -85,34 +95,48 @@ namespace MediaBrowser.Providers
         {
             cancellationToken.ThrowIfCancellationRequested();
 
+            var args = GetResolveArgsContainingImages(item);
+
             // Make sure current image paths still exist
-            ValidateImages(item);
+            ValidateImages(item, args);
 
             cancellationToken.ThrowIfCancellationRequested();
 
             // Make sure current backdrop paths still exist
-            ValidateBackdrops(item);
+            ValidateBackdrops(item, args);
+            ValidateScreenshots(item, args);
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            PopulateBaseItemImages(item);
+            PopulateBaseItemImages(item, args);
 
             SetLastRefreshed(item, DateTime.UtcNow);
             return TrueTaskResult;
+        }
+
+        private ItemResolveArgs GetResolveArgsContainingImages(BaseItem item)
+        {
+            if (item.IsInMixedFolder)
+            {
+                return item.Parent.ResolveArgs;
+            }
+
+            return item.ResolveArgs;
         }
 
         /// <summary>
         /// Validates that images within the item are still on the file system
         /// </summary>
         /// <param name="item">The item.</param>
-        private void ValidateImages(BaseItem item)
+        /// <param name="args">The args.</param>
+        private void ValidateImages(BaseItem item, ItemResolveArgs args)
         {
             // Only validate paths from the same directory - need to copy to a list because we are going to potentially modify the collection below
             var deletedKeys = item.Images.ToList().Where(image =>
             {
                 var path = image.Value;
 
-                return IsInMetaLocation(item, path) && item.ResolveArgs.GetMetaFileByPath(path) == null;
+                return IsInMetaLocation(item, path) && args.GetMetaFileByPath(path) == null;
 
             }).Select(i => i.Key).ToList();
 
@@ -127,20 +151,33 @@ namespace MediaBrowser.Providers
         /// Validates that backdrops within the item are still on the file system
         /// </summary>
         /// <param name="item">The item.</param>
-        private void ValidateBackdrops(BaseItem item)
+        /// <param name="args">The args.</param>
+        private void ValidateBackdrops(BaseItem item, ItemResolveArgs args)
         {
-            if (item.BackdropImagePaths == null)
-            {
-                return;
-            }
-
             // Only validate paths from the same directory - need to copy to a list because we are going to potentially modify the collection below
-            var deletedImages = item.BackdropImagePaths.Where(path => IsInMetaLocation(item, path) && item.ResolveArgs.GetMetaFileByPath(path) == null).ToList();
+            var deletedImages = item.BackdropImagePaths.Where(path => IsInMetaLocation(item, path) && args.GetMetaFileByPath(path) == null).ToList();
 
             // Now remove them from the dictionary
             foreach (var path in deletedImages)
             {
                 item.BackdropImagePaths.Remove(path);
+            }
+        }
+
+        /// <summary>
+        /// Validates the screenshots.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="args">The args.</param>
+        private void ValidateScreenshots(BaseItem item, ItemResolveArgs args)
+        {
+            // Only validate paths from the same directory - need to copy to a list because we are going to potentially modify the collection below
+            var deletedImages = item.ScreenshotImagePaths.Where(path => IsInMetaLocation(item, path) && args.GetMetaFileByPath(path) == null).ToList();
+
+            // Now remove them from the dictionary
+            foreach (var path in deletedImages)
+            {
+                item.ScreenshotImagePaths.Remove(path);
             }
         }
 
@@ -159,24 +196,48 @@ namespace MediaBrowser.Providers
         /// Gets the image.
         /// </summary>
         /// <param name="item">The item.</param>
+        /// <param name="args">The args.</param>
         /// <param name="filenameWithoutExtension">The filename without extension.</param>
         /// <returns>FileSystemInfo.</returns>
-        protected virtual FileSystemInfo GetImage(BaseItem item, string filenameWithoutExtension)
+        protected virtual FileSystemInfo GetImage(BaseItem item, ItemResolveArgs args, string filenameWithoutExtension)
         {
-            return BaseItem.SupportedImageExtensions.Select(i => item.ResolveArgs.GetMetaFileByPath(Path.Combine(item.ResolveArgs.Path, filenameWithoutExtension + i))).FirstOrDefault(i => i != null);
+            return BaseItem.SupportedImageExtensions
+                .Select(i => args.GetMetaFileByPath(GetFullImagePath(item, args, filenameWithoutExtension, i)))
+                .FirstOrDefault(i => i != null);
+        }
+
+        protected virtual string GetFullImagePath(BaseItem item, ItemResolveArgs args, string filenameWithoutExtension, string extension)
+        {
+            var path = item.MetaLocation;
+
+            if (item.IsInMixedFolder)
+            {
+                var pathFilenameWithoutExtension = Path.GetFileNameWithoutExtension(item.Path);
+
+                // If the image filename and path file name match, just look for an image using the same full path as the item
+                if (string.Equals(pathFilenameWithoutExtension, filenameWithoutExtension))
+                {
+                    return Path.ChangeExtension(item.Path, extension);
+                }
+
+                return Path.Combine(path, pathFilenameWithoutExtension + "-" + filenameWithoutExtension + extension);
+            }
+
+            return Path.Combine(path, filenameWithoutExtension + extension);
         }
 
         /// <summary>
         /// Fills in image paths based on files win the folder
         /// </summary>
         /// <param name="item">The item.</param>
-        private void PopulateBaseItemImages(BaseItem item)
+        /// <param name="args">The args.</param>
+        private void PopulateBaseItemImages(BaseItem item, ItemResolveArgs args)
         {
             // Primary Image
-            var image = GetImage(item, "folder") ??
-                GetImage(item, "poster") ??
-                GetImage(item, "cover") ??
-                GetImage(item, "default");
+            var image = GetImage(item, args, "folder") ??
+                GetImage(item, args, "poster") ??
+                GetImage(item, args, "cover") ??
+                GetImage(item, args, "default");
 
             // Look for a file with the same name as the item
             if (image == null)
@@ -185,7 +246,7 @@ namespace MediaBrowser.Providers
 
                 if (!string.IsNullOrEmpty(name))
                 {
-                    image = GetImage(item, name);
+                    image = GetImage(item, args, name);
                 }
             }
 
@@ -195,7 +256,7 @@ namespace MediaBrowser.Providers
             }
 
             // Logo Image
-            image = GetImage(item, "logo");
+            image = GetImage(item, args, "logo");
 
             if (image != null)
             {
@@ -203,7 +264,7 @@ namespace MediaBrowser.Providers
             }
 
             // Banner Image
-            image = GetImage(item, "banner");
+            image = GetImage(item, args, "banner");
 
             if (image != null)
             {
@@ -211,7 +272,7 @@ namespace MediaBrowser.Providers
             }
 
             // Clearart
-            image = GetImage(item, "clearart");
+            image = GetImage(item, args, "clearart");
 
             if (image != null)
             {
@@ -219,7 +280,7 @@ namespace MediaBrowser.Providers
             }
 
             // Disc
-            image = GetImage(item, "disc");
+            image = GetImage(item, args, "disc");
 
             if (image != null)
             {
@@ -227,7 +288,7 @@ namespace MediaBrowser.Providers
             }
 
             // Thumbnail Image
-            image = GetImage(item, "thumb");
+            image = GetImage(item, args, "thumb");
 
             if (image != null)
             {
@@ -235,7 +296,7 @@ namespace MediaBrowser.Providers
             }
 
             // Box Image
-            image = GetImage(item, "box");
+            image = GetImage(item, args, "box");
 
             if (image != null)
             {
@@ -243,7 +304,7 @@ namespace MediaBrowser.Providers
             }
 
             // BoxRear Image
-            image = GetImage(item, "boxrear");
+            image = GetImage(item, args, "boxrear");
 
             if (image != null)
             {
@@ -251,7 +312,7 @@ namespace MediaBrowser.Providers
             }
 
             // Thumbnail Image
-            image = GetImage(item, "menu");
+            image = GetImage(item, args, "menu");
 
             if (image != null)
             {
@@ -259,10 +320,10 @@ namespace MediaBrowser.Providers
             }
 
             // Backdrop Image
-            PopulateBackdrops(item);
+            PopulateBackdrops(item, args);
 
             // Screenshot Image
-            image = GetImage(item, "screenshot");
+            image = GetImage(item, args, "screenshot");
 
             var screenshotFiles = new List<string>();
 
@@ -275,7 +336,7 @@ namespace MediaBrowser.Providers
             for (var i = 1; i <= 20; i++)
             {
                 // Screenshot Image
-                image = GetImage(item, "screenshot" + i);
+                image = GetImage(item, args, "screenshot" + i);
 
                 if (image != null)
                 {
@@ -302,15 +363,16 @@ namespace MediaBrowser.Providers
         /// Populates the backdrops.
         /// </summary>
         /// <param name="item">The item.</param>
-        private void PopulateBackdrops(BaseItem item)
+        /// <param name="args">The args.</param>
+        private void PopulateBackdrops(BaseItem item, ItemResolveArgs args)
         {
             var backdropFiles = new List<string>();
 
-            PopulateBackdrops(item, backdropFiles, "backdrop", "backdrop");
+            PopulateBackdrops(item, args, backdropFiles, "backdrop", "backdrop");
 
             // Support plex/xbmc conventions
-            PopulateBackdrops(item, backdropFiles, "fanart", "fanart-");
-            PopulateBackdrops(item, backdropFiles, "background", "background-");
+            PopulateBackdrops(item, args, backdropFiles, "fanart", "fanart-");
+            PopulateBackdrops(item, args, backdropFiles, "background", "background-");
 
             if (backdropFiles.Count > 0)
             {
@@ -322,12 +384,13 @@ namespace MediaBrowser.Providers
         /// Populates the backdrops.
         /// </summary>
         /// <param name="item">The item.</param>
+        /// <param name="args">The args.</param>
         /// <param name="backdropFiles">The backdrop files.</param>
         /// <param name="filename">The filename.</param>
         /// <param name="numberedSuffix">The numbered suffix.</param>
-        private void PopulateBackdrops(BaseItem item, List<string> backdropFiles, string filename, string numberedSuffix)
+        private void PopulateBackdrops(BaseItem item, ItemResolveArgs args, List<string> backdropFiles, string filename, string numberedSuffix)
         {
-            var image = GetImage(item, filename);
+            var image = GetImage(item, args, filename);
 
             if (image != null)
             {
@@ -338,7 +401,7 @@ namespace MediaBrowser.Providers
             for (var i = 1; i <= 20; i++)
             {
                 // Backdrop Image
-                image = GetImage(item, numberedSuffix + i);
+                image = GetImage(item, args, numberedSuffix + i);
 
                 if (image != null)
                 {
