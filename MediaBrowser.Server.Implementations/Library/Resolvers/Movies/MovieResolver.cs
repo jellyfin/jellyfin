@@ -48,35 +48,45 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
         /// <returns>Video.</returns>
         protected override Video Resolve(ItemResolveArgs args)
         {
-            // Must be a directory
-            if (args.IsDirectory)
+            // Avoid expensive tests against VF's and all their children by not allowing this
+            if (args.Parent != null)
             {
-                // Avoid expensive tests against VF's and all their children by not allowing this
-                if (args.Parent != null)
-                {
-                    if (args.Parent.IsRoot)
-                    {
-                        return null;
-                    }
-
-                    // If the parent is not a boxset, the only other allowed parent type is Folder		
-                    if (!(args.Parent is BoxSet))
-                    {
-                        if (args.Parent.GetType() != typeof(Folder))
-                        {
-                            return null;
-                        }
-                    }
-                }
-
-                // Since the looping is expensive, this is an optimization to help us avoid it
-                if (args.ContainsMetaFileByName("series.xml") || args.Path.IndexOf("[tvdbid", StringComparison.OrdinalIgnoreCase) != -1)
+                if (args.Parent.IsRoot)
                 {
                     return null;
                 }
 
-                var collectionType = args.Parent == null ? null : _libraryManager.FindCollectionType(args.Parent);
+                // If the parent is not a boxset, the only other allowed parent type is Folder		
+                if (!(args.Parent is BoxSet))
+                {
+                    if (args.Parent.GetType() != typeof(Folder))
+                    {
+                        return null;
+                    }
+                }
+            }
 
+            // Since the looping is expensive, this is an optimization to help us avoid it
+            if (args.Path.IndexOf("[tvdbid", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                return null;
+            }
+
+            var isDirectory = args.IsDirectory;
+
+            if (isDirectory)
+            {
+                // Since the looping is expensive, this is an optimization to help us avoid it
+                if (args.ContainsMetaFileByName("series.xml"))
+                {
+                    return null;
+                }
+            }
+
+            var collectionType = args.Parent == null ? null : _libraryManager.FindCollectionType(args.Parent);
+
+            if (isDirectory)
+            {
                 if (args.Path.IndexOf("[trailers]", StringComparison.OrdinalIgnoreCase) != -1 ||
                     string.Equals(collectionType, CollectionType.Trailers, StringComparison.OrdinalIgnoreCase))
                 {
