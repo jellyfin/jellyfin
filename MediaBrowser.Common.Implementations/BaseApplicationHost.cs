@@ -557,14 +557,59 @@ namespace MediaBrowser.Common.Implementations
         /// <value><c>true</c> if this instance can self update; otherwise, <c>false</c>.</value>
         public abstract bool CanSelfUpdate { get; }
 
+        private Tuple<CheckForUpdateResult, DateTime> _lastUpdateCheckResult;
+
         /// <summary>
         /// Checks for update.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
         /// <returns>Task{CheckForUpdateResult}.</returns>
-        public abstract Task<CheckForUpdateResult> CheckForApplicationUpdate(CancellationToken cancellationToken,
-                                                                             IProgress<double> progress);
+        public async Task<CheckForUpdateResult> CheckForApplicationUpdate(CancellationToken cancellationToken,
+                                                                    IProgress<double> progress)
+        {
+            if (_lastUpdateCheckResult != null)
+            {
+                // Let dev users get results more often for testing purposes
+                var cacheLength = ConfigurationManager.CommonConfiguration.SystemUpdateLevel == PackageVersionClass.Dev
+                                      ? TimeSpan.FromHours(1)
+                                      : TimeSpan.FromHours(12);
+
+                if ((DateTime.UtcNow - _lastUpdateCheckResult.Item2) < cacheLength)
+                {
+                    return _lastUpdateCheckResult.Item1;
+                }
+            }
+
+            var result = await CheckForApplicationUpdateInternal(cancellationToken, progress).ConfigureAwait(false);
+
+            _lastUpdateCheckResult = new Tuple<CheckForUpdateResult, DateTime>(result, DateTime.UtcNow);
+
+            return _lastUpdateCheckResult.Item1;
+        }
+
+        /// <summary>
+        /// Checks for application update internal.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="progress">The progress.</param>
+        /// <returns>Task{CheckForUpdateResult}.</returns>
+        private async Task<CheckForUpdateResult> CheckForApplicationUpdateInternal(CancellationToken cancellationToken,
+                                                                   IProgress<double> progress)
+        {
+            var availablePackages = await InstallationManager.GetAvailablePackagesWithoutRegistrationInfo(CancellationToken.None).ConfigureAwait(false);
+
+            var version = InstallationManager.GetLatestCompatibleVersion(availablePackages, ApplicationUpdatePackageName, ConfigurationManager.CommonConfiguration.SystemUpdateLevel);
+
+            return version != null ? new CheckForUpdateResult { AvailableVersion = version.version, IsUpdateAvailable = version.version > ApplicationVersion, Package = version } :
+                       new CheckForUpdateResult { AvailableVersion = ApplicationVersion, IsUpdateAvailable = false };
+        }
+
+        /// <summary>
+        /// Gets the name of the application update package.
+        /// </summary>
+        /// <value>The name of the application update package.</value>
+        protected abstract string ApplicationUpdatePackageName { get; }
 
         /// <summary>
         /// Updates the application.

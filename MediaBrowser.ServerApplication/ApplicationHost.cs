@@ -7,7 +7,6 @@ using MediaBrowser.Common.Implementations;
 using MediaBrowser.Common.Implementations.IO;
 using MediaBrowser.Common.Implementations.ScheduledTasks;
 using MediaBrowser.Common.Implementations.Updates;
-using MediaBrowser.Common.IO;
 using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
@@ -25,11 +24,9 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.Sorting;
-using MediaBrowser.IsoMounter;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.System;
-using MediaBrowser.Model.Updates;
 using MediaBrowser.Providers;
 using MediaBrowser.Server.Implementations;
 using MediaBrowser.Server.Implementations.BdInfo;
@@ -53,7 +50,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.ServerApplication
@@ -652,14 +648,9 @@ namespace MediaBrowser.ServerApplication
             }
         }
 
-        public override async Task<CheckForUpdateResult> CheckForApplicationUpdate(CancellationToken cancellationToken, IProgress<double> progress)
+        protected override string ApplicationUpdatePackageName
         {
-            var availablePackages = await InstallationManager.GetAvailablePackagesWithoutRegistrationInfo(CancellationToken.None).ConfigureAwait(false);
-            
-            var version = InstallationManager.GetLatestCompatibleVersion(availablePackages, Constants.MbServerPkgName, ConfigurationManager.CommonConfiguration.SystemUpdateLevel);
-
-            return version != null ? new CheckForUpdateResult { AvailableVersion = version.version, IsUpdateAvailable = version.version > ApplicationVersion, Package = version } :
-                       new CheckForUpdateResult { AvailableVersion = ApplicationVersion, IsUpdateAvailable = false };
+            get { return Constants.MbServerPkgName; }
         }
     }
 }
