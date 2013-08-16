@@ -40,17 +40,36 @@ namespace MediaBrowser.Common.Extensions
         /// Gets the MB id.
         /// </summary>
         /// <param name="str">The STR.</param>
-        /// <param name="aType">A type.</param>
+        /// <param name="type">The type.</param>
         /// <returns>Guid.</returns>
-        /// <exception cref="System.ArgumentNullException">aType</exception>
-        public static Guid GetMBId(this string str, Type aType)
+        public static Guid GetMBId(this string str, Type type)
         {
-            if (aType == null)
+            return str.GetMBId(type, false);
+        }
+
+        /// <summary>
+        /// Gets the MB id.
+        /// </summary>
+        /// <param name="str">The STR.</param>
+        /// <param name="type">The type.</param>
+        /// <param name="isInMixedFolder">if set to <c>true</c> [is in mixed folder].</param>
+        /// <returns>Guid.</returns>
+        /// <exception cref="System.ArgumentNullException">type</exception>
+        public static Guid GetMBId(this string str, Type type, bool isInMixedFolder)
+        {
+            if (type == null)
             {
-                throw new ArgumentNullException("aType");
+                throw new ArgumentNullException("type");
             }
-            
-            return (aType.FullName + str.ToLower()).GetMD5();
+
+            var key = type.FullName + str.ToLower();
+
+            if (isInMixedFolder)
+            {
+                key += "InMixedFolder";
+            }
+
+            return key.GetMD5();
         }
 
         /// <summary>

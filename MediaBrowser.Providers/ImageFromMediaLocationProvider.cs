@@ -46,7 +46,7 @@ namespace MediaBrowser.Providers
                     return true;
                 }
 
-                return item.IsInMixedFolder && !(item is Episode);
+                return item.IsInMixedFolder && item.Parent != null && !(item is Episode);
             }
             return false;
         }
@@ -118,6 +118,10 @@ namespace MediaBrowser.Providers
         {
             if (item.IsInMixedFolder)
             {
+                if (item.Parent == null)
+                {
+                    return item.ResolveArgs;
+                }
                 return item.Parent.ResolveArgs;
             }
 

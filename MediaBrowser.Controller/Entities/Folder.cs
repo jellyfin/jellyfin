@@ -101,7 +101,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (item.Id == Guid.Empty)
             {
-                item.Id = item.Path.GetMBId(item.GetType());
+                item.Id = item.Path.GetMBId(item.GetType(), item.IsInMixedFolder);
             }
 
             if (item.DateCreated == DateTime.MinValue)
