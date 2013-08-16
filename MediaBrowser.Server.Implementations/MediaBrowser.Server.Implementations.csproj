@@ -232,7 +232,7 @@
   <ItemGroup>
     <EmbeddedResource Include="MediaEncoder\fonts\ARIALUNI.TTF" />
     <EmbeddedResource Include="MediaEncoder\fonts\fonts.conf" />
-    <EmbeddedResource Include="MediaEncoder\ffmpeg20130801.zip" />
+    <EmbeddedResource Include="MediaEncoder\ffmpeg20130813.zip" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup />
