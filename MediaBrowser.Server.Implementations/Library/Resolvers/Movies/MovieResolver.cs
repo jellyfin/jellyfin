@@ -244,6 +244,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
 
                 if (item != null)
                 {
+                    item.IsInMixedFolder = false;
                     movies.Add(item);
                 }
             }
