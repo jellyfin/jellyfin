@@ -582,8 +582,26 @@ namespace MediaBrowser.ServerApplication
                 InProgressInstallations = InstallationManager.CurrentInstallations.Select(i => i.Item1).ToArray(),
                 CompletedInstallations = InstallationManager.CompletedInstallations.ToArray(),
                 Id = _systemId,
-                ProgramDataPath = ApplicationPaths.ProgramDataPath
+                ProgramDataPath = ApplicationPaths.ProgramDataPath,
+                MacAddress = GetMacAddress()
             };
+        }
+
+        /// <summary>
+        /// Gets the mac address.
+        /// </summary>
+        /// <returns>System.String.</returns>
+        private string GetMacAddress()
+        {
+            try
+            {
+                return NetworkManager.GetMacAddress();
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error getting mac address", ex);
+                return null;
+            }
         }
 
         /// <summary>
