@@ -155,7 +155,11 @@
         /// <summary>
         /// The wma
         /// </summary>
-        Wma
+        Wma,
+        /// <summary>
+        /// The copy
+        /// </summary>
+        Copy
     }
 
     /// <summary>
@@ -188,6 +192,10 @@
         /// <summary>
         /// The WMV
         /// </summary>
-        Wmv
+        Wmv,
+        /// <summary>
+        /// The copy
+        /// </summary>
+        Copy
     }
 }
