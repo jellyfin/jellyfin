@@ -276,26 +276,12 @@ namespace MediaBrowser.Common.Implementations.Updates
         }
 
         /// <summary>
-        /// Gets the available plugin updates including registration information for each one.
-        /// Used with API and catalog.
+        /// Gets the available plugin updates.
         /// </summary>
         /// <param name="withAutoUpdateEnabled">if set to <c>true</c> [with auto update enabled].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{IEnumerable{PackageVersionInfo}}.</returns>
         public async Task<IEnumerable<PackageVersionInfo>> GetAvailablePluginUpdates(bool withAutoUpdateEnabled, CancellationToken cancellationToken)
-        {
-            var catalog = await GetAvailablePackages(cancellationToken).ConfigureAwait(false);
-            return FilterCatalog(catalog, withAutoUpdateEnabled);
-        }
-
-        /// <summary>
-        /// Gets the available plugin updates from a static resource - no registration information.
-        /// Used for update checks.
-        /// </summary>
-        /// <param name="withAutoUpdateEnabled">if set to <c>true</c> [with auto update enabled].</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{IEnumerable{PackageVersionInfo}}.</returns>
-        public async Task<IEnumerable<PackageVersionInfo>> GetAvailablePluginUpdatesWithoutRegistrationInfo(bool withAutoUpdateEnabled, CancellationToken cancellationToken)
         {
             var catalog = await GetAvailablePackagesWithoutRegistrationInfo(cancellationToken).ConfigureAwait(false);
             return FilterCatalog(catalog, withAutoUpdateEnabled);

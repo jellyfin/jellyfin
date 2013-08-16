@@ -132,7 +132,7 @@ namespace MediaBrowser.Api
 
             if (request.PackageType == PackageType.UserInstalled || request.PackageType == PackageType.All)
             {
-                result.AddRange(_installationManager.GetAvailablePluginUpdatesWithoutRegistrationInfo(false, CancellationToken.None).Result.ToList());
+                result.AddRange(_installationManager.GetAvailablePluginUpdates(false, CancellationToken.None).Result.ToList());
             }
 
             else if (request.PackageType == PackageType.System || request.PackageType == PackageType.All)
