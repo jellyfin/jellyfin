@@ -817,7 +817,7 @@ namespace MediaBrowser.Api.Playback
                 return VideoCodecs.H264;
             }
 
-            return null;
+            return VideoCodecs.Copy;
         }
     }
 }
