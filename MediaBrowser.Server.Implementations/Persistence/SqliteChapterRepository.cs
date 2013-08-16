@@ -145,12 +145,18 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     if (reader.Read())
                     {
-                        return new ChapterInfo
+                        var chapter = new ChapterInfo
                         {
                             StartPositionTicks = reader.GetInt64(0),
-                            Name = reader.GetString(1),
-                            ImagePath = reader.GetString(2)
+                            Name = reader.GetString(1)
                         };
+
+                        if (!reader.IsDBNull(2))
+                        {
+                            chapter.ImagePath = reader.GetString(2);
+                        }
+
+                        return chapter;
                     }
                 }
                 return null;
