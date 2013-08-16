@@ -50,11 +50,11 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
         {
             return new ITaskTrigger[] { 
             
-                // 1am
-                new DailyTrigger { TimeOfDay = TimeSpan.FromHours(1) },
+                // At startup
+                new StartupTrigger (),
 
-                // Every three hours
-                new IntervalTrigger { Interval = TimeSpan.FromHours(3)}
+                // Every so often
+                new IntervalTrigger { Interval = TimeSpan.FromHours(24)}
             };
         }
 

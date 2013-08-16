@@ -42,12 +42,11 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         {
             return new ITaskTrigger[] { 
             
-                // 1:30am
-                new DailyTrigger { TimeOfDay = TimeSpan.FromHours(1.5) },
+                // At startup
+                new StartupTrigger (),
 
-                new IntervalTrigger { Interval = TimeSpan.FromHours(3)},
-
-                new StartupTrigger()
+                // Every so often
+                new IntervalTrigger { Interval = TimeSpan.FromHours(24)}
             };
         }
 
