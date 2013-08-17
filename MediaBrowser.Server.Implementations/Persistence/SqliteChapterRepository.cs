@@ -99,22 +99,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     while (reader.Read())
                     {
-                        var chapter = new ChapterInfo
-                        {
-                            StartPositionTicks = reader.GetInt64(0)
-                        };
-
-                        if (!reader.IsDBNull(1))
-                        {
-                            chapter.Name = reader.GetString(1);
-                        }
-
-                        if (!reader.IsDBNull(2))
-                        {
-                            chapter.ImagePath = reader.GetString(2);
-                        }
-
-                        yield return chapter;
+                        yield return GetChapter(reader);
                     }
                 }
             }
@@ -145,22 +130,36 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     if (reader.Read())
                     {
-                        var chapter = new ChapterInfo
-                        {
-                            StartPositionTicks = reader.GetInt64(0),
-                            Name = reader.GetString(1)
-                        };
-
-                        if (!reader.IsDBNull(2))
-                        {
-                            chapter.ImagePath = reader.GetString(2);
-                        }
-
-                        return chapter;
+                        return GetChapter(reader);
                     }
                 }
                 return null;
             }
+        }
+
+        /// <summary>
+        /// Gets the chapter.
+        /// </summary>
+        /// <param name="reader">The reader.</param>
+        /// <returns>ChapterInfo.</returns>
+        private ChapterInfo GetChapter(IDataReader reader)
+        {
+            var chapter = new ChapterInfo
+            {
+                StartPositionTicks = reader.GetInt64(0)
+            };
+
+            if (!reader.IsDBNull(1))
+            {
+                chapter.Name = reader.GetString(1);
+            }
+
+            if (!reader.IsDBNull(2))
+            {
+                chapter.ImagePath = reader.GetString(2);
+            }
+
+            return chapter;
         }
 
         /// <summary>
