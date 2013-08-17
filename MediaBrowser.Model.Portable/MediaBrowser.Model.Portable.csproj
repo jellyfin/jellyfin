@@ -59,6 +59,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\MediaBrowser.Model\ApiClient\ApiClientExtensions.cs">
+      <Link>ApiClient\ApiClientExtensions.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\ApiClient\HttpResponseEventArgs.cs">
       <Link>ApiClient\HttpResponseEventArgs.cs</Link>
     </Compile>
