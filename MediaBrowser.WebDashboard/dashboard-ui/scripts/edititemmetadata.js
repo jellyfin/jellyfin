@@ -348,6 +348,12 @@
 
     function setFieldVisibilities(page, item) {
 
+        if (item.Path) {
+            $('#fldPath', page).show();
+        } else {
+            $('#fldPath', page).hide();
+        }
+
         if (item.Type == "Series" || item.Type == "Person") {
             $('#fldEndDate', page).show();
         } else {
@@ -570,6 +576,7 @@
         }
         populateInternetProviderSettings(page, item.LockedFields);
 
+        $('#txtPath', page).val(item.Path || '');
         $('#txtName', page).val(item.Name || "");
         $('#txtOverview', page).val(item.Overview || "");
         $('#txtSortName', page).val(item.SortName || "");

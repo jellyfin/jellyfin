@@ -46,6 +46,10 @@
                         </div>
 
                         <div style="padding: 10px 15px;">
+                            <div data-role="fieldcontain" id="fldPath">
+                                <label for="txtPath">Path:</label>
+                                <input type="text" id="txtPath" name="txtPath" data-mini="true" readonly="readonly" />
+                            </div>
                             <div data-role="fieldcontain">
                                 <label for="txtName">Name:</label>
                                 <input type="text" id="txtName" name="txtName" required="required" data-mini="true" />
@@ -255,6 +259,9 @@
                                 <p>
                                     <label for="enableInternetProviders">Enable internet metadata providers for this item.</label>
                                     <input type="checkbox" name="enableInternetProviders" id="enableInternetProviders" onchange="EditItemMetadataPage.setProviderSettingsContainerVisibility(this)" />
+                                </p>
+                                <p>
+                                    Slide a field to 'off' to lock it and prevent it's data from being changed.
                                 </p>
                                 <div id="providerSettingsContainer" style="display: none">
                                 </div>
