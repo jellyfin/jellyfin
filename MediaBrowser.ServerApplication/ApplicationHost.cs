@@ -318,7 +318,11 @@ namespace MediaBrowser.ServerApplication
 
             var connection = await ConnectToDb(dbFile).ConfigureAwait(false);
 
-            return new SqliteUserRepository(connection, ApplicationPaths, JsonSerializer, LogManager);
+            var repo = new SqliteUserRepository(connection, ApplicationPaths, JsonSerializer, LogManager);
+
+            repo.Initialize();
+
+            return repo;
         }
 
         /// <summary>
