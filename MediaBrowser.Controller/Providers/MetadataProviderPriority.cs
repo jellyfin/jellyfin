@@ -35,6 +35,6 @@ namespace MediaBrowser.Controller.Providers
         /// <summary>
         /// The last
         /// </summary>
-        Last = 6
+        Last = 999
     }
 }
