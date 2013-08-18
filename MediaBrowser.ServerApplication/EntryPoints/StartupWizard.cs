@@ -58,7 +58,7 @@ namespace MediaBrowser.ServerApplication.EntryPoints
 
             try
             {
-                App.OpenDashboardPage("wizardStart.html", user, _configurationManager, _appHost);
+                App.OpenDashboardPage("wizardstart.html", user, _configurationManager, _appHost);
             }
             catch (Win32Exception ex)
             {
