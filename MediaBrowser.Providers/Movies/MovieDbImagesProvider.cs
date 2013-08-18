@@ -65,7 +65,7 @@ namespace MediaBrowser.Providers.Movies
         /// <value>The priority.</value>
         public override MetadataProviderPriority Priority
         {
-            get { return MetadataProviderPriority.Last; }
+            get { return MetadataProviderPriority.Fifth; }
         }
 
         /// <summary>
