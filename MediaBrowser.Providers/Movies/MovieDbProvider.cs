@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -377,7 +376,7 @@ namespace MediaBrowser.Providers.Movies
         /// <param name="language">The language.</param>
         /// <param name="cancellationToken">The cancellation token</param>
         /// <returns>Task{System.String}.</returns>
-        public virtual async Task<string> AttemptFindId(string name, int? year, string language, CancellationToken cancellationToken)
+        private async Task<string> AttemptFindId(string name, int? year, string language, CancellationToken cancellationToken)
         {
             string url3 = string.Format(Search3, UrlEncode(name), ApiKey, language);
             TmdbMovieSearchResults searchResult = null;
