@@ -34,7 +34,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 item.Parent = args.Parent;
             }
 
-            item.Id = item.Path.GetMBId(item.GetType(), item.IsInMixedFolder);
+            item.Id = item.Path.GetMBId(item.GetType());
 
             // If the resolver didn't specify this
             if (string.IsNullOrEmpty(item.DisplayMediaType))
