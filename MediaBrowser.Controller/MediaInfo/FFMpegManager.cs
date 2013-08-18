@@ -131,7 +131,7 @@ namespace MediaBrowser.Controller.MediaInfo
                     break;
                 }
 
-                var filename = video.Id + "_" + video.DateModified.Ticks + "_" + chapter.StartPositionTicks;
+                var filename = video.Path + "_" + video.DateModified.Ticks + "_" + chapter.StartPositionTicks;
 
                 var path = VideoImageCache.GetResourcePath(filename, ".jpg");
 

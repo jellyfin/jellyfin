@@ -27,7 +27,7 @@ namespace MediaBrowser.Controller.Entities.TV
         {
             get
             {
-                return true;
+                return false;
             }
         }
 

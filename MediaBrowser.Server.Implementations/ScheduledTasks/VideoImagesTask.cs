@@ -262,7 +262,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var filename = item.Id + "_" + item.DateModified.Ticks + "_primary";
+            var filename = item.Path + "_" + item.DateModified.Ticks + "_primary";
 
             var path = ImageCache.GetResourcePath(filename, ".jpg");
 
