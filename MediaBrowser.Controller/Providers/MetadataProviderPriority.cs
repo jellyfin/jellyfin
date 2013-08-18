@@ -29,10 +29,12 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         Fourth = 4,
 
+        Fifth = 5,
+
         // Run this provider last
         /// <summary>
         /// The last
         /// </summary>
-        Last = 5
+        Last = 6
     }
 }

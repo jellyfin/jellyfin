@@ -110,7 +110,7 @@ namespace MediaBrowser.Providers.Movies
             get
             {
                 // Run after moviedb and xml providers
-                return MetadataProviderPriority.Last;
+                return MetadataProviderPriority.Fifth;
             }
         }
 
