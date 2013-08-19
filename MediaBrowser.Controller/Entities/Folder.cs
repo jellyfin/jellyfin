@@ -81,11 +81,11 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        public List<LinkedChild> LinkedChildren { get; set; }
+        public virtual List<LinkedChild> LinkedChildren { get; set; }
 
         protected virtual bool SupportsShortcutChildren
         {
-            get { return false; }
+            get { return true; }
         }
 
         /// <summary>

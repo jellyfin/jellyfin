@@ -70,6 +70,38 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Our children are actually just references to the ones in the physical root...
         /// </summary>
+        /// <value>The linked children.</value>
+        public override List<LinkedChild> LinkedChildren
+        {
+            get
+            {
+                ItemResolveArgs resolveArgs;
+
+                try
+                {
+                    resolveArgs = ResolveArgs;
+                }
+                catch (IOException ex)
+                {
+                    Logger.ErrorException("Error getting ResolveArgs for {0}", ex, Path);
+                    return new List<LinkedChild>();
+                }
+
+                return LibraryManager.RootFolder.RecursiveChildren
+                    .OfType<Folder>()
+                    .Where(i => i.Path != null && resolveArgs.PhysicalLocations.Contains(i.Path, StringComparer.OrdinalIgnoreCase))
+                    .SelectMany(c => c.LinkedChildren).ToList();
+
+            }
+            set
+            {
+                base.LinkedChildren = value;
+            }
+        }
+
+        /// <summary>
+        /// Our children are actually just references to the ones in the physical root...
+        /// </summary>
         /// <value>The actual children.</value>
         protected override ConcurrentDictionary<Guid, BaseItem> ActualChildren
         {

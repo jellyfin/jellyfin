@@ -12,6 +12,17 @@ namespace MediaBrowser.Controller.Entities
     public class AggregateFolder : Folder
     {
         /// <summary>
+        /// We don't support manual shortcuts
+        /// </summary>
+        protected override bool SupportsShortcutChildren
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
         /// The _virtual children
         /// </summary>
         private readonly ConcurrentBag<BaseItem> _virtualChildren = new ConcurrentBag<BaseItem>();
