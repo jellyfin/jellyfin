@@ -653,7 +653,7 @@ namespace MediaBrowser.Providers.Movies
             {
                 if (!movie.LockedFields.Contains(MetadataFields.Name))
                 {
-                    movie.Name = movieData.title ?? movieData.original_title ?? movie.Name;
+                    movie.Name = movieData.title ?? movieData.original_title ?? movieData.name ?? movie.Name;
                 }
                 if (!movie.LockedFields.Contains(MetadataFields.Overview))
                 {
@@ -1177,6 +1177,7 @@ namespace MediaBrowser.Providers.Movies
             public string homepage { get; set; }
             public int id { get; set; }
             public string imdb_id { get; set; }
+            public string name { get; set; }
             public string original_title { get; set; }
             public string overview { get; set; }
             public double popularity { get; set; }
