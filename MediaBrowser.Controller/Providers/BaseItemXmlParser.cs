@@ -571,7 +571,7 @@ namespace MediaBrowser.Controller.Providers
                     }
                     break;
 
-                case "CollectionNumber":
+                case "BelongsToCollection":
                     var tmdbCollection = reader.ReadElementContentAsString();
                     if (!string.IsNullOrWhiteSpace(tmdbCollection))
                     {
