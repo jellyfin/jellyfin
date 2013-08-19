@@ -676,6 +676,10 @@ namespace MediaBrowser.Providers.Movies
                 {
                     movie.SetProviderId(MetadataProviders.TmdbCollection, movieData.belongs_to_collection.id.ToString(CultureInfo.InvariantCulture));
                 }
+                else
+                {
+                    movie.SetProviderId(MetadataProviders.TmdbCollection, null); // clear out any old entry
+                }
 
                 float rating;
                 string voteAvg = movieData.vote_average.ToString(CultureInfo.InvariantCulture);
