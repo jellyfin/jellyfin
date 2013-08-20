@@ -75,11 +75,11 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                ItemResolveArgs resolveArgs;
+                Dictionary<string, string> locationsDicionary;
 
                 try
                 {
-                    resolveArgs = ResolveArgs;
+                    locationsDicionary = ResolveArgs.PhysicalLocations.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
                 }
                 catch (IOException ex)
                 {
@@ -89,7 +89,7 @@ namespace MediaBrowser.Controller.Entities
 
                 return LibraryManager.RootFolder.RecursiveChildren
                     .OfType<Folder>()
-                    .Where(i => i.Path != null && resolveArgs.PhysicalLocations.Contains(i.Path, StringComparer.OrdinalIgnoreCase))
+                    .Where(i => i.Path != null && locationsDicionary.ContainsKey(i.Path))
                     .SelectMany(c => c.LinkedChildren).ToList();
 
             }
@@ -107,11 +107,11 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                ItemResolveArgs resolveArgs;
+                Dictionary<string, string> locationsDicionary;
 
                 try
                 {
-                    resolveArgs = ResolveArgs;
+                    locationsDicionary = ResolveArgs.PhysicalLocations.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
                 }
                 catch (IOException ex)
                 {
@@ -122,7 +122,7 @@ namespace MediaBrowser.Controller.Entities
                 var ourChildren =
                     LibraryManager.RootFolder.RecursiveChildren
                     .OfType<Folder>()
-                    .Where(i => i.Path != null && resolveArgs.PhysicalLocations.Contains(i.Path, StringComparer.OrdinalIgnoreCase))
+                    .Where(i => i.Path != null && locationsDicionary.ContainsKey(i.Path))
                     .SelectMany(c => c.Children);
 
                 return new ConcurrentDictionary<Guid, BaseItem>(ourChildren.ToDictionary(i => i.Id));
