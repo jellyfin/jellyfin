@@ -67,7 +67,7 @@ namespace MediaBrowser.Providers.Savers
                     "TVcomId",
                     "RottenTomatoesId",
                     "MusicbrainzId",
-                    "CollectionNumber",
+                    "TMDbCollectionId",
                     "Genres",
                     "Genre",
                     "Studios",
@@ -343,7 +343,7 @@ namespace MediaBrowser.Providers.Savers
 
             if (!string.IsNullOrEmpty(tmdbCollection))
             {
-                builder.Append("<CollectionNumber>" + SecurityElement.Escape(tmdbCollection) + "</CollectionNumber>");
+                builder.Append("<TMDbCollectionId>" + SecurityElement.Escape(tmdbCollection) + "</TMDbCollectionId>");
             }
 
             if (item.Taglines.Count > 0)
