@@ -24,6 +24,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.Sorting;
+using MediaBrowser.IsoMounter;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.System;
@@ -559,6 +560,9 @@ namespace MediaBrowser.ServerApplication
             // Server implementations
             yield return typeof(ServerApplicationPaths).Assembly;
 
+            // Pismo
+            yield return typeof(PismoIsoManager).Assembly;
+            
             // Include composable parts in the running assembly
             yield return GetType().Assembly;
         }
