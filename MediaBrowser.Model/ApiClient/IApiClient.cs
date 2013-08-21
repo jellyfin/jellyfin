@@ -42,7 +42,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="itemId">The item id.</param>
         /// <param name="inheritFromParents">if set to <c>true</c> [inherit from parents].</param>
         /// <returns>Task{ThemeMediaResult}.</returns>
-        Task<ThemeMediaResult> GetThemeSongsAsync(string userId, string itemId, bool inheritFromParents);
+        Task<ThemeMediaResult> GetThemeSongsAsync(string userId, string itemId, bool inheritFromParents, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the search hints async.
@@ -62,7 +62,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="itemId">The item id.</param>
         /// <param name="inheritFromParents">if set to <c>true</c> [inherit from parents].</param>
         /// <returns>Task{ThemeMediaResult}.</returns>
-        Task<ThemeMediaResult> GetThemeVideosAsync(string userId, string itemId, bool inheritFromParents);
+        Task<ThemeMediaResult> GetThemeVideosAsync(string userId, string itemId, bool inheritFromParents, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets all theme media async.
@@ -71,7 +71,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="itemId">The item id.</param>
         /// <param name="inheritFromParents">if set to <c>true</c> [inherit from parents].</param>
         /// <returns>Task{AllThemeMediaResult}.</returns>
-        Task<AllThemeMediaResult> GetAllThemeMediaAsync(string userId, string itemId, bool inheritFromParents);
+        Task<AllThemeMediaResult> GetAllThemeMediaAsync(string userId, string itemId, bool inheritFromParents, CancellationToken cancellationToken);
 
         /// <summary>
         /// Marks the notifications read.
