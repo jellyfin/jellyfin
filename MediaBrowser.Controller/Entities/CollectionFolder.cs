@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Controller.Library;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -87,7 +86,7 @@ namespace MediaBrowser.Controller.Entities
                     return new List<LinkedChild>();
                 }
 
-                return LibraryManager.RootFolder.RecursiveChildren
+                return LibraryManager.RootFolder.Children
                     .OfType<Folder>()
                     .Where(i => i.Path != null && locationsDicionary.ContainsKey(i.Path))
                     .SelectMany(c => c.LinkedChildren).ToList();
@@ -120,7 +119,7 @@ namespace MediaBrowser.Controller.Entities
                 }
 
                 var ourChildren =
-                    LibraryManager.RootFolder.RecursiveChildren
+                    LibraryManager.RootFolder.Children
                     .OfType<Folder>()
                     .Where(i => i.Path != null && locationsDicionary.ContainsKey(i.Path))
                     .SelectMany(c => c.Children);
