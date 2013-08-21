@@ -214,7 +214,10 @@ namespace MediaBrowser.Providers.Movies
         /// <param name="searchResult">The search result.</param>
         protected void ProcessInfo(Person person, PersonResult searchResult)
         {
-            person.Overview = searchResult.biography;
+            if (!person.LockedFields.Contains(MetadataFields.Overview))
+            {
+                person.Overview = searchResult.biography;
+            }
 
             DateTime date;
 
