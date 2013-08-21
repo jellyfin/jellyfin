@@ -33,7 +33,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="startIndex">The start index.</param>
         /// <param name="limit">The limit.</param>
         /// <returns>Task{ItemReviewsResult}.</returns>
-        Task<ItemReviewsResult> GetCriticReviews(string itemId, int? startIndex = null, int? limit = null);
+        Task<ItemReviewsResult> GetCriticReviews(string itemId, CancellationToken cancellationToken, int? startIndex = null, int? limit = null);
 
         /// <summary>
         /// Gets the theme songs async.
@@ -155,7 +155,7 @@ namespace MediaBrowser.Model.ApiClient
         /// Gets the public users async.
         /// </summary>
         /// <returns>Task{UserDto[]}.</returns>
-        Task<UserDto[]> GetPublicUsersAsync();
+        Task<UserDto[]> GetPublicUsersAsync(CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets active client sessions.
@@ -205,7 +205,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="query">The query.</param>
         /// <returns>Task{ItemsResult}.</returns>
         Task<ItemsResult> GetInstantMixFromMusicGenreAsync(SimilarItemsByNameQuery query);
-        
+
         /// <summary>
         /// Gets the similar movies async.
         /// </summary>
@@ -309,7 +309,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="query">The query.</param>
         /// <returns>Task{ItemsResult}.</returns>
         Task<ItemsResult> GetStudiosAsync(ItemsByNameQuery query);
-        
+
         /// <summary>
         /// Gets the music genre async.
         /// </summary>
@@ -325,7 +325,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="userId">The user id.</param>
         /// <returns>Task{BaseItemDto}.</returns>
         Task<BaseItemDto> GetGameGenreAsync(string name, string userId);
-        
+
         /// <summary>
         /// Gets the artist async.
         /// </summary>
@@ -563,7 +563,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="userId">The user id.</param>
         /// <param name="client">The client.</param>
         /// <returns>Task{BaseItemDto}.</returns>
-        Task<DisplayPreferences> GetDisplayPreferencesAsync(string id, string userId, string client);
+        Task<DisplayPreferences> GetDisplayPreferencesAsync(string id, string userId, string client, CancellationToken cancellationToken);
 
         /// <summary>
         /// Updates display preferences for a user
@@ -728,7 +728,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="options">The options.</param>
         /// <returns>System.String.</returns>
         string GetGameGenreImageUrl(string name, ImageOptions options);
-        
+
         /// <summary>
         /// Gets an image url that can be used to download an image from the api
         /// </summary>

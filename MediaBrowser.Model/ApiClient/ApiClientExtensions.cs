@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Dto;
 
 namespace MediaBrowser.Model.ApiClient
 {
@@ -18,6 +19,11 @@ namespace MediaBrowser.Model.ApiClient
         public static Task<Stream> GetImageStreamAsync(this IApiClient apiClient, string url)
         {
             return apiClient.GetImageStreamAsync(url, CancellationToken.None);
+        }
+
+        public static Task<UserDto[]> GetPublicUsersAsync(this IApiClient apiClient)
+        {
+            return apiClient.GetPublicUsersAsync(CancellationToken.None);
         }
     }
 }
