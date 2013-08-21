@@ -52,36 +52,7 @@ namespace MediaBrowser.Api
         [ApiMember(Name = "Url", Description = "The notification's info url", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string Url { get; set; }
 
-        [ApiMember(Name = "Category", Description = "The notification's category", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public string Category { get; set; }
-
-        [ApiMember(Name = "RelatedId", Description = "The notification's related id (item)", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public string RelatedId { get; set; }
-
-        [ApiMember(Name = "Level", Description = "The notification level", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public NotificationLevel Level { get; set; }
-    }
-
-    [Route("/Notifications/{UserId}/{Id}", "POST")]
-    [Api(Description = "Updates a notifications")]
-    public class UpdateNotification : IReturnVoid
-    {
-        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public Guid UserId { get; set; }
-
-        [ApiMember(Name = "Id", Description = "Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public Guid Id { get; set; }
-
-        [ApiMember(Name = "Name", Description = "The notification's name", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public string Name { get; set; }
-
-        [ApiMember(Name = "Description", Description = "The notification's description", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public string Description { get; set; }
-
-        [ApiMember(Name = "Url", Description = "The notification's info url", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public string Url { get; set; }
-
-        [ApiMember(Name = "Category", Description = "The notification's category", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
+        [ApiMember(Name = "Category", Description = "The notification's category", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string Category { get; set; }
 
         [ApiMember(Name = "RelatedId", Description = "The notification's related id (item)", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
@@ -129,13 +100,6 @@ namespace MediaBrowser.Api
             return ToOptimizedResult(task.Result);
         }
 
-        public void Post(UpdateNotification request)
-        {
-            var task = UpdateNotification(request);
-
-            Task.WaitAll(task);
-        }
-
         public object Get(GetNotificationsSummary request)
         {
             var result = _notificationsRepo.GetNotificationsSummary(request.UserId);
@@ -161,24 +125,6 @@ namespace MediaBrowser.Api
             await _notificationsRepo.AddNotification(notification, CancellationToken.None).ConfigureAwait(false);
 
             return notification;
-        }
-
-        private Task UpdateNotification(UpdateNotification request)
-        {
-            var notification = _notificationsRepo.GetNotification(request.Id, request.UserId);
-
-            notification.Description = request.Description;
-            notification.Level = request.Level;
-            notification.Url = request.Url;
-
-            notification.Date = DateTime.UtcNow;
-
-            notification.RelatedId = request.RelatedId;
-            notification.Category = request.Category;
-
-            notification.Name = request.Name;
-
-            return _notificationsRepo.UpdateNotification(notification, CancellationToken.None);
         }
 
         public void Post(MarkRead request)
