@@ -658,8 +658,8 @@ namespace MediaBrowser.Providers.Movies
                 if (!movie.LockedFields.Contains(MetadataFields.Overview))
                 {
                     movie.Overview = WebUtility.HtmlDecode(movieData.overview);
+                    movie.Overview = movie.Overview != null ? movie.Overview.Replace("\n\n", "\n") : null;
                 }
-                movie.Overview = movie.Overview != null ? movie.Overview.Replace("\n\n", "\n") : null;
                 movie.HomePageUrl = movieData.homepage;
                 movie.Budget = movieData.budget;
                 movie.Revenue = movieData.revenue;
