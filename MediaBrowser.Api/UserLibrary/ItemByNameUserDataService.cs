@@ -1,5 +1,7 @@
-﻿using MediaBrowser.Controller.Library;
+﻿using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Model.Dto;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text.Controller;
 using System;
@@ -18,7 +20,7 @@ namespace MediaBrowser.Api.UserLibrary
     [Route("/Users/{UserId}/Favorites/MusicGenres/{Name}", "POST")]
     [Route("/Users/{UserId}/Favorites/GameGenres/{Name}", "POST")]
     [Api(Description = "Marks something as a favorite")]
-    public class MarkItemByNameFavorite : IReturnVoid
+    public class MarkItemByNameFavorite : IReturn<UserItemDataDto>
     {
         /// <summary>
         /// Gets or sets the user id.
@@ -45,7 +47,7 @@ namespace MediaBrowser.Api.UserLibrary
     [Route("/Users/{UserId}/Favorites/MusicGenres/{Name}", "DELETE")]
     [Route("/Users/{UserId}/Favorites/GameGenres/{Name}", "DELETE")]
     [Api(Description = "Unmarks something as a favorite")]
-    public class UnmarkItemByNameFavorite : IReturnVoid
+    public class UnmarkItemByNameFavorite : IReturn<UserItemDataDto>
     {
         /// <summary>
         /// Gets or sets the user id.
@@ -71,7 +73,7 @@ namespace MediaBrowser.Api.UserLibrary
     [Route("/Users/{UserId}/Ratings/Genres/{Name}", "POST")]
     [Route("/Users/{UserId}/Ratings/MusicGenres/{Name}", "POST")]
     [Api(Description = "Updates a user's rating for an item")]
-    public class UpdateItemByNameRating : IReturnVoid
+    public class UpdateItemByNameRating : IReturn<UserItemDataDto>
     {
         /// <summary>
         /// Gets or sets the user id.
@@ -105,7 +107,7 @@ namespace MediaBrowser.Api.UserLibrary
     [Route("/Users/{UserId}/Ratings/MusicGenres/{Name}", "DELETE")]
     [Route("/Users/{UserId}/Ratings/GameGenres/{Name}", "DELETE")]
     [Api(Description = "Deletes a user's saved personal rating for an item")]
-    public class DeleteItemByNameRating : IReturnVoid
+    public class DeleteItemByNameRating : IReturn<UserItemDataDto>
     {
         /// <summary>
         /// Gets or sets the user id.
@@ -152,56 +154,56 @@ namespace MediaBrowser.Api.UserLibrary
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public void Post(MarkItemByNameFavorite request)
+        public object Post(MarkItemByNameFavorite request)
         {
             var pathInfo = PathInfo.Parse(RequestContext.PathInfo);
             var type = pathInfo.GetArgumentValue<string>(3);
 
             var task = MarkFavorite(request.UserId, type, request.Name, true);
 
-            Task.WaitAll(task);
+            return ToOptimizedResult(task.Result);
         }
 
         /// <summary>
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public void Post(UpdateItemByNameRating request)
+        public object Post(UpdateItemByNameRating request)
         {
             var pathInfo = PathInfo.Parse(RequestContext.PathInfo);
             var type = pathInfo.GetArgumentValue<string>(3);
 
             var task = MarkLike(request.UserId, type, request.Name, request.Likes);
 
-            Task.WaitAll(task);
+            return ToOptimizedResult(task.Result);
         }
 
         /// <summary>
         /// Deletes the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public void Delete(UnmarkItemByNameFavorite request)
+        public object Delete(UnmarkItemByNameFavorite request)
         {
             var pathInfo = PathInfo.Parse(RequestContext.PathInfo);
             var type = pathInfo.GetArgumentValue<string>(3);
 
             var task = MarkFavorite(request.UserId, type, request.Name, false);
 
-            Task.WaitAll(task);
+            return ToOptimizedResult(task.Result);
         }
 
         /// <summary>
         /// Deletes the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public void Delete(DeleteItemByNameRating request)
+        public object Delete(DeleteItemByNameRating request)
         {
             var pathInfo = PathInfo.Parse(RequestContext.PathInfo);
             var type = pathInfo.GetArgumentValue<string>(3);
 
             var task = MarkLike(request.UserId, type, request.Name, null);
 
-            Task.WaitAll(task);
+            return ToOptimizedResult(task.Result);
         }
 
         /// <summary>
@@ -212,7 +214,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="name">The name.</param>
         /// <param name="isFavorite">if set to <c>true</c> [is favorite].</param>
         /// <returns>Task.</returns>
-        protected async Task MarkFavorite(Guid userId, string type, string name, bool isFavorite)
+        protected async Task<UserItemDataDto> MarkFavorite(Guid userId, string type, string name, bool isFavorite)
         {
             var item = await GetItemByName(name, type, LibraryManager).ConfigureAwait(false);
 
@@ -225,6 +227,10 @@ namespace MediaBrowser.Api.UserLibrary
             data.IsFavorite = isFavorite;
 
             await UserDataRepository.SaveUserData(userId, key, data, CancellationToken.None).ConfigureAwait(false);
+
+            data = UserDataRepository.GetUserData(userId, key);
+
+            return DtoBuilder.GetUserItemDataDto(data);
         }
 
         /// <summary>
@@ -235,7 +241,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="name">The name.</param>
         /// <param name="likes">if set to <c>true</c> [likes].</param>
         /// <returns>Task.</returns>
-        protected async Task MarkLike(Guid userId, string type, string name, bool? likes)
+        protected async Task<UserItemDataDto> MarkLike(Guid userId, string type, string name, bool? likes)
         {
             var item = await GetItemByName(name, type, LibraryManager).ConfigureAwait(false);
 
@@ -247,6 +253,10 @@ namespace MediaBrowser.Api.UserLibrary
             data.Likes = likes;
 
             await UserDataRepository.SaveUserData(userId, key, data, CancellationToken.None).ConfigureAwait(false);
+
+            data = UserDataRepository.GetUserData(userId, key);
+
+            return DtoBuilder.GetUserItemDataDto(data);
         }
     }
 }
