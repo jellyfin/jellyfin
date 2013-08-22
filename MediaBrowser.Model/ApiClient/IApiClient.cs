@@ -437,7 +437,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="wasPlayed">if set to <c>true</c> [was played].</param>
         /// <returns>Task.</returns>
         /// <exception cref="ArgumentNullException">itemId</exception>
-        Task UpdatePlayedStatusAsync(string itemId, string userId, bool wasPlayed);
+        Task<UserItemDataDto> UpdatePlayedStatusAsync(string itemId, string userId, bool wasPlayed);
 
         /// <summary>
         /// Updates the favorite status async.
@@ -447,7 +447,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="isFavorite">if set to <c>true</c> [is favorite].</param>
         /// <returns>Task.</returns>
         /// <exception cref="ArgumentNullException">itemId</exception>
-        Task UpdateFavoriteStatusAsync(string itemId, string userId, bool isFavorite);
+        Task<UserItemDataDto> UpdateFavoriteStatusAsync(string itemId, string userId, bool isFavorite);
 
         /// <summary>
         /// Reports to the server that the user has begun playing an item
@@ -518,7 +518,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="userId">The user id.</param>
         /// <returns>Task{UserItemDataDto}.</returns>
         /// <exception cref="ArgumentNullException">itemId</exception>
-        Task ClearUserItemRatingAsync(string itemId, string userId);
+        Task<UserItemDataDto> ClearUserItemRatingAsync(string itemId, string userId);
 
         /// <summary>
         /// Updates a user's rating for an item, based on likes or dislikes
@@ -528,7 +528,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="likes">if set to <c>true</c> [likes].</param>
         /// <returns>Task.</returns>
         /// <exception cref="ArgumentNullException">itemId</exception>
-        Task UpdateUserItemRatingAsync(string itemId, string userId, bool likes);
+        Task<UserItemDataDto> UpdateUserItemRatingAsync(string itemId, string userId, bool likes);
 
         /// <summary>
         /// Authenticates a user and returns the result

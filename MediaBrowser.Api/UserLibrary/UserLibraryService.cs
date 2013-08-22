@@ -387,7 +387,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>System.Object.</returns>
         public object Get(GetSpecialFeatures request)
         {
-            var result = GetAsync(request);
+            var result = GetAsync(request).Result;
 
             return ToOptimizedResult(result);
         }
@@ -420,7 +420,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>System.Object.</returns>
         public object Get(GetLocalTrailers request)
         {
-            var result = GetAsync(request);
+            var result = GetAsync(request).Result;
 
             return ToOptimizedResult(result);
         }
@@ -506,7 +506,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public void Post(MarkFavoriteItem request)
+        public object Post(MarkFavoriteItem request)
         {
             var user = _userManager.GetUserById(request.UserId);
 
@@ -523,13 +523,19 @@ namespace MediaBrowser.Api.UserLibrary
             var task = _userDataRepository.SaveUserData(user.Id, key, data, CancellationToken.None);
 
             Task.WaitAll(task);
+
+            data = _userDataRepository.GetUserData(user.Id, key);
+
+            var dto = DtoBuilder.GetUserItemDataDto(data);
+
+            return ToOptimizedResult(dto);
         }
 
         /// <summary>
         /// Deletes the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public void Delete(UnmarkFavoriteItem request)
+        public object Delete(UnmarkFavoriteItem request)
         {
             var user = _userManager.GetUserById(request.UserId);
 
@@ -546,13 +552,19 @@ namespace MediaBrowser.Api.UserLibrary
             var task = _userDataRepository.SaveUserData(user.Id, key, data, CancellationToken.None);
 
             Task.WaitAll(task);
+
+            data = _userDataRepository.GetUserData(user.Id, key);
+
+            var dto = DtoBuilder.GetUserItemDataDto(data);
+
+            return ToOptimizedResult(dto);
         }
 
         /// <summary>
         /// Deletes the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public void Delete(DeleteUserItemRating request)
+        public object Delete(DeleteUserItemRating request)
         {
             var user = _userManager.GetUserById(request.UserId);
 
@@ -568,13 +580,19 @@ namespace MediaBrowser.Api.UserLibrary
             var task = _userDataRepository.SaveUserData(user.Id, key, data, CancellationToken.None);
 
             Task.WaitAll(task);
+
+            data = _userDataRepository.GetUserData(user.Id, key);
+
+            var dto = DtoBuilder.GetUserItemDataDto(data);
+
+            return ToOptimizedResult(dto);
         }
 
         /// <summary>
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public void Post(UpdateUserItemRating request)
+        public object Post(UpdateUserItemRating request)
         {
             var user = _userManager.GetUserById(request.UserId);
 
@@ -590,19 +608,25 @@ namespace MediaBrowser.Api.UserLibrary
             var task = _userDataRepository.SaveUserData(user.Id, key, data, CancellationToken.None);
 
             Task.WaitAll(task);
+
+            data = _userDataRepository.GetUserData(user.Id, key);
+
+            var dto = DtoBuilder.GetUserItemDataDto(data);
+
+            return ToOptimizedResult(dto);
         }
 
         /// <summary>
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public void Post(MarkPlayedItem request)
+        public object Post(MarkPlayedItem request)
         {
             var user = _userManager.GetUserById(request.UserId);
 
             var task = UpdatePlayedStatus(user, request.Id, true);
 
-            Task.WaitAll(task);
+            return ToOptimizedResult(task.Result);
         }
 
         private SessionInfo GetSession()
@@ -669,13 +693,13 @@ namespace MediaBrowser.Api.UserLibrary
         /// Deletes the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public void Delete(MarkUnplayedItem request)
+        public object Delete(MarkUnplayedItem request)
         {
             var user = _userManager.GetUserById(request.UserId);
 
             var task = UpdatePlayedStatus(user, request.Id, false);
 
-            Task.WaitAll(task);
+            return ToOptimizedResult(task.Result);
         }
 
         /// <summary>
@@ -685,11 +709,13 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="itemId">The item id.</param>
         /// <param name="wasPlayed">if set to <c>true</c> [was played].</param>
         /// <returns>Task.</returns>
-        private Task UpdatePlayedStatus(User user, string itemId, bool wasPlayed)
+        private async Task<UserItemDataDto> UpdatePlayedStatus(User user, string itemId, bool wasPlayed)
         {
             var item = DtoBuilder.GetItemByClientId(itemId, _userManager, _libraryManager, user.Id);
 
-            return item.SetPlayedStatus(user, wasPlayed, _userDataRepository);
+            await item.SetPlayedStatus(user, wasPlayed, _userDataRepository).ConfigureAwait(false);
+
+            return DtoBuilder.GetUserItemDataDto(_userDataRepository.GetUserData(user.Id, item.GetUserDataKey()));
         }
     }
 }
