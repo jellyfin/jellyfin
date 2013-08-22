@@ -284,7 +284,8 @@ namespace MediaBrowser.Providers
             }
 
             // Disc
-            image = GetImage(item, args, "disc");
+            image = GetImage(item, args, "disc") ??
+                GetImage(item, args, "cdart");
 
             if (image != null)
             {
