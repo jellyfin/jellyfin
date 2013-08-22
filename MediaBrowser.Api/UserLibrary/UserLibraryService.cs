@@ -79,7 +79,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// </summary>
     [Route("/Users/{UserId}/FavoriteItems/{Id}", "POST")]
     [Api(Description = "Marks an item as a favorite")]
-    public class MarkFavoriteItem : IReturnVoid
+    public class MarkFavoriteItem : IReturn<UserItemDataDto>
     {
         /// <summary>
         /// Gets or sets the user id.
@@ -101,7 +101,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// </summary>
     [Route("/Users/{UserId}/FavoriteItems/{Id}", "DELETE")]
     [Api(Description = "Unmarks an item as a favorite")]
-    public class UnmarkFavoriteItem : IReturnVoid
+    public class UnmarkFavoriteItem : IReturn<UserItemDataDto>
     {
         /// <summary>
         /// Gets or sets the user id.
@@ -123,7 +123,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// </summary>
     [Route("/Users/{UserId}/Items/{Id}/Rating", "DELETE")]
     [Api(Description = "Deletes a user's saved personal rating for an item")]
-    public class DeleteUserItemRating : IReturnVoid
+    public class DeleteUserItemRating : IReturn<UserItemDataDto>
     {
         /// <summary>
         /// Gets or sets the user id.
@@ -145,7 +145,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// </summary>
     [Route("/Users/{UserId}/Items/{Id}/Rating", "POST")]
     [Api(Description = "Updates a user's rating for an item")]
-    public class UpdateUserItemRating : IReturnVoid
+    public class UpdateUserItemRating : IReturn<UserItemDataDto>
     {
         /// <summary>
         /// Gets or sets the user id.
@@ -174,7 +174,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// </summary>
     [Route("/Users/{UserId}/PlayedItems/{Id}", "POST")]
     [Api(Description = "Marks an item as played")]
-    public class MarkPlayedItem : IReturnVoid
+    public class MarkPlayedItem : IReturn<UserItemDataDto>
     {
         /// <summary>
         /// Gets or sets the user id.
@@ -196,7 +196,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// </summary>
     [Route("/Users/{UserId}/PlayedItems/{Id}", "DELETE")]
     [Api(Description = "Marks an item as unplayed")]
-    public class MarkUnplayedItem : IReturnVoid
+    public class MarkUnplayedItem : IReturn<UserItemDataDto>
     {
         /// <summary>
         /// Gets or sets the user id.
@@ -372,7 +372,6 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="itemRepo">The item repo.</param>
         /// <exception cref="System.ArgumentNullException">jsonSerializer</exception>
         public UserLibraryService(IUserManager userManager, ILibraryManager libraryManager, IUserDataRepository userDataRepository, IItemRepository itemRepo, ISessionManager sessionManager)
-            : base()
         {
             _userManager = userManager;
             _libraryManager = libraryManager;
@@ -388,6 +387,13 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>System.Object.</returns>
         public object Get(GetSpecialFeatures request)
         {
+            var result = GetAsync(request);
+
+            return ToOptimizedResult(result);
+        }
+
+        private Task<BaseItemDto[]> GetAsync(GetSpecialFeatures request)
+        {
             var user = _userManager.GetUserById(request.UserId);
 
             var item = string.IsNullOrEmpty(request.Id) ? user.RootFolder : DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager, user.Id);
@@ -399,14 +405,12 @@ namespace MediaBrowser.Api.UserLibrary
 
             var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userDataRepository, _itemRepo);
 
-            var items = movie.SpecialFeatureIds
+            var tasks = movie.SpecialFeatureIds
                 .Select(_itemRepo.RetrieveItem)
                 .OrderBy(i => i.SortName)
-                .Select(i => dtoBuilder.GetBaseItemDto(i, fields, user, movie))
-                .Select(t => t.Result)
-                .ToList();
+                .Select(i => dtoBuilder.GetBaseItemDto(i, fields, user, movie));
 
-            return ToOptimizedResult(items);
+            return Task.WhenAll(tasks);
         }
 
         /// <summary>
@@ -415,6 +419,13 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
         public object Get(GetLocalTrailers request)
+        {
+            var result = GetAsync(request);
+
+            return ToOptimizedResult(result);
+        }
+
+        private Task<BaseItemDto[]> GetAsync(GetLocalTrailers request)
         {
             var user = _userManager.GetUserById(request.UserId);
 
@@ -425,14 +436,12 @@ namespace MediaBrowser.Api.UserLibrary
 
             var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userDataRepository, _itemRepo);
 
-            var items = item.LocalTrailerIds
+            var tasks = item.LocalTrailerIds
                 .Select(_itemRepo.RetrieveItem)
                 .OrderBy(i => i.SortName)
-                .Select(i => dtoBuilder.GetBaseItemDto(i, fields, user, item))
-                .Select(t => t.Result)
-                .ToList();
+                .Select(i => dtoBuilder.GetBaseItemDto(i, fields, user, item));
 
-            return ToOptimizedResult(items);
+            return Task.WhenAll(tasks);
         }
 
         /// <summary>
