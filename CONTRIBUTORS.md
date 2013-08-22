@@ -18,3 +18,4 @@
  - [mboehler](https://github.com/mboehler)
  - [KaHooli](https://github.com/KaHooli)
  - [xzener](https://github.com/xzener)
+ - [CBers] (https://github.com/CBers)
