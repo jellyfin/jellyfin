@@ -16,3 +16,4 @@
  - [Logos302] (https://github.com/Logos302)
  - [TheWorkz](https://github.com/TheWorkz)
  - [mboehler](https://github.com/mboehler)
+ - [KaHooli](https://github.com/KaHooli)
