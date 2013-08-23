@@ -975,7 +975,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="includeLinkedChildren">if set to <c>true</c> [include linked children].</param>
         /// <returns>IEnumerable{BaseItem}.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public IEnumerable<BaseItem> GetRecursiveChildren(User user, bool includeLinkedChildren = false)
+        public IEnumerable<BaseItem> GetRecursiveChildren(User user, bool includeLinkedChildren = true)
         {
             if (user == null)
             {
@@ -999,7 +999,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="includeLinkedChildren">if set to <c>true</c> [include linked children].</param>
         /// <returns>IEnumerable{BaseItem}.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        private IEnumerable<BaseItem> GetRecursiveChildrenInternal(User user, bool includeLinkedChildren = true)
+        private IEnumerable<BaseItem> GetRecursiveChildrenInternal(User user, bool includeLinkedChildren)
         {
             if (user == null)
             {
