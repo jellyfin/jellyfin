@@ -508,25 +508,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         public object Post(MarkFavoriteItem request)
         {
-            var user = _userManager.GetUserById(request.UserId);
-
-            var item = string.IsNullOrEmpty(request.Id) ? user.RootFolder : DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager, user.Id);
-
-            // Get the user data for this item
-            var key = item.GetUserDataKey();
-
-            var data = _userDataRepository.GetUserData(user.Id, key);
-
-            // Set favorite status
-            data.IsFavorite = true;
-
-            var task = _userDataRepository.SaveUserData(user.Id, key, data, CancellationToken.None);
-
-            Task.WaitAll(task);
-
-            data = _userDataRepository.GetUserData(user.Id, key);
-
-            var dto = DtoBuilder.GetUserItemDataDto(data);
+            var dto = MarkFavorite(request.UserId, request.Id, true).Result;
 
             return ToOptimizedResult(dto);
         }
@@ -537,9 +519,16 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         public object Delete(UnmarkFavoriteItem request)
         {
-            var user = _userManager.GetUserById(request.UserId);
+            var dto = MarkFavorite(request.UserId, request.Id, false).Result;
 
-            var item = string.IsNullOrEmpty(request.Id) ? user.RootFolder : DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager, user.Id);
+            return ToOptimizedResult(dto);
+        }
+
+        private async Task<UserItemDataDto> MarkFavorite(Guid userId, string itemId, bool isFavorite)
+        {
+            var user = _userManager.GetUserById(userId);
+
+            var item = string.IsNullOrEmpty(itemId) ? user.RootFolder : DtoBuilder.GetItemByClientId(itemId, _userManager, _libraryManager, user.Id);
 
             var key = item.GetUserDataKey();
 
@@ -547,17 +536,13 @@ namespace MediaBrowser.Api.UserLibrary
             var data = _userDataRepository.GetUserData(user.Id, key);
 
             // Set favorite status
-            data.IsFavorite = false;
+            data.IsFavorite = isFavorite;
 
-            var task = _userDataRepository.SaveUserData(user.Id, key, data, CancellationToken.None);
-
-            Task.WaitAll(task);
+            await _userDataRepository.SaveUserData(user.Id, key, data, CancellationToken.None).ConfigureAwait(false);
 
             data = _userDataRepository.GetUserData(user.Id, key);
 
-            var dto = DtoBuilder.GetUserItemDataDto(data);
-
-            return ToOptimizedResult(dto);
+            return DtoBuilder.GetUserItemDataDto(data);
         }
 
         /// <summary>
@@ -566,24 +551,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         public object Delete(DeleteUserItemRating request)
         {
-            var user = _userManager.GetUserById(request.UserId);
-
-            var item = string.IsNullOrEmpty(request.Id) ? user.RootFolder : DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager, user.Id);
-
-            var key = item.GetUserDataKey();
-
-            // Get the user data for this item
-            var data = _userDataRepository.GetUserData(user.Id, key);
-
-            data.Rating = null;
-
-            var task = _userDataRepository.SaveUserData(user.Id, key, data, CancellationToken.None);
-
-            Task.WaitAll(task);
-
-            data = _userDataRepository.GetUserData(user.Id, key);
-
-            var dto = DtoBuilder.GetUserItemDataDto(data);
+            var dto = UpdateUserItemRating(request.UserId, request.Id, null).Result;
 
             return ToOptimizedResult(dto);
         }
@@ -594,28 +562,31 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         public object Post(UpdateUserItemRating request)
         {
-            var user = _userManager.GetUserById(request.UserId);
+            var dto = UpdateUserItemRating(request.UserId, request.Id, request.Likes).Result;
 
-            var item = string.IsNullOrEmpty(request.Id) ? user.RootFolder : DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager, user.Id);
+            return ToOptimizedResult(dto);
+        }
+
+        private async Task<UserItemDataDto> UpdateUserItemRating(Guid userId, string itemId, bool? likes)
+        {
+            var user = _userManager.GetUserById(userId);
+
+            var item = string.IsNullOrEmpty(itemId) ? user.RootFolder : DtoBuilder.GetItemByClientId(itemId, _userManager, _libraryManager, user.Id);
 
             var key = item.GetUserDataKey();
 
             // Get the user data for this item
             var data = _userDataRepository.GetUserData(user.Id, key);
 
-            data.Likes = request.Likes;
+            data.Likes = likes;
 
-            var task = _userDataRepository.SaveUserData(user.Id, key, data, CancellationToken.None);
-
-            Task.WaitAll(task);
+            await _userDataRepository.SaveUserData(user.Id, key, data, CancellationToken.None).ConfigureAwait(false);
 
             data = _userDataRepository.GetUserData(user.Id, key);
 
-            var dto = DtoBuilder.GetUserItemDataDto(data);
-
-            return ToOptimizedResult(dto);
+            return DtoBuilder.GetUserItemDataDto(data);
         }
-
+        
         /// <summary>
         /// Posts the specified request.
         /// </summary>
