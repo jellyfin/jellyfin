@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.MediaInfo;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
@@ -47,6 +48,8 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// <value>The json serializer.</value>
         private readonly IJsonSerializer _jsonSerializer;
 
+        private readonly IHttpClient _httpClient;
+
         /// <summary>
         /// The video image resource pool
         /// </summary>
@@ -81,12 +84,13 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// <param name="appPaths">The app paths.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
         public MediaEncoder(ILogger logger, IZipClient zipClient, IApplicationPaths appPaths,
-                            IJsonSerializer jsonSerializer)
+                            IJsonSerializer jsonSerializer, IHttpClient httpClient)
         {
             _logger = logger;
             _zipClient = zipClient;
             _appPaths = appPaths;
             _jsonSerializer = jsonSerializer;
+            _httpClient = httpClient;
 
             // Not crazy about this but it's the only way to suppress ffmpeg crash dialog boxes
             SetErrorMode(ErrorModes.SEM_FAILCRITICALERRORS | ErrorModes.SEM_NOALIGNMENTFAULTEXCEPT |
@@ -201,15 +205,16 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                 _zipClient.ExtractAll(resourceStream, targetPath, false);
             }
 
-            ExtractFonts(assembly, targetPath);
+            ExtractFonts(targetPath);
         }
+
+        private const string FontUrl = "https://www.dropbox.com/s/9nb76tybcsw5xrk/ARIALUNI.zip?dl=1";
 
         /// <summary>
         /// Extracts the fonts.
         /// </summary>
-        /// <param name="assembly">The assembly.</param>
         /// <param name="targetPath">The target path.</param>
-        private async void ExtractFonts(Assembly assembly, string targetPath)
+        private async void ExtractFonts(string targetPath)
         {
             var fontsDirectory = Path.Combine(targetPath, "fonts");
 
@@ -224,54 +229,44 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
 
             if (!File.Exists(fontFile))
             {
-                using (var stream = assembly.GetManifestResourceStream(GetType().Namespace + ".fonts." + fontFilename))
+                var tempFile = await _httpClient.GetTempFile(new HttpRequestOptions
                 {
-                    using (
-                        var fileStream = new FileStream(fontFile, FileMode.Create, FileAccess.Write, FileShare.Read,
-                                                        StreamDefaults.DefaultFileStreamBufferSize,
-                                                        FileOptions.Asynchronous))
-                    {
-                        await stream.CopyToAsync(fileStream).ConfigureAwait(false);
-                    }
+                    Url = FontUrl,
+                    Progress = new Progress<double>()
+                });
+
+                _zipClient.ExtractAll(tempFile, fontsDirectory, true);
+
+                try
+                {
+                    File.Delete(tempFile);
+                }
+                catch (IOException ex)
+                {
+                    // Log this, but don't let it fail the operation
+                    _logger.ErrorException("Error deleting temp file {0}", ex, tempFile);
                 }
             }
 
-            await ExtractFontConfigFile(assembly, fontsDirectory).ConfigureAwait(false);
+            await WriteFontConfigFile(fontsDirectory).ConfigureAwait(false);
         }
 
-        /// <summary>
-        /// Extracts the font config file.
-        /// </summary>
-        /// <param name="assembly">The assembly.</param>
-        /// <param name="fontsDirectory">The fonts directory.</param>
-        /// <returns>Task.</returns>
-        private async Task ExtractFontConfigFile(Assembly assembly, string fontsDirectory)
+        private async Task WriteFontConfigFile(string fontsDirectory)
         {
             const string fontConfigFilename = "fonts.conf";
             var fontConfigFile = Path.Combine(fontsDirectory, fontConfigFilename);
 
             if (!File.Exists(fontConfigFile))
             {
-                using (
-                    var stream = assembly.GetManifestResourceStream(GetType().Namespace + ".fonts." + fontConfigFilename)
-                    )
+                var contents = string.Format("<?xml version=\"1.0\"?><fontconfig><dir>{0}</dir><alias><family>Arial</family><prefer>Arial Unicode MS</prefer></alias></fontconfig>", fontsDirectory);
+
+                var bytes = Encoding.UTF8.GetBytes(contents);
+
+                using (var fileStream = new FileStream(fontConfigFile, FileMode.Create, FileAccess.Write,
+                                                    FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize,
+                                                    FileOptions.Asynchronous))
                 {
-                    using (var streamReader = new StreamReader(stream))
-                    {
-                        var contents = await streamReader.ReadToEndAsync().ConfigureAwait(false);
-
-                        contents = contents.Replace("<dir></dir>", "<dir>" + fontsDirectory + "</dir>");
-
-                        var bytes = Encoding.UTF8.GetBytes(contents);
-
-                        using (
-                            var fileStream = new FileStream(fontConfigFile, FileMode.Create, FileAccess.Write,
-                                                            FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize,
-                                                            FileOptions.Asynchronous))
-                        {
-                            await fileStream.WriteAsync(bytes, 0, bytes.Length);
-                        }
-                    }
+                    await fileStream.WriteAsync(bytes, 0, bytes.Length);
                 }
             }
         }
