@@ -16,6 +16,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using MoreLinq;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -981,6 +982,30 @@ namespace MediaBrowser.Controller.Entities
                 throw new ArgumentNullException();
             }
 
+            var children = GetRecursiveChildrenInternal(user, includeLinkedChildren);
+
+            if (includeLinkedChildren)
+            {
+                children = children.DistinctBy(i => i.Id);
+            }
+
+            return children;
+        }
+
+        /// <summary>
+        /// Gets allowed recursive children of an item
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="includeLinkedChildren">if set to <c>true</c> [include linked children].</param>
+        /// <returns>IEnumerable{BaseItem}.</returns>
+        /// <exception cref="System.ArgumentNullException"></exception>
+        private IEnumerable<BaseItem> GetRecursiveChildrenInternal(User user, bool includeLinkedChildren = true)
+        {
+            if (user == null)
+            {
+                throw new ArgumentNullException();
+            }
+
             foreach (var item in GetChildren(user, includeLinkedChildren))
             {
                 yield return item;
@@ -989,7 +1014,7 @@ namespace MediaBrowser.Controller.Entities
 
                 if (subFolder != null)
                 {
-                    foreach (var subitem in subFolder.GetRecursiveChildren(user, includeLinkedChildren))
+                    foreach (var subitem in subFolder.GetRecursiveChildrenInternal(user, includeLinkedChildren))
                     {
                         yield return subitem;
                     }
