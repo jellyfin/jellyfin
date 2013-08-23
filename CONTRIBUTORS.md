@@ -19,3 +19,4 @@
  - [KaHooli](https://github.com/KaHooli)
  - [xzener](https://github.com/xzener)
  - [CBers] (https://github.com/CBers)
+ - [swhitmore](https://github.com/swhitmore)
