@@ -272,7 +272,7 @@ namespace MediaBrowser.ServerApplication
 
             RegisterSingleInstance<ILibrarySearchEngine>(() => new LuceneSearchEngine(ApplicationPaths, LogManager, LibraryManager));
 
-            MediaEncoder = new MediaEncoder(LogManager.GetLogger("MediaEncoder"), ZipClient, ApplicationPaths, JsonSerializer);
+            MediaEncoder = new MediaEncoder(LogManager.GetLogger("MediaEncoder"), ZipClient, ApplicationPaths, JsonSerializer, HttpClient);
             RegisterSingleInstance(MediaEncoder);
 
             var clientConnectionManager = new SessionManager(UserDataRepository, ServerConfigurationManager, Logger, UserRepository);
