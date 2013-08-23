@@ -198,14 +198,21 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// <param name="assembly">The assembly.</param>
         /// <param name="zipFileResourcePath">The zip file resource path.</param>
         /// <param name="targetPath">The target path.</param>
-        private void ExtractTools(Assembly assembly, string zipFileResourcePath, string targetPath)
+        private async void ExtractTools(Assembly assembly, string zipFileResourcePath, string targetPath)
         {
             using (var resourceStream = assembly.GetManifestResourceStream(zipFileResourcePath))
             {
                 _zipClient.ExtractAll(resourceStream, targetPath, false);
             }
 
-            ExtractFonts(targetPath);
+            try
+            {
+                await DownloadFonts(targetPath).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error getting ffmpeg font files", ex);
+            }
         }
 
         private const string FontUrl = "https://www.dropbox.com/s/9nb76tybcsw5xrk/ARIALUNI.zip?dl=1";
@@ -214,7 +221,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// Extracts the fonts.
         /// </summary>
         /// <param name="targetPath">The target path.</param>
-        private async void ExtractFonts(string targetPath)
+        private async Task DownloadFonts(string targetPath)
         {
             var fontsDirectory = Path.Combine(targetPath, "fonts");
 
