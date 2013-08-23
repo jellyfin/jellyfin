@@ -1,7 +1,7 @@
 Media Browser
 ============
 
-Media Browser Server is a home media server built on top of other popular open source technologies such as **Service Stack**, **jQuery** and **jQuery mobile**.
+Media Browser Server is a home media server built on top of other popular open source technologies such as **Service Stack**, **jQuery**, **jQuery mobile** and **Lucene .NET**.
 
 It features a REST-based api with built-in documention to facilitate plugin development.
 
