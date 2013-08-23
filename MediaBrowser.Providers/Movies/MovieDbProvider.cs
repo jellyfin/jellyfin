@@ -181,7 +181,6 @@ namespace MediaBrowser.Providers.Movies
 
         private const string TmdbConfigUrl = "http://api.themoviedb.org/3/configuration?api_key={0}";
         private const string Search3 = @"http://api.themoviedb.org/3/search/movie?api_key={1}&query={0}&language={2}";
-        private const string AltTitleSearch = @"http://api.themoviedb.org/3/movie/{0}/alternative_titles?api_key={1}&country={2}";
         private const string GetMovieInfo3 = @"http://api.themoviedb.org/3/movie/{0}?api_key={1}&language={2}&append_to_response=casts,releases,images,keywords,trailers";
         private const string GetBoxSetInfo3 = @"http://api.themoviedb.org/3/collection/{0}?api_key={1}&language={2}&append_to_response=images";
 
@@ -392,95 +391,12 @@ namespace MediaBrowser.Providers.Movies
                 searchResult = JsonSerializer.DeserializeFromStream<TmdbMovieSearchResults>(json);
             }
 
-            if (searchResult == null || searchResult.results.Count == 0)
-            {
-                //try replacing numbers
-                foreach (var pair in ReplaceStartNumbers)
-                {
-                    if (name.StartsWith(pair.Key))
-                    {
-                        name = name.Remove(0, pair.Key.Length);
-                        name = pair.Value + name;
-                    }
-                }
-                foreach (var pair in ReplaceEndNumbers)
-                {
-                    if (name.EndsWith(pair.Key))
-                    {
-                        name = name.Remove(name.IndexOf(pair.Key), pair.Key.Length);
-                        name = name + pair.Value;
-                    }
-                }
-                Logger.Info("MovieDBProvider - No results.  Trying replacement numbers: " + name);
-                url3 = string.Format(Search3, UrlEncode(name), ApiKey, language);
-
-                using (var json = await GetMovieDbResponse(new HttpRequestOptions
-                {
-                    Url = url3,
-                    CancellationToken = cancellationToken,
-                    AcceptHeader = AcceptHeader
-
-                }).ConfigureAwait(false))
-                {
-                    searchResult = JsonSerializer.DeserializeFromStream<TmdbMovieSearchResults>(json);
-                }
-            }
             if (searchResult != null)
             {
-                string compName = GetComparableName(name, Logger);
                 foreach (var possible in searchResult.results)
                 {
-                    string matchedName = null;
+                    string matchedName = possible.title;
                     string id = possible.id.ToString(CultureInfo.InvariantCulture);
-                    string n = possible.title;
-                    if (GetComparableName(n, Logger) == compName)
-                    {
-                        matchedName = n;
-                    }
-                    else
-                    {
-                        n = possible.original_title;
-                        if (GetComparableName(n, Logger) == compName)
-                        {
-                            matchedName = n;
-                        }
-                    }
-
-                    Logger.Debug("MovieDbProvider - " + compName + " didn't match " + n);
-                    //if main title matches we don't have to look for alternatives
-                    if (matchedName == null)
-                    {
-                        //that title didn't match - look for alternatives
-                        url3 = string.Format(AltTitleSearch, id, ApiKey, ConfigurationManager.Configuration.MetadataCountryCode);
-
-                        using (var json = await GetMovieDbResponse(new HttpRequestOptions
-                        {
-                            Url = url3,
-                            CancellationToken = cancellationToken,
-                            AcceptHeader = AcceptHeader
-
-                        }).ConfigureAwait(false))
-                        {
-                            var response = JsonSerializer.DeserializeFromStream<TmdbAltTitleResults>(json);
-
-                            if (response != null && response.titles != null)
-                            {
-                                foreach (var title in response.titles)
-                                {
-                                    var t = GetComparableName(title.title, Logger);
-                                    if (t == compName)
-                                    {
-                                        Logger.Debug("MovieDbProvider - " + compName +
-                                                            " matched " + t);
-                                        matchedName = t;
-                                        break;
-                                    }
-                                    Logger.Debug("MovieDbProvider - " + compName +
-                                                        " did not match " + t);
-                                }
-                            }
-                        }
-                    }
 
                     if (matchedName != null)
                     {
@@ -848,126 +764,6 @@ namespace MediaBrowser.Providers.Movies
 
                 _movieDbResourcePool.Release();
             }
-        }
-
-        /// <summary>
-        /// The remove
-        /// </summary>
-        const string Remove = "\"'!`?";
-        // "Face/Off" support.
-        /// <summary>
-        /// The spacers
-        /// </summary>
-        const string Spacers = "/,.:;\\(){}[]+-_=–*";  // (there are not actually two - in the they are different char codes)
-        /// <summary>
-        /// The replace start numbers
-        /// </summary>
-        static readonly Dictionary<string, string> ReplaceStartNumbers = new Dictionary<string, string> {
-            {"1 ","one "},
-            {"2 ","two "},
-            {"3 ","three "},
-            {"4 ","four "},
-            {"5 ","five "},
-            {"6 ","six "},
-            {"7 ","seven "},
-            {"8 ","eight "},
-            {"9 ","nine "},
-            {"10 ","ten "},
-            {"11 ","eleven "},
-            {"12 ","twelve "},
-            {"13 ","thirteen "},
-            {"100 ","one hundred "},
-            {"101 ","one hundred one "}
-        };
-
-        /// <summary>
-        /// The replace end numbers
-        /// </summary>
-        static readonly Dictionary<string, string> ReplaceEndNumbers = new Dictionary<string, string> {
-            {" 1"," i"},
-            {" 2"," ii"},
-            {" 3"," iii"},
-            {" 4"," iv"},
-            {" 5"," v"},
-            {" 6"," vi"},
-            {" 7"," vii"},
-            {" 8"," viii"},
-            {" 9"," ix"},
-            {" 10"," x"}
-        };
-
-        /// <summary>
-        /// Gets the name of the comparable.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="logger">The logger.</param>
-        /// <returns>System.String.</returns>
-        internal static string GetComparableName(string name, ILogger logger)
-        {
-            name = name.ToLower();
-            name = name.Replace("á", "a");
-            name = name.Replace("é", "e");
-            name = name.Replace("í", "i");
-            name = name.Replace("ó", "o");
-            name = name.Replace("ú", "u");
-            name = name.Replace("ü", "u");
-            name = name.Replace("ñ", "n");
-            foreach (var pair in ReplaceStartNumbers)
-            {
-                if (name.StartsWith(pair.Key))
-                {
-                    name = name.Remove(0, pair.Key.Length);
-                    name = pair.Value + name;
-                    logger.Info("MovieDbProvider - Replaced Start Numbers: " + name);
-                }
-            }
-            foreach (var pair in ReplaceEndNumbers)
-            {
-                if (name.EndsWith(pair.Key))
-                {
-                    name = name.Remove(name.IndexOf(pair.Key), pair.Key.Length);
-                    name = name + pair.Value;
-                    logger.Info("MovieDbProvider - Replaced End Numbers: " + name);
-                }
-            }
-            name = name.Normalize(NormalizationForm.FormKD);
-            var sb = new StringBuilder();
-            foreach (var c in name)
-            {
-                if (c >= 0x2B0 && c <= 0x0333)
-                {
-                    // skip char modifier and diacritics 
-                }
-                else if (Remove.IndexOf(c) > -1)
-                {
-                    // skip chars we are removing
-                }
-                else if (Spacers.IndexOf(c) > -1)
-                {
-                    sb.Append(" ");
-                }
-                else if (c == '&')
-                {
-                    sb.Append(" and ");
-                }
-                else
-                {
-                    sb.Append(c);
-                }
-            }
-            name = sb.ToString();
-            name = name.Replace(", the", "");
-            name = name.Replace(" the ", " ");
-            name = name.Replace("the ", "");
-
-            string prev_name;
-            do
-            {
-                prev_name = name;
-                name = name.Replace("  ", " ");
-            } while (name.Length != prev_name.Length);
-
-            return name.Trim();
         }
 
         #region Result Objects
