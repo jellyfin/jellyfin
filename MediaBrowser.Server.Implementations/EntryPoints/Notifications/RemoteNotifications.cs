@@ -27,7 +27,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
         private readonly INotificationsRepository _notificationsRepo;
         private readonly IUserManager _userManager;
 
-        private readonly TimeSpan _frequency = TimeSpan.FromHours(3);
+        private readonly TimeSpan _frequency = TimeSpan.FromHours(6);
         private readonly TimeSpan _maxAge = TimeSpan.FromDays(31);
 
         public RemoteNotifications(IApplicationPaths appPaths, ILogger logger, IHttpClient httpClient, IJsonSerializer json, INotificationsRepository notificationsRepo, IUserManager userManager)
