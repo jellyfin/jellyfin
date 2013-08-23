@@ -21,6 +21,17 @@ $.fn.checked = function (value) {
     }
 };
 
+function IsStorageEnabled() {
+    try {
+        localStorage.setItem("__test", "data");
+    } catch (err) {
+        if ((err.name).toUpperCase() == 'QUOTA_EXCEEDED_ERR') {
+            return false;
+        }
+    }
+    return true;
+}
+
 if (!Array.prototype.filter) {
     Array.prototype.filter = function (fun /*, thisp*/) {
         "use strict";
