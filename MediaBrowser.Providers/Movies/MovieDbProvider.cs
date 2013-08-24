@@ -247,8 +247,19 @@ namespace MediaBrowser.Providers.Movies
         /// <returns>Task.</returns>
         private async Task FetchMovieData(BaseItem item, CancellationToken cancellationToken)
         {
-            string id = item.GetProviderId(MetadataProviders.Tmdb) ?? await FindId(item, item.ProductionYear, cancellationToken).ConfigureAwait(false);
-            if (id != null)
+            var id = item.GetProviderId(MetadataProviders.Tmdb);
+
+            if (string.IsNullOrEmpty(id))
+            {
+                id = item.GetProviderId(MetadataProviders.Imdb);
+            }
+
+            if (string.IsNullOrEmpty(id))
+            {
+                id = await FindId(item, cancellationToken).ConfigureAwait(false);
+            }
+
+            if (!string.IsNullOrEmpty(id))
             {
                 Logger.Debug("MovieDbProvider - getting movie info with id: " + id);
 
@@ -290,19 +301,15 @@ namespace MediaBrowser.Providers.Movies
         /// Finds the id.
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <param name="productionYear">The production year.</param>
         /// <param name="cancellationToken">The cancellation token</param>
         /// <returns>Task{System.String}.</returns>
-        public async Task<string> FindId(BaseItem item, int? productionYear, CancellationToken cancellationToken)
+        public async Task<string> FindId(BaseItem item, CancellationToken cancellationToken)
         {
-            int? year;
+            int? yearInName;
             string name = item.Name;
-            ParseName(name, out name, out year);
+            ParseName(name, out name, out yearInName);
 
-            if (year == null && productionYear != null)
-            {
-                year = productionYear;
-            }
+            var year = item.ProductionYear ?? yearInName;
 
             Logger.Info("MovieDbProvider: Finding id for movie: " + name);
             string language = ConfigurationManager.Configuration.PreferredMetadataLanguage.ToLower();
