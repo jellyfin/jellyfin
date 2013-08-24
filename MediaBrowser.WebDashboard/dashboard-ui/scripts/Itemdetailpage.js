@@ -135,7 +135,7 @@
             $('#scenesCollapsible', page).show();
             renderScenes(page, item, 6);
         }
-        if (!item.LocalTrailerCount || item.LocalTrailerCount == 0) {
+        if (!item.LocalTrailerCount && !item.RemoteTrailers.length) {
             $('#trailersCollapsible', page).addClass('hide');
         } else {
             $('#trailersCollapsible', page).removeClass('hide');
@@ -860,11 +860,28 @@
 
     function renderTrailers(page, item) {
 
-        ApiClient.getLocalTrailers(Dashboard.getCurrentUserId(), item.Id).done(function (trailers) {
+        var remoteTrailersHtml = '';
 
-            $('#trailersContent', page).html(getVideosHtml(trailers));
+        for (var i = 0, length = item.RemoteTrailers.length; i < length; i++) {
 
-        });
+            var trailer = item.RemoteTrailers[i];
+
+            var id = getParameterByName('v', trailer.Url);
+
+            if (id) {
+                remoteTrailersHtml += '<iframe style="margin:0 3px;display:inline-block;border:1px solid #555;position:relative;top:9px;" width="272" height="153" src="//www.youtube.com/embed/' + id + '" frameborder="0" allowfullscreen></iframe>';
+            }
+        }
+
+        var elem = $('#trailersContent', page).html(remoteTrailersHtml);
+
+        if (item.LocalTrailerCount) {
+            ApiClient.getLocalTrailers(Dashboard.getCurrentUserId(), item.Id).done(function (trailers) {
+
+                elem.prepend(getVideosHtml(trailers));
+
+            });
+        }
     }
 
     function renderCast(page, item, context, limit) {
@@ -947,11 +964,11 @@
             var userdata = currentItem.UserData || {};
 
             var mediaType = currentItem.MediaType;
-            
+
             if (currentItem.Type == "MusicArtist" || currentItem.Type == "MusicAlbum") {
                 mediaType = "Audio";
             }
-            
+
             LibraryBrowser.showPlayMenu(this, currentItem.Id, currentItem.Type, mediaType, userdata.PlaybackPositionTicks);
         });
 
