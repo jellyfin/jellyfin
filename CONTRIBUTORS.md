@@ -26,3 +26,4 @@
  - [doron1] (https://github.com/doron1)
  - [brainfryd] (https://github.com/brainfryd)
  - [DGMayor] (http://github.com/DGMayor)
+ - [Jon-theHTPC] (https://github.com/Jon-theHTPC)
