@@ -869,7 +869,7 @@
             var id = getParameterByName('v', trailer.Url);
 
             if (id) {
-                remoteTrailersHtml += '<iframe style="margin:0 3px;display:inline-block;border:1px solid #555;position:relative;top:9px;" width="272" height="153" src="//www.youtube.com/embed/' + id + '" frameborder="0" allowfullscreen></iframe>';
+                remoteTrailersHtml += '<iframe class="posterItem smallBackdropPosterItem" style="margin:0 3px;position:relative;top:9px;width:auto;" src="//www.youtube.com/embed/' + id + '" frameborder="0" allowfullscreen></iframe>';
             }
         }
 
