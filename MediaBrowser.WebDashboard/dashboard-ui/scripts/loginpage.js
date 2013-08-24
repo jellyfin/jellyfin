@@ -20,12 +20,12 @@
 
             if (showManualForm) {
 
-                $('#divUsers', '#loginPage').hide();
+                $('.visualLoginForm', '#loginPage').hide();
                 $('#manualLoginForm', '#loginPage').show();
 
             } else {
 
-                $('#divUsers', '#loginPage').show();
+                $('.visualLoginForm', '#loginPage').show();
                 $('#manualLoginForm', '#loginPage').hide();
 
                 LoginPage.loadUserList(users);

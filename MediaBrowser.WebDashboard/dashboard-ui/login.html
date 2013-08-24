@@ -8,7 +8,7 @@
 
         <div data-role="content">
 
-            <form id="manualLoginForm" style="display: none; text-align: center; margin: 0 auto;">
+            <form class="manualLoginForm" id="manualLoginForm" style="display: none; text-align: center; margin: 0 auto;">
                 <h2 style="text-align: left;">Please sign in</h2>
 
                 <label for="txtManualName" style="text-align: left;">User:</label>
@@ -24,7 +24,11 @@
                 </p>
             </form>
 
-            <div id="divUsers" style="display: none; margin: 50px 0 20px; text-align: center;"></div>
+            <div class="visualLoginForm" style="display: none; text-align: center;">
+                <div id="divUsers"></div>
+
+                <p style="text-align: center;"><a onclick="$('.manualLoginForm').show();$('.visualLoginForm').hide();" href="#">Manual Login</a></p>
+            </div>
         </div>
 
         <div data-role="popup" id="popupLogin" class="ui-corner-all popup">
