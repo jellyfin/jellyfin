@@ -28,3 +28,4 @@
  - [DGMayor] (http://github.com/DGMayor)
  - [Jon-theHTPC] (https://github.com/Jon-theHTPC)
  - [aspdend] (https://github.com/aspdend)
+ - [RedshirtMB](https://github.com/RedshirtMB)
