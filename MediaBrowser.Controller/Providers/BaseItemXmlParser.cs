@@ -173,8 +173,16 @@ namespace MediaBrowser.Controller.Providers
                         break;
                     }
                 case "SortTitle":
-                    item.ForcedSortName = reader.ReadElementContentAsString();
-                    break;
+                    {
+                        var val = reader.ReadElementContentAsString();
+
+                        if (!string.IsNullOrWhiteSpace(val))
+                        {
+                            item.ForcedSortName = val;
+                        }
+
+                        break;
+                    }
 
                 case "Overview":
                 case "Description":
@@ -503,7 +511,7 @@ namespace MediaBrowser.Controller.Providers
                         {
                             DateTime airDate;
 
-                            if (DateTime.TryParse(firstAired, out airDate) && airDate.Year > 1850)
+                            if (DateTime.TryParseExact(firstAired, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out airDate) && airDate.Year > 1850)
                             {
                                 item.PremiereDate = airDate.ToUniversalTime();
                                 item.ProductionYear = airDate.Year;
@@ -522,7 +530,7 @@ namespace MediaBrowser.Controller.Providers
                         {
                             DateTime airDate;
 
-                            if (DateTime.TryParse(firstAired, out airDate) && airDate.Year > 1850)
+                            if (DateTime.TryParseExact(firstAired, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out airDate) && airDate.Year > 1850)
                             {
                                 item.EndDate = airDate.ToUniversalTime();
                             }

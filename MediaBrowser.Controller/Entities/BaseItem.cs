@@ -409,7 +409,12 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                return ForcedSortName ?? _sortName ?? (_sortName = CreateSortName());
+                if (!string.IsNullOrEmpty(ForcedSortName))
+                {
+                    return ForcedSortName;
+                }
+
+                return _sortName ?? (_sortName = CreateSortName());
             }
         }
 
