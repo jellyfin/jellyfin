@@ -841,14 +841,6 @@
             currentPlaylistIndex = 0;
 
             var nowPlayingBar = $('#nowPlayingBar');
-
-            if (items.length > 1) {
-                $('#previousTrackButton', nowPlayingBar)[0].disabled = false;
-                $('#nextTrackButton', nowPlayingBar)[0].disabled = false;
-            } else {
-                $('#previousTrackButton', nowPlayingBar)[0].disabled = true;
-                $('#nextTrackButton', nowPlayingBar)[0].disabled = true;
-            }
         };
 
         self.playInternal = function (item, startPosition, user) {

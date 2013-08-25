@@ -644,7 +644,7 @@
         $('#txtTvdb', page).val(providerIds.Tvdb || "");
         $('#txtTvCom', page).val(providerIds.Tvcom || "");
         $('#txtMusicBrainz', page).val(providerIds.Musicbrainz || "");
-        $('#txtMusicBrainzReleaseGroupId', page).val(item.MusicBrainzReleaseGroupId || "");
+        $('#txtMusicBrainzReleaseGroupId', page).val(providerIds.MusicBrainzReleaseGroup || "");
         $('#txtRottenTomatoes', page).val(providerIds.RottenTomatoes || "");
 
     }
@@ -844,7 +844,7 @@
                     Tvdb: $('#txtTvdb', form).val(),
                     Tvcom: $('#txtTvCom', form).val(),
                     Musicbrainz: $('#txtMusicBrainz', form).val(),
-                    MusicBrainzReleaseGroupId: $('#txtMusicBrainzReleaseGroupId', form).val(),
+                    MusicBrainzReleaseGroup: $('#txtMusicBrainzReleaseGroupId', form).val(),
                     RottenTomatoes: $('#txtRottenTomatoes', form).val()
                 }
             };

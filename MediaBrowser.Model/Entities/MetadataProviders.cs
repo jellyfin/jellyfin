@@ -34,6 +34,7 @@ namespace MediaBrowser.Model.Entities
         /// <summary>
         /// Tmdb Collection Id
         /// </summary>
-        TmdbCollection
+        TmdbCollection,
+        MusicBrainzReleaseGroup
     }
 }

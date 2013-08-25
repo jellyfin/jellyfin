@@ -67,21 +67,6 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        /// <summary>
-        /// Return the id that should be used to key display prefs for this item.
-        /// Default is based on the type for everything except actual generic folders.
-        /// </summary>
-        /// <value>The display prefs id.</value>
-        [IgnoreDataMember]
-        public virtual Guid DisplayPreferencesId
-        {
-            get
-            {
-                var thisType = GetType();
-                return thisType == typeof(Folder) ? Id : thisType.FullName.GetMD5();
-            }
-        }
-
         public virtual List<LinkedChild> LinkedChildren { get; set; }
 
         protected virtual bool SupportsShortcutChildren

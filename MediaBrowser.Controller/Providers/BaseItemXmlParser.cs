@@ -548,13 +548,23 @@ namespace MediaBrowser.Controller.Providers
                     break;
 
                 case "MusicbrainzId":
-                    var mbz = reader.ReadElementContentAsString();
-                    if (!string.IsNullOrWhiteSpace(mbz))
                     {
-                        item.SetProviderId(MetadataProviders.Musicbrainz, mbz);
+                        var mbz = reader.ReadElementContentAsString();
+                        if (!string.IsNullOrWhiteSpace(mbz))
+                        {
+                            item.SetProviderId(MetadataProviders.Musicbrainz, mbz);
+                        }
+                        break;
                     }
-                    break;
-
+                case "MusicBrainzReleaseGroupId":
+                    {
+                        var mbz = reader.ReadElementContentAsString();
+                        if (!string.IsNullOrWhiteSpace(mbz))
+                        {
+                            item.SetProviderId(MetadataProviders.MusicBrainzReleaseGroup, mbz);
+                        }
+                        break;
+                    }
                 case "RottenTomatoesId":
                     var rtId = reader.ReadElementContentAsString();
                     if (!string.IsNullOrWhiteSpace(rtId))
