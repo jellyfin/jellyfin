@@ -273,13 +273,6 @@ namespace MediaBrowser.Api
                 song.Artist = request.Artists[0];
             }
 
-            var musicAlbum = item as MusicAlbum;
-
-            if (musicAlbum != null)
-            {
-                musicAlbum.MusicBrainzReleaseGroupId = request.GetProviderId("MusicBrainzReleaseGroupId");
-            }
-
             var musicVideo = item as MusicVideo;
 
             if (musicVideo != null)

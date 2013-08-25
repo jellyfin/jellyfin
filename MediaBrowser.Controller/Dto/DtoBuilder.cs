@@ -90,6 +90,11 @@ namespace MediaBrowser.Controller.Dto
                 }
             }
 
+            if (fields.Contains(ItemFields.DisplayPreferencesId))
+            {
+                dto.DisplayPreferencesId = item.DisplayPreferencesId.ToString("N");
+            }
+
             if (user != null)
             {
                 AttachUserSpecificInfo(dto, item, user, fields);
@@ -272,11 +277,6 @@ namespace MediaBrowser.Controller.Dto
         /// <param name="fields">The fields.</param>
         private void AttachUserSpecificInfo(BaseItemDto dto, BaseItem item, User user, List<ItemFields> fields)
         {
-            if (item.IsFolder && fields.Contains(ItemFields.DisplayPreferencesId))
-            {
-                dto.DisplayPreferencesId = ((Folder) item).DisplayPreferencesId.ToString("N");
-            }
-
             if (item.IsFolder)
             {
                 var hasItemCounts = fields.Contains(ItemFields.ItemCounts);

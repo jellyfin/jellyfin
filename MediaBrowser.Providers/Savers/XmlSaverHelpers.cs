@@ -65,6 +65,7 @@ namespace MediaBrowser.Providers.Savers
                     "IMDbId",
                     "TMDbId",
                     "TVcomId",
+                    "TvDbId",
                     "RottenTomatoesId",
                     "MusicbrainzId",
                     "TMDbCollectionId",
@@ -81,7 +82,8 @@ namespace MediaBrowser.Providers.Savers
                     "BirthDate",
                     "DeathDate",
                     "LockedFields",
-                    "Chapters"
+                    "Chapters",
+                    "MusicBrainzReleaseGroupId"
                 });
 
                 var position = xml.ToString().LastIndexOf("</", StringComparison.OrdinalIgnoreCase);
@@ -330,6 +332,13 @@ namespace MediaBrowser.Providers.Savers
             if (!string.IsNullOrEmpty(mbz))
             {
                 builder.Append("<MusicbrainzId>" + SecurityElement.Escape(mbz) + "</MusicbrainzId>");
+            }
+
+            mbz = item.GetProviderId(MetadataProviders.MusicBrainzReleaseGroup);
+
+            if (!string.IsNullOrEmpty(mbz))
+            {
+                builder.Append("<MusicBrainzReleaseGroupId>" + SecurityElement.Escape(mbz) + "</MusicBrainzReleaseGroupId>");
             }
 
             var gamesdb = item.GetProviderId(MetadataProviders.Gamesdb);

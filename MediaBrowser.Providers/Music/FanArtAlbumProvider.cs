@@ -182,10 +182,13 @@ namespace MediaBrowser.Providers.Music
 
                     var releaseEntryId = item.GetProviderId(MetadataProviders.Musicbrainz);
 
+                    var musicBrainzReleaseGroupId = album.GetProviderId(MetadataProviders.MusicBrainzReleaseGroup);
                     // Fanart uses the release group id so we'll have to get that now using the release entry id
-                    if (string.IsNullOrEmpty(album.MusicBrainzReleaseGroupId))
+                    if (string.IsNullOrEmpty(musicBrainzReleaseGroupId))
                     {
-                        album.MusicBrainzReleaseGroupId = await GetReleaseGroupId(releaseEntryId, cancellationToken).ConfigureAwait(false);
+                        musicBrainzReleaseGroupId = await GetReleaseGroupId(releaseEntryId, cancellationToken).ConfigureAwait(false);
+
+                        album.SetProviderId(MetadataProviders.MusicBrainzReleaseGroup, musicBrainzReleaseGroupId);
                     }
 
                     var doc = new XmlDocument();
@@ -199,9 +202,9 @@ namespace MediaBrowser.Providers.Music
                         // Try try with the release entry Id, if that doesn't produce anything try the release group id
                         var node = doc.SelectSingleNode("//fanart/music/albums/album[@id=\"" + releaseEntryId + "\"]/cdart/@url");
 
-                        if (node == null && !string.IsNullOrEmpty(album.MusicBrainzReleaseGroupId))
+                        if (node == null && !string.IsNullOrEmpty(musicBrainzReleaseGroupId))
                         {
-                            node = doc.SelectSingleNode("//fanart/music/albums/album[@id=\"" + album.MusicBrainzReleaseGroupId + "\"]/cdart/@url");
+                            node = doc.SelectSingleNode("//fanart/music/albums/album[@id=\"" + musicBrainzReleaseGroupId + "\"]/cdart/@url");
                         }
 
                         var path = node != null ? node.Value : null;
@@ -218,9 +221,9 @@ namespace MediaBrowser.Providers.Music
                         // Try try with the release entry Id, if that doesn't produce anything try the release group id
                         var node = doc.SelectSingleNode("//fanart/music/albums/album[@id=\"" + releaseEntryId + "\"]/albumcover/@url");
 
-                        if (node == null && !string.IsNullOrEmpty(album.MusicBrainzReleaseGroupId))
+                        if (node == null && !string.IsNullOrEmpty(musicBrainzReleaseGroupId))
                         {
-                            node = doc.SelectSingleNode("//fanart/music/albums/album[@id=\"" + album.MusicBrainzReleaseGroupId + "\"]/albumcover/@url");
+                            node = doc.SelectSingleNode("//fanart/music/albums/album[@id=\"" + musicBrainzReleaseGroupId + "\"]/albumcover/@url");
                         }
 
                         var path = node != null ? node.Value : null;

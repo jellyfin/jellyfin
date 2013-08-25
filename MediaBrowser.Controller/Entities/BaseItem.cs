@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
@@ -82,6 +83,21 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The id.</value>
         public Guid Id { get; set; }
+
+        /// <summary>
+        /// Return the id that should be used to key display prefs for this item.
+        /// Default is based on the type for everything except actual generic folders.
+        /// </summary>
+        /// <value>The display prefs id.</value>
+        [IgnoreDataMember]
+        public virtual Guid DisplayPreferencesId
+        {
+            get
+            {
+                var thisType = GetType();
+                return thisType == typeof(Folder) ? Id : thisType.FullName.GetMD5();
+            }
+        }
 
         /// <summary>
         /// Gets or sets the path.
