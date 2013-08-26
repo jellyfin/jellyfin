@@ -105,7 +105,7 @@
         $('.chkPremiumFilter', page).on('change', function () {
 
             if (this.checked) {
-                query.IsPremium = true;
+                query.IsPremium = false;
             } else {
                 query.IsPremium = null;
             }

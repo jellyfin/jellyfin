@@ -43,7 +43,7 @@ namespace MediaBrowser.Api
         [ApiMember(Name = "TargetSystems", Description = "Optional. Filter by target system type. Allows multiple, comma delimited.", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET", AllowMultiple = true)]
         public string TargetSystems { get; set; }
 
-        [ApiMember(Name = "IsPremium", Description = "Optiona. Filter by premium status", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
+        [ApiMember(Name = "IsPremium", Description = "Optional. Filter by premium status", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
         public bool? IsPremium { get; set; }
     }
 
