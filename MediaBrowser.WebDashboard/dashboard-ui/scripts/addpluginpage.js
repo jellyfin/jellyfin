@@ -149,7 +149,7 @@
                     $('.premiumHasPrice', page).hide();
                 }
             } else {
-                $('#regInfo', page).html("You must be a <a href='supporter.html'>Media Browser Supporter</a> in order to gain access to this feature.").trigger('create');
+                $('#regInfo', page).html("Please become a <a href='supporter.html'>Media Browser Supporter</a> in order to register this feature.").trigger('create');
                 $('#ppButton', page).hide();
             }
 
