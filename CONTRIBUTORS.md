@@ -39,3 +39,4 @@
  - [wraslor](https://github.com/wraslor)
  - [mrwebsmith](https://github.com/mrwebsmith)
  - [rickster53](https://github.com/rickster53)
+ - [Tharnax] (https://github.com/Tharnax)
