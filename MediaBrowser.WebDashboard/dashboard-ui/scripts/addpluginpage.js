@@ -112,7 +112,7 @@
                 regStatus += "You are currently registered for this feature";
             } else {
                 if (new Date(pkg.expDate).getTime() < new Date(1970, 1, 1).getTime()) {
-                    regStatus += "This feature has no registration information";
+                    regStatus += "This feature has never been installed on this system";
                 } else {
                     if (new Date(pkg.expDate).getTime() <= new Date().getTime()) {
                         regStatus += "The trial period for this feature has expired";
