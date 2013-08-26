@@ -992,39 +992,19 @@ input[type="range"]::-ms-fill-upper {
     padding-left: 5px;
 }
 
-.installedPluginTitle {
-    max-width: 85px;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    display: inline-block;
-}
-
 @media (min-width: 750px) {
-    .installedPluginTitle {
-        max-width: 110px;
-    }
-
     .itemVideo:not(.fullscreenVideo) {
         width: 320px;
     }
 }
 
 @media (min-width: 1200px) {
-    .installedPluginTitle {
-        max-width: 110px;
-    }
-
     .itemVideo:not(.fullscreenVideo) {
         width: 320px;
     }
 }
 
 @media (min-width: 1440px) {
-    .installedPluginTitle {
-        max-width: 110px;
-    }
-
     .itemVideo:not(.fullscreenVideo) {
         width: 400px;
     }
