@@ -52,6 +52,13 @@ namespace MediaBrowser.Providers.Movies
             get { return MetadataProviderPriority.First; }
         }
 
+        internal static string GetXmlFilename(BaseItem item)
+        {
+            var filename = "movie.xml";
+
+            return Path.Combine(item.MetaLocation, filename);
+        }
+
         /// <summary>
         /// Override this to return the date that should be compared to the last refresh date
         /// to determine if this provider should be re-fetched.
@@ -60,7 +67,7 @@ namespace MediaBrowser.Providers.Movies
         /// <returns>DateTime.</returns>
         protected override DateTime CompareDate(BaseItem item)
         {
-            var entry = item.ResolveArgs.GetMetaFileByPath(Path.Combine(item.MetaLocation, "movie.xml"));
+            var entry = item.ResolveArgs.GetMetaFileByPath(Path.Combine(item.MetaLocation, GetXmlFilename(item)));
             return entry != null ? entry.LastWriteTimeUtc : DateTime.MinValue;
         }
 
@@ -86,7 +93,7 @@ namespace MediaBrowser.Providers.Movies
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var metadataFile = item.ResolveArgs.GetMetaFileByPath(Path.Combine(item.MetaLocation, "movie.xml"));
+            var metadataFile = item.ResolveArgs.GetMetaFileByPath(Path.Combine(item.MetaLocation, GetXmlFilename(item)));
 
             if (metadataFile != null)
             {
