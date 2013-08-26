@@ -192,8 +192,6 @@ namespace MediaBrowser.Providers.Movies
             new Regex(@"(?<name>.*)") // last resort matches the whole string as the name
         };
 
-        public const string AltMetaFileName = "movie.xml";
-
         protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
         {
             if (HasAltMeta(item))
@@ -236,7 +234,10 @@ namespace MediaBrowser.Providers.Movies
             {
                 return item.LocationType == LocationType.FileSystem && item.ResolveArgs.ContainsMetaFileByName("collection.xml");
             }
-            return item.LocationType == LocationType.FileSystem && item.ResolveArgs.ContainsMetaFileByName(AltMetaFileName);
+
+            var xmlFileName = MovieProviderFromXml.GetXmlFilename(item);
+
+            return item.LocationType == LocationType.FileSystem && item.ResolveArgs.ContainsMetaFileByName(xmlFileName);
         }
 
         /// <summary>
