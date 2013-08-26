@@ -119,11 +119,14 @@ namespace MediaBrowser.Providers.Savers
 
         public string GetSavePath(BaseItem item)
         {
-            var video = (Video)item;
+            if (item.IsInMixedFolder)
+            {
+                return Path.ChangeExtension(item.Path, ".xml");
+            }
 
-            return video.IsInMixedFolder ?
-                Path.ChangeExtension(item.Path, ".xml") :
-                Path.Combine(item.MetaLocation, "movie.xml");
+            var filename = MovieProviderFromXml.GetXmlFilename(item);
+
+            return Path.Combine(item.MetaLocation, filename);
         }
     }
 }

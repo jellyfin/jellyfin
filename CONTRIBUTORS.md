@@ -41,3 +41,4 @@
  - [rickster53](https://github.com/rickster53)
  - [Tharnax] (https://github.com/Tharnax)
  - [0sm0] (https://github.com/0sm0)
+ - [swhitmore](https://github.com/swhitmore)
