@@ -9,20 +9,18 @@
         <div data-role="content">
             <div class="content-primary">
                 <div data-role="controlgroup" data-type="horizontal" data-mini="true">
-                    <a href="plugins.html" data-role="button">Installed Plugins</a>
+                    <a href="plugins.html" data-role="button">Installed Server Plugins</a>
                     <a href="plugincatalog.html" data-role="button" class="ui-btn-active">Plugin Catalog</a>
                     <a href="pluginupdates.html" data-role="button">Automatic Updates</a>
                 </div>
 
                 <div style=" margin-bottom: 10px">
-                    <p><strong>These are all the plug-ins available for Media Browser - including ones for other components. </strong></p>
-                    <p><strong>You can view basic information, registration status (for premium plug-ins) and register all plug-ins here, 
-                           but only server plug-ins can be installed. There are three types of plug-ins: <a data-rel="popup" data-position-to="origin" href="#freePlugins">Free</a>, 
+                    <p><strong>There are three types of plug-ins: <a data-rel="popup" data-position-to="origin" href="#freePlugins">Free</a>, 
                         <a data-rel="popup" data-position-to="origin" href="#supporterPlugins">Supporter-Only</a>, and <a data-rel="popup" data-position-to="origin" href="#premiumPlugins">Premium</a>.</strong></p>
                 </div>
-               <div style="margin: .75em 0;">
+               <div class="ui-grid-a">
 
-                    <div style="display: inline-block; margin-right: 1em;">
+                    <div class="ui-block-a" >
                         <label for="selectTargetSystem">Show plugins for</label>
                         <select id="selectTargetSystem" data-mini="true" data-inline="true" style="margin-left: .5em;">
                             <option value="Server">MB Server</option>
@@ -31,7 +29,12 @@
                         </select>
                     </div>
 
-                    <button data-mini="true" data-icon="filter" data-inline="true" onclick="$('#filterPanel', $.mobile.activePage).panel( 'toggle' );">Filter</button>
+                       <div class="ui-block-b" style="margin-top: 30px">
+                           <input class="chkPremiumFilter" type="checkbox" data-mini="true" data-inline="true" name="chkPremium" id="chkPremium" data-theme="c" data-filter="IsPremium">
+                           <label for="chkPremium">Show Free Items Only</label>
+                       </div>
+
+
                 </div>
 
                 <div id="noPlugins" class="hide">
@@ -43,18 +46,7 @@
             </div>
         </div>
 
-        <div data-role="panel" id="filterPanel" data-position="right" data-display="overlay" data-theme="b" data-position-fixed="true">
-            <form>
-                <fieldset data-role="controlgroup">
-                    <legend>
-                        <h3>Pricing:</h3>
-                    </legend>
-                    <input class="chkPremiumFilter" type="checkbox" name="chkPremium" id="chkPremium" data-theme="c" data-filter="IsPremium">
-                    <label for="chkPremium">Free Only</label>
-                </fieldset>
-            </form>
-        </div>
-        
+       
         <div data-role="popup" class="ui-content" id="freePlugins" data-theme="e" data-overlay-theme="a" style="max-width: 50%">
             <a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>
             <p>Free plug-ins can be installed and used by anyone for free. They will appear in the catalog without any banners.<p>
