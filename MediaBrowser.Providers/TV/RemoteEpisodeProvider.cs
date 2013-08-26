@@ -69,7 +69,7 @@ namespace MediaBrowser.Providers.TV
                 return ItemUpdateType.ImageUpdate | ItemUpdateType.MetadataDownload;
             }
         }
-        
+
         /// <summary>
         /// Gets the priority.
         /// </summary>
@@ -147,7 +147,7 @@ namespace MediaBrowser.Providers.TV
                     return seriesXmlFileInfo.LastWriteTimeUtc;
                 }
             }
-            
+
             return base.CompareDate(item);
         }
 
@@ -240,7 +240,7 @@ namespace MediaBrowser.Providers.TV
             {
                 return status;
             }
-            IEnumerable<XmlDocument> extraEpisodesNode = new XmlDocument[]{};
+            IEnumerable<XmlDocument> extraEpisodesNode = new XmlDocument[] { };
 
             if (episode.IndexNumberEnd.HasValue)
             {
@@ -262,7 +262,7 @@ namespace MediaBrowser.Providers.TV
                     var xElements = all.Where(x => int.Parse(x.Element("EpisodeNumber").Value) > episode.IndexNumber && int.Parse(x.Element("EpisodeNumber").Value) <= episode.IndexNumberEnd.Value);
                     extraEpisodesNode = xElements.OrderBy(x => x.Element("EpisodeNumber").Value).Select(x => x.ToXmlDocument());
                 }
-               
+
             }
             var doc = new XmlDocument();
             doc.LoadXml(episodeNode.OuterXml);
@@ -320,14 +320,15 @@ namespace MediaBrowser.Providers.TV
                     var persons = Regex.Matches(actors, @"([^|()]|\([^)]*\)*)+")
                         .Cast<Match>()
                         .Select(m => m.Value).Where(i => !string.IsNullOrWhiteSpace(i) && !string.IsNullOrEmpty(i));
-                    foreach (var person in persons.Select(str => {
-                                                              var nameGroup = str.Split(new[] {'('}, 2, StringSplitOptions.RemoveEmptyEntries);
-                                                              var name = nameGroup[0].Trim();
-                                                              var roles = nameGroup.Count() > 1 ? nameGroup[1].Trim() : null;
-                                                              if (roles != null)
-                                                                  roles = roles.EndsWith(")") ? roles.Substring(0, roles.Length - 1) : roles;
-                                                              return new PersonInfo {Type = PersonType.GuestStar, Name = name, Role = roles};
-                                                          }))
+                    foreach (var person in persons.Select(str =>
+                    {
+                        var nameGroup = str.Split(new[] { '(' }, 2, StringSplitOptions.RemoveEmptyEntries);
+                        var name = nameGroup[0].Trim();
+                        var roles = nameGroup.Count() > 1 ? nameGroup[1].Trim() : null;
+                        if (roles != null)
+                            roles = roles.EndsWith(")") ? roles.Substring(0, roles.Length - 1) : roles;
+                        return new PersonInfo { Type = PersonType.GuestStar, Name = name, Role = roles };
+                    }))
                     {
                         episode.AddPerson(person);
                     }
@@ -340,14 +341,15 @@ namespace MediaBrowser.Providers.TV
                     var persons = Regex.Matches(extraActors, @"([^|()]|\([^)]*\)*)+")
                         .Cast<Match>()
                         .Select(m => m.Value).Where(i => !string.IsNullOrWhiteSpace(i) && !string.IsNullOrEmpty(i));
-                    foreach (var person in persons.Select(str => {
-                                                              var nameGroup = str.Split(new[] {'('}, 2, StringSplitOptions.RemoveEmptyEntries);
-                                                              var name = nameGroup[0].Trim();
-                                                              var roles = nameGroup.Count() > 1 ? nameGroup[1].Trim() : null;
-                                                              if (roles != null)
-                                                                  roles = roles.EndsWith(")") ? roles.Substring(0, roles.Length - 1) : roles;
-                                                              return new PersonInfo {Type = PersonType.GuestStar, Name = name, Role = roles};
-                                                          }).Where(person => !episode.People.Any(x => x.Type == person.Type && x.Name == person.Name))
+                    foreach (var person in persons.Select(str =>
+                    {
+                        var nameGroup = str.Split(new[] { '(' }, 2, StringSplitOptions.RemoveEmptyEntries);
+                        var name = nameGroup[0].Trim();
+                        var roles = nameGroup.Count() > 1 ? nameGroup[1].Trim() : null;
+                        if (roles != null)
+                            roles = roles.EndsWith(")") ? roles.Substring(0, roles.Length - 1) : roles;
+                        return new PersonInfo { Type = PersonType.GuestStar, Name = name, Role = roles };
+                    }).Where(person => !episode.People.Any(x => x.Type == person.Type && x.Name == person.Name))
                         )
                     {
                         episode.AddPerson(person);
@@ -358,9 +360,9 @@ namespace MediaBrowser.Providers.TV
                 if (directors != null)
                 {
                     // Sometimes tvdb actors have leading spaces
-                    foreach (var person in directors.Split(new[] {'|'}, StringSplitOptions.RemoveEmptyEntries)
+                    foreach (var person in directors.Split(new[] { '|', ',' }, StringSplitOptions.RemoveEmptyEntries)
                                                     .Where(i => !string.IsNullOrWhiteSpace(i))
-                                                    .Select(str => new PersonInfo {Type = PersonType.Director, Name = str.Trim()}))
+                                                    .Select(str => new PersonInfo { Type = PersonType.Director, Name = str.Trim() }))
                     {
                         episode.AddPerson(person);
                     }
@@ -371,9 +373,9 @@ namespace MediaBrowser.Providers.TV
                 if (writers != null)
                 {
                     // Sometimes tvdb actors have leading spaces
-                    foreach (var person in writers.Split(new[] {'|'}, StringSplitOptions.RemoveEmptyEntries)
+                    foreach (var person in writers.Split(new[] { '|', ',' }, StringSplitOptions.RemoveEmptyEntries)
                                                   .Where(i => !string.IsNullOrWhiteSpace(i))
-                                                  .Select(str => new PersonInfo {Type = PersonType.Writer, Name = str.Trim()}))
+                                                  .Select(str => new PersonInfo { Type = PersonType.Writer, Name = str.Trim() }))
                     {
                         episode.AddPerson(person);
                     }
