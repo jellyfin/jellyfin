@@ -35,9 +35,11 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         public bool ShouldIgnore(ItemResolveArgs args)
         {
+            var filename = args.FileInfo.Name;
+
             // Handle mac .DS_Store
             // https://github.com/MediaBrowser/MediaBrowser/issues/427
-            if (args.Path.IndexOf("._", StringComparison.OrdinalIgnoreCase) == 0)
+            if (filename.IndexOf("._", StringComparison.OrdinalIgnoreCase) == 0)
             {
                 return true;    
             }
@@ -78,8 +80,6 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (args.IsDirectory)
             {
-                var filename = args.FileInfo.Name;
-
                 // Ignore any folders in our list
                 if (IgnoreFolders.ContainsKey(filename))
                 {
@@ -107,8 +107,6 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 if (args.Parent != null)
                 {
-                    var filename = args.FileInfo.Name;
-
                     if (string.Equals(Path.GetFileNameWithoutExtension(filename), BaseItem.ThemeSongFilename) && EntityResolutionHelper.IsAudioFile(filename))
                     {
                         return true;
