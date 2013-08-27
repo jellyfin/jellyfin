@@ -35,6 +35,13 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         public bool ShouldIgnore(ItemResolveArgs args)
         {
+            // Handle mac .DS_Store
+            // https://github.com/MediaBrowser/MediaBrowser/issues/427
+            if (args.Path.IndexOf("._", StringComparison.OrdinalIgnoreCase) == 0)
+            {
+                return true;    
+            }
+
             // Ignore hidden files and folders
             if (args.IsHidden)
             {
