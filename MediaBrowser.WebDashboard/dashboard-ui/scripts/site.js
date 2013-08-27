@@ -1124,7 +1124,6 @@ Dashboard.jQueryMobileInit();
 $(document).on('pagebeforeshow', ".page", function () {
 
     var page = $(this);
-	var pageId = this.id;
 
     var userId = Dashboard.getCurrentUserId();
     ApiClient.currentUserId(userId);
@@ -1148,7 +1147,7 @@ $(document).on('pagebeforeshow', ".page", function () {
 
             if (user.Configuration.IsAdministrator) {
                 Dashboard.ensureToolsMenu(page);
-            } else if (pageId == "dashboardPage") {
+            } else if (page.hasClass('adminPage')) {
                 window.location.replace("index.html");
             }
 
