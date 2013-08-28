@@ -55,13 +55,13 @@
 
         html += '<p style="text-align:center;margin:.75em 0 0;">';
 
-        html += '<span id="browseButtonContainer" style="display:none;"><button onclick="$(\'#fldPlayCommand\').val(\'Browse\');" type="submit" data-icon="arrow-right" data-theme="b" data-mini="true" data-inline="true">Browse</button></span>';
-
         html += '<span id="playButtonContainer" style="display:none;"><button onclick="$(\'#fldPlayCommand\').val(\'PlayNow\');" type="submit" data-icon="play" data-theme="b" data-mini="true" data-inline="true">Play</button></span>';
 
         html += '<span id="resumeButtonContainer" style="display:none;"><button onclick="$(\'#fldPlayCommand\').val(\'Resume\');" type="submit" data-icon="play" data-theme="b" data-mini="true" data-inline="true">Resume</button></span>';
 
         html += '<span id="queueButtonContainer" style="display:none;"><button onclick="$(\'#fldPlayCommand\').val(\'PlayLast\');" type="submit" data-icon="plus" data-theme="b" data-mini="true" data-inline="true">Queue</button></span>';
+
+        html += '<span id="browseButtonContainer" style="display:none;"><button onclick="$(\'#fldPlayCommand\').val(\'Browse\');" type="submit" data-icon="arrow-right" data-theme="b" data-mini="true" data-inline="true">Browse</button></span>';
 
         html += '<button type="button" data-icon="delete" onclick="$(\'#remoteControlFlyout\').popup(\'close\');" data-theme="a" data-mini="true" data-inline="true">Cancel</button>';
 
@@ -126,6 +126,7 @@
             var command = $('#selectCommand', popup).val();
 
             var promise;
+            var showRemoteControlMenuAfterCommand = true;
 
             if (command == "Play") {
 
@@ -158,6 +159,8 @@
                         Context: options.context
 
                     });
+
+                    showRemoteControlMenuAfterCommand = false;
                 }
                 else {
                     promise = ApiClient.sendPlayCommand(sessionIds[0], {
@@ -200,6 +203,10 @@
             promise.done(function () {
 
                 popup.popup("close");
+                
+                if (showRemoteControlMenuAfterCommand) {
+                    RemoteControl.showMenu();
+                }
             });
 
             return false;
