@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -272,7 +273,7 @@ namespace MediaBrowser.Common.Implementations
 
                 RegisterSingleInstance(TaskManager);
 
-                HttpClient = new HttpClientManager.HttpClientManager(ApplicationPaths, Logger);
+                HttpClient = new HttpClientManager.HttpClientManager(ApplicationPaths, Logger, GetHttpMessageHandler);
                 RegisterSingleInstance(HttpClient);
 
                 NetworkManager = new NetworkManager();
@@ -285,6 +286,8 @@ namespace MediaBrowser.Common.Implementations
                 RegisterSingleInstance(InstallationManager);
             });
         }
+
+        protected abstract HttpMessageHandler GetHttpMessageHandler(bool enableHttpCompression);
 
         /// <summary>
         /// Gets a list of types within an assembly
