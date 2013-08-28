@@ -50,6 +50,9 @@ using System.Data.SQLite;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Cache;
+using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -659,6 +662,15 @@ namespace MediaBrowser.ServerApplication
         protected override string ApplicationUpdatePackageName
         {
             get { return Constants.MbServerPkgName; }
+        }
+
+        protected override HttpMessageHandler GetHttpMessageHandler(bool enableHttpCompression)
+        {
+            return new WebRequestHandler
+            {
+                CachePolicy = new RequestCachePolicy(RequestCacheLevel.Revalidate),
+                AutomaticDecompression = enableHttpCompression ? DecompressionMethods.Deflate : DecompressionMethods.None
+            };
         }
     }
 }

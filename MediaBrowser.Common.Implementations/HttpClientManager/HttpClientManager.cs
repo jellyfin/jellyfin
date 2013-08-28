@@ -9,8 +9,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Net.Cache;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
@@ -33,6 +31,10 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         /// </summary>
         private readonly IApplicationPaths _appPaths;
 
+        public delegate HttpMessageHandler GetHttpMessageHandler(bool enableHttpCompression);
+
+        private readonly GetHttpMessageHandler _getHttpMessageHandler;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpClientManager" /> class.
         /// </summary>
@@ -43,7 +45,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         /// or
         /// logger
         /// </exception>
-        public HttpClientManager(IApplicationPaths appPaths, ILogger logger)
+        public HttpClientManager(IApplicationPaths appPaths, ILogger logger, GetHttpMessageHandler getHttpMessageHandler)
         {
             if (appPaths == null)
             {
@@ -55,6 +57,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             }
 
             _logger = logger;
+            _getHttpMessageHandler = getHttpMessageHandler;
             _appPaths = appPaths;
         }
 
@@ -85,15 +88,9 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
             if (!_httpClients.TryGetValue(key, out client))
             {
-                var handler = new WebRequestHandler
-                {
-                    CachePolicy = new RequestCachePolicy(RequestCacheLevel.Revalidate),
-                    AutomaticDecompression = enableHttpCompression ? DecompressionMethods.Deflate : DecompressionMethods.None
-                };
-
                 client = new HttpClientInfo
                 {
-                    HttpClient = new HttpClient(handler)
+                    HttpClient = new HttpClient(_getHttpMessageHandler(enableHttpCompression))
                     {
                         Timeout = TimeSpan.FromSeconds(20)
                     }
