@@ -194,7 +194,7 @@ namespace MediaBrowser.Providers.TV
 
             if (string.IsNullOrEmpty(seriesId))
             {
-                seriesId = await GetSeriesId(series, cancellationToken);
+                seriesId = await FindSeries(series.Name, cancellationToken).ConfigureAwait(false);
             }
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -447,33 +447,14 @@ namespace MediaBrowser.Providers.TV
         }
 
         /// <summary>
-        /// Gets the series id.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{System.String}.</returns>
-        private async Task<string> GetSeriesId(BaseItem item, CancellationToken cancellationToken)
-        {
-            var seriesId = item.GetProviderId(MetadataProviders.Tvdb);
-            if (string.IsNullOrEmpty(seriesId))
-            {
-                seriesId = await FindSeries(item.Name, cancellationToken).ConfigureAwait(false);
-            }
-            return seriesId;
-        }
-
-
-        /// <summary>
         /// Finds the series.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.String}.</returns>
-        public async Task<string> FindSeries(string name, CancellationToken cancellationToken)
+        private async Task<string> FindSeries(string name, CancellationToken cancellationToken)
         {
-
-            //nope - search for it
-            string url = string.Format(RootUrl + SeriesQuery, WebUtility.UrlEncode(name));
+            var url = string.Format(RootUrl + SeriesQuery, WebUtility.UrlEncode(name));
             var doc = new XmlDocument();
 
             using (var results = await HttpClient.Get(new HttpRequestOptions
@@ -489,8 +470,8 @@ namespace MediaBrowser.Providers.TV
 
             if (doc.HasChildNodes)
             {
-                XmlNodeList nodes = doc.SelectNodes("//Series");
-                string comparableName = GetComparableName(name);
+                var nodes = doc.SelectNodes("//Series");
+                var comparableName = GetComparableName(name);
                 if (nodes != null)
                     foreach (XmlNode node in nodes)
                     {
@@ -507,6 +488,16 @@ namespace MediaBrowser.Providers.TV
                                 Logger.Info("TVDb Provider - " + n.InnerText + " did not match " + comparableName);
                         }
                     }
+            }
+
+            // Try stripping off the year if it was supplied
+            var parenthIndex = name.LastIndexOf('(');
+
+            if (parenthIndex != -1)
+            {
+                var newName = name.Substring(0, parenthIndex);
+
+                return await FindSeries(newName, cancellationToken);
             }
 
             Logger.Info("TVDb Provider - Could not find " + name + ". Check name on Thetvdb.org.");
