@@ -3,6 +3,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Implementations.ScheduledTasks;
 using System;
@@ -111,7 +112,11 @@ namespace MediaBrowser.Server.Implementations.IO
 
             var pathsToWatch = new List<string> { LibraryManager.RootFolder.Path };
 
-            var paths = LibraryManager.RootFolder.Children.OfType<Folder>()
+            var paths = LibraryManager
+                .RootFolder
+                .Children
+                .OfType<Folder>()
+                .Where(i => i.LocationType != LocationType.Remote && i.LocationType != LocationType.Virtual)
                 .SelectMany(f =>
                     {
                         try
@@ -125,7 +130,10 @@ namespace MediaBrowser.Server.Implementations.IO
                         }
 
                     })
-                .Where(Path.IsPathRooted);
+                .Where(Path.IsPathRooted)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(i => i)
+                .ToList();
 
             foreach (var path in paths)
             {
