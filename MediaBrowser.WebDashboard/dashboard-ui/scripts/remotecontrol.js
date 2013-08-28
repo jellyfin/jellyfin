@@ -646,7 +646,7 @@
 
         html += '</div>';
 
-        html += '<div data-role="collapsible" data-content-theme="c" data-collapsed="true" data-mini="true" style="margin-top: 1em;">';
+        html += '<div class="commandsCollapsible" data-role="collapsible" data-content-theme="c" data-collapsed="true" data-mini="true" style="margin-top: 1em;display:none;">';
         html += '<h4>Commands</h4>';
         html += '<div>';
         
@@ -841,10 +841,12 @@
 
             $('.nothingPlaying', popup).hide();
             $('.nowPlaying', popup).hide();
+            $('.commandsCollapsible', popup).hide();
 
         }
         else if (session.NowPlayingItem) {
 
+            $('.commandsCollapsible', popup).show();
             $('.nothingPlaying', popup).hide();
 
             var elem = $('.nowPlaying', popup).show();
@@ -853,6 +855,7 @@
 
         } else {
 
+            $('.commandsCollapsible', popup).show();
             $('.nothingPlaying', popup).show();
             $('.nowPlaying', popup).hide();
         }
