@@ -122,6 +122,10 @@ var WebNotifications = {
                 });
             }
         }
+    },
+    
+    supported: function() {
+        return window.Notification || window.webkitNotifications;
     }
 };
 

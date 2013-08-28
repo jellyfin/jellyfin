@@ -840,7 +840,7 @@ var Dashboard = {
 
             var cmd = msg.Data;
 
-            if (cmd.TimeoutMs) {
+            if (cmd.TimeoutMs && WebNotifications.supported()) {
                 var notification = {
                     title: cmd.Header,
                     body: cmd.Text,
