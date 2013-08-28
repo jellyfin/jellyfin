@@ -20,7 +20,7 @@ namespace MediaBrowser.Controller.Dto
                 Client = session.Client,
                 DeviceId = session.DeviceId,
                 DeviceName = session.DeviceName,
-                Id = session.Id,
+                Id = session.Id.ToString("N"),
                 LastActivityDate = session.LastActivityDate,
                 NowPlayingPositionTicks = session.NowPlayingPositionTicks,
                 SupportsRemoteControl = session.SupportsRemoteControl,
