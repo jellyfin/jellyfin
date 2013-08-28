@@ -65,7 +65,7 @@ namespace MediaBrowser.Api.Playback.Hls
         /// <returns>System.Object.</returns>
         public object Get(GetHlsAudioSegment request)
         {
-            var file = SegmentFilePrefix + request.SegmentId + Path.GetExtension(RequestContext.PathInfo);
+            var file = request.SegmentId + Path.GetExtension(RequestContext.PathInfo);
 
             file = Path.Combine(ApplicationPaths.EncodedMediaCachePath, file);
 

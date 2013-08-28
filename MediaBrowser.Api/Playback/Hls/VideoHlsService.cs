@@ -5,8 +5,6 @@ using MediaBrowser.Model.IO;
 using ServiceStack.ServiceHost;
 using System;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.Playback.Hls
 {
@@ -23,7 +21,7 @@ namespace MediaBrowser.Api.Playback.Hls
     /// <summary>
     /// Class GetHlsVideoSegment
     /// </summary>
-    [Route("/Videos/{Id}/hls/{SegmentId}/stream.ts", "GET")]
+    [Route("/Videos/{Id}/hls/{PlaylistId}/{SegmentId}.ts", "GET")]
     [Api(Description = "Gets an Http live streaming segment file. Internal use only.")]
     public class GetHlsVideoSegment
     {
@@ -33,6 +31,8 @@ namespace MediaBrowser.Api.Playback.Hls
         /// <value>The id.</value>
         public string Id { get; set; }
 
+        public string PlaylistId { get; set; }
+        
         /// <summary>
         /// Gets or sets the segment id.
         /// </summary>
@@ -40,6 +40,22 @@ namespace MediaBrowser.Api.Playback.Hls
         public string SegmentId { get; set; }
     }
 
+    /// <summary>
+    /// Class GetHlsVideoSegment
+    /// </summary>
+    [Route("/Videos/{Id}/hls/{PlaylistId}/stream.m3u8", "GET")]
+    [Api(Description = "Gets an Http live streaming segment file. Internal use only.")]
+    public class GetHlsPlaylist
+    {
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        public string Id { get; set; }
+
+        public string PlaylistId { get; set; }
+    }
+    
     /// <summary>
     /// Class VideoHlsService
     /// </summary>
@@ -65,23 +81,20 @@ namespace MediaBrowser.Api.Playback.Hls
         /// <returns>System.Object.</returns>
         public object Get(GetHlsVideoSegment request)
         {
-            foreach (var playlist in Directory.EnumerateFiles(ApplicationPaths.EncodedMediaCachePath, "*.m3u8").ToList())
-            {
-                ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlist, TranscodingJobType.Hls);
-
-                // Avoid implicitly captured closure
-                var playlist1 = playlist;
-
-                Task.Run(async () =>
-                {
-                    // This is an arbitrary time period corresponding to when the request completes.
-                    await Task.Delay(30000).ConfigureAwait(false);
-
-                    ApiEntryPoint.Instance.OnTranscodeEndRequest(playlist1, TranscodingJobType.Hls);
-                });
-            }
+            ExtendHlsTimer(request.Id, request.PlaylistId);
             
-            var file = SegmentFilePrefix + request.SegmentId + Path.GetExtension(RequestContext.PathInfo);
+            var file = request.SegmentId + Path.GetExtension(RequestContext.PathInfo);
+
+            file = Path.Combine(ApplicationPaths.EncodedMediaCachePath, file);
+
+            return ResultFactory.GetStaticFileResult(RequestContext, file);
+        }
+
+        public object Get(GetHlsPlaylist request)
+        {
+            ExtendHlsTimer(request.Id, request.PlaylistId);
+
+            var file = request.PlaylistId + Path.GetExtension(RequestContext.PathInfo);
 
             file = Path.Combine(ApplicationPaths.EncodedMediaCachePath, file);
 
