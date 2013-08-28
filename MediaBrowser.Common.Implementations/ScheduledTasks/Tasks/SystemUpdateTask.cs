@@ -48,6 +48,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
         /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
         public IEnumerable<ITaskTrigger> GetDefaultTriggers()
         {
+            // Until we can vary these default triggers per server and MBT, we need something that makes sense for both
             return new ITaskTrigger[] { 
             
                 // At startup
