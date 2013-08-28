@@ -233,11 +233,7 @@ namespace MediaBrowser.Api.Playback.Progressive
         {
             responseHeaders["Accept-Ranges"] = "none";
 
-            var httpClient = new HttpClient(new WebRequestHandler
-            {
-                CachePolicy = new RequestCachePolicy(RequestCacheLevel.BypassCache),
-                AutomaticDecompression = DecompressionMethods.None
-            });
+            var httpClient = new HttpClient();
 
             using (var message = new HttpRequestMessage(HttpMethod.Get, item.Path))
             {
