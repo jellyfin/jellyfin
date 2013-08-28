@@ -1199,17 +1199,21 @@
             }
         };
 
-        self.volumeUp = function () {
-
-            if (currentMediaElement) {
-                currentMediaElement.volume = Math.max(currentMediaElement.volume - 5, 0);
-            }
-        };
-
         self.volumeDown = function () {
 
             if (currentMediaElement) {
-                currentMediaElement.volume = Math.min(currentMediaElement.volume + 5, 100);
+                currentMediaElement.volume = Math.max(currentMediaElement.volume - .025, 0);
+
+                volumeSlider.val(currentMediaElement.volume);
+            }
+        };
+
+        self.volumeUp = function () {
+
+            if (currentMediaElement) {
+                currentMediaElement.volume = Math.min(currentMediaElement.volume + .025, 1);
+
+                volumeSlider.val(currentMediaElement.volume);
             }
         };
 

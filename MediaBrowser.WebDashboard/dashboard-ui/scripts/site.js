@@ -848,7 +848,8 @@ var Dashboard = {
                 };
 
                 WebNotifications.show(notification);
-            } else {
+            }
+            else {
                 Dashboard.showFooterNotification({ html: "<b>" + cmd.Header + ":&nbsp;&nbsp;&nbsp;</b>" + cmd.Text, timeout: cmd.TimeoutMs });
             }
 

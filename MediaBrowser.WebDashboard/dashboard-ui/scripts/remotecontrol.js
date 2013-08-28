@@ -646,7 +646,22 @@
 
         html += '</div>';
 
-        html += '<p style="text-align:center;margin:.75em 0 0;">';
+        html += '<div data-role="collapsible" data-content-theme="c" data-collapsed="true" data-mini="true" style="margin-top: 1em;">';
+        html += '<h4>Commands</h4>';
+        html += '<div>';
+        
+        html += '<p style="text-align:center;">';
+
+        html += '<button class="btnGoHome" type="button" data-icon="home" data-mini="true" data-inline="true">Go home</button>';
+        html += '<button class="btnGoToSettings" type="button" data-icon="wrench" data-mini="true" data-inline="true">Go to settings</button>';
+
+        html += '</p>';
+
+        html += '</div>';
+        html += '</div>';
+
+
+        html += '<p style="text-align:center;margin:1em 0 0;">';
 
         html += '<button type="button" data-icon="delete" onclick="$(\'#remoteControlFlyout\').popup(\'close\');" data-theme="a" data-mini="true" data-inline="true">Close</button>';
 
@@ -685,6 +700,41 @@
             });
 
         }
+
+        $('.btnGoHome', popup).on('click', function () {
+
+            var id = $('#selectSession', popup).val();
+
+            ApiClient.sendSystemCommand(id, 'GoHome');
+        });
+
+        $('.btnGoToSettings', popup).on('click', function () {
+
+            var id = $('#selectSession', popup).val();
+
+            ApiClient.sendSystemCommand(id, 'GoToSettings');
+        });
+
+        $('.btnVolumeDown', popup).on('click', function () {
+
+            var id = $('#selectSession', popup).val();
+
+            ApiClient.sendSystemCommand(id, 'VolumeDown');
+        });
+
+        $('.btnVolumeUp', popup).on('click', function () {
+
+            var id = $('#selectSession', popup).val();
+
+            ApiClient.sendSystemCommand(id, 'VolumeUp');
+        });
+
+        $('.btnToggleMute', popup).on('click', function () {
+
+            var id = $('#selectSession', popup).val();
+
+            ApiClient.sendSystemCommand(id, 'ToggleMute');
+        });
 
         $('.btnStop', popup).on('click', function () {
 
@@ -769,6 +819,9 @@
         html += '<span class="btnPlayParent"><button class="btnPlay" type="button" data-icon="play" data-inline="true" data-iconpos="notext">Play</button></span>';
         html += '<button class="btnStop" type="button" data-icon="stop" data-inline="true" data-iconpos="notext">Stop</button>';
         html += '<button class="btnNextTrack" type="button" data-icon="step-forward" data-inline="true" data-iconpos="notext">Next track</button>';
+        html += '<button class="btnVolumeDown" type="button" data-icon="volume-down" data-inline="true" data-iconpos="notext">Decrease volume</button>';
+        html += '<button class="btnVolumeUp" type="button" data-icon="volume-up" data-inline="true" data-iconpos="notext">Increase volume</button>';
+        html += '<button class="btnToggleMute" type="button" data-icon="volume-off" data-inline="true" data-iconpos="notext">Toggle mute</button>';
         html += '</div>';
 
 
