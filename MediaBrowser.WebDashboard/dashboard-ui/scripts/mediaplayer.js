@@ -1180,11 +1180,37 @@
         };
 
         self.mute = function () {
-            currentMediaElement.volume = 0;
+
+            if (currentMediaElement) {
+                currentMediaElement.volume = 0;
+            }
         };
 
         self.unmute = function () {
-            currentMediaElement.volume = volumeSlider.val();
+            if (currentMediaElement) {
+                currentMediaElement.volume = volumeSlider.val();
+            }
+        };
+
+        self.toggleMute = function () {
+
+            if (currentMediaElement) {
+                currentMediaElement.volume = currentMediaElement.volume ? 0 : volumeSlider.val();
+            }
+        };
+
+        self.volumeUp = function () {
+
+            if (currentMediaElement) {
+                currentMediaElement.volume = Math.max(currentMediaElement.volume - 5, 0);
+            }
+        };
+
+        self.volumeDown = function () {
+
+            if (currentMediaElement) {
+                currentMediaElement.volume = Math.min(currentMediaElement.volume + 5, 100);
+            }
         };
 
         self.stop = function () {

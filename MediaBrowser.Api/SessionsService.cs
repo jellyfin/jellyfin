@@ -166,7 +166,7 @@ namespace MediaBrowser.Api
         [ApiMember(Name = "Header", Description = "The message header.", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string Header { get; set; }
 
-        [ApiMember(Name = "TimeoutMs", Description = "The message timeout. If omitted the user will have to confirm viewing the message.", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
+        [ApiMember(Name = "TimeoutMs", Description = "The message timeout. If omitted the user will have to confirm viewing the message.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
         public long? TimeoutMs { get; set; }
     }
 
@@ -255,7 +255,7 @@ namespace MediaBrowser.Api
                 throw new InvalidOperationException("The requested session does not have an open web socket.");
             }
         }
-        
+
         /// <summary>
         /// Posts the specified request.
         /// </summary>
@@ -399,7 +399,7 @@ namespace MediaBrowser.Api
 
                         Data = new MessageCommand
                         {
-                            Header = request.Header,
+                            Header = string.IsNullOrEmpty(request.Header) ? "Message from Server" : request.Header,
                             TimeoutMs = request.TimeoutMs,
                             Text = request.Text
                         }

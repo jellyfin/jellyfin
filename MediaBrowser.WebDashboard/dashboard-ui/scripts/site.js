@@ -72,9 +72,9 @@ var Dashboard = {
         if (header.length) {
             // Re-render the header
             header.remove();
-            
+
             if (Dashboard.getUserPromise) {
-                Dashboard.getUserPromise.done(function(user) {
+                Dashboard.getUserPromise.done(function (user) {
                     Dashboard.ensureHeader(page, user);
                 });
             } else {
@@ -812,6 +812,48 @@ var Dashboard = {
                 MediaPlayer.previousTrack();
             }
         }
+        else if (msg.MessageType === "SystemCommand") {
+
+            if (msg.Data === 'GoHome') {
+                Dashboard.navigate('index.html');
+            }
+            else if (msg.Data === 'GoToSettings') {
+                Dashboard.navigate('dashboard.html');
+            }
+            else if (msg.Data === 'Mute') {
+                MediaPlayer.mute();
+            }
+            else if (msg.Data === 'Unmute') {
+                MediaPlayer.unmute();
+            }
+            else if (msg.Data === 'VolumeUp') {
+                MediaPlayer.volumeUp();
+            }
+            else if (msg.Data === 'VolumeDown') {
+                MediaPlayer.volumeDown();
+            }
+            else if (msg.Data === 'ToggleMute') {
+                MediaPlayer.toggleMute();
+            }
+        }
+        else if (msg.MessageType === "MessageCommand") {
+
+            var cmd = msg.Data;
+
+            if (cmd.TimeoutMs) {
+                var notification = {
+                    title: cmd.Header,
+                    body: cmd.Text,
+                    timeout: cmd.TimeoutMs
+                };
+
+                WebNotifications.show(notification);
+            } else {
+                Dashboard.showFooterNotification({ html: "<b>" + cmd.Header + ":&nbsp;&nbsp;&nbsp;</b>" + cmd.Text, timeout: cmd.TimeoutMs });
+            }
+
+        }
+
     },
 
     onBrowseCommand: function (cmd) {
@@ -1113,7 +1155,7 @@ $(function () {
 
         alert("This browser does not support web sockets. For a better experience, try a newer browser such as Chrome (android, desktop), Firefox, IE10, Safari (iOS) or Opera.");
     }
-    
+
     if (!IsStorageEnabled()) {
         alert("This browser does not support local storage or is running in private mode. For a better experience, try a newer browser such as Chrome (android, desktop), Firefox, IE10, Safari (iOS) or Opera.");
     }
@@ -1135,7 +1177,7 @@ $(document).on('pagebeforeshow', ".page", function () {
             Dashboard.logout();
             return;
         }
-        
+
         Dashboard.ensureHeader(page);
         Dashboard.ensurePageTitle(page);
         Dashboard.refreshSystemInfoFromServer();
