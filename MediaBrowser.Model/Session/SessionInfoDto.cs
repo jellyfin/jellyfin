@@ -9,7 +9,7 @@ namespace MediaBrowser.Model.Session
         /// Gets or sets the id.
         /// </summary>
         /// <value>The id.</value>
-        public Guid Id { get; set; }
+        public string Id { get; set; }
 
         /// <summary>
         /// Gets or sets the user id.
