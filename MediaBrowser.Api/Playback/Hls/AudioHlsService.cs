@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Common.MediaInfo;
+﻿using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
@@ -23,8 +22,8 @@ namespace MediaBrowser.Api.Playback.Hls
     /// <summary>
     /// Class GetHlsAudioSegment
     /// </summary>
-    [Route("/Audio/{Id}/segments/{SegmentId}/stream.mp3", "GET")]
-    [Route("/Audio/{Id}/segments/{SegmentId}/stream.aac", "GET")]
+    [Route("/Audio/{Id}/hls/{SegmentId}/stream.mp3", "GET")]
+    [Route("/Audio/{Id}/hls/{SegmentId}/stream.aac", "GET")]
     [Api(Description = "Gets an Http live streaming segment file. Internal use only.")]
     public class GetHlsAudioSegment
     {

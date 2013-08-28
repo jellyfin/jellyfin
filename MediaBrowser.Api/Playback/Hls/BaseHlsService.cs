@@ -149,13 +149,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 await Task.Delay(25).ConfigureAwait(false);
             }
 
-            fileText = fileText.Replace(SegmentFilePrefix, "segments/").Replace(".ts", "/stream.ts").Replace(".aac", "/stream.aac").Replace(".mp3", "/stream.mp3");
-
-            // It's considered live while still encoding (EVENT). Once the encoding has finished, it's video on demand (VOD).
-            var playlistType = fileText.IndexOf("#EXT-X-ENDLIST", StringComparison.OrdinalIgnoreCase) == -1 ? "EVENT" : "VOD";
-
-            // Add event type at the top
-            //fileText = fileText.Replace(allowCacheAttributeName, "#EXT-X-PLAYLIST-TYPE:" + playlistType + Environment.NewLine + allowCacheAttributeName);
+            fileText = fileText.Replace(SegmentFilePrefix, "hls/").Replace(".ts", "/stream.ts").Replace(".aac", "/stream.aac").Replace(".mp3", "/stream.mp3");
 
             return fileText;
         }
@@ -190,7 +184,10 @@ namespace MediaBrowser.Api.Playback.Hls
         {
             var probeSize = GetProbeSizeArgument(state.Item);
 
-            return string.Format("{0} {1} {2} -i {3}{4} -threads 0 {5} {6} {7} -hls_time 10 -start_number 0 -hls_list_size 1440 \"{8}\"",
+            var audioOnlyPlaylistParams = string.Format(" -threads 0 -vn -codec:a:0 aac -strict experimental -ac 2 -ab 64000 -hls_time 10 -start_number 0 -hls_list_size 1440 \"{0}\"",
+                "");
+
+            return string.Format("{0} {1} {2} -i {3}{4} -threads 0 {5} {6} {7} -hls_time 10 -start_number 0 -hls_list_size 1440 \"{8}\" {9}",
                 probeSize,
                 GetUserAgentParam(state.Item),
                 GetFastSeekCommandLineParameter(state.Request),
@@ -199,7 +196,8 @@ namespace MediaBrowser.Api.Playback.Hls
                 GetMapArgs(state),
                 GetVideoArguments(state, performSubtitleConversions),
                 GetAudioArguments(state),
-                outputPath
+                outputPath,
+                audioOnlyPlaylistParams
                 ).Trim();
         }
     }
