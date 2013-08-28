@@ -55,11 +55,13 @@
 
         html += '<p style="text-align:center;margin:.75em 0 0;">';
 
-        html += '<span id="playButtonContainer" onclick="$(\'#fldPlayCommand\').val(\'PlayNow\');" style="display:none;"><button type="submit" data-icon="play" data-theme="b" data-mini="true" data-inline="true">Play</button></span>';
+        html += '<span id="browseButtonContainer" style="display:none;"><button onclick="$(\'#fldPlayCommand\').val(\'Browse\');" type="submit" data-icon="arrow-right" data-theme="b" data-mini="true" data-inline="true">Browse</button></span>';
 
-        html += '<span id="queueButtonContainer" onclick="$(\'#fldPlayCommand\').val(\'PlayLast\');" style="display:none;"><button type="submit" data-icon="play" data-theme="b" data-mini="true" data-inline="true">Queue</button></span>';
+        html += '<span id="playButtonContainer" style="display:none;"><button onclick="$(\'#fldPlayCommand\').val(\'PlayNow\');" type="submit" data-icon="play" data-theme="b" data-mini="true" data-inline="true">Play</button></span>';
 
-        html += '<span id="okButtonContainer"><button type="submit" data-icon="ok" data-theme="b" data-mini="true" data-inline="true">Ok</button></span>';
+        html += '<span id="resumeButtonContainer" style="display:none;"><button onclick="$(\'#fldPlayCommand\').val(\'Resume\');" type="submit" data-icon="play" data-theme="b" data-mini="true" data-inline="true">Resume</button></span>';
+
+        html += '<span id="queueButtonContainer" style="display:none;"><button onclick="$(\'#fldPlayCommand\').val(\'PlayLast\');" type="submit" data-icon="plus" data-theme="b" data-mini="true" data-inline="true">Queue</button></span>';
 
         html += '<button type="button" data-icon="delete" onclick="$(\'#remoteControlFlyout\').popup(\'close\');" data-theme="a" data-mini="true" data-inline="true">Cancel</button>';
 
@@ -125,17 +127,7 @@
 
             var promise;
 
-            if (command == "Browse") {
-                promise = ApiClient.sendBrowseCommand(sessionIds[0], {
-
-                    ItemId: item.Id,
-                    ItemName: item.Name,
-                    ItemType: item.Type,
-                    Context: options.context
-
-                });
-            }
-            else if (command == "Play") {
+            if (command == "Play") {
 
                 if (item.IsFolder) {
 
@@ -144,12 +136,36 @@
                     return false;
                 }
 
-                promise = ApiClient.sendPlayCommand(sessionIds[0], {
+                var playCommand = $('#fldPlayCommand', popup).val();
 
-                    ItemIds: [item.Id].join(','),
-                    PlayCommand: $('#fldPlayCommand', popup).val()
+                if (playCommand == "Resume") {
 
-                });
+                    promise = ApiClient.sendPlayCommand(sessionIds[0], {
+
+                        ItemIds: [item.Id].join(','),
+                        PlayCommand: 'PlayNow',
+                        StartPositionTicks: item.UserData.PlaybackPositionTicks
+                    });
+
+                }
+                else if (playCommand == "Browse") {
+                    
+                    promise = ApiClient.sendBrowseCommand(sessionIds[0], {
+
+                        ItemId: item.Id,
+                        ItemName: item.Name,
+                        ItemType: item.Type,
+                        Context: options.context
+
+                    });
+                }
+                else {
+                    promise = ApiClient.sendPlayCommand(sessionIds[0], {
+
+                        ItemIds: [item.Id].join(','),
+                        PlayCommand: playCommand
+                    });
+                }
             }
             else if (command == "PlayFromChapter") {
 
@@ -162,15 +178,6 @@
                     ItemIds: [item.Id].join(','),
                     PlayCommand: $('#fldPlayCommand', popup).val(),
                     StartPositionTicks: ticks
-
-                });
-            }
-            else if (command == "Resume") {
-                promise = ApiClient.sendPlayCommand(sessionIds[0], {
-
-                    ItemIds: [item.Id].join(','),
-                    PlayCommand: 'PlayNow',
-                    StartPositionTicks: item.UserData.PlaybackPositionTicks
 
                 });
             }
@@ -232,22 +239,23 @@
                 var themeVideosElem = $('.themeVideos', popup).hide();
                 var playButtonContainer = $('#playButtonContainer', popup).hide();
                 var queueButtonContainer = $('#queueButtonContainer', popup).hide();
-                var okButtonContainer = $('#okButtonContainer', popup).hide();
+                var resumeButtonContainer = $('#resumeButtonContainer', popup).hide();
+                var browseButtonContainer = $('#browseButtonContainer', popup).hide();
 
                 var value = this.value;
 
-                if (value == "Browse") {
+                if (value == "Play") {
 
-                    okButtonContainer.show();
-                }
-                else if (value == "Play") {
+                    browseButtonContainer.show();
+                    
+                    if (item.Type != 'Person' && item.Type != 'Genre' && item.Type != 'Studio' && item.Type != 'Artist' && item.Type != 'GameGenre' && item.Type != 'MusicGenre') {
+                        playButtonContainer.show();
+                        queueButtonContainer.show();
+                    }
 
-                    playButtonContainer.show();
-                    queueButtonContainer.show();
-                }
-                else if (value == "Resume") {
-
-                    playButtonContainer.show();
+                    if (!item.IsFolder && item.UserData && item.UserData.PlaybackPositionTicks) {
+                        resumeButtonContainer.show();
+                    }
                 }
                 else if (value == "PlayFromChapter" && item.Chapters && item.Chapters.length) {
 
@@ -330,7 +338,7 @@
                     }
                 }
 
-            });
+            }).trigger('change');
         });
     }
 
@@ -408,39 +416,27 @@
         html += '<div style="margin-top:0;">';
         html += '<label for="selectCommand">Select command</label>';
         html += '<select id="selectCommand" data-mini="true">';
-        html += '<option value="Browse">Browse to</label>';
 
-        if (item.Type != 'Person' && item.Type != 'Genre' && item.Type != 'Studio' && item.Type != 'Artist') {
+        html += '<option value="Play" selected>Play</label>';
 
-            if (item.IsFolder) {
-                html += '<option value="Play">Play All</label>';
-            } else {
-                html += '<option value="Play">Play</label>';
-            }
+        if (item.Chapters && item.Chapters.length) {
+            html += '<option value="PlayFromChapter">Play from scene</label>';
+        }
 
-            if (!item.IsFolder && item.UserData && item.UserData.PlaybackPositionTicks) {
-                html += '<option value="Resume">Resume</label>';
-            }
+        if (item.LocalTrailerCount) {
+            html += '<option value="Trailer">Play trailer</label>';
+        }
 
-            if (item.Chapters && item.Chapters.length) {
-                html += '<option value="PlayFromChapter">Play from scene</label>';
-            }
+        if (item.SpecialFeatureCount) {
+            html += '<option value="SpecialFeature">Play special feature</label>';
+        }
 
-            if (item.LocalTrailerCount) {
-                html += '<option value="Trailer">Play trailer</label>';
-            }
+        if (options.themeSongs) {
+            html += '<option value="ThemeSong">Play theme song</label>';
+        }
 
-            if (item.SpecialFeatureCount) {
-                html += '<option value="SpecialFeature">Play special feature</label>';
-            }
-
-            if (options.themeSongs) {
-                html += '<option value="ThemeSong">Play theme song</label>';
-            }
-
-            if (options.themeVideos) {
-                html += '<option value="ThemeVideo">Play theme video</label>';
-            }
+        if (options.themeVideos) {
+            html += '<option value="ThemeVideo">Play theme video</label>';
         }
 
         html += '</select>';
