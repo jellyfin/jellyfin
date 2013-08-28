@@ -1202,7 +1202,7 @@
         self.volumeDown = function () {
 
             if (currentMediaElement) {
-                currentMediaElement.volume = Math.max(currentMediaElement.volume - .025, 0);
+                currentMediaElement.volume = Math.max(currentMediaElement.volume - .02, 0);
 
                 volumeSlider.val(currentMediaElement.volume);
             }
@@ -1211,7 +1211,7 @@
         self.volumeUp = function () {
 
             if (currentMediaElement) {
-                currentMediaElement.volume = Math.min(currentMediaElement.volume + .025, 1);
+                currentMediaElement.volume = Math.min(currentMediaElement.volume + .02, 1);
 
                 volumeSlider.val(currentMediaElement.volume);
             }
