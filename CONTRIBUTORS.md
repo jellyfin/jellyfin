@@ -47,3 +47,4 @@
  - [Yogi](https://github.com/yogi12)
  - [madFloyd] (https://github.com/madFloyd)
  - [yardameus] (https://github.com/yardameus)
+ - [rrb008] (https://github.com/rrb008)
