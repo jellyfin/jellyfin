@@ -3,12 +3,15 @@ using MediaBrowser.Common.IO;
 using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.IO;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
-using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Api.Playback.Hls
 {
@@ -17,18 +20,13 @@ namespace MediaBrowser.Api.Playback.Hls
     /// </summary>
     public abstract class BaseHlsService : BaseStreamingService
     {
-        /// <summary>
-        /// The segment file prefix
-        /// </summary>
-        public const string SegmentFilePrefix = "hls-";
-
         protected override string GetOutputFilePath(StreamState state)
         {
             var folder = ApplicationPaths.EncodedMediaCachePath;
 
             var outputFileExtension = GetOutputFileExtension(state);
 
-            return Path.Combine(folder, SegmentFilePrefix + GetCommandLineArguments("dummy\\dummy", state, false).GetMD5() + (outputFileExtension ?? string.Empty).ToLower());
+            return Path.Combine(folder, GetCommandLineArguments("dummy\\dummy", state, false).GetMD5() + (outputFileExtension ?? string.Empty).ToLower());
         }
 
         /// <summary>
@@ -107,8 +105,12 @@ namespace MediaBrowser.Api.Playback.Hls
                 ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlist, TranscodingJobType.Hls);
             }
 
-            // Get the current playlist text and convert to bytes
-            var playlistText = await GetPlaylistFileText(playlist, isPlaylistNewlyCreated).ConfigureAwait(false);
+            if (isPlaylistNewlyCreated)
+            {
+                await WaitForMinimumSegmentCount(playlist, 3).ConfigureAwait(false);
+            }
+
+            var playlistText = GetMasterPlaylistFileText(playlist, state.VideoRequest.VideoBitRate.Value);
 
             try
             {
@@ -120,18 +122,31 @@ namespace MediaBrowser.Api.Playback.Hls
             }
         }
 
-        /// <summary>
-        /// Gets the current playlist text
-        /// </summary>
-        /// <param name="playlist">The path to the playlist</param>
-        /// <param name="waitForMinimumSegments">Whether or not we should wait until it contains three segments</param>
-        /// <returns>Task{System.String}.</returns>
-        private async Task<string> GetPlaylistFileText(string playlist, bool waitForMinimumSegments)
+        private string GetMasterPlaylistFileText(string firstPlaylist, int bitrate)
         {
-            string fileText;
+            var builder = new StringBuilder();
 
+            builder.AppendLine("#EXTM3U");
+
+            // Main stream
+            builder.AppendLine("#EXT-X-STREAM-INF:PROGRAM-ID=1, BANDWIDTH=" + bitrate.ToString(UsCulture));
+            var playlistUrl = "hls/" + Path.GetFileName(firstPlaylist).Replace(".m3u8", "/stream.m3u8");
+            builder.AppendLine(playlistUrl);
+
+            // Low bitrate stream
+            //builder.AppendLine("#EXT-X-STREAM-INF:PROGRAM-ID=1, BANDWIDTH=64000");
+            //playlistUrl = "hls/" + Path.GetFileName(firstPlaylist).Replace(".m3u8", "-low/stream.m3u8");
+            //builder.AppendLine(playlistUrl);
+
+            return builder.ToString();
+        }
+
+        private async Task WaitForMinimumSegmentCount(string playlist, int segmentCount)
+        {
             while (true)
             {
+                string fileText;
+
                 // Need to use FileShare.ReadWrite because we're reading the file at the same time it's being written
                 using (var fileStream = new FileStream(playlist, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
                 {
@@ -141,17 +156,13 @@ namespace MediaBrowser.Api.Playback.Hls
                     }
                 }
 
-                if (!waitForMinimumSegments || CountStringOccurrences(fileText, "#EXTINF:") >= 3)
+                if (CountStringOccurrences(fileText, "#EXTINF:") >= segmentCount)
                 {
                     break;
                 }
 
                 await Task.Delay(25).ConfigureAwait(false);
             }
-
-            fileText = fileText.Replace(SegmentFilePrefix, "hls/").Replace(".ts", "/stream.ts").Replace(".aac", "/stream.aac").Replace(".mp3", "/stream.mp3");
-
-            return fileText;
         }
 
         /// <summary>
@@ -173,6 +184,27 @@ namespace MediaBrowser.Api.Playback.Hls
             return count;
         }
 
+        protected void ExtendHlsTimer(string itemId, string playlistId)
+        {
+            foreach (var playlist in Directory.EnumerateFiles(ApplicationPaths.EncodedMediaCachePath, "*.m3u8")
+                .Where(i => i.IndexOf(playlistId, StringComparison.OrdinalIgnoreCase) != -1)
+                .ToList())
+            {
+                ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlist, TranscodingJobType.Hls);
+
+                // Avoid implicitly captured closure
+                var playlist1 = playlist;
+
+                Task.Run(async () =>
+                {
+                    // This is an arbitrary time period corresponding to when the request completes.
+                    await Task.Delay(30000).ConfigureAwait(false);
+
+                    ApiEntryPoint.Instance.OnTranscodeEndRequest(playlist1, TranscodingJobType.Hls);
+                });
+            }
+        }
+
         /// <summary>
         /// Gets the command line arguments.
         /// </summary>
@@ -184,10 +216,7 @@ namespace MediaBrowser.Api.Playback.Hls
         {
             var probeSize = GetProbeSizeArgument(state.Item);
 
-            var audioOnlyPlaylistParams = string.Format(" -threads 0 -vn -codec:a:0 aac -strict experimental -ac 2 -ab 64000 -hls_time 10 -start_number 0 -hls_list_size 1440 \"{0}\"",
-                "");
-
-            return string.Format("{0} {1} {2} -i {3}{4} -threads 0 {5} {6} {7} -hls_time 10 -start_number 0 -hls_list_size 1440 \"{8}\" {9}",
+            var args = string.Format("{0} {1} {2} -i {3}{4} -threads 0 {5} {6} {7} -hls_time 10 -start_number 0 -hls_list_size 1440 \"{8}\"",
                 probeSize,
                 GetUserAgentParam(state.Item),
                 GetFastSeekCommandLineParameter(state.Request),
@@ -196,9 +225,20 @@ namespace MediaBrowser.Api.Playback.Hls
                 GetMapArgs(state),
                 GetVideoArguments(state, performSubtitleConversions),
                 GetAudioArguments(state),
-                outputPath,
-                audioOnlyPlaylistParams
+                outputPath
                 ).Trim();
+
+            if (state.Item is Video)
+            {
+                var lowBitratePath = Path.Combine(Path.GetDirectoryName(outputPath), Path.GetFileNameWithoutExtension(outputPath) + "-low.m3u8");
+
+                var lowBitrateParams = string.Format(" -threads 0 -vn -codec:a:0 aac -strict experimental -ac 2 -ab 64000 -hls_time 10 -start_number 0 -hls_list_size 1440 \"{0}\"",
+                    lowBitratePath);
+
+                args += " " + lowBitrateParams;
+            }
+
+            return args;
         }
     }
 }
