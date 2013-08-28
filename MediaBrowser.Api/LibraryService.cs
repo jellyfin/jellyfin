@@ -18,6 +18,18 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Api
 {
+    [Route("/Items/{Id}/File", "GET")]
+    [Api(Description = "Gets the original file of an item")]
+    public class GetFile 
+    {
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Id { get; set; }
+    }
+    
     /// <summary>
     /// Class GetCriticReviews
     /// </summary>
@@ -193,6 +205,22 @@ namespace MediaBrowser.Api
             _userDataRepository = userDataRepository;
         }
 
+        public object Get(GetFile request)
+        {
+            var item = DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager);
+
+            if (item.LocationType == LocationType.Remote || item.LocationType == LocationType.Virtual)
+            {
+                throw new ArgumentException("This command cannot be used for remote or virtual items.");
+            }
+            if (Directory.Exists(item.Path))
+            {
+                throw new ArgumentException("This command cannot be used for directories.");
+            }
+
+            return ToStaticFileResult(item.Path);
+        }
+        
         /// <summary>
         /// Gets the specified request.
         /// </summary>
