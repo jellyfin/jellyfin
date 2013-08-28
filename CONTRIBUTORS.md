@@ -44,3 +44,4 @@
  - [swhitmore](https://github.com/swhitmore)
  - [DigiTM](https://github.com/DigiTM)
  - [crisliv / xliv](https://github.com/crisliv)
+ - [Yogi](https://github.com/yogi12)
