@@ -319,7 +319,9 @@ namespace MediaBrowser.Providers.TV
                     // Sometimes tvdb actors have leading spaces
                     var persons = Regex.Matches(actors, @"([^|()]|\([^)]*\)*)+")
                         .Cast<Match>()
-                        .Select(m => m.Value).Where(i => !string.IsNullOrWhiteSpace(i) && !string.IsNullOrEmpty(i));
+                        .SelectMany(m => string.IsNullOrWhiteSpace(m.Value) ? new string[] { } : m.Value.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                        .Where(i => !string.IsNullOrWhiteSpace(i) && !string.IsNullOrEmpty(i));
+
                     foreach (var person in persons.Select(str =>
                     {
                         var nameGroup = str.Split(new[] { '(' }, 2, StringSplitOptions.RemoveEmptyEntries);
@@ -340,7 +342,9 @@ namespace MediaBrowser.Providers.TV
                     // Sometimes tvdb actors have leading spaces
                     var persons = Regex.Matches(extraActors, @"([^|()]|\([^)]*\)*)+")
                         .Cast<Match>()
-                        .Select(m => m.Value).Where(i => !string.IsNullOrWhiteSpace(i) && !string.IsNullOrEmpty(i));
+                        .SelectMany(m => string.IsNullOrWhiteSpace(m.Value) ? new string[] { } : m.Value.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                        .Where(i => !string.IsNullOrWhiteSpace(i) && !string.IsNullOrEmpty(i));
+
                     foreach (var person in persons.Select(str =>
                     {
                         var nameGroup = str.Split(new[] { '(' }, 2, StringSplitOptions.RemoveEmptyEntries);
@@ -349,8 +353,7 @@ namespace MediaBrowser.Providers.TV
                         if (roles != null)
                             roles = roles.EndsWith(")") ? roles.Substring(0, roles.Length - 1) : roles;
                         return new PersonInfo { Type = PersonType.GuestStar, Name = name, Role = roles };
-                    }).Where(person => !episode.People.Any(x => x.Type == person.Type && x.Name == person.Name))
-                        )
+                    }))
                     {
                         episode.AddPerson(person);
                     }
