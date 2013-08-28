@@ -236,26 +236,49 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
 
             if (!File.Exists(fontFile))
             {
-                var tempFile = await _httpClient.GetTempFile(new HttpRequestOptions
-                {
-                    Url = FontUrl,
-                    Progress = new Progress<double>()
-                });
+                await DownloadFontFile(fontsDirectory, fontFilename).ConfigureAwait(false);
+            }
 
-                _zipClient.ExtractAll(tempFile, fontsDirectory, true);
+            await WriteFontConfigFile(fontsDirectory).ConfigureAwait(false);
+        }
 
+        private async Task DownloadFontFile(string fontsDirectory, string fontFilename)
+        {
+            var existingFile = Directory
+                .EnumerateFiles(_appPaths.ProgramDataPath, fontFilename, SearchOption.AllDirectories)
+                .FirstOrDefault();
+
+            if (existingFile != null)
+            {
                 try
                 {
-                    File.Delete(tempFile);
+                    File.Copy(existingFile, Path.Combine(fontsDirectory, fontFilename), true);
+                    return;
                 }
                 catch (IOException ex)
                 {
                     // Log this, but don't let it fail the operation
-                    _logger.ErrorException("Error deleting temp file {0}", ex, tempFile);
+                    _logger.ErrorException("Error copying file", ex);
                 }
             }
 
-            await WriteFontConfigFile(fontsDirectory).ConfigureAwait(false);
+            var tempFile = await _httpClient.GetTempFile(new HttpRequestOptions
+            {
+                Url = FontUrl,
+                Progress = new Progress<double>()
+            });
+
+            _zipClient.ExtractAll(tempFile, fontsDirectory, true);
+
+            try
+            {
+                File.Delete(tempFile);
+            }
+            catch (IOException ex)
+            {
+                // Log this, but don't let it fail the operation
+                _logger.ErrorException("Error deleting temp file {0}", ex, tempFile);
+            }
         }
 
         private async Task WriteFontConfigFile(string fontsDirectory)
