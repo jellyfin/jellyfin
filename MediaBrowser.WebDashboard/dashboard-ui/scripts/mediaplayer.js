@@ -651,8 +651,9 @@
 
         function getInitialAudioStreamIndex(mediaStreams, user) {
 
+            // Find all audio streams with at least one channel
             var audioStreams = mediaStreams.filter(function (stream) {
-                return stream.Type == "Audio";
+                return stream.Type == "Audio" && stream.Channels;
             });
 
             if (user.Configuration.AudioLanguagePreference) {
@@ -660,7 +661,7 @@
                 for (var i = 0, length = audioStreams.length; i < length; i++) {
                     var mediaStream = audioStreams[i];
 
-                    if (mediaStream.Type == "Audio" && mediaStream.Language == user.Configuration.AudioLanguagePreference) {
+                    if (mediaStream.Language == user.Configuration.AudioLanguagePreference) {
                         return mediaStream.Index;
                     }
 

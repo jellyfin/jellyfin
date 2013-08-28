@@ -114,7 +114,7 @@ namespace MediaBrowser.Api.Playback
         }
 
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
-        
+
         /// <summary>
         /// The fast seek offset seconds
         /// </summary>
@@ -225,6 +225,12 @@ namespace MediaBrowser.Api.Playback
                 {
                     return stream;
                 }
+            }
+
+            if (returnFirstIfNoIndex && type == MediaStreamType.Audio)
+            {
+                return streams.FirstOrDefault(i => i.Channels.HasValue && i.Channels.Value > 0) ??
+                       streams.FirstOrDefault();
             }
 
             // Just return the first one
