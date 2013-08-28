@@ -314,6 +314,9 @@
     <Compile Include="..\MediaBrowser.Model\Session\BrowseRequest.cs">
       <Link>Session\BrowseRequest.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Session\MessageCommand.cs">
+      <Link>Session\MessageCommand.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Session\PlayRequest.cs">
       <Link>Session\PlayRequest.cs</Link>
     </Compile>
@@ -322,6 +325,9 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Session\SessionInfoDto.cs">
       <Link>Session\SessionInfoDto.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Session\SystemCommand.cs">
+      <Link>Session\SystemCommand.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\System\SystemInfo.cs">
       <Link>System\SystemInfo.cs</Link>

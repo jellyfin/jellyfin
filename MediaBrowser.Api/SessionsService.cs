@@ -130,6 +130,46 @@ namespace MediaBrowser.Api
         public PlaystateCommand Command { get; set; }
     }
 
+    [Route("/Sessions/{Id}/System/{Command}", "POST")]
+    [Api(("Issues a system command to a client"))]
+    public class SendSystemCommand : IReturnVoid
+    {
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Session Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public Guid Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the command.
+        /// </summary>
+        /// <value>The play command.</value>
+        [ApiMember(Name = "Command", Description = "The command to send.", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public SystemCommand Command { get; set; }
+    }
+
+    [Route("/Sessions/{Id}/Message", "POST")]
+    [Api(("Issues a command to a client to display a message to the user"))]
+    public class SendMessageCommand : IReturnVoid
+    {
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Session Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public Guid Id { get; set; }
+
+        [ApiMember(Name = "Text", Description = "The message text.", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string Text { get; set; }
+
+        [ApiMember(Name = "Header", Description = "The message header.", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string Header { get; set; }
+
+        [ApiMember(Name = "TimeoutMs", Description = "The message timeout. If omitted the user will have to confirm viewing the message.", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public long? TimeoutMs { get; set; }
+    }
+
     /// <summary>
     /// Class SessionsService
     /// </summary>
@@ -259,6 +299,110 @@ namespace MediaBrowser.Api
                     {
                         MessageType = "Browse",
                         Data = request
+
+                    }, CancellationToken.None).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException("Error sending web socket message", ex);
+                }
+            }
+            else
+            {
+                throw new InvalidOperationException("The requested session does not have an open web socket.");
+            }
+        }
+
+        /// <summary>
+        /// Posts the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        public void Post(SendSystemCommand request)
+        {
+            var task = SendSystemCommand(request);
+
+            Task.WaitAll(task);
+        }
+
+        private async Task SendSystemCommand(SendSystemCommand request)
+        {
+            var session = _sessionManager.Sessions.FirstOrDefault(i => i.Id == request.Id);
+
+            if (session == null)
+            {
+                throw new ResourceNotFoundException(string.Format("Session {0} not found.", request.Id));
+            }
+
+            if (!session.SupportsRemoteControl)
+            {
+                throw new ArgumentException(string.Format("Session {0} does not support remote control.", session.Id));
+            }
+
+            var socket = session.WebSockets.OrderByDescending(i => i.LastActivityDate).FirstOrDefault(i => i.State == WebSocketState.Open);
+
+            if (socket != null)
+            {
+                try
+                {
+                    await socket.SendAsync(new WebSocketMessage<string>
+                    {
+                        MessageType = "SystemCommand",
+                        Data = request.Command.ToString()
+
+                    }, CancellationToken.None).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException("Error sending web socket message", ex);
+                }
+            }
+            else
+            {
+                throw new InvalidOperationException("The requested session does not have an open web socket.");
+            }
+        }
+
+        /// <summary>
+        /// Posts the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        public void Post(SendMessageCommand request)
+        {
+            var task = SendMessageCommand(request);
+
+            Task.WaitAll(task);
+        }
+
+        private async Task SendMessageCommand(SendMessageCommand request)
+        {
+            var session = _sessionManager.Sessions.FirstOrDefault(i => i.Id == request.Id);
+
+            if (session == null)
+            {
+                throw new ResourceNotFoundException(string.Format("Session {0} not found.", request.Id));
+            }
+
+            if (!session.SupportsRemoteControl)
+            {
+                throw new ArgumentException(string.Format("Session {0} does not support remote control.", session.Id));
+            }
+
+            var socket = session.WebSockets.OrderByDescending(i => i.LastActivityDate).FirstOrDefault(i => i.State == WebSocketState.Open);
+
+            if (socket != null)
+            {
+                try
+                {
+                    await socket.SendAsync(new WebSocketMessage<MessageCommand>
+                    {
+                        MessageType = "MessageCommand",
+
+                        Data = new MessageCommand
+                        {
+                            Header = request.Header,
+                            TimeoutMs = request.TimeoutMs,
+                            Text = request.Text
+                        }
 
                     }, CancellationToken.None).ConfigureAwait(false);
                 }

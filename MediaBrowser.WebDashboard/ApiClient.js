@@ -3465,6 +3465,42 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
             });
         };
 
+        self.sendSystemCommand = function (sessionId, command) {
+
+            if (!sessionId) {
+                throw new Error("null sessionId");
+            }
+
+            if (!command) {
+                throw new Error("null command");
+            }
+
+            var url = self.getUrl("Sessions/" + sessionId + "/System/" + command);
+
+            return self.ajax({
+                type: "POST",
+                url: url
+            });
+        };
+
+        self.sendMessageCommand = function (sessionId, options) {
+
+            if (!sessionId) {
+                throw new Error("null sessionId");
+            }
+
+            if (!options) {
+                throw new Error("null options");
+            }
+
+            var url = self.getUrl("Sessions/" + sessionId + "/Message", options);
+
+            return self.ajax({
+                type: "POST",
+                url: url
+            });
+        };
+
         self.sendPlayStateCommand = function (sessionId, command, options) {
 
             if (!sessionId) {
