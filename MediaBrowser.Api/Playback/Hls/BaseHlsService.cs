@@ -186,8 +186,10 @@ namespace MediaBrowser.Api.Playback.Hls
 
         protected void ExtendHlsTimer(string itemId, string playlistId)
         {
+            var normalizedPlaylistId = playlistId.Replace("-low", string.Empty);
+
             foreach (var playlist in Directory.EnumerateFiles(ApplicationPaths.EncodedMediaCachePath, "*.m3u8")
-                .Where(i => i.IndexOf(playlistId, StringComparison.OrdinalIgnoreCase) != -1)
+                .Where(i => i.IndexOf(normalizedPlaylistId, StringComparison.OrdinalIgnoreCase) != -1)
                 .ToList())
             {
                 ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlist, TranscodingJobType.Hls);
