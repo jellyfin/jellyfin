@@ -512,6 +512,22 @@ namespace MediaBrowser.Model.ApiClient
         Task SendPlayCommandAsync(string sessionId, PlayRequest request);
 
         /// <summary>
+        /// Sends a system command to the client
+        /// </summary>
+        /// <param name="sessionId"></param>
+        /// <param name="command"></param>
+        /// <returns></returns>
+        Task SendSystemCommandAsync(string sessionId, SystemCommand command);
+
+        /// <summary>
+        /// Instructs the client to display a message to the user
+        /// </summary>
+        /// <param name="sessionId"></param>
+        /// <param name="command"></param>
+        /// <returns></returns>
+        Task SendMessageCommandAsync(string sessionId, MessageCommand command);
+        
+        /// <summary>
         /// Clears a user's rating for an item
         /// </summary>
         /// <param name="itemId">The item id.</param>
