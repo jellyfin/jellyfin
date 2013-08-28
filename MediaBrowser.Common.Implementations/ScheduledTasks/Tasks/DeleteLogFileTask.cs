@@ -35,9 +35,15 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
         /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
         public IEnumerable<ITaskTrigger> GetDefaultTriggers()
         {
-            var trigger = new DailyTrigger { TimeOfDay = TimeSpan.FromHours(2) }; //2am
+            // Until we can vary these default triggers per server and MBT, we need something that makes sense for both
+            return new ITaskTrigger[] { 
+            
+                // At startup
+                new StartupTrigger (),
 
-            return new[] { trigger };
+                // Every so often
+                new IntervalTrigger { Interval = TimeSpan.FromHours(24)}
+            };
         }
 
         /// <summary>
