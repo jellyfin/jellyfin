@@ -48,3 +48,7 @@
  - [madFloyd] (https://github.com/madFloyd)
  - [yardameus] (https://github.com/yardameus)
  - [rrb008] (https://github.com/rrb008)
+ - [Toonguy] (https://github.com/Toonguy)
+ - [Alwin Hummels] (https://github.com/AlwinHummels)
+ - [trooper11] (https://github.com/trooper11)
+ - [danlotfy] (https://github.com/danlotfy)
