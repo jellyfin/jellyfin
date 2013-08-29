@@ -51,3 +51,4 @@
  - [Toonguy] (https://github.com/Toonguy)
  - [Alwin Hummels] (https://github.com/AlwinHummels)
  - [trooper11] (https://github.com/trooper11)
+ - [danlotfy] (https://github.com/danlotfy)
