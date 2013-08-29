@@ -159,8 +159,9 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <param name="item">The item.</param>
         /// <param name="isPaused">if set to <c>true</c> [is paused].</param>
         /// <param name="currentPositionTicks">The current position ticks.</param>
-        private void UpdateNowPlayingItem(SessionInfo session, BaseItem item, bool isPaused, long? currentPositionTicks = null)
+        private void UpdateNowPlayingItem(SessionInfo session, BaseItem item, bool isPaused, bool isMuted, long? currentPositionTicks = null)
         {
+            session.IsMuted = isMuted;
             session.IsPaused = isPaused;
             session.NowPlayingPositionTicks = currentPositionTicks;
             session.NowPlayingItem = item;
@@ -178,7 +179,7 @@ namespace MediaBrowser.Server.Implementations.Session
             {
                 session.NowPlayingItem = null;
                 session.NowPlayingPositionTicks = null;
-                session.IsPaused = null;
+                session.IsPaused = false;
             }
         }
 
@@ -225,7 +226,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
             var session = Sessions.First(i => i.Id.Equals(sessionId));
 
-            UpdateNowPlayingItem(session, item, false);
+            UpdateNowPlayingItem(session, item, false, false);
 
             var key = item.GetUserDataKey();
 
@@ -262,7 +263,7 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
         /// <exception cref="System.ArgumentOutOfRangeException">positionTicks</exception>
-        public async Task OnPlaybackProgress(BaseItem item, long? positionTicks, bool isPaused, Guid sessionId)
+        public async Task OnPlaybackProgress(BaseItem item, long? positionTicks, bool isPaused, bool isMuted, Guid sessionId)
         {
             if (item == null)
             {
@@ -276,7 +277,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
             var session = Sessions.First(i => i.Id.Equals(sessionId));
 
-            UpdateNowPlayingItem(session, item, isPaused, positionTicks);
+            UpdateNowPlayingItem(session, item, isPaused, isMuted, positionTicks);
 
             var key = item.GetUserDataKey();
 

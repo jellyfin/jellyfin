@@ -265,6 +265,9 @@ namespace MediaBrowser.Api.UserLibrary
 
         [ApiMember(Name = "IsPaused", Description = "Indicates if the player is paused.", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "POST")]
         public bool IsPaused { get; set; }
+
+        [ApiMember(Name = "IsMuted", Description = "Indicates if the player is muted.", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "POST")]
+        public bool IsMuted { get; set; }
     }
 
     /// <summary>
@@ -640,7 +643,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var item = DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager, user.Id);
 
-            var task = _sessionManager.OnPlaybackProgress(item, request.PositionTicks, request.IsPaused, GetSession().Id);
+            var task = _sessionManager.OnPlaybackProgress(item, request.PositionTicks, request.IsPaused, request.IsMuted, GetSession().Id);
 
             Task.WaitAll(task);
         }

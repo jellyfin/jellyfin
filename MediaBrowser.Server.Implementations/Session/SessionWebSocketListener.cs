@@ -137,8 +137,9 @@ namespace MediaBrowser.Server.Implementations.Session
                     }
 
                     var isPaused = vals.Length > 2 && string.Equals(vals[2], "true", StringComparison.OrdinalIgnoreCase);
+                    var isMuted = vals.Length > 3 && string.Equals(vals[3], "true", StringComparison.OrdinalIgnoreCase);
 
-                    _sessionManager.OnPlaybackProgress(item, positionTicks, isPaused, session.Id);
+                    _sessionManager.OnPlaybackProgress(item, positionTicks, isPaused, isMuted, session.Id);
                 }
             }
             else if (string.Equals(message.MessageType, "PlaybackStopped", StringComparison.OrdinalIgnoreCase))

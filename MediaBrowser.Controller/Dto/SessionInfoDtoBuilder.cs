@@ -25,6 +25,7 @@ namespace MediaBrowser.Controller.Dto
                 NowPlayingPositionTicks = session.NowPlayingPositionTicks,
                 SupportsRemoteControl = session.SupportsRemoteControl,
                 IsPaused = session.IsPaused,
+                IsMuted = session.IsMuted,
                 NowViewingContext = session.NowViewingContext,
                 NowViewingItemId = session.NowViewingItemId,
                 NowViewingItemName = session.NowViewingItemName,

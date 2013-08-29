@@ -467,7 +467,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="isPaused">if set to <c>true</c> [is paused].</param>
         /// <returns>Task{UserItemDataDto}.</returns>
         /// <exception cref="ArgumentNullException">itemId</exception>
-        Task ReportPlaybackProgressAsync(string itemId, string userId, long? positionTicks, bool isPaused);
+        Task ReportPlaybackProgressAsync(string itemId, string userId, long? positionTicks, bool isPaused, bool isMuted);
 
         /// <summary>
         /// Reports to the server that the user has stopped playing an item
@@ -588,7 +588,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="displayPreferences">The display preferences.</param>
         /// <returns>Task{DisplayPreferences}.</returns>
         /// <exception cref="System.ArgumentNullException">userId</exception>
-        Task UpdateDisplayPreferencesAsync(DisplayPreferences displayPreferences, string userId, string client);
+        Task UpdateDisplayPreferencesAsync(DisplayPreferences displayPreferences, string userId, string client, CancellationToken cancellationToken);
 
         /// <summary>
         /// Posts a set of data to a url, and deserializes the return stream into T
