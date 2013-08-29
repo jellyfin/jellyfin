@@ -37,4 +37,4 @@ Dev: 3.0.4978.15146
 
 ## Images
 
-![alt tag](https://www.dropbox.com/lightbox/home/Apps?select=android.png)
+![alt tag](https://www.dropbox.com/s/lc90fkzqj8gaxlg/android.png?dl=1)
