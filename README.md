@@ -45,3 +45,4 @@ Dev: 3.0.4978.15146
 ![Windows Phone](https://www.dropbox.com/s/9kdmr6nkiqj057m/winphone.png?dl=1)
 ![Media Browser Theater](https://www.dropbox.com/s/i1wzkv8o5pyu6d9/winrt.png?dl=1)
 ![Roku](https://www.dropbox.com/s/8oyzfk0sg2f7sds/roku2.jpg?dl=1)
+![Dashboard](https://www.dropbox.com/s/koqtj5ifwgq34sz/dashboard.png?dl=1)
