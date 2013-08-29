@@ -3370,7 +3370,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
 
                 var  msgData = itemId + "|" + (positionTicks == null ? "" : positionTicks) + "|" + (isPaused == null ? "" : isPaused) + "|" + (isMuted == null ? "" : isMuted);
 
-                self.sendWebSocketMessage("PlaybackProgress", msgData;);
+                self.sendWebSocketMessage("PlaybackProgress", msgData);
 
                 deferred.resolveWith(null, []);
                 return deferred.promise();
