@@ -53,3 +53,4 @@
  - [trooper11] (https://github.com/trooper11)
  - [danlotfy] (https://github.com/danlotfy)
  - [jordy1955] (https://github.com/jordy1955)
+ - [JoshFink] (https://github.com/JoshFink)
