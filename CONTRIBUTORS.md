@@ -49,4 +49,4 @@
  - [yardameus] (https://github.com/yardameus)
  - [rrb008] (https://github.com/rrb008)
  - [Toonguy] (https://github.com/Toonguy)
- - [Alwin] (https://github.com/JSmith19)
+ - [Alwin Hummels] (https://github.com/AlwinHummels)
