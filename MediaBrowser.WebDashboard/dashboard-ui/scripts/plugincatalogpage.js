@@ -48,10 +48,10 @@
                 currentCategory = category;
             }
 
-            html += "<a class='posterItem smallBackdropPosterItem transparentPosterItem borderlessPosterItem' href='addPlugin.html?name=" + encodeURIComponent(plugin.name) + "'>";
+            html += "<a class='posterItem backdropPosterItem transparentPosterItem borderlessPosterItem' href='addPlugin.html?name=" + encodeURIComponent(plugin.name) + "'>";
 
             if (plugin.thumbImage) {
-                html += '<div class="posterItemImage" style="background-image:url(\'' + plugin.thumbImage + '\');"></div>';
+                html += '<div class="posterItemImage" style="background-image:url(\'' + plugin.thumbImage + '\');background-size:cover;"></div>';
             } else {
                 html += '<div class="posterItemImage defaultPosterItemImage" style="background-image:url(\'css/images/items/list/collection.png\');"></div>';
             }
