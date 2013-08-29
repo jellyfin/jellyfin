@@ -134,7 +134,7 @@
 
         function sendProgressUpdate(itemId) {
 
-            ApiClient.reportPlaybackProgress(Dashboard.getCurrentUserId(), itemId, getCurrentTicks(), currentMediaElement.paused);
+            ApiClient.reportPlaybackProgress(Dashboard.getCurrentUserId(), itemId, getCurrentTicks(), currentMediaElement.paused, currentMediaElement.volume == 0);
         }
 
         function clearProgressInterval() {

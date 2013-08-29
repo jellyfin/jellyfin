@@ -1211,7 +1211,7 @@ namespace MediaBrowser.Controller.Entities
             else
             {
                 // Check for dupes based on the combination of Name and Type
-                if (!People.Any(p => p.Name.Equals(person.Name, StringComparison.OrdinalIgnoreCase) && p.Type.Equals(person.Type, StringComparison.OrdinalIgnoreCase)))
+                if (!People.Any(p => string.Equals(p.Name, person.Name, StringComparison.OrdinalIgnoreCase) && string.Equals(p.Type, person.Type, StringComparison.OrdinalIgnoreCase)))
                 {
                     People.Add(person);
                 }

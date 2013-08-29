@@ -62,7 +62,7 @@ namespace MediaBrowser.Controller.Session
         /// <param name="sessionId">The session id.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        Task OnPlaybackProgress(BaseItem item, long? positionTicks, bool isPaused, Guid sessionId);
+        Task OnPlaybackProgress(BaseItem item, long? positionTicks, bool isPaused, bool isMuted, Guid sessionId);
 
         /// <summary>
         /// Used to report that playback has ended for an item

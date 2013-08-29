@@ -108,6 +108,8 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (!audio.LockedFields.Contains(MetadataFields.Cast))
             {
+                audio.People.Clear();
+
                 var composer = GetDictionaryValue(tags, "composer");
 
                 if (!string.IsNullOrWhiteSpace(composer))

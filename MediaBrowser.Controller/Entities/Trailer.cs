@@ -1,4 +1,5 @@
 ﻿using System.Runtime.Serialization;
+using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -46,6 +47,18 @@ namespace MediaBrowser.Controller.Entities
         protected override bool UseParentPathToCreateResolveArgs
         {
             get { return !IsLocalTrailer; }
+        }
+
+        public override string GetUserDataKey()
+        {
+            var key = this.GetProviderId(MetadataProviders.Tmdb) ?? this.GetProviderId(MetadataProviders.Tvdb) ?? this.GetProviderId(MetadataProviders.Imdb) ?? this.GetProviderId(MetadataProviders.Tvcom);
+
+            if (!string.IsNullOrWhiteSpace(key))
+            {
+                return key + "-trailer";
+            }
+
+            return base.GetUserDataKey();
         }
     }
 }

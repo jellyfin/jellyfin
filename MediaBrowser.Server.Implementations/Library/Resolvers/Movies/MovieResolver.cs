@@ -106,14 +106,14 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                     return FindMovie<AdultVideo>(args.Path, args.FileSystemChildren);
                 }
 
-                if (!string.IsNullOrEmpty(collectionType) &&
-                    !string.Equals(collectionType, CollectionType.Movies, StringComparison.OrdinalIgnoreCase) &&
-                    !string.Equals(collectionType, CollectionType.BoxSets, StringComparison.OrdinalIgnoreCase))
+                if (string.IsNullOrEmpty(collectionType) ||
+                    string.Equals(collectionType, CollectionType.Movies, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(collectionType, CollectionType.BoxSets, StringComparison.OrdinalIgnoreCase))
                 {
-                    return null;
+                    return FindMovie<Movie>(args.Path, args.FileSystemChildren);
                 }
 
-                return FindMovie<Movie>(args.Path, args.FileSystemChildren);
+                return null;
             }
 
             // Find movies that are mixed in the same folder

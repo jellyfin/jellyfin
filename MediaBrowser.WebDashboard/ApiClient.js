@@ -3354,7 +3354,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
          * @param {String} userId
          * @param {String} itemId
          */
-        self.reportPlaybackProgress = function (userId, itemId, positionTicks, isPaused) {
+        self.reportPlaybackProgress = function (userId, itemId, positionTicks, isPaused, isMuted) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -3368,13 +3368,17 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
 
                 var deferred = $.Deferred();
 
-                self.sendWebSocketMessage("PlaybackProgress", itemId + "|" + (positionTicks == null ? "" : positionTicks) + "|" + (isPaused == null ? "" : isPaused));
+                var  msgData = itemId + "|" + (positionTicks == null ? "" : positionTicks) + "|" + (isPaused == null ? "" : isPaused) + "|" + (isMuted == null ? "" : isMuted);
+
+                self.sendWebSocketMessage("PlaybackProgress", msgData;);
 
                 deferred.resolveWith(null, []);
                 return deferred.promise();
             }
 
             var params = {
+                isPaused: isPaused,
+                isMuted: isMuted
             };
 
             if (positionTicks) {
