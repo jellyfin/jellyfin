@@ -646,14 +646,24 @@
 
         html += '</div>';
 
+        html += '<p class="sessionButtons" style="text-align:center;">';
+
+        html += '<button class="btnGoHome" type="button" data-icon="home" data-mini="true" data-inline="true">Home</button>';
+        html += '<button class="btnGoToSettings" type="button" data-icon="wrench" data-mini="true" data-inline="true">Settings</button>';
+
+        html += '</p>';
+
         html += '<div class="commandsCollapsible" data-role="collapsible" data-content-theme="c" data-collapsed="true" data-mini="true" style="margin-top: 1em;display:none;">';
-        html += '<h4>Commands</h4>';
+        html += '<h4>Send Message</h4>';
         html += '<div>';
         
         html += '<p style="text-align:center;">';
 
-        html += '<button class="btnGoHome" type="button" data-icon="home" data-mini="true" data-inline="true">Go home</button>';
-        html += '<button class="btnGoToSettings" type="button" data-icon="wrench" data-mini="true" data-inline="true">Go to settings</button>';
+        html += '<div><label for="txtMessage">Message text</label></div>';
+        
+        html += '<div style="display:inline-block;width:80%;"><input id="txtMessage" name="txtMessage" type="text" /></div>';
+        
+        html += '<button type="button" data-icon="envelope" class="btnSendMessage" data-theme="a" data-mini="true" data-inline="true">Send</button>';
 
         html += '</p>';
 
@@ -713,6 +723,25 @@
             var id = $('#selectSession', popup).val();
 
             ApiClient.sendSystemCommand(id, 'GoToSettings');
+        });
+
+        $('.btnSendMessage', popup).on('click', function () {
+
+            var id = $('#selectSession', popup).val();
+
+            var messageText = $('#txtMessage', popup).val();
+            
+            if (messageText) {
+                Dashboard.getCurrentUser().done(function(user) {
+
+                    ApiClient.sendMessageCommand(id, {
+                        Header: "Message from " + user.Name,
+                        Text: messageText
+                    });
+                });
+            } else {
+                $('#txtMessage', popup)[0].focus();
+            }
         });
 
         $('.btnVolumeDown', popup).on('click', function () {
@@ -842,11 +871,13 @@
             $('.nothingPlaying', popup).hide();
             $('.nowPlaying', popup).hide();
             $('.commandsCollapsible', popup).hide();
+            $('.sessionButtons', popup).hide();
 
         }
         else if (session.NowPlayingItem) {
 
             $('.commandsCollapsible', popup).show();
+            $('.sessionButtons', popup).show();
             $('.nothingPlaying', popup).hide();
 
             var elem = $('.nowPlaying', popup).show();
@@ -855,6 +886,7 @@
 
         } else {
 
+            $('.sessionButtons', popup).show();
             $('.commandsCollapsible', popup).show();
             $('.nothingPlaying', popup).show();
             $('.nowPlaying', popup).hide();
