@@ -47,3 +47,5 @@ Dev: 3.0.4978.15146
 ![Roku](https://www.dropbox.com/s/8oyzfk0sg2f7sds/roku2.jpg?dl=1)
 ![iOS](https://www.dropbox.com/s/ijtjqvmejxsfwra/ios_3.jpg?dl=1)
 ![Dashboard](https://www.dropbox.com/s/koqtj5ifwgq34sz/dashboard.png?dl=1)
+![iOS](http://i.imgur.com/prrzxMc.jpg)
+![iOS](http://i.imgur.com/c9Vd1w5.jpg)
