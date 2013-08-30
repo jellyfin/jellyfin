@@ -121,7 +121,7 @@
 
             clearProgressInterval();
 
-            var intervalTime = ApiClient.isWebSocketOpen() ? 5000 : 20000;
+            var intervalTime = ApiClient.isWebSocketOpen() ? 4000 : 20000;
 
             currentProgressInterval = setInterval(function () {
 

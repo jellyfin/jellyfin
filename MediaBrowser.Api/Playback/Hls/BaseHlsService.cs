@@ -91,6 +91,15 @@ namespace MediaBrowser.Api.Playback.Hls
         /// <returns>Task{System.Object}.</returns>
         public async Task<object> ProcessRequestAsync(StreamState state)
         {
+            if (!state.VideoRequest.VideoBitRate.HasValue)
+            {
+                throw new ArgumentException("A video bitrate is required");
+            }
+            if (!state.Request.AudioBitRate.HasValue)
+            {
+                throw new ArgumentException("An audio bitrate is required");
+            }
+
             var playlist = GetOutputFilePath(state);
             var isPlaylistNewlyCreated = false;
 
@@ -110,7 +119,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 await WaitForMinimumSegmentCount(playlist, 3).ConfigureAwait(false);
             }
 
-            var playlistText = GetMasterPlaylistFileText(playlist, state.VideoRequest.VideoBitRate.Value);
+            var playlistText = GetMasterPlaylistFileText(playlist, state.VideoRequest.VideoBitRate.Value + state.Request.AudioBitRate.Value);
 
             try
             {
@@ -234,8 +243,9 @@ namespace MediaBrowser.Api.Playback.Hls
             {
                 var lowBitratePath = Path.Combine(Path.GetDirectoryName(outputPath), Path.GetFileNameWithoutExtension(outputPath) + "-low.m3u8");
 
-                var lowBitrateParams = string.Format(" -threads 0 -vn -codec:a:0 aac -strict experimental -ac 2 -ab 64000 -hls_time 10 -start_number 0 -hls_list_size 1440 \"{0}\"",
-                    lowBitratePath);
+                var lowBitrateParams = string.Format(" -threads 0 -vn -codec:a:{1} aac -strict experimental -ac 2 -ab 64000 -hls_time 10 -start_number 0 -hls_list_size 1440 \"{0}\"",
+                    lowBitratePath,
+                    state.AudioStream.Index);
 
                 args += " " + lowBitrateParams;
             }
