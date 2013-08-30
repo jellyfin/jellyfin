@@ -282,7 +282,7 @@ namespace MediaBrowser.Common.Implementations
                 SecurityManager = new PluginSecurityManager(this, HttpClient, JsonSerializer, ApplicationPaths);
                 RegisterSingleInstance(SecurityManager);
 
-                InstallationManager = new InstallationManager(Logger, this, ApplicationPaths, HttpClient, JsonSerializer, SecurityManager, NetworkManager);
+                InstallationManager = new InstallationManager(Logger, this, ApplicationPaths, HttpClient, JsonSerializer, SecurityManager, NetworkManager, ConfigurationManager);
                 RegisterSingleInstance(InstallationManager);
             });
         }
@@ -560,8 +560,6 @@ namespace MediaBrowser.Common.Implementations
         /// <value><c>true</c> if this instance can self update; otherwise, <c>false</c>.</value>
         public abstract bool CanSelfUpdate { get; }
 
-        private Tuple<CheckForUpdateResult, DateTime> _lastUpdateCheckResult;
-
         /// <summary>
         /// Checks for update.
         /// </summary>
@@ -571,24 +569,9 @@ namespace MediaBrowser.Common.Implementations
         public async Task<CheckForUpdateResult> CheckForApplicationUpdate(CancellationToken cancellationToken,
                                                                     IProgress<double> progress)
         {
-            if (_lastUpdateCheckResult != null)
-            {
-                // Let dev users get results more often for testing purposes
-                var cacheLength = ConfigurationManager.CommonConfiguration.SystemUpdateLevel == PackageVersionClass.Dev
-                                      ? TimeSpan.FromHours(1)
-                                      : TimeSpan.FromHours(12);
-
-                if ((DateTime.UtcNow - _lastUpdateCheckResult.Item2) < cacheLength)
-                {
-                    return _lastUpdateCheckResult.Item1;
-                }
-            }
-
             var result = await CheckForApplicationUpdateInternal(cancellationToken, progress).ConfigureAwait(false);
 
-            _lastUpdateCheckResult = new Tuple<CheckForUpdateResult, DateTime>(result, DateTime.UtcNow);
-
-            return _lastUpdateCheckResult.Item1;
+            return result;
         }
 
         /// <summary>
@@ -600,7 +583,7 @@ namespace MediaBrowser.Common.Implementations
         private async Task<CheckForUpdateResult> CheckForApplicationUpdateInternal(CancellationToken cancellationToken,
                                                                    IProgress<double> progress)
         {
-            var availablePackages = await InstallationManager.GetAvailablePackagesWithoutRegistrationInfo(CancellationToken.None).ConfigureAwait(false);
+            var availablePackages = await InstallationManager.GetAvailablePackagesWithoutRegistrationInfo(cancellationToken).ConfigureAwait(false);
 
             var version = InstallationManager.GetLatestCompatibleVersion(availablePackages, ApplicationUpdatePackageName, ConfigurationManager.CommonConfiguration.SystemUpdateLevel);
 

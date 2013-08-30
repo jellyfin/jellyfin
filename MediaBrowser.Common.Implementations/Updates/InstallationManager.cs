@@ -1,5 +1,4 @@
-﻿using System.Security.Cryptography;
-using MediaBrowser.Common.Configuration;
+﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
@@ -14,6 +13,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -104,6 +104,7 @@ namespace MediaBrowser.Common.Implementations.Updates
         private readonly IJsonSerializer _jsonSerializer;
         private readonly ISecurityManager _securityManager;
         private readonly INetworkManager _networkManager;
+        private readonly IConfigurationManager _config;
 
         /// <summary>
         /// Gets the application host.
@@ -111,7 +112,7 @@ namespace MediaBrowser.Common.Implementations.Updates
         /// <value>The application host.</value>
         private readonly IApplicationHost _applicationHost;
 
-        public InstallationManager(ILogger logger, IApplicationHost appHost, IApplicationPaths appPaths, IHttpClient httpClient, IJsonSerializer jsonSerializer, ISecurityManager securityManager, INetworkManager networkManager)
+        public InstallationManager(ILogger logger, IApplicationHost appHost, IApplicationPaths appPaths, IHttpClient httpClient, IJsonSerializer jsonSerializer, ISecurityManager securityManager, INetworkManager networkManager, IConfigurationManager config)
         {
             if (logger == null)
             {
@@ -127,6 +128,7 @@ namespace MediaBrowser.Common.Implementations.Updates
             _jsonSerializer = jsonSerializer;
             _securityManager = securityManager;
             _networkManager = networkManager;
+            _config = config;
             _logger = logger;
         }
 
@@ -153,6 +155,8 @@ namespace MediaBrowser.Common.Implementations.Updates
             }
         }
 
+        private Tuple<List<PackageInfo>, DateTime> _lastPackageListResult;
+        
         /// <summary>
         /// Gets all available packages.
         /// </summary>
@@ -164,11 +168,26 @@ namespace MediaBrowser.Common.Implementations.Updates
             PackageType? packageType = null,
             Version applicationVersion = null)
         {
+            if (_lastPackageListResult != null)
+            {
+                // Let dev users get results more often for testing purposes
+                var cacheLength = _config.CommonConfiguration.SystemUpdateLevel == PackageVersionClass.Dev
+                                      ? TimeSpan.FromMinutes(10)
+                                      : TimeSpan.FromHours(12);
+
+                if ((DateTime.UtcNow - _lastPackageListResult.Item2) < cacheLength)
+                {
+                    return _lastPackageListResult.Item1;
+                }
+            }
+            
             using (var json = await _httpClient.Get(Constants.Constants.MbAdminUrl + "service/MB3Packages.json", cancellationToken).ConfigureAwait(false))
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var packages = _jsonSerializer.DeserializeFromStream<List<PackageInfo>>(json).ToList();
+
+                _lastPackageListResult = new Tuple<List<PackageInfo>, DateTime>(packages, DateTime.UtcNow);
 
                 return FilterPackages(packages, packageType, applicationVersion);
             }
