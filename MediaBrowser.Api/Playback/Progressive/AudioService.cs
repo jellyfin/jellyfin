@@ -93,9 +93,11 @@ namespace MediaBrowser.Api.Playback.Progressive
                 audioTranscodeParams.Add("-strict experimental");
             }
 
-            if (request.AudioBitRate.HasValue)
+            var bitrate = GetAudioBitrateParam(state);
+
+            if (bitrate.HasValue)
             {
-                audioTranscodeParams.Add("-ab " + request.AudioBitRate.Value);
+                audioTranscodeParams.Add("-ab " + bitrate.Value.ToString(UsCulture));
             }
 
             var channels = GetNumAudioChannelsParam(request, state.AudioStream);

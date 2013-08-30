@@ -236,9 +236,11 @@ namespace MediaBrowser.Api.Playback.Progressive
                 args += " -ar " + request.AudioSampleRate.Value;
             }
 
-            if (request.AudioBitRate.HasValue)
+            var bitrate = GetAudioBitrateParam(state);
+
+            if (bitrate.HasValue)
             {
-                args += " -ab " + request.AudioBitRate.Value;
+                args += " -ab " + bitrate.Value.ToString(UsCulture);
             }
 
             var volParam = string.Empty;
@@ -283,16 +285,13 @@ namespace MediaBrowser.Api.Playback.Progressive
             else if (videoCodec.Equals("mpeg4", StringComparison.OrdinalIgnoreCase))
             {
                 args = "-mbd rd -flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -bf 2";
-            } 
-            
-            if (state.VideoRequest.VideoBitRate.HasValue)
+            }
+
+            var bitrate = GetVideoBitrateParam(state);
+
+            if (bitrate.HasValue)
             {
-                // Make sure we don't request a bitrate higher than the source
-                var currentBitrate = state.VideoStream == null ? state.VideoRequest.VideoBitRate.Value : state.VideoStream.BitRate ?? state.VideoRequest.VideoBitRate.Value;
-
-                var bitrate = Math.Min(currentBitrate, state.VideoRequest.VideoBitRate.Value);
-
-                args += " -b:v " + bitrate;
+                args += " -b:v " + bitrate.Value.ToString(UsCulture);
             }
 
             return args.Trim();
