@@ -146,9 +146,11 @@ namespace MediaBrowser.Api.Playback.Hls
                     args += " -ar " + state.Request.AudioSampleRate.Value;
                 }
 
-                if (state.Request.AudioBitRate.HasValue)
+                var bitrate = GetAudioBitrateParam(state);
+
+                if (bitrate.HasValue)
                 {
-                    args += " -ab " + state.Request.AudioBitRate.Value;
+                    args += " -ab " + bitrate.Value.ToString(UsCulture);
                 }
 
                 var volParam = string.Empty;
@@ -187,14 +189,11 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var args = "-codec:v:0 " + codec + " -preset superfast" + keyFrameArg;
 
-            if (state.VideoRequest.VideoBitRate.HasValue)
+            var bitrate = GetVideoBitrateParam(state);
+
+            if (bitrate.HasValue)
             {
-                // Make sure we don't request a bitrate higher than the source
-                var currentBitrate = state.VideoStream == null ? state.VideoRequest.VideoBitRate.Value : state.VideoStream.BitRate ?? state.VideoRequest.VideoBitRate.Value;
-
-                var bitrate = Math.Min(currentBitrate, state.VideoRequest.VideoBitRate.Value);
-
-                args += string.Format(" -b:v {0}", bitrate);
+                args += string.Format(" -b:v {0}", bitrate.Value.ToString(UsCulture));
             }
             
             // Add resolution params, if specified

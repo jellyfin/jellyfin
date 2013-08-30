@@ -119,7 +119,10 @@ namespace MediaBrowser.Api.Playback.Hls
                 await WaitForMinimumSegmentCount(playlist, 3).ConfigureAwait(false);
             }
 
-            var playlistText = GetMasterPlaylistFileText(playlist, state.VideoRequest.VideoBitRate.Value + state.Request.AudioBitRate.Value);
+            var audioBitrate = GetAudioBitrateParam(state) ?? 0;
+            var videoBitrate = GetVideoBitrateParam(state) ?? 0;
+
+            var playlistText = GetMasterPlaylistFileText(playlist, videoBitrate + audioBitrate);
 
             try
             {
