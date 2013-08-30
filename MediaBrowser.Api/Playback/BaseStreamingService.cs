@@ -645,6 +645,18 @@ namespace MediaBrowser.Api.Playback
             {
                 await Task.Delay(100).ConfigureAwait(false);
             }
+
+            // Allow a small amount of time to buffer a little
+            if (state.Item is Video)
+            {
+                await Task.Delay(500).ConfigureAwait(false);
+            }
+
+            // This is arbitrary, but add a little buffer time when internet streaming
+            if (state.Item.LocationType == LocationType.Remote)
+            {
+                await Task.Delay(2000).ConfigureAwait(false);
+            }
         }
 
         /// <summary>
