@@ -81,8 +81,7 @@ namespace MediaBrowser.Providers.Savers
             }
 
             XmlSaverHelpers.AddCommonNodes(item, builder);
-            XmlSaverHelpers.AddMediaInfo(episode, builder);
-            XmlSaverHelpers.AddChapters((Video)item, builder, _itemRepository);
+            XmlSaverHelpers.AddMediaInfo(episode, builder, _itemRepository);
 
             builder.Append("</Item>");
 

@@ -451,9 +451,11 @@ namespace MediaBrowser.Providers.Savers
         /// <typeparam name="T"></typeparam>
         /// <param name="item">The item.</param>
         /// <param name="builder">The builder.</param>
-        public static void AddMediaInfo<T>(T item, StringBuilder builder)
+        public static void AddMediaInfo<T>(T item, StringBuilder builder, IItemRepository itemRepository)
             where T : BaseItem, IHasMediaStreams
         {
+            var video = item as Video;
+
             builder.Append("<MediaInfo>");
 
             foreach (var stream in item.MediaStreams)
@@ -526,8 +528,6 @@ namespace MediaBrowser.Providers.Savers
                         builder.Append("<DurationSeconds>" + Convert.ToInt32(timespan.TotalSeconds).ToString(UsCulture) + "</DurationSeconds>");
                     }
 
-                    var video = item as Video;
-
                     if (video != null && video.Video3DFormat.HasValue)
                     {
                         switch (video.Video3DFormat.Value)
@@ -552,6 +552,11 @@ namespace MediaBrowser.Providers.Savers
             }
 
             builder.Append("</MediaInfo>");
+
+            if (video != null)
+            {
+                AddChapters(video, builder, itemRepository);
+            }
         }
     }
 }
