@@ -54,3 +54,4 @@
  - [danlotfy] (https://github.com/danlotfy)
  - [jordy1955] (https://github.com/jordy1955)
  - [JoshFink] (https://github.com/JoshFink)
+ - [Detector1](https://github.com/Detector1)
