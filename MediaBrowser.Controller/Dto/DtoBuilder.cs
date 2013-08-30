@@ -104,33 +104,9 @@ namespace MediaBrowser.Controller.Dto
 
             if (fields.Contains(ItemFields.SoundtrackIds))
             {
-                var series = item as Series;
-
-                if (series != null)
-                {
-                    AttachSoundtrackIds(dto, series, user);
-                }
-
-                var movie = item as Movie;
-
-                if (movie != null)
-                {
-                    AttachSoundtrackIds(dto, movie, user);
-                }
-
-                var album = item as MusicAlbum;
-
-                if (album != null)
-                {
-                    AttachSoundtrackIds(dto, album, user);
-                }
-
-                var game = item as Game;
-
-                if (game != null)
-                {
-                    AttachSoundtrackIds(dto, game, user);
-                }
+                dto.SoundtrackIds = item.SoundtrackIds
+                    .Select(i => i.ToString("N"))
+                    .ToArray();
             }
             
             // Make sure all the tasks we kicked off have completed.
@@ -140,132 +116,6 @@ namespace MediaBrowser.Controller.Dto
             }
 
             return dto;
-        }
-
-        private void AttachSoundtrackIds(BaseItemDto dto, Movie item, User user)
-        {
-            var tmdb = item.GetProviderId(MetadataProviders.Tmdb);
-
-            if (string.IsNullOrEmpty(tmdb))
-            {
-                return;
-            }
-
-            var recursiveChildren = user == null
-                                        ? _libraryManager.RootFolder.RecursiveChildren
-                                        : user.RootFolder.GetRecursiveChildren(user);
-
-            dto.SoundtrackIds = recursiveChildren
-                .Where(i =>
-                {
-                    if (!string.IsNullOrEmpty(tmdb) &&
-                        string.Equals(tmdb, i.GetProviderId(MetadataProviders.Tmdb), StringComparison.OrdinalIgnoreCase) &&
-                        i is MusicAlbum)
-                    {
-                        return true;
-                    }
-                    return false;
-                })
-                .Select(GetClientItemId)
-                .ToArray();
-        }
-
-        private void AttachSoundtrackIds(BaseItemDto dto, Series item, User user)
-        {
-            var tvdb = item.GetProviderId(MetadataProviders.Tvdb);
-
-            if (string.IsNullOrEmpty(tvdb))
-            {
-                return;
-            }
-
-            var recursiveChildren = user == null
-                                        ? _libraryManager.RootFolder.RecursiveChildren
-                                        : user.RootFolder.GetRecursiveChildren(user);
-
-            dto.SoundtrackIds = recursiveChildren
-                .Where(i =>
-                {
-                    if (!string.IsNullOrEmpty(tvdb) &&
-                        string.Equals(tvdb, i.GetProviderId(MetadataProviders.Tvdb), StringComparison.OrdinalIgnoreCase) &&
-                        i is MusicAlbum)
-                    {
-                        return true;
-                    }
-                    return false;
-                })
-                .Select(GetClientItemId)
-                .ToArray();
-        }
-
-        private void AttachSoundtrackIds(BaseItemDto dto, Game item, User user)
-        {
-            var gamesdb = item.GetProviderId(MetadataProviders.Gamesdb);
-
-            if (string.IsNullOrEmpty(gamesdb))
-            {
-                return;
-            }
-
-            var recursiveChildren = user == null
-                                        ? _libraryManager.RootFolder.RecursiveChildren
-                                        : user.RootFolder.GetRecursiveChildren(user);
-
-            dto.SoundtrackIds = recursiveChildren
-                .Where(i =>
-                {
-                    if (!string.IsNullOrEmpty(gamesdb) &&
-                        string.Equals(gamesdb, i.GetProviderId(MetadataProviders.Gamesdb), StringComparison.OrdinalIgnoreCase) &&
-                        i is MusicAlbum)
-                    {
-                        return true;
-                    }
-                    return false;
-                })
-                .Select(GetClientItemId)
-                .ToArray();
-        }
-
-        private void AttachSoundtrackIds(BaseItemDto dto, MusicAlbum item, User user)
-        {
-            var tmdb = item.GetProviderId(MetadataProviders.Tmdb);
-            var tvdb = item.GetProviderId(MetadataProviders.Tvdb);
-            var gamesdb = item.GetProviderId(MetadataProviders.Gamesdb);
-
-            if (string.IsNullOrEmpty(tmdb) && string.IsNullOrEmpty(tvdb) && string.IsNullOrEmpty(gamesdb))
-            {
-                return;
-            }
-
-            var recursiveChildren = user == null
-                                        ? _libraryManager.RootFolder.RecursiveChildren
-                                        : user.RootFolder.GetRecursiveChildren(user);
-
-            dto.SoundtrackIds = recursiveChildren
-                .Where(i =>
-                {
-                    if (!string.IsNullOrEmpty(tmdb) && 
-                        string.Equals(tmdb, i.GetProviderId(MetadataProviders.Tmdb), StringComparison.OrdinalIgnoreCase) &&
-                        i is Movie)
-                    {
-                        return true;
-                    }
-                    if (!string.IsNullOrEmpty(tvdb) &&
-                        string.Equals(tvdb, i.GetProviderId(MetadataProviders.Tvdb), StringComparison.OrdinalIgnoreCase) &&
-                        i is Series)
-                    {
-                        return true;
-                    }
-                    if (!string.IsNullOrEmpty(gamesdb) &&
-                        string.Equals(gamesdb, i.GetProviderId(MetadataProviders.Gamesdb), StringComparison.OrdinalIgnoreCase) &&
-                        i is Game)
-                    {
-                        return true;
-                    }
-                    return false;
-                })
-                .Select(GetClientItemId)
-                .ToArray();
         }
 
         /// <summary>
@@ -716,8 +566,20 @@ namespace MediaBrowser.Controller.Dto
             {
                 SetMusicVideoProperties(dto, musicVideo);
             }
+
+            var book = item as Book;
+
+            if (book != null)
+            {
+                SetBookProperties(dto, book);
+            }
         }
 
+        private void SetBookProperties(BaseItemDto dto, Book item)
+        {
+            dto.SeriesName = item.SeriesName;
+        }
+        
         private void SetMusicVideoProperties(BaseItemDto dto, MusicVideo item)
         {
             if (!string.IsNullOrEmpty(item.Album))
