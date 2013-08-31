@@ -133,7 +133,6 @@
     <Compile Include="Library\LuceneSearchEngine.cs" />
     <Compile Include="Library\ResolverHelper.cs" />
     <Compile Include="Library\Resolvers\Audio\AudioResolver.cs" />
-    <Compile Include="Library\Resolvers\Audio\MusicAlbumDiscResolver.cs" />
     <Compile Include="Library\Resolvers\Audio\MusicAlbumResolver.cs" />
     <Compile Include="Library\Resolvers\Audio\MusicArtistResolver.cs" />
     <Compile Include="Library\Resolvers\BaseItemResolver.cs" />

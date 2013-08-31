@@ -21,6 +21,8 @@ namespace MediaBrowser.Model.ApiClient
 {
     public interface IApiClient : IDisposable
     {
+        event EventHandler ServerLocationChanged;
+
         /// <summary>
         /// Occurs when [HTTP response received].
         /// </summary>

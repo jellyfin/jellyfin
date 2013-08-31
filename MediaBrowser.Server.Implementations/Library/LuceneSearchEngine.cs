@@ -145,7 +145,7 @@ namespace MediaBrowser.Server.Implementations.Library
             }
 
             // Find genres, from non-audio items
-            var genres = items.Where(i => !(i is Audio) && !(i is MusicAlbum) && !(i is MusicAlbumDisc) && !(i is MusicArtist) && !(i is MusicVideo) && !(i is Game))
+            var genres = items.Where(i => !(i is Audio) && !(i is MusicAlbum) && !(i is MusicArtist) && !(i is MusicVideo) && !(i is Game))
                 .SelectMany(i => i.Genres)
                 .Where(i => !string.IsNullOrEmpty(i))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
@@ -171,7 +171,7 @@ namespace MediaBrowser.Server.Implementations.Library
             }
 
             // Find music genres
-            var musicGenres = items.Where(i => (i is Audio) || (i is MusicAlbum) || (i is MusicAlbumDisc) || (i is MusicArtist) || (i is MusicVideo))
+            var musicGenres = items.Where(i => (i is Audio) || (i is MusicAlbum) || (i is MusicArtist) || (i is MusicVideo))
                 .SelectMany(i => i.Genres)
                 .Where(i => !string.IsNullOrEmpty(i))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
