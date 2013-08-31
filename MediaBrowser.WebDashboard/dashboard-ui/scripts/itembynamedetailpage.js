@@ -179,49 +179,49 @@
 
             if (result.MovieCount) {
 
-                html += '<input type="radio" name="ibnItems" id="radioMovies" value="on" data-mini="true">';
+                html += '<input type="radio" name="ibnItems" id="radioMovies" class="context-movies" value="on" data-mini="true">';
                 html += '<label for="radioMovies">Movies (' + result.MovieCount + ')</label>';
             }
 
             if (result.SeriesCount) {
 
-                html += '<input type="radio" name="ibnItems" id="radioShows" value="on" data-mini="true">';
+                html += '<input type="radio" name="ibnItems" id="radioShows" class="context-tv" value="on" data-mini="true">';
                 html += '<label for="radioShows">TV Shows (' + result.SeriesCount + ')</label>';
             }
 
             if (result.EpisodeCount) {
 
-                html += '<input type="radio" name="ibnItems" id="radioEpisodes" value="on" data-mini="true">';
+                html += '<input type="radio" name="ibnItems" id="radioEpisodes" class="context-tv" value="on" data-mini="true">';
                 html += '<label for="radioEpisodes">Episodes (' + result.EpisodeCount + ')</label>';
             }
 
             if (result.TrailerCount) {
 
-                html += '<input type="radio" name="ibnItems" id="radioTrailers" value="on" data-mini="true">';
+                html += '<input type="radio" name="ibnItems" id="radioTrailers" class="context-movies" value="on" data-mini="true">';
                 html += '<label for="radioTrailers">Trailers (' + result.TrailerCount + ')</label>';
             }
 
             if (result.GameCount) {
 
-                html += '<input type="radio" name="ibnItems" id="radioGames" value="on" data-mini="true">';
+                html += '<input type="radio" name="ibnItems" id="radioGames" class="context-games" value="on" data-mini="true">';
                 html += '<label for="radioGames">Games (' + result.GameCount + ')</label>';
             }
 
             if (result.AlbumCount) {
 
-                html += '<input type="radio" name="ibnItems" id="radioAlbums" value="on" data-mini="true">';
+                html += '<input type="radio" name="ibnItems" id="radioAlbums" class="context-music" value="on" data-mini="true">';
                 html += '<label for="radioAlbums">Albums (' + result.AlbumCount + ')</label>';
             }
 
             if (result.SongCount) {
 
-                html += '<input type="radio" name="ibnItems" id="radioSongs" value="on" data-mini="true">';
+                html += '<input type="radio" name="ibnItems" id="radioSongs" class="context-music" value="on" data-mini="true">';
                 html += '<label for="radioSongs">Songs (' + result.SongCount + ')</label>';
             }
 
             if (result.MusicVideoCount) {
 
-                html += '<input type="radio" name="ibnItems" id="radioMusicVideos" value="on" data-mini="true">';
+                html += '<input type="radio" name="ibnItems" id="radioMusicVideos" class="context-music" value="on" data-mini="true">';
                 html += '<label for="radioMusicVideos">Music Videos (' + result.MusicVideoCount + ')</label>';
             }
 
@@ -231,7 +231,19 @@
 
             bindRadioEvents(page);
 
-            $('input:first', elem).attr("checked", "checked").checkboxradio("refresh").trigger('click');
+            var context = getParameterByName('context');
+            var selectedRadio = null;
+
+            if (context) {
+                selectedRadio = $('.context-' + context + ':first', elem);
+            }
+            
+            if (selectedRadio && selectedRadio.length) {
+                selectedRadio.attr("checked", "checked").checkboxradio("refresh").trigger('click');
+            } else {
+                $('input:first', elem).attr("checked", "checked").checkboxradio("refresh").trigger('click');
+            }
+
         });
     }
 
