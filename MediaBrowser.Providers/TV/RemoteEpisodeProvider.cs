@@ -317,9 +317,12 @@ namespace MediaBrowser.Providers.TV
                 if (actors != null)
                 {
                     // Sometimes tvdb actors have leading spaces
-                    var persons = Regex.Matches(actors, @"([^|()]|\([^)]*\)*)+")
+                    //Regex Info:
+                    //The first block are the posible delimitators (open-parentheses should be there cause if dont the next block will fail)
+                    //The second block Allow the delimitators to be part of the text if they're inside parentheses
+                    var persons = Regex.Matches(actors, @"(?<delimitators>([^|,(])|(?<ignoreinParentheses>\([^)]*\)*))+")
                         .Cast<Match>()
-                        .SelectMany(m => string.IsNullOrWhiteSpace(m.Value) ? new string[] { } : m.Value.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                        .Select(m => m.Value)
                         .Where(i => !string.IsNullOrWhiteSpace(i) && !string.IsNullOrEmpty(i));
 
                     foreach (var person in persons.Select(str =>
@@ -340,9 +343,9 @@ namespace MediaBrowser.Providers.TV
                     var extraActors = xmlDocument.SafeGetString("//GuestStars");
                     if (extraActors == null) continue;
                     // Sometimes tvdb actors have leading spaces
-                    var persons = Regex.Matches(extraActors, @"([^|()]|\([^)]*\)*)+")
+                    var persons = Regex.Matches(extraActors, @"(?<delimitators>([^|,(])|(?<ignoreinParentheses>\([^)]*\)*))+")
                         .Cast<Match>()
-                        .SelectMany(m => string.IsNullOrWhiteSpace(m.Value) ? new string[] { } : m.Value.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                        .Select(m => m.Value)
                         .Where(i => !string.IsNullOrWhiteSpace(i) && !string.IsNullOrEmpty(i));
 
                     foreach (var person in persons.Select(str =>
