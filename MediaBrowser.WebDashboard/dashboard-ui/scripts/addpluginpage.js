@@ -151,7 +151,7 @@
 
                 var pluginTypeHtml = pkg.price ? 'This is a <a data-rel="popup" data-position-to="window" href="#premiumPlugins">premium</a> plugin.' : 'This is a <a data-rel="popup" data-position-to="window" href="#supporterPlugins">supporter-only</a> plugin.';
 
-                $('#regInfo', page).html(pluginTypeHtml + '<br/><br/>It will require a <a href="supporter.html">supporter key</a> in order to register after the trial expiration.').trigger('create');
+                $('#regInfo', page).html(pluginTypeHtml + '<br/><br/>It will require a <a href="supporter.html">supporter key</a> in order to register after the <strong>14-day free trial</strong>.').trigger('create');
                 $('#ppButton', page).hide();
             }
 
