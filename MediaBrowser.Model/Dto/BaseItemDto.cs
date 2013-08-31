@@ -138,6 +138,8 @@ namespace MediaBrowser.Model.Dto
         /// <value>The production year.</value>
         public int? ProductionYear { get; set; }
 
+        public int? SeasonCount { get; set; }
+        
         /// <summary>
         /// Gets or sets the players supported by a game.
         /// </summary>
