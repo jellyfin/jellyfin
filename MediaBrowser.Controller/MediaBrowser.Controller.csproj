@@ -72,6 +72,7 @@
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
     <Compile Include="Entities\AdultVideo.cs" />
+    <Compile Include="Entities\Book.cs" />
     <Compile Include="Notifications\Configuration\IServerConfigurationManager.cs" />
     <Compile Include="Dto\SessionInfoDtoBuilder.cs" />
     <Compile Include="Entities\Audio\MusicAlbumDisc.cs" />

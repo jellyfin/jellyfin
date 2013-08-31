@@ -435,9 +435,10 @@
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), {
 
-            ParentId: getParameterByName('id'),
+            ParentId: item.Id,
             SortBy: sortBy,
-            Fields: "PrimaryImageAspectRatio,ItemCounts,DisplayMediaType,DateCreated,UserData,AudioInfo"
+            Fields: "PrimaryImageAspectRatio,ItemCounts,DisplayMediaType,DateCreated,UserData,AudioInfo",
+            MinIndexNumber: item.Type == "Series" ? 1 : null
 
         }).done(function (result) {
 
@@ -468,7 +469,7 @@
             $('#childrenTitle', page).html('Episodes (' + item.ChildCount + ')');
         }
         else if (item.Type == "Series") {
-            $('#childrenTitle', page).html('Seasons (' + item.ChildCount + ')');
+            $('#childrenTitle', page).html('Seasons (' + item.SeasonCount + ')');
         }
         else if (item.Type == "BoxSet") {
             $('#childrenTitle', page).html('Movies (' + item.ChildCount + ')');
@@ -860,6 +861,12 @@
 
     function renderTrailers(page, item) {
 
+        if (item.Type == "Trailer") {
+            $('#trailerSectionHeader', page).html('More trailers');
+        } else {
+            $('#trailerSectionHeader', page).html('Trailers');
+        }
+        
         var remoteTrailersHtml = '';
 
         for (var i = 0, length = item.RemoteTrailers.length; i < length; i++) {

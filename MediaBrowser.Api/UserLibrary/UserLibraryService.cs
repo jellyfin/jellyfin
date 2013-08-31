@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Session;
@@ -325,7 +326,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// Class GetSpecialFeatures
     /// </summary>
     [Route("/Users/{UserId}/Items/{Id}/SpecialFeatures", "GET")]
-    [Api(Description = "Gets special features for a movie")]
+    [Api(Description = "Gets special features for an item")]
     public class GetSpecialFeatures : IReturn<List<BaseItemDto>>
     {
         /// <summary>
@@ -404,16 +405,40 @@ namespace MediaBrowser.Api.UserLibrary
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true)).ToList();
 
-            var movie = (Movie)item;
-
             var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userDataRepository, _itemRepo);
 
-            var tasks = movie.SpecialFeatureIds
-                .Select(_itemRepo.RetrieveItem)
-                .OrderBy(i => i.SortName)
-                .Select(i => dtoBuilder.GetBaseItemDto(i, fields, user, movie));
+            var movie = item as Movie;
 
-            return Task.WhenAll(tasks);
+            // Get them from the db
+            if (movie != null)
+            {
+                // Avoid implicitly captured closure
+                var movie1 = movie;
+
+                var tasks = movie.SpecialFeatureIds
+                    .Select(_itemRepo.RetrieveItem)
+                    .OrderBy(i => i.SortName)
+                    .Select(i => dtoBuilder.GetBaseItemDto(i, fields, user, movie1));
+
+                return Task.WhenAll(tasks);
+            }
+
+            var series = item as Series;
+
+            // Get them from the child tree
+            if (series != null)
+            {
+                var tasks = series
+                    .RecursiveChildren
+                    .OfType<Episode>()
+                    .Where(i => i.ParentIndexNumber.HasValue && i.ParentIndexNumber.Value == 0)
+                    .OrderBy(i => i.SortName)
+                    .Select(i => dtoBuilder.GetBaseItemDto(i, fields, user));
+
+                return Task.WhenAll(tasks);
+            }
+
+            throw new ArgumentException("The item does not support special features");
         }
 
         /// <summary>
@@ -589,7 +614,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             return DtoBuilder.GetUserItemDataDto(data);
         }
-        
+
         /// <summary>
         /// Posts the specified request.
         /// </summary>

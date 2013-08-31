@@ -172,6 +172,9 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "AdjacentTo", Description = "Optional. Return items that are siblings of a supplied item.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string AdjacentTo { get; set; }
 
+        [ApiMember(Name = "MinIndexNumber", Description = "Optional filter index number.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int? MinIndexNumber { get; set; }
+        
         /// <summary>
         /// Gets the order by.
         /// </summary>
@@ -509,6 +512,12 @@ namespace MediaBrowser.Api.UserLibrary
                 }
 
                 items = items.Where(i => i.Id == previousId || i.Id == nextId);
+            }
+
+            // Min index number
+            if (request.MinIndexNumber.HasValue)
+            {
+                items = items.Where(i => i.IndexNumber.HasValue && i.IndexNumber.Value >= request.MinIndexNumber.Value);
             }
 
             // Min official rating
