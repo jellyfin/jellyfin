@@ -37,7 +37,8 @@ Dev: 3.0.4978.15146
 
 ## Images
 
-![Android](https://www.dropbox.com/s/lc90fkzqj8gaxlg/android.png?dl=1)
+![Android](https://dl.dropboxusercontent.com/u/4038856/android1.png)
+![Android](https://dl.dropboxusercontent.com/u/4038856/android2.png)
 ![Html5](https://www.dropbox.com/s/ptizv0assku1mrn/html5.png?dl=1)
 ![iOS](https://www.dropbox.com/s/24qyw0kdwu42skn/ios_1.jpg?dl=1)
 ![iOS](https://www.dropbox.com/s/p9d0ukms80lo7sy/ios_2.jpg?dl=1)
