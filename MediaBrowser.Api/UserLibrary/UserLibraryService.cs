@@ -432,7 +432,20 @@ namespace MediaBrowser.Api.UserLibrary
                     .RecursiveChildren
                     .OfType<Episode>()
                     .Where(i => i.ParentIndexNumber.HasValue && i.ParentIndexNumber.Value == 0)
-                    .OrderBy(i => i.SortName)
+                    .OrderBy(i =>
+                    {
+                        if (i.PremiereDate.HasValue)
+                        {
+                            return i.PremiereDate.Value;
+                        }
+
+                        if (i.ProductionYear.HasValue)
+                        {
+                            return new DateTime(i.ProductionYear.Value, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+                        }
+                        return DateTime.MinValue;
+                    })
+                    .ThenBy(i => i.SortName)
                     .Select(i => dtoBuilder.GetBaseItemDto(i, fields, user));
 
                 return Task.WhenAll(tasks);
