@@ -97,9 +97,7 @@ namespace MediaBrowser.Providers.Savers
 
             var video = (Video)item;
 
-            XmlSaverHelpers.AddMediaInfo(video, builder);
-
-            XmlSaverHelpers.AddChapters(video, builder, _itemRepository);
+            XmlSaverHelpers.AddMediaInfo(video, builder, _itemRepository);
 
             builder.Append("</Title>");
 

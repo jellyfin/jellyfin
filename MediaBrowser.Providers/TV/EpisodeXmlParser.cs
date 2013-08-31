@@ -49,7 +49,7 @@ namespace MediaBrowser.Providers.TV
             {
                 case "Chapters":
 
-                    _chaptersTask = FetchChaptersFromXmlNode(item, reader.ReadSubtree(), _itemRepo, CancellationToken.None);
+                    //_chaptersTask = FetchChaptersFromXmlNode(item, reader.ReadSubtree(), _itemRepo, CancellationToken.None);
                     break;
 
                 case "Episode":
