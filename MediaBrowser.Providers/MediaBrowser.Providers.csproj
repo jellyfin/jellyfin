@@ -107,6 +107,7 @@
     <Compile Include="TV\SeasonProviderFromXml.cs" />
     <Compile Include="TV\SeriesProviderFromXml.cs" />
     <Compile Include="TV\SeriesXmlParser.cs" />
+    <Compile Include="TV\SeriesPostScanTask.cs" />
     <Compile Include="TV\TvdbPersonImageProvider.cs" />
     <Compile Include="TV\TvdbPrescanTask.cs" />
     <Compile Include="TV\TvdbSeriesImageProvider.cs" />

@@ -13,9 +13,15 @@ namespace MediaBrowser.Controller.Entities.TV
     /// </summary>
     public class Series : Folder
     {
+        public List<Guid> SpecialFeatureIds { get; set; }
+
+        public int SeasonCount { get; set; }
+
         public Series()
         {
             AirDays = new List<DayOfWeek>();
+
+            SpecialFeatureIds = new List<Guid>();
         }
 
         /// <summary>

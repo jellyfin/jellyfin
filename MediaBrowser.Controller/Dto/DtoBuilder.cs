@@ -108,7 +108,7 @@ namespace MediaBrowser.Controller.Dto
                     .Select(i => i.ToString("N"))
                     .ToArray();
             }
-            
+
             // Make sure all the tasks we kicked off have completed.
             if (tasks.Count > 0)
             {
@@ -532,6 +532,10 @@ namespace MediaBrowser.Controller.Dto
                 dto.AirDays = series.AirDays;
                 dto.AirTime = series.AirTime;
                 dto.Status = series.Status;
+
+                dto.SpecialFeatureCount = series.SpecialFeatureIds.Count;
+
+                dto.SeasonCount = series.SeasonCount;
             }
 
             if (episode != null)
@@ -579,7 +583,7 @@ namespace MediaBrowser.Controller.Dto
         {
             dto.SeriesName = item.SeriesName;
         }
-        
+
         private void SetMusicVideoProperties(BaseItemDto dto, MusicVideo item)
         {
             if (!string.IsNullOrEmpty(item.Album))
