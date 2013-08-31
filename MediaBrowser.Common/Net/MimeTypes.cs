@@ -112,6 +112,20 @@ namespace MediaBrowser.Common.Net
                 return "application/xml";
             }
 
+            // Type document
+            if (ext.Equals(".pdf", StringComparison.OrdinalIgnoreCase))
+            {
+                return "application/pdf";
+            }
+            if (ext.Equals(".mobi", StringComparison.OrdinalIgnoreCase))
+            {
+                return "application/x-mobipocket-ebook";
+            }
+            if (ext.Equals(".epub", StringComparison.OrdinalIgnoreCase))
+            {
+                return "application/epub+zip";
+            }
+
             // Type image
             if (ext.Equals(".gif", StringComparison.OrdinalIgnoreCase))
             {
