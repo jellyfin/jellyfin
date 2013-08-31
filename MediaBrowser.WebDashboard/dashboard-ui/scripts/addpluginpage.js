@@ -112,7 +112,6 @@
                 regStatus += "You are currently registered for this feature";
             } else {
                 if (new Date(pkg.expDate).getTime() < new Date(1970, 1, 1).getTime()) {
-                    regStatus += "This feature has never been installed on this system";
                 } else {
                     if (new Date(pkg.expDate).getTime() <= new Date().getTime()) {
                         regStatus += "The trial period for this feature has expired";
@@ -149,7 +148,10 @@
                     $('.premiumHasPrice', page).hide();
                 }
             } else {
-                $('#regInfo', page).html("Please become a <a href='supporter.html'>Media Browser Supporter</a> in order to register this feature.").trigger('create');
+
+                var pluginTypeHtml = pkg.price ? 'This is a <a data-rel="popup" data-position-to="window" href="#premiumPlugins">premium</a> plugin.' : 'This is a <a data-rel="popup" data-position-to="window" href="#supporterPlugins">supporter-only</a> plugin.';
+
+                $('#regInfo', page).html(pluginTypeHtml + '<br/><br/>It will require a <a href="supporter.html">supporter key</a> in order to register after the trial expiration.').trigger('create');
                 $('#ppButton', page).hide();
             }
 

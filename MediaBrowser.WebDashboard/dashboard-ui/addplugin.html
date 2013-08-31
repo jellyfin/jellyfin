@@ -26,15 +26,17 @@
                         </p>
 
                         <p id="btnInstallDiv" class="hide">
-                            <button id="btnInstall" type="submit"  data-icon="download" data-theme="b">Install</button>
+                            <button id="btnInstall" type="submit" data-icon="download" data-theme="b">Install</button>
                         </p>
-	                    <p id="nonServerMsg"></p>
+                        <p id="nonServerMsg"></p>
                     </div>
                 </form>
 
                 <form name="_xclick" action="https://www.paypal.com/cgi-bin/webscr" method="post">
-                    <div class="premiumPackage" data-role="collapsible" data-content-theme="c" data-collapsed="false" style="margin-top: 2em; display: none" >
+                    <div class="premiumPackage" data-role="collapsible" data-content-theme="c" data-collapsed="false" style="margin-top: 2em; display: none">
                         <h3>Registration</h3>
+                        <p id="pluginType">
+                        </p>
                         <p id="regStatus">
                         </p>
                         <p id="regInfo">
@@ -61,7 +63,7 @@
 
                     </div>
 
-                    <div data-role="collapsible" data-content-theme="c" data-collapsed="false" style="margin-top: 2em;" >
+                    <div data-role="collapsible" data-content-theme="c" data-collapsed="false" style="margin-top: 2em;">
                         <h3>Developer Info</h3>
                         <p id="developer"></p>
                         <p id="pViewWebsite" style="display: none;">
@@ -75,6 +77,27 @@
                     </div>
                 </form>
 
+                <div data-role="popup" class="ui-content" id="supporterPlugins" data-theme="e" data-overlay-theme="a">
+                    <a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>
+                    <p>Supporter-Only plug-ins are free for anyone who is an <strong>MB3 Supporter</strong> (with a valid MB3 key who has donated the minimum amount to the overall project).</p>
+                    <p>
+                        Anyone can install them and enjoy a free trial period of 14 days in most instances.  The trial period may commence as soon as you install the plug-in.<p>
+                    <p>These plug-ins will appear in the catalog with a "Supporter" banner.</p>
+                </div>
+
+                <div data-role="popup" class="ui-content" id="premiumPlugins" data-theme="e" data-overlay-theme="a">
+                    <a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>
+                    <p>
+                        Premium plug-ins are developed by third-parties and require that you be an <strong>MB3 Supporter <em>and</em> also register the plug-in with its creator.</strong>
+                        The cost of registering these plug-ins is set for each one by its creator and all revenues go to that person.
+                    </p>
+                    <p>Anyone can install them and enjoy a free trial period of 14 days in most instances.  The trial period may commence as soon as you install the plug-in.</p>
+                    <p>
+                        You should install premium plug-ins without registering them first to take advantage of this trial period.  Then, if you find the functionality useful,
+                                                                                                                                                                         you can register it via its detail page here in the catalog.
+                    </p>
+                    <p>These plug-ins will appear in the catalog with a "Premium" banner.</p>
+                </div>
             </div>
         </div>
         <script type="text/javascript">
