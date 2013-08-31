@@ -75,7 +75,6 @@
     <Compile Include="Entities\Book.cs" />
     <Compile Include="Notifications\Configuration\IServerConfigurationManager.cs" />
     <Compile Include="Dto\SessionInfoDtoBuilder.cs" />
-    <Compile Include="Entities\Audio\MusicAlbumDisc.cs" />
     <Compile Include="Entities\Audio\MusicGenre.cs" />
     <Compile Include="Entities\Game.cs" />
     <Compile Include="Entities\GameGenre.cs" />
