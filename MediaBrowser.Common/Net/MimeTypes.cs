@@ -125,6 +125,10 @@ namespace MediaBrowser.Common.Net
             {
                 return "application/epub+zip";
             }
+            if (ext.Equals(".cbz", StringComparison.OrdinalIgnoreCase) || ext.Equals(".cbr", StringComparison.OrdinalIgnoreCase))
+            {
+                return "application/x-cdisplay";
+            }
 
             // Type image
             if (ext.Equals(".gif", StringComparison.OrdinalIgnoreCase))
