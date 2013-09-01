@@ -141,7 +141,7 @@ namespace MediaBrowser.Api.Playback.Hls
             builder.AppendLine("#EXTM3U");
 
             // Main stream
-            builder.AppendLine("#EXT-X-STREAM-INF:PROGRAM-ID=1, BANDWIDTH=" + bitrate.ToString(UsCulture));
+            builder.AppendLine("#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=" + bitrate.ToString(UsCulture));
             var playlistUrl = "hls/" + Path.GetFileName(firstPlaylist).Replace(".m3u8", "/stream.m3u8");
             builder.AppendLine(playlistUrl);
 
