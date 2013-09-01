@@ -92,4 +92,9 @@ namespace MediaBrowser.Controller.Entities.Audio
             return RecursiveChildren.OfType<Audio>().Any(i => i.HasArtist(artist));
         }
     }
+
+    public class MusicAlbumDisc : Folder
+    {
+        
+    }
 }

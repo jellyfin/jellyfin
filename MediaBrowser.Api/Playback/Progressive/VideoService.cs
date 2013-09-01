@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Common.MediaInfo;
+﻿using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -145,7 +144,7 @@ namespace MediaBrowser.Api.Playback.Progressive
                 return state.VideoStream != null && IsH264(state.VideoStream) ? args + " -bsf h264_mp4toannexb" : args;
             }
 
-            const string keyFrameArg = " -force_key_frames expr:if(isnan(prev_forced_t),gte(t,0),gte(t,prev_forced_t+2))";
+            const string keyFrameArg = " -force_key_frames expr:if(isnan(prev_forced_t),gte(t,1),gte(t,prev_forced_t+5))";
 
             args += keyFrameArg;
 
@@ -217,11 +216,6 @@ namespace MediaBrowser.Api.Playback.Progressive
             }
             
             var args = "-acodec " + codec;
-
-            if (string.Equals(codec, "aac", StringComparison.OrdinalIgnoreCase))
-            {
-                args += " -strict experimental";
-            }
             
             // Add the number of audio channels
             var channels = GetNumAudioChannelsParam(request, state.AudioStream);

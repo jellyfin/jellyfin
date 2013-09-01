@@ -1,8 +1,4 @@
-﻿using System.Net;
-using System.Net.Cache;
-using System.Net.Http;
-using MediaBrowser.Api.Images;
-using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Api.Images;
 using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
@@ -12,11 +8,12 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.IO;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Http;
 using System.Threading.Tasks;
-using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Api.Playback.Progressive
 {
