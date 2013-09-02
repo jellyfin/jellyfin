@@ -18,5 +18,7 @@ namespace MediaBrowser.Model.Entities
         public const string BoxSets = "boxsets";
 
         public const string AdultVideos = "adultvideos";
+
+        public const string Books = "books";
     }
 }
