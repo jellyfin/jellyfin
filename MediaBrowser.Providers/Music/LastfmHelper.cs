@@ -52,10 +52,15 @@ namespace MediaBrowser.Providers.Music
             {
                 item.Overview = overview;
             }
+
             DateTime release;
-            DateTime.TryParse(data.releasedate, out release);
-            item.PremiereDate = release;
-            item.ProductionYear = release.Year;
+
+            if (DateTime.TryParse(data.releasedate, out release) && release.Year != 1901)
+            {
+                item.PremiereDate = release;
+                item.ProductionYear = release.Year;
+            }
+
             if (data.toptags != null && !item.LockedFields.Contains(MetadataFields.Tags))
             {
                 AddTags(item, data.toptags);
