@@ -180,7 +180,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 return IsH264(state.VideoStream) ? "-codec:v:0 copy -bsf h264_mp4toannexb" : "-codec:v:0 copy";
             }
 
-            const string keyFrameArg = " -force_key_frames expr:if(isnan(prev_forced_t),gte(t,1),gte(t,prev_forced_t+5))";
+            const string keyFrameArg = " -force_key_frames expr:if(isnan(prev_forced_t),gte(t,.1),gte(t,prev_forced_t+5))";
 
             var args = "-codec:v:0 " + codec + " -preset superfast" + keyFrameArg;
 
@@ -188,7 +188,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             if (bitrate.HasValue)
             {
-                args += string.Format(" -b:v {0} -maxrate {0} -minrate {0} -bufsize ({0}/10)", bitrate.Value.ToString(UsCulture));
+                args += string.Format(" -b:v {0} -maxrate {0} -minrate {0} -bufsize ({0}/11)", bitrate.Value.ToString(UsCulture));
             }
             
             // Add resolution params, if specified
