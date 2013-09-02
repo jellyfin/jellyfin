@@ -335,7 +335,27 @@ namespace MediaBrowser.Providers.TV
             {
                 series.Overview = doc.SafeGetString("//Overview");
             }
-            series.CommunityRating = doc.SafeGetSingle("//Rating", 0, 10);
+
+            var imdbId = doc.SafeGetString("//IMDB_ID");
+
+            if (!string.IsNullOrWhiteSpace(imdbId))
+            {
+                series.SetProviderId(MetadataProviders.Imdb, imdbId);
+            }
+
+            var zap2ItId = doc.SafeGetString("//zap2it_id");
+
+            if (!string.IsNullOrWhiteSpace(zap2ItId))
+            {
+                series.SetProviderId(MetadataProviders.Zap2It, zap2ItId);
+            }
+            
+            // Only fill this if it doesn't already have a value, since we get it from imdb which has better data
+            if (!series.CommunityRating.HasValue || string.IsNullOrWhiteSpace(series.GetProviderId(MetadataProviders.Imdb)))
+            {
+                series.CommunityRating = doc.SafeGetSingle("//Rating", 0, 10);
+            }
+
             series.AirDays = TVUtils.GetAirDays(doc.SafeGetString("//Airs_DayOfWeek"));
             series.AirTime = doc.SafeGetString("//Airs_Time");
             SeriesStatus seriesStatus;
