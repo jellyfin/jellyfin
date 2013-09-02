@@ -237,6 +237,7 @@
 
             { name: "General or mixed content", value: "" },
             { name: "Adult videos", value: "adultvideos" },
+            { name: "Books*", value: "books" },
             { name: "Box sets", value: "boxsets" },
             { name: "Games*", value: "games" },
             { name: "Home videos", value: "homevideos" },
