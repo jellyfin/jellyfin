@@ -230,7 +230,7 @@ namespace MediaBrowser.Api.Playback.Hls
         {
             var probeSize = GetProbeSizeArgument(state.Item);
 
-            var args = string.Format("{0} {1} {2} -i {3}{4} -threads 0 {5} {6} {7} -hls_time 10 -start_number 0 -hls_list_size 1440 \"{8}\"",
+            var args = string.Format("{0} {1} {2} -i {3}{4} -threads 0 {5} {6} -sc_threshold 0 {7} -hls_time 10 -start_number 0 -hls_list_size 1440 \"{8}\"",
                 probeSize,
                 GetUserAgentParam(state.Item),
                 GetFastSeekCommandLineParameter(state.Request),
@@ -246,7 +246,7 @@ namespace MediaBrowser.Api.Playback.Hls
             {
                 var lowBitratePath = Path.Combine(Path.GetDirectoryName(outputPath), Path.GetFileNameWithoutExtension(outputPath) + "-low.m3u8");
 
-                var lowBitrateParams = string.Format(" -threads 0 -vn -codec:a:{1} aac -strict experimental -ac 2 -ab 64000 -hls_time 10 -start_number 0 -hls_list_size 1440 \"{0}\"",
+                var lowBitrateParams = string.Format(" -threads 0 -vn -codec:a:{1} libmp3lame -ac 2 -ab 32000 -hls_time 10 -start_number 0 -hls_list_size 1440 \"{0}\"",
                     lowBitratePath,
                     state.AudioStream.Index);
 
