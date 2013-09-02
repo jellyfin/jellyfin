@@ -78,6 +78,8 @@ namespace MediaBrowser.Server.Implementations.BdInfo
 
             outputStream.MediaStreams = mediaStreams;
 
+            outputStream.PlaylistName = playlist.Name;
+
             if (playlist.StreamClips != null && playlist.StreamClips.Any())
             {
                 // Get the files in the playlist

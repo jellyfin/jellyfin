@@ -95,6 +95,8 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        public string MainFeaturePlaylistName { get; set; }
+
         /// <summary>
         /// Gets the playable stream files.
         /// </summary>
