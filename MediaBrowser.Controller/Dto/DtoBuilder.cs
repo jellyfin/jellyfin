@@ -483,6 +483,7 @@ namespace MediaBrowser.Controller.Dto
                 dto.VideoType = video.VideoType;
                 dto.Video3DFormat = video.Video3DFormat;
                 dto.IsoType = video.IsoType;
+                dto.MainFeaturePlaylistName = video.MainFeaturePlaylistName;
 
                 dto.PartCount = video.AdditionalPartIds.Count + 1;
 

@@ -566,6 +566,8 @@ namespace MediaBrowser.Providers.MediaInfo
 
             video.MediaStreams = stream.MediaStreams;
 
+            video.MainFeaturePlaylistName = stream.PlaylistName;
+
             if (stream.RunTimeTicks.HasValue && stream.RunTimeTicks.Value > 0)
             {
                 video.RunTimeTicks = stream.RunTimeTicks;

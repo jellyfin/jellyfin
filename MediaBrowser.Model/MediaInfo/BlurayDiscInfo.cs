@@ -26,6 +26,8 @@ namespace MediaBrowser.Model.MediaInfo
         /// <value>The files.</value>
         public List<string> Files { get; set; }
 
+        public string PlaylistName { get; set; }
+
         /// <summary>
         /// Gets or sets the chapters.
         /// </summary>
