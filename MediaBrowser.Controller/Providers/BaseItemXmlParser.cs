@@ -605,6 +605,14 @@ namespace MediaBrowser.Controller.Providers
                     }
                     break;
 
+                case "Zap2ItId":
+                    var zap2ItId = reader.ReadElementContentAsString();
+                    if (!string.IsNullOrWhiteSpace(zap2ItId))
+                    {
+                        item.SetProviderId(MetadataProviders.Zap2It, zap2ItId);
+                    }
+                    break;
+
                 case "IMDB_ID":
                 case "IMDB":
                 case "IMDbId":

@@ -83,7 +83,8 @@ namespace MediaBrowser.Providers.Savers
                     "DeathDate",
                     "LockedFields",
                     "Chapters",
-                    "MusicBrainzReleaseGroupId"
+                    "MusicBrainzReleaseGroupId",
+                    "Zap2ItId"
                 });
 
                 var position = xml.ToString().LastIndexOf("</", StringComparison.OrdinalIgnoreCase);
@@ -325,6 +326,13 @@ namespace MediaBrowser.Providers.Savers
             if (!string.IsNullOrEmpty(rt))
             {
                 builder.Append("<RottenTomatoesId>" + SecurityElement.Escape(rt) + "</RottenTomatoesId>");
+            }
+
+            var zap2It = item.GetProviderId(MetadataProviders.Zap2It);
+
+            if (!string.IsNullOrEmpty(zap2It))
+            {
+                builder.Append("<Zap2ItId>" + SecurityElement.Escape(zap2It) + "</Zap2ItId>");
             }
 
             var mbz = item.GetProviderId(MetadataProviders.Musicbrainz);
