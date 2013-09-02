@@ -70,6 +70,6 @@ namespace MediaBrowser.Model.Querying
         /// The critic rating
         /// </summary>
         public const string CriticRating = "CriticRating";
-
+        public const string IsFolder = "IsFolder";
     }
 }
