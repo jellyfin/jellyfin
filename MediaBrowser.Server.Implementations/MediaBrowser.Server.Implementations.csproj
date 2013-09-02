@@ -175,6 +175,7 @@
     <Compile Include="Sorting\CriticRatingComparer.cs" />
     <Compile Include="Sorting\DateCreatedComparer.cs" />
     <Compile Include="Sorting\DatePlayedComparer.cs" />
+    <Compile Include="Sorting\IsFolderComparer.cs" />
     <Compile Include="Sorting\OfficialRatingComparer.cs" />
     <Compile Include="Sorting\PlayCountComparer.cs" />
     <Compile Include="Sorting\PremiereDateComparer.cs" />
