@@ -146,7 +146,7 @@ namespace MediaBrowser.Api.Playback.Hls
             builder.AppendLine(playlistUrl);
 
             // Low bitrate stream
-            //builder.AppendLine("#EXT-X-STREAM-INF:PROGRAM-ID=1, BANDWIDTH=64000");
+            //builder.AppendLine("#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=64000");
             //playlistUrl = "hls/" + Path.GetFileName(firstPlaylist).Replace(".m3u8", "-low/stream.m3u8");
             //builder.AppendLine(playlistUrl);
 
