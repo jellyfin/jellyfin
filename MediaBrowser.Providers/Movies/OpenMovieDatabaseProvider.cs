@@ -149,13 +149,25 @@ namespace MediaBrowser.Providers.Movies
             {
                 var result = JsonSerializer.DeserializeFromStream<RootObject>(stream);
 
-                int tomatoMeter;
-
-                if (!string.IsNullOrEmpty(result.tomatoMeter)
-                    && int.TryParse(result.tomatoMeter, NumberStyles.Integer, UsCulture, out tomatoMeter)
-                    && tomatoMeter >= 0)
+                // Seeing some bogus RT data on omdb for series, so filter it out here
+                // RT doesn't even have tv series
+                if (!(item is Series))
                 {
-                    item.CriticRating = tomatoMeter;
+                    int tomatoMeter;
+
+                    if (!string.IsNullOrEmpty(result.tomatoMeter)
+                        && int.TryParse(result.tomatoMeter, NumberStyles.Integer, UsCulture, out tomatoMeter)
+                        && tomatoMeter >= 0)
+                    {
+                        item.CriticRating = tomatoMeter;
+                    }
+
+                    if (!string.IsNullOrEmpty(result.tomatoConsensus)
+                        && !string.Equals(result.tomatoConsensus, "n/a", StringComparison.OrdinalIgnoreCase)
+                        && !string.Equals(result.tomatoConsensus, "No consensus yet.", StringComparison.OrdinalIgnoreCase))
+                    {
+                        item.CriticRatingSummary = result.tomatoConsensus;
+                    }
                 }
 
                 int voteCount;
@@ -174,13 +186,6 @@ namespace MediaBrowser.Providers.Movies
                     && imdbRating >= 0)
                 {
                     item.CommunityRating = imdbRating;
-                }
-                
-                if (!string.IsNullOrEmpty(result.tomatoConsensus)
-                    && !string.Equals(result.tomatoConsensus, "n/a", StringComparison.OrdinalIgnoreCase)
-                    && !string.Equals(result.tomatoConsensus, "No consensus yet.", StringComparison.OrdinalIgnoreCase))
-                {
-                    item.CriticRatingSummary = result.tomatoConsensus;
                 }
             }
             
