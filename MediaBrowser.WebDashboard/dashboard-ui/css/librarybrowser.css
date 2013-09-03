@@ -463,6 +463,7 @@ a.itemTag:hover {
         top: -230px;
         margin: 0 auto 0 -20px;
         text-align: center;
+        left: 0;
         width: 100%;
     }
 

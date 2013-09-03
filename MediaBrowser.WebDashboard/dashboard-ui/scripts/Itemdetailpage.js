@@ -727,15 +727,14 @@
 
             var attributes = [];
 
-            if (stream.Codec) {
+            if (stream.Codec && stream.Codec != "dca") {
                 attributes.push('<span class="mediaInfoAttribute">' + stream.Codec + '</span>');
             }
-            if (stream.Profile) {
+
+            if (stream.Profile && stream.Codec == "dca") {
                 attributes.push('<span class="mediaInfoAttribute">' + stream.Profile + '</span>');
             }
-            if (stream.Level) {
-                attributes.push('<span class="mediaInfoAttribute">Level ' + stream.Level + '</span>');
-            }
+
             if (stream.Language) {
                 attributes.push('<span class="mediaInfoAttribute">' + stream.Language + '</span>');
             }
@@ -768,10 +767,6 @@
 
             if (framerate) {
                 attributes.push('<span class="mediaInfoAttribute">' + framerate + '</span>');
-            }
-
-            if (stream.PixelFormat) {
-                attributes.push('<span class="mediaInfoAttribute">' + stream.PixelFormat + '</span>');
             }
 
             if (stream.IsDefault) {
@@ -866,7 +861,7 @@
         } else {
             $('#trailerSectionHeader', page).html('Trailers');
         }
-        
+
         var remoteTrailersHtml = '';
 
         for (var i = 0, length = item.RemoteTrailers.length; i < length; i++) {
@@ -876,7 +871,7 @@
             var id = getParameterByName('v', trailer.Url);
 
             if (id) {
-                remoteTrailersHtml += '<iframe class="posterItem smallBackdropPosterItem" style="margin:0 3px;position:relative;top:9px;width:auto;" src="//www.youtube.com/embed/' + id + '" frameborder="0" allowfullscreen></iframe>';
+                remoteTrailersHtml += '<iframe class="posterItem smallBackdropPosterItem" style="margin:0 3px;width:auto;" src="//www.youtube.com/embed/' + id + '" frameborder="0" allowfullscreen></iframe>';
             }
         }
 

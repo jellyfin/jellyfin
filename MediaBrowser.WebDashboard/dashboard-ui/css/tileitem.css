@@ -110,6 +110,7 @@
 
     .tileName + .tileName {
         margin-top: .75em;
+        font-weight: normal;
     }
 
 .tileItem .userDataIcons img {
@@ -133,18 +134,22 @@
         width: 45%;
     }
 
-    .posterTileItem .tileImage {
-        height: 120px;
-    }
+        .posterTileItem .tileImage {
+            height: 120px;
+        }
 
-    .squareTileItem .tileImage {
-        height: 115px;
-    }
+        .squareTileItem .tileImage {
+            height: 115px;
+        }
 
     .smallPosterTileItem {
         width: 210px;
         display: inline-block;
         margin: 3px;
+    }
+
+    .smallBackdropTileItem {
+        display: block;
     }
 }
 
