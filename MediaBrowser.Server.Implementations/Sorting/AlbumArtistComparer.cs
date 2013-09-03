@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using System.Linq;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Querying;
@@ -31,7 +32,26 @@ namespace MediaBrowser.Server.Implementations.Sorting
         {
             var audio = x as Audio;
 
-            return audio == null ? string.Empty : audio.AlbumArtist;
+            if (audio != null)
+            {
+                return audio.AlbumArtist;
+            }
+
+            var album = x as MusicAlbum;
+
+            if (album != null)
+            {
+                var song = album.RecursiveChildren
+                    .OfType<Audio>()
+                    .FirstOrDefault(i => !string.IsNullOrEmpty(i.AlbumArtist));
+
+                if (song != null)
+                {
+                    return song.AlbumArtist;
+                }
+            }
+            
+            return null;
         }
 
         /// <summary>
