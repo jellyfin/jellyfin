@@ -340,12 +340,15 @@
             }
             else if (itemType == "MusicAlbum") {
                 html += '<li><a href="#" onclick="MediaPlayer.playInstantMixFromAlbum(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Instant Mix</a></li>';
+                html += '<li><a href="#" onclick="MediaPlayer.shuffleFolder(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Shuffle</a></li>';
             }
             else if (itemType == "Artist") {
                 html += '<li><a href="#" onclick="MediaPlayer.playInstantMixFromArtist(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Instant Mix</a></li>';
+                html += '<li><a href="#" onclick="MediaPlayer.shuffleArtist(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Shuffle</a></li>';
             }
             else if (itemType == "MusicGenre") {
                 html += '<li><a href="#" onclick="MediaPlayer.playInstantMixFromMusicGenre(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Instant Mix</a></li>';
+                html += '<li><a href="#" onclick="MediaPlayer.shuffleMusicGenre(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Shuffle</a></li>';
             }
 
             if (resumePositionTicks) {

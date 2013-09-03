@@ -1044,6 +1044,56 @@
 
         };
 
+        self.shuffleArtist = function (artist) {
+
+            self.getItemsForPlayback({
+
+                Artists: artist,
+                Recursive: true,
+                SortBy: "Random",
+                IncludeItemTypes: "Audio"
+
+            }).done(function (result) {
+
+                self.play(result.Items);
+
+            });
+
+        };
+
+        self.shuffleMusicGenre = function (genre) {
+
+            self.getItemsForPlayback({
+
+                Genres: genre,
+                Recursive: true,
+                SortBy: "Random",
+                IncludeItemTypes: "Audio"
+
+            }).done(function (result) {
+
+                self.play(result.Items);
+
+            });
+
+        };
+
+        self.shuffleFolder = function (id) {
+
+            self.getItemsForPlayback({
+
+                ParentId: id,
+                Recursive: true,
+                SortBy: "Random"
+
+            }).done(function (result) {
+
+                self.play(result.Items);
+
+            });
+
+        };
+
         self.toggleFullscreen = function () {
             if (isFullScreen()) {
                 if (document.cancelFullScreen) { document.cancelFullScreen(); }
