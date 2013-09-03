@@ -162,8 +162,8 @@
 
                 html += '<div class="tileContent">';
 
-                if (item.SeriesName || item.Album) {
-                    var seriesName = item.SeriesName || item.Album;
+                if (item.SeriesName || item.Album || item.AlbumArtist) {
+                    var seriesName = item.SeriesName || item.Album || item.AlbumArtist;
                     html += '<div class="tileName">' + seriesName + '</div>';
                 }
 
@@ -191,9 +191,9 @@
                 }
                 else if (item.Type == "MusicAlbum") {
 
-                    childText = item.ChildCount == 1 ? "1 Song" : item.ChildCount + " Songs";
+                    //childText = item.ChildCount == 1 ? "1 Song" : item.ChildCount + " Songs";
 
-                    html += '<p class="itemMiscInfo">' + childText + '</p>';
+                    //html += '<p class="itemMiscInfo">' + childText + '</p>';
                 }
                 else if (item.Type == "Genre" || item.Type == "Studio" || item.Type == "Person" || item.Type == "Artist" || item.Type == "MusicGenre" || item.Type == "GameGenre") {
 
