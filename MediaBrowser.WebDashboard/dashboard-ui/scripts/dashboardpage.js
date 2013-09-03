@@ -86,7 +86,7 @@
             var rowId = 'trSession' + connection.Id;
 
             var elem = $('#' + rowId, page);
-            
+
             if (elem.length) {
                 DashboardPage.updateSession(elem, connection);
                 continue;
@@ -126,18 +126,27 @@
 
         $('.deadSession', table).remove();
     },
-    
-    updateSession: function(row, session) {
+
+    updateSession: function (row, session) {
 
         row.removeClass('deadSession');
-        
+
         $('.username', row).html(session.UserName || '');
 
         var nowPlayingItem = session.NowPlayingItem;
 
         $('.nowPlayingText', row).html(DashboardPage.getNowPlayingText(session, nowPlayingItem)).trigger('create');
 
-        $('.nowPlayingImage', row).html(DashboardPage.getNowPlayingImage(nowPlayingItem));
+        var imageRow = $('.nowPlayingImage', row);
+
+        var image = $('img', imageRow)[0];
+
+        var nowPlayingItemId = nowPlayingItem ? nowPlayingItem.Id : null;
+        var nowPlayingItemImageTag = nowPlayingItem ? nowPlayingItem.PrimaryImageTag : null;
+
+        if (!image || image.getAttribute('data-itemid') != nowPlayingItemId || image.getAttribute('data-tag') != nowPlayingItemImageTag) {
+            imageRow.html(DashboardPage.getNowPlayingImage(nowPlayingItem));
+        }
     },
 
     getClientType: function (connection) {
@@ -217,7 +226,9 @@
                 tag: item.PrimaryImageTag
             });
 
-            return "<img class='clientNowPlayingImage' src='" + url + "' alt='" + item.Name + "' title='" + item.Name + "' />";
+            url += "&xxx=" + new Date().getTime();
+
+            return "<img data-itemid='" + item.Id + "' data-tag='" + item.PrimaryImageTag + "' class='clientNowPlayingImage' src='" + url + "' alt='" + item.Name + "' title='" + item.Name + "' />";
         }
 
         return "";
