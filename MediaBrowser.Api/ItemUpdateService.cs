@@ -222,6 +222,11 @@ namespace MediaBrowser.Api
             item.Studios = request.Studios.Select(x => x.Name).ToList();
             item.People = request.People.Select(x => new PersonInfo { Name = x.Name, Role = x.Role, Type = x.Type }).ToList();
 
+            if (request.DateCreated.HasValue)
+            {
+                item.DateCreated = request.DateCreated.Value.ToUniversalTime();
+            }
+
             item.EndDate = request.EndDate.HasValue ? request.EndDate.Value.ToUniversalTime() : (DateTime?)null;
             item.PremiereDate = request.PremiereDate.HasValue ? request.PremiereDate.Value.ToUniversalTime() : (DateTime?)null;
             item.ProductionYear = request.ProductionYear;
@@ -230,7 +235,7 @@ namespace MediaBrowser.Api
             item.Language = request.Language;
             item.OfficialRating = request.OfficialRating;
             item.CustomRating = request.CustomRating;
-            
+
             item.DontFetchMeta = !(request.EnableInternetProviders ?? true);
             if (request.EnableInternetProviders ?? true)
             {
@@ -256,7 +261,7 @@ namespace MediaBrowser.Api
             {
                 video.Video3DFormat = request.Video3DFormat;
             }
-            
+
             var game = item as Game;
 
             if (game != null)

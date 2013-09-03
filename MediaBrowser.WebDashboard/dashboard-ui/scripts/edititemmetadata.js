@@ -602,6 +602,19 @@
 
         var date;
 
+        if (item.DateCreated) {
+            try {
+                date = parseISO8601Date(item.DateCreated, { toLocal: true });
+
+                $('#txtDateAdded', page).val(date.toISOString().slice(0, 10));
+            }
+            catch (e) {
+                $('#txtDateAdded', page).val('');
+            }
+        } else {
+            $('#txtDateAdded', page).val('');
+        }
+
         if (item.PremiereDate) {
             try {
                 date = parseISO8601Date(item.PremiereDate, { toLocal: true });
@@ -821,6 +834,7 @@
                 Studios: editableListViewValues($("#listStudios", form)).map(function (element) { return { Name: element }; }),
 
                 PremiereDate: $('#txtPremiereDate', form).val() || null,
+                DateCreated: $('#txtDateAdded', form).val() || null,
                 EndDate: $('#txtEndDate', form).val() || null,
                 ProductionYear: $('#txtProductionYear', form).val(),
                 AspectRatio: $('#txtOriginalAspectRatio', form).val(),
