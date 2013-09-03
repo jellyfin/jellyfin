@@ -75,21 +75,26 @@
 
         var html = '';
 
-        if (!dashboardInfo.ActiveConnections.length) {
-            html += '<p>There are no users currently connected.</p>';
-            $('#divConnections', page).html(html).trigger('create');
-            return;
-        }
+        var table = $('.tblConnections', page);
 
-        html += '<table class="tblConnections" style="border-collapse:collapse;">';
+        $('.trSession', table).addClass('deadSession');
 
         for (var i = 0, length = dashboardInfo.ActiveConnections.length; i < length; i++) {
 
             var connection = dashboardInfo.ActiveConnections[i];
 
-            html += '<tr>';
+            var rowId = 'trSession' + connection.Id;
 
-            html += '<td style="text-align:center;">';
+            var elem = $('#' + rowId, page);
+            
+            if (elem.length) {
+                DashboardPage.updateSession(elem, connection);
+                continue;
+            }
+
+            html += '<tr class="trSession" id="' + rowId + '">';
+
+            html += '<td class="clientType" style="text-align:center;">';
             html += DashboardPage.getClientType(connection);
             html += '</td>';
 
@@ -99,25 +104,40 @@
             html += '<div>' + connection.DeviceName + '</div>';
             html += '</td>';
 
-            html += '<td>';
+            html += '<td class="username">';
             html += connection.UserName || '';
             html += '</td>';
 
-            html += '<td>';
-            html += DashboardPage.getNowPlayingImage(connection.NowPlayingItem);
+            var nowPlayingItem = connection.NowPlayingItem;
+
+            html += '<td class="nowPlayingImage">';
+            html += DashboardPage.getNowPlayingImage(nowPlayingItem);
             html += '</td>';
 
-            html += '<td>';
-            html += DashboardPage.getNowPlayingText(connection, connection.NowPlayingItem);
+            html += '<td class="nowPlayingText">';
+            html += DashboardPage.getNowPlayingText(connection, nowPlayingItem);
             html += '</td>';
 
             html += '</tr>';
 
         }
 
-        html += '</table>';
+        table.append(html).trigger('create');
 
-        $('#divConnections', page).html(html);
+        $('.deadSession', table).remove();
+    },
+    
+    updateSession: function(row, session) {
+
+        row.removeClass('deadSession');
+        
+        $('.username', row).html(session.UserName || '');
+
+        var nowPlayingItem = session.NowPlayingItem;
+
+        $('.nowPlayingText', row).html(DashboardPage.getNowPlayingText(session, nowPlayingItem)).trigger('create');
+
+        $('.nowPlayingImage', row).html(DashboardPage.getNowPlayingImage(nowPlayingItem));
     },
 
     getClientType: function (connection) {
@@ -190,18 +210,14 @@
 
     getNowPlayingImage: function (item) {
 
-        if (item) {
+        if (item && item.PrimaryImageTag) {
+            var url = ApiClient.getImageUrl(item.Id, {
+                type: "Primary",
+                height: 100,
+                tag: item.PrimaryImageTag
+            });
 
-            if (item.PrimaryImageTag) {
-
-                var url = ApiClient.getImageUrl(item.Id, {
-                    type: "Primary",
-                    height: 100,
-                    tag: item.PrimaryImageTag
-                });
-
-                return "<img class='clientNowPlayingImage' src='" + url + "' alt='" + item.Name + "' title='" + item.Name + "' />";
-            }
+            return "<img class='clientNowPlayingImage' src='" + url + "' alt='" + item.Name + "' title='" + item.Name + "' />";
         }
 
         return "";
@@ -213,7 +229,7 @@
 
         if (item) {
 
-            html += "<div>" + item.Name + "</div>";
+            html += "<div><a href='itemdetails.html?id=" + item.Id + "'>" + item.Name + "</a></div>";
 
             html += "<div>";
 
@@ -477,11 +493,11 @@
         });
 
     },
-    
+
     restart: function () {
 
         Dashboard.confirm("Are you sure you wish to restart Media Browser Server?", "Restart", function (result) {
-            
+
             if (result) {
                 $('#btnRestartServer').button('disable');
                 Dashboard.restartServer();
