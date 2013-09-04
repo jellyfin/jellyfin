@@ -233,7 +233,7 @@ namespace MediaBrowser.Api.Playback.Hls
         {
             var probeSize = GetProbeSizeArgument(state.Item);
 
-            var args = string.Format("{0} {1} {2} -i {3}{4} -threads 0 {5} {6} -sc_threshold 0 {7} -hls_time 10 -start_number 0 -hls_list_size 1440 \"{8}\"",
+            var args = string.Format("-itsoffset 1 {0} {1} {2} -i {3}{4} -threads 0 {5} {6} -sc_threshold 0 {7} -hls_time 10 -start_number 0 -hls_list_size 1440 \"{8}\"",
                 probeSize,
                 GetUserAgentParam(state.Item),
                 GetFastSeekCommandLineParameter(state.Request),

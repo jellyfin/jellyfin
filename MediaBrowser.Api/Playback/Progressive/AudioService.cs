@@ -113,7 +113,7 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             const string vn = " -vn";
 
-            return string.Format("{0} -i {1}{2} -threads 0{5} {3} -id3v2_version 3 -write_id3v1 1 \"{4}\"",
+            return string.Format("-itsoffset 1 {0} -i {1}{2} -threads 0{5} {3} -id3v2_version 3 -write_id3v1 1 \"{4}\"",
                 GetFastSeekCommandLineParameter(request),
                 GetInputArgument(state.Item, state.IsoMount),
                 GetSlowSeekCommandLineParameter(request),
