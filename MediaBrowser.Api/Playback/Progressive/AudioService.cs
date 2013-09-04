@@ -87,11 +87,6 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             var audioTranscodeParams = new List<string>();
 
-            if (string.Equals(Path.GetExtension(outputPath), ".aac", StringComparison.OrdinalIgnoreCase))
-            {
-                audioTranscodeParams.Add("-strict experimental");
-            }
-
             var bitrate = GetAudioBitrateParam(state);
 
             if (bitrate.HasValue)
@@ -113,7 +108,7 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             const string vn = " -vn";
 
-            return string.Format("-itsoffset 1 {0} -i {1}{2} -threads 0{5} {3} -id3v2_version 3 -write_id3v1 1 \"{4}\"",
+            return string.Format("{0} -i {1}{2} -threads 0{5} {3} -id3v2_version 3 -write_id3v1 1 \"{4}\"",
                 GetFastSeekCommandLineParameter(request),
                 GetInputArgument(state.Item, state.IsoMount),
                 GetSlowSeekCommandLineParameter(request),
