@@ -151,7 +151,7 @@
             $('#castCollapsible', page).hide();
         } else {
             $('#castCollapsible', page).show();
-            renderCast(page, item, context, 10);
+            renderCast(page, item, context, 8);
         }
 
         if (!item.PartCount || item.PartCount < 2) {
@@ -457,7 +457,8 @@
                 var html = LibraryBrowser.getPosterDetailViewHtml({
                     items: result.Items,
                     useAverageAspectRatio: true,
-                    shape: shape
+                    shape: shape,
+                    showParentName: false
                 });
 
                 $('#childrenContent', page).html(html);

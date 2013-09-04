@@ -162,9 +162,11 @@
 
                 html += '<div class="tileContent">';
 
-                if (item.SeriesName || item.Album || item.AlbumArtist) {
-                    var seriesName = item.SeriesName || item.Album || item.AlbumArtist;
-                    html += '<div class="tileName">' + seriesName + '</div>';
+                if (options.showParentName !== false) {
+                    if (item.SeriesName || item.Album || item.AlbumArtist) {
+                        var seriesName = item.SeriesName || item.Album || item.AlbumArtist;
+                        html += '<div class="tileName">' + seriesName + '</div>';
+                    }
                 }
 
                 var name = LibraryBrowser.getPosterViewDisplayName(item);
@@ -204,6 +206,10 @@
                 else if (item.Type == "Game") {
 
                     html += '<p class="itemMiscInfo">' + item.GameSystem + '</p>';
+                }
+                else if (item.Type == "Episode") {
+
+                    // Skip it. Just clutter
                 }
                 else {
                     html += '<p class="itemMiscInfo">' + LibraryBrowser.getMiscInfoHtml(item) + '</p>';

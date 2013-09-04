@@ -36,7 +36,7 @@
 }
 
 .tileItem p {
-    margin: .5em 0 0;
+    margin: 1em 0 0;
 }
 
 .tileContent {
@@ -67,12 +67,12 @@
 }
 
 .smallPosterTileItem .tileImage {
-    height: 95px;
-    width: 30%;
+    height: 110px;
+    width: 35%;
 }
 
 .smallPosterTileItem .tileContent {
-    width: 65%;
+    width: 60%;
 }
 
 .smallPosterTileItem .tileName {
@@ -143,7 +143,7 @@
         }
 
     .smallPosterTileItem {
-        width: 210px;
+        width: 46%;
         display: inline-block;
         margin: 3px;
     }
@@ -162,6 +162,10 @@
         display: inline-block;
     }
 
+
+    .smallPosterTileItem {
+        width: 30%;
+    }
 
     .backdropTileItem, .posterTileItem, .squareTileItem {
         width: 46%;
@@ -183,7 +187,7 @@
 @media all and (min-width: 850px) {
 
     .smallBackdropTileItem {
-        width: 370px;
+        width: 47%;
         display: inline-block;
     }
 
@@ -201,10 +205,6 @@
 
     .posterTileItem {
         width: 30.5%;
-    }
-
-    .tileItem p {
-        margin: .75em 0 0;
     }
 
     .tileItem .itemProgress {
@@ -254,6 +254,14 @@
         .squareTileItem .tileImage {
             height: 130px;
         }
+
+    .smallPosterTileItem {
+        width: 22%;
+    }
+
+    .smallBackdropTileItem {
+        width: 30%;
+    }
 }
 
 @media all and (min-width: 1440px) {
