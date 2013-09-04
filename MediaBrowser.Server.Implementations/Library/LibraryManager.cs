@@ -441,7 +441,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new ArgumentNullException("fileInfo");
             }
 
-            var args = new ItemResolveArgs(ConfigurationManager.ApplicationPaths)
+            var args = new ItemResolveArgs(ConfigurationManager.ApplicationPaths, this)
             {
                 Parent = parent,
                 Path = fileInfo.FullName,

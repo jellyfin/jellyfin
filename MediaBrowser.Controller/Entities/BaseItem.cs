@@ -327,7 +327,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (LocationType == LocationType.Remote || LocationType == LocationType.Virtual)
             {
-                return new ItemResolveArgs(ConfigurationManager.ApplicationPaths);
+                return new ItemResolveArgs(ConfigurationManager.ApplicationPaths, LibraryManager);
             }
 
             var isDirectory = false;
@@ -345,7 +345,7 @@ namespace MediaBrowser.Controller.Entities
                 throw new IOException("Unable to retrieve file system info for " + path);
             }
 
-            var args = new ItemResolveArgs(ConfigurationManager.ApplicationPaths)
+            var args = new ItemResolveArgs(ConfigurationManager.ApplicationPaths, LibraryManager)
             {
                 FileInfo = pathInfo,
                 Path = path,

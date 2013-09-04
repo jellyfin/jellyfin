@@ -17,12 +17,12 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
     /// </summary>
     public class MovieResolver : BaseVideoResolver<Video>
     {
-        private IServerApplicationPaths ApplicationPaths { get; set; }
+        private readonly IServerApplicationPaths _applicationPaths;
         private readonly ILibraryManager _libraryManager;
 
         public MovieResolver(IServerApplicationPaths appPaths, ILibraryManager libraryManager)
         {
-            ApplicationPaths = appPaths;
+            _applicationPaths = appPaths;
             _libraryManager = libraryManager;
         }
 
@@ -83,7 +83,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                 }
             }
 
-            var collectionType = args.Parent == null ? null : _libraryManager.FindCollectionType(args.Parent);
+            var collectionType = args.GetCollectionType();
 
             // Find movies with their own folders
             if (isDirectory)
@@ -234,7 +234,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                     continue;
                 }
 
-                var childArgs = new ItemResolveArgs(ApplicationPaths)
+                var childArgs = new ItemResolveArgs(_applicationPaths, _libraryManager)
                 {
                     FileInfo = child,
                     Path = child.FullName

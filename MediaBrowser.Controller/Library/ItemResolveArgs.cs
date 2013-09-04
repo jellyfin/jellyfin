@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.IO;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -17,14 +16,17 @@ namespace MediaBrowser.Controller.Library
         /// The _app paths
         /// </summary>
         private readonly IServerApplicationPaths _appPaths;
+        private readonly ILibraryManager _libraryManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemResolveArgs" /> class.
         /// </summary>
         /// <param name="appPaths">The app paths.</param>
-        public ItemResolveArgs(IServerApplicationPaths appPaths)
+        /// <param name="libraryManager">The library manager.</param>
+        public ItemResolveArgs(IServerApplicationPaths appPaths, ILibraryManager libraryManager)
         {
             _appPaths = appPaths;
+            _libraryManager = libraryManager;
         }
 
         /// <summary>
@@ -366,6 +368,11 @@ namespace MediaBrowser.Controller.Library
         public bool ContainsFileSystemEntryByName(string name)
         {
             return GetFileSystemEntryByName(name) != null;
+        }
+
+        public string GetCollectionType()
+        {
+            return Parent == null ? null : _libraryManager.FindCollectionType(Parent);
         }
 
         #region Equality Overrides
