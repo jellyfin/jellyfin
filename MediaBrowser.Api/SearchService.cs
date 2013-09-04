@@ -65,6 +65,7 @@ namespace MediaBrowser.Api
         /// </summary>
         private readonly ILibrarySearchEngine _searchEngine;
         private readonly ILibraryManager _libraryManager;
+        private readonly IDtoService _dtoService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SearchService" /> class.
@@ -72,11 +73,12 @@ namespace MediaBrowser.Api
         /// <param name="userManager">The user manager.</param>
         /// <param name="searchEngine">The search engine.</param>
         /// <param name="libraryManager">The library manager.</param>
-        public SearchService(IUserManager userManager, ILibrarySearchEngine searchEngine, ILibraryManager libraryManager)
+        public SearchService(IUserManager userManager, ILibrarySearchEngine searchEngine, ILibraryManager libraryManager, IDtoService dtoService)
         {
             _userManager = userManager;
             _searchEngine = searchEngine;
             _libraryManager = libraryManager;
+            _dtoService = dtoService;
         }
 
         /// <summary>
@@ -149,7 +151,7 @@ namespace MediaBrowser.Api
                 Name = item.Name,
                 IndexNumber = item.IndexNumber,
                 ParentIndexNumber = item.ParentIndexNumber,
-                ItemId = DtoBuilder.GetClientItemId(item),
+                ItemId = _dtoService.GetDtoId(item),
                 Type = item.GetType().Name,
                 MediaType = item.MediaType,
                 MatchedTerm = hintInfo.MatchedTerm,

@@ -31,31 +31,32 @@ namespace MediaBrowser.Api.Playback
         /// Gets or sets the application paths.
         /// </summary>
         /// <value>The application paths.</value>
-        protected IServerApplicationPaths ApplicationPaths { get; set; }
+        protected IServerApplicationPaths ApplicationPaths { get; private set; }
 
         /// <summary>
         /// Gets or sets the user manager.
         /// </summary>
         /// <value>The user manager.</value>
-        protected IUserManager UserManager { get; set; }
+        protected IUserManager UserManager { get; private set; }
 
         /// <summary>
         /// Gets or sets the library manager.
         /// </summary>
         /// <value>The library manager.</value>
-        protected ILibraryManager LibraryManager { get; set; }
+        protected ILibraryManager LibraryManager { get; private set; }
 
         /// <summary>
         /// Gets or sets the iso manager.
         /// </summary>
         /// <value>The iso manager.</value>
-        protected IIsoManager IsoManager { get; set; }
+        protected IIsoManager IsoManager { get; private set; }
 
         /// <summary>
         /// Gets or sets the media encoder.
         /// </summary>
         /// <value>The media encoder.</value>
-        protected IMediaEncoder MediaEncoder { get; set; }
+        protected IMediaEncoder MediaEncoder { get; private set; }
+        protected IDtoService DtoService { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseStreamingService" /> class.
@@ -65,8 +66,9 @@ namespace MediaBrowser.Api.Playback
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="isoManager">The iso manager.</param>
         /// <param name="mediaEncoder">The media encoder.</param>
-        protected BaseStreamingService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder)
+        protected BaseStreamingService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService)
         {
+            DtoService = dtoService;
             ApplicationPaths = appPaths;
             UserManager = userManager;
             LibraryManager = libraryManager;
@@ -751,7 +753,7 @@ namespace MediaBrowser.Api.Playback
         /// <returns>StreamState.</returns>
         protected StreamState GetState(StreamRequest request)
         {
-            var item = DtoBuilder.GetItemByClientId(request.Id, UserManager, LibraryManager);
+            var item = DtoService.GetItemByDtoId(request.Id);
 
             var media = (IHasMediaStreams)item;
 

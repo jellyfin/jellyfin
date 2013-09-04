@@ -112,6 +112,7 @@
     </Compile>
     <Compile Include="BdInfo\BdInfoExaminer.cs" />
     <Compile Include="Configuration\ServerConfigurationManager.cs" />
+    <Compile Include="Dto\DtoService.cs" />
     <Compile Include="EntryPoints\LibraryChangedNotifier.cs" />
     <Compile Include="EntryPoints\LoadRegistrations.cs" />
     <Compile Include="EntryPoints\Notifications\Notifier.cs" />

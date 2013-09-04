@@ -117,6 +117,7 @@ namespace MediaBrowser.WebDashboard.Api
         private readonly IServerConfigurationManager _serverConfigurationManager;
 
         private readonly ISessionManager _sessionManager;
+        private readonly IDtoService _dtoService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DashboardService" /> class.
@@ -125,12 +126,13 @@ namespace MediaBrowser.WebDashboard.Api
         /// <param name="appHost">The app host.</param>
         /// <param name="serverConfigurationManager">The server configuration manager.</param>
         /// <param name="sessionManager">The session manager.</param>
-        public DashboardService(ITaskManager taskManager, IServerApplicationHost appHost, IServerConfigurationManager serverConfigurationManager, ISessionManager sessionManager)
+        public DashboardService(ITaskManager taskManager, IServerApplicationHost appHost, IServerConfigurationManager serverConfigurationManager, ISessionManager sessionManager, IDtoService dtoService)
         {
             _taskManager = taskManager;
             _appHost = appHost;
             _serverConfigurationManager = serverConfigurationManager;
             _sessionManager = sessionManager;
+            _dtoService = dtoService;
         }
 
         /// <summary>
@@ -169,7 +171,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// <returns>System.Object.</returns>
         public object Get(GetDashboardInfo request)
         {
-            var result = GetDashboardInfo(_appHost, _taskManager, _sessionManager);
+            var result = GetDashboardInfo(_appHost, _taskManager, _sessionManager, _dtoService);
 
             return ResultFactory.GetOptimizedResult(RequestContext, result);
         }
@@ -183,7 +185,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// <returns>DashboardInfo.</returns>
         public static DashboardInfo GetDashboardInfo(IServerApplicationHost appHost,
             ITaskManager taskManager,
-            ISessionManager connectionManager)
+            ISessionManager connectionManager, IDtoService dtoService)
         {
             var connections = connectionManager.Sessions.Where(i => i.IsActive).ToArray();
 
@@ -197,7 +199,7 @@ namespace MediaBrowser.WebDashboard.Api
 
                 ApplicationUpdateTaskId = taskManager.ScheduledTasks.First(t => t.ScheduledTask.GetType().Name.Equals("SystemUpdateTask", StringComparison.OrdinalIgnoreCase)).Id,
 
-                ActiveConnections = connections.Select(SessionInfoDtoBuilder.GetSessionInfoDto).ToArray()
+                ActiveConnections = connections.Select(dtoService.GetSessionInfoDto).ToArray()
             };
         }
 

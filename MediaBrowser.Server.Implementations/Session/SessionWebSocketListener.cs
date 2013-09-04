@@ -1,13 +1,11 @@
-﻿using System.Globalization;
-using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Dto;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Net;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Net;
 
 namespace MediaBrowser.Server.Implementations.Session
 {
@@ -31,22 +29,22 @@ namespace MediaBrowser.Server.Implementations.Session
         /// </summary>
         private readonly ILogger _logger;
 
-        private readonly IUserManager _userManager;
-        private readonly ILibraryManager _libraryManager;
+        /// <summary>
+        /// The _dto service
+        /// </summary>
+        private readonly IDtoService _dtoService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SessionWebSocketListener" /> class.
         /// </summary>
         /// <param name="sessionManager">The session manager.</param>
         /// <param name="logManager">The log manager.</param>
-        /// <param name="libraryManager">The library manager.</param>
-        /// <param name="userManager">The user manager.</param>
-        public SessionWebSocketListener(ISessionManager sessionManager, ILogManager logManager, ILibraryManager libraryManager, IUserManager userManager)
+        /// <param name="dtoService">The dto service.</param>
+        public SessionWebSocketListener(ISessionManager sessionManager, ILogManager logManager, IDtoService dtoService)
         {
             _sessionManager = sessionManager;
             _logger = logManager.GetLogger(GetType().Name);
-            _libraryManager = libraryManager;
-            _userManager = userManager;
+            _dtoService = dtoService;
         }
 
         /// <summary>
@@ -109,7 +107,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
                 if (session != null && session.User != null)
                 {
-                    var item = DtoBuilder.GetItemByClientId(message.Data, _userManager, _libraryManager);
+                    var item = _dtoService.GetItemByDtoId(message.Data);
 
                     _sessionManager.OnPlaybackStart(item, session.Id);
                 }
@@ -122,7 +120,7 @@ namespace MediaBrowser.Server.Implementations.Session
                 {
                     var vals = message.Data.Split('|');
 
-                    var item = DtoBuilder.GetItemByClientId(vals[0], _userManager, _libraryManager);
+                    var item = _dtoService.GetItemByDtoId(vals[0]);
 
                     long? positionTicks = null;
 
@@ -152,7 +150,7 @@ namespace MediaBrowser.Server.Implementations.Session
                 {
                     var vals = message.Data.Split('|');
 
-                    var item = DtoBuilder.GetItemByClientId(vals[0], _userManager, _libraryManager);
+                    var item = _dtoService.GetItemByDtoId(vals[0]);
 
                     long? positionTicks = null;
 

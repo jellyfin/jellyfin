@@ -612,7 +612,7 @@ namespace MediaBrowser.Controller.Drawing
         /// <param name="supportedEnhancers">The supported enhancers.</param>
         /// <returns>System.String.</returns>
         /// <exception cref="System.ArgumentNullException">originalImagePath</exception>
-        public async Task<string> GetEnhancedImage(string originalImagePath, DateTime dateModified, BaseItem item, ImageType imageType, int imageIndex, IEnumerable<IImageEnhancer> supportedEnhancers)
+        public async Task<string> GetEnhancedImage(string originalImagePath, DateTime dateModified, BaseItem item, ImageType imageType, int imageIndex, List<IImageEnhancer> supportedEnhancers)
         {
             if (string.IsNullOrEmpty(originalImagePath))
             {

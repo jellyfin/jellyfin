@@ -337,21 +337,19 @@ namespace MediaBrowser.Api.Images
         private readonly IProviderManager _providerManager;
 
         private readonly IItemRepository _itemRepo;
+        private readonly IDtoService _dtoService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ImageService" /> class.
         /// </summary>
-        /// <param name="userManager">The user manager.</param>
-        /// <param name="libraryManager">The library manager.</param>
-        /// <param name="appPaths">The app paths.</param>
-        /// <param name="providerManager">The provider manager.</param>
-        public ImageService(IUserManager userManager, ILibraryManager libraryManager, IApplicationPaths appPaths, IProviderManager providerManager, IItemRepository itemRepo)
+        public ImageService(IUserManager userManager, ILibraryManager libraryManager, IApplicationPaths appPaths, IProviderManager providerManager, IItemRepository itemRepo, IDtoService dtoService)
         {
             _userManager = userManager;
             _libraryManager = libraryManager;
             _appPaths = appPaths;
             _providerManager = providerManager;
             _itemRepo = itemRepo;
+            _dtoService = dtoService;
         }
 
         /// <summary>
@@ -361,7 +359,7 @@ namespace MediaBrowser.Api.Images
         /// <returns>System.Object.</returns>
         public object Get(GetItemImageInfos request)
         {
-            var item = DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager);
+            var item = _dtoService.GetItemByDtoId(request.Id);
 
             var result = GetItemImageInfos(item).Result;
 
@@ -512,7 +510,7 @@ namespace MediaBrowser.Api.Images
         /// <returns>System.Object.</returns>
         public object Get(GetItemImage request)
         {
-            var item = string.IsNullOrEmpty(request.Id) ? _libraryManager.RootFolder : DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager);
+            var item = string.IsNullOrEmpty(request.Id) ? _libraryManager.RootFolder : _dtoService.GetItemByDtoId(request.Id);
 
             return GetImage(request, item);
         }
@@ -824,9 +822,10 @@ namespace MediaBrowser.Api.Images
                     }
                 }
 
-                var memoryStream = new MemoryStream(bytes);
-
-                memoryStream.Position = 0;
+                var memoryStream = new MemoryStream(bytes)
+                {
+                    Position = 0
+                };
 
                 var imageIndex = 0;
 

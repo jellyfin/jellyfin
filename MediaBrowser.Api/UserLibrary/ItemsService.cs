@@ -210,8 +210,8 @@ namespace MediaBrowser.Api.UserLibrary
         private readonly ILibrarySearchEngine _searchEngine;
         private readonly ILocalizationManager _localization;
 
-        private readonly IItemRepository _itemRepo;
-        
+        private readonly IDtoService _dtoService;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemsService" /> class.
         /// </summary>
@@ -219,14 +219,14 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="searchEngine">The search engine.</param>
         /// <param name="userDataRepository">The user data repository.</param>
-        public ItemsService(IUserManager userManager, ILibraryManager libraryManager, ILibrarySearchEngine searchEngine, IUserDataRepository userDataRepository, ILocalizationManager localization, IItemRepository itemRepo)
+        public ItemsService(IUserManager userManager, ILibraryManager libraryManager, ILibrarySearchEngine searchEngine, IUserDataRepository userDataRepository, ILocalizationManager localization, IDtoService dtoService)
         {
             _userManager = userManager;
             _libraryManager = libraryManager;
             _searchEngine = searchEngine;
             _userDataRepository = userDataRepository;
             _localization = localization;
-            _itemRepo = itemRepo;
+            _dtoService = dtoService;
         }
 
         /// <summary>
@@ -275,9 +275,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var fields = request.GetItemFields().ToList();
 
-            var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userDataRepository, _itemRepo);
-
-            var returnItems = await Task.WhenAll(pagedItems.Select(i => dtoBuilder.GetBaseItemDto(i, fields, user))).ConfigureAwait(false);
+            var returnItems = await Task.WhenAll(pagedItems.Select(i => _dtoService.GetBaseItemDto(i, fields, user))).ConfigureAwait(false);
 
             return new ItemsResult
             {
@@ -295,7 +293,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <exception cref="System.InvalidOperationException"></exception>
         private IEnumerable<BaseItem> GetItemsToSerialize(GetItems request, User user)
         {
-            var item = string.IsNullOrEmpty(request.ParentId) ? user.RootFolder : DtoBuilder.GetItemByClientId(request.ParentId, _userManager, _libraryManager, user.Id);
+            var item = string.IsNullOrEmpty(request.ParentId) ? user.RootFolder : _dtoService.GetItemByDtoId(request.ParentId, user.Id);
 
             // Default list type = children
 
@@ -303,7 +301,7 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 var idList = request.Ids.Split(',').ToList();
 
-                return idList.Select(i => DtoBuilder.GetItemByClientId(i, _userManager, _libraryManager, user.Id));
+                return idList.Select(i => _dtoService.GetItemByDtoId(i, user.Id));
             }
 
             if (request.Recursive)
@@ -492,7 +490,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             if (!string.IsNullOrEmpty(request.AdjacentTo))
             {
-                var item = DtoBuilder.GetItemByClientId(request.AdjacentTo, _userManager, _libraryManager);
+                var item = _dtoService.GetItemByDtoId(request.AdjacentTo);
 
                 var allSiblings = item.Parent.GetChildren(user, true).OrderBy(i => i.SortName).ToList();
 

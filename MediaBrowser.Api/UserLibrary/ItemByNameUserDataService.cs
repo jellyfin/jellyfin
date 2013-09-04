@@ -138,16 +138,18 @@ namespace MediaBrowser.Api.UserLibrary
         /// The library manager
         /// </summary>
         protected readonly ILibraryManager LibraryManager;
+        private readonly IDtoService _dtoService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemByNameUserDataService" /> class.
         /// </summary>
         /// <param name="userDataRepository">The user data repository.</param>
         /// <param name="libraryManager">The library manager.</param>
-        public ItemByNameUserDataService(IUserDataRepository userDataRepository, ILibraryManager libraryManager)
+        public ItemByNameUserDataService(IUserDataRepository userDataRepository, ILibraryManager libraryManager, IDtoService dtoService)
         {
             UserDataRepository = userDataRepository;
             LibraryManager = libraryManager;
+            _dtoService = dtoService;
         }
 
         /// <summary>
@@ -230,7 +232,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             data = UserDataRepository.GetUserData(userId, key);
 
-            return DtoBuilder.GetUserItemDataDto(data);
+            return _dtoService.GetUserItemDataDto(data);
         }
 
         /// <summary>
@@ -256,7 +258,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             data = UserDataRepository.GetUserData(userId, key);
 
-            return DtoBuilder.GetUserItemDataDto(data);
+            return _dtoService.GetUserItemDataDto(data);
         }
     }
 }

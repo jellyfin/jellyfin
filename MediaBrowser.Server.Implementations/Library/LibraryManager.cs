@@ -251,14 +251,6 @@ namespace MediaBrowser.Server.Implementations.Library
         }
 
         /// <summary>
-        /// The _internet providers enabled
-        /// </summary>
-        private bool _internetProvidersEnabled;
-        /// <summary>
-        /// The _people image fetching enabled
-        /// </summary>
-        private bool _peopleImageFetchingEnabled;
-        /// <summary>
         /// The _items by name path
         /// </summary>
         private string _itemsByNamePath;
@@ -275,8 +267,6 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             _seasonZeroDisplayName = ConfigurationManager.Configuration.SeasonZeroDisplayName;
             _itemsByNamePath = ConfigurationManager.ApplicationPaths.ItemsByNamePath;
-            _internetProvidersEnabled = configuration.EnableInternetProviders;
-            _peopleImageFetchingEnabled = configuration.InternetProviderExcludeTypes == null || !configuration.InternetProviderExcludeTypes.Contains(typeof(Person).Name, StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>

@@ -5,7 +5,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Model.Serialization;
 using MoreLinq;
 using System;
 using System.Collections.Generic;
@@ -21,8 +20,6 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
     /// </summary>
     class ChapterImagesTask : IScheduledTask
     {
-        private readonly IJsonSerializer _jsonSerializer;
-
         /// <summary>
         /// The _kernel
         /// </summary>
@@ -54,14 +51,12 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         /// <param name="kernel">The kernel.</param>
         /// <param name="logManager">The log manager.</param>
         /// <param name="libraryManager">The library manager.</param>
-        /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="itemRepo">The item repo.</param>
-        public ChapterImagesTask(Kernel kernel, ILogManager logManager, ILibraryManager libraryManager, IJsonSerializer jsonSerializer, IItemRepository itemRepo)
+        public ChapterImagesTask(Kernel kernel, ILogManager logManager, ILibraryManager libraryManager, IItemRepository itemRepo)
         {
             _kernel = kernel;
             _logger = logManager.GetLogger(GetType().Name);
             _libraryManager = libraryManager;
-            _jsonSerializer = jsonSerializer;
             _itemRepo = itemRepo;
 
             libraryManager.ItemAdded += libraryManager_ItemAdded;

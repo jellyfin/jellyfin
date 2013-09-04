@@ -87,22 +87,21 @@ namespace MediaBrowser.Api
         /// <param name="itemRepository">The item repository.</param>
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="userDataRepository">The user data repository.</param>
+        /// <param name="dtoService">The dto service.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="request">The request.</param>
         /// <param name="includeInSearch">The include in search.</param>
         /// <param name="getSimilarityScore">The get similarity score.</param>
         /// <returns>ItemsResult.</returns>
-        internal static ItemsResult GetSimilarItemsResult(IUserManager userManager, IItemRepository itemRepository, ILibraryManager libraryManager, IUserDataRepository userDataRepository, ILogger logger, BaseGetSimilarItemsFromItem request, Func<BaseItem, bool> includeInSearch, Func<BaseItem, BaseItem, int> getSimilarityScore)
+        internal static ItemsResult GetSimilarItemsResult(IUserManager userManager, IItemRepository itemRepository, ILibraryManager libraryManager, IUserDataRepository userDataRepository, IDtoService dtoService, ILogger logger, BaseGetSimilarItemsFromItem request, Func<BaseItem, bool> includeInSearch, Func<BaseItem, BaseItem, int> getSimilarityScore)
         {
             var user = request.UserId.HasValue ? userManager.GetUserById(request.UserId.Value) : null;
 
             var item = string.IsNullOrEmpty(request.Id) ?
                 (request.UserId.HasValue ? user.RootFolder :
-                (Folder)libraryManager.RootFolder) : DtoBuilder.GetItemByClientId(request.Id, userManager, libraryManager, request.UserId);
+                (Folder)libraryManager.RootFolder) : dtoService.GetItemByDtoId(request.Id, request.UserId);
 
             var fields = request.GetItemFields().ToList();
-
-            var dtoBuilder = new DtoBuilder(logger, libraryManager, userDataRepository, itemRepository);
 
             var inputItems = user == null
                                  ? libraryManager.RootFolder.RecursiveChildren
@@ -113,7 +112,7 @@ namespace MediaBrowser.Api
 
             var result = new ItemsResult
             {
-                Items = items.Take(request.Limit ?? items.Length).Select(i => dtoBuilder.GetBaseItemDto(i, fields, user)).Select(t => t.Result).ToArray(),
+                Items = items.Take(request.Limit ?? items.Length).Select(i => dtoService.GetBaseItemDto(i, fields, user)).Select(t => t.Result).ToArray(),
 
                 TotalRecordCount = items.Length
             };

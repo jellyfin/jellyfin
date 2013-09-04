@@ -180,13 +180,16 @@ namespace MediaBrowser.Api
         /// </summary>
         private readonly ISessionManager _sessionManager;
 
+        private readonly IDtoService _dtoService;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SessionsService" /> class.
         /// </summary>
         /// <param name="sessionManager">The session manager.</param>
-        public SessionsService(ISessionManager sessionManager)
+        public SessionsService(ISessionManager sessionManager, IDtoService dtoService)
         {
             _sessionManager = sessionManager;
+            _dtoService = dtoService;
         }
 
         /// <summary>
@@ -203,7 +206,7 @@ namespace MediaBrowser.Api
                 result = result.Where(i => i.SupportsRemoteControl == request.SupportsRemoteControl.Value);
             }
 
-            return ToOptimizedResult(result.Select(SessionInfoDtoBuilder.GetSessionInfoDto).ToList());
+            return ToOptimizedResult(result.Select(_dtoService.GetSessionInfoDto).ToList());
         }
 
         public void Post(SendPlaystateCommand request)

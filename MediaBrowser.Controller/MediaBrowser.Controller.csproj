@@ -71,10 +71,10 @@
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
+    <Compile Include="Dto\IDtoService.cs" />
     <Compile Include="Entities\AdultVideo.cs" />
     <Compile Include="Entities\Book.cs" />
     <Compile Include="Notifications\Configuration\IServerConfigurationManager.cs" />
-    <Compile Include="Dto\SessionInfoDtoBuilder.cs" />
     <Compile Include="Entities\Audio\MusicGenre.cs" />
     <Compile Include="Entities\Game.cs" />
     <Compile Include="Entities\GameGenre.cs" />
@@ -93,7 +93,6 @@
     <Compile Include="Drawing\ImageExtensions.cs" />
     <Compile Include="Drawing\ImageHeader.cs" />
     <Compile Include="Drawing\ImageManager.cs" />
-    <Compile Include="Dto\UserDtoBuilder.cs" />
     <Compile Include="Entities\AggregateFolder.cs" />
     <Compile Include="Entities\Audio\Artist.cs" />
     <Compile Include="Entities\Audio\Audio.cs" />
@@ -128,7 +127,6 @@
     <Compile Include="IO\NativeMethods.cs" />
     <Compile Include="IServerApplicationHost.cs" />
     <Compile Include="IServerApplicationPaths.cs" />
-    <Compile Include="Dto\DtoBuilder.cs" />
     <Compile Include="Library\SearchHintInfo.cs" />
     <Compile Include="Providers\IProviderManager.cs" />
     <Compile Include="MediaInfo\MediaEncoderHelpers.cs" />

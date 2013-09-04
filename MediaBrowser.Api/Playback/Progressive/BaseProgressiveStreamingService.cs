@@ -2,6 +2,7 @@
 using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
@@ -23,9 +24,9 @@ namespace MediaBrowser.Api.Playback.Progressive
     public abstract class BaseProgressiveStreamingService : BaseStreamingService
     {
         protected readonly IItemRepository ItemRepository;
-        
-        protected BaseProgressiveStreamingService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IItemRepository itemRepository) :
-            base(appPaths, userManager, libraryManager, isoManager, mediaEncoder)
+
+        protected BaseProgressiveStreamingService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IItemRepository itemRepository, IDtoService dtoService) :
+            base(appPaths, userManager, libraryManager, isoManager, mediaEncoder, dtoService)
         {
             ItemRepository = itemRepository;
         }
@@ -302,7 +303,7 @@ namespace MediaBrowser.Api.Playback.Progressive
                 }
             }
 
-            return new ImageService(UserManager, LibraryManager, ApplicationPaths, null, ItemRepository)
+            return new ImageService(UserManager, LibraryManager, ApplicationPaths, null, ItemRepository, DtoService)
             {
                 Logger = Logger,
                 RequestContext = RequestContext,
@@ -342,7 +343,7 @@ namespace MediaBrowser.Api.Playback.Progressive
                 ApiEntryPoint.Instance.OnTranscodeBeginRequest(outputPath, TranscodingJobType.Progressive);
             }
 
-            var result = new ProgressiveStreamWriter(outputPath, state, Logger);
+            var result = new ProgressiveStreamWriter(outputPath, Logger);
 
             result.Options["Accept-Ranges"] = "none";
             result.Options["Content-Type"] = contentType;

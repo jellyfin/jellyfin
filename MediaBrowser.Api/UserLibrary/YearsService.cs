@@ -54,8 +54,8 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
-        public YearsService(IUserManager userManager, ILibraryManager libraryManager, IUserDataRepository userDataRepository, IItemRepository itemRepo)
-            : base(userManager, libraryManager, userDataRepository, itemRepo)
+        public YearsService(IUserManager userManager, ILibraryManager libraryManager, IUserDataRepository userDataRepository, IItemRepository itemRepo, IDtoService dtoService)
+            : base(userManager, libraryManager, userDataRepository, itemRepo, dtoService)
         {
         }
 
@@ -82,17 +82,15 @@ namespace MediaBrowser.Api.UserLibrary
 
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true));
-
-            var builder = new DtoBuilder(Logger, LibraryManager, UserDataRepository, ItemRepository);
-
+            
             if (request.UserId.HasValue)
             {
                 var user = UserManager.GetUserById(request.UserId.Value);
 
-                return await builder.GetBaseItemDto(item, fields.ToList(), user).ConfigureAwait(false);
+                return await DtoService.GetBaseItemDto(item, fields.ToList(), user).ConfigureAwait(false);
             }
 
-            return await builder.GetBaseItemDto(item, fields.ToList()).ConfigureAwait(false);
+            return await DtoService.GetBaseItemDto(item, fields.ToList()).ConfigureAwait(false);
         }
 
         /// <summary>

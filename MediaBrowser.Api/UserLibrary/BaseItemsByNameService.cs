@@ -30,6 +30,7 @@ namespace MediaBrowser.Api.UserLibrary
         protected readonly ILibraryManager LibraryManager;
         protected readonly IUserDataRepository UserDataRepository;
         protected readonly IItemRepository ItemRepository;
+        protected IDtoService DtoService { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseItemsByNameService{TItemType}" /> class.
@@ -37,12 +38,13 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="userManager">The user manager.</param>
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="userDataRepository">The user data repository.</param>
-        protected BaseItemsByNameService(IUserManager userManager, ILibraryManager libraryManager, IUserDataRepository userDataRepository, IItemRepository itemRepository)
+        protected BaseItemsByNameService(IUserManager userManager, ILibraryManager libraryManager, IUserDataRepository userDataRepository, IItemRepository itemRepository, IDtoService dtoService)
         {
             UserManager = userManager;
             LibraryManager = libraryManager;
             UserDataRepository = userDataRepository;
             ItemRepository = itemRepository;
+            DtoService = dtoService;
         }
 
         /// <summary>
@@ -58,11 +60,11 @@ namespace MediaBrowser.Api.UserLibrary
             if (request.UserId.HasValue)
             {
                 user = UserManager.GetUserById(request.UserId.Value);
-                item = string.IsNullOrEmpty(request.ParentId) ? user.RootFolder : DtoBuilder.GetItemByClientId(request.ParentId, UserManager, LibraryManager, user.Id);
+                item = string.IsNullOrEmpty(request.ParentId) ? user.RootFolder : DtoService.GetItemByDtoId(request.ParentId, user.Id);
             }
             else
             {
-                item = string.IsNullOrEmpty(request.ParentId) ? LibraryManager.RootFolder : DtoBuilder.GetItemByClientId(request.ParentId, UserManager, LibraryManager);
+                item = string.IsNullOrEmpty(request.ParentId) ? LibraryManager.RootFolder : DtoService.GetItemByDtoId(request.ParentId);
             }
 
             IEnumerable<BaseItem> items;
@@ -285,8 +287,8 @@ namespace MediaBrowser.Api.UserLibrary
                 return null;
             }
 
-            var dto = user == null ? await new DtoBuilder(Logger, LibraryManager, UserDataRepository, ItemRepository).GetBaseItemDto(item, fields).ConfigureAwait(false) :
-                await new DtoBuilder(Logger, LibraryManager, UserDataRepository, ItemRepository).GetBaseItemDto(item, fields, user).ConfigureAwait(false);
+            var dto = user == null ? await DtoService.GetBaseItemDto(item, fields).ConfigureAwait(false) :
+                await DtoService.GetBaseItemDto(item, fields, user).ConfigureAwait(false);
 
             if (fields.Contains(ItemFields.ItemCounts))
             {

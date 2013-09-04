@@ -12,6 +12,7 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
@@ -32,6 +33,7 @@ using MediaBrowser.Providers;
 using MediaBrowser.Server.Implementations;
 using MediaBrowser.Server.Implementations.BdInfo;
 using MediaBrowser.Server.Implementations.Configuration;
+using MediaBrowser.Server.Implementations.Dto;
 using MediaBrowser.Server.Implementations.HttpServer;
 using MediaBrowser.Server.Implementations.IO;
 using MediaBrowser.Server.Implementations.Library;
@@ -155,6 +157,7 @@ namespace MediaBrowser.ServerApplication
         /// </summary>
         /// <value>The HTTP server.</value>
         private IHttpServer HttpServer { get; set; }
+        private IDtoService DtoService { get; set; }
 
         /// <summary>
         /// Gets or sets the media encoder.
@@ -290,6 +293,9 @@ namespace MediaBrowser.ServerApplication
             LocalizationManager = new LocalizationManager(ServerConfigurationManager);
             RegisterSingleInstance(LocalizationManager);
 
+            DtoService = new DtoService(Logger, LibraryManager, UserManager, UserDataRepository, ItemRepository);
+            RegisterSingleInstance(DtoService);
+
             var displayPreferencesTask = Task.Run(async () => await ConfigureDisplayPreferencesRepositories().ConfigureAwait(false));
             var itemsTask = Task.Run(async () => await ConfigureItemRepositories().ConfigureAwait(false));
             var userdataTask = Task.Run(async () => await ConfigureUserDataRepositories().ConfigureAwait(false));
@@ -309,7 +315,7 @@ namespace MediaBrowser.ServerApplication
             ServerKernel.ImageManager = new ImageManager(LogManager.GetLogger("ImageManager"),
                                                          ApplicationPaths, ItemRepository);
             Parallel.Invoke(
-                 () => ServerKernel.FFMpegManager = new FFMpegManager(ApplicationPaths, MediaEncoder, LibraryManager, Logger, ItemRepository),
+                 () => ServerKernel.FFMpegManager = new FFMpegManager(ApplicationPaths, MediaEncoder, Logger, ItemRepository),
                  () => ServerKernel.ImageManager.ImageEnhancers = GetExports<IImageEnhancer>().OrderBy(e => e.Priority).ToArray(),
                  () => LocalizedStrings.StringFiles = GetExports<LocalizedStringData>(),
                  SetStaticProperties
@@ -322,7 +328,7 @@ namespace MediaBrowser.ServerApplication
 
             var connection = await ConnectToDb(dbFile).ConfigureAwait(false);
 
-            var repo = new SqliteUserRepository(connection, ApplicationPaths, JsonSerializer, LogManager);
+            var repo = new SqliteUserRepository(connection, JsonSerializer, LogManager);
 
             repo.Initialize();
 
