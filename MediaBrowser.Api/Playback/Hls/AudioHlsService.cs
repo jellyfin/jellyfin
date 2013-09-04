@@ -93,11 +93,6 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var args = "-codec:a " + codec;
 
-            if (string.Equals(codec, "aac", StringComparison.OrdinalIgnoreCase))
-            {
-                args += " -strict experimental";
-            }
-            
             var channels = GetNumAudioChannelsParam(state.Request, state.AudioStream);
 
             if (channels.HasValue)
