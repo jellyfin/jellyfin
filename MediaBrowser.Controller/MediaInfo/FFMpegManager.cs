@@ -1,12 +1,11 @@
-﻿using System.Collections.Generic;
-using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -31,8 +30,6 @@ namespace MediaBrowser.Controller.MediaInfo
         /// <value>The subtitle cache.</value>
         internal FileSystemRepository SubtitleCache { get; set; }
 
-        private readonly ILibraryManager _libraryManager;
-
         private readonly IServerApplicationPaths _appPaths;
         private readonly IMediaEncoder _encoder;
         private readonly ILogger _logger;
@@ -43,15 +40,13 @@ namespace MediaBrowser.Controller.MediaInfo
         /// </summary>
         /// <param name="appPaths">The app paths.</param>
         /// <param name="encoder">The encoder.</param>
-        /// <param name="libraryManager">The library manager.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="itemRepo">The item repo.</param>
         /// <exception cref="System.ArgumentNullException">zipClient</exception>
-        public FFMpegManager(IServerApplicationPaths appPaths, IMediaEncoder encoder, ILibraryManager libraryManager, ILogger logger, IItemRepository itemRepo)
+        public FFMpegManager(IServerApplicationPaths appPaths, IMediaEncoder encoder, ILogger logger, IItemRepository itemRepo)
         {
             _appPaths = appPaths;
             _encoder = encoder;
-            _libraryManager = libraryManager;
             _logger = logger;
             _itemRepo = itemRepo;
 

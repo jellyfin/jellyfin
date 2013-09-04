@@ -12,7 +12,6 @@ namespace MediaBrowser.Api.Playback.Progressive
     public class ProgressiveStreamWriter : IStreamWriter, IHasOptions
     {
         private string Path { get; set; }
-        private StreamState State { get; set; }
         private ILogger Logger { get; set; }
 
         /// <summary>
@@ -32,12 +31,10 @@ namespace MediaBrowser.Api.Playback.Progressive
         /// Initializes a new instance of the <see cref="ProgressiveStreamWriter" /> class.
         /// </summary>
         /// <param name="path">The path.</param>
-        /// <param name="state">The state.</param>
         /// <param name="logger">The logger.</param>
-        public ProgressiveStreamWriter(string path, StreamState state, ILogger logger)
+        public ProgressiveStreamWriter(string path, ILogger logger)
         {
             Path = path;
-            State = state;
             Logger = logger;
         }
 

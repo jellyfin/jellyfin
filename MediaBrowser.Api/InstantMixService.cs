@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Querying;
 using ServiceStack.ServiceHost;
 using System;
@@ -42,22 +41,20 @@ namespace MediaBrowser.Api
     public class InstantMixService : BaseApiService
     {
         private readonly IUserManager _userManager;
-        private readonly IUserDataRepository _userDataRepository;
         private readonly ILibraryManager _libraryManager;
 
-        private readonly IItemRepository _itemRepo;
+        private readonly IDtoService _dtoService;
 
-        public InstantMixService(IUserManager userManager, IUserDataRepository userDataRepository, ILibraryManager libraryManager, IItemRepository itemRepo)
+        public InstantMixService(IUserManager userManager, ILibraryManager libraryManager, IDtoService dtoService)
         {
             _userManager = userManager;
-            _userDataRepository = userDataRepository;
             _libraryManager = libraryManager;
-            _itemRepo = itemRepo;
+            _dtoService = dtoService;
         }
 
         public object Get(GetInstantMixFromSong request)
         {
-            var item = DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager);
+            var item = _dtoService.GetItemByDtoId(request.Id);
 
             var result = GetInstantMixResult(request, item.Genres).Result;
 
@@ -66,7 +63,7 @@ namespace MediaBrowser.Api
 
         public object Get(GetInstantMixFromAlbum request)
         {
-            var album = (MusicAlbum)DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager);
+            var album = (MusicAlbum)_dtoService.GetItemByDtoId(request.Id);
 
             var genres = album
                .RecursiveChildren
@@ -112,8 +109,6 @@ namespace MediaBrowser.Api
 
             var fields = request.GetItemFields().ToList();
 
-            var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userDataRepository, _itemRepo);
-
             var inputItems = user == null
                                  ? _libraryManager.RootFolder.RecursiveChildren
                                  : user.RootFolder.GetRecursiveChildren(user);
@@ -138,7 +133,7 @@ namespace MediaBrowser.Api
             };
 
             var tasks = items.Take(request.Limit ?? items.Length)
-                .Select(i => dtoBuilder.GetBaseItemDto(i, fields, user));
+                .Select(i => _dtoService.GetBaseItemDto(i, fields, user));
 
             result.Items = await Task.WhenAll(tasks).ConfigureAwait(false);
 

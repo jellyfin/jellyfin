@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
@@ -30,13 +31,15 @@ namespace MediaBrowser.Api
         /// </summary>
         private readonly ILibraryManager _libraryManager;
         private readonly IItemRepository _itemRepo;
+        private readonly IDtoService _dtoService;
 
-        public AlbumsService(IUserManager userManager, IUserDataRepository userDataRepository, ILibraryManager libraryManager, IItemRepository itemRepo)
+        public AlbumsService(IUserManager userManager, IUserDataRepository userDataRepository, ILibraryManager libraryManager, IItemRepository itemRepo, IDtoService dtoService)
         {
             _userManager = userManager;
             _userDataRepository = userDataRepository;
             _libraryManager = libraryManager;
             _itemRepo = itemRepo;
+            _dtoService = dtoService;
         }
 
         /// <summary>
@@ -50,6 +53,7 @@ namespace MediaBrowser.Api
                 _itemRepo,
                 _libraryManager,
                 _userDataRepository,
+                _dtoService,
                 Logger,
                 request, item => item is MusicAlbum,
                 GetAlbumSimilarityScore);

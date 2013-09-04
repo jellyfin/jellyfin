@@ -254,7 +254,7 @@
                 html += '<th>Artist</th>';
             }
 
-            html += '<th class="tabletColumn">Duration</th>';
+            html += '<th class="tabletColumn">Runtime</th>';
             html += '<th class="tabletColumn">Play Count</th>';
             html += '<th class="tabletColumn userDataCell"></th>';
 

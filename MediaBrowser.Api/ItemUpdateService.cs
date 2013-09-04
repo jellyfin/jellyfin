@@ -72,12 +72,12 @@ namespace MediaBrowser.Api
     public class ItemUpdateService : BaseApiService
     {
         private readonly ILibraryManager _libraryManager;
-        private readonly IUserManager _userManager;
+        private readonly IDtoService _dtoService;
 
-        public ItemUpdateService(ILibraryManager libraryManager, IUserManager userManager)
+        public ItemUpdateService(ILibraryManager libraryManager, IDtoService dtoService)
         {
             _libraryManager = libraryManager;
-            _userManager = userManager;
+            _dtoService = dtoService;
         }
 
         public void Post(UpdateItem request)
@@ -89,7 +89,7 @@ namespace MediaBrowser.Api
 
         private Task UpdateItem(UpdateItem request)
         {
-            var item = DtoBuilder.GetItemByClientId(request.ItemId, _userManager, _libraryManager);
+            var item = _dtoService.GetItemByDtoId(request.ItemId);
 
             UpdateItem(request, item);
 

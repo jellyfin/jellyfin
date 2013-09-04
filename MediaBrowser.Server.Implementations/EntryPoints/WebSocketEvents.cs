@@ -8,9 +8,7 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
-using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
-using MediaBrowser.Model.Updates;
 using System;
 
 namespace MediaBrowser.Server.Implementations.EntryPoints
@@ -24,10 +22,6 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         /// The _server manager
         /// </summary>
         private readonly IServerManager _serverManager;
-        /// <summary>
-        /// The _logger
-        /// </summary>
-        private readonly ILogger _logger;
 
         /// <summary>
         /// The _user manager
@@ -49,20 +43,22 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         /// </summary>
         private readonly ITaskManager _taskManager;
 
+        private readonly IDtoService _dtoService;
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="WebSocketEvents" /> class.
         /// </summary>
         /// <param name="serverManager">The server manager.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="userManager">The user manager.</param>
-        public WebSocketEvents(IServerManager serverManager, IServerApplicationHost appHost, ILogger logger, IUserManager userManager, IInstallationManager installationManager, ITaskManager taskManager)
+        public WebSocketEvents(IServerManager serverManager, IServerApplicationHost appHost, IUserManager userManager, IInstallationManager installationManager, ITaskManager taskManager, IDtoService dtoService)
         {
             _serverManager = serverManager;
-            _logger = logger;
             _userManager = userManager;
             _installationManager = installationManager;
             _appHost = appHost;
             _taskManager = taskManager;
+            _dtoService = dtoService;
         }
 
         public void Run()
@@ -140,7 +136,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         /// <param name="e">The e.</param>
         async void userManager_UserUpdated(object sender, GenericEventArgs<User> e)
         {
-            var dto = await new UserDtoBuilder(_logger).GetUserDto(e.Argument).ConfigureAwait(false);
+            var dto = await _dtoService.GetUserDto(e.Argument).ConfigureAwait(false);
 
             _serverManager.SendWebSocketMessage("UserUpdated", dto);
         }

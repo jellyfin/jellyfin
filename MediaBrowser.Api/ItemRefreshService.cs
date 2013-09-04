@@ -1,9 +1,9 @@
-﻿using System.Linq;
-using MediaBrowser.Controller.Dto;
+﻿using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using ServiceStack.ServiceHost;
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -92,12 +92,12 @@ namespace MediaBrowser.Api
     public class ItemRefreshService : BaseApiService
     {
         private readonly ILibraryManager _libraryManager;
-        private readonly IUserManager _userManager;
+        private readonly IDtoService _dtoService;
 
-        public ItemRefreshService(ILibraryManager libraryManager, IUserManager userManager)
+        public ItemRefreshService(ILibraryManager libraryManager, IDtoService dtoService)
         {
             _libraryManager = libraryManager;
-            _userManager = userManager;
+            _dtoService = dtoService;
         }
 
         public void Post(RefreshArtist request)
@@ -244,7 +244,7 @@ namespace MediaBrowser.Api
         /// <returns>Task.</returns>
         private async Task RefreshItem(RefreshItem request)
         {
-            var item = DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager);
+            var item = _dtoService.GetItemByDtoId(request.Id);
 
             var folder = item as Folder;
 

@@ -39,21 +39,14 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly IMediaEncoder _mediaEncoder;
 
         /// <summary>
-        /// The _library manager
-        /// </summary>
-        private readonly ILibraryManager _libraryManager;
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="BaseMetadataProvider" /> class.
         /// </summary>
         /// <param name="logManager">The log manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
-        /// <param name="libraryManager">The library manager.</param>
         /// <param name="mediaEncoder">The media encoder.</param>
-        public AudioImageProvider(ILogManager logManager, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IMediaEncoder mediaEncoder)
+        public AudioImageProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IMediaEncoder mediaEncoder)
             : base(logManager, configurationManager)
         {
-            _libraryManager = libraryManager;
             _mediaEncoder = mediaEncoder;
 
             ImageCache = new FileSystemRepository(Kernel.Instance.FFMpegManager.AudioImagesDataPath);

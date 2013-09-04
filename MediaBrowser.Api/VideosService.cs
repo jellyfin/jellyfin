@@ -30,14 +30,14 @@ namespace MediaBrowser.Api
 
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
-        private readonly IUserDataRepository _userDataRepository;
+        private readonly IDtoService _dtoService;
 
-        public VideosService(IItemRepository itemRepo, ILibraryManager libraryManager, IUserManager userManager, IUserDataRepository userDataRepository)
+        public VideosService(IItemRepository itemRepo, ILibraryManager libraryManager, IUserManager userManager, IDtoService dtoService)
         {
             _itemRepo = itemRepo;
             _libraryManager = libraryManager;
             _userManager = userManager;
-            _userDataRepository = userDataRepository;
+            _dtoService = dtoService;
         }
 
         /// <summary>
@@ -53,20 +53,18 @@ namespace MediaBrowser.Api
                            ? (request.UserId.HasValue
                                   ? user.RootFolder
                                   : (Folder)_libraryManager.RootFolder)
-                           : DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager, request.UserId);
+                           : _dtoService.GetItemByDtoId(request.Id, request.UserId);
 
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields))
                     .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
                     .ToList();
 
-            var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userDataRepository, _itemRepo);
-
             var video = (Video)item;
 
             var items = video.AdditionalPartIds.Select(_itemRepo.RetrieveItem)
                          .OrderBy(i => i.SortName)
-                         .Select(i => dtoBuilder.GetBaseItemDto(i, fields, user, video))
+                         .Select(i => _dtoService.GetBaseItemDto(i, fields, user, video))
                          .Select(t => t.Result)
                          .ToArray();
 

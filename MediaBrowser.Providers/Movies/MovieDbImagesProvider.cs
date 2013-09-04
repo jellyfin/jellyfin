@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -11,7 +10,6 @@ using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -39,24 +37,17 @@ namespace MediaBrowser.Providers.Movies
         private readonly IJsonSerializer _jsonSerializer;
 
         /// <summary>
-        /// The _HTTP client
-        /// </summary>
-        private readonly IHttpClient _httpClient;
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="MovieDbImagesProvider"/> class.
         /// </summary>
         /// <param name="logManager">The log manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="providerManager">The provider manager.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
-        /// <param name="httpClient">The HTTP client.</param>
-        public MovieDbImagesProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager, IJsonSerializer jsonSerializer, IHttpClient httpClient)
+        public MovieDbImagesProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager, IJsonSerializer jsonSerializer)
             : base(logManager, configurationManager)
         {
             _providerManager = providerManager;
             _jsonSerializer = jsonSerializer;
-            _httpClient = httpClient;
         }
 
         /// <summary>

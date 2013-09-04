@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Logging;
 using System.Threading.Tasks;
@@ -31,6 +31,7 @@ namespace MediaBrowser.WebDashboard.Api
         private readonly ITaskManager _taskManager;
 
         private readonly ISessionManager _sessionManager;
+        private readonly IDtoService _dtoService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DashboardInfoWebSocketListener" /> class.
@@ -39,12 +40,13 @@ namespace MediaBrowser.WebDashboard.Api
         /// <param name="logger">The logger.</param>
         /// <param name="taskManager">The task manager.</param>
         /// <param name="sessionManager">The session manager.</param>
-        public DashboardInfoWebSocketListener(IServerApplicationHost appHost, ILogger logger, ITaskManager taskManager, ISessionManager sessionManager)
+        public DashboardInfoWebSocketListener(IServerApplicationHost appHost, ILogger logger, ITaskManager taskManager, ISessionManager sessionManager, IDtoService dtoService)
             : base(logger)
         {
             _appHost = appHost;
             _taskManager = taskManager;
             _sessionManager = sessionManager;
+            _dtoService = dtoService;
         }
 
         /// <summary>
@@ -54,7 +56,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// <returns>Task{IEnumerable{TaskInfo}}.</returns>
         protected override Task<DashboardInfo> GetDataToSend(object state)
         {
-            return Task.FromResult(DashboardService.GetDashboardInfo(_appHost, _taskManager, _sessionManager));
+            return Task.FromResult(DashboardService.GetDashboardInfo(_appHost, _taskManager, _sessionManager, _dtoService));
         }
     }
 }

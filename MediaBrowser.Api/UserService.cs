@@ -171,16 +171,15 @@ namespace MediaBrowser.Api
         /// The _user manager
         /// </summary>
         private readonly IUserManager _userManager;
-        private readonly ILibraryManager _libraryManager;
+        private readonly IDtoService _dtoService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserService" /> class.
         /// </summary>
         /// <param name="xmlSerializer">The XML serializer.</param>
         /// <param name="userManager">The user manager.</param>
-        /// <param name="libraryManager">The library manager.</param>
         /// <exception cref="System.ArgumentNullException">xmlSerializer</exception>
-        public UserService(IXmlSerializer xmlSerializer, IUserManager userManager, ILibraryManager libraryManager)
+        public UserService(IXmlSerializer xmlSerializer, IUserManager userManager, IDtoService dtoService)
             : base()
         {
             if (xmlSerializer == null)
@@ -190,7 +189,7 @@ namespace MediaBrowser.Api
 
             _xmlSerializer = xmlSerializer;
             _userManager = userManager;
-            _libraryManager = libraryManager;
+            _dtoService = dtoService;
         }
 
         public object Get(GetPublicUsers request)
@@ -209,8 +208,6 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetUsers request)
         {
-            var dtoBuilder = new UserDtoBuilder(Logger);
-
             var users = _userManager.Users;
 
             if (request.IsDisabled.HasValue)
@@ -223,7 +220,7 @@ namespace MediaBrowser.Api
                 users = users.Where(i => i.Configuration.IsHidden == request.IsHidden.Value);
             }
 
-            var tasks = users.OrderBy(u => u.Name).Select(dtoBuilder.GetUserDto).Select(i => i.Result);
+            var tasks = users.OrderBy(u => u.Name).Select(_dtoService.GetUserDto).Select(i => i.Result);
 
             return ToOptimizedResult(tasks.ToList());
         }
@@ -242,9 +239,7 @@ namespace MediaBrowser.Api
                 throw new ResourceNotFoundException("User not found");
             }
 
-            var dtoBuilder = new UserDtoBuilder(Logger);
-
-            var result = dtoBuilder.GetUserDto(user).Result;
+            var result = _dtoService.GetUserDto(user).Result;
 
             return ToOptimizedResult(result);
         }
@@ -310,7 +305,7 @@ namespace MediaBrowser.Api
 
             var result = new AuthenticationResult
             {
-                User = await new UserDtoBuilder(Logger).GetUserDto(user).ConfigureAwait(false)
+                User = await _dtoService.GetUserDto(user).ConfigureAwait(false)
             };
 
             return result;
@@ -409,9 +404,7 @@ namespace MediaBrowser.Api
 
             newUser.UpdateConfiguration(dtoUser.Configuration, _xmlSerializer);
 
-            var dtoBuilder = new UserDtoBuilder(Logger);
-
-            var result = dtoBuilder.GetUserDto(newUser).Result;
+            var result = _dtoService.GetUserDto(newUser).Result;
 
             return ToOptimizedResult(result);
         }

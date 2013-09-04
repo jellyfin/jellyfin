@@ -187,27 +187,24 @@ namespace MediaBrowser.Api
 
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
-        private readonly IUserDataRepository _userDataRepository;
+
+        private readonly IDtoService _dtoService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryService" /> class.
         /// </summary>
-        /// <param name="itemRepo">The item repo.</param>
-        /// <param name="libraryManager">The library manager.</param>
-        /// <param name="userManager">The user manager.</param>
-        /// <param name="userDataRepository">The user data repository.</param>
         public LibraryService(IItemRepository itemRepo, ILibraryManager libraryManager, IUserManager userManager,
-                              IUserDataRepository userDataRepository)
+                              IDtoService dtoService)
         {
             _itemRepo = itemRepo;
             _libraryManager = libraryManager;
             _userManager = userManager;
-            _userDataRepository = userDataRepository;
+            _dtoService = dtoService;
         }
 
         public object Get(GetFile request)
         {
-            var item = DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager);
+            var item = _dtoService.GetItemByDtoId(request.Id);
 
             if (item.LocationType == LocationType.Remote || item.LocationType == LocationType.Virtual)
             {
@@ -240,7 +237,7 @@ namespace MediaBrowser.Api
         /// <returns>Task{BaseItemDto[]}.</returns>
         public async Task<BaseItemDto[]> GetAncestors(GetAncestors request)
         {
-            var item = DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager);
+            var item = _dtoService.GetItemByDtoId(request.Id);
 
             var tasks = new List<Task<BaseItemDto>>();
 
@@ -251,8 +248,6 @@ namespace MediaBrowser.Api
                     .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
                     .ToList();
 
-            var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userDataRepository, _itemRepo);
-            
             BaseItem parent = item.Parent;
 
             while (parent != null)
@@ -262,7 +257,7 @@ namespace MediaBrowser.Api
                     parent = TranslateParentItem(parent, user);
                 }
 
-                tasks.Add(dtoBuilder.GetBaseItemDto(parent, fields, user));
+                tasks.Add(_dtoService.GetBaseItemDto(parent, fields, user));
 
                 if (parent is UserRootFolder)
                 {
@@ -379,7 +374,7 @@ namespace MediaBrowser.Api
 
         private async Task DeleteItem(DeleteItem request)
         {
-            var item = DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager);
+            var item = _dtoService.GetItemByDtoId(request.Id);
 
             var parent = item.Parent;
 
@@ -505,7 +500,7 @@ namespace MediaBrowser.Api
                            ? (request.UserId.HasValue
                                   ? user.RootFolder
                                   : (Folder)_libraryManager.RootFolder)
-                           : DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager, request.UserId);
+                           : _dtoService.GetItemByDtoId(request.Id, request.UserId);
 
             while (item.ThemeSongIds.Count == 0 && request.InheritFromParent && item.Parent != null)
             {
@@ -517,11 +512,9 @@ namespace MediaBrowser.Api
                     .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
                     .ToList();
 
-            var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userDataRepository, _itemRepo);
-
             var tasks = item.ThemeSongIds.Select(_itemRepo.RetrieveItem)
                             .OrderBy(i => i.SortName)
-                            .Select(i => dtoBuilder.GetBaseItemDto(i, fields, user, item));
+                            .Select(i => _dtoService.GetBaseItemDto(i, fields, user, item));
 
             var items = await Task.WhenAll(tasks).ConfigureAwait(false);
 
@@ -529,7 +522,7 @@ namespace MediaBrowser.Api
             {
                 Items = items,
                 TotalRecordCount = items.Length,
-                OwnerId = DtoBuilder.GetClientItemId(item)
+                OwnerId = _dtoService.GetDtoId(item)
             };
         }
 
@@ -553,7 +546,7 @@ namespace MediaBrowser.Api
                            ? (request.UserId.HasValue
                                   ? user.RootFolder
                                   : (Folder)_libraryManager.RootFolder)
-                           : DtoBuilder.GetItemByClientId(request.Id, _userManager, _libraryManager, request.UserId);
+                           : _dtoService.GetItemByDtoId(request.Id, request.UserId);
 
             while (item.ThemeVideoIds.Count == 0 && request.InheritFromParent && item.Parent != null)
             {
@@ -566,11 +559,9 @@ namespace MediaBrowser.Api
                     .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
                     .ToList();
 
-            var dtoBuilder = new DtoBuilder(Logger, _libraryManager, _userDataRepository, _itemRepo);
-
             var tasks = item.ThemeVideoIds.Select(_itemRepo.RetrieveItem)
                             .OrderBy(i => i.SortName)
-                            .Select(i => dtoBuilder.GetBaseItemDto(i, fields, user, item));
+                            .Select(i => _dtoService.GetBaseItemDto(i, fields, user, item));
 
             var items = await Task.WhenAll(tasks).ConfigureAwait(false);
 
@@ -578,7 +569,7 @@ namespace MediaBrowser.Api
             {
                 Items = items,
                 TotalRecordCount = items.Length,
-                OwnerId = DtoBuilder.GetClientItemId(item)
+                OwnerId = _dtoService.GetDtoId(item)
             };
         }
     }
