@@ -1,6 +1,4 @@
-﻿using MediaBrowser.Model.Entities;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Runtime.Serialization;
 
 namespace MediaBrowser.Controller.Entities.Audio
@@ -51,35 +49,6 @@ namespace MediaBrowser.Controller.Entities.Audio
         public override Folder IndexContainer
         {
             get { return Parent as MusicArtist ?? UnknwonArtist; }
-        }
-
-        /// <summary>
-        /// Gets or sets the images.
-        /// </summary>
-        /// <value>The images.</value>
-        public override Dictionary<ImageType, string> Images
-        {
-            get
-            {
-                var images = base.Images;
-                string primaryImagePath;
-
-                if (!images.TryGetValue(ImageType.Primary, out primaryImagePath))
-                {
-                    var image = Children.Select(c => c.PrimaryImagePath).FirstOrDefault(c => !string.IsNullOrEmpty(c));
-
-                    if (!string.IsNullOrEmpty(image))
-                    {
-                        images[ImageType.Primary] = image;
-                    }
-                }
-
-                return images;
-            }
-            set
-            {
-                base.Images = value;
-            }
         }
 
         /// <summary>
