@@ -143,6 +143,8 @@
 
     addVirtualFolder: function () {
 
+        $('.collectionTypeFieldDescription').show();
+
         MediaLibraryPage.getTextValue("Add Media Collection", "Name (Movies, Music, TV, etc):", "", true, function (name, type) {
 
             var userId = getParameterByName("userId");
@@ -258,6 +260,8 @@
         var virtualFolder = MediaLibraryPage.virtualFolders[folderIndex];
 
         MediaLibraryPage.lastVirtualFolderName = virtualFolder.Name;
+
+        $('.collectionTypeFieldDescription').hide();
 
         MediaLibraryPage.getTextValue(virtualFolder.Name, "Rename " + virtualFolder.Name, virtualFolder.Name, false, function (newName) {
 
