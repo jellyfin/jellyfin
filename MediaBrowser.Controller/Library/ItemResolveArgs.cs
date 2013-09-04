@@ -370,9 +370,18 @@ namespace MediaBrowser.Controller.Library
             return GetFileSystemEntryByName(name) != null;
         }
 
+        private bool _collectionTypeDiscovered;
+        private string _collectionType;
+
         public string GetCollectionType()
         {
-            return Parent == null ? null : _libraryManager.FindCollectionType(Parent);
+            if (!_collectionTypeDiscovered)
+            {
+                _collectionType = Parent == null ? null : _libraryManager.FindCollectionType(Parent);
+                _collectionTypeDiscovered = true;
+            }
+
+            return _collectionType;
         }
 
         #region Equality Overrides
