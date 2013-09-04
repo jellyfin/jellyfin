@@ -9,7 +9,7 @@
             $('#fldWebSocketPortNumber', page).show();
         }
 
-        $('#selectAutomaticUpdateLevel', page).val(config.SystemUpdateLevel).selectmenu('refresh');
+        $('#selectAutomaticUpdateLevel', page).val(config.SystemUpdateLevel).selectmenu('refresh').trigger('change');
         $('#txtWebSocketPortNumber', page).val(config.LegacyWebSocketPortNumber);
 
         $('#txtPortNumber', page).val(config.HttpServerPortNumber);
@@ -36,6 +36,21 @@
             loadPage(page, response1[0], response2[0]);
 
         });
+        
+    }).on('pageinit', "#advancedConfigurationPage", function () {
+
+        var page = this;
+
+        $('#selectAutomaticUpdateLevel', page).on('change', function () {
+
+            if (this.value == "Dev") {
+                $('#devBuildWarning', page).show();
+            } else {
+                $('#devBuildWarning', page).hide();
+            }
+
+        });
+        
     });
 
     function advancedConfigurationPage() {
