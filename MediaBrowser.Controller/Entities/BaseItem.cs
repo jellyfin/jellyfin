@@ -27,7 +27,7 @@ namespace MediaBrowser.Controller.Entities
         /// MusicAlbums in the library that are the soundtrack for this item
         /// </summary>
         public List<Guid> SoundtrackIds { get; set; }
-        
+
         protected BaseItem()
         {
             Genres = new List<string>();
@@ -63,7 +63,7 @@ namespace MediaBrowser.Controller.Entities
         public const string XbmcTrailerFileSuffix = "-trailer";
 
         public bool IsInMixedFolder { get; set; }
-        
+
         private string _name;
         /// <summary>
         /// Gets or sets the name.
@@ -151,7 +151,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the images.
         /// </summary>
         /// <value>The images.</value>
-        public virtual Dictionary<ImageType, string> Images { get; set; }
+        public Dictionary<ImageType, string> Images { get; set; }
 
         /// <summary>
         /// Gets or sets the date created.
