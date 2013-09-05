@@ -56,6 +56,8 @@ namespace MediaBrowser.Tests.Resolvers
         [TestMethod]
         public void TestGetEndingEpisodeNumberFromFile()
         {
+            Assert.AreEqual(null, TVUtils.GetEndingEpisodeNumberFromFile(@"Season 1\4x01 – 20 Hours in America (1).mkv"));
+            
             Assert.AreEqual(null, TVUtils.GetEndingEpisodeNumberFromFile(@"Season 1\01x02 blah.avi"));
             Assert.AreEqual(null, TVUtils.GetEndingEpisodeNumberFromFile(@"Season 1\S01x02 blah.avi"));
             Assert.AreEqual(null, TVUtils.GetEndingEpisodeNumberFromFile(@"Season 1\S01E02 blah.avi"));

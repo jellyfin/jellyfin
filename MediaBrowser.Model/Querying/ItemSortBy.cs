@@ -71,5 +71,7 @@ namespace MediaBrowser.Model.Querying
         /// </summary>
         public const string CriticRating = "CriticRating";
         public const string IsFolder = "IsFolder";
+        public const string IsUnplayed = "IsUnplayed";
+        public const string IsPlayed = "IsPlayed";
     }
 }
