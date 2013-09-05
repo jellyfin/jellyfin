@@ -128,7 +128,19 @@ namespace MediaBrowser.Providers.MediaInfo
 
             audio.Album = GetDictionaryValue(tags, "album");
 
-            audio.Artist = GetDictionaryValue(tags, "artist");
+            var artist = GetDictionaryValue(tags, "artist");
+
+            if (string.IsNullOrWhiteSpace(artist))
+            {
+                audio.Artists.Clear();
+            }
+            else
+            {
+                audio.Artists = Split(artist)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+
+            }
 
             // Several different forms of albumartist
             audio.AlbumArtist = GetDictionaryValue(tags, "albumartist") ?? GetDictionaryValue(tags, "album artist") ?? GetDictionaryValue(tags, "album_artist");
@@ -159,12 +171,16 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (!audio.LockedFields.Contains(MetadataFields.Studios))
             {
+                audio.Studios.Clear();
+
                 // There's several values in tags may or may not be present
                 FetchStudios(audio, tags, "organization");
                 FetchStudios(audio, tags, "ensemble");
                 FetchStudios(audio, tags, "publisher");
             }
         }
+
+        private readonly char[] _nameDelimiters = new[] { '/', '|', ';', '\\' };
 
         /// <summary>
         /// Splits the specified val.
@@ -175,9 +191,10 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             // Only use the comma as a delimeter if there are no slashes or pipes. 
             // We want to be careful not to split names that have commas in them
-            var delimeter = val.IndexOf('/') == -1 && val.IndexOf('|') == -1 ? new[] { ',' } : new[] { '/', '|' };
+            var delimeter = _nameDelimiters.Any(i => val.IndexOf(i) != -1) ? _nameDelimiters : new[] { ',' };
 
-            return val.Split(delimeter, StringSplitOptions.RemoveEmptyEntries);
+            return val.Split(delimeter, StringSplitOptions.RemoveEmptyEntries)
+                .Where(i => !string.IsNullOrWhiteSpace(i));
         }
 
         /// <summary>
@@ -194,11 +211,8 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 // Sometimes the artist name is listed here, account for that
                 var studios =
-                    val.Split(new[] { '/', '|' }, StringSplitOptions.RemoveEmptyEntries)
-                    .Where(i => !string.IsNullOrWhiteSpace(i))
-                    .Where(i => !string.Equals(i, audio.Artist, StringComparison.OrdinalIgnoreCase) && !string.Equals(i, audio.AlbumArtist, StringComparison.OrdinalIgnoreCase));
-
-                audio.Studios.Clear();
+                    Split(val)
+                    .Where(i => !audio.HasArtist(i));
 
                 foreach (var studio in studios)
                 {
@@ -221,8 +235,7 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 audio.Genres.Clear();
 
-                foreach (var genre in val
-                    .Split(new[] { '/', '|' }, StringSplitOptions.RemoveEmptyEntries)
+                foreach (var genre in Split(val)
                     .Where(i => !string.IsNullOrWhiteSpace(i)))
                 {
                     // Account for sloppy tags by trimming

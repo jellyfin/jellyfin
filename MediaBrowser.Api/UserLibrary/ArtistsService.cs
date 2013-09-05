@@ -181,20 +181,17 @@ namespace MediaBrowser.Api.UserLibrary
 
             return itemsList
                 .SelectMany(i =>
+                {
+                    var list = new List<string>();
+
+                    if (!string.IsNullOrEmpty(i.AlbumArtist))
                     {
-                        var list = new List<string>();
+                        list.Add(i.AlbumArtist);
+                    }
+                    list.AddRange(i.Artists);
 
-                        if (!string.IsNullOrEmpty(i.AlbumArtist))
-                        {
-                            list.Add(i.AlbumArtist);
-                        }
-                        if (!string.IsNullOrEmpty(i.Artist))
-                        {
-                            list.Add(i.Artist);
-                        }
-
-                        return list;
-                    })
+                    return list;
+                })
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .Select(name => new IbnStub<Artist>(name, () => itemsList.Where(i => i.HasArtist(name)), GetEntity));
         }

@@ -900,10 +900,7 @@ namespace MediaBrowser.Server.Implementations.Library
                     {
                         list.Add(c.AlbumArtist);
                     }
-                    if (!string.IsNullOrEmpty(c.Artist))
-                    {
-                        list.Add(c.Artist);
-                    }
+                    list.AddRange(c.Artists);
 
                     return list;
                 })

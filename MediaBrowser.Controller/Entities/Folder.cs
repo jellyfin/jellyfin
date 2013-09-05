@@ -257,7 +257,7 @@ namespace MediaBrowser.Controller.Entities
                 {
                     var songs = recursiveChildren.OfType<Audio.Audio>().ToList();
 
-                    indexFolders = songs.Select(i => i.Artist ?? string.Empty)
+                    indexFolders = songs.SelectMany(i => i.Artists)
                         .Distinct(StringComparer.OrdinalIgnoreCase)
                     .Select(i =>
                     {
@@ -278,7 +278,7 @@ namespace MediaBrowser.Controller.Entities
                     })
                     .Where(i => i != null)
                     .Select(a => new IndexFolder(us, a,
-                                        songs.Where(i => string.Equals(i.Artist, a.Name, StringComparison.OrdinalIgnoreCase)
+                                        songs.Where(i => i.Artists.Contains(a.Name, StringComparer.OrdinalIgnoreCase)
                                         ), currentIndexName)).Concat(indexFolders);
                 }
 

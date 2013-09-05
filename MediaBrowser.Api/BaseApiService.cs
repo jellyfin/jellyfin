@@ -140,8 +140,18 @@ namespace MediaBrowser.Api
             
             return libraryManager.RootFolder.RecursiveChildren
                 .OfType<Audio>()
-                .SelectMany(i => new[] { i.Artist, i.AlbumArtist })
-                .Where(i => !string.IsNullOrEmpty(i))
+                .SelectMany(i =>
+                {
+                    var list = new List<string>();
+
+                    if (!string.IsNullOrEmpty(i.AlbumArtist))
+                    {
+                        list.Add(i.AlbumArtist);
+                    }
+                    list.AddRange(i.Artists);
+
+                    return list;
+                })
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .FirstOrDefault(i =>
                 {

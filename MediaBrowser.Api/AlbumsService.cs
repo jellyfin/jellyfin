@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using ServiceStack.ServiceHost;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace MediaBrowser.Api
@@ -76,15 +77,35 @@ namespace MediaBrowser.Api
 
             var artists1 = album1.RecursiveChildren
                 .OfType<Audio>()
-                .SelectMany(i => new[] { i.AlbumArtist, i.Artist })
-                .Where(i => !string.IsNullOrEmpty(i))
+                .SelectMany(i =>
+                {
+                    var list = new List<string>();
+
+                    if (!string.IsNullOrEmpty(i.AlbumArtist))
+                    {
+                        list.Add(i.AlbumArtist);
+                    }
+                    list.AddRange(i.Artists);
+
+                    return list;
+                })
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
             var artists2 = album2.RecursiveChildren
                 .OfType<Audio>()
-                .SelectMany(i => new[] { i.AlbumArtist, i.Artist })
-                .Where(i => !string.IsNullOrEmpty(i))
+                .SelectMany(i =>
+                {
+                    var list = new List<string>();
+
+                    if (!string.IsNullOrEmpty(i.AlbumArtist))
+                    {
+                        list.Add(i.AlbumArtist);
+                    }
+                    list.AddRange(i.Artists);
+
+                    return list;
+                })
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
 

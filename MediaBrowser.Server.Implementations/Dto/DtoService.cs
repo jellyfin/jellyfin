@@ -893,7 +893,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 dto.Album = audio.Album;
                 dto.AlbumArtist = audio.AlbumArtist;
-                dto.Artists = new[] { audio.Artist };
+                dto.Artists = audio.Artists.ToArray();
 
                 var albumParent = audio.FindParent<MusicAlbum>();
 
@@ -919,8 +919,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.AlbumArtist = songs.Select(i => i.AlbumArtist).FirstOrDefault(i => !string.IsNullOrEmpty(i));
 
                 dto.Artists =
-                    songs.Select(i => i.Artist ?? string.Empty)
-                         .Where(i => !string.IsNullOrEmpty(i))
+                    songs.SelectMany(i => i.Artists)
                          .Distinct(StringComparer.OrdinalIgnoreCase)
                          .ToArray();
             }
