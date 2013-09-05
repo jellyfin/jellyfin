@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Api;
+﻿using System.Threading;
+using MediaBrowser.Api;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Constants;
@@ -246,7 +247,7 @@ namespace MediaBrowser.ServerApplication
 
             IsoManager = new IsoManager();
             RegisterSingleInstance(IsoManager);
-            
+
             RegisterSingleInstance<IBlurayExaminer>(() => new BdInfoExaminer());
 
             ZipClient = new DotNetZipClient();
@@ -353,7 +354,7 @@ namespace MediaBrowser.ServerApplication
 
             RegisterSingleInstance(NotificationsRepository);
         }
-        
+
         /// <summary>
         /// Configures the repositories.
         /// </summary>
@@ -381,8 +382,8 @@ namespace MediaBrowser.ServerApplication
         private Task ConfigureUserDataRepositories()
         {
             return UserDataRepository.Initialize();
-        }       
-        
+        }
+
         /// <summary>
         /// Connects to db.
         /// </summary>
@@ -512,6 +513,16 @@ namespace MediaBrowser.ServerApplication
         /// </summary>
         public override void Restart()
         {
+            try
+            {
+                var task = ServerManager.SendWebSocketMessageAsync("ServerRestarting", () => string.Empty, CancellationToken.None);
+                task.Wait();
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error sending server restart web socket message", ex);
+            }
+
             App.Instance.Restart();
         }
 
@@ -571,7 +582,7 @@ namespace MediaBrowser.ServerApplication
 
             // Pismo
             yield return typeof(PismoIsoManager).Assembly;
-            
+
             // Include composable parts in the running assembly
             yield return GetType().Assembly;
         }
@@ -622,6 +633,16 @@ namespace MediaBrowser.ServerApplication
         /// </summary>
         public override void Shutdown()
         {
+            try
+            {
+                var task = ServerManager.SendWebSocketMessageAsync("ServerShuttingDown", () => string.Empty, CancellationToken.None);
+                task.Wait();
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error sending server shutdown web socket message", ex);
+            }
+
             App.Instance.Dispatcher.Invoke(App.Instance.Shutdown);
         }
 

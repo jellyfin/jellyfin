@@ -700,8 +700,6 @@ var Dashboard = {
         systemInfo = systemInfo || Dashboard.lastSystemInfo;
 
         ApiClient.openWebSocket(systemInfo.WebSocketPortNumber);
-
-        $(ApiClient).on("websocketmessage", Dashboard.onWebSocketMessageReceived);
     },
 
     onWebSocketMessageReceived: function (e, data) {
@@ -710,6 +708,12 @@ var Dashboard = {
 
         if (msg.MessageType === "LibraryChanged") {
             Dashboard.processLibraryUpdateNotification(msg.Data);
+        }
+        else if (msg.MessageType === "ServerShuttingDown") {
+            Dashboard.hideServerRestartWarning();
+        }
+        else if (msg.MessageType === "ServerRestarting") {
+            Dashboard.hideServerRestartWarning();
         }
         else if (msg.MessageType === "UserDeleted") {
             Dashboard.validateCurrentUser();
@@ -1110,6 +1114,9 @@ var Dashboard = {
 };
 
 var ApiClient = MediaBrowser.ApiClient.create("Dashboard", window.dashboardVersion);
+
+$(ApiClient).on("websocketmessage", Dashboard.onWebSocketMessageReceived);
+
 
 $(function () {
 
