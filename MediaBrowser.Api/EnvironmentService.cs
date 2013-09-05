@@ -56,15 +56,6 @@ namespace MediaBrowser.Api
     }
 
     /// <summary>
-    /// Class GetNetworkComputers
-    /// </summary>
-    [Route("/Environment/NetworkDevices", "GET")]
-    [Api(Description = "Gets a list of devices on the network")]
-    public class GetNetworkDevices : IReturn<List<FileSystemEntryInfo>>
-    {
-    }
-
-    /// <summary>
     /// Class EnvironmentService
     /// </summary>
     public class EnvironmentService : BaseApiService
@@ -132,18 +123,6 @@ namespace MediaBrowser.Api
         }
 
         /// <summary>
-        /// Gets the specified request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>System.Object.</returns>
-        public object Get(GetNetworkDevices request)
-        {
-            var result = GetNetworkDevices().OrderBy(i => i.Path).ToList();
-
-            return ToOptimizedResult(result);
-        }
-
-        /// <summary>
         /// Gets the list that is returned when an empty path is supplied
         /// </summary>
         /// <returns>IEnumerable{FileSystemEntryInfo}.</returns>
@@ -156,20 +135,6 @@ namespace MediaBrowser.Api
                 Path = d.RootDirectory.FullName,
                 Type = FileSystemEntryType.Directory
 
-            });
-        }
-
-        /// <summary>
-        /// Gets the network computers.
-        /// </summary>
-        /// <returns>IEnumerable{FileSystemEntryInfo}.</returns>
-        private IEnumerable<FileSystemEntryInfo> GetNetworkDevices()
-        {
-            return _networkManager.GetNetworkDevices().Select(c => new FileSystemEntryInfo
-            {
-                Name = c,
-                Path = NetworkPrefix + c,
-                Type = FileSystemEntryType.NetworkComputer
             });
         }
 

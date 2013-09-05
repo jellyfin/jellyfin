@@ -6,10 +6,7 @@
 
         var promise;
 
-        if (path === "Network") {
-            promise = ApiClient.getNetworkDevices();
-        }
-        else if (path) {
+        if (path) {
             promise = ApiClient.getDirectoryContents(path, { includeDirectories: true });
         } else {
             promise = ApiClient.getDrives();
@@ -35,9 +32,9 @@
                 if (parentPath.endsWith(':')) {
                     parentPath += "\\";
                 }
-
+                
                 if (parentPath == '\\') {
-                    parentPath = "Network";
+                    parentPath = "";
                 }
 
                 html += '<li><a class="lnkDirectory" data-path="' + parentPath + '" href="#">..</a></li>';
@@ -48,10 +45,6 @@
                 var folder = folders[i];
 
                 html += '<li><a class="lnkDirectory" data-path="' + folder.Path + '" href="#">' + folder.Name + '</a></li>';
-            }
-
-            if (!path) {
-                html += '<li><a class="lnkDirectory" data-path="Network" href="#">Network</a></li>';
             }
 
             $('#ulDirectoryPickerList', page).html(html).listview('refresh');
@@ -91,6 +84,7 @@
             html += '<div data-role="fieldcontain" style="margin:0;">';
             html += '<label for="txtDirectoryPickerPath" class="lblDirectoryPickerPath">Current Folder:</label>';
             html += '<input id="txtDirectoryPickerPath" name="txtDirectoryPickerPath" type="text" required="required" style="font-weight:bold;" />';
+            html += '<div class="directoryPickerHeadline" style="margin-top:5px;padding:.5em;display:inline-block;">Network paths can be entered manually, e.g. <b>\\\\my-server</b></div>';
             html += '</div>';
 
             html += '<div style="height: 320px; overflow-y: auto;">';
