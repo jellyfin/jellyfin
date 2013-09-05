@@ -85,7 +85,8 @@ namespace MediaBrowser.Server.Implementations.ServerManager
 
             _jsonSerializer = jsonSerializer;
             _socket = socket;
-            _socket.OnReceiveDelegate = OnReceiveInternal;
+            _socket.OnReceiveBytes = OnReceiveInternal;
+            _socket.OnReceive = OnReceiveInternal;
             RemoteEndPoint = remoteEndPoint;
             _logger = logger;
         }
@@ -127,6 +128,34 @@ namespace MediaBrowser.Server.Implementations.ServerManager
             }
         }
 
+        private void OnReceiveInternal(string message)
+        {
+            LastActivityDate = DateTime.UtcNow;
+
+            if (OnReceive == null)
+            {
+                return;
+            }
+            try
+            {
+                var stub = (WebSocketMessage<object>)_jsonSerializer.DeserializeFromString(message, typeof(WebSocketMessage<object>));
+
+                var info = new WebSocketMessageInfo
+                {
+                    MessageType = stub.MessageType,
+                    Data = stub.Data == null ? null : stub.Data.ToString()
+                };
+
+                info.Connection = this;
+
+                OnReceive(info);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error processing web socket message", ex);
+            }
+        }
+        
         /// <summary>
         /// Sends a message asynchronously.
         /// </summary>

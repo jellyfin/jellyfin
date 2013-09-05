@@ -3,7 +3,6 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using System;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -42,7 +41,7 @@ namespace MediaBrowser.Server.Implementations.WebSocket
             UserContext = context;
 
             context.SetOnDisconnect(OnDisconnected);
-            context.SetOnReceive(OnReceive);
+            context.SetOnReceive(OnReceiveContext);
 
             _logger.Info("Client connected from {0}", context.ClientAddress);
         }
@@ -50,7 +49,7 @@ namespace MediaBrowser.Server.Implementations.WebSocket
         /// <summary>
         /// The _disconnected
         /// </summary>
-        private bool _disconnected = false;
+        private bool _disconnected;
         /// <summary>
         /// Gets or sets the state.
         /// </summary>
@@ -73,25 +72,13 @@ namespace MediaBrowser.Server.Implementations.WebSocket
         /// Called when [receive].
         /// </summary>
         /// <param name="context">The context.</param>
-        private void OnReceive(UserContext context)
+        private void OnReceiveContext(UserContext context)
         {
-            if (OnReceiveDelegate != null)
+            if (OnReceive != null)
             {
                 var json = context.DataFrame.ToString();
 
-                if (!string.IsNullOrWhiteSpace(json))
-                {
-                    try
-                    {
-                        var bytes = Encoding.UTF8.GetBytes(json);
-
-                        OnReceiveDelegate(bytes);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.ErrorException("Error processing web socket message", ex);
-                    }
-                }
+                OnReceive(json);
             }
         }
         
@@ -128,6 +115,12 @@ namespace MediaBrowser.Server.Implementations.WebSocket
         /// Gets or sets the receive action.
         /// </summary>
         /// <value>The receive action.</value>
-        public Action<byte[]> OnReceiveDelegate { get; set; }
+        public Action<byte[]> OnReceiveBytes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the on receive.
+        /// </summary>
+        /// <value>The on receive.</value>
+        public Action<string> OnReceive { get; set; }
     }
 }
