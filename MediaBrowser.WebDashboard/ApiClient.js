@@ -910,7 +910,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
         * Removes a virtual folder from either the default view or a user view
         * @param {String} name
         */
-        self.removeVirtualFolder = function (name, userId) {
+        self.removeVirtualFolder = function (name, userId, refreshLibrary) {
 
             if (!name) {
                 throw new Error("null name");
@@ -919,7 +919,10 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
             var url = userId ? "Users/" + userId + "/VirtualFolders" : "Library/VirtualFolders";
 
             url += "/" + name;
-            url = self.getUrl(url);
+
+            url = self.getUrl(url, {
+                refreshLibrary: refreshLibrary ? true : false
+            });
 
             return self.ajax({
                 type: "DELETE",
@@ -931,7 +934,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
        * Adds a virtual folder to either the default view or a user view
        * @param {String} name
        */
-        self.addVirtualFolder = function (name, type, userId) {
+        self.addVirtualFolder = function (name, type, userId, refreshLibrary) {
 
             if (!name) {
                 throw new Error("null name");
@@ -942,6 +945,8 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
             if (type) {
                 options.collectionType = type;
             }
+
+            options.refreshLibrary = refreshLibrary ? true : false;
 
             var url = userId ? "Users/" + userId + "/VirtualFolders" : "Library/VirtualFolders";
 
@@ -958,7 +963,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
        * Renames a virtual folder, within either the default view or a user view
        * @param {String} name
        */
-        self.renameVirtualFolder = function (name, newName, userId) {
+        self.renameVirtualFolder = function (name, newName, userId, refreshLibrary) {
 
             if (!name) {
                 throw new Error("null name");
@@ -968,7 +973,10 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
 
             url += "/" + name + "/Name";
 
-            url = self.getUrl(url, { newName: newName });
+            url = self.getUrl(url, {
+                refreshLibrary: refreshLibrary ? true : false,
+                newName: newName
+            });
 
             return self.ajax({
                 type: "POST",
@@ -980,7 +988,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
         * Adds an additional mediaPath to an existing virtual folder, within either the default view or a user view
         * @param {String} name
         */
-        self.addMediaPath = function (virtualFolderName, mediaPath, userId) {
+        self.addMediaPath = function (virtualFolderName, mediaPath, userId, refreshLibrary) {
 
             if (!virtualFolderName) {
                 throw new Error("null virtualFolderName");
@@ -994,7 +1002,11 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
 
             url += "/" + virtualFolderName + "/Paths";
 
-            url = self.getUrl(url, { path: mediaPath });
+            url = self.getUrl(url, {
+
+                refreshLibrary: refreshLibrary ? true : false,
+                path: mediaPath
+            });
 
             return self.ajax({
                 type: "POST",
@@ -1006,7 +1018,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
         * Removes a media path from a virtual folder, within either the default view or a user view
         * @param {String} name
         */
-        self.removeMediaPath = function (virtualFolderName, mediaPath, userId) {
+        self.removeMediaPath = function (virtualFolderName, mediaPath, userId, refreshLibrary) {
 
             if (!virtualFolderName) {
                 throw new Error("null virtualFolderName");
@@ -1020,7 +1032,11 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
 
             url += "/" + virtualFolderName + "/Paths";
 
-            url = self.getUrl(url, { path: mediaPath });
+            url = self.getUrl(url, {
+
+                refreshLibrary: refreshLibrary ? true : false,
+                path: mediaPath
+            });
 
             return self.ajax({
                 type: "DELETE",

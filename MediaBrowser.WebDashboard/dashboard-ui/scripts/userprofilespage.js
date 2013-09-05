@@ -22,7 +22,7 @@
 
             html += "<li>";
 
-            html += "<a onclick='Dashboard.navigate(\"edituser.html?userId=" + user.Id + "\");' href='#'>";
+            html += "<a href='edituser.html?userId=" + user.Id + "'>";
 
             if (user.PrimaryImageTag) {
 

@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller;
+﻿using System.Threading.Tasks;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
@@ -45,6 +46,12 @@ namespace MediaBrowser.Api.Library
         /// </summary>
         /// <value>The type of the collection.</value>
         public string CollectionType { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [refresh library].
+        /// </summary>
+        /// <value><c>true</c> if [refresh library]; otherwise, <c>false</c>.</value>
+        public bool RefreshLibrary { get; set; }
     }
 
     [Route("/Library/VirtualFolders/{Name}", "DELETE")]
@@ -62,6 +69,12 @@ namespace MediaBrowser.Api.Library
         /// </summary>
         /// <value>The name.</value>
         public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [refresh library].
+        /// </summary>
+        /// <value><c>true</c> if [refresh library]; otherwise, <c>false</c>.</value>
+        public bool RefreshLibrary { get; set; }
     }
 
     [Route("/Library/VirtualFolders/{Name}/Name", "POST")]
@@ -85,6 +98,12 @@ namespace MediaBrowser.Api.Library
         /// </summary>
         /// <value>The name.</value>
         public string NewName { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [refresh library].
+        /// </summary>
+        /// <value><c>true</c> if [refresh library]; otherwise, <c>false</c>.</value>
+        public bool RefreshLibrary { get; set; }
     }
 
     [Route("/Library/VirtualFolders/{Name}/Paths", "POST")]
@@ -108,6 +127,12 @@ namespace MediaBrowser.Api.Library
         /// </summary>
         /// <value>The name.</value>
         public string Path { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [refresh library].
+        /// </summary>
+        /// <value><c>true</c> if [refresh library]; otherwise, <c>false</c>.</value>
+        public bool RefreshLibrary { get; set; }
     }
     
     [Route("/Library/VirtualFolders/{Name}/Paths", "DELETE")]
@@ -131,6 +156,12 @@ namespace MediaBrowser.Api.Library
         /// </summary>
         /// <value>The name.</value>
         public string Path { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [refresh library].
+        /// </summary>
+        /// <value><c>true</c> if [refresh library]; otherwise, <c>false</c>.</value>
+        public bool RefreshLibrary { get; set; }
     }
 
     /// <summary>
@@ -202,7 +233,7 @@ namespace MediaBrowser.Api.Library
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public void Post(AddVirtualFolder request)
+        public async void Post(AddVirtualFolder request)
         {
             _directoryWatchers.Stop();
 
@@ -218,20 +249,26 @@ namespace MediaBrowser.Api.Library
 
                     LibraryHelpers.AddVirtualFolder(request.Name, request.CollectionType, user, _appPaths);
                 }
+
+                // Need to add a delay here or directory watchers may still pick up the changes
+                await Task.Delay(1000).ConfigureAwait(false);
             }
             finally
             {
                 _directoryWatchers.Start();
             }
 
-            _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
+            if (request.RefreshLibrary)
+            {
+                _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
+            }
         }
 
         /// <summary>
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public void Post(RenameVirtualFolder request)
+        public async void Post(RenameVirtualFolder request)
         {
             _directoryWatchers.Stop();
 
@@ -247,20 +284,26 @@ namespace MediaBrowser.Api.Library
 
                     LibraryHelpers.RenameVirtualFolder(request.Name, request.NewName, user, _appPaths);
                 }
+
+                // Need to add a delay here or directory watchers may still pick up the changes
+                await Task.Delay(1000).ConfigureAwait(false);
             }
             finally
             {
                 _directoryWatchers.Start();
             }
 
-            _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
+            if (request.RefreshLibrary)
+            {
+                _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
+            }
         }
         
         /// <summary>
         /// Deletes the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public void Delete(RemoveVirtualFolder request)
+        public async void Delete(RemoveVirtualFolder request)
         {
             _directoryWatchers.Stop();
 
@@ -276,20 +319,26 @@ namespace MediaBrowser.Api.Library
 
                     LibraryHelpers.RemoveVirtualFolder(request.Name, user, _appPaths);
                 }
+
+                // Need to add a delay here or directory watchers may still pick up the changes
+                await Task.Delay(1000).ConfigureAwait(false);
             }
             finally
             {
                 _directoryWatchers.Start();
             }
 
-            _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
+            if (request.RefreshLibrary)
+            {
+                _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
+            }
         }
 
         /// <summary>
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public void Post(AddMediaPath request)
+        public async void Post(AddMediaPath request)
         {
             _directoryWatchers.Stop();
 
@@ -305,20 +354,26 @@ namespace MediaBrowser.Api.Library
 
                     LibraryHelpers.AddMediaPath(request.Name, request.Path, user, _appPaths);
                 }
+
+                // Need to add a delay here or directory watchers may still pick up the changes
+                await Task.Delay(1000).ConfigureAwait(false);
             }
             finally
             {
                 _directoryWatchers.Start();
             }
 
-            _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
+            if (request.RefreshLibrary)
+            {
+                _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
+            }
         }
 
         /// <summary>
         /// Deletes the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public void Delete(RemoveMediaPath request)
+        public async void Delete(RemoveMediaPath request)
         {
             _directoryWatchers.Stop();
 
@@ -334,13 +389,19 @@ namespace MediaBrowser.Api.Library
 
                     LibraryHelpers.RemoveMediaPath(request.Name, request.Path, user, _appPaths);
                 }
+
+                // Need to add a delay here or directory watchers may still pick up the changes
+                await Task.Delay(1000).ConfigureAwait(false);
             }
             finally
             {
                 _directoryWatchers.Start();
             }
 
-            _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
+            if (request.RefreshLibrary)
+            {
+                _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
+            }
         }
     }
 }

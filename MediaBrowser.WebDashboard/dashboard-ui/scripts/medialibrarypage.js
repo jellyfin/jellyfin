@@ -55,6 +55,11 @@
         }
     },
 
+    shouldRefreshLibraryAfterChanges: function () {
+        
+        return $($.mobile.activePage).is('#mediaLibraryPage');
+    },
+
     reloadVirtualFolders: function (page, virtualFolders) {
 
         if (virtualFolders) {
@@ -86,7 +91,7 @@
 
         html += '<h3>' + virtualFolder.Name + '</h3>';
 
-        var typeName = MediaLibraryPage.getCollectionTypeOptions().filter(function(t) {
+        var typeName = MediaLibraryPage.getCollectionTypeOptions().filter(function (t) {
 
             return t.value == virtualFolder.CollectionType;
 
@@ -151,7 +156,9 @@
 
             MediaLibraryPage.lastVirtualFolderName = name;
 
-            ApiClient.addVirtualFolder(name, type, userId).done(MediaLibraryPage.processOperationResult);
+            var refreshAfterChange = MediaLibraryPage.shouldRefreshLibraryAfterChanges();
+
+            ApiClient.addVirtualFolder(name, type, userId, refreshAfterChange).done(MediaLibraryPage.processOperationResult);
 
         });
     },
@@ -168,7 +175,9 @@
 
                 var userId = getParameterByName("userId");
 
-                ApiClient.addMediaPath(virtualFolder.Name, path, userId).done(MediaLibraryPage.processOperationResult);
+                var refreshAfterChange = MediaLibraryPage.shouldRefreshLibraryAfterChanges();
+
+                ApiClient.addMediaPath(virtualFolder.Name, path, userId, refreshAfterChange).done(MediaLibraryPage.processOperationResult);
             }
 
         });
@@ -269,7 +278,9 @@
 
                 var userId = getParameterByName("userId");
 
-                ApiClient.renameVirtualFolder(virtualFolder.Name, newName, userId).done(MediaLibraryPage.processOperationResult);
+                var refreshAfterChange = MediaLibraryPage.shouldRefreshLibraryAfterChanges();
+
+                ApiClient.renameVirtualFolder(virtualFolder.Name, newName, userId, refreshAfterChange).done(MediaLibraryPage.processOperationResult);
             }
         });
     },
@@ -300,7 +311,9 @@
 
                 var userId = getParameterByName("userId");
 
-                ApiClient.removeVirtualFolder(virtualFolder.Name, userId).done(MediaLibraryPage.processOperationResult);
+                var refreshAfterChange = MediaLibraryPage.shouldRefreshLibraryAfterChanges();
+
+                ApiClient.removeVirtualFolder(virtualFolder.Name, userId, refreshAfterChange).done(MediaLibraryPage.processOperationResult);
             }
 
         });
@@ -323,7 +336,9 @@
 
                 var userId = getParameterByName("userId");
 
-                ApiClient.removeMediaPath(virtualFolder.Name, location, userId).done(MediaLibraryPage.processOperationResult);
+                var refreshAfterChange = MediaLibraryPage.shouldRefreshLibraryAfterChanges();
+
+                ApiClient.removeMediaPath(virtualFolder.Name, location, userId, refreshAfterChange).done(MediaLibraryPage.processOperationResult);
             }
         });
     },
