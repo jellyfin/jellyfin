@@ -123,6 +123,8 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
         public IEnumerable<ITaskTrigger> GetDefaultTriggers()
         {
+            // IMPORTANT: Make sure to update the dashboard "wizardsettings" page if this default ever changes
+            
             return new ITaskTrigger[]
                 {
                     new DailyTrigger { TimeOfDay = TimeSpan.FromHours(4) }
@@ -198,7 +200,11 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         /// <value>The name.</value>
         public string Name
         {
-            get { return "Chapter image extraction"; }
+            get
+            {
+                // IMPORTANT: Make sure to update the dashboard "wizardsettings" page if this name ever changes
+                return "Chapter image extraction";
+            }
         }
 
         /// <summary>

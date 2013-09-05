@@ -509,6 +509,7 @@ namespace MediaBrowser.WebDashboard.Api
                                       "userprofilespage.js",
                                       "wizardfinishpage.js",
                                       "wizardstartpage.js",
+                                      "wizardsettings.js",
                                       "wizarduserpage.js"
                                   };
 
