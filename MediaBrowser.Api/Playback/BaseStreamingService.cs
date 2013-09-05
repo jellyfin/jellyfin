@@ -713,7 +713,7 @@ namespace MediaBrowser.Api.Playback
         {
             if (item.Path.IndexOf("apple.com", StringComparison.OrdinalIgnoreCase) != -1)
             {
-                return "QuickTime/7.6.2";
+                return "QuickTime/7.7.4";
             }
 
             return string.Empty;
