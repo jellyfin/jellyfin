@@ -90,6 +90,10 @@ namespace MediaBrowser.Server.Implementations.WebSocket
         /// </summary>
         public void Stop()
         {
+            if (WebSocketServer != null)
+            {
+                WebSocketServer.Stop();
+            }
         }
 
         /// <summary>
@@ -107,7 +111,10 @@ namespace MediaBrowser.Server.Implementations.WebSocket
         /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected virtual void Dispose(bool dispose)
         {
-            
+            if (WebSocketServer != null)
+            {
+                WebSocketServer.Dispose();
+            }
         }
     }
 }

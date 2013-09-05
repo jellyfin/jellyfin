@@ -1,7 +1,7 @@
-﻿using System;
+﻿using MediaBrowser.Model.Net;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Net;
 
 namespace MediaBrowser.Common.Net
 {
@@ -20,8 +20,14 @@ namespace MediaBrowser.Common.Net
         /// Gets or sets the receive action.
         /// </summary>
         /// <value>The receive action.</value>
-        Action<byte[]> OnReceiveDelegate { get; set; }
+        Action<byte[]> OnReceiveBytes { get; set; }
 
+        /// <summary>
+        /// Gets or sets the on receive.
+        /// </summary>
+        /// <value>The on receive.</value>
+        Action<string> OnReceive { get; set; }
+        
         /// <summary>
         /// Sends the async.
         /// </summary>

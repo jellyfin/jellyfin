@@ -88,9 +88,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                     break;
                 }
 
-                if (OnReceiveDelegate != null)
+                if (OnReceiveBytes != null)
                 {
-                    OnReceiveDelegate(bytes);
+                    OnReceiveBytes(bytes);
                 }
             }
         }
@@ -160,6 +160,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// Gets or sets the receive action.
         /// </summary>
         /// <value>The receive action.</value>
-        public Action<byte[]> OnReceiveDelegate { get; set; }
+        public Action<byte[]> OnReceiveBytes { get; set; }
+
+        public Action<string> OnReceive { get; set; }
     }
 }

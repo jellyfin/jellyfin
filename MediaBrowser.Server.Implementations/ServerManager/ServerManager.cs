@@ -186,7 +186,10 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         /// <param name="e">The <see cref="WebSocketConnectEventArgs" /> instance containing the event data.</param>
         void HttpServer_WebSocketConnected(object sender, WebSocketConnectEventArgs e)
         {
-            var connection = new WebSocketConnection(e.WebSocket, e.Endpoint, _jsonSerializer, _logger) { OnReceive = ProcessWebSocketMessageReceived };
+            var connection = new WebSocketConnection(e.WebSocket, e.Endpoint, _jsonSerializer, _logger)
+            {
+                OnReceive = ProcessWebSocketMessageReceived
+            };
 
             _webSocketConnections.Add(connection);
         }
