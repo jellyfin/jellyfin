@@ -24,12 +24,6 @@ namespace MediaBrowser.Common.Net
         string GetMacAddress();
 
         /// <summary>
-        /// Gets available devices within the domain
-        /// </summary>
-        /// <returns>PC's in the Domain</returns>
-        IEnumerable<string> GetNetworkDevices();
-
-        /// <summary>
         /// Gets the network shares.
         /// </summary>
         /// <param name="path">The path.</param>

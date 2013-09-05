@@ -497,20 +497,6 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
         };
 
         /**
-         * Gets a list of network devices from the server
-         */
-        self.getNetworkDevices = function () {
-
-            var url = self.getUrl("Environment/NetworkDevices");
-
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
-        };
-
-        /**
          * Cancels a package installation
          */
         self.cancelPackageInstallation = function (installationId) {

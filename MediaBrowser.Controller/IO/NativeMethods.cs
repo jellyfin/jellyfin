@@ -12,47 +12,6 @@ namespace MediaBrowser.Controller.IO
     [SuppressUnmanagedCodeSecurity]
     public static class NativeMethods
     {
-        //declare the Netapi32 : NetServerEnum method import
-        /// <summary>
-        /// Nets the server enum.
-        /// </summary>
-        /// <param name="ServerName">Name of the server.</param>
-        /// <param name="dwLevel">The dw level.</param>
-        /// <param name="pBuf">The p buf.</param>
-        /// <param name="dwPrefMaxLen">The dw pref max len.</param>
-        /// <param name="dwEntriesRead">The dw entries read.</param>
-        /// <param name="dwTotalEntries">The dw total entries.</param>
-        /// <param name="dwServerType">Type of the dw server.</param>
-        /// <param name="domain">The domain.</param>
-        /// <param name="dwResumeHandle">The dw resume handle.</param>
-        /// <returns>System.Int32.</returns>
-        [DllImport("Netapi32", CharSet = CharSet.Auto, SetLastError = true),
-        SuppressUnmanagedCodeSecurityAttribute]
-
-        public static extern int NetServerEnum(
-            string ServerName, // must be null
-            int dwLevel,
-            ref IntPtr pBuf,
-            int dwPrefMaxLen,
-            out int dwEntriesRead,
-            out int dwTotalEntries,
-            int dwServerType,
-            string domain, // null for login domain
-            out int dwResumeHandle
-            );
-
-        //declare the Netapi32 : NetApiBufferFree method import
-        /// <summary>
-        /// Nets the API buffer free.
-        /// </summary>
-        /// <param name="pBuf">The p buf.</param>
-        /// <returns>System.Int32.</returns>
-        [DllImport("Netapi32", SetLastError = true),
-        SuppressUnmanagedCodeSecurityAttribute]
-
-        public static extern int NetApiBufferFree(
-            IntPtr pBuf);
-
         /// <summary>
         /// The MA x_ PATH
         /// </summary>
@@ -69,83 +28,6 @@ namespace MediaBrowser.Controller.IO
         /// The STG m_ READ
         /// </summary>
         public const uint STGM_READ = 0;
-    }
-
-    //create a _SERVER_INFO_100 STRUCTURE
-    /// <summary>
-    /// Struct _SERVER_INFO_100
-    /// </summary>
-    [StructLayout(LayoutKind.Sequential)]
-    public struct _SERVER_INFO_100
-    {
-        /// <summary>
-        /// The sv100_platform_id
-        /// </summary>
-        internal int sv100_platform_id;
-        /// <summary>
-        /// The sv100_name
-        /// </summary>
-        [MarshalAs(UnmanagedType.LPWStr)]
-        internal string sv100_name;
-    }
-
-    /// <summary>
-    /// Class FindFirstFileExFlags
-    /// </summary>
-    public class FindFirstFileExFlags
-    {
-        /// <summary>
-        /// The NONE
-        /// </summary>
-        public const int NONE = 0;
-
-        /// <summary>
-        /// Searches are case-sensitive.Searches are case-sensitive.
-        /// </summary>
-        public const int FIND_FIRST_EX_CASE_SENSITIVE = 1;
-
-        /// <summary>
-        /// Uses a larger buffer for directory queries, which can increase performance of the find operation.
-        /// </summary>
-        public const int FIND_FIRST_EX_LARGE_FETCH = 2;
-    }
-
-    /// <summary>
-    /// Enum FINDEX_INFO_LEVELS
-    /// </summary>
-    public enum FINDEX_INFO_LEVELS
-    {
-        /// <summary>
-        /// The FindFirstFileEx function retrieves a standard set of attribute information. The data is returned in a WIN32_FIND_DATA structure.
-        /// </summary>
-        FindExInfoStandard = 0,
-
-        /// <summary>
-        /// The FindFirstFileEx function does not query the short file name, improving overall enumeration speed. The data is returned in a WIN32_FIND_DATA structure, and the cAlternateFileName member is always a NULL string.
-        /// </summary>
-        FindExInfoBasic = 1
-    }
-
-    /// <summary>
-    /// Enum FINDEX_SEARCH_OPS
-    /// </summary>
-    public enum FINDEX_SEARCH_OPS
-    {
-        /// <summary>
-        /// The search for a file that matches a specified file name.
-        /// The lpSearchFilter parameter of FindFirstFileEx must be NULL when this search operation is used.
-        /// </summary>
-        FindExSearchNameMatch = 0,
-
-        /// <summary>
-        /// The find ex search limit to directories
-        /// </summary>
-        FindExSearchLimitToDirectories = 1,
-
-        /// <summary>
-        /// This filtering type is not available.
-        /// </summary>
-        FindExSearchLimitToDevices = 2
     }
 
     /// <summary>
