@@ -141,7 +141,7 @@
             $('#trailersCollapsible', page).removeClass('hide');
             renderTrailers(page, item);
         }
-        if (!item.SpecialFeatureCount || item.SpecialFeatureCount == 0) {
+        if (!item.SpecialFeatureCount || item.SpecialFeatureCount == 0 || item.Type == "Series") {
             $('#specialsCollapsible', page).addClass('hide');
         } else {
             $('#specialsCollapsible', page).removeClass('hide');
@@ -437,8 +437,7 @@
 
             ParentId: item.Id,
             SortBy: sortBy,
-            Fields: "PrimaryImageAspectRatio,ItemCounts,DisplayMediaType,DateCreated,UserData,AudioInfo",
-            MinIndexNumber: item.Type == "Series" ? 1 : null
+            Fields: "PrimaryImageAspectRatio,ItemCounts,DisplayMediaType,DateCreated,UserData,AudioInfo"
 
         }).done(function (result) {
 
