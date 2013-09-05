@@ -135,10 +135,7 @@ namespace MediaBrowser.Providers.Music
                     {
                         list.Add(i.AlbumArtist);
                     }
-                    if (!string.IsNullOrEmpty(i.Artist))
-                    {
-                        list.Add(i.Artist);
-                    }
+                    list.AddRange(i.Artists);
 
                     return list;
                 })

@@ -275,7 +275,7 @@ namespace MediaBrowser.Api
             {
                 song.Album = request.Album;
                 song.AlbumArtist = request.AlbumArtist;
-                song.Artist = request.Artists[0];
+                song.Artists = request.Artists.ToList();
             }
 
             var musicVideo = item as MusicVideo;

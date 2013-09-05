@@ -598,7 +598,7 @@
         $('#txtAlbumArtist', page).val(item.AlbumArtist || "");
 
         var artists = item.Artists || [];
-        $('#txtArtist', page).val(artists.join(','));
+        $('#txtArtist', page).val(artists.join(';'));
 
         var date;
 
@@ -824,7 +824,7 @@
                 Players: $('#txtPlayers', form).val(),
                 Album: $('#txtAlbum', form).val(),
                 AlbumArtist: $('#txtAlbumArtist', form).val(),
-                Artists: [$('#txtArtist', form).val()],
+                Artists: $('#txtArtist', form).val().split(';'),
                 Overview: $('#txtOverview', form).val(),
                 Status: $('#selectStatus', form).val(),
                 AirDays: editableListViewValues($("#listAirDays", form)),

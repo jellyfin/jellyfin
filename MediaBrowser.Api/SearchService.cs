@@ -196,8 +196,7 @@ namespace MediaBrowser.Api
                 result.SongCount = songs.Count;
                 
                 result.Artists = songs
-                    .Select(i => i.Artist)
-                    .Where(i => !string.IsNullOrEmpty(i))
+                    .SelectMany(i => i.Artists)
                     .Distinct(StringComparer.OrdinalIgnoreCase)
                     .ToArray();
 
@@ -210,7 +209,7 @@ namespace MediaBrowser.Api
             {
                 result.Album = song.Album;
                 result.AlbumArtist = song.AlbumArtist;
-                result.Artists = !string.IsNullOrEmpty(song.Artist) ? new[] { song.Artist } : new string[] { };
+                result.Artists = song.Artists.ToArray();
             }
 
             return result;

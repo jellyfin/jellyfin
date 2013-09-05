@@ -37,7 +37,7 @@ namespace MediaBrowser.Server.Implementations.Sorting
                 return string.Empty;
             }
 
-            return audio.Artist ?? string.Empty;
+            return audio.Artists.FirstOrDefault() ?? string.Empty;
         }
 
         /// <summary>

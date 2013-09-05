@@ -293,13 +293,14 @@
 
                 if (options.showArtist) {
 
-                    if (item.Artists && item.Artists.length && item.Artists[0]) {
+                    if (item.Artists && item.Artists.length) {
 
-                        var artist = item.Artists[0];
+                        var artistLinksHtml = LibraryBrowser.getArtistLinksHtml(item.Artists);
 
-                        html += '<td><a href="itembynamedetails.html?context=music&artist=' + ApiClient.encodeName(artist) + '">' + artist + '</a></td>';
-                    } else {
-                        html += '<td>' + (artist || '') + '</td>';
+                        html += '<td>' + artistLinksHtml + '</td>';
+                    }
+                    else {
+                        html += '<td></td>';
                     }
                 }
 
@@ -315,6 +316,23 @@
             }
 
             html += '</table></div>';
+
+            return html;
+        },
+
+        getArtistLinksHtml: function (artists) {
+
+            var html = [];
+
+            for (var i = 0, length = artists.length; i < length; i++) {
+
+                var artist = artists[i];
+
+                html.push('<a href="itembynamedetails.html?context=music&artist=' + ApiClient.encodeName(artist) + '">' + artist + '</a>');
+
+            }
+
+            html = html.join(' / ');
 
             return html;
         },

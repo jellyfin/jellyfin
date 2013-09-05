@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 
 namespace MediaBrowser.Controller.Entities.Audio
@@ -13,6 +14,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         public Audio()
         {
             MediaStreams = new List<MediaStream>();
+            Artists = new List<string>();
         }
 
         /// <summary>
@@ -57,7 +59,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// Gets or sets the artist.
         /// </summary>
         /// <value>The artist.</value>
-        public string Artist { get; set; }
+        public List<string> Artists { get; set; }
 
         /// <summary>
         /// Gets or sets the album.
@@ -99,7 +101,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// <returns><c>true</c> if the specified name has artist; otherwise, <c>false</c>.</returns>
         public bool HasArtist(string name)
         {
-            return string.Equals(Artist, name, StringComparison.OrdinalIgnoreCase) || string.Equals(AlbumArtist, name, StringComparison.OrdinalIgnoreCase);
+            return Artists.Contains(name, StringComparer.OrdinalIgnoreCase) || string.Equals(AlbumArtist, name, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

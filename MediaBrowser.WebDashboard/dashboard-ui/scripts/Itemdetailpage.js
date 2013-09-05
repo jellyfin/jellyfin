@@ -238,8 +238,8 @@
             $('#players', page).hide();
         }
 
-        if ((item.Type == "Audio" || item.Type == "MusicVideo") && item.Artists && item.Artists.length) {
-            $('#artist', page).show().html('Artist:&nbsp;&nbsp;<a class="textlink" href="itembynamedetails.html?context=music&artist=' + ApiClient.encodeName(item.Artists[0]) + '">' + item.Artists[0] + '</a>').trigger('create');
+        if (item.Artists && item.Artists.length) {
+            $('#artist', page).show().html(getArtistLinksHtml(item.Artists)).trigger('create');
         } else {
             $('#artist', page).hide();
         }
@@ -259,6 +259,30 @@
         } else {
             $('.itemPath', page).hide();
         }
+    }
+    
+    function getArtistLinksHtml(artists) {
+        
+        var html = [];
+
+        for (var i = 0, length = artists.length; i < length; i++) {
+
+            var artist = artists[i];
+
+            html.push('<a class="textlink" href="itembynamedetails.html?context=music&artist=' + ApiClient.encodeName(artist) + '">' + artist + '</a>');
+
+        }
+
+        html = html.join(' / ');
+        
+        if (artists.length == 1) {
+            return 'Artist:&nbsp;&nbsp;' + html;
+        }
+        if (artists.length > 1) {
+            return 'Artists:&nbsp;&nbsp;' + html;
+        }
+
+        return html;
     }
 
     function renderSoundtracks(page, item) {

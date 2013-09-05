@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using ServiceStack.ServiceHost;
 using System;
@@ -111,14 +112,25 @@ namespace MediaBrowser.Api
         {
             var item = await GetArtist(request.Name, _libraryManager).ConfigureAwait(false);
 
+            var cancellationToken = CancellationToken.None;
+
             try
             {
-                await item.RefreshMetadata(CancellationToken.None, forceRefresh: request.Forced).ConfigureAwait(false);
+                await item.RefreshMetadata(cancellationToken, forceRefresh: request.Forced).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 Logger.ErrorException("Error refreshing library", ex);
             }
+
+            // Refresh albums
+            var refreshTasks = _libraryManager.RootFolder
+                                              .RecursiveChildren
+                                              .OfType<MusicAlbum>()
+                                              .Where(i => i.HasArtist(item.Name))
+                                              .Select(i => i.ValidateChildren(new Progress<double>(), cancellationToken, true, request.Forced));
+
+            await Task.WhenAll(refreshTasks).ConfigureAwait(false);
         }
 
         public void Post(RefreshGenre request)
