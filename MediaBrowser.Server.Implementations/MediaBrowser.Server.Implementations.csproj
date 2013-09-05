@@ -232,7 +232,7 @@
     <EmbeddedResource Include="MediaEncoder\readme.txt" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="MediaEncoder\ffmpeg20130813.zip" />
+    <EmbeddedResource Include="MediaEncoder\ffmpeg20130904.zip" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
