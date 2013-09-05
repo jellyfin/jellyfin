@@ -116,12 +116,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 {
                     foreach (var person in Split(composer))
                     {
-                        var name = person.Trim();
-
-                        if (!string.IsNullOrEmpty(name))
-                        {
-                            audio.AddPerson(new PersonInfo { Name = name, Type = PersonType.Composer });
-                        }
+                        audio.AddPerson(new PersonInfo { Name = person, Type = PersonType.Composer });
                     }
                 }
             }
@@ -194,7 +189,8 @@ namespace MediaBrowser.Providers.MediaInfo
             var delimeter = _nameDelimiters.Any(i => val.IndexOf(i) != -1) ? _nameDelimiters : new[] { ',' };
 
             return val.Split(delimeter, StringSplitOptions.RemoveEmptyEntries)
-                .Where(i => !string.IsNullOrWhiteSpace(i));
+                .Where(i => !string.IsNullOrWhiteSpace(i))
+                .Select(i => i.Trim());
         }
 
         /// <summary>
@@ -210,14 +206,11 @@ namespace MediaBrowser.Providers.MediaInfo
             if (!string.IsNullOrEmpty(val))
             {
                 // Sometimes the artist name is listed here, account for that
-                var studios =
-                    Split(val)
-                    .Where(i => !audio.HasArtist(i));
+                var studios = Split(val).Where(i => !audio.HasArtist(i));
 
                 foreach (var studio in studios)
                 {
-                    // Account for sloppy tags by trimming
-                    audio.AddStudio(studio.Trim());
+                    audio.AddStudio(studio);
                 }
             }
         }
@@ -235,11 +228,9 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 audio.Genres.Clear();
 
-                foreach (var genre in Split(val)
-                    .Where(i => !string.IsNullOrWhiteSpace(i)))
+                foreach (var genre in Split(val))
                 {
-                    // Account for sloppy tags by trimming
-                    audio.AddGenre(genre.Trim());
+                    audio.AddGenre(genre);
                 }
             }
         }
