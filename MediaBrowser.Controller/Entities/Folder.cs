@@ -342,19 +342,14 @@ namespace MediaBrowser.Controller.Entities
                 var candidates = GetRecursiveChildren(user).Where(i => i.IncludeInIndex).ToList();
 
                 return candidates.AsParallel().SelectMany(i => i.AllGenres)
-                    .Distinct()
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
                     .Select(i =>
                         {
                             try
                             {
                                 return LibraryManager.GetGenre(i).Result;
                             }
-                            catch (IOException ex)
-                            {
-                                Logger.ErrorException("Error getting genre {0}", ex, i);
-                                return null;
-                            }
-                            catch (AggregateException ex)
+                            catch (Exception ex)
                             {
                                 Logger.ErrorException("Error getting genre {0}", ex, i);
                                 return null;
