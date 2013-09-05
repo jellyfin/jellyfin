@@ -250,7 +250,7 @@ namespace MediaBrowser.Api.Playback.Hls
             {
                 var lowBitratePath = Path.Combine(Path.GetDirectoryName(outputPath), Path.GetFileNameWithoutExtension(outputPath) + "-low.m3u8");
 
-                var lowBitrateParams = string.Format(" -threads 0 -vn -codec:a:{1} libmp3lame -ac 2 -ab 32000 -hls_time 10 -start_number 0 -hls_list_size 1440 \"{0}\"",
+                var lowBitrateParams = string.Format(" -threads 0 -vn -codec:a:0 libmp3lame -ac 2 -ab 32000 -hls_time 10 -start_number 0 -hls_list_size 1440 \"{0}\"",
                     lowBitratePath,
                     state.AudioStream.Index);
 
