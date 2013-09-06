@@ -285,7 +285,7 @@
                 html += LibraryBrowser.getSongHeaderCellHtml('Album', '', options.enableColumnSorting, 'Album,SortName', options.sortBy, options.sortOrder);
             }
             if (options.showArtist) {
-                html += LibraryBrowser.getSongHeaderCellHtml('Album Artist', '', options.enableColumnSorting, 'AlbumArtist,Album,SortName', options.sortBy, options.sortOrder);
+                html += LibraryBrowser.getSongHeaderCellHtml('Album Artist', 'tabletColumn', options.enableColumnSorting, 'AlbumArtist,Album,SortName', options.sortBy, options.sortOrder);
                 html += LibraryBrowser.getSongHeaderCellHtml('Artist', '', options.enableColumnSorting, 'Artist,Album,SortName', options.sortBy, options.sortOrder);
             }
 
