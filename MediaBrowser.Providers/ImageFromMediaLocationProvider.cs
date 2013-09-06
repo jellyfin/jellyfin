@@ -136,13 +136,11 @@ namespace MediaBrowser.Providers
         private void ValidateImages(BaseItem item, ItemResolveArgs args)
         {
             // Only validate paths from the same directory - need to copy to a list because we are going to potentially modify the collection below
-            var deletedKeys = item.Images.ToList().Where(image =>
-            {
-                var path = image.Value;
-
-                return IsInMetaLocation(item, path) && args.GetMetaFileByPath(path) == null;
-
-            }).Select(i => i.Key).ToList();
+            var deletedKeys = item.Images
+                .ToList()
+                .Where(image => !File.Exists(image.Value))
+                .Select(i => i.Key)
+                .ToList();
 
             // Now remove them from the dictionary
             foreach (var key in deletedKeys)
@@ -159,7 +157,9 @@ namespace MediaBrowser.Providers
         private void ValidateBackdrops(BaseItem item, ItemResolveArgs args)
         {
             // Only validate paths from the same directory - need to copy to a list because we are going to potentially modify the collection below
-            var deletedImages = item.BackdropImagePaths.Where(path => IsInMetaLocation(item, path) && args.GetMetaFileByPath(path) == null).ToList();
+            var deletedImages = item.BackdropImagePaths
+                .Where(path => !File.Exists(path))
+                .ToList();
 
             // Now remove them from the dictionary
             foreach (var path in deletedImages)
@@ -176,7 +176,9 @@ namespace MediaBrowser.Providers
         private void ValidateScreenshots(BaseItem item, ItemResolveArgs args)
         {
             // Only validate paths from the same directory - need to copy to a list because we are going to potentially modify the collection below
-            var deletedImages = item.ScreenshotImagePaths.Where(path => IsInMetaLocation(item, path) && args.GetMetaFileByPath(path) == null).ToList();
+            var deletedImages = item.ScreenshotImagePaths
+                .Where(path => !File.Exists(path))
+                .ToList();
 
             // Now remove them from the dictionary
             foreach (var path in deletedImages)

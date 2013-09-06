@@ -1,5 +1,4 @@
-﻿using System.IO;
-using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -10,6 +9,7 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using MoreLinq;
 using System;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -38,6 +38,14 @@ namespace MediaBrowser.Providers.Music
         public override MetadataProviderPriority Priority
         {
             get { return MetadataProviderPriority.Third; }
+        }
+
+        protected override string ProviderVersion
+        {
+            get
+            {
+                return "8";
+            }
         }
 
         private bool HasAltMeta(BaseItem item)

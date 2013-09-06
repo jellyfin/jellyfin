@@ -54,8 +54,11 @@ namespace MediaBrowser.Providers.Music
                 return null;
             }
 
-            var img = data.image
+            var validImages = data.image
                 .Where(i => !string.IsNullOrWhiteSpace(i.url))
+                .ToList();
+
+            var img = validImages
                 .FirstOrDefault(i => string.Equals(i.size, "mega", StringComparison.OrdinalIgnoreCase)) ??
                 data.image.FirstOrDefault(i => string.Equals(i.size, "extralarge", StringComparison.OrdinalIgnoreCase)) ??
                 data.image.FirstOrDefault(i => string.Equals(i.size, "large", StringComparison.OrdinalIgnoreCase)) ?? 

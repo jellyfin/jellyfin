@@ -4,11 +4,11 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
 using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Providers.TV
 {
@@ -115,13 +115,7 @@ namespace MediaBrowser.Providers.TV
                 return;
             }
 
-            // Only validate images in the season/metadata folder
-            if (!string.Equals(Path.GetDirectoryName(path), metadataFolderPath, StringComparison.OrdinalIgnoreCase))
-            {
-                return;
-            }
-
-            if (episode.Parent.ResolveArgs.GetMetaFileByPath(path) == null)
+            if (!File.Exists(path))
             {
                 episode.PrimaryImagePath = null;
             }
