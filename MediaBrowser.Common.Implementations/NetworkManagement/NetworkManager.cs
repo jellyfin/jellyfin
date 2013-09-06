@@ -224,6 +224,67 @@ namespace MediaBrowser.Common.Implementations.NetworkManagement
 
             return hosts[0];
         }
+
+        /// <summary>
+        /// Uses the DllImport : NetServerEnum with all its required parameters
+        /// (see http://msdn.microsoft.com/library/default.asp?url=/library/en-us/netmgmt/netmgmt/netserverenum.asp
+        /// for full details or method signature) to retrieve a list of domain SV_TYPE_WORKSTATION
+        /// and SV_TYPE_SERVER PC's
+        /// </summary>
+        /// <returns>Arraylist that represents all the SV_TYPE_WORKSTATION and SV_TYPE_SERVER
+        /// PC's in the Domain</returns>
+        public IEnumerable<string> GetNetworkDevices()
+        {
+            //local fields
+            const int MAX_PREFERRED_LENGTH = -1;
+            var SV_TYPE_WORKSTATION = 1;
+            var SV_TYPE_SERVER = 2;
+            var buffer = IntPtr.Zero;
+            var tmpBuffer = IntPtr.Zero;
+            var entriesRead = 0;
+            var totalEntries = 0;
+            var resHandle = 0;
+            var sizeofINFO = Marshal.SizeOf(typeof(_SERVER_INFO_100));
+
+            try
+            {
+                //call the DllImport : NetServerEnum with all its required parameters
+                //see http://msdn.microsoft.com/library/default.asp?url=/library/en-us/netmgmt/netmgmt/netserverenum.asp
+                //for full details of method signature
+                var ret = NativeMethods.NetServerEnum(null, 100, ref buffer, MAX_PREFERRED_LENGTH, out entriesRead, out totalEntries, SV_TYPE_WORKSTATION | SV_TYPE_SERVER, null, out resHandle);
+
+                //if the returned with a NERR_Success (C++ term), =0 for C#
+                if (ret == 0)
+                {
+                    //loop through all SV_TYPE_WORKSTATION and SV_TYPE_SERVER PC's
+                    for (var i = 0; i < totalEntries; i++)
+                    {
+                        //get pointer to, Pointer to the buffer that received the data from
+                        //the call to NetServerEnum. Must ensure to use correct size of 
+                        //STRUCTURE to ensure correct location in memory is pointed to
+                        tmpBuffer = new IntPtr((int)buffer + (i * sizeofINFO));
+                        //Have now got a pointer to the list of SV_TYPE_WORKSTATION and 
+                        //SV_TYPE_SERVER PC's, which is unmanaged memory
+                        //Needs to Marshal data from an unmanaged block of memory to a 
+                        //managed object, again using STRUCTURE to ensure the correct data
+                        //is marshalled 
+                        var svrInfo = (_SERVER_INFO_100)Marshal.PtrToStructure(tmpBuffer, typeof(_SERVER_INFO_100));
+
+                        //add the PC names to the ArrayList
+                        if (!string.IsNullOrEmpty(svrInfo.sv100_name))
+                        {
+                            yield return svrInfo.sv100_name;
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                //The NetApiBufferFree function frees 
+                //the memory that the NetApiBufferAllocate function allocates
+                NativeMethods.NetApiBufferFree(buffer);
+            }
+        }
     }
 
 }
