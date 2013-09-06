@@ -46,6 +46,7 @@ namespace MediaBrowser.Model.Querying
         /// The sort name
         /// </summary>
         public const string SortName = "SortName";
+        public const string Name = "Name";
         /// <summary>
         /// The random
         /// </summary>
