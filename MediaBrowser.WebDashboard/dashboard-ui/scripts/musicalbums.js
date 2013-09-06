@@ -5,7 +5,7 @@
     // The base query options
     var query = {
 
-        SortBy: "SortName",
+        SortBy: "AlbumArtist,SortName",
         SortOrder: "Ascending",
         IncludeItemTypes: "MusicAlbum",
         Recursive: true,

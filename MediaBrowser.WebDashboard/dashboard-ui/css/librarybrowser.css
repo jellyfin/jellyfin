@@ -326,10 +326,6 @@ a.itemTag:hover {
     height: 230px;
 }
 
-    .itemBackdropContent p:not(.itemOverview) {
-        white-space: nowrap;
-    }
-
 .lnkSibling {
     position: absolute;
     bottom: 240px;
