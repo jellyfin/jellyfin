@@ -87,20 +87,13 @@ namespace MediaBrowser.Api.UserLibrary
 
         [ApiMember(Name = "Albums", Description = "Optional. If specified, results will be filtered based on album. This allows multiple, pipe delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string Albums { get; set; }
-        
+
         /// <summary>
         /// Limit results to items containing specific years
         /// </summary>
         /// <value>The years.</value>
         [ApiMember(Name = "Years", Description = "Optional. If specified, results will be filtered based on production year. This allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string Years { get; set; }
-
-        /// <summary>
-        /// Gets or sets the image types.
-        /// </summary>
-        /// <value>The image types.</value>
-        [ApiMember(Name = "ImageTypes", Description = "Optional. If specified, results will be filtered based on those containing image types. This allows multiple, comma delimited.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
-        public string ImageTypes { get; set; }
 
         /// <summary>
         /// Gets or sets the item ids.
@@ -174,7 +167,7 @@ namespace MediaBrowser.Api.UserLibrary
 
         [ApiMember(Name = "MinIndexNumber", Description = "Optional filter index number.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int? MinIndexNumber { get; set; }
-        
+
         /// <summary>
         /// Gets the order by.
         /// </summary>
@@ -620,7 +613,7 @@ namespace MediaBrowser.Api.UserLibrary
                 items = items.Where(i => !string.IsNullOrEmpty(i.MediaType) && types.Contains(i.MediaType, StringComparer.OrdinalIgnoreCase));
             }
 
-            var imageTypes = GetImageTypes(request).ToArray();
+            var imageTypes = request.GetImageTypes().ToArray();
             if (imageTypes.Length > 0)
             {
                 items = items.Where(item => imageTypes.Any(imageType => HasImage(item, imageType)));
@@ -717,7 +710,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="item">The item.</param>
         /// <param name="imageType">Type of the image.</param>
         /// <returns><c>true</c> if the specified item has image; otherwise, <c>false</c>.</returns>
-        private static bool HasImage(BaseItem item, ImageType imageType)
+        internal static bool HasImage(BaseItem item, ImageType imageType)
         {
             if (imageType == ImageType.Backdrop)
             {
@@ -771,23 +764,6 @@ namespace MediaBrowser.Api.UserLibrary
             }
 
             return items;
-        }
-
-        /// <summary>
-        /// Gets the image types.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>IEnumerable{ImageType}.</returns>
-        private static IEnumerable<ImageType> GetImageTypes(GetItems request)
-        {
-            var val = request.ImageTypes;
-
-            if (string.IsNullOrEmpty(val))
-            {
-                return new ImageType[] { };
-            }
-
-            return val.Split(',').Select(v => (ImageType)Enum.Parse(typeof(ImageType), v, true));
         }
     }
 
