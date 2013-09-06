@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using System.IO;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -143,7 +144,15 @@ namespace MediaBrowser.Providers.Music
 
             }).ConfigureAwait(false))
             {
-                return JsonSerializer.DeserializeFromStream<LastfmGetAlbumResult>(json);
+                using (var reader = new StreamReader(json))
+                {
+                    var jsonText = await reader.ReadToEndAsync().ConfigureAwait(false);
+
+                    // Fix their bad json
+                    jsonText = jsonText.Replace("\"#text\"", "\"url\"");
+
+                    return JsonSerializer.DeserializeFromString<LastfmGetAlbumResult>(jsonText);
+                }
             }
         }
 
