@@ -77,6 +77,18 @@
         /// </summary>
         /// <value>The level.</value>
         public string Level { get; set; }
+
+        /// <summary>
+        /// Gets or sets the baseline stream audio bit rate.
+        /// </summary>
+        /// <value>The baseline stream audio bit rate.</value>
+        public int? BaselineStreamAudioBitRate { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [append baseline stream].
+        /// </summary>
+        /// <value><c>true</c> if [append baseline stream]; otherwise, <c>false</c>.</value>
+        public bool AppendBaselineStream { get; set; }
     }
 
     /// <summary>
