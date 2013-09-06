@@ -16,7 +16,11 @@ namespace MediaBrowser.Api.Playback.Hls
     [Api(Description = "Gets a video stream using HTTP live streaming.")]
     public class GetHlsVideoStream : VideoStreamRequest
     {
+        [ApiMember(Name = "BaselineStreamAudioBitRate", Description = "Optional. Specify the audio bitrate for the baseline stream.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int? BaselineStreamAudioBitRate { get; set; }
 
+        [ApiMember(Name = "AppendBaselineStream", Description = "Optional. Whether or not to include a baseline audio-only stream in the master playlist.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool AppendBaselineStream { get; set; }
     }
 
     /// <summary>

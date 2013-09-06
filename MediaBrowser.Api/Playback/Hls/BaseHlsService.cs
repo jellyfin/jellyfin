@@ -123,7 +123,17 @@ namespace MediaBrowser.Api.Playback.Hls
             var audioBitrate = GetAudioBitrateParam(state) ?? 0;
             var videoBitrate = GetVideoBitrateParam(state) ?? 0;
 
-            var playlistText = GetMasterPlaylistFileText(playlist, videoBitrate + audioBitrate);
+            var appendBaselineStream = false;
+            var baselineStreamBitrate = 64000;
+
+            var hlsVideoRequest = state.VideoRequest as GetHlsVideoStream;
+            if (hlsVideoRequest != null)
+            {
+                appendBaselineStream = hlsVideoRequest.AppendBaselineStream;
+                baselineStreamBitrate = hlsVideoRequest.BaselineStreamAudioBitRate ?? baselineStreamBitrate;
+            }
+
+            var playlistText = GetMasterPlaylistFileText(playlist, videoBitrate + audioBitrate, appendBaselineStream, baselineStreamBitrate);
 
             try
             {
@@ -135,7 +145,7 @@ namespace MediaBrowser.Api.Playback.Hls
             }
         }
 
-        private string GetMasterPlaylistFileText(string firstPlaylist, int bitrate)
+        private string GetMasterPlaylistFileText(string firstPlaylist, int bitrate, bool includeBaselineStream, int baselineStreamBitrate)
         {
             var builder = new StringBuilder();
 
@@ -150,9 +160,12 @@ namespace MediaBrowser.Api.Playback.Hls
             builder.AppendLine(playlistUrl);
 
             // Low bitrate stream
-            builder.AppendLine("#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=64000");
-            playlistUrl = "hls/" + Path.GetFileName(firstPlaylist).Replace(".m3u8", "-low/stream.m3u8");
-            builder.AppendLine(playlistUrl);
+            if (includeBaselineStream)
+            {
+                builder.AppendLine("#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=" + baselineStreamBitrate.ToString(UsCulture));
+                playlistUrl = "hls/" + Path.GetFileName(firstPlaylist).Replace(".m3u8", "-low/stream.m3u8");
+                builder.AppendLine(playlistUrl);
+            }
 
             return builder.ToString();
         }
@@ -246,15 +259,22 @@ namespace MediaBrowser.Api.Playback.Hls
                 outputPath
                 ).Trim();
 
-            if (state.Item is Video)
+            var hlsVideoRequest = state.VideoRequest as GetHlsVideoStream;
+
+            if (hlsVideoRequest != null)
             {
-                var lowBitratePath = Path.Combine(Path.GetDirectoryName(outputPath), Path.GetFileNameWithoutExtension(outputPath) + "-low.m3u8");
+                if (hlsVideoRequest.AppendBaselineStream && state.Item is Video)
+                {
+                    var lowBitratePath = Path.Combine(Path.GetDirectoryName(outputPath), Path.GetFileNameWithoutExtension(outputPath) + "-low.m3u8");
 
-                var lowBitrateParams = string.Format(" -threads 0 -vn -codec:a:0 libmp3lame -ac 2 -ab 32000 -hls_time 10 -start_number 0 -hls_list_size 1440 \"{0}\"",
-                    lowBitratePath,
-                    state.AudioStream.Index);
+                    var bitrate = hlsVideoRequest.BaselineStreamAudioBitRate ?? 64000;
 
-                args += " " + lowBitrateParams;
+                    var lowBitrateParams = string.Format(" -threads 0 -vn -codec:a:0 libmp3lame -ac 2 -ab {1} -hls_time 10 -start_number 0 -hls_list_size 1440 \"{0}\"",
+                        lowBitratePath,
+                        bitrate / 2);
+
+                    args += " " + lowBitrateParams;
+                }
             }
 
             return args;
