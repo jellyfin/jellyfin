@@ -72,20 +72,20 @@ namespace MediaBrowser.Providers.Music
         /// <param name="musicBrainzId">The music brainz id.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        protected override async Task FetchLastfmData(BaseItem item, string musicBrainzId, CancellationToken cancellationToken)
+        protected override async Task FetchLastfmData(BaseItem item, string musicBrainzId, bool force, CancellationToken cancellationToken)
         {
             var artist = (Artist)item;
 
             // See if we can avoid an http request by finding the matching MusicArtist entity
             var musicArtist = FindMusicArtist(artist, LibraryManager);
 
-            if (musicArtist != null)
+            if (musicArtist != null && !force)
             {
                 LastfmHelper.ProcessArtistData(musicArtist, artist);
             }
             else
             {
-                await base.FetchLastfmData(item, musicBrainzId, cancellationToken).ConfigureAwait(false);
+                await base.FetchLastfmData(item, musicBrainzId, force, cancellationToken).ConfigureAwait(false);
             }
         }
 

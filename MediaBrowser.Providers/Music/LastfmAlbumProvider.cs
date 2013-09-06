@@ -67,7 +67,7 @@ namespace MediaBrowser.Providers.Music
             return base.NeedsRefreshInternal(item, providerInfo);
         }
 
-        protected override async Task FetchLastfmData(BaseItem item, string id, CancellationToken cancellationToken)
+        protected override async Task FetchLastfmData(BaseItem item, string id, bool force, CancellationToken cancellationToken)
         {
             var album = (MusicAlbum)item;
 
@@ -165,9 +165,9 @@ namespace MediaBrowser.Providers.Music
             }
         }
         
-        protected override Task FetchData(BaseItem item, CancellationToken cancellationToken)
+        protected override Task FetchData(BaseItem item, bool force, CancellationToken cancellationToken)
         {
-            return FetchLastfmData(item, string.Empty, cancellationToken);
+            return FetchLastfmData(item, string.Empty, force, cancellationToken);
         }
 
         public override bool Supports(BaseItem item)

@@ -6,6 +6,8 @@ namespace MediaBrowser.Controller.Entities.Audio
     /// </summary>
     public class Artist : BaseItem, IItemByName
     {
+        public string LastFmImageUrl { get; set; }
+        
         /// <summary>
         /// Gets the user data key.
         /// </summary>
