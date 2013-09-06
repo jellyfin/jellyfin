@@ -64,9 +64,9 @@ namespace MediaBrowser.Api.Playback
             {
                 using (_msg)
                 {
-                    using (var input = await _msg.Content.ReadAsStreamAsync().ConfigureAwait(false))
+                    using (var remoteStream = await _msg.Content.ReadAsStreamAsync().ConfigureAwait(false))
                     {
-                        await input.CopyToAsync(responseStream).ConfigureAwait(false);
+                        await remoteStream.CopyToAsync(responseStream, 8192000).ConfigureAwait(false);
                     }
                 }
             }
