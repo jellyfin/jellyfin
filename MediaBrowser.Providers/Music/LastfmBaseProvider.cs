@@ -18,7 +18,7 @@ namespace MediaBrowser.Providers.Music
     /// </summary>
     public abstract class LastfmBaseProvider : BaseMetadataProvider
     {
-        protected static readonly SemaphoreSlim LastfmResourcePool = new SemaphoreSlim(4, 4);
+        internal static readonly SemaphoreSlim LastfmResourcePool = new SemaphoreSlim(4, 4);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LastfmBaseProvider" /> class.
@@ -100,7 +100,7 @@ namespace MediaBrowser.Providers.Music
         /// <param name="item">The item.</param>
         /// <param name="cancellationToken"></param>
         /// <returns>Task.</returns>
-        protected virtual async Task FetchData(BaseItem item, CancellationToken cancellationToken)
+        protected virtual async Task FetchData(BaseItem item, bool force, CancellationToken cancellationToken)
         {
             var id = item.GetProviderId(MetadataProviders.Musicbrainz) ?? await FindId(item, cancellationToken).ConfigureAwait(false);
             if (!string.IsNullOrWhiteSpace(id))
@@ -111,18 +111,18 @@ namespace MediaBrowser.Providers.Music
 
                 item.SetProviderId(MetadataProviders.Musicbrainz, id);
 
-                await FetchLastfmData(item, id, cancellationToken).ConfigureAwait(false);
+                await FetchLastfmData(item, id, force, cancellationToken).ConfigureAwait(false);
             }
             else
             {
                 Logger.Info("LastfmProvider could not find " + item.Name + ". Check name on Last.fm.");
             }
-            
+
         }
 
         protected abstract Task<string> FindId(BaseItem item, CancellationToken cancellationToken);
 
-        protected abstract Task FetchLastfmData(BaseItem item, string id, CancellationToken cancellationToken);
+        protected abstract Task FetchLastfmData(BaseItem item, string id, bool force, CancellationToken cancellationToken);
 
         /// <summary>
         /// Encodes an URL.
@@ -145,7 +145,7 @@ namespace MediaBrowser.Providers.Music
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            await FetchData(item, cancellationToken).ConfigureAwait(false);
+            await FetchData(item, force, cancellationToken).ConfigureAwait(false);
             SetLastRefreshed(item, DateTime.UtcNow);
             return true;
         }
@@ -187,6 +187,12 @@ namespace MediaBrowser.Providers.Music
         public List<LastfmFormationInfo> formationlist { get; set; }
     }
 
+    public class LastFmImage
+    {
+        public string url { get; set; }
+        public string size { get; set; }
+    }
+
     public class LastfmArtist
     {
         public string name { get; set; }
@@ -198,6 +204,7 @@ namespace MediaBrowser.Providers.Music
         public List<LastfmArtist> similar { get; set; }
         public LastfmTags tags { get; set; }
         public LastFmBio bio { get; set; }
+        public List<LastFmImage> image { get; set; }
     }
 
 

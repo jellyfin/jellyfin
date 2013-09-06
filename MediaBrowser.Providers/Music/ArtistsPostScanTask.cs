@@ -63,28 +63,17 @@ namespace MediaBrowser.Providers.Music
                     backdrops.InsertRange(0, artist.BackdropImagePaths);
                     artist.BackdropImagePaths = backdrops.Distinct(StringComparer.OrdinalIgnoreCase)
                         .ToList();
-
-                    if (!artist.LockedFields.Contains(MetadataFields.Genres))
-                    {
-                        // Merge genres
-                        var genres = musicArtist.Genres.ToList();
-                        genres.InsertRange(0, artist.Genres);
-                        artist.Genres = genres.Distinct(StringComparer.OrdinalIgnoreCase)
-                            .ToList();
-                    }
                 }
-                else
-                {
-                    if (!artist.LockedFields.Contains(MetadataFields.Genres))
-                    {
-                        // Avoid implicitly captured closure
-                        var artist1 = artist;
 
-                        artist.Genres = allSongs.Where(i => i.HasArtist(artist1.Name))
-                            .SelectMany(i => i.Genres)
-                            .Distinct(StringComparer.OrdinalIgnoreCase)
-                            .ToList();
-                    }
+                if (!artist.LockedFields.Contains(MetadataFields.Genres))
+                {
+                    // Avoid implicitly captured closure
+                    var artist1 = artist;
+
+                    artist.Genres = allSongs.Where(i => i.HasArtist(artist1.Name))
+                        .SelectMany(i => i.Genres)
+                        .Distinct(StringComparer.OrdinalIgnoreCase)
+                        .ToList();
                 }
 
                 numComplete++;

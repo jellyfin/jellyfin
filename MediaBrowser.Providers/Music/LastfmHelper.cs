@@ -31,6 +31,40 @@ namespace MediaBrowser.Providers.Music
             {
                 AddTags(artist, data.tags);
             }
+
+            var musicArtist = artist as MusicArtist;
+
+            if (musicArtist != null)
+            {
+                musicArtist.LastFmImageUrl = GetImageUrl(data);
+            }
+
+            var artistByName = artist as Artist;
+
+            if (artistByName != null)
+            {
+                artistByName.LastFmImageUrl = GetImageUrl(data);
+            }
+        }
+
+        private static string GetImageUrl(LastfmArtist data)
+        {
+            if (data.image == null)
+            {
+                return null;
+            }
+
+            var img = data.image.FirstOrDefault(i => string.Equals(i.size, "extralarge", StringComparison.OrdinalIgnoreCase)) ??
+                data.image.FirstOrDefault(i => string.Equals(i.size, "large", StringComparison.OrdinalIgnoreCase)) ?? 
+                data.image.FirstOrDefault(i => string.Equals(i.size, "medium", StringComparison.OrdinalIgnoreCase)) ?? 
+                data.image.FirstOrDefault();
+
+            if (img != null)
+            {
+                return img.url;
+            }
+
+            return null;
         }
 
         public static void ProcessArtistData(MusicArtist source, Artist target)

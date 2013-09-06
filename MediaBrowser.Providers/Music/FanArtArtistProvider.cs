@@ -115,6 +115,14 @@ namespace MediaBrowser.Providers.Music
             }
         }
 
+        public override MetadataProviderPriority Priority
+        {
+            get
+            {
+                return MetadataProviderPriority.Fourth;
+            }
+        }
+
         /// <summary>
         /// Needses the refresh internal.
         /// </summary>

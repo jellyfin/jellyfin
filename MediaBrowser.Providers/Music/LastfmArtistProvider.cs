@@ -200,7 +200,7 @@ namespace MediaBrowser.Providers.Music
         /// <param name="musicBrainzId">The music brainz id.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        protected override async Task FetchLastfmData(BaseItem item, string musicBrainzId, CancellationToken cancellationToken)
+        protected override async Task FetchLastfmData(BaseItem item, string musicBrainzId, bool force, CancellationToken cancellationToken)
         {
             // Get artist info with provided id
             var url = RootUrl + string.Format("method=artist.getInfo&mbid={0}&api_key={1}&format=json", UrlEncode(musicBrainzId), ApiKey);
@@ -216,7 +216,15 @@ namespace MediaBrowser.Providers.Music
 
             }).ConfigureAwait(false))
             {
-                result = JsonSerializer.DeserializeFromStream<LastfmGetArtistResult>(json);
+                using (var reader = new StreamReader(json))
+                {
+                    var jsonText = await reader.ReadToEndAsync().ConfigureAwait(false);
+
+                    // Fix their bad json
+                    jsonText = jsonText.Replace("\"#text\"", "\"url\"");
+
+                    result = JsonSerializer.DeserializeFromString<LastfmGetArtistResult>(jsonText);
+                }
             }
 
             if (result != null && result.artist != null)
