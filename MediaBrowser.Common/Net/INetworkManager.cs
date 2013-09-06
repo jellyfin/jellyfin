@@ -29,19 +29,11 @@ namespace MediaBrowser.Common.Net
         /// <param name="path">The path.</param>
         /// <returns>IEnumerable{NetworkShare}.</returns>
         IEnumerable<NetworkShare> GetNetworkShares(string path);
-    }
-    /// <summary>
-    /// Enum NetworkProtocol
-    /// </summary>
-    public enum NetworkProtocol
-    {
+
         /// <summary>
-        /// The TCP
+        /// Gets available devices within the domain
         /// </summary>
-        Tcp,
-        /// <summary>
-        /// The UDP
-        /// </summary>
-        Udp
+        /// <returns>PC's in the Domain</returns>
+        IEnumerable<string> GetNetworkDevices();
     }
 }

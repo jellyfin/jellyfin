@@ -1,12 +1,21 @@
 ﻿(function (window, document, $) {
 
     function refreshDirectoryBrowser(page, path) {
-        
+
         Dashboard.showLoadingMsg();
+
+        if (path) {
+            $('.networkHeadline').hide();
+        } else {
+            $('.networkHeadline').show();
+        }
 
         var promise;
 
-        if (path) {
+        if (path === "Network") {
+            promise = ApiClient.getNetworkDevices();
+        }
+        else if (path) {
             promise = ApiClient.getDirectoryContents(path, { includeDirectories: true });
         } else {
             promise = ApiClient.getDrives();
@@ -32,9 +41,9 @@
                 if (parentPath.endsWith(':')) {
                     parentPath += "\\";
                 }
-                
+
                 if (parentPath == '\\') {
-                    parentPath = "";
+                    parentPath = "Network";
                 }
 
                 html += '<li><a class="lnkDirectory" data-path="' + parentPath + '" href="#">..</a></li>';
@@ -45,6 +54,10 @@
                 var folder = folders[i];
 
                 html += '<li><a class="lnkDirectory" data-path="' + folder.Path + '" href="#">' + folder.Name + '</a></li>';
+            }
+
+            if (!path) {
+                html += '<li><a class="lnkDirectory" data-path="Network" href="#">Network</a></li>';
             }
 
             $('#ulDirectoryPickerList', page).html(html).listview('refresh');
@@ -59,8 +72,8 @@
             Dashboard.hideLoadingMsg();
         });
     }
-    
-    window.DirectoryBrowser = function(page) {
+
+    window.DirectoryBrowser = function (page) {
 
         var self = this;
 
@@ -84,12 +97,15 @@
             html += '<div data-role="fieldcontain" style="margin:0;">';
             html += '<label for="txtDirectoryPickerPath" class="lblDirectoryPickerPath">Current Folder:</label>';
             html += '<input id="txtDirectoryPickerPath" name="txtDirectoryPickerPath" type="text" required="required" style="font-weight:bold;" />';
-            html += '<div class="directoryPickerHeadline" style="margin-top:5px;padding:.5em;display:inline-block;">Network paths can be entered manually, e.g. <b>\\\\my-server</b></div>';
             html += '</div>';
 
             html += '<div style="height: 320px; overflow-y: auto;">';
             html += '<ul id="ulDirectoryPickerList" data-role="listview" data-inset="true" data-auto-enhanced="false"></ul>';
+
+            html += '<div class="directoryPickerHeadline networkHeadline" style="margin:5px 0 1em;padding:.5em;">Network paths <b>can be entered manually</b> in the event the Network button fails to locate your devices. For example, <b>\\\\my-server</b>.</div>';
+
             html += '</div>';
+            
 
             html += '<p>';
             html += '<button type="submit" data-theme="b" data-icon="ok">OK</button>';
@@ -102,13 +118,13 @@
             $(page).append(html);
 
             var popup = $('#popupDirectoryPicker').popup().trigger('create').on("popupafteropen", function () {
-                
+
                 $('#popupDirectoryPicker input:first', this).focus();
-                
+
             }).popup("open").on("popupafterclose", function () {
 
                 $('form', this).off("submit");
-                
+
                 $(this).off("click").off("change").off("popupafterclose").remove();
 
             }).on("click", ".lnkDirectory", function () {
@@ -116,7 +132,7 @@
                 var path = this.getAttribute('data-path');
 
                 refreshDirectoryBrowser(page, path);
-                
+
             }).on("change", "#txtDirectoryPickerPath", function () {
 
                 refreshDirectoryBrowser(page, this.value);
@@ -141,7 +157,7 @@
 
         };
 
-        self.close = function() {
+        self.close = function () {
             $('#popupDirectoryPicker', page).popup("close");
         };
     };
