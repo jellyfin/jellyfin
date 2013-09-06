@@ -6,7 +6,7 @@ namespace MediaBrowser.Controller.Entities.Audio
     /// <summary>
     /// Class MusicAlbum
     /// </summary>
-    public class MusicAlbum : Folder
+    public class MusicAlbum : Folder, IHasAlbumArtist
     {
         public string LastFmImageUrl { get; set; }
         
@@ -61,6 +61,17 @@ namespace MediaBrowser.Controller.Entities.Audio
         public bool HasArtist(string artist)
         {
             return RecursiveChildren.OfType<Audio>().Any(i => i.HasArtist(artist));
+        }
+
+        public string AlbumArtist
+        {
+            get
+            {
+                return RecursiveChildren
+                  .OfType<Audio>()
+                  .Select(i => i.AlbumArtist)
+                  .FirstOrDefault(i => !string.IsNullOrEmpty(i));
+            }
         }
     }
 

@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Querying;
 using System;
@@ -7,9 +6,9 @@ using System;
 namespace MediaBrowser.Server.Implementations.Sorting
 {
     /// <summary>
-    /// Class AlbumArtistComparer
+    /// Class NameComparer
     /// </summary>
-    public class AlbumArtistComparer : IBaseItemComparer
+    public class NameComparer : IBaseItemComparer
     {
         /// <summary>
         /// Compares the specified x.
@@ -19,19 +18,7 @@ namespace MediaBrowser.Server.Implementations.Sorting
         /// <returns>System.Int32.</returns>
         public int Compare(BaseItem x, BaseItem y)
         {
-            return string.Compare(GetValue(x), GetValue(y), StringComparison.CurrentCultureIgnoreCase);
-        }
-
-        /// <summary>
-        /// Gets the value.
-        /// </summary>
-        /// <param name="x">The x.</param>
-        /// <returns>System.String.</returns>
-        private string GetValue(BaseItem x)
-        {
-            var audio = x as IHasAlbumArtist;
-
-            return audio != null ? audio.AlbumArtist : null;
+            return string.Compare(x.Name, y.Name, StringComparison.CurrentCultureIgnoreCase);
         }
 
         /// <summary>
@@ -40,7 +27,7 @@ namespace MediaBrowser.Server.Implementations.Sorting
         /// <value>The name.</value>
         public string Name
         {
-            get { return ItemSortBy.AlbumArtist; }
+            get { return ItemSortBy.Name; }
         }
     }
 }

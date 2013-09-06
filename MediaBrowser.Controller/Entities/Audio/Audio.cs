@@ -9,7 +9,7 @@ namespace MediaBrowser.Controller.Entities.Audio
     /// <summary>
     /// Class Audio
     /// </summary>
-    public class Audio : BaseItem, IHasMediaStreams
+    public class Audio : BaseItem, IHasMediaStreams, IHasAlbumArtist
     {
         public Audio()
         {

@@ -126,6 +126,9 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "NameStartsWithOrGreater", Description = "Optional filter by items whose name is sorted equally or greater than a given input string.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string NameStartsWithOrGreater { get; set; }
 
+        [ApiMember(Name = "AlbumArtistStartsWithOrGreater", Description = "Optional filter by items whose album artist is sorted equally or greater than a given input string.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string AlbumArtistStartsWithOrGreater { get; set; }
+        
         /// <summary>
         /// Gets or sets the air days.
         /// </summary>
@@ -574,6 +577,13 @@ namespace MediaBrowser.Api.UserLibrary
             if (!string.IsNullOrEmpty(request.NameStartsWithOrGreater))
             {
                 items = items.Where(i => string.Compare(request.NameStartsWithOrGreater, i.SortName, StringComparison.CurrentCultureIgnoreCase) < 1);
+            }
+
+            if (!string.IsNullOrEmpty(request.AlbumArtistStartsWithOrGreater))
+            {
+                items = items.OfType<IHasAlbumArtist>()
+                    .Where(i => string.Compare(request.AlbumArtistStartsWithOrGreater, i.AlbumArtist, StringComparison.CurrentCultureIgnoreCase) < 1)
+                    .Cast<BaseItem>();
             }
 
             // Filter by Series Status

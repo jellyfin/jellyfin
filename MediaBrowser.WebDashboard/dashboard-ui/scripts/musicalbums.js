@@ -77,19 +77,31 @@
 
         var page = this;
 
-        $('.radioSortBy', this).on('click', function () {
+        $('.radioSortBy', page).on('click', function () {
             query.SortBy = this.getAttribute('data-sortby');
             query.StartIndex = 0;
+            
+            // Clear this
+            $('.alphabetPicker', page).alphaClear();
+            query.NameStartsWithOrGreater = '';
+            query.AlbumArtistStartsWithOrGreater = '';
+
             reloadItems(page);
         });
 
-        $('.radioSortOrder', this).on('click', function () {
+        $('.radioSortOrder', page).on('click', function () {
             query.SortOrder = this.getAttribute('data-sortorder');
             query.StartIndex = 0;
+
+            // Clear this
+            $('.alphabetPicker', page).alphaClear();
+            query.NameStartsWithOrGreater = '';
+            query.AlbumArtistStartsWithOrGreater = '';
+
             reloadItems(page);
         });
 
-        $('.chkStandardFilter', this).on('change', function () {
+        $('.chkStandardFilter', page).on('change', function () {
 
             var filterName = this.getAttribute('data-filter');
             var filters = query.Filters || "";
@@ -106,7 +118,7 @@
             reloadItems(page);
         });
 
-        $('#selectView', this).on('change', function () {
+        $('#selectView', page).on('change', function () {
 
             view = this.value;
 
@@ -121,9 +133,16 @@
             }
         });
 
-        $('.alphabetPicker', this).on('alphaselect', function (e, character) {
+        $('.alphabetPicker', page).on('alphaselect', function (e, character) {
 
-            query.NameStartsWithOrGreater = character;
+            if (query.SortBy.indexOf('AlbumArtist') == -1) {
+                query.NameStartsWithOrGreater = character;
+                query.AlbumArtistStartsWithOrGreater = '';
+            } else {
+                query.AlbumArtistStartsWithOrGreater = character;
+                query.NameStartsWithOrGreater = '';
+            }
+            
             query.StartIndex = 0;
 
             reloadItems(page);
@@ -131,6 +150,7 @@
         }).on('alphaclear', function (e) {
 
             query.NameStartsWithOrGreater = '';
+            query.AlbumArtistStartsWithOrGreater = '';
 
             reloadItems(page);
         });

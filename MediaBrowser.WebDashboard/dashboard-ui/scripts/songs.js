@@ -1,9 +1,11 @@
 ﻿(function ($, document) {
 
+    var defaultSortBy = "Album,SortName";
+
     // The base query options
     var query = {
 
-        SortBy: "Album,SortName",
+        SortBy: defaultSortBy,
         SortOrder: "Ascending",
         IncludeItemTypes: "Audio",
         Recursive: true,
@@ -11,6 +13,22 @@
         Limit: 200,
         StartIndex: 0
     };
+
+    function updateFilterControls(page) {
+
+        // Reset form values using the last used query
+        $('.radioSortBy', page).each(function () {
+
+            this.checked = query.SortBy == this.getAttribute('data-sortby');
+
+        }).checkboxradio('refresh');
+
+        $('.radioSortOrder', page).each(function () {
+
+            this.checked = query.SortOrder == this.getAttribute('data-sortorder');
+
+        }).checkboxradio('refresh');
+    }
 
     function reloadItems(page) {
 
@@ -27,7 +45,10 @@
 
             html += LibraryBrowser.getSongTableHtml(result.Items, {
                 showAlbum: true,
-                showArtist: true
+                showArtist: true,
+                enableColumnSorting: true,
+                sortBy: query.SortBy,
+                sortOrder: query.SortOrder
             });
 
             html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
@@ -55,7 +76,37 @@
                 reloadItems(page);
             });
 
+            $('.lnkColumnSort', page).on('click', function () {
+
+                var order = this.getAttribute('data-sortfield');
+
+                if (query.SortBy == order) {
+
+                    if (query.SortOrder == "Descending") {
+
+                        query.SortOrder = "Ascending";
+                        query.SortBy = defaultSortBy;
+
+                    } else {
+
+                        query.SortOrder = "Descending";
+                        query.SortBy = order;
+                    }
+
+                } else {
+
+                    query.SortOrder = "Ascending";
+                    query.SortBy = order;
+                }
+
+                query.StartIndex = 0;
+
+                reloadItems(page);
+            });
+
             Dashboard.hideLoadingMsg();
+
+            $(page).trigger('itemsreloaded');
         });
     }
 
@@ -98,18 +149,11 @@
 
     }).on('pageshow', "#songsPage", function () {
 
-        // Reset form values using the last used query
-        $('.radioSortBy', this).each(function () {
+        updateFilterControls(this);
 
-            this.checked = query.SortBy == this.getAttribute('data-sortby');
+    }).on('itemsreloaded', "#songsPage", function () {
 
-        }).checkboxradio('refresh');
-
-        $('.radioSortOrder', this).each(function () {
-
-            this.checked = query.SortOrder == this.getAttribute('data-sortorder');
-
-        }).checkboxradio('refresh');
+        updateFilterControls(this);
     });
 
 })(jQuery, document);

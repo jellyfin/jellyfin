@@ -892,7 +892,6 @@ namespace MediaBrowser.Server.Implementations.Dto
             if (audio != null)
             {
                 dto.Album = audio.Album;
-                dto.AlbumArtist = audio.AlbumArtist;
                 dto.Artists = audio.Artists.ToArray();
 
                 var albumParent = audio.FindParent<MusicAlbum>();
@@ -916,12 +915,17 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 var songs = album.RecursiveChildren.OfType<Audio>().ToList();
 
-                dto.AlbumArtist = songs.Select(i => i.AlbumArtist).FirstOrDefault(i => !string.IsNullOrEmpty(i));
-
                 dto.Artists =
                     songs.SelectMany(i => i.Artists)
                          .Distinct(StringComparer.OrdinalIgnoreCase)
                          .ToArray();
+            }
+
+            var hasAlbumArtist = item as IHasAlbumArtist;
+
+            if (hasAlbumArtist != null)
+            {
+                dto.AlbumArtist = hasAlbumArtist.AlbumArtist;
             }
 
             // Add video info

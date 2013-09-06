@@ -90,4 +90,9 @@
         return this;
     };
 
+    $.fn.alphaClear = function (val) {
+
+        return this.alphaValue('');
+    };
+
 })(window, document, jQuery);

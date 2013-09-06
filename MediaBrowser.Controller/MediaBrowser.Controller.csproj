@@ -73,6 +73,7 @@
     </Compile>
     <Compile Include="Dto\IDtoService.cs" />
     <Compile Include="Entities\AdultVideo.cs" />
+    <Compile Include="Entities\Audio\IHasAlbumArtist.cs" />
     <Compile Include="Entities\Book.cs" />
     <Compile Include="Configuration\IServerConfigurationManager.cs" />
     <Compile Include="Entities\Audio\MusicGenre.cs" />

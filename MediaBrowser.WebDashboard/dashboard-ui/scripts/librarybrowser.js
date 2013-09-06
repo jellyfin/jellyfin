@@ -236,6 +236,35 @@
             return html;
         },
 
+        getSongHeaderCellHtml: function (text, cssClass, enableSorting, sortField, selectedSortField, sortDirection) {
+
+            var html = cssClass ? '<th class="' + cssClass + '">' : '<th>';
+
+            if (text && enableSorting) {
+                html += '<a class="lnkColumnSort" data-sortfield="' + sortField + '" href="#" style="text-decoration:underline;">';
+            }
+
+            html += text;
+
+            if (text && enableSorting) {
+
+                html += '</a>';
+
+                if (sortField == selectedSortField) {
+
+                    if (sortDirection == "Descending") {
+                        html += '<span style="font-weight:bold;margin-left:3px;">&darr;</span>';
+                    } else {
+                        html += '<span style="font-weight:bold;margin-left:3px;">&uarr;</span>';
+                    }
+                }
+            }
+
+            html += '</th>';
+
+            return html;
+        },
+
         getSongTableHtml: function (items, options) {
 
             options = options || {};
@@ -248,24 +277,21 @@
 
             html += '<tr>';
 
-            html += '<th></th>';
-            html += '<th></th>';
-
-            html += '<th>Track</th>';
+            html += LibraryBrowser.getSongHeaderCellHtml('', '', options.enableColumnSorting);
+            html += LibraryBrowser.getSongHeaderCellHtml('', '', options.enableColumnSorting);
+            html += LibraryBrowser.getSongHeaderCellHtml('Track', '', options.enableColumnSorting, 'Name', options.sortBy, options.sortOrder);
 
             if (options.showAlbum) {
-                html += '<th>Album</th>';
+                html += LibraryBrowser.getSongHeaderCellHtml('Album', '', options.enableColumnSorting, 'Album,SortName', options.sortBy, options.sortOrder);
             }
             if (options.showArtist) {
-                html += '<th>Album Artist</th>';
-            }
-            if (options.showArtist) {
-                html += '<th>Artist</th>';
+                html += LibraryBrowser.getSongHeaderCellHtml('Album Artist', '', options.enableColumnSorting, 'AlbumArtist,Album,SortName', options.sortBy, options.sortOrder);
+                html += LibraryBrowser.getSongHeaderCellHtml('Artist', '', options.enableColumnSorting, 'Artist,Album,SortName', options.sortBy, options.sortOrder);
             }
 
-            html += '<th class="tabletColumn">Runtime</th>';
-            html += '<th class="tabletColumn">Play Count</th>';
-            html += '<th class="tabletColumn userDataCell"></th>';
+            html += LibraryBrowser.getSongHeaderCellHtml('Runtime', 'tabletColumn', options.enableColumnSorting, 'Runtime,AlbumArtist,Album,SortName', options.sortBy, options.sortOrder);
+            html += LibraryBrowser.getSongHeaderCellHtml('Play Count', 'tabletColumn', options.enableColumnSorting, 'PlayCount,AlbumArtist,Album,SortName', options.sortBy, options.sortOrder);
+            html += LibraryBrowser.getSongHeaderCellHtml('', 'tabletColumn userDataCell', options.enableColumnSorting);
 
             html += '</tr>';
 
