@@ -47,14 +47,17 @@ namespace MediaBrowser.Providers.Music
             }
         }
 
-        private static string GetImageUrl(LastfmArtist data)
+        private static string GetImageUrl(IHasLastFmImages data)
         {
             if (data.image == null)
             {
                 return null;
             }
 
-            var img = data.image.FirstOrDefault(i => string.Equals(i.size, "extralarge", StringComparison.OrdinalIgnoreCase)) ??
+            var img = data.image
+                .Where(i => !string.IsNullOrWhiteSpace(i.url))
+                .FirstOrDefault(i => string.Equals(i.size, "mega", StringComparison.OrdinalIgnoreCase)) ??
+                data.image.FirstOrDefault(i => string.Equals(i.size, "extralarge", StringComparison.OrdinalIgnoreCase)) ??
                 data.image.FirstOrDefault(i => string.Equals(i.size, "large", StringComparison.OrdinalIgnoreCase)) ?? 
                 data.image.FirstOrDefault(i => string.Equals(i.size, "medium", StringComparison.OrdinalIgnoreCase)) ?? 
                 data.image.FirstOrDefault();
@@ -99,6 +102,9 @@ namespace MediaBrowser.Providers.Music
             {
                 AddTags(item, data.toptags);
             }
+
+            var album = (MusicAlbum)item;
+            album.LastFmImageUrl = GetImageUrl(data);
         }
 
         private static void AddTags(BaseItem item, LastfmTags tags)

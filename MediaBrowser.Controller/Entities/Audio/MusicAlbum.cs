@@ -8,6 +8,8 @@ namespace MediaBrowser.Controller.Entities.Audio
     /// </summary>
     public class MusicAlbum : Folder
     {
+        public string LastFmImageUrl { get; set; }
+        
         /// <summary>
         /// Songs will group into us so don't also include us in the index
         /// </summary>

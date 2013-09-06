@@ -77,7 +77,7 @@
     <Compile Include="Music\FanArtUpdatesPrescanTask.cs" />
     <Compile Include="Music\LastfmAlbumProvider.cs" />
     <Compile Include="Music\LastfmArtistByNameProvider.cs" />
-    <Compile Include="Music\LastFmArtistImageProvider.cs" />
+    <Compile Include="Music\LastFmImageProvider.cs" />
     <Compile Include="Music\LastfmArtistProvider.cs" />
     <Compile Include="Music\LastfmBaseProvider.cs" />
     <Compile Include="Music\LastfmHelper.cs" />

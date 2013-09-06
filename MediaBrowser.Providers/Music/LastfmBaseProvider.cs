@@ -193,7 +193,7 @@ namespace MediaBrowser.Providers.Music
         public string size { get; set; }
     }
 
-    public class LastfmArtist
+    public class LastfmArtist : IHasLastFmImages
     {
         public string name { get; set; }
         public string mbid { get; set; }
@@ -208,7 +208,7 @@ namespace MediaBrowser.Providers.Music
     }
 
 
-    public class LastfmAlbum
+    public class LastfmAlbum : IHasLastFmImages
     {
         public string name { get; set; }
         public string artist { get; set; }
@@ -219,6 +219,12 @@ namespace MediaBrowser.Providers.Music
         public int playcount { get; set; }
         public LastfmTags toptags { get; set; }
         public LastFmBio wiki { get; set; }
+        public List<LastFmImage> image { get; set; }
+    }
+
+    public interface IHasLastFmImages
+    {
+        List<LastFmImage> image { get; set; }
     }
 
     public class LastfmGetAlbumResult

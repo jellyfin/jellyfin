@@ -13,7 +13,7 @@ namespace MediaBrowser.Providers.Music
     /// <summary>
     /// Class LastFmArtistImageProvider
     /// </summary>
-    public class LastFmArtistImageProvider : BaseMetadataProvider
+    public class LastFmImageProvider : BaseMetadataProvider
     {
         /// <summary>
         /// The _provider manager
@@ -21,12 +21,12 @@ namespace MediaBrowser.Providers.Music
         private readonly IProviderManager _providerManager;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="LastFmArtistImageProvider"/> class.
+        /// Initializes a new instance of the <see cref="LastFmImageProvider"/> class.
         /// </summary>
         /// <param name="logManager">The log manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="providerManager">The provider manager.</param>
-        public LastFmArtistImageProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager) : 
+        public LastFmImageProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager) : 
             base(logManager, configurationManager)
         {
             _providerManager = providerManager;
@@ -39,7 +39,7 @@ namespace MediaBrowser.Providers.Music
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         public override bool Supports(BaseItem item)
         {
-            return item is Artist || item is MusicArtist;
+            return item is Artist || item is MusicArtist || item is MusicAlbum;
         }
 
         /// <summary>
@@ -112,6 +112,13 @@ namespace MediaBrowser.Providers.Music
             if (artistByName != null)
             {
                 return artistByName.LastFmImageUrl;
+            }
+
+            var album = item as MusicAlbum;
+
+            if (album != null)
+            {
+                return album.LastFmImageUrl;
             }
 
             return null;
