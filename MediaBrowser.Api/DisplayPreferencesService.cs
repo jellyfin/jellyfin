@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Persistence;
+﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Serialization;
 using ServiceStack.ServiceHost;
@@ -20,7 +21,7 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <value>The id.</value>
         [ApiMember(Name = "DisplayPreferencesId", Description = "DisplayPreferences Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public Guid DisplayPreferencesId { get; set; }
+        public string DisplayPreferencesId { get; set; }
 
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
         public Guid UserId { get; set; }
@@ -38,7 +39,7 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <value>The id.</value>
         [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public Guid Id { get; set; }
+        public string Id { get; set; }
 
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
         public Guid UserId { get; set; }
@@ -78,7 +79,14 @@ namespace MediaBrowser.Api
         /// <param name="request">The request.</param>
         public object Get(GetDisplayPreferences request)
         {
-            var result = _displayPreferencesManager.GetDisplayPreferences(request.Id, request.UserId, request.Client);
+            Guid displayPreferencesId;
+
+            if (!Guid.TryParse(request.Id, out displayPreferencesId))
+            {
+                displayPreferencesId = request.Id.GetMD5();
+            }
+
+            var result = _displayPreferencesManager.GetDisplayPreferences(displayPreferencesId, request.UserId, request.Client);
 
             return ToOptimizedResult(result);
         }

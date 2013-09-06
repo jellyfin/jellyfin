@@ -142,6 +142,12 @@ namespace MediaBrowser.Api.UserLibrary
                 items = items.Where(i => string.Compare(request.NameStartsWithOrGreater, i.Name, StringComparison.CurrentCultureIgnoreCase) < 1);
             }
 
+            var imageTypes = request.GetImageTypes().ToArray();
+            if (imageTypes.Length > 0)
+            {
+                items = items.Where(item => imageTypes.Any(imageType => ItemsService.HasImage(item.GetItem().Result, imageType)));
+            }
+            
             var filters = request.GetFilters().ToList();
 
             if (filters.Count == 0)
@@ -219,6 +225,17 @@ namespace MediaBrowser.Api.UserLibrary
                 else
                 {
                     items = items.OrderBy(i => i.Name);
+                }
+            }
+            else if (string.Equals(request.SortBy, "Random", StringComparison.OrdinalIgnoreCase))
+            {
+                if (request.SortOrder.HasValue && request.SortOrder.Value == Model.Entities.SortOrder.Descending)
+                {
+                    items = items.OrderByDescending(i => Guid.NewGuid());
+                }
+                else
+                {
+                    items = items.OrderBy(i => Guid.NewGuid());
                 }
             }
 
@@ -358,7 +375,6 @@ namespace MediaBrowser.Api.UserLibrary
         
         public string Name;
 
-        public BaseItem Item;
         private UserItemData _userData;
 
         public List<BaseItem> Items

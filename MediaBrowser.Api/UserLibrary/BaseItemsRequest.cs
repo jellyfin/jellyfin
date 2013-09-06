@@ -80,6 +80,13 @@ namespace MediaBrowser.Api.UserLibrary
         public string MediaTypes { get; set; }
 
         /// <summary>
+        /// Gets or sets the image types.
+        /// </summary>
+        /// <value>The image types.</value>
+        [ApiMember(Name = "ImageTypes", Description = "Optional. If specified, results will be filtered based on those containing image types. This allows multiple, comma delimited.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string ImageTypes { get; set; }
+
+        /// <summary>
         /// Gets the filters.
         /// </summary>
         /// <returns>IEnumerable{ItemFilter}.</returns>
@@ -119,6 +126,22 @@ namespace MediaBrowser.Api.UserLibrary
                 return null;
 
             }).Where(i => i.HasValue).Select(i => i.Value);
+        }
+
+        /// <summary>
+        /// Gets the image types.
+        /// </summary>
+        /// <returns>IEnumerable{ImageType}.</returns>
+        public IEnumerable<ImageType> GetImageTypes()
+        {
+            var val = ImageTypes;
+
+            if (string.IsNullOrEmpty(val))
+            {
+                return new ImageType[] { };
+            }
+
+            return val.Split(',').Select(v => (ImageType)Enum.Parse(typeof(ImageType), v, true));
         }
     }
 }
