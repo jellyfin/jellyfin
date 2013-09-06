@@ -257,6 +257,9 @@
                 html += '<th>Album</th>';
             }
             if (options.showArtist) {
+                html += '<th>Album Artist</th>';
+            }
+            if (options.showArtist) {
                 html += '<th>Artist</th>';
             }
 
@@ -288,6 +291,17 @@
                         html += '<td><a href="itemdetails.html?id=' + item.ParentId + '">' + item.Album + '</a></td>';
                     } else {
                         html += '<td>' + (item.Album || '') + '</td>';
+                    }
+                }
+
+                if (options.showArtist) {
+
+                    if (item.AlbumArtist) {
+
+                        html += '<td><a href="itembynamedetails.html?context=music&artist=' + ApiClient.encodeName(item.AlbumArtist) + '">' + item.AlbumArtist + '</a></td>';
+
+                    } else {
+                        html += '<td></td>';
                     }
                 }
 
