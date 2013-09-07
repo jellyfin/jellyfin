@@ -3,6 +3,7 @@ using System;
 
 namespace MediaBrowser.Model.Session
 {
+    [ImplementPropertyChanged]
     public class SessionInfoDto
     {
         /// <summary>
