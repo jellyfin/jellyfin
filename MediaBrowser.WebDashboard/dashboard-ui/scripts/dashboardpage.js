@@ -315,7 +315,7 @@
 
         $('#appVersionNumber', page).html(dashboardInfo.SystemInfo.Version);
 
-        var port = ApiClient.serverPortNumber();
+        var port = dashboardInfo.SystemInfo.HttpServerPortNumber;
 
         if (port == dashboardInfo.SystemInfo.WebSocketPortNumber) {
             $('#ports', page).html('Running on port <b>' + port + '</b>');

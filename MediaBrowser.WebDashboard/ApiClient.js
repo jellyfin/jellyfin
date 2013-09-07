@@ -20,9 +20,6 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
         if (!serverHostName) {
             throw new Error("Must supply serverHostName, e.g. 192.168.1.1 or myServerName");
         }
-        if (!serverPortNumber) {
-            throw new Error("Must supply a serverPortNumber");
-        }
 
         var self = this;
         var deviceName = "Web Browser";
@@ -36,14 +33,6 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
         self.serverHostName = function () {
 
             return serverHostName;
-        };
-
-        /**
-         * Gets the server port number.
-         */
-        self.serverPortNumber = function () {
-
-            return serverPortNumber;
         };
 
         /**
@@ -152,7 +141,13 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 throw new Error("Url name cannot be empty");
             }
 
-            var url = serverProtocol + "//" + serverHostName + ":" + serverPortNumber + "/mediabrowser/" + name;
+            var url = serverProtocol + "//" + serverHostName;
+
+            if (serverPortNumber) {
+                url += ":" + serverPortNumber;
+            }
+
+            url += "/mediabrowser/" + name;
 
             if (params) {
                 url += "?" + $.param(params);
@@ -3384,7 +3379,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
 
                 var deferred = $.Deferred();
 
-                var  msgData = itemId + "|" + (positionTicks == null ? "" : positionTicks) + "|" + (isPaused == null ? "" : isPaused) + "|" + (isMuted == null ? "" : isMuted);
+                var msgData = itemId + "|" + (positionTicks == null ? "" : positionTicks) + "|" + (isPaused == null ? "" : isPaused) + "|" + (isMuted == null ? "" : isMuted);
 
                 self.sendWebSocketMessage("PlaybackProgress", msgData);
 
