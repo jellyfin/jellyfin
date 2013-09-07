@@ -13,6 +13,7 @@
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
+    <FodyPath>..\packages\Fody.1.17.0.0</FodyPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -151,19 +152,15 @@
     <Compile Include="Users\AuthenticationResult.cs" />
     <Compile Include="Weather\WeatherUnits.cs" />
     <Compile Include="Web\QueryStringDictionary.cs" />
+    <None Include="Fody.targets" />
     <None Include="FodyWeavers.xml" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="PropertyChanged">
-      <HintPath>..\packages\PropertyChanged.Fody.1.32.2.0\lib\portable-net4+sl4+wp7+win8\PropertyChanged.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Runtime.Serialization" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
@@ -172,6 +169,7 @@ xcopy "$(TargetPath)" "$(SolutionDir)\Nuget\dlls\net45\" /y /d /r /i
 )</PostBuildEvent>
   </PropertyGroup>
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
+  <Import Project="Fody.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
@@ -179,5 +177,4 @@ xcopy "$(TargetPath)" "$(SolutionDir)\Nuget\dlls\net45\" /y /d /r /i
   <Target Name="AfterBuild">
   </Target>
   -->
-  <Import Project="$(ProjectDir)\..\Tools\Fody\Fody.targets" />
 </Project>
