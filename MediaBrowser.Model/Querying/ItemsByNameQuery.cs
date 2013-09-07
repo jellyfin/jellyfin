@@ -67,12 +67,15 @@ namespace MediaBrowser.Model.Querying
         /// <value>The sort by.</value>
         public string[] SortBy { get; set; }
 
+        public ImageType[] ImageTypes { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemsByNameQuery"/> class.
         /// </summary>
         public ItemsByNameQuery()
         {
-            Fields = new ItemFields[] {};
+            ImageTypes = new ImageType[] { };
+            Fields = new ItemFields[] { };
             Recursive = true;
             MediaTypes = new string[] { };
             SortBy = new string[] { };
