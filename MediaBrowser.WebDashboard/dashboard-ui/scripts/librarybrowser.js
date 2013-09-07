@@ -1939,7 +1939,7 @@
             html += '<a class="viewMenuLink viewMenuTextLink' + (view == 'tvshows' ? selectedCssClass : '') + '" href="tvrecommended.html">' + (view == 'tvshows' ? selectedHtml : '') + '<span class="viewName">TV</span></a>';
         }
 
-        if (counts.SongCount) {
+        if (counts.SongCount || counts.MusicVideoCount) {
             html += '<a class="viewMenuLink viewMenuImageLink" href="musicrecommended.html" title="Music"><img src="css/images/views/music.png" alt="Music" /></a>';
             html += '<a class="viewMenuLink viewMenuTextLink' + (view == 'music' ? selectedCssClass : '') + '" href="musicrecommended.html">' + (view == 'music' ? selectedHtml : '') + '<span class="viewName">Music</span></a>';
         }
