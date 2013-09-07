@@ -132,10 +132,17 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         {
             LastActivityDate = DateTime.UtcNow;
 
+            if (!message.StartsWith("{", StringComparison.OrdinalIgnoreCase))
+            {
+                _logger.Error("Received web socket message that is not a json structure: " + message);
+                return;
+            }
+
             if (OnReceive == null)
             {
                 return;
             }
+
             try
             {
                 var stub = (WebSocketMessage<object>)_jsonSerializer.DeserializeFromString(message, typeof(WebSocketMessage<object>));
