@@ -219,7 +219,7 @@ namespace MediaBrowser.Server.Implementations.Providers
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("{0} failed refreshing {1}", ex, provider.GetType().Name, item.Name);
+                _logger.ErrorException("{0} failed refreshing {1} {2}", ex, provider.GetType().Name, item.Name, item.Path ?? string.Empty);
 
                 provider.SetLastRefreshed(item, DateTime.UtcNow, ProviderRefreshStatus.Failure);
 
