@@ -72,7 +72,13 @@ namespace MediaBrowser.Model.System
         /// </summary>
         /// <value>The program data path.</value>
         public string ProgramDataPath { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the HTTP server port number.
+        /// </summary>
+        /// <value>The HTTP server port number.</value>
+        public int HttpServerPortNumber { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SystemInfo"/> class.
         /// </summary>
