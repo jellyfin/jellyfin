@@ -640,6 +640,10 @@
                     cssClass += " transparentPosterItem";
                 }
 
+                if (options.borderless) {
+                    cssClass += " borderlessPosterItem";
+                }
+
                 cssClass += ' ' + options.shape + 'PosterItem';
 
                 html += '<a class="' + cssClass + '" href="' + LibraryBrowser.getHref(item, options.context) + '">';
@@ -652,6 +656,10 @@
 
                 if (background) {
                     style += "background-color:" + background + ";";
+                }
+
+                if (options.imagePosition) {
+                    style += "background-position:" + options.imagePosition + ";";
                 }
 
                 html += '<div class="posterItemImage" style="' + style + '"></div>';
