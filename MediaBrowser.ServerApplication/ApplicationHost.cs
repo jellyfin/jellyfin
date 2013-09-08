@@ -607,7 +607,8 @@ namespace MediaBrowser.ServerApplication
                 CompletedInstallations = InstallationManager.CompletedInstallations.ToArray(),
                 Id = _systemId,
                 ProgramDataPath = ApplicationPaths.ProgramDataPath,
-                MacAddress = GetMacAddress()
+                MacAddress = GetMacAddress(),
+                HttpServerPortNumber = ServerConfigurationManager.Configuration.HttpServerPortNumber
             };
         }
 

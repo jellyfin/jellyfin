@@ -1,4 +1,5 @@
-﻿
+﻿using MediaBrowser.Model.Entities;
+
 namespace MediaBrowser.Model.Querying
 {
     /// <summary>

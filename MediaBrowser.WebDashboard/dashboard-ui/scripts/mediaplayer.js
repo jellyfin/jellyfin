@@ -493,7 +493,7 @@
                 }
 
                 else if (videoStream.Width >= 720) {
-                    baseParams.videoBitrate = 400000;
+                    baseParams.videoBitrate = 420000;
                 }
             }
 
@@ -840,8 +840,6 @@
 
             self.playlist = items;
             currentPlaylistIndex = 0;
-
-            var nowPlayingBar = $('#nowPlayingBar');
         };
 
         self.playInternal = function (item, startPosition, user) {
@@ -1541,7 +1539,7 @@
             // We have media info
             if (videoStream && videoStream.Width) {
 
-                maxAllowedWidth = Math.min(videoStream.Width, maxAllowedWidth);
+                maxAllowedWidth = videoStream.Width;
             }
 
             // Some 1080- videos are reported as 1912?
@@ -1556,7 +1554,7 @@
             }
 
             if (maxAllowedWidth >= 480) {
-                options.push({ name: '480p', maxWidth: 720, videoBitrate: 400000 });
+                options.push({ name: '480p', maxWidth: 720, videoBitrate: 420000 });
             }
             if (maxAllowedWidth >= 360) {
                 options.push({ name: '360p', maxWidth: 640, videoBitrate: 400000 });
