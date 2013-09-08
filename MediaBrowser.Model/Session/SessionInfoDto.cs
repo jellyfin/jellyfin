@@ -1,10 +1,10 @@
-﻿using MediaBrowser.Model.Entities;
+﻿using System.ComponentModel;
+using MediaBrowser.Model.Entities;
 using System;
 
 namespace MediaBrowser.Model.Session
 {
-    [ImplementPropertyChanged]
-    public class SessionInfoDto
+    public class SessionInfoDto : INotifyPropertyChanged
     {
         /// <summary>
         /// Gets or sets the id.
@@ -107,5 +107,7 @@ namespace MediaBrowser.Model.Session
         /// </summary>
         /// <value><c>true</c> if [supports remote control]; otherwise, <c>false</c>.</value>
         public bool SupportsRemoteControl { get; set; }
+
+        public event PropertyChangedEventHandler PropertyChanged;
     }
 }
