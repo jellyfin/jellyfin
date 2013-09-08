@@ -2,7 +2,7 @@
     window.MediaBrowser = {};
 }
 
-MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
+MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, window) {
 
     /**
      * Creates a new api client instance
@@ -26,6 +26,14 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
         var deviceId = MediaBrowser.SHA1(navigator.userAgent + (navigator.cpuClass || ""));
         var currentUserId;
         var webSocket;
+
+        $(window).on("beforeunload", function () {
+
+            // Close the connection gracefully when possible
+            if (webSocket && webSocket.readyState === WebSocket.OPEN) {
+                webSocket.close();
+            }
+        });
 
         /**
          * Gets the server host name.
@@ -3419,15 +3427,17 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
                 throw new Error("null itemId");
             }
 
-            if (self.isWebSocketOpen()) {
+            // Always use the http api in case playback is stopped by closing the browser
+            // See window beforeunload event at the top of this file
+            //if (self.isWebSocketOpen()) {
 
-                var deferred = $.Deferred();
+            //    var deferred = $.Deferred();
 
-                self.sendWebSocketMessage("PlaybackStopped", itemId + "|" + (positionTicks == null ? "" : positionTicks));
+            //    self.sendWebSocketMessage("PlaybackStopped", itemId + "|" + (positionTicks == null ? "" : positionTicks));
 
-                deferred.resolveWith(null, []);
-                return deferred.promise();
-            }
+            //    deferred.resolveWith(null, []);
+            //    return deferred.promise();
+            //}
 
             var params = {
             };
@@ -3535,7 +3545,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout) {
         };
     }
 
-}(jQuery, navigator, window.JSON, window.WebSocket, setTimeout);
+}(jQuery, navigator, window.JSON, window.WebSocket, setTimeout, window);
 
 /**
  * Provides a friendly way to create an api client instance using information from the browser's current url

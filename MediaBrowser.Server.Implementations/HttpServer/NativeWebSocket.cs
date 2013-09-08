@@ -88,6 +88,12 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                     break;
                 }
 
+                if (bytes == null)
+                {
+                    // Connection closed
+                    break;
+                }
+
                 if (OnReceiveBytes != null)
                 {
                     OnReceiveBytes(bytes);
@@ -110,7 +116,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             if (result.CloseStatus.HasValue)
             {
-                throw new WebSocketException("Connection closed");
+                _logger.Info("Web socket connection closed.");
+                return null;
             }
 
             return buffer.Array;
