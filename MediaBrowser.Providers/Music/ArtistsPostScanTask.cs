@@ -63,6 +63,9 @@ namespace MediaBrowser.Providers.Music
                     backdrops.InsertRange(0, artist.BackdropImagePaths);
                     artist.BackdropImagePaths = backdrops.Distinct(StringComparer.OrdinalIgnoreCase)
                         .ToList();
+
+                    ImageFromMediaLocationProvider.ValidateImages(artist);
+                    ImageFromMediaLocationProvider.ValidateBackdrops(artist);
                 }
 
                 if (!artist.LockedFields.Contains(MetadataFields.Genres))

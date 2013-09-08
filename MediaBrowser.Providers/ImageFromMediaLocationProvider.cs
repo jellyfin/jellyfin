@@ -98,12 +98,12 @@ namespace MediaBrowser.Providers
             var args = GetResolveArgsContainingImages(item);
 
             // Make sure current image paths still exist
-            ValidateImages(item, args);
+            ValidateImages(item);
 
             cancellationToken.ThrowIfCancellationRequested();
 
             // Make sure current backdrop paths still exist
-            ValidateBackdrops(item, args);
+            ValidateBackdrops(item);
             ValidateScreenshots(item, args);
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -132,8 +132,7 @@ namespace MediaBrowser.Providers
         /// Validates that images within the item are still on the file system
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <param name="args">The args.</param>
-        private void ValidateImages(BaseItem item, ItemResolveArgs args)
+        internal static void ValidateImages(BaseItem item)
         {
             // Only validate paths from the same directory - need to copy to a list because we are going to potentially modify the collection below
             var deletedKeys = item.Images
@@ -153,8 +152,7 @@ namespace MediaBrowser.Providers
         /// Validates that backdrops within the item are still on the file system
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <param name="args">The args.</param>
-        private void ValidateBackdrops(BaseItem item, ItemResolveArgs args)
+        internal static void ValidateBackdrops(BaseItem item)
         {
             // Only validate paths from the same directory - need to copy to a list because we are going to potentially modify the collection below
             var deletedImages = item.BackdropImagePaths
