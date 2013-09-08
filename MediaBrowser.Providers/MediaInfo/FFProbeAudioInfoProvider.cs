@@ -141,10 +141,10 @@ namespace MediaBrowser.Providers.MediaInfo
             audio.AlbumArtist = GetDictionaryValue(tags, "albumartist") ?? GetDictionaryValue(tags, "album artist") ?? GetDictionaryValue(tags, "album_artist");
 
             // Track number
-            audio.IndexNumber = GetDictionaryNumericValue(tags, "track");
+            audio.IndexNumber = GetDictionaryDiscValue(tags, "track");
 
             // Disc number
-            audio.ParentIndexNumber = GetDictionaryDiscValue(tags);
+            audio.ParentIndexNumber = GetDictionaryDiscValue(tags, "disc");
 
             audio.Language = GetDictionaryValue(tags, "language");
 
@@ -240,10 +240,11 @@ namespace MediaBrowser.Providers.MediaInfo
         /// Gets the disc number, which is sometimes can be in the form of '1', or '1/3'
         /// </summary>
         /// <param name="tags">The tags.</param>
+        /// <param name="tagName">Name of the tag.</param>
         /// <returns>System.Nullable{System.Int32}.</returns>
-        private int? GetDictionaryDiscValue(Dictionary<string, string> tags)
+        private int? GetDictionaryDiscValue(Dictionary<string, string> tags, string tagName)
         {
-            var disc = GetDictionaryValue(tags, "disc");
+            var disc = GetDictionaryValue(tags, tagName);
 
             if (!string.IsNullOrEmpty(disc))
             {
