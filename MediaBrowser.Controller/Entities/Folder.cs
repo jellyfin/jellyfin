@@ -1020,6 +1020,11 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>BaseItem.</returns>
         private BaseItem GetLinkedChild(LinkedChild info)
         {
+            if (string.IsNullOrEmpty(info.Path))
+            {
+                throw new ArgumentException("Encountered linked child with empty path.");
+            }
+                    
             var item = LibraryManager.RootFolder.FindByPath(info.Path);
 
             if (item == null)
@@ -1070,12 +1075,21 @@ namespace MediaBrowser.Controller.Entities
                     try
                     {
                         Logger.Debug("Found shortcut at {0}", i.FullName);
-                        
-                        return new LinkedChild
+
+                        var resolvedPath = FileSystem.ResolveShortcut(i.FullName);
+
+                        if (!string.IsNullOrEmpty(resolvedPath))
                         {
-                            Path = FileSystem.ResolveShortcut(i.FullName),
-                            Type = LinkedChildType.Shortcut
-                        };
+                            return new LinkedChild
+                            {
+                                Path = resolvedPath,
+                                Type = LinkedChildType.Shortcut
+                            };
+                        }
+
+                        Logger.Error("Error resolving shortcut {0}", i.FullName);
+
+                        return null;
                     }
                     catch (IOException ex)
                     {
