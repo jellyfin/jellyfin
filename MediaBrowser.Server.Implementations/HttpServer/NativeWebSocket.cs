@@ -116,7 +116,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             if (result.CloseStatus.HasValue)
             {
-                _logger.Info("Web socket connection closed.");
+                _logger.Info("Web socket connection closed by client.");
                 return null;
             }
 
@@ -169,6 +169,10 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <value>The receive action.</value>
         public Action<byte[]> OnReceiveBytes { get; set; }
 
+        /// <summary>
+        /// Gets or sets the on receive.
+        /// </summary>
+        /// <value>The on receive.</value>
         public Action<string> OnReceive { get; set; }
     }
 }
