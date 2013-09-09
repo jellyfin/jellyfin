@@ -27,6 +27,33 @@
 
     }
 
+    function sendPlayArtistCommand(item, sessionId, popup) {
+
+        ApiClient.getItems(Dashboard.getCurrentUserId(), {
+
+            Artists: item.Name,
+            SortBy: "SortName",
+            IncludeItemTypes: "Audio",
+            Recursive: true,
+            Limit: 100
+
+        }).done(function (result) {
+
+            ApiClient.sendPlayCommand(sessionId, {
+
+                ItemIds: result.Items.map(function (i) {
+                    return i.Id;
+                }).join(','),
+
+                PlayCommand: $('#fldPlayCommand', popup).val()
+            });
+
+            popup.popup("close");
+
+        });
+
+    }
+
     function showMenuForItem(options, sessionsPromise) {
 
         var playFromRendered;
@@ -133,6 +160,12 @@
                 if (item.IsFolder) {
 
                     sendPlayFolderCommand(item, sessionIds[0], popup);
+
+                    return false;
+                }
+                if (item.Type == "Artist") {
+
+                    sendPlayArtistCommand(item, sessionIds[0], popup);
 
                     return false;
                 }
@@ -255,7 +288,7 @@
 
                     browseButtonContainer.show();
                     
-                    if (item.Type != 'Person' && item.Type != 'Genre' && item.Type != 'Studio' && item.Type != 'Artist' && item.Type != 'GameGenre' && item.Type != 'MusicGenre') {
+                    if (item.Type != 'Person' && item.Type != 'Genre' && item.Type != 'Studio' && item.Type != 'GameGenre' && item.Type != 'MusicGenre') {
                         playButtonContainer.show();
                         queueButtonContainer.show();
                     }
