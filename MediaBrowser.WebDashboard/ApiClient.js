@@ -27,14 +27,6 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         var currentUserId;
         var webSocket;
 
-        $(window).on("beforeunload", function () {
-
-            // Close the connection gracefully when possible
-            if (webSocket && webSocket.readyState === WebSocket.OPEN) {
-                webSocket.close();
-            }
-        });
-
         /**
          * Gets the server host name.
          */
@@ -193,6 +185,12 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                     $(self).trigger("websocketclose");
                 }, 0);
             };
+        };
+
+        self.closeWebSocket = function () {
+            if (webSocket && webSocket.readyState === WebSocket.OPEN) {
+                webSocket.close();
+            }
         };
 
         self.sendWebSocketMessage = function (name, data) {
@@ -3427,17 +3425,15 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 throw new Error("null itemId");
             }
 
-            // Always use the http api in case playback is stopped by closing the browser
-            // See window beforeunload event at the top of this file
-            //if (self.isWebSocketOpen()) {
+            if (self.isWebSocketOpen()) {
 
-            //    var deferred = $.Deferred();
+                var deferred = $.Deferred();
 
-            //    self.sendWebSocketMessage("PlaybackStopped", itemId + "|" + (positionTicks == null ? "" : positionTicks));
+                self.sendWebSocketMessage("PlaybackStopped", itemId + "|" + (positionTicks == null ? "" : positionTicks));
 
-            //    deferred.resolveWith(null, []);
-            //    return deferred.promise();
-            //}
+                deferred.resolveWith(null, []);
+                return deferred.promise();
+            }
 
             var params = {
             };
