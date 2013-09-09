@@ -114,6 +114,21 @@ namespace MediaBrowser.Api
 
             var cancellationToken = CancellationToken.None;
 
+            var albums = _libraryManager.RootFolder
+                                        .RecursiveChildren
+                                        .OfType<MusicAlbum>()
+                                        .Where(i => i.HasArtist(item.Name))
+                                        .ToList();
+
+            var musicArtists = albums
+                .Select(i => i.Parent)
+                .OfType<MusicArtist>()
+                .ToList();
+
+            var musicArtistRefreshTasks = musicArtists.Select(i => i.ValidateChildren(new Progress<double>(), cancellationToken, true, request.Forced));
+
+            await Task.WhenAll(musicArtistRefreshTasks).ConfigureAwait(false);
+
             try
             {
                 await item.RefreshMetadata(cancellationToken, forceRefresh: request.Forced).ConfigureAwait(false);
@@ -122,15 +137,6 @@ namespace MediaBrowser.Api
             {
                 Logger.ErrorException("Error refreshing library", ex);
             }
-
-            // Refresh albums
-            var refreshTasks = _libraryManager.RootFolder
-                                              .RecursiveChildren
-                                              .OfType<MusicAlbum>()
-                                              .Where(i => i.HasArtist(item.Name))
-                                              .Select(i => i.ValidateChildren(new Progress<double>(), cancellationToken, true, request.Forced));
-
-            await Task.WhenAll(refreshTasks).ConfigureAwait(false);
         }
 
         public void Post(RefreshGenre request)
