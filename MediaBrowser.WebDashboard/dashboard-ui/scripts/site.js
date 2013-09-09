@@ -1167,6 +1167,14 @@ $(function () {
     if (!IsStorageEnabled()) {
         alert("This browser does not support local storage or is running in private mode. For a better experience, try a newer browser such as Chrome (android, desktop), Firefox, IE10, Safari (iOS) or Opera.");
     }
+    
+    $(window).on("beforeunload", function () {
+
+        // Close the connection gracefully when possible
+        if (ApiClient.isWebSocketOpen() && !MediaPlayer.isPlaying()) {
+            ApiClient.closeWebSocket();
+        }
+    });
 });
 
 Dashboard.jQueryMobileInit();
@@ -1209,3 +1217,4 @@ $(document).on('pagebeforeshow', ".page", function () {
     }
 
 });
+
