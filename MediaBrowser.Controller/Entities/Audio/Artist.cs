@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Dto;
+﻿using System.Runtime.Serialization;
+using MediaBrowser.Model.Dto;
 using System;
 using System.Collections.Generic;
 
@@ -26,8 +27,10 @@ namespace MediaBrowser.Controller.Entities.Audio
             return "Artist-" + Name;
         }
 
+        [IgnoreDataMember]
         public ItemByNameCounts ItemCounts { get; set; }
 
+        [IgnoreDataMember]
         public Dictionary<Guid, ItemByNameCounts> UserItemCounts { get; set; }
     }
 }
