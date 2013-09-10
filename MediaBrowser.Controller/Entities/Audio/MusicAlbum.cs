@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Runtime.Serialization;
 
 namespace MediaBrowser.Controller.Entities.Audio
@@ -6,10 +7,15 @@ namespace MediaBrowser.Controller.Entities.Audio
     /// <summary>
     /// Class MusicAlbum
     /// </summary>
-    public class MusicAlbum : Folder, IHasAlbumArtist
+    public class MusicAlbum : Folder, IHasAlbumArtist, IHasArtist, IHasMusicGenres
     {
+        public MusicAlbum()
+        {
+            Artists = new string[] { };
+        }
+
         public string LastFmImageUrl { get; set; }
-        
+
         /// <summary>
         /// Songs will group into us so don't also include us in the index
         /// </summary>
@@ -60,23 +66,17 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// <returns><c>true</c> if the specified artist has artist; otherwise, <c>false</c>.</returns>
         public bool HasArtist(string artist)
         {
-            return RecursiveChildren.OfType<Audio>().Any(i => i.HasArtist(artist));
+            return string.Equals(AlbumArtist, artist, StringComparison.OrdinalIgnoreCase)
+                   || Artists.Contains(artist, StringComparer.OrdinalIgnoreCase);
         }
 
-        public string AlbumArtist
-        {
-            get
-            {
-                return RecursiveChildren
-                  .OfType<Audio>()
-                  .Select(i => i.AlbumArtist)
-                  .FirstOrDefault(i => !string.IsNullOrEmpty(i));
-            }
-        }
+        public string AlbumArtist { get; set; }
+
+        public string[] Artists { get; set; }
     }
 
     public class MusicAlbumDisc : Folder
     {
-        
+
     }
 }

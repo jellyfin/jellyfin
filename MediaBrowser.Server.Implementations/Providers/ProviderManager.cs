@@ -189,7 +189,11 @@ namespace MediaBrowser.Server.Implementations.Providers
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            _logger.Debug("Running {0} for {1}", provider.GetType().Name, item.Path ?? item.Name ?? "--Unknown--");
+            // Don't clog up the log with these providers
+            if (!(provider is IDynamicInfoProvider))
+            {
+                _logger.Debug("Running {0} for {1}", provider.GetType().Name, item.Path ?? item.Name ?? "--Unknown--");
+            }
 
             // This provides the ability to cancel just this one provider
             var innerCancellationTokenSource = new CancellationTokenSource();

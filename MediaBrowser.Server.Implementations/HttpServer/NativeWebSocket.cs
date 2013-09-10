@@ -81,6 +81,10 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 {
                     bytes = await ReceiveBytesAsync(CancellationToken.None).ConfigureAwait(false);
                 }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
                 catch (WebSocketException ex)
                 {
                     _logger.ErrorException("Error receiving web socket message", ex);

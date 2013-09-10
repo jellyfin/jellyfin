@@ -1,8 +1,5 @@
 ﻿using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
@@ -27,28 +24,6 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <value>The person types.</value>
         public string PersonTypes { get; set; }
-    }
-
-    /// <summary>
-    /// Class GetPersonItemCounts
-    /// </summary>
-    [Route("/Persons/{Name}/Counts", "GET")]
-    [Api(Description = "Gets item counts of library items that a person appears in")]
-    public class GetPersonItemCounts : IReturn<ItemByNameCounts>
-    {
-        /// <summary>
-        /// Gets or sets the user id.
-        /// </summary>
-        /// <value>The user id.</value>
-        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public Guid UserId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        [ApiMember(Name = "Name", Description = "The person name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string Name { get; set; }
     }
 
     /// <summary>
@@ -137,43 +112,6 @@ namespace MediaBrowser.Api.UserLibrary
         }
 
         /// <summary>
-        /// Gets the specified request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>System.Object.</returns>
-        public object Get(GetPersonItemCounts request)
-        {
-            var name = DeSlugPersonName(request.Name, LibraryManager);
-
-            var items = GetItems(request.UserId).Where(i => i.People != null && i.People.Any(p => string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase))).ToList();
-
-            var counts = new ItemByNameCounts
-            {
-                TotalCount = items.Count,
-
-                TrailerCount = items.OfType<Trailer>().Count(),
-
-                MovieCount = items.OfType<Movie>().Count(),
-
-                SeriesCount = items.OfType<Series>().Count(),
-
-                GameCount = items.OfType<Game>().Count(),
-
-                SongCount = items.OfType<Audio>().Count(),
-
-                AlbumCount = items.OfType<MusicAlbum>().Count(),
-
-                EpisodeCount = items.OfType<Episode>().Count(),
-
-                MusicVideoCount = items.OfType<MusicVideo>().Count(),
-
-                AdultVideoCount = items.OfType<AdultVideo>().Count()
-            };
-
-            return ToOptimizedResult(counts);
-        }
-
-        /// <summary>
         /// Gets all items.
         /// </summary>
         /// <param name="request">The request.</param>
@@ -193,15 +131,7 @@ namespace MediaBrowser.Api.UserLibrary
                 .Select(i => i.Name)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
 
-                .Select(name => new IbnStub<Person>(name, () =>
-                {
-                    if (personTypes.Length == 0)
-                    {
-                        return itemsList.Where(i => i.People.Any(p => p.Name.Equals(name, StringComparison.OrdinalIgnoreCase)));
-                    }
-
-                    return itemsList.Where(i => i.People.Any(p => p.Name.Equals(name, StringComparison.OrdinalIgnoreCase) && (personTypes.Contains(p.Type ?? string.Empty, StringComparer.OrdinalIgnoreCase) || personTypes.Contains(p.Role ?? string.Empty, StringComparer.OrdinalIgnoreCase))));
-                }, GetEntity)
+                .Select(name => new IbnStub<Person>(name, GetEntity)
             );
         }
 

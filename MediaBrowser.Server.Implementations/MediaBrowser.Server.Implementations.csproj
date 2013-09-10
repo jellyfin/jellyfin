@@ -146,6 +146,18 @@
     <Compile Include="Library\Resolvers\TV\SeriesResolver.cs" />
     <Compile Include="Library\Resolvers\VideoResolver.cs" />
     <Compile Include="Library\UserManager.cs" />
+    <Compile Include="Library\Validators\ArtistsPostScanTask.cs" />
+    <Compile Include="Library\Validators\ArtistsValidator.cs" />
+    <Compile Include="Library\Validators\CountHelpers.cs" />
+    <Compile Include="Library\Validators\GameGenresPostScanTask.cs" />
+    <Compile Include="Library\Validators\GameGenresValidator.cs" />
+    <Compile Include="Library\Validators\GenresPostScanTask.cs" />
+    <Compile Include="Library\Validators\GenresValidator.cs" />
+    <Compile Include="Library\Validators\MusicGenresPostScanTask.cs" />
+    <Compile Include="Library\Validators\MusicGenresValidator.cs" />
+    <Compile Include="Library\Validators\PeoplePostScanTask.cs" />
+    <Compile Include="Library\Validators\StudiosPostScanTask.cs" />
+    <Compile Include="Library\Validators\StudiosValidator.cs" />
     <Compile Include="Localization\LocalizationManager.cs" />
     <Compile Include="MediaEncoder\MediaEncoder.cs" />
     <Compile Include="Persistence\SqliteChapterRepository.cs" />
@@ -155,7 +167,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Providers\ImageSaver.cs" />
     <Compile Include="Providers\ProviderManager.cs" />
-    <Compile Include="ScheduledTasks\ArtistValidationTask.cs" />
     <Compile Include="ScheduledTasks\PeopleValidationTask.cs" />
     <Compile Include="ScheduledTasks\ChapterImagesTask.cs" />
     <Compile Include="ScheduledTasks\PluginUpdateTask.cs" />

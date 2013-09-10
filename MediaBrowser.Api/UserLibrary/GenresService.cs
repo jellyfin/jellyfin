@@ -1,7 +1,5 @@
 ﻿using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
@@ -21,25 +19,6 @@ namespace MediaBrowser.Api.UserLibrary
     [Api(Description = "Gets all genres from a given item, folder, or the entire library")]
     public class GetGenres : GetItemsByName
     {
-    }
-
-    [Route("/Genres/{Name}/Counts", "GET")]
-    [Api(Description = "Gets item counts of library items that a genre appears in")]
-    public class GetGenreItemCounts : IReturn<ItemByNameCounts>
-    {
-        /// <summary>
-        /// Gets or sets the user id.
-        /// </summary>
-        /// <value>The user id.</value>
-        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public Guid? UserId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        [ApiMember(Name = "Name", Description = "The genre name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string Name { get; set; }
     }
 
     /// <summary>
@@ -133,7 +112,7 @@ namespace MediaBrowser.Api.UserLibrary
             return itemsList
                 .SelectMany(i => i.Genres)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
-                .Select(name => new IbnStub<Genre>(name, () => itemsList.Where(i => i.Genres.Contains(name, StringComparer.OrdinalIgnoreCase)), GetEntity));
+                .Select(name => new IbnStub<Genre>(name, GetEntity));
         }
 
         /// <summary>
@@ -144,35 +123,6 @@ namespace MediaBrowser.Api.UserLibrary
         protected Task<Genre> GetEntity(string name)
         {
             return LibraryManager.GetGenre(name);
-        }
-
-        /// <summary>
-        /// Gets the specified request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>System.Object.</returns>
-        public object Get(GetGenreItemCounts request)
-        {
-            var name = DeSlugGenreName(request.Name, LibraryManager);
-
-            var items = GetItems(request.UserId).Where(i => i.Genres.Contains(name, StringComparer.OrdinalIgnoreCase)).ToList();
-
-            var counts = new ItemByNameCounts
-            {
-                TotalCount = items.Count,
-
-                TrailerCount = items.OfType<Trailer>().Count(),
-
-                MovieCount = items.OfType<Movie>().Count(),
-
-                SeriesCount = items.OfType<Series>().Count(),
-
-                GameCount = items.OfType<Game>().Count(),
-
-                AdultVideoCount = items.OfType<AdultVideo>().Count()
-            };
-
-            return ToOptimizedResult(counts);
         }
     }
 }

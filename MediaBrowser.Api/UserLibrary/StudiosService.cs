@@ -1,8 +1,5 @@
 ﻿using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
@@ -22,25 +19,6 @@ namespace MediaBrowser.Api.UserLibrary
     [Api(Description = "Gets all studios from a given item, folder, or the entire library")]
     public class GetStudios : GetItemsByName
     {
-    }
-
-    [Route("/Studios/{Name}/Counts", "GET")]
-    [Api(Description = "Gets item counts of library items that a studio appears in")]
-    public class GetStudioItemCounts : IReturn<ItemByNameCounts>
-    {
-        /// <summary>
-        /// Gets or sets the user id.
-        /// </summary>
-        /// <value>The user id.</value>
-        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public Guid UserId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        [ApiMember(Name = "Name", Description = "The studio name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string Name { get; set; }
     }
 
     /// <summary>
@@ -114,41 +92,6 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public object Get(GetStudioItemCounts request)
-        {
-            var name = DeSlugStudioName(request.Name, LibraryManager);
-
-            var items = GetItems(request.UserId).Where(i => i.Studios != null && i.Studios.Contains(name, StringComparer.OrdinalIgnoreCase)).ToList();
-
-            var counts = new ItemByNameCounts
-            {
-                TotalCount = items.Count,
-
-                TrailerCount = items.OfType<Trailer>().Count(),
-
-                MovieCount = items.OfType<Movie>().Count(),
-
-                SeriesCount = items.OfType<Series>().Count(),
-
-                GameCount = items.OfType<Game>().Count(),
-
-                SongCount = items.OfType<Audio>().Count(),
-
-                AlbumCount = items.OfType<MusicAlbum>().Count(),
-
-                MusicVideoCount = items.OfType<MusicVideo>().Count(),
-
-                AdultVideoCount = items.OfType<AdultVideo>().Count()
-            };
-
-            return ToOptimizedResult(counts);
-        }
-
-        /// <summary>
-        /// Gets the specified request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>System.Object.</returns>
         public object Get(GetStudios request)
         {
             var result = GetResult(request).Result;
@@ -169,7 +112,7 @@ namespace MediaBrowser.Api.UserLibrary
             return itemsList
                 .SelectMany(i => i.Studios)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
-                .Select(name => new IbnStub<Studio>(name, () => itemsList.Where(i => i.Studios.Contains(name, StringComparer.OrdinalIgnoreCase)), GetEntity));
+                .Select(name => new IbnStub<Studio>(name, GetEntity));
         }
 
         /// <summary>

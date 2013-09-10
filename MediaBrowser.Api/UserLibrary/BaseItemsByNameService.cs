@@ -18,7 +18,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// </summary>
     /// <typeparam name="TItemType">The type of the T item type.</typeparam>
     public abstract class BaseItemsByNameService<TItemType> : BaseApiService
-        where TItemType : BaseItem
+        where TItemType : BaseItem, IItemByName
     {
         /// <summary>
         /// The _user manager
@@ -38,6 +38,8 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="userManager">The user manager.</param>
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="userDataRepository">The user data repository.</param>
+        /// <param name="itemRepository">The item repository.</param>
+        /// <param name="dtoService">The dto service.</param>
         protected BaseItemsByNameService(IUserManager userManager, ILibraryManager libraryManager, IUserDataRepository userDataRepository, IItemRepository itemRepository, IDtoService dtoService)
         {
             UserManager = userManager;
@@ -292,7 +294,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>Task{DtoBaseItem}.</returns>
         private async Task<BaseItemDto> GetDto(IbnStub<TItemType> stub, User user, List<ItemFields> fields)
         {
-            BaseItem item;
+            TItemType item;
 
             try
             {
@@ -306,14 +308,6 @@ namespace MediaBrowser.Api.UserLibrary
 
             var dto = user == null ? await DtoService.GetBaseItemDto(item, fields).ConfigureAwait(false) :
                 await DtoService.GetBaseItemDto(item, fields, user).ConfigureAwait(false);
-
-            if (fields.Contains(ItemFields.ItemCounts))
-            {
-                var items = stub.Items;
-
-                dto.ChildCount = items.Count;
-                dto.RecentlyAddedItemCount = items.Count(i => i.IsRecentlyAdded());
-            }
 
             return dto;
         }
@@ -367,20 +361,12 @@ namespace MediaBrowser.Api.UserLibrary
     public class IbnStub<T>
         where T : BaseItem
     {
-        private readonly Func<IEnumerable<BaseItem>> _childItemsFunction;
-        private List<BaseItem> _childItems;
-
         private readonly Func<string,Task<T>> _itemFunction;
         private Task<T> _itemTask;
         
         public string Name;
 
         private UserItemData _userData;
-
-        public List<BaseItem> Items
-        {
-            get { return _childItems ?? (_childItems = _childItemsFunction().ToList()); }
-        }
 
         public Task<T> GetItem()
         {
@@ -394,10 +380,9 @@ namespace MediaBrowser.Api.UserLibrary
             return _userData ?? (_userData = repo.GetUserData(userId, item.GetUserDataKey()));
         }
 
-        public IbnStub(string name, Func<IEnumerable<BaseItem>> childItems, Func<string,Task<T>> item)
+        public IbnStub(string name, Func<string,Task<T>> item)
         {
             Name = name;
-            _childItemsFunction = childItems;
             _itemFunction = item;
         }
     }

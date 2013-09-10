@@ -1,9 +1,10 @@
-﻿using MediaBrowser.Model.Entities;
+﻿using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Model.Entities;
 using System;
 
 namespace MediaBrowser.Controller.Entities
 {
-    public class MusicVideo : Video
+    public class MusicVideo : Video, IHasArtist, IHasMusicGenres
     {
         /// <summary>
         /// Gets or sets the artist.

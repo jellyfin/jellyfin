@@ -74,6 +74,7 @@
     <Compile Include="Dto\IDtoService.cs" />
     <Compile Include="Entities\AdultVideo.cs" />
     <Compile Include="Entities\Audio\IHasAlbumArtist.cs" />
+    <Compile Include="Entities\Audio\IHasMusicGenres.cs" />
     <Compile Include="Entities\Book.cs" />
     <Compile Include="Configuration\IServerConfigurationManager.cs" />
     <Compile Include="Entities\Audio\MusicGenre.cs" />
@@ -90,6 +91,7 @@
     <Compile Include="Localization\ILocalizationManager.cs" />
     <Compile Include="Notifications\INotificationsRepository.cs" />
     <Compile Include="Notifications\NotificationUpdateEventArgs.cs" />
+    <Compile Include="Providers\IDynamicInfoProvider.cs" />
     <Compile Include="Session\ISessionManager.cs" />
     <Compile Include="Drawing\ImageExtensions.cs" />
     <Compile Include="Drawing\ImageHeader.cs" />

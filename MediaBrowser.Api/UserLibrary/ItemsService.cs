@@ -427,28 +427,9 @@ namespace MediaBrowser.Api.UserLibrary
 
                 items = items.Where(i =>
                 {
-                    var audio = i as Audio;
+                    var audio = i as IHasArtist;
 
-                    if (audio != null)
-                    {
-                        return artists.Any(audio.HasArtist);
-                    }
-
-                    var album = i as MusicAlbum;
-
-                    if (album != null)
-                    {
-                        return artists.Any(album.HasArtist);
-                    }
-
-                    var musicVideo = i as MusicVideo;
-
-                    if (musicVideo != null)
-                    {
-                        return artists.Any(musicVideo.HasArtist);
-                    }
-
-                    return false;
+                    return audio != null && artists.Any(audio.HasArtist);
                 });
             }
 
