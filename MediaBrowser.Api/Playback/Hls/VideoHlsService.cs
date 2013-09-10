@@ -206,13 +206,16 @@ namespace MediaBrowser.Api.Playback.Hls
             var framerate = state.VideoRequest.Framerate ?? 0;
 
             // We have to supply a framerate for hls, so if it's null, account for that here
-            if (framerate.Equals(0))
+            if (state.VideoStream != null)
             {
-                framerate = state.VideoStream.AverageFrameRate ?? 0;
-            }
-            if (framerate.Equals(0))
-            {
-                framerate = state.VideoStream.RealFrameRate ?? 0;
+                if (framerate.Equals(0))
+                {
+                    framerate = state.VideoStream.AverageFrameRate ?? 0;
+                }
+                if (framerate.Equals(0))
+                {
+                    framerate = state.VideoStream.RealFrameRate ?? 0;
+                }
             }
             if (framerate.Equals(0))
             {
