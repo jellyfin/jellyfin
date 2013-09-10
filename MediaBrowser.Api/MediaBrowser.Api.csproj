@@ -66,6 +66,10 @@
     </Compile>
     <Compile Include="AlbumsService.cs" />
     <Compile Include="BaseApiService.cs" />
+    <Compile Include="DefaultTheme\DefaultThemeService.cs" />
+    <Compile Include="DefaultTheme\ItemStub.cs" />
+    <Compile Include="DefaultTheme\MoviesView.cs" />
+    <Compile Include="DefaultTheme\TvView.cs" />
     <Compile Include="DisplayPreferencesService.cs" />
     <Compile Include="EnvironmentService.cs" />
     <Compile Include="GamesService.cs" />
