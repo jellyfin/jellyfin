@@ -117,7 +117,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         /// <param name="items">The items.</param>
         /// <returns>IEnumerable{Tuple{System.StringFunc{System.Int32}}}.</returns>
-        protected override IEnumerable<IbnStub<Person>> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items)
+        protected override IEnumerable<Task<Person>> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items)
         {
             var inputPersonTypes = ((GetPersons)request).PersonTypes;
             var personTypes = string.IsNullOrEmpty(inputPersonTypes) ? new string[] { } : inputPersonTypes.Split(',');
@@ -131,7 +131,7 @@ namespace MediaBrowser.Api.UserLibrary
                 .Select(i => i.Name)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
 
-                .Select(name => new IbnStub<Person>(name, GetEntity)
+                .Select(name => LibraryManager.GetPerson(name)
             );
         }
 

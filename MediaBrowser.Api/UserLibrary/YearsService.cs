@@ -111,14 +111,14 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         /// <param name="items">The items.</param>
         /// <returns>IEnumerable{Tuple{System.StringFunc{System.Int32}}}.</returns>
-        protected override IEnumerable<IbnStub<Year>> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items)
+        protected override IEnumerable<Task<Year>> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items)
         {
             var itemsList = items.Where(i => i.ProductionYear != null).ToList();
 
             return itemsList
                 .Select(i => i.ProductionYear.Value)
                 .Distinct()
-                .Select(year => new IbnStub<Year>(year.ToString(UsCulture), GetEntity));
+                .Select(year => LibraryManager.GetYear(year));
         }
 
         /// <summary>

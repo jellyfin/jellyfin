@@ -101,14 +101,14 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         /// <param name="items">The items.</param>
         /// <returns>IEnumerable{Tuple{System.StringFunc{System.Int32}}}.</returns>
-        protected override IEnumerable<IbnStub<MusicGenre>> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items)
+        protected override IEnumerable<Task<MusicGenre>> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items)
         {
             var itemsList = items.ToList();
 
             return itemsList
                 .SelectMany(i => i.Genres)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
-                .Select(name => new IbnStub<MusicGenre>(name, GetEntity));
+                .Select(name => LibraryManager.GetMusicGenre(name));
         }
 
         /// <summary>

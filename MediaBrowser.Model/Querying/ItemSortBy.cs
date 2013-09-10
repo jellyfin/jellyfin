@@ -76,5 +76,7 @@ namespace MediaBrowser.Model.Querying
         public const string IsPlayed = "IsPlayed";
         public const string TrailerCount = "TrailerCount";
         public const string MovieCount = "MovieCount";
+        public const string SeriesCount = "SeriesCount";
+        public const string EpisodeCount = "EpisodeCount";
     }
 }

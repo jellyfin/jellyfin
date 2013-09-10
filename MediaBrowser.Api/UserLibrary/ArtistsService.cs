@@ -110,7 +110,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         /// <param name="items">The items.</param>
         /// <returns>IEnumerable{Tuple{System.StringFunc{System.Int32}}}.</returns>
-        protected override IEnumerable<IbnStub<Artist>> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items)
+        protected override IEnumerable<Task<Artist>> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items)
         {
             var itemsList = items.OfType<Audio>().ToList();
 
@@ -128,7 +128,7 @@ namespace MediaBrowser.Api.UserLibrary
                     return list;
                 })
                 .Distinct(StringComparer.OrdinalIgnoreCase)
-                .Select(name => new IbnStub<Artist>(name, GetEntity));
+                .Select(name => LibraryManager.GetArtist(name));
         }
 
         /// <summary>
