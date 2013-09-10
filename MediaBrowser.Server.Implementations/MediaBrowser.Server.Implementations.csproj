@@ -181,6 +181,7 @@
     <Compile Include="Session\SessionWebSocketListener.cs" />
     <Compile Include="Sorting\AlbumArtistComparer.cs" />
     <Compile Include="Sorting\AlbumComparer.cs" />
+    <Compile Include="Sorting\AlbumCountComparer.cs" />
     <Compile Include="Sorting\ArtistComparer.cs" />
     <Compile Include="Sorting\BudgetComparer.cs" />
     <Compile Include="Sorting\CommunityRatingComparer.cs" />
@@ -191,6 +192,7 @@
     <Compile Include="Sorting\IsFolderComparer.cs" />
     <Compile Include="Sorting\IsUnplayedComparer.cs" />
     <Compile Include="Sorting\MovieCountComparer.cs" />
+    <Compile Include="Sorting\MusicVideoCountComparer.cs" />
     <Compile Include="Sorting\NameComparer.cs" />
     <Compile Include="Sorting\OfficialRatingComparer.cs" />
     <Compile Include="Sorting\PlayCountComparer.cs" />
@@ -200,6 +202,7 @@
     <Compile Include="Sorting\RevenueComparer.cs" />
     <Compile Include="Sorting\RuntimeComparer.cs" />
     <Compile Include="Sorting\SeriesCountComparer.cs" />
+    <Compile Include="Sorting\SongCountComparer.cs" />
     <Compile Include="Sorting\SortNameComparer.cs" />
     <Compile Include="Persistence\SqliteDisplayPreferencesRepository.cs" />
     <Compile Include="Persistence\SqliteItemRepository.cs" />

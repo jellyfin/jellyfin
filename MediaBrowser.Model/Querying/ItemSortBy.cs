@@ -78,5 +78,8 @@ namespace MediaBrowser.Model.Querying
         public const string MovieCount = "MovieCount";
         public const string SeriesCount = "SeriesCount";
         public const string EpisodeCount = "EpisodeCount";
+        public const string SongCount = "SongCount";
+        public const string AlbumCount = "AlbumCount";
+        public const string MusicVideoCount = "MusicVideoCount";
     }
 }

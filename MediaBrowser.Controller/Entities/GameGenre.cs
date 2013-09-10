@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Model.Dto;
 using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -21,8 +22,10 @@ namespace MediaBrowser.Controller.Entities
             return "GameGenre-" + Name;
         }
 
+        [IgnoreDataMember]
         public ItemByNameCounts ItemCounts { get; set; }
 
+        [IgnoreDataMember]
         public Dictionary<Guid, ItemByNameCounts> UserItemCounts { get; set; }
     }
 }

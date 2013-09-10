@@ -236,6 +236,8 @@
 
         getItemCountsHtml: function (options, item) {
 
+            var counts = [];
+
             var childText;
 
             if (options.context == "movies") {
@@ -243,10 +245,14 @@
                 if (item.MovieCount) {
 
                     childText = item.MovieCount == 1 ? "1 Movie" : item.MovieCount + " Movies";
+
+                    counts.push(childText);
                 }
-                else if (item.TrailerCount) {
+                if (item.TrailerCount) {
 
                     childText = item.TrailerCount == 1 ? "1 Trailer" : item.TrailerCount + " Trailers";
+
+                    counts.push(childText);
                 }
 
             }
@@ -255,10 +261,14 @@
                 if (item.SeriesCount) {
 
                     childText = item.SeriesCount == 1 ? "1 Show" : item.SeriesCount + " Shows";
+
+                    counts.push(childText);
                 }
-                else if (item.EpisodeCount) {
+                if (item.EpisodeCount) {
 
                     childText = item.EpisodeCount == 1 ? "1 Episode" : item.EpisodeCount + " Episodes";
+
+                    counts.push(childText);
                 }
 
             }
@@ -267,6 +277,8 @@
                 if (item.GameCount) {
 
                     childText = item.GameCount == 1 ? "1 Game" : item.GameCount + " Games";
+
+                    counts.push(childText);
                 }
             }
             else if (options.context == "music") {
@@ -274,14 +286,18 @@
                 if (item.SongCount) {
 
                     childText = item.SongCount == 1 ? "1 Song" : item.SongCount + " Songs";
+
+                    counts.push(childText);
                 }
-                else if (item.MusicVideoCount) {
+                if (item.MusicVideoCount) {
 
                     childText = item.MusicVideoCount == 1 ? "1 Music Video" : item.MusicVideoCount + " Music Videos";
+
+                    counts.push(childText);
                 }
             }
 
-            return childText ? '<p class="itemMiscInfo">' + childText + '</p>' : '';
+            return counts.length ? '<p class="itemMiscInfo">' + counts.join(' • ') + '</p>' : '';
         },
 
         getSongHeaderCellHtml: function (text, cssClass, enableSorting, sortField, selectedSortField, sortDirection) {
