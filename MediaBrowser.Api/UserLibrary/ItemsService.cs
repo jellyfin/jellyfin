@@ -38,13 +38,6 @@ namespace MediaBrowser.Api.UserLibrary
         public string Person { get; set; }
 
         /// <summary>
-        /// What to sort the results by
-        /// </summary>
-        /// <value>The sort by.</value>
-        [ApiMember(Name = "SortBy", Description = "Optional. Specify one or more sort orders, comma delimeted. Options: Album, AlbumArtist, Artist, Budget, CommunityRating, CriticRating, DateCreated, DatePlayed, PlayCount, PremiereDate, ProductionYear, SortName, Random, Revenue, Runtime", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
-        public string SortBy { get; set; }
-
-        /// <summary>
         /// If the Person filter is used, this can also be used to restrict to a specific person type
         /// </summary>
         /// <value>The type of the person.</value>
@@ -170,22 +163,6 @@ namespace MediaBrowser.Api.UserLibrary
 
         [ApiMember(Name = "MinIndexNumber", Description = "Optional filter index number.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int? MinIndexNumber { get; set; }
-
-        /// <summary>
-        /// Gets the order by.
-        /// </summary>
-        /// <returns>IEnumerable{ItemSortBy}.</returns>
-        public IEnumerable<string> GetOrderBy()
-        {
-            var val = SortBy;
-
-            if (string.IsNullOrEmpty(val))
-            {
-                return new string[] { };
-            }
-
-            return val.Split(',');
-        }
     }
 
     /// <summary>
@@ -316,7 +293,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="user">The user.</param>
         /// <param name="libraryManager">The library manager.</param>
         /// <returns>IEnumerable{BaseItem}.</returns>
-        internal static IEnumerable<BaseItem> ApplySortOrder(GetItems request, IEnumerable<BaseItem> items, User user, ILibraryManager libraryManager)
+        internal static IEnumerable<BaseItem> ApplySortOrder(BaseItemsRequest request, IEnumerable<BaseItem> items, User user, ILibraryManager libraryManager)
         {
             var orderBy = request.GetOrderBy().ToArray();
 

@@ -87,6 +87,13 @@ namespace MediaBrowser.Api.UserLibrary
         public string ImageTypes { get; set; }
 
         /// <summary>
+        /// What to sort the results by
+        /// </summary>
+        /// <value>The sort by.</value>
+        [ApiMember(Name = "SortBy", Description = "Optional. Specify one or more sort orders, comma delimeted. Options: Album, AlbumArtist, Artist, Budget, CommunityRating, CriticRating, DateCreated, DatePlayed, PlayCount, PremiereDate, ProductionYear, SortName, Random, Revenue, Runtime", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string SortBy { get; set; }
+
+        /// <summary>
         /// Gets the filters.
         /// </summary>
         /// <returns>IEnumerable{ItemFilter}.</returns>
@@ -142,6 +149,22 @@ namespace MediaBrowser.Api.UserLibrary
             }
 
             return val.Split(',').Select(v => (ImageType)Enum.Parse(typeof(ImageType), v, true));
+        }
+
+        /// <summary>
+        /// Gets the order by.
+        /// </summary>
+        /// <returns>IEnumerable{ItemSortBy}.</returns>
+        public IEnumerable<string> GetOrderBy()
+        {
+            var val = SortBy;
+
+            if (string.IsNullOrEmpty(val))
+            {
+                return new string[] { };
+            }
+
+            return val.Split(',');
         }
     }
 }

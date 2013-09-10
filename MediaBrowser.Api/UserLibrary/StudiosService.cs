@@ -105,14 +105,14 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         /// <param name="items">The items.</param>
         /// <returns>IEnumerable{Tuple{System.StringFunc{System.Int32}}}.</returns>
-        protected override IEnumerable<IbnStub<Studio>> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items)
+        protected override IEnumerable<Task<Studio>> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items)
         {
             var itemsList = items.Where(i => i.Studios != null).ToList();
 
             return itemsList
                 .SelectMany(i => i.Studios)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
-                .Select(name => new IbnStub<Studio>(name, GetEntity));
+                .Select(name => LibraryManager.GetStudio(name));
         }
 
         /// <summary>

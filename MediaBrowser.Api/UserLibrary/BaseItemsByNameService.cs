@@ -3,12 +3,10 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using ServiceStack.ServiceHost;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -92,14 +90,16 @@ namespace MediaBrowser.Api.UserLibrary
 
             items = FilterItems(request, items);
 
-            var extractedItems = GetAllItems(request, items);
+            var ibnItemTasks = GetAllItems(request, items);
+            var extractedItems = await Task.WhenAll(ibnItemTasks).ConfigureAwait(false);
 
-            extractedItems = FilterItems(request, extractedItems, user);
-            extractedItems = SortItems(request, extractedItems);
+            var filteredItems = FilterItems(request, extractedItems, user);
 
-            var ibnItemsArray = extractedItems.ToArray();
+            filteredItems = ItemsService.ApplySortOrder(request, filteredItems, user, LibraryManager).Cast<TItemType>();
 
-            IEnumerable<IbnStub<TItemType>> ibnItems = ibnItemsArray;
+            var ibnItemsArray = filteredItems.ToArray();
+
+            IEnumerable<TItemType> ibnItems = ibnItemsArray;
 
             var result = new ItemsResult
             {
@@ -137,8 +137,8 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         /// <param name="items">The items.</param>
         /// <param name="user">The user.</param>
-        /// <returns>IEnumerable{IbnStub}.</returns>
-        private IEnumerable<IbnStub<TItemType>> FilterItems(GetItemsByName request, IEnumerable<IbnStub<TItemType>> items, User user)
+        /// <returns>IEnumerable{`0}.</returns>
+        private IEnumerable<TItemType> FilterItems(GetItemsByName request, IEnumerable<TItemType> items, User user)
         {
             if (!string.IsNullOrEmpty(request.NameStartsWithOrGreater))
             {
@@ -148,7 +148,7 @@ namespace MediaBrowser.Api.UserLibrary
             var imageTypes = request.GetImageTypes().ToArray();
             if (imageTypes.Length > 0)
             {
-                items = items.Where(item => imageTypes.Any(imageType => ItemsService.HasImage(item.GetItem().Result, imageType)));
+                items = items.Where(item => imageTypes.Any(imageType => ItemsService.HasImage(item, imageType)));
             }
 
             var filters = request.GetFilters().ToList();
@@ -164,8 +164,7 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 items = items.Where(i =>
                     {
-                        var item = i.GetItem().Result;
-                        var userdata = UserDataRepository.GetUserData(user.Id, item.GetUserDataKey());
+                        var userdata = UserDataRepository.GetUserData(user.Id, i.GetUserDataKey());
 
                         return userdata != null && userdata.Likes.HasValue && !userdata.Likes.Value;
                     });
@@ -175,8 +174,7 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 items = items.Where(i =>
                 {
-                    var item = i.GetItem().Result;
-                    var userdata = UserDataRepository.GetUserData(user.Id, item.GetUserDataKey());
+                    var userdata = UserDataRepository.GetUserData(user.Id, i.GetUserDataKey());
 
                     return userdata != null && userdata.Likes.HasValue && userdata.Likes.Value;
                 });
@@ -186,8 +184,7 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 items = items.Where(i =>
                 {
-                    var item = i.GetItem().Result;
-                    var userdata = UserDataRepository.GetUserData(user.Id, item.GetUserDataKey());
+                    var userdata = UserDataRepository.GetUserData(user.Id, i.GetUserDataKey());
 
                     var likes = userdata.Likes ?? false;
                     var favorite = userdata.IsFavorite;
@@ -200,48 +197,13 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 items = items.Where(i =>
                 {
-                    var item = i.GetItem().Result;
-                    var userdata = UserDataRepository.GetUserData(user.Id, item.GetUserDataKey());
+                    var userdata = UserDataRepository.GetUserData(user.Id, i.GetUserDataKey());
 
                     return userdata != null && userdata.Likes.HasValue && userdata.IsFavorite;
                 });
             }
 
             return items.AsEnumerable();
-        }
-
-        /// <summary>
-        /// Sorts the items.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <param name="items">The items.</param>
-        /// <returns>IEnumerable{BaseItem}.</returns>
-        private IEnumerable<IbnStub<TItemType>> SortItems(GetItemsByName request, IEnumerable<IbnStub<TItemType>> items)
-        {
-            if (string.Equals(request.SortBy, "SortName", StringComparison.OrdinalIgnoreCase))
-            {
-                if (request.SortOrder.HasValue && request.SortOrder.Value == SortOrder.Descending)
-                {
-                    items = items.OrderByDescending(i => i.Name);
-                }
-                else
-                {
-                    items = items.OrderBy(i => i.Name);
-                }
-            }
-            else if (string.Equals(request.SortBy, "Random", StringComparison.OrdinalIgnoreCase))
-            {
-                if (request.SortOrder.HasValue && request.SortOrder.Value == SortOrder.Descending)
-                {
-                    items = items.OrderByDescending(i => Guid.NewGuid());
-                }
-                else
-                {
-                    items = items.OrderBy(i => Guid.NewGuid());
-                }
-            }
-
-            return items;
         }
 
         /// <summary>
@@ -282,30 +244,18 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <param name="request">The request.</param>
         /// <param name="items">The items.</param>
-        /// <returns>IEnumerable{Tuple{System.StringFunc{System.Int32}}}.</returns>
-        protected abstract IEnumerable<IbnStub<TItemType>> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items);
+        /// <returns>IEnumerable{Task{`0}}.</returns>
+        protected abstract IEnumerable<Task<TItemType>> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items);
 
         /// <summary>
         /// Gets the dto.
         /// </summary>
-        /// <param name="stub">The stub.</param>
+        /// <param name="item">The item.</param>
         /// <param name="user">The user.</param>
         /// <param name="fields">The fields.</param>
         /// <returns>Task{DtoBaseItem}.</returns>
-        private async Task<BaseItemDto> GetDto(IbnStub<TItemType> stub, User user, List<ItemFields> fields)
+        private async Task<BaseItemDto> GetDto(TItemType item, User user, List<ItemFields> fields)
         {
-            TItemType item;
-
-            try
-            {
-                item = await stub.GetItem().ConfigureAwait(false);
-            }
-            catch (IOException ex)
-            {
-                Logger.ErrorException("Error getting IBN item {0}", ex, stub.Name);
-                return null;
-            }
-
             var dto = user == null ? await DtoService.GetBaseItemDto(item, fields).ConfigureAwait(false) :
                 await DtoService.GetBaseItemDto(item, fields, user).ConfigureAwait(false);
 
@@ -345,36 +295,9 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "NameStartsWithOrGreater", Description = "Optional filter by items whose name is sorted equally or greater than a given input string.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string NameStartsWithOrGreater { get; set; }
 
-        /// <summary>
-        /// What to sort the results by
-        /// </summary>
-        /// <value>The sort by.</value>
-        [ApiMember(Name = "SortBy", Description = "Optional. Options: SortName", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
-        public string SortBy { get; set; }
-
         public GetItemsByName()
         {
             Recursive = true;
-        }
-    }
-
-    public class IbnStub<T>
-        where T : BaseItem
-    {
-        private readonly Func<string, Task<T>> _itemFunction;
-        private Task<T> _itemTask;
-
-        public string Name;
-
-        public Task<T> GetItem()
-        {
-            return _itemTask ?? (_itemTask = _itemFunction(Name));
-        }
-
-        public IbnStub(string name, Func<string, Task<T>> item)
-        {
-            Name = name;
-            _itemFunction = item;
         }
     }
 }

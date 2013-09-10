@@ -187,6 +187,7 @@
     <Compile Include="Sorting\CriticRatingComparer.cs" />
     <Compile Include="Sorting\DateCreatedComparer.cs" />
     <Compile Include="Sorting\DatePlayedComparer.cs" />
+    <Compile Include="Sorting\EpisodeCountComparer.cs" />
     <Compile Include="Sorting\IsFolderComparer.cs" />
     <Compile Include="Sorting\IsUnplayedComparer.cs" />
     <Compile Include="Sorting\MovieCountComparer.cs" />
@@ -198,6 +199,7 @@
     <Compile Include="Sorting\RandomComparer.cs" />
     <Compile Include="Sorting\RevenueComparer.cs" />
     <Compile Include="Sorting\RuntimeComparer.cs" />
+    <Compile Include="Sorting\SeriesCountComparer.cs" />
     <Compile Include="Sorting\SortNameComparer.cs" />
     <Compile Include="Persistence\SqliteDisplayPreferencesRepository.cs" />
     <Compile Include="Persistence\SqliteItemRepository.cs" />
