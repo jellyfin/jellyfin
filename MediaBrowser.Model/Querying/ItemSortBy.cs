@@ -74,5 +74,7 @@ namespace MediaBrowser.Model.Querying
         public const string IsFolder = "IsFolder";
         public const string IsUnplayed = "IsUnplayed";
         public const string IsPlayed = "IsPlayed";
+        public const string TrailerCount = "TrailerCount";
+        public const string MovieCount = "MovieCount";
     }
 }

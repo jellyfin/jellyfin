@@ -189,6 +189,7 @@
     <Compile Include="Sorting\DatePlayedComparer.cs" />
     <Compile Include="Sorting\IsFolderComparer.cs" />
     <Compile Include="Sorting\IsUnplayedComparer.cs" />
+    <Compile Include="Sorting\MovieCountComparer.cs" />
     <Compile Include="Sorting\NameComparer.cs" />
     <Compile Include="Sorting\OfficialRatingComparer.cs" />
     <Compile Include="Sorting\PlayCountComparer.cs" />
@@ -202,6 +203,7 @@
     <Compile Include="Persistence\SqliteItemRepository.cs" />
     <Compile Include="Persistence\SqliteUserDataRepository.cs" />
     <Compile Include="Persistence\SqliteUserRepository.cs" />
+    <Compile Include="Sorting\TrailerCountComparer.cs" />
     <Compile Include="Udp\UdpMessageReceivedEventArgs.cs" />
     <Compile Include="Udp\UdpServer.cs" />
     <Compile Include="WebSocket\AlchemyServer.cs" />
