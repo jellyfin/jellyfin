@@ -23,25 +23,6 @@ namespace MediaBrowser.Api.UserLibrary
         }
     }
 
-    [Route("/GameGenres/{Name}/Counts", "GET")]
-    [Api(Description = "Gets item counts of library items that a genre appears in")]
-    public class GetGameGenreItemCounts : IReturn<ItemByNameCounts>
-    {
-        /// <summary>
-        /// Gets or sets the user id.
-        /// </summary>
-        /// <value>The user id.</value>
-        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public Guid? UserId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        [ApiMember(Name = "Name", Description = "The genre name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string Name { get; set; }
-    }
-
     [Route("/GameGenres/{Name}", "GET")]
     [Api(Description = "Gets a Game genre, by name")]
     public class GetGameGenre : IReturn<BaseItemDto>
@@ -127,7 +108,7 @@ namespace MediaBrowser.Api.UserLibrary
             return itemsList
                 .SelectMany(i => i.Genres)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
-                .Select(name => new IbnStub<GameGenre>(name, () => itemsList.Where(i => i.Genres.Contains(name, StringComparer.OrdinalIgnoreCase)), GetEntity));
+                .Select(name => new IbnStub<GameGenre>(name, GetEntity));
         }
 
         /// <summary>
@@ -138,27 +119,6 @@ namespace MediaBrowser.Api.UserLibrary
         protected Task<GameGenre> GetEntity(string name)
         {
             return LibraryManager.GetGameGenre(name);
-        }
-
-        /// <summary>
-        /// Gets the specified request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>System.Object.</returns>
-        public object Get(GetGameGenreItemCounts request)
-        {
-            var name = DeSlugGameGenreName(request.Name, LibraryManager);
-
-            var items = GetItems(request.UserId).Where(i => i.Genres != null && i.Genres.Contains(name, StringComparer.OrdinalIgnoreCase)).ToList();
-
-            var counts = new ItemByNameCounts
-            {
-                TotalCount = items.Count,
-
-                GameCount = items.OfType<Game>().Count()
-            };
-
-            return ToOptimizedResult(counts);
         }
     }
 }

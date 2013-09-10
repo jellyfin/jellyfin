@@ -199,9 +199,7 @@
                 }
                 else if (item.Type == "Genre" || item.Type == "Studio" || item.Type == "Person" || item.Type == "Artist" || item.Type == "MusicGenre" || item.Type == "GameGenre") {
 
-                    childText = item.ChildCount == 1 ? "1 " + options.countNameSingular : item.ChildCount + " " + options.countNamePlural;
-
-                    html += '<p class="itemMiscInfo">' + childText + '</p>';
+                    html += LibraryBrowser.getItemCountsHtml(options, item);
                 }
                 else if (item.Type == "Game") {
 
@@ -234,6 +232,56 @@
             }
 
             return html;
+        },
+
+        getItemCountsHtml: function (options, item) {
+
+            var childText;
+
+            if (options.context == "movies") {
+
+                if (item.MovieCount) {
+
+                    childText = item.MovieCount == 1 ? "1 Movie" : item.MovieCount + " Movies";
+                }
+                else if (item.TrailerCount) {
+
+                    childText = item.TrailerCount == 1 ? "1 Trailer" : item.TrailerCount + " Trailers";
+                }
+
+            }
+            else if (options.context == "tv") {
+
+                if (item.SeriesCount) {
+
+                    childText = item.SeriesCount == 1 ? "1 Show" : item.SeriesCount + " Shows";
+                }
+                else if (item.EpisodeCount) {
+
+                    childText = item.EpisodeCount == 1 ? "1 Episode" : item.EpisodeCount + " Episodes";
+                }
+
+            }
+            else if (options.context == "games") {
+
+                if (item.GameCount) {
+
+                    childText = item.GameCount == 1 ? "1 Game" : item.GameCount + " Games";
+                }
+            }
+            else if (options.context == "music") {
+
+                if (item.SongCount) {
+
+                    childText = item.SongCount == 1 ? "1 Song" : item.SongCount + " Songs";
+                }
+                else if (item.MusicVideoCount) {
+
+                    childText = item.MusicVideoCount == 1 ? "1 Music Video" : item.MusicVideoCount + " Music Videos";
+                }
+            }
+
+            return childText ? '<p class="itemMiscInfo">' + childText + '</p>' : '';
         },
 
         getSongHeaderCellHtml: function (text, cssClass, enableSorting, sortField, selectedSortField, sortDirection) {
@@ -1008,6 +1056,8 @@
                 options += getOption(100);
                 options += getOption(200);
                 options += getOption(300);
+                options += getOption(400);
+                options += getOption(500);
 
                 html += '<label class="labelPageSize" for="' + id + '">Limit: </label><select class="selectPageSize" id="' + id + '" data-enhance="false" data-role="none">' + options + '</select>';
             }

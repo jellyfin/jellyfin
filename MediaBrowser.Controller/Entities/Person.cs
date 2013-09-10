@@ -1,4 +1,7 @@
-﻿
+﻿using MediaBrowser.Model.Dto;
+using System;
+using System.Collections.Generic;
+
 namespace MediaBrowser.Controller.Entities
 {
     /// <summary>
@@ -6,6 +9,16 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class Person : BaseItem, IItemByName
     {
+        public Person()
+        {
+            ItemCounts = new ItemByNameCounts();
+            UserItemCounts = new Dictionary<Guid, ItemByNameCounts>();
+        }
+
+        public ItemByNameCounts ItemCounts { get; set; }
+
+        public Dictionary<Guid, ItemByNameCounts> UserItemCounts { get; set; }
+        
         /// <summary>
         /// Gets the user data key.
         /// </summary>

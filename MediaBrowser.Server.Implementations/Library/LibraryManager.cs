@@ -13,6 +13,7 @@ using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Server.Implementations.Library.Validators;
 using MediaBrowser.Server.Implementations.ScheduledTasks;
 using MoreLinq;
 using System;
@@ -597,11 +598,11 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="name">The name.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
-        /// <param name="forceCreation">if set to <c>true</c> [force creation].</param>
+        /// <param name="refreshMetadata">if set to <c>true</c> [force creation].</param>
         /// <returns>Task{Person}.</returns>
-        private Task<Person> GetPerson(string name, CancellationToken cancellationToken, bool allowSlowProviders = false, bool forceCreation = false)
+        private Task<Person> GetPerson(string name, CancellationToken cancellationToken, bool allowSlowProviders = false, bool refreshMetadata = false)
         {
-            return GetItemByName<Person>(ConfigurationManager.ApplicationPaths.PeoplePath, name, cancellationToken, allowSlowProviders, forceCreation);
+            return GetItemByName<Person>(ConfigurationManager.ApplicationPaths.PeoplePath, name, cancellationToken, allowSlowProviders, refreshMetadata);
         }
 
         /// <summary>
@@ -612,7 +613,20 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>Task{Studio}.</returns>
         public Task<Studio> GetStudio(string name, bool allowSlowProviders = false)
         {
-            return GetItemByName<Studio>(ConfigurationManager.ApplicationPaths.StudioPath, name, CancellationToken.None, allowSlowProviders);
+            return GetStudio(name, CancellationToken.None, allowSlowProviders);
+        }
+
+        /// <summary>
+        /// Gets the studio.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
+        /// <param name="refreshMetadata">if set to <c>true</c> [refresh metadata].</param>
+        /// <returns>Task{Studio}.</returns>
+        internal Task<Studio> GetStudio(string name, CancellationToken cancellationToken, bool allowSlowProviders = false, bool refreshMetadata = false)
+        {
+            return GetItemByName<Studio>(ConfigurationManager.ApplicationPaths.StudioPath, name, cancellationToken, allowSlowProviders, refreshMetadata);
         }
 
         /// <summary>
@@ -623,7 +637,20 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>Task{Genre}.</returns>
         public Task<Genre> GetGenre(string name, bool allowSlowProviders = false)
         {
-            return GetItemByName<Genre>(ConfigurationManager.ApplicationPaths.GenrePath, name, CancellationToken.None, allowSlowProviders);
+            return GetGenre(name, CancellationToken.None, allowSlowProviders);
+        }
+
+        /// <summary>
+        /// Gets the genre.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
+        /// <param name="refreshMetadata">if set to <c>true</c> [refresh metadata].</param>
+        /// <returns>Task{Genre}.</returns>
+        internal Task<Genre> GetGenre(string name, CancellationToken cancellationToken, bool allowSlowProviders = false, bool refreshMetadata = false)
+        {
+            return GetItemByName<Genre>(ConfigurationManager.ApplicationPaths.GenrePath, name, cancellationToken, allowSlowProviders, refreshMetadata);
         }
 
         /// <summary>
@@ -634,7 +661,20 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>Task{MusicGenre}.</returns>
         public Task<MusicGenre> GetMusicGenre(string name, bool allowSlowProviders = false)
         {
-            return GetItemByName<MusicGenre>(ConfigurationManager.ApplicationPaths.MusicGenrePath, name, CancellationToken.None, allowSlowProviders);
+            return GetMusicGenre(name, CancellationToken.None, allowSlowProviders);
+        }
+
+        /// <summary>
+        /// Gets the music genre.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
+        /// <param name="refreshMetadata">if set to <c>true</c> [refresh metadata].</param>
+        /// <returns>Task{MusicGenre}.</returns>
+        internal Task<MusicGenre> GetMusicGenre(string name, CancellationToken cancellationToken, bool allowSlowProviders = false, bool refreshMetadata = false)
+        {
+            return GetItemByName<MusicGenre>(ConfigurationManager.ApplicationPaths.MusicGenrePath, name, cancellationToken, allowSlowProviders, refreshMetadata);
         }
 
         /// <summary>
@@ -645,7 +685,20 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>Task{GameGenre}.</returns>
         public Task<GameGenre> GetGameGenre(string name, bool allowSlowProviders = false)
         {
-            return GetItemByName<GameGenre>(ConfigurationManager.ApplicationPaths.GameGenrePath, name, CancellationToken.None, allowSlowProviders);
+            return GetGameGenre(name, CancellationToken.None, allowSlowProviders);
+        }
+
+        /// <summary>
+        /// Gets the game genre.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
+        /// <param name="refreshMetadata">if set to <c>true</c> [refresh metadata].</param>
+        /// <returns>Task{GameGenre}.</returns>
+        internal Task<GameGenre> GetGameGenre(string name, CancellationToken cancellationToken, bool allowSlowProviders = false, bool refreshMetadata = false)
+        {
+            return GetItemByName<GameGenre>(ConfigurationManager.ApplicationPaths.GameGenrePath, name, cancellationToken, allowSlowProviders, refreshMetadata);
         }
 
         /// <summary>
@@ -665,11 +718,11 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="name">The name.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
-        /// <param name="forceCreation">if set to <c>true</c> [force creation].</param>
+        /// <param name="refreshMetadata">if set to <c>true</c> [force creation].</param>
         /// <returns>Task{Artist}.</returns>
-        private Task<Artist> GetArtist(string name, CancellationToken cancellationToken, bool allowSlowProviders = false, bool forceCreation = false)
+        internal Task<Artist> GetArtist(string name, CancellationToken cancellationToken, bool allowSlowProviders = false, bool refreshMetadata = false)
         {
-            return GetItemByName<Artist>(ConfigurationManager.ApplicationPaths.ArtistsPath, name, cancellationToken, allowSlowProviders, forceCreation);
+            return GetItemByName<Artist>(ConfigurationManager.ApplicationPaths.ArtistsPath, name, cancellationToken, allowSlowProviders, refreshMetadata);
         }
 
         /// <summary>
@@ -707,11 +760,11 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="name">The name.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
-        /// <param name="forceCreation">if set to <c>true</c> [force creation].</param>
+        /// <param name="refreshMetadata">if set to <c>true</c> [force creation].</param>
         /// <returns>Task{``0}.</returns>
         /// <exception cref="System.ArgumentNullException">
         /// </exception>
-        private async Task<T> GetItemByName<T>(string path, string name, CancellationToken cancellationToken, bool allowSlowProviders = true, bool forceCreation = false)
+        private async Task<T> GetItemByName<T>(string path, string name, CancellationToken cancellationToken, bool allowSlowProviders = true, bool refreshMetadata = false)
             where T : BaseItem, new()
         {
             if (string.IsNullOrEmpty(path))
@@ -730,11 +783,25 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (!_itemsByName.TryGetValue(key, out obj))
             {
-                obj = await CreateItemByName<T>(path, name, cancellationToken, allowSlowProviders).ConfigureAwait(false);
+                var tuple = CreateItemByName<T>(path, name, cancellationToken);
+
+                obj = tuple.Item2;
 
                 _itemsByName.AddOrUpdate(key, obj, (keyName, oldValue) => obj);
+
+                try
+                {
+                    await obj.RefreshMetadata(cancellationToken, tuple.Item1, allowSlowProviders: allowSlowProviders).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                    BaseItem removed;
+                    _itemsByName.TryRemove(key, out removed);
+
+                    throw;
+                }
             }
-            else if (forceCreation)
+            else if (refreshMetadata)
             {
                 await obj.RefreshMetadata(cancellationToken, false, allowSlowProviders: allowSlowProviders).ConfigureAwait(false);
             }
@@ -749,10 +816,9 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="path">The path.</param>
         /// <param name="name">The name.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
         /// <returns>Task{``0}.</returns>
         /// <exception cref="System.IO.IOException">Path not created:  + path</exception>
-        private async Task<T> CreateItemByName<T>(string path, string name, CancellationToken cancellationToken, bool allowSlowProviders = true)
+        private Tuple<bool, T> CreateItemByName<T>(string path, string name, CancellationToken cancellationToken)
             where T : BaseItem, new()
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -783,6 +849,7 @@ namespace MediaBrowser.Server.Implementations.Library
             var id = path.GetMBId(type);
 
             var item = RetrieveItem(id) as T;
+
             if (item == null)
             {
                 item = new T
@@ -796,16 +863,10 @@ namespace MediaBrowser.Server.Implementations.Library
                 isNew = true;
             }
 
-            cancellationToken.ThrowIfCancellationRequested();
-
             // Set this now so we don't cause additional file system access during provider executions
             item.ResetResolveArgs(fileInfo);
 
-            await item.RefreshMetadata(cancellationToken, isNew, allowSlowProviders: allowSlowProviders).ConfigureAwait(false);
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            return item;
+            return new Tuple<bool,T>(isNew, item);
         }
 
         /// <summary>
@@ -884,75 +945,53 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
         /// <returns>Task.</returns>
-        public async Task ValidateArtists(CancellationToken cancellationToken, IProgress<double> progress)
+        public Task ValidateArtists(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            const int maxTasks = 25;
+            return new ArtistsValidator(this, _userManager, _logger).Run(progress, cancellationToken);
+        }
 
-            var tasks = new List<Task>();
+        /// <summary>
+        /// Validates the music genres.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="progress">The progress.</param>
+        /// <returns>Task.</returns>
+        public Task ValidateMusicGenres(CancellationToken cancellationToken, IProgress<double> progress)
+        {
+            return new MusicGenresValidator(this, _userManager, _logger).Run(progress, cancellationToken);
+        }
 
-            var artists = RootFolder.RecursiveChildren
-                .OfType<Audio>()
-                .SelectMany(c =>
-                {
-                    var list = new List<string>();
+        /// <summary>
+        /// Validates the game genres.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="progress">The progress.</param>
+        /// <returns>Task.</returns>
+        public Task ValidateGameGenres(CancellationToken cancellationToken, IProgress<double> progress)
+        {
+            return new GameGenresValidator(this, _userManager, _logger).Run(progress, cancellationToken);
+        }
 
-                    if (!string.IsNullOrEmpty(c.AlbumArtist))
-                    {
-                        list.Add(c.AlbumArtist);
-                    }
-                    list.AddRange(c.Artists);
+        /// <summary>
+        /// Validates the studios.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="progress">The progress.</param>
+        /// <returns>Task.</returns>
+        public Task ValidateStudios(CancellationToken cancellationToken, IProgress<double> progress)
+        {
+            return new StudiosValidator(this, _userManager, _logger).Run(progress, cancellationToken);
+        }
 
-                    return list;
-                })
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToList();
-
-            var numComplete = 0;
-
-            foreach (var artist in artists)
-            {
-                if (tasks.Count > maxTasks)
-                {
-                    await Task.WhenAll(tasks).ConfigureAwait(false);
-                    tasks.Clear();
-
-                    // Safe cancellation point, when there are no pending tasks
-                    cancellationToken.ThrowIfCancellationRequested();
-                }
-
-                // Avoid accessing the foreach variable within the closure
-                var currentArtist = artist;
-
-                tasks.Add(Task.Run(async () =>
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    try
-                    {
-                        await GetArtist(currentArtist, cancellationToken, true, true).ConfigureAwait(false);
-                    }
-                    catch (IOException ex)
-                    {
-                        _logger.ErrorException("Error validating Artist {0}", ex, currentArtist);
-                    }
-
-                    // Update progress
-                    lock (progress)
-                    {
-                        numComplete++;
-                        double percent = numComplete;
-                        percent /= artists.Count;
-
-                        progress.Report(100 * percent);
-                    }
-                }));
-            }
-
-            await Task.WhenAll(tasks).ConfigureAwait(false);
-
-            progress.Report(100);
-
-            _logger.Info("Artist validation complete");
+        /// <summary>
+        /// Validates the genres.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="progress">The progress.</param>
+        /// <returns>Task.</returns>
+        public Task ValidateGenres(CancellationToken cancellationToken, IProgress<double> progress)
+        {
+            return new GenresValidator(this, _userManager, _logger).Run(progress, cancellationToken);
         }
 
         /// <summary>
@@ -1000,12 +1039,12 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var innerProgress = new ActionableProgress<double>();
 
-            innerProgress.RegisterAction(pct => progress.Report(15 + pct * .65));
+            innerProgress.RegisterAction(pct => progress.Report(15 + pct * .6));
 
             // Now validate the entire media library
             await RootFolder.ValidateChildren(innerProgress, cancellationToken, recursive: true).ConfigureAwait(false);
 
-            progress.Report(80);
+            progress.Report(75);
 
             // Run post-scan tasks
             await RunPostScanTasks(progress, cancellationToken).ConfigureAwait(false);
@@ -1078,7 +1117,7 @@ namespace MediaBrowser.Server.Implementations.Library
                         double percent = progressDictionary.Values.Sum();
                         percent /= postscanTasks.Count;
 
-                        progress.Report(80 + percent * .2);
+                        progress.Report(75 + percent * .25);
                     }
                 });
 

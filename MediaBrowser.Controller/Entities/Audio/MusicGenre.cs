@@ -1,4 +1,7 @@
-﻿
+﻿using MediaBrowser.Model.Dto;
+using System;
+using System.Collections.Generic;
+
 namespace MediaBrowser.Controller.Entities.Audio
 {
     /// <summary>
@@ -6,6 +9,12 @@ namespace MediaBrowser.Controller.Entities.Audio
     /// </summary>
     public class MusicGenre : BaseItem, IItemByName
     {
+        public MusicGenre()
+        {
+            ItemCounts = new ItemByNameCounts();
+            UserItemCounts = new Dictionary<Guid, ItemByNameCounts>();
+        }
+
         /// <summary>
         /// Gets the user data key.
         /// </summary>
@@ -14,5 +23,9 @@ namespace MediaBrowser.Controller.Entities.Audio
         {
             return "MusicGenre-" + Name;
         }
+
+        public ItemByNameCounts ItemCounts { get; set; }
+
+        public Dictionary<Guid, ItemByNameCounts> UserItemCounts { get; set; }
     }
 }

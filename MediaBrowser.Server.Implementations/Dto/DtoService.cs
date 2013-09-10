@@ -107,6 +107,15 @@ namespace MediaBrowser.Server.Implementations.Dto
                     .ToArray();
             }
 
+            if (fields.Contains(ItemFields.ItemCounts))
+            {
+                var itemByName = item as IItemByName;
+                if (itemByName != null)
+                {
+                    AttachItemByNameCounts(dto, itemByName, user);
+                }
+            }
+
             // Make sure all the tasks we kicked off have completed.
             if (tasks.Count > 0)
             {
@@ -114,6 +123,41 @@ namespace MediaBrowser.Server.Implementations.Dto
             }
 
             return dto;
+        }
+
+        /// <summary>
+        /// Attaches the item by name counts.
+        /// </summary>
+        /// <param name="dto">The dto.</param>
+        /// <param name="item">The item.</param>
+        /// <param name="user">The user.</param>
+        private void AttachItemByNameCounts(BaseItemDto dto, IItemByName item, User user)
+        {
+            ItemByNameCounts counts;
+
+            if (user == null)
+            {
+                counts = item.ItemCounts;
+            }
+            else
+            {
+                if (!item.UserItemCounts.TryGetValue(user.Id, out counts))
+                {
+                    counts = new ItemByNameCounts();
+                }
+            }
+
+            dto.ChildCount = counts.TotalCount;
+
+            dto.AdultVideoCount = counts.AdultVideoCount;
+            dto.AlbumCount = counts.AlbumCount;
+            dto.EpisodeCount = counts.EpisodeCount;
+            dto.GameCount = counts.GameCount;
+            dto.MovieCount = counts.MovieCount;
+            dto.MusicVideoCount = counts.MusicVideoCount;
+            dto.SeriesCount = counts.SeriesCount;
+            dto.SongCount = counts.SongCount;
+            dto.TrailerCount = counts.TrailerCount;
         }
 
         /// <summary>
@@ -380,7 +424,9 @@ namespace MediaBrowser.Server.Implementations.Dto
                 _logger.ErrorException("Error getting {0} image info for {1}", ex, type, path);
                 return null;
             }
-        }        /// <summary>
+        }        
+        
+        /// <summary>
         /// Attaches People DTO's to a DTOBaseItem
         /// </summary>
         /// <param name="dto">The dto.</param>
@@ -913,12 +959,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             if (album != null)
             {
-                var songs = album.RecursiveChildren.OfType<Audio>().ToList();
-
-                dto.Artists =
-                    songs.SelectMany(i => i.Artists)
-                         .Distinct(StringComparer.OrdinalIgnoreCase)
-                         .ToArray();
+                dto.Artists = album.Artists;
             }
 
             var hasAlbumArtist = item as IHasAlbumArtist;
@@ -935,7 +976,6 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.VideoType = video.VideoType;
                 dto.Video3DFormat = video.Video3DFormat;
                 dto.IsoType = video.IsoType;
-                dto.MainFeaturePlaylistName = video.MainFeaturePlaylistName;
 
                 dto.PartCount = video.AdditionalPartIds.Count + 1;
 

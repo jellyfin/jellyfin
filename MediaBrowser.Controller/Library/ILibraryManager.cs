@@ -236,6 +236,38 @@ namespace MediaBrowser.Controller.Library
         Task ValidateArtists(CancellationToken cancellationToken, IProgress<double> progress);
 
         /// <summary>
+        /// Validates the music genres.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="progress">The progress.</param>
+        /// <returns>Task.</returns>
+        Task ValidateMusicGenres(CancellationToken cancellationToken, IProgress<double> progress);
+
+        /// <summary>
+        /// Validates the game genres.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="progress">The progress.</param>
+        /// <returns>Task.</returns>
+        Task ValidateGameGenres(CancellationToken cancellationToken, IProgress<double> progress);
+
+        /// <summary>
+        /// Validates the genres.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="progress">The progress.</param>
+        /// <returns>Task.</returns>
+        Task ValidateGenres(CancellationToken cancellationToken, IProgress<double> progress);
+        
+        /// <summary>
+        /// Validates the studios.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="progress">The progress.</param>
+        /// <returns>Task.</returns>
+        Task ValidateStudios(CancellationToken cancellationToken, IProgress<double> progress);
+        
+        /// <summary>
         /// Occurs when [item added].
         /// </summary>
         event EventHandler<ItemChangeEventArgs> ItemAdded;

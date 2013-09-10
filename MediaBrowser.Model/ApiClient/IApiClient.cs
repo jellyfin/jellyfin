@@ -28,6 +28,8 @@ namespace MediaBrowser.Model.ApiClient
         /// </summary>
         event EventHandler<HttpResponseEventArgs> HttpResponseReceived;
 
+        Task<T> GetAsync<T>(string url, CancellationToken cancellationToken);
+
         /// <summary>
         /// Gets the critic reviews.
         /// </summary>

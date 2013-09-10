@@ -86,11 +86,6 @@ namespace MediaBrowser.Server.Implementations.Session
         }
 
         /// <summary>
-        /// The _true task result
-        /// </summary>
-        private readonly Task _trueTaskResult = Task.FromResult(true);
-
-        /// <summary>
         /// Logs the user activity.
         /// </summary>
         /// <param name="clientType">Type of the client.</param>
@@ -339,6 +334,7 @@ namespace MediaBrowser.Server.Implementations.Session
                 // If the client isn't able to report this, then we'll just have to make an assumption
                 data.PlayCount++;
                 data.Played = true;
+                data.PlaybackPositionTicks = 0;
             }
 
             await _userDataRepository.SaveUserData(user.Id, key, data, CancellationToken.None).ConfigureAwait(false);

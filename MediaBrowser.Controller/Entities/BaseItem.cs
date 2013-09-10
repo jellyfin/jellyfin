@@ -1537,5 +1537,58 @@ namespace MediaBrowser.Controller.Entities
             // Refresh metadata
             return RefreshMetadata(CancellationToken.None, forceSave: true);
         }
+
+        /// <summary>
+        /// Validates that images within the item are still on the file system
+        /// </summary>
+        public void ValidateImages()
+        {
+            // Only validate paths from the same directory - need to copy to a list because we are going to potentially modify the collection below
+            var deletedKeys = Images
+                .ToList()
+                .Where(image => !File.Exists(image.Value))
+                .Select(i => i.Key)
+                .ToList();
+
+            // Now remove them from the dictionary
+            foreach (var key in deletedKeys)
+            {
+                Images.Remove(key);
+            }
+        }
+
+        /// <summary>
+        /// Validates that backdrops within the item are still on the file system
+        /// </summary>
+        public void ValidateBackdrops()
+        {
+            // Only validate paths from the same directory - need to copy to a list because we are going to potentially modify the collection below
+            var deletedImages = BackdropImagePaths
+                .Where(path => !File.Exists(path))
+                .ToList();
+
+            // Now remove them from the dictionary
+            foreach (var path in deletedImages)
+            {
+                BackdropImagePaths.Remove(path);
+            }
+        }
+
+        /// <summary>
+        /// Validates the screenshots.
+        /// </summary>
+        public void ValidateScreenshots()
+        {
+            // Only validate paths from the same directory - need to copy to a list because we are going to potentially modify the collection below
+            var deletedImages = ScreenshotImagePaths
+                .Where(path => !File.Exists(path))
+                .ToList();
+
+            // Now remove them from the dictionary
+            foreach (var path in deletedImages)
+            {
+                ScreenshotImagePaths.Remove(path);
+            }
+        }
     }
 }

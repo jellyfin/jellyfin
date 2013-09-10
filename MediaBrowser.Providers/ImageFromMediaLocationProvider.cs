@@ -98,13 +98,13 @@ namespace MediaBrowser.Providers
             var args = GetResolveArgsContainingImages(item);
 
             // Make sure current image paths still exist
-            ValidateImages(item);
+            item.ValidateImages();
 
             cancellationToken.ThrowIfCancellationRequested();
 
             // Make sure current backdrop paths still exist
-            ValidateBackdrops(item);
-            ValidateScreenshots(item, args);
+            item.ValidateBackdrops();
+            item.ValidateScreenshots();
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -126,74 +126,6 @@ namespace MediaBrowser.Providers
             }
 
             return item.ResolveArgs;
-        }
-
-        /// <summary>
-        /// Validates that images within the item are still on the file system
-        /// </summary>
-        /// <param name="item">The item.</param>
-        internal static void ValidateImages(BaseItem item)
-        {
-            // Only validate paths from the same directory - need to copy to a list because we are going to potentially modify the collection below
-            var deletedKeys = item.Images
-                .ToList()
-                .Where(image => !File.Exists(image.Value))
-                .Select(i => i.Key)
-                .ToList();
-
-            // Now remove them from the dictionary
-            foreach (var key in deletedKeys)
-            {
-                item.Images.Remove(key);
-            }
-        }
-
-        /// <summary>
-        /// Validates that backdrops within the item are still on the file system
-        /// </summary>
-        /// <param name="item">The item.</param>
-        internal static void ValidateBackdrops(BaseItem item)
-        {
-            // Only validate paths from the same directory - need to copy to a list because we are going to potentially modify the collection below
-            var deletedImages = item.BackdropImagePaths
-                .Where(path => !File.Exists(path))
-                .ToList();
-
-            // Now remove them from the dictionary
-            foreach (var path in deletedImages)
-            {
-                item.BackdropImagePaths.Remove(path);
-            }
-        }
-
-        /// <summary>
-        /// Validates the screenshots.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="args">The args.</param>
-        private void ValidateScreenshots(BaseItem item, ItemResolveArgs args)
-        {
-            // Only validate paths from the same directory - need to copy to a list because we are going to potentially modify the collection below
-            var deletedImages = item.ScreenshotImagePaths
-                .Where(path => !File.Exists(path))
-                .ToList();
-
-            // Now remove them from the dictionary
-            foreach (var path in deletedImages)
-            {
-                item.ScreenshotImagePaths.Remove(path);
-            }
-        }
-
-        /// <summary>
-        /// Determines whether [is in same directory] [the specified item].
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="path">The path.</param>
-        /// <returns><c>true</c> if [is in same directory] [the specified item]; otherwise, <c>false</c>.</returns>
-        private bool IsInMetaLocation(BaseItem item, string path)
-        {
-            return string.Equals(Path.GetDirectoryName(path), item.MetaLocation, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>

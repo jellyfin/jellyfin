@@ -27,8 +27,6 @@
 
             html += LibraryBrowser.getPosterDetailViewHtml({
                 items: result.Items,
-                countNameSingular: "Show",
-                countNamePlural: "Shows",
                 context: "tv"
             });
 

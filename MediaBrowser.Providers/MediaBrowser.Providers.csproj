@@ -70,7 +70,6 @@
     <Compile Include="Music\AlbumInfoFromSongProvider.cs" />
     <Compile Include="Music\ArtistInfoFromSongProvider.cs" />
     <Compile Include="Music\ArtistProviderFromXml.cs" />
-    <Compile Include="Music\ArtistsPostScanTask.cs" />
     <Compile Include="Music\FanArtAlbumProvider.cs" />
     <Compile Include="Music\FanArtArtistByNameProvider.cs" />
     <Compile Include="Music\FanArtArtistProvider.cs" />
@@ -81,6 +80,7 @@
     <Compile Include="Music\LastfmArtistProvider.cs" />
     <Compile Include="Music\LastfmBaseProvider.cs" />
     <Compile Include="Music\LastfmHelper.cs" />
+    <Compile Include="Music\MusicAlbumDynamicInfoProvider.cs" />
     <Compile Include="Music\MusicVideoXmlParser.cs" />
     <Compile Include="Music\SoundtrackPostScanTask.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -106,9 +106,9 @@
     <Compile Include="TV\RemoteSeasonProvider.cs" />
     <Compile Include="TV\RemoteSeriesProvider.cs" />
     <Compile Include="TV\SeasonProviderFromXml.cs" />
+    <Compile Include="TV\SeriesPostScanTask.cs" />
     <Compile Include="TV\SeriesProviderFromXml.cs" />
     <Compile Include="TV\SeriesXmlParser.cs" />
-    <Compile Include="TV\SeriesPostScanTask.cs" />
     <Compile Include="TV\TvdbPersonImageProvider.cs" />
     <Compile Include="TV\TvdbPrescanTask.cs" />
     <Compile Include="TV\TvdbSeriesImageProvider.cs" />

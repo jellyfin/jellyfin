@@ -147,104 +147,77 @@
 
     function renderTabs(page, item) {
 
-        var promise;
+        var html = '<fieldset data-role="controlgroup" data-type="horizontal" class="libraryTabs">';
 
-        if (item.Type == "Person") {
-            promise = ApiClient.getPersonItemCounts(Dashboard.getCurrentUserId(), item.Name);
-        }
-        else if (item.Type == "Genre") {
-            promise = ApiClient.getGenreItemCounts(Dashboard.getCurrentUserId(), item.Name);
-        }
-        else if (item.Type == "MusicGenre") {
-            promise = ApiClient.getMusicGenreItemCounts(Dashboard.getCurrentUserId(), item.Name);
-        }
-        else if (item.Type == "GameGenre") {
-            promise = ApiClient.getGameGenreItemCounts(Dashboard.getCurrentUserId(), item.Name);
-        }
-        else if (item.Type == "Studio") {
-            promise = ApiClient.getStudioItemCounts(Dashboard.getCurrentUserId(), item.Name);
-        }
-        else if (item.Type == "Artist") {
-            promise = ApiClient.getArtistItemCounts(Dashboard.getCurrentUserId(), item.Name);
-        }
-        else {
-            throw new Error("Unknown item type: " + item.Type);
+        html += '<legend></legend>';
+
+        if (item.MovieCount) {
+
+            html += '<input type="radio" name="ibnItems" id="radioMovies" class="context-movies" value="on" data-mini="true">';
+            html += '<label for="radioMovies">Movies (' + item.MovieCount + ')</label>';
         }
 
-        promise.done(function (result) {
+        if (item.SeriesCount) {
 
-            var html = '<fieldset data-role="controlgroup" data-type="horizontal" class="libraryTabs">';
+            html += '<input type="radio" name="ibnItems" id="radioShows" class="context-tv" value="on" data-mini="true">';
+            html += '<label for="radioShows">TV Shows (' + item.SeriesCount + ')</label>';
+        }
 
-            html += '<legend></legend>';
+        if (item.EpisodeCount) {
 
-            if (result.MovieCount) {
+            html += '<input type="radio" name="ibnItems" id="radioEpisodes" class="context-tv" value="on" data-mini="true">';
+            html += '<label for="radioEpisodes">Episodes (' + item.EpisodeCount + ')</label>';
+        }
 
-                html += '<input type="radio" name="ibnItems" id="radioMovies" class="context-movies" value="on" data-mini="true">';
-                html += '<label for="radioMovies">Movies (' + result.MovieCount + ')</label>';
-            }
+        if (item.TrailerCount) {
 
-            if (result.SeriesCount) {
+            html += '<input type="radio" name="ibnItems" id="radioTrailers" class="context-movies" value="on" data-mini="true">';
+            html += '<label for="radioTrailers">Trailers (' + item.TrailerCount + ')</label>';
+        }
 
-                html += '<input type="radio" name="ibnItems" id="radioShows" class="context-tv" value="on" data-mini="true">';
-                html += '<label for="radioShows">TV Shows (' + result.SeriesCount + ')</label>';
-            }
+        if (item.GameCount) {
 
-            if (result.EpisodeCount) {
+            html += '<input type="radio" name="ibnItems" id="radioGames" class="context-games" value="on" data-mini="true">';
+            html += '<label for="radioGames">Games (' + item.GameCount + ')</label>';
+        }
 
-                html += '<input type="radio" name="ibnItems" id="radioEpisodes" class="context-tv" value="on" data-mini="true">';
-                html += '<label for="radioEpisodes">Episodes (' + result.EpisodeCount + ')</label>';
-            }
+        if (item.AlbumCount) {
 
-            if (result.TrailerCount) {
+            html += '<input type="radio" name="ibnItems" id="radioAlbums" class="context-music" value="on" data-mini="true">';
+            html += '<label for="radioAlbums">Albums (' + item.AlbumCount + ')</label>';
+        }
 
-                html += '<input type="radio" name="ibnItems" id="radioTrailers" class="context-movies" value="on" data-mini="true">';
-                html += '<label for="radioTrailers">Trailers (' + result.TrailerCount + ')</label>';
-            }
+        if (item.SongCount) {
 
-            if (result.GameCount) {
+            html += '<input type="radio" name="ibnItems" id="radioSongs" class="context-music" value="on" data-mini="true">';
+            html += '<label for="radioSongs">Songs (' + item.SongCount + ')</label>';
+        }
 
-                html += '<input type="radio" name="ibnItems" id="radioGames" class="context-games" value="on" data-mini="true">';
-                html += '<label for="radioGames">Games (' + result.GameCount + ')</label>';
-            }
+        if (item.MusicVideoCount) {
 
-            if (result.AlbumCount) {
+            html += '<input type="radio" name="ibnItems" id="radioMusicVideos" class="context-music" value="on" data-mini="true">';
+            html += '<label for="radioMusicVideos">Music Videos (' + item.MusicVideoCount + ')</label>';
+        }
 
-                html += '<input type="radio" name="ibnItems" id="radioAlbums" class="context-music" value="on" data-mini="true">';
-                html += '<label for="radioAlbums">Albums (' + result.AlbumCount + ')</label>';
-            }
+        html += '</fieldset>';
 
-            if (result.SongCount) {
+        var elem = $('#itemTabs', page).html(html).trigger('create');
 
-                html += '<input type="radio" name="ibnItems" id="radioSongs" class="context-music" value="on" data-mini="true">';
-                html += '<label for="radioSongs">Songs (' + result.SongCount + ')</label>';
-            }
+        bindRadioEvents(page);
 
-            if (result.MusicVideoCount) {
+        var context = getParameterByName('context');
+        var selectedRadio = null;
 
-                html += '<input type="radio" name="ibnItems" id="radioMusicVideos" class="context-music" value="on" data-mini="true">';
-                html += '<label for="radioMusicVideos">Music Videos (' + result.MusicVideoCount + ')</label>';
-            }
+        if (context) {
+            selectedRadio = $('.context-' + context + ':first', elem);
+        }
 
-            html += '</fieldset>';
+        if (selectedRadio && selectedRadio.length) {
+            selectedRadio.attr("checked", "checked").checkboxradio("refresh").trigger('click');
+        } else {
+            $('input:first', elem).attr("checked", "checked").checkboxradio("refresh").trigger('click');
+        }
 
-            var elem = $('#itemTabs', page).html(html).trigger('create');
-
-            bindRadioEvents(page);
-
-            var context = getParameterByName('context');
-            var selectedRadio = null;
-
-            if (context) {
-                selectedRadio = $('.context-' + context + ':first', elem);
-            }
-            
-            if (selectedRadio && selectedRadio.length) {
-                selectedRadio.attr("checked", "checked").checkboxradio("refresh").trigger('click');
-            } else {
-                $('input:first', elem).attr("checked", "checked").checkboxradio("refresh").trigger('click');
-            }
-
-        });
     }
 
     function bindRadioEvents(page) {

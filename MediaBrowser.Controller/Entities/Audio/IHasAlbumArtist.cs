@@ -5,4 +5,9 @@ namespace MediaBrowser.Controller.Entities.Audio
     {
         string AlbumArtist { get; }
     }
+
+    public interface IHasArtist
+    {
+        bool HasArtist(string name);
+    }
 }

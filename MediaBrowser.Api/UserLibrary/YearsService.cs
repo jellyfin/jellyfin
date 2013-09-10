@@ -118,7 +118,7 @@ namespace MediaBrowser.Api.UserLibrary
             return itemsList
                 .Select(i => i.ProductionYear.Value)
                 .Distinct()
-                .Select(year => new IbnStub<Year>(year.ToString(UsCulture), () => itemsList.Where(i => i.ProductionYear.HasValue && i.ProductionYear.Value == year), GetEntity));
+                .Select(year => new IbnStub<Year>(year.ToString(UsCulture), GetEntity));
         }
 
         /// <summary>
