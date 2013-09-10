@@ -13,4 +13,24 @@ namespace MediaBrowser.Controller.Entities
 
         Dictionary<Guid, ItemByNameCounts> UserItemCounts { get; set; }
     }
+
+    public static class IItemByNameExtensions
+    {
+        public static ItemByNameCounts GetItemByNameCounts(this IItemByName item, User user)
+        {
+            if (user == null)
+            {
+                return item.ItemCounts;
+            }
+
+            ItemByNameCounts counts;
+
+            if (item.UserItemCounts.TryGetValue(user.Id, out counts))
+            {
+                return counts;
+            }
+
+            return null;
+        }
+    }
 }

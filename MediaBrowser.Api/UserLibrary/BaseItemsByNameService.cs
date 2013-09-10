@@ -3,6 +3,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using ServiceStack.ServiceHost;
 using System;
@@ -81,7 +82,7 @@ namespace MediaBrowser.Api.UserLibrary
                 }
                 else
                 {
-                    items = request.Recursive ? folder.RecursiveChildren: folder.Children;
+                    items = request.Recursive ? folder.RecursiveChildren : folder.Children;
                 }
             }
             else
@@ -149,7 +150,7 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 items = items.Where(item => imageTypes.Any(imageType => ItemsService.HasImage(item.GetItem().Result, imageType)));
             }
-            
+
             var filters = request.GetFilters().ToList();
 
             if (filters.Count == 0)
@@ -162,18 +163,20 @@ namespace MediaBrowser.Api.UserLibrary
             if (filters.Contains(ItemFilter.Dislikes))
             {
                 items = items.Where(i =>
-                {
-                    var userdata = i.GetUserItemData(UserDataRepository, user.Id).Result;
+                    {
+                        var item = i.GetItem().Result;
+                        var userdata = UserDataRepository.GetUserData(user.Id, item.GetUserDataKey());
 
-                    return userdata != null && userdata.Likes.HasValue && !userdata.Likes.Value;
-                });
+                        return userdata != null && userdata.Likes.HasValue && !userdata.Likes.Value;
+                    });
             }
 
             if (filters.Contains(ItemFilter.Likes))
             {
                 items = items.Where(i =>
                 {
-                    var userdata = i.GetUserItemData(UserDataRepository, user.Id).Result;
+                    var item = i.GetItem().Result;
+                    var userdata = UserDataRepository.GetUserData(user.Id, item.GetUserDataKey());
 
                     return userdata != null && userdata.Likes.HasValue && userdata.Likes.Value;
                 });
@@ -183,12 +186,8 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 items = items.Where(i =>
                 {
-                    var userdata = i.GetUserItemData(UserDataRepository, user.Id).Result;
-
-                    if (userdata == null)
-                    {
-                        return false;
-                    }
+                    var item = i.GetItem().Result;
+                    var userdata = UserDataRepository.GetUserData(user.Id, item.GetUserDataKey());
 
                     var likes = userdata.Likes ?? false;
                     var favorite = userdata.IsFavorite;
@@ -196,20 +195,21 @@ namespace MediaBrowser.Api.UserLibrary
                     return likes || favorite;
                 });
             }
-            
+
             if (filters.Contains(ItemFilter.IsFavorite))
             {
                 items = items.Where(i =>
                 {
-                    var userdata = i.GetUserItemData(UserDataRepository, user.Id).Result;
+                    var item = i.GetItem().Result;
+                    var userdata = UserDataRepository.GetUserData(user.Id, item.GetUserDataKey());
 
                     return userdata != null && userdata.Likes.HasValue && userdata.IsFavorite;
                 });
             }
-            
+
             return items.AsEnumerable();
         }
-        
+
         /// <summary>
         /// Sorts the items.
         /// </summary>
@@ -220,7 +220,7 @@ namespace MediaBrowser.Api.UserLibrary
         {
             if (string.Equals(request.SortBy, "SortName", StringComparison.OrdinalIgnoreCase))
             {
-                if (request.SortOrder.HasValue && request.SortOrder.Value == Model.Entities.SortOrder.Descending)
+                if (request.SortOrder.HasValue && request.SortOrder.Value == SortOrder.Descending)
                 {
                     items = items.OrderByDescending(i => i.Name);
                 }
@@ -231,7 +231,7 @@ namespace MediaBrowser.Api.UserLibrary
             }
             else if (string.Equals(request.SortBy, "Random", StringComparison.OrdinalIgnoreCase))
             {
-                if (request.SortOrder.HasValue && request.SortOrder.Value == Model.Entities.SortOrder.Descending)
+                if (request.SortOrder.HasValue && request.SortOrder.Value == SortOrder.Descending)
                 {
                     items = items.OrderByDescending(i => Guid.NewGuid());
                 }
@@ -273,7 +273,7 @@ namespace MediaBrowser.Api.UserLibrary
 
                 items = items.Where(f => vals.Contains(f.MediaType ?? string.Empty, StringComparer.OrdinalIgnoreCase));
             }
-            
+
             return items;
         }
 
@@ -344,7 +344,7 @@ namespace MediaBrowser.Api.UserLibrary
 
         [ApiMember(Name = "NameStartsWithOrGreater", Description = "Optional filter by items whose name is sorted equally or greater than a given input string.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string NameStartsWithOrGreater { get; set; }
-        
+
         /// <summary>
         /// What to sort the results by
         /// </summary>
@@ -361,26 +361,17 @@ namespace MediaBrowser.Api.UserLibrary
     public class IbnStub<T>
         where T : BaseItem
     {
-        private readonly Func<string,Task<T>> _itemFunction;
+        private readonly Func<string, Task<T>> _itemFunction;
         private Task<T> _itemTask;
-        
-        public string Name;
 
-        private UserItemData _userData;
+        public string Name;
 
         public Task<T> GetItem()
         {
             return _itemTask ?? (_itemTask = _itemFunction(Name));
         }
 
-        public async Task<UserItemData> GetUserItemData(IUserDataRepository repo, Guid userId)
-        {
-            var item = await GetItem().ConfigureAwait(false);
-
-            return _userData ?? (_userData = repo.GetUserData(userId, item.GetUserDataKey()));
-        }
-
-        public IbnStub(string name, Func<string,Task<T>> item)
+        public IbnStub(string name, Func<string, Task<T>> item)
         {
             Name = name;
             _itemFunction = item;
