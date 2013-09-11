@@ -499,7 +499,7 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                return ActualChildren.Values.ToList();
+                return ActualChildren.Values.ToArray();
             }
         }
 
@@ -757,7 +757,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var list = children.ToList();
 
-            var percentages = new Dictionary<Guid, double>();
+            var percentages = new Dictionary<Guid, double>(list.Count);
 
             var tasks = new List<Task>();
 

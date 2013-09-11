@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 
@@ -11,7 +12,7 @@ namespace MediaBrowser.Controller.Entities.Audio
     {
         public MusicAlbum()
         {
-            Artists = new string[] { };
+            Artists = new List<string>();
         }
 
         public string LastFmImageUrl { get; set; }
@@ -72,7 +73,7 @@ namespace MediaBrowser.Controller.Entities.Audio
 
         public string AlbumArtist { get; set; }
 
-        public string[] Artists { get; set; }
+        public List<string> Artists { get; set; }
     }
 
     public class MusicAlbumDisc : Folder

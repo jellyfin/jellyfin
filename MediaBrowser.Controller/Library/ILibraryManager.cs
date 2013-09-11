@@ -48,6 +48,8 @@ namespace MediaBrowser.Controller.Library
         /// <value>The root folder.</value>
         AggregateFolder RootFolder { get; }
 
+        Person GetPersonSync(string name);
+
         /// <summary>
         /// Gets a Person
         /// </summary>

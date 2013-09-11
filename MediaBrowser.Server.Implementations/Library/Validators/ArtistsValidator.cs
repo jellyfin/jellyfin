@@ -108,7 +108,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
                 }
 
                 // Populate counts of items
-                SetItemCounts(artist, null, allItems.OfType<IHasArtist>());
+                //SetItemCounts(artist, null, allItems.OfType<IHasArtist>());
 
                 foreach (var lib in userLibraries)
                 {
@@ -154,10 +154,6 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
             if (userId.HasValue)
             {
                 artist.UserItemCounts[userId.Value] = counts;
-            }
-            else
-            {
-                artist.ItemCounts = counts;
             }
         }
 

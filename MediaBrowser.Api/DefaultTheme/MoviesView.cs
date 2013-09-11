@@ -1,10 +1,10 @@
-﻿
+﻿using MediaBrowser.Model.Dto;
+
 namespace MediaBrowser.Api.DefaultTheme
 {
     public class MoviesView
     {
-        public ItemStub[] SpotlightItems { get; set; }
-        public ItemStub[] BackdropItems { get; set; }
+        public BaseItemDto[] SpotlightItems { get; set; }
         public ItemStub[] MovieItems { get; set; }
         public ItemStub[] PeopleItems { get; set; }
 
@@ -12,5 +12,11 @@ namespace MediaBrowser.Api.DefaultTheme
         public ItemStub[] TrailerItems { get; set; }
         public ItemStub[] HDItems { get; set; }
         public ItemStub[] ThreeDItems { get; set; }
+
+        public ItemStub[] FamilyMovies { get; set; }
+
+        public double FamilyMoviePercentage { get; set; }
+
+        public double HDMoviePercentage { get; set; }
     }
 }

@@ -17,7 +17,12 @@ namespace MediaBrowser.Server.Implementations.Sorting
         /// <returns>System.Int32.</returns>
         public int Compare(BaseItem x, BaseItem y)
         {
-            return (x.CriticRating ?? 0).CompareTo(y.CriticRating ?? 0);
+            return GetValue(x).CompareTo(GetValue(y));
+        }
+
+        private float GetValue(BaseItem x)
+        {
+            return x.CriticRating ?? 0;
         }
 
         /// <summary>

@@ -31,10 +31,8 @@ namespace MediaBrowser.Controller.Entities
         protected BaseItem()
         {
             Genres = new List<string>();
-            RemoteTrailers = new List<MediaUrl>();
             Studios = new List<string>();
             People = new List<PersonInfo>();
-            Taglines = new List<string>();
             ScreenshotImagePaths = new List<string>();
             BackdropImagePaths = new List<string>();
             ProductionLocations = new List<string>();
@@ -46,6 +44,8 @@ namespace MediaBrowser.Controller.Entities
             SoundtrackIds = new List<Guid>();
             LocalTrailerIds = new List<Guid>();
             LockedFields = new List<MetadataFields>();
+            Taglines = new List<string>();
+            RemoteTrailers = new List<MediaUrl>();
         }
 
         /// <summary>
@@ -90,6 +90,42 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The id.</value>
         public Guid Id { get; set; }
 
+        /// <summary>
+        /// Gets or sets the budget.
+        /// </summary>
+        /// <value>The budget.</value>
+        public double? Budget { get; set; }
+
+        /// <summary>
+        /// Gets or sets the taglines.
+        /// </summary>
+        /// <value>The taglines.</value>
+        public List<string> Taglines { get; set; }
+
+        /// <summary>
+        /// Gets or sets the revenue.
+        /// </summary>
+        /// <value>The revenue.</value>
+        public double? Revenue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the critic rating.
+        /// </summary>
+        /// <value>The critic rating.</value>
+        public float? CriticRating { get; set; }
+
+        /// <summary>
+        /// Gets or sets the critic rating summary.
+        /// </summary>
+        /// <value>The critic rating summary.</value>
+        public string CriticRatingSummary { get; set; }
+
+        /// <summary>
+        /// Gets or sets the trailer URL.
+        /// </summary>
+        /// <value>The trailer URL.</value>
+        public List<MediaUrl> RemoteTrailers { get; set; }
+        
         /// <summary>
         /// Return the id that should be used to key display prefs for this item.
         /// Default is based on the type for everything except actual generic folders.
@@ -522,11 +558,6 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The overview.</value>
         public string Overview { get; set; }
-        /// <summary>
-        /// Gets or sets the taglines.
-        /// </summary>
-        /// <value>The taglines.</value>
-        public List<string> Taglines { get; set; }
 
         /// <summary>
         /// Gets or sets the people.
@@ -581,34 +612,10 @@ namespace MediaBrowser.Controller.Entities
         public string HomePageUrl { get; set; }
 
         /// <summary>
-        /// Gets or sets the budget.
-        /// </summary>
-        /// <value>The budget.</value>
-        public double? Budget { get; set; }
-
-        /// <summary>
-        /// Gets or sets the revenue.
-        /// </summary>
-        /// <value>The revenue.</value>
-        public double? Revenue { get; set; }
-
-        /// <summary>
         /// Gets or sets the production locations.
         /// </summary>
         /// <value>The production locations.</value>
         public List<string> ProductionLocations { get; set; }
-
-        /// <summary>
-        /// Gets or sets the critic rating.
-        /// </summary>
-        /// <value>The critic rating.</value>
-        public float? CriticRating { get; set; }
-
-        /// <summary>
-        /// Gets or sets the critic rating summary.
-        /// </summary>
-        /// <value>The critic rating summary.</value>
-        public string CriticRatingSummary { get; set; }
 
         /// <summary>
         /// Gets or sets the community rating.
@@ -974,12 +981,6 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Gets or sets the trailer URL.
-        /// </summary>
-        /// <value>The trailer URL.</value>
-        public List<MediaUrl> RemoteTrailers { get; set; }
-
-        /// <summary>
         /// Gets or sets the provider ids.
         /// </summary>
         /// <value>The provider ids.</value>
@@ -1256,53 +1257,6 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Adds a tagline to the item
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <exception cref="System.ArgumentNullException"></exception>
-        public void AddTagline(string name)
-        {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                throw new ArgumentNullException("name");
-            }
-
-            if (!Taglines.Contains(name, StringComparer.OrdinalIgnoreCase))
-            {
-                Taglines.Add(name);
-            }
-        }
-
-        /// <summary>
-        /// Adds a TrailerUrl to the item
-        /// </summary>
-        /// <param name="url">The URL.</param>
-        /// <param name="isDirectLink">if set to <c>true</c> [is direct link].</param>
-        /// <exception cref="System.ArgumentNullException">url</exception>
-        public void AddTrailerUrl(string url, bool isDirectLink)
-        {
-            if (string.IsNullOrWhiteSpace(url))
-            {
-                throw new ArgumentNullException("url");
-            }
-
-            var current = RemoteTrailers.FirstOrDefault(i => string.Equals(i.Url, url, StringComparison.OrdinalIgnoreCase));
-
-            if (current != null)
-            {
-                current.IsDirectLink = isDirectLink;
-            }
-            else
-            {
-                RemoteTrailers.Add(new MediaUrl
-                {
-                    Url = url,
-                    IsDirectLink = isDirectLink
-                });
-            }
-        }
-
-        /// <summary>
         /// Adds a genre to the item
         /// </summary>
         /// <param name="name">The name.</param>
@@ -1545,7 +1499,6 @@ namespace MediaBrowser.Controller.Entities
         {
             // Only validate paths from the same directory - need to copy to a list because we are going to potentially modify the collection below
             var deletedKeys = Images
-                .ToList()
                 .Where(image => !File.Exists(image.Value))
                 .Select(i => i.Key)
                 .ToList();

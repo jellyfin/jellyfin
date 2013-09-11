@@ -207,13 +207,15 @@ namespace MediaBrowser.Api
                 item.ForcedSortName = request.SortName;
             }
 
+            item.Budget = request.Budget;
+            item.Revenue = request.Revenue;
+
+            item.CriticRating = request.CriticRating;
+            item.CriticRatingSummary = request.CriticRatingSummary;
+            
             item.DisplayMediaType = request.DisplayMediaType;
             item.CommunityRating = request.CommunityRating;
             item.HomePageUrl = request.HomePageUrl;
-            item.Budget = request.Budget;
-            item.Revenue = request.Revenue;
-            item.CriticRating = request.CriticRating;
-            item.CriticRatingSummary = request.CriticRatingSummary;
             item.IndexNumber = request.IndexNumber;
             item.ParentIndexNumber = request.ParentIndexNumber;
             item.Overview = request.Overview;

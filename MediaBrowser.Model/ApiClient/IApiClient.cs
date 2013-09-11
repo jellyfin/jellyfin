@@ -19,8 +19,14 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Model.ApiClient
 {
+    /// <summary>
+    /// Interface IApiClient
+    /// </summary>
     public interface IApiClient : IDisposable
     {
+        /// <summary>
+        /// Occurs when [server location changed].
+        /// </summary>
         event EventHandler ServerLocationChanged;
 
         /// <summary>
@@ -28,12 +34,23 @@ namespace MediaBrowser.Model.ApiClient
         /// </summary>
         event EventHandler<HttpResponseEventArgs> HttpResponseReceived;
 
-        Task<T> GetAsync<T>(string url, CancellationToken cancellationToken);
+        string GetApiUrl(string handler);
+
+        /// <summary>
+        /// Gets the async.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="url">The URL.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{``0}.</returns>
+        Task<T> GetAsync<T>(string url, CancellationToken cancellationToken)
+            where T : class;
 
         /// <summary>
         /// Gets the critic reviews.
         /// </summary>
         /// <param name="itemId">The item id.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="startIndex">The start index.</param>
         /// <param name="limit">The limit.</param>
         /// <returns>Task{ItemReviewsResult}.</returns>
@@ -45,6 +62,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="userId">The user id.</param>
         /// <param name="itemId">The item id.</param>
         /// <param name="inheritFromParents">if set to <c>true</c> [inherit from parents].</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{ThemeMediaResult}.</returns>
         Task<ThemeMediaResult> GetThemeSongsAsync(string userId, string itemId, bool inheritFromParents, CancellationToken cancellationToken);
 
@@ -65,6 +83,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="userId">The user id.</param>
         /// <param name="itemId">The item id.</param>
         /// <param name="inheritFromParents">if set to <c>true</c> [inherit from parents].</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{ThemeMediaResult}.</returns>
         Task<ThemeMediaResult> GetThemeVideosAsync(string userId, string itemId, bool inheritFromParents, CancellationToken cancellationToken);
 
@@ -74,6 +93,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="userId">The user id.</param>
         /// <param name="itemId">The item id.</param>
         /// <param name="inheritFromParents">if set to <c>true</c> [inherit from parents].</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{AllThemeMediaResult}.</returns>
         Task<AllThemeMediaResult> GetAllThemeMediaAsync(string userId, string itemId, bool inheritFromParents, CancellationToken cancellationToken);
 
@@ -152,12 +172,14 @@ namespace MediaBrowser.Model.ApiClient
         /// <summary>
         /// Gets the users async.
         /// </summary>
+        /// <param name="query">The query.</param>
         /// <returns>Task{UserDto[]}.</returns>
         Task<UserDto[]> GetUsersAsync(UserQuery query);
 
         /// <summary>
         /// Gets the public users async.
         /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{UserDto[]}.</returns>
         Task<UserDto[]> GetPublicUsersAsync(CancellationToken cancellationToken);
 
@@ -469,6 +491,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="userId">The user id.</param>
         /// <param name="positionTicks">The position ticks.</param>
         /// <param name="isPaused">if set to <c>true</c> [is paused].</param>
+        /// <param name="isMuted">if set to <c>true</c> [is muted].</param>
         /// <returns>Task{UserItemDataDto}.</returns>
         /// <exception cref="ArgumentNullException">itemId</exception>
         Task ReportPlaybackProgressAsync(string itemId, string userId, long? positionTicks, bool isPaused, bool isMuted);
@@ -508,29 +531,27 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="sessionId">The session id.</param>
         /// <param name="request">The request.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="ArgumentNullException">
-        /// sessionId
+        /// <exception cref="ArgumentNullException">sessionId
         /// or
-        /// request
-        /// </exception>
+        /// request</exception>
         Task SendPlayCommandAsync(string sessionId, PlayRequest request);
 
         /// <summary>
         /// Sends a system command to the client
         /// </summary>
-        /// <param name="sessionId"></param>
-        /// <param name="command"></param>
-        /// <returns></returns>
+        /// <param name="sessionId">The session id.</param>
+        /// <param name="command">The command.</param>
+        /// <returns>Task.</returns>
         Task SendSystemCommandAsync(string sessionId, SystemCommand command);
 
         /// <summary>
         /// Instructs the client to display a message to the user
         /// </summary>
-        /// <param name="sessionId"></param>
-        /// <param name="command"></param>
-        /// <returns></returns>
+        /// <param name="sessionId">The session id.</param>
+        /// <param name="command">The command.</param>
+        /// <returns>Task.</returns>
         Task SendMessageCommandAsync(string sessionId, MessageCommand command);
-        
+
         /// <summary>
         /// Clears a user's rating for an item
         /// </summary>
@@ -582,14 +603,17 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="id">The id.</param>
         /// <param name="userId">The user id.</param>
         /// <param name="client">The client.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{BaseItemDto}.</returns>
         Task<DisplayPreferences> GetDisplayPreferencesAsync(string id, string userId, string client, CancellationToken cancellationToken);
 
         /// <summary>
         /// Updates display preferences for a user
         /// </summary>
-        /// <param name="id">The id.</param>
         /// <param name="displayPreferences">The display preferences.</param>
+        /// <param name="userId">The user id.</param>
+        /// <param name="client">The client.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{DisplayPreferences}.</returns>
         /// <exception cref="System.ArgumentNullException">userId</exception>
         Task UpdateDisplayPreferencesAsync(DisplayPreferences displayPreferences, string userId, string client, CancellationToken cancellationToken);

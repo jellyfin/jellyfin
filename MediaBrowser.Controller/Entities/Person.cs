@@ -12,12 +12,8 @@ namespace MediaBrowser.Controller.Entities
     {
         public Person()
         {
-            ItemCounts = new ItemByNameCounts();
             UserItemCounts = new Dictionary<Guid, ItemByNameCounts>();
         }
-
-        [IgnoreDataMember]
-        public ItemByNameCounts ItemCounts { get; set; }
 
         [IgnoreDataMember]
         public Dictionary<Guid, ItemByNameCounts> UserItemCounts { get; set; }

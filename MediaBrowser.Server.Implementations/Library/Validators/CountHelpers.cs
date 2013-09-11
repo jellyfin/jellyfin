@@ -18,46 +18,46 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="counts">The counts.</param>
-        internal static void AddToDictionary(BaseItem item, Dictionary<string, int> counts)
+        internal static void AddToDictionary(BaseItem item, Dictionary<CountType, int> counts)
         {
             if (item is Movie)
             {
-                IncrementCount(counts, "Movie");
+                IncrementCount(counts, CountType.Movie);
             }
             else if (item is Trailer)
             {
-                IncrementCount(counts, "Trailer");
+                IncrementCount(counts, CountType.Trailer);
             }
             else if (item is Series)
             {
-                IncrementCount(counts, "Series");
+                IncrementCount(counts, CountType.Series);
             }
             else if (item is Game)
             {
-                IncrementCount(counts, "Game");
+                IncrementCount(counts, CountType.Game);
             }
             else if (item is Audio)
             {
-                IncrementCount(counts, "Audio");
+                IncrementCount(counts, CountType.Song);
             }
             else if (item is MusicAlbum)
             {
-                IncrementCount(counts, "MusicAlbum");
+                IncrementCount(counts, CountType.MusicAlbum);
             }
             else if (item is Episode)
             {
-                IncrementCount(counts, "Episode");
+                IncrementCount(counts, CountType.Episode);
             }
             else if (item is MusicVideo)
             {
-                IncrementCount(counts, "MusicVideo");
+                IncrementCount(counts, CountType.MusicVideo);
             }
             else if (item is AdultVideo)
             {
-                IncrementCount(counts, "AdultVideo");
+                IncrementCount(counts, CountType.AdultVideo);
             }
 
-            IncrementCount(counts, "Total");
+            IncrementCount(counts, CountType.Total);
         }
 
         /// <summary>
@@ -65,7 +65,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         /// </summary>
         /// <param name="counts">The counts.</param>
         /// <param name="key">The key.</param>
-        internal static void IncrementCount(Dictionary<string, int> counts, string key)
+        internal static void IncrementCount(Dictionary<CountType, int> counts, CountType key)
         {
             int count;
 
@@ -85,20 +85,20 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         /// </summary>
         /// <param name="counts">The counts.</param>
         /// <returns>ItemByNameCounts.</returns>
-        internal static ItemByNameCounts GetCounts(Dictionary<string, int> counts)
+        internal static ItemByNameCounts GetCounts(Dictionary<CountType, int> counts)
         {
             return new ItemByNameCounts
             {
-                AdultVideoCount = GetCount(counts, "AdultVideo"),
-                AlbumCount = GetCount(counts, "MusicAlbum"),
-                EpisodeCount = GetCount(counts, "Episode"),
-                GameCount = GetCount(counts, "Game"),
-                MovieCount = GetCount(counts, "Movie"),
-                MusicVideoCount = GetCount(counts, "MusicVideo"),
-                SeriesCount = GetCount(counts, "Series"),
-                SongCount = GetCount(counts, "Audio"),
-                TrailerCount = GetCount(counts, "Trailer"),
-                TotalCount = GetCount(counts, "Total")
+                AdultVideoCount = GetCount(counts, CountType.AdultVideo),
+                AlbumCount = GetCount(counts, CountType.MusicAlbum),
+                EpisodeCount = GetCount(counts, CountType.Episode),
+                GameCount = GetCount(counts, CountType.Game),
+                MovieCount = GetCount(counts, CountType.Movie),
+                MusicVideoCount = GetCount(counts, CountType.MusicVideo),
+                SeriesCount = GetCount(counts, CountType.Series),
+                SongCount = GetCount(counts, CountType.Song),
+                TrailerCount = GetCount(counts, CountType.Trailer),
+                TotalCount = GetCount(counts, CountType.Total)
             };
         }
 
@@ -108,7 +108,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         /// <param name="counts">The counts.</param>
         /// <param name="key">The key.</param>
         /// <returns>System.Int32.</returns>
-        internal static int GetCount(Dictionary<string, int> counts, string key)
+        internal static int GetCount(Dictionary<CountType, int> counts, CountType key)
         {
             int count;
 
@@ -127,29 +127,43 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         /// <param name="media">The media.</param>
         /// <param name="names">The names.</param>
         /// <param name="masterDictionary">The master dictionary.</param>
-        internal static void SetItemCounts(Guid? userId, BaseItem media, List<string> names, Dictionary<string, Dictionary<Guid, Dictionary<string, int>>> masterDictionary)
+        internal static void SetItemCounts(Guid userId, BaseItem media, List<string> names, Dictionary<string, Dictionary<Guid, Dictionary<CountType, int>>> masterDictionary)
         {
             foreach (var name in names)
             {
-                Dictionary<Guid, Dictionary<string, int>> libraryCounts;
+                Dictionary<Guid, Dictionary<CountType, int>> libraryCounts;
 
                 if (!masterDictionary.TryGetValue(name, out libraryCounts))
                 {
-                    libraryCounts = new Dictionary<Guid, Dictionary<string, int>>();
+                    libraryCounts = new Dictionary<Guid, Dictionary<CountType, int>>();
                     masterDictionary.Add(name, libraryCounts);
                 }
 
-                var userLibId = userId ?? Guid.Empty;
-                Dictionary<string, int> userDictionary;
+                var userLibId = userId/* ?? Guid.Empty*/;
+                Dictionary<CountType, int> userDictionary;
 
                 if (!libraryCounts.TryGetValue(userLibId, out userDictionary))
                 {
-                    userDictionary = new Dictionary<string, int>();
+                    userDictionary = new Dictionary<CountType, int>();
                     libraryCounts.Add(userLibId, userDictionary);
                 }
 
                 AddToDictionary(media, userDictionary);
             }
         }
+    }
+
+    internal enum CountType
+    {
+        AdultVideo,
+        MusicAlbum,
+        Episode,
+        Game,
+        Movie,
+        MusicVideo,
+        Series,
+        Song,
+        Trailer,
+        Total
     }
 }

@@ -245,7 +245,7 @@ namespace MediaBrowser.Controller.Library
             {
                 throw new ArgumentNullException();
             }
-            
+
             if (MetadataFileDictionary == null)
             {
                 MetadataFileDictionary = new Dictionary<string, FileSystemInfo>(StringComparer.OrdinalIgnoreCase);

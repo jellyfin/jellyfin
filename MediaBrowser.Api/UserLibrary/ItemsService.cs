@@ -121,7 +121,7 @@ namespace MediaBrowser.Api.UserLibrary
 
         [ApiMember(Name = "AlbumArtistStartsWithOrGreater", Description = "Optional filter by items whose album artist is sorted equally or greater than a given input string.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string AlbumArtistStartsWithOrGreater { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the air days.
         /// </summary>
@@ -161,8 +161,14 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "AdjacentTo", Description = "Optional. Return items that are siblings of a supplied item.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string AdjacentTo { get; set; }
 
-        [ApiMember(Name = "MinIndexNumber", Description = "Optional filter index number.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        [ApiMember(Name = "MinIndexNumber", Description = "Optional filter by minimum index number.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int? MinIndexNumber { get; set; }
+
+        [ApiMember(Name = "HasParentalRating", Description = "Optional filter by items that have or do not have a parental rating", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool? HasParentalRating { get; set; }
+
+        [ApiMember(Name = "IsHD", Description = "Optional filter by items that are HD or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool? IsHD { get; set; }
     }
 
     /// <summary>
@@ -481,7 +487,12 @@ namespace MediaBrowser.Api.UserLibrary
                 {
                     items = items.Where(i =>
                     {
-                        var rating = i.CustomRating ?? i.OfficialRating;
+                        var rating = i.CustomRating;
+
+                        if (string.IsNullOrEmpty(rating))
+                        {
+                            rating = i.OfficialRating;
+                        }
 
                         if (string.IsNullOrEmpty(rating))
                         {
@@ -504,7 +515,12 @@ namespace MediaBrowser.Api.UserLibrary
                 {
                     items = items.Where(i =>
                     {
-                        var rating = i.CustomRating ?? i.OfficialRating;
+                        var rating = i.CustomRating;
+
+                        if (string.IsNullOrEmpty(rating))
+                        {
+                            rating = i.OfficialRating;
+                        }
 
                         if (string.IsNullOrEmpty(rating))
                         {
@@ -667,6 +683,31 @@ namespace MediaBrowser.Api.UserLibrary
 
                     return i.MediaStreams == null || i.MediaStreams.All(m => m.Type != MediaStreamType.Subtitle);
                 });
+            }
+
+            if (request.HasParentalRating.HasValue)
+            {
+                items = items.Where(i =>
+                {
+                    var rating = i.CustomRating;
+
+                    if (string.IsNullOrEmpty(rating))
+                    {
+                        rating = i.OfficialRating;
+                    }
+
+                    if (request.HasParentalRating.Value)
+                    {
+                        return !string.IsNullOrEmpty(rating);
+                    }
+
+                    return string.IsNullOrEmpty(rating);
+                });
+            }
+
+            if (request.IsHD.HasValue)
+            {
+                items = items.OfType<Video>().Where(i => i.IsHd == request.IsHD.Value);
             }
 
             return items;

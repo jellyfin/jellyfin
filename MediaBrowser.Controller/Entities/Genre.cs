@@ -12,7 +12,6 @@ namespace MediaBrowser.Controller.Entities
     {
         public Genre()
         {
-            ItemCounts = new ItemByNameCounts();
             UserItemCounts = new Dictionary<Guid, ItemByNameCounts>();
         }
 
@@ -24,9 +23,6 @@ namespace MediaBrowser.Controller.Entities
         {
             return "Genre-" + Name;
         }
-
-        [IgnoreDataMember]
-        public ItemByNameCounts ItemCounts { get; set; }
 
         [IgnoreDataMember]
         public Dictionary<Guid, ItemByNameCounts> UserItemCounts { get; set; }

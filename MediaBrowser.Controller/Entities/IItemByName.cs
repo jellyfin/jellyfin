@@ -9,8 +9,6 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public interface IItemByName
     {
-        ItemByNameCounts ItemCounts { get; set; }
-
         Dictionary<Guid, ItemByNameCounts> UserItemCounts { get; set; }
     }
 
@@ -20,7 +18,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (user == null)
             {
-                return item.ItemCounts;
+                throw new ArgumentNullException("user");
             }
 
             ItemByNameCounts counts;

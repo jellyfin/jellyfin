@@ -39,7 +39,13 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         /// <param name="progress">The progress.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
+        public Task Run(IProgress<double> progress, CancellationToken cancellationToken)
+        {
+            return RunInternal(progress, cancellationToken);
+            //return Task.Run(() => RunInternal(progress, cancellationToken));
+        }
+
+        private async Task RunInternal(IProgress<double> progress, CancellationToken cancellationToken)
         {
             var allItems = _libraryManager.RootFolder.RecursiveChildren.ToList();
 
@@ -49,10 +55,10 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
 
             var allLibraryItems = allItems;
 
-            var masterDictionary = new Dictionary<string, Dictionary<Guid, Dictionary<string, int>>>(StringComparer.OrdinalIgnoreCase);
+            var masterDictionary = new Dictionary<string, Dictionary<Guid, Dictionary<CountType, int>>>(StringComparer.OrdinalIgnoreCase);
 
             // Populate counts of items
-            SetItemCounts(null, allLibraryItems, masterDictionary);
+            //SetItemCounts(null, allLibraryItems, masterDictionary);
 
             progress.Report(2);
 
@@ -74,16 +80,25 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
 
             progress.Report(10);
 
-            var names = masterDictionary.Keys.ToList();
+            var count = masterDictionary.Count;
             numComplete = 0;
 
-            foreach (var name in names)
+            foreach (var name in masterDictionary.Keys)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                
+
                 try
                 {
-                    await UpdateItemByNameCounts(name, masterDictionary[name]).ConfigureAwait(false);
+                    var counts = masterDictionary[name];
+
+                    var itemByName = await _libraryManager.GetPerson(name).ConfigureAwait(false);
+
+                    foreach (var libraryId in counts.Keys)
+                    {
+                        var itemCounts = CountHelpers.GetCounts(counts[libraryId]);
+
+                        itemByName.UserItemCounts[libraryId] = itemCounts;
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -92,7 +107,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
 
                 numComplete++;
                 double percent = numComplete;
-                percent /= names.Count;
+                percent /= count;
                 percent *= 90;
 
                 progress.Report(percent + 10);
@@ -101,26 +116,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
             progress.Report(100);
         }
 
-        private async Task UpdateItemByNameCounts(string name, Dictionary<Guid, Dictionary<string, int>> counts)
-        {
-            var itemByName = await _libraryManager.GetPerson(name).ConfigureAwait(false);
-
-            foreach (var libraryId in counts.Keys.ToList())
-            {
-                var itemCounts = CountHelpers.GetCounts(counts[libraryId]);
-
-                if (libraryId == Guid.Empty)
-                {
-                    itemByName.ItemCounts = itemCounts;
-                }
-                else
-                {
-                    itemByName.UserItemCounts[libraryId] = itemCounts;
-                }
-            }
-        }
-
-        private void SetItemCounts(Guid? userId, IEnumerable<BaseItem> allItems, Dictionary<string, Dictionary<Guid, Dictionary<string, int>>> masterDictionary)
+        private void SetItemCounts(Guid userId, IEnumerable<BaseItem> allItems, Dictionary<string, Dictionary<Guid, Dictionary<CountType, int>>> masterDictionary)
         {
             foreach (var media in allItems)
             {

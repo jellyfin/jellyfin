@@ -9,7 +9,6 @@ namespace MediaBrowser.Controller.Entities
     {
         public GameGenre()
         {
-            ItemCounts = new ItemByNameCounts();
             UserItemCounts = new Dictionary<Guid, ItemByNameCounts>();
         }
 
@@ -21,9 +20,6 @@ namespace MediaBrowser.Controller.Entities
         {
             return "GameGenre-" + Name;
         }
-
-        [IgnoreDataMember]
-        public ItemByNameCounts ItemCounts { get; set; }
 
         [IgnoreDataMember]
         public Dictionary<Guid, ItemByNameCounts> UserItemCounts { get; set; }

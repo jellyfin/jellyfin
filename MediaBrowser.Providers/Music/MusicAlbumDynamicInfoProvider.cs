@@ -67,7 +67,7 @@ namespace MediaBrowser.Providers.Music
 
             album.Artists = songs.SelectMany(i => i.Artists)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToArray();
+                .ToList();
 
             // Don't save to the db
             return FalseTaskResult;

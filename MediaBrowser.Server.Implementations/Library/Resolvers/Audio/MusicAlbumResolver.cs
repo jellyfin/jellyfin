@@ -46,11 +46,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
                 return null;
             }
             
-            return IsMusicAlbum(args) ? new MusicAlbum
-            {
-                DisplayMediaType = "Album"
-
-            } : null;
+            return IsMusicAlbum(args) ? new MusicAlbum() : null;
         }
 
 
