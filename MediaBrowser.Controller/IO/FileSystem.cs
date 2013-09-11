@@ -106,13 +106,15 @@ namespace MediaBrowser.Controller.IO
             {
                 throw new ArgumentNullException("filename");
             }
+
+            var builder = new StringBuilder(filename);
             
             foreach (var c in InvalidFileNameChars)
             {
-                filename = filename.Replace(c, SpaceChar);
+                builder = builder.Replace(c, SpaceChar);
             }
 
-            return filename;
+            return builder.ToString();
         }
 
         /// <summary>
