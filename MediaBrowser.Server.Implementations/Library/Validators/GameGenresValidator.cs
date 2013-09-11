@@ -49,10 +49,10 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
 
             var allLibraryItems = allItems;
 
-            var masterDictionary = new Dictionary<string, Dictionary<Guid, Dictionary<string, int>>>(StringComparer.OrdinalIgnoreCase);
+            var masterDictionary = new Dictionary<string, Dictionary<Guid, Dictionary<CountType, int>>>(StringComparer.OrdinalIgnoreCase);
 
             // Populate counts of items
-            SetItemCounts(null, allLibraryItems, masterDictionary);
+            //SetItemCounts(null, allLibraryItems, masterDictionary);
 
             progress.Report(2);
 
@@ -72,10 +72,10 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
 
             progress.Report(10);
 
-            var names = masterDictionary.Keys.ToList();
+            var count = masterDictionary.Count;
             numComplete = 0;
 
-            foreach (var name in names)
+            foreach (var name in masterDictionary.Keys)
             {
                 try
                 {
@@ -88,7 +88,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
 
                 numComplete++;
                 double percent = numComplete;
-                percent /= names.Count;
+                percent /= count;
                 percent *= 90;
 
                 progress.Report(percent + 10);
@@ -97,26 +97,19 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
             progress.Report(100);
         }
 
-        private async Task UpdateItemByNameCounts(string name, CancellationToken cancellationToken, Dictionary<Guid, Dictionary<string, int>> counts)
+        private async Task UpdateItemByNameCounts(string name, CancellationToken cancellationToken, Dictionary<Guid, Dictionary<CountType, int>> counts)
         {
             var itemByName = await _libraryManager.GetGameGenre(name, cancellationToken, true, true).ConfigureAwait(false);
 
-            foreach (var libraryId in counts.Keys.ToList())
+            foreach (var libraryId in counts.Keys)
             {
                 var itemCounts = CountHelpers.GetCounts(counts[libraryId]);
 
-                if (libraryId == Guid.Empty)
-                {
-                    itemByName.ItemCounts = itemCounts;
-                }
-                else
-                {
-                    itemByName.UserItemCounts[libraryId] = itemCounts;
-                }
+                itemByName.UserItemCounts[libraryId] = itemCounts;
             }
         }
 
-        private void SetItemCounts(Guid? userId, IEnumerable<BaseItem> allItems, Dictionary<string, Dictionary<Guid, Dictionary<string, int>>> masterDictionary)
+        private void SetItemCounts(Guid userId, IEnumerable<BaseItem> allItems, Dictionary<string, Dictionary<Guid, Dictionary<CountType, int>>> masterDictionary)
         {
             foreach (var media in allItems)
             {

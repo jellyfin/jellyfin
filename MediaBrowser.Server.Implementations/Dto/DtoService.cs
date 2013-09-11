@@ -137,7 +137,8 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             if (user == null)
             {
-                counts = item.ItemCounts;
+                //counts = item.ItemCounts;
+                return;
             }
             else
             {
@@ -376,7 +377,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             }
 
             dto.Album = item.Album;
-            dto.Artists = string.IsNullOrEmpty(item.Artist) ? new string[] { } : new[] { item.Artist };
+            dto.Artists = string.IsNullOrEmpty(item.Artist) ? new List<string>() : new List<string> { item.Artist };
         }
 
         private void SetGameProperties(BaseItemDto dto, Game item)
@@ -804,6 +805,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             dto.Language = item.Language;
             dto.MediaType = item.MediaType;
             dto.LocationType = item.LocationType;
+
             dto.CriticRating = item.CriticRating;
 
             if (fields.Contains(ItemFields.CriticRatingSummary))
@@ -938,7 +940,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             if (audio != null)
             {
                 dto.Album = audio.Album;
-                dto.Artists = audio.Artists.ToArray();
+                dto.Artists = audio.Artists;
 
                 var albumParent = audio.FindParent<MusicAlbum>();
 

@@ -73,17 +73,6 @@ namespace MediaBrowser.Providers.Movies
             }
         }
 
-        protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
-        {
-            // These values are now saved in movie.xml, so don't refresh if they're present
-            if (MovieDbProvider.HasAltMeta(item) && item.CriticRating.HasValue && !string.IsNullOrEmpty(item.CriticRatingSummary))
-            {
-                return false;
-            }
-
-            return base.NeedsRefreshInternal(item, providerInfo);
-        }
-
         /// <summary>
         /// Supports the specified item.
         /// </summary>
@@ -151,23 +140,20 @@ namespace MediaBrowser.Providers.Movies
 
                 // Seeing some bogus RT data on omdb for series, so filter it out here
                 // RT doesn't even have tv series
-                if (!(item is Series))
+                int tomatoMeter;
+
+                if (!string.IsNullOrEmpty(result.tomatoMeter)
+                    && int.TryParse(result.tomatoMeter, NumberStyles.Integer, UsCulture, out tomatoMeter)
+                    && tomatoMeter >= 0)
                 {
-                    int tomatoMeter;
+                    item.CriticRating = tomatoMeter;
+                }
 
-                    if (!string.IsNullOrEmpty(result.tomatoMeter)
-                        && int.TryParse(result.tomatoMeter, NumberStyles.Integer, UsCulture, out tomatoMeter)
-                        && tomatoMeter >= 0)
-                    {
-                        item.CriticRating = tomatoMeter;
-                    }
-
-                    if (!string.IsNullOrEmpty(result.tomatoConsensus)
-                        && !string.Equals(result.tomatoConsensus, "n/a", StringComparison.OrdinalIgnoreCase)
-                        && !string.Equals(result.tomatoConsensus, "No consensus yet.", StringComparison.OrdinalIgnoreCase))
-                    {
-                        item.CriticRatingSummary = result.tomatoConsensus;
-                    }
+                if (!string.IsNullOrEmpty(result.tomatoConsensus)
+                    && !string.Equals(result.tomatoConsensus, "n/a", StringComparison.OrdinalIgnoreCase)
+                    && !string.Equals(result.tomatoConsensus, "No consensus yet.", StringComparison.OrdinalIgnoreCase))
+                {
+                    item.CriticRatingSummary = result.tomatoConsensus;
                 }
 
                 int voteCount;

@@ -12,7 +12,6 @@ namespace MediaBrowser.Controller.Entities.Audio
     {
         public Artist()
         {
-            ItemCounts = new ItemByNameCounts();
             UserItemCounts = new Dictionary<Guid, ItemByNameCounts>();
         }
 
@@ -26,9 +25,6 @@ namespace MediaBrowser.Controller.Entities.Audio
         {
             return "Artist-" + Name;
         }
-
-        [IgnoreDataMember]
-        public ItemByNameCounts ItemCounts { get; set; }
 
         [IgnoreDataMember]
         public Dictionary<Guid, ItemByNameCounts> UserItemCounts { get; set; }

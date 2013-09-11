@@ -581,6 +581,11 @@ namespace MediaBrowser.Server.Implementations.Library
                 (UserRootFolder)ResolvePath(new DirectoryInfo(userRootPath)));
         }
 
+        public Person GetPersonSync(string name)
+        {
+            return GetItemByName<Person>(ConfigurationManager.ApplicationPaths.PeoplePath, name);
+        }
+
         /// <summary>
         /// Gets a Person
         /// </summary>
@@ -752,6 +757,37 @@ namespace MediaBrowser.Server.Implementations.Library
         /// </summary>
         private readonly ConcurrentDictionary<string, BaseItem> _itemsByName = new ConcurrentDictionary<string, BaseItem>(StringComparer.OrdinalIgnoreCase);
 
+        private T GetItemByName<T>(string path, string name)
+            where T : BaseItem, new()
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentNullException();
+            }
+
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentNullException();
+            }
+
+            var validFilename = FileSystem.GetValidFilename(name);
+
+            var key = Path.Combine(path, validFilename);
+
+            BaseItem obj;
+
+            if (!_itemsByName.TryGetValue(key, out obj))
+            {
+                var tuple = CreateItemByName<T>(key, name);
+
+                obj = tuple.Item2;
+
+                _itemsByName.AddOrUpdate(key, obj, (keyName, oldValue) => obj);
+            }
+
+            return obj as T;
+        }
+
         /// <summary>
         /// Generically retrieves an IBN item
         /// </summary>
@@ -777,13 +813,15 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new ArgumentNullException();
             }
 
-            var key = Path.Combine(path, FileSystem.GetValidFilename(name));
+            var validFilename = FileSystem.GetValidFilename(name);
+
+            var key = Path.Combine(path, validFilename);
 
             BaseItem obj;
 
             if (!_itemsByName.TryGetValue(key, out obj))
             {
-                var tuple = CreateItemByName<T>(path, name, cancellationToken);
+                var tuple = CreateItemByName<T>(key, name);
 
                 obj = tuple.Item2;
 
@@ -815,16 +853,11 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <typeparam name="T"></typeparam>
         /// <param name="path">The path.</param>
         /// <param name="name">The name.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{``0}.</returns>
         /// <exception cref="System.IO.IOException">Path not created:  + path</exception>
-        private Tuple<bool, T> CreateItemByName<T>(string path, string name, CancellationToken cancellationToken)
+        private Tuple<bool, T> CreateItemByName<T>(string path, string name)
             where T : BaseItem, new()
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            path = Path.Combine(path, FileSystem.GetValidFilename(name));
-
             var fileInfo = new DirectoryInfo(path);
 
             var isNew = false;
@@ -841,8 +874,6 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 isNew = true;
             }
-
-            cancellationToken.ThrowIfCancellationRequested();
 
             var type = typeof(T);
 
@@ -866,7 +897,7 @@ namespace MediaBrowser.Server.Implementations.Library
             // Set this now so we don't cause additional file system access during provider executions
             item.ResetResolveArgs(fileInfo);
 
-            return new Tuple<bool,T>(isNew, item);
+            return new Tuple<bool, T>(isNew, item);
         }
 
         /// <summary>
@@ -878,16 +909,12 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>Task.</returns>
         public async Task ValidatePeople(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            const int maxTasks = 10;
+            const int maxTasks = 5;
 
             var tasks = new List<Task>();
 
-            var includedPersonTypes = new[] { PersonType.Actor, PersonType.Director, PersonType.GuestStar, PersonType.Writer, PersonType.Producer }
-                .ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
-
             var people = RootFolder.RecursiveChildren
-                .Where(c => c.People != null)
-                .SelectMany(c => c.People.Where(p => includedPersonTypes.ContainsKey(p.Type ?? string.Empty) || includedPersonTypes.ContainsKey(p.Role ?? string.Empty)))
+                .SelectMany(c => c.People)
                 .DistinctBy(p => p.Name, StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
@@ -1050,6 +1077,10 @@ namespace MediaBrowser.Server.Implementations.Library
             await RunPostScanTasks(progress, cancellationToken).ConfigureAwait(false);
 
             progress.Report(100);
+
+            // Bad practice, i know. But we keep a lot in memory, unfortunately.
+            GC.Collect(2, GCCollectionMode.Forced, true);
+            GC.Collect(2, GCCollectionMode.Forced, true);
         }
 
         /// <summary>

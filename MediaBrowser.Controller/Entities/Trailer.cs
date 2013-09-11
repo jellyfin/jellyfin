@@ -1,5 +1,6 @@
-﻿using System.Runtime.Serialization;
-using MediaBrowser.Model.Entities;
+﻿using MediaBrowser.Model.Entities;
+using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -8,6 +9,12 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class Trailer : Video
     {
+        public Trailer()
+        {
+            RemoteTrailers = new List<MediaUrl>();
+            Taglines = new List<string>();
+        }
+
         /// <summary>
         /// Gets a value indicating whether this instance is local trailer.
         /// </summary>

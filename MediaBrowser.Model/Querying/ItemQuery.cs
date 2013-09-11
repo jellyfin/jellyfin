@@ -177,6 +177,10 @@ namespace MediaBrowser.Model.Querying
         public string MaxOfficialRating { get; set; }
 
         public int? MinIndexNumber { get; set; }
+
+        public bool? HasParentalRating { get; set; }
+
+        public bool? IsHD { get; set; }
         
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemQuery"/> class.

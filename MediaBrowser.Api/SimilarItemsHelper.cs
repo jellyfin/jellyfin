@@ -139,7 +139,6 @@ namespace MediaBrowser.Api
                 .Select(i => new Tuple<BaseItem, int>(i, getSimilarityScore(item, i)))
                 .Where(i => i.Item2 > 2)
                 .OrderByDescending(i => i.Item2)
-                .ThenByDescending(i => i.Item1.CriticRating ?? 0)
                 .Select(i => i.Item1);
         }
 
