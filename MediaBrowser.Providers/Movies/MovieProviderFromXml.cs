@@ -40,7 +40,7 @@ namespace MediaBrowser.Providers.Movies
                 return !trailer.IsLocalTrailer;
             }
 
-            return item is Movie || item is MusicVideo;
+            return item is Movie || item is MusicVideo || item is AdultVideo;
         }
 
         /// <summary>
@@ -54,7 +54,7 @@ namespace MediaBrowser.Providers.Movies
 
         internal static string GetXmlFilename(BaseItem item)
         {
-            var filename = "movie.xml";
+            const string filename = "movie.xml";
 
             return Path.Combine(item.MetaLocation, filename);
         }
