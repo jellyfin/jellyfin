@@ -509,7 +509,7 @@ namespace MediaBrowser.Api.UserLibrary
             // Max official rating
             if (!string.IsNullOrEmpty(request.MaxOfficialRating))
             {
-                var level = _localization.GetRatingLevel(request.MinOfficialRating);
+                var level = _localization.GetRatingLevel(request.MaxOfficialRating);
 
                 if (level.HasValue)
                 {

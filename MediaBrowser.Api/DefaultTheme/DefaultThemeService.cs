@@ -41,7 +41,7 @@ namespace MediaBrowser.Api.DefaultTheme
         private readonly ILibraryManager _libraryManager;
 
         private readonly ILocalizationManager _localization;
-        
+
         public DefaultThemeService(IUserManager userManager, IDtoService dtoService, ILogger logger, ILibraryManager libraryManager, ILocalizationManager localization)
         {
             _userManager = userManager;
@@ -70,21 +70,20 @@ namespace MediaBrowser.Api.DefaultTheme
 
             var view = new TvView();
 
-            var fields = Enum.GetNames(typeof(ItemFields))
-              .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
-              .ToList();
+            var fields = new List<ItemFields>();
 
             var spotlightItemTasks = seriesWithBackdrops
+                .OrderByDescending(i => GetResolution(i, i.BackdropImagePaths[0]))
+                .Take(60)
                 .OrderBy(i => Guid.NewGuid())
-                .Take(30)
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user));
 
             view.SpotlightItems = await Task.WhenAll(spotlightItemTasks).ConfigureAwait(false);
 
             view.ShowsItems = series
-               .Where(i => !string.IsNullOrEmpty(i.PrimaryImagePath))
+               .Where(i => i.BackdropImagePaths.Count > 0)
                .OrderBy(i => Guid.NewGuid())
-               .Select(i => GetItemStub(i, ImageType.Primary))
+               .Select(i => GetItemStub(i, ImageType.Backdrop))
                .Where(i => i != null)
                .Take(3)
                .ToArray();
@@ -131,25 +130,24 @@ namespace MediaBrowser.Api.DefaultTheme
 
             view.FamilyMoviePercentage = 100 * familyMovies.Count;
             view.FamilyMoviePercentage /= movies.Count;
-            
-            var moviesWithImages = movies
-                .Where(i => !string.IsNullOrEmpty(i.PrimaryImagePath))
-                .ToList();
 
-            var fields = Enum.GetNames(typeof(ItemFields))
-             .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
-             .ToList();
+            var moviesWithBackdrops = movies
+               .Where(i => i.BackdropImagePaths.Count > 0)
+               .ToList();
+
+            var fields = new List<ItemFields>();
 
             var spotlightItemTasks = itemsWithBackdrops
+                .OrderByDescending(i => GetResolution(i, i.BackdropImagePaths[0]))
+                .Take(60)
                 .OrderBy(i => Guid.NewGuid())
-                .Take(30)
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user));
 
             view.SpotlightItems = await Task.WhenAll(spotlightItemTasks).ConfigureAwait(false);
 
-            view.MovieItems = moviesWithImages
+            view.MovieItems = moviesWithBackdrops
                .OrderBy(i => Guid.NewGuid())
-               .Select(i => GetItemStub(i, ImageType.Primary))
+               .Select(i => GetItemStub(i, ImageType.Backdrop))
                .Where(i => i != null)
                .Take(3)
                .ToArray();
@@ -165,33 +163,33 @@ namespace MediaBrowser.Api.DefaultTheme
 
             view.BoxSetItems = items
              .OfType<BoxSet>()
-             .Where(i => !string.IsNullOrEmpty(i.PrimaryImagePath))
+             .Where(i => i.BackdropImagePaths.Count > 0)
              .OrderBy(i => Guid.NewGuid())
-             .Select(i => GetItemStub(i, ImageType.Primary))
+             .Select(i => GetItemStub(i, ImageType.Backdrop))
              .Where(i => i != null)
              .Take(3)
              .ToArray();
 
-            view.ThreeDItems = moviesWithImages
+            view.ThreeDItems = moviesWithBackdrops
              .Where(i => i.Is3D)
              .OrderBy(i => Guid.NewGuid())
-             .Select(i => GetItemStub(i, ImageType.Primary))
+             .Select(i => GetItemStub(i, ImageType.Backdrop))
              .Where(i => i != null)
              .Take(3)
              .ToArray();
 
             view.HDItems = hdMovies
-             .Where(i => !string.IsNullOrEmpty(i.PrimaryImagePath))
+             .Where(i => i.BackdropImagePaths.Count > 0)
              .OrderBy(i => Guid.NewGuid())
-             .Select(i => GetItemStub(i, ImageType.Primary))
+             .Select(i => GetItemStub(i, ImageType.Backdrop))
              .Where(i => i != null)
              .Take(3)
              .ToArray();
 
             view.FamilyMovies = familyMovies
-             .Where(i => !string.IsNullOrEmpty(i.PrimaryImagePath))
+             .Where(i => i.BackdropImagePaths.Count > 0)
              .OrderBy(i => Guid.NewGuid())
-             .Select(i => GetItemStub(i, ImageType.Primary))
+             .Select(i => GetItemStub(i, ImageType.Backdrop))
              .Where(i => i != null)
              .Take(3)
              .ToArray();
@@ -199,6 +197,22 @@ namespace MediaBrowser.Api.DefaultTheme
             view.PeopleItems = await actorsTask.ConfigureAwait(false);
 
             return view;
+        }
+
+        private double GetResolution(BaseItem item, string path)
+        {
+            try
+            {
+                var date = Kernel.Instance.ImageManager.GetImageDateModified(item, path);
+
+                var size = Kernel.Instance.ImageManager.GetImageSize(path, date).Result;
+
+                return size.Width;
+            }
+            catch
+            {
+                return 0;
+            }
         }
 
         private bool IsFamilyMovie(BaseItem item, int? baselineRating)
