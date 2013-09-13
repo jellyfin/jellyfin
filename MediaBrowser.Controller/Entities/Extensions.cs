@@ -4,27 +4,18 @@ using System.Linq;
 
 namespace MediaBrowser.Controller.Entities
 {
+    /// <summary>
+    /// Class Extensions
+    /// </summary>
     public static class Extensions
     {
         /// <summary>
-        /// Adds the tagline.
+        /// Adds the trailer URL.
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <param name="tagline">The tagline.</param>
-        /// <exception cref="System.ArgumentNullException">tagline</exception>
-        public static void AddTagline(this BaseItem item, string tagline)
-        {
-            if (string.IsNullOrWhiteSpace(tagline))
-            {
-                throw new ArgumentNullException("tagline");
-            }
-
-            if (!item.Taglines.Contains(tagline, StringComparer.OrdinalIgnoreCase))
-            {
-                item.Taglines.Add(tagline);
-            }
-        }
-
+        /// <param name="url">The URL.</param>
+        /// <param name="isDirectLink">if set to <c>true</c> [is direct link].</param>
+        /// <exception cref="System.ArgumentNullException">url</exception>
         public static void AddTrailerUrl(this BaseItem item, string url, bool isDirectLink)
         {
             if (string.IsNullOrWhiteSpace(url))
