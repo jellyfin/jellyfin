@@ -1557,7 +1557,10 @@
                 options.push({ name: '480p', maxWidth: 720, videoBitrate: 420000 });
             }
             if (maxAllowedWidth >= 360) {
-                options.push({ name: '360p', maxWidth: 640, videoBitrate: 400000 });
+                options.push({ name: '360p', maxWidth: 640, videoBitrate: 410000 });
+            }
+            if (maxAllowedWidth >= 240) {
+                options.push({ name: '240p', maxWidth: 426, videoBitrate: 400000 });
             }
 
             for (var i = 0, length = options.length; i < length; i++) {
