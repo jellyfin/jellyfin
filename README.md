@@ -17,13 +17,16 @@ We have several client apps released and in production:
 - Windows RT
 - Windows Phone
 
-## Related Reading ##
+## New Users ##
 
-[Media library structure](https://github.com/MediaBrowser/MediaBrowser/wiki/Library-Structure "Media library structure")
+If you're a new user looking to install Media Browser Server, please head over to [mediabrowser3.com](http://www.mediabrowser3.com/ "mediabrowser3.com")
+
+## Developer Info ##
+
+[Api Docs](https://github.com/MediaBrowser/MediaBrowser/wiki/Locating-the-Server "Api Workflow")
 
 [How to Build a Server Plugin](https://github.com/MediaBrowser/MediaBrowser/wiki/How-to-build-a-Server-Plugin "How to build a server plugin")
 
-[Api Workflow](https://github.com/MediaBrowser/MediaBrowser/wiki/Locating-the-Server "Api Workflow")
 
 ## Visit our community: ##
 
