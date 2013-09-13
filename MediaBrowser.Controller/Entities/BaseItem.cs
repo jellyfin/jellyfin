@@ -125,7 +125,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The trailer URL.</value>
         public List<MediaUrl> RemoteTrailers { get; set; }
-        
+
         /// <summary>
         /// Return the id that should be used to key display prefs for this item.
         /// Default is based on the type for everything except actual generic folders.
@@ -1222,6 +1222,25 @@ namespace MediaBrowser.Controller.Entities
                 {
                     People.Add(person);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Adds the tagline.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="tagline">The tagline.</param>
+        /// <exception cref="System.ArgumentNullException">tagline</exception>
+        public void AddTagline(string tagline)
+        {
+            if (string.IsNullOrWhiteSpace(tagline))
+            {
+                throw new ArgumentNullException("tagline");
+            }
+
+            if (!Taglines.Contains(tagline, StringComparer.OrdinalIgnoreCase))
+            {
+                Taglines.Add(tagline);
             }
         }
 
