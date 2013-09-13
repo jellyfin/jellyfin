@@ -1,14 +1,13 @@
-﻿using System.Collections.Generic;
-using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Security;
-using MediaBrowser.Model.Serialization;
-using MediaBrowser.Common.Implementations.Security;
-using MediaBrowser.Model.Entities;
+﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Common.Security;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Serialization;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Linq;
 
 namespace MediaBrowser.Common.Implementations.Security
 {
@@ -47,7 +46,9 @@ namespace MediaBrowser.Common.Implementations.Security
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IApplicationHost _appHost;
         private readonly IApplicationPaths _applciationPaths;
-        private IEnumerable<IRequiresRegistration> _registeredEntities; 
+        private readonly INetworkManager _networkManager;
+
+        private IEnumerable<IRequiresRegistration> _registeredEntities;
         protected IEnumerable<IRequiresRegistration> RegisteredEntities
         {
             get
@@ -59,7 +60,7 @@ namespace MediaBrowser.Common.Implementations.Security
         /// <summary>
         /// Initializes a new instance of the <see cref="PluginSecurityManager" /> class.
         /// </summary>
-        public PluginSecurityManager(IApplicationHost appHost, IHttpClient httpClient, IJsonSerializer jsonSerializer, IApplicationPaths appPaths)
+        public PluginSecurityManager(IApplicationHost appHost, IHttpClient httpClient, IJsonSerializer jsonSerializer, IApplicationPaths appPaths, INetworkManager networkManager)
         {
             if (httpClient == null)
             {
@@ -67,6 +68,7 @@ namespace MediaBrowser.Common.Implementations.Security
             }
 
             _applciationPaths = appPaths;
+            _networkManager = networkManager;
             _appHost = appHost;
             _httpClient = httpClient;
             _jsonSerializer = jsonSerializer;
@@ -95,7 +97,7 @@ namespace MediaBrowser.Common.Implementations.Security
         {
             // Do this on demend instead of in the constructor to delay the external assembly load
             // Todo: Refactor external methods to take app paths as a param
-            MBRegistration.Init(_applciationPaths);
+            MBRegistration.Init(_applciationPaths, _networkManager);
             return await MBRegistration.GetRegistrationStatus(_httpClient, _jsonSerializer, feature, mb2Equivalent).ConfigureAwait(false);
         }
 
@@ -109,14 +111,14 @@ namespace MediaBrowser.Common.Implementations.Security
             {
                 // Do this on demend instead of in the constructor to delay the external assembly load
                 // Todo: Refactor external methods to take app paths as a param
-                MBRegistration.Init(_applciationPaths);
+                MBRegistration.Init(_applciationPaths, _networkManager);
                 return MBRegistration.SupporterKey;
             }
             set
             {
                 // Do this on demend instead of in the constructor to delay the external assembly load
                 // Todo: Refactor external methods to take app paths as a param
-                MBRegistration.Init(_applciationPaths);
+                MBRegistration.Init(_applciationPaths, _networkManager);
                 if (value != MBRegistration.SupporterKey)
                 {
                     MBRegistration.SupporterKey = value;
@@ -136,14 +138,14 @@ namespace MediaBrowser.Common.Implementations.Security
             {
                 // Do this on demend instead of in the constructor to delay the external assembly load
                 // Todo: Refactor external methods to take app paths as a param
-                MBRegistration.Init(_applciationPaths);
+                MBRegistration.Init(_applciationPaths, _networkManager);
                 return MBRegistration.LegacyKey;
             }
             set
             {
                 // Do this on demend instead of in the constructor to delay the external assembly load
                 // Todo: Refactor external methods to take app paths as a param
-                MBRegistration.Init(_applciationPaths);
+                MBRegistration.Init(_applciationPaths, _networkManager);
                 if (value != MBRegistration.LegacyKey)
                 {
                     MBRegistration.LegacyKey = value;

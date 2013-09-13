@@ -279,7 +279,7 @@ namespace MediaBrowser.Common.Implementations
                 NetworkManager = new NetworkManager();
                 RegisterSingleInstance(NetworkManager);
 
-                SecurityManager = new PluginSecurityManager(this, HttpClient, JsonSerializer, ApplicationPaths);
+                SecurityManager = new PluginSecurityManager(this, HttpClient, JsonSerializer, ApplicationPaths, NetworkManager);
                 RegisterSingleInstance(SecurityManager);
 
                 InstallationManager = new InstallationManager(Logger, this, ApplicationPaths, HttpClient, JsonSerializer, SecurityManager, NetworkManager, ConfigurationManager);
