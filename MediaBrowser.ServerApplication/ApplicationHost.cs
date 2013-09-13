@@ -1,5 +1,4 @@
-﻿using System.Threading;
-using MediaBrowser.Api;
+﻿using MediaBrowser.Api;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Constants;
@@ -57,6 +56,7 @@ using System.Net;
 using System.Net.Cache;
 using System.Net.Http;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.ServerApplication
