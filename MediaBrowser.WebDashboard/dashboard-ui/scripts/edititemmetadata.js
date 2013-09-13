@@ -574,7 +574,7 @@
         } else {
             $('#providerSettingsContainer', page).hide();
         }
-        populateInternetProviderSettings(page, item.LockedFields);
+        populateInternetProviderSettings(page, item, item.LockedFields);
 
         $('#txtPath', page).val(item.Path || '');
         $('#txtName', page).val(item.Name || "");
@@ -774,23 +774,48 @@
     function generateSliders(fields, type) {
         var html = '';
         for (var i = 0; i < fields.length; i++) {
+            
             var field = fields[i];
-            var fieldTitle = $.trim(field.replace(/([A-Z])/g, ' $1'));
+            var name = field.name;
+            var value = field.value || field.name;
+            var fieldTitle = $.trim(name.replace(/([A-Z])/g, ' $1'));
             html += '<div data-role="fieldcontain">';
-            html += '<label for="lock' + field + '">' + fieldTitle + ':</label>';
-            html += '<select name="lock' + type + '" id="lock' + field + '" data-role="slider" data-mini="true">';
-            html += '<option value="' + field + '">Off</option>';
+            html += '<label for="lock' + value + '">' + fieldTitle + ':</label>';
+            html += '<select class="selectLockedField" id="lock' + value + '" data-role="slider" data-mini="true">';
+            html += '<option value="' + value + '">Off</option>';
             html += '<option value="" selected="selected">On</option>';
             html += '</select>';
             html += '</div>';
         }
         return html;
     }
-    function populateInternetProviderSettings(page, lockedFields) {
+    function populateInternetProviderSettings(page, item, lockedFields) {
         var container = $('#providerSettingsContainer', page);
         lockedFields = lockedFields || new Array();
-        var metadatafields = new Array("Name", "Overview", "Cast", "Genres", "ProductionLocations", "Studios", "Tags");
+        
+        var metadatafields = [
+            
+            { name: "Name" },
+            { name: "Overview" },
+            { name: "Genres" },
+            { name: "People", value: "Cast" }
+        ];
+        
+        if (item.Type == "Person") {
+            metadatafields.push({ name: "Birth location", value: "ProductionLocations" });
+        } else {
+            metadatafields.push({ name: "Production Locations", value: "ProductionLocations" });
+        }
+        
+        if (item.Type == "Series") {
+            metadatafields.push({ name: "Runtime" });
+        }
+
+        metadatafields.push({ name: "Studios" });
+        metadatafields.push({ name: "Tags" });
+        
         var html = '';
+        
         html += "<h3>Fields</h3>";
         html += generateSliders(metadatafields, 'Fields');
         container.html(html).trigger('create');
@@ -845,7 +870,7 @@
                 CustomRating: $('#selectCustomRating', form).val(),
                 People: currentItem.People,
                 EnableInternetProviders: $("#enableInternetProviders", form).prop('checked'),
-                LockedFields: $('select[name="lockFields"]', form).map(function () {
+                LockedFields: $('.selectLockedField', form).map(function () {
                     var value = $(this).val();
                     if (value != '') return value;
                 }).get(),

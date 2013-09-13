@@ -33,6 +33,10 @@ namespace MediaBrowser.Model.Entities
         /// <summary>
         /// The overview
         /// </summary>
-        Overview
+        Overview,
+        /// <summary>
+        /// The runtime
+        /// </summary>
+        Runtime
     }
 }
