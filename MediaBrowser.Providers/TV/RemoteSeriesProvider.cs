@@ -365,7 +365,10 @@ namespace MediaBrowser.Providers.TV
             if (series.PremiereDate.HasValue)
                 series.ProductionYear = series.PremiereDate.Value.Year;
 
-            series.RunTimeTicks = TimeSpan.FromMinutes(doc.SafeGetInt32("//Runtime")).Ticks;
+            if (!series.LockedFields.Contains(MetadataFields.Runtime))
+            {
+                series.RunTimeTicks = TimeSpan.FromMinutes(doc.SafeGetInt32("//Runtime")).Ticks;
+            }
 
             if (!series.LockedFields.Contains(MetadataFields.Studios))
             {
