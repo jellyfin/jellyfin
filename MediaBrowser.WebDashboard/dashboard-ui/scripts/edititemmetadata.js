@@ -354,6 +354,12 @@
             $('#fldPath', page).hide();
         }
 
+        if (item.Type == "Series") {
+            $('#fldSeriesRuntime', page).show();
+        } else {
+            $('#fldSeriesRuntime', page).hide();
+        }
+
         if (item.Type == "Series" || item.Type == "Person") {
             $('#fldEndDate', page).show();
         } else {
@@ -660,6 +666,14 @@
         $('#txtMusicBrainzReleaseGroupId', page).val(providerIds.MusicBrainzReleaseGroup || "");
         $('#txtRottenTomatoes', page).val(providerIds.RottenTomatoes || "");
 
+        if (item.RunTimeTicks) {
+
+            var minutes = item.RunTimeTicks / 600000000;
+            
+            $('#txtSeriesRuntime', page).val(minutes);
+        } else {
+            $('#txtSeriesRuntime', page).val("");
+        }
     }
 
     function convertTo24HourFormat(time) {
@@ -893,6 +907,13 @@
                 var placeOfBirth = $('#txtPlaceOfBirth', form).val();
 
                 item.ProductionLocations = placeOfBirth ? [placeOfBirth] : [];
+            }
+            
+            if (currentItem.Type == "Series") {
+                
+                // 600000000
+                var seriesRuntime = $('#txtSeriesRuntime', form).val();
+                item.RunTimeTicks = seriesRuntime ? (seriesRuntime * 600000000) : null;
             }
 
             var updatePromise;
