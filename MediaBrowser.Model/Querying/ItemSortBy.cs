@@ -82,5 +82,6 @@ namespace MediaBrowser.Model.Querying
         public const string AlbumCount = "AlbumCount";
         public const string MusicVideoCount = "MusicVideoCount";
         public const string SeriesSortName = "SeriesSortName";
+        public const string VideoBitRate = "VideoBitRate";
     }
 }
