@@ -174,6 +174,14 @@
             reloadItems(page);
         });
 
+        $('#chkSpecialFeature', this).on('change', function () {
+
+            query.StartIndex = 0;
+            query.HasSpecialFeature = this.checked ? true : null;
+
+            reloadItems(page);
+        });
+
         $('#chkThemeVideo', this).on('change', function () {
 
             query.StartIndex = 0;
@@ -255,6 +263,7 @@
         $('#chkTrailer', this).checked(query.HasTrailer == true).checkboxradio('refresh');
         $('#chkThemeSong', this).checked(query.HasThemeSong == true).checkboxradio('refresh');
         $('#chkThemeVideo', this).checked(query.HasThemeVideo == true).checkboxradio('refresh');
+        $('#chkSpecialFeature', this).checked(query.HasSpecialFeature == true).checkboxradio('refresh');
 
         $('.alphabetPicker', this).alphaValue(query.NameStartsWith);
     });
