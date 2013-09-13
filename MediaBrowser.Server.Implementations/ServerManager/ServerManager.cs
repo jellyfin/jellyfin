@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common;
+﻿using System.Net.Sockets;
+using MediaBrowser.Common;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -168,6 +169,12 @@ namespace MediaBrowser.Server.Implementations.ServerManager
                 HttpServer = _applicationHost.Resolve<IHttpServer>();
                 HttpServer.EnableHttpRequestLogging = ConfigurationManager.Configuration.EnableHttpLevelLogging;
                 HttpServer.Start(_applicationHost.HttpServerUrlPrefix);
+            }
+            catch (SocketException ex)
+            {
+                _logger.ErrorException("The http server is unable to start due to a Socket error. This can occasionally happen when the operating system takes longer than usual to release the IP bindings from the previous session. This can take up to five minutes. Please try waiting or rebooting the system.", ex);
+
+                throw;
             }
             catch (HttpListenerException ex)
             {

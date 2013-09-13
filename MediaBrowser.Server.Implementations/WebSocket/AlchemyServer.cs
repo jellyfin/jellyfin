@@ -4,6 +4,7 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Net;
+using System.Net.Sockets;
 
 namespace MediaBrowser.Server.Implementations.WebSocket
 {
@@ -60,7 +61,16 @@ namespace MediaBrowser.Server.Implementations.WebSocket
                 TimeOut = TimeSpan.FromHours(12)
             };
 
-            WebSocketServer.Start();
+            try
+            {
+                WebSocketServer.Start();
+            }
+            catch (SocketException ex)
+            {
+                _logger.ErrorException("The web socket server is unable to start on port {0} due to a Socket error. This can occasionally happen when the operating system takes longer than usual to release the IP bindings from the previous session. This can take up to five minutes. Please try waiting or rebooting the system.", ex, portNumber);
+
+                throw;
+            }
 
             Port = portNumber;
 
