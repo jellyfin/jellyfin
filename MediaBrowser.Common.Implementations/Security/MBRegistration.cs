@@ -1,10 +1,9 @@
-﻿using MediaBrowser.Model.Entities;
-using MediaBrowser.Common.Configuration;
+﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
-using System.Management;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -17,6 +16,7 @@ namespace MediaBrowser.Common.Implementations.Security
         private const string MBValidateUrl = "http://mb3admin.com/admin/service/registration/validate";
 
         private static IApplicationPaths _appPaths;
+        private static INetworkManager _networkManager;
 
         private static MBLicenseFile LicenseFile
         {
@@ -35,16 +35,17 @@ namespace MediaBrowser.Common.Implementations.Security
             set { LicenseFile.LegacyKey = value; LicenseFile.Save(); }
         }
 
-        public static void Init(IApplicationPaths appPaths)
+        public static void Init(IApplicationPaths appPaths, INetworkManager networkManager)
         {
             // Ugly alert (static init)
 
             _appPaths = appPaths;
+            _networkManager = networkManager;
         }
 
         public static async Task<MBRegistrationRecord> GetRegistrationStatus(IHttpClient httpClient, IJsonSerializer jsonSerializer, string feature, string mb2Equivalent = null)
         {
-            var mac = GetMacAddress();
+            var mac = _networkManager.GetMacAddress();
             var data = new Dictionary<string, string> {{"feature", feature}, {"key",SupporterKey}, {"mac",mac}, {"mb2equiv",mb2Equivalent}, {"legacykey", LegacyKey} };
 
             var reg = new RegRecord();
@@ -68,35 +69,6 @@ namespace MediaBrowser.Common.Implementations.Security
             }
 
             return new MBRegistrationRecord {IsRegistered = reg.registered, ExpirationDate = reg.expDate, RegChecked = true};
-        }
-
-        /// <summary>
-        /// Returns MAC Address from first Network Card in Computer
-        /// </summary>
-        /// <returns>[string] MAC Address</returns>
-        public static string GetMacAddress()
-        {
-            var mc = new ManagementClass("Win32_NetworkAdapterConfiguration");
-            var moc = mc.GetInstances();
-            var macAddress = String.Empty;
-            foreach (ManagementObject mo in moc)
-            {
-                if (macAddress == String.Empty)  // only return MAC Address from first card
-                {
-                    try
-                    {
-                        if ((bool)mo["IPEnabled"]) macAddress = mo["MacAddress"].ToString();
-                    }
-                    catch
-                    {
-                        mo.Dispose();
-                        return "";
-                    }
-                }
-                mo.Dispose();
-            }
-
-            return macAddress.Replace(":", "");
         }
     }
 
