@@ -248,6 +248,12 @@ namespace MediaBrowser.Api
                 item.LockedFields.Clear();
             }
 
+            // Only allow this for series. Runtimes for media comes from ffprobe.
+            if (item is Series)
+            {
+                item.RunTimeTicks = request.RunTimeTicks;
+            }
+
             foreach (var pair in request.ProviderIds.ToList())
             {
                 if (string.IsNullOrEmpty(pair.Value))
