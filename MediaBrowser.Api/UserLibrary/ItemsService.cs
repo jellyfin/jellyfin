@@ -669,7 +669,30 @@ namespace MediaBrowser.Api.UserLibrary
 
             if (request.HasSpecialFeature.HasValue)
             {
-                items = items.OfType<Movie>().Where(i => request.HasSpecialFeature.Value ? i.SpecialFeatureIds.Count > 0 : i.SpecialFeatureIds.Count == 0);
+                var filterValue = request.HasSpecialFeature.Value;
+
+                items = items.Where(i =>
+                {
+                    var movie = i as Movie;
+
+                    if (movie != null)
+                    {
+                        return filterValue
+                                   ? movie.SpecialFeatureIds.Count > 0
+                                   : movie.SpecialFeatureIds.Count == 0;
+                    }
+
+                    var series = i as Series;
+
+                    if (series != null)
+                    {
+                        return filterValue
+                                   ? series.SpecialFeatureIds.Count > 0
+                                   : series.SpecialFeatureIds.Count == 0;
+                    }
+
+                    return false;
+                });
             }
 
             if (request.HasSubtitles.HasValue)
