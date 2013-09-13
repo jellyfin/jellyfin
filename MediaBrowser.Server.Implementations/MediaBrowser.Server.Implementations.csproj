@@ -202,6 +202,7 @@
     <Compile Include="Sorting\RevenueComparer.cs" />
     <Compile Include="Sorting\RuntimeComparer.cs" />
     <Compile Include="Sorting\SeriesCountComparer.cs" />
+    <Compile Include="Sorting\SeriesSortNameComparer.cs" />
     <Compile Include="Sorting\SongCountComparer.cs" />
     <Compile Include="Sorting\SortNameComparer.cs" />
     <Compile Include="Persistence\SqliteDisplayPreferencesRepository.cs" />

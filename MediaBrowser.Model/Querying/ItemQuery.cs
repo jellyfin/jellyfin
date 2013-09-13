@@ -43,7 +43,7 @@ namespace MediaBrowser.Model.Querying
         /// </summary>
         /// <value>The artists.</value>
         public string[] Artists { get; set; }
-        
+
         /// <summary>
         /// The sort order to return results with
         /// </summary>
@@ -176,14 +176,32 @@ namespace MediaBrowser.Model.Querying
         /// <value>The max official rating.</value>
         public string MaxOfficialRating { get; set; }
 
+        /// <summary>
+        /// Gets or sets the min index number.
+        /// </summary>
+        /// <value>The min index number.</value>
         public int? MinIndexNumber { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance has parental rating.
+        /// </summary>
+        /// <value><c>null</c> if [has parental rating] contains no value, <c>true</c> if [has parental rating]; otherwise, <c>false</c>.</value>
         public bool? HasParentalRating { get; set; }
 
-        public bool? IsHD { get; set; }
-        
         /// <summary>
-        /// Initializes a new instance of the <see cref="ItemQuery"/> class.
+        /// Gets or sets a value indicating whether this instance is HD.
+        /// </summary>
+        /// <value><c>null</c> if [is HD] contains no value, <c>true</c> if [is HD]; otherwise, <c>false</c>.</value>
+        public bool? IsHD { get; set; }
+
+        /// <summary>
+        /// Gets or sets the parent index number.
+        /// </summary>
+        /// <value>The parent index number.</value>
+        public int? ParentIndexNumber { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ItemQuery" /> class.
         /// </summary>
         public ItemQuery()
         {

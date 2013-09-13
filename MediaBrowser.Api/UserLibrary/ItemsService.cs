@@ -164,6 +164,9 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "MinIndexNumber", Description = "Optional filter by minimum index number.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int? MinIndexNumber { get; set; }
 
+        [ApiMember(Name = "ParentIndexNumber", Description = "Optional filter by parent index number.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int? ParentIndexNumber { get; set; }
+
         [ApiMember(Name = "HasParentalRating", Description = "Optional filter by items that have or do not have a parental rating", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool? HasParentalRating { get; set; }
 
@@ -731,6 +734,30 @@ namespace MediaBrowser.Api.UserLibrary
             if (request.IsHD.HasValue)
             {
                 items = items.OfType<Video>().Where(i => i.IsHd == request.IsHD.Value);
+            }
+
+            if (request.ParentIndexNumber.HasValue)
+            {
+                var filterValue = request.ParentIndexNumber.Value;
+
+                items = items.Where(i =>
+                {
+                    var episode = i as Episode;
+
+                    if (episode != null)
+                    {
+                        return episode.ParentIndexNumber.HasValue && episode.ParentIndexNumber.Value == filterValue;
+                    }
+
+                    var song = i as Audio;
+
+                    if (song != null)
+                    {
+                        return song.ParentIndexNumber.HasValue && song.ParentIndexNumber.Value == filterValue;
+                    }
+                    
+                    return true;
+                });
             }
 
             return items;
