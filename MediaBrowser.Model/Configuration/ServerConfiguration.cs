@@ -231,6 +231,8 @@ namespace MediaBrowser.Model.Configuration
         /// <value><c>true</c> if [enable tv db updates]; otherwise, <c>false</c>.</value>
         public bool EnableTvDbUpdates { get; set; }
 
+        public bool EnableVideoImageExtraction { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>
@@ -241,6 +243,7 @@ namespace MediaBrowser.Model.Configuration
             LegacyWebSocketPortNumber = 8945;
             EnableHttpLevelLogging = true;
             EnableDashboardResponseCaching = true;
+            EnableVideoImageExtraction = true;
 
 #if (DEBUG)
             EnableDeveloperTools = true;
