@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Net;
+﻿using System.Linq;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -45,7 +46,7 @@ namespace MediaBrowser.Providers.Movies
         {
             get
             {
-                return "6";
+                return "8";
             }
         }
 
@@ -105,7 +106,7 @@ namespace MediaBrowser.Providers.Movies
         }
 
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
-        
+
         public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
             BaseProviderInfo data;
@@ -173,14 +174,37 @@ namespace MediaBrowser.Providers.Movies
                 {
                     item.CommunityRating = imdbRating;
                 }
+
+                ParseAdditionalMetadata(item, result);
             }
-            
+
             data.LastRefreshStatus = ProviderRefreshStatus.Success;
             SetLastRefreshed(item, DateTime.UtcNow);
 
             return true;
         }
 
+        private void ParseAdditionalMetadata(BaseItem item, RootObject result)
+        {
+            // Grab series genres because imdb data is better than tvdb. Leave movies alone
+            // But only do it if english is the preferred language because this data will not be localized
+            if (!item.LockedFields.Contains(MetadataFields.Genres) &&
+                item is Series &&
+                !string.IsNullOrWhiteSpace(result.Genre) &&
+                !string.Equals(result.Genre, "n/a", StringComparison.OrdinalIgnoreCase)
+                && string.Equals(ConfigurationManager.Configuration.PreferredMetadataLanguage, "en"))
+            {
+                item.Genres.Clear();
+
+                foreach (var genre in result.Genre
+                    .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(i => i.Trim())
+                    .Where(i => !string.IsNullOrWhiteSpace(i)))
+                {
+                    item.AddGenre(genre);
+                }
+            }
+        }
 
         protected class RootObject
         {
