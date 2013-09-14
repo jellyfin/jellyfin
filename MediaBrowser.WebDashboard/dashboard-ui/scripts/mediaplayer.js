@@ -497,20 +497,28 @@
                 }
             }
 
+            // Webm must be ahead of mp4 due to the issue of mp4 playing too fast in chrome
+            var prioritizeWebmOverH264 = true;
+
+            var h264Codec = 'h264';
+            var h264AudioCodec = 'aac';
+
+            if (videoStream.Width && videoStream.Width <= baseParams.maxWidth) {
+
+                var videoCodec = (videoStream.Codec || '').toLowerCase();
+
+                if (videoCodec.indexOf('h264') != -1) {
+                   // h264Codec = 'copy';
+                }
+            }
+
             if (startPosition) {
                 baseParams.StartTimeTicks = startPosition;
             }
 
             var mp4VideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.mp4', $.extend({}, baseParams, {
-                videoCodec: 'h264',
-                audioCodec: 'aac',
-                profile: 'baseline',
-                level: 3
-            }));
-
-            var tsVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.ts', $.extend({}, baseParams, {
-                videoCodec: 'h264',
-                audioCodec: 'aac',
+                videoCodec: h264Codec,
+                audioCodec: h264AudioCodec,
                 profile: 'baseline',
                 level: 3
             }));
@@ -521,8 +529,8 @@
             }));
 
             var hlsVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.m3u8', $.extend({}, baseParams, {
-                videoCodec: 'h264',
-                audioCodec: 'aac',
+                videoCodec: h264Codec,
+                audioCodec: h264AudioCodec,
                 profile: 'baseline',
                 level: 3
             }));
@@ -535,9 +543,6 @@
 
             var html = '';
 
-            // HLS must be at the top for safari
-            // Webm must be ahead of mp4 due to the issue of mp4 playing too fast in chrome
-
             var requiresControls = $.browser.msie || $.browser.android || ($.browser.webkit && !$.browser.chrome);
 
             // Can't autoplay in these browsers so we need to use the full controls
@@ -547,10 +552,19 @@
                 html += '<video class="itemVideo" autoplay preload="none">';
             }
 
+            // HLS must be at the top for safari
             html += '<source type="application/x-mpegURL" src="' + hlsVideoUrl + '" />';
-            html += '<source type="video/mp2t" src="' + tsVideoUrl + '" />';
-            html += '<source type="video/webm" src="' + webmVideoUrl + '" />';
-            html += '<source type="video/mp4" src="' + mp4VideoUrl + '" />';
+
+            if (prioritizeWebmOverH264) {
+
+                html += '<source type="video/webm" src="' + webmVideoUrl + '" />';
+                html += '<source type="video/mp4" src="' + mp4VideoUrl + '" />';
+            } else {
+
+                html += '<source type="video/mp4" src="' + mp4VideoUrl + '" />';
+                html += '<source type="video/webm" src="' + webmVideoUrl + '" />';
+            }
+
             html += '<source type="video/ogg" src="' + ogvVideoUrl + '" />';
             html += '</video';
 
