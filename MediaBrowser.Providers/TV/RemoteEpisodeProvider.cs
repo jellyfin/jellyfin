@@ -272,8 +272,6 @@ namespace MediaBrowser.Providers.TV
                 var p = doc.SafeGetString("//filename");
                 if (p != null)
                 {
-                    if (!Directory.Exists(episode.MetaLocation)) Directory.CreateDirectory(episode.MetaLocation);
-
                     try
                     {
                         var url = TVUtils.BannerUrl + p;
