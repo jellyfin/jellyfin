@@ -94,16 +94,17 @@
             html += '<form>';
             html += '<p class="directoryPickerHeadline">' + options.instruction + '</p>';
 
-            html += '<div data-role="fieldcontain" style="margin:0;">';
+            html += '<div style="margin:0;">';
             html += '<label for="txtDirectoryPickerPath" class="lblDirectoryPickerPath">Current Folder:</label>';
-            html += '<input id="txtDirectoryPickerPath" name="txtDirectoryPickerPath" type="text" required="required" style="font-weight:bold;" />';
+            html += '<div style="width:92%;display:inline-block;"><input id="txtDirectoryPickerPath" name="txtDirectoryPickerPath" type="text" required="required" style="font-weight:bold;" /></div>';
             html += '<button class="btnRefreshDirectories" type="button" data-icon="refresh" data-inline="true" data-mini="true" data-iconpos="notext">Refresh</button>';
             html += '</div>';
+
+            html += '<div class="directoryPickerHeadline networkHeadline" style="margin:5px 0 1em;padding:.5em;max-width:95%;">Network paths <b>can be entered manually</b> in the event the Network button fails to locate your devices. For example, <b>\\\\my-server</b> or <b>\\\\192.168.1.101</b>.</div>';
 
             html += '<div style="height: 320px; overflow-y: auto;">';
             html += '<ul id="ulDirectoryPickerList" data-role="listview" data-inset="true" data-auto-enhanced="false"></ul>';
 
-            html += '<div class="directoryPickerHeadline networkHeadline" style="margin:5px 0 1em;padding:.5em;">Network paths <b>can be entered manually</b> in the event the Network button fails to locate your devices. For example, <b>\\\\my-server</b> or <b>\\\\192.168.1.101</b>.</div>';
 
             html += '</div>';
             

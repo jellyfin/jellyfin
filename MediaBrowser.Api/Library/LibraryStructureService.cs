@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using MediaBrowser.Controller;
+﻿using MediaBrowser.Controller;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
@@ -8,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.Library
 {
@@ -34,7 +34,7 @@ namespace MediaBrowser.Api.Library
         /// </summary>
         /// <value>The user id.</value>
         public string UserId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
@@ -134,7 +134,7 @@ namespace MediaBrowser.Api.Library
         /// <value><c>true</c> if [refresh library]; otherwise, <c>false</c>.</value>
         public bool RefreshLibrary { get; set; }
     }
-    
+
     [Route("/Library/VirtualFolders/{Name}/Paths", "DELETE")]
     [Route("/Users/{UserId}/VirtualFolders/{Name}/Paths", "DELETE")]
     public class RemoveMediaPath : IReturnVoid
@@ -185,7 +185,7 @@ namespace MediaBrowser.Api.Library
         private readonly ILibraryManager _libraryManager;
 
         private readonly IDirectoryWatchers _directoryWatchers;
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryStructureService"/> class.
         /// </summary>
@@ -233,7 +233,7 @@ namespace MediaBrowser.Api.Library
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public async void Post(AddVirtualFolder request)
+        public void Post(AddVirtualFolder request)
         {
             _directoryWatchers.Stop();
 
@@ -251,7 +251,9 @@ namespace MediaBrowser.Api.Library
                 }
 
                 // Need to add a delay here or directory watchers may still pick up the changes
-                await Task.Delay(1000).ConfigureAwait(false);
+                var task = Task.Delay(1000);
+                // Have to block here to allow exceptions to bubble
+                Task.WaitAll(task);
             }
             finally
             {
@@ -268,7 +270,7 @@ namespace MediaBrowser.Api.Library
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public async void Post(RenameVirtualFolder request)
+        public void Post(RenameVirtualFolder request)
         {
             _directoryWatchers.Stop();
 
@@ -286,7 +288,9 @@ namespace MediaBrowser.Api.Library
                 }
 
                 // Need to add a delay here or directory watchers may still pick up the changes
-                await Task.Delay(1000).ConfigureAwait(false);
+                var task = Task.Delay(1000);
+                // Have to block here to allow exceptions to bubble
+                Task.WaitAll(task);
             }
             finally
             {
@@ -298,12 +302,12 @@ namespace MediaBrowser.Api.Library
                 _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
             }
         }
-        
+
         /// <summary>
         /// Deletes the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public async void Delete(RemoveVirtualFolder request)
+        public void Delete(RemoveVirtualFolder request)
         {
             _directoryWatchers.Stop();
 
@@ -321,7 +325,9 @@ namespace MediaBrowser.Api.Library
                 }
 
                 // Need to add a delay here or directory watchers may still pick up the changes
-                await Task.Delay(1000).ConfigureAwait(false);
+                var task = Task.Delay(1000);
+                // Have to block here to allow exceptions to bubble
+                Task.WaitAll(task);
             }
             finally
             {
@@ -338,7 +344,7 @@ namespace MediaBrowser.Api.Library
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public async void Post(AddMediaPath request)
+        public void Post(AddMediaPath request)
         {
             _directoryWatchers.Stop();
 
@@ -356,7 +362,9 @@ namespace MediaBrowser.Api.Library
                 }
 
                 // Need to add a delay here or directory watchers may still pick up the changes
-                await Task.Delay(1000).ConfigureAwait(false);
+                var task = Task.Delay(1000);
+                // Have to block here to allow exceptions to bubble
+                Task.WaitAll(task);
             }
             finally
             {
@@ -373,7 +381,7 @@ namespace MediaBrowser.Api.Library
         /// Deletes the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public async void Delete(RemoveMediaPath request)
+        public void Delete(RemoveMediaPath request)
         {
             _directoryWatchers.Stop();
 
@@ -391,7 +399,9 @@ namespace MediaBrowser.Api.Library
                 }
 
                 // Need to add a delay here or directory watchers may still pick up the changes
-                await Task.Delay(1000).ConfigureAwait(false);
+                var task = Task.Delay(1000);
+                // Have to block here to allow exceptions to bubble
+                Task.WaitAll(task);
             }
             finally
             {
