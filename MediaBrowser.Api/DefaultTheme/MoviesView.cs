@@ -15,6 +15,8 @@ namespace MediaBrowser.Api.DefaultTheme
 
         public ItemStub[] FamilyMovies { get; set; }
 
+        public ItemStub[] RomanticItems { get; set; }
+
         public double FamilyMoviePercentage { get; set; }
 
         public double HDMoviePercentage { get; set; }

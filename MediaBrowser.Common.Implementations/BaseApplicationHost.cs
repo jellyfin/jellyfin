@@ -149,7 +149,7 @@ namespace MediaBrowser.Common.Implementations
         /// </summary>
         /// <value>The installation manager.</value>
         protected IInstallationManager InstallationManager { get; set; }
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseApplicationHost{TApplicationPathsType}"/> class.
         /// </summary>
@@ -186,7 +186,7 @@ namespace MediaBrowser.Common.Implementations
 
         protected virtual void OnLoggerLoaded()
         {
-            
+
         }
 
         /// <summary>
@@ -471,7 +471,7 @@ namespace MediaBrowser.Common.Implementations
         {
             ConfigureAutoRunAtStartup();
         }
-        
+
         /// <summary>
         /// Configures the auto run at startup.
         /// </summary>
@@ -480,7 +480,7 @@ namespace MediaBrowser.Common.Implementations
             if (ConfigurationManager.CommonConfiguration.RunAtStartup)
             {
                 //Copy our shortut into the startup folder for this user
-                File.Copy(ProductShortcutPath, Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup),Path.GetFileName(ProductShortcutPath) ?? "MBstartup.lnk"), true);
+                File.Copy(ProductShortcutPath, Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), Path.GetFileName(ProductShortcutPath) ?? "MBstartup.lnk"), true);
             }
             else
             {
@@ -566,36 +566,8 @@ namespace MediaBrowser.Common.Implementations
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
         /// <returns>Task{CheckForUpdateResult}.</returns>
-        public async Task<CheckForUpdateResult> CheckForApplicationUpdate(CancellationToken cancellationToken,
-                                                                    IProgress<double> progress)
-        {
-            var result = await CheckForApplicationUpdateInternal(cancellationToken, progress).ConfigureAwait(false);
-
-            return result;
-        }
-
-        /// <summary>
-        /// Checks for application update internal.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="progress">The progress.</param>
-        /// <returns>Task{CheckForUpdateResult}.</returns>
-        private async Task<CheckForUpdateResult> CheckForApplicationUpdateInternal(CancellationToken cancellationToken,
-                                                                   IProgress<double> progress)
-        {
-            var availablePackages = await InstallationManager.GetAvailablePackagesWithoutRegistrationInfo(cancellationToken).ConfigureAwait(false);
-
-            var version = InstallationManager.GetLatestCompatibleVersion(availablePackages, ApplicationUpdatePackageName, ConfigurationManager.CommonConfiguration.SystemUpdateLevel);
-
-            return version != null ? new CheckForUpdateResult { AvailableVersion = version.version, IsUpdateAvailable = version.version > ApplicationVersion, Package = version } :
-                       new CheckForUpdateResult { AvailableVersion = ApplicationVersion, IsUpdateAvailable = false };
-        }
-
-        /// <summary>
-        /// Gets the name of the application update package.
-        /// </summary>
-        /// <value>The name of the application update package.</value>
-        protected abstract string ApplicationUpdatePackageName { get; }
+        public abstract Task<CheckForUpdateResult> CheckForApplicationUpdate(CancellationToken cancellationToken,
+                                                                          IProgress<double> progress);
 
         /// <summary>
         /// Updates the application.
@@ -604,18 +576,23 @@ namespace MediaBrowser.Common.Implementations
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
         /// <returns>Task.</returns>
-        public async Task UpdateApplication(PackageVersionInfo package, CancellationToken cancellationToken, IProgress<double> progress)
-        {
-            await InstallationManager.InstallPackage(package, progress, cancellationToken).ConfigureAwait(false);
-
-            EventHelper.QueueEventIfNotNull(ApplicationUpdated, this, new GenericEventArgs<Version> { Argument = package.version }, Logger);
-
-            NotifyPendingRestart();
-        }
+        public abstract Task UpdateApplication(PackageVersionInfo package, CancellationToken cancellationToken,
+                                            IProgress<double> progress);
 
         /// <summary>
         /// Shuts down.
         /// </summary>
         public abstract void Shutdown();
+
+        /// <summary>
+        /// Called when [application updated].
+        /// </summary>
+        /// <param name="newVersion">The new version.</param>
+        protected void OnApplicationUpdated(Version newVersion)
+        {
+            EventHelper.QueueEventIfNotNull(ApplicationUpdated, this, new GenericEventArgs<Version> { Argument = newVersion }, Logger);
+
+            NotifyPendingRestart();
+        }
     }
 }

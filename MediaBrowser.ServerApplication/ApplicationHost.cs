@@ -29,6 +29,7 @@ using MediaBrowser.IsoMounter;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.System;
+using MediaBrowser.Model.Updates;
 using MediaBrowser.Providers;
 using MediaBrowser.Server.Implementations;
 using MediaBrowser.Server.Implementations.BdInfo;
@@ -687,11 +688,56 @@ namespace MediaBrowser.ServerApplication
             }
         }
 
-        protected override string ApplicationUpdatePackageName
+        /// <summary>
+        /// Checks for update.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="progress">The progress.</param>
+        /// <returns>Task{CheckForUpdateResult}.</returns>
+        public override async Task<CheckForUpdateResult> CheckForApplicationUpdate(CancellationToken cancellationToken,
+                                                                    IProgress<double> progress)
         {
-            get { return Constants.MbServerPkgName; }
+            var result = await CheckForApplicationUpdateInternal(cancellationToken, progress).ConfigureAwait(false);
+
+            return result;
         }
 
+        /// <summary>
+        /// Checks for application update internal.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="progress">The progress.</param>
+        /// <returns>Task{CheckForUpdateResult}.</returns>
+        private async Task<CheckForUpdateResult> CheckForApplicationUpdateInternal(CancellationToken cancellationToken,
+                                                                   IProgress<double> progress)
+        {
+            var availablePackages = await InstallationManager.GetAvailablePackagesWithoutRegistrationInfo(cancellationToken).ConfigureAwait(false);
+
+            var version = InstallationManager.GetLatestCompatibleVersion(availablePackages, Constants.MbServerPkgName, ConfigurationManager.CommonConfiguration.SystemUpdateLevel);
+
+            return version != null ? new CheckForUpdateResult { AvailableVersion = version.version, IsUpdateAvailable = version.version > ApplicationVersion, Package = version } :
+                       new CheckForUpdateResult { AvailableVersion = ApplicationVersion, IsUpdateAvailable = false };
+        }
+
+        /// <summary>
+        /// Updates the application.
+        /// </summary>
+        /// <param name="package">The package that contains the update</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="progress">The progress.</param>
+        /// <returns>Task.</returns>
+        public override async Task UpdateApplication(PackageVersionInfo package, CancellationToken cancellationToken, IProgress<double> progress)
+        {
+            await InstallationManager.InstallPackage(package, progress, cancellationToken).ConfigureAwait(false);
+
+            OnApplicationUpdated(package.version);
+        }
+
+        /// <summary>
+        /// Gets the HTTP message handler.
+        /// </summary>
+        /// <param name="enableHttpCompression">if set to <c>true</c> [enable HTTP compression].</param>
+        /// <returns>HttpMessageHandler.</returns>
         protected override HttpMessageHandler GetHttpMessageHandler(bool enableHttpCompression)
         {
             return new WebRequestHandler

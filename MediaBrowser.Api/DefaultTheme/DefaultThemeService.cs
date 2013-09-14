@@ -178,6 +178,16 @@ namespace MediaBrowser.Api.DefaultTheme
              .Take(3)
              .ToArray();
 
+            var romanceGenres = new[] { "romance" }.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
+
+            view.RomanticItems = moviesWithBackdrops
+             .Where(i => i.Genres.Any(romanceGenres.ContainsKey))
+             .OrderBy(i => Guid.NewGuid())
+             .Select(i => GetItemStub(i, ImageType.Backdrop))
+             .Where(i => i != null)
+             .Take(3)
+             .ToArray();
+
             view.HDItems = hdMovies
              .Where(i => i.BackdropImagePaths.Count > 0)
              .OrderBy(i => Guid.NewGuid())
@@ -284,7 +294,8 @@ namespace MediaBrowser.Api.DefaultTheme
             var stub = new ItemStub
             {
                 Id = _dtoService.GetDtoId(item),
-                Name = item.Name
+                Name = item.Name,
+                ImageType = imageType
             };
 
             var imageManager = Kernel.Instance.ImageManager;
