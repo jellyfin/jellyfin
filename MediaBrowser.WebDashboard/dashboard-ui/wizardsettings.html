@@ -20,6 +20,12 @@
                 </div>
 
                 <div style="margin: 2em 0;">
+                    <label for="chkVIdeoImages">Enable video image extraction</label>
+                    <input id="chkVIdeoImages" name="chkVIdeoImages" type="checkbox" checked="checked" />
+                    <div class="fieldDescription">For videos that don't already have images, and that we're uanble to find internet images for. This will add some additional time to the initial library scan but will result in a more pleasing presentation.</div>
+                </div>
+
+                <div style="margin: 2em 0;">
                     <label for="chkChapters">Enable video chapter image extraction</label>
                     <input id="chkChapters" name="chkChapters" type="checkbox" checked="checked" />
                     <div class="fieldDescription">Extracting chapter images will allow clients to display graphical scene selection menus. The process can be cpu-intensive and on average will require 1-2GB of space. It runs as a nightly scheduled task at 4am, although this is configurable in the scheduled tasks area of the Dashboard once the wizard is completed.</div>

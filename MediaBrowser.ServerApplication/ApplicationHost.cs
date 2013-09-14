@@ -697,20 +697,6 @@ namespace MediaBrowser.ServerApplication
         public override async Task<CheckForUpdateResult> CheckForApplicationUpdate(CancellationToken cancellationToken,
                                                                     IProgress<double> progress)
         {
-            var result = await CheckForApplicationUpdateInternal(cancellationToken, progress).ConfigureAwait(false);
-
-            return result;
-        }
-
-        /// <summary>
-        /// Checks for application update internal.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="progress">The progress.</param>
-        /// <returns>Task{CheckForUpdateResult}.</returns>
-        private async Task<CheckForUpdateResult> CheckForApplicationUpdateInternal(CancellationToken cancellationToken,
-                                                                   IProgress<double> progress)
-        {
             var availablePackages = await InstallationManager.GetAvailablePackagesWithoutRegistrationInfo(cancellationToken).ConfigureAwait(false);
 
             var version = InstallationManager.GetLatestCompatibleVersion(availablePackages, Constants.MbServerPkgName, ConfigurationManager.CommonConfiguration.SystemUpdateLevel);

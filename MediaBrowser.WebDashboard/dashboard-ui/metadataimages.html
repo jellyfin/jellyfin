@@ -123,33 +123,9 @@
                     <br />
                     <ul data-role="listview" class="ulForm">
                         <li>
-                            <label for="selectTmdbPosterDownloadSize">Tmdb poster download size: </label>
-                            <select id="selectTmdbPosterDownloadSize" name="selectTmdbPosterDownloadSize">
-                                <option value="original">original</option>
-                                <option value="w92">w92</option>
-                                <option value="w154">w154</option>
-                                <option value="w185">w185</option>
-                                <option value="w342">w342</option>
-                                <option value="w500">w500</option>
-                            </select>
-                        </li>
-                        <li>
-                            <label for="selectTmdbBackdropDownloadSize">Tmdb backdrop download size: </label>
-                            <select id="selectTmdbBackdropDownloadSize" name="selectTmdbBackdropDownloadSize">
-                                <option value="original">original</option>
-                                <option value="w380">w380</option>
-                                <option value="w780">w780</option>
-                                <option value="w1280">w1280</option>
-                            </select>
-                        </li>
-                        <li>
-                            <label for="selectTmdbPersonImageDownloadSize">Tmdb person image download size: </label>
-                            <select id="selectTmdbPersonImageDownloadSize" name="selectTmdbPersonImageDownloadSize">
-                                <option value="original">original</option>
-                                <option value="w45">w45</option>
-                                <option value="w185">w185</option>
-                                <option value="h632">h632</option>
-                            </select>
+                            <label for="chkVIdeoImages">Enable video image extraction</label>
+                            <input id="chkVIdeoImages" name="chkVIdeoImages" type="checkbox" checked="checked" />
+                            <div class="fieldDescription">For videos that don't already have images, and that we're uanble to find internet images for. This will add some additional time to the initial library scan but will result in a more pleasing presentation.</div>
                         </li>
                         <li>
                             <button type="submit" data-theme="b" data-icon="ok">

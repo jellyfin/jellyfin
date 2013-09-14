@@ -518,6 +518,7 @@ var Dashboard = {
 
     resetPluginSecurityInfo: function () {
         Dashboard.getPluginSecurityInfoPromise = null;
+        Dashboard.validateCurrentUser();
     },
 
     ensureHeader: function (page, user) {

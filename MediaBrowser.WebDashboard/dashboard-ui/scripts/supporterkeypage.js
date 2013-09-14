@@ -45,8 +45,10 @@
             };
 
             ApiClient.updatePluginSecurityInfo(info).done(function () {
+                
                 Dashboard.resetPluginSecurityInfo();
                 Dashboard.hideLoadingMsg();
+
                 SupporterKeyPage.load();
             });
 

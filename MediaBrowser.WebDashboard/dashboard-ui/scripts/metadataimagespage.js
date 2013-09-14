@@ -13,10 +13,6 @@
 
     load: function (page, config) {
 
-        $('#selectTmdbPersonImageDownloadSize', page).val(config.TmdbFetchedProfileSize).selectmenu("refresh");
-        $('#selectTmdbPosterDownloadSize', page).val(config.TmdbFetchedPosterSize).selectmenu("refresh");
-        $('#selectTmdbBackdropDownloadSize', page).val(config.TmdbFetchedBackdropSize).selectmenu("refresh");
-        
         $('#chkRefreshItemImages', page).checked(!config.RefreshItemImages).checkboxradio("refresh");
         $('#txtNumbackdrops', page).val(config.MaxBackdrops);
 
@@ -46,6 +42,8 @@
         $('#chkDownloadAlbumBackdrops', page).checked(config.DownloadMusicAlbumImages.Backdrops).checkboxradio("refresh");
         $('#chkMusicAlbumDisc', page).checked(config.DownloadMusicAlbumImages.Disc).checkboxradio("refresh");
 
+        $('#chkVIdeoImages', page).checked(config.EnableVideoImageExtraction).checkboxradio("refresh");
+
         Dashboard.hideLoadingMsg();
     },
 
@@ -55,10 +53,6 @@
         Dashboard.showLoadingMsg();
 
         ApiClient.getServerConfiguration().done(function (config) {
-
-            config.TmdbFetchedProfileSize = $('#selectTmdbPersonImageDownloadSize', form).val();
-            config.TmdbFetchedPosterSize = $('#selectTmdbPosterDownloadSize', form).val();
-            config.TmdbFetchedBackdropSize = $('#selectTmdbBackdropDownloadSize', form).val();
 
             config.RefreshItemImages = !$('#chkRefreshItemImages', form).checked();
             config.MaxBackdrops = $('#txtNumbackdrops', form).val();
@@ -88,6 +82,8 @@
             config.DownloadMusicAlbumImages.Primary = $('#chkDownloadAlbumPrimary', form).checked();
             config.DownloadMusicAlbumImages.Backdrops = $('#chkDownloadAlbumBackdrops', form).checked();
             config.DownloadMusicAlbumImages.Disc = $('#chkMusicAlbumDisc', form).checked();
+
+            config.EnableVideoImageExtraction = $('#chkVIdeoImages', form).checked();
 
             ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
         });
