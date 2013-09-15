@@ -17,6 +17,13 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.DefaultTheme
 {
+    [Route("/MBT/DefaultTheme/Games", "GET")]
+    public class GetGamesView : IReturn<GamesView>
+    {
+        [ApiMember(Name = "UserId", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public Guid UserId { get; set; }
+    }
+
     [Route("/MBT/DefaultTheme/TV", "GET")]
     public class GetTvView : IReturn<TvView>
     {
@@ -104,6 +111,45 @@ namespace MediaBrowser.Api.DefaultTheme
             return view;
         }
 
+        public object Get(GetGamesView request)
+        {
+            var result = GetGamesView(request).Result;
+
+            return ToOptimizedResult(result);
+        }
+
+        private async Task<GamesView> GetGamesView(GetGamesView request)
+        {
+            var user = _userManager.GetUserById(request.UserId);
+
+            var items = user.RootFolder.GetRecursiveChildren(user)
+                .Where(i => i is Game || string.Equals(i.GetType().Name, "GamePlatform", StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            var itemsWithBackdrops = FilterItemsForBackdropDisplay(items.Where(i => i.BackdropImagePaths.Count > 0)).ToList();
+
+            var view = new GamesView();
+
+            var fields = new List<ItemFields>();
+
+            var spotlightItemTasks = itemsWithBackdrops
+                .OfType<Game>()
+                .OrderBy(i => Guid.NewGuid())
+                .Take(50)
+                .Select(i => _dtoService.GetBaseItemDto(i, fields, user));
+
+            view.SpotlightItems = await Task.WhenAll(spotlightItemTasks).ConfigureAwait(false);
+            
+            return view;
+        }
+
+        public object Get(GetMovieView request)
+        {
+            var result = GetMovieView(request).Result;
+
+            return ToOptimizedResult(result);
+        }
+
         public object Get(GetTvView request)
         {
             var result = GetTvView(request).Result;
@@ -162,13 +208,6 @@ namespace MediaBrowser.Api.DefaultTheme
             view.ActorItems = await GetActors(series).ConfigureAwait(false);
 
             return view;
-        }
-
-        public object Get(GetMovieView request)
-        {
-            var result = GetMovieView(request).Result;
-
-            return ToOptimizedResult(result);
         }
 
         private async Task<MoviesView> GetMovieView(GetMovieView request)

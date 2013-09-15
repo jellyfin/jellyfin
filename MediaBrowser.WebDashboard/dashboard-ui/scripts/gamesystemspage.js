@@ -28,7 +28,8 @@
 
             html += LibraryBrowser.getPosterDetailViewHtml({
                 items: result.Items,
-                context: "games"
+                context: "games",
+                shape: "backdrop"
             });
 
             html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
