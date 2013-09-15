@@ -99,6 +99,17 @@
             reloadItems(page);
         });
 
+        $('.radioPlayers', this).on('click', function () {
+            
+            query.StartIndex = 0;
+
+            var val = this.getAttribute('data-value');
+
+            query.MinPlayers = val == "all" ? null : val;
+            
+            reloadItems(page);
+        });
+
         $('.chkStandardFilter', this).on('change', function () {
 
             var filterName = this.getAttribute('data-filter');
@@ -197,6 +208,19 @@
 
         }).checkboxradio('refresh');
 
+        $('.radioPlayers', this).each(function () {
+
+            var val = this.getAttribute('data-value');
+
+            if (val == "all") {
+
+                this.checked = query.MinPlayers == null;
+            } else {
+                this.checked = query.MinPlayers == val;
+            }
+
+        }).checkboxradio('refresh');
+
         $('.chkStandardFilter', this).each(function () {
 
             var filters = "," + (query.Filters || "");
@@ -205,7 +229,6 @@
             this.checked = filters.indexOf(',' + filterName) != -1;
 
         }).checkboxradio('refresh');
-
 
         $('#selectView', this).val(view).selectmenu('refresh');
 

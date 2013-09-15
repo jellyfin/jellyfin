@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using MediaBrowser.Common.Configuration;
+﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -10,6 +9,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -149,7 +149,7 @@ namespace MediaBrowser.Providers.TV
         {
             get
             {
-                return "1";
+                return "2";
             }
         }
 
