@@ -103,7 +103,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             file = Path.Combine(ApplicationPaths.EncodedMediaCachePath, file);
 
-            return ResultFactory.GetStaticFileResult(RequestContext, file);
+            return ResultFactory.GetStaticFileResult(RequestContext, file, FileShare.ReadWrite);
         }
 
         /// <summary>

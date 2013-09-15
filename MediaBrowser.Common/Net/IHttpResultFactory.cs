@@ -89,9 +89,10 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         /// <param name="requestContext">The request context.</param>
         /// <param name="path">The path.</param>
+        /// <param name="fileShare">The file share.</param>
         /// <param name="responseHeaders">The response headers.</param>
         /// <param name="isHeadRequest">if set to <c>true</c> [is head request].</param>
         /// <returns>System.Object.</returns>
-        object GetStaticFileResult(IRequestContext requestContext, string path, IDictionary<string, string> responseHeaders = null, bool isHeadRequest = false);
+        object GetStaticFileResult(IRequestContext requestContext, string path, FileShare fileShare = FileShare.Read, IDictionary<string, string> responseHeaders = null, bool isHeadRequest = false);
     }
 }

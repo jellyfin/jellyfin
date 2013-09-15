@@ -209,12 +209,12 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             if (request.Static)
             {
-                return ResultFactory.GetStaticFileResult(RequestContext, state.Item.Path, responseHeaders, isHeadRequest);
+                return ResultFactory.GetStaticFileResult(RequestContext, state.Item.Path, FileShare.Read, responseHeaders, isHeadRequest);
             }
 
             if (outputPathExists && !ApiEntryPoint.Instance.HasActiveTranscodingJob(outputPath, TranscodingJobType.Progressive))
             {
-                return ResultFactory.GetStaticFileResult(RequestContext, outputPath, responseHeaders, isHeadRequest);
+                return ResultFactory.GetStaticFileResult(RequestContext, outputPath, FileShare.Read, responseHeaders, isHeadRequest);
             }
 
             return GetStreamResult(state, responseHeaders, isHeadRequest).Result;

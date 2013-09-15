@@ -92,7 +92,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             {
                 AddResponseHeaders(result, responseHeaders);
             }
-            
+
             return result;
         }
 
@@ -271,32 +271,39 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// </summary>
         /// <param name="requestContext">The request context.</param>
         /// <param name="path">The path.</param>
+        /// <param name="fileShare">The file share.</param>
         /// <param name="responseHeaders">The response headers.</param>
         /// <param name="isHeadRequest">if set to <c>true</c> [is head request].</param>
         /// <returns>System.Object.</returns>
         /// <exception cref="System.ArgumentNullException">path</exception>
-        public object GetStaticFileResult(IRequestContext requestContext, string path, IDictionary<string, string> responseHeaders = null, bool isHeadRequest = false)
+        public object GetStaticFileResult(IRequestContext requestContext, string path, FileShare fileShare = FileShare.Read, IDictionary<string, string> responseHeaders = null, bool isHeadRequest = false)
         {
             if (string.IsNullOrEmpty(path))
             {
                 throw new ArgumentNullException("path");
             }
 
+            if (fileShare != FileShare.Read && fileShare != FileShare.ReadWrite)
+            {
+                throw new ArgumentException("FileShare must be either Read or ReadWrite");
+            }
+
             var dateModified = File.GetLastWriteTimeUtc(path);
 
             var cacheKey = path + dateModified.Ticks;
 
-            return GetStaticResult(requestContext, cacheKey.GetMD5(), dateModified, null, MimeTypes.GetMimeType(path), () => Task.FromResult(GetFileStream(path)), responseHeaders, isHeadRequest);
+            return GetStaticResult(requestContext, cacheKey.GetMD5(), dateModified, null, MimeTypes.GetMimeType(path), () => Task.FromResult(GetFileStream(path, fileShare)), responseHeaders, isHeadRequest);
         }
 
         /// <summary>
         /// Gets the file stream.
         /// </summary>
         /// <param name="path">The path.</param>
+        /// <param name="fileShare">The file share.</param>
         /// <returns>Stream.</returns>
-        private Stream GetFileStream(string path)
+        private Stream GetFileStream(string path, FileShare fileShare)
         {
-            return new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous);
+            return new FileStream(path, FileMode.Open, FileAccess.Read, fileShare, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous);
         }
 
         /// <summary>
