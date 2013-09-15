@@ -11,7 +11,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
-using MediaBrowser.Providers.Extensions;
 
 namespace MediaBrowser.Providers.TV
 {
@@ -102,11 +101,7 @@ namespace MediaBrowser.Providers.TV
 
                 }).ConfigureAwait(false))
                 {
-                    var doc = new XmlDocument();
-
-                    doc.Load(stream);
-
-                    newUpdateTime = doc.SafeGetString("//Time");
+                    newUpdateTime = GetUpdateTime(stream);
                 }
 
                 await UpdateSeries(existingDirectories, path, progress, cancellationToken).ConfigureAwait(false);
@@ -122,6 +117,51 @@ namespace MediaBrowser.Providers.TV
 
             File.WriteAllText(timestampFile, newUpdateTime, Encoding.UTF8);
             progress.Report(100);
+        }
+
+        /// <summary>
+        /// Gets the update time.
+        /// </summary>
+        /// <param name="response">The response.</param>
+        /// <returns>System.String.</returns>
+        private string GetUpdateTime(Stream response)
+        {
+            var settings = new XmlReaderSettings
+            {
+                CheckCharacters = false,
+                IgnoreProcessingInstructions = true,
+                IgnoreComments = true,
+                ValidationType = ValidationType.None
+            };
+
+            using (var streamReader = new StreamReader(response, Encoding.UTF8))
+            {
+                // Use XmlReader for best performance
+                using (var reader = XmlReader.Create(streamReader, settings))
+                {
+                    reader.MoveToContent();
+
+                    // Loop through each element
+                    while (reader.Read())
+                    {
+                        if (reader.NodeType == XmlNodeType.Element)
+                        {
+                            switch (reader.Name)
+                            {
+                                case "Time":
+                                    {
+                                        return (reader.ReadElementContentAsString() ?? string.Empty).Trim();
+                                    }
+                                default:
+                                    reader.Skip();
+                                    break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -143,23 +183,65 @@ namespace MediaBrowser.Providers.TV
 
             }).ConfigureAwait(false))
             {
-                var doc = new XmlDocument();
-
-                doc.Load(stream);
-
-                var newUpdateTime = doc.SafeGetString("//Time");
-
-                var seriesNodes = doc.SelectNodes("//Series");
+                var data = GetUpdatedSeriesIdList(stream);
 
                 var existingDictionary = existingSeriesIds.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
 
-                var seriesList = seriesNodes == null ? new string[] { } :
-                    seriesNodes.Cast<XmlNode>()
-                    .Select(i => i.InnerText)
+                var seriesList = data.Item1
                     .Where(i => !string.IsNullOrWhiteSpace(i) && existingDictionary.ContainsKey(i));
 
-                return new Tuple<IEnumerable<string>, string>(seriesList, newUpdateTime);
+                return new Tuple<IEnumerable<string>, string>(seriesList, data.Item2);
             }
+        }
+
+        private Tuple<List<string>, string> GetUpdatedSeriesIdList(Stream stream)
+        {
+            string updateTime = null;
+            var idList = new List<string>();
+
+            var settings = new XmlReaderSettings
+            {
+                CheckCharacters = false,
+                IgnoreProcessingInstructions = true,
+                IgnoreComments = true,
+                ValidationType = ValidationType.None
+            };
+
+            using (var streamReader = new StreamReader(stream, Encoding.UTF8))
+            {
+                // Use XmlReader for best performance
+                using (var reader = XmlReader.Create(streamReader, settings))
+                {
+                    reader.MoveToContent();
+
+                    // Loop through each element
+                    while (reader.Read())
+                    {
+                        if (reader.NodeType == XmlNodeType.Element)
+                        {
+                            switch (reader.Name)
+                            {
+                                case "Time":
+                                    {
+                                        updateTime = (reader.ReadElementContentAsString() ?? string.Empty).Trim();
+                                        break;
+                                    }
+                                case "Series":
+                                    {
+                                        var id = (reader.ReadElementContentAsString() ?? string.Empty).Trim();
+                                        idList.Add(id);
+                                        break;
+                                    }
+                                default:
+                                    reader.Skip();
+                                    break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return new Tuple<List<string>, string>(idList, updateTime);
         }
 
         /// <summary>
@@ -217,7 +299,7 @@ namespace MediaBrowser.Providers.TV
             {
                 Directory.CreateDirectory(seriesDataPath);
             }
-            
+
             return RemoteSeriesProvider.Current.DownloadSeriesZip(id, seriesDataPath, cancellationToken);
         }
     }

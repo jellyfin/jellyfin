@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Controller;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -21,6 +22,12 @@ namespace MediaBrowser.Api.DefaultTheme
     {
         [ApiMember(Name = "UserId", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
         public Guid UserId { get; set; }
+
+        [ApiMember(Name = "ComedyGenre", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string ComedyGenre { get; set; }
+
+        [ApiMember(Name = "RomanceGenre", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string RomanceGenre { get; set; }
     }
 
     [Route("/MBT/DefaultTheme/Movies", "GET")]
@@ -31,6 +38,19 @@ namespace MediaBrowser.Api.DefaultTheme
 
         [ApiMember(Name = "FamilyRating", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string FamilyRating { get; set; }
+
+        [ApiMember(Name = "ComedyGenre", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string ComedyGenre { get; set; }
+
+        [ApiMember(Name = "RomanceGenre", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string RomanceGenre { get; set; }
+    }
+
+    [Route("/MBT/DefaultTheme/Home", "GET")]
+    public class GetHomeView : IReturn<HomeView>
+    {
+        [ApiMember(Name = "UserId", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public Guid UserId { get; set; }
     }
 
     public class DefaultThemeService : BaseApiService
@@ -49,6 +69,39 @@ namespace MediaBrowser.Api.DefaultTheme
             _logger = logger;
             _libraryManager = libraryManager;
             _localization = localization;
+        }
+
+        public object Get(GetHomeView request)
+        {
+            var result = GetHomeView(request).Result;
+
+            return ToOptimizedResult(result);
+        }
+
+        private async Task<HomeView> GetHomeView(GetHomeView request)
+        {
+            var user = _userManager.GetUserById(request.UserId);
+
+            var allItems = user.RootFolder.GetRecursiveChildren(user)
+                .ToList();
+
+            var itemsWithBackdrops = allItems.Where(i => i.BackdropImagePaths.Count > 0).ToList();
+
+            var view = new HomeView();
+
+            var fields = new List<ItemFields>();
+
+            var eligibleSpotlightItems = itemsWithBackdrops
+                .Where(i => i is Game || i is Movie || i is Series || i is MusicArtist);
+
+            var spotlightItemTasks = FilterItemsForBackdropDisplay(eligibleSpotlightItems)
+                .OrderBy(i => Guid.NewGuid())
+                .Take(50)
+                .Select(i => _dtoService.GetBaseItemDto(i, fields, user));
+
+            view.SpotlightItems = await Task.WhenAll(spotlightItemTasks).ConfigureAwait(false);
+
+            return view;
         }
 
         public object Get(GetTvView request)
@@ -72,10 +125,9 @@ namespace MediaBrowser.Api.DefaultTheme
 
             var fields = new List<ItemFields>();
 
-            var spotlightItemTasks = seriesWithBackdrops
-                .OrderByDescending(i => GetResolution(i, i.BackdropImagePaths[0]))
-                .Take(60)
+            var spotlightItemTasks = FilterItemsForBackdropDisplay(seriesWithBackdrops)
                 .OrderBy(i => Guid.NewGuid())
+                .Take(50)
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user));
 
             view.SpotlightItems = await Task.WhenAll(spotlightItemTasks).ConfigureAwait(false);
@@ -87,6 +139,25 @@ namespace MediaBrowser.Api.DefaultTheme
                .Where(i => i != null)
                .Take(3)
                .ToArray();
+
+            var romanceGenres = request.RomanceGenre.Split(',').ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
+            var comedyGenres = request.ComedyGenre.Split(',').ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
+
+            view.RomanceItems = seriesWithBackdrops
+             .Where(i => i.Genres.Any(romanceGenres.ContainsKey))
+             .OrderBy(i => Guid.NewGuid())
+             .Select(i => GetItemStub(i, ImageType.Backdrop))
+             .Where(i => i != null)
+             .Take(3)
+             .ToArray();
+
+            view.ComedyItems = seriesWithBackdrops
+             .Where(i => i.Genres.Any(comedyGenres.ContainsKey))
+             .OrderBy(i => Guid.NewGuid())
+             .Select(i => GetItemStub(i, ImageType.Backdrop))
+             .Where(i => i != null)
+             .Take(3)
+             .ToArray();
 
             view.ActorItems = await GetActors(series).ConfigureAwait(false);
 
@@ -137,10 +208,9 @@ namespace MediaBrowser.Api.DefaultTheme
 
             var fields = new List<ItemFields>();
 
-            var spotlightItemTasks = itemsWithBackdrops
-                .OrderByDescending(i => GetResolution(i, i.BackdropImagePaths[0]))
-                .Take(60)
+            var spotlightItemTasks = FilterItemsForBackdropDisplay(itemsWithBackdrops)
                 .OrderBy(i => Guid.NewGuid())
+                .Take(50)
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user));
 
             view.SpotlightItems = await Task.WhenAll(spotlightItemTasks).ConfigureAwait(false);
@@ -178,10 +248,19 @@ namespace MediaBrowser.Api.DefaultTheme
              .Take(3)
              .ToArray();
 
-            var romanceGenres = new[] { "romance" }.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
+            var romanceGenres = request.RomanceGenre.Split(',').ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
+            var comedyGenres = request.ComedyGenre.Split(',').ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
 
-            view.RomanticItems = moviesWithBackdrops
+            view.RomanceItems = moviesWithBackdrops
              .Where(i => i.Genres.Any(romanceGenres.ContainsKey))
+             .OrderBy(i => Guid.NewGuid())
+             .Select(i => GetItemStub(i, ImageType.Backdrop))
+             .Where(i => i != null)
+             .Take(3)
+             .ToArray();
+
+            view.ComedyItems = moviesWithBackdrops
+             .Where(i => i.Genres.Any(comedyGenres.ContainsKey))
              .OrderBy(i => Guid.NewGuid())
              .Select(i => GetItemStub(i, ImageType.Backdrop))
              .Where(i => i != null)
@@ -207,6 +286,25 @@ namespace MediaBrowser.Api.DefaultTheme
             view.PeopleItems = await actorsTask.ConfigureAwait(false);
 
             return view;
+        }
+
+        private IEnumerable<BaseItem> FilterItemsForBackdropDisplay(IEnumerable<BaseItem> items)
+        {
+            var tuples = items
+                .Select(i => new Tuple<BaseItem, double>(i, GetResolution(i, i.BackdropImagePaths[0])))
+                .Where(i => i.Item2 > 0)
+                .ToList();
+
+            var topItems = tuples
+                .Where(i => i.Item2 >= 1920)
+                .ToList();
+
+            if (topItems.Count >= 10)
+            {
+                return topItems.Select(i => i.Item1);
+            }
+
+            return tuples.Select(i => i.Item1);
         }
 
         private double GetResolution(BaseItem item, string path)

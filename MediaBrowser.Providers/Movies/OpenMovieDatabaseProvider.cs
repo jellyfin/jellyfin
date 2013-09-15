@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -10,6 +9,7 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Globalization;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -46,7 +46,7 @@ namespace MediaBrowser.Providers.Movies
         {
             get
             {
-                return "8";
+                return "9";
             }
         }
 
