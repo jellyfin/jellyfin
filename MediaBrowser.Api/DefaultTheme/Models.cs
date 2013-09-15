@@ -43,6 +43,11 @@ namespace MediaBrowser.Api.DefaultTheme
         public ItemStub[] ComedyItems { get; set; }
     }
 
+    public class GamesView
+    {
+        public BaseItemDto[] SpotlightItems { get; set; }
+    }
+
     public class HomeView
     {
         public BaseItemDto[] SpotlightItems { get; set; }

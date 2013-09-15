@@ -36,8 +36,8 @@ namespace MediaBrowser.Api.DefaultTheme
         [ApiMember(Name = "UserId", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
         public Guid UserId { get; set; }
 
-        [ApiMember(Name = "FamilyRating", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string FamilyRating { get; set; }
+        [ApiMember(Name = "FamilyGenre", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string FamilyGenre { get; set; }
 
         [ApiMember(Name = "ComedyGenre", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string ComedyGenre { get; set; }
@@ -185,8 +185,6 @@ namespace MediaBrowser.Api.DefaultTheme
             var itemsWithBackdrops = items.Where(i => i.BackdropImagePaths.Count > 0 && !(i is Trailer))
                 .ToList();
 
-            var baselineRating = _localization.GetRatingLevel(request.FamilyRating ?? "PG");
-
             var view = new MoviesView();
 
             var movies = items.OfType<Movie>()
@@ -194,7 +192,9 @@ namespace MediaBrowser.Api.DefaultTheme
 
             var hdMovies = movies.Where(i => i.IsHd).ToList();
 
-            var familyMovies = movies.Where(i => IsFamilyMovie(i, baselineRating)).ToList();
+            var familyGenres = request.FamilyGenre.Split(',').ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
+
+            var familyMovies = movies.Where(i => i.Genres.Any(familyGenres.ContainsKey)).ToList();
 
             view.HDMoviePercentage = 100 * hdMovies.Count;
             view.HDMoviePercentage /= movies.Count;
@@ -321,30 +321,6 @@ namespace MediaBrowser.Api.DefaultTheme
             {
                 return 0;
             }
-        }
-
-        private bool IsFamilyMovie(BaseItem item, int? baselineRating)
-        {
-            var ratingString = item.CustomRating;
-
-            if (string.IsNullOrEmpty(ratingString))
-            {
-                ratingString = item.OfficialRating;
-            }
-
-            if (string.IsNullOrEmpty(ratingString))
-            {
-                return false;
-            }
-
-            var rating = _localization.GetRatingLevel(ratingString);
-
-            if (!baselineRating.HasValue || !rating.HasValue)
-            {
-                return false;
-            }
-
-            return rating.Value <= baselineRating.Value;
         }
 
         private async Task<ItemStub[]> GetActors(IEnumerable<BaseItem> mediaItems)
