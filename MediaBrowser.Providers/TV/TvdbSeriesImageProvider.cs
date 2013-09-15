@@ -7,8 +7,10 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
@@ -86,7 +88,7 @@ namespace MediaBrowser.Providers.TV
                 return ItemUpdateType.ImageUpdate;
             }
         }
-        
+
         /// <summary>
         /// Gets a value indicating whether [refresh on version change].
         /// </summary>
@@ -127,7 +129,7 @@ namespace MediaBrowser.Providers.TV
                     return imagesFileInfo.LastWriteTimeUtc;
                 }
             }
-            
+
             return base.CompareDate(item);
         }
 
@@ -150,16 +152,18 @@ namespace MediaBrowser.Providers.TV
                 // Process images
                 var imagesXmlPath = Path.Combine(RemoteSeriesProvider.GetSeriesDataPath(ConfigurationManager.ApplicationPaths, seriesId), "banners.xml");
 
-                var imagesFileInfo = new FileInfo(imagesXmlPath);
-
-                if (imagesFileInfo.Exists)
+                if (!series.HasImage(ImageType.Primary) || !series.HasImage(ImageType.Banner) || series.BackdropImagePaths.Count == 0)
                 {
-                    if (!series.HasImage(ImageType.Primary) || !series.HasImage(ImageType.Banner) || series.BackdropImagePaths.Count == 0)
-                    {
-                        var xmlDoc = new XmlDocument();
-                        xmlDoc.Load(imagesXmlPath);
+                    var backdropLimit = ConfigurationManager.Configuration.MaxBackdrops;
 
-                        await FetchImages(series, xmlDoc, cancellationToken).ConfigureAwait(false);
+                    try
+                    {
+                        var fanartData = FetchFanartXmlData(imagesXmlPath, backdropLimit, cancellationToken);
+                        await DownloadImages(item, fanartData, backdropLimit, cancellationToken).ConfigureAwait(false);
+                    }
+                    catch (FileNotFoundException)
+                    {
+                        // No biggie. Not all series have images
                     }
                 }
 
@@ -179,72 +183,183 @@ namespace MediaBrowser.Providers.TV
 
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
-        /// <summary>
-        /// Fetches the images.
-        /// </summary>
-        /// <param name="series">The series.</param>
-        /// <param name="images">The images.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        private async Task FetchImages(Series series, XmlDocument images, CancellationToken cancellationToken)
+        private async Task DownloadImages(BaseItem item, FanartXmlData data, int backdropLimit, CancellationToken cancellationToken)
         {
-            if (!series.HasImage(ImageType.Primary))
+            if (!item.HasImage(ImageType.Primary))
             {
-                var n = images.SelectSingleNode("//Banner[BannerType='poster']");
-                if (n != null)
+                var url = data.LanguagePoster ?? data.Poster;
+                if (!string.IsNullOrEmpty(url))
                 {
-                    n = n.SelectSingleNode("./BannerPath");
-                    if (n != null)
-                    {
-                        var url = TVUtils.BannerUrl + n.InnerText;
+                    url = TVUtils.BannerUrl + url;
 
-                        await _providerManager.SaveImage(series, url, RemoteSeriesProvider.Current.TvDbResourcePool, ImageType.Primary, null, cancellationToken)
-                          .ConfigureAwait(false);
-                    }
+                    await _providerManager.SaveImage(item, url, RemoteSeriesProvider.Current.TvDbResourcePool, ImageType.Primary, null, cancellationToken)
+                      .ConfigureAwait(false);
                 }
             }
 
-            if (ConfigurationManager.Configuration.DownloadSeriesImages.Banner && !series.HasImage(ImageType.Banner))
+            if (ConfigurationManager.Configuration.DownloadSeriesImages.Banner && !item.HasImage(ImageType.Banner))
             {
-                var n = images.SelectSingleNode("//Banner[BannerType='series']");
-                if (n != null)
+                var url = data.LanguageBanner ?? data.Banner;
+                if (!string.IsNullOrEmpty(url))
                 {
-                    n = n.SelectSingleNode("./BannerPath");
-                    if (n != null)
-                    {
-                        var url = TVUtils.BannerUrl + n.InnerText;
+                    url = TVUtils.BannerUrl + url;
 
-                        await _providerManager.SaveImage(series, url, RemoteSeriesProvider.Current.TvDbResourcePool, ImageType.Banner, null, cancellationToken)
-                          .ConfigureAwait(false);
-                    }
+                    await _providerManager.SaveImage(item, url, RemoteSeriesProvider.Current.TvDbResourcePool, ImageType.Banner, null, cancellationToken)
+                      .ConfigureAwait(false);
                 }
             }
 
-            if (series.BackdropImagePaths.Count == 0)
+            if (ConfigurationManager.Configuration.DownloadSeriesImages.Backdrops && item.BackdropImagePaths.Count == 0)
             {
-                var bdNo = series.BackdropImagePaths.Count;
+                var bdNo = item.BackdropImagePaths.Count;
 
-                var xmlNodeList = images.SelectNodes("//Banner[BannerType='fanart']");
-                if (xmlNodeList != null)
+                foreach (var backdrop in data.Backdrops)
                 {
-                    foreach (XmlNode b in xmlNodeList)
-                    {
-                        var p = b.SelectSingleNode("./BannerPath");
+                    var url = TVUtils.BannerUrl + backdrop;
 
-                        if (p != null)
-                        {
-                            var url = TVUtils.BannerUrl + p.InnerText;
+                    await _providerManager.SaveImage(item, url, RemoteSeriesProvider.Current.TvDbResourcePool, ImageType.Backdrop, bdNo, cancellationToken)
+                      .ConfigureAwait(false);
 
-                            await _providerManager.SaveImage(series, url, RemoteSeriesProvider.Current.TvDbResourcePool, ImageType.Backdrop, bdNo, cancellationToken)
-                              .ConfigureAwait(false);
-                            
-                            bdNo++;
-                        }
+                    bdNo++;
 
-                        if (series.BackdropImagePaths.Count >= ConfigurationManager.Configuration.MaxBackdrops) break;
-                    }
+                    if (item.BackdropImagePaths.Count >= backdropLimit) break;
                 }
             }
         }
+
+        private FanartXmlData FetchFanartXmlData(string bannersXmlPath, int backdropLimit, CancellationToken cancellationToken)
+        {
+            var settings = new XmlReaderSettings
+            {
+                CheckCharacters = false,
+                IgnoreProcessingInstructions = true,
+                IgnoreComments = true,
+                ValidationType = ValidationType.None
+            };
+
+            var data = new FanartXmlData();
+
+            using (var streamReader = new StreamReader(bannersXmlPath, Encoding.UTF8))
+            {
+                // Use XmlReader for best performance
+                using (var reader = XmlReader.Create(streamReader, settings))
+                {
+                    reader.MoveToContent();
+
+                    // Loop through each element
+                    while (reader.Read())
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+
+                        if (reader.NodeType == XmlNodeType.Element)
+                        {
+                            switch (reader.Name)
+                            {
+                                case "Banner":
+                                    {
+                                        using (var subtree = reader.ReadSubtree())
+                                        {
+                                            FetchInfoFromBannerNode(data, subtree, backdropLimit);
+                                        }
+                                        break;
+                                    }
+                                default:
+                                    reader.Skip();
+                                    break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return data;
+        }
+
+        private void FetchInfoFromBannerNode(FanartXmlData data, XmlReader reader, int backdropLimit)
+        {
+            reader.MoveToContent();
+
+            string type = null;
+            string url = null;
+
+            while (reader.Read())
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    switch (reader.Name)
+                    {
+                        case "BannerType":
+                            {
+                                type = reader.ReadElementContentAsString() ?? string.Empty;
+
+                                if (string.Equals(type, "poster", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    // Already got it
+                                    if (!string.IsNullOrEmpty(data.Poster))
+                                    {
+                                        return;
+                                    }
+                                }
+                                else if (string.Equals(type, "series", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    // Already got it
+                                    if (!string.IsNullOrEmpty(data.Banner))
+                                    {
+                                        return;
+                                    }
+                                }
+                                else if (string.Equals(type, "fanart", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    if (data.Backdrops.Count >= backdropLimit)
+                                    {
+                                        return;
+                                    }
+                                }
+                                else
+                                {
+                                    return;
+                                }
+
+                                break;
+                            }
+
+                        case "BannerPath":
+                            {
+                                url = reader.ReadElementContentAsString() ?? string.Empty;
+                                break;
+                            }
+
+                        default:
+                            reader.Skip();
+                            break;
+                    }
+                }
+            }
+
+            if (!string.IsNullOrEmpty(url))
+            {
+                if (string.Equals(type, "poster", StringComparison.OrdinalIgnoreCase))
+                {
+                    data.Poster = url;
+                }
+                else if (string.Equals(type, "series", StringComparison.OrdinalIgnoreCase))
+                {
+                    data.Banner = url;
+                }
+                else if (string.Equals(type, "fanart", StringComparison.OrdinalIgnoreCase))
+                {
+                    data.Backdrops.Add(url);
+                }
+            }
+        }
+    }
+
+    internal class FanartXmlData
+    {
+        public string LanguagePoster { get; set; }
+        public string LanguageBanner { get; set; }
+        public string Poster { get; set; }
+        public string Banner { get; set; }
+        public List<string> Backdrops = new List<string>();
     }
 }

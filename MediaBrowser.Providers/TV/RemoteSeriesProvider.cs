@@ -247,10 +247,7 @@ namespace MediaBrowser.Providers.TV
 
                 if (!series.LockedFields.Contains(MetadataFields.Cast))
                 {
-                    var actorsDoc = new XmlDocument();
-                    actorsDoc.Load(actorsXmlPath);
-
-                    FetchActors(series, actorsDoc, seriesDoc);
+                    FetchActors(series, actorsXmlPath, cancellationToken);
                 }
             }
         }
@@ -384,8 +381,11 @@ namespace MediaBrowser.Providers.TV
                     }
                 }
             }
+
             series.OfficialRating = doc.SafeGetString("//ContentRating");
-            if (!series.LockedFields.Contains(MetadataFields.Genres))
+
+            // Only fill this in if there's no existing genres, because Imdb data from Omdb is preferred
+            if (!series.LockedFields.Contains(MetadataFields.Genres) && (series.Genres.Count == 0 || !string.Equals(ConfigurationManager.Configuration.PreferredMetadataLanguage, "en", StringComparison.OrdinalIgnoreCase)))
             {
                 string g = doc.SafeGetString("//Genre");
 
@@ -429,28 +429,91 @@ namespace MediaBrowser.Providers.TV
         /// Fetches the actors.
         /// </summary>
         /// <param name="series">The series.</param>
-        /// <param name="actorsDoc">The actors doc.</param>
-        /// <param name="seriesDoc">The seriesDoc.</param>
-        /// <returns>Task.</returns>
-        private void FetchActors(Series series, XmlDocument actorsDoc, XmlDocument seriesDoc)
+        /// <param name="actorsXmlPath">The actors XML path.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        private void FetchActors(Series series, string actorsXmlPath, CancellationToken cancellationToken)
         {
-            var xmlNodeList = actorsDoc.SelectNodes("Actors/Actor");
-
-            if (xmlNodeList != null)
+            var settings = new XmlReaderSettings
             {
-                series.People.Clear();
+                CheckCharacters = false,
+                IgnoreProcessingInstructions = true,
+                IgnoreComments = true,
+                ValidationType = ValidationType.None
+            };
 
-                foreach (XmlNode p in xmlNodeList)
+            using (var streamReader = new StreamReader(actorsXmlPath, Encoding.UTF8))
+            {
+                // Use XmlReader for best performance
+                using (var reader = XmlReader.Create(streamReader, settings))
                 {
-                    string actorName = p.SafeGetString("Name");
-                    string actorRole = p.SafeGetString("Role");
+                    reader.MoveToContent();
 
-                    if (!string.IsNullOrWhiteSpace(actorName))
+                    // Loop through each element
+                    while (reader.Read())
                     {
-                        // Sometimes tvdb actors have leading spaces
-                        series.AddPerson(new PersonInfo { Type = PersonType.Actor, Name = actorName.Trim(), Role = actorRole });
+                        cancellationToken.ThrowIfCancellationRequested();
+
+                        if (reader.NodeType == XmlNodeType.Element)
+                        {
+                            switch (reader.Name)
+                            {
+                                case "Actor":
+                                    {
+                                        using (var subtree = reader.ReadSubtree())
+                                        {
+                                            FetchDataFromActorNode(series, subtree);
+                                        }
+                                        break;
+                                    }
+                                default:
+                                    reader.Skip();
+                                    break;
+                            }
+                        }
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Fetches the data from actor node.
+        /// </summary>
+        /// <param name="series">The series.</param>
+        /// <param name="reader">The reader.</param>
+        private void FetchDataFromActorNode(Series series, XmlReader reader)
+        {
+            reader.MoveToContent();
+
+            var personInfo = new PersonInfo();
+
+            while (reader.Read())
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    switch (reader.Name)
+                    {
+                        case "Name":
+                            {
+                                personInfo.Name = (reader.ReadElementContentAsString() ?? string.Empty).Trim();
+                                break;
+                            }
+
+                        case "Role":
+                            {
+                                personInfo.Role = (reader.ReadElementContentAsString() ?? string.Empty).Trim();
+                                break;
+                            }
+                        
+                        default:
+                            reader.Skip();
+                            break;
+                    }
+                }
+            }
+
+            if (!string.IsNullOrEmpty(personInfo.Name))
+            {
+                series.AddPerson(personInfo);
             }
         }
 
