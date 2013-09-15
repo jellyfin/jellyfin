@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System.Collections.Generic;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -8,7 +9,6 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Providers.Extensions;
 using System;
 using System.Globalization;
 using System.IO;
@@ -18,7 +18,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
-using System.Xml.Linq;
 
 namespace MediaBrowser.Providers.TV
 {
@@ -240,10 +239,7 @@ namespace MediaBrowser.Providers.TV
                 var seriesXmlPath = Path.Combine(seriesDataPath, seriesXmlFilename);
                 var actorsXmlPath = Path.Combine(seriesDataPath, "actors.xml");
 
-                var seriesDoc = new XmlDocument();
-                seriesDoc.Load(seriesXmlPath);
-
-                FetchMainInfo(series, seriesDoc);
+                FetchSeriesInfo(series, seriesXmlPath, cancellationToken);
 
                 if (!series.LockedFields.Contains(MetadataFields.Cast))
                 {
@@ -317,112 +313,363 @@ namespace MediaBrowser.Providers.TV
             return dataPath;
         }
 
-        /// <summary>
-        /// Fetches the main info.
-        /// </summary>
-        /// <param name="series">The series.</param>
-        /// <param name="doc">The doc.</param>
-        private void FetchMainInfo(Series series, XmlDocument doc)
+        private void FetchSeriesInfo(Series item, string seriesXmlPath, CancellationToken cancellationToken)
         {
-            if (!series.LockedFields.Contains(MetadataFields.Name))
+            var settings = new XmlReaderSettings
             {
-                series.Name = doc.SafeGetString("//SeriesName");
-            }
-            if (!series.LockedFields.Contains(MetadataFields.Overview))
+                CheckCharacters = false,
+                IgnoreProcessingInstructions = true,
+                IgnoreComments = true,
+                ValidationType = ValidationType.None
+            };
+
+            var episiodeAirDates = new List<DateTime>();
+
+            using (var streamReader = new StreamReader(seriesXmlPath, Encoding.UTF8))
             {
-                series.Overview = doc.SafeGetString("//Overview");
-            }
-
-            var imdbId = doc.SafeGetString("//IMDB_ID");
-
-            if (!string.IsNullOrWhiteSpace(imdbId))
-            {
-                series.SetProviderId(MetadataProviders.Imdb, imdbId);
-            }
-
-            var zap2ItId = doc.SafeGetString("//zap2it_id");
-
-            if (!string.IsNullOrWhiteSpace(zap2ItId))
-            {
-                series.SetProviderId(MetadataProviders.Zap2It, zap2ItId);
-            }
-            
-            // Only fill this if it doesn't already have a value, since we get it from imdb which has better data
-            if (!series.CommunityRating.HasValue || string.IsNullOrWhiteSpace(series.GetProviderId(MetadataProviders.Imdb)))
-            {
-                series.CommunityRating = doc.SafeGetSingle("//Rating", 0, 10);
-            }
-
-            series.AirDays = TVUtils.GetAirDays(doc.SafeGetString("//Airs_DayOfWeek"));
-            series.AirTime = doc.SafeGetString("//Airs_Time");
-            SeriesStatus seriesStatus;
-            if(Enum.TryParse(doc.SafeGetString("//Status"), true, out seriesStatus))
-                series.Status = seriesStatus;
-            series.PremiereDate = doc.SafeGetDateTime("//FirstAired");
-            if (series.PremiereDate.HasValue)
-                series.ProductionYear = series.PremiereDate.Value.Year;
-
-            if (!series.LockedFields.Contains(MetadataFields.Runtime))
-            {
-                series.RunTimeTicks = TimeSpan.FromMinutes(doc.SafeGetInt32("//Runtime")).Ticks;
-            }
-
-            if (!series.LockedFields.Contains(MetadataFields.Studios))
-            {
-                string s = doc.SafeGetString("//Network");
-
-                if (!string.IsNullOrWhiteSpace(s))
+                // Use XmlReader for best performance
+                using (var reader = XmlReader.Create(streamReader, settings))
                 {
-                    series.Studios.Clear();
+                    reader.MoveToContent();
 
-                    foreach (var studio in s.Trim().Split('|'))
+                    // Loop through each element
+                    while (reader.Read())
                     {
-                        series.AddStudio(studio);
-                    }
-                }
-            }
+                        cancellationToken.ThrowIfCancellationRequested();
 
-            series.OfficialRating = doc.SafeGetString("//ContentRating");
-
-            // Only fill this in if there's no existing genres, because Imdb data from Omdb is preferred
-            if (!series.LockedFields.Contains(MetadataFields.Genres) && (series.Genres.Count == 0 || !string.Equals(ConfigurationManager.Configuration.PreferredMetadataLanguage, "en", StringComparison.OrdinalIgnoreCase)))
-            {
-                string g = doc.SafeGetString("//Genre");
-
-                if (g != null)
-                {
-                    string[] genres = g.Trim('|').Split('|');
-                    if (g.Length > 0)
-                    {
-                        series.Genres.Clear();
-
-                        foreach (var genre in genres)
+                        if (reader.NodeType == XmlNodeType.Element)
                         {
-                            series.AddGenre(genre);
+                            switch (reader.Name)
+                            {
+                                case "Series":
+                                    {
+                                        using (var subtree = reader.ReadSubtree())
+                                        {
+                                            FetchDataFromSeriesNode(item, subtree, cancellationToken);
+                                        }
+                                        break;
+                                    }
+
+                                case "Episode":
+                                    {
+                                        using (var subtree = reader.ReadSubtree())
+                                        {
+                                            var date = GetFirstAiredDateFromEpisodeNode(subtree, cancellationToken);
+
+                                            if (date.HasValue)
+                                            {
+                                                episiodeAirDates.Add(date.Value);
+                                            }
+                                        }
+                                        break;
+                                    }
+
+                                default:
+                                    reader.Skip();
+                                    break;
+                            }
                         }
                     }
                 }
             }
-            if (series.Status == SeriesStatus.Ended) {
-                
-                var document = XDocument.Load(new XmlNodeReader(doc));
-                var dates = document.Descendants("Episode").Where(x => {
-                                                                      var seasonNumber = x.Element("SeasonNumber");
-                                                                      var firstAired = x.Element("FirstAired");
-                                                                      return firstAired != null && seasonNumber != null && (!string.IsNullOrEmpty(seasonNumber.Value) && seasonNumber.Value != "0") && !string.IsNullOrEmpty(firstAired.Value);
-                                                                  }).Select(x => {
-                                                                                DateTime? date = null;
-                                                                                DateTime tempDate;
-                                                                                var firstAired = x.Element("FirstAired");
-                                                                                if (firstAired != null && DateTime.TryParse(firstAired.Value, out tempDate)) 
-                                                                                {
-                                                                                    date = tempDate;
-                                                                                }
-                                                                                return date;
-                                                                            }).ToList();
-                if(dates.Any(x=>x.HasValue))
-                    series.EndDate = dates.Where(x => x.HasValue).Max();
+
+            if (item.Status.HasValue && item.Status.Value == SeriesStatus.Ended && episiodeAirDates.Count > 0)
+            {
+                item.EndDate = episiodeAirDates.Max();
             }
+        }
+
+        private void FetchDataFromSeriesNode(Series item, XmlReader reader, CancellationToken cancellationToken)
+        {
+            reader.MoveToContent();
+
+            // Loop through each element
+            while (reader.Read())
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    switch (reader.Name)
+                    {
+                        case "SeriesName":
+                            {
+                                if (!item.LockedFields.Contains(MetadataFields.Name))
+                                {
+                                    item.Name = (reader.ReadElementContentAsString() ?? string.Empty).Trim();
+                                }
+                                break;
+                            }
+
+                        case "Overview":
+                            {
+                                if (!item.LockedFields.Contains(MetadataFields.Overview))
+                                {
+                                    item.Overview = (reader.ReadElementContentAsString() ?? string.Empty).Trim();
+                                }
+                                break;
+                            }
+
+                        case "Airs_DayOfWeek":
+                            {
+                                var val = reader.ReadElementContentAsString();
+
+                                if (!string.IsNullOrWhiteSpace(val))
+                                {
+                                    item.AirDays = TVUtils.GetAirDays(val);
+                                }
+                                break;
+                            }
+
+                        case "Airs_Time":
+                            {
+                                var val = reader.ReadElementContentAsString();
+
+                                if (!string.IsNullOrWhiteSpace(val))
+                                {
+                                    item.AirTime = val;
+                                }
+                                break;
+                            }
+
+                        case "ContentRating":
+                            {
+                                var val = reader.ReadElementContentAsString();
+
+                                if (!string.IsNullOrWhiteSpace(val))
+                                {
+                                    item.OfficialRating = val;
+                                }
+                                break;
+                            }
+
+                        case "Rating":
+                            {
+                                var val = reader.ReadElementContentAsString();
+
+                                if (!string.IsNullOrWhiteSpace(val))
+                                {
+                                    // Only fill this if it doesn't already have a value, since we get it from imdb which has better data
+                                    if (!item.CommunityRating.HasValue || string.IsNullOrWhiteSpace(item.GetProviderId(MetadataProviders.Imdb)))
+                                    {
+                                        float rval;
+
+                                        // float.TryParse is local aware, so it can be probamatic, force us culture
+                                        if (float.TryParse(val, NumberStyles.AllowDecimalPoint, UsCulture, out rval))
+                                        {
+                                            item.CommunityRating = rval;
+                                        }
+                                    }
+                                }
+                                break;
+                            }
+
+                        case "IMDB_ID":
+                            {
+                                var val = reader.ReadElementContentAsString();
+
+                                if (!string.IsNullOrWhiteSpace(val))
+                                {
+                                    item.SetProviderId(MetadataProviders.Imdb, val);
+                                }
+
+                                break;
+                            }
+
+                        case "zap2it_id":
+                            {
+                                var val = reader.ReadElementContentAsString();
+
+                                if (!string.IsNullOrWhiteSpace(val))
+                                {
+                                    item.SetProviderId(MetadataProviders.Zap2It, val);
+                                }
+
+                                break;
+                            }
+
+                        case "Status":
+                            {
+                                var val = reader.ReadElementContentAsString();
+
+                                if (!string.IsNullOrWhiteSpace(val))
+                                {
+                                    SeriesStatus seriesStatus;
+
+                                    if (Enum.TryParse(val, true, out seriesStatus))
+                                        item.Status = seriesStatus;
+                                }
+
+                                break;
+                            }
+
+                        case "FirstAired":
+                            {
+                                var val = reader.ReadElementContentAsString();
+
+                                if (!string.IsNullOrWhiteSpace(val))
+                                {
+                                    DateTime date;
+                                    if (DateTime.TryParse(val, out date))
+                                    {
+                                        date = date.ToUniversalTime();
+
+                                        item.PremiereDate = date;
+                                        item.ProductionYear = date.Year;
+                                    }
+                                }
+
+                                break;
+                            }
+
+                        case "Runtime":
+                            {
+                                var val = reader.ReadElementContentAsString();
+
+                                if (!string.IsNullOrWhiteSpace(val) && !item.LockedFields.Contains(MetadataFields.Runtime))
+                                {
+                                    int rval;
+
+                                    // int.TryParse is local aware, so it can be probamatic, force us culture
+                                    if (int.TryParse(val, NumberStyles.Integer, UsCulture, out rval))
+                                    {
+                                        item.RunTimeTicks = TimeSpan.FromMinutes(rval).Ticks;
+                                    }
+                                }
+
+                                break;
+                            }
+
+                        case "Genre":
+                            {
+                                var val = reader.ReadElementContentAsString();
+
+                                if (!string.IsNullOrWhiteSpace(val))
+                                {
+                                    // Only fill this in if there's no existing genres, because Imdb data from Omdb is preferred
+                                    if (!item.LockedFields.Contains(MetadataFields.Genres) && (item.Genres.Count == 0 || !string.Equals(ConfigurationManager.Configuration.PreferredMetadataLanguage, "en", StringComparison.OrdinalIgnoreCase)))
+                                    {
+                                        var vals = val
+                                            .Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries)
+                                            .Select(i => i.Trim())
+                                            .Where(i => !string.IsNullOrWhiteSpace(i))
+                                            .ToArray();
+
+                                        if (vals.Length > 0)
+                                        {
+                                            item.Genres.Clear();
+
+                                            foreach (var genre in vals)
+                                            {
+                                                item.AddGenre(genre);
+                                            }
+                                        }
+                                    }
+                                }
+
+                                break;
+                            }
+
+                        case "Network":
+                            {
+                                var val = reader.ReadElementContentAsString();
+
+                                if (!string.IsNullOrWhiteSpace(val))
+                                {
+                                    if (!item.LockedFields.Contains(MetadataFields.Studios))
+                                    {
+                                        var vals = val
+                                            .Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries)
+                                            .Select(i => i.Trim())
+                                            .Where(i => !string.IsNullOrWhiteSpace(i))
+                                            .ToArray();
+
+                                        if (vals.Length > 0)
+                                        {
+                                            item.Studios.Clear();
+
+                                            foreach (var genre in vals)
+                                            {
+                                                item.AddStudio(genre);
+                                            }
+                                        }
+                                    }
+                                }
+
+                                break;
+                            }
+
+                        default:
+                            reader.Skip();
+                            break;
+                    }
+                }
+            }
+        }
+
+        private DateTime? GetFirstAiredDateFromEpisodeNode(XmlReader reader, CancellationToken cancellationToken)
+        {
+            DateTime? airDate = null;
+            int? seasonNumber = null;
+
+            reader.MoveToContent();
+
+            // Loop through each element
+            while (reader.Read())
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    switch (reader.Name)
+                    {
+                        case "FirstAired":
+                            {
+                                var val = reader.ReadElementContentAsString();
+
+                                if (!string.IsNullOrWhiteSpace(val))
+                                {
+                                    DateTime date;
+                                    if (DateTime.TryParse(val, out date))
+                                    {
+                                        airDate = date.ToUniversalTime();
+                                    }
+                                }
+
+                                break;
+                            }
+
+                        case "SeasonNumber":
+                            {
+                                var val = reader.ReadElementContentAsString();
+
+                                if (!string.IsNullOrWhiteSpace(val))
+                                {
+                                    int rval;
+
+                                    // int.TryParse is local aware, so it can be probamatic, force us culture
+                                    if (int.TryParse(val, NumberStyles.Integer, UsCulture, out rval))
+                                    {
+                                        seasonNumber = rval;
+                                    }
+                                }
+
+                                break;
+                            }
+
+                        default:
+                            reader.Skip();
+                            break;
+                    }
+                }
+            }
+
+            if (seasonNumber.HasValue && seasonNumber.Value != 0)
+            {
+                return airDate;
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -503,7 +750,7 @@ namespace MediaBrowser.Providers.TV
                                 personInfo.Role = (reader.ReadElementContentAsString() ?? string.Empty).Trim();
                                 break;
                             }
-                        
+
                         default:
                             reader.Skip();
                             break;
