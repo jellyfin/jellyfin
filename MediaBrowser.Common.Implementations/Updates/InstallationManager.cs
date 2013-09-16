@@ -308,22 +308,26 @@ namespace MediaBrowser.Common.Implementations.Updates
 
         protected IEnumerable<PackageVersionInfo> FilterCatalog(IEnumerable<PackageInfo> catalog, bool withAutoUpdateEnabled)
         {
-            var plugins = _applicationHost.Plugins;
+            var plugins = _applicationHost.Plugins.ToList();
 
             if (withAutoUpdateEnabled)
             {
-                plugins = plugins.Where(p => p.Configuration.EnableAutoUpdate);
+                plugins = plugins
+                    .Where(p => p.Configuration.EnableAutoUpdate)
+                    .ToList();
             }
 
             // Figure out what needs to be installed
-            return plugins.Select(p =>
+            var packages = plugins.Select(p =>
             {
                 var latestPluginInfo = GetLatestCompatibleVersion(catalog, p.Name, p.Configuration.UpdateClass);
 
-                return latestPluginInfo != null && latestPluginInfo.version > p.Version ? latestPluginInfo : null;
+                return latestPluginInfo != null && latestPluginInfo.version != null && latestPluginInfo.version > p.Version ? latestPluginInfo : null;
 
-            }).Where(p => !CompletedInstallations.Any(i => string.Equals(i.Name, p.name, StringComparison.OrdinalIgnoreCase)))
-            .Where(p => p != null && !string.IsNullOrWhiteSpace(p.sourceUrl));
+            }).Where(i => i != null).ToList();
+
+            return packages
+                .Where(p => !string.IsNullOrWhiteSpace(p.sourceUrl) && !CompletedInstallations.Any(i => string.Equals(i.Name, p.name, StringComparison.OrdinalIgnoreCase)));
         }
 
         /// <summary>
