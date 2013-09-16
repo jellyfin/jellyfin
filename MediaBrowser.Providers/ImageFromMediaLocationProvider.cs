@@ -1,5 +1,7 @@
-﻿using MediaBrowser.Controller.Configuration;
+﻿using System.Globalization;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
@@ -162,6 +164,8 @@ namespace MediaBrowser.Providers
             return Path.Combine(path, filenameWithoutExtension + extension);
         }
 
+        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
+        
         /// <summary>
         /// Fills in image paths based on files win the folder
         /// </summary>
@@ -175,6 +179,26 @@ namespace MediaBrowser.Providers
                 GetImage(item, args, "cover") ??
                 GetImage(item, args, "default");
 
+            // Support plex/xbmc convention
+            if (image == null && item is Series)
+            {
+                image = GetImage(item, args, "show");
+            }
+
+            // Support plex/xbmc convention
+            if (image == null && item is Season && item.IndexNumber.HasValue)
+            {
+                var num = item.IndexNumber.Value.ToString(_usCulture);
+
+                image = GetImage(item, args, string.Format("season-{0}", num));
+            }
+            
+            // Support plex/xbmc convention
+            if (image == null && (item is Movie || item is MusicVideo || item is AdultVideo))
+            {
+                image = GetImage(item, args, "movie");
+            }
+            
             // Look for a file with the same name as the item
             if (image == null)
             {
@@ -202,6 +226,14 @@ namespace MediaBrowser.Providers
             // Banner Image
             image = GetImage(item, args, "banner");
 
+            // Support plex/xbmc convention
+            if (image == null && item is Season && item.IndexNumber.HasValue)
+            {
+                var num = item.IndexNumber.Value.ToString(_usCulture);
+
+                image = GetImage(item, args, string.Format("season-{0}-banner", num));
+            }
+            
             if (image != null)
             {
                 item.SetImage(ImageType.Banner, image.FullName);
@@ -310,6 +342,7 @@ namespace MediaBrowser.Providers
             // Support plex/xbmc conventions
             PopulateBackdrops(item, args, backdropFiles, "fanart", "fanart-");
             PopulateBackdrops(item, args, backdropFiles, "background", "background-");
+            PopulateBackdrops(item, args, backdropFiles, "art", "art-");
 
             if (backdropFiles.Count > 0)
             {
