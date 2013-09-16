@@ -243,6 +243,8 @@ namespace MediaBrowser.Providers.TV
 
                 if (!series.LockedFields.Contains(MetadataFields.Cast))
                 {
+                    series.People.Clear();
+
                     FetchActors(series, actorsXmlPath, cancellationToken);
                 }
             }
@@ -757,6 +759,8 @@ namespace MediaBrowser.Providers.TV
                     }
                 }
             }
+
+            personInfo.Type = PersonType.Actor;
 
             if (!string.IsNullOrEmpty(personInfo.Name))
             {
