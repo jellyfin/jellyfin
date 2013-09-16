@@ -27,6 +27,30 @@ namespace MediaBrowser.Providers.TV
             _providerManager = providerManager;
         }
 
+        protected override bool RefreshOnVersionChange
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        protected override string ProviderVersion
+        {
+            get
+            {
+                return "2";
+            }
+        }
+
+        public override bool RequiresInternet
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         public override bool Supports(BaseItem item)
         {
             return item is Person;
