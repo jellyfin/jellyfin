@@ -235,7 +235,7 @@ namespace MediaBrowser.Controller.Entities
                     {
                         try
                         {
-                            return LibraryManager.GetPerson(i).Result;
+                            return LibraryManager.GetPerson(i);
                         }
                         catch (IOException ex)
                         {
@@ -263,7 +263,7 @@ namespace MediaBrowser.Controller.Entities
                     {
                         try
                         {
-                            return LibraryManager.GetArtist(i).Result;
+                            return LibraryManager.GetArtist(i);
                         }
                         catch (IOException ex)
                         {
@@ -307,7 +307,7 @@ namespace MediaBrowser.Controller.Entities
                     {
                         try
                         {
-                            return LibraryManager.GetStudio(i).Result;
+                            return LibraryManager.GetStudio(i);
                         }
                         catch (IOException ex)
                         {
@@ -347,7 +347,7 @@ namespace MediaBrowser.Controller.Entities
                         {
                             try
                             {
-                                return LibraryManager.GetGenre(i).Result;
+                                return LibraryManager.GetGenre(i);
                             }
                             catch (Exception ex)
                             {
@@ -383,7 +383,7 @@ namespace MediaBrowser.Controller.Entities
                     {
                         try
                         {
-                            return LibraryManager.GetYear(i).Result;
+                            return LibraryManager.GetYear(i);
                         }
                         catch (IOException ex)
                         {

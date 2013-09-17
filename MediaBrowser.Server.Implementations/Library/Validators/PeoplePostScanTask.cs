@@ -41,11 +41,10 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         /// <returns>Task.</returns>
         public Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            return RunInternal(progress, cancellationToken);
-            //return Task.Run(() => RunInternal(progress, cancellationToken));
+            return Task.Run(() => RunInternal(progress, cancellationToken));
         }
 
-        private async Task RunInternal(IProgress<double> progress, CancellationToken cancellationToken)
+        private void RunInternal(IProgress<double> progress, CancellationToken cancellationToken)
         {
             var allItems = _libraryManager.RootFolder.RecursiveChildren.ToList();
 
@@ -91,7 +90,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
                 {
                     var counts = masterDictionary[name];
 
-                    var itemByName = await _libraryManager.GetPerson(name).ConfigureAwait(false);
+                    var itemByName = _libraryManager.GetPerson(name);
 
                     foreach (var libraryId in counts.Keys)
                     {

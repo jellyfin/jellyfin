@@ -140,7 +140,7 @@ namespace MediaBrowser.Api.Images
         [ApiMember(Name = "NewIndex", Description = "The new image index", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
         public int NewIndex { get; set; }
     }
-    
+
     /// <summary>
     /// Class GetPersonImage
     /// </summary>
@@ -378,14 +378,14 @@ namespace MediaBrowser.Api.Images
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>Task{List{ImageInfo}}.</returns>
-        public async Task<List<ImageInfo>> GetItemByNameImageInfos(GetItemByNameImageInfos request)
+        public Task<List<ImageInfo>> GetItemByNameImageInfos(GetItemByNameImageInfos request)
         {
             var pathInfo = PathInfo.Parse(RequestContext.PathInfo);
             var type = pathInfo.GetArgumentValue<string>(0);
 
-            var item = await GetItemByName(request.Name, type, _libraryManager).ConfigureAwait(false);
+            var item = GetItemByName(request.Name, type, _libraryManager);
 
-            return await GetItemImageInfos(item).ConfigureAwait(false);
+            return GetItemImageInfos(item);
         }
 
         /// <summary>
@@ -532,7 +532,7 @@ namespace MediaBrowser.Api.Images
             var pathInfo = PathInfo.Parse(RequestContext.PathInfo);
             var type = pathInfo.GetArgumentValue<string>(0);
 
-            var item = GetItemByName(request.Name, type, _libraryManager).Result;
+            var item = GetItemByName(request.Name, type, _libraryManager);
 
             return GetImage(request, item);
         }
@@ -563,13 +563,13 @@ namespace MediaBrowser.Api.Images
 
             request.Type = (ImageType)Enum.Parse(typeof(ImageType), pathInfo.GetArgumentValue<string>(3), true);
 
-            var item = GetItemByName(name, type, _libraryManager).Result;
+            var item = GetItemByName(name, type, _libraryManager);
 
             var task = PostImage(item, request.RequestStream, request.Type, RequestContext.ContentType);
 
             Task.WaitAll(task);
         }
-        
+
         /// <summary>
         /// Posts the specified request.
         /// </summary>
@@ -623,7 +623,7 @@ namespace MediaBrowser.Api.Images
             var pathInfo = PathInfo.Parse(RequestContext.PathInfo);
             var type = pathInfo.GetArgumentValue<string>(0);
 
-            var item = GetItemByName(request.Name, type, _libraryManager).Result;
+            var item = GetItemByName(request.Name, type, _libraryManager);
 
             var task = item.DeleteImage(request.Type, request.Index);
 
@@ -652,7 +652,7 @@ namespace MediaBrowser.Api.Images
             var pathInfo = PathInfo.Parse(RequestContext.PathInfo);
             var type = pathInfo.GetArgumentValue<string>(0);
 
-            var item = GetItemByName(request.Name, type, _libraryManager).Result;
+            var item = GetItemByName(request.Name, type, _libraryManager);
 
             var task = UpdateItemIndex(item, request.Type, request.Index, request.NewIndex);
 

@@ -89,7 +89,7 @@ namespace MediaBrowser.Api
         [ApiMember(Name = "Name", Description = "Name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public string Name { get; set; }
     }
-    
+
     public class ItemRefreshService : BaseApiService
     {
         private readonly ILibraryManager _libraryManager;
@@ -110,7 +110,7 @@ namespace MediaBrowser.Api
 
         private async Task RefreshArtist(RefreshArtist request)
         {
-            var item = await GetArtist(request.Name, _libraryManager).ConfigureAwait(false);
+            var item = GetArtist(request.Name, _libraryManager);
 
             var cancellationToken = CancellationToken.None;
 
@@ -148,7 +148,7 @@ namespace MediaBrowser.Api
 
         private async Task RefreshGenre(RefreshGenre request)
         {
-            var item = await GetGenre(request.Name, _libraryManager).ConfigureAwait(false);
+            var item = GetGenre(request.Name, _libraryManager);
 
             try
             {
@@ -169,7 +169,7 @@ namespace MediaBrowser.Api
 
         private async Task RefreshMusicGenre(RefreshMusicGenre request)
         {
-            var item = await GetMusicGenre(request.Name, _libraryManager).ConfigureAwait(false);
+            var item = GetMusicGenre(request.Name, _libraryManager);
 
             try
             {
@@ -190,7 +190,7 @@ namespace MediaBrowser.Api
 
         private async Task RefreshGameGenre(RefreshGameGenre request)
         {
-            var item = await GetGameGenre(request.Name, _libraryManager).ConfigureAwait(false);
+            var item = GetGameGenre(request.Name, _libraryManager);
 
             try
             {
@@ -211,7 +211,7 @@ namespace MediaBrowser.Api
 
         private async Task RefreshPerson(RefreshPerson request)
         {
-            var item = await GetPerson(request.Name, _libraryManager).ConfigureAwait(false);
+            var item = GetPerson(request.Name, _libraryManager);
 
             try
             {
@@ -232,7 +232,7 @@ namespace MediaBrowser.Api
 
         private async Task RefreshStudio(RefreshStudio request)
         {
-            var item = await GetStudio(request.Name, _libraryManager).ConfigureAwait(false);
+            var item = GetStudio(request.Name, _libraryManager);
 
             try
             {
@@ -254,7 +254,7 @@ namespace MediaBrowser.Api
 
             Task.WaitAll(task);
         }
-        
+
         /// <summary>
         /// Refreshes the item.
         /// </summary>

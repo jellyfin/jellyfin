@@ -218,7 +218,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>Task.</returns>
         protected async Task<UserItemDataDto> MarkFavorite(Guid userId, string type, string name, bool isFavorite)
         {
-            var item = await GetItemByName(name, type, LibraryManager).ConfigureAwait(false);
+            var item = GetItemByName(name, type, LibraryManager);
 
             var key = item.GetUserDataKey();
 
@@ -245,7 +245,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>Task.</returns>
         protected async Task<UserItemDataDto> MarkLike(Guid userId, string type, string name, bool? likes)
         {
-            var item = await GetItemByName(name, type, LibraryManager).ConfigureAwait(false);
+            var item = GetItemByName(name, type, LibraryManager);
 
             var key = item.GetUserDataKey();
 

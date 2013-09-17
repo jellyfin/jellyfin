@@ -38,8 +38,8 @@ namespace MediaBrowser.Server.Implementations.Dto
             _userManager = userManager;
             _userDataRepository = userDataRepository;
             _itemRepo = itemRepo;
-        }        
-        
+        }
+
         /// <summary>
         /// Converts a BaseItem to a DTOBaseItem
         /// </summary>
@@ -63,16 +63,9 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             var dto = new BaseItemDto();
 
-            var tasks = new List<Task>();
-
-            if (fields.Contains(ItemFields.Studios))
-            {
-                tasks.Add(AttachStudios(dto, item));
-            }
-
             if (fields.Contains(ItemFields.People))
             {
-                tasks.Add(AttachPeople(dto, item));
+                AttachPeople(dto, item);
             }
 
             if (fields.Contains(ItemFields.PrimaryImageAspectRatio))
@@ -98,6 +91,11 @@ namespace MediaBrowser.Server.Implementations.Dto
                 AttachUserSpecificInfo(dto, item, user, fields);
             }
 
+            if (fields.Contains(ItemFields.Studios))
+            {
+                AttachStudios(dto, item);
+            }
+
             AttachBasicFields(dto, item, owner, fields);
 
             if (fields.Contains(ItemFields.SoundtrackIds))
@@ -114,12 +112,6 @@ namespace MediaBrowser.Server.Implementations.Dto
                 {
                     AttachItemByNameCounts(dto, itemByName, user);
                 }
-            }
-
-            // Make sure all the tasks we kicked off have completed.
-            if (tasks.Count > 0)
-            {
-                await Task.WhenAll(tasks).ConfigureAwait(false);
             }
 
             return dto;
@@ -425,15 +417,15 @@ namespace MediaBrowser.Server.Implementations.Dto
                 _logger.ErrorException("Error getting {0} image info for {1}", ex, type, path);
                 return null;
             }
-        }        
-        
+        }
+
         /// <summary>
         /// Attaches People DTO's to a DTOBaseItem
         /// </summary>
         /// <param name="dto">The dto.</param>
         /// <param name="item">The item.</param>
         /// <returns>Task.</returns>
-        private async Task AttachPeople(BaseItemDto dto, BaseItem item)
+        private void AttachPeople(BaseItemDto dto, BaseItem item)
         {
             // Ordering by person type to ensure actors and artists are at the front.
             // This is taking advantage of the fact that they both begin with A
@@ -443,24 +435,20 @@ namespace MediaBrowser.Server.Implementations.Dto
             // Attach People by transforming them into BaseItemPerson (DTO)
             dto.People = new BaseItemPerson[people.Count];
 
-            var entities = await Task.WhenAll(people.Select(p => p.Name)
+            var dictionary = people.Select(p => p.Name)
                 .Distinct(StringComparer.OrdinalIgnoreCase).Select(c =>
-                    Task.Run(async () =>
+                {
+                    try
                     {
-                        try
-                        {
-                            return await _libraryManager.GetPerson(c).ConfigureAwait(false);
-                        }
-                        catch (IOException ex)
-                        {
-                            _logger.ErrorException("Error getting person {0}", ex, c);
-                            return null;
-                        }
-                    })
+                        return _libraryManager.GetPerson(c);
+                    }
+                    catch (IOException ex)
+                    {
+                        _logger.ErrorException("Error getting person {0}", ex, c);
+                        return null;
+                    }
 
-            )).ConfigureAwait(false);
-
-            var dictionary = entities.Where(i => i != null)
+                }).Where(i => i != null)
                 .DistinctBy(i => i.Name)
                 .ToDictionary(i => i.Name, StringComparer.OrdinalIgnoreCase);
 
@@ -497,32 +485,26 @@ namespace MediaBrowser.Server.Implementations.Dto
         /// <param name="dto">The dto.</param>
         /// <param name="item">The item.</param>
         /// <returns>Task.</returns>
-        private async Task AttachStudios(BaseItemDto dto, BaseItem item)
+        private void AttachStudios(BaseItemDto dto, BaseItem item)
         {
             var studios = item.Studios.ToList();
 
             dto.Studios = new StudioDto[studios.Count];
 
-            var entities = await Task.WhenAll(studios.Distinct(StringComparer.OrdinalIgnoreCase).Select(c =>
-
-                    Task.Run(async () =>
-                    {
-                        try
-                        {
-                            return await _libraryManager.GetStudio(c).ConfigureAwait(false);
-                        }
-                        catch (IOException ex)
-                        {
-                            _logger.ErrorException("Error getting studio {0}", ex, c);
-                            return null;
-                        }
-                    })
-
-            )).ConfigureAwait(false);
-
-            var dictionary = entities
-                .Where(i => i != null)
-                .ToDictionary(i => i.Name, StringComparer.OrdinalIgnoreCase);
+            var dictionary = studios.Distinct(StringComparer.OrdinalIgnoreCase).Select(name =>
+            {
+                try
+                {
+                    return _libraryManager.GetStudio(name);
+                }
+                catch (IOException ex)
+                {
+                    _logger.ErrorException("Error getting studio {0}", ex, name);
+                    return null;
+                }
+            })
+            .Where(i => i != null)
+            .ToDictionary(i => i.Name, StringComparer.OrdinalIgnoreCase);
 
             for (var i = 0; i < studios.Count; i++)
             {

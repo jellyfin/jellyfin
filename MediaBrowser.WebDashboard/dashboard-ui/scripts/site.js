@@ -1114,6 +1114,11 @@ var Dashboard = {
 
 };
 
+if (!window.WebSocket) {
+
+    alert("This browser does not support web sockets. For a better experience, try a newer browser such as Chrome (android, desktop), Firefox, IE10, Safari (iOS) or Opera.");
+}
+
 var ApiClient = MediaBrowser.ApiClient.create("Dashboard", window.dashboardVersion);
 
 $(ApiClient).on("websocketmessage", Dashboard.onWebSocketMessageReceived);
@@ -1159,11 +1164,6 @@ $(function () {
     footerHtml += '</div>';
 
     $(document.body).append(footerHtml);
-
-    if (!window.WebSocket) {
-
-        alert("This browser does not support web sockets. For a better experience, try a newer browser such as Chrome (android, desktop), Firefox, IE10, Safari (iOS) or Opera.");
-    }
 
     if (!IsStorageEnabled()) {
         alert("This browser does not support local storage or is running in private mode. For a better experience, try a newer browser such as Chrome (android, desktop), Firefox, IE10, Safari (iOS) or Opera.");

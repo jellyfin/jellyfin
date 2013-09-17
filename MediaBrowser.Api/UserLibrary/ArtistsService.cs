@@ -77,7 +77,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>Task{BaseItemDto}.</returns>
         private async Task<BaseItemDto> GetItem(GetArtist request)
         {
-            var item = await GetArtist(request.Name, LibraryManager).ConfigureAwait(false);
+            var item = GetArtist(request.Name, LibraryManager);
 
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true));
@@ -110,7 +110,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         /// <param name="items">The items.</param>
         /// <returns>IEnumerable{Tuple{System.StringFunc{System.Int32}}}.</returns>
-        protected override IEnumerable<Task<Artist>> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items)
+        protected override IEnumerable<Artist> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items)
         {
             var itemsList = items.OfType<Audio>().ToList();
 
@@ -129,16 +129,6 @@ namespace MediaBrowser.Api.UserLibrary
                 })
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .Select(name => LibraryManager.GetArtist(name));
-        }
-
-        /// <summary>
-        /// Gets the entity.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <returns>Task{Artist}.</returns>
-        protected Task<Artist> GetEntity(string name)
-        {
-            return LibraryManager.GetArtist(name);
         }
     }
 }

@@ -19,7 +19,7 @@ namespace MediaBrowser.Api.UserLibrary
     {
         public GetMusicGenres()
         {
-            IncludeItemTypes = typeof (Audio).Name;
+            IncludeItemTypes = typeof(Audio).Name;
         }
     }
 
@@ -68,7 +68,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>Task{BaseItemDto}.</returns>
         private async Task<BaseItemDto> GetItem(GetMusicGenre request)
         {
-            var item = await GetMusicGenre(request.Name, LibraryManager).ConfigureAwait(false);
+            var item = GetMusicGenre(request.Name, LibraryManager);
 
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true));
@@ -101,7 +101,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         /// <param name="items">The items.</param>
         /// <returns>IEnumerable{Tuple{System.StringFunc{System.Int32}}}.</returns>
-        protected override IEnumerable<Task<MusicGenre>> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items)
+        protected override IEnumerable<MusicGenre> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items)
         {
             var itemsList = items.ToList();
 
@@ -109,16 +109,6 @@ namespace MediaBrowser.Api.UserLibrary
                 .SelectMany(i => i.Genres)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .Select(name => LibraryManager.GetMusicGenre(name));
-        }
-
-        /// <summary>
-        /// Gets the entity.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <returns>Task{Genre}.</returns>
-        protected Task<MusicGenre> GetEntity(string name)
-        {
-            return LibraryManager.GetMusicGenre(name);
         }
     }
 }

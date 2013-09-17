@@ -95,32 +95,32 @@ namespace MediaBrowser.Api
         private readonly char[] _dashReplaceChars = new[] { '?', '/' };
         private const char SlugChar = '-';
 
-        protected Task<Artist> GetArtist(string name, ILibraryManager libraryManager)
+        protected Artist GetArtist(string name, ILibraryManager libraryManager)
         {
             return libraryManager.GetArtist(DeSlugArtistName(name, libraryManager));
         }
 
-        protected Task<Studio> GetStudio(string name, ILibraryManager libraryManager)
+        protected Studio GetStudio(string name, ILibraryManager libraryManager)
         {
             return libraryManager.GetStudio(DeSlugStudioName(name, libraryManager));
         }
 
-        protected Task<Genre> GetGenre(string name, ILibraryManager libraryManager)
+        protected Genre GetGenre(string name, ILibraryManager libraryManager)
         {
             return libraryManager.GetGenre(DeSlugGenreName(name, libraryManager));
         }
 
-        protected Task<MusicGenre> GetMusicGenre(string name, ILibraryManager libraryManager)
+        protected MusicGenre GetMusicGenre(string name, ILibraryManager libraryManager)
         {
             return libraryManager.GetMusicGenre(DeSlugGenreName(name, libraryManager));
         }
 
-        protected Task<GameGenre> GetGameGenre(string name, ILibraryManager libraryManager)
+        protected GameGenre GetGameGenre(string name, ILibraryManager libraryManager)
         {
             return libraryManager.GetGameGenre(DeSlugGameGenreName(name, libraryManager));
         }
-        
-        protected Task<Person> GetPerson(string name, ILibraryManager libraryManager)
+
+        protected Person GetPerson(string name, ILibraryManager libraryManager)
         {
             return libraryManager.GetPerson(DeSlugPersonName(name, libraryManager));
         }
@@ -137,7 +137,7 @@ namespace MediaBrowser.Api
             {
                 return name;
             }
-            
+
             return libraryManager.RootFolder.RecursiveChildren
                 .OfType<Audio>()
                 .SelectMany(i =>
@@ -203,7 +203,7 @@ namespace MediaBrowser.Api
 
                 }) ?? name;
         }
-        
+
         /// <summary>
         /// Deslugs a studio name by finding the correct entry in the library
         /// </summary>
@@ -257,37 +257,37 @@ namespace MediaBrowser.Api
         /// <param name="libraryManager">The library manager.</param>
         /// <returns>Task{BaseItem}.</returns>
         /// <exception cref="System.ArgumentException"></exception>
-        protected async Task<BaseItem> GetItemByName(string name, string type, ILibraryManager libraryManager)
+        protected BaseItem GetItemByName(string name, string type, ILibraryManager libraryManager)
         {
             BaseItem item;
 
             if (type.IndexOf("Person", StringComparison.OrdinalIgnoreCase) == 0)
             {
-                item = await GetPerson(name, libraryManager).ConfigureAwait(false);
+                item = GetPerson(name, libraryManager);
             }
             else if (type.IndexOf("Artist", StringComparison.OrdinalIgnoreCase) == 0)
             {
-                item = await GetArtist(name, libraryManager).ConfigureAwait(false);
+                item = GetArtist(name, libraryManager);
             }
             else if (type.IndexOf("Genre", StringComparison.OrdinalIgnoreCase) == 0)
             {
-                item = await GetGenre(name, libraryManager).ConfigureAwait(false);
+                item = GetGenre(name, libraryManager);
             }
             else if (type.IndexOf("MusicGenre", StringComparison.OrdinalIgnoreCase) == 0)
             {
-                item = await GetMusicGenre(name, libraryManager).ConfigureAwait(false);
+                item = GetMusicGenre(name, libraryManager);
             }
             else if (type.IndexOf("GameGenre", StringComparison.OrdinalIgnoreCase) == 0)
             {
-                item = await GetGameGenre(name, libraryManager).ConfigureAwait(false);
+                item = GetGameGenre(name, libraryManager);
             }
             else if (type.IndexOf("Studio", StringComparison.OrdinalIgnoreCase) == 0)
             {
-                item = await GetStudio(name, libraryManager).ConfigureAwait(false);
+                item = GetStudio(name, libraryManager);
             }
             else if (type.IndexOf("Year", StringComparison.OrdinalIgnoreCase) == 0)
             {
-                item = await libraryManager.GetYear(int.Parse(name)).ConfigureAwait(false);
+                item = libraryManager.GetYear(int.Parse(name));
             }
             else
             {

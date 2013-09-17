@@ -15,7 +15,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         /// <summary>
         /// The _library manager
         /// </summary>
-        private readonly LibraryManager _libraryManager;
+        private readonly ILibraryManager _libraryManager;
 
         /// <summary>
         /// The _user manager
@@ -27,7 +27,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         /// </summary>
         private readonly ILogger _logger;
 
-        public MusicGenresValidator(LibraryManager libraryManager, IUserManager userManager, ILogger logger)
+        public MusicGenresValidator(ILibraryManager libraryManager, IUserManager userManager, ILogger logger)
         {
             _libraryManager = libraryManager;
             _userManager = userManager;
@@ -102,7 +102,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
 
         private async Task UpdateItemByNameCounts(string name, CancellationToken cancellationToken, Dictionary<Guid, Dictionary<CountType, int>> counts)
         {
-            var itemByName = await _libraryManager.GetMusicGenre(name, cancellationToken, true, true).ConfigureAwait(false);
+            var itemByName = _libraryManager.GetMusicGenre(name);
 
             foreach (var libraryId in counts.Keys)
             {
@@ -110,6 +110,8 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
 
                 itemByName.UserItemCounts[libraryId] = itemCounts;
             }
+
+            await itemByName.RefreshMetadata(cancellationToken).ConfigureAwait(false);
         }
 
         private void SetItemCounts(Guid userId, IEnumerable<BaseItem> allItems, Dictionary<string, Dictionary<Guid, Dictionary<CountType, int>>> masterDictionary)
