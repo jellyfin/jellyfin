@@ -393,12 +393,12 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>System.Object.</returns>
         public object Get(GetSpecialFeatures request)
         {
-            var result = GetAsync(request).Result;
+            var result = GetAsync(request);
 
             return ToOptimizedResult(result);
         }
 
-        private Task<BaseItemDto[]> GetAsync(GetSpecialFeatures request)
+        private BaseItemDto[] GetAsync(GetSpecialFeatures request)
         {
             var user = _userManager.GetUserById(request.UserId);
 
@@ -415,12 +415,12 @@ namespace MediaBrowser.Api.UserLibrary
                 // Avoid implicitly captured closure
                 var movie1 = movie;
 
-                var tasks = movie.SpecialFeatureIds
+                var dtos = movie.SpecialFeatureIds
                     .Select(_itemRepo.RetrieveItem)
                     .OrderBy(i => i.SortName)
                     .Select(i => _dtoService.GetBaseItemDto(i, fields, user, movie1));
 
-                return Task.WhenAll(tasks);
+                return dtos.ToArray();
             }
 
             var series = item as Series;
@@ -428,7 +428,7 @@ namespace MediaBrowser.Api.UserLibrary
             // Get them from the child tree
             if (series != null)
             {
-                var tasks = series
+                var dtos = series
                     .RecursiveChildren
                     .OfType<Episode>()
                     .Where(i => i.ParentIndexNumber.HasValue && i.ParentIndexNumber.Value == 0)
@@ -448,7 +448,7 @@ namespace MediaBrowser.Api.UserLibrary
                     .ThenBy(i => i.SortName)
                     .Select(i => _dtoService.GetBaseItemDto(i, fields, user));
 
-                return Task.WhenAll(tasks);
+                return dtos.ToArray();
             }
 
             throw new ArgumentException("The item does not support special features");
@@ -461,12 +461,12 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>System.Object.</returns>
         public object Get(GetLocalTrailers request)
         {
-            var result = GetAsync(request).Result;
+            var result = GetAsync(request);
 
             return ToOptimizedResult(result);
         }
 
-        private Task<BaseItemDto[]> GetAsync(GetLocalTrailers request)
+        private BaseItemDto[] GetAsync(GetLocalTrailers request)
         {
             var user = _userManager.GetUserById(request.UserId);
 
@@ -475,12 +475,12 @@ namespace MediaBrowser.Api.UserLibrary
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true)).ToList();
 
-            var tasks = item.LocalTrailerIds
+            var dtos = item.LocalTrailerIds
                 .Select(_itemRepo.RetrieveItem)
                 .OrderBy(i => i.SortName)
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user, item));
 
-            return Task.WhenAll(tasks);
+            return dtos.ToArray();
         }
 
         /// <summary>
@@ -497,7 +497,7 @@ namespace MediaBrowser.Api.UserLibrary
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true)).ToList();
 
-            var result = _dtoService.GetBaseItemDto(item, fields, user).Result;
+            var result = _dtoService.GetBaseItemDto(item, fields, user);
 
             return ToOptimizedResult(result);
         }
@@ -516,7 +516,7 @@ namespace MediaBrowser.Api.UserLibrary
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true)).ToList();
 
-            var result = _dtoService.GetBaseItemDto(item, fields, user).Result;
+            var result = _dtoService.GetBaseItemDto(item, fields, user);
 
             return ToOptimizedResult(result);
         }

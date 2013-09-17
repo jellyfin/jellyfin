@@ -8,7 +8,6 @@ using ServiceStack.ServiceHost;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.UserLibrary
 {
@@ -72,7 +71,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>System.Object.</returns>
         public object Get(GetPerson request)
         {
-            var result = GetItem(request).Result;
+            var result = GetItem(request);
 
             return ToOptimizedResult(result);
         }
@@ -82,7 +81,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>Task{BaseItemDto}.</returns>
-        private async Task<BaseItemDto> GetItem(GetPerson request)
+        private BaseItemDto GetItem(GetPerson request)
         {
             var item = GetPerson(request.Name, LibraryManager);
 
@@ -93,10 +92,10 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 var user = UserManager.GetUserById(request.UserId.Value);
 
-                return await DtoService.GetBaseItemDto(item, fields.ToList(), user).ConfigureAwait(false);
+                return DtoService.GetBaseItemDto(item, fields.ToList(), user);
             }
 
-            return await DtoService.GetBaseItemDto(item, fields.ToList()).ConfigureAwait(false);
+            return DtoService.GetBaseItemDto(item, fields.ToList());
         }
 
         /// <summary>

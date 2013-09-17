@@ -44,7 +44,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         private readonly ITaskManager _taskManager;
 
         private readonly IDtoService _dtoService;
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="WebSocketEvents" /> class.
         /// </summary>
@@ -134,9 +134,9 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
-        async void userManager_UserUpdated(object sender, GenericEventArgs<User> e)
+        void userManager_UserUpdated(object sender, GenericEventArgs<User> e)
         {
-            var dto = await _dtoService.GetUserDto(e.Argument).ConfigureAwait(false);
+            var dto = _dtoService.GetUserDto(e.Argument);
 
             _serverManager.SendWebSocketMessage("UserUpdated", dto);
         }

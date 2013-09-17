@@ -6,7 +6,6 @@ using ServiceStack.ServiceHost;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Api
 {
@@ -56,7 +55,7 @@ namespace MediaBrowser.Api
         {
             var item = _dtoService.GetItemByDtoId(request.Id);
 
-            var result = GetInstantMixResult(request, item.Genres).Result;
+            var result = GetInstantMixResult(request, item.Genres);
 
             return ToOptimizedResult(result);
         }
@@ -72,7 +71,7 @@ namespace MediaBrowser.Api
                .Concat(album.Genres)
                .Distinct(StringComparer.OrdinalIgnoreCase);
 
-            var result = GetInstantMixResult(request, genres).Result;
+            var result = GetInstantMixResult(request, genres);
 
             return ToOptimizedResult(result);
         }
@@ -81,7 +80,7 @@ namespace MediaBrowser.Api
         {
             var genre = GetMusicGenre(request.Name, _libraryManager);
 
-            var result = GetInstantMixResult(request, new[] { genre.Name }).Result;
+            var result = GetInstantMixResult(request, new[] { genre.Name });
 
             return ToOptimizedResult(result);
         }
@@ -98,12 +97,12 @@ namespace MediaBrowser.Api
                 .Concat(artist.Genres)
                 .Distinct(StringComparer.OrdinalIgnoreCase);
 
-            var result = GetInstantMixResult(request, genres).Result;
+            var result = GetInstantMixResult(request, genres);
 
             return ToOptimizedResult(result);
         }
 
-        private async Task<ItemsResult> GetInstantMixResult(BaseGetSimilarItems request, IEnumerable<string> genres)
+        private ItemsResult GetInstantMixResult(BaseGetSimilarItems request, IEnumerable<string> genres)
         {
             var user = request.UserId.HasValue ? _userManager.GetUserById(request.UserId.Value) : null;
 
@@ -132,10 +131,10 @@ namespace MediaBrowser.Api
                 TotalRecordCount = items.Length
             };
 
-            var tasks = items.Take(request.Limit ?? items.Length)
+            var dtos = items.Take(request.Limit ?? items.Length)
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user));
 
-            result.Items = await Task.WhenAll(tasks).ConfigureAwait(false);
+            result.Items = dtos.ToArray();
 
             return result;
         }

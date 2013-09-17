@@ -202,7 +202,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
-            const int maxTasks = 5;
+            const int maxTasks = 3;
 
             var tasks = new List<Task>();
 

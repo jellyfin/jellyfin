@@ -225,7 +225,7 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetAncestors request)
         {
-            var result = GetAncestors(request).Result;
+            var result = GetAncestors(request);
 
             return ToOptimizedResult(result);
         }
@@ -235,11 +235,11 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>Task{BaseItemDto[]}.</returns>
-        public async Task<BaseItemDto[]> GetAncestors(GetAncestors request)
+        public BaseItemDto[] GetAncestors(GetAncestors request)
         {
             var item = _dtoService.GetItemByDtoId(request.Id);
 
-            var tasks = new List<Task<BaseItemDto>>();
+            var baseItemDtos = new List<BaseItemDto>();
 
             var user = request.UserId.HasValue ? _userManager.GetUserById(request.UserId.Value) : null;
 
@@ -257,7 +257,7 @@ namespace MediaBrowser.Api
                     parent = TranslateParentItem(parent, user);
                 }
 
-                tasks.Add(_dtoService.GetBaseItemDto(parent, fields, user));
+                baseItemDtos.Add(_dtoService.GetBaseItemDto(parent, fields, user));
 
                 if (parent is UserRootFolder)
                 {
@@ -267,7 +267,7 @@ namespace MediaBrowser.Api
                 parent = parent.Parent;
             }
 
-            return await Task.WhenAll(tasks).ConfigureAwait(false);
+            return baseItemDtos.ToArray();
         }
 
         private BaseItem TranslateParentItem(BaseItem item, User user)
@@ -512,11 +512,11 @@ namespace MediaBrowser.Api
                     .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
                     .ToList();
 
-            var tasks = item.ThemeSongIds.Select(_itemRepo.RetrieveItem)
+            var dtos = item.ThemeSongIds.Select(_itemRepo.RetrieveItem)
                             .OrderBy(i => i.SortName)
                             .Select(i => _dtoService.GetBaseItemDto(i, fields, user, item));
 
-            var items = await Task.WhenAll(tasks).ConfigureAwait(false);
+            var items = dtos.ToArray();
 
             return new ThemeMediaResult
             {
@@ -559,11 +559,11 @@ namespace MediaBrowser.Api
                     .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
                     .ToList();
 
-            var tasks = item.ThemeVideoIds.Select(_itemRepo.RetrieveItem)
+            var dtos = item.ThemeVideoIds.Select(_itemRepo.RetrieveItem)
                             .OrderBy(i => i.SortName)
                             .Select(i => _dtoService.GetBaseItemDto(i, fields, user, item));
 
-            var items = await Task.WhenAll(tasks).ConfigureAwait(false);
+            var items = dtos.ToArray();
 
             return new ThemeMediaResult
             {

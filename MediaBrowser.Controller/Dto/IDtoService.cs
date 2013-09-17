@@ -6,7 +6,6 @@ using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Session;
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Dto
 {
@@ -19,8 +18,8 @@ namespace MediaBrowser.Controller.Dto
         /// Gets the user dto.
         /// </summary>
         /// <param name="user">The user.</param>
-        /// <returns>Task{UserDto}.</returns>
-        Task<UserDto> GetUserDto(User user);
+        /// <returns>UserDto.</returns>
+        UserDto GetUserDto(User user);
 
         /// <summary>
         /// Gets the session info dto.
@@ -66,6 +65,6 @@ namespace MediaBrowser.Controller.Dto
         /// <param name="user">The user.</param>
         /// <param name="owner">The owner.</param>
         /// <returns>Task{BaseItemDto}.</returns>
-        Task<BaseItemDto> GetBaseItemDto(BaseItem item, List<ItemFields> fields, User user = null, BaseItem owner = null);
+        BaseItemDto GetBaseItemDto(BaseItem item, List<ItemFields> fields, User user = null, BaseItem owner = null);
     }
 }

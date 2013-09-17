@@ -74,7 +74,7 @@ namespace MediaBrowser.Api
             }).Where(i => i.HasValue).Select(i => i.Value);
         }
     }
-    
+
     /// <summary>
     /// Class SimilarItemsHelper
     /// </summary>
@@ -112,7 +112,7 @@ namespace MediaBrowser.Api
 
             var result = new ItemsResult
             {
-                Items = items.Take(request.Limit ?? items.Length).Select(i => dtoService.GetBaseItemDto(i, fields, user)).Select(t => t.Result).ToArray(),
+                Items = items.Take(request.Limit ?? items.Length).Select(i => dtoService.GetBaseItemDto(i, fields, user)).ToArray(),
 
                 TotalRecordCount = items.Length
             };

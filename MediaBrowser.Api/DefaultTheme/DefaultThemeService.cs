@@ -101,12 +101,12 @@ namespace MediaBrowser.Api.DefaultTheme
             var eligibleSpotlightItems = itemsWithBackdrops
                 .Where(i => i is Game || i is Movie || i is Series || i is MusicArtist);
 
-            var spotlightItemTasks = FilterItemsForBackdropDisplay(eligibleSpotlightItems)
+            var dtos = FilterItemsForBackdropDisplay(eligibleSpotlightItems)
                 .OrderBy(i => Guid.NewGuid())
                 .Take(50)
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user));
 
-            view.SpotlightItems = await Task.WhenAll(spotlightItemTasks).ConfigureAwait(false);
+            view.SpotlightItems = dtos.ToArray();
 
             return view;
         }
@@ -132,13 +132,13 @@ namespace MediaBrowser.Api.DefaultTheme
 
             var fields = new List<ItemFields>();
 
-            var spotlightItemTasks = itemsWithBackdrops
+            var dtos = itemsWithBackdrops
                 .OfType<Game>()
                 .OrderBy(i => Guid.NewGuid())
                 .Take(50)
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user));
 
-            view.SpotlightItems = await Task.WhenAll(spotlightItemTasks).ConfigureAwait(false);
+            view.SpotlightItems = dtos.ToArray();
 
             return view;
         }
@@ -171,12 +171,12 @@ namespace MediaBrowser.Api.DefaultTheme
 
             var fields = new List<ItemFields>();
 
-            var spotlightItemTasks = FilterItemsForBackdropDisplay(seriesWithBackdrops)
+            var dtos = FilterItemsForBackdropDisplay(seriesWithBackdrops)
                 .OrderBy(i => Guid.NewGuid())
                 .Take(50)
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user));
 
-            view.SpotlightItems = await Task.WhenAll(spotlightItemTasks).ConfigureAwait(false);
+            view.SpotlightItems = dtos.ToArray();
 
             view.ShowsItems = series
                .Where(i => i.BackdropImagePaths.Count > 0)
@@ -245,12 +245,12 @@ namespace MediaBrowser.Api.DefaultTheme
 
             var fields = new List<ItemFields>();
 
-            var spotlightItemTasks = FilterItemsForBackdropDisplay(itemsWithBackdrops)
+            var dtos = FilterItemsForBackdropDisplay(itemsWithBackdrops)
                 .OrderBy(i => Guid.NewGuid())
                 .Take(50)
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user));
 
-            view.SpotlightItems = await Task.WhenAll(spotlightItemTasks).ConfigureAwait(false);
+            view.SpotlightItems = dtos.ToArray();
 
             view.MovieItems = moviesWithBackdrops
                .OrderBy(i => Guid.NewGuid())
@@ -350,7 +350,7 @@ namespace MediaBrowser.Api.DefaultTheme
             {
                 var date = Kernel.Instance.ImageManager.GetImageDateModified(item, path);
 
-                var size = Kernel.Instance.ImageManager.GetImageSize(path, date).Result;
+                var size = Kernel.Instance.ImageManager.GetImageSize(path, date);
 
                 return size.Width;
             }

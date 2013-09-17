@@ -361,14 +361,14 @@ namespace MediaBrowser.Api.Images
         {
             var item = _dtoService.GetItemByDtoId(request.Id);
 
-            var result = GetItemImageInfos(item).Result;
+            var result = GetItemImageInfos(item);
 
             return ToOptimizedResult(result);
         }
 
         public object Get(GetItemByNameImageInfos request)
         {
-            var result = GetItemByNameImageInfos(request).Result;
+            var result = GetItemByNameImageInfos(request);
 
             return ToOptimizedResult(result);
         }
@@ -378,7 +378,7 @@ namespace MediaBrowser.Api.Images
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>Task{List{ImageInfo}}.</returns>
-        public Task<List<ImageInfo>> GetItemByNameImageInfos(GetItemByNameImageInfos request)
+        private List<ImageInfo> GetItemByNameImageInfos(GetItemByNameImageInfos request)
         {
             var pathInfo = PathInfo.Parse(RequestContext.PathInfo);
             var type = pathInfo.GetArgumentValue<string>(0);
@@ -393,7 +393,7 @@ namespace MediaBrowser.Api.Images
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>Task{List{ImageInfo}}.</returns>
-        public async Task<List<ImageInfo>> GetItemImageInfos(BaseItem item)
+        public List<ImageInfo> GetItemImageInfos(BaseItem item)
         {
             var list = new List<ImageInfo>();
 
@@ -405,7 +405,7 @@ namespace MediaBrowser.Api.Images
 
                 var dateModified = Kernel.Instance.ImageManager.GetImageDateModified(item, path);
 
-                var size = await Kernel.Instance.ImageManager.GetImageSize(path, dateModified).ConfigureAwait(false);
+                var size = Kernel.Instance.ImageManager.GetImageSize(path, dateModified);
 
                 list.Add(new ImageInfo
                 {
@@ -426,7 +426,7 @@ namespace MediaBrowser.Api.Images
 
                 var dateModified = Kernel.Instance.ImageManager.GetImageDateModified(item, image);
 
-                var size = await Kernel.Instance.ImageManager.GetImageSize(image, dateModified).ConfigureAwait(false);
+                var size = Kernel.Instance.ImageManager.GetImageSize(image, dateModified);
 
                 list.Add(new ImageInfo
                 {
@@ -450,7 +450,7 @@ namespace MediaBrowser.Api.Images
 
                 var dateModified = Kernel.Instance.ImageManager.GetImageDateModified(item, image);
 
-                var size = await Kernel.Instance.ImageManager.GetImageSize(image, dateModified).ConfigureAwait(false);
+                var size = Kernel.Instance.ImageManager.GetImageSize(image, dateModified);
 
                 list.Add(new ImageInfo
                 {
@@ -482,7 +482,7 @@ namespace MediaBrowser.Api.Images
 
                         var dateModified = Kernel.Instance.ImageManager.GetImageDateModified(item, image);
 
-                        var size = await Kernel.Instance.ImageManager.GetImageSize(image, dateModified).ConfigureAwait(false);
+                        var size = Kernel.Instance.ImageManager.GetImageSize(image, dateModified);
 
                         list.Add(new ImageInfo
                         {

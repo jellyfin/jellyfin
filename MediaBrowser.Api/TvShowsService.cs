@@ -191,7 +191,7 @@ namespace MediaBrowser.Api
 
             var fields = request.GetItemFields().ToList();
 
-            var returnItems = await GetItemDtos(pagedItems, user, fields).ConfigureAwait(false);
+            var returnItems = pagedItems.Select(i => _dtoService.GetBaseItemDto(i, fields, user)).ToArray();
 
             return new ItemsResult
             {
@@ -245,18 +245,6 @@ namespace MediaBrowser.Api
             }
 
             return new Tuple<Episode, DateTime>(null, lastWatchedDate);
-        }
-
-        /// <summary>
-        /// Gets the item dtos.
-        /// </summary>
-        /// <param name="pagedItems">The paged items.</param>
-        /// <param name="user">The user.</param>
-        /// <param name="fields">The fields.</param>
-        /// <returns>Task.</returns>
-        private Task<BaseItemDto[]> GetItemDtos(IEnumerable<BaseItem> pagedItems, User user, List<ItemFields> fields)
-        {
-            return Task.WhenAll(pagedItems.Select(i => _dtoService.GetBaseItemDto(i, fields, user)));
         }
 
         /// <summary>

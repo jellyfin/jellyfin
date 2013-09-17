@@ -69,11 +69,6 @@ namespace MediaBrowser.Controller.Drawing
         private readonly IItemRepository _itemRepo;
 
         /// <summary>
-        /// The _locks
-        /// </summary>
-        private readonly ConcurrentDictionary<string, SemaphoreSlim> _locks = new ConcurrentDictionary<string, SemaphoreSlim>();
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="ImageManager" /> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
@@ -146,7 +141,7 @@ namespace MediaBrowser.Controller.Drawing
                 }
             }
 
-            var originalImageSize = await GetImageSize(originalImagePath, dateModified).ConfigureAwait(false);
+            var originalImageSize = GetImageSize(originalImagePath, dateModified);
 
             // Determine the output size based on incoming parameters
             var newSize = DrawingUtils.Resize(originalImageSize, width, height, maxWidth, maxHeight);
@@ -304,7 +299,7 @@ namespace MediaBrowser.Controller.Drawing
         /// <param name="dateModified">The date modified.</param>
         /// <returns>Task{ImageSize}.</returns>
         /// <exception cref="System.ArgumentNullException">imagePath</exception>
-        public async Task<ImageSize> GetImageSize(string imagePath, DateTime dateModified)
+        public ImageSize GetImageSize(string imagePath, DateTime dateModified)
         {
             if (string.IsNullOrEmpty(imagePath))
             {
@@ -317,7 +312,7 @@ namespace MediaBrowser.Controller.Drawing
 
             if (!_cachedImagedSizes.TryGetValue(name, out size))
             {
-                size = await GetImageSize(name, imagePath).ConfigureAwait(false);
+                size = GetImageSize(name, imagePath);
 
                 _cachedImagedSizes.AddOrUpdate(name, size, (keyName, oldValue) => size);
             }
@@ -333,7 +328,7 @@ namespace MediaBrowser.Controller.Drawing
         /// <param name="keyName">Name of the key.</param>
         /// <param name="imagePath">The image path.</param>
         /// <returns>ImageSize.</returns>
-        private async Task<ImageSize> GetImageSize(string keyName, string imagePath)
+        private ImageSize GetImageSize(string keyName, string imagePath)
         {
             // Now check the file system cache
             var fullCachePath = ImageSizeCache.GetResourcePath(keyName, ".txt");
@@ -349,34 +344,29 @@ namespace MediaBrowser.Controller.Drawing
                 // Cache file doesn't exist or is currently being written to
             }
 
-            var semaphore = GetLock(fullCachePath);
+            var syncLock = GetObjectLock(fullCachePath);
 
-            await semaphore.WaitAsync().ConfigureAwait(false);
+            lock (syncLock)
+            {
+                try
+                {
+                    var result = File.ReadAllText(fullCachePath)
+                        .Split('|')
+                        .Select(i => double.Parse(i, UsCulture))
+                        .ToArray();
 
-            try
-            {
-                var result = File.ReadAllText(fullCachePath).Split('|').Select(i => double.Parse(i, UsCulture)).ToArray();
+                    return new ImageSize { Width = result[0], Height = result[1] };
+                }
+                catch (FileNotFoundException)
+                {
+                    // Cache file doesn't exist no biggie
+                }
+                catch (DirectoryNotFoundException)
+                {
+                    // Cache file doesn't exist no biggie
+                }
 
-                return new ImageSize { Width = result[0], Height = result[1] };
-            }
-            catch (FileNotFoundException)
-            {
-                // Cache file doesn't exist no biggie
-            }
-            catch (DirectoryNotFoundException)
-            {
-                // Cache file doesn't exist no biggie
-            }
-            catch
-            {
-                semaphore.Release();
-
-                throw;
-            }
-
-            try
-            {
-                var size = await ImageHeader.GetDimensions(imagePath, _logger).ConfigureAwait(false);
+                var size = ImageHeader.GetDimensions(imagePath, _logger);
 
                 var parentPath = Path.GetDirectoryName(fullCachePath);
 
@@ -389,10 +379,6 @@ namespace MediaBrowser.Controller.Drawing
                 File.WriteAllText(fullCachePath, size.Width.ToString(UsCulture) + @"|" + size.Height.ToString(UsCulture));
 
                 return new ImageSize { Width = size.Width, Height = size.Height };
-            }
-            finally
-            {
-                semaphore.Release();
             }
         }
 
@@ -600,7 +586,7 @@ namespace MediaBrowser.Controller.Drawing
 
             return GetEnhancedImage(originalImagePath, dateModified, item, imageType, imageIndex, supportedImageEnhancers);
         }
-        
+
         /// <summary>
         /// Runs an image through the image enhancers, caches the result, and returns the cached path
         /// </summary>
@@ -787,13 +773,33 @@ namespace MediaBrowser.Controller.Drawing
         }
 
         /// <summary>
+        /// The _semaphoreLocks
+        /// </summary>
+        private readonly ConcurrentDictionary<string, SemaphoreSlim> _semaphoreLocks = new ConcurrentDictionary<string, SemaphoreSlim>();
+
+        /// <summary>
         /// Gets the lock.
         /// </summary>
         /// <param name="filename">The filename.</param>
         /// <returns>System.Object.</returns>
         private SemaphoreSlim GetLock(string filename)
         {
-            return _locks.GetOrAdd(filename, key => new SemaphoreSlim(1, 1));
+            return _semaphoreLocks.GetOrAdd(filename, key => new SemaphoreSlim(1, 1));
+        }
+
+        /// <summary>
+        /// The _semaphoreLocks
+        /// </summary>
+        private readonly ConcurrentDictionary<string, object> _locks = new ConcurrentDictionary<string, object>();
+
+        /// <summary>
+        /// Gets the lock.
+        /// </summary>
+        /// <param name="filename">The filename.</param>
+        /// <returns>System.Object.</returns>
+        private object GetObjectLock(string filename)
+        {
+            return _locks.GetOrAdd(filename, key => new object());
         }
     }
 }
