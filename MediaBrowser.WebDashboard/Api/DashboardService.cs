@@ -414,6 +414,11 @@ namespace MediaBrowser.WebDashboard.Api
         /// <returns>System.String.</returns>
         private static string GetCommonJavascript(Version version)
         {
+            var builder = new StringBuilder();
+
+            builder.Append("<script type=\"text/javascript\">if (navigator.userAgent.toLowerCase().indexOf('compatible; msie 7')!=-1){alert(\"Please ensure you're running at least IE10 and that compatibility mode is disabled.\");}");
+            builder.Append("</script>");
+
             var versionString = "?v=" + version;
 
             var files = new[]
@@ -426,7 +431,9 @@ namespace MediaBrowser.WebDashboard.Api
 
             var tags = files.Select(s => string.Format("<script src=\"{0}\"></script>", s)).ToArray();
 
-            return string.Join(string.Empty, tags);
+            builder.Append(string.Join(string.Empty, tags));
+
+            return builder.ToString();
         }
 
         /// <summary>
