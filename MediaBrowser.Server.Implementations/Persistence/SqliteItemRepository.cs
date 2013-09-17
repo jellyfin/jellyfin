@@ -24,7 +24,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         private readonly ILogger _logger;
 
-        private TypeMapper _typeMapper = new TypeMapper();
+        private readonly TypeMapper _typeMapper = new TypeMapper();
         
         /// <summary>
         /// Gets the name of the repository
@@ -307,27 +307,22 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// </summary>
         /// <param name="itemId">The item id.</param>
         /// <returns>Task{IEnumerable{ItemReview}}.</returns>
-        public Task<IEnumerable<ItemReview>> GetCriticReviews(Guid itemId)
+        public IEnumerable<ItemReview> GetCriticReviews(Guid itemId)
         {
-            return Task.Run<IEnumerable<ItemReview>>(() =>
+            try
             {
+                var path = Path.Combine(_criticReviewsPath, itemId + ".json");
 
-                try
-                {
-                    var path = Path.Combine(_criticReviewsPath, itemId + ".json");
-
-                    return _jsonSerializer.DeserializeFromFile<List<ItemReview>>(path);
-                }
-                catch (DirectoryNotFoundException)
-                {
-                    return new List<ItemReview>();
-                }
-                catch (FileNotFoundException)
-                {
-                    return new List<ItemReview>();
-                }
-
-            });
+                return _jsonSerializer.DeserializeFromFile<List<ItemReview>>(path);
+            }
+            catch (DirectoryNotFoundException)
+            {
+                return new List<ItemReview>();
+            }
+            catch (FileNotFoundException)
+            {
+                return new List<ItemReview>();
+            }
         }
 
         /// <summary>

@@ -503,7 +503,7 @@
             var h264Codec = 'h264';
             var h264AudioCodec = 'aac';
 
-            if (videoStream.Width && videoStream.Width <= baseParams.maxWidth) {
+            if (videoStream && videoStream.Width && videoStream.Width <= baseParams.maxWidth) {
 
                 var videoCodec = (videoStream.Codec || '').toLowerCase();
 
