@@ -20,7 +20,7 @@ namespace MediaBrowser.Api
 {
     [Route("/Items/{Id}/File", "GET")]
     [Api(Description = "Gets the original file of an item")]
-    public class GetFile 
+    public class GetFile
     {
         /// <summary>
         /// Gets or sets the id.
@@ -29,7 +29,7 @@ namespace MediaBrowser.Api
         [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Id { get; set; }
     }
-    
+
     /// <summary>
     /// Class GetCriticReviews
     /// </summary>
@@ -174,7 +174,7 @@ namespace MediaBrowser.Api
         [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Id { get; set; }
     }
-    
+
     /// <summary>
     /// Class LibraryService
     /// </summary>
@@ -217,7 +217,7 @@ namespace MediaBrowser.Api
 
             return ToStaticFileResult(item.Path);
         }
-        
+
         /// <summary>
         /// Gets the specified request.
         /// </summary>
@@ -301,7 +301,7 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetCriticReviews request)
         {
-            var result = GetCriticReviewsAsync(request).Result;
+            var result = GetCriticReviews(request);
 
             return ToOptimizedResult(result);
         }
@@ -430,9 +430,9 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>Task{ItemReviewsResult}.</returns>
-        private async Task<ItemReviewsResult> GetCriticReviewsAsync(GetCriticReviews request)
+        private ItemReviewsResult GetCriticReviews(GetCriticReviews request)
         {
-            var reviews = await _itemRepo.GetCriticReviews(new Guid(request.Id)).ConfigureAwait(false);
+            var reviews = _itemRepo.GetCriticReviews(new Guid(request.Id));
 
             var reviewsArray = reviews.ToArray();
 
