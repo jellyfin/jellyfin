@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System.Net;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
@@ -17,6 +18,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using MediaBrowser.Model.Net;
 
 namespace MediaBrowser.Providers.Music
 {
@@ -314,8 +316,19 @@ namespace MediaBrowser.Providers.Music
                 path = node != null ? node.Value : null;
                 if (!string.IsNullOrEmpty(path))
                 {
-                    await _providerManager.SaveImage(item, path, FanArtResourcePool, ImageType.Logo, null, cancellationToken)
-                        .ConfigureAwait(false);
+                    try
+                    {
+                        await _providerManager.SaveImage(item, path, FanArtResourcePool, ImageType.Logo, null, cancellationToken)
+                            .ConfigureAwait(false);
+                    }
+                    catch (HttpException ex)
+                    {
+                        // Sometimes fanart has bad url's in their xml. Nothing we can do here but catch it
+                        if (!ex.StatusCode.HasValue || ex.StatusCode.Value != HttpStatusCode.NotFound)
+                        {
+                            throw;
+                        }
+                    }
                 }
             }
             cancellationToken.ThrowIfCancellationRequested();
@@ -332,10 +345,21 @@ namespace MediaBrowser.Providers.Music
                         path = node.Value;
                         if (!string.IsNullOrEmpty(path))
                         {
-                            await _providerManager.SaveImage(item, path, FanArtResourcePool, ImageType.Backdrop, numBackdrops, cancellationToken)
-                                .ConfigureAwait(false);
-                            numBackdrops++;
-                            if (numBackdrops >= ConfigurationManager.Configuration.MaxBackdrops) break;
+                            try
+                            {
+                                await _providerManager.SaveImage(item, path, FanArtResourcePool, ImageType.Backdrop, numBackdrops, cancellationToken)
+                                    .ConfigureAwait(false);
+                                numBackdrops++;
+                                if (numBackdrops >= ConfigurationManager.Configuration.MaxBackdrops) break;
+                            }
+                            catch (HttpException ex)
+                            {
+                                // Sometimes fanart has bad url's in their xml. Nothing we can do here but catch it
+                                if (!ex.StatusCode.HasValue || ex.StatusCode.Value != HttpStatusCode.NotFound)
+                                {
+                                    throw;
+                                }
+                            }
                         }
                     }
 
@@ -353,8 +377,19 @@ namespace MediaBrowser.Providers.Music
                 path = node != null ? node.Value : null;
                 if (!string.IsNullOrEmpty(path))
                 {
-                    await _providerManager.SaveImage(item, path, FanArtResourcePool, ImageType.Art, null, cancellationToken)
-                        .ConfigureAwait(false);
+                    try
+                    {
+                        await _providerManager.SaveImage(item, path, FanArtResourcePool, ImageType.Art, null, cancellationToken)
+                            .ConfigureAwait(false);
+                    }
+                    catch (HttpException ex)
+                    {
+                        // Sometimes fanart has bad url's in their xml. Nothing we can do here but catch it
+                        if (!ex.StatusCode.HasValue || ex.StatusCode.Value != HttpStatusCode.NotFound)
+                        {
+                            throw;
+                        }
+                    }
                 }
             }
             cancellationToken.ThrowIfCancellationRequested();
@@ -366,8 +401,19 @@ namespace MediaBrowser.Providers.Music
                 path = node != null ? node.Value : null;
                 if (!string.IsNullOrEmpty(path))
                 {
-                    await _providerManager.SaveImage(item, path, FanArtResourcePool, ImageType.Banner, null, cancellationToken)
-                        .ConfigureAwait(false);
+                    try
+                    {
+                        await _providerManager.SaveImage(item, path, FanArtResourcePool, ImageType.Banner, null, cancellationToken)
+                            .ConfigureAwait(false);
+                    }
+                    catch (HttpException ex)
+                    {
+                        // Sometimes fanart has bad url's in their xml. Nothing we can do here but catch it
+                        if (!ex.StatusCode.HasValue || ex.StatusCode.Value != HttpStatusCode.NotFound)
+                        {
+                            throw;
+                        }
+                    }
                 }
             }
 
@@ -380,8 +426,19 @@ namespace MediaBrowser.Providers.Music
                 path = node != null ? node.Value : null;
                 if (!string.IsNullOrEmpty(path))
                 {
-                    await _providerManager.SaveImage(item, path, FanArtResourcePool, ImageType.Primary, null, cancellationToken)
-                        .ConfigureAwait(false);
+                    try
+                    {
+                        await _providerManager.SaveImage(item, path, FanArtResourcePool, ImageType.Primary, null, cancellationToken)
+                            .ConfigureAwait(false);
+                    }
+                    catch (HttpException ex)
+                    {
+                        // Sometimes fanart has bad url's in their xml. Nothing we can do here but catch it
+                        if (!ex.StatusCode.HasValue || ex.StatusCode.Value != HttpStatusCode.NotFound)
+                        {
+                            throw;
+                        }
+                    }
                 }
             }
         }

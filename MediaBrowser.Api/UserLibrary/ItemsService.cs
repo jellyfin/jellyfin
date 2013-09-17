@@ -260,7 +260,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var fields = request.GetItemFields().ToList();
 
-            var returnItems = await Task.WhenAll(pagedItems.Select(i => _dtoService.GetBaseItemDto(i, fields, user))).ConfigureAwait(false);
+            var returnItems = pagedItems.Select(i => _dtoService.GetBaseItemDto(i, fields, user)).ToArray();
 
             return new ItemsResult
             {

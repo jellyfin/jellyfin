@@ -19,7 +19,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Dto
 {
@@ -49,7 +48,7 @@ namespace MediaBrowser.Server.Implementations.Dto
         /// <param name="owner">The owner.</param>
         /// <returns>Task{DtoBaseItem}.</returns>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        public async Task<BaseItemDto> GetBaseItemDto(BaseItem item, List<ItemFields> fields, User user = null, BaseItem owner = null)
+        public BaseItemDto GetBaseItemDto(BaseItem item, List<ItemFields> fields, User user = null, BaseItem owner = null)
         {
             if (item == null)
             {
@@ -72,7 +71,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 try
                 {
-                    await AttachPrimaryImageAspectRatio(dto, item).ConfigureAwait(false);
+                    AttachPrimaryImageAspectRatio(dto, item);
                 }
                 catch (Exception ex)
                 {
@@ -189,7 +188,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             }
         }
 
-        public async Task<UserDto> GetUserDto(User user)
+        public UserDto GetUserDto(User user)
         {
             if (user == null)
             {
@@ -214,7 +213,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                 try
                 {
-                    await AttachPrimaryImageAspectRatio(dto, user).ConfigureAwait(false);
+                    AttachPrimaryImageAspectRatio(dto, user);
                 }
                 catch (Exception ex)
                 {
@@ -1132,9 +1131,8 @@ namespace MediaBrowser.Server.Implementations.Dto
         /// </summary>
         /// <param name="dto">The dto.</param>
         /// <param name="item">The item.</param>
-        /// <param name="logger">The _logger.</param>
         /// <returns>Task.</returns>
-        private async Task AttachPrimaryImageAspectRatio(IItemDto dto, BaseItem item)
+        private void AttachPrimaryImageAspectRatio(IItemDto dto, BaseItem item)
         {
             var path = item.PrimaryImagePath;
 
@@ -1152,7 +1150,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             try
             {
-                size = await Kernel.Instance.ImageManager.GetImageSize(path, dateModified).ConfigureAwait(false);
+                size = Kernel.Instance.ImageManager.GetImageSize(path, dateModified);
             }
             catch (FileNotFoundException)
             {

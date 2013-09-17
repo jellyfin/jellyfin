@@ -121,11 +121,9 @@ namespace MediaBrowser.Api.UserLibrary
 
             var fields = request.GetItemFields().ToList();
 
-            var tasks = ibnItems.Select(i => GetDto(i, user, fields));
+            var dtos = ibnItems.Select(i => GetDto(i, user, fields));
 
-            var resultItems = await Task.WhenAll(tasks).ConfigureAwait(false);
-
-            result.Items = resultItems.Where(i => i != null).ToArray();
+            result.Items = dtos.Where(i => i != null).ToArray();
 
             return result;
         }
@@ -253,10 +251,10 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="user">The user.</param>
         /// <param name="fields">The fields.</param>
         /// <returns>Task{DtoBaseItem}.</returns>
-        private async Task<BaseItemDto> GetDto(TItemType item, User user, List<ItemFields> fields)
+        private BaseItemDto GetDto(TItemType item, User user, List<ItemFields> fields)
         {
-            var dto = user == null ? await DtoService.GetBaseItemDto(item, fields).ConfigureAwait(false) :
-                await DtoService.GetBaseItemDto(item, fields, user).ConfigureAwait(false);
+            var dto = user == null ? DtoService.GetBaseItemDto(item, fields) :
+                 DtoService.GetBaseItemDto(item, fields, user);
 
             return dto;
         }
