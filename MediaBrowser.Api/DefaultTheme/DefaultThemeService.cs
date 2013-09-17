@@ -139,7 +139,7 @@ namespace MediaBrowser.Api.DefaultTheme
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user));
 
             view.SpotlightItems = await Task.WhenAll(spotlightItemTasks).ConfigureAwait(false);
-            
+
             return view;
         }
 
@@ -205,7 +205,7 @@ namespace MediaBrowser.Api.DefaultTheme
              .Take(3)
              .ToArray();
 
-            view.ActorItems = await GetActors(series).ConfigureAwait(false);
+            view.ActorItems = GetActors(series);
 
             return view;
         }
@@ -217,8 +217,6 @@ namespace MediaBrowser.Api.DefaultTheme
             var items = user.RootFolder.GetRecursiveChildren(user)
                 .Where(i => i is Movie || i is Trailer || i is BoxSet)
                 .ToList();
-
-            var actorsTask = GetActors(items);
 
             // Exclude trailers from backdrops because they're not always 1080p
             var itemsWithBackdrops = items.Where(i => i.BackdropImagePaths.Count > 0 && !(i is Trailer))
@@ -322,7 +320,7 @@ namespace MediaBrowser.Api.DefaultTheme
              .Take(3)
              .ToArray();
 
-            view.PeopleItems = await actorsTask.ConfigureAwait(false);
+            view.PeopleItems = GetActors(items);
 
             return view;
         }
@@ -362,44 +360,35 @@ namespace MediaBrowser.Api.DefaultTheme
             }
         }
 
-        private async Task<ItemStub[]> GetActors(IEnumerable<BaseItem> mediaItems)
+        private ItemStub[] GetActors(IEnumerable<BaseItem> mediaItems)
         {
-            var actorStubs = new List<ItemStub>();
-
             var actors = mediaItems.SelectMany(i => i.People)
                 .Select(i => i.Name)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .OrderBy(i => Guid.NewGuid())
                 .ToList();
 
-            foreach (var actor in actors)
+            return actors.Select(actor =>
             {
-                if (actorStubs.Count >= 3)
-                {
-                    break;
-                }
-
                 try
                 {
-                    var person = await _libraryManager.GetPerson(actor).ConfigureAwait(false);
+                    var person = _libraryManager.GetPerson(actor);
 
                     if (!string.IsNullOrEmpty(person.PrimaryImagePath))
                     {
-                        var stub = GetItemStub(person, ImageType.Primary);
-
-                        if (stub != null)
-                        {
-                            actorStubs.Add(stub);
-                        }
+                        return GetItemStub(person, ImageType.Primary);
                     }
                 }
                 catch (Exception ex)
                 {
                     _logger.ErrorException("Error getting person {0}", ex, actor);
                 }
-            }
 
-            return actorStubs.ToArray();
+                return null;
+            })
+            .Where(i => i != null)
+            .Take(3)
+            .ToArray();
         }
 
         private ItemStub GetItemStub(BaseItem item, ImageType imageType)

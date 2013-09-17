@@ -105,7 +105,7 @@ namespace MediaBrowser.Api
 
         private async Task UpdateItem(UpdatePerson request)
         {
-            var item = await GetPerson(request.PersonName, _libraryManager).ConfigureAwait(false);
+            var item = GetPerson(request.PersonName, _libraryManager);
 
             UpdateItem(request, item);
 
@@ -121,7 +121,7 @@ namespace MediaBrowser.Api
 
         private async Task UpdateItem(UpdateArtist request)
         {
-            var item = await GetArtist(request.ArtistName, _libraryManager).ConfigureAwait(false);
+            var item = GetArtist(request.ArtistName, _libraryManager);
 
             UpdateItem(request, item);
 
@@ -137,7 +137,7 @@ namespace MediaBrowser.Api
 
         private async Task UpdateItem(UpdateStudio request)
         {
-            var item = await GetStudio(request.StudioName, _libraryManager).ConfigureAwait(false);
+            var item = GetStudio(request.StudioName, _libraryManager);
 
             UpdateItem(request, item);
 
@@ -153,7 +153,7 @@ namespace MediaBrowser.Api
 
         private async Task UpdateItem(UpdateMusicGenre request)
         {
-            var item = await GetMusicGenre(request.GenreName, _libraryManager).ConfigureAwait(false);
+            var item = GetMusicGenre(request.GenreName, _libraryManager);
 
             UpdateItem(request, item);
 
@@ -169,7 +169,7 @@ namespace MediaBrowser.Api
 
         private async Task UpdateItem(UpdateGameGenre request)
         {
-            var item = await GetGameGenre(request.GenreName, _libraryManager).ConfigureAwait(false);
+            var item = GetGameGenre(request.GenreName, _libraryManager);
 
             UpdateItem(request, item);
 
@@ -185,7 +185,7 @@ namespace MediaBrowser.Api
 
         private async Task UpdateItem(UpdateGenre request)
         {
-            var item = await GetGenre(request.GenreName, _libraryManager).ConfigureAwait(false);
+            var item = GetGenre(request.GenreName, _libraryManager);
 
             UpdateItem(request, item);
 
@@ -212,7 +212,7 @@ namespace MediaBrowser.Api
 
             item.CriticRating = request.CriticRating;
             item.CriticRatingSummary = request.CriticRatingSummary;
-            
+
             item.DisplayMediaType = request.DisplayMediaType;
             item.CommunityRating = request.CommunityRating;
             item.HomePageUrl = request.HomePageUrl;

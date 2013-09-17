@@ -42,7 +42,7 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "UserId", Description = "Optional. Filter by user id, and attach user data", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public Guid? UserId { get; set; }
     }
-    
+
     /// <summary>
     /// Class GenresService
     /// </summary>
@@ -72,7 +72,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>Task{BaseItemDto}.</returns>
         private async Task<BaseItemDto> GetItem(GetGenre request)
         {
-            var item = await GetGenre(request.Name, LibraryManager).ConfigureAwait(false);
+            var item = GetGenre(request.Name, LibraryManager);
 
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true));
@@ -86,7 +86,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             return await DtoService.GetBaseItemDto(item, fields.ToList()).ConfigureAwait(false);
         }
-       
+
         /// <summary>
         /// Gets the specified request.
         /// </summary>
@@ -105,7 +105,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         /// <param name="items">The items.</param>
         /// <returns>IEnumerable{Tuple{System.StringFunc{System.Int32}}}.</returns>
-        protected override IEnumerable<Task<Genre>> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items)
+        protected override IEnumerable<Genre> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items)
         {
             var itemsList = items.Where(i => i.Genres != null).ToList();
 
@@ -113,16 +113,6 @@ namespace MediaBrowser.Api.UserLibrary
                 .SelectMany(i => i.Genres)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .Select(name => LibraryManager.GetGenre(name));
-        }
-
-        /// <summary>
-        /// Gets the entity.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <returns>Task{Genre}.</returns>
-        protected Task<Genre> GetEntity(string name)
-        {
-            return LibraryManager.GetGenre(name);
         }
     }
 }

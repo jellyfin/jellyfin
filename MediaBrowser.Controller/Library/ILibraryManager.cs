@@ -39,7 +39,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="files">The files.</param>
         /// <param name="parent">The parent.</param>
         /// <returns>List{``0}.</returns>
-        List<T> ResolvePaths<T>(IEnumerable<FileSystemInfo> files, Folder parent) 
+        List<T> ResolvePaths<T>(IEnumerable<FileSystemInfo> files, Folder parent)
             where T : BaseItem;
 
         /// <summary>
@@ -54,58 +54,51 @@ namespace MediaBrowser.Controller.Library
         /// Gets a Person
         /// </summary>
         /// <param name="name">The name.</param>
-        /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
         /// <returns>Task{Person}.</returns>
-        Task<Person> GetPerson(string name, bool allowSlowProviders = false);
+        Person GetPerson(string name);
 
         /// <summary>
         /// Gets the artist.
         /// </summary>
         /// <param name="name">The name.</param>
-        /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
         /// <returns>Task{Artist}.</returns>
-        Task<Artist> GetArtist(string name, bool allowSlowProviders = false);
+        Artist GetArtist(string name);
 
         /// <summary>
         /// Gets a Studio
         /// </summary>
         /// <param name="name">The name.</param>
-        /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
         /// <returns>Task{Studio}.</returns>
-        Task<Studio> GetStudio(string name, bool allowSlowProviders = false);
+        Studio GetStudio(string name);
 
         /// <summary>
         /// Gets a Genre
         /// </summary>
         /// <param name="name">The name.</param>
-        /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
         /// <returns>Task{Genre}.</returns>
-        Task<Genre> GetGenre(string name, bool allowSlowProviders = false);
+        Genre GetGenre(string name);
 
         /// <summary>
         /// Gets the genre.
         /// </summary>
         /// <param name="name">The name.</param>
-        /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
         /// <returns>Task{MusicGenre}.</returns>
-        Task<MusicGenre> GetMusicGenre(string name, bool allowSlowProviders = false);
+        MusicGenre GetMusicGenre(string name);
 
         /// <summary>
         /// Gets the game genre.
         /// </summary>
         /// <param name="name">The name.</param>
-        /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
         /// <returns>Task{GameGenre}.</returns>
-        Task<GameGenre> GetGameGenre(string name, bool allowSlowProviders = false);
-        
+        GameGenre GetGameGenre(string name);
+
         /// <summary>
         /// Gets a Year
         /// </summary>
         /// <param name="value">The value.</param>
-        /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
         /// <returns>Task{Year}.</returns>
         /// <exception cref="System.ArgumentOutOfRangeException"></exception>
-        Task<Year> GetYear(int value, bool allowSlowProviders = false);
+        Year GetYear(int value);
 
         /// <summary>
         /// Validate and refresh the People sub-set of the IBN.
@@ -163,10 +156,10 @@ namespace MediaBrowser.Controller.Library
         /// <param name="prescanTasks">The prescan tasks.</param>
         /// <param name="postscanTasks">The postscan tasks.</param>
         /// <param name="savers">The savers.</param>
-        void AddParts(IEnumerable<IResolverIgnoreRule> rules, 
-            IEnumerable<IVirtualFolderCreator> pluginFolders, 
-            IEnumerable<IItemResolver> resolvers, 
-            IEnumerable<IIntroProvider> introProviders, 
+        void AddParts(IEnumerable<IResolverIgnoreRule> rules,
+            IEnumerable<IVirtualFolderCreator> pluginFolders,
+            IEnumerable<IItemResolver> resolvers,
+            IEnumerable<IIntroProvider> introProviders,
             IEnumerable<IBaseItemComparer> itemComparers,
             IEnumerable<ILibraryPrescanTask> prescanTasks,
             IEnumerable<ILibraryPostScanTask> postscanTasks,
@@ -260,7 +253,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="progress">The progress.</param>
         /// <returns>Task.</returns>
         Task ValidateGenres(CancellationToken cancellationToken, IProgress<double> progress);
-        
+
         /// <summary>
         /// Validates the studios.
         /// </summary>
@@ -268,7 +261,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="progress">The progress.</param>
         /// <returns>Task.</returns>
         Task ValidateStudios(CancellationToken cancellationToken, IProgress<double> progress);
-        
+
         /// <summary>
         /// Occurs when [item added].
         /// </summary>

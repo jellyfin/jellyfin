@@ -24,7 +24,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         /// <summary>
         /// The _library manager
         /// </summary>
-        private readonly LibraryManager _libraryManager;
+        private readonly ILibraryManager _libraryManager;
 
         /// <summary>
         /// The _user manager
@@ -42,7 +42,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="userManager">The user manager.</param>
         /// <param name="logger">The logger.</param>
-        public ArtistsValidator(LibraryManager libraryManager, IUserManager userManager, ILogger logger)
+        public ArtistsValidator(ILibraryManager libraryManager, IUserManager userManager, ILogger logger)
         {
             _libraryManager = libraryManager;
             _userManager = userManager;
@@ -65,7 +65,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
             var innerProgress = new ActionableProgress<double>();
 
             innerProgress.RegisterAction(pct => progress.Report(pct * .8));
-            
+
             var allArtists = await GetAllArtists(allSongs, cancellationToken, innerProgress).ConfigureAwait(false);
 
             progress.Report(80);
@@ -79,7 +79,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
             foreach (var artist in allArtists)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                
+
                 artist.ValidateImages();
                 artist.ValidateBackdrops();
 
@@ -230,8 +230,9 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
 
                     try
                     {
-                        var artistItem = await _libraryManager.GetArtist(currentArtist, cancellationToken, true, true)
-                            .ConfigureAwait(false);
+                        var artistItem = _libraryManager.GetArtist(currentArtist);
+
+                        await artistItem.RefreshMetadata(cancellationToken).ConfigureAwait(false);
 
                         returnArtists.Add(artistItem);
                     }

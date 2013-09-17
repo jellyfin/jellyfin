@@ -78,11 +78,11 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>Task{BaseItemDto}.</returns>
         private async Task<BaseItemDto> GetItem(GetYear request)
         {
-            var item = await LibraryManager.GetYear(request.Year).ConfigureAwait(false);
+            var item = LibraryManager.GetYear(request.Year);
 
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true));
-            
+
             if (request.UserId.HasValue)
             {
                 var user = UserManager.GetUserById(request.UserId.Value);
@@ -111,7 +111,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         /// <param name="items">The items.</param>
         /// <returns>IEnumerable{Tuple{System.StringFunc{System.Int32}}}.</returns>
-        protected override IEnumerable<Task<Year>> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items)
+        protected override IEnumerable<Year> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items)
         {
             var itemsList = items.Where(i => i.ProductionYear != null).ToList();
 
@@ -119,16 +119,6 @@ namespace MediaBrowser.Api.UserLibrary
                 .Select(i => i.ProductionYear.Value)
                 .Distinct()
                 .Select(year => LibraryManager.GetYear(year));
-        }
-
-        /// <summary>
-        /// Gets the entity.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <returns>Task{Studio}.</returns>
-        protected Task<Year> GetEntity(string name)
-        {
-            return LibraryManager.GetYear(int.Parse(name, UsCulture));
         }
     }
 }

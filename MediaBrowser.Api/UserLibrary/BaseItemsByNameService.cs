@@ -90,8 +90,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             items = FilterItems(request, items);
 
-            var ibnItemTasks = GetAllItems(request, items);
-            var extractedItems = await Task.WhenAll(ibnItemTasks).ConfigureAwait(false);
+            var extractedItems = GetAllItems(request, items);
 
             var filteredItems = FilterItems(request, extractedItems, user);
 
@@ -245,7 +244,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         /// <param name="items">The items.</param>
         /// <returns>IEnumerable{Task{`0}}.</returns>
-        protected abstract IEnumerable<Task<TItemType>> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items);
+        protected abstract IEnumerable<TItemType> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items);
 
         /// <summary>
         /// Gets the dto.

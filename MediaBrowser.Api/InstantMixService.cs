@@ -79,7 +79,7 @@ namespace MediaBrowser.Api
 
         public object Get(GetInstantMixFromMusicGenre request)
         {
-            var genre = GetMusicGenre(request.Name, _libraryManager).Result;
+            var genre = GetMusicGenre(request.Name, _libraryManager);
 
             var result = GetInstantMixResult(request, new[] { genre.Name }).Result;
 
@@ -88,7 +88,7 @@ namespace MediaBrowser.Api
 
         public object Get(GetInstantMixFromArtist request)
         {
-            var artist = GetArtist(request.Name, _libraryManager).Result;
+            var artist = GetArtist(request.Name, _libraryManager);
 
             var genres = _libraryManager.RootFolder
                 .RecursiveChildren

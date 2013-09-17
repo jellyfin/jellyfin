@@ -590,144 +590,60 @@ namespace MediaBrowser.Server.Implementations.Library
         /// Gets a Person
         /// </summary>
         /// <param name="name">The name.</param>
-        /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
         /// <returns>Task{Person}.</returns>
-        public Task<Person> GetPerson(string name, bool allowSlowProviders = false)
+        public Person GetPerson(string name)
         {
-            return GetPerson(name, CancellationToken.None, allowSlowProviders);
-        }
-
-        /// <summary>
-        /// Gets a Person
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
-        /// <param name="refreshMetadata">if set to <c>true</c> [force creation].</param>
-        /// <returns>Task{Person}.</returns>
-        private Task<Person> GetPerson(string name, CancellationToken cancellationToken, bool allowSlowProviders = false, bool refreshMetadata = false)
-        {
-            return GetItemByName<Person>(ConfigurationManager.ApplicationPaths.PeoplePath, name, cancellationToken, allowSlowProviders, refreshMetadata);
+            return GetItemByName<Person>(ConfigurationManager.ApplicationPaths.PeoplePath, name);
         }
 
         /// <summary>
         /// Gets a Studio
         /// </summary>
         /// <param name="name">The name.</param>
-        /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
         /// <returns>Task{Studio}.</returns>
-        public Task<Studio> GetStudio(string name, bool allowSlowProviders = false)
+        public Studio GetStudio(string name)
         {
-            return GetStudio(name, CancellationToken.None, allowSlowProviders);
-        }
-
-        /// <summary>
-        /// Gets the studio.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
-        /// <param name="refreshMetadata">if set to <c>true</c> [refresh metadata].</param>
-        /// <returns>Task{Studio}.</returns>
-        internal Task<Studio> GetStudio(string name, CancellationToken cancellationToken, bool allowSlowProviders = false, bool refreshMetadata = false)
-        {
-            return GetItemByName<Studio>(ConfigurationManager.ApplicationPaths.StudioPath, name, cancellationToken, allowSlowProviders, refreshMetadata);
+            return GetItemByName<Studio>(ConfigurationManager.ApplicationPaths.StudioPath, name);
         }
 
         /// <summary>
         /// Gets a Genre
         /// </summary>
         /// <param name="name">The name.</param>
-        /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
         /// <returns>Task{Genre}.</returns>
-        public Task<Genre> GetGenre(string name, bool allowSlowProviders = false)
+        public Genre GetGenre(string name)
         {
-            return GetGenre(name, CancellationToken.None, allowSlowProviders);
+            return GetItemByName<Genre>(ConfigurationManager.ApplicationPaths.GenrePath, name);
         }
 
         /// <summary>
         /// Gets the genre.
         /// </summary>
         /// <param name="name">The name.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
-        /// <param name="refreshMetadata">if set to <c>true</c> [refresh metadata].</param>
-        /// <returns>Task{Genre}.</returns>
-        internal Task<Genre> GetGenre(string name, CancellationToken cancellationToken, bool allowSlowProviders = false, bool refreshMetadata = false)
-        {
-            return GetItemByName<Genre>(ConfigurationManager.ApplicationPaths.GenrePath, name, cancellationToken, allowSlowProviders, refreshMetadata);
-        }
-
-        /// <summary>
-        /// Gets the genre.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
         /// <returns>Task{MusicGenre}.</returns>
-        public Task<MusicGenre> GetMusicGenre(string name, bool allowSlowProviders = false)
+        public MusicGenre GetMusicGenre(string name)
         {
-            return GetMusicGenre(name, CancellationToken.None, allowSlowProviders);
-        }
-
-        /// <summary>
-        /// Gets the music genre.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
-        /// <param name="refreshMetadata">if set to <c>true</c> [refresh metadata].</param>
-        /// <returns>Task{MusicGenre}.</returns>
-        internal Task<MusicGenre> GetMusicGenre(string name, CancellationToken cancellationToken, bool allowSlowProviders = false, bool refreshMetadata = false)
-        {
-            return GetItemByName<MusicGenre>(ConfigurationManager.ApplicationPaths.MusicGenrePath, name, cancellationToken, allowSlowProviders, refreshMetadata);
+            return GetItemByName<MusicGenre>(ConfigurationManager.ApplicationPaths.MusicGenrePath, name);
         }
 
         /// <summary>
         /// Gets the game genre.
         /// </summary>
         /// <param name="name">The name.</param>
-        /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
         /// <returns>Task{GameGenre}.</returns>
-        public Task<GameGenre> GetGameGenre(string name, bool allowSlowProviders = false)
+        public GameGenre GetGameGenre(string name)
         {
-            return GetGameGenre(name, CancellationToken.None, allowSlowProviders);
-        }
-
-        /// <summary>
-        /// Gets the game genre.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
-        /// <param name="refreshMetadata">if set to <c>true</c> [refresh metadata].</param>
-        /// <returns>Task{GameGenre}.</returns>
-        internal Task<GameGenre> GetGameGenre(string name, CancellationToken cancellationToken, bool allowSlowProviders = false, bool refreshMetadata = false)
-        {
-            return GetItemByName<GameGenre>(ConfigurationManager.ApplicationPaths.GameGenrePath, name, cancellationToken, allowSlowProviders, refreshMetadata);
+            return GetItemByName<GameGenre>(ConfigurationManager.ApplicationPaths.GameGenrePath, name);
         }
 
         /// <summary>
         /// Gets a Genre
         /// </summary>
         /// <param name="name">The name.</param>
-        /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
         /// <returns>Task{Genre}.</returns>
-        public Task<Artist> GetArtist(string name, bool allowSlowProviders = false)
+        public Artist GetArtist(string name)
         {
-            return GetArtist(name, CancellationToken.None, allowSlowProviders);
-        }
-
-        /// <summary>
-        /// Gets the artist.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
-        /// <param name="refreshMetadata">if set to <c>true</c> [force creation].</param>
-        /// <returns>Task{Artist}.</returns>
-        internal Task<Artist> GetArtist(string name, CancellationToken cancellationToken, bool allowSlowProviders = false, bool refreshMetadata = false)
-        {
-            return GetItemByName<Artist>(ConfigurationManager.ApplicationPaths.ArtistsPath, name, cancellationToken, allowSlowProviders, refreshMetadata);
+            return GetItemByName<Artist>(ConfigurationManager.ApplicationPaths.ArtistsPath, name);
         }
 
         /// <summary>
@@ -739,17 +655,16 @@ namespace MediaBrowser.Server.Implementations.Library
         /// Gets a Year
         /// </summary>
         /// <param name="value">The value.</param>
-        /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
         /// <returns>Task{Year}.</returns>
         /// <exception cref="System.ArgumentOutOfRangeException"></exception>
-        public Task<Year> GetYear(int value, bool allowSlowProviders = false)
+        public Year GetYear(int value)
         {
             if (value <= 0)
             {
                 throw new ArgumentOutOfRangeException();
             }
 
-            return GetItemByName<Year>(ConfigurationManager.ApplicationPaths.YearPath, value.ToString(UsCulture), CancellationToken.None, allowSlowProviders);
+            return GetItemByName<Year>(ConfigurationManager.ApplicationPaths.YearPath, value.ToString(UsCulture));
         }
 
         /// <summary>
@@ -940,7 +855,9 @@ namespace MediaBrowser.Server.Implementations.Library
 
                     try
                     {
-                        await GetPerson(currentPerson.Name, cancellationToken, true, true).ConfigureAwait(false);
+                        var item = GetPerson(currentPerson.Name);
+
+                        await item.RefreshMetadata(cancellationToken).ConfigureAwait(false);
                     }
                     catch (IOException ex)
                     {
@@ -964,6 +881,10 @@ namespace MediaBrowser.Server.Implementations.Library
             progress.Report(100);
 
             _logger.Info("People validation complete");
+
+            // Bad practice, i know. But we keep a lot in memory, unfortunately.
+            GC.Collect(2, GCCollectionMode.Forced, true);
+            GC.Collect(2, GCCollectionMode.Forced, true);
         }
 
         /// <summary>

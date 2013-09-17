@@ -97,7 +97,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="searchTerm">The search term.</param>
         /// <returns>IEnumerable{SearchHintResult}.</returns>
         /// <exception cref="System.ArgumentNullException">searchTerm</exception>
-        public async Task<IEnumerable<SearchHintInfo>> GetSearchHints(IEnumerable<BaseItem> inputItems, string searchTerm)
+        public Task<IEnumerable<SearchHintInfo>> GetSearchHints(IEnumerable<BaseItem> inputItems, string searchTerm)
         {
             if (string.IsNullOrEmpty(searchTerm))
             {
@@ -143,7 +143,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 {
                     try
                     {
-                        var artist = await _libraryManager.GetArtist(item).ConfigureAwait(false);
+                        var artist = _libraryManager.GetArtist(item);
 
                         hints.Add(new Tuple<BaseItem, string, int>(artist, index.Item1, index.Item2));
                     }
@@ -169,7 +169,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 {
                     try
                     {
-                        var genre = await _libraryManager.GetGenre(item).ConfigureAwait(false);
+                        var genre = _libraryManager.GetGenre(item);
 
                         hints.Add(new Tuple<BaseItem, string, int>(genre, index.Item1, index.Item2));
                     }
@@ -195,7 +195,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 {
                     try
                     {
-                        var genre = await _libraryManager.GetMusicGenre(item).ConfigureAwait(false);
+                        var genre = _libraryManager.GetMusicGenre(item);
 
                         hints.Add(new Tuple<BaseItem, string, int>(genre, index.Item1, index.Item2));
                     }
@@ -221,7 +221,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 {
                     try
                     {
-                        var genre = await _libraryManager.GetGameGenre(item).ConfigureAwait(false);
+                        var genre = _libraryManager.GetGameGenre(item);
 
                         hints.Add(new Tuple<BaseItem, string, int>(genre, index.Item1, index.Item2));
                     }
@@ -246,7 +246,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 {
                     try
                     {
-                        var studio = await _libraryManager.GetStudio(item).ConfigureAwait(false);
+                        var studio = _libraryManager.GetStudio(item);
 
                         hints.Add(new Tuple<BaseItem, string, int>(studio, index.Item1, index.Item2));
                     }
@@ -272,7 +272,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 {
                     try
                     {
-                        var person = await _libraryManager.GetPerson(item).ConfigureAwait(false);
+                        var person = _libraryManager.GetPerson(item);
 
                         hints.Add(new Tuple<BaseItem, string, int>(person, index.Item1, index.Item2));
                     }
@@ -283,11 +283,13 @@ namespace MediaBrowser.Server.Implementations.Library
                 }
             }
 
-            return hints.Where(i => i.Item3 >= 0).OrderBy(i => i.Item3).Select(i => new SearchHintInfo
+            var returnValue = hints.Where(i => i.Item3 >= 0).OrderBy(i => i.Item3).Select(i => new SearchHintInfo
             {
                 Item = i.Item1,
                 MatchedTerm = i.Item2
             });
+
+            return Task.FromResult(returnValue);
         }
 
         /// <summary>
