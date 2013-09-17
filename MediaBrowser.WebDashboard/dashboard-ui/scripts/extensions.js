@@ -1,4 +1,24 @@
-﻿// Array Remove - By John Resig (MIT Licensed)
+﻿function IsStorageEnabled() {
+    try {
+        localStorage.setItem("__test", "data");
+    } catch (err) {
+        if ((err.name).toUpperCase() == 'QUOTA_EXCEEDED_ERR') {
+            return false;
+        }
+    }
+    return true;
+}
+
+if (!window.WebSocket) {
+
+    alert("This browser does not support web sockets. For a better experience, try a newer browser such as Chrome (android, desktop), Firefox, IE10, Safari (iOS) or Opera.");
+}
+
+if (!IsStorageEnabled()) {
+    alert("This browser does not support local storage or is running in private mode. For a better experience, try a newer browser such as Chrome (android, desktop), Firefox, IE10, Safari (iOS) or Opera.");
+}
+
+// Array Remove - By John Resig (MIT Licensed)
 Array.prototype.remove = function (from, to) {
     var rest = this.slice((to || from) + 1 || this.length);
     this.length = from < 0 ? this.length + from : from;
@@ -20,17 +40,6 @@ $.fn.checked = function (value) {
         return $(this).is(':checked');
     }
 };
-
-function IsStorageEnabled() {
-    try {
-        localStorage.setItem("__test", "data");
-    } catch (err) {
-        if ((err.name).toUpperCase() == 'QUOTA_EXCEEDED_ERR') {
-            return false;
-        }
-    }
-    return true;
-}
 
 if (!Array.prototype.filter) {
     Array.prototype.filter = function (fun /*, thisp*/) {
