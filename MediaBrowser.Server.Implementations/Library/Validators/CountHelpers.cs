@@ -127,7 +127,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         /// <param name="media">The media.</param>
         /// <param name="names">The names.</param>
         /// <param name="masterDictionary">The master dictionary.</param>
-        internal static void SetItemCounts(Guid userId, BaseItem media, List<string> names, Dictionary<string, Dictionary<Guid, Dictionary<CountType, int>>> masterDictionary)
+        internal static void SetItemCounts(Guid userId, BaseItem media, IEnumerable<string> names, Dictionary<string, Dictionary<Guid, Dictionary<CountType, int>>> masterDictionary)
         {
             foreach (var name in names)
             {

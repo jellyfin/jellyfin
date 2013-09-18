@@ -470,14 +470,9 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         {
             var message = new HttpRequestMessage(HttpMethod.Get, options.Url);
 
-            if (!string.IsNullOrEmpty(options.UserAgent))
+            foreach (var pair in options.RequestHeaders.ToArray())
             {
-                message.Headers.Add("User-Agent", options.UserAgent);
-            }
-
-            if (!string.IsNullOrEmpty(options.AcceptHeader))
-            {
-                message.Headers.Add("Accept", options.AcceptHeader);
+                message.Headers.Add(pair.Key, pair.Value);
             }
 
             return message;

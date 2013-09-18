@@ -4,10 +4,8 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
-using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Logging;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -23,12 +21,6 @@ namespace MediaBrowser.Server.Implementations.Library
     /// </summary>
     public class UserManager : IUserManager
     {
-        /// <summary>
-        /// The _active connections
-        /// </summary>
-        private readonly ConcurrentDictionary<string, SessionInfo> _activeConnections =
-            new ConcurrentDictionary<string, SessionInfo>(StringComparer.OrdinalIgnoreCase);
-
         /// <summary>
         /// The _users
         /// </summary>
@@ -62,24 +54,6 @@ namespace MediaBrowser.Server.Implementations.Library
                     _usersInitialized = false;
                 }
             }
-        }
-
-        /// <summary>
-        /// Gets all connections.
-        /// </summary>
-        /// <value>All connections.</value>
-        public IEnumerable<SessionInfo> AllConnections
-        {
-            get { return _activeConnections.Values.OrderByDescending(c => c.LastActivityDate); }
-        }
-
-        /// <summary>
-        /// Gets the active connections.
-        /// </summary>
-        /// <value>The active connections.</value>
-        public IEnumerable<SessionInfo> RecentConnections
-        {
-            get { return AllConnections.Where(c => (DateTime.UtcNow - c.LastActivityDate).TotalMinutes <= 5); }
         }
 
         /// <summary>

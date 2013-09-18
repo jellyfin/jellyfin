@@ -117,6 +117,11 @@ namespace MediaBrowser.Model.Querying
         Revenue,
 
         /// <summary>
+        /// The screenshot image tags
+        /// </summary>
+        ScreenshotImageTags,
+
+        /// <summary>
         /// The soundtrack ids
         /// </summary>
         SoundtrackIds,

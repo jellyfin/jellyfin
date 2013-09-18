@@ -3,8 +3,6 @@ using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using MoreLinq;
 
 namespace MediaBrowser.Controller.IO
 {
@@ -40,9 +38,14 @@ namespace MediaBrowser.Controller.IO
             if (!resolveShortcuts && flattenFolderDepth == 0)
             {
                 // Seeing dupes on some users file system for some reason
-                return entries
-                    .DistinctBy(i => i.FullName, StringComparer.OrdinalIgnoreCase)
-                    .ToDictionary(i => i.FullName, StringComparer.OrdinalIgnoreCase);
+                var dictionary = new Dictionary<string, FileSystemInfo>(StringComparer.OrdinalIgnoreCase);
+
+                foreach (var info in entries)
+                {
+                    dictionary[info.FullName] = info;
+                }
+
+                return dictionary;
             }
 
             var dict = new Dictionary<string, FileSystemInfo>(StringComparer.OrdinalIgnoreCase);

@@ -18,19 +18,22 @@ namespace MediaBrowser.Controller.Drawing
         /// <summary>
         /// The error message
         /// </summary>
-        const string errorMessage = "Could not recognize image format.";
+        const string ErrorMessage = "Could not recognize image format.";
 
         /// <summary>
         /// The image format decoders
         /// </summary>
-        private static readonly Dictionary<byte[], Func<BinaryReader, Size>> imageFormatDecoders = new Dictionary<byte[], Func<BinaryReader, Size>>
+        private static readonly KeyValuePair<byte[], Func<BinaryReader, Size>>[] ImageFormatDecoders = new Dictionary<byte[], Func<BinaryReader, Size>>
         { 
             { new byte[] { 0x42, 0x4D }, DecodeBitmap }, 
             { new byte[] { 0x47, 0x49, 0x46, 0x38, 0x37, 0x61 }, DecodeGif }, 
             { new byte[] { 0x47, 0x49, 0x46, 0x38, 0x39, 0x61 }, DecodeGif }, 
             { new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A }, DecodePng },
-            { new byte[] { 0xff, 0xd8 }, DecodeJfif }, 
-        };
+            { new byte[] { 0xff, 0xd8 }, DecodeJfif }
+
+        }.ToArray();
+
+        private static readonly int MaxMagicBytesLength = ImageFormatDecoders.Select(i => i.Key.Length).OrderByDescending(i => i).First();
 
         /// <summary>
         /// Gets the dimensions of an image.
@@ -81,12 +84,13 @@ namespace MediaBrowser.Controller.Drawing
         /// <exception cref="ArgumentException">The image was of an unrecognized format.</exception>
         private static Size GetDimensions(BinaryReader binaryReader)
         {
-            int maxMagicBytesLength = imageFormatDecoders.Keys.OrderByDescending(x => x.Length).First().Length;
-            var magicBytes = new byte[maxMagicBytesLength];
-            for (int i = 0; i < maxMagicBytesLength; i += 1)
+            var magicBytes = new byte[MaxMagicBytesLength];
+
+            for (var i = 0; i < MaxMagicBytesLength; i += 1)
             {
                 magicBytes[i] = binaryReader.ReadByte();
-                foreach (var kvPair in imageFormatDecoders)
+
+                foreach (var kvPair in ImageFormatDecoders)
                 {
                     if (StartsWith(magicBytes, kvPair.Key))
                     {
@@ -95,7 +99,7 @@ namespace MediaBrowser.Controller.Drawing
                 }
             }
 
-            throw new ArgumentException(errorMessage, "binaryReader");
+            throw new ArgumentException(ErrorMessage, "binaryReader");
         }
 
         /// <summary>
@@ -217,7 +221,7 @@ namespace MediaBrowser.Controller.Drawing
                 }
             }
 
-            throw new ArgumentException(errorMessage);
+            throw new ArgumentException(ErrorMessage);
         }
     }
 }

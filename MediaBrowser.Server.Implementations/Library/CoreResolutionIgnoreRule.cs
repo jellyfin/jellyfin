@@ -107,6 +107,7 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 if (args.Parent != null)
                 {
+                    // Don't resolve these into audio files
                     if (string.Equals(Path.GetFileNameWithoutExtension(filename), BaseItem.ThemeSongFilename) && EntityResolutionHelper.IsAudioFile(filename))
                     {
                         return true;

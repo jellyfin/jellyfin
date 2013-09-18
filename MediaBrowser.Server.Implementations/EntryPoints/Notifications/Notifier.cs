@@ -8,10 +8,10 @@ using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Notifications;
+using MediaBrowser.Model.Tasks;
 using System;
 using System.Linq;
 using System.Threading;
-using MediaBrowser.Model.Tasks;
 
 namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
 {

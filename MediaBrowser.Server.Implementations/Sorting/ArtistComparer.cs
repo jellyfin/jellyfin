@@ -3,7 +3,6 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Querying;
 using System;
-using System.Linq;
 
 namespace MediaBrowser.Server.Implementations.Sorting
 {
@@ -37,7 +36,7 @@ namespace MediaBrowser.Server.Implementations.Sorting
                 return string.Empty;
             }
 
-            return audio.Artists.FirstOrDefault() ?? string.Empty;
+            return audio.Artists.Count == 0 ? null : audio.Artists[0];
         }
 
         /// <summary>

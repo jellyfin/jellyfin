@@ -1036,6 +1036,10 @@ namespace MediaBrowser.Server.Implementations.Library
                 {
                     await i.Run(innerProgress, cancellationToken);
                 }
+                catch (OperationCanceledException)
+                {
+                    _logger.Info("Pre-scan task cancelled: {0}", i.GetType().Name);
+                }
                 catch (Exception ex)
                 {
                     _logger.ErrorException("Error running prescan task", ex);
@@ -1076,6 +1080,10 @@ namespace MediaBrowser.Server.Implementations.Library
                 try
                 {
                     await i.Run(innerProgress, cancellationToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    _logger.Info("Post-scan task cancelled: {0}", i.GetType().Name);
                 }
                 catch (Exception ex)
                 {
