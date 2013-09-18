@@ -62,7 +62,7 @@ namespace MediaBrowser.Controller.Entities.Movies
 
             var itemsChanged = !SpecialFeatureIds.SequenceEqual(newItemIds);
 
-            var tasks = newItems.Select(i => i.RefreshMetadata(cancellationToken, forceSave, forceRefresh, allowSlowProviders));
+            var tasks = newItems.Select(i => i.RefreshMetadata(cancellationToken, forceSave, forceRefresh, allowSlowProviders, resetResolveArgs: false));
 
             var results = await Task.WhenAll(tasks).ConfigureAwait(false);
 

@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
@@ -936,7 +937,7 @@ namespace MediaBrowser.Controller.Entities
 
             var itemsChanged = !LocalTrailerIds.SequenceEqual(newItemIds);
 
-            var tasks = newItems.Select(i => i.RefreshMetadata(cancellationToken, forceSave, forceRefresh, allowSlowProviders));
+            var tasks = newItems.Select(i => i.RefreshMetadata(cancellationToken, forceSave, forceRefresh, allowSlowProviders, resetResolveArgs: false));
 
             var results = await Task.WhenAll(tasks).ConfigureAwait(false);
 
@@ -952,7 +953,7 @@ namespace MediaBrowser.Controller.Entities
 
             var themeVideosChanged = !ThemeVideoIds.SequenceEqual(newThemeVideoIds);
 
-            var tasks = newThemeVideos.Select(i => i.RefreshMetadata(cancellationToken, forceSave, forceRefresh, allowSlowProviders));
+            var tasks = newThemeVideos.Select(i => i.RefreshMetadata(cancellationToken, forceSave, forceRefresh, allowSlowProviders, resetResolveArgs: false));
 
             var results = await Task.WhenAll(tasks).ConfigureAwait(false);
 
@@ -971,7 +972,7 @@ namespace MediaBrowser.Controller.Entities
 
             var themeSongsChanged = !ThemeSongIds.SequenceEqual(newThemeSongIds);
 
-            var tasks = newThemeSongs.Select(i => i.RefreshMetadata(cancellationToken, forceSave, forceRefresh, allowSlowProviders));
+            var tasks = newThemeSongs.Select(i => i.RefreshMetadata(cancellationToken, forceSave, forceRefresh, allowSlowProviders, resetResolveArgs: false));
 
             var results = await Task.WhenAll(tasks).ConfigureAwait(false);
 
@@ -1561,6 +1562,65 @@ namespace MediaBrowser.Controller.Entities
             {
                 ScreenshotImagePaths.Remove(path);
             }
+        }
+
+        /// <summary>
+        /// Gets the image path.
+        /// </summary>
+        /// <param name="imageType">Type of the image.</param>
+        /// <param name="imageIndex">Index of the image.</param>
+        /// <returns>System.String.</returns>
+        /// <exception cref="System.InvalidOperationException">
+        /// </exception>
+        /// <exception cref="System.ArgumentNullException">item</exception>
+        public string GetImagePath(ImageType imageType, int imageIndex)
+        {
+            if (imageType == ImageType.Backdrop)
+            {
+                return BackdropImagePaths[imageIndex];
+            }
+
+            if (imageType == ImageType.Screenshot)
+            {
+                return ScreenshotImagePaths[imageIndex];
+            }
+
+            if (imageType == ImageType.Chapter)
+            {
+                return ItemRepository.GetChapter(Id, imageIndex).ImagePath;
+            }
+
+            return GetImage(imageType);
+        }
+
+        /// <summary>
+        /// Gets the image date modified.
+        /// </summary>
+        /// <param name="imagePath">The image path.</param>
+        /// <returns>DateTime.</returns>
+        /// <exception cref="System.ArgumentNullException">item</exception>
+        public DateTime GetImageDateModified(string imagePath)
+        {
+            if (string.IsNullOrEmpty(imagePath))
+            {
+                throw new ArgumentNullException("imagePath");
+            }
+
+            var metaFileEntry = ResolveArgs.GetMetaFileByPath(imagePath);
+
+            // If we didn't the metafile entry, check the Season
+            if (metaFileEntry == null)
+            {
+                var episode = this as Episode;
+
+                if (episode != null && episode.Season != null)
+                {
+                    episode.Season.ResolveArgs.GetMetaFileByPath(imagePath);
+                }
+            }
+
+            // See if we can avoid a file system lookup by looking for the file in ResolveArgs
+            return metaFileEntry == null ? File.GetLastWriteTimeUtc(imagePath) : metaFileEntry.LastWriteTimeUtc;
         }
     }
 }

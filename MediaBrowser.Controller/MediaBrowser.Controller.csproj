@@ -71,6 +71,7 @@
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
+    <Compile Include="Drawing\IImageProcessor.cs" />
     <Compile Include="Dto\IDtoService.cs" />
     <Compile Include="Entities\AdultVideo.cs" />
     <Compile Include="Entities\Audio\IHasAlbumArtist.cs" />
@@ -95,8 +96,6 @@
     <Compile Include="Providers\IDynamicInfoProvider.cs" />
     <Compile Include="Session\ISessionManager.cs" />
     <Compile Include="Drawing\ImageExtensions.cs" />
-    <Compile Include="Drawing\ImageHeader.cs" />
-    <Compile Include="Drawing\ImageManager.cs" />
     <Compile Include="Entities\AggregateFolder.cs" />
     <Compile Include="Entities\Audio\Artist.cs" />
     <Compile Include="Entities\Audio\Audio.cs" />

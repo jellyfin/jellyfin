@@ -34,6 +34,7 @@ using MediaBrowser.Providers;
 using MediaBrowser.Server.Implementations;
 using MediaBrowser.Server.Implementations.BdInfo;
 using MediaBrowser.Server.Implementations.Configuration;
+using MediaBrowser.Server.Implementations.Drawing;
 using MediaBrowser.Server.Implementations.Dto;
 using MediaBrowser.Server.Implementations.HttpServer;
 using MediaBrowser.Server.Implementations.IO;
@@ -160,6 +161,7 @@ namespace MediaBrowser.ServerApplication
         /// <value>The HTTP server.</value>
         private IHttpServer HttpServer { get; set; }
         private IDtoService DtoService { get; set; }
+        private IImageProcessor ImageProcessor { get; set; }
 
         /// <summary>
         /// Gets or sets the media encoder.
@@ -295,7 +297,10 @@ namespace MediaBrowser.ServerApplication
             LocalizationManager = new LocalizationManager(ServerConfigurationManager);
             RegisterSingleInstance(LocalizationManager);
 
-            DtoService = new DtoService(Logger, LibraryManager, UserManager, UserDataRepository, ItemRepository);
+            ImageProcessor = new ImageProcessor(Logger, ServerConfigurationManager.ApplicationPaths);
+            RegisterSingleInstance(ImageProcessor);
+
+            DtoService = new DtoService(Logger, LibraryManager, UserManager, UserDataRepository, ItemRepository, ImageProcessor);
             RegisterSingleInstance(DtoService);
 
             var displayPreferencesTask = Task.Run(async () => await ConfigureDisplayPreferencesRepositories().ConfigureAwait(false));
@@ -314,11 +319,8 @@ namespace MediaBrowser.ServerApplication
         /// </summary>
         private void SetKernelProperties()
         {
-            ServerKernel.ImageManager = new ImageManager(LogManager.GetLogger("ImageManager"),
-                                                         ApplicationPaths, ItemRepository);
             Parallel.Invoke(
                  () => ServerKernel.FFMpegManager = new FFMpegManager(ApplicationPaths, MediaEncoder, Logger, ItemRepository),
-                 () => ServerKernel.ImageManager.ImageEnhancers = GetExports<IImageEnhancer>().OrderBy(e => e.Priority).ToArray(),
                  () => LocalizedStrings.StringFiles = GetExports<LocalizedStringData>(),
                  SetStaticProperties
                  );
@@ -461,6 +463,8 @@ namespace MediaBrowser.ServerApplication
             ProviderManager.AddParts(GetExports<BaseMetadataProvider>().ToArray());
 
             IsoManager.AddParts(GetExports<IIsoMounter>().ToArray());
+
+            ImageProcessor.AddParts(GetExports<IImageEnhancer>().ToArray());
         }
 
         /// <summary>

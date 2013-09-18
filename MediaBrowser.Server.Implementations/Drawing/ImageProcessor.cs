@@ -1,108 +1,79 @@
-﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Persistence;
-using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Drawing;
-using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Drawing;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Drawing;
+using System;
+using System.Collections.Concurrent;
+using System.IO;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
 
-namespace MediaBrowser.Controller.Drawing
+namespace MediaBrowser.Server.Implementations.Drawing
 {
     /// <summary>
-    /// Class ImageManager
+    /// Class ImageProcessor
     /// </summary>
-    public class ImageManager
+    public class ImageProcessor : IImageProcessor
     {
+        /// <summary>
+        /// The us culture
+        /// </summary>
+        protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
+
+        /// <summary>
+        /// The _cached imaged sizes
+        /// </summary>
+        private readonly ConcurrentDictionary<string, ImageSize> _cachedImagedSizes = new ConcurrentDictionary<string, ImageSize>();
+
         /// <summary>
         /// Gets the list of currently registered image processors
         /// Image processors are specialized metadata providers that run after the normal ones
         /// </summary>
         /// <value>The image enhancers.</value>
-        public IEnumerable<IImageEnhancer> ImageEnhancers { get; set; }
-
-        /// <summary>
-        /// Gets the image size cache.
-        /// </summary>
-        /// <value>The image size cache.</value>
-        private FileSystemRepository ImageSizeCache { get; set; }
-
-        /// <summary>
-        /// Gets or sets the resized image cache.
-        /// </summary>
-        /// <value>The resized image cache.</value>
-        private FileSystemRepository ResizedImageCache { get; set; }
-        /// <summary>
-        /// Gets the cropped image cache.
-        /// </summary>
-        /// <value>The cropped image cache.</value>
-        private FileSystemRepository CroppedImageCache { get; set; }
-
-        /// <summary>
-        /// Gets the cropped image cache.
-        /// </summary>
-        /// <value>The cropped image cache.</value>
-        private FileSystemRepository EnhancedImageCache { get; set; }
-
-        /// <summary>
-        /// The cached imaged sizes
-        /// </summary>
-        private readonly ConcurrentDictionary<string, ImageSize> _cachedImagedSizes = new ConcurrentDictionary<string, ImageSize>();
+        public IEnumerable<IImageEnhancer> ImageEnhancers { get; private set; }
 
         /// <summary>
         /// The _logger
         /// </summary>
         private readonly ILogger _logger;
-
-        private readonly IItemRepository _itemRepo;
-
         /// <summary>
-        /// Initializes a new instance of the <see cref="ImageManager" /> class.
+        /// The _app paths
         /// </summary>
-        /// <param name="logger">The logger.</param>
-        /// <param name="appPaths">The app paths.</param>
-        /// <param name="itemRepo">The item repo.</param>
-        public ImageManager(ILogger logger, IServerApplicationPaths appPaths, IItemRepository itemRepo)
+        private readonly IServerApplicationPaths _appPaths;
+
+        private readonly string _imageSizeCachePath;
+        private readonly string _croppedWhitespaceImageCachePath;
+        private readonly string _enhancedImageCachePath;
+        private readonly string _resizedImageCachePath;
+
+        public ImageProcessor(ILogger logger, IServerApplicationPaths appPaths)
         {
             _logger = logger;
-            _itemRepo = itemRepo;
+            _appPaths = appPaths;
 
-            ImageSizeCache = new FileSystemRepository(Path.Combine(appPaths.ImageCachePath, "image-sizes"));
-            ResizedImageCache = new FileSystemRepository(Path.Combine(appPaths.ImageCachePath, "resized-images"));
-            CroppedImageCache = new FileSystemRepository(Path.Combine(appPaths.ImageCachePath, "cropped-images"));
-            EnhancedImageCache = new FileSystemRepository(Path.Combine(appPaths.ImageCachePath, "enhanced-images"));
+            _imageSizeCachePath = Path.Combine(_appPaths.ImageCachePath, "image-sizes");
+            _croppedWhitespaceImageCachePath = Path.Combine(_appPaths.ImageCachePath, "cropped-images");
+            _enhancedImageCachePath = Path.Combine(_appPaths.ImageCachePath, "enhanced-images");
+            _resizedImageCachePath = Path.Combine(_appPaths.ImageCachePath, "resized-images");
         }
 
-        /// <summary>
-        /// Processes an image by resizing to target dimensions
-        /// </summary>
-        /// <param name="entity">The entity that owns the image</param>
-        /// <param name="imageType">The image type</param>
-        /// <param name="imageIndex">The image index (currently only used with backdrops)</param>
-        /// <param name="originalImagePath">The original image path.</param>
-        /// <param name="cropWhitespace">if set to <c>true</c> [crop whitespace].</param>
-        /// <param name="dateModified">The last date modified of the original image file</param>
-        /// <param name="toStream">The stream to save the new image to</param>
-        /// <param name="width">Use if a fixed width is required. Aspect ratio will be preserved.</param>
-        /// <param name="height">Use if a fixed height is required. Aspect ratio will be preserved.</param>
-        /// <param name="maxWidth">Use if a max width is required. Aspect ratio will be preserved.</param>
-        /// <param name="maxHeight">Use if a max height is required. Aspect ratio will be preserved.</param>
-        /// <param name="quality">Quality level, from 0-100. Currently only applies to JPG. The default value should suffice.</param>
-        /// <param name="enhancers">The enhancers.</param>
-        /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">entity</exception>
+        public void AddParts(IEnumerable<IImageEnhancer> enhancers)
+        {
+            ImageEnhancers = enhancers.ToArray();
+        }
+
         public async Task ProcessImage(BaseItem entity, ImageType imageType, int imageIndex, string originalImagePath, bool cropWhitespace, DateTime dateModified, Stream toStream, int? width, int? height, int? maxWidth, int? maxHeight, int? quality, List<IImageEnhancer> enhancers)
         {
             if (entity == null)
@@ -117,7 +88,7 @@ namespace MediaBrowser.Controller.Drawing
 
             if (cropWhitespace)
             {
-                originalImagePath = await GetCroppedImage(originalImagePath, dateModified).ConfigureAwait(false);
+                originalImagePath = await GetWhitespaceCroppedImage(originalImagePath, dateModified).ConfigureAwait(false);
             }
 
             // No enhancement - don't cache
@@ -247,253 +218,17 @@ namespace MediaBrowser.Controller.Drawing
         }
 
         /// <summary>
-        /// Caches the resized image.
-        /// </summary>
-        /// <param name="cacheFilePath">The cache file path.</param>
-        /// <param name="bytes">The bytes.</param>
-        private async Task CacheResizedImage(string cacheFilePath, byte[] bytes)
-        {
-            var parentPath = Path.GetDirectoryName(cacheFilePath);
-
-            if (!Directory.Exists(parentPath))
-            {
-                Directory.CreateDirectory(parentPath);
-            }
-
-            // Save to the cache location
-            using (var cacheFileStream = new FileStream(cacheFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
-            {
-                // Save to the filestream
-                await cacheFileStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
-            }
-        }
-
-        /// <summary>
-        /// Gets the cache file path based on a set of parameters
-        /// </summary>
-        /// <param name="originalPath">The path to the original image file</param>
-        /// <param name="outputSize">The size to output the image in</param>
-        /// <param name="quality">Quality level, from 0-100. Currently only applies to JPG. The default value should suffice.</param>
-        /// <param name="dateModified">The last modified date of the image</param>
-        /// <returns>System.String.</returns>
-        private string GetCacheFilePath(string originalPath, ImageSize outputSize, int quality, DateTime dateModified)
-        {
-            var filename = originalPath;
-
-            filename += "width=" + outputSize.Width;
-
-            filename += "height=" + outputSize.Height;
-
-            filename += "quality=" + quality;
-
-            filename += "datemodified=" + dateModified.Ticks;
-
-            return ResizedImageCache.GetResourcePath(filename, Path.GetExtension(originalPath));
-        }
-
-
-        /// <summary>
-        /// Gets image dimensions
-        /// </summary>
-        /// <param name="imagePath">The image path.</param>
-        /// <param name="dateModified">The date modified.</param>
-        /// <returns>Task{ImageSize}.</returns>
-        /// <exception cref="System.ArgumentNullException">imagePath</exception>
-        public ImageSize GetImageSize(string imagePath, DateTime dateModified)
-        {
-            if (string.IsNullOrEmpty(imagePath))
-            {
-                throw new ArgumentNullException("imagePath");
-            }
-
-            var name = imagePath + "datemodified=" + dateModified.Ticks;
-
-            ImageSize size;
-
-            if (!_cachedImagedSizes.TryGetValue(name, out size))
-            {
-                size = GetImageSize(name, imagePath);
-
-                _cachedImagedSizes.AddOrUpdate(name, size, (keyName, oldValue) => size);
-            }
-
-            return size;
-        }
-
-        protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
-
-        /// <summary>
-        /// Gets the size of the image.
-        /// </summary>
-        /// <param name="keyName">Name of the key.</param>
-        /// <param name="imagePath">The image path.</param>
-        /// <returns>ImageSize.</returns>
-        private ImageSize GetImageSize(string keyName, string imagePath)
-        {
-            // Now check the file system cache
-            var fullCachePath = ImageSizeCache.GetResourcePath(keyName, ".txt");
-
-            try
-            {
-                var result = File.ReadAllText(fullCachePath).Split('|').Select(i => double.Parse(i, UsCulture)).ToArray();
-
-                return new ImageSize { Width = result[0], Height = result[1] };
-            }
-            catch (IOException)
-            {
-                // Cache file doesn't exist or is currently being written to
-            }
-
-            var syncLock = GetObjectLock(fullCachePath);
-
-            lock (syncLock)
-            {
-                try
-                {
-                    var result = File.ReadAllText(fullCachePath)
-                        .Split('|')
-                        .Select(i => double.Parse(i, UsCulture))
-                        .ToArray();
-
-                    return new ImageSize { Width = result[0], Height = result[1] };
-                }
-                catch (FileNotFoundException)
-                {
-                    // Cache file doesn't exist no biggie
-                }
-                catch (DirectoryNotFoundException)
-                {
-                    // Cache file doesn't exist no biggie
-                }
-
-                var size = ImageHeader.GetDimensions(imagePath, _logger);
-
-                var parentPath = Path.GetDirectoryName(fullCachePath);
-
-                if (!Directory.Exists(parentPath))
-                {
-                    Directory.CreateDirectory(parentPath);
-                }
-
-                // Update the file system cache
-                File.WriteAllText(fullCachePath, size.Width.ToString(UsCulture) + @"|" + size.Height.ToString(UsCulture));
-
-                return new ImageSize { Width = size.Width, Height = size.Height };
-            }
-        }
-
-        /// <summary>
-        /// Gets the image path.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="imageType">Type of the image.</param>
-        /// <param name="imageIndex">Index of the image.</param>
-        /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">item</exception>
-        /// <exception cref="System.InvalidOperationException"></exception>
-        public string GetImagePath(BaseItem item, ImageType imageType, int imageIndex)
-        {
-            if (item == null)
-            {
-                throw new ArgumentNullException("item");
-            }
-
-            if (imageType == ImageType.Backdrop)
-            {
-                if (item.BackdropImagePaths == null)
-                {
-                    throw new InvalidOperationException(string.Format("Item {0} does not have any Backdrops.", item.Name));
-                }
-
-                return item.BackdropImagePaths[imageIndex];
-            }
-
-            if (imageType == ImageType.Screenshot)
-            {
-                if (item.ScreenshotImagePaths == null)
-                {
-                    throw new InvalidOperationException(string.Format("Item {0} does not have any Screenshots.", item.Name));
-                }
-
-                return item.ScreenshotImagePaths[imageIndex];
-            }
-
-            if (imageType == ImageType.Chapter)
-            {
-                return _itemRepo.GetChapter(item.Id, imageIndex).ImagePath;
-            }
-
-            return item.GetImage(imageType);
-        }
-
-        /// <summary>
-        /// Gets the image date modified.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="imageType">Type of the image.</param>
-        /// <param name="imageIndex">Index of the image.</param>
-        /// <returns>DateTime.</returns>
-        /// <exception cref="System.ArgumentNullException">item</exception>
-        public DateTime GetImageDateModified(BaseItem item, ImageType imageType, int imageIndex)
-        {
-            if (item == null)
-            {
-                throw new ArgumentNullException("item");
-            }
-
-            var imagePath = GetImagePath(item, imageType, imageIndex);
-
-            return GetImageDateModified(item, imagePath);
-        }
-
-        /// <summary>
-        /// Gets the image date modified.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="imagePath">The image path.</param>
-        /// <returns>DateTime.</returns>
-        /// <exception cref="System.ArgumentNullException">item</exception>
-        public DateTime GetImageDateModified(BaseItem item, string imagePath)
-        {
-            if (item == null)
-            {
-                throw new ArgumentNullException("item");
-            }
-
-            if (string.IsNullOrEmpty(imagePath))
-            {
-                throw new ArgumentNullException("imagePath");
-            }
-
-            var metaFileEntry = item.ResolveArgs.GetMetaFileByPath(imagePath);
-
-            // If we didn't the metafile entry, check the Season
-            if (metaFileEntry == null)
-            {
-                var episode = item as Episode;
-
-                if (episode != null && episode.Season != null)
-                {
-                    episode.Season.ResolveArgs.GetMetaFileByPath(imagePath);
-                }
-            }
-
-            // See if we can avoid a file system lookup by looking for the file in ResolveArgs
-            return metaFileEntry == null ? File.GetLastWriteTimeUtc(imagePath) : metaFileEntry.LastWriteTimeUtc;
-        }
-
-        /// <summary>
         /// Crops whitespace from an image, caches the result, and returns the cached path
         /// </summary>
         /// <param name="originalImagePath">The original image path.</param>
         /// <param name="dateModified">The date modified.</param>
         /// <returns>System.String.</returns>
-        private async Task<string> GetCroppedImage(string originalImagePath, DateTime dateModified)
+        private async Task<string> GetWhitespaceCroppedImage(string originalImagePath, DateTime dateModified)
         {
             var name = originalImagePath;
             name += "datemodified=" + dateModified.Ticks;
 
-            var croppedImagePath = CroppedImageCache.GetResourcePath(name, Path.GetExtension(originalImagePath));
+            var croppedImagePath = GetCachePath(_croppedWhitespaceImageCachePath, name, Path.GetExtension(originalImagePath));
 
             var semaphore = GetLock(croppedImagePath);
 
@@ -550,6 +285,210 @@ namespace MediaBrowser.Controller.Drawing
             }
 
             return croppedImagePath;
+        }
+
+        /// <summary>
+        /// Caches the resized image.
+        /// </summary>
+        /// <param name="cacheFilePath">The cache file path.</param>
+        /// <param name="bytes">The bytes.</param>
+        private async Task CacheResizedImage(string cacheFilePath, byte[] bytes)
+        {
+            var parentPath = Path.GetDirectoryName(cacheFilePath);
+
+            if (!Directory.Exists(parentPath))
+            {
+                Directory.CreateDirectory(parentPath);
+            }
+
+            // Save to the cache location
+            using (var cacheFileStream = new FileStream(cacheFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
+            {
+                // Save to the filestream
+                await cacheFileStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
+            }
+        }
+
+        /// <summary>
+        /// Gets the cache file path based on a set of parameters
+        /// </summary>
+        /// <param name="originalPath">The path to the original image file</param>
+        /// <param name="outputSize">The size to output the image in</param>
+        /// <param name="quality">Quality level, from 0-100. Currently only applies to JPG. The default value should suffice.</param>
+        /// <param name="dateModified">The last modified date of the image</param>
+        /// <returns>System.String.</returns>
+        private string GetCacheFilePath(string originalPath, ImageSize outputSize, int quality, DateTime dateModified)
+        {
+            var filename = originalPath;
+
+            filename += "width=" + outputSize.Width;
+
+            filename += "height=" + outputSize.Height;
+
+            filename += "quality=" + quality;
+
+            filename += "datemodified=" + dateModified.Ticks;
+
+            return GetCachePath(_resizedImageCachePath, filename, Path.GetExtension(originalPath));
+        }
+
+        /// <summary>
+        /// Gets the size of the image.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>ImageSize.</returns>
+        public ImageSize GetImageSize(string path)
+        {
+            return GetImageSize(path, File.GetLastWriteTimeUtc(path));
+        }
+
+        /// <summary>
+        /// Gets the size of the image.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <param name="imageDateModified">The image date modified.</param>
+        /// <returns>ImageSize.</returns>
+        /// <exception cref="System.ArgumentNullException">path</exception>
+        public ImageSize GetImageSize(string path, DateTime imageDateModified)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentNullException("path");
+            }
+
+            var name = path + "datemodified=" + imageDateModified.Ticks;
+
+            ImageSize size;
+
+            if (!_cachedImagedSizes.TryGetValue(name, out size))
+            {
+                size = GetImageSizeInternal(name, path);
+
+                _cachedImagedSizes.AddOrUpdate(name, size, (keyName, oldValue) => size);
+            }
+
+            return size;
+        }
+
+        /// <summary>
+        /// Gets the image size internal.
+        /// </summary>
+        /// <param name="cacheKey">The cache key.</param>
+        /// <param name="path">The path.</param>
+        /// <returns>ImageSize.</returns>
+        private ImageSize GetImageSizeInternal(string cacheKey, string path)
+        {
+            // Now check the file system cache
+            var fullCachePath = GetCachePath(_imageSizeCachePath, cacheKey, ".txt");
+
+            try
+            {
+                var result = File.ReadAllText(fullCachePath).Split('|').Select(i => double.Parse(i, UsCulture)).ToArray();
+
+                return new ImageSize { Width = result[0], Height = result[1] };
+            }
+            catch (IOException)
+            {
+                // Cache file doesn't exist or is currently being written to
+            }
+
+            var syncLock = GetObjectLock(fullCachePath);
+
+            lock (syncLock)
+            {
+                try
+                {
+                    var result = File.ReadAllText(fullCachePath)
+                        .Split('|')
+                        .Select(i => double.Parse(i, UsCulture))
+                        .ToArray();
+
+                    return new ImageSize { Width = result[0], Height = result[1] };
+                }
+                catch (FileNotFoundException)
+                {
+                    // Cache file doesn't exist no biggie
+                }
+                catch (DirectoryNotFoundException)
+                {
+                    // Cache file doesn't exist no biggie
+                }
+
+                var size = ImageHeader.GetDimensions(path, _logger);
+
+                var parentPath = Path.GetDirectoryName(fullCachePath);
+
+                if (!Directory.Exists(parentPath))
+                {
+                    Directory.CreateDirectory(parentPath);
+                }
+
+                // Update the file system cache
+                File.WriteAllText(fullCachePath, size.Width.ToString(UsCulture) + @"|" + size.Height.ToString(UsCulture));
+
+                return new ImageSize { Width = size.Width, Height = size.Height };
+            }
+        }
+
+        /// <summary>
+        /// Gets the image cache tag.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="imageType">Type of the image.</param>
+        /// <param name="imagePath">The image path.</param>
+        /// <returns>Guid.</returns>
+        /// <exception cref="System.ArgumentNullException">item</exception>
+        public Guid GetImageCacheTag(BaseItem item, ImageType imageType, string imagePath)
+        {
+            if (item == null)
+            {
+                throw new ArgumentNullException("item");
+            }
+
+            if (string.IsNullOrEmpty(imagePath))
+            {
+                throw new ArgumentNullException("imagePath");
+            }
+
+            var dateModified = item.GetImageDateModified(imagePath);
+
+            var supportedEnhancers = GetSupportedEnhancers(item, imageType).ToList();
+
+            return GetImageCacheTag(item, imageType, imagePath, dateModified, supportedEnhancers);
+        }
+
+        /// <summary>
+        /// Gets the image cache tag.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="imageType">Type of the image.</param>
+        /// <param name="originalImagePath">The original image path.</param>
+        /// <param name="dateModified">The date modified of the original image file.</param>
+        /// <param name="imageEnhancers">The image enhancers.</param>
+        /// <returns>Guid.</returns>
+        /// <exception cref="System.ArgumentNullException">item</exception>
+        public Guid GetImageCacheTag(BaseItem item, ImageType imageType, string originalImagePath, DateTime dateModified, IEnumerable<IImageEnhancer> imageEnhancers)
+        {
+            if (item == null)
+            {
+                throw new ArgumentNullException("item");
+            }
+
+            if (imageEnhancers == null)
+            {
+                throw new ArgumentNullException("imageEnhancers");
+            }
+
+            if (string.IsNullOrEmpty(originalImagePath))
+            {
+                throw new ArgumentNullException("originalImagePath");
+            }
+
+            // Cache name is created with supported enhancers combined with the last config change so we pick up new config changes
+            var cacheKeys = imageEnhancers.Select(i => i.GetConfigurationCacheKey(item, imageType)).ToList();
+            cacheKeys.Add(originalImagePath + dateModified.Ticks);
+
+            return string.Join("|", cacheKeys.ToArray()).GetMD5();
         }
 
         /// <summary>
@@ -610,10 +549,10 @@ namespace MediaBrowser.Controller.Drawing
                 throw new ArgumentNullException("item");
             }
 
-            var cacheGuid = GetImageCacheTag(originalImagePath, dateModified, supportedEnhancers, item, imageType);
+            var cacheGuid = GetImageCacheTag(item, imageType, originalImagePath, dateModified, supportedEnhancers);
 
             // All enhanced images are saved as png to allow transparency
-            var enhancedImagePath = EnhancedImageCache.GetResourcePath(cacheGuid + ".png");
+            var enhancedImagePath = GetCachePath(_enhancedImageCachePath, cacheGuid + ".png");
 
             var semaphore = GetLock(enhancedImagePath);
 
@@ -666,80 +605,6 @@ namespace MediaBrowser.Controller.Drawing
         }
 
         /// <summary>
-        /// Gets the image cache tag.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="imageType">Type of the image.</param>
-        /// <param name="imagePath">The image path.</param>
-        /// <returns>Guid.</returns>
-        /// <exception cref="System.ArgumentNullException">item</exception>
-        public Guid GetImageCacheTag(BaseItem item, ImageType imageType, string imagePath)
-        {
-            if (item == null)
-            {
-                throw new ArgumentNullException("item");
-            }
-
-            if (string.IsNullOrEmpty(imagePath))
-            {
-                throw new ArgumentNullException("imagePath");
-            }
-
-            var dateModified = GetImageDateModified(item, imagePath);
-
-            var supportedEnhancers = ImageEnhancers.Where(i =>
-            {
-                try
-                {
-                    return i.Supports(item, imageType);
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error in image enhancer: {0}", ex, i.GetType().Name);
-
-                    return false;
-                }
-
-            }).ToList();
-
-            return GetImageCacheTag(imagePath, dateModified, supportedEnhancers, item, imageType);
-        }
-
-        /// <summary>
-        /// Gets the image cache tag.
-        /// </summary>
-        /// <param name="originalImagePath">The original image path.</param>
-        /// <param name="dateModified">The date modified of the original image file.</param>
-        /// <param name="imageEnhancers">The image enhancers.</param>
-        /// <param name="item">The item.</param>
-        /// <param name="imageType">Type of the image.</param>
-        /// <returns>Guid.</returns>
-        /// <exception cref="System.ArgumentNullException">item</exception>
-        public Guid GetImageCacheTag(string originalImagePath, DateTime dateModified, IEnumerable<IImageEnhancer> imageEnhancers, BaseItem item, ImageType imageType)
-        {
-            if (item == null)
-            {
-                throw new ArgumentNullException("item");
-            }
-
-            if (imageEnhancers == null)
-            {
-                throw new ArgumentNullException("imageEnhancers");
-            }
-
-            if (string.IsNullOrEmpty(originalImagePath))
-            {
-                throw new ArgumentNullException("originalImagePath");
-            }
-
-            // Cache name is created with supported enhancers combined with the last config change so we pick up new config changes
-            var cacheKeys = imageEnhancers.Select(i => i.GetConfigurationCacheKey(item, imageType)).ToList();
-            cacheKeys.Add(originalImagePath + dateModified.Ticks);
-
-            return string.Join("|", cacheKeys.ToArray()).GetMD5();
-        }
-
-        /// <summary>
         /// Executes the image enhancers.
         /// </summary>
         /// <param name="imageEnhancers">The image enhancers.</param>
@@ -775,6 +640,21 @@ namespace MediaBrowser.Controller.Drawing
         /// <summary>
         /// The _semaphoreLocks
         /// </summary>
+        private readonly ConcurrentDictionary<string, object> _locks = new ConcurrentDictionary<string, object>();
+
+        /// <summary>
+        /// Gets the lock.
+        /// </summary>
+        /// <param name="filename">The filename.</param>
+        /// <returns>System.Object.</returns>
+        private object GetObjectLock(string filename)
+        {
+            return _locks.GetOrAdd(filename, key => new object());
+        }
+
+        /// <summary>
+        /// The _semaphoreLocks
+        /// </summary>
         private readonly ConcurrentDictionary<string, SemaphoreSlim> _semaphoreLocks = new ConcurrentDictionary<string, SemaphoreSlim>();
 
         /// <summary>
@@ -788,18 +668,85 @@ namespace MediaBrowser.Controller.Drawing
         }
 
         /// <summary>
-        /// The _semaphoreLocks
+        /// Gets the cache path.
         /// </summary>
-        private readonly ConcurrentDictionary<string, object> _locks = new ConcurrentDictionary<string, object>();
+        /// <param name="path">The path.</param>
+        /// <param name="uniqueName">Name of the unique.</param>
+        /// <param name="fileExtension">The file extension.</param>
+        /// <returns>System.String.</returns>
+        /// <exception cref="System.ArgumentNullException">
+        /// path
+        /// or
+        /// uniqueName
+        /// or
+        /// fileExtension
+        /// </exception>
+        public string GetCachePath(string path, string uniqueName, string fileExtension)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentNullException("path");
+            }
+            if (string.IsNullOrEmpty(uniqueName))
+            {
+                throw new ArgumentNullException("uniqueName");
+            }
+
+            if (string.IsNullOrEmpty(fileExtension))
+            {
+                throw new ArgumentNullException("fileExtension");
+            }
+
+            var filename = uniqueName.GetMD5() + fileExtension;
+
+            return GetCachePath(path, filename);
+        }
 
         /// <summary>
-        /// Gets the lock.
+        /// Gets the cache path.
         /// </summary>
+        /// <param name="path">The path.</param>
         /// <param name="filename">The filename.</param>
-        /// <returns>System.Object.</returns>
-        private object GetObjectLock(string filename)
+        /// <returns>System.String.</returns>
+        /// <exception cref="System.ArgumentNullException">
+        /// path
+        /// or
+        /// filename
+        /// </exception>
+        public string GetCachePath(string path, string filename)
         {
-            return _locks.GetOrAdd(filename, key => new object());
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentNullException("path");
+            }
+            if (string.IsNullOrEmpty(filename))
+            {
+                throw new ArgumentNullException("filename");
+            }
+
+            var prefix = filename.Substring(0, 1);
+
+            path = Path.Combine(path, prefix);
+
+            return Path.Combine(path, filename);
+        }
+
+        public IEnumerable<IImageEnhancer> GetSupportedEnhancers(BaseItem item, ImageType imageType)
+        {
+            return ImageEnhancers.Where(i =>
+            {
+                try
+                {
+                    return i.Supports(item as BaseItem, imageType);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error in image enhancer: {0}", ex, i.GetType().Name);
+
+                    return false;
+                }
+
+            }).ToList();
         }
     }
 }

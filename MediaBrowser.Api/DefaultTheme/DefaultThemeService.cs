@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Controller;
+﻿using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -13,7 +13,6 @@ using ServiceStack.ServiceHost;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.DefaultTheme
 {
@@ -68,24 +67,26 @@ namespace MediaBrowser.Api.DefaultTheme
         private readonly ILibraryManager _libraryManager;
 
         private readonly ILocalizationManager _localization;
+        private readonly IImageProcessor _imageProcessor;
 
-        public DefaultThemeService(IUserManager userManager, IDtoService dtoService, ILogger logger, ILibraryManager libraryManager, ILocalizationManager localization)
+        public DefaultThemeService(IUserManager userManager, IDtoService dtoService, ILogger logger, ILibraryManager libraryManager, ILocalizationManager localization, IImageProcessor imageProcessor)
         {
             _userManager = userManager;
             _dtoService = dtoService;
             _logger = logger;
             _libraryManager = libraryManager;
             _localization = localization;
+            _imageProcessor = imageProcessor;
         }
 
         public object Get(GetHomeView request)
         {
-            var result = GetHomeView(request).Result;
+            var result = GetHomeView(request);
 
             return ToOptimizedResult(result);
         }
 
-        private async Task<HomeView> GetHomeView(GetHomeView request)
+        private HomeView GetHomeView(GetHomeView request)
         {
             var user = _userManager.GetUserById(request.UserId);
 
@@ -113,12 +114,12 @@ namespace MediaBrowser.Api.DefaultTheme
 
         public object Get(GetGamesView request)
         {
-            var result = GetGamesView(request).Result;
+            var result = GetGamesView(request);
 
             return ToOptimizedResult(result);
         }
 
-        private async Task<GamesView> GetGamesView(GetGamesView request)
+        private GamesView GetGamesView(GetGamesView request)
         {
             var user = _userManager.GetUserById(request.UserId);
 
@@ -145,19 +146,19 @@ namespace MediaBrowser.Api.DefaultTheme
 
         public object Get(GetMovieView request)
         {
-            var result = GetMovieView(request).Result;
+            var result = GetMovieView(request);
 
             return ToOptimizedResult(result);
         }
 
         public object Get(GetTvView request)
         {
-            var result = GetTvView(request).Result;
+            var result = GetTvView(request);
 
             return ToOptimizedResult(result);
         }
 
-        private async Task<TvView> GetTvView(GetTvView request)
+        private TvView GetTvView(GetTvView request)
         {
             var user = _userManager.GetUserById(request.UserId);
 
@@ -210,7 +211,7 @@ namespace MediaBrowser.Api.DefaultTheme
             return view;
         }
 
-        private async Task<MoviesView> GetMovieView(GetMovieView request)
+        private MoviesView GetMovieView(GetMovieView request)
         {
             var user = _userManager.GetUserById(request.UserId);
 
@@ -348,9 +349,9 @@ namespace MediaBrowser.Api.DefaultTheme
         {
             try
             {
-                var date = Kernel.Instance.ImageManager.GetImageDateModified(item, path);
+                var date = item.GetImageDateModified(path);
 
-                var size = Kernel.Instance.ImageManager.GetImageSize(path, date);
+                var size = _imageProcessor.GetImageSize(path, date);
 
                 return size.Width;
             }
@@ -400,13 +401,11 @@ namespace MediaBrowser.Api.DefaultTheme
                 ImageType = imageType
             };
 
-            var imageManager = Kernel.Instance.ImageManager;
-
             try
             {
-                var imagePath = imageManager.GetImagePath(item, imageType, 0);
+                var imagePath = item.GetImagePath(imageType, 0);
 
-                stub.ImageTag = imageManager.GetImageCacheTag(item, imageType, imagePath);
+                stub.ImageTag = _imageProcessor.GetImageCacheTag(item, imageType, imagePath);
             }
             catch (Exception ex)
             {

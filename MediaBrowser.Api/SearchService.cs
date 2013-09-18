@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller;
+using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -66,6 +67,7 @@ namespace MediaBrowser.Api
         private readonly ILibrarySearchEngine _searchEngine;
         private readonly ILibraryManager _libraryManager;
         private readonly IDtoService _dtoService;
+        private readonly IImageProcessor _imageProcessor;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SearchService" /> class.
@@ -73,12 +75,13 @@ namespace MediaBrowser.Api
         /// <param name="userManager">The user manager.</param>
         /// <param name="searchEngine">The search engine.</param>
         /// <param name="libraryManager">The library manager.</param>
-        public SearchService(IUserManager userManager, ILibrarySearchEngine searchEngine, ILibraryManager libraryManager, IDtoService dtoService)
+        public SearchService(IUserManager userManager, ILibrarySearchEngine searchEngine, ILibraryManager libraryManager, IDtoService dtoService, IImageProcessor imageProcessor)
         {
             _userManager = userManager;
             _searchEngine = searchEngine;
             _libraryManager = libraryManager;
             _dtoService = dtoService;
+            _imageProcessor = imageProcessor;
         }
 
         /// <summary>
@@ -161,7 +164,7 @@ namespace MediaBrowser.Api
 
             if (item.HasImage(ImageType.Primary))
             {
-                result.PrimaryImageTag = Kernel.Instance.ImageManager.GetImageCacheTag(item, ImageType.Primary, item.GetImage(ImageType.Primary));
+                result.PrimaryImageTag = _imageProcessor.GetImageCacheTag(item, ImageType.Primary, item.GetImage(ImageType.Primary));
             }
 
             var episode = item as Episode;
