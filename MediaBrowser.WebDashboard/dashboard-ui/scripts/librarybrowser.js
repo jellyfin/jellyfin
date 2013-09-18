@@ -283,6 +283,12 @@
             }
             else if (options.context == "music") {
 
+                if (item.AlbumCount) {
+
+                    childText = item.AlbumCount == 1 ? "1 Album" : item.AlbumCount + " Albums";
+
+                    counts.push(childText);
+                }
                 if (item.SongCount) {
 
                     childText = item.SongCount == 1 ? "1 Song" : item.SongCount + " Songs";

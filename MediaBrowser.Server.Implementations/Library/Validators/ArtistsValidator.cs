@@ -72,10 +72,6 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
 
             var numComplete = 0;
 
-            var userLibraries = _userManager.Users
-                .Select(i => new Tuple<Guid, IHasArtist[]>(i.Id, i.RootFolder.GetRecursiveChildren(i).OfType<IHasArtist>().ToArray()))
-                .ToArray();
-
             foreach (var artist in allArtists)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -110,9 +106,9 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
                 // Populate counts of items
                 //SetItemCounts(artist, null, allItems.OfType<IHasArtist>());
 
-                foreach (var lib in userLibraries)
+                foreach (var user in _userManager.Users.ToArray())
                 {
-                    SetItemCounts(artist, lib.Item1, lib.Item2);
+                    SetItemCounts(artist, user.Id, user.RootFolder.GetRecursiveChildren(user).OfType<IHasArtist>().ToArray());
                 }
 
                 numComplete++;
