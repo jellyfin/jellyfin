@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Controller.MediaInfo;
+﻿using MediaBrowser.Controller.MediaInfo;
 
 namespace MediaBrowser.Controller
 {
@@ -13,12 +12,6 @@ namespace MediaBrowser.Controller
         /// </summary>
         /// <value>The instance.</value>
         public static Kernel Instance { get; private set; }
-
-        /// <summary>
-        /// Gets the image manager.
-        /// </summary>
-        /// <value>The image manager.</value>
-        public ImageManager ImageManager { get; set; }
 
         /// <summary>
         /// Gets the FFMPEG controller.

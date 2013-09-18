@@ -1,5 +1,5 @@
 ﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller;
+using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -30,13 +30,16 @@ namespace MediaBrowser.Server.Implementations.Dto
         private readonly IUserDataRepository _userDataRepository;
         private readonly IItemRepository _itemRepo;
 
-        public DtoService(ILogger logger, ILibraryManager libraryManager, IUserManager userManager, IUserDataRepository userDataRepository, IItemRepository itemRepo)
+        private readonly IImageProcessor _imageProcessor;
+        
+        public DtoService(ILogger logger, ILibraryManager libraryManager, IUserManager userManager, IUserDataRepository userDataRepository, IItemRepository itemRepo, IImageProcessor imageProcessor)
         {
             _logger = logger;
             _libraryManager = libraryManager;
             _userManager = userManager;
             _userDataRepository = userDataRepository;
             _itemRepo = itemRepo;
+            _imageProcessor = imageProcessor;
         }
 
         /// <summary>
@@ -209,7 +212,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             if (!string.IsNullOrEmpty(image))
             {
-                dto.PrimaryImageTag = Kernel.Instance.ImageManager.GetImageCacheTag(user, ImageType.Primary, image);
+                dto.PrimaryImageTag = _imageProcessor.GetImageCacheTag(user, ImageType.Primary, image);
 
                 try
                 {
@@ -288,7 +291,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 try
                 {
-                    info.PrimaryImageTag = Kernel.Instance.ImageManager.GetImageCacheTag(item, ImageType.Primary, imagePath);
+                    info.PrimaryImageTag = _imageProcessor.GetImageCacheTag(item, ImageType.Primary, imagePath);
                 }
                 catch (IOException)
                 {
@@ -409,7 +412,7 @@ namespace MediaBrowser.Server.Implementations.Dto
         {
             try
             {
-                return Kernel.Instance.ImageManager.GetImageCacheTag(item, type, path);
+                return _imageProcessor.GetImageCacheTag(item, type, path);
             }
             catch (IOException ex)
             {
@@ -1154,7 +1157,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             try
             {
-                size = Kernel.Instance.ImageManager.GetImageSize(path, dateModified);
+                size = _imageProcessor.GetImageSize(path, dateModified);
             }
             catch (FileNotFoundException)
             {
@@ -1169,21 +1172,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             dto.OriginalPrimaryImageAspectRatio = size.Width / size.Height;
 
-            var supportedEnhancers = Kernel.Instance.ImageManager.ImageEnhancers.Where(i =>
-            {
-                try
-                {
-                    return i.Supports(item, ImageType.Primary);
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error in image enhancer: {0}", ex, i.GetType().Name);
-
-                    return false;
-                }
-
-            }).ToList();
-
+            var supportedEnhancers = _imageProcessor.GetSupportedEnhancers(item, ImageType.Primary).ToList();
 
             foreach (var enhancer in supportedEnhancers)
             {
@@ -1199,6 +1188,5 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             dto.PrimaryImageAspectRatio = size.Width / size.Height;
         }
-
     }
 }

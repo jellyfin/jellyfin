@@ -2,6 +2,7 @@
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -338,11 +339,12 @@ namespace MediaBrowser.Api.Images
 
         private readonly IItemRepository _itemRepo;
         private readonly IDtoService _dtoService;
+        private readonly IImageProcessor _imageProcessor;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ImageService" /> class.
         /// </summary>
-        public ImageService(IUserManager userManager, ILibraryManager libraryManager, IApplicationPaths appPaths, IProviderManager providerManager, IItemRepository itemRepo, IDtoService dtoService)
+        public ImageService(IUserManager userManager, ILibraryManager libraryManager, IApplicationPaths appPaths, IProviderManager providerManager, IItemRepository itemRepo, IDtoService dtoService, IImageProcessor imageProcessor)
         {
             _userManager = userManager;
             _libraryManager = libraryManager;
@@ -350,6 +352,7 @@ namespace MediaBrowser.Api.Images
             _providerManager = providerManager;
             _itemRepo = itemRepo;
             _dtoService = dtoService;
+            _imageProcessor = imageProcessor;
         }
 
         /// <summary>
@@ -403,15 +406,13 @@ namespace MediaBrowser.Api.Images
 
                 var fileInfo = new FileInfo(path);
 
-                var dateModified = Kernel.Instance.ImageManager.GetImageDateModified(item, path);
-
-                var size = Kernel.Instance.ImageManager.GetImageSize(path, dateModified);
+                var size = _imageProcessor.GetImageSize(path);
 
                 list.Add(new ImageInfo
                 {
                     Path = path,
                     ImageType = image.Key,
-                    ImageTag = Kernel.Instance.ImageManager.GetImageCacheTag(item, image.Key, path),
+                    ImageTag = _imageProcessor.GetImageCacheTag(item, image.Key, path),
                     Size = fileInfo.Length,
                     Width = Convert.ToInt32(size.Width),
                     Height = Convert.ToInt32(size.Height)
@@ -424,16 +425,14 @@ namespace MediaBrowser.Api.Images
             {
                 var fileInfo = new FileInfo(image);
 
-                var dateModified = Kernel.Instance.ImageManager.GetImageDateModified(item, image);
-
-                var size = Kernel.Instance.ImageManager.GetImageSize(image, dateModified);
+                var size = _imageProcessor.GetImageSize(image);
 
                 list.Add(new ImageInfo
                 {
                     Path = image,
                     ImageIndex = index,
                     ImageType = ImageType.Backdrop,
-                    ImageTag = Kernel.Instance.ImageManager.GetImageCacheTag(item, ImageType.Backdrop, image),
+                    ImageTag = _imageProcessor.GetImageCacheTag(item, ImageType.Backdrop, image),
                     Size = fileInfo.Length,
                     Width = Convert.ToInt32(size.Width),
                     Height = Convert.ToInt32(size.Height)
@@ -448,16 +447,14 @@ namespace MediaBrowser.Api.Images
             {
                 var fileInfo = new FileInfo(image);
 
-                var dateModified = Kernel.Instance.ImageManager.GetImageDateModified(item, image);
-
-                var size = Kernel.Instance.ImageManager.GetImageSize(image, dateModified);
+                var size = _imageProcessor.GetImageSize(image);
 
                 list.Add(new ImageInfo
                 {
                     Path = image,
                     ImageIndex = index,
                     ImageType = ImageType.Screenshot,
-                    ImageTag = Kernel.Instance.ImageManager.GetImageCacheTag(item, ImageType.Screenshot, image),
+                    ImageTag = _imageProcessor.GetImageCacheTag(item, ImageType.Screenshot, image),
                     Size = fileInfo.Length,
                     Width = Convert.ToInt32(size.Width),
                     Height = Convert.ToInt32(size.Height)
@@ -480,16 +477,14 @@ namespace MediaBrowser.Api.Images
 
                         var fileInfo = new FileInfo(image);
 
-                        var dateModified = Kernel.Instance.ImageManager.GetImageDateModified(item, image);
-
-                        var size = Kernel.Instance.ImageManager.GetImageSize(image, dateModified);
+                        var size = _imageProcessor.GetImageSize(image);
 
                         list.Add(new ImageInfo
                         {
                             Path = image,
                             ImageIndex = index,
                             ImageType = ImageType.Chapter,
-                            ImageTag = Kernel.Instance.ImageManager.GetImageCacheTag(item, ImageType.Chapter, image),
+                            ImageTag = _imageProcessor.GetImageCacheTag(item, ImageType.Chapter, image),
                             Size = fileInfo.Length,
                             Width = Convert.ToInt32(size.Width),
                             Height = Convert.ToInt32(size.Height)
@@ -721,11 +716,7 @@ namespace MediaBrowser.Api.Images
         /// </exception>
         private object GetImage(ImageRequest request, BaseItem item)
         {
-            var kernel = Kernel.Instance;
-
-            var index = request.Index ?? 0;
-
-            var imagePath = GetImagePath(kernel, request, item);
+            var imagePath = GetImagePath(request, item);
 
             if (string.IsNullOrEmpty(imagePath))
             {
@@ -733,9 +724,9 @@ namespace MediaBrowser.Api.Images
             }
 
             // See if we can avoid a file system lookup by looking for the file in ResolveArgs
-            var originalFileImageDateModified = kernel.ImageManager.GetImageDateModified(item, imagePath);
+            var originalFileImageDateModified = item.GetImageDateModified(imagePath);
 
-            var supportedImageEnhancers = request.EnableImageEnhancers ? kernel.ImageManager.ImageEnhancers.Where(i =>
+            var supportedImageEnhancers = request.EnableImageEnhancers ? _imageProcessor.ImageEnhancers.Where(i =>
             {
                 try
                 {
@@ -759,7 +750,7 @@ namespace MediaBrowser.Api.Images
 
             var contentType = MimeTypes.GetMimeType(imagePath);
 
-            var cacheGuid = kernel.ImageManager.GetImageCacheTag(imagePath, originalFileImageDateModified, supportedImageEnhancers, item, request.Type);
+            var cacheGuid = _imageProcessor.GetImageCacheTag(item, request.Type, imagePath, originalFileImageDateModified, supportedImageEnhancers);
 
             TimeSpan? cacheDuration = null;
 
@@ -778,7 +769,8 @@ namespace MediaBrowser.Api.Images
                 Request = currentRequest,
                 OriginalImageDateModified = originalFileImageDateModified,
                 Enhancers = supportedImageEnhancers,
-                OriginalImagePath = imagePath
+                OriginalImagePath = imagePath,
+                ImageProcessor = _imageProcessor
 
             }, contentType);
         }
@@ -786,15 +778,14 @@ namespace MediaBrowser.Api.Images
         /// <summary>
         /// Gets the image path.
         /// </summary>
-        /// <param name="kernel">The kernel.</param>
         /// <param name="request">The request.</param>
         /// <param name="item">The item.</param>
         /// <returns>System.String.</returns>
-        private string GetImagePath(Kernel kernel, ImageRequest request, BaseItem item)
+        private string GetImagePath(ImageRequest request, BaseItem item)
         {
             var index = request.Index ?? 0;
 
-            return kernel.ImageManager.GetImagePath(item, request.Type, index);
+            return item.GetImagePath(request.Type, index);
         }
 
         /// <summary>

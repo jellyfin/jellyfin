@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Controller;
+﻿using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -34,6 +34,8 @@ namespace MediaBrowser.Api.Images
         public DateTime OriginalImageDateModified;
 
         public string OriginalImagePath;
+
+        public IImageProcessor ImageProcessor { get; set; }
 
         /// <summary>
         /// The _options
@@ -73,7 +75,7 @@ namespace MediaBrowser.Api.Images
                 cropwhitespace = Request.CropWhitespace.Value;
             }
 
-            return Kernel.Instance.ImageManager.ProcessImage(Item, Request.Type, Request.Index ?? 0, OriginalImagePath, cropwhitespace,
+            return ImageProcessor.ProcessImage(Item, Request.Type, Request.Index ?? 0, OriginalImagePath, cropwhitespace,
                                                     OriginalImageDateModified, responseStream, Request.Width, Request.Height, Request.MaxWidth,
                                                     Request.MaxHeight, Request.Quality, Enhancers);
         }
