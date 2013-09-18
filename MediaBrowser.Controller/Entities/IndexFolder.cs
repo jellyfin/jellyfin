@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Model.Entities;
 using MoreLinq;
-using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -111,7 +110,7 @@ namespace MediaBrowser.Controller.Entities
         /// Override to return the children defined to us when we were created
         /// </summary>
         /// <value>The actual children.</value>
-        protected override ConcurrentDictionary<Guid,BaseItem> LoadChildren()
+        protected override IEnumerable<BaseItem> LoadChildren()
         {
             var originalChildSource = ChildSource.ToList();
 
@@ -136,7 +135,7 @@ namespace MediaBrowser.Controller.Entities
             // Now - since we built the index grouping from the bottom up - we now need to properly set Parents from the top down
             SetParents(this, kids.OfType<IndexFolder>());
 
-            return new ConcurrentDictionary<Guid, BaseItem>(kids.DistinctBy(i => i.Id).ToDictionary(i => i.Id));
+            return kids.DistinctBy(i => i.Id);
         }
 
         /// <summary>
