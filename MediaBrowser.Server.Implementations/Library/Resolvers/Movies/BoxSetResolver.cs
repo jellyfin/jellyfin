@@ -2,9 +2,9 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Entities;
 using System;
 using System.IO;
-using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
 {

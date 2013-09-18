@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 
 namespace MediaBrowser.Common.Net
@@ -18,8 +19,14 @@ namespace MediaBrowser.Common.Net
         /// Gets or sets the accept header.
         /// </summary>
         /// <value>The accept header.</value>
-        public string AcceptHeader { get; set; }
-
+        public string AcceptHeader
+        {
+            get { return GetHeaderValue("Accept"); }
+            set
+            {
+                RequestHeaders["Accept"] = value;
+            }
+        }
         /// <summary>
         /// Gets or sets the cancellation token.
         /// </summary>
@@ -36,7 +43,14 @@ namespace MediaBrowser.Common.Net
         /// Gets or sets the user agent.
         /// </summary>
         /// <value>The user agent.</value>
-        public string UserAgent { get; set; }
+        public string UserAgent
+        {
+            get { return GetHeaderValue("User-Agent"); }
+            set
+            {
+                RequestHeaders["User-Agent"] = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the progress.
@@ -50,12 +64,25 @@ namespace MediaBrowser.Common.Net
         /// <value><c>true</c> if [enable HTTP compression]; otherwise, <c>false</c>.</value>
         public bool EnableHttpCompression { get; set; }
 
+        public Dictionary<string, string> RequestHeaders { get; private set; }
+
+        private string GetHeaderValue(string name)
+        {
+            string value;
+
+            RequestHeaders.TryGetValue(name, out value);
+
+            return value;
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpRequestOptions"/> class.
         /// </summary>
         public HttpRequestOptions()
         {
             EnableHttpCompression = true;
+
+            RequestHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
     }
 }

@@ -1,4 +1,6 @@
 ﻿using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
@@ -37,6 +39,12 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
 
             // Don't allow nested artists
             if (args.Parent is MusicArtist)
+            {
+                return null;
+            }
+
+            // Optimization
+            if (args.Parent is BoxSet || args.Parent is Series || args.Parent is Season)
             {
                 return null;
             }

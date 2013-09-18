@@ -140,14 +140,25 @@ namespace MediaBrowser.Providers.MediaInfo
 
         public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
-            var myItem = (Video)item;
+            var video = (Video)item;
 
-            var isoMount = await MountIsoIfNeeded(myItem, cancellationToken).ConfigureAwait(false);
+            var isoMount = await MountIsoIfNeeded(video, cancellationToken).ConfigureAwait(false);
 
             try
             {
-                OnPreFetch(myItem, isoMount);
+                OnPreFetch(video, isoMount);
 
+                // If we didn't find any satisfying the min length, just take them all
+                if (video.VideoType == VideoType.Dvd || (video.IsoType.HasValue && video.IsoType == IsoType.Dvd))
+                {
+                    if (video.PlayableStreamFileNames.Count == 0)
+                    {
+                        Logger.Error("No playable vobs found in dvd structure, skipping ffprobe.");
+                        SetLastRefreshed(item, DateTime.UtcNow);
+                        return true;
+                    }
+                }
+                
                 var result = await GetMediaInfo(item, isoMount, cancellationToken).ConfigureAwait(false);
 
                 cancellationToken.ThrowIfCancellationRequested();
@@ -156,9 +167,8 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await Fetch(myItem, force, cancellationToken, result, isoMount).ConfigureAwait(false);
+                await Fetch(video, force, cancellationToken, result, isoMount).ConfigureAwait(false);
 
-                SetLastRefreshed(item, DateTime.UtcNow);
             }
             finally
             {
@@ -222,7 +232,25 @@ namespace MediaBrowser.Providers.MediaInfo
 
             // Try to eliminate menus and intros by skipping all files at the front of the list that are less than the minimum size
             // Once we reach a file that is at least the minimum, return all subsequent ones
-            var files = Directory.EnumerateFiles(root, "*.vob", SearchOption.AllDirectories).SkipWhile(f => new FileInfo(f).Length < minPlayableSize).ToList();
+            var allVobs = Directory.EnumerateFiles(root, "*.vob", SearchOption.AllDirectories).ToList();
+
+            // If we didn't find any satisfying the min length, just take them all
+            if (allVobs.Count == 0)
+            {
+                Logger.Error("No vobs found in dvd structure.");
+                return;
+            }
+            
+            var files = allVobs
+                .SkipWhile(f => new FileInfo(f).Length < minPlayableSize)
+                .ToList();
+
+            // If we didn't find any satisfying the min length, just take them all
+            if (files.Count == 0)
+            {
+                Logger.Warn("Vob size filter resulted in zero matches. Taking all vobs.");
+                files = allVobs;
+            }
 
             // Assuming they're named "vts_05_01", take all files whose second part matches that of the first file
             if (files.Count > 0)
@@ -240,6 +268,13 @@ namespace MediaBrowser.Providers.MediaInfo
                         return fileParts.Length == 3 && string.Equals(title, fileParts[1], StringComparison.OrdinalIgnoreCase);
 
                     }).ToList();
+
+                    // If this resulted in not getting any vobs, just take them all
+                    if (files.Count == 0)
+                    {
+                        Logger.Warn("Vob filename filter resulted in zero matches. Taking all vobs.");
+                        files = allVobs;
+                    }
                 }
             }
 

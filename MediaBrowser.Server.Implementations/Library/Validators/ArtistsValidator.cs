@@ -57,10 +57,10 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         /// <returns>Task.</returns>
         public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var allItems = _libraryManager.RootFolder.RecursiveChildren.ToList();
+            var allItems = _libraryManager.RootFolder.RecursiveChildren.ToArray();
 
-            var allMusicArtists = allItems.OfType<MusicArtist>().ToList();
-            var allSongs = allItems.OfType<Audio>().ToList();
+            var allMusicArtists = allItems.OfType<MusicArtist>().ToArray();
+            var allSongs = allItems.OfType<Audio>().ToArray();
 
             var innerProgress = new ActionableProgress<double>();
 
@@ -73,8 +73,8 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
             var numComplete = 0;
 
             var userLibraries = _userManager.Users
-                .Select(i => new Tuple<Guid, List<IHasArtist>>(i.Id, i.RootFolder.GetRecursiveChildren(i).OfType<IHasArtist>().ToList()))
-                .ToList();
+                .Select(i => new Tuple<Guid, IHasArtist[]>(i.Id, i.RootFolder.GetRecursiveChildren(i).OfType<IHasArtist>().ToArray()))
+                .ToArray();
 
             foreach (var artist in allArtists)
             {
@@ -117,7 +117,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
 
                 numComplete++;
                 double percent = numComplete;
-                percent /= allArtists.Count;
+                percent /= allArtists.Length;
                 percent *= 20;
 
                 progress.Report(80 + percent);
@@ -138,11 +138,11 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
 
             var items = allItems
                 .Where(i => i.HasArtist(name))
-                .ToList();
+                .ToArray();
 
             var counts = new ItemByNameCounts
             {
-                TotalCount = items.Count,
+                TotalCount = items.Length,
 
                 SongCount = items.OfType<Audio>().Count(),
 
@@ -165,7 +165,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         private void MergeImages(Dictionary<ImageType, string> source, Dictionary<ImageType, string> target)
         {
             foreach (var key in source.Keys
-                .ToList()
+                .ToArray()
                 .Where(k => !target.ContainsKey(k)))
             {
                 string path;
@@ -184,7 +184,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
         /// <returns>Task{Artist[]}.</returns>
-        private async Task<List<Artist>> GetAllArtists(IEnumerable<Audio> allSongs, CancellationToken cancellationToken, IProgress<double> progress)
+        private async Task<Artist[]> GetAllArtists(IEnumerable<Audio> allSongs, CancellationToken cancellationToken, IProgress<double> progress)
         {
             var allArtists = allSongs
                 .SelectMany(i =>
@@ -200,7 +200,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
                     return list;
                 })
                 .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToList();
+                .ToArray();
 
             const int maxTasks = 3;
 
@@ -246,7 +246,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
                     {
                         numComplete++;
                         double percent = numComplete;
-                        percent /= allArtists.Count;
+                        percent /= allArtists.Length;
 
                         progress.Report(100 * percent);
                     }
@@ -255,7 +255,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
 
-            return returnArtists.ToList();
+            return returnArtists.ToArray();
         }
 
         /// <summary>

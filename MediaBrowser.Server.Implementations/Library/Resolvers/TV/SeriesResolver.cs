@@ -1,4 +1,6 @@
 ﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
@@ -41,7 +43,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
                 }
                 
                 // Optimization to avoid running these tests against Seasons
-                if (args.Parent is Series)
+                if (args.Parent is Series || args.Parent is MusicArtist || args.Parent is MusicAlbum || args.Parent is BoxSet)
                 {
                     return null;
                 }

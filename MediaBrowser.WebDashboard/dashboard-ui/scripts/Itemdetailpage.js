@@ -296,7 +296,7 @@
         ApiClient.getItems(Dashboard.getCurrentUserId(), {
 
             Ids: item.SoundtrackIds.join(","),
-            ItemFields: "PrimaryImageAspectRatio,ItemCounts,DisplayMediaType,DateCreated,UserData,AudioInfo",
+            ItemFields: "PrimaryImageAspectRatio,ItemCounts,DateCreated,AudioInfo",
             SortBy: "SortName"
 
         }).done(function (result) {
@@ -461,7 +461,7 @@
 
             ParentId: item.Id,
             SortBy: sortBy,
-            Fields: "PrimaryImageAspectRatio,ItemCounts,DisplayMediaType,DateCreated,UserData,AudioInfo"
+            Fields: "PrimaryImageAspectRatio,ItemCounts,DateCreated,AudioInfo"
 
         }).done(function (result) {
 
@@ -631,7 +631,7 @@
             SortOrder: "Ascending",
             IncludeItemTypes: "MusicVideo",
             Recursive: true,
-            Fields: "UserData,DisplayMediaType,ItemCounts,DateCreated",
+            Fields: "ItemCounts,DateCreated",
             Albums: item.Name
 
         }).done(function (result) {

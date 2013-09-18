@@ -46,13 +46,9 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
 
         private void RunInternal(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var allItems = _libraryManager.RootFolder.RecursiveChildren.ToList();
-
             var userLibraries = _userManager.Users
-                .Select(i => new Tuple<Guid, List<BaseItem>>(i.Id, i.RootFolder.GetRecursiveChildren(i).ToList()))
+                .Select(i => new Tuple<Guid, BaseItem[]>(i.Id, i.RootFolder.GetRecursiveChildren(i).ToArray()))
                 .ToList();
-
-            var allLibraryItems = allItems;
 
             var masterDictionary = new Dictionary<string, Dictionary<Guid, Dictionary<CountType, int>>>(StringComparer.OrdinalIgnoreCase);
 
@@ -122,7 +118,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
                 var names = media
                     .People.Select(i => i.Name)
                     .Distinct(StringComparer.OrdinalIgnoreCase)
-                    .ToList();
+                    .ToArray();
 
                 CountHelpers.SetItemCounts(userId, media, names, masterDictionary);
             }

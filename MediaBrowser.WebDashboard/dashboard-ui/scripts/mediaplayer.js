@@ -941,7 +941,7 @@
             $('.nowPlayingMediaInfo', nowPlayingBar).html(html);
         };
 
-        var getItemFields = "MediaStreams,UserData,DisplayMediaType,Chapters,Path";
+        var getItemFields = "MediaStreams,Chapters,Path";
 
         self.getItemsForPlayback = function (query) {
 

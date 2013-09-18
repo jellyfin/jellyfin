@@ -1,14 +1,14 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -330,6 +330,16 @@ namespace MediaBrowser.Controller.Providers
             return GetFileSystemStamp(item);
         }
 
+        private Dictionary<string, string> _fileStampExtensionsDictionary;
+        private  Dictionary<string, string> FileStampExtensionsDictionary
+        {
+            get
+            {
+                return _fileStampExtensionsDictionary ??
+                       (_fileStampExtensionsDictionary =
+                        FilestampExtensions.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase));
+            }
+        }
         /// <summary>
         /// Gets the file system stamp.
         /// </summary>
@@ -362,20 +372,20 @@ namespace MediaBrowser.Controller.Providers
 
             var sb = new StringBuilder();
 
-            var extensionsList = FilestampExtensions;
-            var extensions = extensionsList.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
+            var extensions = FileStampExtensionsDictionary;
+            var numExtensions = extensions.Count;
 
             // Record the name of each file 
             // Need to sort these because accoring to msdn docs, our i/o methods are not guaranteed in any order
             foreach (var file in resolveArgs.FileSystemChildren
-                .Where(i => IncludeInFileStamp(i, extensions, extensionsList.Length))
+                .Where(i => IncludeInFileStamp(i, extensions, numExtensions))
                 .OrderBy(f => f.Name))
             {
                 sb.Append(file.Name);
             }
 
             foreach (var file in resolveArgs.MetadataFiles
-                .Where(i => IncludeInFileStamp(i, extensions, extensionsList.Length))
+                .Where(i => IncludeInFileStamp(i, extensions, numExtensions))
                 .OrderBy(f => f.Name))
             {
                 sb.Append(file.Name);

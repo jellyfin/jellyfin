@@ -759,7 +759,11 @@ namespace MediaBrowser.Server.Implementations.Dto
             dto.AspectRatio = item.AspectRatio;
 
             dto.BackdropImageTags = GetBackdropImageTags(item);
-            dto.ScreenshotImageTags = GetScreenshotImageTags(item);
+
+            if (fields.Contains(ItemFields.ScreenshotImageTags))
+            {
+                dto.ScreenshotImageTags = GetScreenshotImageTags(item);
+            }
 
             if (fields.Contains(ItemFields.Genres))
             {

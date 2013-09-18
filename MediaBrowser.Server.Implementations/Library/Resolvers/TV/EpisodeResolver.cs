@@ -20,7 +20,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
             var season = args.Parent as Season;
 
             // If the parent is a Season or Series, then this is an Episode if the VideoResolver returns something
-            if (season != null || args.Parent is Series)
+            if (season != null)
             {
                 Episode episode = null;
 
@@ -51,10 +51,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
 
                 if (episode != null)
                 {
-                    if (season != null)
-                    {
-                        episode.ParentIndexNumber = season.IndexNumber;
-                    }
+                    episode.ParentIndexNumber = season.IndexNumber;
                     
                     if (episode.ParentIndexNumber == null)
                     {

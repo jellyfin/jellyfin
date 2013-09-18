@@ -1,11 +1,12 @@
 ﻿using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
 {
@@ -37,6 +38,12 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
             if (args.Parent.IsRoot) return null;
             if (args.Parent is MusicAlbum) return null;
 
+            // Optimization
+            if (args.Parent is BoxSet || args.Parent is Series || args.Parent is Season)
+            {
+                return null;
+            }
+            
             var collectionType = args.GetCollectionType();
 
             // If there's a collection type and it's not music, it can't be a series
@@ -102,8 +109,10 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
             // If list contains at least 2 audio files or at least one and no video files consider it to contain music
             var foundAudio = 0;
 
-            foreach (var fullName in list.Select(file => file.FullName))
+            foreach (var file in list)
             {
+                var fullName = file.FullName;
+
                 if (EntityResolutionHelper.IsAudioFile(fullName)) foundAudio++;
                 if (foundAudio >= 2)
                 {

@@ -3,7 +3,6 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Linq;
 
 namespace MediaBrowser.Controller.Drawing
 {
@@ -61,7 +60,15 @@ namespace MediaBrowser.Controller.Drawing
         /// <returns>ImageCodecInfo.</returns>
         private static ImageCodecInfo GetImageCodecInfo(string mimeType)
         {
-            return Encoders.FirstOrDefault(i => i.MimeType.Equals(mimeType, StringComparison.OrdinalIgnoreCase)) ?? Encoders.FirstOrDefault();
+            foreach (var encoder in Encoders)
+            {
+                if (string.Equals(encoder.MimeType, mimeType, StringComparison.OrdinalIgnoreCase))
+                {
+                    return encoder;
+                }
+            }
+
+            return Encoders.Length == 0 ? null : Encoders[0];
         }
 
         /// <summary>

@@ -92,13 +92,21 @@ namespace MediaBrowser.Server.Implementations.Providers
 
             cancellationToken.ThrowIfCancellationRequested();
 
+            var enableInternetProviders = ConfigurationManager.Configuration.EnableInternetProviders;
+            var excludeTypes = ConfigurationManager.Configuration.InternetProviderExcludeTypes;
+
             // Run the normal providers sequentially in order of priority
-            foreach (var provider in MetadataProviders.Where(p => ProviderSupportsItem(p, item)))
+            foreach (var provider in MetadataProviders)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
+                if (!ProviderSupportsItem(provider, item))
+                {
+                    continue;
+                }
+
                 // Skip if internet providers are currently disabled
-                if (provider.RequiresInternet && !ConfigurationManager.Configuration.EnableInternetProviders)
+                if (provider.RequiresInternet && !enableInternetProviders)
                 {
                     continue;
                 }
@@ -110,7 +118,10 @@ namespace MediaBrowser.Server.Implementations.Providers
                 }
 
                 // Skip if internet provider and this type is not allowed
-                if (provider.RequiresInternet && ConfigurationManager.Configuration.EnableInternetProviders && ConfigurationManager.Configuration.InternetProviderExcludeTypes.Contains(item.GetType().Name, StringComparer.OrdinalIgnoreCase))
+                if (provider.RequiresInternet &&
+                    enableInternetProviders &&
+                    excludeTypes.Length > 0 &&
+                    excludeTypes.Contains(item.GetType().Name, StringComparer.OrdinalIgnoreCase))
                 {
                     continue;
                 }

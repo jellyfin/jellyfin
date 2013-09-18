@@ -208,7 +208,9 @@ namespace MediaBrowser.Model.Web
                 throw new ArgumentNullException("value");
             }
 
-            Add(name, string.Join(",", value.Select(v => v.ToString()).ToArray()));
+            var paramValue = string.Join(",", value.ToArray());
+
+            Add(name, paramValue);
         }
 
         /// <summary>

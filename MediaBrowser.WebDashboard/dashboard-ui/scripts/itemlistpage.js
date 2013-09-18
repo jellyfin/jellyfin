@@ -7,7 +7,7 @@
 
         SortBy: "SortName",
         SortOrder: "Ascending",
-        Fields: "UserData,DisplayMediaType,ItemCounts,DateCreated",
+        Fields: "ItemCounts,DateCreated",
         StartIndex: 0
     };
 
