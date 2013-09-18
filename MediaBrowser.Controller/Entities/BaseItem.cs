@@ -1042,7 +1042,9 @@ namespace MediaBrowser.Controller.Entities
                 throw new ArgumentNullException("user");
             }
 
-            if (user.Configuration.MaxParentalRating == null)
+            var maxAllowedRating = user.Configuration.MaxParentalRating;
+
+            if (maxAllowedRating == null)
             {
                 return true;
             }
@@ -1067,7 +1069,7 @@ namespace MediaBrowser.Controller.Entities
                 return true;
             }
 
-            return value.Value <= user.Configuration.MaxParentalRating.Value;
+            return value.Value <= maxAllowedRating.Value;
         }
 
         /// <summary>

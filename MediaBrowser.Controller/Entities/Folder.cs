@@ -476,7 +476,7 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                LazyInitializer.EnsureInitialized(ref _children, ref _childrenInitialized, ref _childrenSyncLock, LoadChildren);
+                LazyInitializer.EnsureInitialized(ref _children, ref _childrenInitialized, ref _childrenSyncLock, LoadChildrenInternal);
                 return _children;
             }
             private set
@@ -529,16 +529,20 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        private ConcurrentDictionary<Guid, BaseItem> LoadChildrenInternal()
+        {
+            return new ConcurrentDictionary<Guid, BaseItem>(LoadChildren().ToDictionary(i => i.Id));
+        }
 
         /// <summary>
         /// Loads our children.  Validation will occur externally.
         /// We want this sychronous.
         /// </summary>
         /// <returns>ConcurrentBag{BaseItem}.</returns>
-        protected virtual ConcurrentDictionary<Guid, BaseItem> LoadChildren()
+        protected virtual IEnumerable<BaseItem> LoadChildren()
         {
             //just load our children from the repo - the library will be validated and maintained in other processes
-            return new ConcurrentDictionary<Guid, BaseItem>(GetCachedChildren().ToDictionary(i => i.Id));
+            return GetCachedChildren();
         }
 
         /// <summary>
