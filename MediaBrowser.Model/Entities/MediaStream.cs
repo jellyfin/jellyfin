@@ -119,12 +119,6 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value>The level.</value>
         public double? Level { get; set; }
-
-        /// <summary>
-        /// Gets or sets the pixel format.
-        /// </summary>
-        /// <value>The pixel format.</value>
-        public string PixelFormat { get; set; }
     }
 
     /// <summary>

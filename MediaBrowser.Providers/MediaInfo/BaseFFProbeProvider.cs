@@ -212,7 +212,6 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 stream.Width = streamInfo.width;
                 stream.Height = streamInfo.height;
-                stream.PixelFormat = streamInfo.pix_fmt;
                 stream.AspectRatio = streamInfo.display_aspect_ratio;
 
                 stream.AverageFrameRate = GetFrameRate(streamInfo.avg_frame_rate);
