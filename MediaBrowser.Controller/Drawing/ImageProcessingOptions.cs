@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
@@ -35,20 +36,5 @@ namespace MediaBrowser.Controller.Drawing
         public ImageOutputFormat OutputFormat { get; set; }
 
         public ImageOverlay Indicator { get; set; }
-    }
-
-    public enum ImageOutputFormat
-    {
-        Original,
-        Bmp,
-        Gif,
-        Jpg,
-        Png
-    }
-
-    public enum ImageOverlay
-    {
-        None,
-        Watched
     }
 }

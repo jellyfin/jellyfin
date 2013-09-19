@@ -46,6 +46,8 @@
     <Compile Include="Configuration\BaseApplicationConfiguration.cs" />
     <Compile Include="Configuration\ManualLoginCategory.cs" />
     <Compile Include="Configuration\ServerConfiguration.cs" />
+    <Compile Include="Drawing\ImageOverlay.cs" />
+    <Compile Include="Drawing\ImageOutputFormat.cs" />
     <Compile Include="Dto\BaseItemPerson.cs" />
     <Compile Include="Dto\ChapterInfoDto.cs" />
     <Compile Include="Dto\IItemDto.cs" />
