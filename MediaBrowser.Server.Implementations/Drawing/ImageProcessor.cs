@@ -1,24 +1,23 @@
-﻿using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
-using System.Globalization;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Drawing;
-using System;
-using System.Collections.Concurrent;
-using System.IO;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Drawing
 {
@@ -74,11 +73,11 @@ namespace MediaBrowser.Server.Implementations.Drawing
             ImageEnhancers = enhancers.ToArray();
         }
 
-        public async Task ProcessImage(BaseItem entity, ImageType imageType, int imageIndex, string originalImagePath, bool cropWhitespace, DateTime dateModified, Stream toStream, int? width, int? height, int? maxWidth, int? maxHeight, int? quality, List<IImageEnhancer> enhancers)
+        public async Task ProcessImage(ImageProcessingOptions options, Stream toStream)
         {
-            if (entity == null)
+            if (options == null)
             {
-                throw new ArgumentNullException("entity");
+                throw new ArgumentNullException("options");
             }
 
             if (toStream == null)
@@ -86,43 +85,31 @@ namespace MediaBrowser.Server.Implementations.Drawing
                 throw new ArgumentNullException("toStream");
             }
 
-            if (cropWhitespace)
+            var originalImagePath = options.OriginalImagePath;
+            var dateModified = options.OriginalImageDateModified;
+
+            if (options.CropWhiteSpace)
             {
                 originalImagePath = await GetWhitespaceCroppedImage(originalImagePath, dateModified).ConfigureAwait(false);
             }
 
             // No enhancement - don't cache
-            if (enhancers.Count > 0)
+            if (options.Enhancers.Count > 0)
             {
-                try
-                {
-                    // Enhance if we have enhancers
-                    var ehnancedImagePath = await GetEnhancedImage(originalImagePath, dateModified, entity, imageType, imageIndex, enhancers).ConfigureAwait(false);
+                var tuple = await GetEnhancedImage(originalImagePath, dateModified, options.Item, options.ImageType, options.ImageIndex, options.Enhancers).ConfigureAwait(false);
 
-                    // If the path changed update dateModified
-                    if (!ehnancedImagePath.Equals(originalImagePath, StringComparison.OrdinalIgnoreCase))
-                    {
-                        dateModified = File.GetLastWriteTimeUtc(ehnancedImagePath);
-                        originalImagePath = ehnancedImagePath;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.Error("Error enhancing image", ex);
-                }
+                originalImagePath = tuple.Item1;
+                dateModified = tuple.Item2;
             }
 
             var originalImageSize = GetImageSize(originalImagePath, dateModified);
 
             // Determine the output size based on incoming parameters
-            var newSize = DrawingUtils.Resize(originalImageSize, width, height, maxWidth, maxHeight);
+            var newSize = DrawingUtils.Resize(originalImageSize, options.Width, options.Height, options.MaxWidth, options.MaxHeight);
 
-            if (!quality.HasValue)
-            {
-                quality = 90;
-            }
+            var quality = options.Quality ?? 90;
 
-            var cacheFilePath = GetCacheFilePath(originalImagePath, newSize, quality.Value, dateModified);
+            var cacheFilePath = GetCacheFilePath(originalImagePath, newSize, quality, dateModified, options.OutputFormat);
 
             try
             {
@@ -188,12 +175,12 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
                                     thumbnailGraph.DrawImage(originalImage, 0, 0, newWidth, newHeight);
 
-                                    var outputFormat = originalImage.RawFormat;
+                                    var outputFormat = GetOutputFormat(originalImage, options.OutputFormat);
 
                                     using (var outputMemoryStream = new MemoryStream())
                                     {
                                         // Save to the memory stream
-                                        thumbnail.Save(outputFormat, outputMemoryStream, quality.Value);
+                                        thumbnail.Save(outputFormat, outputMemoryStream, quality);
 
                                         var bytes = outputMemoryStream.ToArray();
 
@@ -214,6 +201,29 @@ namespace MediaBrowser.Server.Implementations.Drawing
             finally
             {
                 semaphore.Release();
+            }
+        }
+
+        /// <summary>
+        /// Gets the output format.
+        /// </summary>
+        /// <param name="image">The image.</param>
+        /// <param name="outputFormat">The output format.</param>
+        /// <returns>ImageFormat.</returns>
+        private ImageFormat GetOutputFormat(Image image, ImageOutputFormat outputFormat)
+        {
+            switch (outputFormat)
+            {
+                case ImageOutputFormat.Bmp:
+                    return ImageFormat.Bmp;
+                case ImageOutputFormat.Gif:
+                    return ImageFormat.Gif;
+                case ImageOutputFormat.Jpg:
+                    return ImageFormat.Jpeg;
+                case ImageOutputFormat.Png:
+                    return ImageFormat.Png;
+                default:
+                    return image.RawFormat;
             }
         }
 
@@ -317,7 +327,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
         /// <param name="quality">Quality level, from 0-100. Currently only applies to JPG. The default value should suffice.</param>
         /// <param name="dateModified">The last modified date of the image</param>
         /// <returns>System.String.</returns>
-        private string GetCacheFilePath(string originalPath, ImageSize outputSize, int quality, DateTime dateModified)
+        private string GetCacheFilePath(string originalPath, ImageSize outputSize, int quality, DateTime dateModified, ImageOutputFormat format)
         {
             var filename = originalPath;
 
@@ -328,6 +338,11 @@ namespace MediaBrowser.Server.Implementations.Drawing
             filename += "quality=" + quality;
 
             filename += "datemodified=" + dateModified.Ticks;
+
+            if (format != ImageOutputFormat.Original)
+            {
+                filename += "format=" + format;
+            }
 
             return GetCachePath(_resizedImageCachePath, filename, Path.GetExtension(originalPath));
         }
@@ -452,7 +467,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
             var dateModified = item.GetImageDateModified(imagePath);
 
-            var supportedEnhancers = GetSupportedEnhancers(item, imageType).ToList();
+            var supportedEnhancers = GetSupportedEnhancers(item, imageType);
 
             return GetImageCacheTag(item, imageType, imagePath, dateModified, supportedEnhancers);
         }
@@ -491,39 +506,29 @@ namespace MediaBrowser.Server.Implementations.Drawing
             return string.Join("|", cacheKeys.ToArray()).GetMD5();
         }
 
-        /// <summary>
-        /// Gets the enhanced image.
-        /// </summary>
-        /// <param name="originalImagePath">The original image path.</param>
-        /// <param name="dateModified">The date modified.</param>
-        /// <param name="item">The item.</param>
-        /// <param name="imageType">Type of the image.</param>
-        /// <param name="imageIndex">Index of the image.</param>
-        /// <returns>Task{System.String}.</returns>
-        /// <exception cref="System.ArgumentNullException">item</exception>
-        public Task<string> GetEnhancedImage(string originalImagePath, DateTime dateModified, BaseItem item, ImageType imageType, int imageIndex)
+        private async Task<Tuple<string,DateTime>> GetEnhancedImage(string originalImagePath, DateTime dateModified, BaseItem item,
+                                                    ImageType imageType, int imageIndex,
+                                                    List<IImageEnhancer> enhancers)
         {
-            if (item == null)
+            try
             {
-                throw new ArgumentNullException("item");
+                // Enhance if we have enhancers
+                var ehnancedImagePath = await GetEnhancedImageInternal(originalImagePath, dateModified, item, imageType, imageIndex, enhancers).ConfigureAwait(false);
+
+                // If the path changed update dateModified
+                if (!ehnancedImagePath.Equals(originalImagePath, StringComparison.OrdinalIgnoreCase))
+                {
+                    dateModified = File.GetLastWriteTimeUtc(ehnancedImagePath);
+
+                    return new Tuple<string, DateTime>(ehnancedImagePath, dateModified);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error("Error enhancing image", ex);
             }
 
-            var supportedImageEnhancers = ImageEnhancers.Where(i =>
-            {
-                try
-                {
-                    return i.Supports(item, imageType);
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error in image enhancer: {0}", ex, i.GetType().Name);
-
-                    return false;
-                }
-
-            }).ToList();
-
-            return GetEnhancedImage(originalImagePath, dateModified, item, imageType, imageIndex, supportedImageEnhancers);
+            return new Tuple<string, DateTime>(originalImagePath, dateModified);
         }
 
         /// <summary>
@@ -537,7 +542,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
         /// <param name="supportedEnhancers">The supported enhancers.</param>
         /// <returns>System.String.</returns>
         /// <exception cref="System.ArgumentNullException">originalImagePath</exception>
-        public async Task<string> GetEnhancedImage(string originalImagePath, DateTime dateModified, BaseItem item, ImageType imageType, int imageIndex, List<IImageEnhancer> supportedEnhancers)
+        private async Task<string> GetEnhancedImageInternal(string originalImagePath, DateTime dateModified, BaseItem item, ImageType imageType, int imageIndex, List<IImageEnhancer> supportedEnhancers)
         {
             if (string.IsNullOrEmpty(originalImagePath))
             {
