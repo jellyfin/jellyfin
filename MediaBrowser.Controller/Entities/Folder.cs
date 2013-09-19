@@ -103,7 +103,33 @@ namespace MediaBrowser.Controller.Entities
 
             await LibraryManager.CreateItem(item, cancellationToken).ConfigureAwait(false);
 
-            await ItemRepository.SaveChildren(Id, _children.ToList().Select(i => i.Id), cancellationToken).ConfigureAwait(false);
+            await ItemRepository.SaveChildren(Id, _children.Select(i => i.Id).ToList(), cancellationToken).ConfigureAwait(false);
+        }
+
+        protected void AddChildrenInternal(IEnumerable<BaseItem> children)
+        {
+            foreach (var child in children)
+            {
+                _children.Add(child);
+            }
+        }
+
+        protected void RemoveChildrenInternal(IEnumerable<BaseItem> children)
+        {
+            lock (ChildrenSyncLock)
+            {
+                _children = new ConcurrentBag<BaseItem>(_children.Except(children));
+            }
+        }
+
+        protected void ClearChildrenInternal()
+        {
+            BaseItem removed;
+
+            while (_children.TryTake(out removed))
+            {
+
+            }
         }
 
         /// <summary>
@@ -132,22 +158,13 @@ namespace MediaBrowser.Controller.Entities
         /// <exception cref="System.InvalidOperationException">Unable to remove  + item.Name</exception>
         public Task RemoveChild(BaseItem item, CancellationToken cancellationToken)
         {
-            List<BaseItem> newChildren;
-
-            lock (ChildrenSyncLock)
-            {
-                newChildren = _children.ToList();
-
-                newChildren.Remove(item);
-
-                _children = new ConcurrentBag<BaseItem>(newChildren);
-            }
+            RemoveChildrenInternal(new[] { item });
 
             item.Parent = null;
 
             LibraryManager.ReportItemRemoved(item);
 
-            return ItemRepository.SaveChildren(Id, newChildren.Select(i => i.Id), cancellationToken);
+            return ItemRepository.SaveChildren(Id, ActualChildren.Select(i => i.Id).ToList(), cancellationToken);
         }
 
         #region Indexing
@@ -726,7 +743,7 @@ namespace MediaBrowser.Controller.Entities
                     Logger.Debug("** " + item.Name + " Added to library.");
                 }
 
-                await ItemRepository.SaveChildren(Id, _children.ToList().Select(i => i.Id), cancellationToken).ConfigureAwait(false);
+                await ItemRepository.SaveChildren(Id, _children.Select(i => i.Id).ToList(), cancellationToken).ConfigureAwait(false);
 
                 //force the indexes to rebuild next time
                 if (IndexCache != null)
