@@ -134,7 +134,7 @@ namespace MediaBrowser.Controller.Entities
         {
             List<BaseItem> newChildren;
 
-            lock (_childrenSyncLock)
+            lock (ChildrenSyncLock)
             {
                 newChildren = _children.ToList();
 
@@ -477,7 +477,7 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// The _children sync lock
         /// </summary>
-        private object _childrenSyncLock = new object();
+        protected object ChildrenSyncLock = new object();
         /// <summary>
         /// Gets or sets the actual children.
         /// </summary>
@@ -486,7 +486,7 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                LazyInitializer.EnsureInitialized(ref _children, ref _childrenInitialized, ref _childrenSyncLock, LoadChildrenInternal);
+                LazyInitializer.EnsureInitialized(ref _children, ref _childrenInitialized, ref ChildrenSyncLock, LoadChildrenInternal);
                 return _children;
             }
         }
@@ -711,7 +711,7 @@ namespace MediaBrowser.Controller.Entities
 
                 if (actualRemovals.Count > 0)
                 {
-                    lock (_childrenSyncLock)
+                    lock (ChildrenSyncLock)
                     {
                         _children = new ConcurrentBag<BaseItem>(_children.Except(actualRemovals));
                     }
