@@ -67,6 +67,12 @@
     <Compile Include="..\MediaBrowser.Model\Drawing\DrawingUtils.cs">
       <Link>Drawing\DrawingUtils.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Drawing\ImageOutputFormat.cs">
+      <Link>Drawing\ImageOutputFormat.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Drawing\ImageOverlay.cs">
+      <Link>Drawing\ImageOverlay.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Dto\BaseItemDto.cs">
       <Link>Dto\BaseItemDto.cs</Link>
     </Compile>

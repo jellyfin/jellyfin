@@ -1,5 +1,6 @@
-﻿using System;
+﻿using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
+using System;
 
 namespace MediaBrowser.Model.Dto
 {
@@ -69,9 +70,16 @@ namespace MediaBrowser.Model.Dto
         /// <value><c>true</c> if [enable image enhancers]; otherwise, <c>false</c>.</value>
         public bool EnableImageEnhancers { get; set; }
 
+        public ImageOutputFormat Format { get; set; }
+
+        public ImageOverlay Indicator { get; set; }
+        
         public ImageOptions()
         {
             EnableImageEnhancers = true;
+
+            Format = ImageOutputFormat.Original;
+            Indicator = ImageOverlay.None;
         }
     }
 }

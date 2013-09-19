@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Controller.Drawing;
+﻿using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
 using ServiceStack.ServiceHost;
 
