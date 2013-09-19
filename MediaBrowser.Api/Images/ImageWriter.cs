@@ -89,7 +89,8 @@ namespace MediaBrowser.Api.Images
                 OriginalImagePath = OriginalImagePath,
                 Quality = Request.Quality,
                 Width = Request.Width,
-                OutputFormat = Request.Format
+                OutputFormat = Request.Format,
+                Indicator = Request.Indicator
             };
 
             return ImageProcessor.ProcessImage(options, responseStream);

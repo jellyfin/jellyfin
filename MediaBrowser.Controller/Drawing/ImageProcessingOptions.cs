@@ -33,6 +33,8 @@ namespace MediaBrowser.Controller.Drawing
         public List<IImageEnhancer> Enhancers { get; set; }
 
         public ImageOutputFormat OutputFormat { get; set; }
+
+        public ImageOverlay Indicator { get; set; }
     }
 
     public enum ImageOutputFormat
@@ -42,5 +44,11 @@ namespace MediaBrowser.Controller.Drawing
         Gif,
         Jpg,
         Png
+    }
+
+    public enum ImageOverlay
+    {
+        None,
+        Watched
     }
 }

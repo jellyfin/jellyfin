@@ -747,7 +747,7 @@ namespace MediaBrowser.Api.Images
                 throw new ResourceNotFoundException(string.Format("File not found: {0}", imagePath));
             }
 
-            var contentType = MimeTypes.GetMimeType(imagePath);
+            var contentType = GetMimeType(request.Format, imagePath);
 
             var cacheGuid = _imageProcessor.GetImageCacheTag(item, request.Type, imagePath, originalFileImageDateModified, supportedImageEnhancers);
 
@@ -772,6 +772,28 @@ namespace MediaBrowser.Api.Images
                 ImageProcessor = _imageProcessor
 
             }, contentType);
+        }
+
+        private string GetMimeType(ImageOutputFormat format, string path)
+        {
+            if (format == ImageOutputFormat.Bmp)
+            {
+                return MimeTypes.GetMimeType("i.bmp");
+            }
+            if (format == ImageOutputFormat.Gif)
+            {
+                return MimeTypes.GetMimeType("i.gif");
+            }
+            if (format == ImageOutputFormat.Jpg)
+            {
+                return MimeTypes.GetMimeType("i.jpg");
+            }
+            if (format == ImageOutputFormat.Png)
+            {
+                return MimeTypes.GetMimeType("i.png");
+            }
+
+            return MimeTypes.GetMimeType(path);
         }
 
         /// <summary>

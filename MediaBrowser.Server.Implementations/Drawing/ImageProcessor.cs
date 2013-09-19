@@ -109,7 +109,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
             var quality = options.Quality ?? 90;
 
-            var cacheFilePath = GetCacheFilePath(originalImagePath, newSize, quality, dateModified, options.OutputFormat);
+            var cacheFilePath = GetCacheFilePath(originalImagePath, newSize, quality, dateModified, options.OutputFormat, options.Indicator);
 
             try
             {
@@ -175,6 +175,8 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
                                     thumbnailGraph.DrawImage(originalImage, 0, 0, newWidth, newHeight);
 
+                                    DrawIndicator(thumbnailGraph, newWidth, newHeight, options.Indicator);
+
                                     var outputFormat = GetOutputFormat(originalImage, options.OutputFormat);
 
                                     using (var outputMemoryStream = new MemoryStream())
@@ -201,6 +203,20 @@ namespace MediaBrowser.Server.Implementations.Drawing
             finally
             {
                 semaphore.Release();
+            }
+        }
+
+        private WatchedIndicatorDrawer _watchedDrawer;
+
+        private void DrawIndicator(Graphics graphics, int imageWidth, int imageHeight, ImageOverlay indicator)
+        {
+            if (indicator == ImageOverlay.Watched)
+            {
+                _watchedDrawer = _watchedDrawer ?? (_watchedDrawer = new WatchedIndicatorDrawer());
+
+                var currentImageSize = new Size(imageWidth, imageHeight);
+
+                _watchedDrawer.Process(graphics, currentImageSize);
             }
         }
 
@@ -322,12 +338,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
         /// <summary>
         /// Gets the cache file path based on a set of parameters
         /// </summary>
-        /// <param name="originalPath">The path to the original image file</param>
-        /// <param name="outputSize">The size to output the image in</param>
-        /// <param name="quality">Quality level, from 0-100. Currently only applies to JPG. The default value should suffice.</param>
-        /// <param name="dateModified">The last modified date of the image</param>
-        /// <returns>System.String.</returns>
-        private string GetCacheFilePath(string originalPath, ImageSize outputSize, int quality, DateTime dateModified, ImageOutputFormat format)
+        private string GetCacheFilePath(string originalPath, ImageSize outputSize, int quality, DateTime dateModified, ImageOutputFormat format, ImageOverlay overlay)
         {
             var filename = originalPath;
 
@@ -342,6 +353,11 @@ namespace MediaBrowser.Server.Implementations.Drawing
             if (format != ImageOutputFormat.Original)
             {
                 filename += "format=" + format;
+            }
+
+            if (overlay != ImageOverlay.None)
+            {
+                filename += "overlay=" + overlay;
             }
 
             return GetCachePath(_resizedImageCachePath, filename, Path.GetExtension(originalPath));
@@ -506,7 +522,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
             return string.Join("|", cacheKeys.ToArray()).GetMD5();
         }
 
-        private async Task<Tuple<string,DateTime>> GetEnhancedImage(string originalImagePath, DateTime dateModified, BaseItem item,
+        private async Task<Tuple<string, DateTime>> GetEnhancedImage(string originalImagePath, DateTime dateModified, BaseItem item,
                                                     ImageType imageType, int imageIndex,
                                                     List<IImageEnhancer> enhancers)
         {
