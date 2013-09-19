@@ -99,14 +99,11 @@ namespace MediaBrowser.Controller.Entities
                 item.DateModified = DateTime.UtcNow;
             }
 
-            if (!_children.TryAdd(item.Id, item))
-            {
-                throw new InvalidOperationException("Unable to add " + item.Name);
-            }
+            _children.Add(item);
 
             await LibraryManager.CreateItem(item, cancellationToken).ConfigureAwait(false);
 
-            await ItemRepository.SaveChildren(Id, _children.Values.ToList().Select(i => i.Id), cancellationToken).ConfigureAwait(false);
+            await ItemRepository.SaveChildren(Id, _children.ToList().Select(i => i.Id), cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -135,18 +132,22 @@ namespace MediaBrowser.Controller.Entities
         /// <exception cref="System.InvalidOperationException">Unable to remove  + item.Name</exception>
         public Task RemoveChild(BaseItem item, CancellationToken cancellationToken)
         {
-            BaseItem removed;
+            List<BaseItem> newChildren;
 
-            if (!_children.TryRemove(item.Id, out removed))
+            lock (_childrenSyncLock)
             {
-                throw new InvalidOperationException("Unable to remove " + item.Name);
+                newChildren = _children.ToList();
+
+                newChildren.Remove(item);
+
+                _children = new ConcurrentBag<BaseItem>(newChildren);
             }
 
             item.Parent = null;
 
             LibraryManager.ReportItemRemoved(item);
 
-            return ItemRepository.SaveChildren(Id, _children.Values.ToList().Select(i => i.Id), cancellationToken);
+            return ItemRepository.SaveChildren(Id, newChildren.Select(i => i.Id), cancellationToken);
         }
 
         #region Indexing
@@ -411,9 +412,13 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>IEnumerable{BaseItem}.</returns>
         private IEnumerable<BaseItem> GetIndexedChildren(User user, string indexBy)
         {
-            List<BaseItem> result;
+            List<BaseItem> result = null;
             var cacheKey = user.Name + indexBy;
-            IndexCache.TryGetValue(cacheKey, out result);
+
+            if (IndexCache != null)
+            {
+                IndexCache.TryGetValue(cacheKey, out result);
+            }
 
             if (result == null)
             {
@@ -438,7 +443,7 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// The index cache
         /// </summary>
-        protected ConcurrentDictionary<string, List<BaseItem>> IndexCache = new ConcurrentDictionary<string, List<BaseItem>>(StringComparer.OrdinalIgnoreCase);
+        protected ConcurrentDictionary<string, List<BaseItem>> IndexCache;
 
         /// <summary>
         /// Builds the index.
@@ -449,6 +454,11 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>List{BaseItem}.</returns>
         protected virtual List<BaseItem> BuildIndex(string indexKey, Func<User, IEnumerable<BaseItem>> indexFunction, User user)
         {
+            if (IndexCache == null)
+            {
+                IndexCache = new ConcurrentDictionary<string, List<BaseItem>>();
+            }
+
             return indexFunction != null
                        ? IndexCache[user.Name + indexKey] = indexFunction(user).ToList()
                        : null;
@@ -459,7 +469,7 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// The children
         /// </summary>
-        private ConcurrentDictionary<Guid, BaseItem> _children;
+        private ConcurrentBag<BaseItem> _children;
         /// <summary>
         /// The _children initialized
         /// </summary>
@@ -472,21 +482,12 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the actual children.
         /// </summary>
         /// <value>The actual children.</value>
-        protected virtual ConcurrentDictionary<Guid, BaseItem> ActualChildren
+        protected virtual IEnumerable<BaseItem> ActualChildren
         {
             get
             {
                 LazyInitializer.EnsureInitialized(ref _children, ref _childrenInitialized, ref _childrenSyncLock, LoadChildrenInternal);
                 return _children;
-            }
-            private set
-            {
-                _children = value;
-
-                if (value == null)
-                {
-                    _childrenInitialized = false;
-                }
             }
         }
 
@@ -497,10 +498,7 @@ namespace MediaBrowser.Controller.Entities
         [IgnoreDataMember]
         public IEnumerable<BaseItem> Children
         {
-            get
-            {
-                return ActualChildren.Values.ToArray();
-            }
+            get { return ActualChildren; }
         }
 
         /// <summary>
@@ -529,9 +527,9 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        private ConcurrentDictionary<Guid, BaseItem> LoadChildrenInternal()
+        private ConcurrentBag<BaseItem> LoadChildrenInternal()
         {
-            return new ConcurrentDictionary<Guid, BaseItem>(LoadChildren().ToDictionary(i => i.Id));
+            return new ConcurrentBag<BaseItem>(LoadChildren());
         }
 
         /// <summary>
@@ -642,7 +640,7 @@ namespace MediaBrowser.Controller.Entities
             progress.Report(5);
 
             //build a dictionary of the current children we have now by Id so we can compare quickly and easily
-            var currentChildren = ActualChildren;
+            var currentChildren = ActualChildren.ToDictionary(i => i.Id);
 
             //create a list for our validated children
             var validChildren = new ConcurrentBag<Tuple<BaseItem, bool>>();
@@ -694,22 +692,14 @@ namespace MediaBrowser.Controller.Entities
                 //that's all the new and changed ones - now see if there are any that are missing
                 var itemsRemoved = currentChildren.Values.Except(newChildren).ToList();
 
+                var actualRemovals = new List<BaseItem>();
+
                 foreach (var item in itemsRemoved)
                 {
                     if (IsRootPathAvailable(item.Path))
                     {
                         item.IsOffline = false;
-
-                        BaseItem removed;
-
-                        if (!_children.TryRemove(item.Id, out removed))
-                        {
-                            Logger.Error("Failed to remove {0}", item.Name);
-                        }
-                        else
-                        {
-                            LibraryManager.ReportItemRemoved(item);
-                        }
+                        actualRemovals.Add(item);
                     }
                     else
                     {
@@ -719,24 +709,30 @@ namespace MediaBrowser.Controller.Entities
                     }
                 }
 
+                if (actualRemovals.Count > 0)
+                {
+                    lock (_childrenSyncLock)
+                    {
+                        _children = new ConcurrentBag<BaseItem>(_children.Except(actualRemovals));
+                    }
+                }
+
                 await LibraryManager.CreateItems(newItems, cancellationToken).ConfigureAwait(false);
 
                 foreach (var item in newItems)
                 {
-                    if (!_children.TryAdd(item.Id, item))
-                    {
-                        Logger.Error("Failed to add {0}", item.Name);
-                    }
-                    else
-                    {
-                        Logger.Debug("** " + item.Name + " Added to library.");
-                    }
+                    _children.Add(item);
+
+                    Logger.Debug("** " + item.Name + " Added to library.");
                 }
 
-                await ItemRepository.SaveChildren(Id, _children.Values.ToList().Select(i => i.Id), cancellationToken).ConfigureAwait(false);
+                await ItemRepository.SaveChildren(Id, _children.ToList().Select(i => i.Id), cancellationToken).ConfigureAwait(false);
 
                 //force the indexes to rebuild next time
-                IndexCache.Clear();
+                if (IndexCache != null)
+                {
+                    IndexCache.Clear();
+                }
             }
 
             progress.Report(10);
@@ -949,7 +945,7 @@ namespace MediaBrowser.Controller.Entities
             }
 
             // If indexed is false or the indexing function is null
-            return children.Where(c => c.IsVisible(user));
+            return children.AsParallel().Where(c => c.IsVisible(user)).AsEnumerable();
         }
 
         /// <summary>
@@ -970,7 +966,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (includeLinkedChildren)
             {
-                children = children.DistinctBy(i => i.Id);
+                children = children.Distinct();
             }
 
             return children;
@@ -1028,7 +1024,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 throw new ArgumentException("Encountered linked child with empty path.");
             }
-                    
+
             var item = LibraryManager.RootFolder.FindByPath(info.Path);
 
             if (item == null)

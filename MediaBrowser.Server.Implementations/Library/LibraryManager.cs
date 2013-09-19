@@ -341,7 +341,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             items.Add(RootFolder);
 
-            // Need to use DistinctBy Id because there could be multiple instances with the same id
+            // Need to use Distinct because there could be multiple instances with the same id
             // due to sharing the default library
             var userRootFolders = _userManager.Users.Select(i => i.RootFolder)
                 .Distinct()
@@ -357,9 +357,14 @@ namespace MediaBrowser.Server.Implementations.Library
 
             items.AddRange(userFolders);
 
-            var disctinctItems = items.DistinctBy(i => i.Id).ToList();
+            var dictionary = new ConcurrentDictionary<Guid, BaseItem>();
 
-            return new ConcurrentDictionary<Guid, BaseItem>(disctinctItems.ToDictionary(i => i.Id));
+            foreach (var item in items)
+            {
+                dictionary[item.Id] = item;
+            }
+
+            return dictionary;
         }
 
         /// <summary>

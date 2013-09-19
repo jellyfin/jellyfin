@@ -61,7 +61,10 @@ namespace MediaBrowser.Controller.Entities
         {
             //we don't directly validate our children
             //but we do need to clear out the index cache...
-            IndexCache = new ConcurrentDictionary<string, List<BaseItem>>(StringComparer.OrdinalIgnoreCase);
+            if (IndexCache != null)
+            {
+                IndexCache.Clear();
+            }
 
             return NullTaskResult;
         }
@@ -102,7 +105,7 @@ namespace MediaBrowser.Controller.Entities
         /// Our children are actually just references to the ones in the physical root...
         /// </summary>
         /// <value>The actual children.</value>
-        protected override ConcurrentDictionary<Guid, BaseItem> ActualChildren
+        protected override IEnumerable<BaseItem> ActualChildren
         {
             get
             {
@@ -115,16 +118,14 @@ namespace MediaBrowser.Controller.Entities
                 catch (IOException ex)
                 {
                     Logger.ErrorException("Error getting ResolveArgs for {0}", ex, Path);
-                    return new ConcurrentDictionary<Guid, BaseItem>();
+                    return new BaseItem[] { };
                 }
 
-                var ourChildren =
+                return
                     LibraryManager.RootFolder.Children
                     .OfType<Folder>()
                     .Where(i => i.Path != null && locationsDicionary.ContainsKey(i.Path))
                     .SelectMany(c => c.Children);
-
-                return new ConcurrentDictionary<Guid, BaseItem>(ourChildren.ToDictionary(i => i.Id));
             }
         }
     }
