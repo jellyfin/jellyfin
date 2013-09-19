@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Entities;
+﻿using MediaBrowser.Controller.Drawing;
+using MediaBrowser.Model.Entities;
 using ServiceStack.ServiceHost;
 
 namespace MediaBrowser.Api.Images
@@ -52,9 +53,14 @@ namespace MediaBrowser.Api.Images
         [ApiMember(Name = "EnableImageEnhancers", Description = "Enable or disable image enhancers such as cover art.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool EnableImageEnhancers { get; set; }
 
+        [ApiMember(Name = "Format", Description = "Determines the output foramt of the image - original,gif,jpg,png", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public ImageOutputFormat Format { get; set; }
+        
         public ImageRequest()
         {
             EnableImageEnhancers = true;
+
+            Format = ImageOutputFormat.Original;
         }
     }
 

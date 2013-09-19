@@ -75,9 +75,24 @@ namespace MediaBrowser.Api.Images
                 cropwhitespace = Request.CropWhitespace.Value;
             }
 
-            return ImageProcessor.ProcessImage(Item, Request.Type, Request.Index ?? 0, OriginalImagePath, cropwhitespace,
-                                                    OriginalImageDateModified, responseStream, Request.Width, Request.Height, Request.MaxWidth,
-                                                    Request.MaxHeight, Request.Quality, Enhancers);
+            var options = new ImageProcessingOptions
+            {
+                CropWhiteSpace = cropwhitespace,
+                Enhancers = Enhancers,
+                Height = Request.Height,
+                ImageIndex = Request.Index ?? 0,
+                ImageType = Request.Type,
+                Item = Item,
+                MaxHeight = Request.MaxHeight,
+                MaxWidth = Request.MaxWidth,
+                OriginalImageDateModified = OriginalImageDateModified,
+                OriginalImagePath = OriginalImagePath,
+                Quality = Request.Quality,
+                Width = Request.Width,
+                OutputFormat = Request.Format
+            };
+
+            return ImageProcessor.ProcessImage(options, responseStream);
         }
     }
 }

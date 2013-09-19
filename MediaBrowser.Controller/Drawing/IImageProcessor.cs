@@ -73,22 +73,9 @@ namespace MediaBrowser.Controller.Drawing
         /// <summary>
         /// Processes the image.
         /// </summary>
-        /// <param name="entity">The entity.</param>
-        /// <param name="imageType">Type of the image.</param>
-        /// <param name="imageIndex">Index of the image.</param>
-        /// <param name="originalImagePath">The original image path.</param>
-        /// <param name="cropWhitespace">if set to <c>true</c> [crop whitespace].</param>
-        /// <param name="dateModified">The date modified.</param>
+        /// <param name="options">The options.</param>
         /// <param name="toStream">To stream.</param>
-        /// <param name="width">The width.</param>
-        /// <param name="height">The height.</param>
-        /// <param name="maxWidth">Width of the max.</param>
-        /// <param name="maxHeight">Height of the max.</param>
-        /// <param name="quality">The quality.</param>
-        /// <param name="enhancers">The enhancers.</param>
         /// <returns>Task.</returns>
-        Task ProcessImage(BaseItem entity, ImageType imageType, int imageIndex, string originalImagePath, bool cropWhitespace,
-                     DateTime dateModified, Stream toStream, int? width, int? height, int? maxWidth, int? maxHeight,
-                     int? quality, List<IImageEnhancer> enhancers);
+        Task ProcessImage(ImageProcessingOptions options, Stream toStream);
     }
 }

@@ -221,7 +221,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>System.Object.</returns>
         public object Get(GetItems request)
         {
-            var result = GetItems(request).Result;
+            var result = GetItems(request);
 
             return ToOptimizedResult(result);
         }
@@ -231,7 +231,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>Task{ItemsResult}.</returns>
-        private async Task<ItemsResult> GetItems(GetItems request)
+        private ItemsResult GetItems(GetItems request)
         {
             var user = _userManager.GetUserById(request.UserId);
 

@@ -72,6 +72,7 @@
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
     <Compile Include="Drawing\IImageProcessor.cs" />
+    <Compile Include="Drawing\ImageProcessingOptions.cs" />
     <Compile Include="Dto\IDtoService.cs" />
     <Compile Include="Entities\AdultVideo.cs" />
     <Compile Include="Entities\Audio\IHasAlbumArtist.cs" />
