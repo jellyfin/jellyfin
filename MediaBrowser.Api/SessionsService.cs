@@ -25,6 +25,9 @@ namespace MediaBrowser.Api
         /// <value><c>null</c> if [supports remote control] contains no value, <c>true</c> if [supports remote control]; otherwise, <c>false</c>.</value>
         [ApiMember(Name = "SupportsRemoteControl", Description = "Optional. Filter by sessions that can be remote controlled.", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
         public bool? SupportsRemoteControl { get; set; }
+
+        [ApiMember(Name = "ControllableByUserId", Description = "Optional. Filter by sessions that a given user is allowed to remote control.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public Guid? ControllableByUserId { get; set; }
     }
 
     /// <summary>

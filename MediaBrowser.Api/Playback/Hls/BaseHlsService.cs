@@ -247,7 +247,16 @@ namespace MediaBrowser.Api.Playback.Hls
         {
             var probeSize = GetProbeSizeArgument(state.Item);
 
-            var args = string.Format("-itsoffset 1 {0} {1} {2} -i {3}{4} -threads 0 {5} {6} -sc_threshold 0 {7} -hls_time 10 -start_number 0 -hls_list_size 1440 \"{8}\"",
+            var hlsVideoRequest = state.VideoRequest as GetHlsVideoStream;
+
+            var itsOffsetMs = hlsVideoRequest == null
+                                       ? 0
+                                       : ((GetHlsVideoStream) state.VideoRequest).TimeStampOffsetMs;
+
+            var itsOffset = itsOffsetMs == 0 ? string.Empty : string.Format("-itsoffset {0} ", TimeSpan.FromMilliseconds(itsOffsetMs).TotalSeconds);
+
+            var args = string.Format("{0}{1} {2} {3} -i {4}{5} -threads 0 {6} {7} -sc_threshold 0 {8} -hls_time 10 -start_number 0 -hls_list_size 1440 \"{9}\"",
+                itsOffset,
                 probeSize,
                 GetUserAgentParam(state.Item),
                 GetFastSeekCommandLineParameter(state.Request),
@@ -258,8 +267,6 @@ namespace MediaBrowser.Api.Playback.Hls
                 GetAudioArguments(state),
                 outputPath
                 ).Trim();
-
-            var hlsVideoRequest = state.VideoRequest as GetHlsVideoStream;
 
             if (hlsVideoRequest != null)
             {
