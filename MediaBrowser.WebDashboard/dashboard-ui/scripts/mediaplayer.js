@@ -1562,7 +1562,7 @@
                 options.push({ name: '1080p', maxWidth: 1920, videoBitrate: 2500000 });
             }
 
-            if (maxAllowedWidth >= 1280) {
+            if (maxAllowedWidth >= 1270) {
                 options.push({ name: '720p+', maxWidth: 1280, videoBitrate: 2000000 });
                 options.push({ name: '720p', maxWidth: 1280, videoBitrate: 1000000 });
             }
