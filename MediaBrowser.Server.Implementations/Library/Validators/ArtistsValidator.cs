@@ -72,6 +72,12 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
 
             var numComplete = 0;
 
+            var userLibraries = _userManager.Users
+                .Select(i => new Tuple<Guid, IHasArtist[]>(i.Id, i.RootFolder.GetRecursiveChildren(i).OfType<IHasArtist>().ToArray()))
+                .ToArray();
+
+            var numArtists = allArtists.Count;
+
             foreach (var artist in allArtists)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -106,14 +112,14 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
                 // Populate counts of items
                 //SetItemCounts(artist, null, allItems.OfType<IHasArtist>());
 
-                foreach (var user in _userManager.Users.ToArray())
+                foreach (var lib in userLibraries)
                 {
-                    SetItemCounts(artist, user.Id, user.RootFolder.GetRecursiveChildren(user).OfType<IHasArtist>().ToArray());
+                    SetItemCounts(artist, lib.Item1, lib.Item2);
                 }
 
                 numComplete++;
                 double percent = numComplete;
-                percent /= allArtists.Length;
+                percent /= numArtists;
                 percent *= 20;
 
                 progress.Report(80 + percent);
@@ -180,7 +186,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
         /// <returns>Task{Artist[]}.</returns>
-        private async Task<Artist[]> GetAllArtists(IEnumerable<Audio> allSongs, CancellationToken cancellationToken, IProgress<double> progress)
+        private async Task<ConcurrentBag<Artist>> GetAllArtists(IEnumerable<Audio> allSongs, CancellationToken cancellationToken, IProgress<double> progress)
         {
             var allArtists = allSongs
                 .SelectMany(i =>
@@ -251,7 +257,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
 
-            return returnArtists.ToArray();
+            return returnArtists;
         }
 
         /// <summary>
