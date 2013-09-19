@@ -1030,12 +1030,17 @@
 
         var self = this;
 
+        var sessionQuery = {
+            SupportsRemoteControl: true,
+            ControllableByUserId: Dashboard.getCurrentUserId()
+        };
+
         self.showMenuForItem = function (options) {
-            showMenuForItem(options, ApiClient.getSessions({ SupportsRemoteControl: true }));
+            showMenuForItem(options, ApiClient.getSessions(sessionQuery));
         };
 
         self.showMenu = function () {
-            ApiClient.getSessions({ SupportsRemoteControl: true }).done(function (sessions) {
+            ApiClient.getSessions(sessionQuery).done(function (sessions) {
 
                 showMenu(sessions);
 

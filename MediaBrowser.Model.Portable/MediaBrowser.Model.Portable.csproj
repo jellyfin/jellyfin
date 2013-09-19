@@ -296,6 +296,9 @@
     <Compile Include="..\MediaBrowser.Model\Querying\PersonsQuery.cs">
       <Link>Querying\PersonsQuery.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Querying\SessionQuery.cs">
+      <Link>Querying\SessionQuery.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Querying\SimilarItemsQuery.cs">
       <Link>Querying\SimilarItemsQuery.cs</Link>
     </Compile>

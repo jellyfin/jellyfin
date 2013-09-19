@@ -187,7 +187,7 @@ namespace MediaBrowser.Model.ApiClient
         /// Gets active client sessions.
         /// </summary>
         /// <returns>Task{SessionInfoDto[]}.</returns>
-        Task<SessionInfoDto[]> GetClientSessionsAsync();
+        Task<SessionInfoDto[]> GetClientSessionsAsync(SessionQuery query);
 
         /// <summary>
         /// Gets the item counts async.

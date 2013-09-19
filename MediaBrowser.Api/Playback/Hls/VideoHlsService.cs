@@ -21,6 +21,14 @@ namespace MediaBrowser.Api.Playback.Hls
 
         [ApiMember(Name = "AppendBaselineStream", Description = "Optional. Whether or not to include a baseline audio-only stream in the master playlist.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool AppendBaselineStream { get; set; }
+
+        [ApiMember(Name = "TimeStampOffsetMs", Description = "Optional. Alter the timestamps in the playlist by a given amount, in ms. Default is 1000.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int TimeStampOffsetMs { get; set; }
+
+        public GetHlsVideoStream()
+        {
+            TimeStampOffsetMs = 1000;
+        }
     }
 
     /// <summary>

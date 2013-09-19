@@ -89,6 +89,12 @@
         /// </summary>
         /// <value><c>true</c> if [append baseline stream]; otherwise, <c>false</c>.</value>
         public bool AppendBaselineStream { get; set; }
+
+        /// <summary>
+        /// Gets or sets the time stamp offset ms. Only used with HLS.
+        /// </summary>
+        /// <value>The time stamp offset ms.</value>
+        public int? TimeStampOffsetMs { get; set; }
     }
 
     /// <summary>
