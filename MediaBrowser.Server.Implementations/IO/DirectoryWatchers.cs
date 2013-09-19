@@ -6,6 +6,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Implementations.ScheduledTasks;
+using Microsoft.Win32;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -24,7 +25,7 @@ namespace MediaBrowser.Server.Implementations.IO
         /// <summary>
         /// The file system watchers
         /// </summary>
-        private readonly ConcurrentDictionary<string, FileSystemWatcher> _fileSystemWatchers = new ConcurrentDictionary<string,FileSystemWatcher>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, FileSystemWatcher> _fileSystemWatchers = new ConcurrentDictionary<string, FileSystemWatcher>(StringComparer.OrdinalIgnoreCase);
         /// <summary>
         /// The update timer
         /// </summary>
@@ -100,6 +101,19 @@ namespace MediaBrowser.Server.Implementations.IO
             TaskManager = taskManager;
             Logger = logManager.GetLogger("DirectoryWatchers");
             ConfigurationManager = configurationManager;
+
+            SystemEvents.PowerModeChanged += SystemEvents_PowerModeChanged;
+        }
+
+        /// <summary>
+        /// Handles the PowerModeChanged event of the SystemEvents control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="PowerModeChangedEventArgs"/> instance containing the event data.</param>
+        void SystemEvents_PowerModeChanged(object sender, PowerModeChangedEventArgs e)
+        {
+            Stop();
+            Start();
         }
 
         /// <summary>
@@ -288,47 +302,14 @@ namespace MediaBrowser.Server.Implementations.IO
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="ErrorEventArgs" /> instance containing the event data.</param>
-        async void watcher_Error(object sender, ErrorEventArgs e)
+        void watcher_Error(object sender, ErrorEventArgs e)
         {
             var ex = e.GetException();
             var dw = (FileSystemWatcher)sender;
 
             Logger.ErrorException("Error in Directory watcher for: " + dw.Path, ex);
 
-            //Network either dropped or, we are coming out of sleep and it hasn't reconnected yet - wait and retry
-            var retries = 0;
-            var success = false;
-            while (!success && retries < 10)
-            {
-                await Task.Delay(500).ConfigureAwait(false);
-
-                try
-                {
-                    dw.EnableRaisingEvents = false;
-                    dw.EnableRaisingEvents = true;
-                    success = true;
-                }
-                catch (ObjectDisposedException)
-                {
-                    RemoveWatcherFromList(dw);
-                    return;
-                }
-                catch (IOException)
-                {
-                    Logger.Warn("Network still unavailable...");
-                    retries++;
-                }
-                catch (ApplicationException)
-                {
-                    Logger.Warn("Network still unavailable...");
-                    retries++;
-                }
-            }
-            if (!success)
-            {
-                Logger.Warn("Unable to access network. Giving up.");
-                DisposeWatcher(dw);
-            }
+            DisposeWatcher(dw);
         }
 
         /// <summary>
@@ -348,7 +329,7 @@ namespace MediaBrowser.Server.Implementations.IO
 
             var nameFromFullPath = Path.GetFileName(e.FullPath);
             // Ignore certain files
-            if (!string.IsNullOrEmpty(nameFromFullPath) &&  _alwaysIgnoreFiles.Contains(nameFromFullPath, StringComparer.OrdinalIgnoreCase))
+            if (!string.IsNullOrEmpty(nameFromFullPath) && _alwaysIgnoreFiles.Contains(nameFromFullPath, StringComparer.OrdinalIgnoreCase))
             {
                 return;
             }
