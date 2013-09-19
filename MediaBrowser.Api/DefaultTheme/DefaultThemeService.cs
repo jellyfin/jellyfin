@@ -175,6 +175,7 @@ namespace MediaBrowser.Api.DefaultTheme
             var dtos = FilterItemsForBackdropDisplay(seriesWithBackdrops)
                 .OrderBy(i => Guid.NewGuid())
                 .Take(50)
+                .AsParallel()
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user));
 
             view.SpotlightItems = dtos.ToArray();
