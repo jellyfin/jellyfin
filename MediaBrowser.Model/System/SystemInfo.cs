@@ -81,7 +81,13 @@ namespace MediaBrowser.Model.System
         public int HttpServerPortNumber { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SystemInfo"/> class.
+        /// Gets or sets a value indicating whether this instance is background service.
+        /// </summary>
+        /// <value><c>true</c> if this instance is background service; otherwise, <c>false</c>.</value>
+        public bool IsBackgroundService { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SystemInfo" /> class.
         /// </summary>
         public SystemInfo()
         {
