@@ -17,6 +17,8 @@ We have several client apps released and in production:
 - Windows RT
 - Windows Phone
 
+#### [Now with 60+ active contributors!](https://github.com/MediaBrowser/MediaBrowser/blob/master/CONTRIBUTORS.md "Now with 60+ active contributors!")
+
 ## New Users ##
 
 If you're a new user looking to install Media Browser Server, please head over to [mediabrowser3.com](http://www.mediabrowser3.com/ "mediabrowser3.com")
