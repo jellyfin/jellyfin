@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities.Audio;
+﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -69,7 +70,16 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
 
             foreach (var fullName in Directory.EnumerateFiles(path))
             {
-                if (EntityResolutionHelper.IsAudioFile(fullName)) foundAudio++;
+                if (EntityResolutionHelper.IsAudioFile(fullName))
+                {
+                    // Don't resolve these into audio files
+                    if (string.Equals(Path.GetFileNameWithoutExtension(fullName), BaseItem.ThemeSongFilename) && EntityResolutionHelper.IsAudioFile(fullName))
+                    {
+                        continue;
+                    }
+
+                    foundAudio++;
+                }
                 if (foundAudio >= 2)
                 {
                     return true;
