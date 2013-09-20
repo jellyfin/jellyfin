@@ -23,7 +23,7 @@ namespace MediaBrowser.Common.ScheduledTasks
                 State = task.State,
                 Id = task.Id,
                 LastExecutionResult = task.LastExecutionResult,
-                Triggers = task.Triggers.Select(GetTriggerInfo).ToArray(),
+                Triggers = task.Triggers.Select(GetTriggerInfo).ToList(),
                 Description = task.Description,
                 Category = task.Category
             };

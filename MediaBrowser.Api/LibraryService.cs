@@ -235,7 +235,7 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>Task{BaseItemDto[]}.</returns>
-        public BaseItemDto[] GetAncestors(GetAncestors request)
+        public List<BaseItemDto> GetAncestors(GetAncestors request)
         {
             var item = _dtoService.GetItemByDtoId(request.Id);
 
@@ -267,7 +267,7 @@ namespace MediaBrowser.Api
                 parent = parent.Parent;
             }
 
-            return baseItemDtos.ToArray();
+            return baseItemDtos.ToList();
         }
 
         private BaseItem TranslateParentItem(BaseItem item, User user)
@@ -463,7 +463,7 @@ namespace MediaBrowser.Api
                 Id = request.Id,
                 UserId = request.UserId
 
-            }).Result;
+            });
 
             var themeVideos = GetThemeVideos(new GetThemeVideos
             {
@@ -471,7 +471,7 @@ namespace MediaBrowser.Api
                 Id = request.Id,
                 UserId = request.UserId
 
-            }).Result;
+            });
 
             return ToOptimizedResult(new AllThemeMediaResult
             {
@@ -487,12 +487,12 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetThemeSongs request)
         {
-            var result = GetThemeSongs(request).Result;
+            var result = GetThemeSongs(request);
 
             return ToOptimizedResult(result);
         }
 
-        private async Task<ThemeMediaResult> GetThemeSongs(GetThemeSongs request)
+        private ThemeMediaResult GetThemeSongs(GetThemeSongs request)
         {
             var user = request.UserId.HasValue ? _userManager.GetUserById(request.UserId.Value) : null;
 
@@ -533,12 +533,12 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetThemeVideos request)
         {
-            var result = GetThemeVideos(request).Result;
+            var result = GetThemeVideos(request);
 
             return ToOptimizedResult(result);
         }
 
-        public async Task<ThemeMediaResult> GetThemeVideos(GetThemeVideos request)
+        public ThemeMediaResult GetThemeVideos(GetThemeVideos request)
         {
             var user = request.UserId.HasValue ? _userManager.GetUserById(request.UserId.Value) : null;
 

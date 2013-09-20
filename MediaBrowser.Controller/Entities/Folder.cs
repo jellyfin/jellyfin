@@ -99,7 +99,7 @@ namespace MediaBrowser.Controller.Entities
                 item.DateModified = DateTime.UtcNow;
             }
 
-            _children.Add(item);
+            AddChildrenInternal(new[] { item });
 
             await LibraryManager.CreateItem(item, cancellationToken).ConfigureAwait(false);
 
@@ -728,10 +728,7 @@ namespace MediaBrowser.Controller.Entities
 
                 if (actualRemovals.Count > 0)
                 {
-                    lock (ChildrenSyncLock)
-                    {
-                        _children = new ConcurrentBag<BaseItem>(_children.Except(actualRemovals));
-                    }
+                    RemoveChildrenInternal(actualRemovals);
                 }
 
                 await LibraryManager.CreateItems(newItems, cancellationToken).ConfigureAwait(false);

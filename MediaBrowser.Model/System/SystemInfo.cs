@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Model.Updates;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Model.System
 {
@@ -35,7 +36,7 @@ namespace MediaBrowser.Model.System
         /// Gets or sets the in progress installations.
         /// </summary>
         /// <value>The in progress installations.</value>
-        public InstallationInfo[] InProgressInstallations { get; set; }
+        public List<InstallationInfo> InProgressInstallations { get; set; }
 
         /// <summary>
         /// Gets or sets the web socket port number.
@@ -47,7 +48,7 @@ namespace MediaBrowser.Model.System
         /// Gets or sets the completed installations.
         /// </summary>
         /// <value>The completed installations.</value>
-        public InstallationInfo[] CompletedInstallations { get; set; }
+        public List<InstallationInfo> CompletedInstallations { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [supports native web socket].
@@ -59,7 +60,7 @@ namespace MediaBrowser.Model.System
         /// Gets or sets plugin assemblies that failed to load.
         /// </summary>
         /// <value>The failed assembly loads.</value>
-        public string[] FailedPluginAssemblies { get; set; }
+        public List<string> FailedPluginAssemblies { get; set; }
 
         /// <summary>
         /// Gets or sets the id.
@@ -84,11 +85,11 @@ namespace MediaBrowser.Model.System
         /// </summary>
         public SystemInfo()
         {
-            InProgressInstallations = new InstallationInfo[] { };
+            InProgressInstallations = new List<InstallationInfo>();
 
-            CompletedInstallations = new InstallationInfo[] { };
+            CompletedInstallations = new List<InstallationInfo>();
 
-            FailedPluginAssemblies = new string[] { };
+            FailedPluginAssemblies = new List<string>();
         }
     }
 }

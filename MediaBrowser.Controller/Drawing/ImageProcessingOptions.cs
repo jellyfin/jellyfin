@@ -35,6 +35,6 @@ namespace MediaBrowser.Controller.Drawing
 
         public ImageOutputFormat OutputFormat { get; set; }
 
-        public ImageOverlay Indicator { get; set; }
+        public ImageOverlay? Indicator { get; set; }
     }
 }

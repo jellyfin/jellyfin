@@ -460,11 +460,11 @@ namespace MediaBrowser.ServerApplication
                                     GetExports<ILibraryPostScanTask>(),
                                     GetExports<IMetadataSaver>());
 
-            ProviderManager.AddParts(GetExports<BaseMetadataProvider>().ToArray());
+            ProviderManager.AddParts(GetExports<BaseMetadataProvider>());
 
-            IsoManager.AddParts(GetExports<IIsoMounter>().ToArray());
+            IsoManager.AddParts(GetExports<IIsoMounter>());
 
-            ImageProcessor.AddParts(GetExports<IImageEnhancer>().ToArray());
+            ImageProcessor.AddParts(GetExports<IImageEnhancer>());
         }
 
         /// <summary>
@@ -607,9 +607,9 @@ namespace MediaBrowser.ServerApplication
                 IsNetworkDeployed = CanSelfUpdate,
                 WebSocketPortNumber = ServerManager.WebSocketPortNumber,
                 SupportsNativeWebSocket = ServerManager.SupportsNativeWebSocket,
-                FailedPluginAssemblies = FailedAssemblies.ToArray(),
-                InProgressInstallations = InstallationManager.CurrentInstallations.Select(i => i.Item1).ToArray(),
-                CompletedInstallations = InstallationManager.CompletedInstallations.ToArray(),
+                FailedPluginAssemblies = FailedAssemblies.ToList(),
+                InProgressInstallations = InstallationManager.CurrentInstallations.Select(i => i.Item1).ToList(),
+                CompletedInstallations = InstallationManager.CompletedInstallations.ToList(),
                 Id = _systemId,
                 ProgramDataPath = ApplicationPaths.ProgramDataPath,
                 MacAddress = GetMacAddress(),

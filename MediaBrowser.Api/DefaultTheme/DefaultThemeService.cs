@@ -107,7 +107,7 @@ namespace MediaBrowser.Api.DefaultTheme
                 .Take(50)
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user));
 
-            view.SpotlightItems = dtos.ToArray();
+            view.SpotlightItems = dtos.ToList();
 
             return view;
         }
@@ -139,7 +139,7 @@ namespace MediaBrowser.Api.DefaultTheme
                 .Take(50)
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user));
 
-            view.SpotlightItems = dtos.ToArray();
+            view.SpotlightItems = dtos.ToList();
 
             return view;
         }
@@ -178,7 +178,7 @@ namespace MediaBrowser.Api.DefaultTheme
                 .AsParallel()
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user));
 
-            view.SpotlightItems = dtos.ToArray();
+            view.SpotlightItems = dtos.ToList();
 
             view.ShowsItems = series
                .Where(i => i.BackdropImagePaths.Count > 0)
@@ -186,7 +186,7 @@ namespace MediaBrowser.Api.DefaultTheme
                .Select(i => GetItemStub(i, ImageType.Backdrop))
                .Where(i => i != null)
                .Take(3)
-               .ToArray();
+               .ToList();
 
             var romanceGenres = request.RomanceGenre.Split(',').ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
             var comedyGenres = request.ComedyGenre.Split(',').ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
@@ -197,7 +197,7 @@ namespace MediaBrowser.Api.DefaultTheme
              .Select(i => GetItemStub(i, ImageType.Backdrop))
              .Where(i => i != null)
              .Take(3)
-             .ToArray();
+             .ToList();
 
             view.ComedyItems = seriesWithBackdrops
              .Where(i => i.Genres.Any(comedyGenres.ContainsKey))
@@ -205,7 +205,7 @@ namespace MediaBrowser.Api.DefaultTheme
              .Select(i => GetItemStub(i, ImageType.Backdrop))
              .Where(i => i != null)
              .Take(3)
-             .ToArray();
+             .ToList();
 
             view.ActorItems = GetActors(series);
 
@@ -252,14 +252,14 @@ namespace MediaBrowser.Api.DefaultTheme
                 .Take(50)
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user));
 
-            view.SpotlightItems = dtos.ToArray();
+            view.SpotlightItems = dtos.ToList();
 
             view.MovieItems = moviesWithBackdrops
                .OrderBy(i => Guid.NewGuid())
                .Select(i => GetItemStub(i, ImageType.Backdrop))
                .Where(i => i != null)
                .Take(3)
-               .ToArray();
+               .ToList();
 
             view.TrailerItems = items
              .OfType<Trailer>()
@@ -268,7 +268,7 @@ namespace MediaBrowser.Api.DefaultTheme
              .Select(i => GetItemStub(i, ImageType.Primary))
              .Where(i => i != null)
              .Take(3)
-             .ToArray();
+             .ToList();
 
             view.BoxSetItems = items
              .OfType<BoxSet>()
@@ -277,7 +277,7 @@ namespace MediaBrowser.Api.DefaultTheme
              .Select(i => GetItemStub(i, ImageType.Backdrop))
              .Where(i => i != null)
              .Take(3)
-             .ToArray();
+             .ToList();
 
             view.ThreeDItems = moviesWithBackdrops
              .Where(i => i.Is3D)
@@ -285,7 +285,7 @@ namespace MediaBrowser.Api.DefaultTheme
              .Select(i => GetItemStub(i, ImageType.Backdrop))
              .Where(i => i != null)
              .Take(3)
-             .ToArray();
+             .ToList();
 
             var romanceGenres = request.RomanceGenre.Split(',').ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
             var comedyGenres = request.ComedyGenre.Split(',').ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
@@ -296,7 +296,7 @@ namespace MediaBrowser.Api.DefaultTheme
              .Select(i => GetItemStub(i, ImageType.Backdrop))
              .Where(i => i != null)
              .Take(3)
-             .ToArray();
+             .ToList();
 
             view.ComedyItems = moviesWithBackdrops
              .Where(i => i.Genres.Any(comedyGenres.ContainsKey))
@@ -304,7 +304,7 @@ namespace MediaBrowser.Api.DefaultTheme
              .Select(i => GetItemStub(i, ImageType.Backdrop))
              .Where(i => i != null)
              .Take(3)
-             .ToArray();
+             .ToList();
 
             view.HDItems = hdMovies
              .Where(i => i.BackdropImagePaths.Count > 0)
@@ -312,7 +312,7 @@ namespace MediaBrowser.Api.DefaultTheme
              .Select(i => GetItemStub(i, ImageType.Backdrop))
              .Where(i => i != null)
              .Take(3)
-             .ToArray();
+             .ToList();
 
             view.FamilyMovies = familyMovies
              .Where(i => i.BackdropImagePaths.Count > 0)
@@ -320,7 +320,7 @@ namespace MediaBrowser.Api.DefaultTheme
              .Select(i => GetItemStub(i, ImageType.Backdrop))
              .Where(i => i != null)
              .Take(3)
-             .ToArray();
+             .ToList();
 
             view.PeopleItems = GetActors(items);
 
@@ -362,7 +362,7 @@ namespace MediaBrowser.Api.DefaultTheme
             }
         }
 
-        private ItemStub[] GetActors(IEnumerable<BaseItem> mediaItems)
+        private List<ItemStub> GetActors(IEnumerable<BaseItem> mediaItems)
         {
             var actors = mediaItems.SelectMany(i => i.People)
                 .Select(i => i.Name)
@@ -390,7 +390,7 @@ namespace MediaBrowser.Api.DefaultTheme
             })
             .Where(i => i != null)
             .Take(3)
-            .ToArray();
+            .ToList();
         }
 
         private ItemStub GetItemStub(BaseItem item, ImageType imageType)

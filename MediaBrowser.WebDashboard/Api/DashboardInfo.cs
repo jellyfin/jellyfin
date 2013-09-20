@@ -2,6 +2,7 @@
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
 using System;
+using System.Collections.Generic;
 
 namespace MediaBrowser.WebDashboard.Api
 {
@@ -20,7 +21,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// Gets or sets the running tasks.
         /// </summary>
         /// <value>The running tasks.</value>
-        public TaskInfo[] RunningTasks { get; set; }
+        public List<TaskInfo> RunningTasks { get; set; }
 
         /// <summary>
         /// Gets or sets the application update task id.
@@ -32,7 +33,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// Gets or sets the active connections.
         /// </summary>
         /// <value>The active connections.</value>
-        public SessionInfoDto[] ActiveConnections { get; set; }
+        public List<SessionInfoDto> ActiveConnections { get; set; }
     }
 
 }

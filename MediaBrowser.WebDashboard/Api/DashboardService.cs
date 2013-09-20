@@ -187,7 +187,7 @@ namespace MediaBrowser.WebDashboard.Api
             ITaskManager taskManager,
             ISessionManager connectionManager, IDtoService dtoService)
         {
-            var connections = connectionManager.Sessions.Where(i => i.IsActive).ToArray();
+            var connections = connectionManager.Sessions.Where(i => i.IsActive).ToList();
 
             return new DashboardInfo
             {
@@ -195,11 +195,11 @@ namespace MediaBrowser.WebDashboard.Api
 
                 RunningTasks = taskManager.ScheduledTasks.Where(i => i.State == TaskState.Running || i.State == TaskState.Cancelling)
                                      .Select(ScheduledTaskHelpers.GetTaskInfo)
-                                     .ToArray(),
+                                     .ToList(),
 
                 ApplicationUpdateTaskId = taskManager.ScheduledTasks.First(t => t.ScheduledTask.GetType().Name.Equals("SystemUpdateTask", StringComparison.OrdinalIgnoreCase)).Id,
 
-                ActiveConnections = connections.Select(dtoService.GetSessionInfoDto).ToArray()
+                ActiveConnections = connections.Select(dtoService.GetSessionInfoDto).ToList()
             };
         }
 

@@ -65,6 +65,8 @@ namespace MediaBrowser.Controller.Entities
                 IndexCache.Clear();
             }
 
+            ResetDynamicChildren();
+
             return NullTaskResult;
         }
 
@@ -99,7 +101,8 @@ namespace MediaBrowser.Controller.Entities
             return LibraryManager.RootFolder.Children
                 .OfType<Folder>()
                 .Where(i => i.Path != null && locationsDicionary.ContainsKey(i.Path))
-                .SelectMany(c => c.LinkedChildren).ToList();
+                .SelectMany(c => c.LinkedChildren)
+                .ToList();
         }
 
         private IEnumerable<BaseItem> _actualChildren;
@@ -131,7 +134,8 @@ namespace MediaBrowser.Controller.Entities
                 LibraryManager.RootFolder.Children
                 .OfType<Folder>()
                 .Where(i => i.Path != null && locationsDicionary.ContainsKey(i.Path))
-                .SelectMany(c => c.Children);
+                .SelectMany(c => c.Children)
+                .ToList();
         }
 
         public void ResetDynamicChildren()

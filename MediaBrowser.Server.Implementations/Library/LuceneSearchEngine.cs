@@ -299,7 +299,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="searchInput">The search input.</param>
         /// <param name="searchWords">The search input.</param>
         /// <returns>System.Int32.</returns>
-        private Tuple<string, int> GetIndex(string input, string searchInput, string[] searchWords)
+        private Tuple<string, int> GetIndex(string input, string searchInput, List<string> searchWords)
         {
             if (string.IsNullOrEmpty(input))
             {
@@ -324,11 +324,11 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var items = GetWords(input);
 
-            for (var i = 0; i < searchWords.Length; i++)
+            for (var i = 0; i < searchWords.Count; i++)
             {
                 var searchTerm = searchWords[i];
 
-                for (var j = 0; j < items.Length; j++)
+                for (var j = 0; j < items.Count; j++)
                 {
                     var item = items[j];
 
@@ -357,9 +357,9 @@ namespace MediaBrowser.Server.Implementations.Library
         /// </summary>
         /// <param name="term">The term.</param>
         /// <returns>System.String[][].</returns>
-        private string[] GetWords(string term)
+        private List<string> GetWords(string term)
         {
-            return term.Split().Where(i => !string.IsNullOrWhiteSpace(i)).ToArray();
+            return term.Split().Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
         }
     }
 

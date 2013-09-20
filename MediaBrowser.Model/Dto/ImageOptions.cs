@@ -72,14 +72,13 @@ namespace MediaBrowser.Model.Dto
 
         public ImageOutputFormat Format { get; set; }
 
-        public ImageOverlay Indicator { get; set; }
+        public ImageOverlay? Indicator { get; set; }
         
         public ImageOptions()
         {
             EnableImageEnhancers = true;
 
             Format = ImageOutputFormat.Original;
-            Indicator = ImageOverlay.None;
         }
     }
 }

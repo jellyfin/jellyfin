@@ -470,7 +470,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         {
             var message = new HttpRequestMessage(HttpMethod.Get, options.Url);
 
-            foreach (var pair in options.RequestHeaders.ToArray())
+            foreach (var pair in options.RequestHeaders.ToList())
             {
                 message.Headers.Add(pair.Key, pair.Value);
             }

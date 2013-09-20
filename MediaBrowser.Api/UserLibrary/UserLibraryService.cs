@@ -398,7 +398,7 @@ namespace MediaBrowser.Api.UserLibrary
             return ToOptimizedResult(result);
         }
 
-        private BaseItemDto[] GetAsync(GetSpecialFeatures request)
+        private List<BaseItemDto> GetAsync(GetSpecialFeatures request)
         {
             var user = _userManager.GetUserById(request.UserId);
 
@@ -420,7 +420,7 @@ namespace MediaBrowser.Api.UserLibrary
                     .OrderBy(i => i.SortName)
                     .Select(i => _dtoService.GetBaseItemDto(i, fields, user, movie1));
 
-                return dtos.ToArray();
+                return dtos.ToList();
             }
 
             var series = item as Series;
@@ -448,7 +448,7 @@ namespace MediaBrowser.Api.UserLibrary
                     .ThenBy(i => i.SortName)
                     .Select(i => _dtoService.GetBaseItemDto(i, fields, user));
 
-                return dtos.ToArray();
+                return dtos.ToList();
             }
 
             throw new ArgumentException("The item does not support special features");
@@ -466,7 +466,7 @@ namespace MediaBrowser.Api.UserLibrary
             return ToOptimizedResult(result);
         }
 
-        private BaseItemDto[] GetAsync(GetLocalTrailers request)
+        private List<BaseItemDto> GetAsync(GetLocalTrailers request)
         {
             var user = _userManager.GetUserById(request.UserId);
 
@@ -480,7 +480,7 @@ namespace MediaBrowser.Api.UserLibrary
                 .OrderBy(i => i.SortName)
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user, item));
 
-            return dtos.ToArray();
+            return dtos.ToList();
         }
 
         /// <summary>

@@ -57,14 +57,13 @@ namespace MediaBrowser.Api.Images
         public ImageOutputFormat Format { get; set; }
 
         [ApiMember(Name = "Indicator", Description = "Determines what overlay to render, if any. none, watched.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
-        public ImageOverlay Indicator { get; set; }
+        public ImageOverlay? Indicator { get; set; }
         
         public ImageRequest()
         {
             EnableImageEnhancers = true;
 
             Format = ImageOutputFormat.Original;
-            Indicator = ImageOverlay.None;
         }
     }
 

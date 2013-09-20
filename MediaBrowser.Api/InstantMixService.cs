@@ -124,14 +124,14 @@ namespace MediaBrowser.Api
                 .Select(i => i.Item1)
                 .Take(limit)
                 .OrderBy(i => Guid.NewGuid())
-                .ToArray();
+                .ToList();
 
             var result = new ItemsResult
             {
-                TotalRecordCount = items.Length
+                TotalRecordCount = items.Count
             };
 
-            var dtos = items.Take(request.Limit ?? items.Length)
+            var dtos = items.Take(request.Limit ?? items.Count)
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user));
 
             result.Items = dtos.ToArray();
