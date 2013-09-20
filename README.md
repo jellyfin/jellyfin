@@ -17,7 +17,7 @@ We have several client apps released and in production:
 - Windows RT
 - Windows Phone
 
-[Now with 60+ active contributors!](https://github.com/MediaBrowser/MediaBrowser/blob/master/CONTRIBUTORS.md "Now with 60+ active contributors!")
+#### [Now with 60+ active contributors!](https://github.com/MediaBrowser/MediaBrowser/blob/master/CONTRIBUTORS.md "Now with 60+ active contributors!")
 
 ## New Users ##
 
