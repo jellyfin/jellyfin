@@ -79,7 +79,7 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             get
             {
-                return new[] { ".srt" };
+                return new[] { ".srt", ".ssa", ".ass" };
             }
         }
 
@@ -158,7 +158,7 @@ namespace MediaBrowser.Providers.MediaInfo
                         return true;
                     }
                 }
-                
+
                 var result = await GetMediaInfo(item, isoMount, cancellationToken).ConfigureAwait(false);
 
                 cancellationToken.ThrowIfCancellationRequested();
@@ -240,7 +240,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 Logger.Error("No vobs found in dvd structure.");
                 return;
             }
-            
+
             var files = allVobs
                 .SkipWhile(f => new FileInfo(f).Length < minPlayableSize)
                 .ToList();
@@ -443,7 +443,7 @@ namespace MediaBrowser.Providers.MediaInfo
             var videoFileNameWithoutExtension = Path.GetFileNameWithoutExtension(video.Path);
 
             foreach (var file in fileSystemChildren
-                .Where(f => !f.Attributes.HasFlag(FileAttributes.Directory) && string.Equals(Path.GetExtension(f.FullName), ".srt", StringComparison.OrdinalIgnoreCase)))
+                .Where(f => !f.Attributes.HasFlag(FileAttributes.Directory) && FilestampExtensions.Contains(Path.GetExtension(f.FullName), StringComparer.OrdinalIgnoreCase)))
             {
                 var fullName = file.FullName;
 
