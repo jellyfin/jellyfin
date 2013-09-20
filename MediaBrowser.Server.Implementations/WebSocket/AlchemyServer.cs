@@ -55,14 +55,14 @@ namespace MediaBrowser.Server.Implementations.WebSocket
         /// <param name="portNumber">The port number.</param>
         public void Start(int portNumber)
         {
-            WebSocketServer = new WebSocketServer(portNumber, IPAddress.Any)
-            {
-                OnConnected = OnAlchemyWebSocketClientConnected,
-                TimeOut = TimeSpan.FromHours(12)
-            };
-
             try
             {
+                WebSocketServer = new WebSocketServer(portNumber, IPAddress.Any)
+                {
+                    OnConnected = OnAlchemyWebSocketClientConnected,
+                    TimeOut = TimeSpan.FromHours(12)
+                };
+
                 WebSocketServer.Start();
             }
             catch (SocketException ex)

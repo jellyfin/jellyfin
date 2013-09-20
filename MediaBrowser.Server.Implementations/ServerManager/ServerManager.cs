@@ -118,43 +118,44 @@ namespace MediaBrowser.Server.Implementations.ServerManager
             _jsonSerializer = jsonSerializer;
             _applicationHost = applicationHost;
             ConfigurationManager = configurationManager;
-
-            ConfigurationManager.ConfigurationUpdated += ConfigurationUpdated;
         }
 
         /// <summary>
         /// Starts this instance.
         /// </summary>
-        public void Start()
+        public void Start(string urlPrefix, bool enableHttpLogging)
         {
-            ReloadHttpServer();
+            ReloadHttpServer(urlPrefix, enableHttpLogging);
+        }
 
+        public void StartWebSocketServer()
+        {
             if (!SupportsNativeWebSocket)
             {
-                ReloadExternalWebSocketServer();
+                ReloadExternalWebSocketServer(ConfigurationManager.Configuration.LegacyWebSocketPortNumber);
             }
         }
 
         /// <summary>
         /// Starts the external web socket server.
         /// </summary>
-        private void ReloadExternalWebSocketServer()
+        private void ReloadExternalWebSocketServer(int portNumber)
         {
             DisposeExternalWebSocketServer();
 
             ExternalWebSocketServer = _applicationHost.Resolve<IWebSocketServer>();
 
-            ExternalWebSocketServer.Start(ConfigurationManager.Configuration.LegacyWebSocketPortNumber);
+            ExternalWebSocketServer.Start(portNumber);
             ExternalWebSocketServer.WebSocketConnected += HttpServer_WebSocketConnected;
         }
 
         /// <summary>
         /// Restarts the Http Server, or starts it if not currently running
         /// </summary>
-        private void ReloadHttpServer()
+        private void ReloadHttpServer(string urlPrefix, bool enableHttpLogging)
         {
             // Only reload if the port has changed, so that we don't disconnect any active users
-            if (HttpServer != null && HttpServer.UrlPrefix.Equals(_applicationHost.HttpServerUrlPrefix, StringComparison.OrdinalIgnoreCase))
+            if (HttpServer != null && HttpServer.UrlPrefix.Equals(urlPrefix, StringComparison.OrdinalIgnoreCase))
             {
                 return;
             }
@@ -166,8 +167,8 @@ namespace MediaBrowser.Server.Implementations.ServerManager
             try
             {
                 HttpServer = _applicationHost.Resolve<IHttpServer>();
-                HttpServer.EnableHttpRequestLogging = ConfigurationManager.Configuration.EnableHttpLevelLogging;
-                HttpServer.Start(_applicationHost.HttpServerUrlPrefix);
+                HttpServer.EnableHttpRequestLogging = enableHttpLogging;
+                HttpServer.Start(urlPrefix);
             }
             catch (SocketException ex)
             {
@@ -373,17 +374,6 @@ namespace MediaBrowser.Server.Implementations.ServerManager
                 _logger.Info("Disposing {0}", ExternalWebSocketServer.GetType().Name);
                 ExternalWebSocketServer.Dispose();
             }
-        }
-
-        /// <summary>
-        /// Handles the ConfigurationUpdated event of the _kernel control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
-        void ConfigurationUpdated(object sender, EventArgs e)
-        {
-            HttpServer.EnableHttpRequestLogging = ConfigurationManager.Configuration.EnableHttpLevelLogging;
         }
 
         /// <summary>
