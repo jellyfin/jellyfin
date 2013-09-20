@@ -208,15 +208,27 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
         private WatchedIndicatorDrawer _watchedDrawer;
 
-        private void DrawIndicator(Graphics graphics, int imageWidth, int imageHeight, ImageOverlay indicator)
+        private void DrawIndicator(Graphics graphics, int imageWidth, int imageHeight, ImageOverlay? indicator)
         {
-            if (indicator == ImageOverlay.Watched)
+            if (!indicator.HasValue)
             {
-                _watchedDrawer = _watchedDrawer ?? (_watchedDrawer = new WatchedIndicatorDrawer());
+                return;
+            }
 
-                var currentImageSize = new Size(imageWidth, imageHeight);
+            try
+            {
+                if (indicator.Value == ImageOverlay.Watched)
+                {
+                    _watchedDrawer = _watchedDrawer ?? (_watchedDrawer = new WatchedIndicatorDrawer());
 
-                _watchedDrawer.Process(graphics, currentImageSize);
+                    var currentImageSize = new Size(imageWidth, imageHeight);
+
+                    _watchedDrawer.Process(graphics, currentImageSize);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error drawing indicator overlay", ex);
             }
         }
 
@@ -338,7 +350,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
         /// <summary>
         /// Gets the cache file path based on a set of parameters
         /// </summary>
-        private string GetCacheFilePath(string originalPath, ImageSize outputSize, int quality, DateTime dateModified, ImageOutputFormat format, ImageOverlay overlay)
+        private string GetCacheFilePath(string originalPath, ImageSize outputSize, int quality, DateTime dateModified, ImageOutputFormat format, ImageOverlay? overlay)
         {
             var filename = originalPath;
 
@@ -355,9 +367,9 @@ namespace MediaBrowser.Server.Implementations.Drawing
                 filename += "format=" + format;
             }
 
-            if (overlay != ImageOverlay.None)
+            if (overlay.HasValue)
             {
-                filename += "overlay=" + overlay;
+                filename += "overlay=" + overlay.Value;
             }
 
             return GetCachePath(_resizedImageCachePath, filename, Path.GetExtension(originalPath));
@@ -414,9 +426,13 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
             try
             {
-                var result = File.ReadAllText(fullCachePath).Split('|').Select(i => double.Parse(i, UsCulture)).ToArray();
+                var result = File.ReadAllText(fullCachePath).Split('|');
 
-                return new ImageSize { Width = result[0], Height = result[1] };
+                return new ImageSize
+                {
+                    Width = double.Parse(result[0], UsCulture),
+                    Height = double.Parse(result[1], UsCulture)
+                };
             }
             catch (IOException)
             {
@@ -429,12 +445,13 @@ namespace MediaBrowser.Server.Implementations.Drawing
             {
                 try
                 {
-                    var result = File.ReadAllText(fullCachePath)
-                        .Split('|')
-                        .Select(i => double.Parse(i, UsCulture))
-                        .ToArray();
+                    var result = File.ReadAllText(fullCachePath).Split('|');
 
-                    return new ImageSize { Width = result[0], Height = result[1] };
+                    return new ImageSize
+                    {
+                        Width = double.Parse(result[0], UsCulture),
+                        Height = double.Parse(result[1], UsCulture)
+                    };
                 }
                 catch (FileNotFoundException)
                 {

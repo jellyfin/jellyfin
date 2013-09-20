@@ -108,13 +108,20 @@ namespace MediaBrowser.Api
                                  : user.RootFolder.GetRecursiveChildren(user);
 
             var items = GetSimilaritems(item, inputItems, includeInSearch, getSimilarityScore)
-                .ToArray();
+                .ToList();
+
+            IEnumerable<BaseItem> returnItems = items;
+
+            if (request.Limit.HasValue)
+            {
+                returnItems = returnItems.Take(request.Limit.Value);
+            }
 
             var result = new ItemsResult
             {
-                Items = items.Take(request.Limit ?? items.Length).Select(i => dtoService.GetBaseItemDto(i, fields, user)).ToArray(),
+                Items = returnItems.Select(i => dtoService.GetBaseItemDto(i, fields, user)).ToArray(),
 
-                TotalRecordCount = items.Length
+                TotalRecordCount = items.Count
             };
 
             return result;

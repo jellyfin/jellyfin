@@ -166,9 +166,9 @@ namespace MediaBrowser.Providers.Music
                 var files = new DirectoryInfo(path)
                     .EnumerateFiles("*.xml", SearchOption.TopDirectoryOnly)
                     .Select(i => i.LastWriteTimeUtc)
-                    .ToArray();
+                    .ToList();
 
-                if (files.Length > 0)
+                if (files.Count > 0)
                 {
                     return files.Max();
                 }

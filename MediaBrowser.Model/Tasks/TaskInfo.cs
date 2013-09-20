@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Model.Tasks
 {
@@ -41,7 +42,7 @@ namespace MediaBrowser.Model.Tasks
         /// Gets or sets the triggers.
         /// </summary>
         /// <value>The triggers.</value>
-        public TaskTriggerInfo[] Triggers { get; set; }
+        public List<TaskTriggerInfo> Triggers { get; set; }
 
         /// <summary>
         /// Gets or sets the description.
@@ -60,7 +61,7 @@ namespace MediaBrowser.Model.Tasks
         /// </summary>
         public TaskInfo()
         {
-            Triggers = new TaskTriggerInfo[] {};
+            Triggers = new List<TaskTriggerInfo>();
         }
     }
 }

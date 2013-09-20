@@ -96,13 +96,13 @@ namespace MediaBrowser.Api.UserLibrary
 
             filteredItems = ItemsService.ApplySortOrder(request, filteredItems, user, LibraryManager).Cast<TItemType>();
 
-            var ibnItemsArray = filteredItems.ToArray();
+            var ibnItemsArray = filteredItems.ToList();
 
             IEnumerable<TItemType> ibnItems = ibnItemsArray;
 
             var result = new ItemsResult
             {
-                TotalRecordCount = ibnItemsArray.Length
+                TotalRecordCount = ibnItemsArray.Count
             };
 
             if (request.StartIndex.HasValue || request.Limit.HasValue)
@@ -142,8 +142,8 @@ namespace MediaBrowser.Api.UserLibrary
                 items = items.Where(i => string.Compare(request.NameStartsWithOrGreater, i.Name, StringComparison.CurrentCultureIgnoreCase) < 1);
             }
 
-            var imageTypes = request.GetImageTypes().ToArray();
-            if (imageTypes.Length > 0)
+            var imageTypes = request.GetImageTypes().ToList();
+            if (imageTypes.Count > 0)
             {
                 items = items.Where(item => imageTypes.Any(imageType => ItemsService.HasImage(item, imageType)));
             }

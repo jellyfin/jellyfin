@@ -7,10 +7,6 @@ namespace MediaBrowser.Model.Drawing
     public enum ImageOverlay
     {
         /// <summary>
-        /// The none
-        /// </summary>
-        None,
-        /// <summary>
         /// The watched
         /// </summary>
         Watched

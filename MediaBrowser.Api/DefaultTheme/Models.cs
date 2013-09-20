@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using System;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Api.DefaultTheme
 {
@@ -14,19 +15,19 @@ namespace MediaBrowser.Api.DefaultTheme
 
     public class MoviesView
     {
-        public BaseItemDto[] SpotlightItems { get; set; }
-        public ItemStub[] MovieItems { get; set; }
-        public ItemStub[] PeopleItems { get; set; }
+        public List<BaseItemDto> SpotlightItems { get; set; }
+        public List<ItemStub> MovieItems { get; set; }
+        public List<ItemStub> PeopleItems { get; set; }
 
-        public ItemStub[] BoxSetItems { get; set; }
-        public ItemStub[] TrailerItems { get; set; }
-        public ItemStub[] HDItems { get; set; }
-        public ItemStub[] ThreeDItems { get; set; }
+        public List<ItemStub> BoxSetItems { get; set; }
+        public List<ItemStub> TrailerItems { get; set; }
+        public List<ItemStub> HDItems { get; set; }
+        public List<ItemStub> ThreeDItems { get; set; }
 
-        public ItemStub[] FamilyMovies { get; set; }
+        public List<ItemStub> FamilyMovies { get; set; }
 
-        public ItemStub[] RomanceItems { get; set; }
-        public ItemStub[] ComedyItems { get; set; }
+        public List<ItemStub> RomanceItems { get; set; }
+        public List<ItemStub> ComedyItems { get; set; }
 
         public double FamilyMoviePercentage { get; set; }
 
@@ -35,21 +36,21 @@ namespace MediaBrowser.Api.DefaultTheme
 
     public class TvView
     {
-        public BaseItemDto[] SpotlightItems { get; set; }
-        public ItemStub[] ShowsItems { get; set; }
-        public ItemStub[] ActorItems { get; set; }
+        public List<BaseItemDto> SpotlightItems { get; set; }
+        public List<ItemStub> ShowsItems { get; set; }
+        public List<ItemStub> ActorItems { get; set; }
 
-        public ItemStub[] RomanceItems { get; set; }
-        public ItemStub[] ComedyItems { get; set; }
+        public List<ItemStub> RomanceItems { get; set; }
+        public List<ItemStub> ComedyItems { get; set; }
     }
 
     public class GamesView
     {
-        public BaseItemDto[] SpotlightItems { get; set; }
+        public List<BaseItemDto> SpotlightItems { get; set; }
     }
 
     public class HomeView
     {
-        public BaseItemDto[] SpotlightItems { get; set; }
+        public List<BaseItemDto> SpotlightItems { get; set; }
     }
 }

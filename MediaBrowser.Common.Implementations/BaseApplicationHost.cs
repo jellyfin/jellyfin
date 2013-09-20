@@ -238,7 +238,7 @@ namespace MediaBrowser.Common.Implementations
         {
             FailedAssemblies.Clear();
 
-            var assemblies = GetComposablePartAssemblies().ToArray();
+            var assemblies = GetComposablePartAssemblies().ToList();
 
             foreach (var assembly in assemblies)
             {
@@ -431,7 +431,7 @@ namespace MediaBrowser.Common.Implementations
         /// <returns>IEnumerable{``0}.</returns>
         public IEnumerable<T> GetExports<T>(bool manageLiftime = true)
         {
-            var parts = GetExportTypes<T>().Select(CreateInstance).Cast<T>().ToArray();
+            var parts = GetExportTypes<T>().Select(CreateInstance).Cast<T>().ToList();
 
             if (manageLiftime)
             {

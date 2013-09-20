@@ -1159,7 +1159,7 @@ $(function () {
     footerHtml += '</div>';
 
     $(document.body).append(footerHtml);
-    
+
     $(window).on("beforeunload", function () {
 
         // Close the connection gracefully when possible
@@ -1188,7 +1188,6 @@ $(document).on('pagebeforeshow', ".page", function () {
 
         Dashboard.ensureHeader(page);
         Dashboard.ensurePageTitle(page);
-        Dashboard.refreshSystemInfoFromServer();
     }
 
     else {
@@ -1204,9 +1203,10 @@ $(document).on('pagebeforeshow', ".page", function () {
             Dashboard.ensureHeader(page, user);
             Dashboard.ensurePageTitle(page);
         });
-
-        Dashboard.refreshSystemInfoFromServer();
     }
 
+    if (!ApiClient.isWebSocketOpen()) {
+        Dashboard.refreshSystemInfoFromServer();
+    }
 });
 

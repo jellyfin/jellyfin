@@ -254,7 +254,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             items = ApplySortOrder(request, items, user, _libraryManager);
 
-            var itemsArray = items.ToArray();
+            var itemsArray = items.ToList();
 
             var pagedItems = ApplyPaging(request, itemsArray);
 
@@ -264,7 +264,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             return new ItemsResult
             {
-                TotalRecordCount = itemsArray.Length,
+                TotalRecordCount = itemsArray.Count,
                 Items = returnItems
             };
         }
@@ -307,9 +307,9 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>IEnumerable{BaseItem}.</returns>
         internal static IEnumerable<BaseItem> ApplySortOrder(BaseItemsRequest request, IEnumerable<BaseItem> items, User user, ILibraryManager libraryManager)
         {
-            var orderBy = request.GetOrderBy().ToArray();
+            var orderBy = request.GetOrderBy().ToList();
 
-            return orderBy.Length == 0 ? items : libraryManager.Sort(items, user, orderBy, request.SortOrder ?? SortOrder.Ascending);
+            return orderBy.Count == 0 ? items : libraryManager.Sort(items, user, orderBy, request.SortOrder ?? SortOrder.Ascending);
         }
 
         /// <summary>
@@ -603,8 +603,8 @@ namespace MediaBrowser.Api.UserLibrary
                 items = items.Where(i => !string.IsNullOrEmpty(i.MediaType) && types.Contains(i.MediaType, StringComparer.OrdinalIgnoreCase));
             }
 
-            var imageTypes = request.GetImageTypes().ToArray();
-            if (imageTypes.Length > 0)
+            var imageTypes = request.GetImageTypes().ToList();
+            if (imageTypes.Count > 0)
             {
                 items = items.Where(item => imageTypes.Any(imageType => HasImage(item, imageType)));
             }

@@ -165,9 +165,9 @@ namespace MediaBrowser.Providers.TV
                 var files = new DirectoryInfo(path)
                     .EnumerateFiles("*.xml", SearchOption.TopDirectoryOnly)
                     .Select(i => i.LastWriteTimeUtc)
-                    .ToArray();
+                    .ToList();
 
-                if (files.Length > 0)
+                if (files.Count > 0)
                 {
                     return files.Max();
                 }
@@ -222,7 +222,7 @@ namespace MediaBrowser.Providers.TV
         /// <returns>Task{System.Boolean}.</returns>
         private async Task FetchSeriesData(Series series, string seriesId, string seriesDataPath, bool isForcedRefresh, CancellationToken cancellationToken)
         {
-            var files = Directory.EnumerateFiles(seriesDataPath, "*.xml", SearchOption.TopDirectoryOnly).Select(Path.GetFileName).ToArray();
+            var files = Directory.EnumerateFiles(seriesDataPath, "*.xml", SearchOption.TopDirectoryOnly).Select(Path.GetFileName).ToList();
 
             var seriesXmlFilename = ConfigurationManager.Configuration.PreferredMetadataLanguage.ToLower() + ".xml";
 
@@ -555,9 +555,9 @@ namespace MediaBrowser.Providers.TV
                                             .Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries)
                                             .Select(i => i.Trim())
                                             .Where(i => !string.IsNullOrWhiteSpace(i))
-                                            .ToArray();
+                                            .ToList();
 
-                                        if (vals.Length > 0)
+                                        if (vals.Count > 0)
                                         {
                                             item.Genres.Clear();
 
@@ -584,9 +584,9 @@ namespace MediaBrowser.Providers.TV
                                             .Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries)
                                             .Select(i => i.Trim())
                                             .Where(i => !string.IsNullOrWhiteSpace(i))
-                                            .ToArray();
+                                            .ToList();
 
-                                        if (vals.Length > 0)
+                                        if (vals.Count > 0)
                                         {
                                             item.Studios.Clear();
 

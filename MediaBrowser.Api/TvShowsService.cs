@@ -3,13 +3,11 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
-using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
 using ServiceStack.ServiceHost;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Api
 {
@@ -144,7 +142,7 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetNextUpEpisodes request)
         {
-            var result = GetNextUpEpisodes(request).Result;
+            var result = GetNextUpEpisodes(request);
 
             return ToOptimizedResult(result);
         }
@@ -154,18 +152,18 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>Task{ItemsResult}.</returns>
-        private async Task<ItemsResult> GetNextUpEpisodes(GetNextUpEpisodes request)
+        private ItemsResult GetNextUpEpisodes(GetNextUpEpisodes request)
         {
             var user = _userManager.GetUserById(request.UserId);
 
-            var itemsArray = user.RootFolder
+            var itemsList = user.RootFolder
                 .GetRecursiveChildren(user)
                 .OfType<Series>()
                 .AsParallel()
                 .Select(i => GetNextUp(i, user))
-                .ToArray();
+                .ToList();
 
-            itemsArray = itemsArray
+            itemsList = itemsList
                 .Where(i => i.Item1 != null)
                 .OrderByDescending(i =>
                 {
@@ -185,9 +183,9 @@ namespace MediaBrowser.Api
                     return 0;
                 })
                 .ThenByDescending(i => i.Item1.PremiereDate ?? DateTime.MinValue)
-                .ToArray();
+                .ToList();
 
-            var pagedItems = ApplyPaging(request, itemsArray.Select(i => i.Item1));
+            var pagedItems = ApplyPaging(request, itemsList.Select(i => i.Item1));
 
             var fields = request.GetItemFields().ToList();
 
@@ -195,7 +193,7 @@ namespace MediaBrowser.Api
 
             return new ItemsResult
             {
-                TotalRecordCount = itemsArray.Length,
+                TotalRecordCount = itemsList.Count,
                 Items = returnItems
             };
         }

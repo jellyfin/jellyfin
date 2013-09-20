@@ -118,7 +118,7 @@ namespace MediaBrowser.Api
 
             var results = await _searchEngine.GetSearchHints(inputItems, request.SearchTerm).ConfigureAwait(false);
 
-            var searchResultArray = results.ToArray();
+            var searchResultArray = results.ToList();
 
             IEnumerable<SearchHintInfo> returnResults = searchResultArray;
 
@@ -134,7 +134,7 @@ namespace MediaBrowser.Api
 
             return new SearchHintResult
             {
-                TotalRecordCount = searchResultArray.Length,
+                TotalRecordCount = searchResultArray.Count,
 
                 SearchHints = returnResults.Select(GetSearchHintResult).ToArray()
             };
