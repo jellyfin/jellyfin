@@ -458,7 +458,7 @@ namespace MediaBrowser.Providers.MediaInfo
                         Type = MediaStreamType.Subtitle,
                         IsExternal = true,
                         Path = fullName,
-                        Codec = "srt"
+                        Codec = Path.GetExtension(fullName).ToLower().TrimStart('.')
                     });
                 }
                 else if (fileNameWithoutExtension.StartsWith(videoFileNameWithoutExtension + ".", StringComparison.OrdinalIgnoreCase))
