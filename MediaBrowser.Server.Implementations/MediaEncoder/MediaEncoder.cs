@@ -602,11 +602,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                 throw new ArgumentNullException("outputPath");
             }
 
-            var fastSeekSeconds = offset.TotalSeconds >= 1 ? offset.TotalSeconds - 1 : 0;
-            var slowSeekSeconds = offset.TotalSeconds >= 1 ? 1 : 0;
-
-            var fastSeekParam = fastSeekSeconds > 0 ? "-ss " + fastSeekSeconds.ToString(UsCulture) + " " : string.Empty;
-            var slowSeekParam = slowSeekSeconds > 0 ? " -ss " + slowSeekSeconds.ToString(UsCulture) : string.Empty;
+            var slowSeekParam = offset.TotalSeconds > 0 ? " -ss " + offset.TotalSeconds.ToString(UsCulture) : string.Empty;
 
             var encodingParam = string.IsNullOrEmpty(language) ? string.Empty :
                 GetSubtitleLanguageEncodingParam(language) + " ";
@@ -622,7 +618,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                             UseShellExecute = false,
                             FileName = FFMpegPath,
                             Arguments =
-                                string.Format("{0}{1}-i \"{2}\"{3} \"{4}\"", encodingParam, fastSeekParam, inputPath, slowSeekParam,
+                                string.Format("{0}-i \"{1}\"{2} \"{3}\"", encodingParam, inputPath, slowSeekParam,
                                               outputPath),
                             WindowStyle = ProcessWindowStyle.Hidden,
                             ErrorDialog = false
@@ -820,11 +816,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                 throw new ArgumentNullException("cancellationToken");
             }
 
-            var fastSeekSeconds = offset.TotalSeconds >= 1 ? offset.TotalSeconds - 1 : 0;
-            var slowSeekSeconds = offset.TotalSeconds >= 1 ? 1 : 0;
-
-            var fastSeekParam = fastSeekSeconds > 0 ? "-ss " + fastSeekSeconds.ToString(UsCulture) + " " : string.Empty;
-            var slowSeekParam = slowSeekSeconds > 0 ? " -ss " + slowSeekSeconds.ToString(UsCulture) : string.Empty;
+            var slowSeekParam = offset.TotalSeconds > 0 ? " -ss " + offset.TotalSeconds.ToString(UsCulture) : string.Empty;
 
             var process = new Process
             {
@@ -837,7 +829,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                     RedirectStandardError = true,
 
                     FileName = FFMpegPath,
-                    Arguments = string.Format("{0}-i {1}{2} -map 0:{3} -an -vn -c:s ass \"{4}\"", fastSeekParam, inputPath, slowSeekParam, subtitleStreamIndex, outputPath),
+                    Arguments = string.Format("-i {0}{1} -map 0:{2} -an -vn -c:s ass \"{3}\"", inputPath, slowSeekParam, subtitleStreamIndex, outputPath),
                     WindowStyle = ProcessWindowStyle.Hidden,
                     ErrorDialog = false
                 }
