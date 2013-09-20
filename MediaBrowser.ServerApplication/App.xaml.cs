@@ -1,89 +1,19 @@
-﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Constants;
-using MediaBrowser.Common.Implementations.Updates;
-using MediaBrowser.Controller;
+﻿using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Server.Implementations;
 using MediaBrowser.ServerApplication.Splash;
-using Microsoft.Win32;
 using System;
 using System.Diagnostics;
-using System.IO;
-using System.Net.Cache;
-using System.Threading;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
 
 namespace MediaBrowser.ServerApplication
 {
     /// <summary>
     /// Interaction logic for App.xaml
     /// </summary>
-    public partial class App : Application
+    public partial class App : Application, IApplicationInterface
     {
-        /// <summary>
-        /// The single instance mutex
-        /// </summary>
-        private static Mutex _singleInstanceMutex;
-
-        /// <summary>
-        /// Defines the entry point of the application.
-        /// </summary>
-        [STAThread]
-        public static void Main()
-        {
-            bool createdNew;
-
-            var runningPath = Process.GetCurrentProcess().MainModule.FileName.Replace(Path.DirectorySeparatorChar.ToString(), string.Empty);
-
-            _singleInstanceMutex = new Mutex(true, @"Local\" + runningPath, out createdNew);
-            
-            if (!createdNew)
-            {
-                _singleInstanceMutex = null;
-                return;
-            }
-
-            // Look for the existence of an update archive
-            var appPaths = new ServerApplicationPaths();
-            var updateArchive = Path.Combine(appPaths.TempUpdatePath, Constants.MbServerPkgName + ".zip");
-            if (File.Exists(updateArchive))
-            {
-                // Update is there - execute update
-                try
-                {
-                    new ApplicationUpdater().UpdateApplication(MBApplication.MBServer, appPaths, updateArchive);
-
-                    // And just let the app exit so it can update
-                    return;
-                }
-                catch (Exception e)
-                {
-                    MessageBox.Show(string.Format("Error attempting to update application.\n\n{0}\n\n{1}", e.GetType().Name, e.Message));
-                }
-            }
-
-            var application = new App();
-
-            application.Run();
-        }
-
-        /// <summary>
-        /// Gets the instance.
-        /// </summary>
-        /// <value>The instance.</value>
-        public static App Instance
-        {
-            get
-            {
-                return Current as App;
-            }
-        }
-
         /// <summary>
         /// Gets or sets the logger.
         /// </summary>
@@ -95,7 +25,7 @@ namespace MediaBrowser.ServerApplication
         /// </summary>
         /// <value>The composition root.</value>
         protected ApplicationHost CompositionRoot { get; set; }
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="App" /> class.
         /// </summary>
@@ -103,6 +33,11 @@ namespace MediaBrowser.ServerApplication
         public App()
         {
             InitializeComponent();
+        }
+
+        public bool IsBackgroundService
+        {
+            get { return false; }
         }
 
         /// <summary>
@@ -114,63 +49,35 @@ namespace MediaBrowser.ServerApplication
             get { return "MediaBrowser.Server.Uninstall.exe"; }
         }
 
-        /// <summary>
-        /// Raises the <see cref="E:System.Windows.Application.Startup" /> event.
-        /// </summary>
-        /// <param name="e">A <see cref="T:System.Windows.StartupEventArgs" /> that contains the event data.</param>
+        public void OnUnhandledException(Exception ex)
+        {
+            Logger.ErrorException("UnhandledException", ex);
+
+            MessageBox.Show("Unhandled exception: " + ex.Message);
+        }
+
         protected override void OnStartup(StartupEventArgs e)
         {
-            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
-            LoadKernel();
+            base.OnStartup(e);
 
-            SystemEvents.SessionEnding += SystemEvents_SessionEnding;
-        }
-
-        /// <summary>
-        /// Handles the UnhandledException event of the CurrentDomain control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="UnhandledExceptionEventArgs" /> instance containing the event data.</param>
-        void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
-        {
-            var exception = (Exception)e.ExceptionObject;
-
-            Logger.ErrorException("UnhandledException", exception);
-
-            MessageBox.Show("Unhandled exception: " + exception.Message);
-
-            if (!Debugger.IsAttached)
-            {
-                Environment.Exit(System.Runtime.InteropServices.Marshal.GetHRForException(exception));
-            }
-        }
-
-        /// <summary>
-        /// Handles the SessionEnding event of the SystemEvents control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="SessionEndingEventArgs" /> instance containing the event data.</param>
-        void SystemEvents_SessionEnding(object sender, SessionEndingEventArgs e)
-        {
-            // Try to shut down gracefully
-            Shutdown();
+            LoadApplication();
         }
 
         /// <summary>
         /// Loads the kernel.
         /// </summary>
-        protected async void LoadKernel()
+        protected async void LoadApplication()
         {
             try
             {
-                CompositionRoot = new ApplicationHost();
+                CompositionRoot = new ApplicationHost(this);
 
                 Logger = CompositionRoot.LogManager.GetLogger("App");
 
                 var splash = new SplashWindow(CompositionRoot.ApplicationVersion);
 
                 splash.Show();
-                
+
                 await CompositionRoot.Init();
 
                 splash.Hide();
@@ -192,13 +99,18 @@ namespace MediaBrowser.ServerApplication
             }
         }
 
+        public void ShutdownApplication()
+        {
+            Dispatcher.Invoke(Shutdown);
+        }
+
         /// <summary>
         /// Raises the <see cref="E:System.Windows.Application.Exit" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.Windows.ExitEventArgs" /> that contains the event data.</param>
         protected override void OnExit(ExitEventArgs e)
         {
-            ReleaseMutex();
+            MainStartup.ReleaseMutex();
 
             base.OnExit(e);
 
@@ -206,22 +118,6 @@ namespace MediaBrowser.ServerApplication
             {
                 CompositionRoot.Dispose();
             }
-        }
-
-        /// <summary>
-        /// Releases the mutex.
-        /// </summary>
-        private void ReleaseMutex()
-        {
-            if (_singleInstanceMutex == null)
-            {
-                return;
-            }
-
-            _singleInstanceMutex.ReleaseMutex();
-            _singleInstanceMutex.Close();
-            _singleInstanceMutex.Dispose();
-            _singleInstanceMutex = null;
         }
 
         /// <summary>
@@ -281,9 +177,9 @@ namespace MediaBrowser.ServerApplication
         /// Restarts this instance.
         /// </summary>
         /// <exception cref="System.NotImplementedException"></exception>
-        public void Restart()
+        public void RestartApplication()
         {
-            Dispatcher.Invoke(ReleaseMutex);
+            Dispatcher.Invoke(MainStartup.ReleaseMutex);
 
             CompositionRoot.Dispose();
 

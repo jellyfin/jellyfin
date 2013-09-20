@@ -119,7 +119,7 @@ namespace MediaBrowser.ServerApplication
 
             Dispatcher.InvokeAsync(() =>
             {
-                var logWindow = App.Instance.Windows.OfType<LogWindow>().FirstOrDefault();
+                var logWindow = App.Current.Windows.OfType<LogWindow>().FirstOrDefault();
 
                 if ((logWindow == null && _configurationManager.Configuration.ShowLogWindow) || (logWindow != null && !_configurationManager.Configuration.ShowLogWindow))
                 {
@@ -204,7 +204,7 @@ namespace MediaBrowser.ServerApplication
         {
             App.OpenUrl("https://github.com/MediaBrowser/MediaBrowser/wiki");
         }
-        
+
         /// <summary>
         /// Occurs when [property changed].
         /// </summary>
@@ -258,7 +258,7 @@ namespace MediaBrowser.ServerApplication
         {
             App.OpenDashboardPage("dashboard.html", loggedInUser, _configurationManager, _appHost);
         }
-        
+
         /// <summary>
         /// Handles the click event of the cmVisitCT control.
         /// </summary>
@@ -285,9 +285,9 @@ namespace MediaBrowser.ServerApplication
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RoutedEventArgs" /> instance containing the event data.</param>
-        private void cmExit_click(object sender, RoutedEventArgs e)
+        private async void cmExit_click(object sender, RoutedEventArgs e)
         {
-            Application.Current.Shutdown();
+            await _appHost.Shutdown().ConfigureAwait(false);
         }
 
         /// <summary>
@@ -295,9 +295,9 @@ namespace MediaBrowser.ServerApplication
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RoutedEventArgs" /> instance containing the event data.</param>
-        private void cmdReloadServer_click(object sender, RoutedEventArgs e)
+        private async void cmdReloadServer_click(object sender, RoutedEventArgs e)
         {
-            App.Instance.Restart();
+            await _appHost.Restart().ConfigureAwait(false);
         }
 
         /// <summary>

@@ -552,7 +552,7 @@ namespace MediaBrowser.Common.Implementations
         /// <summary>
         /// Restarts this instance.
         /// </summary>
-        public abstract void Restart();
+        public abstract Task Restart();
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance can self update.
@@ -582,7 +582,7 @@ namespace MediaBrowser.Common.Implementations
         /// <summary>
         /// Shuts down.
         /// </summary>
-        public abstract void Shutdown();
+        public abstract Task Shutdown();
 
         /// <summary>
         /// Called when [application updated].

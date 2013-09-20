@@ -1,5 +1,4 @@
-﻿using System.Windows.Forms;
-using MediaBrowser.Api;
+﻿using MediaBrowser.Api;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Constants;
@@ -7,7 +6,6 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Implementations;
 using MediaBrowser.Common.Implementations.IO;
 using MediaBrowser.Common.Implementations.ScheduledTasks;
-using MediaBrowser.Common.Implementations.Updates;
 using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
@@ -184,6 +182,13 @@ namespace MediaBrowser.ServerApplication
         private IItemRepository ItemRepository { get; set; }
         private INotificationsRepository NotificationsRepository { get; set; }
 
+        public bool IsBackgroundService
+        {
+            get { return _appInterface != null && _appInterface.IsBackgroundService; }
+        }
+
+        private readonly IApplicationInterface _appInterface;
+
         /// <summary>
         /// The full path to our startmenu shortcut
         /// </summary>
@@ -193,6 +198,11 @@ namespace MediaBrowser.ServerApplication
         }
 
         private Task<IHttpServer> _httpServerCreationTask;
+
+        public ApplicationHost(IApplicationInterface appInterface)
+        {
+            _appInterface = appInterface;
+        }
 
         /// <summary>
         /// Runs the startup tasks.
@@ -505,7 +515,7 @@ namespace MediaBrowser.ServerApplication
             base.OnConfigurationUpdated(sender, e);
 
             HttpServer.EnableHttpRequestLogging = ServerConfigurationManager.Configuration.EnableHttpLevelLogging;
-            
+
             if (!string.Equals(HttpServer.UrlPrefix, HttpServerUrlPrefix, StringComparison.OrdinalIgnoreCase))
             {
                 NotifyPendingRestart();
@@ -521,19 +531,18 @@ namespace MediaBrowser.ServerApplication
         /// <summary>
         /// Restarts this instance.
         /// </summary>
-        public override void Restart()
+        public override async Task Restart()
         {
             try
             {
-                var task = ServerManager.SendWebSocketMessageAsync("ServerRestarting", () => string.Empty, CancellationToken.None);
-                task.Wait();
+                await ServerManager.SendWebSocketMessageAsync("ServerRestarting", () => string.Empty, CancellationToken.None).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 Logger.ErrorException("Error sending server restart web socket message", ex);
             }
 
-            App.Instance.Restart();
+            _appInterface.RestartApplication();
         }
 
         /// <summary>
@@ -618,7 +627,8 @@ namespace MediaBrowser.ServerApplication
                 Id = _systemId,
                 ProgramDataPath = ApplicationPaths.ProgramDataPath,
                 MacAddress = GetMacAddress(),
-                HttpServerPortNumber = ServerConfigurationManager.Configuration.HttpServerPortNumber
+                HttpServerPortNumber = ServerConfigurationManager.Configuration.HttpServerPortNumber,
+                IsBackgroundService = IsBackgroundService
             };
         }
 
@@ -642,19 +652,18 @@ namespace MediaBrowser.ServerApplication
         /// <summary>
         /// Shuts down.
         /// </summary>
-        public override void Shutdown()
+        public override async Task Shutdown()
         {
             try
             {
-                var task = ServerManager.SendWebSocketMessageAsync("ServerShuttingDown", () => string.Empty, CancellationToken.None);
-                task.Wait();
+                await ServerManager.SendWebSocketMessageAsync("ServerShuttingDown", () => string.Empty, CancellationToken.None).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 Logger.ErrorException("Error sending server shutdown web socket message", ex);
             }
 
-            App.Instance.Dispatcher.Invoke(App.Instance.Shutdown);
+            _appInterface.ShutdownApplication();
         }
 
         /// <summary>

@@ -133,8 +133,8 @@ namespace MediaBrowser.Api
         {
             Task.Run(async () =>
             {
-                await Task.Delay(100);
-                _appHost.Restart();
+                await Task.Delay(100).ConfigureAwait(false);
+                await _appHost.Restart().ConfigureAwait(false);
             });
         }
 
@@ -146,8 +146,8 @@ namespace MediaBrowser.Api
         {
             Task.Run(async () =>
             {
-                await Task.Delay(100);
-                _appHost.Shutdown();
+                await Task.Delay(100).ConfigureAwait(false);
+                await _appHost.Shutdown().ConfigureAwait(false);
             });
         }
 

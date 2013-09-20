@@ -37,7 +37,7 @@ namespace MediaBrowser.Common
         /// <summary>
         /// Restarts this instance.
         /// </summary>
-        void Restart();
+        Task Restart();
 
         /// <summary>
         /// Gets the application version.
@@ -113,7 +113,7 @@ namespace MediaBrowser.Common
         /// <summary>
         /// Shuts down.
         /// </summary>
-        void Shutdown();
+        Task Shutdown();
 
         /// <summary>
         /// Gets the plugins.

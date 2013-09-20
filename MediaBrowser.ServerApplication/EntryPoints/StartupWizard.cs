@@ -64,7 +64,10 @@ namespace MediaBrowser.ServerApplication.EntryPoints
             {
                 _logger.ErrorException("Error launching startup wizard", ex);
 
-                MessageBox.Show("There was an error launching the Media Browser startup wizard. Please ensure a web browser is installed on the machine and is configured as the default browser.", "Media Browser");
+                if (!_appHost.IsBackgroundService)
+                {
+                    MessageBox.Show("There was an error launching the Media Browser startup wizard. Please ensure a web browser is installed on the machine and is configured as the default browser.", "Media Browser");
+                }
             }
         }
 
