@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Api;
+﻿using System.Windows.Forms;
+using MediaBrowser.Api;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Constants;
@@ -475,7 +476,7 @@ namespace MediaBrowser.ServerApplication
         {
             try
             {
-                ServerManager.Start();
+                ServerManager.Start(HttpServerUrlPrefix, ServerConfigurationManager.Configuration.EnableHttpLevelLogging);
             }
             catch
             {
@@ -490,6 +491,8 @@ namespace MediaBrowser.ServerApplication
                     throw;
                 }
             }
+
+            ServerManager.StartWebSocketServer();
         }
 
         /// <summary>
@@ -501,6 +504,8 @@ namespace MediaBrowser.ServerApplication
         {
             base.OnConfigurationUpdated(sender, e);
 
+            HttpServer.EnableHttpRequestLogging = ServerConfigurationManager.Configuration.EnableHttpLevelLogging;
+            
             if (!string.Equals(HttpServer.UrlPrefix, HttpServerUrlPrefix, StringComparison.OrdinalIgnoreCase))
             {
                 NotifyPendingRestart();
