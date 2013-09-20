@@ -539,6 +539,26 @@ namespace MediaBrowser.Server.Implementations.Drawing
             return string.Join("|", cacheKeys.ToArray()).GetMD5();
         }
 
+        /// <summary>
+        /// Gets the enhanced image.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="imageType">Type of the image.</param>
+        /// <param name="imageIndex">Index of the image.</param>
+        /// <returns>Task{System.String}.</returns>
+        public async Task<string> GetEnhancedImage(BaseItem item, ImageType imageType, int imageIndex)
+        {
+            var enhancers = GetSupportedEnhancers(item, imageType).ToList();
+
+            var imagePath = item.GetImagePath(imageType, imageIndex);
+
+            var dateModified = item.GetImageDateModified(imagePath);
+
+            var result = await GetEnhancedImage(imagePath, dateModified, item, imageType, imageIndex, enhancers);
+
+            return result.Item1;
+        }
+
         private async Task<Tuple<string, DateTime>> GetEnhancedImage(string originalImagePath, DateTime dateModified, BaseItem item,
                                                     ImageType imageType, int imageIndex,
                                                     List<IImageEnhancer> enhancers)
