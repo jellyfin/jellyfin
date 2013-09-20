@@ -951,15 +951,39 @@ namespace MediaBrowser.Controller.Entities
                 return result;
             }
 
-            var children = Children;
+            return GetChildrenList(user, includeLinkedChildren);
+        }
+
+        /// <summary>
+        /// Gets the children list.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="includeLinkedChildren">if set to <c>true</c> [include linked children].</param>
+        /// <returns>List{BaseItem}.</returns>
+        private List<BaseItem> GetChildrenList(User user, bool includeLinkedChildren)
+        {
+            var list = new List<BaseItem>();
+            
+            foreach (var child in Children)
+            {
+                if (child.IsVisible(user))
+                {
+                    list.Add(child);
+                }
+            }
 
             if (includeLinkedChildren)
             {
-                children = children.Concat(GetLinkedChildren());
+                foreach (var child in GetLinkedChildren())
+                {
+                    if (child.IsVisible(user))
+                    {
+                        list.Add(child);
+                    }
+                }
             }
 
-            // If indexed is false or the indexing function is null
-            return children.AsParallel().Where(c => c.IsVisible(user)).AsEnumerable();
+            return list;
         }
 
         /// <summary>
@@ -976,42 +1000,35 @@ namespace MediaBrowser.Controller.Entities
                 throw new ArgumentNullException();
             }
 
-            var children = GetRecursiveChildrenInternal(user, includeLinkedChildren);
+            var list = new List<BaseItem>(10000);
+
+            AddRecursiveChildrenInternal(user, includeLinkedChildren, list);
 
             if (includeLinkedChildren)
             {
-                children = children.Distinct();
+                list = list.Distinct().ToList();
             }
 
-            return children;
+            return list;
         }
 
         /// <summary>
-        /// Gets allowed recursive children of an item
+        /// Adds the recursive children internal.
         /// </summary>
         /// <param name="user">The user.</param>
         /// <param name="includeLinkedChildren">if set to <c>true</c> [include linked children].</param>
-        /// <returns>IEnumerable{BaseItem}.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
-        private IEnumerable<BaseItem> GetRecursiveChildrenInternal(User user, bool includeLinkedChildren)
+        /// <param name="list">The list.</param>
+        private void AddRecursiveChildrenInternal(User user, bool includeLinkedChildren, List<BaseItem> list)
         {
-            if (user == null)
+            foreach (var item in GetChildrenList(user, includeLinkedChildren))
             {
-                throw new ArgumentNullException();
-            }
-
-            foreach (var item in GetChildren(user, includeLinkedChildren))
-            {
-                yield return item;
+                list.Add(item);
 
                 var subFolder = item as Folder;
 
                 if (subFolder != null)
                 {
-                    foreach (var subitem in subFolder.GetRecursiveChildrenInternal(user, includeLinkedChildren))
-                    {
-                        yield return subitem;
-                    }
+                    subFolder.AddRecursiveChildrenInternal(user, includeLinkedChildren, list);
                 }
             }
         }

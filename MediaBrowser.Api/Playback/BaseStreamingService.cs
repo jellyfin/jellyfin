@@ -256,7 +256,10 @@ namespace MediaBrowser.Api.Playback
 
             if (state.SubtitleStream != null)
             {
-                if (state.SubtitleStream.Codec.IndexOf("srt", StringComparison.OrdinalIgnoreCase) != -1 || state.SubtitleStream.Codec.IndexOf("subrip", StringComparison.OrdinalIgnoreCase) != -1)
+                if (state.SubtitleStream.Codec.IndexOf("srt", StringComparison.OrdinalIgnoreCase) != -1 ||
+                    state.SubtitleStream.Codec.IndexOf("subrip", StringComparison.OrdinalIgnoreCase) != -1 ||
+                    string.Equals(state.SubtitleStream.Codec, "ass", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(state.SubtitleStream.Codec, "ssa", StringComparison.OrdinalIgnoreCase))
                 {
                     assSubtitleParam = GetTextSubtitleParam((Video)state.Item, state.SubtitleStream, request.StartTimeTicks, performTextSubtitleConversion);
                 }
