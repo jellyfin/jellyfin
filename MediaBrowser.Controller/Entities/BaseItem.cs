@@ -1315,14 +1315,14 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Marks the item as either played or unplayed
+        /// Marks the played.
         /// </summary>
         /// <param name="user">The user.</param>
-        /// <param name="wasPlayed">if set to <c>true</c> [was played].</param>
+        /// <param name="datePlayed">The date played.</param>
         /// <param name="userManager">The user manager.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public virtual async Task SetPlayedStatus(User user, bool wasPlayed, IUserDataRepository userManager)
+        public virtual async Task MarkPlayed(User user, DateTime? datePlayed, IUserDataRepository userManager)
         {
             if (user == null)
             {
@@ -1333,20 +1333,39 @@ namespace MediaBrowser.Controller.Entities
 
             var data = userManager.GetUserData(user.Id, key);
 
-            if (wasPlayed)
+            data.PlayCount = Math.Max(data.PlayCount, 1);
+
+            data.LastPlayedDate = datePlayed ?? data.LastPlayedDate;
+            data.Played = true;
+
+            await userManager.SaveUserData(user.Id, key, data, CancellationToken.None).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Marks the unplayed.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="userManager">The user manager.</param>
+        /// <returns>Task.</returns>
+        /// <exception cref="System.ArgumentNullException"></exception>
+        public virtual async Task MarkUnplayed(User user, IUserDataRepository userManager)
+        {
+            if (user == null)
             {
-                data.PlayCount = Math.Max(data.PlayCount, 1);
-            }
-            else
-            {
-                //I think it is okay to do this here.
-                // if this is only called when a user is manually forcing something to un-played
-                // then it probably is what we want to do...
-                data.PlayCount = 0;
-                data.PlaybackPositionTicks = 0;
+                throw new ArgumentNullException();
             }
 
-            data.Played = wasPlayed;
+            var key = GetUserDataKey();
+
+            var data = userManager.GetUserData(user.Id, key);
+
+            //I think it is okay to do this here.
+            // if this is only called when a user is manually forcing something to un-played
+            // then it probably is what we want to do...
+            data.PlayCount = 0;
+            data.PlaybackPositionTicks = 0;
+            data.LastPlayedDate = null;
+            data.Played = false;
 
             await userManager.SaveUserData(user.Id, key, data, CancellationToken.None).ConfigureAwait(false);
         }
