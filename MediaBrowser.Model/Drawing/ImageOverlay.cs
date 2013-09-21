@@ -9,6 +9,10 @@ namespace MediaBrowser.Model.Drawing
         /// <summary>
         /// The watched
         /// </summary>
-        Watched
+        Played,
+        /// <summary>
+        /// The percent played
+        /// </summary>
+        PercentPlayed
     }
 }
