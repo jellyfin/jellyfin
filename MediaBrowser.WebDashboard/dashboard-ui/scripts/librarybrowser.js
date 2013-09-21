@@ -185,7 +185,7 @@
 
                     html += '<p class="itemMiscInfo">' + childText + '</p>';
                 }
-                else if (item.Type == "GamePlatform") {
+                else if (item.Type == "GameSystem") {
 
                     childText = item.ChildCount == 1 ? "1 Game" : item.ChildCount + " Games";
 
@@ -203,7 +203,7 @@
                 }
                 else if (item.Type == "Game") {
 
-                    html += '<p class="itemMiscInfo">' + item.GameSystem + '</p>';
+                    html += '<p class="itemMiscInfo">' + (item.DisplayMediaType || item.GameSystem) + '</p>';
                 }
                 else if (item.Type == "Episode") {
 
@@ -537,7 +537,7 @@
             if (item.Type == "MusicAlbum") {
                 return "itemdetails.html?id=" + id;
             }
-            if (item.Type == "GamePlatform") {
+            if (item.Type == "GameSystem") {
                 return "itemdetails.html?id=" + id;
             }
             if (item.Type == "Genre") {

@@ -99,7 +99,7 @@
             $('#gameTabs', page).show();
         }
 
-        if (item.Type == "GamePlatform") {
+        if (item.Type == "GameSystem") {
             $('#gameSystemTabs', page).show();
         }
 
@@ -501,7 +501,7 @@
         else if (item.Type == "MusicAlbum") {
             $('#childrenTitle', page).html('Tracks (' + item.ChildCount + ')');
         }
-        else if (item.Type == "GamePlatform") {
+        else if (item.Type == "GameSystem") {
             $('#childrenTitle', page).html('Games (' + item.ChildCount + ')');
         }
         else {

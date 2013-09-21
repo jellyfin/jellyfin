@@ -9,7 +9,6 @@ using ServiceStack.ServiceHost;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Api
 {
@@ -123,6 +122,18 @@ namespace MediaBrowser.Api
         protected Person GetPerson(string name, ILibraryManager libraryManager)
         {
             return libraryManager.GetPerson(DeSlugPersonName(name, libraryManager));
+        }
+
+        protected IEnumerable<BaseItem> GetAllLibraryItems(Guid? userId, IUserManager userManager, ILibraryManager libraryManager)
+        {
+            if (userId.HasValue)
+            {
+                var user = userManager.GetUserById(userId.Value);
+
+                return userManager.GetUserById(userId.Value).RootFolder.GetRecursiveChildren(user);
+            }
+
+            return libraryManager.RootFolder.RecursiveChildren;
         }
 
         /// <summary>

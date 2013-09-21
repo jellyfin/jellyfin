@@ -313,7 +313,7 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetItemCounts request)
         {
-            var items = GetItems(request.UserId).ToList();
+            var items = GetAllLibraryItems(request.UserId, _userManager, _libraryManager).ToList();
 
             var counts = new ItemCounts
             {
@@ -330,18 +330,6 @@ namespace MediaBrowser.Api
             };
 
             return ToOptimizedResult(counts);
-        }
-
-        protected IEnumerable<BaseItem> GetItems(Guid? userId)
-        {
-            if (userId.HasValue)
-            {
-                var user = _userManager.GetUserById(userId.Value);
-
-                return _userManager.GetUserById(userId.Value).RootFolder.GetRecursiveChildren(user);
-            }
-
-            return _libraryManager.RootFolder.RecursiveChildren;
         }
 
         /// <summary>

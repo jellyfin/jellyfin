@@ -34,7 +34,19 @@ namespace MediaBrowser.Model.ApiClient
         /// </summary>
         event EventHandler<HttpResponseEventArgs> HttpResponseReceived;
 
+        /// <summary>
+        /// Gets the API URL.
+        /// </summary>
+        /// <param name="handler">The handler.</param>
+        /// <returns>System.String.</returns>
         string GetApiUrl(string handler);
+
+        /// <summary>
+        /// Gets the game system summaries async.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{List{GameSystemSummary}}.</returns>
+        Task<List<GameSystemSummary>> GetGameSystemSummariesAsync(CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the async.
@@ -186,6 +198,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <summary>
         /// Gets active client sessions.
         /// </summary>
+        /// <param name="query">The query.</param>
         /// <returns>Task{SessionInfoDto[]}.</returns>
         Task<SessionInfoDto[]> GetClientSessionsAsync(SessionQuery query);
 
@@ -468,7 +481,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="userId">The user id.</param>
         /// <returns>Task{UserItemDataDto}.</returns>
         Task<UserItemDataDto> MarkUnplayedAsync(string itemId, string userId);
-        
+
         /// <summary>
         /// Updates the favorite status async.
         /// </summary>

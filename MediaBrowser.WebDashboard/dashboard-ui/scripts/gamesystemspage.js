@@ -6,7 +6,7 @@
 
         SortBy: "SortName",
         SortOrder: "Ascending",
-        IncludeItemTypes: "GamePlatform",
+        IncludeItemTypes: "GameSystem",
         Recursive: true,
         Fields: "ItemCounts,ItemCounts,DateCreated,UserData",
         StartIndex: 0

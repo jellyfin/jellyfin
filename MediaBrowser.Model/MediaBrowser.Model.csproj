@@ -50,6 +50,7 @@
     <Compile Include="Drawing\ImageOutputFormat.cs" />
     <Compile Include="Dto\BaseItemPerson.cs" />
     <Compile Include="Dto\ChapterInfoDto.cs" />
+    <Compile Include="Dto\GameSystemSummary.cs" />
     <Compile Include="Dto\IItemDto.cs" />
     <Compile Include="Dto\ImageInfo.cs" />
     <Compile Include="Dto\ItemByNameCounts.cs" />
