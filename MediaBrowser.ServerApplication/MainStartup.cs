@@ -27,6 +27,10 @@ namespace MediaBrowser.ServerApplication
 
         private static App _app;
 
+        private static BackgroundService _backgroundService;
+
+        private static ILogger _logger;
+
         /// <summary>
         /// Defines the entry point of the application.
         /// </summary>
@@ -41,7 +45,7 @@ namespace MediaBrowser.ServerApplication
             var logManager = new NlogManager(appPaths.LogDirectoryPath, "server");
             logManager.ReloadLogger(LogSeverity.Info);
 
-            var logger = logManager.GetLogger("Main");
+            var logger = _logger = logManager.GetLogger("Main");
 
             BeginLog(logger);
 
@@ -187,6 +191,8 @@ namespace MediaBrowser.ServerApplication
             service.Disposed += service_Disposed;
 
             ServiceBase.Run(service);
+
+            _backgroundService = service;
         }
 
         /// <summary>
@@ -294,10 +300,10 @@ namespace MediaBrowser.ServerApplication
         /// <param name="e">The <see cref="SessionEndingEventArgs"/> instance containing the event data.</param>
         static void SystemEvents_SessionEnding(object sender, SessionEndingEventArgs e)
         {
-            // Try to shutdown gracefully
-            var task = _appHost.Shutdown();
-
-            Task.WaitAll(task);
+            if (e.Reason == SessionEndReasons.SystemShutdown || _backgroundService == null)
+            {
+                Shutdown();
+            }
         }
 
         /// <summary>
@@ -309,7 +315,10 @@ namespace MediaBrowser.ServerApplication
         {
             var exception = (Exception)e.ExceptionObject;
 
-            _app.OnUnhandledException(exception);
+            if (_backgroundService == null)
+            {
+                _app.OnUnhandledException(exception);
+            }
 
             if (!Debugger.IsAttached)
             {
@@ -364,6 +373,45 @@ namespace MediaBrowser.ServerApplication
             }
 
             return false;
+        }
+
+        public static void Shutdown()
+        {
+            if (_backgroundService != null)
+            {
+                _backgroundService.Stop();
+            }
+            else
+            {
+                _app.Dispatcher.Invoke(_app.Shutdown);
+            }
+        }
+
+        public static void Restart()
+        {
+            // Second instance will start first, so release the mutex and dispose the http server ahead of time
+            _app.Dispatcher.Invoke(() => ReleaseMutex(_logger));
+
+            _appHost.Dispose();
+
+            RestartInternal();
+
+            _app.Dispatcher.Invoke(_app.Shutdown);
+        }
+
+        private static void RestartInternal()
+        {
+            if (_backgroundService == null)
+            {
+                System.Windows.Forms.Application.Restart();
+            }
+            else
+            {
+                //var controller = new ServiceController()
+                //{
+                //    ServiceName = BackgroundService.Name
+                //};
+            }
         }
     }
 }

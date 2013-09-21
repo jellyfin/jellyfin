@@ -534,14 +534,7 @@ namespace MediaBrowser.ServerApplication
                 Logger.ErrorException("Error sending server restart web socket message", ex);
             }
 
-            // Second instance will start first, so release the mutex and dispose the http server ahead of time
-            Application.Current.Dispatcher.Invoke(() => MainStartup.ReleaseMutex(Logger));
-
-            Dispose();
-
-            System.Windows.Forms.Application.Restart();
-
-            ShutdownInternal();
+            MainStartup.Restart();
         }
 
         /// <summary>
@@ -661,15 +654,7 @@ namespace MediaBrowser.ServerApplication
                 Logger.ErrorException("Error sending server shutdown web socket message", ex);
             }
 
-            ShutdownInternal();
-        }
-
-        public void ShutdownInternal()
-        {
-            Logger.Info("Shutting down application");
-            var app = Application.Current;
-
-            app.Dispatcher.Invoke(app.Shutdown);
+            MainStartup.Shutdown();
         }
 
         /// <summary>
