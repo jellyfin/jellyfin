@@ -90,7 +90,9 @@ namespace MediaBrowser.Api.Images
                 Quality = Request.Quality,
                 Width = Request.Width,
                 OutputFormat = Request.Format,
-                Indicator = Request.Indicator
+                Indicator = Request.Indicator,
+                PercentPlayed = Request.PercentPlayed,
+                BackgroundColor = Request.BackgroundColor
             };
 
             return ImageProcessor.ProcessImage(options, responseStream);
