@@ -25,11 +25,5 @@ namespace MediaBrowser.Controller
         /// </summary>
         /// <value>The HTTP server URL prefix.</value>
         string HttpServerUrlPrefix { get; }
-
-        /// <summary>
-        /// Gets a value indicating whether this instance is background service.
-        /// </summary>
-        /// <value><c>true</c> if this instance is background service; otherwise, <c>false</c>.</value>
-        bool IsBackgroundService { get; }
     }
 }

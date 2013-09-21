@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller;
+﻿using MediaBrowser.Common.Events;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Logging;
@@ -12,32 +13,35 @@ namespace MediaBrowser.ServerApplication
     /// <summary>
     /// Interaction logic for App.xaml
     /// </summary>
-    public partial class App : Application, IApplicationInterface
+    public partial class App : Application
     {
         /// <summary>
         /// Gets or sets the logger.
         /// </summary>
         /// <value>The logger.</value>
-        protected ILogger Logger { get; set; }
+        private readonly ILogger _logger;
 
         /// <summary>
         /// Gets or sets the composition root.
         /// </summary>
         /// <value>The composition root.</value>
-        protected ApplicationHost CompositionRoot { get; set; }
+        private readonly ApplicationHost _appHost;
+
+        public event EventHandler AppStarted;
+
+        public bool IsRunningAsService { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="App" /> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
-        public App()
+        public App(ApplicationHost appHost, ILogger logger, bool isRunningAsService)
         {
-            InitializeComponent();
-        }
+            _appHost = appHost;
+            _logger = logger;
+            IsRunningAsService = isRunningAsService;
 
-        public bool IsBackgroundService
-        {
-            get { return false; }
+            InitializeComponent();
         }
 
         /// <summary>
@@ -51,7 +55,7 @@ namespace MediaBrowser.ServerApplication
 
         public void OnUnhandledException(Exception ex)
         {
-            Logger.ErrorException("UnhandledException", ex);
+            _logger.ErrorException("UnhandledException", ex);
 
             MessageBox.Show("Unhandled exception: " + ex.Message);
         }
@@ -70,27 +74,32 @@ namespace MediaBrowser.ServerApplication
         {
             try
             {
-                CompositionRoot = new ApplicationHost(this);
+                if (!IsRunningAsService)
+                {
+                    ShowSplashWindow();
+                }
 
-                Logger = CompositionRoot.LogManager.GetLogger("App");
+                await _appHost.Init();
 
-                var splash = new SplashWindow(CompositionRoot.ApplicationVersion);
+                if (!IsRunningAsService)
+                {
+                    HideSplashWindow();
+                }
 
-                splash.Show();
+                var task = _appHost.RunStartupTasks();
 
-                await CompositionRoot.Init();
+                if (!IsRunningAsService)
+                {
+                    ShowMainWindow();
+                }
 
-                splash.Hide();
-
-                var task = CompositionRoot.RunStartupTasks();
-
-                new MainWindow(CompositionRoot.LogManager, CompositionRoot, CompositionRoot.ServerConfigurationManager, CompositionRoot.UserManager, CompositionRoot.LibraryManager, CompositionRoot.JsonSerializer, CompositionRoot.DisplayPreferencesRepository).Show();
+                EventHelper.FireEventIfNotNull(AppStarted, this, EventArgs.Empty, _logger);
 
                 await task.ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error launching application", ex);
+                _logger.ErrorException("Error launching application", ex);
 
                 MessageBox.Show("There was an error launching Media Browser: " + ex.Message);
 
@@ -99,25 +108,51 @@ namespace MediaBrowser.ServerApplication
             }
         }
 
+        private MainWindow _mainWindow;
+        private void ShowMainWindow()
+        {
+            var host = _appHost;
+
+            var win = new MainWindow(host.LogManager, host,
+                                     host.ServerConfigurationManager, host.UserManager,
+                                     host.LibraryManager, host.JsonSerializer,
+                                     host.DisplayPreferencesRepository);
+
+            win.Show();
+
+            _mainWindow = win;
+        }
+
+        private void HideMainWindow()
+        {
+            if (_mainWindow != null)
+            {
+                _mainWindow.Hide();
+                _mainWindow = null;
+            }
+        }
+
+        private SplashWindow _splashWindow;
+        private void ShowSplashWindow()
+        {
+            var win = new SplashWindow(_appHost.ApplicationVersion);
+            win.Show();
+
+            _splashWindow = win;
+        }
+
+        private void HideSplashWindow()
+        {
+            if (_splashWindow != null)
+            {
+                _splashWindow.Hide();
+                _splashWindow = null;
+            }
+        }
+
         public void ShutdownApplication()
         {
             Dispatcher.Invoke(Shutdown);
-        }
-
-        /// <summary>
-        /// Raises the <see cref="E:System.Windows.Application.Exit" /> event.
-        /// </summary>
-        /// <param name="e">An <see cref="T:System.Windows.ExitEventArgs" /> that contains the event data.</param>
-        protected override void OnExit(ExitEventArgs e)
-        {
-            MainStartup.ReleaseMutex();
-
-            base.OnExit(e);
-
-            if (CompositionRoot != null)
-            {
-                CompositionRoot.Dispose();
-            }
         }
 
         /// <summary>
@@ -171,21 +206,6 @@ namespace MediaBrowser.ServerApplication
         static void ProcessExited(object sender, EventArgs e)
         {
             ((Process)sender).Dispose();
-        }
-
-        /// <summary>
-        /// Restarts this instance.
-        /// </summary>
-        /// <exception cref="System.NotImplementedException"></exception>
-        public void RestartApplication()
-        {
-            Dispatcher.Invoke(MainStartup.ReleaseMutex);
-
-            CompositionRoot.Dispose();
-
-            System.Windows.Forms.Application.Restart();
-
-            Dispatcher.Invoke(Shutdown);
         }
     }
 }

@@ -173,6 +173,7 @@
       <HintPath>..\packages\SimpleInjector.2.3.5\lib\net40-client\SimpleInjector.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration.Install" />
     <Reference Include="System.Data" />
     <Reference Include="System.Data.SQLite, Version=1.0.88.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
@@ -209,8 +210,10 @@
     </Compile>
     <Compile Include="EntryPoints\StartupWizard.cs" />
     <Compile Include="EntryPoints\UdpServerEntryPoint.cs" />
-    <Compile Include="IApplicationInterface.cs" />
     <Compile Include="MainStartup.cs" />
+    <Compile Include="BackgroundServiceInstaller.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Splash\SplashWindow.xaml.cs">
       <DependentUpon>SplashWindow.xaml</DependentUpon>
     </Compile>

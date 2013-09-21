@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
-using MediaBrowser.Common.Implementations.Logging;
 using MediaBrowser.Common.Implementations.NetworkManagement;
 using MediaBrowser.Common.Implementations.ScheduledTasks;
 using MediaBrowser.Common.Implementations.Security;
@@ -71,7 +70,7 @@ namespace MediaBrowser.Common.Implementations
         /// Gets the application paths.
         /// </summary>
         /// <value>The application paths.</value>
-        protected TApplicationPathsType ApplicationPaths = new TApplicationPathsType();
+        protected TApplicationPathsType ApplicationPaths { get; private set; }
 
         /// <summary>
         /// The container
@@ -153,11 +152,12 @@ namespace MediaBrowser.Common.Implementations
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseApplicationHost{TApplicationPathsType}"/> class.
         /// </summary>
-        protected BaseApplicationHost()
+        protected BaseApplicationHost(TApplicationPathsType applicationPaths, ILogManager logManager)
         {
             FailedAssemblies = new List<string>();
 
-            LogManager = new NlogManager(ApplicationPaths.LogDirectoryPath, LogFilePrefixName);
+            ApplicationPaths = applicationPaths;
+            LogManager = logManager;
 
             ConfigurationManager = GetConfigurationManager();
         }
@@ -172,7 +172,10 @@ namespace MediaBrowser.Common.Implementations
 
             Logger = LogManager.GetLogger("App");
 
-            LogManager.ReloadLogger(ConfigurationManager.CommonConfiguration.EnableDebugLevelLogging ? LogSeverity.Debug : LogSeverity.Info);
+            LogManager.LogSeverity = ConfigurationManager.CommonConfiguration.EnableDebugLevelLogging
+                                         ? LogSeverity.Debug
+                                         : LogSeverity.Info;
+
             OnLoggerLoaded();
 
             DiscoverTypes();
@@ -210,12 +213,6 @@ namespace MediaBrowser.Common.Implementations
         /// </summary>
         /// <returns>IEnumerable{Assembly}.</returns>
         protected abstract IEnumerable<Assembly> GetComposablePartAssemblies();
-
-        /// <summary>
-        /// Gets the name of the log file prefix.
-        /// </summary>
-        /// <value>The name of the log file prefix.</value>
-        protected abstract string LogFilePrefixName { get; }
 
         /// <summary>
         /// Gets the configuration manager.

@@ -27,6 +27,15 @@ namespace MediaBrowser.Common.Implementations
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="BaseApplicationPaths"/> class.
+        /// </summary>
+        /// <param name="programDataPath">The program data path.</param>
+        protected BaseApplicationPaths(string programDataPath)
+        {
+            _programDataPath = programDataPath;
+        }
+
+        /// <summary>
         /// The _program data path
         /// </summary>
         private string _programDataPath;
