@@ -114,6 +114,7 @@
     <Compile Include="BdInfo\BdInfoExaminer.cs" />
     <Compile Include="Configuration\ServerConfigurationManager.cs" />
     <Compile Include="Drawing\ImageHeader.cs" />
+    <Compile Include="Drawing\PercentPlayedDrawer.cs" />
     <Compile Include="Drawing\WatchedIndicatorDrawer.cs" />
     <Compile Include="Dto\DtoService.cs" />
     <Compile Include="EntryPoints\LibraryChangedNotifier.cs" />

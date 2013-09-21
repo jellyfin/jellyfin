@@ -109,7 +109,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
             var quality = options.Quality ?? 90;
 
-            var cacheFilePath = GetCacheFilePath(originalImagePath, newSize, quality, dateModified, options.OutputFormat, options.Indicator);
+            var cacheFilePath = GetCacheFilePath(originalImagePath, newSize, quality, dateModified, options.OutputFormat, options.Indicator, options.PercentPlayed, options.BackgroundColor);
 
             try
             {
@@ -173,9 +173,11 @@ namespace MediaBrowser.Server.Implementations.Drawing
                                     thumbnailGraph.PixelOffsetMode = PixelOffsetMode.HighQuality;
                                     thumbnailGraph.CompositingMode = CompositingMode.SourceOver;
 
+                                    SetBackgroundColor(thumbnailGraph, options);
+
                                     thumbnailGraph.DrawImage(originalImage, 0, 0, newWidth, newHeight);
 
-                                    DrawIndicator(thumbnailGraph, newWidth, newHeight, options.Indicator);
+                                    DrawIndicator(thumbnailGraph, newWidth, newHeight, options.Indicator, options.PercentPlayed);
 
                                     var outputFormat = GetOutputFormat(originalImage, options.OutputFormat);
 
@@ -206,9 +208,41 @@ namespace MediaBrowser.Server.Implementations.Drawing
             }
         }
 
-        private WatchedIndicatorDrawer _watchedDrawer;
+        /// <summary>
+        /// Sets the color of the background.
+        /// </summary>
+        /// <param name="graphics">The graphics.</param>
+        /// <param name="options">The options.</param>
+        private void SetBackgroundColor(Graphics graphics, ImageProcessingOptions options)
+        {
+            var color = options.BackgroundColor;
 
-        private void DrawIndicator(Graphics graphics, int imageWidth, int imageHeight, ImageOverlay? indicator)
+            if (!string.IsNullOrEmpty(color))
+            {
+                Color drawingColor;
+
+                try
+                {
+                    drawingColor = ColorTranslator.FromHtml(color);
+                }
+                catch
+                {
+                    drawingColor = ColorTranslator.FromHtml("#" + color);
+                }
+
+                graphics.Clear(drawingColor);
+            }
+        }
+
+        /// <summary>
+        /// Draws the indicator.
+        /// </summary>
+        /// <param name="graphics">The graphics.</param>
+        /// <param name="imageWidth">Width of the image.</param>
+        /// <param name="imageHeight">Height of the image.</param>
+        /// <param name="indicator">The indicator.</param>
+        /// <param name="percentPlayed">The percent played.</param>
+        private void DrawIndicator(Graphics graphics, int imageWidth, int imageHeight, ImageOverlay? indicator, int percentPlayed)
         {
             if (!indicator.HasValue)
             {
@@ -217,13 +251,17 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
             try
             {
-                if (indicator.Value == ImageOverlay.Watched)
+                if (indicator.Value == ImageOverlay.Played)
                 {
-                    _watchedDrawer = _watchedDrawer ?? (_watchedDrawer = new WatchedIndicatorDrawer());
-
                     var currentImageSize = new Size(imageWidth, imageHeight);
 
-                    _watchedDrawer.Process(graphics, currentImageSize);
+                    new WatchedIndicatorDrawer().Process(graphics, currentImageSize);
+                }
+                if (indicator.Value == ImageOverlay.PercentPlayed)
+                {
+                    var currentImageSize = new Size(imageWidth, imageHeight);
+
+                    new PercentPlayedDrawer().Process(graphics, currentImageSize, percentPlayed);
                 }
             }
             catch (Exception ex)
@@ -350,7 +388,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
         /// <summary>
         /// Gets the cache file path based on a set of parameters
         /// </summary>
-        private string GetCacheFilePath(string originalPath, ImageSize outputSize, int quality, DateTime dateModified, ImageOutputFormat format, ImageOverlay? overlay)
+        private string GetCacheFilePath(string originalPath, ImageSize outputSize, int quality, DateTime dateModified, ImageOutputFormat format, ImageOverlay? overlay, int percentPlayed, string backgroundColor)
         {
             var filename = originalPath;
 
@@ -364,12 +402,18 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
             if (format != ImageOutputFormat.Original)
             {
-                filename += "format=" + format;
+                filename += "f=" + format;
             }
 
             if (overlay.HasValue)
             {
-                filename += "overlay=" + overlay.Value;
+                filename += "o=" + overlay.Value;
+                filename += "p=" + percentPlayed;
+            }
+
+            if (!string.IsNullOrEmpty(backgroundColor))
+            {
+                filename += "b=" + backgroundColor;
             }
 
             return GetCachePath(_resizedImageCachePath, filename, Path.GetExtension(originalPath));
