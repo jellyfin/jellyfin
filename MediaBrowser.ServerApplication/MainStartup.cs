@@ -54,7 +54,7 @@ namespace MediaBrowser.ServerApplication
             }
 
             // Restart with admin rights, then install
-            if (string.Equals(startFlag, "-launchinstallservice", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(startFlag, "-installserviceasadmin", StringComparison.OrdinalIgnoreCase))
             {
                 logger.Info("Performing service installation");
                 RunServiceInstallation();
@@ -70,7 +70,7 @@ namespace MediaBrowser.ServerApplication
             }
 
             // Restart with admin rights, then uninstall
-            if (string.Equals(startFlag, "-launchuninstallservice", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(startFlag, "-uninstallserviceasadmin", StringComparison.OrdinalIgnoreCase))
             {
                 logger.Info("Performing service uninstallation");
                 RunServiceUninstallation();
