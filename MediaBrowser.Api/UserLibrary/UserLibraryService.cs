@@ -184,6 +184,9 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public Guid UserId { get; set; }
 
+        [ApiMember(Name = "DatePlayed", Description = "The date the item was played (if any)", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public DateTime? DatePlayed { get; set; }
+        
         /// <summary>
         /// Gets or sets the id.
         /// </summary>
@@ -630,7 +633,7 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var user = _userManager.GetUserById(request.UserId);
 
-            var task = UpdatePlayedStatus(user, request.Id, true);
+            var task = UpdatePlayedStatus(user, request.Id, true, request.DatePlayed);
 
             return ToOptimizedResult(task.Result);
         }
@@ -703,7 +706,7 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var user = _userManager.GetUserById(request.UserId);
 
-            var task = UpdatePlayedStatus(user, request.Id, false);
+            var task = UpdatePlayedStatus(user, request.Id, false, null);
 
             return ToOptimizedResult(task.Result);
         }
@@ -714,12 +717,20 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="user">The user.</param>
         /// <param name="itemId">The item id.</param>
         /// <param name="wasPlayed">if set to <c>true</c> [was played].</param>
+        /// <param name="datePlayed">The date played.</param>
         /// <returns>Task.</returns>
-        private async Task<UserItemDataDto> UpdatePlayedStatus(User user, string itemId, bool wasPlayed)
+        private async Task<UserItemDataDto> UpdatePlayedStatus(User user, string itemId, bool wasPlayed, DateTime? datePlayed)
         {
             var item = _dtoService.GetItemByDtoId(itemId, user.Id);
 
-            await item.SetPlayedStatus(user, wasPlayed, _userDataRepository).ConfigureAwait(false);
+            if (wasPlayed)
+            {
+                await item.MarkPlayed(user, datePlayed, _userDataRepository).ConfigureAwait(false);
+            }
+            else
+            {
+                await item.MarkUnplayed(user, _userDataRepository).ConfigureAwait(false);
+            }
 
             return _dtoService.GetUserItemDataDto(_userDataRepository.GetUserData(user.Id, item.GetUserDataKey()));
         }

@@ -1161,16 +1161,30 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Marks the item as either played or unplayed
+        /// Marks the played.
         /// </summary>
         /// <param name="user">The user.</param>
-        /// <param name="wasPlayed">if set to <c>true</c> [was played].</param>
+        /// <param name="datePlayed">The date played.</param>
         /// <param name="userManager">The user manager.</param>
         /// <returns>Task.</returns>
-        public override async Task SetPlayedStatus(User user, bool wasPlayed, IUserDataRepository userManager)
+        public override async Task MarkPlayed(User user, DateTime? datePlayed, IUserDataRepository userManager)
         {
             // Sweep through recursively and update status
-            var tasks = GetRecursiveChildren(user, true).Where(i => !i.IsFolder).Select(c => c.SetPlayedStatus(user, wasPlayed, userManager));
+            var tasks = GetRecursiveChildren(user, true).Where(i => !i.IsFolder).Select(c => c.MarkPlayed(user, datePlayed, userManager));
+
+            await Task.WhenAll(tasks).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Marks the unplayed.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="userManager">The user manager.</param>
+        /// <returns>Task.</returns>
+        public override async Task MarkUnplayed(User user, IUserDataRepository userManager)
+        {
+            // Sweep through recursively and update status
+            var tasks = GetRecursiveChildren(user, true).Where(i => !i.IsFolder).Select(c => c.MarkUnplayed(user, userManager));
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
         }

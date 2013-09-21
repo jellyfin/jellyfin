@@ -453,18 +453,22 @@ namespace MediaBrowser.Model.ApiClient
         Task<CountryInfo[]> GetCountriesAsync();
 
         /// <summary>
-        /// Marks an item as played or unplayed.
-        /// This should not be used to update playstate following playback.
-        /// There are separate playstate check-in methods for that. This should be used for a
-        /// separate option to reset playstate.
+        /// Marks the played async.
         /// </summary>
         /// <param name="itemId">The item id.</param>
         /// <param name="userId">The user id.</param>
-        /// <param name="wasPlayed">if set to <c>true</c> [was played].</param>
-        /// <returns>Task.</returns>
-        /// <exception cref="ArgumentNullException">itemId</exception>
-        Task<UserItemDataDto> UpdatePlayedStatusAsync(string itemId, string userId, bool wasPlayed);
+        /// <param name="datePlayed">The date played.</param>
+        /// <returns>Task{UserItemDataDto}.</returns>
+        Task<UserItemDataDto> MarkPlayedAsync(string itemId, string userId, DateTime? datePlayed);
 
+        /// <summary>
+        /// Marks the unplayed async.
+        /// </summary>
+        /// <param name="itemId">The item id.</param>
+        /// <param name="userId">The user id.</param>
+        /// <returns>Task{UserItemDataDto}.</returns>
+        Task<UserItemDataDto> MarkUnplayedAsync(string itemId, string userId);
+        
         /// <summary>
         /// Updates the favorite status async.
         /// </summary>
