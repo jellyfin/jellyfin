@@ -26,6 +26,7 @@ using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.IsoMounter;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Updates;
@@ -59,6 +60,7 @@ using System.Net.Http;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace MediaBrowser.ServerApplication
 {
@@ -82,15 +84,6 @@ namespace MediaBrowser.ServerApplication
         public IServerConfigurationManager ServerConfigurationManager
         {
             get { return (IServerConfigurationManager)ConfigurationManager; }
-        }
-
-        /// <summary>
-        /// Gets the name of the log file prefix.
-        /// </summary>
-        /// <value>The name of the log file prefix.</value>
-        protected override string LogFilePrefixName
-        {
-            get { return "server"; }
         }
 
         /// <summary>
@@ -182,13 +175,6 @@ namespace MediaBrowser.ServerApplication
         private IItemRepository ItemRepository { get; set; }
         private INotificationsRepository NotificationsRepository { get; set; }
 
-        public bool IsBackgroundService
-        {
-            get { return _appInterface != null && _appInterface.IsBackgroundService; }
-        }
-
-        private readonly IApplicationInterface _appInterface;
-
         /// <summary>
         /// The full path to our startmenu shortcut
         /// </summary>
@@ -199,9 +185,15 @@ namespace MediaBrowser.ServerApplication
 
         private Task<IHttpServer> _httpServerCreationTask;
 
-        public ApplicationHost(IApplicationInterface appInterface)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ApplicationHost"/> class.
+        /// </summary>
+        /// <param name="applicationPaths">The application paths.</param>
+        /// <param name="logManager">The log manager.</param>
+        public ApplicationHost(ServerApplicationPaths applicationPaths, ILogManager logManager)
+            : base(applicationPaths, logManager)
         {
-            _appInterface = appInterface;
+
         }
 
         /// <summary>
@@ -542,7 +534,14 @@ namespace MediaBrowser.ServerApplication
                 Logger.ErrorException("Error sending server restart web socket message", ex);
             }
 
-            _appInterface.RestartApplication();
+            // Second instance will start first, so release the mutex and dispose the http server ahead of time
+            Application.Current.Dispatcher.Invoke(() => MainStartup.ReleaseMutex(Logger));
+
+            Dispose();
+
+            System.Windows.Forms.Application.Restart();
+
+            ShutdownInternal();
         }
 
         /// <summary>
@@ -627,8 +626,7 @@ namespace MediaBrowser.ServerApplication
                 Id = _systemId,
                 ProgramDataPath = ApplicationPaths.ProgramDataPath,
                 MacAddress = GetMacAddress(),
-                HttpServerPortNumber = ServerConfigurationManager.Configuration.HttpServerPortNumber,
-                IsBackgroundService = IsBackgroundService
+                HttpServerPortNumber = ServerConfigurationManager.Configuration.HttpServerPortNumber
             };
         }
 
@@ -663,7 +661,15 @@ namespace MediaBrowser.ServerApplication
                 Logger.ErrorException("Error sending server shutdown web socket message", ex);
             }
 
-            _appInterface.ShutdownApplication();
+            ShutdownInternal();
+        }
+
+        public void ShutdownInternal()
+        {
+            Logger.Info("Shutting down application");
+            var app = Application.Current;
+
+            app.Dispatcher.Invoke(app.Shutdown);
         }
 
         /// <summary>

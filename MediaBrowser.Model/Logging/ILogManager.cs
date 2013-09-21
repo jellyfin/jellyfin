@@ -8,6 +8,12 @@ namespace MediaBrowser.Model.Logging
     public interface ILogManager
     {
         /// <summary>
+        /// Gets or sets the log level.
+        /// </summary>
+        /// <value>The log level.</value>
+        LogSeverity LogSeverity { get; set; }
+
+        /// <summary>
         /// Gets the logger.
         /// </summary>
         /// <param name="name">The name.</param>

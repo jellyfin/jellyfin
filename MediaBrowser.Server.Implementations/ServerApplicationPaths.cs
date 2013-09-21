@@ -26,6 +26,17 @@ namespace MediaBrowser.Server.Implementations
         {
         }
 #endif
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BaseApplicationPaths" /> class.
+        /// </summary>
+        /// <param name="programDataPath">The program data path.</param>
+        public ServerApplicationPaths(string programDataPath)
+            : base(programDataPath)
+        {
+
+        }
+
         /// <summary>
         /// Gets the path to the base root media directory
         /// </summary>
@@ -117,7 +128,7 @@ namespace MediaBrowser.Server.Implementations
                 return Path.Combine(ItemsByNamePath, "MusicGenre");
             }
         }
-        
+
         /// <summary>
         /// Gets the path to the Studio directory
         /// </summary>
