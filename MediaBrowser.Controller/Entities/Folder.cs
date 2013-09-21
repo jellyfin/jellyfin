@@ -99,7 +99,7 @@ namespace MediaBrowser.Controller.Entities
                 item.DateModified = DateTime.UtcNow;
             }
 
-            AddChildrenInternal(new[] { item });
+            AddChildInternal(item);
 
             await LibraryManager.CreateItem(item, cancellationToken).ConfigureAwait(false);
 
@@ -110,8 +110,12 @@ namespace MediaBrowser.Controller.Entities
         {
             foreach (var child in children)
             {
-                _children.Add(child);
+                AddChildInternal(child);
             }
+        }
+        protected void AddChildInternal(BaseItem child)
+        {
+            _children.Add(child);
         }
 
         protected void RemoveChildrenInternal(IEnumerable<BaseItem> children)
