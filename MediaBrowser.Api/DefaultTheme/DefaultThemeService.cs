@@ -124,7 +124,7 @@ namespace MediaBrowser.Api.DefaultTheme
             var user = _userManager.GetUserById(request.UserId);
 
             var items = user.RootFolder.GetRecursiveChildren(user)
-                .Where(i => i is Game || string.Equals(i.GetType().Name, "GamePlatform", StringComparison.OrdinalIgnoreCase))
+                .Where(i => i is Game || i is GameSystem)
                 .ToList();
 
             var itemsWithBackdrops = FilterItemsForBackdropDisplay(items.Where(i => i.BackdropImagePaths.Count > 0)).ToList();

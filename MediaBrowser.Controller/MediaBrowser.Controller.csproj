@@ -83,6 +83,7 @@
     <Compile Include="Entities\Extensions.cs" />
     <Compile Include="Entities\Game.cs" />
     <Compile Include="Entities\GameGenre.cs" />
+    <Compile Include="Entities\GameSystem.cs" />
     <Compile Include="Entities\IByReferenceItem.cs" />
     <Compile Include="Entities\IItemByName.cs" />
     <Compile Include="Entities\LinkedChild.cs" />
