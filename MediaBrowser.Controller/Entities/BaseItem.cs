@@ -1336,11 +1336,6 @@ namespace MediaBrowser.Controller.Entities
             if (wasPlayed)
             {
                 data.PlayCount = Math.Max(data.PlayCount, 1);
-
-                if (!data.LastPlayedDate.HasValue)
-                {
-                    data.LastPlayedDate = DateTime.UtcNow;
-                }
             }
             else
             {
@@ -1349,7 +1344,6 @@ namespace MediaBrowser.Controller.Entities
                 // then it probably is what we want to do...
                 data.PlayCount = 0;
                 data.PlaybackPositionTicks = 0;
-                data.LastPlayedDate = null;
             }
 
             data.Played = wasPlayed;
