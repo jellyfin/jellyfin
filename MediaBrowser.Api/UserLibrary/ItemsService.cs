@@ -63,6 +63,9 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "Genres", Description = "Optional. If specified, results will be filtered based on genre. This allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string Genres { get; set; }
 
+        [ApiMember(Name = "AllGenres", Description = "Optional. If specified, results will be filtered based on genre. This allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string AllGenres { get; set; }
+
         /// <summary>
         /// Limit results to items containing specific studios
         /// </summary>
@@ -608,43 +611,42 @@ namespace MediaBrowser.Api.UserLibrary
                 items = items.Where(item => imageTypes.Any(imageType => HasImage(item, imageType)));
             }
 
-            var genres = request.Genres;
+            // Apply genre filter
+            if (!string.IsNullOrEmpty(request.Genres))
+            {
+                var vals = request.Genres.Split(',');
+                items = items.Where(f => vals.Any(v => f.Genres.Contains(v, StringComparer.OrdinalIgnoreCase)));
+            }
 
             // Apply genre filter
-            if (!string.IsNullOrEmpty(genres))
+            if (!string.IsNullOrEmpty(request.AllGenres))
             {
-                var vals = genres.Split(',');
-                items = items.Where(f => f.Genres != null && vals.Any(v => f.Genres.Contains(v, StringComparer.OrdinalIgnoreCase)));
+                var vals = request.AllGenres.Split(',');
+                items = items.Where(f => vals.All(v => f.Genres.Contains(v, StringComparer.OrdinalIgnoreCase)));
             }
-
-            var studios = request.Studios;
-
+            
             // Apply studio filter
-            if (!string.IsNullOrEmpty(studios))
+            if (!string.IsNullOrEmpty(request.Studios))
             {
-                var vals = studios.Split(',');
-                items = items.Where(f => f.Studios != null && vals.Any(v => f.Studios.Contains(v, StringComparer.OrdinalIgnoreCase)));
+                var vals = request.Studios.Split(',');
+                items = items.Where(f => vals.Any(v => f.Studios.Contains(v, StringComparer.OrdinalIgnoreCase)));
             }
-
-            var years = request.Years;
 
             // Apply year filter
-            if (!string.IsNullOrEmpty(years))
+            if (!string.IsNullOrEmpty(request.Years))
             {
-                var vals = years.Split(',').Select(int.Parse);
+                var vals = request.Years.Split(',').Select(int.Parse).ToList();
                 items = items.Where(f => f.ProductionYear.HasValue && vals.Contains(f.ProductionYear.Value));
             }
 
-            var personName = request.Person;
-
             // Apply person filter
-            if (!string.IsNullOrEmpty(personName))
+            if (!string.IsNullOrEmpty(request.Person))
             {
                 var personTypes = request.PersonTypes;
 
                 if (string.IsNullOrEmpty(personTypes))
                 {
-                    items = items.Where(item => item.People != null && item.People.Any(p => string.Equals(p.Name, personName, StringComparison.OrdinalIgnoreCase)));
+                    items = items.Where(item => item.People != null && item.People.Any(p => string.Equals(p.Name, request.Person, StringComparison.OrdinalIgnoreCase)));
                 }
                 else
                 {
@@ -653,7 +655,7 @@ namespace MediaBrowser.Api.UserLibrary
                     items = items.Where(item =>
                             item.People != null &&
                             item.People.Any(p =>
-                                p.Name.Equals(personName, StringComparison.OrdinalIgnoreCase) && (types.Contains(p.Type, StringComparer.OrdinalIgnoreCase) || types.Contains(p.Role, StringComparer.OrdinalIgnoreCase))));
+                                p.Name.Equals(request.Person, StringComparison.OrdinalIgnoreCase) && (types.Contains(p.Type, StringComparer.OrdinalIgnoreCase) || types.Contains(p.Role, StringComparer.OrdinalIgnoreCase))));
                 }
             }
 

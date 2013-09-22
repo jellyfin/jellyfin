@@ -93,6 +93,12 @@ namespace MediaBrowser.Model.Querying
         public string[] Genres { get; set; }
 
         /// <summary>
+        /// Limit results to items containing specific genres
+        /// </summary>
+        /// <value>The genres.</value>
+        public string[] AllGenres { get; set; }
+        
+        /// <summary>
         /// Limit results to items containing specific studios
         /// </summary>
         /// <value>The studios.</value>
