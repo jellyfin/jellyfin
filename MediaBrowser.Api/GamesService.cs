@@ -110,7 +110,8 @@ namespace MediaBrowser.Api
         {
             var summary = new GameSystemSummary
             {
-                Name = system.Name
+                Name = system.GameSystemName,
+                DisplayName = system.Name
             };
 
             var items = user == null ? system.RecursiveChildren : system.GetRecursiveChildren(user);

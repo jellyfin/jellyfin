@@ -14,6 +14,12 @@ namespace MediaBrowser.Model.Dto
         public string Name { get; set; }
 
         /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        public string DisplayName { get; set; }
+        
+        /// <summary>
         /// Gets or sets the game count.
         /// </summary>
         /// <value>The game count.</value>
