@@ -32,6 +32,12 @@ namespace MediaBrowser.Model.Dto
         public List<string> GameFileExtensions { get; set; }
 
         /// <summary>
+        /// Gets or sets the client installed game count.
+        /// </summary>
+        /// <value>The client installed game count.</value>
+        public int ClientInstalledGameCount { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="GameSystemSummary"/> class.
         /// </summary>
         public GameSystemSummary()

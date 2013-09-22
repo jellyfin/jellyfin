@@ -118,9 +118,11 @@ namespace MediaBrowser.Api
 
             var games = items.OfType<Game>().ToList();
 
+            summary.ClientInstalledGameCount = games.Count(i => !i.IsInstalledOnClient);
+
             summary.GameCount = games.Count;
 
-            summary.GameFileExtensions = games.Select(i => Path.GetExtension(i.Path))
+            summary.GameFileExtensions = games.Where(i => !i.IsInstalledOnClient).Select(i => Path.GetExtension(i.Path))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
