@@ -76,26 +76,29 @@ namespace MediaBrowser.Common.Updates
         /// Gets the latest compatible version.
         /// </summary>
         /// <param name="name">The name.</param>
+        /// <param name="currentServerVersion">The current server version.</param>
         /// <param name="classification">The classification.</param>
         /// <returns>Task{PackageVersionInfo}.</returns>
-        Task<PackageVersionInfo> GetLatestCompatibleVersion(string name, PackageVersionClass classification = PackageVersionClass.Release);
+        Task<PackageVersionInfo> GetLatestCompatibleVersion(string name, Version currentServerVersion, PackageVersionClass classification = PackageVersionClass.Release);
 
         /// <summary>
         /// Gets the latest compatible version.
         /// </summary>
         /// <param name="availablePackages">The available packages.</param>
         /// <param name="name">The name.</param>
+        /// <param name="currentServerVersion">The current server version.</param>
         /// <param name="classification">The classification.</param>
         /// <returns>PackageVersionInfo.</returns>
-        PackageVersionInfo GetLatestCompatibleVersion(IEnumerable<PackageInfo> availablePackages, string name, PackageVersionClass classification = PackageVersionClass.Release);
+        PackageVersionInfo GetLatestCompatibleVersion(IEnumerable<PackageInfo> availablePackages, string name, Version currentServerVersion, PackageVersionClass classification = PackageVersionClass.Release);
 
         /// <summary>
         /// Gets the available plugin updates.
         /// </summary>
+        /// <param name="currentServerVersion">The current server version.</param>
         /// <param name="withAutoUpdateEnabled">if set to <c>true</c> [with auto update enabled].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{IEnumerable{PackageVersionInfo}}.</returns>
-        Task<IEnumerable<PackageVersionInfo>> GetAvailablePluginUpdates(bool withAutoUpdateEnabled, CancellationToken cancellationToken);
+        Task<IEnumerable<PackageVersionInfo>> GetAvailablePluginUpdates(Version currentServerVersion, bool withAutoUpdateEnabled, CancellationToken cancellationToken);
 
         /// <summary>
         /// Installs the package.
