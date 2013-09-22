@@ -132,7 +132,7 @@ namespace MediaBrowser.Api
 
             if (request.PackageType == PackageType.UserInstalled || request.PackageType == PackageType.All)
             {
-                result.AddRange(_installationManager.GetAvailablePluginUpdates(false, CancellationToken.None).Result.ToList());
+                result.AddRange(_installationManager.GetAvailablePluginUpdates(_appHost.ApplicationVersion, false, CancellationToken.None).Result.ToList());
             }
 
             else if (request.PackageType == PackageType.System || request.PackageType == PackageType.All)
@@ -194,7 +194,7 @@ namespace MediaBrowser.Api
         public void Post(InstallPackage request)
         {
             var package = string.IsNullOrEmpty(request.Version) ?
-                _installationManager.GetLatestCompatibleVersion(request.Name, request.UpdateClass).Result :
+                _installationManager.GetLatestCompatibleVersion(request.Name, _appHost.ApplicationVersion, request.UpdateClass).Result :
                 _installationManager.GetPackage(request.Name, request.UpdateClass, Version.Parse(request.Version)).Result;
 
             if (package == null)
