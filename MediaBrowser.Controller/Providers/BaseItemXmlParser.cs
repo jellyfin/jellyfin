@@ -139,6 +139,7 @@ namespace MediaBrowser.Controller.Providers
 
                         break;
                     }
+
                 case "CriticRating":
                     {
                         var text = reader.ReadElementContentAsString();
@@ -150,6 +151,7 @@ namespace MediaBrowser.Controller.Providers
 
                         break;
                     }
+
                 case "Budget":
                     {
                         var text = reader.ReadElementContentAsString();
@@ -161,6 +163,7 @@ namespace MediaBrowser.Controller.Providers
 
                         break;
                     }
+
                 case "Revenue":
                     {
                         var text = reader.ReadElementContentAsString();
@@ -172,6 +175,7 @@ namespace MediaBrowser.Controller.Providers
 
                         break;
                     }
+
                 case "SortTitle":
                     {
                         var val = reader.ReadElementContentAsString();
@@ -466,6 +470,7 @@ namespace MediaBrowser.Controller.Providers
                         break;
                     }
 
+                case "ReleaseYear":
                 case "ProductionYear":
                     {
                         var val = reader.ReadElementContentAsString();
@@ -555,6 +560,37 @@ namespace MediaBrowser.Controller.Providers
                     }
                     break;
 
+                case "Players":
+                    {
+                        var val = reader.ReadElementContentAsString();
+                        if (!string.IsNullOrWhiteSpace(val))
+                        {
+                            int num;
+                            // All external meta is saving this as '.' for decimal I believe...but just to be sure
+                            if (int.TryParse(val, NumberStyles.Integer, _usCulture, out num))
+                            {
+                                var game = item as Game;
+                                if (game != null)
+                                {
+                                    game.PlayersSupported = num;
+                                }
+                            }
+                        }
+                        break;
+                    }
+                case "GameSystem":
+                    {
+                        var val = reader.ReadElementContentAsString();
+                        if (!string.IsNullOrWhiteSpace(val))
+                        {
+                            var game = item as Game;
+                            if (game != null)
+                            {
+                                game.GameSystem = val;
+                            }
+                        }
+                        break;
+                    }
                 case "MusicbrainzId":
                     {
                         var mbz = reader.ReadElementContentAsString();
