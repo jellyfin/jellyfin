@@ -1004,7 +1004,8 @@ namespace MediaBrowser.Controller.Entities
                 throw new ArgumentNullException();
             }
 
-            var list = new List<BaseItem>(10000);
+            var initialCount = _children == null ? 100 : _children.Count;
+            var list = new List<BaseItem>(initialCount);
 
             AddRecursiveChildrenInternal(user, includeLinkedChildren, list);
 

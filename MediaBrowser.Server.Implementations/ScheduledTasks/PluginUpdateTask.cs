@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.ScheduledTasks;
+﻿using MediaBrowser.Common;
+using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
@@ -23,15 +24,13 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
 
         private readonly IInstallationManager _installationManager;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PluginUpdateTask" /> class.
-        /// </summary>
-        /// <param name="logger">The logger.</param>
-        /// <param name="installationManager">The installation manager.</param>
-        public PluginUpdateTask(ILogger logger, IInstallationManager installationManager)
+        private readonly IApplicationHost _appHost;
+
+        public PluginUpdateTask(ILogger logger, IInstallationManager installationManager, IApplicationHost appHost)
         {
             _logger = logger;
             _installationManager = installationManager;
+            _appHost = appHost;
         }
 
         /// <summary>
@@ -60,7 +59,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         {
             progress.Report(0);
 
-            var packagesToInstall = (await _installationManager.GetAvailablePluginUpdates(true, cancellationToken).ConfigureAwait(false)).ToList();
+            var packagesToInstall = (await _installationManager.GetAvailablePluginUpdates(_appHost.ApplicationVersion, true, cancellationToken).ConfigureAwait(false)).ToList();
 
             progress.Report(10);
 

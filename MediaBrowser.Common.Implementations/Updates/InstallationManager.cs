@@ -225,9 +225,9 @@ namespace MediaBrowser.Common.Implementations.Updates
         /// Determines whether [is package version up to date] [the specified package version info].
         /// </summary>
         /// <param name="packageVersionInfo">The package version info.</param>
-        /// <param name="applicationVersion">The application version.</param>
+        /// <param name="currentServerVersion">The current server version.</param>
         /// <returns><c>true</c> if [is package version up to date] [the specified package version info]; otherwise, <c>false</c>.</returns>
-        private bool IsPackageVersionUpToDate(PackageVersionInfo packageVersionInfo, Version applicationVersion)
+        private bool IsPackageVersionUpToDate(PackageVersionInfo packageVersionInfo, Version currentServerVersion)
         {
             if (string.IsNullOrEmpty(packageVersionInfo.requiredVersionStr))
             {
@@ -236,7 +236,7 @@ namespace MediaBrowser.Common.Implementations.Updates
 
             Version requiredVersion;
 
-            return Version.TryParse(packageVersionInfo.requiredVersionStr, out requiredVersion) && applicationVersion >= requiredVersion;
+            return Version.TryParse(packageVersionInfo.requiredVersionStr, out requiredVersion) && currentServerVersion >= requiredVersion;
         }
 
         /// <summary>
@@ -264,13 +264,14 @@ namespace MediaBrowser.Common.Implementations.Updates
         /// Gets the latest compatible version.
         /// </summary>
         /// <param name="name">The name.</param>
+        /// <param name="currentServerVersion">The current server version.</param>
         /// <param name="classification">The classification.</param>
         /// <returns>Task{PackageVersionInfo}.</returns>
-        public async Task<PackageVersionInfo> GetLatestCompatibleVersion(string name, PackageVersionClass classification = PackageVersionClass.Release)
+        public async Task<PackageVersionInfo> GetLatestCompatibleVersion(string name, Version currentServerVersion, PackageVersionClass classification = PackageVersionClass.Release)
         {
             var packages = await GetAvailablePackages(CancellationToken.None).ConfigureAwait(false);
 
-            return GetLatestCompatibleVersion(packages, name, classification);
+            return GetLatestCompatibleVersion(packages, name, currentServerVersion, classification);
         }
 
         /// <summary>
@@ -278,9 +279,10 @@ namespace MediaBrowser.Common.Implementations.Updates
         /// </summary>
         /// <param name="availablePackages">The available packages.</param>
         /// <param name="name">The name.</param>
+        /// <param name="currentServerVersion">The current server version.</param>
         /// <param name="classification">The classification.</param>
         /// <returns>PackageVersionInfo.</returns>
-        public PackageVersionInfo GetLatestCompatibleVersion(IEnumerable<PackageInfo> availablePackages, string name, PackageVersionClass classification = PackageVersionClass.Release)
+        public PackageVersionInfo GetLatestCompatibleVersion(IEnumerable<PackageInfo> availablePackages, string name, Version currentServerVersion, PackageVersionClass classification = PackageVersionClass.Release)
         {
             var package = availablePackages.FirstOrDefault(p => p.name.Equals(name, StringComparison.OrdinalIgnoreCase));
 
@@ -291,23 +293,20 @@ namespace MediaBrowser.Common.Implementations.Updates
 
             return package.versions
                 .OrderByDescending(v => v.version)
-                .FirstOrDefault(v => v.classification <= classification && IsPackageVersionUpToDate(v, _applicationHost.ApplicationVersion));
+                .FirstOrDefault(v => v.classification <= classification && IsPackageVersionUpToDate(v, currentServerVersion));
         }
 
         /// <summary>
         /// Gets the available plugin updates.
         /// </summary>
+        /// <param name="currentServerVersion">The current server version.</param>
         /// <param name="withAutoUpdateEnabled">if set to <c>true</c> [with auto update enabled].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{IEnumerable{PackageVersionInfo}}.</returns>
-        public async Task<IEnumerable<PackageVersionInfo>> GetAvailablePluginUpdates(bool withAutoUpdateEnabled, CancellationToken cancellationToken)
+        public async Task<IEnumerable<PackageVersionInfo>> GetAvailablePluginUpdates(Version currentServerVersion, bool withAutoUpdateEnabled, CancellationToken cancellationToken)
         {
             var catalog = await GetAvailablePackagesWithoutRegistrationInfo(cancellationToken).ConfigureAwait(false);
-            return FilterCatalog(catalog, withAutoUpdateEnabled);
-        }
 
-        protected IEnumerable<PackageVersionInfo> FilterCatalog(IEnumerable<PackageInfo> catalog, bool withAutoUpdateEnabled)
-        {
             var plugins = _applicationHost.Plugins.ToList();
 
             if (withAutoUpdateEnabled)
@@ -320,7 +319,7 @@ namespace MediaBrowser.Common.Implementations.Updates
             // Figure out what needs to be installed
             var packages = plugins.Select(p =>
             {
-                var latestPluginInfo = GetLatestCompatibleVersion(catalog, p.Name, p.Configuration.UpdateClass);
+                var latestPluginInfo = GetLatestCompatibleVersion(catalog, p.Name, currentServerVersion, p.Configuration.UpdateClass);
 
                 return latestPluginInfo != null && latestPluginInfo.version != null && latestPluginInfo.version > p.Version ? latestPluginInfo : null;
 

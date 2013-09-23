@@ -384,7 +384,10 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 if (!string.IsNullOrWhiteSpace(officialRating))
                 {
-                    video.OfficialRating = officialRating;
+                    if (!video.LockedFields.Contains(MetadataFields.OfficialRating))
+                    {
+                        video.OfficialRating = officialRating;
+                    }
                 }
             }
 

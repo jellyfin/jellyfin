@@ -19,5 +19,11 @@ namespace MediaBrowser.Controller.Entities
                 return Id;
             }
         }
+
+        /// <summary>
+        /// Gets or sets the game system.
+        /// </summary>
+        /// <value>The game system.</value>
+        public string GameSystemName { get; set; }
     }
 }
