@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using MediaBrowser.Common.Configuration;
+﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Model.Logging;
@@ -8,6 +7,7 @@ using MediaBrowser.Model.Tasks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Common.Implementations.ScheduledTasks
 {
@@ -75,6 +75,17 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
             ((ScheduledTaskWorker)task).CancelIfRunning();
 
             QueueScheduledTask<T>();
+        }
+
+        /// <summary>
+        /// Cancels if running
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        public void CancelIfRunning<T>()
+                 where T : IScheduledTask
+        {
+            var task = ScheduledTasks.First(t => t.ScheduledTask.GetType() == typeof(T));
+            ((ScheduledTaskWorker)task).CancelIfRunning();
         }
 
         /// <summary>

@@ -245,7 +245,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ApplicationHost.cs" />
-    <Compile Include="Implementations\DotNetZipClient.cs" />
+    <Compile Include="Implementations\ZipClient.cs" />
     <Compile Include="LibraryExplorer.xaml.cs">
       <DependentUpon>LibraryExplorer.xaml</DependentUpon>
     </Compile>
