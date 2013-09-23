@@ -721,6 +721,10 @@ progress {
         opacity: .5;
     }
 
+.imgPlayed, .imgPlayedOff {
+    border-radius: 4px;
+}
+
 /* Now playing bar */
 #nowPlayingBar {
     padding: 6px .5em;
