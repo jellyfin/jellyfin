@@ -281,6 +281,8 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <None Include="app.manifest" />
+    <None Include="Implementations\ARIALUNI.7z" />
+    <None Include="Implementations\ffmpeg-20130904-git-f974289-win32-static.7z" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
