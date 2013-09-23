@@ -107,13 +107,10 @@ namespace MediaBrowser.Server.Implementations.Dto
                     .ToArray();
             }
 
-            if (fields.Contains(ItemFields.ItemCounts))
+            var itemByName = item as IItemByName;
+            if (itemByName != null)
             {
-                var itemByName = item as IItemByName;
-                if (itemByName != null)
-                {
-                    AttachItemByNameCounts(dto, itemByName, user);
-                }
+                AttachItemByNameCounts(dto, itemByName, user);
             }
 
             return dto;
@@ -166,18 +163,13 @@ namespace MediaBrowser.Server.Implementations.Dto
         {
             if (item.IsFolder)
             {
-                var hasItemCounts = fields.Contains(ItemFields.ItemCounts);
+                var folder = (Folder)item;
 
-                if (hasItemCounts || fields.Contains(ItemFields.CumulativeRunTimeTicks))
+                dto.ChildCount = folder.GetChildren(user, true).Count();
+
+                if (!(folder is UserRootFolder))
                 {
-                    var folder = (Folder)item;
-
-                    if (hasItemCounts)
-                    {
-                        dto.ChildCount = folder.GetChildren(user, true).Count();
-                    }
-
-                    SetSpecialCounts(folder, user, dto);
+                    SetSpecialCounts(folder, user, dto, fields);
                 }
             }
 
@@ -1068,8 +1060,9 @@ namespace MediaBrowser.Server.Implementations.Dto
         /// <param name="folder">The folder.</param>
         /// <param name="user">The user.</param>
         /// <param name="dto">The dto.</param>
+        /// <param name="fields">The fields.</param>
         /// <returns>Task.</returns>
-        private void SetSpecialCounts(Folder folder, User user, BaseItemDto dto)
+        private void SetSpecialCounts(Folder folder, User user, BaseItemDto dto, List<ItemFields> fields)
         {
             var rcentlyAddedItemCount = 0;
             var recursiveItemCount = 0;
@@ -1127,7 +1120,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.PlayedPercentage = totalPercentPlayed / recursiveItemCount;
             }
 
-            if (runtime > 0)
+            if (runtime > 0 && fields.Contains(ItemFields.CumulativeRunTimeTicks))
             {
                 dto.CumulativeRunTimeTicks = runtime;
             }

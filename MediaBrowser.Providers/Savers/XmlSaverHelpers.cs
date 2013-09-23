@@ -563,7 +563,7 @@ namespace MediaBrowser.Providers.Savers
 
             if (video != null)
             {
-                AddChapters(video, builder, itemRepository);
+                //AddChapters(video, builder, itemRepository);
             }
         }
     }

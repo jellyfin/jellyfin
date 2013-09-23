@@ -37,6 +37,10 @@ namespace MediaBrowser.Model.Entities
         /// <summary>
         /// The runtime
         /// </summary>
-        Runtime
+        Runtime,
+        /// <summary>
+        /// The official rating
+        /// </summary>
+        OfficialRating
     }
 }

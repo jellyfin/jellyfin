@@ -153,6 +153,15 @@ namespace MediaBrowser.Providers.TV
             }
         }
 
+        public override bool EnforceDontFetchMetadata
+        {
+            get
+            {
+                // Other providers depend on the xml downloaded here
+                return false;
+            }
+        }
+
         protected override DateTime CompareDate(BaseItem item)
         {
             var seriesId = item.GetProviderId(MetadataProviders.Tvdb);
@@ -440,7 +449,10 @@ namespace MediaBrowser.Providers.TV
 
                                 if (!string.IsNullOrWhiteSpace(val))
                                 {
-                                    item.OfficialRating = val;
+                                    if (!item.LockedFields.Contains(MetadataFields.OfficialRating))
+                                    {
+                                        item.OfficialRating = val;
+                                    }
                                 }
                                 break;
                             }

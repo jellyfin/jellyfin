@@ -356,6 +356,12 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 try
                 {
                     ProcessRequest(context);
+
+                    var url = context.Request.Url.ToString();
+                    var endPoint = context.Request.RemoteEndPoint;
+
+                    LogResponse(context, url, endPoint);
+
                 }
                 catch (Exception ex)
                 {
@@ -433,9 +439,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             var httpRes = new HttpListenerResponseWrapper(context.Response);
             var handler = ServiceStackHttpHandlerFactory.GetHandler(httpReq);
 
-            var url = context.Request.Url.ToString();
-            var endPoint = context.Request.RemoteEndPoint;
-
             var serviceStackHandler = handler as IServiceStackHttpHandler;
 
             if (serviceStackHandler != null)
@@ -446,7 +449,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                     httpReq.OperationName = operationName = restHandler.RestPath.RequestType.Name;
                 }
                 serviceStackHandler.ProcessRequest(httpReq, httpRes, operationName);
-                LogResponse(context, url, endPoint);
                 return;
             }
 

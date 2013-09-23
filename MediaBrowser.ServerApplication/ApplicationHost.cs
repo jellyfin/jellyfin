@@ -60,7 +60,6 @@ using System.Net.Http;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
 
 namespace MediaBrowser.ServerApplication
 {
@@ -285,8 +284,7 @@ namespace MediaBrowser.ServerApplication
 
             RegisterSingleInstance<ILibrarySearchEngine>(() => new LuceneSearchEngine(ApplicationPaths, LogManager, LibraryManager));
 
-            MediaEncoder = new MediaEncoder(LogManager.GetLogger("MediaEncoder"), ZipClient, ApplicationPaths, JsonSerializer, HttpClient);
-            RegisterSingleInstance(MediaEncoder);
+            await RegisterMediaEncoder().ConfigureAwait(false);
 
             var clientConnectionManager = new SessionManager(UserDataRepository, ServerConfigurationManager, Logger, UserRepository);
             RegisterSingleInstance<ISessionManager>(clientConnectionManager);
@@ -315,6 +313,18 @@ namespace MediaBrowser.ServerApplication
             await Task.WhenAll(itemsTask, displayPreferencesTask, userdataTask).ConfigureAwait(false);
 
             SetKernelProperties();
+        }
+
+        /// <summary>
+        /// Registers the media encoder.
+        /// </summary>
+        /// <returns>Task.</returns>
+        private async Task RegisterMediaEncoder()
+        {
+            var info = await new FFMpegDownloader(Logger, ApplicationPaths, HttpClient, ZipClient).GetFFMpegInfo().ConfigureAwait(false);
+
+            MediaEncoder = new MediaEncoder(LogManager.GetLogger("MediaEncoder"), ApplicationPaths, JsonSerializer, info.Path, info.ProbePath, info.Version);
+            RegisterSingleInstance(MediaEncoder);
         }
 
         /// <summary>
@@ -708,7 +718,7 @@ namespace MediaBrowser.ServerApplication
         {
             var availablePackages = await InstallationManager.GetAvailablePackagesWithoutRegistrationInfo(cancellationToken).ConfigureAwait(false);
 
-            var version = InstallationManager.GetLatestCompatibleVersion(availablePackages, Constants.MbServerPkgName, ConfigurationManager.CommonConfiguration.SystemUpdateLevel);
+            var version = InstallationManager.GetLatestCompatibleVersion(availablePackages, Constants.MbServerPkgName, ApplicationVersion, ConfigurationManager.CommonConfiguration.SystemUpdateLevel);
 
             return version != null ? new CheckForUpdateResult { AvailableVersion = version.version, IsUpdateAvailable = version.version > ApplicationVersion, Package = version } :
                        new CheckForUpdateResult { AvailableVersion = ApplicationVersion, IsUpdateAvailable = false };

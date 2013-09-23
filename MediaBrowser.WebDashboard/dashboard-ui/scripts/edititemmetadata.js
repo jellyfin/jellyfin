@@ -392,7 +392,7 @@
             $('#fldPlayers', page).hide();
         }
 
-        if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "MusicVideo") {
+        if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "MusicVideo" || item.Type == "Series" || item.Type == "Game") {
             $('#fldCriticRating', page).show();
             $('#fldCriticRatingSummary', page).show();
             $('#fldRottenTomatoes', page).show();
@@ -812,6 +812,7 @@
             { name: "Name" },
             { name: "Overview" },
             { name: "Genres" },
+            { name: "Parental Rating", value: "OfficialRating" },
             { name: "People", value: "Cast" }
         ];
         

@@ -7,7 +7,7 @@
         SortOrder: "Ascending",
         IncludeItemTypes: "Series,Episode",
         Recursive: true,
-        Fields: "ItemCounts,DateCreated,UserData",
+        Fields: "DateCreated",
         PersonTypes: "",
         StartIndex: 0
     };

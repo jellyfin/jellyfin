@@ -25,6 +25,12 @@ namespace MediaBrowser.Controller.Entities
         public int? PlayersSupported { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance is installed on client.
+        /// </summary>
+        /// <value><c>true</c> if this instance is installed on client; otherwise, <c>false</c>.</value>
+        public bool IsInstalledOnClient { get; set; }
+
+        /// <summary>
         /// Gets or sets the game system.
         /// </summary>
         /// <value>The game system.</value>

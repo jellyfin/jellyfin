@@ -7,7 +7,7 @@
 
         SortBy: "SortName",
         SortOrder: "Ascending",
-        Fields: "ItemCounts,DateCreated",
+        Fields: "DateCreated",
         StartIndex: 0
     };
 

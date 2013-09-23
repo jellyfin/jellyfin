@@ -7,7 +7,7 @@
         SortOrder: "Ascending",
         IncludeItemTypes: "BoxSet",
         Recursive: true,
-        Fields: "ItemCounts,DateCreated",
+        Fields: "DateCreated",
         StartIndex: 0
     };
 

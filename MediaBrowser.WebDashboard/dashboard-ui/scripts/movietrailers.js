@@ -9,7 +9,7 @@
         SortOrder: "Ascending",
         IncludeItemTypes: "Trailer",
         Recursive: true,
-        Fields: "ItemCounts,DateCreated",
+        Fields: "DateCreated",
         StartIndex: 0
     };
 

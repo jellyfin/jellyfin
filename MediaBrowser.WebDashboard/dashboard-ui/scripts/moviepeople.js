@@ -7,7 +7,7 @@
         SortOrder: "Ascending",
         IncludeItemTypes: "Movie,Trailer",
         Recursive: true,
-        Fields: "ItemCounts,DateCreated,UserData",
+        Fields: "DateCreated",
         PersonTypes: "",
         StartIndex: 0
     };
