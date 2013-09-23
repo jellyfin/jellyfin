@@ -1194,9 +1194,9 @@
 
             if (item.MediaType || item.IsFolder) {
                 if (userData.Played) {
-                    html += '<img data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgPlayed" src="css/images/userdata/played.png" alt="Played" title="Played" onclick="LibraryBrowser.markPlayed(this);return false;" />';
+                    html += '<img data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgPlayed" src="css/images/userdata/playedon.png" alt="Played" title="Played" onclick="LibraryBrowser.markPlayed(this);return false;" />';
                 } else {
-                    html += '<img data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgPlayedOff" src="css/images/userdata/unplayed.png" alt="Played" title="Played" onclick="LibraryBrowser.markPlayed(this);return false;" />';
+                    html += '<img data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgPlayedOff" src="css/images/userdata/playedoff.png" alt="Played" title="Played" onclick="LibraryBrowser.markPlayed(this);return false;" />';
                 }
             }
 
@@ -1233,10 +1233,10 @@
             ApiClient.updatePlayedStatus(Dashboard.getCurrentUserId(), id, markAsPlayed);
 
             if (markAsPlayed) {
-                link.src = "css/images/userdata/played.png";
+                link.src = "css/images/userdata/playedon.png";
                 $link.addClass('imgPlayed').removeClass('imgPlayedOff');
             } else {
-                link.src = "css/images/userdata/unplayed.png";
+                link.src = "css/images/userdata/playedoff.png";
                 $link.addClass('imgPlayedOff').removeClass('imgPlayed');
             }
         },
