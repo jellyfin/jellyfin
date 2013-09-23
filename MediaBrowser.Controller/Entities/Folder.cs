@@ -171,6 +171,25 @@ namespace MediaBrowser.Controller.Entities
             return ItemRepository.SaveChildren(Id, ActualChildren.Select(i => i.Id).ToList(), cancellationToken);
         }
 
+        /// <summary>
+        /// Clears the children.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        public Task ClearChildren(CancellationToken cancellationToken)
+        {
+            var items = ActualChildren.ToList();
+
+            ClearChildrenInternal();
+
+            foreach (var item in items)
+            {
+                LibraryManager.ReportItemRemoved(item);
+            }
+
+            return ItemRepository.SaveChildren(Id, ActualChildren.Select(i => i.Id).ToList(), cancellationToken);
+        }
+
         #region Indexing
 
         /// <summary>
@@ -733,6 +752,11 @@ namespace MediaBrowser.Controller.Entities
                 if (actualRemovals.Count > 0)
                 {
                     RemoveChildrenInternal(actualRemovals);
+
+                    foreach (var item in actualRemovals)
+                    {
+                        LibraryManager.ReportItemRemoved(item);
+                    }
                 }
 
                 await LibraryManager.CreateItems(newItems, cancellationToken).ConfigureAwait(false);
