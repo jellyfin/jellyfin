@@ -321,7 +321,7 @@ namespace MediaBrowser.ServerApplication
         /// <returns>Task.</returns>
         private async Task RegisterMediaEncoder()
         {
-            var info = await new FFMpegDownloader(Logger, ApplicationPaths, HttpClient, ZipClient).GetFFMpegInfo().ConfigureAwait(false);
+            var info = await new FFMpegDownloader(Logger, ApplicationPaths, HttpClient).GetFFMpegInfo().ConfigureAwait(false);
 
             MediaEncoder = new MediaEncoder(LogManager.GetLogger("MediaEncoder"), ApplicationPaths, JsonSerializer, info.Path, info.ProbePath, info.Version);
             RegisterSingleInstance(MediaEncoder);
