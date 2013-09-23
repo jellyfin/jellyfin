@@ -281,7 +281,6 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <None Include="app.manifest" />
-    <EmbeddedResource Include="Implementations\ffmpeg20130904.zip" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -392,9 +391,6 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Images\mb3logo800.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Implementations\readme.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
