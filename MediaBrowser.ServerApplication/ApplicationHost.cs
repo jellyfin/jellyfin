@@ -258,6 +258,8 @@ namespace MediaBrowser.ServerApplication
             ZipClient = new DotNetZipClient();
             RegisterSingleInstance(ZipClient);
 
+            var mediaEncoderTask = RegisterMediaEncoder();
+
             UserDataRepository = new SqliteUserDataRepository(ApplicationPaths, JsonSerializer, LogManager);
             RegisterSingleInstance(UserDataRepository);
 
@@ -284,8 +286,6 @@ namespace MediaBrowser.ServerApplication
 
             RegisterSingleInstance<ILibrarySearchEngine>(() => new LuceneSearchEngine(ApplicationPaths, LogManager, LibraryManager));
 
-            await RegisterMediaEncoder().ConfigureAwait(false);
-
             var clientConnectionManager = new SessionManager(UserDataRepository, ServerConfigurationManager, Logger, UserRepository);
             RegisterSingleInstance<ISessionManager>(clientConnectionManager);
 
@@ -310,7 +310,7 @@ namespace MediaBrowser.ServerApplication
 
             await ConfigureNotificationsRepository().ConfigureAwait(false);
 
-            await Task.WhenAll(itemsTask, displayPreferencesTask, userdataTask).ConfigureAwait(false);
+            await Task.WhenAll(itemsTask, displayPreferencesTask, userdataTask, mediaEncoderTask).ConfigureAwait(false);
 
             SetKernelProperties();
         }

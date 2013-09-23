@@ -29,33 +29,37 @@ namespace MediaBrowser.ServerApplication.Implementations
 
         public async Task<FFMpegInfo> GetFFMpegInfo()
         {
-            var assembly = GetType().Assembly;
+            var version = "ffmpeg20130904";
 
-            var prefix = GetType().Namespace + ".";
+            var versionedDirectoryPath = Path.Combine(GetMediaToolsPath(true), version);
 
-            var srch = prefix + "ffmpeg";
-
-            var resource = assembly.GetManifestResourceNames().First(r => r.StartsWith(srch));
-
-            var filename =
-                resource.Substring(resource.IndexOf(prefix, StringComparison.OrdinalIgnoreCase) + prefix.Length);
-
-            var versionedDirectoryPath = Path.Combine(GetMediaToolsPath(true),
-                                                      Path.GetFileNameWithoutExtension(filename));
+            var info = new FFMpegInfo
+            {
+                ProbePath = Path.Combine(versionedDirectoryPath, "ffprobe.exe"),
+                Path = Path.Combine(versionedDirectoryPath, "ffmpeg.exe"),
+                Version = version
+            };
 
             if (!Directory.Exists(versionedDirectoryPath))
             {
                 Directory.CreateDirectory(versionedDirectoryPath);
             }
 
-            await ExtractTools(assembly, resource, versionedDirectoryPath).ConfigureAwait(false);
-
-            return new FFMpegInfo
+            if (!File.Exists(info.ProbePath) || !File.Exists(info.Path))
             {
-                ProbePath = Path.Combine(versionedDirectoryPath, "ffprobe.exe"),
-                Path = Path.Combine(versionedDirectoryPath, "ffmpeg.exe"),
-                Version = Path.GetFileNameWithoutExtension(versionedDirectoryPath)
-            };
+                ExtractTools(version, versionedDirectoryPath);
+            }
+
+            try
+            {
+                await DownloadFonts(versionedDirectoryPath).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error getting ffmpeg font files", ex);
+            }
+
+            return info;
         }
 
         /// <summary>
@@ -64,20 +68,13 @@ namespace MediaBrowser.ServerApplication.Implementations
         /// <param name="assembly">The assembly.</param>
         /// <param name="zipFileResourcePath">The zip file resource path.</param>
         /// <param name="targetPath">The target path.</param>
-        private async Task ExtractTools(Assembly assembly, string zipFileResourcePath, string targetPath)
+        private void ExtractTools(string version, string targetPath)
         {
-            using (var resourceStream = assembly.GetManifestResourceStream(zipFileResourcePath))
+            var zipFileResourcePath = GetType().Namespace + "." + version + ".zip";
+
+            using (var resourceStream = GetType().Assembly.GetManifestResourceStream(zipFileResourcePath))
             {
                 _zipClient.ExtractAll(resourceStream, targetPath, false);
-            }
-
-            try
-            {
-                await DownloadFonts(targetPath).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error getting ffmpeg font files", ex);
             }
         }
 
