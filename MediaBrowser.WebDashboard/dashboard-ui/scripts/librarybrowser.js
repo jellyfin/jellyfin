@@ -991,8 +991,13 @@
                 if (item.Type == "MusicArtist" || item.Type == "Artist") {
                     links.push('<a class="textlink" href="http://musicbrainz.org/artist/' + providerIds.Musicbrainz + '" target="_blank">MusicBrainz</a>');
                 } else {
-                    links.push('<a class="textlink" href="http://musicbrainz.org/release/' + providerIds.Musicbrainz + '" target="_blank">MusicBrainz</a>');
+                    links.push('<a class="textlink" href="http://musicbrainz.org/release/' + providerIds.Musicbrainz + '" target="_blank">MusicBrainz Release</a>');
                 }
+
+            }
+            if (providerIds.MusicBrainzReleaseGroup) {
+
+                links.push('<a class="textlink" href="http://musicbrainz.org/release-group/' + providerIds.MusicBrainzReleaseGroup + '" target="_blank">MusicBrainz Release Group</a>');
 
             }
             if (providerIds.Gamesdb)
