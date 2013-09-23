@@ -52,11 +52,6 @@ namespace MediaBrowser.Model.Querying
         HomePageUrl,
 
         /// <summary>
-        /// Child count, recursive child count, etc
-        /// </summary>
-        ItemCounts,
-
-        /// <summary>
         /// The fields that the server supports indexing on
         /// </summary>
         IndexOptions,
