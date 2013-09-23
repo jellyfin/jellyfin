@@ -6,7 +6,7 @@
         SortBy: "SortName",
         SortOrder: "Ascending",
         Recursive: true,
-        Fields: "ItemCounts,DateCreated,UserData",
+        Fields: "DateCreated",
         StartIndex: 0
     };
 

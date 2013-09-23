@@ -404,7 +404,7 @@
             SortOrder: "Ascending",
             IncludeItemTypes: "",
             Recursive: true,
-            Fields: "ItemCounts,DateCreated,AudioInfo,SeriesInfo,ParentId",
+            Fields: "DateCreated,AudioInfo,SeriesInfo,ParentId",
             Limit: LibraryBrowser.getDefaultPageSize(),
             StartIndex: 0
         };

@@ -631,7 +631,7 @@
             SortOrder: "Ascending",
             IncludeItemTypes: "MusicVideo",
             Recursive: true,
-            Fields: "ItemCounts,DateCreated",
+            Fields: "DateCreated",
             Albums: item.Name
 
         }).done(function (result) {

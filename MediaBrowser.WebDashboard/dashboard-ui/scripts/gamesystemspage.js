@@ -8,7 +8,7 @@
         SortOrder: "Ascending",
         IncludeItemTypes: "GameSystem",
         Recursive: true,
-        Fields: "ItemCounts,ItemCounts,DateCreated,UserData",
+        Fields: "DateCreated",
         StartIndex: 0
     };
 

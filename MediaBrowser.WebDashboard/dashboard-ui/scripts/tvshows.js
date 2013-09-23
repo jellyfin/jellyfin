@@ -9,7 +9,7 @@
         SortOrder: "Ascending",
         IncludeItemTypes: "Series",
         Recursive: true,
-        Fields: "SeriesInfo,ItemCounts,DateCreated",
+        Fields: "SeriesInfo,DateCreated",
         StartIndex: 0
     };
 

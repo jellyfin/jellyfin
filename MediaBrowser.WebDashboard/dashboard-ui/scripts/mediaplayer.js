@@ -532,7 +532,8 @@
                 videoCodec: h264Codec,
                 audioCodec: h264AudioCodec,
                 profile: 'baseline',
-                level: 3
+                level: 3,
+                timeStampOffsetMs: 0
             }));
 
             var ogvVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.ogv', $.extend({}, baseParams, {
