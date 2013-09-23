@@ -203,6 +203,18 @@ namespace MediaBrowser.Controller.Providers
         }
 
         /// <summary>
+        /// Gets a value indicating whether [enforce dont fetch metadata].
+        /// </summary>
+        /// <value><c>true</c> if [enforce dont fetch metadata]; otherwise, <c>false</c>.</value>
+        public virtual bool EnforceDontFetchMetadata
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        /// <summary>
         /// Needses the refresh internal.
         /// </summary>
         /// <param name="item">The item.</param>
