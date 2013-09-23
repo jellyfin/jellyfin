@@ -7,6 +7,7 @@ using SharpCompress.Archive.SevenZip;
 using SharpCompress.Common;
 using SharpCompress.Reader;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -54,19 +55,16 @@ namespace MediaBrowser.ServerApplication.Implementations
                 Directory.CreateDirectory(versionedDirectoryPath);
             }
 
+            var tasks = new List<Task>();
+
             if (!File.Exists(info.ProbePath) || !File.Exists(info.Path))
             {
-                await DownloadFFMpeg(info).ConfigureAwait(false);
+                tasks.Add(DownloadFFMpeg(info));
             }
 
-            try
-            {
-                await DownloadFonts(versionedDirectoryPath).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error getting ffmpeg font files", ex);
-            }
+            tasks.Add(DownloadFonts(versionedDirectoryPath));
+
+            await Task.WhenAll(tasks).ConfigureAwait(false);
 
             return info;
         }
@@ -87,6 +85,8 @@ namespace MediaBrowser.ServerApplication.Implementations
 
                 }
             }
+
+            throw new ApplicationException("Unable to download required components. Please try again later.");
         }
 
         private Task<string> DownloadFFMpeg(FFMpegInfo info, string url)
@@ -160,23 +160,36 @@ namespace MediaBrowser.ServerApplication.Implementations
         /// <param name="targetPath">The target path.</param>
         private async Task DownloadFonts(string targetPath)
         {
-            var fontsDirectory = Path.Combine(targetPath, "fonts");
-
-            if (!Directory.Exists(fontsDirectory))
+            try
             {
-                Directory.CreateDirectory(fontsDirectory);
+                var fontsDirectory = Path.Combine(targetPath, "fonts");
+
+                if (!Directory.Exists(fontsDirectory))
+                {
+                    Directory.CreateDirectory(fontsDirectory);
+                }
+
+                const string fontFilename = "ARIALUNI.TTF";
+
+                var fontFile = Path.Combine(fontsDirectory, fontFilename);
+
+                if (!File.Exists(fontFile))
+                {
+                    await DownloadFontFile(fontsDirectory, fontFilename).ConfigureAwait(false);
+                }
+
+                await WriteFontConfigFile(fontsDirectory).ConfigureAwait(false);
             }
-
-            const string fontFilename = "ARIALUNI.TTF";
-
-            var fontFile = Path.Combine(fontsDirectory, fontFilename);
-
-            if (!File.Exists(fontFile))
+            catch (HttpException ex)
             {
-                await DownloadFontFile(fontsDirectory, fontFilename).ConfigureAwait(false);
+                // Don't let the server crash because of this
+                _logger.ErrorException("Error downloading ffmpeg font files", ex);
             }
-
-            await WriteFontConfigFile(fontsDirectory).ConfigureAwait(false);
+            catch (Exception ex)
+            {
+                // Don't let the server crash because of this
+                _logger.ErrorException("Error writing ffmpeg font files", ex);
+            }
         }
 
         /// <summary>
