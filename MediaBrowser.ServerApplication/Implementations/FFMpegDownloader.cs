@@ -1,42 +1,52 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Net;
+using SharpCompress.Archive.SevenZip;
+using SharpCompress.Common;
+using SharpCompress.Reader;
 using System;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.ServerApplication.Implementations
 {
     public class FFMpegDownloader
     {
-        private readonly IZipClient _zipClient;
         private readonly IHttpClient _httpClient;
         private readonly IApplicationPaths _appPaths;
         private readonly ILogger _logger;
 
-        public FFMpegDownloader(ILogger logger, IApplicationPaths appPaths, IHttpClient httpClient, IZipClient zipClient)
+        private const string Version = "ffmpeg20130904";
+
+        private const string FontUrl = "https://www.dropbox.com/s/pj847twf7riq0j7/ARIALUNI.7z?dl=1";
+
+        private readonly string[] _ffMpegUrls = new[]
+                {
+                    "http://ffmpeg.zeranoe.com/builds/win32/static/ffmpeg-20130904-git-f974289-win32-static.7z",
+                    "https://www.dropbox.com/s/a81cb2ob23fwcfs/ffmpeg-20130904-git-f974289-win32-static.7z?dl=1"
+                };
+
+        public FFMpegDownloader(ILogger logger, IApplicationPaths appPaths, IHttpClient httpClient)
         {
             _logger = logger;
             _appPaths = appPaths;
             _httpClient = httpClient;
-            _zipClient = zipClient;
         }
 
         public async Task<FFMpegInfo> GetFFMpegInfo()
         {
-            var version = "ffmpeg20130904";
-
-            var versionedDirectoryPath = Path.Combine(GetMediaToolsPath(true), version);
+            var versionedDirectoryPath = Path.Combine(GetMediaToolsPath(true), Version);
 
             var info = new FFMpegInfo
             {
                 ProbePath = Path.Combine(versionedDirectoryPath, "ffprobe.exe"),
                 Path = Path.Combine(versionedDirectoryPath, "ffmpeg.exe"),
-                Version = version
+                Version = Version
             };
 
             if (!Directory.Exists(versionedDirectoryPath))
@@ -46,7 +56,7 @@ namespace MediaBrowser.ServerApplication.Implementations
 
             if (!File.Exists(info.ProbePath) || !File.Exists(info.Path))
             {
-                ExtractTools(version, versionedDirectoryPath);
+                await DownloadFFMpeg(info).ConfigureAwait(false);
             }
 
             try
@@ -61,23 +71,88 @@ namespace MediaBrowser.ServerApplication.Implementations
             return info;
         }
 
-        /// <summary>
-        /// Extracts the tools.
-        /// </summary>
-        /// <param name="assembly">The assembly.</param>
-        /// <param name="zipFileResourcePath">The zip file resource path.</param>
-        /// <param name="targetPath">The target path.</param>
-        private void ExtractTools(string version, string targetPath)
+        private async Task DownloadFFMpeg(FFMpegInfo info)
         {
-            var zipFileResourcePath = GetType().Namespace + "." + version + ".zip";
-
-            using (var resourceStream = GetType().Assembly.GetManifestResourceStream(zipFileResourcePath))
+            foreach (var url in _ffMpegUrls)
             {
-                _zipClient.ExtractAll(resourceStream, targetPath, false);
+                try
+                {
+                    var tempFile = await DownloadFFMpeg(info, url).ConfigureAwait(false);
+
+                    ExtractFFMpeg(tempFile, Path.GetDirectoryName(info.Path));
+                    return;
+                }
+                catch (HttpException ex)
+                {
+
+                }
             }
         }
 
-        private const string FontUrl = "https://www.dropbox.com/s/9nb76tybcsw5xrk/ARIALUNI.zip?dl=1";
+        private Task<string> DownloadFFMpeg(FFMpegInfo info, string url)
+        {
+            return _httpClient.GetTempFile(new HttpRequestOptions
+            {
+                Url = url,
+                CancellationToken = CancellationToken.None,
+                Progress = new Progress<double>(),
+
+                // Make it look like a browser
+                // Try to hide that we're direct linking
+                UserAgent = "Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.47 Safari/537.36"
+            });
+        }
+
+        private void ExtractFFMpeg(string tempFile, string targetFolder)
+        {
+            _logger.Debug("Extracting ffmpeg from {0}", tempFile);
+
+            var tempFolder = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid().ToString());
+
+            if (!Directory.Exists(tempFolder))
+            {
+                Directory.CreateDirectory(tempFolder);
+            }
+
+            try
+            {
+                Extract7zArchive(tempFile, tempFolder);
+
+                var files = Directory.EnumerateFiles(tempFolder, "*.exe", SearchOption.AllDirectories).ToList();
+
+                foreach (var file in files)
+                {
+                    File.Copy(file, Path.Combine(targetFolder, Path.GetFileName(file)));
+                }
+            }
+            finally
+            {
+                DeleteFile(tempFile);
+            }
+        }
+
+        private void Extract7zArchive(string archivePath, string targetPath)
+        {
+            using (var archive = SevenZipArchive.Open(archivePath))
+            {
+                using (var reader = archive.ExtractAllEntries())
+                {
+                    reader.WriteAllToDirectory(targetPath, ExtractOptions.ExtractFullPath | ExtractOptions.Overwrite);
+                }
+            }
+        }
+
+        private void DeleteFile(string path)
+        {
+            try
+            {
+                File.Delete(path);
+            }
+            catch (IOException ex)
+            {
+                _logger.ErrorException("Error deleting temp file {0}", ex, path);
+            }
+        }
 
         /// <summary>
         /// Extracts the fonts.
@@ -136,7 +211,7 @@ namespace MediaBrowser.ServerApplication.Implementations
                 Progress = new Progress<double>()
             });
 
-            _zipClient.ExtractAll(tempFile, fontsDirectory, true);
+            Extract7zArchive(tempFile, fontsDirectory);
 
             try
             {
