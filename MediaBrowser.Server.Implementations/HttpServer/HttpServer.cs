@@ -531,7 +531,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                     {
                         new ClientWebSocket();
 
-                        _supportsNativeWebSocket = false;
+                        _supportsNativeWebSocket = true;
                     }
                     catch (PlatformNotSupportedException)
                     {
