@@ -8,7 +8,7 @@ namespace MediaBrowser.ServerApplication.Implementations
     /// <summary>
     /// Class DotNetZipClient
     /// </summary>
-    public class DotNetZipClient : IZipClient
+    public class ZipClient : IZipClient
     {
         /// <summary>
         /// Extracts all.

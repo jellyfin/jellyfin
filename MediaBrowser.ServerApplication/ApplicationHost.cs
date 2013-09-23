@@ -255,7 +255,7 @@ namespace MediaBrowser.ServerApplication
 
             RegisterSingleInstance<IBlurayExaminer>(() => new BdInfoExaminer());
 
-            ZipClient = new DotNetZipClient();
+            ZipClient = new ZipClient();
             RegisterSingleInstance(ZipClient);
 
             var mediaEncoderTask = RegisterMediaEncoder();

@@ -22,6 +22,13 @@ namespace MediaBrowser.Common.ScheduledTasks
             where T : IScheduledTask;
 
         /// <summary>
+        /// Cancels if running.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        void CancelIfRunning<T>()
+            where T : IScheduledTask;
+
+        /// <summary>
         /// Queues the scheduled task.
         /// </summary>
         /// <typeparam name="T"></typeparam>
