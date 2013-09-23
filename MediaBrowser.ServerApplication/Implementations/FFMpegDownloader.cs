@@ -24,10 +24,15 @@ namespace MediaBrowser.ServerApplication.Implementations
 
         private const string Version = "ffmpeg20130904";
 
-        private const string FontUrl = "https://www.dropbox.com/s/pj847twf7riq0j7/ARIALUNI.7z?dl=1";
+        private readonly string[] _fontUrls = new[]
+            {
+                "https://www.dropbox.com/s/pj847twf7riq0j7/ARIALUNI.7z?dl=1"
+            };
 
         private readonly string[] _ffMpegUrls = new[]
                 {
+                    "https://raw.github.com/MediaBrowser/MediaBrowser/master/MediaBrowser.ServerApplication/Implementations/ffmpeg-20130904-git-f974289-win32-static.7z",
+
                     "http://ffmpeg.zeranoe.com/builds/win32/static/ffmpeg-20130904-git-f974289-win32-static.7z",
                     "https://www.dropbox.com/s/a81cb2ob23fwcfs/ffmpeg-20130904-git-f974289-win32-static.7z?dl=1"
                 };
@@ -218,11 +223,32 @@ namespace MediaBrowser.ServerApplication.Implementations
                 }
             }
 
-            var tempFile = await _httpClient.GetTempFile(new HttpRequestOptions
+            string tempFile = null;
+
+            foreach (var url in _fontUrls)
             {
-                Url = FontUrl,
-                Progress = new Progress<double>()
-            });
+                try
+                {
+                    tempFile = await _httpClient.GetTempFile(new HttpRequestOptions
+                    {
+                        Url = url,
+                        Progress = new Progress<double>()
+
+                    }).ConfigureAwait(false);
+
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    // The core can function without the font file, so handle this
+                    _logger.ErrorException("Failed to download ffmpeg font file from {0}", ex, url);
+                }
+            }
+
+            if (string.IsNullOrEmpty(tempFile))
+            {
+                return;
+            }
 
             Extract7zArchive(tempFile, fontsDirectory);
 
