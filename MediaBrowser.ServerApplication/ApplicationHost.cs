@@ -284,8 +284,7 @@ namespace MediaBrowser.ServerApplication
 
             RegisterSingleInstance<ILibrarySearchEngine>(() => new LuceneSearchEngine(ApplicationPaths, LogManager, LibraryManager));
 
-            MediaEncoder = new MediaEncoder(LogManager.GetLogger("MediaEncoder"), ZipClient, ApplicationPaths, JsonSerializer, HttpClient);
-            RegisterSingleInstance(MediaEncoder);
+            await RegisterMediaEncoder().ConfigureAwait(false);
 
             var clientConnectionManager = new SessionManager(UserDataRepository, ServerConfigurationManager, Logger, UserRepository);
             RegisterSingleInstance<ISessionManager>(clientConnectionManager);
@@ -314,6 +313,18 @@ namespace MediaBrowser.ServerApplication
             await Task.WhenAll(itemsTask, displayPreferencesTask, userdataTask).ConfigureAwait(false);
 
             SetKernelProperties();
+        }
+
+        /// <summary>
+        /// Registers the media encoder.
+        /// </summary>
+        /// <returns>Task.</returns>
+        private async Task RegisterMediaEncoder()
+        {
+            var info = await new FFMpegDownloader(Logger, ApplicationPaths, HttpClient, ZipClient).GetFFMpegInfo().ConfigureAwait(false);
+
+            MediaEncoder = new MediaEncoder(LogManager.GetLogger("MediaEncoder"), ApplicationPaths, JsonSerializer, info.Path, info.ProbePath, info.Version);
+            RegisterSingleInstance(MediaEncoder);
         }
 
         /// <summary>
