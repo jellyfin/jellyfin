@@ -254,10 +254,8 @@
     <EmbeddedResource Include="Localization\Ratings\kz.txt" />
     <EmbeddedResource Include="Localization\Ratings\nz.txt" />
     <EmbeddedResource Include="Localization\Ratings\ru.txt" />
-    <EmbeddedResource Include="MediaEncoder\readme.txt" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="MediaEncoder\ffmpeg20130904.zip" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
