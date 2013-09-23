@@ -113,7 +113,10 @@ namespace MediaBrowser.Providers.Savers
                     "Network",
                     "Airs_Time",
                     "Airs_DayOfWeek",
-                    "FirstAired"
+                    "FirstAired",
+
+                    // Don't preserve old series node
+                    "Series"
                 });
 
             // Set last refreshed so that the provider doesn't trigger after the file save
