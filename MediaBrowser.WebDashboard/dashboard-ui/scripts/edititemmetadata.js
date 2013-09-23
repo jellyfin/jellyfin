@@ -812,6 +812,7 @@
             { name: "Name" },
             { name: "Overview" },
             { name: "Genres" },
+            { name: "Parental Rating", value: "OfficialRating" },
             { name: "People", value: "Cast" }
         ];
         

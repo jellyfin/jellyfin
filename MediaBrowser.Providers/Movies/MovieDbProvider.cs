@@ -317,7 +317,7 @@ namespace MediaBrowser.Providers.Movies
             var boxset = item as BoxSet;
             if (boxset != null)
             {
-               // See if any movies have a collection id already
+                // See if any movies have a collection id already
                 var collId = boxset.Children.Concat(boxset.GetLinkedChildren()).OfType<Video>()
                     .Select(i => i.GetProviderId(MetadataProviders.TmdbCollection))
                    .FirstOrDefault(i => i != null);
@@ -462,7 +462,7 @@ namespace MediaBrowser.Providers.Movies
                 Logger.Info("MoviedbProvider: Ignoring " + item.Name + " because ID forced blank.");
                 return;
             }
-            
+
             item.SetProviderId(MetadataProviders.Tmdb, id);
 
             var mainResult = await FetchMainResult(item, id, cancellationToken).ConfigureAwait(false);
@@ -586,14 +586,18 @@ namespace MediaBrowser.Providers.Movies
                     var ourRelease = movieData.releases.countries.FirstOrDefault(c => c.iso_3166_1.Equals(ConfigurationManager.Configuration.MetadataCountryCode, StringComparison.OrdinalIgnoreCase)) ?? new Country();
                     var usRelease = movieData.releases.countries.FirstOrDefault(c => c.iso_3166_1.Equals("US", StringComparison.OrdinalIgnoreCase)) ?? new Country();
                     var minimunRelease = movieData.releases.countries.OrderBy(c => c.release_date).FirstOrDefault() ?? new Country();
-                    var ratingPrefix = ConfigurationManager.Configuration.MetadataCountryCode.Equals("us", StringComparison.OrdinalIgnoreCase) ? "" : ConfigurationManager.Configuration.MetadataCountryCode + "-";
-                    movie.OfficialRating = !string.IsNullOrEmpty(ourRelease.certification)
-                                               ? ratingPrefix + ourRelease.certification
-                                               : !string.IsNullOrEmpty(usRelease.certification)
-                                                     ? usRelease.certification
-                                                     : !string.IsNullOrEmpty(minimunRelease.certification)
-                                                           ? minimunRelease.iso_3166_1 + "-" + minimunRelease.certification
-                                                           : null;
+
+                    if (!movie.LockedFields.Contains(MetadataFields.OfficialRating))
+                    {
+                        var ratingPrefix = ConfigurationManager.Configuration.MetadataCountryCode.Equals("us", StringComparison.OrdinalIgnoreCase) ? "" : ConfigurationManager.Configuration.MetadataCountryCode + "-";
+                        movie.OfficialRating = !string.IsNullOrEmpty(ourRelease.certification)
+                                                   ? ratingPrefix + ourRelease.certification
+                                                   : !string.IsNullOrEmpty(usRelease.certification)
+                                                         ? usRelease.certification
+                                                         : !string.IsNullOrEmpty(minimunRelease.certification)
+                                                               ? minimunRelease.iso_3166_1 + "-" + minimunRelease.certification
+                                                               : null;
+                    }
 
                     if (ourRelease.release_date != default(DateTime))
                     {
@@ -632,7 +636,7 @@ namespace MediaBrowser.Providers.Movies
                 }
 
                 //if that didn't find a rating and we are a boxset, use the one from our first child
-                if (movie.OfficialRating == null && movie is BoxSet)
+                if (movie.OfficialRating == null && movie is BoxSet && !movie.LockedFields.Contains(MetadataFields.OfficialRating))
                 {
                     var boxset = movie as BoxSet;
                     Logger.Info("MovieDbProvider - Using rating of first child of boxset...");
