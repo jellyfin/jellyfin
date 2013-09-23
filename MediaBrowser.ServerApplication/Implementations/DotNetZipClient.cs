@@ -1,5 +1,6 @@
-﻿using Ionic.Zip;
-using MediaBrowser.Model.IO;
+﻿using MediaBrowser.Model.IO;
+using SharpCompress.Common;
+using SharpCompress.Reader;
 using System.IO;
 
 namespace MediaBrowser.ServerApplication.Implementations
@@ -19,10 +20,7 @@ namespace MediaBrowser.ServerApplication.Implementations
         {
             using (var fileStream = File.OpenRead(sourceFile))
             {
-                using (var zipFile = ZipFile.Read(fileStream))
-                {
-                    zipFile.ExtractAll(targetPath, overwriteExistingFiles ? ExtractExistingFileAction.OverwriteSilently : ExtractExistingFileAction.DoNotOverwrite);
-                }
+                ExtractAll(fileStream, targetPath, overwriteExistingFiles);
             }
         }
 
@@ -34,9 +32,16 @@ namespace MediaBrowser.ServerApplication.Implementations
         /// <param name="overwriteExistingFiles">if set to <c>true</c> [overwrite existing files].</param>
         public void ExtractAll(Stream source, string targetPath, bool overwriteExistingFiles)
         {
-            using (var zipFile = ZipFile.Read(source))
+            using (var reader = ReaderFactory.Open(source))
             {
-                zipFile.ExtractAll(targetPath, overwriteExistingFiles ? ExtractExistingFileAction.OverwriteSilently : ExtractExistingFileAction.DoNotOverwrite);
+                var options = ExtractOptions.ExtractFullPath;
+
+                if (overwriteExistingFiles)
+                {
+                    options = options | ExtractOptions.Overwrite;
+                }
+
+                reader.WriteAllToDirectory(targetPath, options);
             }
         }
     }
