@@ -183,6 +183,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Session\SessionWebSocketListener.cs" />
+    <Compile Include="Session\WebSocketController.cs" />
     <Compile Include="Sorting\AlbumArtistComparer.cs" />
     <Compile Include="Sorting\AlbumComparer.cs" />
     <Compile Include="Sorting\AlbumCountComparer.cs" />
