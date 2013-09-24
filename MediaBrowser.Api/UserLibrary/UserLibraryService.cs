@@ -663,19 +663,11 @@ namespace MediaBrowser.Api.UserLibrary
 
         private SessionInfo GetSession()
         {
-            var auth = RequestFilterAttribute.GetAuthorization(RequestContext);
+            var auth = AuthorizationRequestFilterAttribute.GetAuthorization(RequestContext);
 
-            string deviceId;
-            string client;
-            string version;
-
-            auth.TryGetValue("DeviceId", out deviceId);
-            auth.TryGetValue("Client", out client);
-            auth.TryGetValue("Version", out version);
-
-            return _sessionManager.Sessions.First(i => string.Equals(i.DeviceId, deviceId) &&
-                string.Equals(i.Client, client) &&
-                string.Equals(i.ApplicationVersion, version));
+            return _sessionManager.Sessions.First(i => string.Equals(i.DeviceId, auth.DeviceId) &&
+                string.Equals(i.Client, auth.Client) &&
+                string.Equals(i.ApplicationVersion, auth.Version));
         }
 
         /// <summary>
@@ -726,7 +718,12 @@ namespace MediaBrowser.Api.UserLibrary
 
             var item = _dtoService.GetItemByDtoId(request.Id, user.Id);
 
-            var task = _sessionManager.OnPlaybackStopped(item, request.PositionTicks, GetSession().Id);
+            // Kill the encoding
+            ApiEntryPoint.Instance.KillSingleTranscodingJob(item.Path);
+
+            var session = GetSession();
+
+            var task = _sessionManager.OnPlaybackStopped(item, request.PositionTicks, session.Id);
 
             Task.WaitAll(task);
         }

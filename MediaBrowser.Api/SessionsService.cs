@@ -1,7 +1,5 @@
-﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller.Dto;
+﻿using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Session;
-using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Session;
 using ServiceStack.ServiceHost;
 using System;
@@ -189,6 +187,7 @@ namespace MediaBrowser.Api
         /// Initializes a new instance of the <see cref="SessionsService" /> class.
         /// </summary>
         /// <param name="sessionManager">The session manager.</param>
+        /// <param name="dtoService">The dto service.</param>
         public SessionsService(ISessionManager sessionManager, IDtoService dtoService)
         {
             _sessionManager = sessionManager;
@@ -214,52 +213,15 @@ namespace MediaBrowser.Api
 
         public void Post(SendPlaystateCommand request)
         {
-            var task = SendPlaystateCommand(request);
+            var command = new PlaystateRequest
+            {
+                Command = request.Command,
+                SeekPositionTicks = request.SeekPositionTicks
+            };
+
+            var task = _sessionManager.SendPlaystateCommand(request.Id, command, CancellationToken.None);
 
             Task.WaitAll(task);
-        }
-
-        private async Task SendPlaystateCommand(SendPlaystateCommand request)
-        {
-            var session = _sessionManager.Sessions.FirstOrDefault(i => i.Id == request.Id);
-
-            if (session == null)
-            {
-                throw new ResourceNotFoundException(string.Format("Session {0} not found.", request.Id));
-            }
-
-            if (!session.SupportsRemoteControl)
-            {
-                throw new ArgumentException(string.Format("Session {0} does not support remote control.", session.Id));
-            }
-
-            var socket = session.WebSockets.OrderByDescending(i => i.LastActivityDate).FirstOrDefault(i => i.State == WebSocketState.Open);
-
-            if (socket != null)
-            {
-                try
-                {
-                    await socket.SendAsync(new WebSocketMessage<PlaystateRequest>
-                    {
-                        MessageType = "Playstate",
-
-                        Data = new PlaystateRequest
-                        {
-                            Command = request.Command,
-                            SeekPositionTicks = request.SeekPositionTicks
-                        }
-
-                    }, CancellationToken.None).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    Logger.ErrorException("Error sending web socket message", ex);
-                }
-            }
-            else
-            {
-                throw new InvalidOperationException("The requested session does not have an open web socket.");
-            }
         }
 
         /// <summary>
@@ -268,55 +230,17 @@ namespace MediaBrowser.Api
         /// <param name="request">The request.</param>
         public void Post(BrowseTo request)
         {
-            var task = BrowseTo(request);
+            var command = new BrowseRequest
+            {
+                Context = request.Context,
+                ItemId = request.ItemId,
+                ItemName = request.ItemName,
+                ItemType = request.ItemType
+            };
+
+            var task = _sessionManager.SendBrowseCommand(request.Id, command, CancellationToken.None);
 
             Task.WaitAll(task);
-        }
-
-        /// <summary>
-        /// Browses to.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>Task.</returns>
-        /// <exception cref="ResourceNotFoundException"></exception>
-        /// <exception cref="System.ArgumentException"></exception>
-        /// <exception cref="System.InvalidOperationException">The requested session does not have an open web socket.</exception>
-        private async Task BrowseTo(BrowseTo request)
-        {
-            var session = _sessionManager.Sessions.FirstOrDefault(i => i.Id == request.Id);
-
-            if (session == null)
-            {
-                throw new ResourceNotFoundException(string.Format("Session {0} not found.", request.Id));
-            }
-
-            if (!session.SupportsRemoteControl)
-            {
-                throw new ArgumentException(string.Format("Session {0} does not support remote control.", session.Id));
-            }
-
-            var socket = session.WebSockets.OrderByDescending(i => i.LastActivityDate).FirstOrDefault(i => i.State == WebSocketState.Open);
-
-            if (socket != null)
-            {
-                try
-                {
-                    await socket.SendAsync(new WebSocketMessage<BrowseTo>
-                    {
-                        MessageType = "Browse",
-                        Data = request
-
-                    }, CancellationToken.None).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    Logger.ErrorException("Error sending web socket message", ex);
-                }
-            }
-            else
-            {
-                throw new InvalidOperationException("The requested session does not have an open web socket.");
-            }
         }
 
         /// <summary>
@@ -336,53 +260,16 @@ namespace MediaBrowser.Api
         /// <param name="request">The request.</param>
         public void Post(SendMessageCommand request)
         {
-            var task = SendMessageCommand(request);
+            var command = new MessageCommand
+            {
+                Header = string.IsNullOrEmpty(request.Header) ? "Message from Server" : request.Header,
+                TimeoutMs = request.TimeoutMs,
+                Text = request.Text
+            };
+
+            var task = _sessionManager.SendMessageCommand(request.Id, command, CancellationToken.None);
 
             Task.WaitAll(task);
-        }
-
-        private async Task SendMessageCommand(SendMessageCommand request)
-        {
-            var session = _sessionManager.Sessions.FirstOrDefault(i => i.Id == request.Id);
-
-            if (session == null)
-            {
-                throw new ResourceNotFoundException(string.Format("Session {0} not found.", request.Id));
-            }
-
-            if (!session.SupportsRemoteControl)
-            {
-                throw new ArgumentException(string.Format("Session {0} does not support remote control.", session.Id));
-            }
-
-            var socket = session.WebSockets.OrderByDescending(i => i.LastActivityDate).FirstOrDefault(i => i.State == WebSocketState.Open);
-
-            if (socket != null)
-            {
-                try
-                {
-                    await socket.SendAsync(new WebSocketMessage<MessageCommand>
-                    {
-                        MessageType = "MessageCommand",
-
-                        Data = new MessageCommand
-                        {
-                            Header = string.IsNullOrEmpty(request.Header) ? "Message from Server" : request.Header,
-                            TimeoutMs = request.TimeoutMs,
-                            Text = request.Text
-                        }
-
-                    }, CancellationToken.None).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    Logger.ErrorException("Error sending web socket message", ex);
-                }
-            }
-            else
-            {
-                throw new InvalidOperationException("The requested session does not have an open web socket.");
-            }
         }
 
         /// <summary>
@@ -391,62 +278,17 @@ namespace MediaBrowser.Api
         /// <param name="request">The request.</param>
         public void Post(Play request)
         {
-            var task = Play(request);
+            var command = new PlayRequest
+            {
+                ItemIds = request.ItemIds.Split(',').ToArray(),
+
+                PlayCommand = request.PlayCommand,
+                StartPositionTicks = request.StartPositionTicks
+            };
+
+            var task = _sessionManager.SendPlayCommand(request.Id, command, CancellationToken.None);
 
             Task.WaitAll(task);
-        }
-
-        /// <summary>
-        /// Plays the specified request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>Task.</returns>
-        /// <exception cref="ResourceNotFoundException"></exception>
-        /// <exception cref="System.ArgumentException"></exception>
-        /// <exception cref="System.InvalidOperationException">The requested session does not have an open web socket.</exception>
-        private async Task Play(Play request)
-        {
-            var session = _sessionManager.Sessions.FirstOrDefault(i => i.Id == request.Id);
-
-            if (session == null)
-            {
-                throw new ResourceNotFoundException(string.Format("Session {0} not found.", request.Id));
-            }
-
-            if (!session.SupportsRemoteControl)
-            {
-                throw new ArgumentException(string.Format("Session {0} does not support remote control.", session.Id));
-            }
-
-            var socket = session.WebSockets.OrderByDescending(i => i.LastActivityDate).FirstOrDefault(i => i.State == WebSocketState.Open);
-
-            if (socket != null)
-            {
-                try
-                {
-                    await socket.SendAsync(new WebSocketMessage<PlayRequest>
-                    {
-                        MessageType = "Play",
-
-                        Data = new PlayRequest
-                        {
-                            ItemIds = request.ItemIds.Split(',').ToArray(),
-
-                            PlayCommand = request.PlayCommand,
-                            StartPositionTicks = request.StartPositionTicks
-                        }
-
-                    }, CancellationToken.None).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    Logger.ErrorException("Error sending web socket message", ex);
-                }
-            }
-            else
-            {
-                throw new InvalidOperationException("The requested session does not have an open web socket.");
-            }
         }
     }
 }

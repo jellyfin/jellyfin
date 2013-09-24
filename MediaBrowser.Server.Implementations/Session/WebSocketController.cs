@@ -1,5 +1,5 @@
-﻿using MediaBrowser.Controller.Session;
-using MediaBrowser.Model.Logging;
+﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Session;
 using System;
@@ -11,42 +11,82 @@ namespace MediaBrowser.Server.Implementations.Session
 {
     public class WebSocketController : ISessionRemoteController
     {
-        private readonly ILogger _logger;
-
-        public WebSocketController(ILogger logger)
-        {
-            _logger = logger;
-        }
-
         public bool Supports(SessionInfo session)
         {
             return session.WebSockets.Any(i => i.State == WebSocketState.Open);
         }
 
-        public async Task SendSystemCommand(SessionInfo session, SystemCommand command, CancellationToken cancellationToken)
+        private IWebSocketConnection GetSocket(SessionInfo session)
         {
             var socket = session.WebSockets.OrderByDescending(i => i.LastActivityDate).FirstOrDefault(i => i.State == WebSocketState.Open);
 
-            if (socket != null)
-            {
-                try
-                {
-                    await socket.SendAsync(new WebSocketMessage<string>
-                    {
-                        MessageType = "SystemCommand",
-                        Data = command.ToString()
 
-                    }, cancellationToken).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error sending web socket message", ex);
-                }
-            }
-            else
+            if (socket == null)
             {
                 throw new InvalidOperationException("The requested session does not have an open web socket.");
             }
+
+            return socket;
+        }
+
+        public Task SendSystemCommand(SessionInfo session, SystemCommand command, CancellationToken cancellationToken)
+        {
+            var socket = GetSocket(session);
+
+            return socket.SendAsync(new WebSocketMessage<string>
+            {
+                MessageType = "SystemCommand",
+                Data = command.ToString()
+
+            }, cancellationToken);
+        }
+
+        public Task SendMessageCommand(SessionInfo session, MessageCommand command, CancellationToken cancellationToken)
+        {
+            var socket = GetSocket(session);
+
+            return socket.SendAsync(new WebSocketMessage<MessageCommand>
+            {
+                MessageType = "MessageCommand",
+                Data = command
+
+            }, cancellationToken);
+        }
+
+        public Task SendPlayCommand(SessionInfo session, PlayRequest command, CancellationToken cancellationToken)
+        {
+            var socket = GetSocket(session);
+
+            return socket.SendAsync(new WebSocketMessage<PlayRequest>
+            {
+                MessageType = "Play",
+                Data = command
+
+            }, cancellationToken);
+        }
+
+        public Task SendBrowseCommand(SessionInfo session, BrowseRequest command, CancellationToken cancellationToken)
+        {
+            var socket = GetSocket(session);
+
+            return socket.SendAsync(new WebSocketMessage<BrowseRequest>
+            {
+                MessageType = "Browse",
+                Data = command
+
+            }, cancellationToken);
+        }
+
+        public Task SendPlaystateCommand(SessionInfo session, PlaystateRequest command, CancellationToken cancellationToken)
+        {
+            var socket = GetSocket(session);
+
+            return socket.SendAsync(new WebSocketMessage<PlaystateRequest>
+            {
+                MessageType = "Playstate",
+                Data = command
+
+            }, cancellationToken);
         }
     }
 }

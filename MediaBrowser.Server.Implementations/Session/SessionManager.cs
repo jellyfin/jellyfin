@@ -465,5 +465,69 @@ namespace MediaBrowser.Server.Implementations.Session
 
             return Task.WhenAll(tasks);
         }
+
+        /// <summary>
+        /// Sends the message command.
+        /// </summary>
+        /// <param name="sessionId">The session id.</param>
+        /// <param name="command">The command.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        public Task SendMessageCommand(Guid sessionId, MessageCommand command, CancellationToken cancellationToken)
+        {
+            var session = GetSessionForRemoteControl(sessionId);
+
+            var tasks = GetControllers(session).Select(i => i.SendMessageCommand(session, command, cancellationToken));
+
+            return Task.WhenAll(tasks);
+        }
+
+        /// <summary>
+        /// Sends the play command.
+        /// </summary>
+        /// <param name="sessionId">The session id.</param>
+        /// <param name="command">The command.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        public Task SendPlayCommand(Guid sessionId, PlayRequest command, CancellationToken cancellationToken)
+        {
+            var session = GetSessionForRemoteControl(sessionId);
+
+            var tasks = GetControllers(session).Select(i => i.SendPlayCommand(session, command, cancellationToken));
+
+            return Task.WhenAll(tasks);
+        }
+
+        /// <summary>
+        /// Sends the browse command.
+        /// </summary>
+        /// <param name="sessionId">The session id.</param>
+        /// <param name="command">The command.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        public Task SendBrowseCommand(Guid sessionId, BrowseRequest command, CancellationToken cancellationToken)
+        {
+            var session = GetSessionForRemoteControl(sessionId);
+
+            var tasks = GetControllers(session).Select(i => i.SendBrowseCommand(session, command, cancellationToken));
+
+            return Task.WhenAll(tasks);
+        }
+
+        /// <summary>
+        /// Sends the playstate command.
+        /// </summary>
+        /// <param name="sessionId">The session id.</param>
+        /// <param name="command">The command.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        public Task SendPlaystateCommand(Guid sessionId, PlaystateRequest command, CancellationToken cancellationToken)
+        {
+            var session = GetSessionForRemoteControl(sessionId);
+
+            var tasks = GetControllers(session).Select(i => i.SendPlaystateCommand(session, command, cancellationToken));
+
+            return Task.WhenAll(tasks);
+        }
     }
 }

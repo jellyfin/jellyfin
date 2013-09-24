@@ -89,5 +89,41 @@ namespace MediaBrowser.Controller.Session
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task SendSystemCommand(Guid sessionId, SystemCommand command, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Sends the message command.
+        /// </summary>
+        /// <param name="sessionId">The session id.</param>
+        /// <param name="command">The command.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task SendMessageCommand(Guid sessionId, MessageCommand command, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Sends the play command.
+        /// </summary>
+        /// <param name="sessionId">The session id.</param>
+        /// <param name="command">The command.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task SendPlayCommand(Guid sessionId, PlayRequest command, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Sends the browse command.
+        /// </summary>
+        /// <param name="sessionId">The session id.</param>
+        /// <param name="command">The command.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task SendBrowseCommand(Guid sessionId, BrowseRequest command, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Sends the playstate command.
+        /// </summary>
+        /// <param name="sessionId">The session id.</param>
+        /// <param name="command">The command.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task SendPlaystateCommand(Guid sessionId, PlaystateRequest command, CancellationToken cancellationToken);
     }
 }

@@ -70,6 +70,7 @@
     <Compile Include="DefaultTheme\Models.cs" />
     <Compile Include="DisplayPreferencesService.cs" />
     <Compile Include="EnvironmentService.cs" />
+    <Compile Include="AuthorizationRequestFilterAttribute.cs" />
     <Compile Include="GamesService.cs" />
     <Compile Include="Images\ImageByNameService.cs" />
     <Compile Include="Images\ImageRequest.cs" />
@@ -88,6 +89,8 @@
     <Compile Include="PackageService.cs" />
     <Compile Include="Playback\Hls\AudioHlsService.cs" />
     <Compile Include="Playback\Hls\BaseHlsService.cs" />
+    <Compile Include="Playback\Hls\HlsSegmentResponseFilter.cs" />
+    <Compile Include="Playback\Hls\HlsSegmentService.cs" />
     <Compile Include="Playback\Hls\VideoHlsService.cs" />
     <Compile Include="Playback\Progressive\AudioService.cs" />
     <Compile Include="Playback\Progressive\BaseProgressiveStreamingService.cs" />
@@ -143,7 +146,9 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Filters\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>
