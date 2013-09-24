@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProductVersion>10.0.0</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{A7FE75CD-3CB4-4E71-A5BF-5347721EC8E0}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>MediaBrowser.Server.Mono</RootNamespace>
+    <AssemblyName>MediaBrowser.Server.Mono</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="Mono.Posix, Version=2.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756" />
+    <Reference Include="gtk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
+    <Reference Include="gdk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
+    <Reference Include="glib-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
+    <Reference Include="glade-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
+    <Reference Include="pango-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
+    <Reference Include="atk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="gtk-gui\gui.stetic">
+      <LogicalName>gui.stetic</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="gtk-gui\generated.cs" />
+    <Compile Include="MainWindow.cs" />
+    <Compile Include="gtk-gui\MainWindow.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <ProjectReference Include="..\MediaBrowser.WebDashboard\MediaBrowser.WebDashboard.csproj">
+      <Project>{5624B7B5-B5A7-41D8-9F10-CC5611109619}</Project>
+      <Name>MediaBrowser.WebDashboard</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.Server.Implementations\MediaBrowser.Server.Implementations.csproj">
+      <Project>{2E781478-814D-4A48-9D80-BFF206441A65}</Project>
+      <Name>MediaBrowser.Server.Implementations</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.Providers\MediaBrowser.Providers.csproj">
+      <Project>{442B5058-DCAF-4263-BB6A-F21E31120A1B}</Project>
+      <Name>MediaBrowser.Providers</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj">
+      <Project>{7EEEB4BB-F3E8-48FC-B4C5-70F0FFF8329B}</Project>
+      <Name>MediaBrowser.Model</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj">
+      <Project>{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}</Project>
+      <Name>MediaBrowser.Controller</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.Common.Implementations\MediaBrowser.Common.Implementations.csproj">
+      <Project>{C4D2573A-3FD3-441F-81AF-174AC4CD4E1D}</Project>
+      <Name>MediaBrowser.Common.Implementations</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">
+      <Project>{9142EEFA-7570-41E1-BFCC-468BB571AF2F}</Project>
+      <Name>MediaBrowser.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.Api\MediaBrowser.Api.csproj">
+      <Project>{4FD51AC5-2C16-4308-A993-C3A84F3B4582}</Project>
+      <Name>MediaBrowser.Api</Name>
+    </ProjectReference>
+  </ItemGroup>
+</Project>
