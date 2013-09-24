@@ -3200,7 +3200,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
          * @param {String} userId
          * @param {String} itemId
          */
-        self.reportPlaybackStart = function (userId, itemId) {
+        self.reportPlaybackStart = function (userId, itemId, canSeek, queueableMediaTypes) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -3210,17 +3210,26 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 throw new Error("null itemId");
             }
 
+            canSeek = canSeek || false;
+            queueableMediaTypes = queueableMediaTypes || '';
+
             if (self.isWebSocketOpen()) {
 
                 var deferred = $.Deferred();
 
-                self.sendWebSocketMessage("PlaybackStart", itemId);
+                var msg = [itemId, canSeek, queueableMediaTypes];
+
+                self.sendWebSocketMessage("PlaybackStart", msg.join('|'));
 
                 deferred.resolveWith(null, []);
                 return deferred.promise();
             }
 
-            var url = self.getUrl("Users/" + userId + "/PlayingItems/" + itemId);
+            var url = self.getUrl("Users/" + userId + "/PlayingItems/" + itemId, {
+
+                CanSeek: canSeek,
+                QueueableMediaTypes: queueableMediaTypes
+            });
 
             return self.ajax({
                 type: "POST",

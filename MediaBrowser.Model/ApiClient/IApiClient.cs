@@ -497,9 +497,11 @@ namespace MediaBrowser.Model.ApiClient
         /// </summary>
         /// <param name="itemId">The item id.</param>
         /// <param name="userId">The user id.</param>
+        /// <param name="isSeekable">if set to <c>true</c> [is seekable].</param>
+        /// <param name="queueableMediaTypes">The list of media types that the client is capable of queuing onto the playlist. See MediaType class.</param>
         /// <returns>Task{UserItemDataDto}.</returns>
         /// <exception cref="ArgumentNullException">itemId</exception>
-        Task ReportPlaybackStartAsync(string itemId, string userId);
+        Task ReportPlaybackStartAsync(string itemId, string userId, bool isSeekable, List<string> queueableMediaTypes);
 
         /// <summary>
         /// Reports playback progress to the server

@@ -101,16 +101,7 @@ namespace MediaBrowser.Server.Implementations.Session
             }
             else if (string.Equals(message.MessageType, "PlaybackStart", StringComparison.OrdinalIgnoreCase))
             {
-                _logger.Debug("Received PlaybackStart message");
-                
-                var session = _sessionManager.Sessions.FirstOrDefault(i => i.WebSockets.Contains(message.Connection));
-
-                if (session != null && session.User != null)
-                {
-                    var item = _dtoService.GetItemByDtoId(message.Data);
-
-                    _sessionManager.OnPlaybackStart(item, session.Id);
-                }
+                ReportPlaybackStart(message);
             }
             else if (string.Equals(message.MessageType, "PlaybackProgress", StringComparison.OrdinalIgnoreCase))
             {
@@ -169,6 +160,47 @@ namespace MediaBrowser.Server.Implementations.Session
             }
 
             return _trueTaskResult;
+        }
+
+        /// <summary>
+        /// Reports the playback start.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        private void ReportPlaybackStart(WebSocketMessageInfo message)
+        {
+            _logger.Debug("Received PlaybackStart message");
+            
+            var session = _sessionManager.Sessions
+                .FirstOrDefault(i => i.WebSockets.Contains(message.Connection));
+
+            if (session != null && session.User != null)
+            {
+                var vals = message.Data.Split('|');
+
+                var item = _dtoService.GetItemByDtoId(vals[0]);
+
+                var queueableMediaTypes = string.Empty;
+                var canSeek = true;
+
+                if (vals.Length > 1)
+                {
+                    canSeek = string.Equals(vals[1], "true", StringComparison.OrdinalIgnoreCase);
+                }
+                if (vals.Length > 2)
+                {
+                    queueableMediaTypes = vals[2];
+                }
+  
+                var info = new PlaybackInfo
+                {
+                    CanSeek = canSeek,
+                    Item = item,
+                    SessionId = session.Id,
+                    QueueableMediaTypes = queueableMediaTypes.Split(',').ToList()
+                };
+
+                _sessionManager.OnPlaybackStart(info);
+            }
         }
     }
 }

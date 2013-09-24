@@ -207,20 +207,28 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <summary>
         /// Used to report that playback has started for an item
         /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="sessionId">The session id.</param>
+        /// <param name="info">The info.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
-        public async Task OnPlaybackStart(BaseItem item, Guid sessionId)
+        /// <exception cref="System.ArgumentNullException">info</exception>
+        public async Task OnPlaybackStart(PlaybackInfo info)
         {
-            if (item == null)
+            if (info == null)
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException("info");
+            }
+            if (info.SessionId == Guid.Empty)
+            {
+                throw new ArgumentNullException("info");
             }
 
-            var session = Sessions.First(i => i.Id.Equals(sessionId));
+            var session = Sessions.First(i => i.Id.Equals(info.SessionId));
+
+            var item = info.Item;
 
             UpdateNowPlayingItem(session, item, false, false);
+
+            session.CanSeek = info.CanSeek;
+            session.QueueableMediaTypes = info.QueueableMediaTypes;
 
             var key = item.GetUserDataKey();
 

@@ -5,7 +5,6 @@ using NLog.Targets;
 using System;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Common.Implementations.Logging
 {
@@ -193,17 +192,14 @@ namespace MediaBrowser.Common.Implementations.Logging
 
             if (LoggerLoaded != null)
             {
-                Task.Run(() =>
+                try
                 {
-                    try
-                    {
-                        LoggerLoaded(this, EventArgs.Empty);
-                    }
-                    catch (Exception ex)
-                    {
-                        GetLogger("Logger").ErrorException("Error in LoggerLoaded event", ex);
-                    }
-                });
+                    LoggerLoaded(this, EventArgs.Empty);
+                }
+                catch (Exception ex)
+                {
+                    GetLogger("Logger").ErrorException("Error in LoggerLoaded event", ex);
+                }
             }
         }
     }
