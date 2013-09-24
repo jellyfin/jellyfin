@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Events;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -6,6 +7,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Session;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -75,6 +77,12 @@ namespace MediaBrowser.Server.Implementations.Session
             _userRepository = userRepository;
         }
 
+        private List<ISessionRemoteController> _remoteControllers;
+        public void AddParts(IEnumerable<ISessionRemoteController> remoteControllers)
+        {
+            _remoteControllers = remoteControllers.ToList();
+        }
+
         /// <summary>
         /// Gets all connections.
         /// </summary>
@@ -122,7 +130,7 @@ namespace MediaBrowser.Server.Implementations.Session
             var activityDate = DateTime.UtcNow;
 
             var session = GetSessionInfo(clientType, appVersion, deviceId, deviceName, user);
-            
+
             session.LastActivityDate = activityDate;
 
             if (user == null)
@@ -233,7 +241,7 @@ namespace MediaBrowser.Server.Implementations.Session
             var key = item.GetUserDataKey();
 
             var user = session.User;
-            
+
             var data = _userDataRepository.GetUserData(user.Id, key);
 
             data.PlayCount++;
@@ -321,7 +329,7 @@ namespace MediaBrowser.Server.Implementations.Session
             {
                 throw new ArgumentOutOfRangeException("positionTicks");
             }
-            
+
             var session = Sessions.First(i => i.Id.Equals(sessionId));
 
             RemoveNowPlayingItem(session, item);
@@ -329,7 +337,7 @@ namespace MediaBrowser.Server.Implementations.Session
             var key = item.GetUserDataKey();
 
             var user = session.User;
-            
+
             var data = _userDataRepository.GetUserData(user.Id, key);
 
             if (positionTicks.HasValue)
@@ -407,6 +415,55 @@ namespace MediaBrowser.Server.Implementations.Session
             }
 
             data.PlaybackPositionTicks = positionTicks;
+        }
+
+        /// <summary>
+        /// Gets the session for remote control.
+        /// </summary>
+        /// <param name="sessionId">The session id.</param>
+        /// <returns>SessionInfo.</returns>
+        /// <exception cref="ResourceNotFoundException"></exception>
+        private SessionInfo GetSessionForRemoteControl(Guid sessionId)
+        {
+            var session = Sessions.First(i => i.Id.Equals(sessionId));
+
+            if (session == null)
+            {
+                throw new ResourceNotFoundException(string.Format("Session {0} not found.", sessionId));
+            }
+
+            if (!session.SupportsRemoteControl)
+            {
+                throw new ArgumentException(string.Format("Session {0} does not support remote control.", session.Id));
+            }
+            
+            return session;
+        }
+
+        /// <summary>
+        /// Gets the controllers.
+        /// </summary>
+        /// <param name="session">The session.</param>
+        /// <returns>IEnumerable{ISessionRemoteController}.</returns>
+        private IEnumerable<ISessionRemoteController> GetControllers(SessionInfo session)
+        {
+            return _remoteControllers.Where(i => i.Supports(session));
+        }
+
+        /// <summary>
+        /// Sends the system command.
+        /// </summary>
+        /// <param name="sessionId">The session id.</param>
+        /// <param name="command">The command.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        public Task SendSystemCommand(Guid sessionId, SystemCommand command, CancellationToken cancellationToken)
+        {
+            var session = GetSessionForRemoteControl(sessionId);
+
+            var tasks = GetControllers(session).Select(i => i.SendSystemCommand(session, command, cancellationToken));
+
+            return Task.WhenAll(tasks);
         }
     }
 }

@@ -1,7 +1,9 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Session;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Session
@@ -11,6 +13,12 @@ namespace MediaBrowser.Controller.Session
     /// </summary>
     public interface ISessionManager
     {
+        /// <summary>
+        /// Adds the parts.
+        /// </summary>
+        /// <param name="remoteControllers">The remote controllers.</param>
+        void AddParts(IEnumerable<ISessionRemoteController> remoteControllers);
+
         /// <summary>
         /// Occurs when [playback start].
         /// </summary>
@@ -72,5 +80,14 @@ namespace MediaBrowser.Controller.Session
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
         Task OnPlaybackStopped(BaseItem item, long? positionTicks, Guid sessionId);
+
+        /// <summary>
+        /// Sends the system command.
+        /// </summary>
+        /// <param name="sessionId">The session id.</param>
+        /// <param name="command">The command.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task SendSystemCommand(Guid sessionId, SystemCommand command, CancellationToken cancellationToken);
     }
 }

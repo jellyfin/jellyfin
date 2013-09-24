@@ -325,47 +325,9 @@ namespace MediaBrowser.Api
         /// <param name="request">The request.</param>
         public void Post(SendSystemCommand request)
         {
-            var task = SendSystemCommand(request);
+            var task = _sessionManager.SendSystemCommand(request.Id, request.Command, CancellationToken.None);
 
             Task.WaitAll(task);
-        }
-
-        private async Task SendSystemCommand(SendSystemCommand request)
-        {
-            var session = _sessionManager.Sessions.FirstOrDefault(i => i.Id == request.Id);
-
-            if (session == null)
-            {
-                throw new ResourceNotFoundException(string.Format("Session {0} not found.", request.Id));
-            }
-
-            if (!session.SupportsRemoteControl)
-            {
-                throw new ArgumentException(string.Format("Session {0} does not support remote control.", session.Id));
-            }
-
-            var socket = session.WebSockets.OrderByDescending(i => i.LastActivityDate).FirstOrDefault(i => i.State == WebSocketState.Open);
-
-            if (socket != null)
-            {
-                try
-                {
-                    await socket.SendAsync(new WebSocketMessage<string>
-                    {
-                        MessageType = "SystemCommand",
-                        Data = request.Command.ToString()
-
-                    }, CancellationToken.None).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    Logger.ErrorException("Error sending web socket message", ex);
-                }
-            }
-            else
-            {
-                throw new InvalidOperationException("The requested session does not have an open web socket.");
-            }
         }
 
         /// <summary>

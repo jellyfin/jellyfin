@@ -161,6 +161,7 @@ namespace MediaBrowser.ServerApplication
         private IMediaEncoder MediaEncoder { get; set; }
 
         private IIsoManager IsoManager { get; set; }
+        private ISessionManager SessionManager { get; set; }
 
         private ILocalizationManager LocalizationManager { get; set; }
 
@@ -286,8 +287,8 @@ namespace MediaBrowser.ServerApplication
 
             RegisterSingleInstance<ILibrarySearchEngine>(() => new LuceneSearchEngine(ApplicationPaths, LogManager, LibraryManager));
 
-            var clientConnectionManager = new SessionManager(UserDataRepository, ServerConfigurationManager, Logger, UserRepository);
-            RegisterSingleInstance<ISessionManager>(clientConnectionManager);
+            SessionManager = new SessionManager(UserDataRepository, ServerConfigurationManager, Logger, UserRepository);
+            RegisterSingleInstance<ISessionManager>(SessionManager);
 
             HttpServer = await _httpServerCreationTask.ConfigureAwait(false);
             RegisterSingleInstance(HttpServer, false);
@@ -477,6 +478,8 @@ namespace MediaBrowser.ServerApplication
 
             IsoManager.AddParts(GetExports<IIsoMounter>());
 
+            SessionManager.AddParts(GetExports<ISessionRemoteController>());
+            
             ImageProcessor.AddParts(GetExports<IImageEnhancer>());
         }
 
