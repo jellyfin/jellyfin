@@ -41,7 +41,9 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         /// <returns>Task.</returns>
         public Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            return Task.Run(() => RunInternal(progress, cancellationToken));
+            RunInternal(progress, cancellationToken);
+
+            return Task.FromResult(true);
         }
 
         private void RunInternal(IProgress<double> progress, CancellationToken cancellationToken)

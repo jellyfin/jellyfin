@@ -829,10 +829,6 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>Task.</returns>
         public async Task ValidatePeople(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            const int maxTasks = 3;
-
-            var tasks = new List<Task>();
-
             var people = RootFolder.RecursiveChildren
                 .SelectMany(c => c.People)
                 .DistinctBy(p => p.Name, StringComparer.OrdinalIgnoreCase)
@@ -842,46 +838,26 @@ namespace MediaBrowser.Server.Implementations.Library
 
             foreach (var person in people)
             {
-                if (tasks.Count > maxTasks)
-                {
-                    await Task.WhenAll(tasks).ConfigureAwait(false);
-                    tasks.Clear();
+                cancellationToken.ThrowIfCancellationRequested();
 
-                    // Safe cancellation point, when there are no pending tasks
-                    cancellationToken.ThrowIfCancellationRequested();
+                try
+                {
+                    var item = GetPerson(person.Name);
+
+                    await item.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+                }
+                catch (IOException ex)
+                {
+                    _logger.ErrorException("Error validating IBN entry {0}", ex, person.Name);
                 }
 
-                // Avoid accessing the foreach variable within the closure
-                var currentPerson = person;
+                // Update progress
+                numComplete++;
+                double percent = numComplete;
+                percent /= people.Count;
 
-                tasks.Add(Task.Run(async () =>
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    try
-                    {
-                        var item = GetPerson(currentPerson.Name);
-
-                        await item.RefreshMetadata(cancellationToken).ConfigureAwait(false);
-                    }
-                    catch (IOException ex)
-                    {
-                        _logger.ErrorException("Error validating IBN entry {0}", ex, currentPerson.Name);
-                    }
-
-                    // Update progress
-                    lock (progress)
-                    {
-                        numComplete++;
-                        double percent = numComplete;
-                        percent /= people.Count;
-
-                        progress.Report(100 * percent);
-                    }
-                }));
+                progress.Report(100 * percent);
             }
-
-            await Task.WhenAll(tasks).ConfigureAwait(false);
 
             progress.Report(100);
 
@@ -956,7 +932,9 @@ namespace MediaBrowser.Server.Implementations.Library
         public Task ValidateMediaLibrary(IProgress<double> progress, CancellationToken cancellationToken)
         {
             // Just run the scheduled task so that the user can see it
-            return Task.Run(() => _taskManager.CancelIfRunningAndQueue<RefreshMediaLibraryTask>());
+            _taskManager.CancelIfRunningAndQueue<RefreshMediaLibraryTask>();
+
+            return Task.FromResult(true);
         }
 
         /// <summary>

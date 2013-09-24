@@ -16,7 +16,6 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using MoreLinq;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -690,7 +689,7 @@ namespace MediaBrowser.Controller.Entities
 
             var options = new ParallelOptions
             {
-                MaxDegreeOfParallelism = 20
+                MaxDegreeOfParallelism = 10
             };
 
             Parallel.ForEach(nonCachedChildren, options, child =>
@@ -805,7 +804,7 @@ namespace MediaBrowser.Controller.Entities
 
             foreach (var tuple in list)
             {
-                if (tasks.Count > 8)
+                if (tasks.Count > 5)
                 {
                     await Task.WhenAll(tasks).ConfigureAwait(false);
                 }

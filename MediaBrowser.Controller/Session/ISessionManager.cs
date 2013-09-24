@@ -47,11 +47,9 @@ namespace MediaBrowser.Controller.Session
         /// <summary>
         /// Used to report that playback has started for an item
         /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="sessionId">The session id.</param>
+        /// <param name="info">The info.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
-        Task OnPlaybackStart(BaseItem item, Guid sessionId);
+        Task OnPlaybackStart(PlaybackInfo info);
 
         /// <summary>
         /// Used to report playback progress for an item
@@ -59,6 +57,7 @@ namespace MediaBrowser.Controller.Session
         /// <param name="item">The item.</param>
         /// <param name="positionTicks">The position ticks.</param>
         /// <param name="isPaused">if set to <c>true</c> [is paused].</param>
+        /// <param name="isMuted">if set to <c>true</c> [is muted].</param>
         /// <param name="sessionId">The session id.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
