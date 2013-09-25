@@ -185,7 +185,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
         /// <returns>Task{Artist[]}.</returns>
-        private async Task<ConcurrentBag<Artist>> GetAllArtists(IEnumerable<Audio> allSongs, CancellationToken cancellationToken, IProgress<double> progress)
+        private async Task<List<Artist>> GetAllArtists(IEnumerable<Audio> allSongs, CancellationToken cancellationToken, IProgress<double> progress)
         {
             var allArtists = allSongs
                 .SelectMany(i =>
@@ -203,59 +203,35 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
-            const int maxTasks = 3;
-
-            var tasks = new List<Task>();
-
-            var returnArtists = new ConcurrentBag<Artist>();
+            var returnArtists = new List<Artist>(allArtists.Count);
 
             var numComplete = 0;
             var numArtists = allArtists.Count;
 
             foreach (var artist in allArtists)
             {
-                if (tasks.Count > maxTasks)
-                {
-                    await Task.WhenAll(tasks).ConfigureAwait(false);
-                    tasks.Clear();
+                cancellationToken.ThrowIfCancellationRequested();
 
-                    // Safe cancellation point, when there are no pending tasks
-                    cancellationToken.ThrowIfCancellationRequested();
+                try
+                {
+                    var artistItem = _libraryManager.GetArtist(artist);
+
+                    await artistItem.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+
+                    returnArtists.Add(artistItem);
+                }
+                catch (IOException ex)
+                {
+                    _logger.ErrorException("Error validating Artist {0}", ex, artist);
                 }
 
-                // Avoid accessing the foreach variable within the closure
-                var currentArtist = artist;
+                // Update progress
+                numComplete++;
+                double percent = numComplete;
+                percent /= numArtists;
 
-                tasks.Add(Task.Run(async () =>
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    try
-                    {
-                        var artistItem = _libraryManager.GetArtist(currentArtist);
-
-                        await artistItem.RefreshMetadata(cancellationToken).ConfigureAwait(false);
-
-                        returnArtists.Add(artistItem);
-                    }
-                    catch (IOException ex)
-                    {
-                        _logger.ErrorException("Error validating Artist {0}", ex, currentArtist);
-                    }
-
-                    // Update progress
-                    lock (progress)
-                    {
-                        numComplete++;
-                        double percent = numComplete;
-                        percent /= numArtists;
-
-                        progress.Report(100 * percent);
-                    }
-                }));
+                progress.Report(100 * percent);
             }
-
-            await Task.WhenAll(tasks).ConfigureAwait(false);
 
             return returnArtists;
         }
