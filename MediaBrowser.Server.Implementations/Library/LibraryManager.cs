@@ -709,65 +709,6 @@ namespace MediaBrowser.Server.Implementations.Library
         }
 
         /// <summary>
-        /// Generically retrieves an IBN item
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="path">The path.</param>
-        /// <param name="name">The name.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
-        /// <param name="refreshMetadata">if set to <c>true</c> [force creation].</param>
-        /// <returns>Task{``0}.</returns>
-        /// <exception cref="System.ArgumentNullException">
-        /// </exception>
-        private async Task<T> GetItemByName<T>(string path, string name, CancellationToken cancellationToken, bool allowSlowProviders = true, bool refreshMetadata = false)
-            where T : BaseItem, new()
-        {
-            if (string.IsNullOrEmpty(path))
-            {
-                throw new ArgumentNullException();
-            }
-
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentNullException();
-            }
-
-            var validFilename = FileSystem.GetValidFilename(name);
-
-            var key = Path.Combine(path, validFilename);
-
-            BaseItem obj;
-
-            if (!_itemsByName.TryGetValue(key, out obj))
-            {
-                var tuple = CreateItemByName<T>(key, name);
-
-                obj = tuple.Item2;
-
-                _itemsByName.AddOrUpdate(key, obj, (keyName, oldValue) => obj);
-
-                try
-                {
-                    await obj.RefreshMetadata(cancellationToken, tuple.Item1, allowSlowProviders: allowSlowProviders).ConfigureAwait(false);
-                }
-                catch (OperationCanceledException)
-                {
-                    BaseItem removed;
-                    _itemsByName.TryRemove(key, out removed);
-
-                    throw;
-                }
-            }
-            else if (refreshMetadata)
-            {
-                await obj.RefreshMetadata(cancellationToken, false, allowSlowProviders: allowSlowProviders).ConfigureAwait(false);
-            }
-
-            return obj as T;
-        }
-
-        /// <summary>
         /// Creates an IBN item based on a given path
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -846,7 +787,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
                     await item.RefreshMetadata(cancellationToken).ConfigureAwait(false);
                 }
-                catch (IOException ex)
+                catch (Exception ex)
                 {
                     _logger.ErrorException("Error validating IBN entry {0}", ex, person.Name);
                 }
@@ -963,12 +904,16 @@ namespace MediaBrowser.Server.Implementations.Library
 
             progress.Report(2);
 
+            var innerProgress = new ActionableProgress<double>();
+
+            innerProgress.RegisterAction(pct => progress.Report(2 + pct * .13));
+
             // Run prescan tasks
-            await RunPrescanTasks(progress, cancellationToken).ConfigureAwait(false);
+            await RunPrescanTasks(innerProgress, cancellationToken).ConfigureAwait(false);
 
             progress.Report(15);
 
-            var innerProgress = new ActionableProgress<double>();
+            innerProgress = new ActionableProgress<double>();
 
             innerProgress.RegisterAction(pct => progress.Report(15 + pct * .6));
 
@@ -977,8 +922,12 @@ namespace MediaBrowser.Server.Implementations.Library
 
             progress.Report(75);
 
+            innerProgress = new ActionableProgress<double>();
+
+            innerProgress.RegisterAction(pct => progress.Report(75 + pct * .25));
+
             // Run post-scan tasks
-            await RunPostScanTasks(progress, cancellationToken).ConfigureAwait(false);
+            await RunPostScanTasks(innerProgress, cancellationToken).ConfigureAwait(false);
 
             progress.Report(100);
 
@@ -995,41 +944,45 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>Task.</returns>
         private async Task RunPrescanTasks(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var prescanTasks = PrescanTasks.ToList();
-            var progressDictionary = new Dictionary<ILibraryPrescanTask, double>();
+            var tasks = PrescanTasks.ToList();
 
-            var tasks = prescanTasks.Select(i => Task.Run(async () =>
+            var numComplete = 0;
+            var numTasks = tasks.Count;
+
+            foreach (var task in tasks)
             {
                 var innerProgress = new ActionableProgress<double>();
 
+                // Prevent access to modified closure
+                var currentNumComplete = numComplete;
+
                 innerProgress.RegisterAction(pct =>
                 {
-                    lock (progressDictionary)
-                    {
-                        progressDictionary[i] = pct;
-
-                        double percent = progressDictionary.Values.Sum();
-                        percent /= prescanTasks.Count;
-
-                        progress.Report(2 + percent * .13);
-                    }
+                    double innerPercent = (currentNumComplete * 100) + pct;
+                    innerPercent /= numTasks;
+                    progress.Report(innerPercent);
                 });
 
                 try
                 {
-                    await i.Run(innerProgress, cancellationToken);
+                    await task.Run(innerProgress, cancellationToken);
                 }
                 catch (OperationCanceledException)
                 {
-                    _logger.Info("Pre-scan task cancelled: {0}", i.GetType().Name);
+                    _logger.Info("Pre-scan task cancelled: {0}", task.GetType().Name);
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error running prescan task", ex);
+                    _logger.ErrorException("Error running pre-scan task", ex);
                 }
-            }));
 
-            await Task.WhenAll(tasks).ConfigureAwait(false);
+                numComplete++;
+                double percent = numComplete;
+                percent /= numTasks;
+                progress.Report(percent * 100);
+            }
+
+            progress.Report(100);
         }
 
         /// <summary>
@@ -1040,41 +993,45 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>Task.</returns>
         private async Task RunPostScanTasks(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var postscanTasks = PostscanTasks.ToList();
-            var progressDictionary = new Dictionary<ILibraryPostScanTask, double>();
+            var tasks = PostscanTasks.ToList();
 
-            var tasks = postscanTasks.Select(i => Task.Run(async () =>
+            var numComplete = 0;
+            var numTasks = tasks.Count;
+
+            foreach (var task in tasks)
             {
                 var innerProgress = new ActionableProgress<double>();
 
+                // Prevent access to modified closure
+                var currentNumComplete = numComplete;
+
                 innerProgress.RegisterAction(pct =>
                 {
-                    lock (progressDictionary)
-                    {
-                        progressDictionary[i] = pct;
-
-                        double percent = progressDictionary.Values.Sum();
-                        percent /= postscanTasks.Count;
-
-                        progress.Report(75 + percent * .25);
-                    }
+                    double innerPercent = (currentNumComplete * 100) + pct;
+                    innerPercent /= numTasks;
+                    progress.Report(innerPercent);
                 });
 
                 try
                 {
-                    await i.Run(innerProgress, cancellationToken);
+                    await task.Run(innerProgress, cancellationToken);
                 }
                 catch (OperationCanceledException)
                 {
-                    _logger.Info("Post-scan task cancelled: {0}", i.GetType().Name);
+                    _logger.Info("Post-scan task cancelled: {0}", task.GetType().Name);
                 }
                 catch (Exception ex)
                 {
                     _logger.ErrorException("Error running postscan task", ex);
                 }
-            }));
 
-            await Task.WhenAll(tasks).ConfigureAwait(false);
+                numComplete++;
+                double percent = numComplete;
+                percent /= numTasks;
+                progress.Report(percent * 100);
+            }
+
+            progress.Report(100);
         }
 
         /// <summary>

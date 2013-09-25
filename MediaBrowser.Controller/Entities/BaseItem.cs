@@ -304,14 +304,6 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         private ItemResolveArgs _resolveArgs;
         /// <summary>
-        /// The _resolve args initialized
-        /// </summary>
-        private bool _resolveArgsInitialized;
-        /// <summary>
-        /// The _resolve args sync lock
-        /// </summary>
-        private object _resolveArgsSyncLock = new object();
-        /// <summary>
         /// We attach these to the item so that we only ever have to hit the file system once
         /// (this includes the children of the containing folder)
         /// </summary>
@@ -321,25 +313,23 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                try
+                if (_resolveArgs == null)
                 {
-                    LazyInitializer.EnsureInitialized(ref _resolveArgs, ref _resolveArgsInitialized, ref _resolveArgsSyncLock, () => CreateResolveArgs());
-                }
-                catch (IOException ex)
-                {
-                    Logger.ErrorException("Error creating resolve args for {0}", ex, Path);
+                    try
+                    {
+                        _resolveArgs = CreateResolveArgs();
+                    }
+                    catch (IOException ex)
+                    {
+                        Logger.ErrorException("Error creating resolve args for {0}", ex, Path);
 
-                    IsOffline = true;
+                        IsOffline = true;
 
-                    throw;
+                        throw;
+                    }
                 }
 
                 return _resolveArgs;
-            }
-            private set
-            {
-                _resolveArgs = value;
-                _resolveArgsInitialized = value != null;
             }
         }
 
@@ -354,12 +344,12 @@ namespace MediaBrowser.Controller.Entities
 
         public void ResetResolveArgs()
         {
-            ResolveArgs = null;
+            _resolveArgs = null;
         }
 
         public void ResetResolveArgs(ItemResolveArgs args)
         {
-            ResolveArgs = args;
+            _resolveArgs = args;
         }
 
         /// <summary>
@@ -759,7 +749,7 @@ namespace MediaBrowser.Controller.Entities
 
                 if (dbItem != null)
                 {
-                    dbItem.ResolveArgs = video.ResolveArgs;
+                    dbItem.ResetResolveArgs(video.ResolveArgs);
                     video = dbItem;
                 }
 
@@ -820,7 +810,7 @@ namespace MediaBrowser.Controller.Entities
 
                 if (dbItem != null)
                 {
-                    dbItem.ResolveArgs = audio.ResolveArgs;
+                    dbItem.ResetResolveArgs(audio.ResolveArgs);
                     audio = dbItem;
                 }
 
@@ -878,7 +868,7 @@ namespace MediaBrowser.Controller.Entities
 
                 if (dbItem != null)
                 {
-                    dbItem.ResolveArgs = item.ResolveArgs;
+                    dbItem.ResetResolveArgs(item.ResolveArgs);
                     item = dbItem;
                 }
 
