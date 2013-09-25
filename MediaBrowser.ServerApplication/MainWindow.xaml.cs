@@ -12,6 +12,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Threading;
+using MediaBrowser.ServerApplication.Native;
 
 namespace MediaBrowser.ServerApplication
 {
@@ -188,19 +189,19 @@ namespace MediaBrowser.ServerApplication
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         void cmdApiDocs_Click(object sender, EventArgs e)
         {
-            App.OpenUrl("http://localhost:" + _configurationManager.Configuration.HttpServerPortNumber + "/" +
-                      _appHost.WebApplicationName + "/metadata");
+            BrowserLauncher.OpenUrl("http://localhost:" + _configurationManager.Configuration.HttpServerPortNumber + "/" +
+                      _appHost.WebApplicationName + "/metadata", _logger);
         }
 
         void cmdSwaggerApiDocs_Click(object sender, EventArgs e)
         {
-            App.OpenUrl("http://localhost:" + _configurationManager.Configuration.HttpServerPortNumber + "/" +
-                      _appHost.WebApplicationName + "/swagger-ui/index.html");
+            BrowserLauncher.OpenUrl("http://localhost:" + _configurationManager.Configuration.HttpServerPortNumber + "/" +
+                      _appHost.WebApplicationName + "/swagger-ui/index.html", _logger);
         }
 
         void cmdGithubWiki_Click(object sender, EventArgs e)
         {
-            App.OpenUrl("https://github.com/MediaBrowser/MediaBrowser/wiki");
+            BrowserLauncher.OpenUrl("https://github.com/MediaBrowser/MediaBrowser/wiki", _logger);
         }
 
         /// <summary>
@@ -254,7 +255,7 @@ namespace MediaBrowser.ServerApplication
         /// </summary>
         private void OpenDashboard(User loggedInUser)
         {
-            App.OpenDashboardPage("dashboard.html", loggedInUser, _configurationManager, _appHost);
+            BrowserLauncher.OpenDashboardPage("dashboard.html", loggedInUser, _configurationManager, _appHost, _logger);
         }
 
         /// <summary>
@@ -264,7 +265,7 @@ namespace MediaBrowser.ServerApplication
         /// <param name="e">The <see cref="RoutedEventArgs" /> instance containing the event data.</param>
         private void cmVisitCT_click(object sender, RoutedEventArgs e)
         {
-            App.OpenUrl("http://community.mediabrowser.tv/");
+            BrowserLauncher.OpenUrl("http://community.mediabrowser.tv/", _logger);
         }
 
         /// <summary>
@@ -275,7 +276,7 @@ namespace MediaBrowser.ServerApplication
         private void cmdBrowseLibrary_click(object sender, RoutedEventArgs e)
         {
             var user = _userManager.Users.FirstOrDefault(u => u.Configuration.IsAdministrator);
-            App.OpenDashboardPage("index.html", user, _configurationManager, _appHost);
+            BrowserLauncher.OpenDashboardPage("index.html", user, _configurationManager, _appHost, _logger);
         }
 
         /// <summary>

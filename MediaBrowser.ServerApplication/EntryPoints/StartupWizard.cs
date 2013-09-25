@@ -3,9 +3,10 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Logging;
-using System.ComponentModel;
+using System;
 using System.Linq;
-using System.Windows;
+using System.Windows.Forms;
+using MediaBrowser.ServerApplication.Native;
 
 namespace MediaBrowser.ServerApplication.EntryPoints
 {
@@ -31,9 +32,10 @@ namespace MediaBrowser.ServerApplication.EntryPoints
         /// </summary>
         /// <param name="appHost">The app host.</param>
         /// <param name="userManager">The user manager.</param>
-        public StartupWizard(IServerApplicationHost appHost, IUserManager userManager, IServerConfigurationManager configurationManager)
+        public StartupWizard(IServerApplicationHost appHost, IUserManager userManager, IServerConfigurationManager configurationManager, ILogger logger)
         {
             _appHost = appHost;
+            _logger = logger;
             _userManager = userManager;
             _configurationManager = configurationManager;
         }
@@ -58,9 +60,9 @@ namespace MediaBrowser.ServerApplication.EntryPoints
 
             try
             {
-                App.OpenDashboardPage("wizardstart.html", user, _configurationManager, _appHost);
+                BrowserLauncher.OpenDashboardPage("wizardstart.html", user, _configurationManager, _appHost, _logger);
             }
-            catch (Win32Exception ex)
+            catch (Exception ex)
             {
                 _logger.ErrorException("Error launching startup wizard", ex);
 

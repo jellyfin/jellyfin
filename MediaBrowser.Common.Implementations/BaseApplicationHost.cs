@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
+using MediaBrowser.Common.Implementations.Archiving;
 using MediaBrowser.Common.Implementations.NetworkManagement;
 using MediaBrowser.Common.Implementations.ScheduledTasks;
 using MediaBrowser.Common.Implementations.Security;
@@ -10,6 +11,7 @@ using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Common.Security;
 using MediaBrowser.Common.Updates;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Updates;
@@ -150,6 +152,12 @@ namespace MediaBrowser.Common.Implementations
         protected IInstallationManager InstallationManager { get; set; }
 
         /// <summary>
+        /// Gets or sets the zip client.
+        /// </summary>
+        /// <value>The zip client.</value>
+        protected IZipClient ZipClient { get; set; }
+        
+        /// <summary>
         /// Initializes a new instance of the <see cref="BaseApplicationHost{TApplicationPathsType}"/> class.
         /// </summary>
         protected BaseApplicationHost(TApplicationPathsType applicationPaths, ILogManager logManager)
@@ -202,10 +210,25 @@ namespace MediaBrowser.Common.Implementations
             {
                 Resolve<ITaskManager>().AddTasks(GetExports<IScheduledTask>(false));
 
-                Task.Run(() => ConfigureAutoRunAtStartup());
+                Task.Run(() => ConfigureAutorun());
 
                 ConfigurationManager.ConfigurationUpdated += OnConfigurationUpdated;
             });
+        }
+
+        /// <summary>
+        /// Configures the autorun.
+        /// </summary>
+        private void ConfigureAutorun()
+        {
+            try
+            {
+                ConfigureAutoRunAtStartup(ConfigurationManager.CommonConfiguration.RunAtStartup);
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error configuring autorun", ex);
+            }
         }
 
         /// <summary>
@@ -281,6 +304,9 @@ namespace MediaBrowser.Common.Implementations
 
                 InstallationManager = new InstallationManager(Logger, this, ApplicationPaths, HttpClient, JsonSerializer, SecurityManager, NetworkManager, ConfigurationManager);
                 RegisterSingleInstance(InstallationManager);
+
+                ZipClient = new ZipClient();
+                RegisterSingleInstance(ZipClient);
             });
         }
 
@@ -454,11 +480,6 @@ namespace MediaBrowser.Common.Implementations
         }
 
         /// <summary>
-        /// Defines the full path to our shortcut in the start menu
-        /// </summary>
-        protected abstract string ProductShortcutPath { get; }
-
-        /// <summary>
         /// Handles the ConfigurationUpdated event of the ConfigurationManager control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -466,32 +487,10 @@ namespace MediaBrowser.Common.Implementations
         /// <exception cref="System.NotImplementedException"></exception>
         protected virtual void OnConfigurationUpdated(object sender, EventArgs e)
         {
-            ConfigureAutoRunAtStartup();
+            ConfigureAutorun();
         }
 
-        /// <summary>
-        /// Configures the auto run at startup.
-        /// </summary>
-        private void ConfigureAutoRunAtStartup()
-        {
-            if (ConfigurationManager.CommonConfiguration.RunAtStartup)
-            {
-                //Copy our shortut into the startup folder for this user
-                File.Copy(ProductShortcutPath, Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), Path.GetFileName(ProductShortcutPath) ?? "MBstartup.lnk"), true);
-            }
-            else
-            {
-                //Remove our shortcut from the startup folder for this user
-                try
-                {
-                    File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), Path.GetFileName(ProductShortcutPath) ?? "MBstartup.lnk"));
-                }
-                catch (FileNotFoundException)
-                {
-                    //This is okay - trying to remove it anyway
-                }
-            }
-        }
+        protected abstract void ConfigureAutoRunAtStartup(bool autorun);
 
         /// <summary>
         /// Removes the plugin.

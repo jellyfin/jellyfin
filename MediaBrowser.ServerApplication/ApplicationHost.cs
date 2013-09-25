@@ -24,7 +24,6 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.Sorting;
-using MediaBrowser.IsoMounter;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
@@ -36,6 +35,7 @@ using MediaBrowser.Server.Implementations.BdInfo;
 using MediaBrowser.Server.Implementations.Configuration;
 using MediaBrowser.Server.Implementations.Drawing;
 using MediaBrowser.Server.Implementations.Dto;
+using MediaBrowser.Server.Implementations.EntryPoints;
 using MediaBrowser.Server.Implementations.HttpServer;
 using MediaBrowser.Server.Implementations.IO;
 using MediaBrowser.Server.Implementations.Library;
@@ -46,16 +46,14 @@ using MediaBrowser.Server.Implementations.Providers;
 using MediaBrowser.Server.Implementations.ServerManager;
 using MediaBrowser.Server.Implementations.Session;
 using MediaBrowser.Server.Implementations.WebSocket;
-using MediaBrowser.ServerApplication.Implementations;
+using MediaBrowser.ServerApplication.FFMpeg;
+using MediaBrowser.ServerApplication.Native;
 using MediaBrowser.WebDashboard.Api;
 using System;
 using System.Collections.Generic;
-using System.Data.SQLite;
-using System.Diagnostics;
+using System.Data;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Net.Cache;
 using System.Net.Http;
 using System.Reflection;
 using System.Threading;
@@ -68,8 +66,6 @@ namespace MediaBrowser.ServerApplication
     /// </summary>
     public class ApplicationHost : BaseApplicationHost<ServerApplicationPaths>, IServerApplicationHost
     {
-        internal const int UdpServerPort = 7359;
-
         /// <summary>
         /// Gets the server kernel.
         /// </summary>
@@ -142,11 +138,6 @@ namespace MediaBrowser.ServerApplication
         /// <value>The provider manager.</value>
         private IProviderManager ProviderManager { get; set; }
         /// <summary>
-        /// Gets or sets the zip client.
-        /// </summary>
-        /// <value>The zip client.</value>
-        private IZipClient ZipClient { get; set; }
-        /// <summary>
         /// Gets or sets the HTTP server.
         /// </summary>
         /// <value>The HTTP server.</value>
@@ -174,14 +165,6 @@ namespace MediaBrowser.ServerApplication
         internal IDisplayPreferencesRepository DisplayPreferencesRepository { get; set; }
         private IItemRepository ItemRepository { get; set; }
         private INotificationsRepository NotificationsRepository { get; set; }
-
-        /// <summary>
-        /// The full path to our startmenu shortcut
-        /// </summary>
-        protected override string ProductShortcutPath
-        {
-            get { return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.StartMenu), "Media Browser 3", "Media Browser Server.lnk"); }
-        }
 
         private Task<IHttpServer> _httpServerCreationTask;
 
@@ -256,9 +239,6 @@ namespace MediaBrowser.ServerApplication
 
             RegisterSingleInstance<IBlurayExaminer>(() => new BdInfoExaminer());
 
-            ZipClient = new ZipClient();
-            RegisterSingleInstance(ZipClient);
-
             var mediaEncoderTask = RegisterMediaEncoder();
 
             UserDataRepository = new SqliteUserDataRepository(ApplicationPaths, JsonSerializer, LogManager);
@@ -322,7 +302,7 @@ namespace MediaBrowser.ServerApplication
         /// <returns>Task.</returns>
         private async Task RegisterMediaEncoder()
         {
-            var info = await new FFMpegDownloader(Logger, ApplicationPaths, HttpClient).GetFFMpegInfo().ConfigureAwait(false);
+            var info = await new FFMpegDownloader(Logger, ApplicationPaths, HttpClient, ZipClient).GetFFMpegInfo().ConfigureAwait(false);
 
             MediaEncoder = new MediaEncoder(LogManager.GetLogger("MediaEncoder"), ApplicationPaths, JsonSerializer, info.Path, info.ProbePath, info.Version);
             RegisterSingleInstance(MediaEncoder);
@@ -407,27 +387,14 @@ namespace MediaBrowser.ServerApplication
         /// <param name="dbPath">The db path.</param>
         /// <returns>Task{IDbConnection}.</returns>
         /// <exception cref="System.ArgumentNullException">dbPath</exception>
-        private static async Task<SQLiteConnection> ConnectToDb(string dbPath)
+        private static Task<IDbConnection> ConnectToDb(string dbPath)
         {
             if (string.IsNullOrEmpty(dbPath))
             {
                 throw new ArgumentNullException("dbPath");
             }
 
-            var connectionstr = new SQLiteConnectionStringBuilder
-            {
-                PageSize = 4096,
-                CacheSize = 4096,
-                SyncMode = SynchronizationModes.Normal,
-                DataSource = dbPath,
-                JournalMode = SQLiteJournalModeEnum.Wal
-            };
-
-            var connection = new SQLiteConnection(connectionstr.ConnectionString);
-
-            await connection.OpenAsync().ConfigureAwait(false);
-
-            return connection;
+            return Sqlite.OpenDatabase(dbPath);
         }
 
         /// <summary>
@@ -479,7 +446,7 @@ namespace MediaBrowser.ServerApplication
             IsoManager.AddParts(GetExports<IIsoMounter>());
 
             SessionManager.AddParts(GetExports<ISessionRemoteController>());
-            
+
             ImageProcessor.AddParts(GetExports<IImageEnhancer>());
         }
 
@@ -530,7 +497,6 @@ namespace MediaBrowser.ServerApplication
             {
                 NotifyPendingRestart();
             }
-
         }
 
         /// <summary>
@@ -547,7 +513,7 @@ namespace MediaBrowser.ServerApplication
                 Logger.ErrorException("Error sending server restart web socket message", ex);
             }
 
-            MainStartup.Restart();
+            NativeApp.Restart();
         }
 
         /// <summary>
@@ -571,44 +537,44 @@ namespace MediaBrowser.ServerApplication
         /// <returns>IEnumerable{Assembly}.</returns>
         protected override IEnumerable<Assembly> GetComposablePartAssemblies()
         {
+            var list = Directory.EnumerateFiles(ApplicationPaths.PluginsPath, "*.dll", SearchOption.TopDirectoryOnly)
+                .Select(LoadAssembly)
+                .Where(a => a != null)
+                .ToList();
+            
             // Gets all plugin assemblies by first reading all bytes of the .dll and calling Assembly.Load against that
             // This will prevent the .dll file from getting locked, and allow us to replace it when needed
-            foreach (var pluginAssembly in Directory
-                .EnumerateFiles(ApplicationPaths.PluginsPath, "*.dll", SearchOption.TopDirectoryOnly)
-                .Select(LoadAssembly).Where(a => a != null))
-            {
-                yield return pluginAssembly;
-            }
 
             // Include composable parts in the Api assembly 
-            yield return typeof(ApiEntryPoint).Assembly;
+            list.Add(typeof(ApiEntryPoint).Assembly);
 
             // Include composable parts in the Dashboard assembly 
-            yield return typeof(DashboardInfo).Assembly;
+            list.Add(typeof(DashboardInfo).Assembly);
 
             // Include composable parts in the Model assembly 
-            yield return typeof(SystemInfo).Assembly;
+            list.Add(typeof(SystemInfo).Assembly);
 
             // Include composable parts in the Common assembly 
-            yield return typeof(IApplicationHost).Assembly;
+            list.Add(typeof(IApplicationHost).Assembly);
 
             // Include composable parts in the Controller assembly 
-            yield return typeof(Kernel).Assembly;
+            list.Add(typeof(Kernel).Assembly);
 
             // Include composable parts in the Providers assembly 
-            yield return typeof(ImagesByNameProvider).Assembly;
+            list.Add(typeof(ImagesByNameProvider).Assembly);
 
             // Common implementations
-            yield return typeof(TaskManager).Assembly;
+            list.Add(typeof(TaskManager).Assembly);
 
             // Server implementations
-            yield return typeof(ServerApplicationPaths).Assembly;
+            list.Add(typeof(ServerApplicationPaths).Assembly);
 
-            // Pismo
-            yield return typeof(PismoIsoManager).Assembly;
+            list.AddRange(Assemblies.GetAssembliesWithParts());
 
             // Include composable parts in the running assembly
-            yield return GetType().Assembly;
+            list.Add(GetType().Assembly);
+
+            return list;
         }
 
         private readonly string _systemId = Environment.MachineName.GetMD5().ToString();
@@ -667,7 +633,7 @@ namespace MediaBrowser.ServerApplication
                 Logger.ErrorException("Error sending server shutdown web socket message", ex);
             }
 
-            MainStartup.Shutdown();
+            NativeApp.Shutdown();
         }
 
         /// <summary>
@@ -677,36 +643,16 @@ namespace MediaBrowser.ServerApplication
         {
             Logger.Info("Requesting administrative access to authorize http server");
 
-            // Create a temp file path to extract the bat file to
-            var tmpFile = Path.Combine(ConfigurationManager.CommonApplicationPaths.TempDirectory, Guid.NewGuid() + ".bat");
-
-            // Extract the bat file
-            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("MediaBrowser.ServerApplication.RegisterServer.bat"))
+            try
             {
-                using (var fileStream = File.Create(tmpFile))
-                {
-                    stream.CopyTo(fileStream);
-                }
+                ServerAuthorization.AuthorizeServer(ServerConfigurationManager.Configuration.HttpServerPortNumber,
+                    HttpServerUrlPrefix, ServerConfigurationManager.Configuration.LegacyWebSocketPortNumber,
+                    UdpServerEntryPoint.PortNumber,
+                    ConfigurationManager.CommonApplicationPaths.TempDirectory);
             }
-
-            var startInfo = new ProcessStartInfo
+            catch (Exception ex)
             {
-                FileName = tmpFile,
-
-                Arguments = string.Format("{0} {1} {2} {3}", ServerConfigurationManager.Configuration.HttpServerPortNumber,
-                HttpServerUrlPrefix,
-                UdpServerPort,
-                ServerConfigurationManager.Configuration.LegacyWebSocketPortNumber),
-
-                CreateNoWindow = true,
-                WindowStyle = ProcessWindowStyle.Hidden,
-                Verb = "runas",
-                ErrorDialog = false
-            };
-
-            using (var process = Process.Start(startInfo))
-            {
-                process.WaitForExit();
+                Logger.ErrorException("Error authorizing server", ex);
             }
         }
 
@@ -716,8 +662,7 @@ namespace MediaBrowser.ServerApplication
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
         /// <returns>Task{CheckForUpdateResult}.</returns>
-        public override async Task<CheckForUpdateResult> CheckForApplicationUpdate(CancellationToken cancellationToken,
-                                                                    IProgress<double> progress)
+        public override async Task<CheckForUpdateResult> CheckForApplicationUpdate(CancellationToken cancellationToken, IProgress<double> progress)
         {
             var availablePackages = await InstallationManager.GetAvailablePackagesWithoutRegistrationInfo(cancellationToken).ConfigureAwait(false);
 
@@ -748,11 +693,12 @@ namespace MediaBrowser.ServerApplication
         /// <returns>HttpMessageHandler.</returns>
         protected override HttpMessageHandler GetHttpMessageHandler(bool enableHttpCompression)
         {
-            return new WebRequestHandler
-            {
-                CachePolicy = new RequestCachePolicy(RequestCacheLevel.Revalidate),
-                AutomaticDecompression = enableHttpCompression ? DecompressionMethods.Deflate : DecompressionMethods.None
-            };
+            return HttpMessageHandlerFactory.GetHttpMessageHandler(enableHttpCompression);
+        }
+
+        protected override void ConfigureAutoRunAtStartup(bool autorun)
+        {
+            Autorun.Configure(autorun);
         }
     }
 }

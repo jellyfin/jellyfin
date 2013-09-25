@@ -5,7 +5,7 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Implementations.Udp;
 using System.Net.Sockets;
 
-namespace MediaBrowser.ServerApplication.EntryPoints
+namespace MediaBrowser.Server.Implementations.EntryPoints
 {
     /// <summary>
     /// Class UdpServerEntryPoint
@@ -35,6 +35,8 @@ namespace MediaBrowser.ServerApplication.EntryPoints
         /// </summary>
         private readonly IHttpServer _httpServer;
 
+        public const int PortNumber = 7359;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="UdpServerEntryPoint"/> class.
         /// </summary>
@@ -59,7 +61,7 @@ namespace MediaBrowser.ServerApplication.EntryPoints
 
             try
             {
-                udpServer.Start(ApplicationHost.UdpServerPort);
+                udpServer.Start(PortNumber);
 
                 UdpServer = udpServer;
             }

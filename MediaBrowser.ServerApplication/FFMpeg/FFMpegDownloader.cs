@@ -1,11 +1,9 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
-using SharpCompress.Archive.SevenZip;
-using SharpCompress.Common;
-using SharpCompress.Reader;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,13 +12,14 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.ServerApplication.Implementations
+namespace MediaBrowser.ServerApplication.FFMpeg
 {
     public class FFMpegDownloader
     {
         private readonly IHttpClient _httpClient;
         private readonly IApplicationPaths _appPaths;
         private readonly ILogger _logger;
+        private readonly IZipClient _zipClient;
 
         private const string Version = "ffmpeg20130904";
 
@@ -37,11 +36,12 @@ namespace MediaBrowser.ServerApplication.Implementations
                     "https://www.dropbox.com/s/a81cb2ob23fwcfs/ffmpeg-20130904-git-f974289-win32-static.7z?dl=1"
                 };
 
-        public FFMpegDownloader(ILogger logger, IApplicationPaths appPaths, IHttpClient httpClient)
+        public FFMpegDownloader(ILogger logger, IApplicationPaths appPaths, IHttpClient httpClient, IZipClient zipClient)
         {
             _logger = logger;
             _appPaths = appPaths;
             _httpClient = httpClient;
+            _zipClient = zipClient;
         }
 
         public async Task<FFMpegInfo> GetFFMpegInfo()
@@ -138,13 +138,7 @@ namespace MediaBrowser.ServerApplication.Implementations
 
         private void Extract7zArchive(string archivePath, string targetPath)
         {
-            using (var archive = SevenZipArchive.Open(archivePath))
-            {
-                using (var reader = archive.ExtractAllEntries())
-                {
-                    reader.WriteAllToDirectory(targetPath, ExtractOptions.ExtractFullPath | ExtractOptions.Overwrite);
-                }
-            }
+            _zipClient.ExtractAllFrom7z(archivePath, targetPath, true);
         }
 
         private void DeleteFile(string path)
@@ -304,12 +298,5 @@ namespace MediaBrowser.ServerApplication.Implementations
 
             return path;
         }
-    }
-
-    public class FFMpegInfo
-    {
-        public string Path { get; set; }
-        public string ProbePath { get; set; }
-        public string Version { get; set; }
     }
 }
