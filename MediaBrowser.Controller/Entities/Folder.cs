@@ -107,7 +107,7 @@ namespace MediaBrowser.Controller.Entities
 
         protected void AddChildrenInternal(IEnumerable<BaseItem> children)
         {
-            lock (ChildrenSyncLock)
+            lock (_childrenSyncLock)
             {
                 var newChildren = _children.ToList();
                 newChildren.AddRange(children);
@@ -116,7 +116,7 @@ namespace MediaBrowser.Controller.Entities
         }
         protected void AddChildInternal(BaseItem child)
         {
-            lock (ChildrenSyncLock)
+            lock (_childrenSyncLock)
             {
                 var newChildren = _children.ToList();
                 newChildren.Add(child);
@@ -126,7 +126,7 @@ namespace MediaBrowser.Controller.Entities
 
         protected void RemoveChildrenInternal(IEnumerable<BaseItem> children)
         {
-            lock (ChildrenSyncLock)
+            lock (_childrenSyncLock)
             {
                 _children = _children.Except(children).ToList();
             }
@@ -134,7 +134,7 @@ namespace MediaBrowser.Controller.Entities
 
         protected void ClearChildrenInternal()
         {
-            lock (ChildrenSyncLock)
+            lock (_childrenSyncLock)
             {
                 _children = new List<BaseItem>();
             }
@@ -513,11 +513,11 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// The children
         /// </summary>
-        private List<BaseItem> _children;
+        private IReadOnlyList<BaseItem> _children;
         /// <summary>
         /// The _children sync lock
         /// </summary>
-        protected object ChildrenSyncLock = new object();
+        private readonly object _childrenSyncLock = new object();
         /// <summary>
         /// Gets or sets the actual children.
         /// </summary>
