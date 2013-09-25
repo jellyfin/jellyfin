@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Configuration;
+﻿using System.Collections.Generic;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -105,7 +106,7 @@ namespace MediaBrowser.Providers.Savers
 
             var xmlFilePath = GetSavePath(item);
 
-            XmlSaverHelpers.Save(builder, xmlFilePath, new[]
+            XmlSaverHelpers.Save(builder, xmlFilePath, new List<string>
                 {
                     "id", 
                     "SeriesName",

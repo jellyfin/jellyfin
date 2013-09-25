@@ -385,7 +385,7 @@ namespace MediaBrowser.Controller.Providers
             var sb = new StringBuilder();
 
             var extensions = FileStampExtensionsDictionary;
-            var numExtensions = extensions.Count;
+            var numExtensions = FilestampExtensions.Length;
 
             // Record the name of each file 
             // Need to sort these because accoring to msdn docs, our i/o methods are not guaranteed in any order
