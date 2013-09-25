@@ -438,7 +438,7 @@
 
                 audioElement.off("play.once");
 
-                ApiClient.reportPlaybackStart(Dashboard.getCurrentUserId(), item.Id);
+                ApiClient.reportPlaybackStart(Dashboard.getCurrentUserId(), item.Id, true, item.MediaType);
 
                 startProgressInterval(item.Id);
 
@@ -635,7 +635,7 @@
 
                 videoElement.off("play.once");
 
-                ApiClient.reportPlaybackStart(Dashboard.getCurrentUserId(), item.Id);
+                ApiClient.reportPlaybackStart(Dashboard.getCurrentUserId(), item.Id, true, item.MediaType);
 
                 startProgressInterval(item.Id);
 

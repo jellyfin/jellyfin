@@ -1,11 +1,24 @@
-﻿using System.ComponentModel;
-using MediaBrowser.Model.Entities;
+﻿using MediaBrowser.Model.Entities;
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace MediaBrowser.Model.Session
 {
     public class SessionInfoDto : INotifyPropertyChanged
     {
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance can seek.
+        /// </summary>
+        /// <value><c>true</c> if this instance can seek; otherwise, <c>false</c>.</value>
+        public bool CanSeek { get; set; }
+
+        /// <summary>
+        /// Gets or sets the queueable media types.
+        /// </summary>
+        /// <value>The queueable media types.</value>
+        public List<string> QueueableMediaTypes { get; set; }
+        
         /// <summary>
         /// Gets or sets the id.
         /// </summary>

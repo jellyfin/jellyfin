@@ -1,0 +1,68 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Model", "MediaBrowser.Model\MediaBrowser.Model.csproj", "{7EEEB4BB-F3E8-48FC-B4C5-70F0FFF8329B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Common", "MediaBrowser.Common\MediaBrowser.Common.csproj", "{9142EEFA-7570-41E1-BFCC-468BB571AF2F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Common.Implementations", "MediaBrowser.Common.Implementations\MediaBrowser.Common.Implementations.csproj", "{C4D2573A-3FD3-441F-81AF-174AC4CD4E1D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Controller", "MediaBrowser.Controller\MediaBrowser.Controller.csproj", "{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Providers", "MediaBrowser.Providers\MediaBrowser.Providers.csproj", "{442B5058-DCAF-4263-BB6A-F21E31120A1B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Server.Implementations", "MediaBrowser.Server.Implementations\MediaBrowser.Server.Implementations.csproj", "{2E781478-814D-4A48-9D80-BFF206441A65}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.WebDashboard", "MediaBrowser.WebDashboard\MediaBrowser.WebDashboard.csproj", "{5624B7B5-B5A7-41D8-9F10-CC5611109619}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Api", "MediaBrowser.Api\MediaBrowser.Api.csproj", "{4FD51AC5-2C16-4308-A993-C3A84F3B4582}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Server.Mono", "MediaBrowser.Server.Mono\MediaBrowser.Server.Mono.csproj", "{A7FE75CD-3CB4-4E71-A5BF-5347721EC8E0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}.Debug|x86.ActiveCfg = Debug|x86
+		{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}.Debug|x86.Build.0 = Debug|x86
+		{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}.Release|x86.ActiveCfg = Release|x86
+		{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}.Release|x86.Build.0 = Release|x86
+		{2E781478-814D-4A48-9D80-BFF206441A65}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{2E781478-814D-4A48-9D80-BFF206441A65}.Debug|x86.Build.0 = Debug|Any CPU
+		{2E781478-814D-4A48-9D80-BFF206441A65}.Release|x86.ActiveCfg = Release|Any CPU
+		{2E781478-814D-4A48-9D80-BFF206441A65}.Release|x86.Build.0 = Release|Any CPU
+		{442B5058-DCAF-4263-BB6A-F21E31120A1B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{442B5058-DCAF-4263-BB6A-F21E31120A1B}.Debug|x86.Build.0 = Debug|Any CPU
+		{442B5058-DCAF-4263-BB6A-F21E31120A1B}.Release|x86.ActiveCfg = Release|Any CPU
+		{442B5058-DCAF-4263-BB6A-F21E31120A1B}.Release|x86.Build.0 = Release|Any CPU
+		{4FD51AC5-2C16-4308-A993-C3A84F3B4582}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4FD51AC5-2C16-4308-A993-C3A84F3B4582}.Debug|x86.Build.0 = Debug|Any CPU
+		{4FD51AC5-2C16-4308-A993-C3A84F3B4582}.Release|x86.ActiveCfg = Release|Any CPU
+		{4FD51AC5-2C16-4308-A993-C3A84F3B4582}.Release|x86.Build.0 = Release|Any CPU
+		{5624B7B5-B5A7-41D8-9F10-CC5611109619}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5624B7B5-B5A7-41D8-9F10-CC5611109619}.Debug|x86.Build.0 = Debug|Any CPU
+		{5624B7B5-B5A7-41D8-9F10-CC5611109619}.Release|x86.ActiveCfg = Release|Any CPU
+		{5624B7B5-B5A7-41D8-9F10-CC5611109619}.Release|x86.Build.0 = Release|Any CPU
+		{7EEEB4BB-F3E8-48FC-B4C5-70F0FFF8329B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7EEEB4BB-F3E8-48FC-B4C5-70F0FFF8329B}.Debug|x86.Build.0 = Debug|Any CPU
+		{7EEEB4BB-F3E8-48FC-B4C5-70F0FFF8329B}.Release|x86.ActiveCfg = Release|Any CPU
+		{7EEEB4BB-F3E8-48FC-B4C5-70F0FFF8329B}.Release|x86.Build.0 = Release|Any CPU
+		{9142EEFA-7570-41E1-BFCC-468BB571AF2F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9142EEFA-7570-41E1-BFCC-468BB571AF2F}.Debug|x86.Build.0 = Debug|Any CPU
+		{9142EEFA-7570-41E1-BFCC-468BB571AF2F}.Release|x86.ActiveCfg = Release|Any CPU
+		{9142EEFA-7570-41E1-BFCC-468BB571AF2F}.Release|x86.Build.0 = Release|Any CPU
+		{A7FE75CD-3CB4-4E71-A5BF-5347721EC8E0}.Debug|x86.ActiveCfg = Debug|x86
+		{A7FE75CD-3CB4-4E71-A5BF-5347721EC8E0}.Debug|x86.Build.0 = Debug|x86
+		{A7FE75CD-3CB4-4E71-A5BF-5347721EC8E0}.Release|x86.ActiveCfg = Release|x86
+		{A7FE75CD-3CB4-4E71-A5BF-5347721EC8E0}.Release|x86.Build.0 = Release|x86
+		{C4D2573A-3FD3-441F-81AF-174AC4CD4E1D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C4D2573A-3FD3-441F-81AF-174AC4CD4E1D}.Debug|x86.Build.0 = Debug|Any CPU
+		{C4D2573A-3FD3-441F-81AF-174AC4CD4E1D}.Release|x86.ActiveCfg = Release|Any CPU
+		{C4D2573A-3FD3-441F-81AF-174AC4CD4E1D}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = MediaBrowser.Server.Mono\MediaBrowser.Server.Mono.csproj
+	EndGlobalSection
+EndGlobal

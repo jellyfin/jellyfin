@@ -333,17 +333,16 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// <returns>Task.</returns>
         public Task SaveCriticReviews(Guid itemId, IEnumerable<ItemReview> criticReviews)
         {
-            return Task.Run(() =>
+            if (!Directory.Exists(_criticReviewsPath))
             {
-                if (!Directory.Exists(_criticReviewsPath))
-                {
-                    Directory.CreateDirectory(_criticReviewsPath);
-                }
+                Directory.CreateDirectory(_criticReviewsPath);
+            }
 
-                var path = Path.Combine(_criticReviewsPath, itemId + ".json");
+            var path = Path.Combine(_criticReviewsPath, itemId + ".json");
 
-                _jsonSerializer.SerializeToFile(criticReviews.ToList(), path);
-            });
+            _jsonSerializer.SerializeToFile(criticReviews.ToList(), path);
+
+            return Task.FromResult(true);
         }
 
         /// <summary>

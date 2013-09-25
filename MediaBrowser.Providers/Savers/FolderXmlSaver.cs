@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -77,7 +78,7 @@ namespace MediaBrowser.Providers.Savers
 
             var xmlFilePath = GetSavePath(item);
 
-            XmlSaverHelpers.Save(builder, xmlFilePath, new string[] { });
+            XmlSaverHelpers.Save(builder, xmlFilePath, new List<string> { });
 
             FolderProviderFromXml.Current.SetLastRefreshed(item, DateTime.UtcNow);
         }

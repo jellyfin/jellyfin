@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Configuration;
+﻿using System.Collections.Generic;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
@@ -70,7 +71,7 @@ namespace MediaBrowser.Providers.Savers
 
             var xmlFilePath = GetSavePath(item);
 
-            XmlSaverHelpers.Save(builder, xmlFilePath, new string[] { });
+            XmlSaverHelpers.Save(builder, xmlFilePath, new List<string> { });
 
             // Set last refreshed so that the provider doesn't trigger after the file save
             ArtistProviderFromXml.Current.SetLastRefreshed(item, DateTime.UtcNow);

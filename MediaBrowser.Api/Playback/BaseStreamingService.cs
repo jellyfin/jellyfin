@@ -613,7 +613,7 @@ namespace MediaBrowser.Api.Playback
                 EnableRaisingEvents = true
             };
 
-            ApiEntryPoint.Instance.OnTranscodeBeginning(outputPath, TranscodingJobType, process, video != null, state.Request.StartTimeTicks);
+            ApiEntryPoint.Instance.OnTranscodeBeginning(outputPath, TranscodingJobType, process, video != null, state.Request.StartTimeTicks, state.Item.Path);
 
             Logger.Info(process.StartInfo.FileName + " " + process.StartInfo.Arguments);
 

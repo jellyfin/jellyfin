@@ -121,7 +121,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
             }
             catch (IOException)
             {
-                // Cache file doesn't exist or is currently being written ro
+                // Cache file doesn't exist or is currently being written to
             }
 
             var semaphore = GetLock(cacheFilePath);
@@ -129,20 +129,23 @@ namespace MediaBrowser.Server.Implementations.Drawing
             await semaphore.WaitAsync().ConfigureAwait(false);
 
             // Check again in case of lock contention
-            if (File.Exists(cacheFilePath))
+            try
             {
-                try
+                using (var fileStream = new FileStream(cacheFilePath, FileMode.Open, FileAccess.Read, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
                 {
-                    using (var fileStream = new FileStream(cacheFilePath, FileMode.Open, FileAccess.Read, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
-                    {
-                        await fileStream.CopyToAsync(toStream).ConfigureAwait(false);
-                        return;
-                    }
-                }
-                finally
-                {
+                    await fileStream.CopyToAsync(toStream).ConfigureAwait(false);
                     semaphore.Release();
+                    return;
                 }
+            }
+            catch (IOException)
+            {
+                // Cache file doesn't exist or is currently being written to
+            }
+            catch
+            {
+                semaphore.Release();
+                throw;
             }
 
             try
@@ -188,12 +191,10 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
                                         var bytes = outputMemoryStream.ToArray();
 
-                                        var outputTask = toStream.WriteAsync(bytes, 0, bytes.Length);
+                                        await toStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
 
                                         // kick off a task to cache the result
-                                        var cacheTask = CacheResizedImage(cacheFilePath, bytes);
-
-                                        await Task.WhenAll(outputTask, cacheTask).ConfigureAwait(false);
+                                        CacheResizedImage(cacheFilePath, bytes, semaphore);
                                     }
                                 }
                             }
@@ -202,10 +203,49 @@ namespace MediaBrowser.Server.Implementations.Drawing
                     }
                 }
             }
-            finally
+            catch
             {
                 semaphore.Release();
+
+                throw;
             }
+        }
+
+        /// <summary>
+        /// Caches the resized image.
+        /// </summary>
+        /// <param name="cacheFilePath">The cache file path.</param>
+        /// <param name="bytes">The bytes.</param>
+        /// <param name="semaphore">The semaphore.</param>
+        private void CacheResizedImage(string cacheFilePath, byte[] bytes, SemaphoreSlim semaphore)
+        {
+            Task.Run(async () =>
+            {
+                try
+                {
+                    var parentPath = Path.GetDirectoryName(cacheFilePath);
+
+                    if (!Directory.Exists(parentPath))
+                    {
+                        Directory.CreateDirectory(parentPath);
+                    }
+
+                    // Save to the cache location
+                    using (var cacheFileStream = new FileStream(cacheFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
+                    {
+                        // Save to the filestream
+                        await cacheFileStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error writing to image cache file {0}", ex, cacheFilePath);
+                }
+                finally
+                {
+                    semaphore.Release();
+                }
+            });
         }
 
         /// <summary>
@@ -361,28 +401,6 @@ namespace MediaBrowser.Server.Implementations.Drawing
             }
 
             return croppedImagePath;
-        }
-
-        /// <summary>
-        /// Caches the resized image.
-        /// </summary>
-        /// <param name="cacheFilePath">The cache file path.</param>
-        /// <param name="bytes">The bytes.</param>
-        private async Task CacheResizedImage(string cacheFilePath, byte[] bytes)
-        {
-            var parentPath = Path.GetDirectoryName(cacheFilePath);
-
-            if (!Directory.Exists(parentPath))
-            {
-                Directory.CreateDirectory(parentPath);
-            }
-
-            // Save to the cache location
-            using (var cacheFileStream = new FileStream(cacheFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
-            {
-                // Save to the filestream
-                await cacheFileStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
-            }
         }
 
         /// <summary>

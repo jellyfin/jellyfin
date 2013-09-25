@@ -154,58 +154,5 @@ namespace MediaBrowser.ServerApplication
         {
             Dispatcher.Invoke(Shutdown);
         }
-
-        /// <summary>
-        /// Opens the dashboard page.
-        /// </summary>
-        /// <param name="page">The page.</param>
-        /// <param name="loggedInUser">The logged in user.</param>
-        /// <param name="configurationManager">The configuration manager.</param>
-        /// <param name="appHost">The app host.</param>
-        public static void OpenDashboardPage(string page, User loggedInUser, IServerConfigurationManager configurationManager, IServerApplicationHost appHost)
-        {
-            var url = "http://localhost:" + configurationManager.Configuration.HttpServerPortNumber + "/" +
-                      appHost.WebApplicationName + "/dashboard/" + page;
-
-            OpenUrl(url);
-        }
-
-        /// <summary>
-        /// Opens the URL.
-        /// </summary>
-        /// <param name="url">The URL.</param>
-        public static void OpenUrl(string url)
-        {
-            var process = new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = url
-                },
-
-                EnableRaisingEvents = true
-            };
-
-            process.Exited += ProcessExited;
-
-            try
-            {
-                process.Start();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("There was an error launching your web browser. Please check your defualt browser settings.");
-            }
-        }
-
-        /// <summary>
-        /// Processes the exited.
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        static void ProcessExited(object sender, EventArgs e)
-        {
-            ((Process)sender).Dispose();
-        }
     }
 }

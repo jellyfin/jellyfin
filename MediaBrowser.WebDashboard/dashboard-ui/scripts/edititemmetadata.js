@@ -423,6 +423,12 @@
         }
 
         if (item.Type == "Series") {
+            $('#fldZap2It', page).show();
+        } else {
+            $('#fldZap2It', page).hide();
+        }
+
+        if (item.Type == "Series") {
             $('#fldStatus', page).show();
             $('#fldAirDays', page).show();
             $('#fldAirTime', page).show();
@@ -665,15 +671,18 @@
         $('#txtMusicBrainz', page).val(providerIds.Musicbrainz || "");
         $('#txtMusicBrainzReleaseGroupId', page).val(providerIds.MusicBrainzReleaseGroup || "");
         $('#txtRottenTomatoes', page).val(providerIds.RottenTomatoes || "");
+        $('#txtZap2It', page).val(providerIds.Zap2It || "");
 
         if (item.RunTimeTicks) {
 
             var minutes = item.RunTimeTicks / 600000000;
-            
+
             $('#txtSeriesRuntime', page).val(minutes);
         } else {
             $('#txtSeriesRuntime', page).val("");
         }
+
+        $('.txtProviderId', page).trigger('change');
     }
 
     function convertTo24HourFormat(time) {
@@ -788,7 +797,7 @@
     function generateSliders(fields, type) {
         var html = '';
         for (var i = 0; i < fields.length; i++) {
-            
+
             var field = fields[i];
             var name = field.name;
             var value = field.value || field.name;
@@ -806,31 +815,31 @@
     function populateInternetProviderSettings(page, item, lockedFields) {
         var container = $('#providerSettingsContainer', page);
         lockedFields = lockedFields || new Array();
-        
+
         var metadatafields = [
-            
+
             { name: "Name" },
             { name: "Overview" },
             { name: "Genres" },
             { name: "Parental Rating", value: "OfficialRating" },
             { name: "People", value: "Cast" }
         ];
-        
+
         if (item.Type == "Person") {
             metadatafields.push({ name: "Birth location", value: "ProductionLocations" });
         } else {
             metadatafields.push({ name: "Production Locations", value: "ProductionLocations" });
         }
-        
+
         if (item.Type == "Series") {
             metadatafields.push({ name: "Runtime" });
         }
 
         metadatafields.push({ name: "Studios" });
         metadatafields.push({ name: "Tags" });
-        
+
         var html = '';
-        
+
         html += "<h3>Fields</h3>";
         html += generateSliders(metadatafields, 'Fields');
         container.html(html).trigger('create');
@@ -899,7 +908,8 @@
                     Tvcom: $('#txtTvCom', form).val(),
                     Musicbrainz: $('#txtMusicBrainz', form).val(),
                     MusicBrainzReleaseGroup: $('#txtMusicBrainzReleaseGroupId', form).val(),
-                    RottenTomatoes: $('#txtRottenTomatoes', form).val()
+                    RottenTomatoes: $('#txtRottenTomatoes', form).val(),
+                    Zap2It: $('#txtZap2It', form).val()
                 }
             };
 
@@ -909,9 +919,9 @@
 
                 item.ProductionLocations = placeOfBirth ? [placeOfBirth] : [];
             }
-            
+
             if (currentItem.Type == "Series") {
-                
+
                 // 600000000
                 var seriesRuntime = $('#txtSeriesRuntime', form).val();
                 item.RunTimeTicks = seriesRuntime ? (seriesRuntime * 600000000) : null;
@@ -987,6 +997,114 @@
     $(document).on('pageinit', "#editItemMetadataPage", function () {
 
         var page = this;
+
+        $('#txtGamesDb', this).on('change', function () {
+
+            var val = this.value;
+
+            if (val) {
+
+                $('#btnOpenGamesDb', page).attr('href', 'http://thegamesdb.net/game/' + val);
+            } else {
+                $('#btnOpenGamesDb', page).attr('href', '#');
+            }
+
+        });
+
+        $('#txtImdb', this).on('change', function () {
+
+            var val = this.value;
+
+            if (val) {
+
+                if (currentItem.Type == "Person") {
+                    $('#btnOpenImdb', page).attr('href', 'http://www.imdb.com/name/' + val);
+                } else {
+                    $('#btnOpenImdb', page).attr('href', 'http://www.imdb.com/title/' + val);
+                }
+            } else {
+                $('#btnOpenImdb', page).attr('href', '#');
+            }
+
+        });
+
+        $('#txtMusicBrainz', this).on('change', function () {
+
+            var val = this.value;
+
+            if (val) {
+
+                if (currentItem.Type == "MusicArtist" || currentItem.Type == "Artist") {
+                    $('#btnOpenMusicbrainz', page).attr('href', 'http://musicbrainz.org/artist/' + val);
+                } else {
+                    $('#btnOpenMusicbrainz', page).attr('href', 'http://musicbrainz.org/release/' + val);
+                }
+
+            } else {
+                $('#btnOpenMusicbrainz', page).attr('href', '#');
+            }
+
+        });
+
+        $('#txtMusicBrainzReleaseGroupId', this).on('change', function () {
+
+            var val = this.value;
+
+            if (val) {
+
+                $('#btnOpenMusicbrainzReleaseGroup', page).attr('href', 'http://musicbrainz.org/release-group/' + val);
+            } else {
+                $('#btnOpenMusicbrainzReleaseGroup', page).attr('href', '#');
+            }
+
+        });
+
+        $('#txtTmdb', this).on('change', function () {
+
+            var val = this.value;
+
+            if (val) {
+
+                if (currentItem.Type == "Movie" || currentItem.Type == "Trailer" || currentItem.Type == "MusicVideo")
+                    $('#btnOpenTmdb', page).attr('href', 'http://www.themoviedb.org/movie/' + val);
+                else if (currentItem.Type == "BoxSet")
+                    $('#btnOpenTmdb', page).attr('href', 'http://www.themoviedb.org/collection/' + val);
+                else if (currentItem.Type == "Person")
+                    $('#btnOpenTmdb', page).attr('href', 'http://www.themoviedb.org/person/' + val);
+
+            } else {
+                $('#btnOpenTmdb', page).attr('href', '#');
+            }
+
+        });
+
+        $('#txtTvdb', this).on('change', function () {
+
+            var val = this.value;
+
+            if (val) {
+
+                $('#btnOpenTvdb', page).attr('href', 'http://thetvdb.com/index.php?tab=series&id=' + val);
+
+            } else {
+                $('#btnOpenTvdb', page).attr('href', '#');
+            }
+
+        });
+
+        $('#txtZap2It', this).on('change', function () {
+
+            var val = this.value;
+
+            if (val) {
+
+                $('#btnOpenZap2It', page).attr('href', 'http://tvlistings.zap2it.com/tv/dexter/' + val);
+
+            } else {
+                $('#btnOpenZap2It', page).attr('href', '#');
+            }
+
+        });
 
         $('#btnRefresh', this).on('click', function () {
 

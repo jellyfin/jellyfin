@@ -16,7 +16,6 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using MoreLinq;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -167,6 +166,25 @@ namespace MediaBrowser.Controller.Entities
             item.Parent = null;
 
             LibraryManager.ReportItemRemoved(item);
+
+            return ItemRepository.SaveChildren(Id, ActualChildren.Select(i => i.Id).ToList(), cancellationToken);
+        }
+
+        /// <summary>
+        /// Clears the children.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        public Task ClearChildren(CancellationToken cancellationToken)
+        {
+            var items = ActualChildren.ToList();
+
+            ClearChildrenInternal();
+
+            foreach (var item in items)
+            {
+                LibraryManager.ReportItemRemoved(item);
+            }
 
             return ItemRepository.SaveChildren(Id, ActualChildren.Select(i => i.Id).ToList(), cancellationToken);
         }
@@ -671,7 +689,7 @@ namespace MediaBrowser.Controller.Entities
 
             var options = new ParallelOptions
             {
-                MaxDegreeOfParallelism = 20
+                MaxDegreeOfParallelism = 10
             };
 
             Parallel.ForEach(nonCachedChildren, options, child =>
@@ -733,6 +751,11 @@ namespace MediaBrowser.Controller.Entities
                 if (actualRemovals.Count > 0)
                 {
                     RemoveChildrenInternal(actualRemovals);
+
+                    foreach (var item in actualRemovals)
+                    {
+                        LibraryManager.ReportItemRemoved(item);
+                    }
                 }
 
                 await LibraryManager.CreateItems(newItems, cancellationToken).ConfigureAwait(false);
@@ -781,7 +804,7 @@ namespace MediaBrowser.Controller.Entities
 
             foreach (var tuple in list)
             {
-                if (tasks.Count > 8)
+                if (tasks.Count > 5)
                 {
                     await Task.WhenAll(tasks).ConfigureAwait(false);
                 }

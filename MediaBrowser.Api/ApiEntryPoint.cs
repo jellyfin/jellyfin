@@ -62,7 +62,7 @@ namespace MediaBrowser.Api
         {
             var jobCount = _activeTranscodingJobs.Count;
 
-            Parallel.ForEach(_activeTranscodingJobs, OnTranscodeKillTimerStopped);
+            Parallel.ForEach(_activeTranscodingJobs, KillTranscodingJob);
 
             // Try to allow for some time to kill the ffmpeg processes and delete the partial stream files
             if (jobCount > 0)
@@ -84,7 +84,8 @@ namespace MediaBrowser.Api
         /// <param name="process">The process.</param>
         /// <param name="isVideo">if set to <c>true</c> [is video].</param>
         /// <param name="startTimeTicks">The start time ticks.</param>
-        public void OnTranscodeBeginning(string path, TranscodingJobType type, Process process, bool isVideo, long? startTimeTicks)
+        /// <param name="sourcePath">The source path.</param>
+        public void OnTranscodeBeginning(string path, TranscodingJobType type, Process process, bool isVideo, long? startTimeTicks, string sourcePath)
         {
             lock (_activeTranscodingJobs)
             {
@@ -95,7 +96,8 @@ namespace MediaBrowser.Api
                     Process = process,
                     ActiveRequestCount = 1,
                     IsVideo = isVideo,
-                    StartTimeTicks = startTimeTicks
+                    StartTimeTicks = startTimeTicks,
+                    SourcePath = sourcePath
                 });
             }
         }
@@ -178,7 +180,7 @@ namespace MediaBrowser.Api
 
                 if (job.ActiveRequestCount == 0)
                 {
-                    var timerDuration = type == TranscodingJobType.Progressive ? 1000 : 60000;
+                    var timerDuration = type == TranscodingJobType.Progressive ? 1000 : 180000;
 
                     if (job.KillTimer == null)
                     {
@@ -196,10 +198,47 @@ namespace MediaBrowser.Api
         /// Called when [transcode kill timer stopped].
         /// </summary>
         /// <param name="state">The state.</param>
-        private async void OnTranscodeKillTimerStopped(object state)
+        private void OnTranscodeKillTimerStopped(object state)
         {
             var job = (TranscodingJob)state;
 
+            KillTranscodingJob(job);
+        }
+
+        /// <summary>
+        /// Kills the single transcoding job.
+        /// </summary>
+        /// <param name="sourcePath">The source path.</param>
+        internal void KillSingleTranscodingJob(string sourcePath)
+        {
+            if (string.IsNullOrEmpty(sourcePath))
+            {
+                throw new ArgumentNullException("sourcePath");
+            }
+
+            var jobs = new List<TranscodingJob>();
+
+            lock (_activeTranscodingJobs)
+            {
+                // This is really only needed for HLS. 
+                // Progressive streams can stop on their own reliably
+                jobs.AddRange(_activeTranscodingJobs.Where(i => string.Equals(sourcePath, i.SourcePath) && i.Type == TranscodingJobType.Hls));
+            }
+
+            // This method of killing is a bit of a shortcut, but it saves clients from having to send a request just for that
+            // But we can only kill if there's one active job. If there are more we won't know which one to stop
+            if (jobs.Count == 1)
+            {
+                KillTranscodingJob(jobs.First());
+            }
+        }
+
+        /// <summary>
+        /// Kills the transcoding job.
+        /// </summary>
+        /// <param name="job">The job.</param>
+        private async void KillTranscodingJob(TranscodingJob job)
+        {
             lock (_activeTranscodingJobs)
             {
                 _activeTranscodingJobs.Remove(job);
@@ -373,6 +412,7 @@ namespace MediaBrowser.Api
 
         public bool IsVideo { get; set; }
         public long? StartTimeTicks { get; set; }
+        public string SourcePath { get; set; }
     }
 
     /// <summary>

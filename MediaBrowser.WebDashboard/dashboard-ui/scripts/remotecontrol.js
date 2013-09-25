@@ -183,7 +183,7 @@
 
                 }
                 else if (playCommand == "Browse") {
-                    
+
                     promise = ApiClient.sendBrowseCommand(sessionIds[0], {
 
                         ItemId: item.Id,
@@ -236,7 +236,7 @@
             promise.done(function () {
 
                 popup.popup("close");
-                
+
                 if (showRemoteControlMenuAfterCommand) {
                     RemoteControl.showMenu();
                 }
@@ -256,7 +256,7 @@
                 return s.DeviceId != deviceId;
             });
 
-            renderSessionsInPlayMenu(sessions, options, elem);
+            renderSessionsInPlayMenu(sessions, options, elem, popup);
 
             if (ApiClient.isWebSocketOpen()) {
                 ApiClient.sendWebSocketMessage("SessionsStart", "1000,1000");
@@ -287,7 +287,7 @@
                 if (value == "Play") {
 
                     browseButtonContainer.show();
-                    
+
                     if (item.Type != 'Person' && item.Type != 'Genre' && item.Type != 'Studio' && item.Type != 'GameGenre' && item.Type != 'MusicGenre') {
                         playButtonContainer.show();
                         queueButtonContainer.show();
@@ -441,7 +441,7 @@
         $('.chkSelectPlayTime:first', elem).checked(true);
     }
 
-    function renderSessionsInPlayMenu(sessions, options, elem) {
+    function renderSessionsInPlayMenu(sessions, options, elem, popup) {
 
         if (!sessions.length) {
             elem.html('<p>There are currently no available media browser sessions to control.</p>');
@@ -507,7 +507,7 @@
 
             var session = sessions[i];
 
-            html += '<tr class="trSession" data-sessionid="' + session.Id + '">';
+            html += '<tr class="trSession" data-queue="' + session.QueueableMediaTypes.join(',') + '" data-sessionid="' + session.Id + '">';
 
             html += '<td class="tdSelectSession"></td>';
             html += '<td>' + session.Client + '</td>';
@@ -549,7 +549,7 @@
         elem.html(html).trigger('create');
 
         $('.tdSelectSession', elem).html('<input type="radio" class="chkClient" name="chkClient" />');
-
+        
         $('.chkClient:first', elem).checked(true);
 
         $('#remoteControlFlyout').popup("reposition", { tolerance: 0 });
@@ -689,13 +689,13 @@
         html += '<div class="commandsCollapsible" data-role="collapsible" data-content-theme="c" data-collapsed="true" data-mini="true" style="margin-top: 1em;display:none;">';
         html += '<h4>Send Message</h4>';
         html += '<div>';
-        
+
         html += '<p style="text-align:center;">';
 
         html += '<div><label for="txtMessage">Message text</label></div>';
-        
+
         html += '<div style="display:inline-block;width:80%;"><input id="txtMessage" name="txtMessage" type="text" /></div>';
-        
+
         html += '<button type="button" data-icon="envelope" class="btnSendMessage" data-theme="a" data-mini="true" data-inline="true">Send</button>';
 
         html += '</p>';
@@ -763,9 +763,9 @@
             var id = $('#selectSession', popup).val();
 
             var messageText = $('#txtMessage', popup).val();
-            
+
             if (messageText) {
-                Dashboard.getCurrentUser().done(function(user) {
+                Dashboard.getCurrentUser().done(function (user) {
 
                     ApiClient.sendMessageCommand(id, {
                         Header: "Message from " + user.Name,
@@ -872,7 +872,7 @@
         html += '<span class="duration"></span>';
         html += '</div>';
 
-        html += '<input type="range" name="positionSlider" id="positionSlider" min="0" max="100" value="50" step=".1" style="display:none;" />';
+        html += '<div class="positionSliderContainer"><input type="range" name="positionSlider" id="positionSlider" min="0" max="100" value="50" step=".1" style="display:none;" /></div>';
         html += '</div>';
 
         html += '<div style="text-align:center; margin: 0 0 2em;">';
@@ -953,13 +953,19 @@
             imageContainer.hide();
         }
 
+        if (session.CanSeek) {
+            $('.positionSliderContainer', elem).show();
+        } else {
+            $('.positionSliderContainer', elem).hide();
+        }
+
         var time = session.NowPlayingPositionTicks || 0;
         var duration = item.RunTimeTicks || 0;
 
         var percent = duration ? 100 * time / duration : 0;
 
         var slider = $('#positionSlider', elem);
-        
+
         if (!slider[0].isSliding) {
             slider.val(percent).slider('refresh');
         }

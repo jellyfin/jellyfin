@@ -58,7 +58,11 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
 
             progress.Report(0);
 
-            return Task.Run(() => LogManager.ReloadLogger(ConfigurationManager.CommonConfiguration.EnableDebugLevelLogging ? LogSeverity.Debug : LogSeverity.Info));
+            LogManager.ReloadLogger(ConfigurationManager.CommonConfiguration.EnableDebugLevelLogging
+                                        ? LogSeverity.Debug
+                                        : LogSeverity.Info);
+
+            return Task.FromResult(true);
         }
 
         /// <summary>
