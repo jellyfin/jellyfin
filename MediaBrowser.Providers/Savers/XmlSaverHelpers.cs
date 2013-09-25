@@ -29,13 +29,11 @@ namespace MediaBrowser.Providers.Savers
         /// <param name="xml">The XML.</param>
         /// <param name="path">The path.</param>
         /// <param name="xmlTagsUsed">The XML tags used.</param>
-        public static void Save(StringBuilder xml, string path, IEnumerable<string> xmlTagsUsed)
+        public static void Save(StringBuilder xml, string path, List<string> xmlTagsUsed)
         {
             if (File.Exists(path))
             {
-                var tags = xmlTagsUsed.ToList();
-
-                tags.AddRange(new[]
+                xmlTagsUsed.AddRange(new[]
                 {
                     "MediaInfo",
                     "ContentRating",
@@ -88,7 +86,7 @@ namespace MediaBrowser.Providers.Savers
                 });
 
                 var position = xml.ToString().LastIndexOf("</", StringComparison.OrdinalIgnoreCase);
-                xml.Insert(position, GetCustomTags(path, tags));
+                xml.Insert(position, GetCustomTags(path, xmlTagsUsed));
             }
 
             var xmlDocument = new XmlDocument();
@@ -142,17 +140,46 @@ namespace MediaBrowser.Providers.Savers
         /// <param name="path">The path.</param>
         /// <param name="xmlTagsUsed">The XML tags used.</param>
         /// <returns>System.String.</returns>
-        private static string GetCustomTags(string path, ICollection<string> xmlTagsUsed)
+        private static string GetCustomTags(string path, IEnumerable<string> xmlTagsUsed)
         {
-            var doc = new XmlDocument();
-            doc.Load(path);
+            var settings = new XmlReaderSettings
+            {
+                CheckCharacters = false,
+                IgnoreProcessingInstructions = true,
+                IgnoreComments = true,
+                ValidationType = ValidationType.None
+            };
 
-            var nodes = doc.DocumentElement.ChildNodes.Cast<XmlNode>()
-                .Where(i => !xmlTagsUsed.Contains(i.Name))
-                .Select(i => i.OuterXml)
-                .ToArray();
+            var tagsDictionary = xmlTagsUsed.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
 
-            return string.Join(Environment.NewLine, nodes);
+            var builder = new StringBuilder();
+
+            using (var streamReader = new StreamReader(path, Encoding.UTF8))
+            {
+                // Use XmlReader for best performance
+                using (var reader = XmlReader.Create(streamReader, settings))
+                {
+                    reader.MoveToContent();
+
+                    // Loop through each element
+                    while (reader.Read())
+                    {
+                        if (reader.NodeType == XmlNodeType.Element)
+                        {
+                            if (!tagsDictionary.ContainsKey(reader.Name))
+                            {
+                                builder.AppendLine(reader.ReadOuterXml());
+                            }
+                            else
+                            {
+                                reader.Skip();
+                            }
+                        }
+                    }
+                }
+            }
+            
+            return builder.ToString();
         }
 
         /// <summary>

@@ -159,6 +159,10 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
             {
                 previouslyFailedImages = new List<string>();
             }
+            catch (DirectoryNotFoundException)
+            {
+                previouslyFailedImages = new List<string>();
+            }
 
             foreach (var video in videos)
             {

@@ -83,7 +83,7 @@ namespace MediaBrowser.Controller.Session
         /// </summary>
         /// <value>The name of the now viewing item.</value>
         public string NowViewingItemName { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the now playing item.
         /// </summary>
@@ -107,7 +107,7 @@ namespace MediaBrowser.Controller.Session
         /// </summary>
         /// <value><c>true</c> if this instance is muted; otherwise, <c>false</c>.</value>
         public bool IsMuted { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the device id.
         /// </summary>
@@ -139,7 +139,7 @@ namespace MediaBrowser.Controller.Session
                     return WebSockets.Any(i => i.State == WebSocketState.Open);
                 }
 
-                return (DateTime.UtcNow - LastActivityDate).TotalMinutes <= 5;
+                return (DateTime.UtcNow - LastActivityDate).TotalMinutes <= 10;
             }
         }
 
