@@ -415,7 +415,7 @@ mkdir "$(SolutionDir)..\Deploy\Server\System\dashboard-ui"
 xcopy "$(TargetDir)dashboard-ui" "$(SolutionDir)..\Deploy\Server\System\dashboard-ui" /y /s
 
 del "$(SolutionDir)..\Deploy\MBServer.zip"
-"$(SolutionDir)ThirdParty\7zip\7za" a -tzip "$(SolutionDir)..\Deploy\MBServer.zip" "$(SolutionDir)..\Deploy\Server\*"
+"$(SolutionDir)ThirdParty\7zip\7za" a -tzip -mx9 "$(SolutionDir)..\Deploy\MBServer.zip" "$(SolutionDir)..\Deploy\Server\*"
 )</PostBuildEvent>
   </PropertyGroup>
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
