@@ -1288,14 +1288,14 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>Task.</returns>
         public async Task UpdateItem(BaseItem item, ItemUpdateType updateReason, CancellationToken cancellationToken)
         {
-            await ItemRepository.SaveItem(item, cancellationToken).ConfigureAwait(false);
-
-            UpdateItemInLibraryCache(item);
-
             if (item.LocationType == LocationType.FileSystem)
             {
                 await SaveMetadata(item, updateReason).ConfigureAwait(false);
             }
+
+            await ItemRepository.SaveItem(item, cancellationToken).ConfigureAwait(false);
+
+            UpdateItemInLibraryCache(item);
 
             if (ItemUpdated != null)
             {
