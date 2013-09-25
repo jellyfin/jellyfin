@@ -500,7 +500,7 @@ namespace MediaBrowser.Api
                     .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
                     .ToList();
 
-            var dtos = item.ThemeSongIds.Select(_itemRepo.RetrieveItem)
+            var dtos = item.ThemeSongIds.Select(_libraryManager.GetItemById)
                             .OrderBy(i => i.SortName)
                             .Select(i => _dtoService.GetBaseItemDto(i, fields, user, item));
 
@@ -547,7 +547,7 @@ namespace MediaBrowser.Api
                     .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
                     .ToList();
 
-            var dtos = item.ThemeVideoIds.Select(_itemRepo.RetrieveItem)
+            var dtos = item.ThemeVideoIds.Select(_libraryManager.GetItemById)
                             .OrderBy(i => i.SortName)
                             .Select(i => _dtoService.GetBaseItemDto(i, fields, user, item));
 
