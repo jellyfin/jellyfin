@@ -95,7 +95,7 @@ namespace MediaBrowser.ServerApplication
 
                 EventHelper.FireEventIfNotNull(AppStarted, this, EventArgs.Empty, _logger);
 
-                await task.ConfigureAwait(false);
+                await task;
             }
             catch (Exception ex)
             {

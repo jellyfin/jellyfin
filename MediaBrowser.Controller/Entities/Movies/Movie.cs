@@ -114,7 +114,7 @@ namespace MediaBrowser.Controller.Entities.Movies
 
                 if (dbItem != null)
                 {
-                    dbItem.ResolveArgs = video.ResolveArgs;
+                    dbItem.ResetResolveArgs(video.ResolveArgs);
                     video = dbItem;
                 }
 

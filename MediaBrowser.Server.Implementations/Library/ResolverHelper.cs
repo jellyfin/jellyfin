@@ -20,7 +20,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="args">The args.</param>
         public static void SetInitialItemValues(BaseItem item, ItemResolveArgs args)
         {
-            item.ResolveArgs = args;
+            item.ResetResolveArgs(args);
 
             // If the resolver didn't specify this
             if (string.IsNullOrEmpty(item.Path))
