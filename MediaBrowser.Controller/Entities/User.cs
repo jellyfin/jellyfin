@@ -312,7 +312,7 @@ namespace MediaBrowser.Controller.Entities
             if (resetResolveArgs)
             {
                 // Reload this
-                ResolveArgs = null;
+                ResetResolveArgs();
             }
 
             var updateReason = await ProviderManager.ExecuteMetadataProviders(this, cancellationToken, forceRefresh, allowSlowProviders).ConfigureAwait(false);

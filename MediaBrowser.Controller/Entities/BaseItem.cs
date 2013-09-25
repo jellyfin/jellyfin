@@ -336,7 +336,7 @@ namespace MediaBrowser.Controller.Entities
 
                 return _resolveArgs;
             }
-            set
+            private set
             {
                 _resolveArgs = value;
                 _resolveArgsInitialized = value != null;
@@ -349,7 +349,17 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="pathInfo">The path info.</param>
         public void ResetResolveArgs(FileSystemInfo pathInfo)
         {
-            ResolveArgs = CreateResolveArgs(pathInfo);
+            ResetResolveArgs(CreateResolveArgs(pathInfo));
+        }
+
+        public void ResetResolveArgs()
+        {
+            ResolveArgs = null;
+        }
+
+        public void ResetResolveArgs(ItemResolveArgs args)
+        {
+            ResolveArgs = args;
         }
 
         /// <summary>
@@ -887,10 +897,10 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>true if a provider reports we changed</returns>
         public virtual async Task<bool> RefreshMetadata(CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false, bool allowSlowProviders = true, bool resetResolveArgs = true)
         {
-            if (resetResolveArgs)
+            if (resetResolveArgs || ResolveArgs == null)
             {
                 // Reload this
-                ResolveArgs = null;
+                ResetResolveArgs();
             }
 
             // Refresh for the item

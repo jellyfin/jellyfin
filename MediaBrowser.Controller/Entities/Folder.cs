@@ -107,31 +107,36 @@ namespace MediaBrowser.Controller.Entities
 
         protected void AddChildrenInternal(IEnumerable<BaseItem> children)
         {
-            foreach (var child in children)
+            lock (ChildrenSyncLock)
             {
-                AddChildInternal(child);
+                var newChildren = _children.ToList();
+                newChildren.AddRange(children);
+                _children = newChildren;
             }
         }
         protected void AddChildInternal(BaseItem child)
         {
-            _children.Add(child);
+            lock (ChildrenSyncLock)
+            {
+                var newChildren = _children.ToList();
+                newChildren.Add(child);
+                _children = newChildren;
+            }
         }
 
         protected void RemoveChildrenInternal(IEnumerable<BaseItem> children)
         {
             lock (ChildrenSyncLock)
             {
-                _children = new ConcurrentBag<BaseItem>(_children.Except(children));
+                _children = _children.Except(children).ToList();
             }
         }
 
         protected void ClearChildrenInternal()
         {
-            BaseItem removed;
-
-            while (_children.TryTake(out removed))
+            lock (ChildrenSyncLock)
             {
-
+                _children = new List<BaseItem>();
             }
         }
 
@@ -508,11 +513,7 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// The children
         /// </summary>
-        private ConcurrentBag<BaseItem> _children;
-        /// <summary>
-        /// The _children initialized
-        /// </summary>
-        private bool _childrenInitialized;
+        private List<BaseItem> _children;
         /// <summary>
         /// The _children sync lock
         /// </summary>
@@ -525,9 +526,13 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                LazyInitializer.EnsureInitialized(ref _children, ref _childrenInitialized, ref ChildrenSyncLock, LoadChildrenInternal);
                 return _children;
             }
+        }
+
+        public void LoadSavedChildren()
+        {
+            _children = LoadChildrenInternal();
         }
 
         /// <summary>
@@ -566,16 +571,15 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        private ConcurrentBag<BaseItem> LoadChildrenInternal()
+        private List<BaseItem> LoadChildrenInternal()
         {
-            return new ConcurrentBag<BaseItem>(LoadChildren());
+            return LoadChildren().ToList();
         }
 
         /// <summary>
         /// Loads our children.  Validation will occur externally.
         /// We want this sychronous.
         /// </summary>
-        /// <returns>ConcurrentBag{BaseItem}.</returns>
         protected virtual IEnumerable<BaseItem> LoadChildren()
         {
             //just load our children from the repo - the library will be validated and maintained in other processes
@@ -698,7 +702,7 @@ namespace MediaBrowser.Controller.Entities
 
                 if (currentChildren.TryGetValue(child.Id, out currentChild))
                 {
-                    currentChild.ResolveArgs = child.ResolveArgs;
+                    currentChild.ResetResolveArgs(child.ResolveArgs);
 
                     //existing item - check if it has changed
                     if (currentChild.HasChanged(child))
@@ -760,12 +764,7 @@ namespace MediaBrowser.Controller.Entities
 
                 await LibraryManager.CreateItems(newItems, cancellationToken).ConfigureAwait(false);
 
-                foreach (var item in newItems)
-                {
-                    _children.Add(item);
-
-                    Logger.Debug("** " + item.Name + " Added to library.");
-                }
+                AddChildrenInternal(newItems);
 
                 await ItemRepository.SaveChildren(Id, _children.Select(i => i.Id).ToList(), cancellationToken).ConfigureAwait(false);
 
