@@ -387,8 +387,6 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         private readonly ILibraryManager _libraryManager;
 
-        private readonly IItemRepository _itemRepo;
-
         private readonly ISessionManager _sessionManager;
         private readonly IDtoService _dtoService;
 
@@ -398,16 +396,14 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="userManager">The user manager.</param>
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="userDataRepository">The user data repository.</param>
-        /// <param name="itemRepo">The item repo.</param>
         /// <param name="sessionManager">The session manager.</param>
         /// <param name="dtoService">The dto service.</param>
         /// <exception cref="System.ArgumentNullException">jsonSerializer</exception>
-        public UserLibraryService(IUserManager userManager, ILibraryManager libraryManager, IUserDataRepository userDataRepository, IItemRepository itemRepo, ISessionManager sessionManager, IDtoService dtoService)
+        public UserLibraryService(IUserManager userManager, ILibraryManager libraryManager, IUserDataRepository userDataRepository, ISessionManager sessionManager, IDtoService dtoService)
         {
             _userManager = userManager;
             _libraryManager = libraryManager;
             _userDataRepository = userDataRepository;
-            _itemRepo = itemRepo;
             _sessionManager = sessionManager;
             _dtoService = dtoService;
         }
@@ -442,7 +438,7 @@ namespace MediaBrowser.Api.UserLibrary
                 var movie1 = movie;
 
                 var dtos = movie.SpecialFeatureIds
-                    .Select(_itemRepo.RetrieveItem)
+                    .Select(_libraryManager.GetItemById)
                     .OrderBy(i => i.SortName)
                     .Select(i => _dtoService.GetBaseItemDto(i, fields, user, movie1));
 
@@ -502,7 +498,7 @@ namespace MediaBrowser.Api.UserLibrary
             var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true)).ToList();
 
             var dtos = item.LocalTrailerIds
-                .Select(_itemRepo.RetrieveItem)
+                .Select(_libraryManager.GetItemById)
                 .OrderBy(i => i.SortName)
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user, item));
 

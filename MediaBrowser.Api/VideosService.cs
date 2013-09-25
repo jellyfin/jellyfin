@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Querying;
 using ServiceStack.ServiceHost;
 using System;
@@ -26,15 +25,12 @@ namespace MediaBrowser.Api
     
     public class VideosService : BaseApiService
     {
-        private readonly IItemRepository _itemRepo;
-
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
         private readonly IDtoService _dtoService;
 
-        public VideosService(IItemRepository itemRepo, ILibraryManager libraryManager, IUserManager userManager, IDtoService dtoService)
+        public VideosService( ILibraryManager libraryManager, IUserManager userManager, IDtoService dtoService)
         {
-            _itemRepo = itemRepo;
             _libraryManager = libraryManager;
             _userManager = userManager;
             _dtoService = dtoService;
@@ -62,7 +58,7 @@ namespace MediaBrowser.Api
 
             var video = (Video)item;
 
-            var items = video.AdditionalPartIds.Select(_itemRepo.RetrieveItem)
+            var items = video.AdditionalPartIds.Select(_libraryManager.GetItemById)
                          .OrderBy(i => i.SortName)
                          .Select(i => _dtoService.GetBaseItemDto(i, fields, user, video))
                          .ToArray();
