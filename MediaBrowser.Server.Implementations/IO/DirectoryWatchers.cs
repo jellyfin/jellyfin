@@ -66,7 +66,7 @@ namespace MediaBrowser.Server.Implementations.IO
         public async void RemoveTempIgnore(string path)
         {
             // This is an arbitraty amount of time, but delay it because file system writes often trigger events after RemoveTempIgnore has been called. 
-            await Task.Delay(1000).ConfigureAwait(false);
+            await Task.Delay(1500).ConfigureAwait(false);
 
             string val;
             _tempIgnoredPaths.TryRemove(path, out val);
