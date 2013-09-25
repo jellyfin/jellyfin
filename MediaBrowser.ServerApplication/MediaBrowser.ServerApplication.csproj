@@ -130,10 +130,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\MediaBrowser.IsoMounting.3.0.56\lib\net45\MediaBrowser.IsoMounter.dll</HintPath>
     </Reference>
-    <Reference Include="MoreLinq, Version=1.0.16006.0, Culture=neutral, PublicKeyToken=384d532d7e88985d, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\morelinq.1.0.16006\lib\net35\MoreLinq.dll</HintPath>
-    </Reference>
     <Reference Include="NLog, Version=2.0.1.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\NLog.2.0.1.2\lib\net45\NLog.dll</HintPath>
@@ -168,9 +164,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\ServiceStack.Text.3.9.62\lib\net35\ServiceStack.Text.dll</HintPath>
     </Reference>
-    <Reference Include="SharpCompress">
-      <HintPath>..\packages\sharpcompress.0.10.1.3\lib\net40\SharpCompress.dll</HintPath>
-    </Reference>
     <Reference Include="SimpleInjector, Version=2.3.5.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\SimpleInjector.2.3.5\lib\net40-client\SimpleInjector.dll</HintPath>
@@ -190,7 +183,6 @@
     <Reference Include="System.Net" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Net.Http.WebRequest" />
-    <Reference Include="System.Runtime.Remoting" />
     <Reference Include="System.ServiceProcess" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -212,12 +204,19 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="EntryPoints\StartupWizard.cs" />
-    <Compile Include="EntryPoints\UdpServerEntryPoint.cs" />
-    <Compile Include="Implementations\FFMpegDownloader.cs" />
+    <Compile Include="FFMpeg\FFMpegInfo.cs" />
+    <Compile Include="Native\Assemblies.cs" />
+    <Compile Include="Native\HttpMessageHandlerFactory.cs" />
+    <Compile Include="Native\NativeApp.cs" />
+    <Compile Include="Native\ServerAuthorization.cs" />
+    <Compile Include="Native\Autorun.cs" />
+    <Compile Include="Native\BrowserLauncher.cs" />
+    <Compile Include="FFMpeg\FFMpegDownloader.cs" />
     <Compile Include="MainStartup.cs" />
     <Compile Include="BackgroundServiceInstaller.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Native\Sqlite.cs" />
     <Compile Include="Splash\SplashWindow.xaml.cs">
       <DependentUpon>SplashWindow.xaml</DependentUpon>
     </Compile>
@@ -245,7 +244,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ApplicationHost.cs" />
-    <Compile Include="Implementations\ZipClient.cs" />
     <Compile Include="LibraryExplorer.xaml.cs">
       <DependentUpon>LibraryExplorer.xaml</DependentUpon>
     </Compile>
@@ -281,15 +279,15 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <None Include="app.manifest" />
-    <None Include="Implementations\ARIALUNI.7z" />
-    <None Include="Implementations\ffmpeg-20130904-git-f974289-win32-static.7z" />
+    <None Include="FFMpeg\ARIALUNI.7z" />
+    <None Include="FFMpeg\ffmpeg-20130904-git-f974289-win32-static.7z" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
-    <EmbeddedResource Include="RegisterServer.bat" />
+    <EmbeddedResource Include="Native\RegisterServer.bat" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">
