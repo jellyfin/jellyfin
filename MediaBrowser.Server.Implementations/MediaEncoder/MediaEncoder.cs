@@ -57,7 +57,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// <summary>
         /// The FF probe resource pool
         /// </summary>
-        private readonly SemaphoreSlim _ffProbeResourcePool = new SemaphoreSlim(2, 2);
+        private readonly SemaphoreSlim _ffProbeResourcePool = new SemaphoreSlim(1, 1);
 
         public string FFMpegPath { get; private set; }
 

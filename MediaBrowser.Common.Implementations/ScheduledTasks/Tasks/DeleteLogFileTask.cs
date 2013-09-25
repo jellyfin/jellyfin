@@ -54,33 +54,32 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
         /// <returns>Task.</returns>
         public Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            return Task.Run(() =>
+            // Delete log files more than n days old
+            var minDateModified = DateTime.UtcNow.AddDays(-(ConfigurationManager.CommonConfiguration.LogFileRetentionDays));
+
+            var filesToDelete = new DirectoryInfo(ConfigurationManager.CommonApplicationPaths.LogDirectoryPath).EnumerateFileSystemInfos("*", SearchOption.AllDirectories)
+                          .Where(f => f.LastWriteTimeUtc < minDateModified)
+                          .ToList();
+
+            var index = 0;
+
+            foreach (var file in filesToDelete)
             {
-                // Delete log files more than n days old
-                var minDateModified = DateTime.UtcNow.AddDays(-(ConfigurationManager.CommonConfiguration.LogFileRetentionDays));
+                double percent = index;
+                percent /= filesToDelete.Count;
 
-                var filesToDelete = new DirectoryInfo(ConfigurationManager.CommonApplicationPaths.LogDirectoryPath).EnumerateFileSystemInfos("*", SearchOption.AllDirectories)
-                              .Where(f => f.LastWriteTimeUtc < minDateModified)
-                              .ToList();
+                progress.Report(100 * percent);
 
-                var index = 0;
+                cancellationToken.ThrowIfCancellationRequested();
 
-                foreach (var file in filesToDelete)
-                {
-                    double percent = index;
-                    percent /= filesToDelete.Count;
+                File.Delete(file.FullName);
 
-                    progress.Report(100 * percent);
+                index++;
+            }
 
-                    cancellationToken.ThrowIfCancellationRequested();
+            progress.Report(100);
 
-                    File.Delete(file.FullName);
-
-                    index++;
-                }
-
-                progress.Report(100);
-            });
+            return Task.FromResult(true);
         }
 
         /// <summary>

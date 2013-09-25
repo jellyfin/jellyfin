@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Configuration;
+﻿using System.Collections.Generic;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Providers.Movies;
@@ -66,7 +67,7 @@ namespace MediaBrowser.Providers.Savers
 
             if (!string.IsNullOrEmpty(game.GameSystem))
             {
-                builder.Append("<GameSystem><![CDATA[" + game.GameSystem + "]]></GameSystem>");
+                builder.Append("<GameSystem>" + SecurityElement.Escape(game.GameSystem) + "</GameSystem>");
             }
             
             XmlSaverHelpers.AddCommonNodes(item, builder);
@@ -75,7 +76,7 @@ namespace MediaBrowser.Providers.Savers
 
             var xmlFilePath = GetSavePath(item);
 
-            XmlSaverHelpers.Save(builder, xmlFilePath, new[]
+            XmlSaverHelpers.Save(builder, xmlFilePath, new List<string>
                 {
                     "Players",
                     "GameSystem"

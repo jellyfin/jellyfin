@@ -186,7 +186,7 @@ namespace MediaBrowser.Api.UserLibrary
 
         [ApiMember(Name = "DatePlayed", Description = "The date the item was played (if any)", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
         public DateTime? DatePlayed { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the id.
         /// </summary>
@@ -224,6 +224,13 @@ namespace MediaBrowser.Api.UserLibrary
     [Api(Description = "Reports that a user has begun playing an item")]
     public class OnPlaybackStart : IReturnVoid
     {
+        public OnPlaybackStart()
+        {
+            // Have to default these until all clients have a chance to incorporate them
+            CanSeek = true;
+            QueueableMediaTypes = "Audio,Video,Book,Game";
+        }
+
         /// <summary>
         /// Gets or sets the user id.
         /// </summary>
@@ -237,6 +244,20 @@ namespace MediaBrowser.Api.UserLibrary
         /// <value>The id.</value>
         [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public string Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="UpdateUserItemRating" /> is likes.
+        /// </summary>
+        /// <value><c>true</c> if likes; otherwise, <c>false</c>.</value>
+        [ApiMember(Name = "CanSeek", Description = "Indicates if the client can seek", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "POST")]
+        public bool CanSeek { get; set; }
+
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "QueueableMediaTypes", Description = "A list of media types that can be queued from this item, comma delimited. Audio,Video,Book,Game", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST", AllowMultiple = true)]
+        public string QueueableMediaTypes { get; set; }
     }
 
     /// <summary>
@@ -378,6 +399,8 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="userDataRepository">The user data repository.</param>
         /// <param name="itemRepo">The item repo.</param>
+        /// <param name="sessionManager">The session manager.</param>
+        /// <param name="dtoService">The dto service.</param>
         /// <exception cref="System.ArgumentNullException">jsonSerializer</exception>
         public UserLibraryService(IUserManager userManager, ILibraryManager libraryManager, IUserDataRepository userDataRepository, IItemRepository itemRepo, ISessionManager sessionManager, IDtoService dtoService)
         {
@@ -640,19 +663,11 @@ namespace MediaBrowser.Api.UserLibrary
 
         private SessionInfo GetSession()
         {
-            var auth = RequestFilterAttribute.GetAuthorization(RequestContext);
+            var auth = AuthorizationRequestFilterAttribute.GetAuthorization(RequestContext);
 
-            string deviceId;
-            string client;
-            string version;
-
-            auth.TryGetValue("DeviceId", out deviceId);
-            auth.TryGetValue("Client", out client);
-            auth.TryGetValue("Version", out version);
-
-            return _sessionManager.Sessions.First(i => string.Equals(i.DeviceId, deviceId) &&
-                string.Equals(i.Client, client) &&
-                string.Equals(i.ApplicationVersion, version));
+            return _sessionManager.Sessions.First(i => string.Equals(i.DeviceId, auth.DeviceId) &&
+                string.Equals(i.Client, auth.Client) &&
+                string.Equals(i.ApplicationVersion, auth.Version));
         }
 
         /// <summary>
@@ -665,7 +680,17 @@ namespace MediaBrowser.Api.UserLibrary
 
             var item = _dtoService.GetItemByDtoId(request.Id, user.Id);
 
-            _sessionManager.OnPlaybackStart(item, GetSession().Id);
+            var queueableMediaTypes = (request.QueueableMediaTypes ?? string.Empty);
+
+            var info = new PlaybackInfo
+            {
+                CanSeek = request.CanSeek,
+                Item = item,
+                SessionId = GetSession().Id,
+                QueueableMediaTypes = queueableMediaTypes.Split(',').ToList()
+            };
+
+            _sessionManager.OnPlaybackStart(info);
         }
 
         /// <summary>
@@ -693,7 +718,12 @@ namespace MediaBrowser.Api.UserLibrary
 
             var item = _dtoService.GetItemByDtoId(request.Id, user.Id);
 
-            var task = _sessionManager.OnPlaybackStopped(item, request.PositionTicks, GetSession().Id);
+            // Kill the encoding
+            ApiEntryPoint.Instance.KillSingleTranscodingJob(item.Path);
+
+            var session = GetSession();
+
+            var task = _sessionManager.OnPlaybackStopped(item, request.PositionTicks, session.Id);
 
             Task.WaitAll(task);
         }

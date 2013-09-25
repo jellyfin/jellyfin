@@ -92,7 +92,9 @@ namespace MediaBrowser.Server.Implementations.WebSocket
         /// <returns>Task.</returns>
         public Task SendAsync(byte[] bytes, WebSocketMessageType type, bool endOfMessage, CancellationToken cancellationToken)
         {
-            return Task.Run(() => UserContext.Send(bytes));
+            UserContext.Send(bytes);
+
+            return Task.FromResult(true);
         }
 
         /// <summary>

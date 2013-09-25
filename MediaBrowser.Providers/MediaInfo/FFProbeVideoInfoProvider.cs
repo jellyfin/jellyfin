@@ -178,6 +178,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
+            SetLastRefreshed(item, DateTime.UtcNow);
             return true;
         }
 

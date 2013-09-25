@@ -10,7 +10,6 @@ using MediaBrowser.Model.IO;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -211,29 +210,6 @@ namespace MediaBrowser.Api.Playback.Hls
                 count++;
             }
             return count;
-        }
-
-        protected void ExtendHlsTimer(string itemId, string playlistId)
-        {
-            var normalizedPlaylistId = playlistId.Replace("-low", string.Empty);
-
-            foreach (var playlist in Directory.EnumerateFiles(ApplicationPaths.EncodedMediaCachePath, "*.m3u8")
-                .Where(i => i.IndexOf(normalizedPlaylistId, StringComparison.OrdinalIgnoreCase) != -1)
-                .ToList())
-            {
-                ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlist, TranscodingJobType.Hls);
-
-                // Avoid implicitly captured closure
-                var playlist1 = playlist;
-
-                Task.Run(async () =>
-                {
-                    // This is an arbitrary time period corresponding to when the request completes.
-                    await Task.Delay(30000).ConfigureAwait(false);
-
-                    ApiEntryPoint.Instance.OnTranscodeEndRequest(playlist1, TranscodingJobType.Hls);
-                });
-            }
         }
 
         /// <summary>

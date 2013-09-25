@@ -102,6 +102,18 @@ namespace MediaBrowser.Server.Implementations.Providers
 
                 using (source)
                 {
+                    // If the file is currently hidden we'll have to remove that or the save will fail
+                    var file = new FileInfo(path);
+
+                    // This will fail if the file is hidden
+                    if (file.Exists)
+                    {
+                        if ((file.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
+                        {
+                            file.Attributes &= ~FileAttributes.Hidden;
+                        }
+                    } 
+                    
                     using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
                     {
                         await source.CopyToAsync(fs, StreamDefaults.DefaultCopyToBufferSize, cancellationToken).ConfigureAwait(false);

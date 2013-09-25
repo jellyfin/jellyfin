@@ -314,6 +314,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <param name="context">The CTX.</param>
         private async void ProcessHttpRequestAsync(HttpListenerContext context)
         {
+            var date = DateTime.Now;
+
             LogHttpRequest(context);
 
             if (context.Request.IsWebSocketRequest)
@@ -360,7 +362,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                     var url = context.Request.Url.ToString();
                     var endPoint = context.Request.RemoteEndPoint;
 
-                    LogResponse(context, url, endPoint);
+                    var duration = DateTime.Now - date;
+
+                    LogResponse(context, url, endPoint, duration);
 
                 }
                 catch (Exception ex)
@@ -461,14 +465,15 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <param name="ctx">The CTX.</param>
         /// <param name="url">The URL.</param>
         /// <param name="endPoint">The end point.</param>
-        private void LogResponse(HttpListenerContext ctx, string url, IPEndPoint endPoint)
+        /// <param name="duration">The duration.</param>
+        private void LogResponse(HttpListenerContext ctx, string url, IPEndPoint endPoint, TimeSpan duration)
         {
             if (!EnableHttpRequestLogging)
             {
                 return;
             }
 
-            var statusode = ctx.Response.StatusCode;
+            var statusCode = ctx.Response.StatusCode;
 
             var log = new StringBuilder();
 
@@ -476,7 +481,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             log.AppendLine("Headers: " + string.Join(",", ctx.Response.Headers.AllKeys.Select(k => k + "=" + ctx.Response.Headers[k])));
 
-            var msg = "Http Response Sent (" + statusode + ") to " + endPoint;
+            var responseTime = string.Format(". Response time: {0} ms", duration.TotalMilliseconds);
+
+            var msg = "Response code " + statusCode + " sent to " + endPoint + responseTime;
 
             _logger.LogMultiline(msg, LogSeverity.Debug, log);
         }
