@@ -513,7 +513,7 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// The children
         /// </summary>
-        private IReadOnlyList<BaseItem> _children;
+        private IReadOnlyList<BaseItem> _children = new List<BaseItem>();
         /// <summary>
         /// The _children sync lock
         /// </summary>
@@ -1026,7 +1026,7 @@ namespace MediaBrowser.Controller.Entities
                 throw new ArgumentNullException();
             }
 
-            var initialCount = _children == null ? 100 : _children.Count;
+            var initialCount = _children.Count;
             var list = new List<BaseItem>(initialCount);
 
             AddRecursiveChildrenInternal(user, includeLinkedChildren, list);
