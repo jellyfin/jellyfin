@@ -1,4 +1,6 @@
-﻿using MediaBrowser.Controller.Notifications;
+﻿using System.IO;
+using MediaBrowser.Controller;
+using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Notifications;
 using System;
@@ -12,15 +14,15 @@ namespace MediaBrowser.Server.Implementations.Persistence
 {
     public class SqliteNotificationsRepository : INotificationsRepository
     {
-        private readonly IDbConnection _connection;
+        private  IDbConnection _connection;
         private readonly ILogger _logger;
+        private readonly IServerApplicationPaths _appPaths;
 
         private readonly SemaphoreSlim _writeLock = new SemaphoreSlim(1, 1);
 
-        public SqliteNotificationsRepository(IDbConnection connection, ILogManager logManager)
+        public SqliteNotificationsRepository(ILogManager logManager, IServerApplicationPaths appPaths)
         {
-            _connection = connection;
-
+            _appPaths = appPaths;
             _logger = logManager.GetLogger(GetType().Name);
         }
 
@@ -31,8 +33,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private IDbCommand _replaceNotificationCommand;
         private IDbCommand _markReadCommand;
 
-        public void Initialize()
+        public async Task Initialize()
         {
+            var dbFile = Path.Combine(_appPaths.DataPath, "notifications.db");
+
+            _connection = await SqliteExtensions.ConnectToDb(dbFile).ConfigureAwait(false);
+            
             string[] queries = {
 
                                 "create table if not exists Notifications (Id GUID NOT NULL, UserId GUID NOT NULL, Date DATETIME NOT NULL, Name TEXT NOT NULL, Description TEXT, Url TEXT, Level TEXT NOT NULL, IsRead BOOLEAN NOT NULL, Category TEXT NOT NULL, RelatedId TEXT, PRIMARY KEY (Id, UserId))",

@@ -1,15 +1,12 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="d:\Development\MediaBrowser\MediaBrowser.Server.Mono\Native\Sqlite.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="d:\Development\MediaBrowser\MediaBrowser.ServerApplication\ApplicationHost.cs">
     <Files>
+      <File FileName="d:\Development\MediaBrowser\MediaBrowser.ServerApplication\ApplicationHost.cs" Line="442" Column="10" />
+      <File FileName="MediaBrowser.Server.Mono\Native\ServerAuthorization.cs" Line="1" Column="1" />
+      <File FileName="MediaBrowser.Server.Mono\Native\Autorun.cs" Line="1" Column="1" />
+      <File FileName="MediaBrowser.Server.Mono\Native\Assemblies.cs" Line="1" Column="1" />
       <File FileName="MediaBrowser.Server.Mono\Program.cs" Line="1" Column="1" />
-      <File FileName="MediaBrowser.Server.Mono\MainWindow.cs" Line="8" Column="12" />
-      <File FileName="MediaBrowser.Server.Mono\Native\Autorun.cs" Line="17" Column="4" />
-      <File FileName="MediaBrowser.Server.Mono\Native\ServerAuthorization.cs" Line="23" Column="1" />
-      <File FileName="MediaBrowser.Server.Mono\FFMpeg\FFMpegDownloader.cs" Line="7" Column="14" />
-      <File FileName="MediaBrowser.ServerApplication\ApplicationHost.cs" Line="548" Column="61" />
-      <File FileName="MediaBrowser.Server.Mono\Native\NativeApp.cs" Line="22" Column="13" />
-      <File FileName="d:\Development\MediaBrowser\MediaBrowser.Server.Mono\Native\Sqlite.cs" Line="21" Column="14" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

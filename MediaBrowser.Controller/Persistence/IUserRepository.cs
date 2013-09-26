@@ -14,7 +14,7 @@ namespace MediaBrowser.Controller.Persistence
         /// Opens the connection to the repository
         /// </summary>
         /// <returns>Task.</returns>
-        void Initialize();
+        Task Initialize();
 
         /// <summary>
         /// Deletes the user.

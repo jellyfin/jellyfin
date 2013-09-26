@@ -55,8 +55,6 @@ namespace MediaBrowser.ServerApplication
 
         public void OnUnhandledException(Exception ex)
         {
-            _logger.ErrorException("UnhandledException", ex);
-
             MessageBox.Show("Unhandled exception: " + ex.Message);
         }
 

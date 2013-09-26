@@ -980,7 +980,7 @@ namespace MediaBrowser.Controller.Entities
             var initialCount = _children.Count;
             var list = new List<BaseItem>(initialCount);
 
-            AddChildrenToList(user, includeLinkedChildren, list, false);
+            AddChildrenToList(user, includeLinkedChildren, list, false, null);
 
             return list;
         }
@@ -992,7 +992,9 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="includeLinkedChildren">if set to <c>true</c> [include linked children].</param>
         /// <param name="list">The list.</param>
         /// <param name="recursive">if set to <c>true</c> [recursive].</param>
-        private bool AddChildrenToList(User user, bool includeLinkedChildren, List<BaseItem> list, bool recursive)
+        /// <param name="filter">The filter.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
+        private bool AddChildrenToList(User user, bool includeLinkedChildren, List<BaseItem> list, bool recursive, Func<BaseItem,bool> filter)
         {
             var hasLinkedChildren = false;
 
@@ -1000,7 +1002,10 @@ namespace MediaBrowser.Controller.Entities
             {
                 if (child.IsVisible(user))
                 {
-                    list.Add(child);
+                    if (filter == null || filter(child))
+                    {
+                        list.Add(child);
+                    }
                 }
 
                 if (recursive)
@@ -1009,7 +1014,7 @@ namespace MediaBrowser.Controller.Entities
 
                     if (folder != null)
                     {
-                        if (folder.AddChildrenToList(user, includeLinkedChildren, list, true))
+                        if (folder.AddChildrenToList(user, includeLinkedChildren, list, true, filter))
                         {
                             hasLinkedChildren = true;
                         }
@@ -1021,6 +1026,11 @@ namespace MediaBrowser.Controller.Entities
             {
                 foreach (var child in GetLinkedChildren())
                 {
+                    if (filter != null && !filter(child))
+                    {
+                        continue;
+                    }
+                    
                     hasLinkedChildren = true;
 
                     if (child.IsVisible(user))
@@ -1043,6 +1053,11 @@ namespace MediaBrowser.Controller.Entities
         /// <exception cref="System.ArgumentNullException"></exception>
         public IEnumerable<BaseItem> GetRecursiveChildren(User user, bool includeLinkedChildren = true)
         {
+            return GetRecursiveChildren(user, null, true);
+        }
+
+        public IEnumerable<BaseItem> GetRecursiveChildren(User user, Func<BaseItem,bool> filter, bool includeLinkedChildren = true)
+        {
             if (user == null)
             {
                 throw new ArgumentNullException();
@@ -1051,10 +1066,10 @@ namespace MediaBrowser.Controller.Entities
             var initialCount = _lastRecursiveCount == 0 ? _children.Count : _lastRecursiveCount;
             var list = new List<BaseItem>(initialCount);
 
-            var hasLinkedChildren = AddChildrenToList(user, includeLinkedChildren, list, true);
+            var hasLinkedChildren = AddChildrenToList(user, includeLinkedChildren, list, true, null);
 
             _lastRecursiveCount = list.Count;
-            
+
             if (includeLinkedChildren && hasLinkedChildren)
             {
                 list = list.Distinct().ToList();
@@ -1062,7 +1077,7 @@ namespace MediaBrowser.Controller.Entities
 
             return list;
         }
-
+        
         /// <summary>
         /// Gets the linked children.
         /// </summary>
