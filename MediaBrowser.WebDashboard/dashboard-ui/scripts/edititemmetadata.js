@@ -677,7 +677,7 @@
 
             var minutes = item.RunTimeTicks / 600000000;
 
-            $('#txtSeriesRuntime', page).val(minutes);
+            $('#txtSeriesRuntime', page).val(Math.round(minutes));
         } else {
             $('#txtSeriesRuntime', page).val("");
         }
