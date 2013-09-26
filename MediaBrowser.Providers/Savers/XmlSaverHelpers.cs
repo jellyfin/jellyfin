@@ -18,6 +18,59 @@ namespace MediaBrowser.Providers.Savers
     /// </summary>
     public static class XmlSaverHelpers
     {
+        private static readonly Dictionary<string, string> CommonTags = new[] {     
+               
+                    "Added",
+                    "AspectRatio",
+                    "BirthDate",
+                    "Budget",
+                    "certification",
+                    "Chapters",
+                    "ContentRating",
+                    "CustomRating",
+                    "CriticRating",
+                    "CriticRatingSummary",
+                    "DeathDate",
+                    "EndDate",
+                    "Genres",
+                    "Genre",
+                    "GamesDbId",
+                    "IMDB_ID",
+                    "IMDB",
+                    "IMDbId",
+                    "Language",
+                    "LocalTitle",
+                    "LockData",
+                    "LockedFields",
+                    "MediaInfo",
+                    "MPAARating",
+                    "MusicbrainzId",
+                    "MusicBrainzReleaseGroupId",
+                    "Overview",
+                    "Persons",
+                    "PremiereDate",
+                    "ProductionYear",
+                    "Rating",
+                    "Revenue",
+                    "RottenTomatoesId",
+                    "RunningTime",
+                    "Runtime",
+                    "SortTitle",
+                    "Studios",
+                    "Tags",
+                    "TagLine",
+                    "Taglines",
+                    "TMDbCollectionId",
+                    "TMDbId",
+                    "Trailer",
+                    "TVcomId",
+                    "TvDbId",
+                    "Type",
+                    "Website",
+                    "Zap2ItId"
+
+        }.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
+
         /// <summary>
         /// The us culture
         /// </summary>
@@ -33,58 +86,6 @@ namespace MediaBrowser.Providers.Savers
         {
             if (File.Exists(path))
             {
-                xmlTagsUsed.AddRange(new[]
-                {
-                    "MediaInfo",
-                    "ContentRating",
-                    "MPAARating",
-                    "certification",
-                    "Persons",
-                    "Type",
-                    "Overview",
-                    "CustomRating",
-                    "LocalTitle",
-                    "SortTitle",
-                    "PremiereDate",
-                    "EndDate",
-                    "Budget",
-                    "Revenue",
-                    "Rating",
-                    "ProductionYear",
-                    "Website",
-                    "AspectRatio",
-                    "Language",
-                    "RunningTime",
-                    "Runtime",
-                    "TagLine",
-                    "Taglines",
-                    "IMDB_ID",
-                    "IMDB",
-                    "IMDbId",
-                    "TMDbId",
-                    "TVcomId",
-                    "TvDbId",
-                    "RottenTomatoesId",
-                    "MusicbrainzId",
-                    "TMDbCollectionId",
-                    "Genres",
-                    "Genre",
-                    "Studios",
-                    "Tags",
-                    "Added",
-                    "LockData",
-                    "Trailer",
-                    "CriticRating",
-                    "CriticRatingSummary",
-                    "GamesDbId",
-                    "BirthDate",
-                    "DeathDate",
-                    "LockedFields",
-                    "Chapters",
-                    "MusicBrainzReleaseGroupId",
-                    "Zap2ItId"
-                });
-
                 var position = xml.ToString().LastIndexOf("</", StringComparison.OrdinalIgnoreCase);
                 xml.Insert(position, GetCustomTags(path, xmlTagsUsed));
             }
@@ -140,7 +141,7 @@ namespace MediaBrowser.Providers.Savers
         /// <param name="path">The path.</param>
         /// <param name="xmlTagsUsed">The XML tags used.</param>
         /// <returns>System.String.</returns>
-        private static string GetCustomTags(string path, IEnumerable<string> xmlTagsUsed)
+        private static string GetCustomTags(string path, List<string> xmlTagsUsed)
         {
             var settings = new XmlReaderSettings
             {
@@ -149,8 +150,6 @@ namespace MediaBrowser.Providers.Savers
                 IgnoreComments = true,
                 ValidationType = ValidationType.None
             };
-
-            var tagsDictionary = xmlTagsUsed.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
 
             var builder = new StringBuilder();
 
@@ -166,7 +165,9 @@ namespace MediaBrowser.Providers.Savers
                     {
                         if (reader.NodeType == XmlNodeType.Element)
                         {
-                            if (!tagsDictionary.ContainsKey(reader.Name))
+                            var name = reader.Name;
+
+                            if (!CommonTags.ContainsKey(name) && !xmlTagsUsed.Contains(name, StringComparer.OrdinalIgnoreCase))
                             {
                                 builder.AppendLine(reader.ReadOuterXml());
                             }
