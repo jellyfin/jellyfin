@@ -977,24 +977,43 @@ namespace MediaBrowser.Controller.Entities
                 return result;
             }
 
-            return GetChildrenList(user, includeLinkedChildren);
+            var initialCount = _children.Count;
+            var list = new List<BaseItem>(initialCount);
+
+            AddChildrenToList(user, includeLinkedChildren, list, false);
+
+            return list;
         }
 
         /// <summary>
-        /// Gets the children list.
+        /// Adds the children to list.
         /// </summary>
         /// <param name="user">The user.</param>
         /// <param name="includeLinkedChildren">if set to <c>true</c> [include linked children].</param>
-        /// <returns>List{BaseItem}.</returns>
-        private List<BaseItem> GetChildrenList(User user, bool includeLinkedChildren)
+        /// <param name="list">The list.</param>
+        /// <param name="recursive">if set to <c>true</c> [recursive].</param>
+        private bool AddChildrenToList(User user, bool includeLinkedChildren, List<BaseItem> list, bool recursive)
         {
-            var list = new List<BaseItem>();
-            
+            var hasLinkedChildren = false;
+
             foreach (var child in Children)
             {
                 if (child.IsVisible(user))
                 {
                     list.Add(child);
+                }
+
+                if (recursive)
+                {
+                    var folder = child as Folder;
+
+                    if (folder != null)
+                    {
+                        if (folder.AddChildrenToList(user, includeLinkedChildren, list, true))
+                        {
+                            hasLinkedChildren = true;
+                        }
+                    }
                 }
             }
 
@@ -1002,6 +1021,8 @@ namespace MediaBrowser.Controller.Entities
             {
                 foreach (var child in GetLinkedChildren())
                 {
+                    hasLinkedChildren = true;
+
                     if (child.IsVisible(user))
                     {
                         list.Add(child);
@@ -1009,9 +1030,10 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            return list;
+            return hasLinkedChildren;
         }
 
+        private int _lastRecursiveCount;
         /// <summary>
         /// Gets allowed recursive children of an item
         /// </summary>
@@ -1026,38 +1048,19 @@ namespace MediaBrowser.Controller.Entities
                 throw new ArgumentNullException();
             }
 
-            var initialCount = _children.Count;
+            var initialCount = _lastRecursiveCount == 0 ? _children.Count : _lastRecursiveCount;
             var list = new List<BaseItem>(initialCount);
 
-            AddRecursiveChildrenInternal(user, includeLinkedChildren, list);
+            var hasLinkedChildren = AddChildrenToList(user, includeLinkedChildren, list, true);
 
-            if (includeLinkedChildren)
+            _lastRecursiveCount = list.Count;
+            
+            if (includeLinkedChildren && hasLinkedChildren)
             {
                 list = list.Distinct().ToList();
             }
 
             return list;
-        }
-
-        /// <summary>
-        /// Adds the recursive children internal.
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <param name="includeLinkedChildren">if set to <c>true</c> [include linked children].</param>
-        /// <param name="list">The list.</param>
-        private void AddRecursiveChildrenInternal(User user, bool includeLinkedChildren, List<BaseItem> list)
-        {
-            foreach (var item in GetChildrenList(user, includeLinkedChildren))
-            {
-                list.Add(item);
-
-                var subFolder = item as Folder;
-
-                if (subFolder != null)
-                {
-                    subFolder.AddRecursiveChildrenInternal(user, includeLinkedChildren, list);
-                }
-            }
         }
 
         /// <summary>
