@@ -331,6 +331,10 @@ namespace MediaBrowser.Controller.Entities
 
                 return _resolveArgs;
             }
+            set
+            {
+                _resolveArgs = value;
+            }
         }
 
         /// <summary>
@@ -342,11 +346,18 @@ namespace MediaBrowser.Controller.Entities
             ResetResolveArgs(CreateResolveArgs(pathInfo));
         }
 
+        /// <summary>
+        /// Resets the resolve args.
+        /// </summary>
         public void ResetResolveArgs()
         {
             _resolveArgs = null;
         }
 
+        /// <summary>
+        /// Resets the resolve args.
+        /// </summary>
+        /// <param name="args">The args.</param>
         public void ResetResolveArgs(ItemResolveArgs args)
         {
             _resolveArgs = args;
