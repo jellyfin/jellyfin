@@ -455,6 +455,8 @@ namespace MediaBrowser.ServerApplication
             SessionManager.AddParts(GetExports<ISessionRemoteController>());
 
             ImageProcessor.AddParts(GetExports<IImageEnhancer>());
+
+            LiveTvManager.AddParts(GetExports<ILiveTvService>());
         }
 
         /// <summary>
