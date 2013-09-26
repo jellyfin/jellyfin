@@ -15,6 +15,7 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.MediaInfo;
 using MediaBrowser.Controller.Notifications;
@@ -39,6 +40,7 @@ using MediaBrowser.Server.Implementations.EntryPoints;
 using MediaBrowser.Server.Implementations.HttpServer;
 using MediaBrowser.Server.Implementations.IO;
 using MediaBrowser.Server.Implementations.Library;
+using MediaBrowser.Server.Implementations.LiveTv;
 using MediaBrowser.Server.Implementations.Localization;
 using MediaBrowser.Server.Implementations.MediaEncoder;
 using MediaBrowser.Server.Implementations.Persistence;
@@ -154,6 +156,8 @@ namespace MediaBrowser.ServerApplication
         private IIsoManager IsoManager { get; set; }
         private ISessionManager SessionManager { get; set; }
 
+        private ILiveTvManager LiveTvManager { get; set; }
+        
         private ILocalizationManager LocalizationManager { get; set; }
 
         /// <summary>
@@ -284,6 +288,9 @@ namespace MediaBrowser.ServerApplication
 
             DtoService = new DtoService(Logger, LibraryManager, UserManager, UserDataRepository, ItemRepository, ImageProcessor);
             RegisterSingleInstance(DtoService);
+
+            LiveTvManager = new LiveTvManager();
+            RegisterSingleInstance(LiveTvManager);
 
             var displayPreferencesTask = Task.Run(async () => await ConfigureDisplayPreferencesRepositories().ConfigureAwait(false));
             var itemsTask = Task.Run(async () => await ConfigureItemRepositories().ConfigureAwait(false));
