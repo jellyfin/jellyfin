@@ -67,12 +67,49 @@
                     </p>
 
                 </form>
+                <hr/>
+                <h2>Multiple Key Linking</h2>
+                <p>
+                    If your PayPal email address has changed causing you to have more than one MB3 supporter key, use this form to link the old key's
+                    registrations with your new one.
+                </p>
+                <form id="linkKeysForm">
+                    <div style="margin-top: 40px; margin-bottom: 40px">
+                        <label for="txtEmail">Current Email Address</label>
+                        <input type="email" required id="txtNewEmail" name="txtNewEmail" data-inline="true" />
+                        <div class="fieldDescription">
+                            <strong>The current email address to which your new key was sent.</strong>
+                        </div>
+                    </div>
+                    <div style="margin-top: 40px; margin-bottom: 40px">
 
+                        <label for="txtNewKey">New Supporter Key</label>
+                        <input type="password" required="" id="txtNewKey" name="txtNewKey" data-inline="true" />
+                        <div class="fieldDescription">
+                            <strong>The supporter key that was sent to the above email address.</strong>
+                        </div>
+                    </div>
+                    <div style="margin-top: 40px; margin-bottom: 40px">
+
+                        <label for="txtOldKey">Old Supporter Key</label>
+                        <input type="password" required id="txtOldKey" name="txtOldKey" data-inline="true" />
+                        <div class="fieldDescription">
+                            <strong>The supporter key attached to your previous email address.</strong>
+                        </div>
+                    </div>
+
+                    <p>
+                        <button type="submit" id="mbLinkKeysBtn" data-theme="b">Link Keys</button>
+
+                    </p>
+
+                </form>
             </div>
         </div>
         <script type="text/javascript">
             $('#supporterKeyForm').on('submit', SupporterKeyPage.updateSupporterKey);
             $('#lostKeyForm').on('submit', SupporterKeyPage.retrieveSupporterKey);
+            $('#linkKeysForm').on('submit', SupporterKeyPage.linkSupporterKeys);
         </script>
     </div>
 </body>
