@@ -1,11 +1,11 @@
-﻿using System.Collections.Generic;
-using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Providers.TV;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Security;
 using System.Text;

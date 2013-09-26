@@ -52,6 +52,7 @@
     <Compile Include="FanartBaseProvider.cs" />
     <Compile Include="FolderProviderFromXml.cs" />
     <Compile Include="Games\GameProviderFromXml.cs" />
+    <Compile Include="Games\GameSystemProviderFromXml.cs" />
     <Compile Include="ImageFromMediaLocationProvider.cs" />
     <Compile Include="ImagesByNameProvider.cs" />
     <Compile Include="MediaInfo\AudioImageProvider.cs" />
@@ -91,6 +92,7 @@
     <Compile Include="Savers\BoxSetXmlSaver.cs" />
     <Compile Include="Savers\EpisodeXmlSaver.cs" />
     <Compile Include="Savers\FolderXmlSaver.cs" />
+    <Compile Include="Savers\GameSystemXmlSaver.cs" />
     <Compile Include="Savers\GameXmlSaver.cs" />
     <Compile Include="Savers\MovieXmlSaver.cs" />
     <Compile Include="Savers\PersonXmlSaver.cs" />
