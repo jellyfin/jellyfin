@@ -66,6 +66,8 @@
     <Compile Include="IO\IIsoManager.cs" />
     <Compile Include="IO\IIsoMount.cs" />
     <Compile Include="IO\IIsoMounter.cs" />
+    <Compile Include="LiveTv\ChannelInfoDto.cs" />
+    <Compile Include="LiveTv\LiveTvServiceInfo.cs" />
     <Compile Include="Net\WebSocketMessage.cs" />
     <Compile Include="Net\WebSocketMessageType.cs" />
     <Compile Include="Net\WebSocketState.cs" />

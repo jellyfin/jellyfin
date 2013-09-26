@@ -148,6 +148,7 @@
     <Compile Include="Library\Validators\PeoplePostScanTask.cs" />
     <Compile Include="Library\Validators\StudiosPostScanTask.cs" />
     <Compile Include="Library\Validators\StudiosValidator.cs" />
+    <Compile Include="LiveTv\LiveTvManager.cs" />
     <Compile Include="Localization\LocalizationManager.cs" />
     <Compile Include="MediaEncoder\MediaEncoder.cs" />
     <Compile Include="Persistence\SqliteChapterRepository.cs" />
