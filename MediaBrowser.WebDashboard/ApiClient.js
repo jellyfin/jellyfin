@@ -520,7 +520,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 throw new Error("null installationId");
             }
 
-            var url = self.getUrl("Packages/Installing/" + id);
+            var url = self.getUrl("Packages/Installing/" + installationId);
 
             return self.ajax({
                 type: "DELETE",
