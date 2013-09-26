@@ -42,10 +42,7 @@ namespace MediaBrowser.Api.LiveTv
 
         public object Get(GetChannels request)
         {
-            var services = _liveTvManager.Services;
-
-            var result = services.Select(GetServiceInfo)
-                .ToList();
+            var result = GetChannelsAsync(request).Result;
 
             return ToOptimizedResult(result);
         }
