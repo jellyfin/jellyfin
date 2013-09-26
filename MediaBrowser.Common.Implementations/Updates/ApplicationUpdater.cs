@@ -38,8 +38,8 @@ namespace MediaBrowser.Common.Implementations.Updates
             // Our updater needs SS and ionic
             source = Path.Combine(appPaths.ProgramSystemPath, "ServiceStack.Text.dll");
             File.Copy(source, Path.Combine(Path.GetTempPath(), "ServiceStack.Text.dll"), true);
-            source = Path.Combine(appPaths.ProgramSystemPath, "Ionic.Zip.dll");
-            File.Copy(source, Path.Combine(Path.GetTempPath(), "Ionic.Zip.dll"), true);
+            source = Path.Combine(appPaths.ProgramSystemPath, "SharpCompress.dll");
+            File.Copy(source, Path.Combine(Path.GetTempPath(), "SharpCompress.dll"), true);
             Process.Start(tempUpdater, string.Format("product={0} archive=\"{1}\" caller={2} pismo=false version={3}", product, archive, Process.GetCurrentProcess().Id, version));
 
             // That's it.  The installer will do the work once we exit
