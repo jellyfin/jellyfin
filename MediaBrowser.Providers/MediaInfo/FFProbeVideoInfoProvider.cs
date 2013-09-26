@@ -330,8 +330,17 @@ namespace MediaBrowser.Providers.MediaInfo
 
             await Kernel.Instance.FFMpegManager.PopulateChapterImages(video, chapters, false, false, cancellationToken).ConfigureAwait(false);
 
-            // Only save chapters if forcing or there are not already any saved ones
-            if (force || _itemRepo.GetChapter(video.Id, 0) == null)
+
+            BaseProviderInfo providerInfo;
+            var videoFileChanged = false;
+
+            if (video.ProviderData.TryGetValue(Id, out providerInfo))
+            {
+                videoFileChanged = CompareDate(video) > providerInfo.LastRefreshed;
+            }
+
+            // Only save chapters if forcing, if the video changed, or if there are not already any saved ones
+            if (force || videoFileChanged || _itemRepo.GetChapter(video.Id, 0) == null)
             {
                 await _itemRepo.SaveChapters(video.Id, chapters, cancellationToken).ConfigureAwait(false);
             }

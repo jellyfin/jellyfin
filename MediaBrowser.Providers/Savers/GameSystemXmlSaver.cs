@@ -1,9 +1,7 @@
 ﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Providers.Games;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,11 +10,11 @@ using System.Threading;
 
 namespace MediaBrowser.Providers.Savers
 {
-    public class FolderXmlSaver : IMetadataSaver
+    public class GameSystemXmlSaver : IMetadataSaver
     {
         private readonly IServerConfigurationManager _config;
 
-        public FolderXmlSaver(IServerConfigurationManager config)
+        public GameSystemXmlSaver(IServerConfigurationManager config)
         {
             _config = config;
         }
@@ -29,31 +27,13 @@ namespace MediaBrowser.Providers.Savers
         /// <returns><c>true</c> if [is enabled for] [the specified item]; otherwise, <c>false</c>.</returns>
         public bool IsEnabledFor(BaseItem item, ItemUpdateType updateType)
         {
-            if (!(item is Folder))
-            {
-                return false;
-            }
-
             var wasMetadataEdited = (updateType & ItemUpdateType.MetadataEdit) == ItemUpdateType.MetadataEdit;
             var wasMetadataDownloaded = (updateType & ItemUpdateType.MetadataDownload) == ItemUpdateType.MetadataDownload;
-            
-            // If new metadata has been downloaded and save local is on, OR metadata was manually edited, proceed
-            if ((_config.Configuration.SaveLocalMeta && wasMetadataDownloaded) || wasMetadataEdited)
-            {
-                if (!(item is Series) && !(item is BoxSet) && !(item is MusicArtist) && !(item is MusicAlbum) &&
-                    !(item is Season))
-                {
-                    return true;
-                }
-            }
 
-            // If new metadata has been downloaded or metadata was manually edited, proceed
-            if (wasMetadataDownloaded || wasMetadataEdited)
+            // If new metadata has been downloaded and save local is on, OR metadata was manually edited, proceed
+            if ((_config.Configuration.SaveLocalMeta && (wasMetadataEdited || wasMetadataDownloaded)) || wasMetadataEdited)
             {
-                if (item is AggregateFolder || item is UserRootFolder || item is CollectionFolder)
-                {
-                    return true;
-                }
+                return item is GameSystem;
             }
 
             return false;
@@ -79,7 +59,7 @@ namespace MediaBrowser.Providers.Savers
 
             XmlSaverHelpers.Save(builder, xmlFilePath, new List<string> { });
 
-            FolderProviderFromXml.Current.SetLastRefreshed(item, DateTime.UtcNow);
+            GameSystemProviderFromXml.Current.SetLastRefreshed(item, DateTime.UtcNow);
         }
 
         /// <summary>
@@ -89,7 +69,7 @@ namespace MediaBrowser.Providers.Savers
         /// <returns>System.String.</returns>
         public string GetSavePath(BaseItem item)
         {
-            return Path.Combine(item.Path, "folder.xml");
+            return Path.Combine(item.Path, "gamesystem.xml");
         }
     }
 }
