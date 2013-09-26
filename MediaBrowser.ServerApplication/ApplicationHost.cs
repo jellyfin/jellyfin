@@ -53,7 +53,6 @@ using MediaBrowser.ServerApplication.Native;
 using MediaBrowser.WebDashboard.Api;
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -157,7 +156,7 @@ namespace MediaBrowser.ServerApplication
         private ISessionManager SessionManager { get; set; }
 
         private ILiveTvManager LiveTvManager { get; set; }
-        
+
         private ILocalizationManager LocalizationManager { get; set; }
 
         /// <summary>
@@ -329,13 +328,9 @@ namespace MediaBrowser.ServerApplication
 
         private async Task<IUserRepository> GetUserRepository()
         {
-            var dbFile = Path.Combine(ApplicationPaths.DataPath, "users.db");
+            var repo = new SqliteUserRepository(JsonSerializer, LogManager, ApplicationPaths);
 
-            var connection = await ConnectToDb(dbFile).ConfigureAwait(false);
-
-            var repo = new SqliteUserRepository(connection, JsonSerializer, LogManager);
-
-            repo.Initialize();
+            await repo.Initialize().ConfigureAwait(false);
 
             return repo;
         }
@@ -346,13 +341,9 @@ namespace MediaBrowser.ServerApplication
         /// <returns>Task.</returns>
         private async Task ConfigureNotificationsRepository()
         {
-            var dbFile = Path.Combine(ApplicationPaths.DataPath, "notifications.db");
+            var repo = new SqliteNotificationsRepository(LogManager, ApplicationPaths);
 
-            var connection = await ConnectToDb(dbFile).ConfigureAwait(false);
-
-            var repo = new SqliteNotificationsRepository(connection, LogManager);
-
-            repo.Initialize();
+            await repo.Initialize().ConfigureAwait(false);
 
             NotificationsRepository = repo;
 
@@ -386,22 +377,6 @@ namespace MediaBrowser.ServerApplication
         private Task ConfigureUserDataRepositories()
         {
             return UserDataRepository.Initialize();
-        }
-
-        /// <summary>
-        /// Connects to db.
-        /// </summary>
-        /// <param name="dbPath">The db path.</param>
-        /// <returns>Task{IDbConnection}.</returns>
-        /// <exception cref="System.ArgumentNullException">dbPath</exception>
-        private static Task<IDbConnection> ConnectToDb(string dbPath)
-        {
-            if (string.IsNullOrEmpty(dbPath))
-            {
-                throw new ArgumentNullException("dbPath");
-            }
-
-            return Sqlite.OpenDatabase(dbPath);
         }
 
         /// <summary>
@@ -550,7 +525,7 @@ namespace MediaBrowser.ServerApplication
                 .Select(LoadAssembly)
                 .Where(a => a != null)
                 .ToList();
-            
+
             // Gets all plugin assemblies by first reading all bytes of the .dll and calling Assembly.Load against that
             // This will prevent the .dll file from getting locked, and allow us to replace it when needed
 

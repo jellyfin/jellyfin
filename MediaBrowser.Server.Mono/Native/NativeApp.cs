@@ -1,4 +1,5 @@
-﻿
+﻿using MediaBrowser.Server.Mono;
+
 namespace MediaBrowser.ServerApplication.Native
 {
     /// <summary>
@@ -11,7 +12,7 @@ namespace MediaBrowser.ServerApplication.Native
         /// </summary>
         public static void Shutdown()
         {
-            
+			MainClass.Shutdown ();
         }
 
         /// <summary>
@@ -19,7 +20,7 @@ namespace MediaBrowser.ServerApplication.Native
         /// </summary>
         public static void Restart()
         {
-            
+			MainClass.Restart ();
         }
     }
 }

@@ -26,6 +26,12 @@ namespace MediaBrowser.Controller.Notifications
         event EventHandler<NotificationReadEventArgs> NotificationsMarkedRead;
 
         /// <summary>
+        /// Opens the connection to the repository
+        /// </summary>
+        /// <returns>Task.</returns>
+        Task Initialize();
+        
+        /// <summary>
         /// Gets the notifications.
         /// </summary>
         /// <param name="query">The query.</param>

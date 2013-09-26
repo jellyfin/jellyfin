@@ -1074,7 +1074,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             double totalPercentPlayed = 0;
 
             // Loop through each recursive child
-            foreach (var child in folder.GetRecursiveChildren(user, true).Where(i => !i.IsFolder).ToList())
+            foreach (var child in folder.GetRecursiveChildren(user, i => !i.IsFolder))
             {
                 var userdata = _userDataRepository.GetUserData(user.Id, child.GetUserDataKey());
 

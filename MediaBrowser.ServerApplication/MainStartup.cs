@@ -314,6 +314,8 @@ namespace MediaBrowser.ServerApplication
         {
             var exception = (Exception)e.ExceptionObject;
 
+            _logger.ErrorException("UnhandledException", ex);
+
             if (_backgroundService == null)
             {
                 _app.OnUnhandledException(exception);
