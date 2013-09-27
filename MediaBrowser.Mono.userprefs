@@ -1,18 +1,15 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="d:\Development\MediaBrowser\MediaBrowser.ServerApplication\ApplicationHost.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="MediaBrowser.Server.Mono\Program.cs">
     <Files>
-      <File FileName="d:\Development\MediaBrowser\MediaBrowser.ServerApplication\ApplicationHost.cs" Line="506" Column="29" />
-      <File FileName="MediaBrowser.Server.Mono\Program.cs" Line="192" Column="1" />
-      <File FileName="MediaBrowser.Server.Mono\Native\NativeApp.cs" Line="24" Column="1" />
-      <File FileName="d:\Development\MediaBrowser\MediaBrowser.Common.Implementations\Logging\NLogger.cs" Line="72" Column="1" />
-      <File FileName="d:\Development\MediaBrowser\MediaBrowser.Common.Implementations\BaseApplicationHost.cs" Line="530" Column="1" />
+      <File FileName="MediaBrowser.Server.Mono\Program.cs" Line="3" Column="40" />
+      <File FileName="MediaBrowser.Server.Mono\Native\NativeApp.cs" Line="1" Column="1" />
+      <File FileName="d:\Development\MediaBrowser\MediaBrowser.Common.Implementations\Logging\NLogger.cs" Line="1" Column="1" />
+      <File FileName="d:\Development\MediaBrowser\MediaBrowser.Common.Implementations\BaseApplicationHost.cs" Line="1" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore>
-      <Breakpoint file="D:\Development\MediaBrowser\MediaBrowser.Server.Mono\Program.cs" line="177" column="1" />
-      <Breakpoint file="D:\Development\MediaBrowser\MediaBrowser.Server.Mono\Program.cs" line="189" column="1" />
       <Breakpoint file="D:\Development\MediaBrowser\MediaBrowser.Server.Mono\Native\NativeApp.cs" line="23" column="1" />
       <Breakpoint file="D:\Development\MediaBrowser\MediaBrowser.Server.Mono\Native\NativeApp.cs" line="15" column="1" />
     </BreakpointStore>

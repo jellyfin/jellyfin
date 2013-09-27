@@ -4,6 +4,7 @@ using MediaBrowser.Common.Implementations.Updates;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Implementations;
 using MediaBrowser.ServerApplication;
+using MediaBrowser.ServerApplication.Native;
 using Microsoft.Win32;
 using System;
 using System.Diagnostics;
@@ -11,6 +12,7 @@ using System.IO;
 using System.Threading;
 using System.Windows;
 using Gtk;
+using Gdk;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Mono
@@ -24,6 +26,9 @@ namespace MediaBrowser.Server.Mono
 		private static ILogger _logger;
 
 		private static MainWindow _mainWindow;
+
+		// The tray Icon
+		private static StatusIcon trayIcon;
 
 		public static void Main (string[] args)
 		{
@@ -46,9 +51,10 @@ namespace MediaBrowser.Server.Mono
 
 			//_singleInstanceMutex = new Mutex(true, @"Local\" + runningPath, out createdNew);
 			createdNew = true;
+
 			if (!createdNew)
 			{
-				//_singleInstanceMutex = null;
+				_singleInstanceMutex = null;
 				logger.Info("Shutting down because another instance of Media Browser Server is already running.");
 				return;
 			}
@@ -67,7 +73,7 @@ namespace MediaBrowser.Server.Mono
 			{
 				logger.Info("Shutting down");
 
-				//ReleaseMutex(logger);
+				ReleaseMutex(logger);
 
 				_appHost.Dispose();
 			}
@@ -95,9 +101,68 @@ namespace MediaBrowser.Server.Mono
 			// TODO: Hide splash here
 			_mainWindow = new MainWindow ();
 
-			_mainWindow.Show ();
+			// Creation of the Icon
+			// Creation of the Icon
+			trayIcon = new StatusIcon(new Pixbuf ("tray.png"));
+			trayIcon.Visible = true;
+
+			// When the TrayIcon has been clicked.
+			trayIcon.Activate += delegate { };
+			// Show a pop up menu when the icon has been right clicked.
+			trayIcon.PopupMenu += OnTrayIconPopup;
+
+			// A Tooltip for the Icon
+			trayIcon.Tooltip = "Media Browser Server";
+
+			_mainWindow.ShowAll ();
+			_mainWindow.Visible = false;
 
 			Application.Run ();
+		}
+
+		// Create the popup menu, on right click.
+		static void OnTrayIconPopup (object o, EventArgs args) {
+
+			Menu popupMenu = new Menu();
+
+			var menuItemBrowse = new ImageMenuItem ("Browse Library");
+			menuItemBrowse.Image = new Gtk.Image(Stock.MediaPlay, IconSize.Menu);
+			popupMenu.Add(menuItemBrowse);
+			menuItemBrowse.Activated += delegate { 
+				BrowserLauncher.OpenWebClient(_appHost.UserManager, _appHost.ServerConfigurationManager, _appHost, _logger);
+			};
+
+			var menuItemConfigure = new ImageMenuItem ("Configure Media Browser");
+			menuItemConfigure.Image = new Gtk.Image(Stock.Edit, IconSize.Menu);
+			popupMenu.Add(menuItemConfigure);
+			menuItemConfigure.Activated += delegate { 
+				BrowserLauncher.OpenDashboard(_appHost.UserManager, _appHost.ServerConfigurationManager, _appHost, _logger);
+			};
+
+			var menuItemApi = new ImageMenuItem ("View Api Docs");
+			menuItemApi.Image = new Gtk.Image(Stock.Network, IconSize.Menu);
+			popupMenu.Add(menuItemApi);
+			menuItemApi.Activated += delegate { 
+				BrowserLauncher.OpenSwagger(_appHost.ServerConfigurationManager, _appHost, _logger);
+			};
+
+			var menuItemCommunity = new ImageMenuItem ("Visit Community");
+			menuItemCommunity.Image = new Gtk.Image(Stock.Help, IconSize.Menu);
+			popupMenu.Add(menuItemCommunity);
+			menuItemCommunity.Activated += delegate { BrowserLauncher.OpenCommunity(_logger); };
+
+			var menuItemGithub = new ImageMenuItem ("Visit Github");
+			menuItemGithub.Image = new Gtk.Image(Stock.Network, IconSize.Menu);
+			popupMenu.Add(menuItemGithub);
+			menuItemGithub.Activated += delegate { BrowserLauncher.OpenGithub(_logger); };
+
+			var menuItemQuit = new ImageMenuItem ("Exit");
+			menuItemQuit.Image = new Gtk.Image(Stock.Quit, IconSize.Menu);
+			popupMenu.Add(menuItemQuit);
+			menuItemQuit.Activated += delegate { Shutdown(); };
+
+			popupMenu.ShowAll();
+			popupMenu.Popup();
 		}
 
 		/// <summary>
@@ -174,20 +239,40 @@ namespace MediaBrowser.Server.Mono
 
 		public static void Shutdown()
 		{
-			_mainWindow.Hide ();
-			_mainWindow.Dispose ();
+			if (trayIcon != null) {
+				trayIcon.Visible = false;
+				trayIcon.Dispose ();
+				trayIcon = null;
+			}
+
+			if (_mainWindow != null) {
+				_mainWindow.HideAll ();
+				_mainWindow.Dispose ();
+				_mainWindow = null;
+			}
+
 			Application.Quit ();
 		}
 
 		public static void Restart()
 		{
 			// Second instance will start first, so release the mutex and dispose the http server ahead of time
-			//ReleaseMutex (_logger);
+			ReleaseMutex (_logger);
 
 			_appHost.Dispose();
 
-			_mainWindow.Hide ();
-			_mainWindow.Dispose ();
+			if (trayIcon != null) {
+				trayIcon.Visible = false;
+				trayIcon.Dispose ();
+				trayIcon = null;
+			}
+
+			if (_mainWindow != null) {
+				_mainWindow.HideAll ();
+				_mainWindow.Dispose ();
+				_mainWindow = null;
+			}
+
 			Application.Quit ();
 		}
 	}
