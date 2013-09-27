@@ -56,7 +56,7 @@
         apiClient.getItems(userId, {
 
             SortBy: "random",
-            IncludeItemTypes: "Movie",
+            IncludeItemTypes: "Movie,Trailer",
             Limit: 6,
             ImageTypes: "Primary",
             Recursive: true
