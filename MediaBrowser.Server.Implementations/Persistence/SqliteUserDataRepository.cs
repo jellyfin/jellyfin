@@ -16,13 +16,13 @@ namespace MediaBrowser.Server.Implementations.Persistence
     public class SqliteUserDataRepository : IUserDataRepository
     {
         private readonly ILogger _logger;
-        
+
         private readonly ConcurrentDictionary<string, UserItemData> _userData = new ConcurrentDictionary<string, UserItemData>();
 
         private readonly SemaphoreSlim _writeLock = new SemaphoreSlim(1, 1);
 
         private SQLiteConnection _connection;
-        
+
         /// <summary>
         /// Gets the name of the repository
         /// </summary>
@@ -75,20 +75,28 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// <returns>Task.</returns>
         public async Task Initialize()
         {
-            var dbFile = Path.Combine(_appPaths.DataPath, "userdata.db");
+            var dbFile = Path.Combine(_appPaths.DataPath, "userdata_v2.db");
 
             _connection = await SqliteExtensions.ConnectToDb(dbFile).ConfigureAwait(false);
 
             string[] queries = {
 
-                                "create table if not exists userdata (key nvarchar, userId GUID, data BLOB)",
+                                "create table if not exists userdata (key nvarchar, userId GUID, rating float null, played bit, playCount int, isFavorite bit, playbackPositionTicks bigint, lastPlayedDate datetime null)",
+
                                 "create unique index if not exists userdataindex on userdata (key, userId)",
-                                "create table if not exists schema_version (table_name primary key, version)",
+
                                 //pragmas
                                 "pragma temp_store = memory"
                                };
 
             _connection.RunQueries(queries, _logger);
+
+            var oldFile = Path.Combine(_appPaths.DataPath, "userdata.db");
+
+            if (File.Exists(oldFile))
+            {
+                await UserDataMigration.Migrate(oldFile, _connection, _logger, _jsonSerializer).ConfigureAwait(false);
+            }
         }
 
         /// <summary>
@@ -167,10 +175,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var serialized = _jsonSerializer.SerializeToBytes(userData);
-
-            cancellationToken.ThrowIfCancellationRequested();
-
             await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             SQLiteTransaction transaction = null;
@@ -181,11 +185,18 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 using (var cmd = _connection.CreateCommand())
                 {
-                    cmd.CommandText = "replace into userdata (key, userId, data) values (@1, @2, @3)";
-                    cmd.AddParam("@1", key);
-                    cmd.AddParam("@2", userId);
-                    cmd.AddParam("@3", serialized);
+                    cmd.CommandText = "replace into userdata (key, userId, rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate) values (@key, @userId, @rating,@played,@playCount,@isFavorite,@playbackPositionTicks,@lastPlayedDate)";
 
+                    cmd.AddParam("@key", key);
+                    cmd.AddParam("@userId", userId);
+
+                    cmd.AddParam("@rating", userData.Rating);
+                    cmd.AddParam("@played", userData.Played);
+                    cmd.AddParam("@playCount", userData.PlayCount);
+                    cmd.AddParam("@isFavorite", userData.IsFavorite);
+                    cmd.AddParam("@playbackPositionTicks", userData.PlaybackPositionTicks);
+                    cmd.AddParam("@lastPlayedDate", userData.LastPlayedDate);
+                    
                     cmd.Transaction = transaction;
 
                     await cmd.ExecuteNonQueryAsync(cancellationToken);
@@ -259,7 +270,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         {
             using (var cmd = _connection.CreateCommand())
             {
-                cmd.CommandText = "select data from userdata where key = @key and userId=@userId";
+                cmd.CommandText = "select rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate from userdata where key = @key and userId=@userId";
 
                 var idParam = cmd.Parameters.Add("@key", DbType.String);
                 idParam.Value = key;
@@ -267,18 +278,34 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 var userIdParam = cmd.Parameters.Add("@userId", DbType.Guid);
                 userIdParam.Value = userId;
 
+                var userData = new UserItemData
+                {
+                    UserId = userId,
+                    Key = key
+                };
+
                 using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult | CommandBehavior.SingleRow))
                 {
                     if (reader.Read())
                     {
-                        using (var stream = reader.GetMemoryStream(0))
+                        if (!reader.IsDBNull(0))
                         {
-                            return _jsonSerializer.DeserializeFromStream<UserItemData>(stream);
+                            userData.Rating = reader.GetDouble(0);
+                        }
+
+                        userData.Played = reader.GetBoolean(1);
+                        userData.PlayCount = reader.GetInt32(2);
+                        userData.IsFavorite = reader.GetBoolean(3);
+                        userData.PlaybackPositionTicks = reader.GetInt64(4);
+
+                        if (!reader.IsDBNull(5))
+                        {
+                            userData.LastPlayedDate = reader.GetDateTime(5);
                         }
                     }
                 }
 
-                return new UserItemData();
+                return userData;
             }
         }
 

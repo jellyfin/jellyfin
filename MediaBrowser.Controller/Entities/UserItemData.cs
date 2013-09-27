@@ -15,6 +15,12 @@ namespace MediaBrowser.Controller.Entities
         public Guid UserId { get; set; }
 
         /// <summary>
+        /// Gets or sets the key.
+        /// </summary>
+        /// <value>The key.</value>
+        public string Key { get; set; }
+
+        /// <summary>
         /// The _rating
         /// </summary>
         private double? _rating;
