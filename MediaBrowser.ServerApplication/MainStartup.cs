@@ -5,30 +5,27 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Implementations;
 using Microsoft.Win32;
 using System;
+using System.ComponentModel;
 using System.Configuration.Install;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.ServiceProcess;
-using System.Threading;
 using System.Windows;
 
 namespace MediaBrowser.ServerApplication
 {
     public class MainStartup
     {
-        /// <summary>
-        /// The single instance mutex
-        /// </summary>
-        private static Mutex _singleInstanceMutex;
-
         private static ApplicationHost _appHost;
 
         private static App _app;
 
-        private static BackgroundService _backgroundService;
-
         private static ILogger _logger;
+
+        private static bool _isRestarting = false;
+
+        private static bool _isRunningAsService = false;
 
         /// <summary>
         /// Defines the entry point of the application.
@@ -37,9 +34,9 @@ namespace MediaBrowser.ServerApplication
         public static void Main()
         {
             var startFlag = Environment.GetCommandLineArgs().ElementAtOrDefault(1);
-            var runService = string.Equals(startFlag, "-service", StringComparison.OrdinalIgnoreCase);
+            _isRunningAsService = string.Equals(startFlag, "-service", StringComparison.OrdinalIgnoreCase);
 
-            var appPaths = CreateApplicationPaths(runService);
+            var appPaths = CreateApplicationPaths(_isRunningAsService);
 
             var logManager = new NlogManager(appPaths.LogDirectoryPath, "server");
             logManager.ReloadLogger(LogSeverity.Info);
@@ -82,15 +79,12 @@ namespace MediaBrowser.ServerApplication
 
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
-            bool createdNew;
+            RunServiceInstallationIfNeeded();
 
-            var runningPath = Process.GetCurrentProcess().MainModule.FileName.Replace(Path.DirectorySeparatorChar.ToString(), string.Empty);
+            var currentProcess = Process.GetCurrentProcess();
 
-            _singleInstanceMutex = new Mutex(true, @"Local\" + runningPath, out createdNew);
-
-            if (!createdNew)
+            if (IsAlreadyRunning(currentProcess))
             {
-                _singleInstanceMutex = null;
                 logger.Info("Shutting down because another instance of Media Browser Server is already running.");
                 return;
             }
@@ -103,16 +97,47 @@ namespace MediaBrowser.ServerApplication
 
             try
             {
-                RunApplication(appPaths, logManager, runService);
+                RunApplication(appPaths, logManager, _isRunningAsService);
             }
             finally
             {
-                logger.Info("Shutting down");
-
-                ReleaseMutex(logger);
-
-                _appHost.Dispose();
+                OnServiceShutdown();
             }
+        }
+
+        /// <summary>
+        /// Determines whether [is already running] [the specified current process].
+        /// </summary>
+        /// <param name="currentProcess">The current process.</param>
+        /// <returns><c>true</c> if [is already running] [the specified current process]; otherwise, <c>false</c>.</returns>
+        private static bool IsAlreadyRunning(Process currentProcess)
+        {
+            var runningPath = Process.GetCurrentProcess().MainModule.FileName;
+
+            var duplicate = Process.GetProcesses().FirstOrDefault(i =>
+                {
+                    try
+                    {
+                        return string.Equals(runningPath, i.MainModule.FileName) && currentProcess.Id != i.Id;
+                    }
+                    catch (Win32Exception)
+                    {
+                        return false;
+                    }
+                });
+
+            if (duplicate != null)
+            {
+                _logger.Info("Found a duplicate process. Giving it time to exit.");
+                
+                if (!duplicate.WaitForExit(5000))
+                {
+                    _logger.Info("The duplicate process did not exit.");
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -159,8 +184,6 @@ namespace MediaBrowser.ServerApplication
         {
             SystemEvents.SessionEnding += SystemEvents_SessionEnding;
 
-            var commandLineArgs = Environment.GetCommandLineArgs();
-
             _appHost = new ApplicationHost(appPaths, logManager);
 
             _app = new App(_appHost, _appHost.LogManager.GetLogger("App"), runService);
@@ -178,20 +201,11 @@ namespace MediaBrowser.ServerApplication
         /// </summary>
         private static void StartService(ILogManager logManager)
         {
-            var ctl = ServiceController.GetServices().FirstOrDefault(s => s.ServiceName == BackgroundService.Name);
-
-            if (ctl == null)
-            {
-                RunServiceInstallation();
-            }
-
             var service = new BackgroundService(logManager.GetLogger("Service"));
 
             service.Disposed += service_Disposed;
 
             ServiceBase.Run(service);
-
-            _backgroundService = service;
         }
 
         /// <summary>
@@ -199,9 +213,27 @@ namespace MediaBrowser.ServerApplication
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        static async void service_Disposed(object sender, EventArgs e)
+        static void service_Disposed(object sender, EventArgs e)
         {
-            await _appHost.Shutdown();
+            OnServiceShutdown();
+        }
+
+        private static void OnServiceShutdown()
+        {
+            _logger.Info("Shutting down");
+
+            _appHost.Dispose();
+
+            if (_isRestarting)
+            {
+                using (var process = Process.Start("cmd", "/c net start " + BackgroundService.Name))
+                {
+                }
+
+                _logger.Info("New service process started");
+            }
+
+            _app.Dispatcher.Invoke(_app.Shutdown);
         }
 
         /// <summary>
@@ -239,6 +271,16 @@ namespace MediaBrowser.ServerApplication
             catch (Exception ex)
             {
                 logger.ErrorException("Uninstall failed", ex);
+            }
+        }
+
+        private static void RunServiceInstallationIfNeeded()
+        {
+            var ctl = ServiceController.GetServices().FirstOrDefault(s => s.ServiceName == BackgroundService.Name);
+
+            if (ctl == null)
+            {
+                RunServiceInstallation();
             }
         }
 
@@ -299,7 +341,7 @@ namespace MediaBrowser.ServerApplication
         /// <param name="e">The <see cref="SessionEndingEventArgs"/> instance containing the event data.</param>
         static void SystemEvents_SessionEnding(object sender, SessionEndingEventArgs e)
         {
-            if (e.Reason == SessionEndReasons.SystemShutdown || _backgroundService == null)
+            if (e.Reason == SessionEndReasons.SystemShutdown || !_isRunningAsService)
             {
                 Shutdown();
             }
@@ -316,7 +358,7 @@ namespace MediaBrowser.ServerApplication
 
             _logger.ErrorException("UnhandledException", exception);
 
-            if (_backgroundService == null)
+            if (!_isRunningAsService)
             {
                 _app.OnUnhandledException(exception);
             }
@@ -325,24 +367,6 @@ namespace MediaBrowser.ServerApplication
             {
                 Environment.Exit(System.Runtime.InteropServices.Marshal.GetHRForException(exception));
             }
-        }
-
-        /// <summary>
-        /// Releases the mutex.
-        /// </summary>
-        internal static void ReleaseMutex(ILogger logger)
-        {
-            if (_singleInstanceMutex == null)
-            {
-                return;
-            }
-
-            logger.Debug("Releasing mutex");
-
-            _singleInstanceMutex.ReleaseMutex();
-            _singleInstanceMutex.Close();
-            _singleInstanceMutex.Dispose();
-            _singleInstanceMutex = null;
         }
 
         /// <summary>
@@ -378,40 +402,67 @@ namespace MediaBrowser.ServerApplication
 
         public static void Shutdown()
         {
-            if (_backgroundService != null)
+            if (_isRunningAsService)
             {
-                _backgroundService.Stop();
+                ShutdownWindowsService();
             }
             else
             {
-                _app.Dispatcher.Invoke(_app.Shutdown);
+                ShutdownWindowsApplication();
             }
         }
 
         public static void Restart()
         {
-            // Second instance will start first, so release the mutex and dispose the http server ahead of time
-            _app.Dispatcher.Invoke(() => ReleaseMutex(_logger));
-
+            _logger.Info("Disposing app host");
             _appHost.Dispose();
 
+            _logger.Info("Starting new instance of server");
             RestartInternal();
 
-            _app.Dispatcher.Invoke(_app.Shutdown);
+            _logger.Info("Shutting down existing instance of server.");
+            Shutdown();
         }
 
         private static void RestartInternal()
         {
-            if (_backgroundService == null)
+            if (!_isRunningAsService)
             {
-                System.Windows.Forms.Application.Restart();
+                _logger.Info("Starting server application");
+                RestartWindowsApplication();
             }
             else
             {
-                //var controller = new ServiceController()
-                //{
-                //    ServiceName = BackgroundService.Name
-                //};
+                _logger.Info("Starting windows service");
+                RestartWindowsService();
+            }
+        }
+
+        private static void RestartWindowsApplication()
+        {
+            System.Windows.Forms.Application.Restart();
+        }
+
+        private static void RestartWindowsService()
+        {
+            _isRestarting = true;
+        }
+
+        private static void ShutdownWindowsApplication()
+        {
+            _app.Dispatcher.Invoke(_app.Shutdown);
+        }
+
+        private static void ShutdownWindowsService()
+        {
+            _logger.Info("Stopping background service");
+            var service = new ServiceController(BackgroundService.Name);
+
+            service.Refresh();
+
+            if (service.Status == ServiceControllerStatus.Running)
+            {
+                service.Stop();
             }
         }
     }

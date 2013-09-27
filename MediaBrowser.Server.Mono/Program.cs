@@ -81,7 +81,7 @@ namespace MediaBrowser.Server.Mono
 
 		private static ServerApplicationPaths CreateApplicationPaths()
 		{
-			return new ServerApplicationPaths("D:\\MonoTest");
+			return new ServerApplicationPaths();
 		}
 
 		private static void RunApplication(ServerApplicationPaths appPaths, ILogManager logManager)

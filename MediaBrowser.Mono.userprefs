@@ -2,10 +2,9 @@
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
   <MonoDevelop.Ide.Workbench ActiveDocument="MediaBrowser.Server.Mono\Program.cs">
     <Files>
-      <File FileName="MediaBrowser.Server.Mono\Program.cs" Line="3" Column="40" />
-      <File FileName="MediaBrowser.Server.Mono\Native\NativeApp.cs" Line="1" Column="1" />
-      <File FileName="d:\Development\MediaBrowser\MediaBrowser.Common.Implementations\Logging\NLogger.cs" Line="1" Column="1" />
-      <File FileName="d:\Development\MediaBrowser\MediaBrowser.Common.Implementations\BaseApplicationHost.cs" Line="1" Column="1" />
+      <File FileName="MediaBrowser.Server.Mono\app.config" Line="10" Column="44" />
+      <File FileName="MediaBrowser.ServerApplication\ApplicationHost.cs" Line="1" Column="1" />
+      <File FileName="MediaBrowser.Server.Mono\Program.cs" Line="63" Column="5" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
