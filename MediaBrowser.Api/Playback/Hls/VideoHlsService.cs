@@ -136,7 +136,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             if (bitrate.HasValue)
             {
-                args += string.Format(" -b:v {0} -maxrate {0} -minrate {0} -bufsize ({0}/10)", bitrate.Value.ToString(UsCulture));
+                args += string.Format(" -b:v {0} -maxrate ({0}*.85) -bufsize {0}", bitrate.Value.ToString(UsCulture));
             }
             
             // Add resolution params, if specified
