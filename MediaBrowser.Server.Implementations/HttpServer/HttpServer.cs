@@ -357,10 +357,10 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             {
                 try
                 {
-                    ProcessRequest(context);
-
                     var url = context.Request.Url.ToString();
                     var endPoint = context.Request.RemoteEndPoint;
+
+                    ProcessRequest(context);
 
                     var duration = DateTime.Now - date;
 
