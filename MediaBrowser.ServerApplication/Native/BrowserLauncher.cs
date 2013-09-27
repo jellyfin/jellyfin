@@ -1,13 +1,18 @@
 ﻿using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace MediaBrowser.ServerApplication.Native
 {
+    /// <summary>
+    /// Class BrowserLauncher
+    /// </summary>
     public static class BrowserLauncher
     {
         /// <summary>
@@ -17,6 +22,7 @@ namespace MediaBrowser.ServerApplication.Native
         /// <param name="loggedInUser">The logged in user.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="appHost">The app host.</param>
+        /// <param name="logger">The logger.</param>
         public static void OpenDashboardPage(string page, User loggedInUser, IServerConfigurationManager configurationManager, IServerApplicationHost appHost, ILogger logger)
         {
             var url = "http://localhost:" + configurationManager.Configuration.HttpServerPortNumber + "/" +
@@ -26,10 +32,79 @@ namespace MediaBrowser.ServerApplication.Native
         }
 
         /// <summary>
+        /// Opens the github.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        public static void OpenGithub(ILogger logger)
+        {
+            OpenUrl("https://github.com/MediaBrowser/MediaBrowser", logger);
+        }
+
+        /// <summary>
+        /// Opens the community.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        public static void OpenCommunity(ILogger logger)
+        {
+            OpenUrl("http://community.mediabrowser.tv/", logger);
+        }
+
+        /// <summary>
+        /// Opens the web client.
+        /// </summary>
+        /// <param name="userManager">The user manager.</param>
+        /// <param name="configurationManager">The configuration manager.</param>
+        /// <param name="appHost">The app host.</param>
+        /// <param name="logger">The logger.</param>
+        public static void OpenWebClient(IUserManager userManager, IServerConfigurationManager configurationManager, IServerApplicationHost appHost, ILogger logger)
+        {
+            var user = userManager.Users.FirstOrDefault(u => u.Configuration.IsAdministrator);
+            OpenDashboardPage("index.html", user, configurationManager, appHost, logger);
+        }
+
+        /// <summary>
+        /// Opens the dashboard.
+        /// </summary>
+        /// <param name="userManager">The user manager.</param>
+        /// <param name="configurationManager">The configuration manager.</param>
+        /// <param name="appHost">The app host.</param>
+        /// <param name="logger">The logger.</param>
+        public static void OpenDashboard(IUserManager userManager, IServerConfigurationManager configurationManager, IServerApplicationHost appHost, ILogger logger)
+        {
+            var user = userManager.Users.FirstOrDefault(u => u.Configuration.IsAdministrator);
+            OpenDashboardPage("dashboard.html", user, configurationManager, appHost, logger);
+        }
+
+        /// <summary>
+        /// Opens the swagger.
+        /// </summary>
+        /// <param name="configurationManager">The configuration manager.</param>
+        /// <param name="appHost">The app host.</param>
+        /// <param name="logger">The logger.</param>
+        public static void OpenSwagger(IServerConfigurationManager configurationManager, IServerApplicationHost appHost, ILogger logger)
+        {
+            OpenUrl("http://localhost:" + configurationManager.Configuration.HttpServerPortNumber + "/" +
+                      appHost.WebApplicationName + "/swagger-ui/index.html", logger);
+        }
+
+        /// <summary>
+        /// Opens the standard API documentation.
+        /// </summary>
+        /// <param name="configurationManager">The configuration manager.</param>
+        /// <param name="appHost">The app host.</param>
+        /// <param name="logger">The logger.</param>
+        public static void OpenStandardApiDocumentation(IServerConfigurationManager configurationManager, IServerApplicationHost appHost, ILogger logger)
+        {
+            OpenUrl("http://localhost:" + configurationManager.Configuration.HttpServerPortNumber + "/" +
+                      appHost.WebApplicationName + "/metadata", logger);
+        }
+
+        /// <summary>
         /// Opens the URL.
         /// </summary>
         /// <param name="url">The URL.</param>
-        public static void OpenUrl(string url, ILogger logger)
+        /// <param name="logger">The logger.</param>
+        private static void OpenUrl(string url, ILogger logger)
         {
             var process = new Process
                 {
