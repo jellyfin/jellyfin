@@ -25,6 +25,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <value>The web socket.</value>
         private System.Net.WebSockets.WebSocket WebSocket { get; set; }
 
+        private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+
         /// <summary>
         /// Initializes a new instance of the <see cref="NativeWebSocket" /> class.
         /// </summary>
@@ -79,7 +81,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
                 try
                 {
-                    bytes = await ReceiveBytesAsync(CancellationToken.None).ConfigureAwait(false);
+                    bytes = await ReceiveBytesAsync(_cancellationTokenSource.Token).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
                 {
@@ -144,7 +146,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 _logger.Warn("Unrecognized WebSocketMessageType: {0}", type.ToString());
             }
 
-            return WebSocket.SendAsync(new ArraySegment<byte>(bytes), nativeType, true, cancellationToken);
+            var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancellationTokenSource.Token);
+
+            return WebSocket.SendAsync(new ArraySegment<byte>(bytes), nativeType, true, linkedTokenSource.Token);
         }
 
         /// <summary>
@@ -163,6 +167,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         {
             if (dispose)
             {
+                _cancellationTokenSource.Cancel();
+                _cancellationTokenSource.Dispose();
+
                 WebSocket.Dispose();
             }
         }
