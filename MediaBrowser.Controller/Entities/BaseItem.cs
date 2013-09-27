@@ -22,7 +22,7 @@ namespace MediaBrowser.Controller.Entities
     /// <summary>
     /// Class BaseItem
     /// </summary>
-    public abstract class BaseItem : IHasProviderIds
+    public abstract class BaseItem : IHasProviderIds, ILibraryItem
     {
         /// <summary>
         /// MusicAlbums in the library that are the soundtrack for this item
