@@ -43,7 +43,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
             var userLibraries = _userManager.Users
-                .Select(i => new Tuple<Guid, List<BaseItem>>(i.Id, i.RootFolder.GetRecursiveChildren(i).Where(m => !(m is IHasMusicGenres) && !(m is Game)).ToList()))
+                .Select(i => new Tuple<Guid, IList<BaseItem>>(i.Id, i.RootFolder.GetRecursiveChildren(i, m => !(m is IHasMusicGenres) && !(m is Game))))
                 .ToList();
 
             var masterDictionary = new Dictionary<string, Dictionary<Guid, Dictionary<CountType, int>>>(StringComparer.OrdinalIgnoreCase);

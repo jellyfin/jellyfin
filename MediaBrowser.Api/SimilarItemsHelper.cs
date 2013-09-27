@@ -104,8 +104,8 @@ namespace MediaBrowser.Api
             var fields = request.GetItemFields().ToList();
 
             var inputItems = user == null
-                                 ? libraryManager.RootFolder.RecursiveChildren
-                                 : user.RootFolder.GetRecursiveChildren(user);
+                                 ? libraryManager.RootFolder.GetRecursiveChildren(i => i.Id != item.Id)
+                                 : user.RootFolder.GetRecursiveChildren(user, i => i.Id != item.Id);
 
             var items = GetSimilaritems(item, inputItems, includeInSearch, getSimilarityScore)
                 .ToList();
@@ -139,11 +139,7 @@ namespace MediaBrowser.Api
         {
             inputItems = inputItems.Where(includeInSearch);
 
-            // Avoid implicitly captured closure
-            var currentItem = item;
-
-            return inputItems.Where(i => i.Id != currentItem.Id)
-                .Select(i => new Tuple<BaseItem, int>(i, getSimilarityScore(item, i)))
+            return inputItems.Select(i => new Tuple<BaseItem, int>(i, getSimilarityScore(item, i)))
                 .Where(i => i.Item2 > 2)
                 .OrderByDescending(i => i.Item2)
                 .Select(i => i.Item1);

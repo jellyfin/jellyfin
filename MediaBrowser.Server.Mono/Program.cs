@@ -23,6 +23,8 @@ namespace MediaBrowser.Server.Mono
 
 		private static ILogger _logger;
 
+		private static MainWindow _mainWindow;
+
 		public static void Main (string[] args)
 		{
 			Application.Init ();
@@ -42,11 +44,11 @@ namespace MediaBrowser.Server.Mono
 
 			var runningPath = Process.GetCurrentProcess().MainModule.FileName.Replace(Path.DirectorySeparatorChar.ToString(), string.Empty);
 
-			_singleInstanceMutex = new Mutex(true, @"Local\" + runningPath, out createdNew);
-
+			//_singleInstanceMutex = new Mutex(true, @"Local\" + runningPath, out createdNew);
+			createdNew = true;
 			if (!createdNew)
 			{
-				_singleInstanceMutex = null;
+				//_singleInstanceMutex = null;
 				logger.Info("Shutting down because another instance of Media Browser Server is already running.");
 				return;
 			}
@@ -65,7 +67,7 @@ namespace MediaBrowser.Server.Mono
 			{
 				logger.Info("Shutting down");
 
-				ReleaseMutex(logger);
+				//ReleaseMutex(logger);
 
 				_appHost.Dispose();
 			}
@@ -91,9 +93,9 @@ namespace MediaBrowser.Server.Mono
 			Task.WaitAll (task);
 
 			// TODO: Hide splash here
-			MainWindow win = new MainWindow ();
+			_mainWindow = new MainWindow ();
 
-			win.Show ();
+			_mainWindow.Show ();
 
 			Application.Run ();
 		}
@@ -172,16 +174,20 @@ namespace MediaBrowser.Server.Mono
 
 		public static void Shutdown()
 		{
+			_mainWindow.Hide ();
+			_mainWindow.Dispose ();
 			Application.Quit ();
 		}
 
 		public static void Restart()
 		{
 			// Second instance will start first, so release the mutex and dispose the http server ahead of time
-			ReleaseMutex (_logger);
+			//ReleaseMutex (_logger);
 
 			_appHost.Dispose();
 
+			_mainWindow.Hide ();
+			_mainWindow.Dispose ();
 			Application.Quit ();
 		}
 	}

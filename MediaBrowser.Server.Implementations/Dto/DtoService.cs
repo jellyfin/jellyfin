@@ -354,8 +354,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             if (!string.IsNullOrEmpty(item.Album))
             {
                 var parentAlbum = _libraryManager.RootFolder
-                    .RecursiveChildren
-                    .OfType<MusicAlbum>()
+                    .GetRecursiveChildren(i => i is MusicAlbum)
                     .FirstOrDefault(i => string.Equals(i.Name, item.Album, StringComparison.OrdinalIgnoreCase));
 
                 if (parentAlbum != null)

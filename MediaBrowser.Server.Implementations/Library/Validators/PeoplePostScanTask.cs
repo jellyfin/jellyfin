@@ -49,7 +49,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         private void RunInternal(IProgress<double> progress, CancellationToken cancellationToken)
         {
             var userLibraries = _userManager.Users
-                .Select(i => new Tuple<Guid, List<BaseItem>>(i.Id, i.RootFolder.GetRecursiveChildren(i).ToList()))
+                .Select(i => new Tuple<Guid, IList<BaseItem>>(i.Id, i.RootFolder.GetRecursiveChildren(i, null)))
                 .ToList();
 
             var masterDictionary = new Dictionary<string, Dictionary<Guid, Dictionary<CountType, int>>>(StringComparer.OrdinalIgnoreCase);

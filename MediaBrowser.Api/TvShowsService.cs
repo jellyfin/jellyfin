@@ -157,10 +157,9 @@ namespace MediaBrowser.Api
             var user = _userManager.GetUserById(request.UserId);
 
             var itemsList = user.RootFolder
-                .GetRecursiveChildren(user)
-                .OfType<Series>()
+                .GetRecursiveChildren(user, i => i is Series)
                 .AsParallel()
-                .Select(i => GetNextUp(i, user))
+                .Select(i => GetNextUp((Series)i, user))
                 .ToList();
 
             itemsList = itemsList

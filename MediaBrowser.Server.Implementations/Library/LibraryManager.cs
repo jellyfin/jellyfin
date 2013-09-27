@@ -337,7 +337,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>ConcurrentDictionary{GuidBaseItem}.</returns>
         private ConcurrentDictionary<Guid, BaseItem> CreateLibraryItemsCache()
         {
-            var items = RootFolder.RecursiveChildren.ToList();
+            var items = RootFolder.GetRecursiveChildren();
 
             items.Add(RootFolder);
 
@@ -347,7 +347,10 @@ namespace MediaBrowser.Server.Implementations.Library
                 .Distinct()
                 .ToList();
 
-            items.AddRange(userRootFolders);
+            foreach (var folder in userRootFolders)
+            {
+                items.Add(folder);
+            }
 
             // Get all user collection folders
             // Skip BasePluginFolders because we already got them from RootFolder.RecursiveChildren
@@ -355,7 +358,10 @@ namespace MediaBrowser.Server.Implementations.Library
                             .Where(i => !(i is BasePluginFolder))
                             .ToList();
 
-            items.AddRange(userFolders);
+            foreach (var folder in userFolders)
+            {
+                items.Add(folder);
+            }
 
             var dictionary = new ConcurrentDictionary<Guid, BaseItem>();
 
@@ -770,7 +776,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>Task.</returns>
         public async Task ValidatePeople(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            var people = RootFolder.RecursiveChildren
+            var people = RootFolder.GetRecursiveChildren()
                 .SelectMany(c => c.People)
                 .DistinctBy(p => p.Name, StringComparer.OrdinalIgnoreCase)
                 .ToList();

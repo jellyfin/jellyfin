@@ -451,9 +451,7 @@ namespace MediaBrowser.Api.UserLibrary
             if (series != null)
             {
                 var dtos = series
-                    .RecursiveChildren
-                    .OfType<Episode>()
-                    .Where(i => i.ParentIndexNumber.HasValue && i.ParentIndexNumber.Value == 0)
+                    .GetRecursiveChildren(i => i is Episode && i.ParentIndexNumber.HasValue && i.ParentIndexNumber.Value == 0)
                     .OrderBy(i =>
                     {
                         if (i.PremiereDate.HasValue)
