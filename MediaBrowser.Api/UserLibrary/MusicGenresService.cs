@@ -89,7 +89,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>System.Object.</returns>
         public object Get(GetMusicGenres request)
         {
-            var result = GetResult(request).Result;
+            var result = GetResult(request);
 
             return ToOptimizedResult(result);
         }

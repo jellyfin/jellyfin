@@ -75,7 +75,7 @@ namespace MediaBrowser.Api
             var album1 = (MusicAlbum)item1;
             var album2 = (MusicAlbum)item2;
 
-            var artists1 = album1.RecursiveChildren
+            var artists1 = album1.GetRecursiveChildren()
                 .OfType<Audio>()
                 .SelectMany(i =>
                 {
@@ -92,7 +92,7 @@ namespace MediaBrowser.Api
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
-            var artists2 = album2.RecursiveChildren
+            var artists2 = album2.GetRecursiveChildren()
                 .OfType<Audio>()
                 .SelectMany(i =>
                 {

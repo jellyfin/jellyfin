@@ -103,18 +103,7 @@ namespace MediaBrowser.Api
         /// <returns>Task{IEnumerable{SearchHintResult}}.</returns>
         private async Task<SearchHintResult> GetSearchHintsAsync(GetSearchHints request)
         {
-            IEnumerable<BaseItem> inputItems;
-
-            if (request.UserId.HasValue)
-            {
-                var user = _userManager.GetUserById(request.UserId.Value);
-
-                inputItems = user.RootFolder.GetRecursiveChildren(user);
-            }
-            else
-            {
-                inputItems = _libraryManager.RootFolder.RecursiveChildren;
-            }
+            var inputItems = GetAllLibraryItems(request.UserId, _userManager, _libraryManager);
 
             var results = await _searchEngine.GetSearchHints(inputItems, request.SearchTerm).ConfigureAwait(false);
 
@@ -180,21 +169,21 @@ namespace MediaBrowser.Api
             {
                 result.Series = season.Series.Name;
 
-                result.EpisodeCount = season.RecursiveChildren.OfType<Episode>().Count();
+                result.EpisodeCount = season.GetRecursiveChildren(i => i is Episode).Count;
             }
 
             var series = item as Series;
 
             if (series != null)
             {
-                result.EpisodeCount = series.RecursiveChildren.OfType<Episode>().Count();
+                result.EpisodeCount = series.GetRecursiveChildren(i => i is Episode).Count;
             }
 
             var album = item as MusicAlbum;
 
             if (album != null)
             {
-                var songs = album.RecursiveChildren.OfType<Audio>().ToList();
+                var songs = album.GetRecursiveChildren().OfType<Audio>().ToList();
 
                 result.SongCount = songs.Count;
                 

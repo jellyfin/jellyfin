@@ -53,7 +53,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>Task{ItemsResult}.</returns>
-        protected async Task<ItemsResult> GetResult(GetItemsByName request)
+        protected ItemsResult GetResult(GetItemsByName request)
         {
             User user = null;
             BaseItem item;
@@ -80,7 +80,7 @@ namespace MediaBrowser.Api.UserLibrary
                 }
                 else
                 {
-                    items = request.Recursive ? folder.RecursiveChildren : folder.Children;
+                    items = request.Recursive ? folder.GetRecursiveChildren() : folder.Children;
                 }
             }
             else
@@ -257,23 +257,6 @@ namespace MediaBrowser.Api.UserLibrary
                  DtoService.GetBaseItemDto(item, fields, user);
 
             return dto;
-        }
-
-        /// <summary>
-        /// Gets the items.
-        /// </summary>
-        /// <param name="userId">The user id.</param>
-        /// <returns>IEnumerable{BaseItem}.</returns>
-        protected IEnumerable<BaseItem> GetItems(Guid? userId)
-        {
-            if (userId.HasValue)
-            {
-                var user = UserManager.GetUserById(userId.Value);
-
-                return UserManager.GetUserById(userId.Value).RootFolder.GetRecursiveChildren(user);
-            }
-
-            return LibraryManager.RootFolder.RecursiveChildren;
         }
     }
 

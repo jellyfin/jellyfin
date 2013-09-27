@@ -122,16 +122,16 @@ namespace MediaBrowser.Api
             return libraryManager.GetPerson(DeSlugPersonName(name, libraryManager));
         }
 
-        protected IEnumerable<BaseItem> GetAllLibraryItems(Guid? userId, IUserManager userManager, ILibraryManager libraryManager)
+        protected IList<BaseItem> GetAllLibraryItems(Guid? userId, IUserManager userManager, ILibraryManager libraryManager)
         {
             if (userId.HasValue)
             {
                 var user = userManager.GetUserById(userId.Value);
 
-                return userManager.GetUserById(userId.Value).RootFolder.GetRecursiveChildren(user);
+                return userManager.GetUserById(userId.Value).RootFolder.GetRecursiveChildren(user, null);
             }
 
-            return libraryManager.RootFolder.RecursiveChildren;
+            return libraryManager.RootFolder.GetRecursiveChildren();
         }
 
         /// <summary>
@@ -147,7 +147,7 @@ namespace MediaBrowser.Api
                 return name;
             }
 
-            return libraryManager.RootFolder.RecursiveChildren
+            return libraryManager.RootFolder.GetRecursiveChildren()
                 .OfType<Audio>()
                 .SelectMany(i =>
                 {
@@ -181,7 +181,7 @@ namespace MediaBrowser.Api
                 return name;
             }
 
-            return libraryManager.RootFolder.RecursiveChildren
+            return libraryManager.RootFolder.GetRecursiveChildren()
                 .SelectMany(i => i.Genres)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .FirstOrDefault(i =>
@@ -200,8 +200,7 @@ namespace MediaBrowser.Api
                 return name;
             }
 
-            return libraryManager.RootFolder.RecursiveChildren
-                .OfType<Game>()
+            return libraryManager.RootFolder.GetRecursiveChildren(i => i is Game)
                 .SelectMany(i => i.Genres)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .FirstOrDefault(i =>
@@ -223,7 +222,7 @@ namespace MediaBrowser.Api
                 return name;
             }
 
-            return libraryManager.RootFolder.RecursiveChildren
+            return libraryManager.RootFolder.GetRecursiveChildren()
                 .SelectMany(i => i.Studios)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .FirstOrDefault(i =>
@@ -245,7 +244,7 @@ namespace MediaBrowser.Api
                 return name;
             }
 
-            return libraryManager.RootFolder.RecursiveChildren
+            return libraryManager.RootFolder.GetRecursiveChildren()
                 .SelectMany(i => i.People)
                 .Select(i => i.Name)
                 .Distinct(StringComparer.OrdinalIgnoreCase)

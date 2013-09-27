@@ -552,23 +552,7 @@ namespace MediaBrowser.Controller.Entities
         [IgnoreDataMember]
         public IEnumerable<BaseItem> RecursiveChildren
         {
-            get
-            {
-                foreach (var item in Children)
-                {
-                    yield return item;
-
-                    if (item.IsFolder)
-                    {
-                        var subFolder = (Folder)item;
-
-                        foreach (var subitem in subFolder.RecursiveChildren)
-                        {
-                            yield return subitem;
-                        }
-                    }
-                }
-            }
+            get { return GetRecursiveChildren(); }
         }
 
         private List<BaseItem> LoadChildrenInternal()
@@ -686,17 +670,12 @@ namespace MediaBrowser.Controller.Entities
             var currentChildren = ActualChildren.ToDictionary(i => i.Id);
 
             //create a list for our validated children
-            var validChildren = new ConcurrentBag<Tuple<BaseItem, bool>>();
-            var newItems = new ConcurrentBag<BaseItem>();
+            var validChildren = new List<Tuple<BaseItem, bool>>();
+            var newItems = new List<BaseItem>();
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var options = new ParallelOptions
-            {
-                MaxDegreeOfParallelism = 10
-            };
-
-            Parallel.ForEach(nonCachedChildren, options, child =>
+            foreach (var child in nonCachedChildren)
             {
                 BaseItem currentChild;
 
@@ -725,10 +704,10 @@ namespace MediaBrowser.Controller.Entities
 
                     validChildren.Add(new Tuple<BaseItem, bool>(child, true));
                 }
-            });
+            }
 
             // If any items were added or removed....
-            if (!newItems.IsEmpty || currentChildren.Count != validChildren.Count)
+            if (newItems.Count > 0 || currentChildren.Count != validChildren.Count)
             {
                 var newChildren = validChildren.Select(c => c.Item1).ToList();
 
@@ -793,9 +772,9 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="recursive">if set to <c>true</c> [recursive].</param>
         /// <param name="forceRefreshMetadata">if set to <c>true</c> [force refresh metadata].</param>
         /// <returns>Task.</returns>
-        private async Task RefreshChildren(IEnumerable<Tuple<BaseItem, bool>> children, IProgress<double> progress, CancellationToken cancellationToken, bool? recursive, bool forceRefreshMetadata = false)
+        private async Task RefreshChildren(IList<Tuple<BaseItem, bool>> children, IProgress<double> progress, CancellationToken cancellationToken, bool? recursive, bool forceRefreshMetadata = false)
         {
-            var list = children.ToList();
+            var list = children;
 
             var percentages = new Dictionary<Guid, double>(list.Count);
 
@@ -994,7 +973,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="recursive">if set to <c>true</c> [recursive].</param>
         /// <param name="filter">The filter.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        private bool AddChildrenToList(User user, bool includeLinkedChildren, List<BaseItem> list, bool recursive, Func<BaseItem,bool> filter)
+        private bool AddChildrenToList(User user, bool includeLinkedChildren, List<BaseItem> list, bool recursive, Func<BaseItem, bool> filter)
         {
             var hasLinkedChildren = false;
 
@@ -1030,7 +1009,7 @@ namespace MediaBrowser.Controller.Entities
                     {
                         continue;
                     }
-                    
+
                     hasLinkedChildren = true;
 
                     if (child.IsVisible(user))
@@ -1056,7 +1035,15 @@ namespace MediaBrowser.Controller.Entities
             return GetRecursiveChildren(user, null, true);
         }
 
-        public IEnumerable<BaseItem> GetRecursiveChildren(User user, Func<BaseItem,bool> filter, bool includeLinkedChildren = true)
+        /// <summary>
+        /// Gets the recursive children.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="filter">The filter.</param>
+        /// <param name="includeLinkedChildren">if set to <c>true</c> [include linked children].</param>
+        /// <returns>IList{BaseItem}.</returns>
+        /// <exception cref="System.ArgumentNullException"></exception>
+        public IList<BaseItem> GetRecursiveChildren(User user, Func<BaseItem, bool> filter, bool includeLinkedChildren = true)
         {
             if (user == null)
             {
@@ -1066,7 +1053,7 @@ namespace MediaBrowser.Controller.Entities
             var initialCount = _lastRecursiveCount == 0 ? _children.Count : _lastRecursiveCount;
             var list = new List<BaseItem>(initialCount);
 
-            var hasLinkedChildren = AddChildrenToList(user, includeLinkedChildren, list, true, null);
+            var hasLinkedChildren = AddChildrenToList(user, includeLinkedChildren, list, true, filter);
 
             _lastRecursiveCount = list.Count;
 
@@ -1077,7 +1064,59 @@ namespace MediaBrowser.Controller.Entities
 
             return list;
         }
-        
+
+        /// <summary>
+        /// Gets the recursive children.
+        /// </summary>
+        /// <returns>IList{BaseItem}.</returns>
+        public IList<BaseItem> GetRecursiveChildren()
+        {
+            return GetRecursiveChildren(null);
+        }
+
+        /// <summary>
+        /// Gets the recursive children.
+        /// </summary>
+        /// <param name="filter">The filter.</param>
+        /// <returns>IEnumerable{BaseItem}.</returns>
+        public IList<BaseItem> GetRecursiveChildren(Func<BaseItem, bool> filter)
+        {
+            var initialCount = _lastRecursiveCount == 0 ? _children.Count : _lastRecursiveCount;
+            var list = new List<BaseItem>(initialCount);
+
+            AddChildrenToList(list, true, filter);
+
+            return list;
+        }
+
+        /// <summary>
+        /// Adds the children to list.
+        /// </summary>
+        /// <param name="list">The list.</param>
+        /// <param name="recursive">if set to <c>true</c> [recursive].</param>
+        /// <param name="filter">The filter.</param>
+        private void AddChildrenToList(List<BaseItem> list, bool recursive, Func<BaseItem, bool> filter)
+        {
+            foreach (var child in Children)
+            {
+                if (filter == null || filter(child))
+                {
+                    list.Add(child);
+                }
+
+                if (recursive)
+                {
+                    var folder = child as Folder;
+
+                    if (folder != null)
+                    {
+                        folder.AddChildrenToList(list, true, filter);
+                    }
+                }
+            }
+        }
+
+
         /// <summary>
         /// Gets the linked children.
         /// </summary>
