@@ -50,7 +50,7 @@
                         </div>
                     </div>
 
-                    <div data-role="collapsible" data-content-theme="c" data-collapsed="false" style="margin-top: 2em;">
+                    <div id="runningTasksCollapsible" data-role="collapsible" data-content-theme="c" data-collapsed="false" style="margin-top: 2em; display: none;">
                         <h3>Running Tasks</h3>
                         <div id="divRunningTasks">
                         </div>
@@ -58,7 +58,21 @@
                     </div>
 
                     <div style="margin-top: 2em;">
-                        <button id="btnRestartServer" type="button" data-icon="refresh" data-mini="true" data-inline="true" onclick="DashboardPage.restart();">Restart MB Server</button>
+                        <div style="display: inline-block;">
+                            <button id="btnRestartServer" type="button" data-icon="refresh" data-mini="true" data-inline="true" onclick="DashboardPage.restart();">Restart MB Server</button>
+                        </div>
+                        <div style="display: inline-block;">
+                            <button id="btnShutdown" type="button" data-icon="delete" data-mini="true" data-inline="true" onclick="DashboardPage.shutdown();">Shutdown MB Server</button>
+                        </div>
+                    </div>
+
+                    <div data-role="collapsible" data-content-theme="c" data-collapsed="false" style="margin-top: 2em;">
+                        <h3>Links</h3>
+                        <div>
+                            <p><a href="http://mediabrowser3.com/community" target="_blank">Community</a></p>
+                            <p><a href="https://github.com/MediaBrowser/MediaBrowser" target="_blank">Github</a></p>
+                            <p><a href="../swagger-ui/index.html" target="_blank">Interactive Api Documentation</a></p>
+                        </div>
                     </div>
 
                     <div style="display: none; margin-top: 4em;" id="contribute">

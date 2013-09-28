@@ -264,6 +264,9 @@
 
         if (!dashboardInfo.RunningTasks.length) {
             html += '<p>No tasks are currently running.</p>';
+            $('#runningTasksCollapsible', page).hide();
+        } else {
+            $('#runningTasksCollapsible', page).show();
         }
 
         for (var i = 0, length = dashboardInfo.RunningTasks.length; i < length; i++) {
