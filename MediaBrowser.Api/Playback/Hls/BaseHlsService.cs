@@ -6,6 +6,7 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
 using System;
 using System.Collections.Generic;
@@ -91,11 +92,11 @@ namespace MediaBrowser.Api.Playback.Hls
         /// <returns>Task{System.Object}.</returns>
         public async Task<object> ProcessRequestAsync(StreamState state)
         {
-            if (!state.VideoRequest.VideoBitRate.HasValue)
+            if (!state.VideoRequest.VideoBitRate.HasValue && (!state.VideoRequest.VideoCodec.HasValue || state.VideoRequest.VideoCodec.Value != VideoCodecs.Copy))
             {
                 throw new ArgumentException("A video bitrate is required");
             }
-            if (!state.Request.AudioBitRate.HasValue)
+            if (!state.Request.AudioBitRate.HasValue && (!state.Request.AudioCodec.HasValue || state.Request.AudioCodec.Value != AudioCodecs.Copy))
             {
                 throw new ArgumentException("An audio bitrate is required");
             }
