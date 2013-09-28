@@ -70,7 +70,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 }
             }
 
-            File.Move(oldFile, Path.Combine(Path.GetDirectoryName(oldFile), "userdata_v1.db"));
+            File.Move(oldFile, Path.Combine(Path.GetDirectoryName(oldFile), "userdata_v1.db.bak"));
         }
 
         /// <summary>

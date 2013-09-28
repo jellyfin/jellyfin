@@ -1,5 +1,4 @@
 ﻿using System.Net;
-using System.Net.Cache;
 using System.Net.Http;
 
 namespace MediaBrowser.ServerApplication.Native
