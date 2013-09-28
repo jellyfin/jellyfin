@@ -1,8 +1,10 @@
-﻿using MediaBrowser.Common.Constants;
+﻿using System.Runtime.InteropServices;
+using MediaBrowser.Common.Constants;
 using MediaBrowser.Common.Implementations.Logging;
 using MediaBrowser.Common.Implementations.Updates;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Implementations;
+using MediaBrowser.ServerApplication.Native;
 using Microsoft.Win32;
 using System;
 using System.ComponentModel;
@@ -183,6 +185,7 @@ namespace MediaBrowser.ServerApplication
         private static void RunApplication(ServerApplicationPaths appPaths, ILogManager logManager, bool runService)
         {
             SystemEvents.SessionEnding += SystemEvents_SessionEnding;
+            SystemEvents.SessionSwitch += SystemEvents_SessionSwitch;
 
             _appHost = new ApplicationHost(appPaths, logManager);
 
@@ -192,8 +195,22 @@ namespace MediaBrowser.ServerApplication
             {
                 _app.AppStarted += (sender, args) => StartService(logManager);
             }
-
+            else
+            {
+                // Not crazy about this but it's the only way to suppress ffmpeg crash dialog boxes
+                SetErrorMode(ErrorModes.SEM_FAILCRITICALERRORS | ErrorModes.SEM_NOALIGNMENTFAULTEXCEPT |
+                             ErrorModes.SEM_NOGPFAULTERRORBOX | ErrorModes.SEM_NOOPENFILEERRORBOX);
+            }
+            
             _app.Run();
+        }
+
+        static void SystemEvents_SessionSwitch(object sender, SessionSwitchEventArgs e)
+        {
+            if (e.Reason == SessionSwitchReason.SessionLogon)
+            {
+                BrowserLauncher.OpenDashboard(_appHost.UserManager, _appHost.ServerConfigurationManager, _appHost, _logger);
+            }
         }
 
         /// <summary>
@@ -223,6 +240,11 @@ namespace MediaBrowser.ServerApplication
             _logger.Info("Shutting down");
 
             _appHost.Dispose();
+
+            if (!_isRunningAsService)
+            {
+                SetErrorMode(ErrorModes.SYSTEM_DEFAULT);
+            }
 
             if (_isRestarting)
             {
@@ -464,6 +486,42 @@ namespace MediaBrowser.ServerApplication
             {
                 service.Stop();
             }
+        }
+
+        /// <summary>
+        /// Sets the error mode.
+        /// </summary>
+        /// <param name="uMode">The u mode.</param>
+        /// <returns>ErrorModes.</returns>
+        [DllImport("kernel32.dll")]
+        static extern ErrorModes SetErrorMode(ErrorModes uMode);
+
+        /// <summary>
+        /// Enum ErrorModes
+        /// </summary>
+        [Flags]
+        public enum ErrorModes : uint
+        {
+            /// <summary>
+            /// The SYSTE m_ DEFAULT
+            /// </summary>
+            SYSTEM_DEFAULT = 0x0,
+            /// <summary>
+            /// The SE m_ FAILCRITICALERRORS
+            /// </summary>
+            SEM_FAILCRITICALERRORS = 0x0001,
+            /// <summary>
+            /// The SE m_ NOALIGNMENTFAULTEXCEPT
+            /// </summary>
+            SEM_NOALIGNMENTFAULTEXCEPT = 0x0004,
+            /// <summary>
+            /// The SE m_ NOGPFAULTERRORBOX
+            /// </summary>
+            SEM_NOGPFAULTERRORBOX = 0x0002,
+            /// <summary>
+            /// The SE m_ NOOPENFILEERRORBOX
+            /// </summary>
+            SEM_NOOPENFILEERRORBOX = 0x8000
         }
     }
 }
