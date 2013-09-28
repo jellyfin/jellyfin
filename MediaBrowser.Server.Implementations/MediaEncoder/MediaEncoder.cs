@@ -11,7 +11,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -74,10 +73,6 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
             Version = version;
             FFProbePath = ffProbePath;
             FFMpegPath = ffMpegPath;
-
-            // Not crazy about this but it's the only way to suppress ffmpeg crash dialog boxes
-            SetErrorMode(ErrorModes.SEM_FAILCRITICALERRORS | ErrorModes.SEM_NOALIGNMENTFAULTEXCEPT |
-                         ErrorModes.SEM_NOGPFAULTERRORBOX | ErrorModes.SEM_NOOPENFILEERRORBOX);
         }
 
         /// <summary>
@@ -994,44 +989,6 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
             {
                 _videoImageResourcePool.Dispose();
             }
-
-            SetErrorMode(ErrorModes.SYSTEM_DEFAULT);
-        }
-
-        /// <summary>
-        /// Sets the error mode.
-        /// </summary>
-        /// <param name="uMode">The u mode.</param>
-        /// <returns>ErrorModes.</returns>
-        [DllImport("kernel32.dll")]
-        static extern ErrorModes SetErrorMode(ErrorModes uMode);
-
-        /// <summary>
-        /// Enum ErrorModes
-        /// </summary>
-        [Flags]
-        public enum ErrorModes : uint
-        {
-            /// <summary>
-            /// The SYSTE m_ DEFAULT
-            /// </summary>
-            SYSTEM_DEFAULT = 0x0,
-            /// <summary>
-            /// The SE m_ FAILCRITICALERRORS
-            /// </summary>
-            SEM_FAILCRITICALERRORS = 0x0001,
-            /// <summary>
-            /// The SE m_ NOALIGNMENTFAULTEXCEPT
-            /// </summary>
-            SEM_NOALIGNMENTFAULTEXCEPT = 0x0004,
-            /// <summary>
-            /// The SE m_ NOGPFAULTERRORBOX
-            /// </summary>
-            SEM_NOGPFAULTERRORBOX = 0x0002,
-            /// <summary>
-            /// The SE m_ NOOPENFILEERRORBOX
-            /// </summary>
-            SEM_NOOPENFILEERRORBOX = 0x8000
         }
     }
 }
