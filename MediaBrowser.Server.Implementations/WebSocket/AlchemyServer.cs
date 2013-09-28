@@ -123,7 +123,9 @@ namespace MediaBrowser.Server.Implementations.WebSocket
         {
             if (WebSocketServer != null)
             {
+                WebSocketServer.Stop();
                 WebSocketServer.Dispose();
+                WebSocketServer = null;
             }
         }
     }
