@@ -6,7 +6,6 @@ using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Concurrent;
 using System.Data;
-using System.Data.SQLite;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,7 +20,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         private readonly SemaphoreSlim _writeLock = new SemaphoreSlim(1, 1);
 
-        private SQLiteConnection _connection;
+        private IDbConnection _connection;
 
         /// <summary>
         /// Gets the name of the repository
@@ -177,7 +176,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-            SQLiteTransaction transaction = null;
+            IDbTransaction transaction = null;
 
             try
             {
@@ -187,19 +186,18 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     cmd.CommandText = "replace into userdata (key, userId, rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate) values (@key, @userId, @rating,@played,@playCount,@isFavorite,@playbackPositionTicks,@lastPlayedDate)";
 
-                    cmd.AddParam("@key", key);
-                    cmd.AddParam("@userId", userId);
+                    cmd.Parameters.Add(cmd, "@key", DbType.String).Value = key;
+                    cmd.Parameters.Add(cmd, "@userId", DbType.Guid).Value = userId;
+                    cmd.Parameters.Add(cmd, "@rating", DbType.Double).Value = userData.Rating;
+                    cmd.Parameters.Add(cmd, "@played", DbType.Boolean).Value = userData.Played;
+                    cmd.Parameters.Add(cmd, "@playCount", DbType.Int32).Value = userData.PlayCount;
+                    cmd.Parameters.Add(cmd, "@isFavorite", DbType.Boolean).Value = userData.IsFavorite;
+                    cmd.Parameters.Add(cmd, "@playbackPositionTicks", DbType.Int64).Value = userData.PlaybackPositionTicks;
+                    cmd.Parameters.Add(cmd, "@lastPlayedDate", DbType.DateTime).Value = userData.LastPlayedDate;
 
-                    cmd.AddParam("@rating", userData.Rating);
-                    cmd.AddParam("@played", userData.Played);
-                    cmd.AddParam("@playCount", userData.PlayCount);
-                    cmd.AddParam("@isFavorite", userData.IsFavorite);
-                    cmd.AddParam("@playbackPositionTicks", userData.PlaybackPositionTicks);
-                    cmd.AddParam("@lastPlayedDate", userData.LastPlayedDate);
-                    
                     cmd.Transaction = transaction;
 
-                    await cmd.ExecuteNonQueryAsync(cancellationToken);
+                    cmd.ExecuteNonQuery();
                 }
 
                 transaction.Commit();
@@ -272,11 +270,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
             {
                 cmd.CommandText = "select rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate from userdata where key = @key and userId=@userId";
 
-                var idParam = cmd.Parameters.Add("@key", DbType.String);
-                idParam.Value = key;
-
-                var userIdParam = cmd.Parameters.Add("@userId", DbType.Guid);
-                userIdParam.Value = userId;
+                cmd.Parameters.Add(cmd, "@key", DbType.String).Value = key;
+                cmd.Parameters.Add(cmd, "@userId", DbType.Guid).Value = userId;
 
                 var userData = new UserItemData
                 {
