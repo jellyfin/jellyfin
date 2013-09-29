@@ -19,8 +19,13 @@ namespace MediaBrowser.ServerApplication
                 StartType = ServiceStartMode.Manual,
                 ServiceName = BackgroundService.Name,
                 DisplayName = BackgroundService.DisplayName,
+
                 DelayedAutoStart = true,
-                Description = "The windows background service for Media Browser Server."
+
+                Description = "The windows background service for Media Browser Server.",
+
+                // Will ensure the network is available
+                ServicesDependedOn = new[] { "LanmanServer" }
             };
 
             // Microsoft didn't add the ability to add a
