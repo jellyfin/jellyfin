@@ -49,6 +49,8 @@ namespace MediaBrowser.Server.Implementations.WebSocket
         /// <value>The port.</value>
         public int Port { get; private set; }
 
+        private bool _hasStarted;
+
         /// <summary>
         /// Starts the specified port number.
         /// </summary>
@@ -60,10 +62,12 @@ namespace MediaBrowser.Server.Implementations.WebSocket
                 WebSocketServer = new WebSocketServer(portNumber, IPAddress.Any)
                 {
                     OnConnected = OnAlchemyWebSocketClientConnected,
-                    TimeOut = TimeSpan.FromHours(12)
+                    TimeOut = TimeSpan.FromHours(24)
                 };
 
                 WebSocketServer.Start();
+
+                _hasStarted = true;
             }
             catch (SocketException ex)
             {
@@ -123,7 +127,11 @@ namespace MediaBrowser.Server.Implementations.WebSocket
         {
             if (WebSocketServer != null)
             {
-                WebSocketServer.Stop();
+                if (_hasStarted)
+                {
+                    WebSocketServer.Stop();
+                }
+
                 WebSocketServer.Dispose();
                 WebSocketServer = null;
             }
