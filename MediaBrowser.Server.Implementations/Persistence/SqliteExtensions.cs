@@ -13,40 +13,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
     static class SqliteExtensions
     {
         /// <summary>
-        /// Adds the param.
-        /// </summary>
-        /// <param name="cmd">The CMD.</param>
-        /// <param name="param">The param.</param>
-        /// <returns>SQLiteParameter.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
-        public static SQLiteParameter AddParam(this SQLiteCommand cmd, string param)
-        {
-            if (string.IsNullOrEmpty(param))
-            {
-                throw new ArgumentNullException();
-            }
-
-            var sqliteParam = new SQLiteParameter(param);
-            cmd.Parameters.Add(sqliteParam);
-            return sqliteParam;
-        }
-
-        /// <summary>
-        /// Adds the param.
-        /// </summary>
-        /// <param name="cmd">The CMD.</param>
-        /// <param name="param">The param.</param>
-        /// <param name="data">The data.</param>
-        /// <returns>SQLiteParameter.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
-        public static SQLiteParameter AddParam(this SQLiteCommand cmd, string param, object data)
-        {
-            var sqliteParam = AddParam(cmd, param);
-            sqliteParam.Value = data;
-            return sqliteParam;
-        }
-
-        /// <summary>
         /// Determines whether the specified conn is open.
         /// </summary>
         /// <param name="conn">The conn.</param>
@@ -160,7 +126,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// <param name="dbPath">The db path.</param>
         /// <returns>Task{IDbConnection}.</returns>
         /// <exception cref="System.ArgumentNullException">dbPath</exception>
-        public static async Task<SQLiteConnection> ConnectToDb(string dbPath)
+        public static async Task<IDbConnection> ConnectToDb(string dbPath)
         {
             if (string.IsNullOrEmpty(dbPath))
             {
