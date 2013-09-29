@@ -5,7 +5,6 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Data;
-using System.Data.SQLite;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,7 +16,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
     /// </summary>
     public class SqliteDisplayPreferencesRepository : IDisplayPreferencesRepository
     {
-        private SQLiteConnection _connection;
+        private IDbConnection _connection;
 
         private readonly ILogger _logger;
 
@@ -124,7 +123,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-            SQLiteTransaction transaction = null;
+            IDbTransaction transaction = null;
 
             try
             {
@@ -133,14 +132,15 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 using (var cmd = _connection.CreateCommand())
                 {
                     cmd.CommandText = "replace into userdisplaypreferences (id, userid, client, data) values (@1, @2, @3, @4)";
-                    cmd.AddParam("@1", displayPreferences.Id);
-                    cmd.AddParam("@2", userId);
-                    cmd.AddParam("@3", client);
-                    cmd.AddParam("@4", serialized);
+
+                    cmd.Parameters.Add(cmd, "@1", DbType.Guid).Value = displayPreferences.Id;
+                    cmd.Parameters.Add(cmd, "@2", DbType.Guid).Value = userId;
+                    cmd.Parameters.Add(cmd, "@3", DbType.String).Value = client;
+                    cmd.Parameters.Add(cmd, "@4", DbType.Binary).Value = serialized;
 
                     cmd.Transaction = transaction;
 
-                    await cmd.ExecuteNonQueryAsync(cancellationToken);
+                    cmd.ExecuteNonQuery();
                 }
 
                 transaction.Commit();
@@ -194,14 +194,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
             var cmd = _connection.CreateCommand();
             cmd.CommandText = "select data from userdisplaypreferences where id = @id and userId=@userId and client=@client";
 
-            var idParam = cmd.Parameters.Add("@id", DbType.Guid);
-            idParam.Value = displayPreferencesId;
-
-            var userIdParam = cmd.Parameters.Add("@userId", DbType.Guid);
-            userIdParam.Value = userId;
-
-            var clientParam = cmd.Parameters.Add("@client", DbType.String);
-            clientParam.Value = client;
+            cmd.Parameters.Add(cmd, "@id", DbType.Guid).Value = displayPreferencesId;
+            cmd.Parameters.Add(cmd, "@userId", DbType.Guid).Value = userId;
+            cmd.Parameters.Add(cmd, "@client", DbType.String).Value = client;
 
             using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult | CommandBehavior.SingleRow))
             {
