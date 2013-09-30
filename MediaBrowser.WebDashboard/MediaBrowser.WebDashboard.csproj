@@ -918,9 +918,6 @@
     <Content Include="dashboard-ui\css\images\clients\windowsphone.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\css\images\clients\win8.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
   <ItemGroup>
     <Content Include="dashboard-ui\css\images\notifications\download.png">

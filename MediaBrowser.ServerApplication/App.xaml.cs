@@ -79,12 +79,12 @@ namespace MediaBrowser.ServerApplication
 
                 await _appHost.Init();
 
+                var task = _appHost.RunStartupTasks();
+
                 if (!IsRunningAsService)
                 {
                     HideSplashWindow();
                 }
-
-                var task = _appHost.RunStartupTasks();
 
                 if (!IsRunningAsService)
                 {
