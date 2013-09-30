@@ -311,11 +311,11 @@ namespace MediaBrowser.Common.Implementations.Updates
         /// <summary>
         /// Gets the available plugin updates.
         /// </summary>
-        /// <param name="currentServerVersion">The current server version.</param>
+        /// <param name="applicationVersion">The current server version.</param>
         /// <param name="withAutoUpdateEnabled">if set to <c>true</c> [with auto update enabled].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{IEnumerable{PackageVersionInfo}}.</returns>
-        public async Task<IEnumerable<PackageVersionInfo>> GetAvailablePluginUpdates(Version currentServerVersion, bool withAutoUpdateEnabled, CancellationToken cancellationToken)
+        public async Task<IEnumerable<PackageVersionInfo>> GetAvailablePluginUpdates(Version applicationVersion, bool withAutoUpdateEnabled, CancellationToken cancellationToken)
         {
             var catalog = await GetAvailablePackagesWithoutRegistrationInfo(cancellationToken).ConfigureAwait(false);
 
@@ -331,7 +331,7 @@ namespace MediaBrowser.Common.Implementations.Updates
             // Figure out what needs to be installed
             var packages = plugins.Select(p =>
             {
-                var latestPluginInfo = GetLatestCompatibleVersion(catalog, p.Name, currentServerVersion, p.Configuration.UpdateClass);
+                var latestPluginInfo = GetLatestCompatibleVersion(catalog, p.Name, applicationVersion, p.Configuration.UpdateClass);
 
                 return latestPluginInfo != null && latestPluginInfo.version != null && latestPluginInfo.version > p.Version ? latestPluginInfo : null;
 

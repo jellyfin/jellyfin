@@ -68,6 +68,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
         public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
             if (!_appHost.CanSelfUpdate) return;
+            if (!ConfigurationManager.CommonConfiguration.EnableAutoUpdate) return;
 
             EventHandler<double> innerProgressHandler = (sender, e) => progress.Report(e * .1);
 
