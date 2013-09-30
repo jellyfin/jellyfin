@@ -25,7 +25,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <value>The web socket.</value>
         private System.Net.WebSockets.WebSocket WebSocket { get; set; }
 
-        private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+        private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NativeWebSocket" /> class.
@@ -168,7 +168,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             if (dispose)
             {
                 _cancellationTokenSource.Cancel();
-                _cancellationTokenSource.Dispose();
 
                 WebSocket.Dispose();
             }
