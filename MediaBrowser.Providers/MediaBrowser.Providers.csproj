@@ -110,6 +110,7 @@
     <Compile Include="TV\RemoteSeasonProvider.cs" />
     <Compile Include="TV\RemoteSeriesProvider.cs" />
     <Compile Include="TV\SeasonProviderFromXml.cs" />
+    <Compile Include="TV\SeriesDynamicInfoProvider.cs" />
     <Compile Include="TV\SeriesPostScanTask.cs" />
     <Compile Include="TV\SeriesProviderFromXml.cs" />
     <Compile Include="TV\SeriesXmlParser.cs" />
