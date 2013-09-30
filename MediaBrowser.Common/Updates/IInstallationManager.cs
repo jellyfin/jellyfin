@@ -90,11 +90,11 @@ namespace MediaBrowser.Common.Updates
         /// <summary>
         /// Gets the available plugin updates.
         /// </summary>
-        /// <param name="currentServerVersion">The current server version.</param>
+        /// <param name="applicationVersion">The current server version.</param>
         /// <param name="withAutoUpdateEnabled">if set to <c>true</c> [with auto update enabled].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{IEnumerable{PackageVersionInfo}}.</returns>
-        Task<IEnumerable<PackageVersionInfo>> GetAvailablePluginUpdates(Version currentServerVersion, bool withAutoUpdateEnabled, CancellationToken cancellationToken);
+        Task<IEnumerable<PackageVersionInfo>> GetAvailablePluginUpdates(Version applicationVersion, bool withAutoUpdateEnabled, CancellationToken cancellationToken);
 
         /// <summary>
         /// Installs the package.

@@ -511,7 +511,7 @@ namespace MediaBrowser.ServerApplication
 #if DEBUG
                 return false;
 #endif
-                return ConfigurationManager.CommonConfiguration.EnableAutoUpdate;
+                return true;
             }
         }
 
