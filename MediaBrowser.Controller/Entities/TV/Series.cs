@@ -41,6 +41,12 @@ namespace MediaBrowser.Controller.Entities.TV
         public string AirTime { get; set; }
 
         /// <summary>
+        /// Gets or sets the date last episode added.
+        /// </summary>
+        /// <value>The date last episode added.</value>
+        public DateTime DateLastEpisodeAdded { get; set; }
+
+        /// <summary>
         /// Series aren't included directly in indices - Their Episodes will roll up to them
         /// </summary>
         /// <value><c>true</c> if [include in index]; otherwise, <c>false</c>.</value>
