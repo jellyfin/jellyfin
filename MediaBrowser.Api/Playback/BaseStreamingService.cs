@@ -470,12 +470,15 @@ namespace MediaBrowser.Api.Playback
         /// <returns>System.Nullable{System.Int32}.</returns>
         protected int? GetNumAudioChannelsParam(StreamRequest request, MediaStream audioStream)
         {
-            if (audioStream.Channels > 2 && request.AudioCodec.HasValue)
+            if (audioStream != null)
             {
-                if (request.AudioCodec.Value == AudioCodecs.Wma)
+                if (audioStream.Channels > 2 && request.AudioCodec.HasValue)
                 {
-                    // wmav2 currently only supports two channel output
-                    return 2;
+                    if (request.AudioCodec.Value == AudioCodecs.Wma)
+                    {
+                        // wmav2 currently only supports two channel output
+                        return 2;
+                    }
                 }
             }
 
