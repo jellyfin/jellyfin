@@ -29,11 +29,11 @@
                     config.SaveLocalMeta = $('#chkSaveLocalMetadata', page).checked();
                     config.EnableVideoImageExtraction = $('#chkVIdeoImages', page).checked();
 
-                    ApiClient.updateServerConfiguration(config).done(function(result) {
+                    ApiClient.updateServerConfiguration(config).done(function (result) {
 
                         Dashboard.processServerConfigurationUpdateResult(result);
 
-                        Dashboard.navigate('wizardfinish.html');
+                        navigateToNextPage();
 
                     });
                 });
@@ -42,6 +42,21 @@
             });
         });
 
+    }
+
+    function navigateToNextPage() {
+
+        ApiClient.getSystemInfo().done(function (systemInfo) {
+
+            var os = systemInfo.OperatingSystem.toLowerCase();
+
+            if (os.indexOf('windows') != -1) {
+                Dashboard.navigate('wizardservice.html');
+            } else {
+                Dashboard.navigate('wizardfinish.html');
+            }
+
+        });
     }
 
     $(document).on('pageinit', "#wizardSettingsPage", function () {
