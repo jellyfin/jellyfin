@@ -756,7 +756,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             if (request.IsHD.HasValue)
             {
-                items = items.OfType<Video>().Where(i => i.IsHd == request.IsHD.Value);
+                items = items.OfType<Video>().Where(i => i.IsHD == request.IsHD.Value);
             }
 
             if (request.ParentIndexNumber.HasValue)

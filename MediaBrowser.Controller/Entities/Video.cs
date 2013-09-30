@@ -136,7 +136,7 @@ namespace MediaBrowser.Controller.Entities
             get { return Video3DFormat.HasValue; }
         }
 
-        public bool IsHd
+        public bool IsHD
         {
             get { return MediaStreams != null && MediaStreams.Any(i => i.Type == MediaStreamType.Video && i.Width.HasValue && i.Width.Value >= 1280); }
         }

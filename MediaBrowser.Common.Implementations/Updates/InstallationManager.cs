@@ -439,7 +439,6 @@ namespace MediaBrowser.Common.Implementations.Updates
             finally
             {
                 // Dispose the progress object and remove the installation from the in-progress list
-
                 innerProgress.Dispose();
                 tuple.Item2.Dispose();
             }
@@ -457,8 +456,10 @@ namespace MediaBrowser.Common.Implementations.Updates
             // Do the install
             await PerformPackageInstallation(progress, package, cancellationToken).ConfigureAwait(false);
 
+            var extension = Path.GetExtension(package.targetFilename) ?? "";
+
             // Do plugin-specific processing
-            if (!(Path.GetExtension(package.targetFilename) ?? "").Equals(".zip", StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(extension, ".zip", StringComparison.OrdinalIgnoreCase) && !string.Equals(extension, ".rar", StringComparison.OrdinalIgnoreCase) && !string.Equals(extension, ".7z", StringComparison.OrdinalIgnoreCase))
             {
                 // Set last update time if we were installed before
                 var plugin = _applicationHost.Plugins.FirstOrDefault(p => p.Name.Equals(package.name, StringComparison.OrdinalIgnoreCase));
@@ -471,7 +472,6 @@ namespace MediaBrowser.Common.Implementations.Updates
                 {
                     OnPluginInstalled(package);
                 }
-
             }
         }
 
@@ -479,7 +479,8 @@ namespace MediaBrowser.Common.Implementations.Updates
         {
             // Target based on if it is an archive or single assembly
             //  zip archives are assumed to contain directory structures relative to our ProgramDataPath
-            var isArchive = string.Equals(Path.GetExtension(package.targetFilename), ".zip", StringComparison.OrdinalIgnoreCase);
+            var extension = Path.GetExtension(package.targetFilename);
+            var isArchive = string.Equals(extension, ".zip", StringComparison.OrdinalIgnoreCase) || string.Equals(extension, ".rar", StringComparison.OrdinalIgnoreCase) || string.Equals(extension, ".7z", StringComparison.OrdinalIgnoreCase);
             var target = Path.Combine(isArchive ? _appPaths.TempUpdatePath : _appPaths.PluginsPath, package.targetFilename);
 
             // Download to temporary file so that, if interrupted, it won't destroy the existing installation
@@ -535,7 +536,6 @@ namespace MediaBrowser.Common.Implementations.Updates
                 _logger.ErrorException("Error deleting temp file {0]", e, tempFile);
             }
         }
-
 
         /// <summary>
         /// Uninstalls a plugin
