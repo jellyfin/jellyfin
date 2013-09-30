@@ -582,7 +582,8 @@ namespace MediaBrowser.ServerApplication
                 Id = _systemId,
                 ProgramDataPath = ApplicationPaths.ProgramDataPath,
                 MacAddress = GetMacAddress(),
-                HttpServerPortNumber = ServerConfigurationManager.Configuration.HttpServerPortNumber
+                HttpServerPortNumber = ServerConfigurationManager.Configuration.HttpServerPortNumber,
+                OperatingSystem = Environment.OSVersion.ToString()
             };
         }
 

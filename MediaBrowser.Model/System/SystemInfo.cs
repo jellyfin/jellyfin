@@ -15,6 +15,12 @@ namespace MediaBrowser.Model.System
         public string Version { get; set; }
 
         /// <summary>
+        /// Gets or sets the operating sytem.
+        /// </summary>
+        /// <value>The operating sytem.</value>
+        public string OperatingSystem { get; set; }
+        
+        /// <summary>
         /// Gets or sets the mac address.
         /// </summary>
         /// <value>The mac address.</value>
