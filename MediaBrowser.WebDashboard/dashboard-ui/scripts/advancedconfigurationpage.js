@@ -2,6 +2,14 @@
 
     function loadPage(page, config, systemInfo) {
 
+        var os = systemInfo.OperatingSystem.toLowerCase();
+        
+        if (os.indexOf('windows') != -1) {
+            $('#windowsStartupDescription', page).show();
+        } else {
+            $('#windowsStartupDescription', page).hide();
+        }
+        
         if (systemInfo.SupportsNativeWebSocket) {
 
             $('#fldWebSocketPortNumber', page).hide();
