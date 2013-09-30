@@ -6,9 +6,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.IO;
 using ServiceStack.ServiceHost;
-using System;
 using System.Collections.Generic;
-using System.IO;
 
 namespace MediaBrowser.Api.Playback.Progressive
 {
@@ -94,7 +92,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             {
                 audioTranscodeParams.Add("-ac " + channels.Value);
             }
-
+            
             if (request.AudioSampleRate.HasValue)
             {
                 audioTranscodeParams.Add("-ar " + request.AudioSampleRate.Value);
