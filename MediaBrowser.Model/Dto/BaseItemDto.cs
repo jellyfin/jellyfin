@@ -138,6 +138,10 @@ namespace MediaBrowser.Model.Dto
         /// <value>The production year.</value>
         public int? ProductionYear { get; set; }
 
+        /// <summary>
+        /// Gets or sets the season count.
+        /// </summary>
+        /// <value>The season count.</value>
         public int? SeasonCount { get; set; }
         
         /// <summary>
@@ -188,6 +192,12 @@ namespace MediaBrowser.Model.Dto
         /// <value>The language.</value>
         public string Language { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is HD.
+        /// </summary>
+        /// <value><c>null</c> if [is HD] contains no value, <c>true</c> if [is HD]; otherwise, <c>false</c>.</value>
+        public bool? IsHD { get; set; }
+        
         /// <summary>
         /// Gets or sets a value indicating whether this instance is folder.
         /// </summary>

@@ -275,7 +275,6 @@ namespace MediaBrowser.Server.Implementations.Dto
                 Name = item.Name,
                 MediaType = item.MediaType,
                 Type = item.GetType().Name,
-                IsFolder = item.IsFolder,
                 RunTimeTicks = item.RunTimeTicks
             };
 
@@ -959,6 +958,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.VideoType = video.VideoType;
                 dto.Video3DFormat = video.Video3DFormat;
                 dto.IsoType = video.IsoType;
+                dto.IsHD = video.IsHD;
 
                 dto.PartCount = video.AdditionalPartIds.Count + 1;
 

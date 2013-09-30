@@ -79,6 +79,7 @@
     <Compile Include="ScheduledTasks\TaskManager.cs" />
     <Compile Include="ScheduledTasks\Tasks\DeleteCacheFileTask.cs" />
     <Compile Include="ScheduledTasks\Tasks\DeleteLogFileTask.cs" />
+    <Compile Include="ScheduledTasks\Tasks\PluginUpdateTask.cs" />
     <Compile Include="ScheduledTasks\Tasks\ReloadLoggerTask.cs" />
     <Compile Include="ScheduledTasks\Tasks\SystemUpdateTask.cs" />
     <Compile Include="Security\MBLicenseFile.cs" />

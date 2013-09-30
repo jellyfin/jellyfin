@@ -5,6 +5,7 @@ using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaInfo;
 using MediaBrowser.Model.Drawing;
@@ -442,7 +443,23 @@ namespace MediaBrowser.Api.Playback
         /// <returns>System.String.</returns>
         protected string GetProbeSizeArgument(BaseItem item)
         {
-            return MediaEncoder.GetProbeSizeArgument(MediaEncoderHelpers.GetInputType(item));
+            var type = InputType.AudioFile;
+
+            if (item is Audio)
+            {
+                type = MediaEncoderHelpers.GetInputType(item.Path, null, null);
+            }
+            else
+            {
+                var video = item as Video;
+
+                if (video != null)
+                {
+                    type = MediaEncoderHelpers.GetInputType(item.Path, video.VideoType, video.IsoType);
+                }
+            }
+
+            return MediaEncoder.GetProbeSizeArgument(type);
         }
 
         /// <summary>

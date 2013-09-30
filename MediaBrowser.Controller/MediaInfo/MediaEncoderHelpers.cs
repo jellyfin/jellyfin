@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Common.MediaInfo;
+﻿using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
@@ -64,17 +63,17 @@ namespace MediaBrowser.Controller.MediaInfo
         /// <summary>
         /// Gets the type of the input.
         /// </summary>
-        /// <param name="item">The item.</param>
+        /// <param name="path">The path.</param>
+        /// <param name="videoType">Type of the video.</param>
+        /// <param name="isoType">Type of the iso.</param>
         /// <returns>InputType.</returns>
-        public static InputType GetInputType(BaseItem item)
+        public static InputType GetInputType(string path, VideoType? videoType, IsoType? isoType)
         {
             var type = InputType.AudioFile;
 
-            var video = item as Video;
-
-            if (video != null)
+            if (videoType.HasValue)
             {
-                switch (video.VideoType)
+                switch (videoType.Value)
                 {
                     case VideoType.BluRay:
                         type = InputType.Bluray;
@@ -83,9 +82,9 @@ namespace MediaBrowser.Controller.MediaInfo
                         type = InputType.Dvd;
                         break;
                     case VideoType.Iso:
-                        if (video.IsoType.HasValue)
+                        if (isoType.HasValue)
                         {
-                            switch (video.IsoType.Value)
+                            switch (isoType.Value)
                             {
                                 case IsoType.BluRay:
                                     type = InputType.Bluray;

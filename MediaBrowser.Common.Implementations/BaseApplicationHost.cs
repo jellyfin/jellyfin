@@ -586,6 +586,8 @@ namespace MediaBrowser.Common.Implementations
         /// <param name="newVersion">The new version.</param>
         protected void OnApplicationUpdated(Version newVersion)
         {
+            Logger.Info("Application has been updated to version {0}", newVersion);
+
             EventHelper.QueueEventIfNotNull(ApplicationUpdated, this, new GenericEventArgs<Version> { Argument = newVersion }, Logger);
 
             NotifyPendingRestart();

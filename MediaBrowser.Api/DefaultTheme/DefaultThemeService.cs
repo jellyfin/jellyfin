@@ -229,7 +229,7 @@ namespace MediaBrowser.Api.DefaultTheme
             var movies = items.OfType<Movie>()
                 .ToList();
 
-            var hdMovies = movies.Where(i => i.IsHd).ToList();
+            var hdMovies = movies.Where(i => i.IsHD).ToList();
 
             var familyGenres = request.FamilyGenre.Split(',').ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
 
