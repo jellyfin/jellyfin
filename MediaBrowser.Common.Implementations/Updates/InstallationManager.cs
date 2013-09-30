@@ -156,17 +156,13 @@ namespace MediaBrowser.Common.Implementations.Updates
         }
 
         private Tuple<List<PackageInfo>, DateTime> _lastPackageListResult;
-        
+
         /// <summary>
         /// Gets all available packages.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="packageType">Type of the package.</param>
-        /// <param name="applicationVersion">The application version.</param>
         /// <returns>Task{List{PackageInfo}}.</returns>
-        public async Task<IEnumerable<PackageInfo>> GetAvailablePackagesWithoutRegistrationInfo(CancellationToken cancellationToken,
-            PackageType? packageType = null,
-            Version applicationVersion = null)
+        public async Task<IEnumerable<PackageInfo>> GetAvailablePackagesWithoutRegistrationInfo(CancellationToken cancellationToken)
         {
             if (_lastPackageListResult != null)
             {
@@ -187,10 +183,26 @@ namespace MediaBrowser.Common.Implementations.Updates
 
                 var packages = _jsonSerializer.DeserializeFromStream<List<PackageInfo>>(json).ToList();
 
+                packages = FilterPackages(packages).ToList();
+
                 _lastPackageListResult = new Tuple<List<PackageInfo>, DateTime>(packages, DateTime.UtcNow);
 
-                return FilterPackages(packages, packageType, applicationVersion);
+                return _lastPackageListResult.Item1;
             }
+        }
+
+        protected IEnumerable<PackageInfo> FilterPackages(List<PackageInfo> packages)
+        {
+            foreach (var package in packages)
+            {
+                package.versions = package.versions.Where(v => !string.IsNullOrWhiteSpace(v.sourceUrl))
+                    .OrderByDescending(v => v.version).ToList();
+            }
+
+            // Remove packages with no versions
+            packages = packages.Where(p => p.versions.Any()).ToList();
+
+            return packages;
         }
 
         protected IEnumerable<PackageInfo> FilterPackages(List<PackageInfo> packages, PackageType? packageType, Version applicationVersion)
