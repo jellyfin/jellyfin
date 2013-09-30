@@ -266,46 +266,43 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <summary>
         /// Used to report playback progress for an item
         /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="positionTicks">The position ticks.</param>
-        /// <param name="isPaused">if set to <c>true</c> [is paused].</param>
-        /// <param name="sessionId">The session id.</param>
+        /// <param name="info">The info.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
         /// <exception cref="System.ArgumentOutOfRangeException">positionTicks</exception>
-        public async Task OnPlaybackProgress(BaseItem item, long? positionTicks, bool isPaused, bool isMuted, Guid sessionId)
+        public async Task OnPlaybackProgress(PlaybackProgressInfo info)
         {
-            if (item == null)
+            if (info == null)
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException("info");
             }
 
-            if (positionTicks.HasValue && positionTicks.Value < 0)
+            if (info.PositionTicks.HasValue && info.PositionTicks.Value < 0)
             {
                 throw new ArgumentOutOfRangeException("positionTicks");
             }
 
-            var session = Sessions.First(i => i.Id.Equals(sessionId));
+            var session = Sessions.First(i => i.Id.Equals(info.SessionId));
 
-            UpdateNowPlayingItem(session, item, isPaused, isMuted, positionTicks);
+            UpdateNowPlayingItem(session, info.Item, info.IsPaused, info.IsMuted, info.PositionTicks);
 
-            var key = item.GetUserDataKey();
+            var key = info.Item.GetUserDataKey();
 
             var user = session.User;
 
-            if (positionTicks.HasValue)
+            if (info.PositionTicks.HasValue)
             {
                 var data = _userDataRepository.GetUserData(user.Id, key);
 
-                UpdatePlayState(item, data, positionTicks.Value);
+                UpdatePlayState(info.Item, data, info.PositionTicks.Value);
                 await _userDataRepository.SaveUserData(user.Id, key, data, CancellationToken.None).ConfigureAwait(false);
             }
 
             EventHelper.QueueEventIfNotNull(PlaybackProgress, this, new PlaybackProgressEventArgs
             {
-                Item = item,
+                Item = info.Item,
                 User = user,
-                PlaybackPositionTicks = positionTicks
+                PlaybackPositionTicks = info.PositionTicks
 
             }, _logger);
         }
@@ -313,36 +310,35 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <summary>
         /// Used to report that playback has ended for an item
         /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="positionTicks">The position ticks.</param>
-        /// <param name="sessionId">The session id.</param>
+        /// <param name="info">The info.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
-        public async Task OnPlaybackStopped(BaseItem item, long? positionTicks, Guid sessionId)
+        /// <exception cref="System.ArgumentNullException">info</exception>
+        /// <exception cref="System.ArgumentOutOfRangeException">positionTicks</exception>
+        public async Task OnPlaybackStopped(PlaybackStopInfo info)
         {
-            if (item == null)
+            if (info == null)
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException("info");
             }
 
-            if (positionTicks.HasValue && positionTicks.Value < 0)
+            if (info.PositionTicks.HasValue && info.PositionTicks.Value < 0)
             {
                 throw new ArgumentOutOfRangeException("positionTicks");
             }
 
-            var session = Sessions.First(i => i.Id.Equals(sessionId));
+            var session = Sessions.First(i => i.Id.Equals(info.SessionId));
 
-            RemoveNowPlayingItem(session, item);
+            RemoveNowPlayingItem(session, info.Item);
 
-            var key = item.GetUserDataKey();
+            var key = info.Item.GetUserDataKey();
 
             var user = session.User;
 
             var data = _userDataRepository.GetUserData(user.Id, key);
 
-            if (positionTicks.HasValue)
+            if (info.PositionTicks.HasValue)
             {
-                UpdatePlayState(item, data, positionTicks.Value);
+                UpdatePlayState(info.Item, data, info.PositionTicks.Value);
             }
             else
             {
@@ -356,9 +352,9 @@ namespace MediaBrowser.Server.Implementations.Session
 
             EventHelper.QueueEventIfNotNull(PlaybackStopped, this, new PlaybackProgressEventArgs
             {
-                Item = item,
+                Item = info.Item,
                 User = user,
-                PlaybackPositionTicks = positionTicks
+                PlaybackPositionTicks = info.PositionTicks
             }, _logger);
         }
 

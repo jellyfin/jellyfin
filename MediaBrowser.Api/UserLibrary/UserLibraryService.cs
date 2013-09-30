@@ -697,7 +697,16 @@ namespace MediaBrowser.Api.UserLibrary
 
             var item = _dtoService.GetItemByDtoId(request.Id, user.Id);
 
-            var task = _sessionManager.OnPlaybackProgress(item, request.PositionTicks, request.IsPaused, request.IsMuted, GetSession().Id);
+            var info = new PlaybackProgressInfo
+            {
+                Item = item,
+                PositionTicks = request.PositionTicks,
+                IsMuted = request.IsMuted,
+                IsPaused = request.IsPaused,
+                SessionId = GetSession().Id
+            };
+
+            var task = _sessionManager.OnPlaybackProgress(info);
 
             Task.WaitAll(task);
         }
@@ -717,7 +726,14 @@ namespace MediaBrowser.Api.UserLibrary
 
             var session = GetSession();
 
-            var task = _sessionManager.OnPlaybackStopped(item, request.PositionTicks, session.Id);
+            var info = new PlaybackStopInfo
+            {
+                Item = item,
+                PositionTicks = request.PositionTicks,
+                SessionId = session.Id
+            };
+
+            var task = _sessionManager.OnPlaybackStopped(info);
 
             Task.WaitAll(task);
         }

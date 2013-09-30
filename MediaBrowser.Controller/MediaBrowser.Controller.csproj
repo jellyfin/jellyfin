@@ -175,6 +175,8 @@
     <Compile Include="Providers\BaseMetadataProvider.cs" />
     <Compile Include="Session\ISessionRemoteController.cs" />
     <Compile Include="Session\PlaybackInfo.cs" />
+    <Compile Include="Session\PlaybackProgressInfo.cs" />
+    <Compile Include="Session\PlaybackStopInfo.cs" />
     <Compile Include="Session\SessionInfo.cs" />
     <Compile Include="Sorting\IBaseItemComparer.cs" />
     <Compile Include="Sorting\IUserBaseItemComparer.cs" />

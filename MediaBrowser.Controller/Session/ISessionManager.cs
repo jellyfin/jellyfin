@@ -62,24 +62,18 @@ namespace MediaBrowser.Controller.Session
         /// <summary>
         /// Used to report playback progress for an item
         /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="positionTicks">The position ticks.</param>
-        /// <param name="isPaused">if set to <c>true</c> [is paused].</param>
-        /// <param name="isMuted">if set to <c>true</c> [is muted].</param>
-        /// <param name="sessionId">The session id.</param>
+        /// <param name="info">The info.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        Task OnPlaybackProgress(BaseItem item, long? positionTicks, bool isPaused, bool isMuted, Guid sessionId);
+        Task OnPlaybackProgress(PlaybackProgressInfo info);
 
         /// <summary>
         /// Used to report that playback has ended for an item
         /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="positionTicks">The position ticks.</param>
-        /// <param name="sessionId">The session id.</param>
+        /// <param name="info">The info.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        Task OnPlaybackStopped(BaseItem item, long? positionTicks, Guid sessionId);
+        Task OnPlaybackStopped(PlaybackStopInfo info);
 
         /// <summary>
         /// Sends the system command.

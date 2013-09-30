@@ -128,7 +128,16 @@ namespace MediaBrowser.Server.Implementations.Session
                     var isPaused = vals.Length > 2 && string.Equals(vals[2], "true", StringComparison.OrdinalIgnoreCase);
                     var isMuted = vals.Length > 3 && string.Equals(vals[3], "true", StringComparison.OrdinalIgnoreCase);
 
-                    _sessionManager.OnPlaybackProgress(item, positionTicks, isPaused, isMuted, session.Id);
+                    var info = new PlaybackProgressInfo
+                    {
+                        Item = item,
+                        PositionTicks = positionTicks,
+                        IsMuted = isMuted,
+                        IsPaused = isPaused,
+                        SessionId = session.Id
+                    };
+
+                    _sessionManager.OnPlaybackProgress(info);
                 }
             }
             else if (string.Equals(message.MessageType, "PlaybackStopped", StringComparison.OrdinalIgnoreCase))
@@ -155,7 +164,14 @@ namespace MediaBrowser.Server.Implementations.Session
                         }
                     }
 
-                    _sessionManager.OnPlaybackStopped(item, positionTicks, session.Id);
+                    var info = new PlaybackStopInfo
+                    {
+                        Item = item,
+                        PositionTicks = positionTicks,
+                        SessionId = session.Id
+                    };
+
+                    _sessionManager.OnPlaybackStopped(info);
                 }
             }
 
