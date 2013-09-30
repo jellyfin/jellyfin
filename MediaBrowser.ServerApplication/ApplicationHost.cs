@@ -4,7 +4,6 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Constants;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Implementations;
-using MediaBrowser.Common.Implementations.IO;
 using MediaBrowser.Common.Implementations.ScheduledTasks;
 using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Common.Net;
@@ -25,7 +24,6 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.Sorting;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.System;
@@ -152,7 +150,6 @@ namespace MediaBrowser.ServerApplication
         /// <value>The media encoder.</value>
         private IMediaEncoder MediaEncoder { get; set; }
 
-        private IIsoManager IsoManager { get; set; }
         private ISessionManager SessionManager { get; set; }
 
         private ILiveTvManager LiveTvManager { get; set; }
@@ -237,9 +234,6 @@ namespace MediaBrowser.ServerApplication
 
             RegisterSingleInstance<IWebSocketServer>(() => new AlchemyServer(Logger));
 
-            IsoManager = new IsoManager();
-            RegisterSingleInstance(IsoManager);
-
             RegisterSingleInstance<IBlurayExaminer>(() => new BdInfoExaminer());
 
             var mediaEncoderTask = RegisterMediaEncoder();
@@ -271,7 +265,7 @@ namespace MediaBrowser.ServerApplication
             RegisterSingleInstance<ILibrarySearchEngine>(() => new LuceneSearchEngine(ApplicationPaths, LogManager, LibraryManager));
 
             SessionManager = new SessionManager(UserDataRepository, ServerConfigurationManager, Logger, UserRepository);
-            RegisterSingleInstance<ISessionManager>(SessionManager);
+            RegisterSingleInstance(SessionManager);
 
             HttpServer = await _httpServerCreationTask.ConfigureAwait(false);
             RegisterSingleInstance(HttpServer, false);
@@ -326,6 +320,10 @@ namespace MediaBrowser.ServerApplication
                  );
         }
 
+        /// <summary>
+        /// Gets the user repository.
+        /// </summary>
+        /// <returns>Task{IUserRepository}.</returns>
         private async Task<IUserRepository> GetUserRepository()
         {
             var repo = new SqliteUserRepository(JsonSerializer, LogManager, ApplicationPaths);
@@ -424,8 +422,6 @@ namespace MediaBrowser.ServerApplication
                                     GetExports<IMetadataSaver>());
 
             ProviderManager.AddParts(GetExports<BaseMetadataProvider>());
-
-            IsoManager.AddParts(GetExports<IIsoMounter>());
 
             SessionManager.AddParts(GetExports<ISessionRemoteController>());
 

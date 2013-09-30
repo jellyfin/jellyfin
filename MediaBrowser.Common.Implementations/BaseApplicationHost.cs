@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Implementations.Archiving;
+using MediaBrowser.Common.Implementations.IO;
 using MediaBrowser.Common.Implementations.NetworkManagement;
 using MediaBrowser.Common.Implementations.ScheduledTasks;
 using MediaBrowser.Common.Implementations.Security;
@@ -156,6 +157,8 @@ namespace MediaBrowser.Common.Implementations
         /// </summary>
         /// <value>The zip client.</value>
         protected IZipClient ZipClient { get; set; }
+
+        protected IIsoManager IsoManager { get; set; }
         
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseApplicationHost{TApplicationPathsType}"/> class.
@@ -193,18 +196,54 @@ namespace MediaBrowser.Common.Implementations
             await RegisterResources().ConfigureAwait(false);
 
             FindParts();
+
+            await InstallIsoMounters(CancellationToken.None).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Called when [logger loaded].
+        /// </summary>
         protected virtual void OnLoggerLoaded()
         {
 
         }
 
         /// <summary>
+        /// Installs the iso mounters.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        private async Task InstallIsoMounters(CancellationToken cancellationToken)
+        {
+            var list = new List<IIsoMounter>();
+
+            foreach (var isoMounter in GetExports<IIsoMounter>())
+            {
+                try
+                {
+                    if (isoMounter.RequiresInstallation && !isoMounter.IsInstalled)
+                    {
+                        Logger.Info("Installing {0}", isoMounter.Name);
+
+                        await isoMounter.Install(cancellationToken).ConfigureAwait(false);
+                    }
+
+                    list.Add(isoMounter);
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException("{0} failed to load.", ex, isoMounter.Name);
+                }
+            }
+
+            IsoManager.AddParts(list);
+        }
+
+        /// <summary>
         /// Runs the startup tasks.
         /// </summary>
         /// <returns>Task.</returns>
-        public virtual Task RunStartupTasks()
+        public virtual  Task RunStartupTasks()
         {
             return Task.Run(() =>
             {
@@ -307,6 +346,9 @@ namespace MediaBrowser.Common.Implementations
 
                 ZipClient = new ZipClient();
                 RegisterSingleInstance(ZipClient);
+
+                IsoManager = new IsoManager();
+                RegisterSingleInstance(IsoManager);
             });
         }
 
