@@ -498,7 +498,7 @@
             }
 
             // Webm must be ahead of mp4 due to the issue of mp4 playing too fast in chrome
-            var prioritizeWebmOverH264 = true;
+            var prioritizeWebmOverH264 = $.browser.chrome || $.browser.msie;
 
             var h264Codec = 'h264';
             var h264AudioCodec = 'aac';
@@ -507,8 +507,13 @@
 
                 var videoCodec = (videoStream.Codec || '').toLowerCase();
 
-                if (videoCodec.indexOf('h264') != -1) {
-                   // h264Codec = 'copy';
+                if (videoCodec.indexOf('h264') != -1 &&
+                    videoStream.Width &&
+                    videoStream.Width <= 1280 &&
+                    videoStream.BitRate &&
+                    videoStream.BitRate <= 2000000) {
+
+                    //h264Codec = 'copy';
                 }
             }
 
@@ -561,7 +566,6 @@
                 html += '<source type="video/webm" src="' + webmVideoUrl + '" />';
                 html += '<source type="video/mp4" src="' + mp4VideoUrl + '" />';
             } else {
-
                 html += '<source type="video/mp4" src="' + mp4VideoUrl + '" />';
                 html += '<source type="video/webm" src="' + webmVideoUrl + '" />';
             }
