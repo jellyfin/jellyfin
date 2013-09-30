@@ -1,22 +1,10 @@
-﻿<controls:MetroWindow x:Class="MediaBrowser.ServerApplication.LibraryExplorer"
+﻿<Window x:Class="MediaBrowser.ServerApplication.LibraryExplorer"
                       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                       xmlns:local="clr-namespace:MediaBrowser.ServerApplication"
-                      xmlns:controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
-                      Title="Library Explorer"
+        Title="Library Explorer"
                       Height="733.75"
                       Width="893">
-    <controls:MetroWindow.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Colours.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Accents/Blue.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Accents/BaseLight.xaml" />
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
-    </controls:MetroWindow.Resources>
     <Grid Margin="0,0,0,10">
         <TreeView x:Name="tvwLibrary"
                   HorizontalAlignment="Left"
@@ -187,4 +175,4 @@
                Width="138" />
 
     </Grid>
-</controls:MetroWindow>
+</Window>
