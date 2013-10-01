@@ -43,7 +43,7 @@ namespace MediaBrowser.Providers.MediaInfo
             _mediaEncoder = mediaEncoder;
             _isoManager = isoManager;
 
-            ImageCache = new FileSystemRepository(Kernel.Instance.FFMpegManager.AudioImagesDataPath);
+            ImageCache = new FileSystemRepository(Kernel.Instance.FFMpegManager.VideoImagesDataPath);
         }
 
         /// <summary>
