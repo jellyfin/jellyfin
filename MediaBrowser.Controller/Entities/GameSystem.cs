@@ -25,5 +25,14 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The game system.</value>
         public string GameSystemName { get; set; }
+
+        /// <summary>
+        /// Gets the user data key.
+        /// </summary>
+        /// <returns>System.String.</returns>
+        public override string GetUserDataKey()
+        {
+            return GameSystemName ?? base.GetUserDataKey();
+        }
     }
 }

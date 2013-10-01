@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediaBrowser.Model.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -74,6 +75,29 @@ namespace MediaBrowser.Controller.Entities.Audio
         public string AlbumArtist { get; set; }
 
         public List<string> Artists { get; set; }
+
+        /// <summary>
+        /// Gets the user data key.
+        /// </summary>
+        /// <returns>System.String.</returns>
+        public override string GetUserDataKey()
+        {
+            var id = this.GetProviderId(MetadataProviders.MusicBrainzReleaseGroup);
+
+            if (!string.IsNullOrEmpty(id))
+            {
+                return id;
+            }
+
+            id = this.GetProviderId(MetadataProviders.Musicbrainz);
+
+            if (!string.IsNullOrEmpty(id))
+            {
+                return id;
+            }
+
+            return base.GetUserDataKey();
+        }
     }
 
     public class MusicAlbumDisc : Folder

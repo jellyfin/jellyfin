@@ -40,7 +40,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// <summary>
         /// The unknown album
         /// </summary>
-        private static readonly MusicAlbum UnknownAlbum = new MusicAlbum {Name = "<Unknown>"};
+        private static readonly MusicAlbum UnknownAlbum = new MusicAlbum { Name = "<Unknown>" };
         /// <summary>
         /// Override this to return the folder that should be used to construct a container
         /// for this item in an index.  GroupInIndex should be true as well.
@@ -51,7 +51,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         {
             get
             {
-                return Parent is MusicAlbum ? Parent : Album != null ? new MusicAlbum {Name = Album, PrimaryImagePath = PrimaryImagePath } : UnknownAlbum;
+                return Parent is MusicAlbum ? Parent : Album != null ? new MusicAlbum { Name = Album, PrimaryImagePath = PrimaryImagePath } : UnknownAlbum;
             }
         }
 
@@ -102,6 +102,31 @@ namespace MediaBrowser.Controller.Entities.Audio
         public bool HasArtist(string name)
         {
             return Artists.Contains(name, StringComparer.OrdinalIgnoreCase) || string.Equals(AlbumArtist, name, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Gets the user data key.
+        /// </summary>
+        /// <returns>System.String.</returns>
+        public override string GetUserDataKey()
+        {
+            var parent = Parent as MusicAlbum;
+
+            if (parent != null)
+            {
+                var id = parent.GetProviderId(MetadataProviders.MusicBrainzReleaseGroup) ??
+                         parent.GetProviderId(MetadataProviders.Musicbrainz);
+
+                if (!string.IsNullOrEmpty(id) && IndexNumber.HasValue)
+                {
+                    var songKey = (ParentIndexNumber != null ? ParentIndexNumber.Value.ToString("0000 - ") : "")
+                                  + (IndexNumber.Value.ToString("0000 - "));
+
+                    return id + songKey;
+                }
+            }
+
+            return base.GetUserDataKey();
         }
     }
 }
