@@ -1,11 +1,11 @@
-﻿using System.Globalization;
-using System.Linq;
-using MediaBrowser.Controller.Library;
+﻿using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using System.Runtime.Serialization;
-using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Entities.Audio
 {
@@ -27,7 +27,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// <returns>System.String.</returns>
         public override string GetUserDataKey()
         {
-            return "Artist-" + Name;
+            return GetUserDataKey(this);
         }
 
         [IgnoreDataMember]
@@ -63,6 +63,23 @@ namespace MediaBrowser.Controller.Entities.Audio
 
                 return string.Compare(i.Name, artist.Name, CultureInfo.CurrentCulture, CompareOptions.IgnoreNonSpace | CompareOptions.IgnoreCase | CompareOptions.IgnoreSymbols) == 0;
             });
+        }
+
+        /// <summary>
+        /// Gets the user data key.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns>System.String.</returns>
+        public static string GetUserDataKey(BaseItem item)
+        {
+            var id = item.GetProviderId(MetadataProviders.Musicbrainz);
+
+            if (!string.IsNullOrEmpty(id))
+            {
+                return id;
+            }
+            
+            return "Artist-" + item.Name;
         }
     }
 }

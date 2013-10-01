@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using MediaBrowser.Model.Entities;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -67,6 +68,11 @@ namespace MediaBrowser.Controller.Entities
             {
                 return !IsInMixedFolder;
             }
+        }
+
+        public override string GetUserDataKey()
+        {
+            return this.GetProviderId(MetadataProviders.Gamesdb) ?? base.GetUserDataKey();
         }
     }
 }
