@@ -5,11 +5,39 @@
         TargetSystems: 'Server'
     };
 
+    function getApps() {
+
+        var apps = [];
+
+        apps.push({
+            type: "UserInstalled",
+            name: "MBKinect",
+            category: "Voice Control",
+            isApp: true,
+            tileColor: "#050810",
+            thumbImage: "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/images/mbkinect/thumb.png",
+            externalUrl: "http://community.mediabrowser.tv/permalinks/14020/mb-kinect-and-control-public-alpha",
+            isPremium: false
+        });
+
+        return apps;
+    }
+
+    function getAppsPromise() {
+
+        var deferred = $.Deferred();
+
+        deferred.resolveWith(null, [[getApps()]]);
+
+        return deferred.promise();
+    }
+
     function reloadList(page) {
 
         Dashboard.showLoadingMsg();
 
-        var promise1 = ApiClient.getAvailablePlugins(query);
+        var promise1 = query.TargetSystems == "Apps" ? getAppsPromise() : ApiClient.getAvailablePlugins(query);
+
         var promise2 = ApiClient.getInstalledPlugins();
 
         $.when(promise1, promise2).done(function (response1, response2) {
@@ -42,13 +70,16 @@
             var plugin = availablePlugins[i];
 
             var category = plugin.category || "General";
-            
+
             if (category != currentCategory) {
                 html += '<h2 style="margin: .5em 0 0;">' + category + '</h2>';
                 currentCategory = category;
             }
 
-            html += "<a class='posterItem backdropPosterItem transparentPosterItem borderlessPosterItem' href='addPlugin.html?name=" + encodeURIComponent(plugin.name) + "'>";
+            var href = plugin.externalUrl ? plugin.externalUrl : "addPlugin.html?name=" + encodeURIComponent(plugin.name);
+            var target = plugin.externalUrl ? ' target="_blank"' : '';
+
+            html += "<a class='posterItem backdropPosterItem transparentPosterItem borderlessPosterItem' href='" + href + "' " + target + ">";
 
             if (plugin.thumbImage) {
                 html += '<div class="posterItemImage" style="background-image:url(\'' + plugin.thumbImage + '\');background-size:cover;"></div>';
@@ -68,7 +99,7 @@
 
             html += "<div class='posterItemText posterItemTextCentered' style='background:" + color + "'>";
 
-            var installedPlugin = installedPlugins.filter(function (ip) {
+            var installedPlugin = plugin.isApp ? null : installedPlugins.filter(function (ip) {
                 return ip.Name == plugin.name;
             })[0];
 
