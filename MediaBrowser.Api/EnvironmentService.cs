@@ -105,6 +105,12 @@ namespace MediaBrowser.Api
                 throw new ArgumentNullException("Path");
             }
 
+            // If it's not a drive trim trailing slashes.
+            if (!path.EndsWith(":\\"))
+            {
+                path = path.TrimEnd('\\');
+            }
+
             if (path.StartsWith(NetworkPrefix, StringComparison.OrdinalIgnoreCase) && path.LastIndexOf('\\') == 1)
             {
                 return ToOptimizedResult(GetNetworkShares(path).OrderBy(i => i.Path).ToList());

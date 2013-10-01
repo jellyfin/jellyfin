@@ -208,7 +208,7 @@
             $('#fldCollectionType', popup).hide();
         }
 
-        $('#selectCollectionType', popup).html(MediaLibraryPage.getCollectionTypeOptionsHtml()).val('movies').selectmenu('refresh');
+        $('#selectCollectionType', popup).html(MediaLibraryPage.getCollectionTypeOptionsHtml()).selectmenu('refresh');
 
         popup.on("popupafteropen", function () {
             $('#textEntryForm input:first', this).focus();
