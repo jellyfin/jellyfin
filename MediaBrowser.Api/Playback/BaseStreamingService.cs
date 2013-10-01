@@ -358,10 +358,7 @@ namespace MediaBrowser.Api.Playback
                 {
                     var parentPath = Path.GetDirectoryName(path);
 
-                    if (!Directory.Exists(parentPath))
-                    {
-                        Directory.CreateDirectory(parentPath);
-                    }
+                    Directory.CreateDirectory(parentPath);
 
                     var task = MediaEncoder.ExtractTextSubtitle(inputPath, type, subtitleStream.Index, offset, path, CancellationToken.None);
 
@@ -396,10 +393,7 @@ namespace MediaBrowser.Api.Playback
                 {
                     var parentPath = Path.GetDirectoryName(path);
 
-                    if (!Directory.Exists(parentPath))
-                    {
-                        Directory.CreateDirectory(parentPath);
-                    }
+                    Directory.CreateDirectory(parentPath);
 
                     var task = MediaEncoder.ConvertTextSubtitleToAss(subtitleStream.Path, path, subtitleStream.Language, offset, CancellationToken.None);
 
@@ -599,10 +593,7 @@ namespace MediaBrowser.Api.Playback
         {
             var parentPath = Path.GetDirectoryName(outputPath);
 
-            if (!Directory.Exists(parentPath))
-            {
-                Directory.CreateDirectory(parentPath);
-            }
+            Directory.CreateDirectory(parentPath);
 
             var video = state.Item as Video;
 
@@ -648,7 +639,7 @@ namespace MediaBrowser.Api.Playback
             {
                 process.Start();
             }
-            catch (Win32Exception ex)
+            catch (Exception ex)
             {
                 Logger.ErrorException("Error starting ffmpeg", ex);
 

@@ -225,10 +225,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
                 {
                     var parentPath = Path.GetDirectoryName(cacheFilePath);
 
-                    if (!Directory.Exists(parentPath))
-                    {
-                        Directory.CreateDirectory(parentPath);
-                    }
+                    Directory.CreateDirectory(parentPath);
 
                     // Save to the cache location
                     using (var cacheFileStream = new FileStream(cacheFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
@@ -374,10 +371,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
                             {
                                 var parentPath = Path.GetDirectoryName(croppedImagePath);
 
-                                if (!Directory.Exists(parentPath))
-                                {
-                                    Directory.CreateDirectory(parentPath);
-                                }
+                                Directory.CreateDirectory(parentPath);
 
                                 using (var outputStream = new FileStream(croppedImagePath, FileMode.Create, FileAccess.Write, FileShare.Read))
                                 {
@@ -528,10 +522,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
                 var parentPath = Path.GetDirectoryName(fullCachePath);
 
-                if (!Directory.Exists(parentPath))
-                {
-                    Directory.CreateDirectory(parentPath);
-                }
+                Directory.CreateDirectory(parentPath);
 
                 // Update the file system cache
                 File.WriteAllText(fullCachePath, size.Width.ToString(UsCulture) + @"|" + size.Height.ToString(UsCulture));
@@ -701,10 +692,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
                             {
                                 var parentDirectory = Path.GetDirectoryName(enhancedImagePath);
 
-                                if (!Directory.Exists(parentDirectory))
-                                {
-                                    Directory.CreateDirectory(parentDirectory);
-                                }
+                                Directory.CreateDirectory(parentDirectory);
 
                                 //And then save it in the cache
                                 using (var outputStream = new FileStream(enhancedImagePath, FileMode.Create, FileAccess.Write, FileShare.Read))

@@ -163,14 +163,21 @@ namespace MediaBrowser.Providers.Music
                 // Process images
                 var path = GetArtistDataPath(ConfigurationManager.ApplicationPaths, musicBrainzId);
 
-                var files = new DirectoryInfo(path)
-                    .EnumerateFiles("*.xml", SearchOption.TopDirectoryOnly)
-                    .Select(i => i.LastWriteTimeUtc)
-                    .ToList();
-
-                if (files.Count > 0)
+                try
                 {
-                    return files.Max();
+                    var files = new DirectoryInfo(path)
+                        .EnumerateFiles("*.xml", SearchOption.TopDirectoryOnly)
+                        .Select(i => i.LastWriteTimeUtc)
+                        .ToList();
+
+                    if (files.Count > 0)
+                    {
+                        return files.Max();
+                    }
+                }
+                catch (DirectoryNotFoundException)
+                {
+                    
                 }
             }
 
@@ -192,11 +199,6 @@ namespace MediaBrowser.Providers.Music
         {
             var seriesDataPath = Path.Combine(GetArtistDataPath(appPaths), musicBrainzArtistId);
 
-            if (!Directory.Exists(seriesDataPath))
-            {
-                Directory.CreateDirectory(seriesDataPath);
-            }
-
             return seriesDataPath;
         }
 
@@ -208,11 +210,6 @@ namespace MediaBrowser.Providers.Music
         internal static string GetArtistDataPath(IApplicationPaths appPaths)
         {
             var dataPath = Path.Combine(appPaths.DataPath, "fanart-music");
-
-            if (!Directory.Exists(dataPath))
-            {
-                Directory.CreateDirectory(dataPath);
-            }
 
             return dataPath;
         }

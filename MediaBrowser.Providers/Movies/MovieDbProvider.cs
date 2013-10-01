@@ -15,6 +15,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Providers.Savers;
 
 namespace MediaBrowser.Providers.Movies
 {
@@ -233,9 +234,15 @@ namespace MediaBrowser.Providers.Movies
                 return item.LocationType == LocationType.FileSystem && item.ResolveArgs.ContainsMetaFileByName("collection.xml");
             }
 
-            var xmlFileName = MovieProviderFromXml.GetXmlFilename(item);
+            var path = MovieXmlSaver.GetMovieSavePath(item);
 
-            return item.LocationType == LocationType.FileSystem && item.ResolveArgs.ContainsMetaFileByName(xmlFileName);
+            if (item.LocationType == LocationType.FileSystem)
+            {
+                // If mixed with multiple movies in one folder, resolve args won't have the file system children
+                return item.ResolveArgs.ContainsMetaFileByName(Path.GetFileName(path)) || File.Exists(path);
+            }
+
+            return false;
         }
 
         /// <summary>

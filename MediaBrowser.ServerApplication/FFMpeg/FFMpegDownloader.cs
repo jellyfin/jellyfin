@@ -55,10 +55,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                 Version = Version
             };
 
-            if (!Directory.Exists(versionedDirectoryPath))
-            {
-                Directory.CreateDirectory(versionedDirectoryPath);
-            }
+            Directory.CreateDirectory(versionedDirectoryPath);
 
             var tasks = new List<Task>();
 
@@ -114,10 +111,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
 
             var tempFolder = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid().ToString());
 
-            if (!Directory.Exists(tempFolder))
-            {
-                Directory.CreateDirectory(tempFolder);
-            }
+            Directory.CreateDirectory(tempFolder);
 
             try
             {
@@ -163,10 +157,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
             {
                 var fontsDirectory = Path.Combine(targetPath, "fonts");
 
-                if (!Directory.Exists(fontsDirectory))
-                {
-                    Directory.CreateDirectory(fontsDirectory);
-                }
+                Directory.CreateDirectory(fontsDirectory);
 
                 const string fontFilename = "ARIALUNI.TTF";
 
@@ -291,10 +282,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
         {
             var path = Path.Combine(_appPaths.ProgramDataPath, "ffmpeg");
 
-            if (create && !Directory.Exists(path))
-            {
-                Directory.CreateDirectory(path);
-            }
+            Directory.CreateDirectory(path);
 
             return path;
         }

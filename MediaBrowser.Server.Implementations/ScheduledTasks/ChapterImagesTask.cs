@@ -182,10 +182,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
 
                     var parentPath = Path.GetDirectoryName(failHistoryPath);
 
-                    if (!Directory.Exists(parentPath))
-                    {
-                        Directory.CreateDirectory(parentPath);
-                    }
+                    Directory.CreateDirectory(parentPath);
 
                     File.WriteAllText(failHistoryPath, string.Join("|", previouslyFailedImages.ToArray()));
                 }

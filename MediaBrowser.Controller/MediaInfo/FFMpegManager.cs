@@ -159,10 +159,7 @@ namespace MediaBrowser.Controller.MediaInfo
                         {
                             var parentPath = Path.GetDirectoryName(path);
 
-                            if (!Directory.Exists(parentPath))
-                            {
-                                Directory.CreateDirectory(parentPath);
-                            }
+                            Directory.CreateDirectory(parentPath);
                             
                             await _encoder.ExtractImage(inputPath, type, video.Video3DFormat, time, path, cancellationToken).ConfigureAwait(false);
                             chapter.ImagePath = path;

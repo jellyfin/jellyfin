@@ -100,14 +100,21 @@ namespace MediaBrowser.Providers.TV
                 // Process images
                 var path = GetSeriesDataPath(ConfigurationManager.ApplicationPaths, id);
 
-                var files = new DirectoryInfo(path)
-                    .EnumerateFiles("*.xml", SearchOption.TopDirectoryOnly)
-                    .Select(i => i.LastWriteTimeUtc)
-                    .ToList();
-
-                if (files.Count > 0)
+                try
                 {
-                    return files.Max();
+                    var files = new DirectoryInfo(path)
+                        .EnumerateFiles("*.xml", SearchOption.TopDirectoryOnly)
+                        .Select(i => i.LastWriteTimeUtc)
+                        .ToList();
+
+                    if (files.Count > 0)
+                    {
+                        return files.Max();
+                    }
+                }
+                catch (DirectoryNotFoundException)
+                {
+                    // Don't blow up
                 }
             }
 
@@ -148,11 +155,6 @@ namespace MediaBrowser.Providers.TV
         {
             var seriesDataPath = Path.Combine(GetSeriesDataPath(appPaths), seriesId);
 
-            if (!Directory.Exists(seriesDataPath))
-            {
-                Directory.CreateDirectory(seriesDataPath);
-            }
-
             return seriesDataPath;
         }
 
@@ -164,11 +166,6 @@ namespace MediaBrowser.Providers.TV
         internal static string GetSeriesDataPath(IApplicationPaths appPaths)
         {
             var dataPath = Path.Combine(appPaths.DataPath, "fanart-tv");
-
-            if (!Directory.Exists(dataPath))
-            {
-                Directory.CreateDirectory(dataPath);
-            }
 
             return dataPath;
         }

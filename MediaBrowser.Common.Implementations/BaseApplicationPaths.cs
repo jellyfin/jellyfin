@@ -72,10 +72,7 @@ namespace MediaBrowser.Common.Implementations
                 {
                     _dataDirectory = Path.Combine(ProgramDataPath, "data");
 
-                    if (!Directory.Exists(_dataDirectory))
-                    {
-                        Directory.CreateDirectory(_dataDirectory);
-                    }
+                    Directory.CreateDirectory(_dataDirectory);
                 }
 
                 return _dataDirectory;
@@ -98,10 +95,7 @@ namespace MediaBrowser.Common.Implementations
                 {
                     _imageCachePath = Path.Combine(CachePath, "images");
 
-                    if (!Directory.Exists(_imageCachePath))
-                    {
-                        Directory.CreateDirectory(_imageCachePath);
-                    }
+                    Directory.CreateDirectory(_imageCachePath);
                 }
 
                 return _imageCachePath;
@@ -123,10 +117,7 @@ namespace MediaBrowser.Common.Implementations
                 if (_pluginsPath == null)
                 {
                     _pluginsPath = Path.Combine(ProgramDataPath, "plugins");
-                    if (!Directory.Exists(_pluginsPath))
-                    {
-                        Directory.CreateDirectory(_pluginsPath);
-                    }
+                    Directory.CreateDirectory(_pluginsPath);
                 }
 
                 return _pluginsPath;
@@ -148,10 +139,7 @@ namespace MediaBrowser.Common.Implementations
                 if (_pluginConfigurationsPath == null)
                 {
                     _pluginConfigurationsPath = Path.Combine(PluginsPath, "configurations");
-                    if (!Directory.Exists(_pluginConfigurationsPath))
-                    {
-                        Directory.CreateDirectory(_pluginConfigurationsPath);
-                    }
+                    Directory.CreateDirectory(_pluginConfigurationsPath);
                 }
 
                 return _pluginConfigurationsPath;
@@ -170,10 +158,7 @@ namespace MediaBrowser.Common.Implementations
                 if (_tempUpdatePath == null)
                 {
                     _tempUpdatePath = Path.Combine(ProgramDataPath, "updates");
-                    if (!Directory.Exists(_tempUpdatePath))
-                    {
-                        Directory.CreateDirectory(_tempUpdatePath);
-                    }
+                    Directory.CreateDirectory(_tempUpdatePath);
                 }
 
                 return _tempUpdatePath;
@@ -195,10 +180,7 @@ namespace MediaBrowser.Common.Implementations
                 if (_logDirectoryPath == null)
                 {
                     _logDirectoryPath = Path.Combine(ProgramDataPath, "logs");
-                    if (!Directory.Exists(_logDirectoryPath))
-                    {
-                        Directory.CreateDirectory(_logDirectoryPath);
-                    }
+                    Directory.CreateDirectory(_logDirectoryPath);
                 }
                 return _logDirectoryPath;
             }
@@ -219,10 +201,7 @@ namespace MediaBrowser.Common.Implementations
                 if (_configurationDirectoryPath == null)
                 {
                     _configurationDirectoryPath = Path.Combine(ProgramDataPath, "config");
-                    if (!Directory.Exists(_configurationDirectoryPath))
-                    {
-                        Directory.CreateDirectory(_configurationDirectoryPath);
-                    }
+                    Directory.CreateDirectory(_configurationDirectoryPath);
                 }
                 return _configurationDirectoryPath;
             }
@@ -256,10 +235,7 @@ namespace MediaBrowser.Common.Implementations
                 {
                     _cachePath = Path.Combine(ProgramDataPath, "cache");
 
-                    if (!Directory.Exists(_cachePath))
-                    {
-                        Directory.CreateDirectory(_cachePath);
-                    }
+                    Directory.CreateDirectory(_cachePath);
                 }
 
                 return _cachePath;
@@ -282,10 +258,7 @@ namespace MediaBrowser.Common.Implementations
                 {
                     _tempDirectory = Path.Combine(CachePath, "temp");
 
-                    if (!Directory.Exists(_tempDirectory))
-                    {
-                        Directory.CreateDirectory(_tempDirectory);
-                    }
+                    Directory.CreateDirectory(_tempDirectory);
                 }
 
                 return _tempDirectory;
@@ -318,10 +291,7 @@ namespace MediaBrowser.Common.Implementations
                 programDataPath = Path.GetFullPath(programDataPath);
             }
 
-            if (!Directory.Exists(programDataPath))
-            {
-                Directory.CreateDirectory(programDataPath);
-            }
+            Directory.CreateDirectory(programDataPath);
 
             return programDataPath;
         }

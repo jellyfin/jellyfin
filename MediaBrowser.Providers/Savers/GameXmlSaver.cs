@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
-using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Providers.Movies;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Security;
@@ -88,6 +88,16 @@ namespace MediaBrowser.Providers.Savers
 
         public string GetSavePath(BaseItem item)
         {
+            return GetGameSavePath(item);
+        }
+
+        public static string GetGameSavePath(BaseItem item)
+        {
+            if (item.IsInMixedFolder)
+            {
+                return Path.ChangeExtension(item.Path, ".xml");
+            }
+
             return Path.Combine(item.MetaLocation, "game.xml");
         }
     }

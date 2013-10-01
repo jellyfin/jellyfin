@@ -258,15 +258,7 @@ namespace MediaBrowser.Api
             {
                 hasExited = process.HasExited;
             }
-            catch (Win32Exception ex)
-            {
-                Logger.ErrorException("Error determining if ffmpeg process has exited for {0}", ex, job.Path);
-            }
-            catch (InvalidOperationException ex)
-            {
-                Logger.ErrorException("Error determining if ffmpeg process has exited for {0}", ex, job.Path);
-            }
-            catch (NotSupportedException ex)
+            catch (Exception ex)
             {
                 Logger.ErrorException("Error determining if ffmpeg process has exited for {0}", ex, job.Path);
             }

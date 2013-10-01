@@ -168,14 +168,21 @@ namespace MediaBrowser.Providers.Movies
                 // Process images
                 var path = GetMovieDataPath(ConfigurationManager.ApplicationPaths, id);
 
-                var files = new DirectoryInfo(path)
-                    .EnumerateFiles("*.xml", SearchOption.TopDirectoryOnly)
-                    .Select(i => i.LastWriteTimeUtc)
-                    .ToList();
-
-                if (files.Count > 0)
+                try
                 {
-                    return files.Max();
+                    var files = new DirectoryInfo(path)
+                        .EnumerateFiles("*.xml", SearchOption.TopDirectoryOnly)
+                        .Select(i => i.LastWriteTimeUtc)
+                        .ToList();
+
+                    if (files.Count > 0)
+                    {
+                        return files.Max();
+                    }
+                }
+                catch (DirectoryNotFoundException)
+                {
+                    // Don't blow up
                 }
             }
 
@@ -192,11 +199,6 @@ namespace MediaBrowser.Providers.Movies
         {
             var dataPath = Path.Combine(GetMoviesDataPath(appPaths), tmdbId);
 
-            if (!Directory.Exists(dataPath))
-            {
-                Directory.CreateDirectory(dataPath);
-            }
-
             return dataPath;
         }
 
@@ -208,11 +210,6 @@ namespace MediaBrowser.Providers.Movies
         internal static string GetMoviesDataPath(IApplicationPaths appPaths)
         {
             var dataPath = Path.Combine(appPaths.DataPath, "fanart-movies");
-
-            if (!Directory.Exists(dataPath))
-            {
-                Directory.CreateDirectory(dataPath);
-            }
 
             return dataPath;
         }

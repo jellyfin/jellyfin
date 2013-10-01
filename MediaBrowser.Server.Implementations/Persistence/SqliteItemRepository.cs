@@ -322,10 +322,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// <returns>Task.</returns>
         public Task SaveCriticReviews(Guid itemId, IEnumerable<ItemReview> criticReviews)
         {
-            if (!Directory.Exists(_criticReviewsPath))
-            {
-                Directory.CreateDirectory(_criticReviewsPath);
-            }
+            Directory.CreateDirectory(_criticReviewsPath);
 
             var path = Path.Combine(_criticReviewsPath, itemId + ".json");
 

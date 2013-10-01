@@ -98,10 +98,7 @@ namespace MediaBrowser.Providers.Savers
 
             var parentPath = Path.GetDirectoryName(path);
 
-            if (!Directory.Exists(parentPath))
-            {
-                Directory.CreateDirectory(parentPath);
-            }
+            Directory.CreateDirectory(parentPath);
 
             var wasHidden = false;
 

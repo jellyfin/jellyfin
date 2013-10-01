@@ -71,6 +71,8 @@ namespace MediaBrowser.Providers.TV
 
             var path = RemoteSeriesProvider.GetSeriesDataPath(_config.CommonApplicationPaths);
 
+            Directory.CreateDirectory(path);
+            
             var timestampFile = Path.Combine(path, "time.txt");
 
             var timestampFileInfo = new FileInfo(timestampFile);
@@ -295,10 +297,7 @@ namespace MediaBrowser.Providers.TV
 
             seriesDataPath = Path.Combine(seriesDataPath, id);
 
-            if (!Directory.Exists(seriesDataPath))
-            {
-                Directory.CreateDirectory(seriesDataPath);
-            }
+            Directory.CreateDirectory(seriesDataPath);
 
             return RemoteSeriesProvider.Current.DownloadSeriesZip(id, seriesDataPath, cancellationToken);
         }

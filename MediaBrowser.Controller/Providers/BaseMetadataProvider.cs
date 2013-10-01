@@ -233,16 +233,6 @@ namespace MediaBrowser.Controller.Providers
                 throw new ArgumentNullException("providerInfo");
             }
 
-            if (CompareDate(item) > providerInfo.LastRefreshed)
-            {
-                return true;
-            }
-
-            if (RefreshOnFileSystemStampChange && item.LocationType == LocationType.FileSystem && HasFileSystemStampChanged(item, providerInfo))
-            {
-                return true;
-            }
-
             if (RefreshOnVersionChange && !String.Equals(ProviderVersion, providerInfo.ProviderVersion))
             {
                 return true;
@@ -258,7 +248,28 @@ namespace MediaBrowser.Controller.Providers
                 return true;
             }
 
+            if (NeedsRefreshBasedOnCompareDate(item, providerInfo))
+            {
+                return true;
+            }
+
+            if (RefreshOnFileSystemStampChange && item.LocationType == LocationType.FileSystem && HasFileSystemStampChanged(item, providerInfo))
+            {
+                return true;
+            }
+
             return false;
+        }
+
+        /// <summary>
+        /// Needses the refresh based on compare date.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="providerInfo">The provider info.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
+        protected virtual bool NeedsRefreshBasedOnCompareDate(BaseItem item, BaseProviderInfo providerInfo)
+        {
+            return CompareDate(item) > providerInfo.LastRefreshed;
         }
 
         /// <summary>

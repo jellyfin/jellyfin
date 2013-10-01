@@ -48,10 +48,7 @@ namespace MediaBrowser.Server.Implementations.Localization
 
             var localizationPath = LocalizationPath;
 
-            if (!Directory.Exists(localizationPath))
-            {
-                Directory.CreateDirectory(localizationPath);
-            }
+            Directory.CreateDirectory(localizationPath);
 
             var existingFiles = Directory.EnumerateFiles(localizationPath, "ratings-*.txt", SearchOption.TopDirectoryOnly)
                 .Select(Path.GetFileName)

@@ -90,7 +90,7 @@ namespace MediaBrowser.Providers.TV
 
             var parent = item.ResolveArgs.Parent;
 
-            ValidateImage(episode, item.MetaLocation);
+            ValidateImage(episode);
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -106,7 +106,7 @@ namespace MediaBrowser.Providers.TV
         /// <param name="episode">The episode.</param>
         /// <param name="metadataFolderPath">The metadata folder path.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        private void ValidateImage(Episode episode, string metadataFolderPath)
+        private void ValidateImage(Episode episode)
         {
             var path = episode.PrimaryImagePath;
 
