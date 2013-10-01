@@ -2,6 +2,7 @@
 using MediaBrowser.Common.Constants;
 using MediaBrowser.Common.Implementations.Logging;
 using MediaBrowser.Common.Implementations.Updates;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Implementations;
 using MediaBrowser.ServerApplication.Native;
@@ -186,6 +187,8 @@ namespace MediaBrowser.ServerApplication
         {
             SystemEvents.SessionEnding += SystemEvents_SessionEnding;
             SystemEvents.SessionSwitch += SystemEvents_SessionSwitch;
+
+            MigrateShortcuts(appPaths.RootFolderPath);
 
             _appHost = new ApplicationHost(appPaths, logManager);
 
@@ -522,6 +525,35 @@ namespace MediaBrowser.ServerApplication
             /// The SE m_ NOOPENFILEERRORBOX
             /// </summary>
             SEM_NOOPENFILEERRORBOX = 0x8000
+        }
+
+        private static void MigrateShortcuts(string directory)
+        {
+            Directory.CreateDirectory(directory);
+
+            foreach (var file in Directory.EnumerateFiles(directory, "*.lnk", SearchOption.AllDirectories).ToList())
+            {
+                MigrateShortcut(file);
+            }
+        }
+
+        private static void MigrateShortcut(string file)
+        {
+            var newFile = Path.ChangeExtension(file, ".mblink");
+
+            try
+            {
+                var resolvedPath = FileSystem.ResolveShortcut(file);
+
+                if (!string.IsNullOrEmpty(resolvedPath))
+                {
+                    FileSystem.CreateShortcut(newFile, resolvedPath);
+                }
+            }
+            finally
+            {
+                File.Delete(file);
+            }
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿using MediaBrowser.Model.Logging;
+﻿using System.Collections.Generic;
+using System.Linq;
+using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Specialized;
 using System.IO;
@@ -130,16 +132,21 @@ namespace MediaBrowser.Controller.IO
                 throw new ArgumentNullException("filename");
             }
 
-            return new WindowsShortcut(filename).ResolvedPath;
+            if (string.Equals(Path.GetExtension(filename), ".mblink", StringComparison.OrdinalIgnoreCase))
+            {
+                return File.ReadAllText(filename);
+            }
 
-            //var link = new ShellLink();
-            //((IPersistFile)link).Load(filename, NativeMethods.STGM_READ);
-            //// TODO: if I can get hold of the hwnd call resolve first. This handles moved and renamed files.  
-            //// ((IShellLinkW)link).Resolve(hwnd, 0) 
-            //var sb = new StringBuilder(NativeMethods.MAX_PATH);
-            //WIN32_FIND_DATA data;
-            //((IShellLinkW)link).GetPath(sb, sb.Capacity, out data, 0);
-            //return sb.ToString();
+            //return new WindowsShortcut(filename).ResolvedPath;
+
+            var link = new ShellLink();
+            ((IPersistFile)link).Load(filename, NativeMethods.STGM_READ);
+            // TODO: if I can get hold of the hwnd call resolve first. This handles moved and renamed files.  
+            // ((IShellLinkW)link).Resolve(hwnd, 0) 
+            var sb = new StringBuilder(NativeMethods.MAX_PATH);
+            WIN32_FIND_DATA data;
+            ((IShellLinkW)link).GetPath(sb, sb.Capacity, out data, 0);
+            return sb.ToString();
         }
 
         /// <summary>
@@ -160,12 +167,17 @@ namespace MediaBrowser.Controller.IO
                 throw new ArgumentNullException("target");
             }
 
-            var link = new ShellLink();
+            File.WriteAllText(shortcutPath, target);
 
-            ((IShellLinkW)link).SetPath(target);
+            //var link = new ShellLink();
 
-            ((IPersistFile)link).Save(shortcutPath, true);
+            //((IShellLinkW)link).SetPath(target);
+
+            //((IPersistFile)link).Save(shortcutPath, true);
         }
+
+        private static readonly Dictionary<string, string> ShortcutExtensionsDictionary = new[] { ".mblink", ".lnk" }
+            .ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Determines whether the specified filename is shortcut.
@@ -180,7 +192,9 @@ namespace MediaBrowser.Controller.IO
                 throw new ArgumentNullException("filename");
             }
 
-            return string.Equals(Path.GetExtension(filename), ".lnk", StringComparison.OrdinalIgnoreCase);
+            var extension = Path.GetExtension(filename);
+
+            return !string.IsNullOrEmpty(extension) && ShortcutExtensionsDictionary.ContainsKey(extension);
         }
 
         /// <summary>
@@ -258,7 +272,7 @@ namespace MediaBrowser.Controller.IO
 
         public WindowsShortcut(string file)
         {
-            ParseLink(File.ReadAllBytes(file));
+            ParseLink(File.ReadAllBytes(file), Encoding.UTF8);
         }
 
         private static bool isMagicPresent(byte[] link)
@@ -274,7 +288,7 @@ namespace MediaBrowser.Controller.IO
          * Gobbles up link data by parsing it and storing info in member fields
          * @param link all the bytes from the .lnk file
          */
-        private void ParseLink(byte[] link)
+        private void ParseLink(byte[] link, Encoding encoding)
         {
             if (!isMagicPresent(link))
                 throw new IOException("Invalid shortcut; magic is missing", 0);
@@ -317,11 +331,11 @@ namespace MediaBrowser.Controller.IO
             const int networkVolumeTable_offset_offset = 0x14;
             const int finalname_offset_offset = 0x18;
             int finalname_offset = link[file_start + finalname_offset_offset] + file_start;
-            String finalname = getNullDelimitedString(link, finalname_offset);
+            String finalname = getNullDelimitedString(link, finalname_offset, encoding);
             if (IsLocal)
             {
                 int basename_offset = link[file_start + basename_offset_offset] + file_start;
-                String basename = getNullDelimitedString(link, basename_offset);
+                String basename = getNullDelimitedString(link, basename_offset, encoding);
                 ResolvedPath = basename + finalname;
             }
             else
@@ -330,12 +344,12 @@ namespace MediaBrowser.Controller.IO
                 int shareName_offset_offset = 0x08;
                 int shareName_offset = link[networkVolumeTable_offset + shareName_offset_offset]
                     + networkVolumeTable_offset;
-                String shareName = getNullDelimitedString(link, shareName_offset);
+                String shareName = getNullDelimitedString(link, shareName_offset, encoding);
                 ResolvedPath = shareName + "\\" + finalname;
             }
         }
 
-        private static string getNullDelimitedString(byte[] bytes, int off)
+        private static string getNullDelimitedString(byte[] bytes, int off, Encoding encoding)
         {
             int len = 0;
 
@@ -349,7 +363,7 @@ namespace MediaBrowser.Controller.IO
                 len++;
             }
 
-            return Encoding.UTF8.GetString(bytes, off, len);
+            return encoding.GetString(bytes, off, len);
         }
 
         /*

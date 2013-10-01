@@ -1084,7 +1084,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 {
                     Name = Path.GetFileName(dir),
 
-                    Locations = Directory.EnumerateFiles(dir, "*.lnk", SearchOption.TopDirectoryOnly)
+                    Locations = Directory.EnumerateFiles(dir, "*.mblink", SearchOption.TopDirectoryOnly)
                                 .Select(FileSystem.ResolveShortcut)
                                 .OrderBy(i => i)
                                 .ToList(),
