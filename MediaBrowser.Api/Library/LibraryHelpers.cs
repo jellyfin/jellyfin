@@ -12,6 +12,9 @@ namespace MediaBrowser.Api.Library
     /// </summary>
     public static class LibraryHelpers
     {
+        private const string ShortcutFileExtension = ".lnk";
+        private const string ShortcutFileSearch = "*.lnk";
+
         /// <summary>
         /// Adds the virtual folder.
         /// </summary>
@@ -118,7 +121,7 @@ namespace MediaBrowser.Api.Library
                 throw new DirectoryNotFoundException(string.Format("The media collection {0} does not exist", virtualFolderName));
             }
 
-            var shortcut = Directory.EnumerateFiles(path, "*.lnk", SearchOption.AllDirectories).FirstOrDefault(f => FileSystem.ResolveShortcut(f).Equals(mediaPath, StringComparison.OrdinalIgnoreCase));
+            var shortcut = Directory.EnumerateFiles(path, ShortcutFileSearch, SearchOption.AllDirectories).FirstOrDefault(f => FileSystem.ResolveShortcut(f).Equals(mediaPath, StringComparison.OrdinalIgnoreCase));
 
             if (!string.IsNullOrEmpty(shortcut))
             {
@@ -161,12 +164,12 @@ namespace MediaBrowser.Api.Library
 
             var shortcutFilename = Path.GetFileNameWithoutExtension(path);
 
-            var lnk = Path.Combine(virtualFolderPath, shortcutFilename + ".lnk");
+            var lnk = Path.Combine(virtualFolderPath, shortcutFilename + ShortcutFileExtension);
 
             while (File.Exists(lnk))
             {
                 shortcutFilename += "1";
-                lnk = Path.Combine(virtualFolderPath, shortcutFilename + ".lnk");
+                lnk = Path.Combine(virtualFolderPath, shortcutFilename + ShortcutFileExtension);
             }
 
             FileSystem.CreateShortcut(lnk, path);
@@ -181,7 +184,7 @@ namespace MediaBrowser.Api.Library
         /// <exception cref="System.ArgumentException"></exception>
         private static void ValidateNewMediaPath(string currentViewRootFolderPath, string mediaPath, IServerApplicationPaths appPaths)
         {
-            var duplicate = Directory.EnumerateFiles(appPaths.RootFolderPath, "*.lnk", SearchOption.AllDirectories)
+            var duplicate = Directory.EnumerateFiles(appPaths.RootFolderPath, ShortcutFileSearch, SearchOption.AllDirectories)
                 .Select(FileSystem.ResolveShortcut)
                 .FirstOrDefault(p => !IsNewPathValid(mediaPath, p, false));
 
@@ -192,7 +195,7 @@ namespace MediaBrowser.Api.Library
 
             // Don't allow duplicate sub-paths within the same user library, or it will result in duplicate items
             // See comments in IsNewPathValid
-            duplicate = Directory.EnumerateFiles(currentViewRootFolderPath, "*.lnk", SearchOption.AllDirectories)
+            duplicate = Directory.EnumerateFiles(currentViewRootFolderPath, ShortcutFileSearch, SearchOption.AllDirectories)
               .Select(FileSystem.ResolveShortcut)
               .FirstOrDefault(p => !IsNewPathValid(mediaPath, p, true));
 
@@ -202,7 +205,7 @@ namespace MediaBrowser.Api.Library
             }
             
             // Make sure the current root folder doesn't already have a shortcut to the same path
-            duplicate = Directory.EnumerateFiles(currentViewRootFolderPath, "*.lnk", SearchOption.AllDirectories)
+            duplicate = Directory.EnumerateFiles(currentViewRootFolderPath, ShortcutFileSearch, SearchOption.AllDirectories)
                 .Select(FileSystem.ResolveShortcut)
                 .FirstOrDefault(p => mediaPath.Equals(p, StringComparison.OrdinalIgnoreCase));
 

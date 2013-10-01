@@ -247,7 +247,10 @@ namespace MediaBrowser.Controller.IO
         }
     }
 
-    public class WindowsShortcut
+    /// <summary>
+    ///  Adapted from http://stackoverflow.com/questions/309495/windows-shortcut-lnk-parser-in-java
+    /// </summary>
+    internal class WindowsShortcut
     {
         public bool IsDirectory { get; private set; }
         public bool IsLocal { get; private set; }
