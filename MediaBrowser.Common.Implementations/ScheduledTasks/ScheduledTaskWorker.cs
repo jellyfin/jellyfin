@@ -431,7 +431,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         {
             var path = Path.Combine(ApplicationPaths.ConfigurationDirectoryPath, "ScheduledTasks");
 
-            if (create && !Directory.Exists(path))
+            if (create)
             {
                 Directory.CreateDirectory(path);
             }
@@ -448,7 +448,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         {
             var path = Path.Combine(ApplicationPaths.DataPath, "ScheduledTasks");
 
-            if (create && !Directory.Exists(path))
+            if (create)
             {
                 Directory.CreateDirectory(path);
             }
@@ -507,10 +507,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
 
             var parentPath = Path.GetDirectoryName(path);
 
-            if (!Directory.Exists(parentPath))
-            {
-                Directory.CreateDirectory(parentPath);
-            }
+            Directory.CreateDirectory(parentPath);
 
             JsonSerializer.SerializeToFile(triggers.Select(ScheduledTaskHelpers.GetTriggerInfo), path);
         }

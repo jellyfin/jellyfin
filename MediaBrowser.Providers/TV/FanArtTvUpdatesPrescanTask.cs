@@ -59,6 +59,8 @@ namespace MediaBrowser.Providers.TV
 
             var path = FanArtTvProvider.GetSeriesDataPath(_config.CommonApplicationPaths);
 
+            Directory.CreateDirectory(path);
+            
             var timestampFile = Path.Combine(path, "time.txt");
 
             var timestampFileInfo = new FileInfo(timestampFile);
@@ -161,10 +163,7 @@ namespace MediaBrowser.Providers.TV
 
             seriesDataPath = Path.Combine(seriesDataPath, tvdbId);
 
-            if (!Directory.Exists(seriesDataPath))
-            {
-                Directory.CreateDirectory(seriesDataPath);
-            }
+            Directory.CreateDirectory(seriesDataPath);
 
             return FanArtTvProvider.Current.DownloadSeriesXml(seriesDataPath, tvdbId, cancellationToken);
         }

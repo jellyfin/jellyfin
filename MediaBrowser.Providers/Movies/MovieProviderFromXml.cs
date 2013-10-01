@@ -1,9 +1,11 @@
 ﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Providers.Savers;
 using System;
 using System.IO;
 using System.Threading;
@@ -52,23 +54,18 @@ namespace MediaBrowser.Providers.Movies
             get { return MetadataProviderPriority.First; }
         }
 
-        internal static string GetXmlFilename(BaseItem item)
+        protected override bool NeedsRefreshBasedOnCompareDate(BaseItem item, BaseProviderInfo providerInfo)
         {
-            const string filename = "movie.xml";
+            var savePath = MovieXmlSaver.GetMovieSavePath(item);
 
-            return Path.Combine(item.MetaLocation, filename);
-        }
+            var xml = item.ResolveArgs.GetMetaFileByPath(savePath) ?? new FileInfo(savePath);
 
-        /// <summary>
-        /// Override this to return the date that should be compared to the last refresh date
-        /// to determine if this provider should be re-fetched.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns>DateTime.</returns>
-        protected override DateTime CompareDate(BaseItem item)
-        {
-            var entry = item.ResolveArgs.GetMetaFileByPath(Path.Combine(item.MetaLocation, GetXmlFilename(item)));
-            return entry != null ? entry.LastWriteTimeUtc : DateTime.MinValue;
+            if (!xml.Exists)
+            {
+                return false;
+            }
+
+            return FileSystem.GetLastWriteTimeUtc(xml, Logger) > providerInfo.LastRefreshed;
         }
 
         /// <summary>
@@ -93,30 +90,24 @@ namespace MediaBrowser.Providers.Movies
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var metadataFile = item.ResolveArgs.GetMetaFileByPath(Path.Combine(item.MetaLocation, GetXmlFilename(item)));
+            var path = MovieXmlSaver.GetMovieSavePath(item);
 
-            if (metadataFile != null)
+            await XmlParsingResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
             {
-                var path = metadataFile.FullName;
+                var video = (Video)item;
 
-                await XmlParsingResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-                try
-                {
-                    var video = (Video) item;
-
-                    await new MovieXmlParser(Logger, _itemRepo).FetchAsync(video, path, cancellationToken).ConfigureAwait(false);
-                }
-                finally
-                {
-                    XmlParsingResourcePool.Release();
-                }
-
-                SetLastRefreshed(item, DateTime.UtcNow);
-                return true;
+                await new MovieXmlParser(Logger, _itemRepo).FetchAsync(video, path, cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                XmlParsingResourcePool.Release();
             }
 
-            return false;
+            SetLastRefreshed(item, DateTime.UtcNow);
+
+            return true;
         }
     }
 }

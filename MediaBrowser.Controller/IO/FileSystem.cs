@@ -205,10 +205,7 @@ namespace MediaBrowser.Controller.IO
             }
 
             // Check if the target directory exists, if not, create it. 
-            if (!Directory.Exists(target))
-            {
-                Directory.CreateDirectory(target);
-            }
+            Directory.CreateDirectory(target);
 
             foreach (var file in Directory.EnumerateFiles(source))
             {

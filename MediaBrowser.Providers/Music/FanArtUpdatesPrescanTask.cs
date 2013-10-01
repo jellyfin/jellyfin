@@ -58,6 +58,8 @@ namespace MediaBrowser.Providers.Music
 
             var path = FanArtArtistProvider.GetArtistDataPath(_config.CommonApplicationPaths);
 
+            Directory.CreateDirectory(path);
+
             var timestampFile = Path.Combine(path, "time.txt");
 
             var timestampFileInfo = new FileInfo(timestampFile);
@@ -167,10 +169,7 @@ namespace MediaBrowser.Providers.Music
 
             artistsDataPath = Path.Combine(artistsDataPath, musicBrainzId);
 
-            if (!Directory.Exists(artistsDataPath))
-            {
-                Directory.CreateDirectory(artistsDataPath);
-            }
+            Directory.CreateDirectory(artistsDataPath);
 
             return FanArtArtistProvider.Current.DownloadArtistXml(artistsDataPath, musicBrainzId, cancellationToken);
         }

@@ -220,10 +220,10 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                     {
                         options.ResourcePool.Release();
                     }
-                    
+
                     throw new HttpException(string.Format("Connection to {0} timed out", options.Url)) { IsTimedOut = true };
                 }
-                
+
                 _logger.Info("HttpClientManager.Get url: {0}", options.Url);
 
                 try
@@ -512,10 +512,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             if (operationCanceledException != null)
             {
                 // Cleanup
-                if (File.Exists(tempFile))
-                {
-                    File.Delete(tempFile);
-                }
+                DeleteTempFile(tempFile);
 
                 return GetCancellationException(options.Url, options.CancellationToken, operationCanceledException);
             }
@@ -525,10 +522,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             var httpRequestException = ex as HttpRequestException;
 
             // Cleanup
-            if (File.Exists(tempFile))
-            {
-                File.Delete(tempFile);
-            }
+            DeleteTempFile(tempFile);
 
             if (httpRequestException != null)
             {
@@ -536,6 +530,18 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             }
 
             return ex;
+        }
+
+        private void DeleteTempFile(string file)
+        {
+            try
+            {
+                File.Delete(file);
+            }
+            catch (IOException)
+            {
+                // Might not have been created at all. No need to worry.
+            }
         }
 
         /// <summary>

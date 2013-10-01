@@ -234,10 +234,7 @@ namespace MediaBrowser.Common.Plugins
                     // We can always make this configurable if/when needed
                     _dataFolderPath = Path.Combine(ApplicationPaths.PluginsPath, Path.GetFileNameWithoutExtension(ConfigurationFileName));
 
-                    if (!Directory.Exists(_dataFolderPath))
-                    {
-                        Directory.CreateDirectory(_dataFolderPath);
-                    }
+                    Directory.CreateDirectory(_dataFolderPath);
                 }
 
                 return _dataFolderPath;

@@ -527,16 +527,13 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 try
                 {
-                    if (f.Exists)
-                    {
-                        var item = ResolvePath(f, parent) as T;
+                    var item = ResolvePath(f, parent) as T;
 
-                        if (item != null)
+                    if (item != null)
+                    {
+                        lock (list)
                         {
-                            lock (list)
-                            {
-                                list.Add(item);
-                            }
+                            list.Add(item);
                         }
                     }
                 }

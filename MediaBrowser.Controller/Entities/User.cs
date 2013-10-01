@@ -30,10 +30,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 var path = Configuration.UseCustomLibrary ? GetRootFolderPath(Name) : ConfigurationManager.ApplicationPaths.DefaultUserViewsPath;
 
-                if (!Directory.Exists(path))
-                {
-                    Directory.CreateDirectory(path);
-                }
+                Directory.CreateDirectory(path);
 
                 return path;
             }
@@ -256,10 +253,7 @@ namespace MediaBrowser.Controller.Entities
                 {
                     _configurationDirectoryPath = GetConfigurationDirectoryPath(Name);
 
-                    if (!Directory.Exists(_configurationDirectoryPath))
-                    {
-                        Directory.CreateDirectory(_configurationDirectoryPath);
-                    }
+                    Directory.CreateDirectory(_configurationDirectoryPath);
                 }
 
                 return _configurationDirectoryPath;

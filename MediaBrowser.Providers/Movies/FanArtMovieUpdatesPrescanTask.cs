@@ -59,6 +59,8 @@ namespace MediaBrowser.Providers.Movies
 
             var path = FanArtMovieProvider.GetMoviesDataPath(_config.CommonApplicationPaths);
 
+            Directory.CreateDirectory(path);
+            
             var timestampFile = Path.Combine(path, "time.txt");
 
             var timestampFileInfo = new FileInfo(timestampFile);
@@ -146,10 +148,7 @@ namespace MediaBrowser.Providers.Movies
 
             movieDataPath = Path.Combine(movieDataPath, tmdbId);
 
-            if (!Directory.Exists(movieDataPath))
-            {
-                Directory.CreateDirectory(movieDataPath);
-            }
+            Directory.CreateDirectory(movieDataPath);
 
             return FanArtMovieProvider.Current.DownloadMovieXml(movieDataPath, tmdbId, cancellationToken);
         }

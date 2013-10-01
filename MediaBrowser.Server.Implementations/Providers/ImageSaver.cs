@@ -273,10 +273,7 @@ namespace MediaBrowser.Server.Implementations.Providers
 
             var parentPath = Path.GetDirectoryName(path);
 
-            if (!Directory.Exists(parentPath))
-            {
-                Directory.CreateDirectory(parentPath);
-            }
+            Directory.CreateDirectory(parentPath);
 
             return path;
         }

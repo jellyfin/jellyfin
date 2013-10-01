@@ -7,6 +7,7 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Providers.Savers;
 
 namespace MediaBrowser.Providers.Games
 {
@@ -33,10 +34,18 @@ namespace MediaBrowser.Providers.Games
             return item is Game;
         }
 
-        protected override DateTime CompareDate(BaseItem item)
+        protected override bool NeedsRefreshBasedOnCompareDate(BaseItem item, BaseProviderInfo providerInfo)
         {
-            var xml = item.ResolveArgs.GetMetaFileByPath(Path.Combine(item.MetaLocation, "game.xml"));
-            return xml != null ? FileSystem.GetLastWriteTimeUtc(xml, Logger) : DateTime.MinValue;
+            var savePath = GameXmlSaver.GetGameSavePath(item);
+
+            var xml = item.ResolveArgs.GetMetaFileByPath(savePath) ?? new FileInfo(savePath);
+
+            if (!xml.Exists)
+            {
+                return false;
+            }
+
+            return FileSystem.GetLastWriteTimeUtc(xml, Logger) > providerInfo.LastRefreshed;
         }
 
         /// <summary>
@@ -61,21 +70,17 @@ namespace MediaBrowser.Providers.Games
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var metaFile = Path.Combine(game.MetaLocation, "game.xml");
+            var metaFile = GameXmlSaver.GetGameSavePath(game);
 
-            if (File.Exists(metaFile))
+            await XmlParsingResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
             {
-                await XmlParsingResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-                try
-                {
-                    new BaseItemXmlParser<Game>(Logger).Fetch(game, metaFile, cancellationToken);
-                }
-                finally
-                {
-                    XmlParsingResourcePool.Release();
-                }
-
+                new BaseItemXmlParser<Game>(Logger).Fetch(game, metaFile, cancellationToken);
+            }
+            finally
+            {
+                XmlParsingResourcePool.Release();
             }
 
             SetLastRefreshed(game, DateTime.UtcNow);

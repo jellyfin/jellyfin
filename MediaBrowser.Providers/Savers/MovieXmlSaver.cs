@@ -1,11 +1,11 @@
-﻿using System.Collections.Generic;
-using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Providers.Movies;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Security;
@@ -118,12 +118,24 @@ namespace MediaBrowser.Providers.Savers
 
         public string GetSavePath(BaseItem item)
         {
+            return GetMovieSavePath(item);
+        }
+
+        public static string GetMovieSavePath(BaseItem item)
+        {
             if (item.IsInMixedFolder)
             {
                 return Path.ChangeExtension(item.Path, ".xml");
             }
 
-            var filename = MovieProviderFromXml.GetXmlFilename(item);
+            var filename = GetXmlFilename(item);
+
+            return Path.Combine(item.MetaLocation, filename);
+        }
+
+        private static string GetXmlFilename(BaseItem item)
+        {
+            const string filename = "movie.xml";
 
             return Path.Combine(item.MetaLocation, filename);
         }

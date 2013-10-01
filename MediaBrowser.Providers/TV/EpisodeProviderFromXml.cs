@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -59,12 +60,12 @@ namespace MediaBrowser.Providers.TV
         }
 
         /// <summary>
-        /// Override this to return the date that should be compared to the last refresh date
-        /// to determine if this provider should be re-fetched.
+        /// Needses the refresh based on compare date.
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <returns>DateTime.</returns>
-        protected override DateTime CompareDate(BaseItem item)
+        /// <param name="providerInfo">The provider info.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
+        protected override bool NeedsRefreshBasedOnCompareDate(BaseItem item, BaseProviderInfo providerInfo)
         {
             var metadataFile = Path.Combine(item.MetaLocation, Path.ChangeExtension(Path.GetFileName(item.Path), ".xml"));
 
@@ -72,10 +73,10 @@ namespace MediaBrowser.Providers.TV
 
             if (file == null)
             {
-                return base.CompareDate(item);
+                return false;
             }
 
-            return file.LastWriteTimeUtc;
+            return FileSystem.GetLastWriteTimeUtc(file, Logger) > providerInfo.LastRefreshed;
         }
 
         /// <summary>
