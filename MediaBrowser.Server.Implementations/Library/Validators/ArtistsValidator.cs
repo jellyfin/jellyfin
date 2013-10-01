@@ -6,9 +6,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -85,7 +83,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
                 artist.ValidateImages();
                 artist.ValidateBackdrops();
 
-                var musicArtist = FindMusicArtist(artist, allMusicArtists);
+                var musicArtist = Artist.FindMusicArtist(artist, allMusicArtists);
 
                 if (musicArtist != null)
                 {
@@ -234,27 +232,6 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
             }
 
             return returnArtists;
-        }
-
-        /// <summary>
-        /// Finds the music artist.
-        /// </summary>
-        /// <param name="artist">The artist.</param>
-        /// <param name="allMusicArtists">All music artists.</param>
-        /// <returns>MusicArtist.</returns>
-        private static MusicArtist FindMusicArtist(Artist artist, IEnumerable<MusicArtist> allMusicArtists)
-        {
-            var musicBrainzId = artist.GetProviderId(MetadataProviders.Musicbrainz);
-
-            return allMusicArtists.FirstOrDefault(i =>
-            {
-                if (!string.IsNullOrWhiteSpace(musicBrainzId) && string.Equals(musicBrainzId, i.GetProviderId(MetadataProviders.Musicbrainz), StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-
-                return string.Compare(i.Name, artist.Name, CultureInfo.CurrentCulture, CompareOptions.IgnoreNonSpace | CompareOptions.IgnoreCase | CompareOptions.IgnoreSymbols) == 0;
-            });
         }
     }
 }

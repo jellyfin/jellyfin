@@ -3,11 +3,8 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
-using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -77,7 +74,7 @@ namespace MediaBrowser.Providers.Music
             var artist = (Artist)item;
 
             // See if we can avoid an http request by finding the matching MusicArtist entity
-            var musicArtist = FindMusicArtist(artist, LibraryManager);
+            var musicArtist = Artist.FindMusicArtist(artist, LibraryManager);
 
             if (musicArtist != null && !force)
             {
@@ -87,30 +84,6 @@ namespace MediaBrowser.Providers.Music
             {
                 await base.FetchLastfmData(item, musicBrainzId, force, cancellationToken).ConfigureAwait(false);
             }
-        }
-
-
-        /// <summary>
-        /// Finds the music artist.
-        /// </summary>
-        /// <param name="artist">The artist.</param>
-        /// <param name="libraryManager">The library manager.</param>
-        /// <returns>MusicArtist.</returns>
-        private static MusicArtist FindMusicArtist(Artist artist, ILibraryManager libraryManager)
-        {
-            var musicBrainzId = artist.GetProviderId(MetadataProviders.Musicbrainz);
-
-            return libraryManager.RootFolder.RecursiveChildren
-                .OfType<MusicArtist>()
-                .FirstOrDefault(i =>
-                {
-                    if (!string.IsNullOrWhiteSpace(musicBrainzId) && string.Equals(musicBrainzId, i.GetProviderId(MetadataProviders.Musicbrainz), StringComparison.OrdinalIgnoreCase))
-                    {
-                        return true;
-                    }
-
-                    return false;
-                });
         }
     }
 }
