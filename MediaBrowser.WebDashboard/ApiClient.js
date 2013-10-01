@@ -701,6 +701,19 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         };
 
         /**
+         * Instructs the server to perform a shutdown.
+         */
+        self.shutdownServer = function () {
+
+            var url = self.getUrl("System/Shutdown");
+
+            return self.ajax({
+                type: "POST",
+                url: url
+            });
+        };
+
+        /**
          * Gets information about an installable package
          */
         self.getPackageInfo = function (name) {
