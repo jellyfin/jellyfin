@@ -12,8 +12,8 @@ namespace MediaBrowser.Api.Library
     /// </summary>
     public static class LibraryHelpers
     {
-        private const string ShortcutFileExtension = ".lnk";
-        private const string ShortcutFileSearch = "*.lnk";
+        private const string ShortcutFileExtension = ".mblink";
+        private const string ShortcutFileSearch = "*" + ShortcutFileExtension;
 
         /// <summary>
         /// Adds the virtual folder.
