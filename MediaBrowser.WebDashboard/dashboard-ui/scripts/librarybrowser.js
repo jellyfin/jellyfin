@@ -814,20 +814,25 @@
         },
         getNewIndicatorHtml: function (item) {
 
-            if (item.RecentlyAddedItemCount) {
-                return '<div class="posterRibbon">' + item.RecentlyAddedItemCount + ' New</div>';
+            if (item.Type == "Series" || item.Type == "Season") {
+                if (item.RecursiveUnplayedItemCount && item.PlayedPercentage) {
+                    return '<div class="posterRibbon">' + item.RecursiveUnplayedItemCount + ' New</div>';
+                }
             }
 
             if (!item.IsFolder && item.Type !== "Genre" && item.Type !== "Studio" && item.Type !== "Person" && item.Type !== "Artist" && item.Type !== "MusicGenre" && item.Type !== "GameGenre") {
 
                 var date = item.DateCreated;
+                var isPlayed = item.UserData && item.UserData.Played;
+                
+                if (!isPlayed) {
+                    try {
+                        if (date && (new Date().getTime() - parseISO8601Date(date).getTime()) < 604800000) {
+                            return "<div class='posterRibbon'>New</div>";
+                        }
+                    } catch (err) {
 
-                try {
-                    if (date && (new Date().getTime() - parseISO8601Date(date).getTime()) < 604800000) {
-                        return "<div class='posterRibbon'>New</div>";
                     }
-                } catch (err) {
-
                 }
             }
 
