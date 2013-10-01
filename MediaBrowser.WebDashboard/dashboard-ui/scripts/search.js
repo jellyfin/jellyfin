@@ -177,7 +177,7 @@
 
         }
         else {
-            html += '<div class="searchHintSecondaryText">' + (hint.DisplayMediaType || hint.Type) + '</div>';
+            html += '<div class="searchHintSecondaryText">' + (hint.Type) + '</div>';
         }
 
         var text;

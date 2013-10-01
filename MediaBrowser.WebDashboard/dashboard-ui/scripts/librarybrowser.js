@@ -203,7 +203,7 @@
                 }
                 else if (item.Type == "Game") {
 
-                    html += '<p class="itemMiscInfo">' + (item.DisplayMediaType || item.GameSystem) + '</p>';
+                    html += '<p class="itemMiscInfo">' + (item.GameSystem) + '</p>';
                 }
                 else if (item.Type == "Episode") {
 

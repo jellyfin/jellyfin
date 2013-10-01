@@ -514,7 +514,21 @@
 
             if (result) {
                 $('#btnRestartServer').button('disable');
+                $('#btnShutdown').button('disable');
                 Dashboard.restartServer();
+            }
+
+        });
+    },
+
+    shutdown: function () {
+
+        Dashboard.confirm("Are you sure you wish to shutdown Media Browser Server?", "Shutdown", function (result) {
+
+            if (result) {
+                $('#btnRestartServer').button('disable');
+                $('#btnShutdown').button('disable');
+                ApiClient.shutdownServer();
             }
 
         });
