@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text.Controller;
 using System;
@@ -228,7 +228,7 @@ namespace MediaBrowser.Api.UserLibrary
             // Set favorite status
             data.IsFavorite = isFavorite;
 
-            await UserDataRepository.SaveUserData(userId, key, data, CancellationToken.None).ConfigureAwait(false);
+            await UserDataRepository.SaveUserData(userId, key, data, UserDataSaveReason.UpdateUserRating, CancellationToken.None).ConfigureAwait(false);
 
             data = UserDataRepository.GetUserData(userId, key);
 
@@ -254,7 +254,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             data.Likes = likes;
 
-            await UserDataRepository.SaveUserData(userId, key, data, CancellationToken.None).ConfigureAwait(false);
+            await UserDataRepository.SaveUserData(userId, key, data, UserDataSaveReason.UpdateUserRating, CancellationToken.None).ConfigureAwait(false);
 
             data = UserDataRepository.GetUserData(userId, key);
 

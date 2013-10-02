@@ -1349,7 +1349,7 @@ namespace MediaBrowser.Controller.Entities
             data.LastPlayedDate = datePlayed ?? data.LastPlayedDate;
             data.Played = true;
 
-            await userManager.SaveUserData(user.Id, key, data, CancellationToken.None).ConfigureAwait(false);
+            await userManager.SaveUserData(user.Id, key, data, UserDataSaveReason.TogglePlayed, CancellationToken.None).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -1378,7 +1378,7 @@ namespace MediaBrowser.Controller.Entities
             data.LastPlayedDate = null;
             data.Played = false;
 
-            await userManager.SaveUserData(user.Id, key, data, CancellationToken.None).ConfigureAwait(false);
+            await userManager.SaveUserData(user.Id, key, data, UserDataSaveReason.TogglePlayed, CancellationToken.None).ConfigureAwait(false);
         }
 
         /// <summary>
