@@ -1,15 +1,13 @@
-﻿using System.Collections.Generic;
-using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Entities;
-using MediaBrowser.Providers.Movies;
+using MediaBrowser.Providers.Music;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading;
-using MediaBrowser.Providers.Music;
 
 namespace MediaBrowser.Providers.Savers
 {
@@ -30,9 +28,11 @@ namespace MediaBrowser.Providers.Savers
         /// <returns><c>true</c> if [is enabled for] [the specified item]; otherwise, <c>false</c>.</returns>
         public bool IsEnabledFor(BaseItem item, ItemUpdateType updateType)
         {
-            // If new metadata has been downloaded and save local is on, OR metadata was manually edited, proceed
-            if ((_config.Configuration.SaveLocalMeta && (updateType & ItemUpdateType.MetadataDownload) == ItemUpdateType.MetadataDownload)
-                || (updateType & ItemUpdateType.MetadataEdit) == ItemUpdateType.MetadataEdit)
+            var wasMetadataEdited = (updateType & ItemUpdateType.MetadataEdit) == ItemUpdateType.MetadataEdit;
+            var wasMetadataDownloaded = (updateType & ItemUpdateType.MetadataDownload) == ItemUpdateType.MetadataDownload;
+
+            // If new metadata has been downloaded and save local is on
+            if (_config.Configuration.SaveLocalMeta && (wasMetadataEdited || wasMetadataDownloaded))
             {
                 if (item is MusicArtist)
                 {
@@ -41,8 +41,7 @@ namespace MediaBrowser.Providers.Savers
             }
 
             // If new metadata has been downloaded or metadata was manually edited, proceed
-            if ((updateType & ItemUpdateType.MetadataDownload) == ItemUpdateType.MetadataDownload
-                || (updateType & ItemUpdateType.MetadataEdit) == ItemUpdateType.MetadataEdit)
+            if (wasMetadataDownloaded || wasMetadataEdited)
             {
                 if (item is Artist)
                 {
