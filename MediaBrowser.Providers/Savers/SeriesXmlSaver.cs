@@ -33,8 +33,8 @@ namespace MediaBrowser.Providers.Savers
             var wasMetadataEdited = (updateType & ItemUpdateType.MetadataEdit) == ItemUpdateType.MetadataEdit;
             var wasMetadataDownloaded = (updateType & ItemUpdateType.MetadataDownload) == ItemUpdateType.MetadataDownload;
 
-            // If new metadata has been downloaded and save local is on, OR metadata was manually edited, proceed
-            if ((_config.Configuration.SaveLocalMeta && (wasMetadataEdited || wasMetadataDownloaded)) || wasMetadataEdited)
+            // If new metadata has been downloaded and save local is on
+            if (_config.Configuration.SaveLocalMeta && (wasMetadataEdited || wasMetadataDownloaded))
             {
                 return item is Series;
             }
