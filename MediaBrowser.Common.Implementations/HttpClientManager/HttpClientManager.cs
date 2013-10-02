@@ -31,21 +31,22 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         /// </summary>
         private readonly IApplicationPaths _appPaths;
 
-        public delegate HttpMessageHandler GetHttpMessageHandler(bool enableHttpCompression);
+        public delegate HttpClient GetHttpClientHandler(bool enableHttpCompression);
 
-        private readonly GetHttpMessageHandler _getHttpMessageHandler;
+        private readonly GetHttpClientHandler _getHttpClientHandler;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="HttpClientManager" /> class.
+        /// Initializes a new instance of the <see cref="HttpClientManager"/> class.
         /// </summary>
-        /// <param name="appPaths">The kernel.</param>
+        /// <param name="appPaths">The app paths.</param>
         /// <param name="logger">The logger.</param>
+        /// <param name="getHttpClientHandler">The get HTTP client handler.</param>
         /// <exception cref="System.ArgumentNullException">
         /// appPaths
         /// or
         /// logger
         /// </exception>
-        public HttpClientManager(IApplicationPaths appPaths, ILogger logger, GetHttpMessageHandler getHttpMessageHandler)
+        public HttpClientManager(IApplicationPaths appPaths, ILogger logger, GetHttpClientHandler getHttpClientHandler)
         {
             if (appPaths == null)
             {
@@ -57,7 +58,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             }
 
             _logger = logger;
-            _getHttpMessageHandler = getHttpMessageHandler;
+            _getHttpClientHandler = getHttpClientHandler;
             _appPaths = appPaths;
         }
 
@@ -90,10 +91,8 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             {
                 client = new HttpClientInfo
                 {
-                    HttpClient = new HttpClient(_getHttpMessageHandler(enableHttpCompression))
-                    {
-                        Timeout = TimeSpan.FromSeconds(20)
-                    }
+
+                    HttpClient = _getHttpClientHandler(enableHttpCompression)
                 };
                 _httpClients.TryAdd(key, client);
             }
