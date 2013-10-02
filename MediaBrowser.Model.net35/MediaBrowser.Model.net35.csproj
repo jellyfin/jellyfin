@@ -70,9 +70,6 @@
     <Compile Include="..\MediaBrowser.Model\Drawing\ImageOutputFormat.cs">
       <Link>Drawing\ImageOutputFormat.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\Drawing\ImageOverlay.cs">
-      <Link>Drawing\ImageOverlay.cs</Link>
-    </Compile>
     <Compile Include="..\MediaBrowser.Model\Dto\BaseItemDto.cs">
       <Link>Dto\BaseItemDto.cs</Link>
     </Compile>
@@ -187,6 +184,9 @@
     <Compile Include="..\MediaBrowser.Model\Extensions\ModelExtensions.cs">
       <Link>Extensions\ModelExtensions.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Games\GameSystem.cs">
+      <Link>Games\GameSystem.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Globalization\CountryInfo.cs">
       <Link>Globalization\CountryInfo.cs</Link>
     </Compile>
@@ -201,6 +201,9 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\LiveTv\ChannelInfoDto.cs">
       <Link>LiveTv\ChannelInfoDto.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\LiveTv\ChannelType.cs">
+      <Link>LiveTv\ChannelType.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\LiveTv\LiveTvServiceInfo.cs">
       <Link>LiveTv\LiveTvServiceInfo.cs</Link>

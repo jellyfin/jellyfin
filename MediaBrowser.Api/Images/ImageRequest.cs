@@ -56,11 +56,11 @@ namespace MediaBrowser.Api.Images
         [ApiMember(Name = "Format", Description = "Determines the output foramt of the image - original,gif,jpg,png", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public ImageOutputFormat Format { get; set; }
 
-        [ApiMember(Name = "Indicator", Description = "Determines what overlay to render, if any. none, watched.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
-        public ImageOverlay? Indicator { get; set; }
+        [ApiMember(Name = "AddPlayedIndicator", Description = "Optional. Add a played indicator", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool AddPlayedIndicator { get; set; }
 
-        [ApiMember(Name = "PercentPlayed", Description = "Percent to render for the percent played overlay", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
-        public int PercentPlayed { get; set; }
+        [ApiMember(Name = "PercentPlayed", Description = "Optional percent to render for the percent played overlay", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public int? PercentPlayed { get; set; }
 
         [ApiMember(Name = "BackgroundColor", Description = "Optional. Apply a background color for transparent images.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string BackgroundColor { get; set; }

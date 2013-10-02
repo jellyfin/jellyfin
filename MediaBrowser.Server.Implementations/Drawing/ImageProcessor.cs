@@ -109,7 +109,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
             var quality = options.Quality ?? 90;
 
-            var cacheFilePath = GetCacheFilePath(originalImagePath, newSize, quality, dateModified, options.OutputFormat, options.Indicator, options.PercentPlayed, options.BackgroundColor);
+            var cacheFilePath = GetCacheFilePath(originalImagePath, newSize, quality, dateModified, options.OutputFormat, options.AddPlayedIndicator, options.PercentPlayed, options.BackgroundColor);
 
             try
             {
@@ -180,7 +180,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
                                     thumbnailGraph.DrawImage(originalImage, 0, 0, newWidth, newHeight);
 
-                                    DrawIndicator(thumbnailGraph, newWidth, newHeight, options.Indicator, options.PercentPlayed);
+                                    DrawIndicator(thumbnailGraph, newWidth, newHeight, options);
 
                                     var outputFormat = GetOutputFormat(originalImage, options.OutputFormat);
 
@@ -277,28 +277,31 @@ namespace MediaBrowser.Server.Implementations.Drawing
         /// <param name="graphics">The graphics.</param>
         /// <param name="imageWidth">Width of the image.</param>
         /// <param name="imageHeight">Height of the image.</param>
-        /// <param name="indicator">The indicator.</param>
-        /// <param name="percentPlayed">The percent played.</param>
-        private void DrawIndicator(Graphics graphics, int imageWidth, int imageHeight, ImageOverlay? indicator, int percentPlayed)
+        /// <param name="options">The options.</param>
+        private void DrawIndicator(Graphics graphics, int imageWidth, int imageHeight, ImageProcessingOptions options)
         {
-            if (!indicator.HasValue)
+            if (!options.AddPlayedIndicator && !options.PercentPlayed.HasValue)
             {
                 return;
             }
 
             try
             {
-                if (indicator.Value == ImageOverlay.Played)
+                var percentOffset = 0;
+
+                if (options.AddPlayedIndicator)
                 {
                     var currentImageSize = new Size(imageWidth, imageHeight);
 
                     new WatchedIndicatorDrawer().Process(graphics, currentImageSize);
+
+                    percentOffset = 0 - WatchedIndicatorDrawer.IndicatorWidth;
                 }
-                if (indicator.Value == ImageOverlay.PercentPlayed)
+                if (options.PercentPlayed.HasValue)
                 {
                     var currentImageSize = new Size(imageWidth, imageHeight);
 
-                    new PercentPlayedDrawer().Process(graphics, currentImageSize, percentPlayed);
+                    new PercentPlayedDrawer().Process(graphics, currentImageSize, options.PercentPlayed.Value, percentOffset);
                 }
             }
             catch (Exception ex)
@@ -400,7 +403,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
         /// <summary>
         /// Gets the cache file path based on a set of parameters
         /// </summary>
-        private string GetCacheFilePath(string originalPath, ImageSize outputSize, int quality, DateTime dateModified, ImageOutputFormat format, ImageOverlay? overlay, int percentPlayed, string backgroundColor)
+        private string GetCacheFilePath(string originalPath, ImageSize outputSize, int quality, DateTime dateModified, ImageOutputFormat format, bool addPlayedIndicator, int? percentPlayed, string backgroundColor)
         {
             var filename = originalPath;
 
@@ -417,10 +420,14 @@ namespace MediaBrowser.Server.Implementations.Drawing
                 filename += "f=" + format;
             }
 
-            if (overlay.HasValue)
+            if (addPlayedIndicator)
             {
-                filename += "o=" + overlay.Value;
-                filename += "p=" + percentPlayed;
+                filename += "pl=true";
+            }
+
+            if (percentPlayed.HasValue)
+            {
+                filename += "p=" + percentPlayed.Value;
             }
 
             if (!string.IsNullOrEmpty(backgroundColor))

@@ -70,10 +70,33 @@ namespace MediaBrowser.Model.Dto
         /// <value><c>true</c> if [enable image enhancers]; otherwise, <c>false</c>.</value>
         public bool EnableImageEnhancers { get; set; }
 
+        /// <summary>
+        /// Gets or sets the format.
+        /// </summary>
+        /// <value>The format.</value>
         public ImageOutputFormat Format { get; set; }
 
-        public ImageOverlay? Indicator { get; set; }
-        
+        /// <summary>
+        /// Gets or sets a value indicating whether [add played indicator].
+        /// </summary>
+        /// <value><c>true</c> if [add played indicator]; otherwise, <c>false</c>.</value>
+        public bool AddPlayedIndicator { get; set; }
+
+        /// <summary>
+        /// Gets or sets the percent played.
+        /// </summary>
+        /// <value>The percent played.</value>
+        public int? PercentPlayed { get; set; }
+
+        /// <summary>
+        /// Gets or sets the color of the background.
+        /// </summary>
+        /// <value>The color of the background.</value>
+        public string BackgroundColor { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ImageOptions" /> class.
+        /// </summary>
         public ImageOptions()
         {
             EnableImageEnhancers = true;
