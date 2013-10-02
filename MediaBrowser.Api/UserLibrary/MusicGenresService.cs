@@ -43,7 +43,7 @@ namespace MediaBrowser.Api.UserLibrary
 
     public class MusicGenresService : BaseItemsByNameService<MusicGenre>
     {
-        public MusicGenresService(IUserManager userManager, ILibraryManager libraryManager, IUserDataRepository userDataRepository, IItemRepository itemRepo, IDtoService dtoService)
+        public MusicGenresService(IUserManager userManager, ILibraryManager libraryManager, IUserDataManager userDataRepository, IItemRepository itemRepo, IDtoService dtoService)
             : base(userManager, libraryManager, userDataRepository, itemRepo, dtoService)
         {
         }

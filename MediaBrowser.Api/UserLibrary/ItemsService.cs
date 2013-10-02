@@ -188,7 +188,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// The _user manager
         /// </summary>
         private readonly IUserManager _userManager;
-        private readonly IUserDataRepository _userDataRepository;
+        private readonly IUserDataManager _userDataRepository;
 
         /// <summary>
         /// The _library manager
@@ -206,7 +206,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="searchEngine">The search engine.</param>
         /// <param name="userDataRepository">The user data repository.</param>
-        public ItemsService(IUserManager userManager, ILibraryManager libraryManager, ILibrarySearchEngine searchEngine, IUserDataRepository userDataRepository, ILocalizationManager localization, IDtoService dtoService)
+        public ItemsService(IUserManager userManager, ILibraryManager libraryManager, ILibrarySearchEngine searchEngine, IUserDataManager userDataRepository, ILocalizationManager localization, IDtoService dtoService)
         {
             _userManager = userManager;
             _libraryManager = libraryManager;
@@ -322,7 +322,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="user">The user.</param>
         /// <param name="repository">The repository.</param>
         /// <returns>IEnumerable{BaseItem}.</returns>
-        internal static IEnumerable<BaseItem> ApplyFilter(IEnumerable<BaseItem> items, ItemFilter filter, User user, IUserDataRepository repository)
+        internal static IEnumerable<BaseItem> ApplyFilter(IEnumerable<BaseItem> items, ItemFilter filter, User user, IUserDataManager repository)
         {
             switch (filter)
             {

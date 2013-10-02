@@ -26,7 +26,7 @@ namespace MediaBrowser.Api
         /// <summary>
         /// The _user data repository
         /// </summary>
-        private readonly IUserDataRepository _userDataRepository;
+        private readonly IUserDataManager _userDataRepository;
         /// <summary>
         /// The _library manager
         /// </summary>
@@ -34,7 +34,7 @@ namespace MediaBrowser.Api
         private readonly IItemRepository _itemRepo;
         private readonly IDtoService _dtoService;
 
-        public AlbumsService(IUserManager userManager, IUserDataRepository userDataRepository, ILibraryManager libraryManager, IItemRepository itemRepo, IDtoService dtoService)
+        public AlbumsService(IUserManager userManager, IUserDataManager userDataRepository, ILibraryManager libraryManager, IItemRepository itemRepo, IDtoService dtoService)
         {
             _userManager = userManager;
             _userDataRepository = userDataRepository;

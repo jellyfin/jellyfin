@@ -47,7 +47,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// </summary>
     public class GenresService : BaseItemsByNameService<Genre>
     {
-        public GenresService(IUserManager userManager, ILibraryManager libraryManager, IUserDataRepository userDataRepository, IItemRepository itemRepo, IDtoService dtoService)
+        public GenresService(IUserManager userManager, ILibraryManager libraryManager, IUserDataManager userDataRepository, IItemRepository itemRepo, IDtoService dtoService)
             : base(userManager, libraryManager, userDataRepository, itemRepo, dtoService)
         {
         }

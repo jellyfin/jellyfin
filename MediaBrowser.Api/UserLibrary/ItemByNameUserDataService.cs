@@ -132,7 +132,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <summary>
         /// The user data repository
         /// </summary>
-        protected readonly IUserDataRepository UserDataRepository;
+        protected readonly IUserDataManager UserDataRepository;
 
         /// <summary>
         /// The library manager
@@ -145,7 +145,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <param name="userDataRepository">The user data repository.</param>
         /// <param name="libraryManager">The library manager.</param>
-        public ItemByNameUserDataService(IUserDataRepository userDataRepository, ILibraryManager libraryManager, IDtoService dtoService)
+        public ItemByNameUserDataService(IUserDataManager userDataRepository, ILibraryManager libraryManager, IDtoService dtoService)
         {
             UserDataRepository = userDataRepository;
             LibraryManager = libraryManager;

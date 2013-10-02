@@ -52,7 +52,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="userDataRepository">The user data repository.</param>
         /// <param name="itemRepo">The item repo.</param>
-        public ArtistsService(IUserManager userManager, ILibraryManager libraryManager, IUserDataRepository userDataRepository, IItemRepository itemRepo, IDtoService dtoService)
+        public ArtistsService(IUserManager userManager, ILibraryManager libraryManager, IUserDataManager userDataRepository, IItemRepository itemRepo, IDtoService dtoService)
             : base(userManager, libraryManager, userDataRepository, itemRepo, dtoService)
         {
         }

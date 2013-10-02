@@ -1333,7 +1333,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="userManager">The user manager.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public virtual async Task MarkPlayed(User user, DateTime? datePlayed, IUserDataRepository userManager)
+        public virtual async Task MarkPlayed(User user, DateTime? datePlayed, IUserDataManager userManager)
         {
             if (user == null)
             {
@@ -1359,7 +1359,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="userManager">The user manager.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public virtual async Task MarkUnplayed(User user, IUserDataRepository userManager)
+        public virtual async Task MarkUnplayed(User user, IUserDataManager userManager)
         {
             if (user == null)
             {

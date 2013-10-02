@@ -142,6 +142,7 @@
     <Compile Include="Library\Resolvers\TV\SeasonResolver.cs" />
     <Compile Include="Library\Resolvers\TV\SeriesResolver.cs" />
     <Compile Include="Library\Resolvers\VideoResolver.cs" />
+    <Compile Include="Library\UserDataManager.cs" />
     <Compile Include="Library\UserManager.cs" />
     <Compile Include="Library\Validators\ArtistsPostScanTask.cs" />
     <Compile Include="Library\Validators\ArtistsValidator.cs" />

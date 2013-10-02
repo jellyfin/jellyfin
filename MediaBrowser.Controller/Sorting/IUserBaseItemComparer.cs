@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Persistence;
 
 namespace MediaBrowser.Controller.Sorting
 {
@@ -25,6 +24,6 @@ namespace MediaBrowser.Controller.Sorting
         /// Gets or sets the user data repository.
         /// </summary>
         /// <value>The user data repository.</value>
-        IUserDataRepository UserDataRepository { get; set; }
+        IUserDataManager UserDataRepository { get; set; }
     }
 }

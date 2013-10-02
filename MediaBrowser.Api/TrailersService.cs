@@ -29,7 +29,7 @@ namespace MediaBrowser.Api
         /// <summary>
         /// The _user data repository
         /// </summary>
-        private readonly IUserDataRepository _userDataRepository;
+        private readonly IUserDataManager _userDataRepository;
         /// <summary>
         /// The _library manager
         /// </summary>
@@ -44,7 +44,7 @@ namespace MediaBrowser.Api
         /// <param name="userManager">The user manager.</param>
         /// <param name="userDataRepository">The user data repository.</param>
         /// <param name="libraryManager">The library manager.</param>
-        public TrailersService(IUserManager userManager, IUserDataRepository userDataRepository, ILibraryManager libraryManager, IItemRepository itemRepo, IDtoService dtoService)
+        public TrailersService(IUserManager userManager, IUserDataManager userDataRepository, ILibraryManager libraryManager, IItemRepository itemRepo, IDtoService dtoService)
         {
             _userManager = userManager;
             _userDataRepository = userDataRepository;

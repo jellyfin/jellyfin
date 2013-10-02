@@ -48,7 +48,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// </summary>
     public class StudiosService : BaseItemsByNameService<Studio>
     {
-        public StudiosService(IUserManager userManager, ILibraryManager libraryManager, IUserDataRepository userDataRepository, IItemRepository itemRepo, IDtoService dtoService)
+        public StudiosService(IUserManager userManager, ILibraryManager libraryManager, IUserDataManager userDataRepository, IItemRepository itemRepo, IDtoService dtoService)
             : base(userManager, libraryManager, userDataRepository, itemRepo, dtoService)
         {
         }

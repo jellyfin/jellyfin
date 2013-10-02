@@ -1247,7 +1247,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="datePlayed">The date played.</param>
         /// <param name="userManager">The user manager.</param>
         /// <returns>Task.</returns>
-        public override async Task MarkPlayed(User user, DateTime? datePlayed, IUserDataRepository userManager)
+        public override async Task MarkPlayed(User user, DateTime? datePlayed, IUserDataManager userManager)
         {
             // Sweep through recursively and update status
             var tasks = GetRecursiveChildren(user, true).Where(i => !i.IsFolder).Select(c => c.MarkPlayed(user, datePlayed, userManager));
@@ -1261,7 +1261,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="user">The user.</param>
         /// <param name="userManager">The user manager.</param>
         /// <returns>Task.</returns>
-        public override async Task MarkUnplayed(User user, IUserDataRepository userManager)
+        public override async Task MarkUnplayed(User user, IUserDataManager userManager)
         {
             // Sweep through recursively and update status
             var tasks = GetRecursiveChildren(user, true).Where(i => !i.IsFolder).Select(c => c.MarkUnplayed(user, userManager));

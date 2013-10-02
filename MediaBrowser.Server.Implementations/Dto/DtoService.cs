@@ -27,12 +27,12 @@ namespace MediaBrowser.Server.Implementations.Dto
         private readonly ILogger _logger;
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
-        private readonly IUserDataRepository _userDataRepository;
+        private readonly IUserDataManager _userDataRepository;
         private readonly IItemRepository _itemRepo;
 
         private readonly IImageProcessor _imageProcessor;
-        
-        public DtoService(ILogger logger, ILibraryManager libraryManager, IUserManager userManager, IUserDataRepository userDataRepository, IItemRepository itemRepo, IImageProcessor imageProcessor)
+
+        public DtoService(ILogger logger, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataRepository, IItemRepository itemRepo, IImageProcessor imageProcessor)
         {
             _logger = logger;
             _libraryManager = libraryManager;

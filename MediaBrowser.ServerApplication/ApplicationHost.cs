@@ -160,7 +160,7 @@ namespace MediaBrowser.ServerApplication
         /// Gets or sets the user data repository.
         /// </summary>
         /// <value>The user data repository.</value>
-        private IUserDataRepository UserDataRepository { get; set; }
+        private IUserDataManager UserDataManager { get; set; }
         private IUserRepository UserRepository { get; set; }
         internal IDisplayPreferencesRepository DisplayPreferencesRepository { get; set; }
         private IItemRepository ItemRepository { get; set; }
@@ -238,8 +238,8 @@ namespace MediaBrowser.ServerApplication
 
             var mediaEncoderTask = RegisterMediaEncoder();
 
-            UserDataRepository = new SqliteUserDataRepository(ApplicationPaths, JsonSerializer, LogManager);
-            RegisterSingleInstance(UserDataRepository);
+            UserDataManager = new UserDataManager();
+            RegisterSingleInstance(UserDataManager);
 
             UserRepository = await GetUserRepository().ConfigureAwait(false);
             RegisterSingleInstance(UserRepository);
@@ -253,7 +253,7 @@ namespace MediaBrowser.ServerApplication
             UserManager = new UserManager(Logger, ServerConfigurationManager, UserRepository);
             RegisterSingleInstance(UserManager);
 
-            LibraryManager = new LibraryManager(Logger, TaskManager, UserManager, ServerConfigurationManager, UserDataRepository, () => DirectoryWatchers);
+            LibraryManager = new LibraryManager(Logger, TaskManager, UserManager, ServerConfigurationManager, UserDataManager, () => DirectoryWatchers);
             RegisterSingleInstance(LibraryManager);
 
             DirectoryWatchers = new DirectoryWatchers(LogManager, TaskManager, LibraryManager, ServerConfigurationManager);
@@ -264,7 +264,7 @@ namespace MediaBrowser.ServerApplication
 
             RegisterSingleInstance<ILibrarySearchEngine>(() => new LuceneSearchEngine(ApplicationPaths, LogManager, LibraryManager));
 
-            SessionManager = new SessionManager(UserDataRepository, ServerConfigurationManager, Logger, UserRepository);
+            SessionManager = new SessionManager(UserDataManager, ServerConfigurationManager, Logger, UserRepository);
             RegisterSingleInstance(SessionManager);
 
             HttpServer = await _httpServerCreationTask.ConfigureAwait(false);
@@ -279,7 +279,7 @@ namespace MediaBrowser.ServerApplication
             ImageProcessor = new ImageProcessor(Logger, ServerConfigurationManager.ApplicationPaths);
             RegisterSingleInstance(ImageProcessor);
 
-            DtoService = new DtoService(Logger, LibraryManager, UserManager, UserDataRepository, ItemRepository, ImageProcessor);
+            DtoService = new DtoService(Logger, LibraryManager, UserManager, UserDataManager, ItemRepository, ImageProcessor);
             RegisterSingleInstance(DtoService);
 
             LiveTvManager = new LiveTvManager();
@@ -372,9 +372,13 @@ namespace MediaBrowser.ServerApplication
         /// Configures the user data repositories.
         /// </summary>
         /// <returns>Task.</returns>
-        private Task ConfigureUserDataRepositories()
+        private async Task ConfigureUserDataRepositories()
         {
-            return UserDataRepository.Initialize();
+            var repo = new SqliteUserDataRepository(ApplicationPaths, JsonSerializer, LogManager);
+
+            await repo.Initialize().ConfigureAwait(false);
+
+            ((UserDataManager) UserDataManager).Repository = repo;
         }
 
         /// <summary>
