@@ -3,19 +3,10 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Controller.Persistence
+namespace MediaBrowser.Controller.Library
 {
-    /// <summary>
-    /// Provides an interface to implement a UserData repository
-    /// </summary>
-    public interface IUserDataRepository : IRepository
+    public interface IUserDataManager
     {
-        /// <summary>
-        /// Opens the connection to the repository
-        /// </summary>
-        /// <returns>Task.</returns>
-        Task Initialize();
-
         /// <summary>
         /// Saves the user data.
         /// </summary>

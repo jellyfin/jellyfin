@@ -381,7 +381,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <summary>
         /// The _user data repository
         /// </summary>
-        private readonly IUserDataRepository _userDataRepository;
+        private readonly IUserDataManager _userDataRepository;
         /// <summary>
         /// The _library manager
         /// </summary>
@@ -399,7 +399,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="sessionManager">The session manager.</param>
         /// <param name="dtoService">The dto service.</param>
         /// <exception cref="System.ArgumentNullException">jsonSerializer</exception>
-        public UserLibraryService(IUserManager userManager, ILibraryManager libraryManager, IUserDataRepository userDataRepository, ISessionManager sessionManager, IDtoService dtoService)
+        public UserLibraryService(IUserManager userManager, ILibraryManager libraryManager, IUserDataManager userDataRepository, ISessionManager sessionManager, IDtoService dtoService)
         {
             _userManager = userManager;
             _libraryManager = libraryManager;

@@ -53,7 +53,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
-        public YearsService(IUserManager userManager, ILibraryManager libraryManager, IUserDataRepository userDataRepository, IItemRepository itemRepo, IDtoService dtoService)
+        public YearsService(IUserManager userManager, ILibraryManager libraryManager, IUserDataManager userDataRepository, IItemRepository itemRepo, IDtoService dtoService)
             : base(userManager, libraryManager, userDataRepository, itemRepo, dtoService)
         {
         }

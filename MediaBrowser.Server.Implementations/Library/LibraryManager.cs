@@ -113,7 +113,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <summary>
         /// The _user data repository
         /// </summary>
-        private readonly IUserDataRepository _userDataRepository;
+        private readonly IUserDataManager _userDataRepository;
 
         /// <summary>
         /// Gets or sets the configuration manager.
@@ -172,7 +172,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="userManager">The user manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="userDataRepository">The user data repository.</param>
-        public LibraryManager(ILogger logger, ITaskManager taskManager, IUserManager userManager, IServerConfigurationManager configurationManager, IUserDataRepository userDataRepository, Func<IDirectoryWatchers> directoryWatchersFactory)
+        public LibraryManager(ILogger logger, ITaskManager taskManager, IUserManager userManager, IServerConfigurationManager configurationManager, IUserDataManager userDataRepository, Func<IDirectoryWatchers> directoryWatchersFactory)
         {
             _logger = logger;
             _taskManager = taskManager;

@@ -55,7 +55,7 @@ namespace MediaBrowser.Server.Implementations.Sorting
         /// Gets or sets the user data repository.
         /// </summary>
         /// <value>The user data repository.</value>
-        public IUserDataRepository UserDataRepository { get; set; }
+        public IUserDataManager UserDataRepository { get; set; }
 
         /// <summary>
         /// Gets or sets the user manager.
@@ -113,7 +113,7 @@ namespace MediaBrowser.Server.Implementations.Sorting
         /// Gets or sets the user data repository.
         /// </summary>
         /// <value>The user data repository.</value>
-        public IUserDataRepository UserDataRepository { get; set; }
+        public IUserDataManager UserDataRepository { get; set; }
 
         /// <summary>
         /// Gets or sets the user manager.

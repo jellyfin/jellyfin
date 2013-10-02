@@ -25,7 +25,7 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <summary>
         /// The _user data repository
         /// </summary>
-        private readonly IUserDataRepository _userDataRepository;
+        private readonly IUserDataManager _userDataRepository;
 
         /// <summary>
         /// The _user repository
@@ -69,7 +69,7 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="userRepository">The user repository.</param>
-        public SessionManager(IUserDataRepository userDataRepository, IServerConfigurationManager configurationManager, ILogger logger, IUserRepository userRepository)
+        public SessionManager(IUserDataManager userDataRepository, IServerConfigurationManager configurationManager, ILogger logger, IUserRepository userRepository)
         {
             _userDataRepository = userDataRepository;
             _configurationManager = configurationManager;

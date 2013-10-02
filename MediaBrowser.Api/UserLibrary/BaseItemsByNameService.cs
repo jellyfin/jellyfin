@@ -8,7 +8,6 @@ using ServiceStack.ServiceHost;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.UserLibrary
 {
@@ -27,7 +26,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// The library manager
         /// </summary>
         protected readonly ILibraryManager LibraryManager;
-        protected readonly IUserDataRepository UserDataRepository;
+        protected readonly IUserDataManager UserDataRepository;
         protected readonly IItemRepository ItemRepository;
         protected IDtoService DtoService { get; private set; }
 
@@ -39,7 +38,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="userDataRepository">The user data repository.</param>
         /// <param name="itemRepository">The item repository.</param>
         /// <param name="dtoService">The dto service.</param>
-        protected BaseItemsByNameService(IUserManager userManager, ILibraryManager libraryManager, IUserDataRepository userDataRepository, IItemRepository itemRepository, IDtoService dtoService)
+        protected BaseItemsByNameService(IUserManager userManager, ILibraryManager libraryManager, IUserDataManager userDataRepository, IItemRepository itemRepository, IDtoService dtoService)
         {
             UserManager = userManager;
             LibraryManager = libraryManager;

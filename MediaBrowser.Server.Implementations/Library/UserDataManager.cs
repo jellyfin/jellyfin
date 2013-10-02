@@ -1,20 +1,22 @@
 ﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Persistence;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Controller.Persistence
+namespace MediaBrowser.Server.Implementations.Library
 {
     /// <summary>
-    /// Provides an interface to implement a UserData repository
+    /// Class UserDataManager
     /// </summary>
-    public interface IUserDataRepository : IRepository
+    public class UserDataManager : IUserDataManager
     {
         /// <summary>
-        /// Opens the connection to the repository
+        /// Gets or sets the repository.
         /// </summary>
-        /// <returns>Task.</returns>
-        Task Initialize();
+        /// <value>The repository.</value>
+        public IUserDataRepository Repository { get; set; }
 
         /// <summary>
         /// Saves the user data.
@@ -24,7 +26,10 @@ namespace MediaBrowser.Controller.Persistence
         /// <param name="userData">The user data.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SaveUserData(Guid userId, string key, UserItemData userData, CancellationToken cancellationToken);
+        public Task SaveUserData(Guid userId, string key, UserItemData userData, CancellationToken cancellationToken)
+        {
+            return Repository.SaveUserData(userId, key, userData, cancellationToken);
+        }
 
         /// <summary>
         /// Gets the user data.
@@ -32,6 +37,9 @@ namespace MediaBrowser.Controller.Persistence
         /// <param name="userId">The user id.</param>
         /// <param name="key">The key.</param>
         /// <returns>Task{UserItemData}.</returns>
-        UserItemData GetUserData(Guid userId, string key);
+        public UserItemData GetUserData(Guid userId, string key)
+        {
+            return Repository.GetUserData(userId, key);
+        }
     }
 }
