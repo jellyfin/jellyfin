@@ -332,7 +332,7 @@ namespace MediaBrowser.Common.Implementations
 
                 RegisterSingleInstance(TaskManager);
 
-                HttpClient = new HttpClientManager.HttpClientManager(ApplicationPaths, Logger, GetHttpMessageHandler);
+                HttpClient = new HttpClientManager.HttpClientManager(ApplicationPaths, Logger, CreateHttpClient);
                 RegisterSingleInstance(HttpClient);
 
                 NetworkManager = new NetworkManager();
@@ -352,7 +352,7 @@ namespace MediaBrowser.Common.Implementations
             });
         }
 
-        protected abstract HttpMessageHandler GetHttpMessageHandler(bool enableHttpCompression);
+        protected abstract HttpClient CreateHttpClient(bool enableHttpCompression);
 
         /// <summary>
         /// Gets a list of types within an assembly

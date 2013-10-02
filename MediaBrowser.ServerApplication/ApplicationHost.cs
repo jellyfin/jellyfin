@@ -672,14 +672,9 @@ namespace MediaBrowser.ServerApplication
             OnApplicationUpdated(package.version);
         }
 
-        /// <summary>
-        /// Gets the HTTP message handler.
-        /// </summary>
-        /// <param name="enableHttpCompression">if set to <c>true</c> [enable HTTP compression].</param>
-        /// <returns>HttpMessageHandler.</returns>
-        protected override HttpMessageHandler GetHttpMessageHandler(bool enableHttpCompression)
+        protected override HttpClient CreateHttpClient(bool enableHttpCompression)
         {
-            return HttpMessageHandlerFactory.GetHttpMessageHandler(enableHttpCompression);
+            return HttpClientFactory.GetHttpClient(enableHttpCompression);
         }
 
         protected override void ConfigureAutoRunAtStartup(bool autorun)

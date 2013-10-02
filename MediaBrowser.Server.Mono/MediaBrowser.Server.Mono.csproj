@@ -81,9 +81,9 @@
     <Compile Include="..\MediaBrowser.ServerApplication\ApplicationHost.cs">
       <Link>ApplicationHost.cs</Link>
     </Compile>
-    <Compile Include="Native\HttpMessageHandlerFactory.cs" />
     <Compile Include="Native\Assemblies.cs" />
     <Compile Include="Native\NativeApp.cs" />
+    <Compile Include="Native\HttpClientFactory.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
