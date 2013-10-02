@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Common.Events;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
@@ -15,6 +16,8 @@ namespace MediaBrowser.Server.Implementations.Library
     /// </summary>
     public class UserDataManager : IUserDataManager
     {
+        public event EventHandler<UserDataSaveEventArgs> UserDataSaved;
+
         private readonly ConcurrentDictionary<string, UserItemData> _userData = new ConcurrentDictionary<string, UserItemData>();
 
         private readonly ILogger _logger;
@@ -84,6 +87,15 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 throw;
             }
+
+            EventHelper.FireEventIfNotNull(UserDataSaved, this, new UserDataSaveEventArgs
+            {
+                Key = key,
+                UserData = userData,
+                SaveReason = reason,
+                UserId = userId
+
+            }, _logger);
         }
 
         /// <summary>

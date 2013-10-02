@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Session
 {
-    public class WebSocketController : ISessionRemoteController
+    public class WebSocketController : ISessionController
     {
         public bool Supports(SessionInfo session)
         {

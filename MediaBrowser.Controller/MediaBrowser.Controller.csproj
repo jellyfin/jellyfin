@@ -98,6 +98,7 @@
     <Compile Include="Library\IMetadataSaver.cs" />
     <Compile Include="Library\ItemUpdateType.cs" />
     <Compile Include="Library\IUserDataManager.cs" />
+    <Compile Include="Library\UserDataSaveEventArgs.cs" />
     <Compile Include="LiveTv\ChannelInfo.cs" />
     <Compile Include="LiveTv\ILiveTvManager.cs" />
     <Compile Include="LiveTv\ILiveTvService.cs" />
@@ -174,7 +175,7 @@
     <Compile Include="Kernel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Providers\BaseMetadataProvider.cs" />
-    <Compile Include="Session\ISessionRemoteController.cs" />
+    <Compile Include="Session\ISessionController.cs" />
     <Compile Include="Session\PlaybackInfo.cs" />
     <Compile Include="Session\PlaybackProgressInfo.cs" />
     <Compile Include="Session\PlaybackStopInfo.cs" />

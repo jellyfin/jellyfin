@@ -17,7 +17,7 @@ namespace MediaBrowser.Controller.Session
         /// Adds the parts.
         /// </summary>
         /// <param name="remoteControllers">The remote controllers.</param>
-        void AddParts(IEnumerable<ISessionRemoteController> remoteControllers);
+        void AddParts(IEnumerable<ISessionController> remoteControllers);
 
         /// <summary>
         /// Occurs when [playback start].
@@ -50,7 +50,7 @@ namespace MediaBrowser.Controller.Session
         /// <param name="user">The user.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">user</exception>
-        Task<SessionInfo> LogConnectionActivity(string clientType, string appVersion, string deviceId, string deviceName, User user);
+        Task<SessionInfo> LogSessionActivity(string clientType, string appVersion, string deviceId, string deviceName, User user);
 
         /// <summary>
         /// Used to report that playback has started for an item

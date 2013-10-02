@@ -78,8 +78,8 @@ namespace MediaBrowser.Server.Implementations.Session
             _userRepository = userRepository;
         }
 
-        private List<ISessionRemoteController> _remoteControllers;
-        public void AddParts(IEnumerable<ISessionRemoteController> remoteControllers)
+        private List<ISessionController> _remoteControllers;
+        public void AddParts(IEnumerable<ISessionController> remoteControllers)
         {
             _remoteControllers = remoteControllers.ToList();
         }
@@ -104,7 +104,7 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <returns>Task.</returns>
         /// <exception cref="System.UnauthorizedAccessException"></exception>
         /// <exception cref="System.ArgumentNullException">user</exception>
-        public async Task<SessionInfo> LogConnectionActivity(string clientType, string appVersion, string deviceId, string deviceName, User user)
+        public async Task<SessionInfo> LogSessionActivity(string clientType, string appVersion, string deviceId, string deviceName, User user)
         {
             if (string.IsNullOrEmpty(clientType))
             {
@@ -442,7 +442,7 @@ namespace MediaBrowser.Server.Implementations.Session
         /// </summary>
         /// <param name="session">The session.</param>
         /// <returns>IEnumerable{ISessionRemoteController}.</returns>
-        private IEnumerable<ISessionRemoteController> GetControllers(SessionInfo session)
+        private IEnumerable<ISessionController> GetControllers(SessionInfo session)
         {
             return _remoteControllers.Where(i => i.Supports(session));
         }

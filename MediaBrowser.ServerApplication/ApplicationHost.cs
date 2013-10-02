@@ -427,7 +427,7 @@ namespace MediaBrowser.ServerApplication
 
             ProviderManager.AddParts(GetExports<BaseMetadataProvider>());
 
-            SessionManager.AddParts(GetExports<ISessionRemoteController>());
+            SessionManager.AddParts(GetExports<ISessionController>());
 
             ImageProcessor.AddParts(GetExports<IImageEnhancer>());
 

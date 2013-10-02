@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Session
 {
-    public interface ISessionRemoteController
+    public interface ISessionController
     {
         /// <summary>
         /// Supportses the specified session.
