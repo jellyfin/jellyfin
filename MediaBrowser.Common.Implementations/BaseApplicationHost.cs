@@ -159,7 +159,7 @@ namespace MediaBrowser.Common.Implementations
         protected IZipClient ZipClient { get; set; }
 
         protected IIsoManager IsoManager { get; set; }
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseApplicationHost{TApplicationPathsType}"/> class.
         /// </summary>
@@ -243,7 +243,7 @@ namespace MediaBrowser.Common.Implementations
         /// Runs the startup tasks.
         /// </summary>
         /// <returns>Task.</returns>
-        public virtual  Task RunStartupTasks()
+        public virtual Task RunStartupTasks()
         {
             return Task.Run(() =>
             {
@@ -384,7 +384,7 @@ namespace MediaBrowser.Common.Implementations
         /// </summary>
         /// <param name="type">The type.</param>
         /// <returns>System.Object.</returns>
-        public object CreateInstance(Type type)
+        protected object CreateInstance(Type type)
         {
             try
             {
@@ -395,6 +395,25 @@ namespace MediaBrowser.Common.Implementations
                 Logger.Error("Error creating {0}", ex, type.Name);
 
                 throw;
+            }
+        }
+
+        /// <summary>
+        /// Creates the instance safe.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns>System.Object.</returns>
+        protected object CreateInstanceSafe(Type type)
+        {
+            try
+            {
+                return Container.GetInstance(type);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("Error creating {0}", ex, type.Name);
+
+                return null;
             }
         }
 
@@ -496,7 +515,11 @@ namespace MediaBrowser.Common.Implementations
         /// <returns>IEnumerable{``0}.</returns>
         public IEnumerable<T> GetExports<T>(bool manageLiftime = true)
         {
-            var parts = GetExportTypes<T>().Select(CreateInstance).Cast<T>().ToList();
+            var parts = GetExportTypes<T>()
+                .Select(CreateInstanceSafe)
+                .Where(i => i != null)
+                .Cast<T>()
+                .ToList();
 
             if (manageLiftime)
             {

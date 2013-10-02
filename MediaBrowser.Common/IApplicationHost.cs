@@ -90,13 +90,6 @@ namespace MediaBrowser.Common
         Task UpdateApplication(PackageVersionInfo package, CancellationToken cancellationToken, IProgress<double> progress);
 
         /// <summary>
-        /// Creates an instance of type and resolves all constructor dependancies
-        /// </summary>
-        /// <param name="type">The type.</param>
-        /// <returns>System.Object.</returns>
-        object CreateInstance(Type type);
-
-        /// <summary>
         /// Resolves this instance.
         /// </summary>
         /// <typeparam name="T"></typeparam>
