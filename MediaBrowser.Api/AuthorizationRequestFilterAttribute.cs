@@ -64,7 +64,7 @@ namespace MediaBrowser.Api
 
                 if (!string.IsNullOrEmpty(client) && !string.IsNullOrEmpty(deviceId) && !string.IsNullOrEmpty(device) && !string.IsNullOrEmpty(version))
                 {
-                    SessionManager.LogConnectionActivity(client, version, deviceId, device, user);
+                    SessionManager.LogSessionActivity(client, version, deviceId, device, user);
                 }
             }
         }

@@ -12,6 +12,11 @@ namespace MediaBrowser.Controller.Library
     public interface IUserDataManager
     {
         /// <summary>
+        /// Occurs when [user data saved].
+        /// </summary>
+        event EventHandler<UserDataSaveEventArgs> UserDataSaved;
+
+        /// <summary>
         /// Saves the user data.
         /// </summary>
         /// <param name="userId">The user id.</param>

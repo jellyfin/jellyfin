@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Net;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace MediaBrowser.Controller.Session
 {
