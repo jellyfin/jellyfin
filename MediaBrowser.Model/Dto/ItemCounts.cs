@@ -1,4 +1,6 @@
 ﻿
+using System.Collections.Generic;
+
 namespace MediaBrowser.Model.Dto
 {
     /// <summary>
@@ -28,6 +30,11 @@ namespace MediaBrowser.Model.Dto
         /// <value>The game count.</value>
         public int GameCount { get; set; }
         /// <summary>
+        /// Gets or sets the game system count.
+        /// </summary>
+        /// <value>The game system count.</value>
+        public int GameSystemCount { get; set; }
+        /// <summary>
         /// Gets or sets the trailer count.
         /// </summary>
         /// <value>The trailer count.</value>
@@ -47,6 +54,25 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The music video count.</value>
         public int MusicVideoCount { get; set; }
+        /// <summary>
+        /// Gets or sets the box set count.
+        /// </summary>
+        /// <value>The box set count.</value>
         public int BoxSetCount { get; set; }
+        /// <summary>
+        /// Gets or sets the book count.
+        /// </summary>
+        /// <value>The book count.</value>
+        public int BookCount { get; set; }
+        /// <summary>
+        /// Gets or sets the unique types.
+        /// </summary>
+        /// <value>The unique types.</value>
+        public List<string> UniqueTypes { get; set; }
+
+        public ItemCounts()
+        {
+            UniqueTypes = new List<string>();
+        }
     }
 }

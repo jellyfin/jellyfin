@@ -320,13 +320,17 @@ namespace MediaBrowser.Api
                 AlbumCount = items.OfType<MusicAlbum>().Count(),
                 EpisodeCount = items.OfType<Episode>().Count(),
                 GameCount = items.OfType<Game>().Count(),
+                GameSystemCount = items.OfType<GameSystem>().Count(),
                 MovieCount = items.OfType<Movie>().Count(),
                 SeriesCount = items.OfType<Series>().Count(),
                 SongCount = items.OfType<Audio>().Count(),
                 TrailerCount = items.OfType<Trailer>().Count(),
                 MusicVideoCount = items.OfType<MusicVideo>().Count(),
                 AdultVideoCount = items.OfType<AdultVideo>().Count(),
-                BoxSetCount = items.OfType<BoxSet>().Count()
+                BoxSetCount = items.OfType<BoxSet>().Count(),
+                BookCount = items.OfType<Book>().Count(),
+
+                UniqueTypes = items.Select(i => i.GetType().Name).Distinct().ToList()
             };
 
             return ToOptimizedResult(counts);
