@@ -38,7 +38,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return new ChannelInfoDto
             {
                 Name = info.Name,
-                ServiceName = info.ServiceName
+                ServiceName = info.ServiceName,
+                ChannelType = info.ChannelType
             };
         }
     }

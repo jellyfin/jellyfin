@@ -90,7 +90,7 @@ namespace MediaBrowser.Api.Images
                 Quality = Request.Quality,
                 Width = Request.Width,
                 OutputFormat = Request.Format,
-                Indicator = Request.Indicator,
+                AddPlayedIndicator = Request.AddPlayedIndicator,
                 PercentPlayed = Request.PercentPlayed,
                 BackgroundColor = Request.BackgroundColor
             };

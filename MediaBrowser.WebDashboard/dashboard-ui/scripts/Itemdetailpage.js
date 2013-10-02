@@ -48,12 +48,24 @@
 
             $(".autoNumeric").autoNumeric('init');
 
+            setPeopleHeader(page, item);
+
             if (ApiClient.isWebSocketOpen()) {
                 ApiClient.sendWebSocketMessage("Context", [item.Type, item.Id, item.Name, context].join('|'));
             }
 
             Dashboard.hideLoadingMsg();
         });
+    }
+
+    function setPeopleHeader(page, item) {
+
+        if (item.Type == "Audio" || item.Type == "MusicAlbum" || item.MediaType == "Book" || item.MediaType == "Photo") {
+            $('#peopleHeader', page).html('People');
+        } else {
+            $('#peopleHeader', page).html('Cast & Crew');
+        }
+
     }
 
     function getContext(item) {
@@ -260,9 +272,9 @@
             $('.itemPath', page).hide();
         }
     }
-    
+
     function getArtistLinksHtml(artists) {
-        
+
         var html = [];
 
         for (var i = 0, length = artists.length; i < length; i++) {
@@ -274,7 +286,7 @@
         }
 
         html = html.join(' / ');
-        
+
         if (artists.length == 1) {
             return 'Artist:&nbsp;&nbsp;' + html;
         }

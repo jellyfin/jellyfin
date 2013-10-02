@@ -35,9 +35,9 @@ namespace MediaBrowser.Controller.Drawing
 
         public ImageOutputFormat OutputFormat { get; set; }
 
-        public ImageOverlay? Indicator { get; set; }
+        public bool AddPlayedIndicator { get; set; }
 
-        public int PercentPlayed { get; set; }
+        public int? PercentPlayed { get; set; }
 
         public string BackgroundColor { get; set; }
     }

@@ -48,7 +48,6 @@
     <Compile Include="Configuration\BaseApplicationConfiguration.cs" />
     <Compile Include="Configuration\ManualLoginCategory.cs" />
     <Compile Include="Configuration\ServerConfiguration.cs" />
-    <Compile Include="Drawing\ImageOverlay.cs" />
     <Compile Include="Drawing\ImageOutputFormat.cs" />
     <Compile Include="Dto\BaseItemPerson.cs" />
     <Compile Include="Dto\ChapterInfoDto.cs" />
@@ -63,10 +62,12 @@
     <Compile Include="Entities\MediaUrl.cs" />
     <Compile Include="Entities\MetadataFields.cs" />
     <Compile Include="Entities\Video3DFormat.cs" />
+    <Compile Include="Games\GameSystem.cs" />
     <Compile Include="IO\IIsoManager.cs" />
     <Compile Include="IO\IIsoMount.cs" />
     <Compile Include="IO\IIsoMounter.cs" />
     <Compile Include="LiveTv\ChannelInfoDto.cs" />
+    <Compile Include="LiveTv\ChannelType.cs" />
     <Compile Include="LiveTv\LiveTvServiceInfo.cs" />
     <Compile Include="Net\WebSocketMessage.cs" />
     <Compile Include="Net\WebSocketMessageType.cs" />

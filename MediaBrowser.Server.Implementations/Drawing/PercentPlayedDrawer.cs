@@ -10,9 +10,9 @@ namespace MediaBrowser.Server.Implementations.Drawing
         private const int FontSize = 30;
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
-        public void Process(Graphics graphics, Size imageSize, int percent)
+        public void Process(Graphics graphics, Size imageSize, int percent, int rightOffset)
         {
-            var x = imageSize.Width - IndicatorWidth;
+            var x = imageSize.Width - IndicatorWidth + rightOffset;
 
             using (var backdroundBrush = new SolidBrush(Color.FromArgb(225, 102, 192, 16)))
             {
@@ -20,7 +20,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
                 var text = string.Format("{0}%", percent.ToString(_usCulture));
 
-                x = imageSize.Width - (percent < 10 ? 66 : 75);
+                x = imageSize.Width - (percent < 10 ? 66 : 75) + rightOffset;
 
                 using (var font = new Font(FontFamily.GenericSansSerif, FontSize, FontStyle.Regular, GraphicsUnit.Pixel))
                 {
