@@ -1,7 +1,9 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Model.Logging;
 using System;
+using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,6 +14,15 @@ namespace MediaBrowser.Server.Implementations.Library
     /// </summary>
     public class UserDataManager : IUserDataManager
     {
+        private readonly ConcurrentDictionary<string, UserItemData> _userData = new ConcurrentDictionary<string, UserItemData>();
+
+        private readonly ILogger _logger;
+
+        public UserDataManager(ILogManager logManager)
+        {
+            _logger = logManager.GetLogger(GetType().Name);
+        }
+
         /// <summary>
         /// Gets or sets the repository.
         /// </summary>
@@ -26,9 +37,42 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="userData">The user data.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public Task SaveUserData(Guid userId, string key, UserItemData userData, CancellationToken cancellationToken)
+        public async Task SaveUserData(Guid userId, string key, UserItemData userData, CancellationToken cancellationToken)
         {
-            return Repository.SaveUserData(userId, key, userData, cancellationToken);
+            if (userData == null)
+            {
+                throw new ArgumentNullException("userData");
+            }
+            if (cancellationToken == null)
+            {
+                throw new ArgumentNullException("cancellationToken");
+            }
+            if (userId == Guid.Empty)
+            {
+                throw new ArgumentNullException("userId");
+            }
+            if (string.IsNullOrEmpty(key))
+            {
+                throw new ArgumentNullException("key");
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            try
+            {
+                await Repository.SaveUserData(userId, key, userData, cancellationToken).ConfigureAwait(false);
+
+                var newValue = userData;
+
+                // Once it succeeds, put it into the dictionary to make it available to everyone else
+                _userData.AddOrUpdate(GetCacheKey(userId, key), newValue, delegate { return newValue; });
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error saving user data", ex);
+
+                throw;
+            }
         }
 
         /// <summary>
@@ -39,7 +83,27 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>Task{UserItemData}.</returns>
         public UserItemData GetUserData(Guid userId, string key)
         {
-            return Repository.GetUserData(userId, key);
+            if (userId == Guid.Empty)
+            {
+                throw new ArgumentNullException("userId");
+            }
+            if (string.IsNullOrEmpty(key))
+            {
+                throw new ArgumentNullException("key");
+            }
+
+            return _userData.GetOrAdd(GetCacheKey(userId, key), keyName => Repository.GetUserData(userId, key));
+        }
+
+        /// <summary>
+        /// Gets the internal key.
+        /// </summary>
+        /// <param name="userId">The user id.</param>
+        /// <param name="key">The key.</param>
+        /// <returns>System.String.</returns>
+        private string GetCacheKey(Guid userId, string key)
+        {
+            return userId + key;
         }
     }
 }

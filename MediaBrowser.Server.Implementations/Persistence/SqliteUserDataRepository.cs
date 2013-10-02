@@ -4,7 +4,6 @@ using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
-using System.Collections.Concurrent;
 using System.Data;
 using System.IO;
 using System.Threading;
@@ -15,8 +14,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
     public class SqliteUserDataRepository : IUserDataRepository
     {
         private readonly ILogger _logger;
-
-        private readonly ConcurrentDictionary<string, UserItemData> _userData = new ConcurrentDictionary<string, UserItemData>();
 
         private readonly SemaphoreSlim _writeLock = new SemaphoreSlim(1, 1);
 
@@ -113,7 +110,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// userId
         /// or
         /// userDataId</exception>
-        public async Task SaveUserData(Guid userId, string key, UserItemData userData, CancellationToken cancellationToken)
+        public Task SaveUserData(Guid userId, string key, UserItemData userData, CancellationToken cancellationToken)
         {
             if (userData == null)
             {
@@ -132,34 +129,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 throw new ArgumentNullException("key");
             }
 
-            cancellationToken.ThrowIfCancellationRequested();
-
-            try
-            {
-                await PersistUserData(userId, key, userData, cancellationToken).ConfigureAwait(false);
-
-                var newValue = userData;
-
-                // Once it succeeds, put it into the dictionary to make it available to everyone else
-                _userData.AddOrUpdate(GetInternalKey(userId, key), newValue, delegate { return newValue; });
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error saving user data", ex);
-
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// Gets the internal key.
-        /// </summary>
-        /// <param name="userId">The user id.</param>
-        /// <param name="key">The key.</param>
-        /// <returns>System.String.</returns>
-        private string GetInternalKey(Guid userId, string key)
-        {
-            return userId + key;
+            return PersistUserData(userId, key, userData, cancellationToken);
         }
 
         /// <summary>
@@ -255,17 +225,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 throw new ArgumentNullException("key");
             }
 
-            return _userData.GetOrAdd(GetInternalKey(userId, key), keyName => RetrieveUserData(userId, key));
-        }
-
-        /// <summary>
-        /// Retrieves the user data.
-        /// </summary>
-        /// <param name="userId">The user id.</param>
-        /// <param name="key">The key.</param>
-        /// <returns>Task{UserItemData}.</returns>
-        private UserItemData RetrieveUserData(Guid userId, string key)
-        {
             using (var cmd = _connection.CreateCommand())
             {
                 cmd.CommandText = "select rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate from userdata where key = @key and userId=@userId";

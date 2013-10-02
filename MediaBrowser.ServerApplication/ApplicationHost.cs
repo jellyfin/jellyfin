@@ -238,7 +238,7 @@ namespace MediaBrowser.ServerApplication
 
             var mediaEncoderTask = RegisterMediaEncoder();
 
-            UserDataManager = new UserDataManager();
+            UserDataManager = new UserDataManager(LogManager);
             RegisterSingleInstance(UserDataManager);
 
             UserRepository = await GetUserRepository().ConfigureAwait(false);
