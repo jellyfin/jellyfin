@@ -1,8 +1,8 @@
 ﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Model.Net;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -33,6 +33,7 @@ namespace MediaBrowser.Server.Implementations.Session
         /// The _dto service
         /// </summary>
         private readonly IDtoService _dtoService;
+        private readonly IServerApplicationHost _appHost;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SessionWebSocketListener" /> class.
@@ -40,11 +41,12 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <param name="sessionManager">The session manager.</param>
         /// <param name="logManager">The log manager.</param>
         /// <param name="dtoService">The dto service.</param>
-        public SessionWebSocketListener(ISessionManager sessionManager, ILogManager logManager, IDtoService dtoService)
+        public SessionWebSocketListener(ISessionManager sessionManager, ILogManager logManager, IDtoService dtoService, IServerApplicationHost appHost)
         {
             _sessionManager = sessionManager;
             _logger = logManager.GetLogger(GetType().Name);
             _dtoService = dtoService;
+            _appHost = appHost;
         }
 
         /// <summary>
@@ -56,48 +58,11 @@ namespace MediaBrowser.Server.Implementations.Session
         {
             if (string.Equals(message.MessageType, "Identity", StringComparison.OrdinalIgnoreCase))
             {
-                _logger.Debug("Received Identity message");
-
-                var vals = message.Data.Split('|');
-
-                var client = vals[0];
-                var deviceId = vals[1];
-                var version = vals[2];
-
-                var session = _sessionManager.Sessions
-                    .FirstOrDefault(i => string.Equals(i.DeviceId, deviceId) &&
-                        string.Equals(i.Client, client) &&
-                        string.Equals(i.ApplicationVersion, version));
-
-                if (session != null)
-                {
-                    var sockets = session.WebSockets.Where(i => i.State == WebSocketState.Open).ToList();
-                    sockets.Add(message.Connection);
-
-                    session.WebSockets = sockets;
-                }
-                else
-                {
-                    _logger.Warn("Unable to determine session based on identity message: {0}", message.Data);
-                }
+                ProcessIdentityMessage(message);
             }
             else if (string.Equals(message.MessageType, "Context", StringComparison.OrdinalIgnoreCase))
             {
-                var session = _sessionManager.Sessions.FirstOrDefault(i => i.WebSockets.Contains(message.Connection));
-
-                if (session != null)
-                {
-                    var vals = message.Data.Split('|');
-
-                    session.NowViewingItemType = vals[0];
-                    session.NowViewingItemId = vals[1];
-                    session.NowViewingItemName = vals[2];
-                    session.NowViewingContext = vals.Length > 3 ? vals[3] : null;
-                }
-                else
-                {
-                    _logger.Warn("Unable to determine session based on context message: {0}", message.Data);
-                }
+                ProcessContextMessage(message);
             }
             else if (string.Equals(message.MessageType, "PlaybackStart", StringComparison.OrdinalIgnoreCase))
             {
@@ -105,77 +70,96 @@ namespace MediaBrowser.Server.Implementations.Session
             }
             else if (string.Equals(message.MessageType, "PlaybackProgress", StringComparison.OrdinalIgnoreCase))
             {
-                var session = _sessionManager.Sessions.FirstOrDefault(i => i.WebSockets.Contains(message.Connection));
-
-                if (session != null && session.User != null)
-                {
-                    var vals = message.Data.Split('|');
-
-                    var item = _dtoService.GetItemByDtoId(vals[0]);
-
-                    long? positionTicks = null;
-
-                    if (vals.Length > 1)
-                    {
-                        long pos;
-
-                        if (long.TryParse(vals[1], out pos))
-                        {
-                            positionTicks = pos;
-                        }
-                    }
-
-                    var isPaused = vals.Length > 2 && string.Equals(vals[2], "true", StringComparison.OrdinalIgnoreCase);
-                    var isMuted = vals.Length > 3 && string.Equals(vals[3], "true", StringComparison.OrdinalIgnoreCase);
-
-                    var info = new PlaybackProgressInfo
-                    {
-                        Item = item,
-                        PositionTicks = positionTicks,
-                        IsMuted = isMuted,
-                        IsPaused = isPaused,
-                        SessionId = session.Id
-                    };
-
-                    _sessionManager.OnPlaybackProgress(info);
-                }
+                ReportPlaybackProgress(message);
             }
             else if (string.Equals(message.MessageType, "PlaybackStopped", StringComparison.OrdinalIgnoreCase))
             {
-                _logger.Debug("Received PlaybackStopped message");
-                
-                var session = _sessionManager.Sessions.FirstOrDefault(i => i.WebSockets.Contains(message.Connection));
-
-                if (session != null && session.User != null)
-                {
-                    var vals = message.Data.Split('|');
-
-                    var item = _dtoService.GetItemByDtoId(vals[0]);
-
-                    long? positionTicks = null;
-
-                    if (vals.Length > 1)
-                    {
-                        long pos;
-
-                        if (long.TryParse(vals[1], out pos))
-                        {
-                            positionTicks = pos;
-                        }
-                    }
-
-                    var info = new PlaybackStopInfo
-                    {
-                        Item = item,
-                        PositionTicks = positionTicks,
-                        SessionId = session.Id
-                    };
-
-                    _sessionManager.OnPlaybackStopped(info);
-                }
+                ReportPlaybackStopped(message);
             }
 
             return _trueTaskResult;
+        }
+
+        /// <summary>
+        /// Processes the identity message.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        private void ProcessIdentityMessage(WebSocketMessageInfo message)
+        {
+            _logger.Debug("Received Identity message");
+
+            var vals = message.Data.Split('|');
+
+            var client = vals[0];
+            var deviceId = vals[1];
+            var version = vals[2];
+
+            var session = _sessionManager.Sessions
+                .FirstOrDefault(i => string.Equals(i.DeviceId, deviceId) &&
+                    string.Equals(i.Client, client) &&
+                    string.Equals(i.ApplicationVersion, version));
+
+            if (session != null)
+            {
+                var controller = new WebSocketController(session, _appHost);
+                controller.Sockets.Add(message.Connection);
+
+                session.SessionController = controller;
+            }
+            else
+            {
+                _logger.Warn("Unable to determine session based on identity message: {0}", message.Data);
+            }
+        }
+
+        /// <summary>
+        /// Processes the context message.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        private void ProcessContextMessage(WebSocketMessageInfo message)
+        {
+            var session = GetSessionFromMessage(message);
+
+            if (session != null)
+            {
+                var vals = message.Data.Split('|');
+
+                session.NowViewingItemType = vals[0];
+                session.NowViewingItemId = vals[1];
+                session.NowViewingItemName = vals[2];
+                session.NowViewingContext = vals.Length > 3 ? vals[3] : null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the session from message.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <returns>SessionInfo.</returns>
+        private SessionInfo GetSessionFromMessage(WebSocketMessageInfo message)
+        {
+            var result = _sessionManager.Sessions.FirstOrDefault(i =>
+            {
+                var controller = i.SessionController as WebSocketController;
+
+                if (controller != null)
+                {
+                    if (controller.Sockets.Any(s => s.Id == message.Connection.Id))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+
+            });
+
+            if (result == null)
+            {
+                _logger.Error("Unable to session based on web socket message");
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -185,9 +169,8 @@ namespace MediaBrowser.Server.Implementations.Session
         private void ReportPlaybackStart(WebSocketMessageInfo message)
         {
             _logger.Debug("Received PlaybackStart message");
-            
-            var session = _sessionManager.Sessions
-                .FirstOrDefault(i => i.WebSockets.Contains(message.Connection));
+
+            var session = GetSessionFromMessage(message);
 
             if (session != null && session.User != null)
             {
@@ -206,7 +189,7 @@ namespace MediaBrowser.Server.Implementations.Session
                 {
                     queueableMediaTypes = vals[2];
                 }
-  
+
                 var info = new PlaybackInfo
                 {
                     CanSeek = canSeek,
@@ -216,6 +199,87 @@ namespace MediaBrowser.Server.Implementations.Session
                 };
 
                 _sessionManager.OnPlaybackStart(info);
+            }
+        }
+
+        /// <summary>
+        /// Reports the playback progress.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        private void ReportPlaybackProgress(WebSocketMessageInfo message)
+        {
+            var session = GetSessionFromMessage(message);
+
+            if (session != null && session.User != null)
+            {
+                var vals = message.Data.Split('|');
+
+                var item = _dtoService.GetItemByDtoId(vals[0]);
+
+                long? positionTicks = null;
+
+                if (vals.Length > 1)
+                {
+                    long pos;
+
+                    if (long.TryParse(vals[1], out pos))
+                    {
+                        positionTicks = pos;
+                    }
+                }
+
+                var isPaused = vals.Length > 2 && string.Equals(vals[2], "true", StringComparison.OrdinalIgnoreCase);
+                var isMuted = vals.Length > 3 && string.Equals(vals[3], "true", StringComparison.OrdinalIgnoreCase);
+
+                var info = new PlaybackProgressInfo
+                {
+                    Item = item,
+                    PositionTicks = positionTicks,
+                    IsMuted = isMuted,
+                    IsPaused = isPaused,
+                    SessionId = session.Id
+                };
+
+                _sessionManager.OnPlaybackProgress(info);
+            }
+        }
+
+        /// <summary>
+        /// Reports the playback stopped.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        private void ReportPlaybackStopped(WebSocketMessageInfo message)
+        {
+            _logger.Debug("Received PlaybackStopped message");
+
+            var session = GetSessionFromMessage(message);
+
+            if (session != null && session.User != null)
+            {
+                var vals = message.Data.Split('|');
+
+                var item = _dtoService.GetItemByDtoId(vals[0]);
+
+                long? positionTicks = null;
+
+                if (vals.Length > 1)
+                {
+                    long pos;
+
+                    if (long.TryParse(vals[1], out pos))
+                    {
+                        positionTicks = pos;
+                    }
+                }
+
+                var info = new PlaybackStopInfo
+                {
+                    Item = item,
+                    PositionTicks = positionTicks,
+                    SessionId = session.Id
+                };
+
+                _sessionManager.OnPlaybackStopped(info);
             }
         }
     }

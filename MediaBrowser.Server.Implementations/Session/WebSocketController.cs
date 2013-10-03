@@ -1,8 +1,12 @@
 ﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Session;
+using MediaBrowser.Model.System;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,15 +15,39 @@ namespace MediaBrowser.Server.Implementations.Session
 {
     public class WebSocketController : ISessionController
     {
-        public bool Supports(SessionInfo session)
+        public SessionInfo Session { get; private set; }
+        public List<IWebSocketConnection> Sockets { get; private set; }
+
+        private readonly IServerApplicationHost _appHost;
+
+        public WebSocketController(SessionInfo session, IServerApplicationHost appHost)
         {
-            return session.WebSockets.Any(i => i.State == WebSocketState.Open);
+            Session = session;
+            _appHost = appHost;
+            Sockets = new List<IWebSocketConnection>();
         }
 
-        private IWebSocketConnection GetSocket(SessionInfo session)
+        public bool SupportsMediaRemoteControl
         {
-            var socket = session.WebSockets.OrderByDescending(i => i.LastActivityDate).FirstOrDefault(i => i.State == WebSocketState.Open);
+            get
+            {
+                return Sockets.Any(i => i.State == WebSocketState.Open);
+            }
+        }
 
+        public bool IsSessionActive
+        {
+            get
+            {
+                return Sockets.Any(i => i.State == WebSocketState.Open);
+            }
+        }
+
+        private IWebSocketConnection GetActiveSocket()
+        {
+            var socket = Sockets
+                .OrderByDescending(i => i.LastActivityDate)
+                .FirstOrDefault(i => i.State == WebSocketState.Open);
 
             if (socket == null)
             {
@@ -29,9 +57,9 @@ namespace MediaBrowser.Server.Implementations.Session
             return socket;
         }
 
-        public Task SendSystemCommand(SessionInfo session, SystemCommand command, CancellationToken cancellationToken)
+        public Task SendSystemCommand(SystemCommand command, CancellationToken cancellationToken)
         {
-            var socket = GetSocket(session);
+            var socket = GetActiveSocket();
 
             return socket.SendAsync(new WebSocketMessage<string>
             {
@@ -41,9 +69,9 @@ namespace MediaBrowser.Server.Implementations.Session
             }, cancellationToken);
         }
 
-        public Task SendMessageCommand(SessionInfo session, MessageCommand command, CancellationToken cancellationToken)
+        public Task SendMessageCommand(MessageCommand command, CancellationToken cancellationToken)
         {
-            var socket = GetSocket(session);
+            var socket = GetActiveSocket();
 
             return socket.SendAsync(new WebSocketMessage<MessageCommand>
             {
@@ -53,9 +81,9 @@ namespace MediaBrowser.Server.Implementations.Session
             }, cancellationToken);
         }
 
-        public Task SendPlayCommand(SessionInfo session, PlayRequest command, CancellationToken cancellationToken)
+        public Task SendPlayCommand(PlayRequest command, CancellationToken cancellationToken)
         {
-            var socket = GetSocket(session);
+            var socket = GetActiveSocket();
 
             return socket.SendAsync(new WebSocketMessage<PlayRequest>
             {
@@ -65,9 +93,9 @@ namespace MediaBrowser.Server.Implementations.Session
             }, cancellationToken);
         }
 
-        public Task SendBrowseCommand(SessionInfo session, BrowseRequest command, CancellationToken cancellationToken)
+        public Task SendBrowseCommand(BrowseRequest command, CancellationToken cancellationToken)
         {
-            var socket = GetSocket(session);
+            var socket = GetActiveSocket();
 
             return socket.SendAsync(new WebSocketMessage<BrowseRequest>
             {
@@ -77,14 +105,43 @@ namespace MediaBrowser.Server.Implementations.Session
             }, cancellationToken);
         }
 
-        public Task SendPlaystateCommand(SessionInfo session, PlaystateRequest command, CancellationToken cancellationToken)
+        public Task SendPlaystateCommand(PlaystateRequest command, CancellationToken cancellationToken)
         {
-            var socket = GetSocket(session);
+            var socket = GetActiveSocket();
 
             return socket.SendAsync(new WebSocketMessage<PlaystateRequest>
             {
                 MessageType = "Playstate",
                 Data = command
+
+            }, cancellationToken);
+        }
+
+        public Task SendLibraryUpdateInfo(LibraryUpdateInfo info, CancellationToken cancellationToken)
+        {
+            var socket = GetActiveSocket();
+            
+            return socket.SendAsync(new WebSocketMessage<LibraryUpdateInfo>
+            {
+                MessageType = "Playstate",
+                Data = info
+
+            }, cancellationToken);
+        }
+
+        /// <summary>
+        /// Sends the restart required message.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        public Task SendRestartRequiredMessage(CancellationToken cancellationToken)
+        {
+            var socket = GetActiveSocket();
+
+            return socket.SendAsync(new WebSocketMessage<SystemInfo>
+            {
+                MessageType = "RestartRequired",
+                Data = _appHost.GetSystemInfo()
 
             }, cancellationToken);
         }

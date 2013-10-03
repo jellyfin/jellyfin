@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
@@ -21,7 +20,6 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         private readonly ILibraryManager _libraryManager;
 
         private readonly ISessionManager _sessionManager;
-        private readonly IServerManager _serverManager;
         private readonly IUserManager _userManager;
         private readonly ILogger _logger;
 
@@ -48,11 +46,10 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         /// </summary>
         private const int LibraryUpdateDuration = 20000;
 
-        public LibraryChangedNotifier(ILibraryManager libraryManager, ISessionManager sessionManager, IServerManager serverManager, IUserManager userManager, ILogger logger)
+        public LibraryChangedNotifier(ILibraryManager libraryManager, ISessionManager sessionManager, IUserManager userManager, ILogger logger)
         {
             _libraryManager = libraryManager;
             _sessionManager = sessionManager;
-            _serverManager = serverManager;
             _userManager = userManager;
             _logger = logger;
         }
@@ -187,31 +184,33 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         /// <param name="foldersAddedTo">The folders added to.</param>
         /// <param name="foldersRemovedFrom">The folders removed from.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        private async void SendChangeNotifications(IEnumerable<BaseItem> itemsAdded, IEnumerable<BaseItem> itemsUpdated, IEnumerable<BaseItem> itemsRemoved, IEnumerable<Folder> foldersAddedTo, IEnumerable<Folder> foldersRemovedFrom, CancellationToken cancellationToken)
+        private async void SendChangeNotifications(List<BaseItem> itemsAdded, List<BaseItem> itemsUpdated, List<BaseItem> itemsRemoved, List<Folder> foldersAddedTo, List<Folder> foldersRemovedFrom, CancellationToken cancellationToken)
         {
-            var currentSessions = _sessionManager.Sessions.ToList();
-
-            var users = currentSessions.Select(i => i.User)
-                .Where(i => i != null)
-                .Select(i => i.Id)
-                .Distinct()
-                .ToList();
-
-            foreach (var userId in users)
+            foreach (var user in _userManager.Users.ToList())
             {
-                var id = userId;
-                var webSockets = currentSessions.Where(u => u.User != null && u.User.Id == id)
-                    .SelectMany(i => i.WebSockets)
+                var id = user.Id;
+                var userSessions = _sessionManager.Sessions
+                    .Where(u => u.User != null && u.User.Id == id && u.SessionController != null && u.IsActive)
                     .ToList();
 
-                try
+                if (userSessions.Count > 0)
                 {
-                    await _serverManager.SendWebSocketMessageAsync("LibraryChanged", () => GetLibraryUpdateInfo(itemsAdded, itemsUpdated, itemsRemoved, foldersAddedTo, foldersRemovedFrom, id), webSockets, cancellationToken).ConfigureAwait(false);
+                    var info = GetLibraryUpdateInfo(itemsAdded, itemsUpdated, itemsRemoved, foldersAddedTo,
+                                                    foldersRemovedFrom, id);
+
+                    foreach (var userSession in userSessions)
+                    {
+                        try
+                        {
+                            await userSession.SessionController.SendLibraryUpdateInfo(info, cancellationToken).ConfigureAwait(false);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.ErrorException("Error sending LibraryChanged message", ex);
+                        }
+                    }
                 }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error sending LibraryChanged message", ex);
-                }
+
             }
         }
 

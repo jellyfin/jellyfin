@@ -63,17 +63,6 @@ namespace MediaBrowser.Common.Net
         Task SendWebSocketMessageAsync<T>(string messageType, Func<T> dataFunction, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Sends the web socket message async.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="messageType">Type of the message.</param>
-        /// <param name="dataFunction">The data function.</param>
-        /// <param name="connections">The connections.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        Task SendWebSocketMessageAsync<T>(string messageType, Func<T> dataFunction, IEnumerable<IWebSocketConnection> connections, CancellationToken cancellationToken);
-
-        /// <summary>
         /// Adds the web socket listeners.
         /// </summary>
         /// <param name="listeners">The listeners.</param>

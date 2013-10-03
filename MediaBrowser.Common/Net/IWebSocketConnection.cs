@@ -8,6 +8,12 @@ namespace MediaBrowser.Common.Net
     public interface IWebSocketConnection : IDisposable
     {
         /// <summary>
+        /// Gets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        Guid Id { get; }
+
+        /// <summary>
         /// Gets the last activity date.
         /// </summary>
         /// <value>The last activity date.</value>

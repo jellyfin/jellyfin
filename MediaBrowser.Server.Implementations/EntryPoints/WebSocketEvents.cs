@@ -8,8 +8,10 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
+using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Tasks;
 using System;
+using System.Threading;
 
 namespace MediaBrowser.Server.Implementations.EntryPoints
 {
@@ -45,13 +47,15 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
         private readonly IDtoService _dtoService;
 
+        private ISessionManager _sessionManager;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="WebSocketEvents" /> class.
         /// </summary>
         /// <param name="serverManager">The server manager.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="userManager">The user manager.</param>
-        public WebSocketEvents(IServerManager serverManager, IServerApplicationHost appHost, IUserManager userManager, IInstallationManager installationManager, ITaskManager taskManager, IDtoService dtoService)
+        public WebSocketEvents(IServerManager serverManager, IServerApplicationHost appHost, IUserManager userManager, IInstallationManager installationManager, ITaskManager taskManager, IDtoService dtoService, ISessionManager sessionManager)
         {
             _serverManager = serverManager;
             _userManager = userManager;
@@ -59,6 +63,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             _appHost = appHost;
             _taskManager = taskManager;
             _dtoService = dtoService;
+            _sessionManager = sessionManager;
         }
 
         public void Run()
@@ -126,7 +131,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         void kernel_HasPendingRestartChanged(object sender, EventArgs e)
         {
-            _serverManager.SendWebSocketMessage("RestartRequired", _appHost.GetSystemInfo());
+            _sessionManager.SendRestartRequiredMessage(CancellationToken.None);
         }
 
         /// <summary>

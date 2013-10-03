@@ -57,6 +57,12 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         public DateTime LastActivityDate { get; private set; }
 
         /// <summary>
+        /// Gets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        public Guid Id { get; private set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="WebSocketConnection" /> class.
         /// </summary>
         /// <param name="socket">The socket.</param>
@@ -83,6 +89,7 @@ namespace MediaBrowser.Server.Implementations.ServerManager
                 throw new ArgumentNullException("logger");
             }
 
+            Id = Guid.NewGuid();
             _jsonSerializer = jsonSerializer;
             _socket = socket;
             _socket.OnReceiveBytes = OnReceiveInternal;
