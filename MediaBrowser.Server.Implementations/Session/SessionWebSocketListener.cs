@@ -84,15 +84,22 @@ namespace MediaBrowser.Server.Implementations.Session
         /// Processes the identity message.
         /// </summary>
         /// <param name="message">The message.</param>
-        private void ProcessIdentityMessage(WebSocketMessageInfo message)
+        private async void ProcessIdentityMessage(WebSocketMessageInfo message)
         {
-            _logger.Debug("Received Identity message");
+            _logger.Debug("Received Identity message: " + message.Data);
 
             var vals = message.Data.Split('|');
 
             var client = vals[0];
             var deviceId = vals[1];
             var version = vals[2];
+            var deviceName = vals.Length > 3 ? vals[3] : string.Empty;
+
+            if (!string.IsNullOrEmpty(deviceName))
+            {
+                _logger.Debug("Logging session activity");
+                await _sessionManager.LogSessionActivity(client, version, deviceId, deviceName, null).ConfigureAwait(false);
+            }
 
             var session = _sessionManager.Sessions
                 .FirstOrDefault(i => string.Equals(i.DeviceId, deviceId) &&
@@ -156,7 +163,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
             if (result == null)
             {
-                _logger.Error("Unable to session based on web socket message");
+                _logger.Error("Unable to find session based on web socket message");
             }
 
             return result;

@@ -290,6 +290,7 @@ namespace MediaBrowser.Server.Implementations.Session
                 var data = _userDataRepository.GetUserData(user.Id, key);
 
                 UpdatePlayState(info.Item, data, info.PositionTicks.Value);
+
                 await _userDataRepository.SaveUserData(user.Id, key, data, UserDataSaveReason.PlaybackProgress, CancellationToken.None).ConfigureAwait(false);
             }
 
@@ -501,7 +502,12 @@ namespace MediaBrowser.Server.Implementations.Session
             return session.SessionController.SendPlaystateCommand(command, cancellationToken);
         }
 
-        public Task SendRestartRequiredMessage(CancellationToken cancellationToken)
+        /// <summary>
+        /// Sends the restart required message.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        public Task SendRestartRequiredNotification(CancellationToken cancellationToken)
         {
             var sessions = Sessions.Where(i => i.IsActive && i.SessionController != null).ToList();
 
@@ -509,11 +515,61 @@ namespace MediaBrowser.Server.Implementations.Session
             {
                 try
                 {
-                    await session.SessionController.SendRestartRequiredMessage(cancellationToken).ConfigureAwait(false);
+                    await session.SessionController.SendRestartRequiredNotification(cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error in SendRestartRequiredMessage.", ex);
+                    _logger.ErrorException("Error in SendRestartRequiredNotification.", ex);
+                }
+
+            }));
+
+            return Task.WhenAll(tasks);
+        }
+
+        /// <summary>
+        /// Sends the server shutdown notification.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        public Task SendServerShutdownNotification(CancellationToken cancellationToken)
+        {
+            var sessions = Sessions.Where(i => i.IsActive && i.SessionController != null).ToList();
+
+            var tasks = sessions.Select(session => Task.Run(async () =>
+            {
+                try
+                {
+                    await session.SessionController.SendServerShutdownNotification(cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error in SendServerShutdownNotification.", ex);
+                }
+
+            }));
+
+            return Task.WhenAll(tasks);
+        }
+
+        /// <summary>
+        /// Sends the server restart notification.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        public Task SendServerRestartNotification(CancellationToken cancellationToken)
+        {
+            var sessions = Sessions.Where(i => i.IsActive && i.SessionController != null).ToList();
+
+            var tasks = sessions.Select(session => Task.Run(async () =>
+            {
+                try
+                {
+                    await session.SessionController.SendServerRestartNotification(cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error in SendServerRestartNotification.", ex);
                 }
 
             }));

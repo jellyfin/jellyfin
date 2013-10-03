@@ -50,6 +50,12 @@ namespace MediaBrowser.Model.Dto
         /// <value><c>true</c> if played; otherwise, <c>false</c>.</value>
         public bool Played { get; set; }
 
+        /// <summary>
+        /// Gets or sets the key.
+        /// </summary>
+        /// <value>The key.</value>
+        public string Key { get; set; }
+
         public event PropertyChangedEventHandler PropertyChanged;
     }
 }

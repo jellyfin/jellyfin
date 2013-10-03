@@ -18,7 +18,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
     /// <summary>
     /// Class WebSocketEvents
     /// </summary>
-    public class WebSocketEvents : IServerEntryPoint
+    public class ServerEventNotifier : IServerEntryPoint
     {
         /// <summary>
         /// The _server manager
@@ -47,15 +47,15 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
         private readonly IDtoService _dtoService;
 
-        private ISessionManager _sessionManager;
+        private readonly ISessionManager _sessionManager;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="WebSocketEvents" /> class.
+        /// Initializes a new instance of the <see cref="ServerEventNotifier" /> class.
         /// </summary>
         /// <param name="serverManager">The server manager.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="userManager">The user manager.</param>
-        public WebSocketEvents(IServerManager serverManager, IServerApplicationHost appHost, IUserManager userManager, IInstallationManager installationManager, ITaskManager taskManager, IDtoService dtoService, ISessionManager sessionManager)
+        public ServerEventNotifier(IServerManager serverManager, IServerApplicationHost appHost, IUserManager userManager, IInstallationManager installationManager, ITaskManager taskManager, IDtoService dtoService, ISessionManager sessionManager)
         {
             _serverManager = serverManager;
             _userManager = userManager;
@@ -131,7 +131,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         void kernel_HasPendingRestartChanged(object sender, EventArgs e)
         {
-            _sessionManager.SendRestartRequiredMessage(CancellationToken.None);
+            _sessionManager.SendRestartRequiredNotification(CancellationToken.None);
         }
 
         /// <summary>

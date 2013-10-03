@@ -1,0 +1,140 @@
+﻿using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Plugins;
+using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Session;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace MediaBrowser.Server.Implementations.EntryPoints
+{
+    class UserDataChangeNotifier : IServerEntryPoint
+    {
+        private readonly ISessionManager _sessionManager;
+        private readonly ILogger _logger;
+        private readonly IDtoService _dtoService;
+        private readonly IUserDataManager _userDataManager;
+
+        private readonly object _syncLock = new object();
+        private Timer UpdateTimer { get; set; }
+        private const int UpdateDuration = 2000;
+
+        private readonly Dictionary<Guid, List<string>> _changedKeys = new Dictionary<Guid, List<string>>();
+
+        public UserDataChangeNotifier(IUserDataManager userDataManager, ISessionManager sessionManager, IDtoService dtoService, ILogger logger)
+        {
+            _userDataManager = userDataManager;
+            _sessionManager = sessionManager;
+            _dtoService = dtoService;
+            _logger = logger;
+        }
+
+        public void Run()
+        {
+            _userDataManager.UserDataSaved += _userDataManager_UserDataSaved;
+        }
+
+        void _userDataManager_UserDataSaved(object sender, UserDataSaveEventArgs e)
+        {
+            if (e.SaveReason == UserDataSaveReason.PlaybackProgress)
+            {
+                return;
+            }
+
+            lock (_syncLock)
+            {
+                if (UpdateTimer == null)
+                {
+                    UpdateTimer = new Timer(UpdateTimerCallback, null, UpdateDuration,
+                                                   Timeout.Infinite);
+                }
+                else
+                {
+                    UpdateTimer.Change(UpdateDuration, Timeout.Infinite);
+                }
+
+                List<string> keys;
+
+                if (!_changedKeys.TryGetValue(e.UserId, out keys))
+                {
+                    keys = new List<string>();
+                    _changedKeys[e.UserId] = keys;
+                }
+
+                keys.Add(e.Key);
+            }
+        }
+
+        private void UpdateTimerCallback(object state)
+        {
+            lock (_syncLock)
+            {
+                // Remove dupes in case some were saved multiple times
+                var changes = _changedKeys.ToList();
+                _changedKeys.Clear();
+
+                SendNotifications(changes, CancellationToken.None);
+
+                if (UpdateTimer != null)
+                {
+                    UpdateTimer.Dispose();
+                    UpdateTimer = null;
+                }
+            }
+        }
+
+        private async Task SendNotifications(List<KeyValuePair<Guid, List<string>>> changes, CancellationToken cancellationToken)
+        {
+            foreach (var pair in changes)
+            {
+                var userId = pair.Key;
+                var userSessions = _sessionManager.Sessions
+                    .Where(u => u.User != null && u.User.Id == userId && u.SessionController != null && u.IsActive)
+                    .ToList();
+
+                if (userSessions.Count > 0)
+                {
+                    var dtoList = pair.Value
+                        .Select(i => _dtoService.GetUserItemDataDto(_userDataManager.GetUserData(userId, i)))
+                        .ToList();
+
+                    var info = new UserDataChangeInfo
+                    {
+                        UserId = userId.ToString("N"),
+
+                        UserDataList = dtoList
+                    };
+
+                    foreach (var userSession in userSessions)
+                    {
+                        try
+                        {
+                            await userSession.SessionController.SendUserDataChangeInfo(info, cancellationToken).ConfigureAwait(false);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.ErrorException("Error sending UserDataChanged message", ex);
+                        }
+                    }
+                }
+
+            }
+        }
+
+        public void Dispose()
+        {
+            if (UpdateTimer != null)
+            {
+                UpdateTimer.Dispose();
+                UpdateTimer = null;
+            }
+
+            _userDataManager.UserDataSaved -= _userDataManager_UserDataSaved;
+        }
+    }
+}
