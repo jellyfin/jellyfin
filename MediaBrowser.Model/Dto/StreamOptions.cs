@@ -151,6 +151,12 @@
         /// </summary>
         /// <value>The output file extension.</value>
         public string OutputFileExtension { get; set; }
+
+        /// <summary>
+        /// Gets or sets the device id.
+        /// </summary>
+        /// <value>The device id.</value>
+        public string DeviceId { get; set; }
     }
 
     /// <summary>

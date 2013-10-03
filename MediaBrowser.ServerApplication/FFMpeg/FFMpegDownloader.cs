@@ -21,7 +21,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
         private readonly ILogger _logger;
         private readonly IZipClient _zipClient;
 
-        private const string Version = "ffmpeg20130904";
+        private const string Version = "ffmpeg20130904.1";
 
         private readonly string[] _fontUrls = new[]
             {

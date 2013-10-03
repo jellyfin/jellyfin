@@ -85,7 +85,8 @@ namespace MediaBrowser.Api
         /// <param name="isVideo">if set to <c>true</c> [is video].</param>
         /// <param name="startTimeTicks">The start time ticks.</param>
         /// <param name="sourcePath">The source path.</param>
-        public void OnTranscodeBeginning(string path, TranscodingJobType type, Process process, bool isVideo, long? startTimeTicks, string sourcePath)
+        /// <param name="deviceId">The device id.</param>
+        public void OnTranscodeBeginning(string path, TranscodingJobType type, Process process, bool isVideo, long? startTimeTicks, string sourcePath, string deviceId)
         {
             lock (_activeTranscodingJobs)
             {
@@ -97,7 +98,8 @@ namespace MediaBrowser.Api
                     ActiveRequestCount = 1,
                     IsVideo = isVideo,
                     StartTimeTicks = startTimeTicks,
-                    SourcePath = sourcePath
+                    SourcePath = sourcePath,
+                    DeviceId = deviceId
                 });
             }
         }
@@ -180,7 +182,7 @@ namespace MediaBrowser.Api
 
                 if (job.ActiveRequestCount == 0)
                 {
-                    var timerDuration = type == TranscodingJobType.Progressive ? 1000 : 180000;
+                    var timerDuration = type == TranscodingJobType.Progressive ? 1000 : 120000;
 
                     if (job.KillTimer == null)
                     {
@@ -208,12 +210,14 @@ namespace MediaBrowser.Api
         /// <summary>
         /// Kills the single transcoding job.
         /// </summary>
-        /// <param name="sourcePath">The source path.</param>
-        internal void KillSingleTranscodingJob(string sourcePath)
+        /// <param name="deviceId">The device id.</param>
+        /// <param name="isVideo">if set to <c>true</c> [is video].</param>
+        /// <exception cref="System.ArgumentNullException">sourcePath</exception>
+        internal void KillTranscodingJobs(string deviceId, bool isVideo)
         {
-            if (string.IsNullOrEmpty(sourcePath))
+            if (string.IsNullOrEmpty(deviceId))
             {
-                throw new ArgumentNullException("sourcePath");
+                throw new ArgumentNullException("deviceId");
             }
 
             var jobs = new List<TranscodingJob>();
@@ -222,14 +226,12 @@ namespace MediaBrowser.Api
             {
                 // This is really only needed for HLS. 
                 // Progressive streams can stop on their own reliably
-                jobs.AddRange(_activeTranscodingJobs.Where(i => string.Equals(sourcePath, i.SourcePath) && i.Type == TranscodingJobType.Hls));
+                jobs.AddRange(_activeTranscodingJobs.Where(i => isVideo == i.IsVideo && string.Equals(deviceId, i.DeviceId, StringComparison.OrdinalIgnoreCase)));
             }
 
-            // This method of killing is a bit of a shortcut, but it saves clients from having to send a request just for that
-            // But we can only kill if there's one active job. If there are more we won't know which one to stop
-            if (jobs.Count == 1)
+            foreach (var job in jobs)
             {
-                KillTranscodingJob(jobs.First());
+                KillTranscodingJob(job);
             }
         }
 
@@ -405,6 +407,7 @@ namespace MediaBrowser.Api
         public bool IsVideo { get; set; }
         public long? StartTimeTicks { get; set; }
         public string SourcePath { get; set; }
+        public string DeviceId { get; set; }
     }
 
     /// <summary>

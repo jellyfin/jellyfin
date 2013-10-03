@@ -125,5 +125,12 @@ namespace MediaBrowser.Common
         /// </summary>
         /// <returns>Task.</returns>
         Task Init();
+
+        /// <summary>
+        /// Creates the instance.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns>System.Object.</returns>
+        object CreateInstance(Type type);
     }
 }

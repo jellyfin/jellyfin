@@ -92,7 +92,7 @@ namespace MediaBrowser.Providers.Games
         /// </summary>
         public override MetadataProviderPriority Priority
         {
-            get { return MetadataProviderPriority.First; }
+            get { return MetadataProviderPriority.Second; }
         }
     }
 }

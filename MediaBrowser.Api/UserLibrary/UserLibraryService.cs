@@ -721,9 +721,6 @@ namespace MediaBrowser.Api.UserLibrary
 
             var item = _dtoService.GetItemByDtoId(request.Id, user.Id);
 
-            // Kill the encoding
-            ApiEntryPoint.Instance.KillSingleTranscodingJob(item.Path);
-
             var session = GetSession();
 
             var info = new PlaybackStopInfo
