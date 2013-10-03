@@ -66,7 +66,7 @@ namespace MediaBrowser.Api.Playback.Hls
         public string PlaylistId { get; set; }
     }
 
-    [Route("/Videos", "DELETE")]
+    [Route("/Videos/ActiveEncodings", "DELETE")]
     [Api(Description = "Stops an encoding process")]
     public class StopEncodingProcess
     {

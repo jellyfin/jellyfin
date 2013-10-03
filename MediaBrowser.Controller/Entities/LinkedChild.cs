@@ -1,5 +1,6 @@
 ﻿using System;
-using System.Collections;
+using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -7,6 +8,12 @@ namespace MediaBrowser.Controller.Entities
     {
         public string Path { get; set; }
         public LinkedChildType Type { get; set; }
+
+        /// <summary>
+        /// Serves as a cache
+        /// </summary>
+        [IgnoreDataMember]
+        public Guid ItemId { get; set; }
     }
 
     public enum LinkedChildType
@@ -15,24 +22,20 @@ namespace MediaBrowser.Controller.Entities
         Shortcut = 2
     }
 
-    public class LinkedChildComparer : IComparer
+    public class LinkedChildComparer : IEqualityComparer<LinkedChild>
     {
-        public int Compare(object x, object y)
+        public bool Equals(LinkedChild x, LinkedChild y)
         {
-            var a = (LinkedChild)x;
-
-            var b = (LinkedChild)y;
-
-            if (!string.Equals(a.Path, b.Path, StringComparison.OrdinalIgnoreCase))
+            if (x.Type == y.Type)
             {
-                return string.Compare(a.Path, b.Path, StringComparison.OrdinalIgnoreCase);
+                return string.Equals(x.Path, y.Path, StringComparison.OrdinalIgnoreCase);
             }
-            if (a.Type != b.Type)
-            {
-                return a.Type.CompareTo(b.Type);
-            }
+            return false;
+        }
 
-            return 0;
+        public int GetHashCode(LinkedChild obj)
+        {
+            return (obj.Path + obj.Type.ToString()).GetHashCode();
         }
     }
 }

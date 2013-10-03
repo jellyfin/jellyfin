@@ -4,7 +4,6 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
-using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
 using System;
@@ -1140,11 +1139,29 @@ namespace MediaBrowser.Controller.Entities
                 throw new ArgumentException("Encountered linked child with empty path.");
             }
 
-            var item = LibraryManager.RootFolder.FindByPath(info.Path);
+            BaseItem item = null;
 
+            // First get using the cached Id
+            if (info.ItemId != Guid.Empty)
+            {
+                item = LibraryManager.GetItemById(info.ItemId);
+            }
+
+            // If still null, search by path
+            if (item == null)
+            {
+                item = LibraryManager.RootFolder.FindByPath(info.Path);
+            }
+
+            // If still null, log
             if (item == null)
             {
                 Logger.Warn("Unable to find linked item at {0}", info.Path);
+            }
+            else
+            {
+                // Cache the id for next time
+                info.ItemId = item.Id;
             }
 
             return item;
@@ -1215,7 +1232,7 @@ namespace MediaBrowser.Controller.Entities
                 .Where(i => i != null)
                 .ToList();
 
-            if (!newShortcutLinks.SequenceEqual(currentShortcutLinks))
+            if (!newShortcutLinks.SequenceEqual(currentShortcutLinks, new LinkedChildComparer()))
             {
                 Logger.Info("Shortcut links have changed for {0}", Path);
 
