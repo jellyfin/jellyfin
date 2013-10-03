@@ -66,6 +66,14 @@ namespace MediaBrowser.Api.Playback.Hls
         public string PlaylistId { get; set; }
     }
 
+    [Route("/Videos", "DELETE")]
+    [Api(Description = "Stops an encoding process")]
+    public class StopEncodingProcess
+    {
+        [ApiMember(Name = "DeviceId", Description = "The device id of the client requesting. Used to stop encoding processes when needed.", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "DELETE")]
+        public string DeviceId { get; set; }
+    }
+
     public class HlsSegmentService : BaseApiService
     {
         private readonly IServerApplicationPaths _appPaths;
@@ -84,6 +92,11 @@ namespace MediaBrowser.Api.Playback.Hls
             file = Path.Combine(_appPaths.EncodedMediaCachePath, file);
 
             return ResultFactory.GetStaticFileResult(RequestContext, file, FileShare.ReadWrite);
+        }
+
+        public void Delete(StopEncodingProcess request)
+        {
+            ApiEntryPoint.Instance.KillTranscodingJobs(request.DeviceId, true);
         }
 
         /// <summary>

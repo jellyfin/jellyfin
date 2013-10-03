@@ -323,6 +323,8 @@ namespace MediaBrowser.Providers.MediaInfo
 
             FetchWtvInfo(video, force, data);
 
+            video.IsHD = video.MediaStreams.Any(i => i.Type == MediaStreamType.Video && i.Width.HasValue && i.Width.Value >= 1270);
+
             if (chapters.Count == 0 && video.MediaStreams.Any(i => i.Type == MediaStreamType.Video))
             {
                 AddDummyChapters(video, chapters);

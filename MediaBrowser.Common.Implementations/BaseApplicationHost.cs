@@ -384,7 +384,7 @@ namespace MediaBrowser.Common.Implementations
         /// </summary>
         /// <param name="type">The type.</param>
         /// <returns>System.Object.</returns>
-        protected object CreateInstance(Type type)
+        public object CreateInstance(Type type)
         {
             try
             {
