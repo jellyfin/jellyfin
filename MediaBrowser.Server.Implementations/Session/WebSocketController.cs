@@ -134,7 +134,7 @@ namespace MediaBrowser.Server.Implementations.Session
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public Task SendRestartRequiredMessage(CancellationToken cancellationToken)
+        public Task SendRestartRequiredNotification(CancellationToken cancellationToken)
         {
             var socket = GetActiveSocket();
 
@@ -142,6 +142,59 @@ namespace MediaBrowser.Server.Implementations.Session
             {
                 MessageType = "RestartRequired",
                 Data = _appHost.GetSystemInfo()
+
+            }, cancellationToken);
+        }
+
+
+        /// <summary>
+        /// Sends the user data change info.
+        /// </summary>
+        /// <param name="info">The info.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        public Task SendUserDataChangeInfo(UserDataChangeInfo info, CancellationToken cancellationToken)
+        {
+            var socket = GetActiveSocket();
+
+            return socket.SendAsync(new WebSocketMessage<UserDataChangeInfo>
+            {
+                MessageType = "UserDataChanged",
+                Data = info
+
+            }, cancellationToken);
+        }
+
+        /// <summary>
+        /// Sends the server shutdown notification.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        public Task SendServerShutdownNotification(CancellationToken cancellationToken)
+        {
+            var socket = GetActiveSocket();
+
+            return socket.SendAsync(new WebSocketMessage<string>
+            {
+                MessageType = "ServerShuttingDown",
+                Data = string.Empty
+
+            }, cancellationToken);
+        }
+
+        /// <summary>
+        /// Sends the server restart notification.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        public Task SendServerRestartNotification(CancellationToken cancellationToken)
+        {
+            var socket = GetActiveSocket();
+
+            return socket.SendAsync(new WebSocketMessage<string>
+            {
+                MessageType = "ServerRestarting",
+                Data = string.Empty
 
             }, cancellationToken);
         }

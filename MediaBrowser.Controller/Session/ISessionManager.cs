@@ -119,6 +119,20 @@ namespace MediaBrowser.Controller.Session
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SendRestartRequiredMessage(CancellationToken cancellationToken);
+        Task SendRestartRequiredNotification(CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Sends the server shutdown notification.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task SendServerShutdownNotification(CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Sends the server restart notification.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task SendServerRestartNotification(CancellationToken cancellationToken);
     }
 }

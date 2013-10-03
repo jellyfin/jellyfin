@@ -488,11 +488,11 @@ namespace MediaBrowser.ServerApplication
         {
             try
             {
-                await ServerManager.SendWebSocketMessageAsync("ServerRestarting", () => string.Empty, CancellationToken.None).ConfigureAwait(false);
+                await SessionManager.SendServerRestartNotification(CancellationToken.None).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error sending server restart web socket message", ex);
+                Logger.ErrorException("Error sending server restart notification", ex);
             }
 
             NativeApp.Restart();
@@ -609,11 +609,11 @@ namespace MediaBrowser.ServerApplication
         {
             try
             {
-                await ServerManager.SendWebSocketMessageAsync("ServerShuttingDown", () => string.Empty, CancellationToken.None).ConfigureAwait(false);
+                await SessionManager.SendServerShutdownNotification(CancellationToken.None).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error sending server shutdown web socket message", ex);
+                Logger.ErrorException("Error sending server shutdown notification", ex);
             }
 
             NativeApp.Shutdown();

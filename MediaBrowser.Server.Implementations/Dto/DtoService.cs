@@ -340,7 +340,8 @@ namespace MediaBrowser.Server.Implementations.Dto
                 PlayCount = data.PlayCount,
                 Rating = data.Rating,
                 Played = data.Played,
-                LastPlayedDate = data.LastPlayedDate
+                LastPlayedDate = data.LastPlayedDate,
+                Key = data.Key
             };
         }
         private void SetBookProperties(BaseItemDto dto, Book item)

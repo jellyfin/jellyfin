@@ -126,6 +126,7 @@
     <Compile Include="Serialization\IXmlSerializer.cs" />
     <Compile Include="Session\SessionInfoDto.cs" />
     <Compile Include="Session\SystemCommand.cs" />
+    <Compile Include="Session\UserDataChangeInfo.cs" />
     <Compile Include="Updates\CheckForUpdateResult.cs" />
     <Compile Include="Updates\PackageTargetSystem.cs" />
     <Compile Include="Updates\InstallationInfo.cs" />
