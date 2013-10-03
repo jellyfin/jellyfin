@@ -78,12 +78,6 @@ namespace MediaBrowser.Server.Implementations.Session
             _userRepository = userRepository;
         }
 
-        private List<ISessionController> _remoteControllers;
-        public void AddParts(IEnumerable<ISessionController> remoteControllers)
-        {
-            _remoteControllers = remoteControllers.ToList();
-        }
-
         /// <summary>
         /// Gets all connections.
         /// </summary>
@@ -433,18 +427,8 @@ namespace MediaBrowser.Server.Implementations.Session
             {
                 throw new ArgumentException(string.Format("Session {0} does not support remote control.", session.Id));
             }
-            
-            return session;
-        }
 
-        /// <summary>
-        /// Gets the controllers.
-        /// </summary>
-        /// <param name="session">The session.</param>
-        /// <returns>IEnumerable{ISessionRemoteController}.</returns>
-        private IEnumerable<ISessionController> GetControllers(SessionInfo session)
-        {
-            return _remoteControllers.Where(i => i.Supports(session));
+            return session;
         }
 
         /// <summary>
@@ -458,9 +442,7 @@ namespace MediaBrowser.Server.Implementations.Session
         {
             var session = GetSessionForRemoteControl(sessionId);
 
-            var tasks = GetControllers(session).Select(i => i.SendSystemCommand(session, command, cancellationToken));
-
-            return Task.WhenAll(tasks);
+            return session.SessionController.SendSystemCommand(command, cancellationToken);
         }
 
         /// <summary>
@@ -474,9 +456,7 @@ namespace MediaBrowser.Server.Implementations.Session
         {
             var session = GetSessionForRemoteControl(sessionId);
 
-            var tasks = GetControllers(session).Select(i => i.SendMessageCommand(session, command, cancellationToken));
-
-            return Task.WhenAll(tasks);
+            return session.SessionController.SendMessageCommand(command, cancellationToken);
         }
 
         /// <summary>
@@ -490,9 +470,7 @@ namespace MediaBrowser.Server.Implementations.Session
         {
             var session = GetSessionForRemoteControl(sessionId);
 
-            var tasks = GetControllers(session).Select(i => i.SendPlayCommand(session, command, cancellationToken));
-
-            return Task.WhenAll(tasks);
+            return session.SessionController.SendPlayCommand(command, cancellationToken);
         }
 
         /// <summary>
@@ -506,9 +484,7 @@ namespace MediaBrowser.Server.Implementations.Session
         {
             var session = GetSessionForRemoteControl(sessionId);
 
-            var tasks = GetControllers(session).Select(i => i.SendBrowseCommand(session, command, cancellationToken));
-
-            return Task.WhenAll(tasks);
+            return session.SessionController.SendBrowseCommand(command, cancellationToken);
         }
 
         /// <summary>
@@ -522,7 +498,25 @@ namespace MediaBrowser.Server.Implementations.Session
         {
             var session = GetSessionForRemoteControl(sessionId);
 
-            var tasks = GetControllers(session).Select(i => i.SendPlaystateCommand(session, command, cancellationToken));
+            return session.SessionController.SendPlaystateCommand(command, cancellationToken);
+        }
+
+        public Task SendRestartRequiredMessage(CancellationToken cancellationToken)
+        {
+            var sessions = Sessions.Where(i => i.IsActive && i.SessionController != null).ToList();
+
+            var tasks = sessions.Select(session => Task.Run(async () =>
+            {
+                try
+                {
+                    await session.SessionController.SendRestartRequiredMessage(cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error in SendRestartRequiredMessage.", ex);
+                }
+
+            }));
 
             return Task.WhenAll(tasks);
         }

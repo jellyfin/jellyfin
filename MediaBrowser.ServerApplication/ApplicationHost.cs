@@ -427,8 +427,6 @@ namespace MediaBrowser.ServerApplication
 
             ProviderManager.AddParts(GetExports<BaseMetadataProvider>());
 
-            SessionManager.AddParts(GetExports<ISessionController>());
-
             ImageProcessor.AddParts(GetExports<IImageEnhancer>());
 
             LiveTvManager.AddParts(GetExports<ILiveTvService>());

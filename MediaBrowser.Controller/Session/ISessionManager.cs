@@ -14,12 +14,6 @@ namespace MediaBrowser.Controller.Session
     public interface ISessionManager
     {
         /// <summary>
-        /// Adds the parts.
-        /// </summary>
-        /// <param name="remoteControllers">The remote controllers.</param>
-        void AddParts(IEnumerable<ISessionController> remoteControllers);
-
-        /// <summary>
         /// Occurs when [playback start].
         /// </summary>
         event EventHandler<PlaybackProgressEventArgs> PlaybackStart;
@@ -119,5 +113,12 @@ namespace MediaBrowser.Controller.Session
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task SendPlaystateCommand(Guid sessionId, PlaystateRequest command, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Sends the restart required message.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task SendRestartRequiredMessage(CancellationToken cancellationToken);
     }
 }

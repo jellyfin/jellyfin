@@ -207,6 +207,24 @@ namespace MediaBrowser.Model.Querying
         public int? ParentIndexNumber { get; set; }
 
         /// <summary>
+        /// Gets or sets the min players.
+        /// </summary>
+        /// <value>The min players.</value>
+        public int? MinPlayers { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name starts with or greater.
+        /// </summary>
+        /// <value>The name starts with or greater.</value>
+        public string NameStartsWithOrGreater { get; set; }
+
+        /// <summary>
+        /// Gets or sets the album artist starts with or greater.
+        /// </summary>
+        /// <value>The album artist starts with or greater.</value>
+        public string AlbumArtistStartsWithOrGreater { get; set; }
+        
+        /// <summary>
         /// Initializes a new instance of the <see cref="ItemQuery" /> class.
         /// </summary>
         public ItemQuery()

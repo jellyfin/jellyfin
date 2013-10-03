@@ -273,7 +273,7 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         /// dataFunction
         /// or
         /// cancellationToken</exception>
-        public async Task SendWebSocketMessageAsync<T>(string messageType, Func<T> dataFunction, IEnumerable<IWebSocketConnection> connections, CancellationToken cancellationToken)
+        private async Task SendWebSocketMessageAsync<T>(string messageType, Func<T> dataFunction, IEnumerable<IWebSocketConnection> connections, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(messageType))
             {

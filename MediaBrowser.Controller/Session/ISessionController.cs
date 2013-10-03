@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Session;
+﻿using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Session;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -7,55 +8,70 @@ namespace MediaBrowser.Controller.Session
     public interface ISessionController
     {
         /// <summary>
-        /// Supportses the specified session.
+        /// Gets a value indicating whether [supports media remote control].
         /// </summary>
-        /// <param name="session">The session.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        bool Supports(SessionInfo session);
+        /// <value><c>true</c> if [supports media remote control]; otherwise, <c>false</c>.</value>
+        bool SupportsMediaRemoteControl { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is session active.
+        /// </summary>
+        /// <value><c>true</c> if this instance is session active; otherwise, <c>false</c>.</value>
+        bool IsSessionActive { get; }
 
         /// <summary>
         /// Sends the system command.
         /// </summary>
-        /// <param name="session">The session.</param>
         /// <param name="command">The command.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SendSystemCommand(SessionInfo session, SystemCommand command, CancellationToken cancellationToken);
+        Task SendSystemCommand(SystemCommand command, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sends the message command.
         /// </summary>
-        /// <param name="session">The session.</param>
         /// <param name="command">The command.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SendMessageCommand(SessionInfo session, MessageCommand command, CancellationToken cancellationToken);
+        Task SendMessageCommand(MessageCommand command, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sends the play command.
         /// </summary>
-        /// <param name="session">The session.</param>
         /// <param name="command">The command.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SendPlayCommand(SessionInfo session, PlayRequest command, CancellationToken cancellationToken);
+        Task SendPlayCommand(PlayRequest command, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sends the browse command.
         /// </summary>
-        /// <param name="session">The session.</param>
         /// <param name="command">The command.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SendBrowseCommand(SessionInfo session, BrowseRequest command, CancellationToken cancellationToken);
+        Task SendBrowseCommand(BrowseRequest command, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sends the playstate command.
         /// </summary>
-        /// <param name="session">The session.</param>
         /// <param name="command">The command.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SendPlaystateCommand(SessionInfo session, PlaystateRequest command, CancellationToken cancellationToken);
+        Task SendPlaystateCommand(PlaystateRequest command, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Sends the library update info.
+        /// </summary>
+        /// <param name="info">The info.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task SendLibraryUpdateInfo(LibraryUpdateInfo info, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Sends the restart required message.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task SendRestartRequiredMessage(CancellationToken cancellationToken);
     }
 }

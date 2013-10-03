@@ -46,7 +46,7 @@ namespace MediaBrowser.ServerApplication.Native
         /// <param name="logger">The logger.</param>
         public static void OpenCommunity(ILogger logger)
         {
-            OpenUrl("http://community.mediabrowser.tv/", logger);
+            OpenUrl("http://mediabrowser3.com/community", logger);
         }
 
         /// <summary>
