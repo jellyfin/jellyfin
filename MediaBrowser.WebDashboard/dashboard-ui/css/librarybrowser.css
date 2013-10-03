@@ -628,14 +628,17 @@ a.itemTag:hover {
     top: 0;
     right: 0;
     text-align: center;
-    background-color: #008FBB;
     padding: 3px 10px;
     border-bottom-left-radius: 10px;
     color: #fff;
+
+    background: rgb(0, 143, 187);
+    background: rgba(0, 143, 187, .8);
 }
 
 .offlinePosterRibbon {
-    background-color: #cc3333;
+    background: rgb(255, 106, 0);
+    background: rgba(255, 106, 0, .85);
 }
 
 .itemProgress {

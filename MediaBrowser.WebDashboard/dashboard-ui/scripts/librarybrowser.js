@@ -814,7 +814,13 @@
         },
         getNewIndicatorHtml: function (item) {
 
-            if (item.Type == "Series" || item.Type == "Season") {
+            if (item.Type == "Season") {
+                if (item.RecursiveUnplayedItemCount) {
+                    return '<div class="posterRibbon">' + item.RecursiveUnplayedItemCount + ' New</div>';
+                }
+            }
+
+            if (item.Type == "Series") {
                 if (item.RecursiveUnplayedItemCount && item.PlayedPercentage) {
                     return '<div class="posterRibbon">' + item.RecursiveUnplayedItemCount + ' New</div>';
                 }
@@ -863,10 +869,29 @@
 
             var half = Math.floor(values.length / 2);
 
+            var result;
+            
             if (values.length % 2)
-                return values[half];
+                result = values[half];
             else
-                return (values[half - 1] + values[half]) / 2.0;
+                result = (values[half - 1] + values[half]) / 2.0;
+
+            // If really close to 2:3 (poster image), just return 2:3
+            if (Math.abs(0.66666666667 - result) <= .05) {
+                return 0.66666666667;
+            }
+
+            // If really close to 16:9 (episode image), just return 16:9
+            if (Math.abs(1.777777778 - result) <= .05) {
+                return 1.777777778;
+            }
+
+            // If really close to 1 (square image), just return 1
+            if (Math.abs(1 - result) <= .05) {
+                return 1;
+            }
+
+            return result;
         },
 
         metroColors: ["#6FBD45", "#4BB3DD", "#4164A5", "#E12026", "#800080", "#E1B222", "#008040", "#0094FF", "#FF00C7", "#FF870F", "#7F0037"],
