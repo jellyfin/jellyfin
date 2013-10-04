@@ -9,7 +9,7 @@ We have several client apps released and in production:
 
 - Android
 - Html5
-- iOS
+- [iOS](https://itunes.apple.com/us/app/media-browser-for-ios/id705058087 "iOS")
 - Media Portal
 - Roku
 - Windows 7/8 Desktop
