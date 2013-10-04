@@ -169,9 +169,8 @@ namespace MediaBrowser.Model.ApiClient
         /// </summary>
         /// <param name="itemId">The item id.</param>
         /// <param name="userId">The user id.</param>
-        /// <returns>Task{System.String[]}.</returns>
-        /// <exception cref="ArgumentNullException">id</exception>
-        Task<string[]> GetIntrosAsync(string itemId, string userId);
+        /// <returns>Task{ItemsResult}.</returns>
+        Task<ItemsResult> GetIntrosAsync(string itemId, string userId);
 
         /// <summary>
         /// Gets a BaseItem

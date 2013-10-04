@@ -48,6 +48,11 @@ namespace MediaBrowser.Controller.Library
         /// <value>The root folder.</value>
         AggregateFolder RootFolder { get; }
 
+        /// <summary>
+        /// Gets the person sync.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <returns>Person.</returns>
         Person GetPersonSync(string name);
 
         /// <summary>
@@ -143,7 +148,13 @@ namespace MediaBrowser.Controller.Library
         /// <param name="item">The item.</param>
         /// <param name="user">The user.</param>
         /// <returns>IEnumerable{System.String}.</returns>
-        IEnumerable<string> GetIntros(BaseItem item, User user);
+        IEnumerable<Video> GetIntros(BaseItem item, User user);
+
+        /// <summary>
+        /// Gets all intro files.
+        /// </summary>
+        /// <returns>IEnumerable{System.String}.</returns>
+        IEnumerable<string> GetAllIntroFiles();
 
         /// <summary>
         /// Adds the parts.
