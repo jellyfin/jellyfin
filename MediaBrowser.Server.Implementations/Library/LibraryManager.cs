@@ -1129,9 +1129,75 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="item">The item.</param>
         /// <param name="user">The user.</param>
         /// <returns>IEnumerable{System.String}.</returns>
-        public IEnumerable<string> GetIntros(BaseItem item, User user)
+        public IEnumerable<Video> GetIntros(BaseItem item, User user)
         {
-            return IntroProviders.SelectMany(i => i.GetIntros(item, user));
+            return IntroProviders.SelectMany(i => i.GetIntros(item, user))
+                .Select(ResolveIntro)
+                .Where(i => i != null);
+        }
+
+        /// <summary>
+        /// Gets all intro files.
+        /// </summary>
+        /// <returns>IEnumerable{System.String}.</returns>
+        public IEnumerable<string> GetAllIntroFiles()
+        {
+            return IntroProviders.SelectMany(i => i.GetAllIntroFiles());
+        }
+
+        /// <summary>
+        /// Resolves the intro.
+        /// </summary>
+        /// <param name="info">The info.</param>
+        /// <returns>Video.</returns>
+        private Video ResolveIntro(IntroInfo info)
+        {
+            Video video = null;
+            
+            if (info.ItemId.HasValue)
+            {
+                // Get an existing item by Id
+                video = GetItemById(info.ItemId.Value) as Video;
+
+                if (video == null)
+                {
+                    _logger.Error("Unable to locate item with Id {0}.", info.ItemId.Value);
+                }
+            }
+            else if (!string.IsNullOrEmpty(info.Path))
+            {
+                try
+                {
+                    // Try to resolve the path into a video 
+                    video = ResolvePath(FileSystem.GetFileSystemInfo(info.Path)) as Video;
+
+                    if (video == null)
+                    {
+                        _logger.Error("Intro resolver returned null for {0}.", info.Path);
+                    }
+                    else
+                    {
+                        // Pull the saved db item that will include metadata
+                        var dbItem = GetItemById(video.Id) as Video;
+
+                        if (dbItem != null)
+                        {
+                            dbItem.ResetResolveArgs(video.ResolveArgs);
+                            video = dbItem;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error resolving path {0}.", ex, info.Path);
+                }
+            }
+            else
+            {
+                _logger.Error("IntroProvider returned an IntroInfo with null Path and ItemId.");
+            }
+
+            return video;
         }
 
         /// <summary>

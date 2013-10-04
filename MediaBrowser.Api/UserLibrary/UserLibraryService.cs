@@ -58,7 +58,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// </summary>
     [Route("/Users/{UserId}/Items/{Id}/Intros", "GET")]
     [Api(("Gets intros to play before the main media item plays"))]
-    public class GetIntros : IReturn<List<string>>
+    public class GetIntros : IReturn<ItemsResult>
     {
         /// <summary>
         /// Gets or sets the user id.
@@ -552,7 +552,21 @@ namespace MediaBrowser.Api.UserLibrary
 
             var item = string.IsNullOrEmpty(request.Id) ? user.RootFolder : _dtoService.GetItemByDtoId(request.Id, user.Id);
 
-            var result = _libraryManager.GetIntros(item, user);
+            var items = _libraryManager.GetIntros(item, user);
+
+            // Get everything
+            var fields = Enum.GetNames(typeof(ItemFields))
+                .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
+                .ToList();
+
+            var dtos = items.Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+                .ToArray();
+
+            var result = new ItemsResult
+            {
+                Items = dtos,
+                TotalRecordCount = dtos.Length
+            };
 
             return ToOptimizedResult(result);
         }
@@ -579,6 +593,13 @@ namespace MediaBrowser.Api.UserLibrary
             return ToOptimizedResult(dto);
         }
 
+        /// <summary>
+        /// Marks the favorite.
+        /// </summary>
+        /// <param name="userId">The user id.</param>
+        /// <param name="itemId">The item id.</param>
+        /// <param name="isFavorite">if set to <c>true</c> [is favorite].</param>
+        /// <returns>Task{UserItemDataDto}.</returns>
         private async Task<UserItemDataDto> MarkFavorite(Guid userId, string itemId, bool isFavorite)
         {
             var user = _userManager.GetUserById(userId);
@@ -622,6 +643,13 @@ namespace MediaBrowser.Api.UserLibrary
             return ToOptimizedResult(dto);
         }
 
+        /// <summary>
+        /// Updates the user item rating.
+        /// </summary>
+        /// <param name="userId">The user id.</param>
+        /// <param name="itemId">The item id.</param>
+        /// <param name="likes">if set to <c>true</c> [likes].</param>
+        /// <returns>Task{UserItemDataDto}.</returns>
         private async Task<UserItemDataDto> UpdateUserItemRating(Guid userId, string itemId, bool? likes)
         {
             var user = _userManager.GetUserById(userId);
