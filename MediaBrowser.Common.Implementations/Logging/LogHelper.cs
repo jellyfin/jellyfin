@@ -47,12 +47,14 @@ namespace MediaBrowser.Common.Implementations.Logging
                 foreach (var ex in aggregate.InnerExceptions)
                 {
                     AppendInnerException(messageText, ex);
+                    AppendInnerExceptions(messageText, ex);
                 }
             }
 
             else if (e.InnerException != null)
             {
                 AppendInnerException(messageText, e.InnerException);
+                AppendInnerExceptions(messageText, e.InnerException);
             }
         }
 
