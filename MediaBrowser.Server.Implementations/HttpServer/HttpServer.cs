@@ -382,22 +382,23 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <returns>Task.</returns>
         private async Task ProcessWebSocketRequest(HttpListenerContext ctx)
         {
+            #if __MonoCS__
+            #else
             try
-            {
-                var webSocketContext = await ctx.AcceptWebSocketAsync(null).ConfigureAwait(false);
-
-                if (WebSocketConnected != null)
-                {
-                    WebSocketConnected(this, new WebSocketConnectEventArgs { WebSocket = new NativeWebSocket(webSocketContext.WebSocket, _logger), Endpoint = ctx.Request.RemoteEndPoint.ToString() });
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("AcceptWebSocketAsync error", ex);
-
-                ctx.Response.StatusCode = 500;
-                ctx.Response.Close();
-            }
+              {
+               var webSocketContext = await ctx.AcceptWebSocketAsync(null).ConfigureAwait(false);
+               if (WebSocketConnected != null)
+               {
+                WebSocketConnected(this, new WebSocketConnectEventArgs { WebSocket = new NativeWebSocket(webSocketContext.WebSocket, _logger), Endpoint = ctx.Request.RemoteEndPoint.ToString() });
+               }
+              }
+              catch (Exception ex)
+              {
+               _logger.ErrorException("AcceptWebSocketAsync error", ex);
+               ctx.Response.StatusCode = 500;
+               ctx.Response.Close();
+              }
+            #endif
         }
 
         /// <summary>
@@ -532,7 +533,12 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         {
             get
             {
-                if (!_supportsNativeWebSocket.HasValue)
+				#if __MonoCS__
+				return false;
+				#else
+				#endif
+
+				if (!_supportsNativeWebSocket.HasValue)
                 {
                     try
                     {

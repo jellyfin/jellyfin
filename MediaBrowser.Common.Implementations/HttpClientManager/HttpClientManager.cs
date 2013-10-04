@@ -555,11 +555,6 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             {
                 throw new ArgumentNullException("url");
             }
-
-            if (cancellationToken == null)
-            {
-                throw new ArgumentNullException("cancellationToken");
-            }
         }
 
         /// <summary>

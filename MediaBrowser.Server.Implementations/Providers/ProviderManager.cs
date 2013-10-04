@@ -269,10 +269,6 @@ namespace MediaBrowser.Server.Implementations.Providers
             {
                 throw new ArgumentNullException();
             }
-            if (cancellationToken == null)
-            {
-                throw new ArgumentNullException();
-            }
 
             if (cancellationToken.IsCancellationRequested)
             {

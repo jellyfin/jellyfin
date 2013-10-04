@@ -98,11 +98,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 throw new ArgumentNullException("user");
             }
 
-            if (cancellationToken == null)
-            {
-                throw new ArgumentNullException("cancellationToken");
-            }
-
             cancellationToken.ThrowIfCancellationRequested();
 
             var serialized = _jsonSerializer.SerializeToBytes(user);
@@ -197,11 +192,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
             if (user == null)
             {
                 throw new ArgumentNullException("user");
-            }
-
-            if (cancellationToken == null)
-            {
-                throw new ArgumentNullException("cancellationToken");
             }
 
             cancellationToken.ThrowIfCancellationRequested();

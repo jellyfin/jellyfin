@@ -186,11 +186,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 throw new ArgumentNullException("items");
             }
 
-            if (cancellationToken == null)
-            {
-                throw new ArgumentNullException("cancellationToken");
-            }
-
             cancellationToken.ThrowIfCancellationRequested();
 
             await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -454,11 +449,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
             if (children == null)
             {
                 throw new ArgumentNullException("children");
-            }
-
-            if (cancellationToken == null)
-            {
-                throw new ArgumentNullException("cancellationToken");
             }
 
             cancellationToken.ThrowIfCancellationRequested();

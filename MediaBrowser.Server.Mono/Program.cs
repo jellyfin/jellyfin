@@ -47,8 +47,6 @@ namespace MediaBrowser.Server.Mono
 
 			bool createdNew;
 
-			var runningPath = Process.GetCurrentProcess().MainModule.FileName.Replace(Path.DirectorySeparatorChar.ToString(), string.Empty);
-
 			//_singleInstanceMutex = new Mutex(true, @"Local\" + runningPath, out createdNew);
 			createdNew = true;
 

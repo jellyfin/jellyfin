@@ -130,17 +130,17 @@ namespace MediaBrowser.Controller.Localization
                 {
                     value = field.GetValue(stringData) as string;
                 }
-                catch (TargetException ex)
+                catch (TargetException)
                 {
                     //Logger.ErrorException("Error getting value for field: {0}", ex, field.Name);
                     continue;
                 }
-                catch (FieldAccessException ex)
+                catch (FieldAccessException)
                 {
                     //Logger.ErrorException("Error getting value for field: {0}", ex, field.Name);
                     continue;
                 }
-                catch (NotSupportedException ex)
+                catch (NotSupportedException)
                 {
                     //Logger.ErrorException("Error getting value for field: {0}", ex, field.Name);
                     continue;

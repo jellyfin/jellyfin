@@ -116,10 +116,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
             {
                 throw new ArgumentNullException("userData");
             }
-            if (cancellationToken == null)
-            {
-                throw new ArgumentNullException("cancellationToken");
-            }
             if (userId == Guid.Empty)
             {
                 throw new ArgumentNullException("userId");
