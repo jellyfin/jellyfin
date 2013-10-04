@@ -112,10 +112,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
             {
                 throw new ArgumentNullException("displayPreferences.Id");
             }
-            if (cancellationToken == null)
-            {
-                throw new ArgumentNullException("cancellationToken");
-            }
 
             cancellationToken.ThrowIfCancellationRequested();
 

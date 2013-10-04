@@ -361,11 +361,6 @@ namespace MediaBrowser.Common.Implementations.Updates
                 throw new ArgumentNullException("progress");
             }
 
-            if (cancellationToken == null)
-            {
-                throw new ArgumentNullException("cancellationToken");
-            }
-
             var installationInfo = new InstallationInfo
             {
                 Id = Guid.NewGuid(),

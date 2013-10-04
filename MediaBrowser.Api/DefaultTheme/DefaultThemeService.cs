@@ -66,16 +66,14 @@ namespace MediaBrowser.Api.DefaultTheme
         private readonly ILogger _logger;
         private readonly ILibraryManager _libraryManager;
 
-        private readonly ILocalizationManager _localization;
         private readonly IImageProcessor _imageProcessor;
 
-        public DefaultThemeService(IUserManager userManager, IDtoService dtoService, ILogger logger, ILibraryManager libraryManager, ILocalizationManager localization, IImageProcessor imageProcessor)
+        public DefaultThemeService(IUserManager userManager, IDtoService dtoService, ILogger logger, ILibraryManager libraryManager, IImageProcessor imageProcessor)
         {
             _userManager = userManager;
             _dtoService = dtoService;
             _logger = logger;
             _libraryManager = libraryManager;
-            _localization = localization;
             _imageProcessor = imageProcessor;
         }
 

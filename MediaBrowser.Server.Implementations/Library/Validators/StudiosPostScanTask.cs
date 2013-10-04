@@ -16,19 +16,13 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         private readonly ILibraryManager _libraryManager;
 
         /// <summary>
-        /// The _user manager
-        /// </summary>
-        private readonly IUserManager _userManager;
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="ArtistsPostScanTask" /> class.
         /// </summary>
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="userManager">The user manager.</param>
-        public StudiosPostScanTask(ILibraryManager libraryManager, IUserManager userManager)
+        public StudiosPostScanTask(ILibraryManager libraryManager)
         {
             _libraryManager = libraryManager;
-            _userManager = userManager;
         }
 
         /// <summary>

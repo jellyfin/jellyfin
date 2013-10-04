@@ -285,11 +285,6 @@ namespace MediaBrowser.Server.Implementations.ServerManager
                 throw new ArgumentNullException("dataFunction");
             }
 
-            if (cancellationToken == null)
-            {
-                throw new ArgumentNullException("cancellationToken");
-            }
-
             cancellationToken.ThrowIfCancellationRequested();
 
             var connectionsList = connections.Where(s => s.State == WebSocketState.Open).ToList();

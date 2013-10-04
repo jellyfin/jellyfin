@@ -216,11 +216,6 @@ namespace MediaBrowser.Server.Implementations.ServerManager
                 throw new ArgumentNullException("buffer");
             }
 
-            if (cancellationToken == null)
-            {
-                throw new ArgumentNullException("cancellationToken");
-            }
-
             cancellationToken.ThrowIfCancellationRequested();
 
             // Per msdn docs, attempting to send simultaneous messages will result in one failing.

@@ -188,11 +188,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 throw new ArgumentNullException("chapters");
             }
 
-            if (cancellationToken == null)
-            {
-                throw new ArgumentNullException("cancellationToken");
-            }
-
             cancellationToken.ThrowIfCancellationRequested();
 
             await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
