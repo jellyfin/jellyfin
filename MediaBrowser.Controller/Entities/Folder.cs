@@ -1032,7 +1032,7 @@ namespace MediaBrowser.Controller.Entities
         /// <exception cref="System.ArgumentNullException"></exception>
         public IEnumerable<BaseItem> GetRecursiveChildren(User user, bool includeLinkedChildren = true)
         {
-            return GetRecursiveChildren(user, null, true);
+            return GetRecursiveChildren(user, null, includeLinkedChildren);
         }
 
         /// <summary>
@@ -1047,7 +1047,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (user == null)
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException("user");
             }
 
             var initialCount = _lastRecursiveCount == 0 ? _children.Count : _lastRecursiveCount;
@@ -1057,12 +1057,7 @@ namespace MediaBrowser.Controller.Entities
 
             _lastRecursiveCount = list.Count;
 
-            if (includeLinkedChildren && hasLinkedChildren)
-            {
-                list = list.DistinctBy(i => i.Id).ToList();
-            }
-
-            return list;
+            return hasLinkedChildren ? list.DistinctBy(i => i.Id).ToList() : list;
         }
 
         /// <summary>
@@ -1071,7 +1066,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>IList{BaseItem}.</returns>
         public IList<BaseItem> GetRecursiveChildren()
         {
-            return GetRecursiveChildren(null);
+            return GetRecursiveChildren(null, null, true);
         }
 
         /// <summary>
