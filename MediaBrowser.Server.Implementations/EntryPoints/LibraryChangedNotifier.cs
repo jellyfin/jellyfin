@@ -230,7 +230,9 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
             var collections = user.RootFolder.GetChildren(user, true).ToList();
 
-            var allRecursiveChildren = user.RootFolder.GetRecursiveChildren(user).ToDictionary(i => i.Id);
+            var allRecursiveChildren = user.RootFolder.GetRecursiveChildren(user)
+                .Select(i => i.Id)
+                .ToDictionary(i => i);
 
             return new LibraryUpdateInfo
             {
@@ -256,7 +258,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         /// <param name="allRecursiveChildren">All recursive children.</param>
         /// <param name="includeIfNotFound">if set to <c>true</c> [include if not found].</param>
         /// <returns>IEnumerable{``0}.</returns>
-        private IEnumerable<T> TranslatePhysicalItemToUserLibrary<T>(T item, User user, IEnumerable<BaseItem> collections, Dictionary<Guid, BaseItem> allRecursiveChildren, bool includeIfNotFound = false)
+        private IEnumerable<T> TranslatePhysicalItemToUserLibrary<T>(T item, User user, IEnumerable<BaseItem> collections, Dictionary<Guid, Guid> allRecursiveChildren, bool includeIfNotFound = false)
             where T : BaseItem
         {
             // If the physical root changed, return the user root

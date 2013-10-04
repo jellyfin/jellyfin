@@ -95,16 +95,22 @@ namespace MediaBrowser.Server.Implementations.Session
             var version = vals[2];
             var deviceName = vals.Length > 3 ? vals[3] : string.Empty;
 
-            if (!string.IsNullOrEmpty(deviceName))
-            {
-                _logger.Debug("Logging session activity");
-                await _sessionManager.LogSessionActivity(client, version, deviceId, deviceName, null).ConfigureAwait(false);
-            }
-
             var session = _sessionManager.Sessions
                 .FirstOrDefault(i => string.Equals(i.DeviceId, deviceId) &&
                     string.Equals(i.Client, client) &&
                     string.Equals(i.ApplicationVersion, version));
+
+            if (session == null && !string.IsNullOrEmpty(deviceName))
+            {
+                _logger.Debug("Logging session activity");
+
+                await _sessionManager.LogSessionActivity(client, version, deviceId, deviceName, null).ConfigureAwait(false);
+
+                session = _sessionManager.Sessions
+                    .FirstOrDefault(i => string.Equals(i.DeviceId, deviceId) &&
+                        string.Equals(i.Client, client) &&
+                        string.Equals(i.ApplicationVersion, version));
+            }
 
             if (session != null)
             {
