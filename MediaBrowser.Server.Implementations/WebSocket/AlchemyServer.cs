@@ -69,7 +69,7 @@ namespace MediaBrowser.Server.Implementations.WebSocket
 
                 _hasStarted = true;
             }
-            catch (SocketException ex)
+            catch (Exception ex)
             {
                 _logger.ErrorException("The web socket server is unable to start on port {0} due to a Socket error. This can occasionally happen when the operating system takes longer than usual to release the IP bindings from the previous session. This can take up to five minutes. Please try waiting or rebooting the system.", ex, portNumber);
 
@@ -119,21 +119,28 @@ namespace MediaBrowser.Server.Implementations.WebSocket
             GC.SuppressFinalize(this);
         }
 
+        private readonly object _syncLock = new object();
+
         /// <summary>
         /// Releases unmanaged and - optionally - managed resources.
         /// </summary>
         /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected virtual void Dispose(bool dispose)
         {
-            if (WebSocketServer != null)
+            lock (_syncLock)
             {
-                if (_hasStarted)
+                if (WebSocketServer != null)
                 {
-                    WebSocketServer.Stop();
-                }
+                    if (_hasStarted)
+                    {
+                        _logger.Debug("Stopping alchemy server");
+                        WebSocketServer.Stop();
+                    }
 
-                WebSocketServer.Dispose();
-                WebSocketServer = null;
+                    _logger.Debug("Disposing alchemy server");
+                    WebSocketServer.Dispose();
+                    WebSocketServer = null;
+                }
             }
         }
     }

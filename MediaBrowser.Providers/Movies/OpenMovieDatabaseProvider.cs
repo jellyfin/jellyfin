@@ -46,7 +46,7 @@ namespace MediaBrowser.Providers.Movies
         {
             get
             {
-                return "9";
+                return "11";
             }
         }
 
@@ -189,10 +189,9 @@ namespace MediaBrowser.Providers.Movies
             // Grab series genres because imdb data is better than tvdb. Leave movies alone
             // But only do it if english is the preferred language because this data will not be localized
             if (!item.LockedFields.Contains(MetadataFields.Genres) &&
-                item is Series &&
+                ShouldFetchGenres(item) &&
                 !string.IsNullOrWhiteSpace(result.Genre) &&
-                !string.Equals(result.Genre, "n/a", StringComparison.OrdinalIgnoreCase)
-                && string.Equals(ConfigurationManager.Configuration.PreferredMetadataLanguage, "en"))
+                !string.Equals(result.Genre, "n/a", StringComparison.OrdinalIgnoreCase))
             {
                 item.Genres.Clear();
 
@@ -204,6 +203,17 @@ namespace MediaBrowser.Providers.Movies
                     item.AddGenre(genre);
                 }
             }
+        }
+
+        private bool ShouldFetchGenres(BaseItem item)
+        {
+            // Only fetch if other providers didn't get anything
+            if (item is Trailer)
+            {
+                return item.Genres.Count == 0;
+            }
+
+            return item is Series;
         }
 
         protected class RootObject

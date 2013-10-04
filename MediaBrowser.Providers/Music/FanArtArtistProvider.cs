@@ -274,6 +274,8 @@ namespace MediaBrowser.Providers.Music
 
             var xmlPath = Path.Combine(artistPath, "fanart.xml");
 
+            Directory.CreateDirectory(artistPath);
+            
             using (var response = await HttpClient.Get(new HttpRequestOptions
             {
                 Url = url,

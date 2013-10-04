@@ -263,6 +263,8 @@ namespace MediaBrowser.Providers.Movies
 
             var xmlPath = Path.Combine(movieDataPath, "fanart.xml");
 
+            Directory.CreateDirectory(movieDataPath);
+
             using (var response = await HttpClient.Get(new HttpRequestOptions
             {
                 Url = url,

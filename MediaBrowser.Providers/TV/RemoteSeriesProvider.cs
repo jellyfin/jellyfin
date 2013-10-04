@@ -238,7 +238,11 @@ namespace MediaBrowser.Providers.TV
         /// <returns>Task{System.Boolean}.</returns>
         private async Task FetchSeriesData(Series series, string seriesId, string seriesDataPath, bool isForcedRefresh, CancellationToken cancellationToken)
         {
-            var files = Directory.EnumerateFiles(seriesDataPath, "*.xml", SearchOption.TopDirectoryOnly).Select(Path.GetFileName).ToList();
+            Directory.CreateDirectory(seriesDataPath);
+
+            var files = Directory.EnumerateFiles(seriesDataPath, "*.xml", SearchOption.TopDirectoryOnly)
+                .Select(Path.GetFileName)
+                .ToList();
 
             var seriesXmlFilename = ConfigurationManager.Configuration.PreferredMetadataLanguage.ToLower() + ".xml";
 

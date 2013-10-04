@@ -6,6 +6,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
+using MediaBrowser.Providers.Savers;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -15,7 +16,6 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Providers.Savers;
 
 namespace MediaBrowser.Providers.Movies
 {
