@@ -9,8 +9,8 @@ We have several client apps released and in production:
 
 - Android
 - Html5
-- iOS
-- Media Portal
+- [iOS](https://itunes.apple.com/us/app/media-browser-for-ios/id705058087 "iOS")
+- [Media Portal](http://www.team-mediaportal.com/ "Media Portal")
 - Roku
 - Windows 7/8 Desktop
 - Windows Media Center
@@ -25,7 +25,7 @@ If you're a new user looking to install Media Browser Server, please head over t
 
 ## Developer Info ##
 
-[Api Docs](https://github.com/MediaBrowser/MediaBrowser/wiki/Locating-the-Server "Api Workflow")
+[Api Docs](https://github.com/MediaBrowser/MediaBrowser/wiki "Api Workflow")
 
 [How to Build a Server Plugin](https://github.com/MediaBrowser/MediaBrowser/wiki/How-to-build-a-Server-Plugin "How to build a server plugin")
 
@@ -36,9 +36,8 @@ http://community.mediabrowser.tv/
 
 ## Current Versions ##
 
-Release: 3.0.4954.26523<br/>
+Release: 3.0.4999.38224<br/>
 Beta: 3.0.4964.14543<br/>
-Dev: 3.0.4978.15146
 
 ## Images
 
