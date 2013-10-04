@@ -67,10 +67,26 @@ namespace MediaBrowser.Model.Querying
         /// <value>The sort by.</value>
         public string[] SortBy { get; set; }
 
+        /// <summary>
+        /// Gets or sets the image types.
+        /// </summary>
+        /// <value>The image types.</value>
         public ImageType[] ImageTypes { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ItemsByNameQuery"/> class.
+        /// Gets or sets the name starts with or greater.
+        /// </summary>
+        /// <value>The name starts with or greater.</value>
+        public string NameStartsWithOrGreater { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name less than.
+        /// </summary>
+        /// <value>The name less than.</value>
+        public string NameLessThan { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ItemsByNameQuery" /> class.
         /// </summary>
         public ItemsByNameQuery()
         {

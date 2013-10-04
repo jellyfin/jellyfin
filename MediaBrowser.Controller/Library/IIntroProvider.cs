@@ -15,5 +15,11 @@ namespace MediaBrowser.Controller.Library
         /// <param name="user">The user.</param>
         /// <returns>IEnumerable{System.String}.</returns>
         IEnumerable<string> GetIntros(BaseItem item, User user);
+
+        /// <summary>
+        /// Gets all intros.
+        /// </summary>
+        /// <returns>IEnumerable{System.String}.</returns>
+        IEnumerable<string> GetAllIntros();
     }
 }

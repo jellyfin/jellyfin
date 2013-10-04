@@ -150,12 +150,16 @@ namespace MediaBrowser.Providers.TV
             if (!string.IsNullOrEmpty(seriesId))
             {
                 // Process images
-                var imagesXmlPath = Path.Combine(RemoteSeriesProvider.GetSeriesDataPath(ConfigurationManager.ApplicationPaths, seriesId), "banners.xml");
+                var seriesDataPath = RemoteSeriesProvider.GetSeriesDataPath(ConfigurationManager.ApplicationPaths, seriesId);
+
+                var imagesXmlPath = Path.Combine(seriesDataPath, "banners.xml");
 
                 if (!series.HasImage(ImageType.Primary) || !series.HasImage(ImageType.Banner) || series.BackdropImagePaths.Count == 0)
                 {
                     var backdropLimit = ConfigurationManager.Configuration.MaxBackdrops;
 
+                    Directory.CreateDirectory(seriesDataPath);
+                    
                     try
                     {
                         var fanartData = FetchFanartXmlData(imagesXmlPath, backdropLimit, cancellationToken);

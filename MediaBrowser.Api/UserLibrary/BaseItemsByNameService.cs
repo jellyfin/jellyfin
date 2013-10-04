@@ -138,7 +138,12 @@ namespace MediaBrowser.Api.UserLibrary
         {
             if (!string.IsNullOrEmpty(request.NameStartsWithOrGreater))
             {
-                items = items.Where(i => string.Compare(request.NameStartsWithOrGreater, i.Name, StringComparison.CurrentCultureIgnoreCase) < 1);
+                items = items.Where(i => string.Compare(request.NameStartsWithOrGreater, i.SortName, StringComparison.CurrentCultureIgnoreCase) < 1);
+            }
+
+            if (!string.IsNullOrEmpty(request.NameLessThan))
+            {
+                items = items.Where(i => string.Compare(request.NameLessThan, i.SortName, StringComparison.CurrentCultureIgnoreCase) == 1);
             }
 
             var imageTypes = request.GetImageTypes().ToList();
@@ -274,6 +279,9 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "NameStartsWithOrGreater", Description = "Optional filter by items whose name is sorted equally or greater than a given input string.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string NameStartsWithOrGreater { get; set; }
 
+        [ApiMember(Name = "NameLessThan", Description = "Optional filter by items whose name is sorted less than a given input string.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string NameLessThan { get; set; }
+        
         public GetItemsByName()
         {
             Recursive = true;

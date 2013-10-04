@@ -119,9 +119,9 @@ namespace MediaBrowser.ServerApplication.FFMpeg
 
                 var files = Directory.EnumerateFiles(tempFolder, "*.exe", SearchOption.AllDirectories).ToList();
 
-                foreach (var file in files)
+                foreach (var file in files.Where(i => i.IndexOf("ffprobe.exe", StringComparison.OrdinalIgnoreCase) != -1 || i.IndexOf("ffmpeg.exe", StringComparison.OrdinalIgnoreCase) != -1))
                 {
-                    File.Copy(file, Path.Combine(targetFolder, Path.GetFileName(file)));
+                    File.Copy(file, Path.Combine(targetFolder, Path.GetFileName(file)), true);
                 }
             }
             finally

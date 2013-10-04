@@ -6,6 +6,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
+using MoreLinq;
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
@@ -1009,10 +1010,10 @@ namespace MediaBrowser.Controller.Entities
                         continue;
                     }
 
-                    hasLinkedChildren = true;
-
                     if (child.IsVisible(user))
                     {
+                        hasLinkedChildren = true;
+
                         list.Add(child);
                     }
                 }
@@ -1058,7 +1059,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (includeLinkedChildren && hasLinkedChildren)
             {
-                list = list.Distinct().ToList();
+                list = list.DistinctBy(i => i.Id).ToList();
             }
 
             return list;

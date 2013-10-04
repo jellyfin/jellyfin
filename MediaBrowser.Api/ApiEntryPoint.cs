@@ -182,7 +182,7 @@ namespace MediaBrowser.Api
 
                 if (job.ActiveRequestCount == 0)
                 {
-                    var timerDuration = type == TranscodingJobType.Progressive ? 1000 : 120000;
+                    var timerDuration = type == TranscodingJobType.Progressive ? 1000 : 180000;
 
                     if (job.KillTimer == null)
                     {
