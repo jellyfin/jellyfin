@@ -25,7 +25,7 @@ If you're a new user looking to install Media Browser Server, please head over t
 
 ## Developer Info ##
 
-[Api Docs](https://github.com/MediaBrowser/MediaBrowser/wiki/Locating-the-Server "Api Workflow")
+[Api Docs](https://github.com/MediaBrowser/MediaBrowser/wiki "Api Workflow")
 
 [How to Build a Server Plugin](https://github.com/MediaBrowser/MediaBrowser/wiki/How-to-build-a-Server-Plugin "How to build a server plugin")
 
