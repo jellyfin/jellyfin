@@ -198,6 +198,9 @@
     <Compile Include="BackgroundServiceInstaller.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Networking\NativeMethods.cs" />
+    <Compile Include="Networking\NetworkManager.cs" />
+    <Compile Include="Networking\NetworkShares.cs" />
     <Compile Include="Splash\SplashWindow.xaml.cs">
       <DependentUpon>SplashWindow.xaml</DependentUpon>
     </Compile>

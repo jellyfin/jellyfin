@@ -2,7 +2,6 @@
 using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Implementations.Archiving;
 using MediaBrowser.Common.Implementations.IO;
-using MediaBrowser.Common.Implementations.NetworkManagement;
 using MediaBrowser.Common.Implementations.ScheduledTasks;
 using MediaBrowser.Common.Implementations.Security;
 using MediaBrowser.Common.Implementations.Serialization;
@@ -335,7 +334,7 @@ namespace MediaBrowser.Common.Implementations
                 HttpClient = new HttpClientManager.HttpClientManager(ApplicationPaths, Logger, CreateHttpClient);
                 RegisterSingleInstance(HttpClient);
 
-                NetworkManager = new NetworkManager();
+                NetworkManager = CreateNetworkManager();
                 RegisterSingleInstance(NetworkManager);
 
                 SecurityManager = new PluginSecurityManager(this, HttpClient, JsonSerializer, ApplicationPaths, NetworkManager);
@@ -378,6 +377,8 @@ namespace MediaBrowser.Common.Implementations
                 return ex.Types.Where(t => t != null);
             }
         }
+
+        protected abstract INetworkManager CreateNetworkManager();
 
         /// <summary>
         /// Creates an instance of type and resolves all constructor dependancies

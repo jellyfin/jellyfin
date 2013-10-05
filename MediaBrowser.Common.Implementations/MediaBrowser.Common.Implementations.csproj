@@ -71,9 +71,7 @@
     <Compile Include="Logging\LogHelper.cs" />
     <Compile Include="Logging\NLogger.cs" />
     <Compile Include="Logging\NlogManager.cs" />
-    <Compile Include="NetworkManagement\NativeMethods.cs" />
-    <Compile Include="NetworkManagement\NetworkManager.cs" />
-    <Compile Include="NetworkManagement\NetworkShares.cs" />
+    <Compile Include="Networking\BaseNetworkManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ScheduledTasks\ScheduledTaskWorker.cs" />
     <Compile Include="ScheduledTasks\TaskManager.cs" />
