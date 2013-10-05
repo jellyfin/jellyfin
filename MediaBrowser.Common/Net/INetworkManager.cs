@@ -1,5 +1,6 @@
 using MediaBrowser.Model.Net;
 using System.Collections.Generic;
+using System.Net;
 
 namespace MediaBrowser.Common.Net
 {
@@ -35,5 +36,12 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         /// <returns>PC's in the Domain</returns>
         IEnumerable<string> GetNetworkDevices();
+
+        /// <summary>
+        /// Parses the specified endpointstring.
+        /// </summary>
+        /// <param name="endpointstring">The endpointstring.</param>
+        /// <returns>IPEndPoint.</returns>
+        IPEndPoint Parse(string endpointstring);
     }
 }

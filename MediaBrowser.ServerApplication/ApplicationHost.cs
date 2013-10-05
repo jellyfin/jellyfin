@@ -48,6 +48,7 @@ using MediaBrowser.Server.Implementations.Session;
 using MediaBrowser.Server.Implementations.WebSocket;
 using MediaBrowser.ServerApplication.FFMpeg;
 using MediaBrowser.ServerApplication.Native;
+using MediaBrowser.ServerApplication.Networking;
 using MediaBrowser.WebDashboard.Api;
 using System;
 using System.Collections.Generic;
@@ -294,6 +295,11 @@ namespace MediaBrowser.ServerApplication
             await Task.WhenAll(itemsTask, displayPreferencesTask, userdataTask, mediaEncoderTask).ConfigureAwait(false);
 
             SetKernelProperties();
+        }
+
+        protected override INetworkManager CreateNetworkManager()
+        {
+            return new NetworkManager();
         }
 
         /// <summary>

@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Security;
 
-namespace MediaBrowser.Common.Implementations.NetworkManagement
+namespace MediaBrowser.ServerApplication.Networking
 {
     /// <summary>
     /// Class NativeMethods

@@ -232,6 +232,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
             var allRecursiveChildren = user.RootFolder.GetRecursiveChildren(user)
                 .Select(i => i.Id)
+                .Distinct()
                 .ToDictionary(i => i);
 
             return new LibraryUpdateInfo
