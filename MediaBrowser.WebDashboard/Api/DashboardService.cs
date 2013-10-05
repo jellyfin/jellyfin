@@ -161,7 +161,11 @@ namespace MediaBrowser.WebDashboard.Api
         /// <returns>System.String.</returns>
         private string GetDashboardResourcePath(string virtualPath)
         {
-            return Path.Combine(DashboardUIPath, virtualPath.Replace('/', '\\'));
+			#if __MonoCS__
+			return Path.Combine(DashboardUIPath, virtualPath);
+			#else
+			return Path.Combine(DashboardUIPath, virtualPath.Replace('/', '\\'));
+			#endif
         }
 
         /// <summary>
