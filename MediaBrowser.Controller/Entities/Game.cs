@@ -72,7 +72,13 @@ namespace MediaBrowser.Controller.Entities
 
         public override string GetUserDataKey()
         {
-            return this.GetProviderId(MetadataProviders.Gamesdb) ?? base.GetUserDataKey();
+            var id = this.GetProviderId(MetadataProviders.Gamesdb);
+
+            if (!string.IsNullOrEmpty(id))
+            {
+                return "Game-Gamesdb-" + id;
+            }
+            return base.GetUserDataKey();
         }
     }
 }

@@ -22,8 +22,7 @@
                 useAverageAspectRatio: true,
                 showNewIndicator: false,
                 transparent: true,
-                borderless: true,
-                imagePosition: 'center center'
+                borderless: true
             }));
 
         });
@@ -51,8 +50,7 @@
                 items: result.Items,
                 useAverageAspectRatio: true,
                 transparent: true,
-                borderless: true,
-                imagePosition: 'center center'
+                borderless: true
             }));
 
         });
@@ -80,8 +78,7 @@
                 items: result.Items,
                 useAverageAspectRatio: true,
                 transparent: true,
-                borderless: true,
-                imagePosition: 'center center'
+                borderless: true
             }));
 
         });

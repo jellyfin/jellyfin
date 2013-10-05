@@ -20,7 +20,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         }
 
         public string LastFmImageUrl { get; set; }
-        
+
         /// <summary>
         /// Gets the user data key.
         /// </summary>
@@ -76,9 +76,9 @@ namespace MediaBrowser.Controller.Entities.Audio
 
             if (!string.IsNullOrEmpty(id))
             {
-                return id;
+                return "Artist-Musicbrainz-" + id;
             }
-            
+
             return "Artist-" + item.Name;
         }
     }

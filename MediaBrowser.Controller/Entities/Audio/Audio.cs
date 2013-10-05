@@ -114,15 +114,14 @@ namespace MediaBrowser.Controller.Entities.Audio
 
             if (parent != null)
             {
-                var id = parent.GetProviderId(MetadataProviders.MusicBrainzReleaseGroup) ??
-                         parent.GetProviderId(MetadataProviders.Musicbrainz);
+                var parentKey = parent.GetUserDataKey();
 
-                if (!string.IsNullOrEmpty(id) && IndexNumber.HasValue)
+                if (IndexNumber.HasValue)
                 {
                     var songKey = (ParentIndexNumber != null ? ParentIndexNumber.Value.ToString("0000 - ") : "")
                                   + (IndexNumber.Value.ToString("0000 - "));
 
-                    return id + songKey;
+                    return parentKey + songKey;
                 }
             }
 
