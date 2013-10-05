@@ -306,6 +306,13 @@ namespace MediaBrowser.Providers.TV
                 episode.PremiereDate = airDate.ToUniversalTime();
                 episode.ProductionYear = airDate.Year;
             }
+
+            var imdbId = doc.SafeGetString("//IMDB_ID");
+            if (!string.IsNullOrEmpty(imdbId))
+            {
+                episode.SetProviderId(MetadataProviders.Imdb, imdbId);
+            }
+
             if (!episode.LockedFields.Contains(MetadataFields.Cast))
             {
                 episode.People.Clear();
