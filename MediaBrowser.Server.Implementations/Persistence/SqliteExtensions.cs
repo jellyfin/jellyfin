@@ -1,7 +1,11 @@
 ﻿using MediaBrowser.Model.Logging;
 using System;
 using System.Data;
+#if __MonoCS__
+using Mono.Data.Sqlite;
+#else 
 using System.Data.SQLite;
+#endif
 using System.IO;
 using System.Threading.Tasks;
 
@@ -133,6 +137,18 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 throw new ArgumentNullException("dbPath");
             }
 
+			#if __MonoCS__
+			var connectionstr = new SqliteConnectionStringBuilder
+			{
+				PageSize = 4096,
+				CacheSize = 4096,
+				SyncMode = SynchronizationModes.Normal,
+				DataSource = dbPath,
+				JournalMode = SQLiteJournalModeEnum.Off
+			};
+
+			var connection = new SqliteConnection(connectionstr.ConnectionString);
+#else
             var connectionstr = new SQLiteConnectionStringBuilder
             {
                 PageSize = 4096,
@@ -143,7 +159,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             };
 
             var connection = new SQLiteConnection(connectionstr.ConnectionString);
-
+#endif
             await connection.OpenAsync().ConfigureAwait(false);
 
             return connection;
