@@ -1,11 +1,9 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Release|x86" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="MediaBrowser.Server.Mono\Native\HttpClientFactory.cs">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="MediaBrowser.Server.Mono\FFMpeg\FFMpegDownloader.cs">
     <Files>
-      <File FileName="MediaBrowser.Server.Mono\app.config" Line="1" Column="1" />
-      <File FileName="MediaBrowser.ServerApplication\ApplicationHost.cs" Line="1" Column="1" />
-      <File FileName="MediaBrowser.Server.Mono\Program.cs" Line="1" Column="1" />
-      <File FileName="MediaBrowser.Server.Mono\Native\HttpClientFactory.cs" Line="6" Column="15" />
+      <File FileName="MediaBrowser.Server.Implementations\HttpServer\HttpServer.cs" Line="604" Column="23" />
+      <File FileName="MediaBrowser.Server.Mono\FFMpeg\FFMpegDownloader.cs" Line="1" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

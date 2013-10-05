@@ -121,8 +121,7 @@ namespace MediaBrowser.Api.DefaultTheme
         {
             var user = _userManager.GetUserById(request.UserId);
 
-            var items = user.RootFolder.GetRecursiveChildren(user)
-                .Where(i => i is Game || i is GameSystem)
+            var items = user.RootFolder.GetRecursiveChildren(user, i => i is Game || i is GameSystem)
                 .ToList();
 
             var itemsWithBackdrops = FilterItemsForBackdropDisplay(items.Where(i => i.BackdropImagePaths.Count > 0)).ToList();
@@ -214,8 +213,7 @@ namespace MediaBrowser.Api.DefaultTheme
         {
             var user = _userManager.GetUserById(request.UserId);
 
-            var items = user.RootFolder.GetRecursiveChildren(user)
-                .Where(i => i is Movie || i is Trailer || i is BoxSet)
+            var items = user.RootFolder.GetRecursiveChildren(user, i => i is Movie || i is Trailer || i is BoxSet)
                 .ToList();
 
             // Exclude trailers from backdrops because they're not always 1080p
