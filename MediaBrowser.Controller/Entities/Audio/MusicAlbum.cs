@@ -86,14 +86,14 @@ namespace MediaBrowser.Controller.Entities.Audio
 
             if (!string.IsNullOrEmpty(id))
             {
-                return id;
+                return "MusicAlbum-MusicBrainzReleaseGroup-" + id;
             }
 
             id = this.GetProviderId(MetadataProviders.Musicbrainz);
 
             if (!string.IsNullOrEmpty(id))
             {
-                return id;
+                return "MusicAlbum-Musicbrainz-" + id;
             }
 
             return base.GetUserDataKey();

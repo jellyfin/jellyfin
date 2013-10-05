@@ -32,7 +32,11 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>System.String.</returns>
         public override string GetUserDataKey()
         {
-            return GameSystemName ?? base.GetUserDataKey();
+            if (!string.IsNullOrEmpty(GameSystemName))
+            {
+                return "GameSystem-" + GameSystemName;
+            }
+            return base.GetUserDataKey();
         }
     }
 }
