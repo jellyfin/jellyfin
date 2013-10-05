@@ -30,7 +30,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
 
         private readonly string[] _ffMpegUrls = new[]
                 {
-                    "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/ffmpeg/ffmpeg-20130904-git-f974289-win32-static.7z",
+                    "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/ffmpeg/windows/ffmpeg-20130904-git-f974289-win32-static.7z",
 
                     "http://ffmpeg.zeranoe.com/builds/win32/static/ffmpeg-20130904-git-f974289-win32-static.7z",
                     "https://www.dropbox.com/s/a81cb2ob23fwcfs/ffmpeg-20130904-git-f974289-win32-static.7z?dl=1"
