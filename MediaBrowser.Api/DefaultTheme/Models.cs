@@ -47,6 +47,7 @@ namespace MediaBrowser.Api.DefaultTheme
     public class GamesView
     {
         public List<BaseItemDto> SpotlightItems { get; set; }
+        public List<ItemStub> MultiPlayerItems { get; set; }
     }
 
     public class HomeView

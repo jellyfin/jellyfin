@@ -24,6 +24,8 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class Folder : BaseItem
     {
+        public static IUserManager UserManager { get; set; }
+
         public Folder()
         {
             LinkedChildren = new List<LinkedChild>();
@@ -87,6 +89,11 @@ namespace MediaBrowser.Controller.Entities
             if (item.Id == Guid.Empty)
             {
                 item.Id = item.Path.GetMBId(item.GetType());
+            }
+
+            if (_children.Any(i => i.Id == item.Id))
+            {
+                throw new ArgumentException(string.Format("A child with the Id {0} already exists.", item.Id));
             }
 
             if (item.DateCreated == DateTime.MinValue)
@@ -718,16 +725,16 @@ namespace MediaBrowser.Controller.Entities
 
                 foreach (var item in itemsRemoved)
                 {
-                    if (IsRootPathAvailable(item.Path))
-                    {
-                        item.IsOffline = false;
-                        actualRemovals.Add(item);
-                    }
-                    else
+                    if (IsPathOffline(item.Path))
                     {
                         item.IsOffline = true;
 
                         validChildren.Add(new Tuple<BaseItem, bool>(item, false));
+                    }
+                    else
+                    {
+                        item.IsOffline = false;
+                        actualRemovals.Add(item);
                     }
                 }
 
@@ -855,29 +862,52 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Determines if a path's root is available or not
+        /// Determines whether the specified path is offline.
         /// </summary>
-        /// <param name="path"></param>
-        /// <returns></returns>
-        private bool IsRootPathAvailable(string path)
+        /// <param name="path">The path.</param>
+        /// <returns><c>true</c> if the specified path is offline; otherwise, <c>false</c>.</returns>
+        private bool IsPathOffline(string path)
         {
             if (File.Exists(path))
             {
-                return true;
+                return false;
             }
+
+            var originalPath = path;
 
             // Depending on whether the path is local or unc, it may return either null or '\' at the top
             while (!string.IsNullOrEmpty(path) && path.Length > 1)
             {
                 if (Directory.Exists(path))
                 {
-                    return true;
+                    return false;
                 }
 
                 path = System.IO.Path.GetDirectoryName(path);
             }
 
-            return false;
+            if (ContainsPath(LibraryManager.GetDefaultVirtualFolders(), originalPath))
+            {
+                return true;
+            }
+
+            return UserManager.Users.Any(user => ContainsPath(LibraryManager.GetVirtualFolders(user), originalPath));
+        }
+
+        /// <summary>
+        /// Determines whether the specified folders contains path.
+        /// </summary>
+        /// <param name="folders">The folders.</param>
+        /// <param name="path">The path.</param>
+        /// <returns><c>true</c> if the specified folders contains path; otherwise, <c>false</c>.</returns>
+        private bool ContainsPath(IEnumerable<VirtualFolderInfo> folders, string path)
+        {
+            return folders.SelectMany(i => i.Locations).Any(i => ContainsPath(i, path));
+        }
+
+        private bool ContainsPath(string parent, string path)
+        {
+            return string.Equals(parent, path, StringComparison.OrdinalIgnoreCase) || path.IndexOf(parent.TrimEnd(System.IO.Path.DirectorySeparatorChar) + System.IO.Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) != -1;
         }
 
         /// <summary>
