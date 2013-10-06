@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System.Net;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Implementations.Archiving;
 using MediaBrowser.Common.Implementations.IO;
@@ -192,6 +193,8 @@ namespace MediaBrowser.Common.Implementations
 
             Logger.Info("Version {0} initializing", ApplicationVersion);
 
+            SetHttpLimit();
+
             await RegisterResources().ConfigureAwait(false);
 
             FindParts();
@@ -207,6 +210,18 @@ namespace MediaBrowser.Common.Implementations
 
         }
 
+        private void SetHttpLimit()
+        {
+            try
+            {
+                ServicePointManager.DefaultConnectionLimit = Math.Min(48, ServicePointManager.DefaultConnectionLimit);
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error setting http limit", ex);
+            }
+        }
+        
         /// <summary>
         /// Installs the iso mounters.
         /// </summary>
