@@ -167,7 +167,10 @@ namespace MediaBrowser.Api.UserLibrary
 
         [ApiMember(Name = "MinPlayers", Description = "Optional filter by minimum number of game players.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int? MinPlayers { get; set; }
-        
+
+        [ApiMember(Name = "MaxPlayers", Description = "Optional filter by maximum number of game players.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int? MaxPlayers { get; set; }
+
         [ApiMember(Name = "ParentIndexNumber", Description = "Optional filter by parent index number.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int? ParentIndexNumber { get; set; }
 
@@ -686,6 +689,25 @@ namespace MediaBrowser.Api.UserLibrary
                         var players = game.PlayersSupported ?? 1;
 
                         return players >= filterValue;
+                    }
+
+                    return false;
+                });
+            }
+
+            if (request.MaxPlayers.HasValue)
+            {
+                var filterValue = request.MaxPlayers.Value;
+
+                items = items.Where(i =>
+                {
+                    var game = i as Game;
+
+                    if (game != null)
+                    {
+                        var players = game.PlayersSupported ?? 1;
+
+                        return players <= filterValue;
                     }
 
                     return false;

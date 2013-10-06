@@ -286,8 +286,8 @@ namespace MediaBrowser.Api.Playback
             if (request.Height.HasValue)
             {
                 return isH264Output ?
-                    string.Format(" -vf \"scale={0}:trunc(oh/a/2)*2{1}\"", request.Height.Value, assSubtitleParam) :
-                    string.Format(" -vf \"scale=-1{1}:{0}\"", request.Height.Value, assSubtitleParam);
+                    string.Format(" -vf \"scale=trunc(oh*a*2)/2:{0}{1}\"", request.Height.Value, assSubtitleParam) :
+                    string.Format(" -vf \"scale=-1:{0}{1}\"", request.Height.Value, assSubtitleParam);
             }
 
             // If a max width was requested
@@ -302,8 +302,8 @@ namespace MediaBrowser.Api.Playback
             if (request.MaxHeight.HasValue && (!request.MaxWidth.HasValue || state.VideoStream == null))
             {
                 return isH264Output ?
-                    string.Format(" -vf \"scale=min(ih\\,{0}):trunc(oh/a/2)*2{1}\"", request.MaxHeight.Value, assSubtitleParam) :
-                    string.Format(" -vf \"scale=min(ih\\,{0}):-1{1}\"", request.MaxHeight.Value, assSubtitleParam);
+                    string.Format(" -vf \"scale=trunc(oh*a*2)/2:min(ih\\,{0}){1}\"", request.MaxHeight.Value, assSubtitleParam) :
+                    string.Format(" -vf \"scale=-1:min(ih\\,{0}){1}\"", request.MaxHeight.Value, assSubtitleParam);
             }
 
             if (state.VideoStream == null)

@@ -10,7 +10,9 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using ServiceStack.ServiceHost;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -173,6 +175,21 @@ namespace MediaBrowser.Api
         /// <value>The id.</value>
         [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Id { get; set; }
+    }
+
+    [Route("/Items/YearIndex", "GET")]
+    [Api(Description = "Gets a year index based on an item query.")]
+    public class GetYearIndex : IReturn<List<ItemIndex>>
+    {
+        /// <summary>
+        /// Gets or sets the user id.
+        /// </summary>
+        /// <value>The user id.</value>
+        [ApiMember(Name = "UserId", Description = "Optional. Filter by user id, and attach user data", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public Guid? UserId { get; set; }
+
+        [ApiMember(Name = "IncludeItemTypes", Description = "Optional. If specified, results will be filtered based on item type. This allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string IncludeItemTypes { get; set; }
     }
 
     /// <summary>
@@ -563,6 +580,31 @@ namespace MediaBrowser.Api
                 TotalRecordCount = items.Length,
                 OwnerId = _dtoService.GetDtoId(item)
             };
+        }
+
+        private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
+        
+        public object Get(GetYearIndex request)
+        {
+            IEnumerable<BaseItem> items = GetAllLibraryItems(request.UserId, _userManager, _libraryManager);
+
+            if (!string.IsNullOrEmpty(request.IncludeItemTypes))
+            {
+                var vals = request.IncludeItemTypes.Split(',');
+                items = items.Where(f => vals.Contains(f.GetType().Name, StringComparer.OrdinalIgnoreCase));
+            }
+            
+            var lookup = items
+                .ToLookup(i => i.ProductionYear ?? -1)
+                .OrderBy(i => i.Key)
+                .Select(i => new ItemIndex
+                {
+                    ItemCount = i.Count(),
+                    Name = i.Key == -1 ? string.Empty : i.Key.ToString(UsCulture)
+                })
+                .ToList();
+
+            return ToOptimizedResult(lookup);
         }
     }
 }

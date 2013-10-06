@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Dto;
+﻿using System.Globalization;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
@@ -26,6 +27,21 @@ namespace MediaBrowser.Api
     [Route("/Games/SystemSummaries", "GET")]
     [Api(Description = "Finds games similar to a given game.")]
     public class GetGameSystemSummaries : IReturn<List<GameSystemSummary>>
+    {
+        /// <summary>
+        /// Gets or sets the user id.
+        /// </summary>
+        /// <value>The user id.</value>
+        [ApiMember(Name = "UserId", Description = "Optional. Filter by user id", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public Guid? UserId { get; set; }
+    }
+
+    /// <summary>
+    /// Class GetGameSystemSummaries
+    /// </summary>
+    [Route("/Games/PlayerIndex", "GET")]
+    [Api(Description = "Gets an index of players (1-x) and the number of games listed under each")]
+    public class GetPlayerIndex : IReturn<List<ItemIndex>>
     {
         /// <summary>
         /// Gets or sets the user id.
@@ -98,6 +114,27 @@ namespace MediaBrowser.Api
                 .ToList();
 
             return ToOptimizedResult(result);
+        }
+
+        private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
+        
+        public object Get(GetPlayerIndex request)
+        {
+            var games = GetAllLibraryItems(request.UserId, _userManager, _libraryManager)
+                .OfType<Game>()
+                .ToList();
+
+            var lookup = games
+                .ToLookup(i => i.PlayersSupported ?? -1)
+                .OrderBy(i => i.Key)
+                .Select(i => new ItemIndex
+                {
+                    ItemCount = i.Count(),
+                    Name = i.Key == -1 ? string.Empty : i.Key.ToString(UsCulture)
+                })
+                .ToList();
+
+            return ToOptimizedResult(lookup);
         }
 
         /// <summary>

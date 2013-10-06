@@ -213,6 +213,12 @@ namespace MediaBrowser.Model.Querying
         public int? MinPlayers { get; set; }
 
         /// <summary>
+        /// Gets or sets the max players.
+        /// </summary>
+        /// <value>The max players.</value>
+        public int? MaxPlayers { get; set; }
+        
+        /// <summary>
         /// Gets or sets the name starts with or greater.
         /// </summary>
         /// <value>The name starts with or greater.</value>
