@@ -1,5 +1,4 @@
-﻿using System.Runtime.InteropServices;
-using MediaBrowser.Common.Constants;
+﻿using MediaBrowser.Common.Constants;
 using MediaBrowser.Common.Implementations.Logging;
 using MediaBrowser.Common.Implementations.Updates;
 using MediaBrowser.Controller.IO;
@@ -13,6 +12,7 @@ using System.Configuration.Install;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.ServiceProcess;
 using System.Windows;
 
@@ -251,9 +251,7 @@ namespace MediaBrowser.ServerApplication
 
             if (_isRestarting)
             {
-                using (var process = Process.Start("cmd", "/c net start " + BackgroundService.Name))
-                {
-                }
+                Process.Start("cmd", "/c net start " + BackgroundService.Name);
 
                 _logger.Info("New service process started");
             }
@@ -383,6 +381,8 @@ namespace MediaBrowser.ServerApplication
 
             _logger.ErrorException("UnhandledException", exception);
 
+            _appHost.LogManager.Flush();
+
             if (!_isRunningAsService)
             {
                 _app.OnUnhandledException(exception);
@@ -390,7 +390,7 @@ namespace MediaBrowser.ServerApplication
 
             if (!Debugger.IsAttached)
             {
-                Environment.Exit(System.Runtime.InteropServices.Marshal.GetHRForException(exception));
+                Environment.Exit(Marshal.GetHRForException(exception));
             }
         }
 
@@ -411,13 +411,16 @@ namespace MediaBrowser.ServerApplication
                 // Update is there - execute update
                 try
                 {
-                    new ApplicationUpdater().UpdateApplication(MBApplication.MBServer, appPaths, updateArchive);
+                    var serviceName = _isRunningAsService ? BackgroundService.Name : string.Empty;
+                    new ApplicationUpdater().UpdateApplication(MBApplication.MBServer, appPaths, updateArchive, logger, serviceName);
 
                     // And just let the app exit so it can update
                     return true;
                 }
                 catch (Exception e)
                 {
+                    logger.ErrorException("Error starting updater.", e);
+
                     MessageBox.Show(string.Format("Error attempting to update application.\n\n{0}\n\n{1}", e.GetType().Name, e.Message));
                 }
             }

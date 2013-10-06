@@ -202,5 +202,13 @@ namespace MediaBrowser.Common.Implementations.Logging
                 }
             }
         }
+
+        /// <summary>
+        /// Flushes this instance.
+        /// </summary>
+        public void Flush()
+        {
+            LogManager.Flush();
+        }
     }
 }

@@ -35,5 +35,10 @@ namespace MediaBrowser.Model.Logging
         /// Occurs when [logger loaded].
         /// </summary>
         event EventHandler LoggerLoaded;
+
+        /// <summary>
+        /// Flushes this instance.
+        /// </summary>
+        void Flush();
     }
 }

@@ -123,7 +123,7 @@ namespace MediaBrowser.Server.Implementations.Session
             
             return socket.SendAsync(new WebSocketMessage<LibraryUpdateInfo>
             {
-                MessageType = "Playstate",
+                MessageType = "LibraryChanged",
                 Data = info
 
             }, cancellationToken);

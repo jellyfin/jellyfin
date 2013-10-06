@@ -4,7 +4,6 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Net;
-using System.Net.Sockets;
 
 namespace MediaBrowser.Server.Implementations.WebSocket
 {
@@ -28,6 +27,8 @@ namespace MediaBrowser.Server.Implementations.WebSocket
         /// The _logger
         /// </summary>
         private readonly ILogger _logger;
+
+        private bool _hasStopped;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AlchemyServer" /> class.
@@ -57,6 +58,8 @@ namespace MediaBrowser.Server.Implementations.WebSocket
         /// <param name="portNumber">The port number.</param>
         public void Start(int portNumber)
         {
+            _logger.Info("Starting Alchemy web socket server on port {0}", portNumber);
+
             try
             {
                 WebSocketServer = new WebSocketServer(portNumber, IPAddress.Any)
@@ -87,6 +90,11 @@ namespace MediaBrowser.Server.Implementations.WebSocket
         /// <param name="context">The context.</param>
         private void OnAlchemyWebSocketClientConnected(UserContext context)
         {
+            if (_hasStopped)
+            {
+                return;
+            }
+
             if (WebSocketConnected != null)
             {
                 var socket = new AlchemyWebSocket(context, _logger);
@@ -127,6 +135,8 @@ namespace MediaBrowser.Server.Implementations.WebSocket
         /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected virtual void Dispose(bool dispose)
         {
+            _hasStopped = true;
+
             lock (_syncLock)
             {
                 if (WebSocketServer != null)
