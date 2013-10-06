@@ -5,7 +5,6 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Localization;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
@@ -124,6 +123,7 @@ namespace MediaBrowser.Api.DefaultTheme
             var items = user.RootFolder.GetRecursiveChildren(user, i => i is Game || i is GameSystem)
                 .ToList();
 
+            var gamesWithImages = items.OfType<Game>().Where(i => !string.IsNullOrEmpty(i.PrimaryImagePath)).ToList();
             var itemsWithBackdrops = FilterItemsForBackdropDisplay(items.Where(i => i.BackdropImagePaths.Count > 0)).ToList();
 
             var view = new GamesView();
@@ -138,6 +138,14 @@ namespace MediaBrowser.Api.DefaultTheme
 
             view.SpotlightItems = dtos.ToList();
 
+            view.MultiPlayerItems = gamesWithImages
+            .Where(i => i.PlayersSupported.HasValue && i.PlayersSupported.Value > 1)
+            .OrderBy(i => Guid.NewGuid())
+            .Select(i => GetItemStub(i, ImageType.Primary))
+            .Where(i => i != null)
+            .Take(3)
+            .ToList();
+            
             return view;
         }
 
