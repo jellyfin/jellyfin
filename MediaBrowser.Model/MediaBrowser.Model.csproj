@@ -56,6 +56,7 @@
     <Compile Include="Dto\ImageInfo.cs" />
     <Compile Include="Dto\ItemByNameCounts.cs" />
     <Compile Include="Dto\ItemCounts.cs" />
+    <Compile Include="Dto\ItemIndex.cs" />
     <Compile Include="Dto\StudioDto.cs" />
     <Compile Include="Entities\CollectionType.cs" />
     <Compile Include="Entities\ItemReview.cs" />

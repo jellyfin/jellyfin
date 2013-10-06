@@ -59,6 +59,23 @@ namespace MediaBrowser.Model.ApiClient
             where T : class;
 
         /// <summary>
+        /// Gets the index of the game players.
+        /// </summary>
+        /// <param name="userId">The user id.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{List{ItemIndex}}.</returns>
+        Task<List<ItemIndex>> GetGamePlayerIndex(string userId, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the index of the year.
+        /// </summary>
+        /// <param name="userId">The user id.</param>
+        /// <param name="includeItemTypes">The include item types.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{List{ItemIndex}}.</returns>
+        Task<List<ItemIndex>> GetYearIndex(string userId, string[] includeItemTypes, CancellationToken cancellationToken);
+        
+        /// <summary>
         /// Gets the critic reviews.
         /// </summary>
         /// <param name="itemId">The item id.</param>
