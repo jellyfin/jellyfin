@@ -402,6 +402,7 @@ namespace MediaBrowser.ServerApplication
             User.XmlSerializer = XmlSerializer;
             User.UserManager = UserManager;
             LocalizedStrings.ApplicationPaths = ApplicationPaths;
+            Folder.UserManager = UserManager;
         }
 
         /// <summary>
