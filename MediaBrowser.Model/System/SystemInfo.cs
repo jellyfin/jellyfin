@@ -67,7 +67,13 @@ namespace MediaBrowser.Model.System
         /// </summary>
         /// <value><c>true</c> if this instance can self restart; otherwise, <c>false</c>.</value>
         public bool CanSelfRestart { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance can self update.
+        /// </summary>
+        /// <value><c>true</c> if this instance can self update; otherwise, <c>false</c>.</value>
+        public bool CanSelfUpdate { get; set; }
+
         /// <summary>
         /// Gets or sets plugin assemblies that failed to load.
         /// </summary>

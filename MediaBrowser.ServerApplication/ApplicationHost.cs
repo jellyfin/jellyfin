@@ -530,7 +530,7 @@ namespace MediaBrowser.ServerApplication
 #if DEBUG
                 return false;
 #endif
-                return true;
+                return NativeApp.CanSelfUpdate;
             }
         }
 
@@ -603,7 +603,8 @@ namespace MediaBrowser.ServerApplication
                 MacAddress = GetMacAddress(),
                 HttpServerPortNumber = ServerConfigurationManager.Configuration.HttpServerPortNumber,
                 OperatingSystem = Environment.OSVersion.ToString(),
-                CanSelfRestart = CanSelfRestart
+                CanSelfRestart = CanSelfRestart,
+                CanSelfUpdate = CanSelfUpdate
             };
         }
 

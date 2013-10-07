@@ -114,7 +114,7 @@ namespace MediaBrowser.ServerApplication
         /// <returns><c>true</c> if [is already running] [the specified current process]; otherwise, <c>false</c>.</returns>
         private static bool IsAlreadyRunning(Process currentProcess)
         {
-            var runningPath = Process.GetCurrentProcess().MainModule.FileName;
+            var runningPath = currentProcess.MainModule.FileName;
 
             var duplicate = Process.GetProcesses().FirstOrDefault(i =>
                 {
@@ -151,13 +151,11 @@ namespace MediaBrowser.ServerApplication
         {
             if (runAsService)
             {
-#if (RELEASE)
                 var systemPath = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
 
                 var programDataPath = Path.GetDirectoryName(systemPath);
 
                 return new ServerApplicationPaths(programDataPath);
-#endif
             }
 
             return new ServerApplicationPaths();
@@ -171,7 +169,19 @@ namespace MediaBrowser.ServerApplication
         {
             get
             {
-                return true;
+                return !_isRunningAsService;
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance can self update.
+        /// </summary>
+        /// <value><c>true</c> if this instance can self update; otherwise, <c>false</c>.</value>
+        public static bool CanSelfUpdate
+        {
+            get
+            {
+                return !_isRunningAsService;
             }
         }
 
@@ -188,6 +198,9 @@ namespace MediaBrowser.ServerApplication
             logger.Info("Server: {0}", Environment.MachineName);
             logger.Info("Operating system: {0}", Environment.OSVersion.ToString());
             logger.Info("Program data path: {0}", appPaths.ProgramDataPath);
+
+            var runningPath = Process.GetCurrentProcess().MainModule.FileName;
+            logger.Info("Executable: {0}", runningPath);
         }
 
         /// <summary>
@@ -275,11 +288,6 @@ namespace MediaBrowser.ServerApplication
             try
             {
                 ManagedInstallerClass.InstallHelper(new[] { runningPath });
-
-                using (var process = Process.Start("cmd.exe", "/c sc failure " + BackgroundService.Name + " reset= 0 actions= restart/1000/restart/1000/restart/60000"))
-                {
-                    process.WaitForExit();
-                }
 
                 logger.Info("Service installation succeeded");
             }
@@ -458,19 +466,11 @@ namespace MediaBrowser.ServerApplication
 
             if (!_isRunningAsService)
             {
-                _logger.Info("Starting server application");
-                RestartWindowsApplication();
-            }
-            else
-            {
-                _logger.Info("Calling Enviornment.Exit to tell Windows to restart the server.");
-                Environment.Exit(1);
-            }
-        }
+                _logger.Info("Executing windows forms restart");
+                System.Windows.Forms.Application.Restart();
 
-        private static void RestartWindowsApplication()
-        {
-            System.Windows.Forms.Application.Restart();
+                ShutdownWindowsApplication();
+            }
         }
 
         private static void ShutdownWindowsApplication()
