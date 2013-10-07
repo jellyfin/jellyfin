@@ -23,7 +23,12 @@
                             <div id="pUpdateNow" style="display: none;">
                                 <p><strong>A new version of Media Browser Server is available!</strong></p>
                                 <p id="newVersionNumber"></p>
-                                <button id="btnUpdateApplication" type="button" data-icon="download" data-theme="b" onclick="DashboardPage.updateApplication();">Update Now</button>
+                                <div id="btnUpdateApplicationContainer">
+                                    <button id="btnUpdateApplication" type="button" data-icon="download" data-theme="b" onclick="DashboardPage.updateApplication();">Update Now</button>
+                                </div>
+                                <div id="btnManualUpdateContainer">
+                                    Please shutdown the server and <a href="http://www.mediabrowser3.com/download" target="_blank">update manually.</a>
+                                </div>
                             </div>
                             <div id="updateFail" style="color: #cc0000; display: none;">There was an error connecting to the remote Media Browser repository.</div>
                             <p id="ports"></p>

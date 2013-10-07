@@ -33,5 +33,17 @@ namespace MediaBrowser.ServerApplication.Native
                 return MainStartup.CanSelfRestart;
             }
         }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance can self update.
+        /// </summary>
+        /// <value><c>true</c> if this instance can self update; otherwise, <c>false</c>.</value>
+        public static bool CanSelfUpdate
+        {
+            get
+            {
+                return MainStartup.CanSelfUpdate;
+            }
+        }
     }
 }

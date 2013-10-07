@@ -21,6 +21,30 @@ namespace MediaBrowser.ServerApplication.Native
         public static void Restart()
         {
 			MainClass.Restart ();
-        }
+		}
+
+		/// <summary>
+		/// Determines whether this instance [can self restart].
+		/// </summary>
+		/// <returns><c>true</c> if this instance [can self restart]; otherwise, <c>false</c>.</returns>
+		public static bool CanSelfRestart
+		{
+			get
+			{
+				return MainClass.CanSelfRestart;
+			}
+		}
+
+		/// <summary>
+		/// Gets a value indicating whether this instance can self update.
+		/// </summary>
+		/// <value><c>true</c> if this instance can self update; otherwise, <c>false</c>.</value>
+		public static bool CanSelfUpdate
+		{
+			get
+			{
+				return MainClass.CanSelfUpdate;
+			}
+		}
     }
 }

@@ -362,7 +362,7 @@
 
         $('#updateFail', page).hide();
 
-        if (dashboardInfo.SystemInfo.IsNetworkDeployed && !dashboardInfo.SystemInfo.HasPendingRestart) {
+        if (!dashboardInfo.SystemInfo.HasPendingRestart) {
 
             // Only check once every 10 mins
             if (DashboardPage.lastAppUpdateCheck && (new Date().getTime() - DashboardPage.lastAppUpdateCheck) < 600000) {
@@ -382,6 +382,14 @@
                     $('#pUpToDate', page).hide();
 
                     $('#pUpdateNow', page).show();
+                    
+                    if (dashboardInfo.SystemInfo.CanSelfUpdate) {
+                        $('#btnUpdateApplicationContainer', page).show();
+                        $('#btnManualUpdateContainer', page).hide();
+                    } else {
+                        $('#btnUpdateApplicationContainer', page).hide();
+                        $('#btnManualUpdateContainer', page).show();
+                    }
 
                     $('#newVersionNumber', page).html("Version " + version.versionStr + " is now available for download.");
                 }
