@@ -44,11 +44,13 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <value>The configuration manager.</value>
         private readonly IServerConfigurationManager _configurationManager;
 
+        private object _sessionLock = new object();
+
         /// <summary>
         /// The _active connections
         /// </summary>
-        private readonly ConcurrentDictionary<string, SessionInfo> _activeConnections =
-            new ConcurrentDictionary<string, SessionInfo>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, SessionInfo> _activeConnections =
+            new Dictionary<string, SessionInfo>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Occurs when [playback start].
@@ -84,7 +86,7 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <value>All connections.</value>
         public IEnumerable<SessionInfo> Sessions
         {
-            get { return _activeConnections.Values.OrderByDescending(c => c.LastActivityDate).ToList(); }
+            get { return _activeConnections.Values.ToList().OrderByDescending(c => c.LastActivityDate); }
         }
 
         /// <summary>
@@ -193,18 +195,28 @@ namespace MediaBrowser.Server.Implementations.Session
         {
             var key = clientType + deviceId + appVersion;
 
-            var connection = _activeConnections.GetOrAdd(key, keyName => new SessionInfo
+            lock (_sessionLock)
             {
-                Client = clientType,
-                DeviceId = deviceId,
-                ApplicationVersion = appVersion,
-                Id = Guid.NewGuid()
-            });
+                SessionInfo connection;
 
-            connection.DeviceName = deviceName;
-            connection.User = user;
+                if (!_activeConnections.TryGetValue(key, out connection))
+                {
+                    connection = new SessionInfo
+                        {
+                            Client = clientType,
+                            DeviceId = deviceId,
+                            ApplicationVersion = appVersion,
+                            Id = Guid.NewGuid()
+                        };
 
-            return connection;
+                    _activeConnections[key] = connection;
+                }
+
+                connection.DeviceName = deviceName;
+                connection.User = user;
+
+                return connection;
+            }
         }
 
         /// <summary>
