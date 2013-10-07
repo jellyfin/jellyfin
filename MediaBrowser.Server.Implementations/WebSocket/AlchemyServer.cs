@@ -50,8 +50,6 @@ namespace MediaBrowser.Server.Implementations.WebSocket
         /// <value>The port.</value>
         public int Port { get; private set; }
 
-        private bool _hasStarted;
-
         /// <summary>
         /// Starts the specified port number.
         /// </summary>
@@ -69,8 +67,6 @@ namespace MediaBrowser.Server.Implementations.WebSocket
                 };
 
                 WebSocketServer.Start();
-
-                _hasStarted = true;
             }
             catch (Exception ex)
             {
@@ -141,14 +137,9 @@ namespace MediaBrowser.Server.Implementations.WebSocket
             {
                 if (WebSocketServer != null)
                 {
-                    if (_hasStarted)
-                    {
-                        _logger.Debug("Stopping alchemy server");
-                        WebSocketServer.Stop();
-                    }
-
+                    // Calling dispose will also call stop
                     _logger.Debug("Disposing alchemy server");
-                    WebSocketServer.Dispose();
+                    WebSocketServer.Stop();
                     WebSocketServer = null;
                 }
             }

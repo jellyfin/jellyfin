@@ -26,8 +26,6 @@ namespace MediaBrowser.ServerApplication
 
         private static ILogger _logger;
 
-        private static bool _isRestarting = false;
-
         private static bool _isRunningAsService = false;
 
         /// <summary>
@@ -132,7 +130,7 @@ namespace MediaBrowser.ServerApplication
             if (duplicate != null)
             {
                 _logger.Info("Found a duplicate process. Giving it time to exit.");
-                
+
                 if (!duplicate.WaitForExit(5000))
                 {
                     _logger.Info("The duplicate process did not exit.");
@@ -204,7 +202,7 @@ namespace MediaBrowser.ServerApplication
                 SetErrorMode(ErrorModes.SEM_FAILCRITICALERRORS | ErrorModes.SEM_NOALIGNMENTFAULTEXCEPT |
                              ErrorModes.SEM_NOGPFAULTERRORBOX | ErrorModes.SEM_NOOPENFILEERRORBOX);
             }
-            
+
             _app.Run();
         }
 
@@ -249,13 +247,6 @@ namespace MediaBrowser.ServerApplication
                 SetErrorMode(ErrorModes.SYSTEM_DEFAULT);
             }
 
-            if (_isRestarting)
-            {
-                Process.Start("cmd", "/c net start " + BackgroundService.Name);
-
-                _logger.Info("New service process started");
-            }
-
             _app.Dispatcher.Invoke(_app.Shutdown);
         }
 
@@ -269,6 +260,11 @@ namespace MediaBrowser.ServerApplication
             try
             {
                 ManagedInstallerClass.InstallHelper(new[] { runningPath });
+
+                using (var process = Process.Start("cmd.exe", "/c sc failure " + BackgroundService.Name + " reset= 0 actions= restart/1000/restart/1000/restart/60000"))
+                {
+                    process.WaitForExit();
+                }
 
                 logger.Info("Service installation succeeded");
             }
@@ -445,15 +441,6 @@ namespace MediaBrowser.ServerApplication
             _logger.Info("Disposing app host");
             _appHost.Dispose();
 
-            _logger.Info("Starting new instance of server");
-            RestartInternal();
-
-            _logger.Info("Shutting down existing instance of server.");
-            Shutdown();
-        }
-
-        private static void RestartInternal()
-        {
             if (!_isRunningAsService)
             {
                 _logger.Info("Starting server application");
@@ -461,19 +448,14 @@ namespace MediaBrowser.ServerApplication
             }
             else
             {
-                _logger.Info("Starting windows service");
-                RestartWindowsService();
+                _logger.Info("Calling Enviornment.Exit to tell Windows to restart the server.");
+                Environment.Exit(1);
             }
         }
 
         private static void RestartWindowsApplication()
         {
             System.Windows.Forms.Application.Restart();
-        }
-
-        private static void RestartWindowsService()
-        {
-            _isRestarting = true;
         }
 
         private static void ShutdownWindowsApplication()
