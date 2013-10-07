@@ -21,5 +21,17 @@ namespace MediaBrowser.ServerApplication.Native
         {
             MainStartup.Restart();
         }
+
+        /// <summary>
+        /// Determines whether this instance [can self restart].
+        /// </summary>
+        /// <returns><c>true</c> if this instance [can self restart]; otherwise, <c>false</c>.</returns>
+        public static bool CanSelfRestart
+        {
+            get
+            {
+                return MainStartup.CanSelfRestart;
+            }
+        }
     }
 }

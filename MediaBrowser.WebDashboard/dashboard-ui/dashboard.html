@@ -39,7 +39,9 @@
                         <div id="pendingInstallations">
                         </div>
                         <p>Please restart the server to finish applying updates.</p>
-                        <button type="button" data-icon="refresh" data-theme="b" onclick="Dashboard.restartServer();">Restart Now</button>
+                        <div class="btnRestartContainer hide">
+                            <button type="button" data-icon="refresh" data-theme="b" onclick="Dashboard.restartServer();">Restart Now</button>
+                        </div>
                     </div>
 
                     <div data-role="collapsible" data-content-theme="c" data-collapsed="false" style="margin-top: 2em;">
@@ -59,7 +61,9 @@
 
                     <div style="margin-top: 2em;">
                         <div style="display: inline-block;">
-                            <button id="btnRestartServer" type="button" data-icon="refresh" data-mini="true" data-inline="true" onclick="DashboardPage.restart();">Restart MB Server</button>
+                            <div class="btnRestartContainer hide">
+                                <button id="btnRestartServer" type="button" data-icon="refresh" data-mini="true" data-inline="true" onclick="DashboardPage.restart();">Restart MB Server</button>
+                            </div>
                         </div>
                         <div style="display: inline-block;">
                             <button id="btnShutdown" type="button" data-icon="delete" data-mini="true" data-inline="true" onclick="DashboardPage.shutdown();">Shutdown MB Server</button>

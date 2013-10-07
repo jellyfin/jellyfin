@@ -344,6 +344,12 @@
         } else {
             $('#btnUpdateApplication', page).button('enable');
         }
+        
+        if (dashboardInfo.SystemInfo.CanSelfRestart) {
+            $('.btnRestartContainer', page).removeClass('hide');
+        } else {
+            $('.btnRestartContainer', page).addClass('hide');
+        }
 
         DashboardPage.renderApplicationUpdateInfo(dashboardInfo);
         DashboardPage.renderPluginUpdateInfo(dashboardInfo);

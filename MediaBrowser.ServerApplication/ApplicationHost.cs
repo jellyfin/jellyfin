@@ -181,6 +181,15 @@ namespace MediaBrowser.ServerApplication
         }
 
         /// <summary>
+        /// Gets a value indicating whether this instance can self restart.
+        /// </summary>
+        /// <value><c>true</c> if this instance can self restart; otherwise, <c>false</c>.</value>
+        public override bool CanSelfRestart
+        {
+            get { return NativeApp.CanSelfRestart; }
+        }
+
+        /// <summary>
         /// Runs the startup tasks.
         /// </summary>
         /// <returns>Task.</returns>
@@ -384,7 +393,7 @@ namespace MediaBrowser.ServerApplication
 
             await repo.Initialize().ConfigureAwait(false);
 
-            ((UserDataManager) UserDataManager).Repository = repo;
+            ((UserDataManager)UserDataManager).Repository = repo;
         }
 
         /// <summary>
@@ -493,6 +502,11 @@ namespace MediaBrowser.ServerApplication
         /// </summary>
         public override async Task Restart()
         {
+            if (!CanSelfRestart)
+            {
+                throw new InvalidOperationException("The server is unable to self-restart. Please restart manually.");
+            }
+
             try
             {
                 await SessionManager.SendServerRestartNotification(CancellationToken.None).ConfigureAwait(false);
@@ -588,7 +602,8 @@ namespace MediaBrowser.ServerApplication
                 ProgramDataPath = ApplicationPaths.ProgramDataPath,
                 MacAddress = GetMacAddress(),
                 HttpServerPortNumber = ServerConfigurationManager.Configuration.HttpServerPortNumber,
-                OperatingSystem = Environment.OSVersion.ToString()
+                OperatingSystem = Environment.OSVersion.ToString(),
+                CanSelfRestart = CanSelfRestart
             };
         }
 
