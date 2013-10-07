@@ -25,6 +25,12 @@ namespace MediaBrowser.Common
         bool HasPendingRestart { get; }
 
         /// <summary>
+        /// Gets a value indicating whether this instance can self restart.
+        /// </summary>
+        /// <value><c>true</c> if this instance can self restart; otherwise, <c>false</c>.</value>
+        bool CanSelfRestart { get; }
+
+        /// <summary>
         /// Occurs when [has pending restart changed].
         /// </summary>
         event EventHandler HasPendingRestartChanged;

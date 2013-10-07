@@ -591,6 +591,12 @@ namespace MediaBrowser.Common.Implementations
         }
 
         /// <summary>
+        /// Gets a value indicating whether this instance can self restart.
+        /// </summary>
+        /// <value><c>true</c> if this instance can self restart; otherwise, <c>false</c>.</value>
+        public abstract bool CanSelfRestart { get; }
+
+        /// <summary>
         /// Notifies that the kernel that a change has been made that requires a restart
         /// </summary>
         public void NotifyPendingRestart()

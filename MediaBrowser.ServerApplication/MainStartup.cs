@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Constants;
+﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Constants;
 using MediaBrowser.Common.Implementations.Logging;
 using MediaBrowser.Common.Implementations.Updates;
 using MediaBrowser.Controller.IO;
@@ -44,7 +45,7 @@ namespace MediaBrowser.ServerApplication
 
             var logger = _logger = logManager.GetLogger("Main");
 
-            BeginLog(logger);
+            BeginLog(logger, appPaths);
 
             // Install directly
             if (string.Equals(startFlag, "-installservice", StringComparison.OrdinalIgnoreCase))
@@ -163,16 +164,30 @@ namespace MediaBrowser.ServerApplication
         }
 
         /// <summary>
+        /// Gets a value indicating whether this instance can self restart.
+        /// </summary>
+        /// <value><c>true</c> if this instance can self restart; otherwise, <c>false</c>.</value>
+        public static bool CanSelfRestart
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        /// <summary>
         /// Begins the log.
         /// </summary>
         /// <param name="logger">The logger.</param>
-        private static void BeginLog(ILogger logger)
+        /// <param name="appPaths">The app paths.</param>
+        private static void BeginLog(ILogger logger, IApplicationPaths appPaths)
         {
             logger.Info("Media Browser Server started");
             logger.Info("Command line: {0}", string.Join(" ", Environment.GetCommandLineArgs()));
 
             logger.Info("Server: {0}", Environment.MachineName);
             logger.Info("Operating system: {0}", Environment.OSVersion.ToString());
+            logger.Info("Program data path: {0}", appPaths.ProgramDataPath);
         }
 
         /// <summary>
