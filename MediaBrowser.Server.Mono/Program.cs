@@ -21,8 +21,6 @@ namespace MediaBrowser.Server.Mono
 	{
 		private static ApplicationHost _appHost;
 
-		private static Mutex _singleInstanceMutex;
-
 		private static ILogger _logger;
 
 		private static MainWindow _mainWindow;
@@ -45,18 +43,6 @@ namespace MediaBrowser.Server.Mono
 
 			AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
-			bool createdNew;
-
-			//_singleInstanceMutex = new Mutex(true, @"Local\" + runningPath, out createdNew);
-			createdNew = true;
-
-			if (!createdNew)
-			{
-				_singleInstanceMutex = null;
-				logger.Info("Shutting down because another instance of Media Browser Server is already running.");
-				return;
-			}
-
 			if (PerformUpdateIfNeeded(appPaths, logger))
 			{
 				logger.Info("Exiting to perform application update.");
@@ -70,8 +56,6 @@ namespace MediaBrowser.Server.Mono
 			finally
 			{
 				logger.Info("Shutting down");
-
-				ReleaseMutex(logger);
 
 				_appHost.Dispose();
 			}
@@ -231,24 +215,6 @@ namespace MediaBrowser.Server.Mono
 		}
 
 		/// <summary>
-		/// Releases the mutex.
-		/// </summary>
-		internal static void ReleaseMutex(ILogger logger)
-		{
-			if (_singleInstanceMutex == null)
-			{
-				return;
-			}
-
-			logger.Debug("Releasing mutex");
-
-			_singleInstanceMutex.ReleaseMutex();
-			_singleInstanceMutex.Close();
-			_singleInstanceMutex.Dispose();
-			_singleInstanceMutex = null;
-		}
-
-		/// <summary>
 		/// Performs the update if needed.
 		/// </summary>
 		/// <param name="appPaths">The app paths.</param>
@@ -278,24 +244,11 @@ namespace MediaBrowser.Server.Mono
 
 		public static void Restart()
 		{
-			// Second instance will start first, so release the mutex and dispose the http server ahead of time
-			ReleaseMutex (_logger);
-
+			// Second instance will start first, so dispose so that the http ports will be available to the new instance
 			_appHost.Dispose();
 
-			if (trayIcon != null) {
-				trayIcon.Visible = false;
-				trayIcon.Dispose ();
-				trayIcon = null;
-			}
-
-			if (_mainWindow != null) {
-				_mainWindow.HideAll ();
-				_mainWindow.Dispose ();
-				_mainWindow = null;
-			}
-
-			Application.Quit ();
+			// Right now this method will just shutdown, but not restart
+			Shutdown ();
 		}
 	}
 }
