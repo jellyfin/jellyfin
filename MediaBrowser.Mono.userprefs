@@ -5,9 +5,9 @@
       <File FileName="MediaBrowser.Server.Implementations\HttpServer\HttpServer.cs" Line="1" Column="1" />
       <File FileName="MediaBrowser.Server.Mono\FFMpeg\FFMpegDownloader.cs" Line="1" Column="1" />
       <File FileName="MediaBrowser.Server.Mono\Networking\NetworkManager.cs" Line="1" Column="1" />
-      <File FileName="MediaBrowser.ServerApplication\ApplicationHost.cs" Line="525" Column="50" />
+      <File FileName="MediaBrowser.ServerApplication\ApplicationHost.cs" Line="1" Column="1" />
       <File FileName="MediaBrowser.Server.Mono\Native\NativeApp.cs" Line="1" Column="1" />
-      <File FileName="MediaBrowser.Server.Mono\Program.cs" Line="250" Column="64" />
+      <File FileName="MediaBrowser.Server.Mono\Program.cs" Line="193" Column="25" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
