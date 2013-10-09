@@ -52,6 +52,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\MediaBrowser.Model\ApiClient\HttpResponseEventArgs.cs">
+      <Link>ApiClient\HttpResponseEventArgs.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\ApiClient\IServerEvents.cs">
+      <Link>ApiClient\IServerEvents.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\ApiClient\ServerEventArgs.cs">
+      <Link>ApiClient\ServerEventArgs.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\BaseApplicationConfiguration.cs">
       <Link>Configuration\BaseApplicationConfiguration.cs</Link>
     </Compile>
