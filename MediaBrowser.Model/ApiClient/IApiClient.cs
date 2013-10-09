@@ -74,7 +74,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{List{ItemIndex}}.</returns>
         Task<List<ItemIndex>> GetYearIndex(string userId, string[] includeItemTypes, CancellationToken cancellationToken);
-        
+
         /// <summary>
         /// Gets the critic reviews.
         /// </summary>
@@ -680,13 +680,20 @@ namespace MediaBrowser.Model.ApiClient
         /// Gets or sets the server host name (myserver or 192.168.x.x)
         /// </summary>
         /// <value>The name of the server host.</value>
-        string ServerHostName { get; set; }
+        string ServerHostName { get; }
 
         /// <summary>
         /// Gets or sets the port number used by the API
         /// </summary>
         /// <value>The server API port.</value>
-        int ServerApiPort { get; set; }
+        int ServerApiPort { get; }
+
+        /// <summary>
+        /// Changes the server location.
+        /// </summary>
+        /// <param name="hostName">Name of the host.</param>
+        /// <param name="apiPort">The API port.</param>
+        void ChangeServerLocation(string hostName, int apiPort);
 
         /// <summary>
         /// Gets or sets the type of the client.
