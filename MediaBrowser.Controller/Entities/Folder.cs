@@ -725,7 +725,7 @@ namespace MediaBrowser.Controller.Entities
 
                 foreach (var item in itemsRemoved)
                 {
-                    if (IsPathOffline(item.Path))
+                    if (!string.IsNullOrEmpty(item.Path) && IsPathOffline(item.Path))
                     {
                         item.IsOffline = true;
 
