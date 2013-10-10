@@ -92,17 +92,20 @@ namespace MediaBrowser.Providers.Movies
 
             var path = MovieXmlSaver.GetMovieSavePath(item);
 
-            await XmlParsingResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            try
+            if (File.Exists(path))
             {
-                var video = (Video)item;
+                await XmlParsingResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-                await new MovieXmlParser(Logger, _itemRepo).FetchAsync(video, path, cancellationToken).ConfigureAwait(false);
-            }
-            finally
-            {
-                XmlParsingResourcePool.Release();
+                try
+                {
+                    var video = (Video)item;
+
+                    await new MovieXmlParser(Logger, _itemRepo).FetchAsync(video, path, cancellationToken).ConfigureAwait(false);
+                }
+                finally
+                {
+                    XmlParsingResourcePool.Release();
+                }
             }
 
             SetLastRefreshed(item, DateTime.UtcNow);

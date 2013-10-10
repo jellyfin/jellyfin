@@ -72,15 +72,18 @@ namespace MediaBrowser.Providers.Games
 
             var metaFile = GameXmlSaver.GetGameSavePath(game);
 
-            await XmlParsingResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
+            if (File.Exists(metaFile))
+            {
+                await XmlParsingResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-            try
-            {
-                new BaseItemXmlParser<Game>(Logger).Fetch(game, metaFile, cancellationToken);
-            }
-            finally
-            {
-                XmlParsingResourcePool.Release();
+                try
+                {
+                    new BaseItemXmlParser<Game>(Logger).Fetch(game, metaFile, cancellationToken);
+                }
+                finally
+                {
+                    XmlParsingResourcePool.Release();
+                }
             }
 
             SetLastRefreshed(game, DateTime.UtcNow);

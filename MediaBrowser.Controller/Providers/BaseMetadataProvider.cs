@@ -233,6 +233,16 @@ namespace MediaBrowser.Controller.Providers
                 throw new ArgumentNullException("providerInfo");
             }
 
+            if (NeedsRefreshBasedOnCompareDate(item, providerInfo))
+            {
+                return true;
+            }
+
+            if (RefreshOnFileSystemStampChange && item.LocationType == LocationType.FileSystem && HasFileSystemStampChanged(item, providerInfo))
+            {
+                return true;
+            }
+
             if (RefreshOnVersionChange && !String.Equals(ProviderVersion, providerInfo.ProviderVersion))
             {
                 return true;
@@ -244,16 +254,6 @@ namespace MediaBrowser.Controller.Providers
             }
 
             if (providerInfo.LastRefreshStatus != ProviderRefreshStatus.Success)
-            {
-                return true;
-            }
-
-            if (NeedsRefreshBasedOnCompareDate(item, providerInfo))
-            {
-                return true;
-            }
-
-            if (RefreshOnFileSystemStampChange && item.LocationType == LocationType.FileSystem && HasFileSystemStampChanged(item, providerInfo))
             {
                 return true;
             }
