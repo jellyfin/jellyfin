@@ -16,7 +16,7 @@
             isApp: true,
             tileColor: "#050810",
             thumbImage: "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/images/mbkinect/thumb.png",
-            externalUrl: "http://community.mediabrowser.tv/permalinks/14020/mb-kinect-and-control-public-alpha",
+            externalUrl: "http://mediabrowser3.com/community/index.php?/topic/850-media-browser-kinect-sensor-plug-in-support/",
             isPremium: false
         });
 
