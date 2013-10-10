@@ -22,7 +22,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
         private readonly object _syncLock = new object();
         private Timer UpdateTimer { get; set; }
-        private const int UpdateDuration = 2000;
+        private const int UpdateDuration = 500;
 
         private readonly Dictionary<Guid, List<string>> _changedKeys = new Dictionary<Guid, List<string>>();
 

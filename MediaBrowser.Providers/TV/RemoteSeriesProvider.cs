@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -162,7 +163,7 @@ namespace MediaBrowser.Providers.TV
             }
         }
 
-        protected override DateTime CompareDate(BaseItem item)
+        protected override bool NeedsRefreshBasedOnCompareDate(BaseItem item, BaseProviderInfo providerInfo)
         {
             var seriesId = item.GetProviderId(MetadataProviders.Tvdb);
 
@@ -180,16 +181,17 @@ namespace MediaBrowser.Providers.TV
 
                     if (files.Count > 0)
                     {
-                        return files.Max();
+                        return files.Max() > providerInfo.LastRefreshed;
                     }
                 }
                 catch (DirectoryNotFoundException)
                 {
                     // Don't blow up
+                    return true;
                 }
             }
-
-            return base.CompareDate(item);
+            
+            return base.NeedsRefreshBasedOnCompareDate(item, providerInfo);
         }
 
         /// <summary>
@@ -298,6 +300,66 @@ namespace MediaBrowser.Providers.TV
                     _zipClient.ExtractAll(ms, seriesDataPath, true);
                 }
             }
+
+            foreach (var file in Directory.EnumerateFiles(seriesDataPath, "*.xml", SearchOption.AllDirectories).ToList())
+            {
+                await SanitizeXmlFile(file).ConfigureAwait(false);
+            }
+        }
+
+        /// <summary>
+        /// Sanitizes the XML file.
+        /// </summary>
+        /// <param name="file">The file.</param>
+        /// <returns>Task.</returns>
+        private async Task SanitizeXmlFile(string file)
+        {
+            string validXml;
+
+            using (var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, true))
+            {
+                using (var reader = new StreamReader(fileStream))
+                {
+                    var xml = await reader.ReadToEndAsync().ConfigureAwait(false);
+
+                    validXml = StripInvalidXmlCharacters(xml);
+                }
+            }
+
+            using (var fileStream = new FileStream(file, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, true))
+            {
+                using (var writer = new StreamWriter(fileStream))
+                {
+                    await writer.WriteAsync(validXml).ConfigureAwait(false);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Strips the invalid XML characters.
+        /// </summary>
+        /// <param name="inString">The in string.</param>
+        /// <returns>System.String.</returns>
+        public static string StripInvalidXmlCharacters(string inString)
+        {
+            if (inString == null) return null;
+
+            var sbOutput = new StringBuilder();
+            char ch;
+
+            for (int i = 0; i < inString.Length; i++)
+            {
+                ch = inString[i];
+                if ((ch >= 0x0020 && ch <= 0xD7FF) ||
+                    (ch >= 0xE000 && ch <= 0xFFFD) ||
+                    ch == 0x0009 ||
+                    ch == 0x000A ||
+                    ch == 0x000D)
+                {
+                    sbOutput.Append(ch);
+                }
+            }
+            return sbOutput.ToString();
         }
 
         /// <summary>
@@ -320,7 +382,7 @@ namespace MediaBrowser.Providers.TV
         /// <returns>System.String.</returns>
         internal static string GetSeriesDataPath(IApplicationPaths appPaths)
         {
-            var dataPath = Path.Combine(appPaths.DataPath, "tvdb");
+            var dataPath = Path.Combine(appPaths.DataPath, "tvdb-v2");
 
             return dataPath;
         }

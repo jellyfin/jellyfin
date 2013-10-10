@@ -93,20 +93,18 @@ namespace MediaBrowser.Providers.TV
 
             var file = item.ResolveArgs.Parent.ResolveArgs.GetMetaFileByPath(metadataFile);
 
-            if (file == null)
+            if (file != null)
             {
-                return false;
-            }
+                await XmlParsingResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-            await XmlParsingResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            try
-            {
-                await new EpisodeXmlParser(Logger, _itemRepo).FetchAsync((Episode)item, metadataFile, cancellationToken).ConfigureAwait(false);
-            }
-            finally
-            {
-                XmlParsingResourcePool.Release();
+                try
+                {
+                    await new EpisodeXmlParser(Logger, _itemRepo).FetchAsync((Episode)item, metadataFile, cancellationToken).ConfigureAwait(false);
+                }
+                finally
+                {
+                    XmlParsingResourcePool.Release();
+                }
             }
 
             SetLastRefreshed(item, DateTime.UtcNow);

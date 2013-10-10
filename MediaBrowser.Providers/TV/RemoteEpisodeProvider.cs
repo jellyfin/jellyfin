@@ -120,7 +120,7 @@ namespace MediaBrowser.Providers.TV
         protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
         {
             // Don't proceed if there's local metadata
-            if (HasLocalMeta(item) && !ConfigurationManager.Configuration.EnableTvDbUpdates)
+            if (!ConfigurationManager.Configuration.EnableTvDbUpdates && HasLocalMeta(item))
             {
                 return false;
             }
