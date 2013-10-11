@@ -182,7 +182,8 @@ namespace MediaBrowser.Api
 
                 if (job.ActiveRequestCount == 0)
                 {
-                    var timerDuration = type == TranscodingJobType.Progressive ? 1000 : 180000;
+                    // The HLS kill timer is long - 1/2 hr. clients should use the manual kill command when stopping.
+                    var timerDuration = type == TranscodingJobType.Progressive ? 1000 : 1800000;
 
                     if (job.KillTimer == null)
                     {

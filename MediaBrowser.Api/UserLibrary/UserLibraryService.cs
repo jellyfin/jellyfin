@@ -224,13 +224,6 @@ namespace MediaBrowser.Api.UserLibrary
     [Api(Description = "Reports that a user has begun playing an item")]
     public class OnPlaybackStart : IReturnVoid
     {
-        public OnPlaybackStart()
-        {
-            // Have to default these until all clients have a chance to incorporate them
-            CanSeek = true;
-            QueueableMediaTypes = "Audio,Video,Book,Game";
-        }
-
         /// <summary>
         /// Gets or sets the user id.
         /// </summary>

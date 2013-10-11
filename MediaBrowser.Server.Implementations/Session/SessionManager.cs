@@ -38,6 +38,8 @@ namespace MediaBrowser.Server.Implementations.Session
         /// </summary>
         private readonly ILogger _logger;
 
+        private readonly ILibraryManager _libraryManager;
+        
         /// <summary>
         /// Gets or sets the configuration manager.
         /// </summary>
@@ -471,6 +473,19 @@ namespace MediaBrowser.Server.Implementations.Session
         {
             var session = GetSessionForRemoteControl(sessionId);
 
+            if (command.PlayCommand != PlayCommand.PlayNow)
+            {
+                if (command.ItemIds.Any(i =>
+                    {
+                        var item = _libraryManager.GetItemById(new Guid(i));
+
+                        return !session.QueueableMediaTypes.Contains(item.MediaType, StringComparer.OrdinalIgnoreCase);
+                    }))
+                {
+                    throw new ArgumentException(string.Format("Session {0} is unable to queue the requested media type.", session.Id));
+                }
+            }
+            
             return session.SessionController.SendPlayCommand(command, cancellationToken);
         }
 
@@ -498,6 +513,11 @@ namespace MediaBrowser.Server.Implementations.Session
         public Task SendPlaystateCommand(Guid sessionId, PlaystateRequest command, CancellationToken cancellationToken)
         {
             var session = GetSessionForRemoteControl(sessionId);
+
+            if (command.Command == PlaystateCommand.Seek && !session.CanSeek)
+            {
+                throw new ArgumentException(string.Format("Session {0} is unable to seek.", session.Id));
+            }
 
             return session.SessionController.SendPlaystateCommand(command, cancellationToken);
         }
