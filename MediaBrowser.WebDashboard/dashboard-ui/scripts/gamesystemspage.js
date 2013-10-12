@@ -11,7 +11,8 @@
         Fields: "DateCreated",
         StartIndex: 0
     };
-
+	
+	LibraryBrowser.loadSavedQueryValues('gamesystems', query);
 
     function reloadItems(page) {
 
@@ -57,6 +58,8 @@
                 reloadItems(page);
             });
 
+			LibraryBrowser.saveQueryValues('gamesystems', query);
+			
             Dashboard.hideLoadingMsg();
         });
     }

@@ -10,6 +10,8 @@
         Fields: "UserData",
         StartIndex: 0
     };
+	
+	LibraryBrowser.loadSavedQueryValues('gamestudios', query);
 
     function reloadItems(page) {
 
@@ -53,6 +55,8 @@
                 query.StartIndex = 0;
                 reloadItems(page);
             });
+			
+			LibraryBrowser.saveQueryValues('gamestudios', query);
 
             Dashboard.hideLoadingMsg();
         });

@@ -12,6 +12,8 @@
         Fields: "DateCreated,SeriesInfo",
         StartIndex: 0
     };
+	
+	LibraryBrowser.loadSavedQueryValues('episodes', query);
 
     function reloadItems(page) {
 
@@ -59,6 +61,8 @@
                 query.StartIndex = 0;
                 reloadItems(page);
             });
+			
+			LibraryBrowser.saveQueryValues('episodes', query);
 
             Dashboard.hideLoadingMsg();
         });

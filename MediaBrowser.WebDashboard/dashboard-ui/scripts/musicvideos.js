@@ -12,6 +12,8 @@
         Fields: "DateCreated",
         StartIndex: 0
     };
+	
+	LibraryBrowser.loadSavedQueryValues('musicvideos', query);
 
     function reloadItems(page) {
 
@@ -78,6 +80,8 @@
                 reloadItems(page);
             });
 
+			LibraryBrowser.saveQueryValues('musicvideos', query);
+			
             Dashboard.hideLoadingMsg();
         });
     }

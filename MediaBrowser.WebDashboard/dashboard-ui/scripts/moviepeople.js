@@ -11,6 +11,8 @@
         PersonTypes: "",
         StartIndex: 0
     };
+	
+	LibraryBrowser.loadSavedQueryValues('moviepeople', query);
 
     function reloadItems(page) {
 
@@ -55,6 +57,8 @@
                 reloadItems(page);
             });
 
+			LibraryBrowser.saveQueryValues('moviepeople', query);
+			
             Dashboard.hideLoadingMsg();
         });
     }

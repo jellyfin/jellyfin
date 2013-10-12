@@ -9,6 +9,8 @@
         Fields: "DateCreated",
         StartIndex: 0
     };
+	
+	LibraryBrowser.loadSavedQueryValues('musicartists', query);
 
     function reloadItems(page) {
 
@@ -54,6 +56,8 @@
                 query.StartIndex = 0;
                 reloadItems(page);
             });
+			
+			LibraryBrowser.saveQueryValues('musicartists', query);
 
             Dashboard.hideLoadingMsg();
         });
