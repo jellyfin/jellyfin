@@ -788,7 +788,7 @@
 
                 var videoType = (item.VideoType || "").toLowerCase();
 
-                var expirementalText = "This feature is expiremental. It may not work at all with some titles. Do you wish to continue?";
+                var expirementalText = "This feature is experimental. It may not work at all with some titles. Do you wish to continue?";
 
                 if (videoType == "dvd") {
 
