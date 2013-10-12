@@ -10,6 +10,8 @@
         Fields: "DateCreated",
         StartIndex: 0
     };
+	
+	LibraryBrowser.loadSavedQueryValues('moviegenres', query);
 
     function reloadItems(page) {
 
@@ -53,6 +55,8 @@
                 query.StartIndex = 0;
                 reloadItems(page);
             });
+			
+			LibraryBrowser.saveQueryValues('moviegenres', query);
 
             Dashboard.hideLoadingMsg();
         });

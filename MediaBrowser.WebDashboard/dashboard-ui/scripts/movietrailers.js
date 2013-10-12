@@ -12,6 +12,8 @@
         Fields: "DateCreated",
         StartIndex: 0
     };
+	
+	LibraryBrowser.loadSavedQueryValues('movietrailers', query);
 
     function reloadItems(page) {
 
@@ -64,6 +66,8 @@
                 query.StartIndex = 0;
                 reloadItems(page);
             });
+			
+			LibraryBrowser.saveQueryValues('movietrailers', query);
 
             Dashboard.hideLoadingMsg();
         });

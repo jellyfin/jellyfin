@@ -10,7 +10,8 @@
         Fields: "DateCreated",
         StartIndex: 0
     };
-
+	
+	LibraryBrowser.loadSavedQueryValues('boxsets', query);
 
     function reloadItems(page) {
 
@@ -55,6 +56,8 @@
                 reloadItems(page);
             });
 
+			LibraryBrowser.saveQueryValues('boxsets', query);
+			
             Dashboard.hideLoadingMsg();
         });
     }

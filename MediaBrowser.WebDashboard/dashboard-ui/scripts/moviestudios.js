@@ -10,6 +10,8 @@
         Fields: "DateCreated",
         StartIndex: 0
     };
+	
+	LibraryBrowser.loadSavedQueryValues('moviestudios', query);
 
     function reloadItems(page) {
 
@@ -54,6 +56,8 @@
                 reloadItems(page);
             });
 
+			LibraryBrowser.saveQueryValues('moviestudios', query);
+			
             Dashboard.hideLoadingMsg();
         });
     }

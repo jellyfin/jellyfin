@@ -13,6 +13,8 @@
         Fields: "Genres,Studios,PrimaryImageAspectRatio",
         StartIndex: 0
     };
+	
+	LibraryBrowser.loadSavedQueryValues('games', query);
 
     function reloadItems(page) {
 
@@ -79,6 +81,8 @@
                 reloadItems(page);
             });
 
+			LibraryBrowser.saveQueryValues('games', query);
+			
             Dashboard.hideLoadingMsg();
         });
     }
