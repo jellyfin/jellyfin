@@ -14,8 +14,8 @@ We have several client apps released and in production:
 - Roku
 - Windows 7/8 Desktop
 - Windows Media Center
+- [Windows Phone](http://www.windowsphone.com/s?appid=f4971ed9-f651-4bf6-84bb-94fd98613b86 "Windows Phone")
 - Windows RT
-- Windows Phone
 
 #### [Now with 60+ active contributors!](https://github.com/MediaBrowser/MediaBrowser/blob/master/CONTRIBUTORS.md "Now with 60+ active contributors!")
 
