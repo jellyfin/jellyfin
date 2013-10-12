@@ -47,8 +47,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Extensions\XDocumentExtensions.cs" />
-    <Compile Include="Extensions\XmlExtensions.cs" />
     <Compile Include="FanartBaseProvider.cs" />
     <Compile Include="FolderProviderFromXml.cs" />
     <Compile Include="Games\GameProviderFromXml.cs" />

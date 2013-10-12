@@ -121,9 +121,11 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
             {
                 LazyInitializer.EnsureInitialized(ref _lastExecutionResult, ref _lastExecutionResultinitialized, ref _lastExecutionResultSyncLock, () =>
                 {
+                    var path = GetHistoryFilePath(false);
+
                     try
                     {
-                        return JsonSerializer.DeserializeFromFile<TaskResult>(GetHistoryFilePath(false));
+                        return JsonSerializer.DeserializeFromFile<TaskResult>(path);
                     }
                     catch (DirectoryNotFoundException)
                     {
@@ -133,6 +135,11 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
                     catch (FileNotFoundException)
                     {
                         // File doesn't exist. No biggie
+                        return null;
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.ErrorException("Error deserializing {0}", ex, path);
                         return null;
                     }
                 });
