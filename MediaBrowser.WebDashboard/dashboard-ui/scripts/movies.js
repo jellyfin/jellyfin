@@ -13,6 +13,8 @@
         StartIndex: 0
     };
 
+    LibraryBrowser.loadSavedQueryValues('movies', query);
+
     function reloadItems(page) {
 
         Dashboard.showLoadingMsg();
@@ -78,6 +80,8 @@
                 reloadItems(page);
             });
 
+            LibraryBrowser.saveQueryValues('movies', query);
+            
             Dashboard.hideLoadingMsg();
         });
     }

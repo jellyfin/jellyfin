@@ -18,6 +18,34 @@
             return 20;
         },
 
+        loadSavedQueryValues: function (key, query) {
+
+            var values = localStorage.getItem(key + '_' + Dashboard.getCurrentUserId());
+            
+            if (values) {
+
+                values = JSON.parse(values);
+
+                return $.extend(query, values);
+            }
+
+            return query;
+        },
+
+        saveQueryValues: function (key, query) {
+
+            var values = {};
+
+            if (query.SortBy) {
+                values.SortBy = query.SortBy;
+            }
+            if (query.SortOrder) {
+                values.SortOrder = query.SortOrder;
+            }
+
+            localStorage.setItem(key + '_' + Dashboard.getCurrentUserId(), JSON.stringify(values));
+        },
+
         getPosterDetailViewHtml: function (options) {
 
             var items = options.items;
@@ -830,7 +858,7 @@
 
                 var date = item.DateCreated;
                 var isPlayed = item.UserData && item.UserData.Played;
-                
+
                 if (!isPlayed) {
                     try {
                         if (date && (new Date().getTime() - parseISO8601Date(date).getTime()) < 604800000) {
@@ -870,7 +898,7 @@
             var half = Math.floor(values.length / 2);
 
             var result;
-            
+
             if (values.length % 2)
                 result = values[half];
             else
@@ -1008,8 +1036,12 @@
                 else if (item.Type == "Person")
                     links.push('<a class="textlink" href="http://www.themoviedb.org/person/' + providerIds.Tmdb + '" target="_blank">TheMovieDB</a>');
             }
-            if (providerIds.Tvdb)
-                links.push('<a class="textlink" href="http://thetvdb.com/index.php?tab=series&id=' + providerIds.Tvdb + '" target="_blank">TheTVDB</a>');
+            if (providerIds.Tvdb) {
+
+                if (item.Type == "Series") {
+                    links.push('<a class="textlink" href="http://thetvdb.com/index.php?tab=series&id=' + providerIds.Tvdb + '" target="_blank">TheTVDB</a>');
+                }
+            }
             if (providerIds.Tvcom) {
                 if (item.Type == "Episode")
                     links.push('<a class="textlink" href="http://www.tv.com/shows/' + providerIds.Tvcom + '" target="_blank">TV.com</a>');
