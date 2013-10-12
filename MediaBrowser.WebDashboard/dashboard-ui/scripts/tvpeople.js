@@ -11,6 +11,8 @@
         PersonTypes: "",
         StartIndex: 0
     };
+	
+	LibraryBrowser.loadSavedQueryValues('tvpeople', query);
 
     function reloadItems(page) {
 
@@ -54,6 +56,8 @@
                 query.StartIndex = 0;
                 reloadItems(page);
             });
+			
+			LibraryBrowser.saveQueryValues('tvpeople', query);
 
             Dashboard.hideLoadingMsg();
         });

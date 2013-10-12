@@ -9,6 +9,8 @@
         Fields: "DateCreated",
         StartIndex: 0
     };
+	
+	LibraryBrowser.loadSavedQueryValues('gamegenres', query);
 
     function reloadItems(page) {
 
@@ -53,6 +55,8 @@
                 reloadItems(page);
             });
 
+			LibraryBrowser.saveQueryValues('gamegenres', query);
+			
             Dashboard.hideLoadingMsg();
         });
     }

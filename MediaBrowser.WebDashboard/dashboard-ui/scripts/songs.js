@@ -13,6 +13,8 @@
         Limit: 200,
         StartIndex: 0
     };
+	
+	LibraryBrowser.loadSavedQueryValues('songs', query);
 
     function updateFilterControls(page) {
 
@@ -103,6 +105,8 @@
 
                 reloadItems(page);
             });
+			
+			LibraryBrowser.saveQueryValues('songs', query);
 
             Dashboard.hideLoadingMsg();
 

@@ -10,7 +10,7 @@
         Fields: "DateCreated",
         StartIndex: 0
     };
-
+	
     var currentItem;
 
     function reloadItems(page) {
@@ -64,6 +64,8 @@
                 query.StartIndex = 0;
                 reloadItems(page);
             });
+			
+			LibraryBrowser.saveQueryValues(getParameterByName('parentId'), query);
 
             Dashboard.hideLoadingMsg();
         });
@@ -172,6 +174,8 @@
         query.SortOrder = "Ascending";
         query.StartIndex = 0;
         query.NameStartsWithOrGreater = '';
+		
+		LibraryBrowser.loadSavedQueryValues(getParameterByName('parentId'), query);
 
         reloadItems(this);
 

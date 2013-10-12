@@ -12,6 +12,8 @@
         Fields: "SeriesInfo,DateCreated",
         StartIndex: 0
     };
+	
+	LibraryBrowser.loadSavedQueryValues('tvshows', query);
 
     function reloadItems(page) {
 
@@ -75,6 +77,8 @@
                 reloadItems(page);
             });
 
+			LibraryBrowser.saveQueryValues('tvshows', query);
+			
             Dashboard.hideLoadingMsg();
         });
     }

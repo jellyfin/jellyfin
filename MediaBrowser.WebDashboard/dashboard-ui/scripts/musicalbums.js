@@ -12,6 +12,8 @@
         Fields: "DateCreated",
         StartIndex: 0
     };
+	
+	LibraryBrowser.loadSavedQueryValues('musicalbums', query);
 
     function reloadItems(page) {
 
@@ -69,6 +71,8 @@
                 reloadItems(page);
             });
 
+			LibraryBrowser.saveQueryValues('musicalbums', query);
+			
             Dashboard.hideLoadingMsg();
         });
     }
