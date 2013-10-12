@@ -190,7 +190,7 @@ namespace MediaBrowser.Providers.TV
                     return true;
                 }
             }
-            
+
             return base.NeedsRefreshBasedOnCompareDate(item, providerInfo);
         }
 
@@ -305,6 +305,8 @@ namespace MediaBrowser.Providers.TV
             {
                 await SanitizeXmlFile(file).ConfigureAwait(false);
             }
+
+            await ExtractEpisodes(seriesDataPath, Path.Combine(seriesDataPath, ConfigurationManager.Configuration.PreferredMetadataLanguage + ".xml")).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -363,6 +365,159 @@ namespace MediaBrowser.Providers.TV
         }
 
         /// <summary>
+        /// Extracts info for each episode into invididual xml files so that they can be easily accessed without having to step through the entire series xml
+        /// </summary>
+        /// <param name="seriesDataPath">The series data path.</param>
+        /// <param name="xmlFile">The XML file.</param>
+        /// <returns>Task.</returns>
+        private async Task ExtractEpisodes(string seriesDataPath, string xmlFile)
+        {
+            var settings = new XmlReaderSettings
+            {
+                CheckCharacters = false,
+                IgnoreProcessingInstructions = true,
+                IgnoreComments = true,
+                ValidationType = ValidationType.None
+            };
+
+            using (var streamReader = new StreamReader(xmlFile, Encoding.UTF8))
+            {
+                // Use XmlReader for best performance
+                using (var reader = XmlReader.Create(streamReader, settings))
+                {
+                    reader.MoveToContent();
+
+                    // Loop through each element
+                    while (reader.Read())
+                    {
+                        if (reader.NodeType == XmlNodeType.Element)
+                        {
+                            switch (reader.Name)
+                            {
+                                case "Episode":
+                                    {
+                                        var outerXml = reader.ReadOuterXml();
+
+                                        await SaveEpsiodeXml(seriesDataPath, outerXml).ConfigureAwait(false);
+                                        break;
+                                    }
+
+                                default:
+                                    reader.Skip();
+                                    break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private async Task SaveEpsiodeXml(string seriesDataPath, string xml)
+        {
+            var settings = new XmlReaderSettings
+            {
+                CheckCharacters = false,
+                IgnoreProcessingInstructions = true,
+                IgnoreComments = true,
+                ValidationType = ValidationType.None
+            };
+
+            var seasonNumber = -1;
+            var episodeNumber = -1;
+            var absoluteNumber = -1;
+
+            using (var streamReader = new StringReader(xml))
+            {
+                // Use XmlReader for best performance
+                using (var reader = XmlReader.Create(streamReader, settings))
+                {
+                    reader.MoveToContent();
+
+                    // Loop through each element
+                    while (reader.Read())
+                    {
+                        if (reader.NodeType == XmlNodeType.Element)
+                        {
+                            switch (reader.Name)
+                            {
+                                case "EpisodeNumber":
+                                    {
+                                        var val = reader.ReadElementContentAsString();
+                                        if (!string.IsNullOrWhiteSpace(val))
+                                        {
+                                            int num;
+                                            if (int.TryParse(val, NumberStyles.Integer, UsCulture, out num))
+                                            {
+                                                episodeNumber = num;
+                                            }
+                                        }
+                                        break;
+                                    }
+
+                                case "absolute_number":
+                                    {
+                                        var val = reader.ReadElementContentAsString();
+                                        if (!string.IsNullOrWhiteSpace(val))
+                                        {
+                                            int num;
+                                            if (int.TryParse(val, NumberStyles.Integer, UsCulture, out num))
+                                            {
+                                                absoluteNumber = num;
+                                            }
+                                        }
+                                        break;
+                                    }
+
+                                case "SeasonNumber":
+                                    {
+                                        var val = reader.ReadElementContentAsString();
+                                        if (!string.IsNullOrWhiteSpace(val))
+                                        {
+                                            int num;
+                                            if (int.TryParse(val, NumberStyles.Integer, UsCulture, out num))
+                                            {
+                                                seasonNumber = num;
+                                            }
+                                        }
+                                        break;
+                                    }
+
+                                default:
+                                    reader.Skip();
+                                    break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            var file = Path.Combine(seriesDataPath, string.Format("episode-{0}-{1}.xml", seasonNumber, episodeNumber));
+
+            using (var writer = XmlWriter.Create(file, new XmlWriterSettings
+            {
+                Encoding = Encoding.UTF8,
+                Async = true
+            }))
+            {
+                await writer.WriteRawAsync(xml).ConfigureAwait(false);
+            }
+
+            if (absoluteNumber != -1)
+            {
+                file = Path.Combine(seriesDataPath, string.Format("episode-abs-{0}.xml", absoluteNumber));
+
+                using (var writer = XmlWriter.Create(file, new XmlWriterSettings
+                {
+                    Encoding = Encoding.UTF8,
+                    Async = true
+                }))
+                {
+                    await writer.WriteRawAsync(xml).ConfigureAwait(false);
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets the series data path.
         /// </summary>
         /// <param name="appPaths">The app paths.</param>
@@ -382,7 +537,7 @@ namespace MediaBrowser.Providers.TV
         /// <returns>System.String.</returns>
         internal static string GetSeriesDataPath(IApplicationPaths appPaths)
         {
-            var dataPath = Path.Combine(appPaths.DataPath, "tvdb-v2");
+            var dataPath = Path.Combine(appPaths.DataPath, "tvdb-v3");
 
             return dataPath;
         }
@@ -538,6 +693,23 @@ namespace MediaBrowser.Providers.TV
                                         }
                                     }
                                 }
+                                break;
+                            }
+                        case "RatingCount":
+                            {
+                                var val = reader.ReadElementContentAsString();
+
+                                if (!string.IsNullOrWhiteSpace(val))
+                                {
+                                    int rval;
+
+                                    // int.TryParse is local aware, so it can be probamatic, force us culture
+                                    if (int.TryParse(val, NumberStyles.Integer, UsCulture, out rval))
+                                    {
+                                        item.VoteCount = rval;
+                                    }
+                                }
+
                                 break;
                             }
 

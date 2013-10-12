@@ -265,12 +265,6 @@
         } else {
             detailsSection.removeClass('hide');
         }
-
-        if (item.Path) {
-            $('.itemPath', page).show().html('Path:&nbsp;&nbsp;' + '<span style="font-size:13px;">' + item.Path + '</span>');
-        } else {
-            $('.itemPath', page).hide();
-        }
     }
 
     function getArtistLinksHtml(artists) {
