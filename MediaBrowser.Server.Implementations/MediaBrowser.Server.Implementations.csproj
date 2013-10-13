@@ -259,7 +259,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="sqlite3.dll" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="swagger-ui\css\hightlight.default.css">
