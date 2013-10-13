@@ -155,7 +155,7 @@ namespace MediaBrowser.Providers.Movies
 
             if (!string.IsNullOrEmpty(id))
             {
-                await FetchInfo(person, id, cancellationToken).ConfigureAwait(false);
+                await FetchInfo(person, id, force, cancellationToken).ConfigureAwait(false);
             }
             else
             {
@@ -219,9 +219,10 @@ namespace MediaBrowser.Providers.Movies
         /// </summary>
         /// <param name="person">The person.</param>
         /// <param name="id">The id.</param>
+        /// <param name="isForcedRefresh">if set to <c>true</c> [is forced refresh].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        private async Task FetchInfo(Person person, string id, CancellationToken cancellationToken)
+        private async Task FetchInfo(Person person, string id, bool isForcedRefresh, CancellationToken cancellationToken)
         {
             var personDataPath = GetPersonDataPath(ConfigurationManager.ApplicationPaths, id);
 
@@ -240,7 +241,7 @@ namespace MediaBrowser.Providers.Movies
                 await DownloadPersonInfo(id, personDataPath, cancellationToken).ConfigureAwait(false);
             }
 
-            //if (!HasAltMeta(person))
+            if (isForcedRefresh || ConfigurationManager.Configuration.EnableTmdbUpdates || !HasAltMeta(person))
             {
                 var info = JsonSerializer.DeserializeFromFile<PersonResult>(Path.Combine(personDataPath, dataFileName));
 

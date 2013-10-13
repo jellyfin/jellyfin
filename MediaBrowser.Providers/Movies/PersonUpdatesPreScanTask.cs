@@ -60,7 +60,7 @@ namespace MediaBrowser.Providers.Movies
         /// <returns>Task.</returns>
         public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            if (!_config.Configuration.EnableInternetProviders)
+            if (!_config.Configuration.EnableInternetProviders || !_config.Configuration.EnableTmdbUpdates)
             {
                 progress.Report(100);
                 return;
@@ -101,8 +101,8 @@ namespace MediaBrowser.Providers.Movies
 
                     var updatedIds = await GetIdsToUpdate(lastUpdateDate, 1, cancellationToken).ConfigureAwait(false);
 
-                    var existingDictionary = existingDirectories.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase); 
-                    
+                    var existingDictionary = existingDirectories.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
+
                     var idsToUpdate = updatedIds.Where(i => !string.IsNullOrWhiteSpace(i) && existingDictionary.ContainsKey(i));
 
                     await UpdatePeople(idsToUpdate, path, progress, cancellationToken).ConfigureAwait(false);
@@ -174,14 +174,9 @@ namespace MediaBrowser.Providers.Movies
                 {
                     await UpdatePerson(id, peopleDataPath, cancellationToken).ConfigureAwait(false);
                 }
-                catch (HttpException ex)
+                catch (Exception ex)
                 {
-                    // Already logged at lower levels, but don't fail the whole operation, unless timed out
-                    // We have to fail this to make it run again otherwise new episode data could potentially be missing
-                    if (ex.IsTimedOut)
-                    {
-                        throw;
-                    }
+                    _logger.ErrorException("Error updating tmdb person id {0}", ex, id);
                 }
 
                 numComplete++;

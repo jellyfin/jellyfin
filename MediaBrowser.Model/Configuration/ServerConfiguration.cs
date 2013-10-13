@@ -224,6 +224,7 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value><c>true</c> if [enable tv db updates]; otherwise, <c>false</c>.</value>
         public bool EnableTvDbUpdates { get; set; }
+        public bool EnableTmdbUpdates { get; set; }
 
         public bool EnableVideoImageExtraction { get; set; }
 

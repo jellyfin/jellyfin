@@ -1137,7 +1137,7 @@
 
             var refreshPromise;
 
-            var force = $('#chkForceRefresh', page).checked();
+            var force = true;
 
             if (currentItem.Type == "Artist") {
                 refreshPromise = ApiClient.refreshArtist(currentItem.Name, force);
