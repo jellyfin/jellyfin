@@ -24,6 +24,26 @@
 
         htmlName += name;
 
+        if (!item.LocalTrailerCount && item.Type == "Movie") {
+            htmlName += '<img src="css/images/editor/missingtrailer.png" title="Missing local trailer." />';
+        }
+
+        if (!item.ImageTags || !item.ImageTags.Primary) {
+            htmlName += '<img src="css/images/editor/missingprimaryimage.png" title="Missing primary image." />';
+        }
+
+        if (!item.BackdropImageTags || !item.BackdropImageTags.length) {
+            if (item.Type !== "Episode") {
+                htmlName += '<img src="css/images/editor/missingbackdrop.png" title="Missing backdrop image." />';
+            }
+        }
+
+        if (!item.ImageTags || !item.ImageTags.Logo) {
+            if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "Series" || item.Type == "Artist" || item.Type == "MusicArtist" || item.Type == "BoxSet") {
+                htmlName += '<img src="css/images/editor/missinglogo.png" title="Missing logo image." />';
+            }
+        }
+
         htmlName += "</div>";
 
         var rel = item.IsFolder ? 'folder' : 'default';
