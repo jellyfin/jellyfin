@@ -109,6 +109,12 @@ namespace MediaBrowser.Model.Dto
         public float? CommunityRating { get; set; }
 
         /// <summary>
+        /// Gets or sets the vote count.
+        /// </summary>
+        /// <value>The vote count.</value>
+        public int? VoteCount { get; set; }
+
+        /// <summary>
         /// Gets or sets the original run time ticks.
         /// </summary>
         /// <value>The original run time ticks.</value>

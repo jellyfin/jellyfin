@@ -905,6 +905,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             dto.Type = item.GetType().Name;
             dto.CommunityRating = item.CommunityRating;
+            dto.VoteCount = item.VoteCount;
 
             if (item.IsFolder)
             {
