@@ -88,7 +88,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             }
         }
 
-        private async Task SendNotifications(List<KeyValuePair<Guid, List<string>>> changes, CancellationToken cancellationToken)
+        private async Task SendNotifications(IEnumerable<KeyValuePair<Guid, List<string>>> changes, CancellationToken cancellationToken)
         {
             foreach (var pair in changes)
             {

@@ -21,20 +21,10 @@ namespace MediaBrowser.ServerApplication.FFMpeg
         private readonly ILogger _logger;
         private readonly IZipClient _zipClient;
 
-        private const string Version = "ffmpeg20130904.1";
-
         private readonly string[] _fontUrls = new[]
             {
                 "https://www.dropbox.com/s/pj847twf7riq0j7/ARIALUNI.7z?dl=1"
             };
-
-        private readonly string[] _ffMpegUrls = new[]
-                {
-                    "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/ffmpeg/windows/ffmpeg-20130904-git-f974289-win32-static.7z",
-
-                    "http://ffmpeg.zeranoe.com/builds/win32/static/ffmpeg-20130904-git-f974289-win32-static.7z",
-                    "https://www.dropbox.com/s/a81cb2ob23fwcfs/ffmpeg-20130904-git-f974289-win32-static.7z?dl=1"
-                };
 
         public FFMpegDownloader(ILogger logger, IApplicationPaths appPaths, IHttpClient httpClient, IZipClient zipClient)
         {
@@ -46,13 +36,13 @@ namespace MediaBrowser.ServerApplication.FFMpeg
 
         public async Task<FFMpegInfo> GetFFMpegInfo()
         {
-            var versionedDirectoryPath = Path.Combine(GetMediaToolsPath(true), Version);
+            var versionedDirectoryPath = Path.Combine(GetMediaToolsPath(true), FFMpegDownloadInfo.Version);
 
             var info = new FFMpegInfo
             {
-                ProbePath = Path.Combine(versionedDirectoryPath, "ffprobe.exe"),
-                Path = Path.Combine(versionedDirectoryPath, "ffmpeg.exe"),
-                Version = Version
+                ProbePath = Path.Combine(versionedDirectoryPath, FFMpegDownloadInfo.FFProbeFilename),
+                Path = Path.Combine(versionedDirectoryPath, FFMpegDownloadInfo.FFMpegFilename),
+                Version = FFMpegDownloadInfo.Version
             };
 
             Directory.CreateDirectory(versionedDirectoryPath);
@@ -73,7 +63,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
 
         private async Task DownloadFFMpeg(FFMpegInfo info)
         {
-            foreach (var url in _ffMpegUrls)
+            foreach (var url in FFMpegDownloadInfo.FfMpegUrls)
             {
                 try
                 {
@@ -115,11 +105,18 @@ namespace MediaBrowser.ServerApplication.FFMpeg
 
             try
             {
-                Extract7zArchive(tempFile, tempFolder);
+                ExtractArchive(tempFile, tempFolder);
 
-                var files = Directory.EnumerateFiles(tempFolder, "*.exe", SearchOption.AllDirectories).ToList();
+                var files = Directory.EnumerateFiles(tempFolder, "*", SearchOption.AllDirectories).ToList();
 
-                foreach (var file in files.Where(i => i.IndexOf("ffprobe.exe", StringComparison.OrdinalIgnoreCase) != -1 || i.IndexOf("ffmpeg.exe", StringComparison.OrdinalIgnoreCase) != -1))
+                foreach (var file in files.Where(i =>
+                    {
+                        var filename = Path.GetFileName(i);
+
+                        return
+                            string.Equals(filename, FFMpegDownloadInfo.FFProbeFilename, StringComparison.OrdinalIgnoreCase) ||
+                            string.Equals(filename, FFMpegDownloadInfo.FFMpegFilename, StringComparison.OrdinalIgnoreCase);
+                    }))
                 {
                     File.Copy(file, Path.Combine(targetFolder, Path.GetFileName(file)), true);
                 }
@@ -130,9 +127,16 @@ namespace MediaBrowser.ServerApplication.FFMpeg
             }
         }
 
-        private void Extract7zArchive(string archivePath, string targetPath)
+        private void ExtractArchive(string archivePath, string targetPath)
         {
-            _zipClient.ExtractAllFrom7z(archivePath, targetPath, true);
+            if (string.Equals(FFMpegDownloadInfo.ArchiveType, "7z", StringComparison.OrdinalIgnoreCase))
+            {
+                _zipClient.ExtractAllFrom7z(archivePath, targetPath, true);
+            }
+            else if (string.Equals(FFMpegDownloadInfo.ArchiveType, "gz", StringComparison.OrdinalIgnoreCase))
+            {
+                _zipClient.ExtractAllFromTar(archivePath, targetPath, true);
+            }
         }
 
         private void DeleteFile(string path)
@@ -235,7 +239,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                 return;
             }
 
-            Extract7zArchive(tempFile, fontsDirectory);
+            ExtractArchive(tempFile, fontsDirectory);
 
             try
             {

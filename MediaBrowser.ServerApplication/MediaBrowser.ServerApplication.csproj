@@ -186,6 +186,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="EntryPoints\StartupWizard.cs" />
+    <Compile Include="FFMpeg\FFMpegDownloadInfo.cs" />
     <Compile Include="FFMpeg\FFMpegInfo.cs" />
     <Compile Include="Native\Assemblies.cs" />
     <Compile Include="Native\HttpClientFactory.cs" />
