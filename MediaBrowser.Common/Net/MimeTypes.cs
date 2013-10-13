@@ -135,7 +135,7 @@ namespace MediaBrowser.Common.Net
             {
                 return "image/gif";
             }
-            if (ext.Equals(".jpg", StringComparison.OrdinalIgnoreCase) || ext.Equals(".jpeg", StringComparison.OrdinalIgnoreCase))
+            if (ext.Equals(".jpg", StringComparison.OrdinalIgnoreCase) || ext.Equals(".jpeg", StringComparison.OrdinalIgnoreCase) || ext.Equals(".tbn", StringComparison.OrdinalIgnoreCase))
             {
                 return "image/jpeg";
             }
