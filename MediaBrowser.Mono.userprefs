@@ -1,25 +1,24 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="MediaBrowser.Model\Web\QueryStringDictionary.cs">
-    <Files>
-      <File FileName="MediaBrowser.Server.Implementations\HttpServer\HttpServer.cs" Line="1" Column="1" />
-      <File FileName="MediaBrowser.Server.Mono\Networking\NetworkManager.cs" Line="1" Column="1" />
-      <File FileName="MediaBrowser.ServerApplication\ApplicationHost.cs" Line="1" Column="1" />
-      <File FileName="MediaBrowser.Server.Mono\Native\NativeApp.cs" Line="1" Column="1" />
-      <File FileName="MediaBrowser.Server.Mono\Program.cs" Line="1" Column="1" />
-      <File FileName="MediaBrowser.ServerApplication\FFMpeg\FFMpegDownloader.cs" Line="31" Column="30" />
-      <File FileName="MediaBrowser.Server.Mono\FFMpeg\FFMpegDownloadInfo.cs" Line="1" Column="1" />
-      <File FileName="MediaBrowser.Model\Web\QueryStringDictionary.cs" Line="26" Column="10" />
-    </Files>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Release|x86" />
+  <MonoDevelop.Ide.Workbench>
     <Pads>
       <Pad Id="ProjectPad">
         <State expanded="True">
+          <Node name="MediaBrowser.Common.Implementations" expanded="True">
+            <Node name="HttpClientManager" expanded="True" />
+          </Node>
+          <Node name="MediaBrowser.Controller" expanded="True">
+            <Node name="Drawing" expanded="True" />
+          </Node>
           <Node name="MediaBrowser.Model" expanded="True">
-            <Node name="References" expanded="True" selected="True" />
+            <Node name="References" expanded="True" />
             <Node name="Web" expanded="True" />
           </Node>
+          <Node name="MediaBrowser.Server.Implementations" expanded="True" />
           <Node name="MediaBrowser.Server.Mono" expanded="True">
-            <Node name="FFMpeg" expanded="True" />
+            <Node name="FFMpeg" expanded="True">
+              <Node name="FFMpegDownloader.cs" selected="True" />
+            </Node>
           </Node>
         </State>
       </Pad>
@@ -35,6 +34,7 @@
     <BreakpointStore>
       <Breakpoint file="D:\Development\MediaBrowser\MediaBrowser.Server.Mono\Native\NativeApp.cs" line="23" column="1" />
       <Breakpoint file="D:\Development\MediaBrowser\MediaBrowser.Server.Mono\Native\NativeApp.cs" line="15" column="1" />
+      <Breakpoint file="D:\Development\MediaBrowser\MediaBrowser.Common.Implementations\HttpClientManager\HttpClientManager.cs" line="477" column="17" />
     </BreakpointStore>
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
