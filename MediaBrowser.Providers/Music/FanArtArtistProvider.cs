@@ -310,7 +310,7 @@ namespace MediaBrowser.Providers.Music
             if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Logo && !item.HasImage(ImageType.Logo))
             {
                 var node =
-                    doc.SelectSingleNode("//fanart/music/musiclogos/hdmusiclogo/@url") ??
+                    doc.SelectSingleNode("//fanart/music/hdmusiclogos/hdmusiclogo/@url") ??
                     doc.SelectSingleNode("//fanart/music/musiclogos/musiclogo/@url");
                 path = node != null ? node.Value : null;
                 if (!string.IsNullOrEmpty(path))
