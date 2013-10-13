@@ -1082,7 +1082,7 @@
 
             var val = this.value;
 
-            if (val) {
+            if (val && currentItem.Type == "Series") {
 
                 $('#btnOpenTvdb', page).attr('href', 'http://thetvdb.com/index.php?tab=series&id=' + val);
 

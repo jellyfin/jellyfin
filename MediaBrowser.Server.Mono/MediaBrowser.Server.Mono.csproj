@@ -74,7 +74,6 @@
     </Compile>
     <Compile Include="Native\Autorun.cs" />
     <Compile Include="Native\ServerAuthorization.cs" />
-    <Compile Include="FFMpeg\FFMpegDownloader.cs" />
     <Compile Include="..\MediaBrowser.ServerApplication\FFMpeg\FFMpegInfo.cs">
       <Link>FFMpeg\FFMpegInfo.cs</Link>
     </Compile>
@@ -85,6 +84,10 @@
     <Compile Include="Native\NativeApp.cs" />
     <Compile Include="Native\HttpClientFactory.cs" />
     <Compile Include="Networking\NetworkManager.cs" />
+    <Compile Include="..\MediaBrowser.ServerApplication\FFMpeg\FFMpegDownloader.cs">
+      <Link>FFMpeg\FFMpegDownloader.cs</Link>
+    </Compile>
+    <Compile Include="FFMpeg\FFMpegDownloadInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

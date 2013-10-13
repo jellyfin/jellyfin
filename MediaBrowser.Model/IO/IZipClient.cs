@@ -38,5 +38,21 @@ namespace MediaBrowser.Model.IO
         /// <param name="targetPath">The target path.</param>
         /// <param name="overwriteExistingFiles">if set to <c>true</c> [overwrite existing files].</param>
         void ExtractAllFrom7z(Stream source, string targetPath, bool overwriteExistingFiles);
+
+        /// <summary>
+        /// Extracts all from tar.
+        /// </summary>
+        /// <param name="sourceFile">The source file.</param>
+        /// <param name="targetPath">The target path.</param>
+        /// <param name="overwriteExistingFiles">if set to <c>true</c> [overwrite existing files].</param>
+        void ExtractAllFromTar(string sourceFile, string targetPath, bool overwriteExistingFiles);
+
+        /// <summary>
+        /// Extracts all from tar.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="targetPath">The target path.</param>
+        /// <param name="overwriteExistingFiles">if set to <c>true</c> [overwrite existing files].</param>
+        void ExtractAllFromTar(Stream source, string targetPath, bool overwriteExistingFiles);
     }
 }
