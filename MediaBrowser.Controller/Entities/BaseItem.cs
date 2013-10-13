@@ -52,7 +52,7 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// The supported image extensions
         /// </summary>
-        public static readonly string[] SupportedImageExtensions = new[] { ".png", ".jpg", ".jpeg" };
+        public static readonly string[] SupportedImageExtensions = new[] { ".png", ".jpg", ".jpeg", ".tbn" };
 
         /// <summary>
         /// The trailer folder name
