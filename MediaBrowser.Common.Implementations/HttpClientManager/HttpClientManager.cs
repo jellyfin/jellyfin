@@ -471,7 +471,10 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
             foreach (var pair in options.RequestHeaders.ToList())
             {
-                message.Headers.Add(pair.Key, pair.Value);
+                if (!message.Headers.TryAddWithoutValidation(pair.Key, pair.Value))
+                {
+                    _logger.Error("Unable to add request header {0} with value {1}", pair.Key, pair.Value);
+                }
             }
 
             return message;
@@ -484,9 +487,31 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         /// <returns>System.Nullable{System.Int64}.</returns>
         private long? GetContentLength(HttpResponseMessage response)
         {
-            IEnumerable<string> lengthValues;
+            IEnumerable<string> lengthValues = null;
 
-            if (!response.Headers.TryGetValues("content-length", out lengthValues) && !response.Content.Headers.TryGetValues("content-length", out lengthValues))
+            // Seeing some InvalidOperationException here under mono
+            try
+            {
+                response.Headers.TryGetValues("content-length", out lengthValues);
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.ErrorException("Error accessing response.Headers.TryGetValues Content-Length", ex);
+            }
+
+            if (lengthValues == null)
+            {
+                try
+                {
+                    response.Content.Headers.TryGetValues("content-length", out lengthValues);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    _logger.ErrorException("Error accessing response.Content.Headers.TryGetValues Content-Length", ex);
+                }
+            }
+
+            if (lengthValues == null)
             {
                 return null;
             }

@@ -206,12 +206,25 @@ namespace MediaBrowser.Server.Mono
 		{
 			var exception = (Exception)e.ExceptionObject;
 
-			_logger.ErrorException("UnhandledException", exception);
+			LogUnhandledException(exception);
 
 			if (!Debugger.IsAttached)
 			{
 				Environment.Exit(System.Runtime.InteropServices.Marshal.GetHRForException(exception));
 			}
+		}
+
+		private static void LogUnhandledException(Exception ex)
+		{
+			_logger.ErrorException("UnhandledException", ex);
+
+			_appHost.LogManager.Flush ();
+
+			var path = Path.Combine(_appHost.ServerConfigurationManager.ApplicationPaths.LogDirectoryPath, "crash_" + Guid.NewGuid() + ".txt");
+
+			var builder = LogHelper.GetLogMessage(ex);
+
+			File.WriteAllText(path, builder.ToString());
 		}
 
 		/// <summary>
