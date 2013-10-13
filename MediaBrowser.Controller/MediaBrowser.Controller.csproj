@@ -96,6 +96,7 @@
     <Compile Include="Library\ILibraryPostScanTask.cs" />
     <Compile Include="Library\ILibraryPrescanTask.cs" />
     <Compile Include="Library\IMetadataSaver.cs" />
+    <Compile Include="Library\IPeoplePrescanTask.cs" />
     <Compile Include="Library\ItemUpdateType.cs" />
     <Compile Include="Library\IUserDataManager.cs" />
     <Compile Include="Library\UserDataSaveEventArgs.cs" />

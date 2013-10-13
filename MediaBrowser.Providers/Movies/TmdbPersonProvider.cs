@@ -1,4 +1,6 @@
-﻿using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -24,6 +26,8 @@ namespace MediaBrowser.Providers.Movies
     {
         protected readonly IProviderManager ProviderManager;
 
+        internal static TmdbPersonProvider Current { get; private set; }
+        
         public TmdbPersonProvider(IJsonSerializer jsonSerializer, ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager)
             : base(logManager, configurationManager)
         {
@@ -33,6 +37,7 @@ namespace MediaBrowser.Providers.Movies
             }
             JsonSerializer = jsonSerializer;
             ProviderManager = providerManager;
+            Current = this;
         }
 
         /// <summary>
@@ -75,12 +80,49 @@ namespace MediaBrowser.Providers.Movies
             }
         }
 
-        protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
+        protected override bool NeedsRefreshBasedOnCompareDate(BaseItem item, BaseProviderInfo providerInfo)
         {
-            if (HasAltMeta(item))
-                return false;
+            var provderId = item.GetProviderId(MetadataProviders.Tmdb);
 
-            return base.NeedsRefreshInternal(item, providerInfo);
+            if (!string.IsNullOrEmpty(provderId))
+            {
+                // Process images
+                var path = GetPersonDataPath(ConfigurationManager.ApplicationPaths, provderId);
+
+                try
+                {
+                    var files = new DirectoryInfo(path)
+                        .EnumerateFiles("*.json", SearchOption.TopDirectoryOnly)
+                        .Select(i => i.LastWriteTimeUtc)
+                        .ToList();
+
+                    if (files.Count > 0)
+                    {
+                        return files.Max() > providerInfo.LastRefreshed;
+                    }
+                }
+                catch (DirectoryNotFoundException)
+                {
+                    // Don't blow up
+                    return true;
+                }
+            }
+
+            return base.NeedsRefreshBasedOnCompareDate(item, providerInfo);
+        }
+
+        internal static string GetPersonDataPath(IApplicationPaths appPaths, string tmdbId)
+        {
+            var seriesDataPath = Path.Combine(GetPersonsDataPath(appPaths), tmdbId);
+
+            return seriesDataPath;
+        }
+
+        internal static string GetPersonsDataPath(IApplicationPaths appPaths)
+        {
+            var dataPath = Path.Combine(appPaths.DataPath, "tmdb-people");
+
+            return dataPath;
         }
 
         private bool HasAltMeta(BaseItem item)
@@ -181,8 +223,40 @@ namespace MediaBrowser.Providers.Movies
         /// <returns>Task.</returns>
         private async Task FetchInfo(Person person, string id, CancellationToken cancellationToken)
         {
-            string url = string.Format(@"http://api.themoviedb.org/3/person/{1}?api_key={0}&append_to_response=credits,images", MovieDbProvider.ApiKey, id);
-            PersonResult searchResult = null;
+            var personDataPath = GetPersonDataPath(ConfigurationManager.ApplicationPaths, id);
+
+            Directory.CreateDirectory(personDataPath);
+
+            var files = Directory.EnumerateFiles(personDataPath, "*.json", SearchOption.TopDirectoryOnly)
+                .Select(Path.GetFileName)
+                .ToList();
+
+            const string dataFileName = "info.json";
+
+            // Only download if not already there
+            // The prescan task will take care of updates so we don't need to re-download here
+            if (!files.Contains(dataFileName, StringComparer.OrdinalIgnoreCase))
+            {
+                await DownloadPersonInfo(id, personDataPath, cancellationToken).ConfigureAwait(false);
+            }
+
+            //if (!HasAltMeta(person))
+            {
+                var info = JsonSerializer.DeserializeFromFile<PersonResult>(Path.Combine(personDataPath, dataFileName));
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                ProcessInfo(person, info);
+
+                Logger.Debug("TmdbPersonProvider downloaded and saved information for {0}", person.Name);
+
+                await FetchImages(person, info.images, cancellationToken).ConfigureAwait(false);
+            }
+        }
+
+        internal async Task DownloadPersonInfo(string id, string personDataPath, CancellationToken cancellationToken)
+        {
+            var url = string.Format(@"http://api.themoviedb.org/3/person/{1}?api_key={0}&append_to_response=credits,images", MovieDbProvider.ApiKey, id);
 
             using (var json = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
             {
@@ -192,18 +266,10 @@ namespace MediaBrowser.Providers.Movies
 
             }).ConfigureAwait(false))
             {
-                searchResult = JsonSerializer.DeserializeFromStream<PersonResult>(json);
-            }
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            if (searchResult != null)
-            {
-                ProcessInfo(person, searchResult);
-
-                Logger.Debug("TmdbPersonProvider downloaded and saved information for {0}", person.Name);
-
-                await FetchImages(person, searchResult.images, cancellationToken).ConfigureAwait(false);
+                using (var fs = new FileStream(Path.Combine(personDataPath, "info.json"), FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, true))
+                {
+                    await json.CopyToAsync(fs).ConfigureAwait(false);
+                }
             }
         }
 

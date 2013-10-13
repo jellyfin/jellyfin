@@ -160,6 +160,7 @@
     <Compile Include="Library\Validators\MusicGenresPostScanTask.cs" />
     <Compile Include="Library\Validators\MusicGenresValidator.cs" />
     <Compile Include="Library\Validators\PeoplePostScanTask.cs" />
+    <Compile Include="Library\Validators\PeopleValidator.cs" />
     <Compile Include="Library\Validators\StudiosPostScanTask.cs" />
     <Compile Include="Library\Validators\StudiosValidator.cs" />
     <Compile Include="LiveTv\LiveTvManager.cs" />
