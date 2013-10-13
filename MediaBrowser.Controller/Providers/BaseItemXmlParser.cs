@@ -566,7 +566,7 @@ namespace MediaBrowser.Controller.Providers
                         if (!string.IsNullOrWhiteSpace(val))
                         {
                             int num;
-                            // All external meta is saving this as '.' for decimal I believe...but just to be sure
+
                             if (int.TryParse(val, NumberStyles.Integer, _usCulture, out num))
                             {
                                 var game = item as Game;
@@ -574,6 +574,20 @@ namespace MediaBrowser.Controller.Providers
                                 {
                                     game.PlayersSupported = num;
                                 }
+                            }
+                        }
+                        break;
+                    }
+                case "VoteCount":
+                    {
+                        var val = reader.ReadElementContentAsString();
+                        if (!string.IsNullOrWhiteSpace(val))
+                        {
+                            int num;
+
+                            if (int.TryParse(val, NumberStyles.Integer, _usCulture, out num))
+                            {
+                                item.VoteCount = num;
                             }
                         }
                         break;
