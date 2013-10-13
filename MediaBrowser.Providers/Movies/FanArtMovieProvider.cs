@@ -68,7 +68,7 @@ namespace MediaBrowser.Providers.Movies
                 return ItemUpdateType.ImageUpdate;
             }
         }
-        
+
         /// <summary>
         /// Gets a value indicating whether [refresh on version change].
         /// </summary>
@@ -159,7 +159,7 @@ namespace MediaBrowser.Providers.Movies
             return base.NeedsRefreshInternal(item, providerInfo);
         }
 
-        protected override DateTime CompareDate(BaseItem item)
+        protected override bool NeedsRefreshBasedOnCompareDate(BaseItem item, BaseProviderInfo providerInfo)
         {
             var id = item.GetProviderId(MetadataProviders.Tmdb);
 
@@ -177,16 +177,16 @@ namespace MediaBrowser.Providers.Movies
 
                     if (files.Count > 0)
                     {
-                        return files.Max();
+                        return files.Max() > providerInfo.LastRefreshed;
                     }
                 }
                 catch (DirectoryNotFoundException)
                 {
-                    // Don't blow up
+                    return true;
                 }
             }
 
-            return base.CompareDate(item);
+            return base.NeedsRefreshBasedOnCompareDate(item, providerInfo);
         }
 
         /// <summary>
@@ -291,23 +291,23 @@ namespace MediaBrowser.Providers.Movies
         {
             var doc = new XmlDocument();
             doc.Load(xmlFilePath);
-            
+
             var language = ConfigurationManager.Configuration.PreferredMetadataLanguage.ToLower();
-            
+
             cancellationToken.ThrowIfCancellationRequested();
 
             string path;
-            var hd = ConfigurationManager.Configuration.DownloadHDFanArt ? "hd" : "";
 
             if (ConfigurationManager.Configuration.DownloadMovieImages.Logo && !item.HasImage(ImageType.Logo))
             {
                 var node =
-                    doc.SelectSingleNode("//fanart/movie/movielogos/" + hd + "movielogo[@lang = \"" + language + "\"]/@url") ??
+                    doc.SelectSingleNode("//fanart/movie/hdmovielogos/hdmovielogo[@lang = \"" + language + "\"]/@url") ??
                     doc.SelectSingleNode("//fanart/movie/movielogos/movielogo[@lang = \"" + language + "\"]/@url");
                 if (node == null && language != "en")
                 {
                     //maybe just couldn't find language - try just first one
-                    node = doc.SelectSingleNode("//fanart/movie/movielogos/" + hd + "movielogo/@url");
+                    node = doc.SelectSingleNode("//fanart/movie/hdmovielogos/hdmovielogo/@url") ??
+                        doc.SelectSingleNode("//fanart/movie/movielogos/movielogo/@url");
                 }
                 path = node != null ? node.Value : null;
                 if (!string.IsNullOrEmpty(path))
@@ -320,8 +320,8 @@ namespace MediaBrowser.Providers.Movies
             if (ConfigurationManager.Configuration.DownloadMovieImages.Art && !item.HasImage(ImageType.Art))
             {
                 var node =
-                    doc.SelectSingleNode("//fanart/movie/moviearts/" + hd + "movieart[@lang = \"" + language + "\"]/@url") ??
-                    doc.SelectSingleNode("//fanart/movie/moviearts/" + hd + "movieart/@url") ??
+                    doc.SelectSingleNode("//fanart/movie/hdmoviecleararts/hdmovieclearart[@lang = \"" + language + "\"]/@url") ??
+                    doc.SelectSingleNode("//fanart/movie/hdmoviecleararts/hdmovieclearart/@url") ??
                     doc.SelectSingleNode("//fanart/movie/moviearts/movieart[@lang = \"" + language + "\"]/@url") ??
                     doc.SelectSingleNode("//fanart/movie/moviearts/movieart/@url");
                 path = node != null ? node.Value : null;
