@@ -66,6 +66,7 @@ namespace MediaBrowser.Providers.Savers
                     "TVcomId",
                     "TvDbId",
                     "Type",
+                    "VoteCount",
                     "Website",
                     "Zap2ItId"
 
@@ -280,6 +281,10 @@ namespace MediaBrowser.Providers.Savers
             if (item.CommunityRating.HasValue)
             {
                 builder.Append("<Rating>" + SecurityElement.Escape(item.CommunityRating.Value.ToString(UsCulture)) + "</Rating>");
+            }
+            if (item.VoteCount.HasValue)
+            {
+                builder.Append("<VoteCount>" + SecurityElement.Escape(item.VoteCount.Value.ToString(UsCulture)) + "</VoteCount>");
             }
 
             if (item.ProductionYear.HasValue && !(item is Person))
