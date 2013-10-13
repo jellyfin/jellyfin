@@ -160,7 +160,7 @@ namespace MediaBrowser.Providers.Movies
                 int voteCount;
 
                 if (!string.IsNullOrEmpty(result.imdbVotes)
-                    && int.TryParse(result.imdbVotes, NumberStyles.Integer, UsCulture, out voteCount)
+                    && int.TryParse(result.imdbVotes, NumberStyles.Number, UsCulture, out voteCount)
                     && voteCount >= 0)
                 {
                     item.VoteCount = voteCount;
@@ -169,7 +169,7 @@ namespace MediaBrowser.Providers.Movies
                 float imdbRating;
 
                 if (!string.IsNullOrEmpty(result.imdbRating)
-                    && float.TryParse(result.imdbRating, NumberStyles.Number, UsCulture, out imdbRating)
+                    && float.TryParse(result.imdbRating, NumberStyles.Any, UsCulture, out imdbRating)
                     && imdbRating >= 0)
                 {
                     item.CommunityRating = imdbRating;

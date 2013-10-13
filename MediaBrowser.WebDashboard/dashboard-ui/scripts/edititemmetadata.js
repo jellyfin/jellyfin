@@ -478,12 +478,14 @@
 
         if (item.Type == "Person" || item.Type == "Genre" || item.Type == "Studio" || item.Type == "GameGenre" || item.Type == "MusicGenre") {
             $('#fldCommunityRating', page).hide();
+            $('#fldCommunityVoteCount', page).hide();
             $('#fldOfficialRating', page).hide();
             $('#fldCustomRating', page).hide();
             $('#genresCollapsible', page).hide();
             $('#studiosCollapsible', page).hide();
         } else {
             $('#fldCommunityRating', page).show();
+            $('#fldCommunityVoteCount', page).show();
             $('#fldOfficialRating', page).show();
             $('#fldCustomRating', page).show();
             $('#genresCollapsible', page).show();
@@ -594,6 +596,7 @@
         $('#txtSortName', page).val(item.SortName || "");
         $('#txtDisplayMediaType', page).val(item.DisplayMediaType || "");
         $('#txtCommunityRating', page).val(item.CommunityRating || "");
+        $('#txtCommunityVoteCount', page).val(item.VoteCount || "");
         $('#txtHomePageUrl', page).val(item.HomePageUrl || "");
 
         $('#txtBudget', page).val(item.Budget || "");

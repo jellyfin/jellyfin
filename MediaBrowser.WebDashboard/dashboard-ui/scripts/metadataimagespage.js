@@ -13,7 +13,6 @@
 
     load: function (page, config) {
 
-        $('#chkRefreshItemImages', page).checked(!config.RefreshItemImages).checkboxradio("refresh");
         $('#txtNumbackdrops', page).val(config.MaxBackdrops);
 
         $('#chkDownloadMovieArt', page).checked(config.DownloadMovieImages.Art).checkboxradio("refresh");
@@ -54,7 +53,6 @@
 
         ApiClient.getServerConfiguration().done(function (config) {
 
-            config.RefreshItemImages = !$('#chkRefreshItemImages', form).checked();
             config.MaxBackdrops = $('#txtNumbackdrops', form).val();
 
             config.DownloadMovieImages.Art = $('#chkDownloadMovieArt', form).checked();
