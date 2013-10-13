@@ -33,7 +33,7 @@
         }
 
         if (!item.BackdropImageTags || !item.BackdropImageTags.length) {
-            if (item.Type !== "Episode") {
+            if (item.Type !== "Episode" && item.Type !== "Season" && item.MediaType !== "Audio") {
                 htmlName += '<img src="css/images/editor/missingbackdrop.png" title="Missing backdrop image." />';
             }
         }
