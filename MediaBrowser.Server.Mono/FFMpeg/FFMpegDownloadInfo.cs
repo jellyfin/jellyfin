@@ -7,9 +7,9 @@ namespace MediaBrowser.ServerApplication.FFMpeg
 
         public static string[] FfMpegUrls = new[]
                 {
-					"http://ffmpeg.gusari.org/static/32bit/ffmpeg.static.32bit.2013-09-04.tar.gz",
+					"http://ffmpeg.gusari.org/static/32bit/ffmpeg.static.32bit.2013-10-11.tar.gz",
 
-					"https://www.dropbox.com/s/y7f4nk96rxmbb30/ffmpeg.static.32bit.2013-09-04.tar.gz?dl=1"
+					"https://www.dropbox.com/s/b9v17h105cps7p0/ffmpeg.static.32bit.2013-10-11.tar.gz?dl=1"
                 };
 
         public static string FFMpegFilename = "ffmpeg";

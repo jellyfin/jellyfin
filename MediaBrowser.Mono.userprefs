@@ -13,9 +13,11 @@
     <Pads>
       <Pad Id="ProjectPad">
         <State expanded="True">
-          <Node name="MediaBrowser.Model" expanded="True" selected="True" />
+          <Node name="MediaBrowser.Model" expanded="True" />
           <Node name="MediaBrowser.Server.Mono" expanded="True">
-            <Node name="FFMpeg" expanded="True" />
+            <Node name="FFMpeg" expanded="True">
+              <Node name="FFMpegDownloadInfo.cs" selected="True" />
+            </Node>
           </Node>
         </State>
       </Pad>
