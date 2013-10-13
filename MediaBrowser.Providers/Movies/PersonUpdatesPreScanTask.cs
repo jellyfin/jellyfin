@@ -93,6 +93,12 @@ namespace MediaBrowser.Providers.Movies
                 {
                     var lastUpdateDate = new DateTime(lastUpdateTicks, DateTimeKind.Utc);
 
+                    // They only allow up to 14 days of updates
+                    if ((DateTime.UtcNow - lastUpdateDate).TotalDays > 13)
+                    {
+                        lastUpdateDate = DateTime.UtcNow.AddDays(-13);
+                    }
+
                     var updatedIds = await GetIdsToUpdate(lastUpdateDate, 1, cancellationToken).ConfigureAwait(false);
 
                     var existingDictionary = existingDirectories.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase); 
