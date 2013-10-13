@@ -137,12 +137,6 @@ namespace MediaBrowser.Model.Configuration
         public ImageDownloadOptions DownloadMusicAlbumImages { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [download TV season backdrops].
-        /// </summary>
-        /// <value><c>true</c> if [download TV season banner]; otherwise, <c>false</c>.</value>
-        public bool DownloadHDFanArt { get; set; }
-
-        /// <summary>
         /// Characters to be replaced with a ' ' in strings to create a sort name
         /// </summary>
         /// <value>The sort replace characters.</value>
@@ -273,7 +267,6 @@ namespace MediaBrowser.Model.Configuration
             DownloadSeasonImages = new ImageDownloadOptions();
             DownloadMusicArtistImages = new ImageDownloadOptions();
             DownloadMusicAlbumImages = new ImageDownloadOptions();
-            DownloadHDFanArt = true;
             MaxBackdrops = 3;
 
             SortReplaceCharacters = new[] { ".", "+", "%" };

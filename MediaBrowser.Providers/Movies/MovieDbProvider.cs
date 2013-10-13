@@ -197,7 +197,7 @@ namespace MediaBrowser.Providers.Movies
                 return false;
 
             // Boxsets require two passes because we need the children to be refreshed
-            if (item is BoxSet && string.IsNullOrEmpty(item.GetProviderId(MetadataProviders.TmdbCollection)))
+            if (item is BoxSet && string.IsNullOrEmpty(item.GetProviderId(MetadataProviders.Tmdb)))
             {
                 return true;
             }

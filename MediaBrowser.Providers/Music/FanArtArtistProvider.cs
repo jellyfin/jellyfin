@@ -306,11 +306,11 @@ namespace MediaBrowser.Providers.Music
             cancellationToken.ThrowIfCancellationRequested();
 
             string path;
-            var hd = ConfigurationManager.Configuration.DownloadHDFanArt ? "hd" : "";
+
             if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Logo && !item.HasImage(ImageType.Logo))
             {
                 var node =
-                    doc.SelectSingleNode("//fanart/music/musiclogos/" + hd + "musiclogo/@url") ??
+                    doc.SelectSingleNode("//fanart/music/musiclogos/hdmusiclogo/@url") ??
                     doc.SelectSingleNode("//fanart/music/musiclogos/musiclogo/@url");
                 path = node != null ? node.Value : null;
                 if (!string.IsNullOrEmpty(path))
@@ -371,7 +371,7 @@ namespace MediaBrowser.Providers.Music
             if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Art && !item.HasImage(ImageType.Art))
             {
                 var node =
-                    doc.SelectSingleNode("//fanart/music/musicarts/" + hd + "musicart/@url") ??
+                    doc.SelectSingleNode("//fanart/music/hdmusicarts/hdmusicart/@url") ??
                     doc.SelectSingleNode("//fanart/music/musicarts/musicart/@url");
                 path = node != null ? node.Value : null;
                 if (!string.IsNullOrEmpty(path))
@@ -395,7 +395,7 @@ namespace MediaBrowser.Providers.Music
 
             if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Banner && !item.HasImage(ImageType.Banner))
             {
-                var node = doc.SelectSingleNode("//fanart/music/musicbanners/" + hd + "musicbanner/@url") ??
+                var node = doc.SelectSingleNode("//fanart/music/hdmusicbanners/hdmusicbanner/@url") ??
                            doc.SelectSingleNode("//fanart/music/musicbanners/musicbanner/@url");
                 path = node != null ? node.Value : null;
                 if (!string.IsNullOrEmpty(path))
