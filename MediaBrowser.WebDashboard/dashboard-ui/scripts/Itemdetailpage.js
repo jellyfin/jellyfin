@@ -769,19 +769,15 @@
                 attributes.push('<span class="mediaInfoAttribute">' + stream.Language + '</span>');
             }
 
-            if (stream.Width) {
-                attributes.push('<span class="mediaInfoAttribute">' + stream.Width + '</span>');
+            if (stream.Width || stream.Height) {
+                attributes.push('<span class="mediaInfoAttribute">' + stream.Width + 'x' + stream.Height + '</span>');
             }
 
-            if (stream.Height) {
-                attributes.push('<span class="mediaInfoAttribute">' + stream.Height + '</span>');
-            }
-
-            if (stream.AspectRatio) {
+            if (stream.AspectRatio && stream.Codec != "mjpeg") {
                 attributes.push('<span class="mediaInfoAttribute">' + stream.AspectRatio + '</span>');
             }
 
-            if (stream.BitRate) {
+            if (stream.BitRate && stream.Codec != "mjpeg") {
                 attributes.push('<span class="mediaInfoAttribute">' + (parseInt(stream.BitRate / 1000)) + ' kbps</span>');
             }
 
@@ -795,7 +791,7 @@
 
             var framerate = stream.AverageFrameRate || stream.RealFrameRate;
 
-            if (framerate) {
+            if (framerate && item.MediaType != "Audio") {
                 attributes.push('<span class="mediaInfoAttribute">' + framerate + '</span>');
             }
 

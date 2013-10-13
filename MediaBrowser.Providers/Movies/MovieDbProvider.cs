@@ -31,7 +31,7 @@ namespace MediaBrowser.Providers.Movies
         /// <summary>
         /// The movie db
         /// </summary>
-        private readonly SemaphoreSlim _movieDbResourcePool = new SemaphoreSlim(1, 1);
+        internal readonly SemaphoreSlim MovieDbResourcePool = new SemaphoreSlim(1, 1);
 
         internal static MovieDbProvider Current { get; private set; }
 
@@ -72,7 +72,7 @@ namespace MediaBrowser.Providers.Movies
         {
             if (dispose)
             {
-                _movieDbResourcePool.Dispose();
+                MovieDbResourcePool.Dispose();
             }
         }
 
@@ -726,7 +726,7 @@ namespace MediaBrowser.Providers.Movies
         {
             var cancellationToken = options.CancellationToken;
 
-            await _movieDbResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
+            await MovieDbResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             try
             {
@@ -746,7 +746,7 @@ namespace MediaBrowser.Providers.Movies
             {
                 _lastRequestDate = DateTime.Now;
 
-                _movieDbResourcePool.Release();
+                MovieDbResourcePool.Release();
             }
         }
 

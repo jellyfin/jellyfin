@@ -15,7 +15,6 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Implementations.Library.Validators;
 using MediaBrowser.Server.Implementations.ScheduledTasks;
-using MoreLinq;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -43,6 +42,12 @@ namespace MediaBrowser.Server.Implementations.Library
         /// </summary>
         /// <value>The prescan tasks.</value>
         private IEnumerable<ILibraryPrescanTask> PrescanTasks { get; set; }
+
+        /// <summary>
+        /// Gets or sets the people prescan tasks.
+        /// </summary>
+        /// <value>The people prescan tasks.</value>
+        private IEnumerable<IPeoplePrescanTask> PeoplePrescanTasks { get; set; }
 
         /// <summary>
         /// Gets the intro providers.
@@ -197,6 +202,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="itemComparers">The item comparers.</param>
         /// <param name="prescanTasks">The prescan tasks.</param>
         /// <param name="postscanTasks">The postscan tasks.</param>
+        /// <param name="peoplePrescanTasks">The people prescan tasks.</param>
         /// <param name="savers">The savers.</param>
         public void AddParts(IEnumerable<IResolverIgnoreRule> rules,
             IEnumerable<IVirtualFolderCreator> pluginFolders,
@@ -205,6 +211,7 @@ namespace MediaBrowser.Server.Implementations.Library
             IEnumerable<IBaseItemComparer> itemComparers,
             IEnumerable<ILibraryPrescanTask> prescanTasks,
             IEnumerable<ILibraryPostScanTask> postscanTasks,
+            IEnumerable<IPeoplePrescanTask> peoplePrescanTasks,
             IEnumerable<IMetadataSaver> savers)
         {
             EntityResolutionIgnoreRules = rules;
@@ -214,6 +221,7 @@ namespace MediaBrowser.Server.Implementations.Library
             Comparers = itemComparers;
             PrescanTasks = prescanTasks;
             PostscanTasks = postscanTasks;
+            PeoplePrescanTasks = peoplePrescanTasks;
             _savers = savers;
         }
 
@@ -771,45 +779,9 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
         /// <returns>Task.</returns>
-        public async Task ValidatePeople(CancellationToken cancellationToken, IProgress<double> progress)
+        public Task ValidatePeople(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            var people = RootFolder.GetRecursiveChildren()
-                .SelectMany(c => c.People)
-                .DistinctBy(p => p.Name, StringComparer.OrdinalIgnoreCase)
-                .ToList();
-
-            var numComplete = 0;
-
-            foreach (var person in people)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                try
-                {
-                    var item = GetPerson(person.Name);
-
-                    await item.RefreshMetadata(cancellationToken).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error validating IBN entry {0}", ex, person.Name);
-                }
-
-                // Update progress
-                numComplete++;
-                double percent = numComplete;
-                percent /= people.Count;
-
-                progress.Report(100 * percent);
-            }
-
-            progress.Report(100);
-
-            _logger.Info("People validation complete");
-
-            // Bad practice, i know. But we keep a lot in memory, unfortunately.
-            GC.Collect(2, GCCollectionMode.Forced, true);
-            GC.Collect(2, GCCollectionMode.Forced, true);
+            return new PeopleValidator(this, PeoplePrescanTasks, _logger).ValidatePeople(cancellationToken, progress);
         }
 
         /// <summary>
@@ -1153,7 +1125,7 @@ namespace MediaBrowser.Server.Implementations.Library
         private Video ResolveIntro(IntroInfo info)
         {
             Video video = null;
-            
+
             if (info.ItemId.HasValue)
             {
                 // Get an existing item by Id
