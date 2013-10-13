@@ -138,6 +138,10 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                 _zipClient.ExtractAllFromTar(archivePath, targetPath, true);
             }
         }
+        private void Extract7zArchive(string archivePath, string targetPath)
+        {
+            _zipClient.ExtractAllFrom7z(archivePath, targetPath, true);
+        }
 
         private void DeleteFile(string path)
         {
@@ -239,7 +243,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                 return;
             }
 
-            ExtractArchive(tempFile, fontsDirectory);
+            Extract7zArchive(tempFile, fontsDirectory);
 
             try
             {
