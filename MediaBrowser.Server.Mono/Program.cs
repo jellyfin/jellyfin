@@ -11,6 +11,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Windows;
+using System.Net;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 using Gtk;
 using Gdk;
 using System.Threading.Tasks;
@@ -90,11 +93,16 @@ namespace MediaBrowser.Server.Mono
 			}
 		}
 
+		private static RemoteCertificateValidationCallback _ignoreCertificates = new RemoteCertificateValidationCallback(delegate { return true; });
+
 		private static void RunApplication(ServerApplicationPaths appPaths, ILogManager logManager)
 		{
 			// TODO: Show splash here
 
 			SystemEvents.SessionEnding += SystemEvents_SessionEnding;
+
+			// Allow all https requests
+			ServicePointManager.ServerCertificateValidationCallback = _ignoreCertificates;
 
 			_appHost = new ApplicationHost(appPaths, logManager);
 
@@ -262,6 +270,14 @@ namespace MediaBrowser.Server.Mono
 
 			// Right now this method will just shutdown, but not restart
 			Shutdown ();
+		}
+	}
+
+	class NoCheckCertificatePolicy : ICertificatePolicy
+	{
+		public bool CheckValidationResult (ServicePoint srvPoint, X509Certificate certificate, WebRequest request, int certificateProblem)
+		{
+			return true;
 		}
 	}
 }

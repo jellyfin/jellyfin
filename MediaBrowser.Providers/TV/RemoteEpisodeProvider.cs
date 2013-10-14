@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Net;
+﻿using System.Collections.Generic;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
@@ -127,7 +128,7 @@ namespace MediaBrowser.Providers.TV
             return base.NeedsRefreshInternal(item, providerInfo);
         }
 
-        protected override DateTime CompareDate(BaseItem item)
+        protected override bool NeedsRefreshBasedOnCompareDate(BaseItem item, BaseProviderInfo providerInfo)
         {
             var episode = (Episode)item;
 
@@ -136,17 +137,90 @@ namespace MediaBrowser.Providers.TV
             if (!string.IsNullOrEmpty(seriesId))
             {
                 // Process images
-                var seriesXmlPath = Path.Combine(RemoteSeriesProvider.GetSeriesDataPath(ConfigurationManager.ApplicationPaths, seriesId), ConfigurationManager.Configuration.PreferredMetadataLanguage.ToLower() + ".xml");
+                var seriesDataPath = RemoteSeriesProvider.GetSeriesDataPath(ConfigurationManager.ApplicationPaths, seriesId);
 
-                var seriesXmlFileInfo = new FileInfo(seriesXmlPath);
+                var files = GetEpisodeXmlFiles(episode, seriesDataPath);
 
-                if (seriesXmlFileInfo.Exists)
+                if (files.Count > 0)
                 {
-                    return seriesXmlFileInfo.LastWriteTimeUtc;
+                    return files.Select(i => i.LastWriteTimeUtc).Max() > providerInfo.LastRefreshed;
+                }
+            }
+            
+            return false;
+        }
+
+        /// <summary>
+        /// Gets the episode XML files.
+        /// </summary>
+        /// <param name="episode">The episode.</param>
+        /// <param name="seriesDataPath">The series data path.</param>
+        /// <returns>List{FileInfo}.</returns>
+        private List<FileInfo> GetEpisodeXmlFiles(Episode episode, string seriesDataPath)
+        {
+            var files = new List<FileInfo>();
+
+            if (episode.IndexNumber == null)
+            {
+                return files;
+            }
+
+            var episodeNumber = episode.IndexNumber.Value;
+            var seasonNumber = episode.ParentIndexNumber;
+
+            if (seasonNumber == null)
+            {
+                return files;
+            }
+
+            var file = Path.Combine(seriesDataPath, string.Format("episode-{0}-{1}.xml", seasonNumber.Value, episodeNumber));
+
+            var fileInfo = new FileInfo(file);
+            var usingAbsoluteData = false;
+
+            if (fileInfo.Exists)
+            {
+                files.Add(fileInfo);
+            }
+            else
+            {
+                file = Path.Combine(seriesDataPath, string.Format("episode-abs-{0}.xml", episodeNumber));
+                fileInfo = new FileInfo(file);
+                if (fileInfo.Exists)
+                {
+                    files.Add(fileInfo);
+                    usingAbsoluteData = true;
                 }
             }
 
-            return base.CompareDate(item);
+            var end = episode.IndexNumberEnd ?? episodeNumber;
+            episodeNumber++;
+
+            while (episodeNumber <= end)
+            {
+                if (usingAbsoluteData)
+                {
+                    file = Path.Combine(seriesDataPath, string.Format("episode-abs-{0}.xml", episodeNumber));
+                }
+                else
+                {
+                    file = Path.Combine(seriesDataPath, string.Format("episode-{0}-{1}.xml", seasonNumber.Value, episodeNumber));
+                }
+
+                fileInfo = new FileInfo(file);
+                if (fileInfo.Exists)
+                {
+                    files.Add(fileInfo);
+                }
+                else
+                {
+                    break;
+                }
+
+                episodeNumber++;
+            }
+
+            return files;
         }
 
         /// <summary>
@@ -213,7 +287,7 @@ namespace MediaBrowser.Providers.TV
             }
 
             var episodeNumber = episode.IndexNumber.Value;
-            var seasonNumber = episode.ParentIndexNumber ?? TVUtils.GetSeasonNumberFromEpisodeFile(episode.Path);
+            var seasonNumber = episode.ParentIndexNumber;
 
             if (seasonNumber == null)
             {
