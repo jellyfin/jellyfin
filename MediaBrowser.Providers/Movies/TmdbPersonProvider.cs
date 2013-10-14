@@ -80,6 +80,14 @@ namespace MediaBrowser.Providers.Movies
             }
         }
 
+        protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
+        {
+            if (HasAltMeta(item) && !ConfigurationManager.Configuration.EnableTmdbUpdates)
+                return false;
+
+            return base.NeedsRefreshInternal(item, providerInfo);
+        }
+        
         protected override bool NeedsRefreshBasedOnCompareDate(BaseItem item, BaseProviderInfo providerInfo)
         {
             var provderId = item.GetProviderId(MetadataProviders.Tmdb);
@@ -187,7 +195,7 @@ namespace MediaBrowser.Providers.Movies
             }
         }
 
-        protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
+        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
         /// <summary>
         /// Gets the TMDB id.
@@ -211,7 +219,7 @@ namespace MediaBrowser.Providers.Movies
                 searchResult = JsonSerializer.DeserializeFromStream<PersonSearchResults>(json);
             }
 
-            return searchResult != null && searchResult.Total_Results > 0 ? searchResult.Results[0].Id.ToString(UsCulture) : null;
+            return searchResult != null && searchResult.Total_Results > 0 ? searchResult.Results[0].Id.ToString(_usCulture) : null;
         }
 
         /// <summary>
@@ -311,7 +319,7 @@ namespace MediaBrowser.Providers.Movies
                 }
             }
 
-            person.SetProviderId(MetadataProviders.Tmdb, searchResult.id.ToString(UsCulture));
+            person.SetProviderId(MetadataProviders.Tmdb, searchResult.id.ToString(_usCulture));
         }
 
         /// <summary>

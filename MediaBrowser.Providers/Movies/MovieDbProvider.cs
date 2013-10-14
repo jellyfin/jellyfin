@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -193,7 +194,7 @@ namespace MediaBrowser.Providers.Movies
 
         protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
         {
-            if (HasAltMeta(item))
+            if (HasAltMeta(item) && !ConfigurationManager.Configuration.EnableTmdbUpdates)
                 return false;
 
             // Boxsets require two passes because we need the children to be refreshed
@@ -203,6 +204,53 @@ namespace MediaBrowser.Providers.Movies
             }
 
             return base.NeedsRefreshInternal(item, providerInfo);
+        }
+
+        protected override bool NeedsRefreshBasedOnCompareDate(BaseItem item, BaseProviderInfo providerInfo)
+        {
+            var language = ConfigurationManager.Configuration.PreferredMetadataLanguage;
+
+            var path = GetDataFilePath(item, language);
+
+            if (!string.IsNullOrEmpty(path))
+            {
+                var fileInfo = new FileInfo(path);
+
+                if (fileInfo.Exists)
+                {
+                    return fileInfo.LastWriteTimeUtc > providerInfo.LastRefreshed;
+                }
+            }
+
+            return base.NeedsRefreshBasedOnCompareDate(item, providerInfo);
+        }
+
+        /// <summary>
+        /// Gets the movie data path.
+        /// </summary>
+        /// <param name="appPaths">The app paths.</param>
+        /// <param name="isBoxSet">if set to <c>true</c> [is box set].</param>
+        /// <param name="tmdbId">The TMDB id.</param>
+        /// <returns>System.String.</returns>
+        internal static string GetMovieDataPath(IApplicationPaths appPaths, bool isBoxSet, string tmdbId)
+        {
+            var dataPath = isBoxSet ? GetBoxSetsDataPath(appPaths) : GetMoviesDataPath(appPaths);
+
+            return Path.Combine(dataPath, tmdbId);
+        }
+
+        internal static string GetMoviesDataPath(IApplicationPaths appPaths)
+        {
+            var dataPath = Path.Combine(appPaths.DataPath, "tmdb-movies");
+
+            return dataPath;
+        }
+
+        internal static string GetBoxSetsDataPath(IApplicationPaths appPaths)
+        {
+            var dataPath = Path.Combine(appPaths.DataPath, "tmdb-collections");
+
+            return dataPath;
         }
 
         /// <summary>
@@ -216,7 +264,29 @@ namespace MediaBrowser.Providers.Movies
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            await FetchMovieData(item, cancellationToken).ConfigureAwait(false);
+            var id = item.GetProviderId(MetadataProviders.Tmdb);
+
+            if (string.IsNullOrEmpty(id))
+            {
+                id = item.GetProviderId(MetadataProviders.Imdb);
+            }
+
+            if (string.IsNullOrEmpty(id))
+            {
+                id = await FindId(item, cancellationToken).ConfigureAwait(false);
+
+                if (!string.IsNullOrEmpty(id))
+                {
+                    item.SetProviderId(MetadataProviders.Tmdb, id);
+                }
+            }
+
+            if (!string.IsNullOrEmpty(id))
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                await FetchMovieData(item, id, force, cancellationToken).ConfigureAwait(false);
+            }
 
             SetLastRefreshed(item, DateTime.UtcNow);
             return true;
@@ -243,40 +313,6 @@ namespace MediaBrowser.Providers.Movies
             }
 
             return false;
-        }
-
-        /// <summary>
-        /// Fetches the movie data.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="cancellationToken"></param>
-        /// <returns>Task.</returns>
-        private async Task FetchMovieData(BaseItem item, CancellationToken cancellationToken)
-        {
-            var id = item.GetProviderId(MetadataProviders.Tmdb);
-
-            if (string.IsNullOrEmpty(id))
-            {
-                id = item.GetProviderId(MetadataProviders.Imdb);
-            }
-
-            if (string.IsNullOrEmpty(id))
-            {
-                id = await FindId(item, cancellationToken).ConfigureAwait(false);
-            }
-
-            if (!string.IsNullOrEmpty(id))
-            {
-                Logger.Debug("MovieDbProvider - getting movie info with id: " + id);
-
-                cancellationToken.ThrowIfCancellationRequested();
-
-                await FetchMovieData(item, id, cancellationToken).ConfigureAwait(false);
-            }
-            else
-            {
-                Logger.Info("MovieDBProvider could not find " + item.Name + ". Check name on themoviedb.org.");
-            }
         }
 
         /// <summary>
@@ -453,42 +489,114 @@ namespace MediaBrowser.Providers.Movies
             return WebUtility.UrlEncode(name);
         }
 
+        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
+
         /// <summary>
         /// Fetches the movie data.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="id">The id.</param>
+        /// <param name="isForcedRefresh">if set to <c>true</c> [is forced refresh].</param>
         /// <param name="cancellationToken">The cancellation token</param>
         /// <returns>Task.</returns>
-        protected async Task FetchMovieData(BaseItem item, string id, CancellationToken cancellationToken)
+        private async Task FetchMovieData(BaseItem item, string id, bool isForcedRefresh, CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
+            // Id could be ImdbId or TmdbId
 
-            if (String.IsNullOrEmpty(id))
+            var language = ConfigurationManager.Configuration.PreferredMetadataLanguage;
+
+            var dataFilePath = GetDataFilePath(item, language);
+
+            var hasAltMeta = HasAltMeta(item);
+
+            var isRefreshingDueToTmdbUpdate = hasAltMeta && !isForcedRefresh;
+
+            if (string.IsNullOrEmpty(dataFilePath) || !File.Exists(dataFilePath))
             {
-                Logger.Info("MoviedbProvider: Ignoring " + item.Name + " because ID forced blank.");
-                return;
+                var isBoxSet = item is BoxSet;
+
+                var mainResult = await FetchMainResult(id, isBoxSet, cancellationToken).ConfigureAwait(false);
+
+                if (mainResult == null) return;
+
+                var path = GetMovieDataPath(ConfigurationManager.ApplicationPaths, isBoxSet, mainResult.id.ToString(_usCulture));
+
+                dataFilePath = Path.Combine(path, language + ".json");
+
+                var directory = Path.GetDirectoryName(dataFilePath);
+
+                Directory.CreateDirectory(directory);
+
+                JsonSerializer.SerializeToFile(mainResult, dataFilePath);
+
+                isRefreshingDueToTmdbUpdate = false;
             }
 
-            item.SetProviderId(MetadataProviders.Tmdb, id);
+            if (isForcedRefresh || ConfigurationManager.Configuration.EnableTmdbUpdates || !hasAltMeta)
+            {
+                dataFilePath = GetDataFilePath(item, language);
 
-            var mainResult = await FetchMainResult(item, id, cancellationToken).ConfigureAwait(false);
+                var mainResult = JsonSerializer.DeserializeFromFile<CompleteMovieData>(dataFilePath);
+
+                ProcessMainInfo(item, mainResult, isRefreshingDueToTmdbUpdate);
+            }
+        }
+
+        /// <summary>
+        /// Downloads the movie info.
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <param name="isBoxSet">if set to <c>true</c> [is box set].</param>
+        /// <param name="dataPath">The data path.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        internal async Task DownloadMovieInfo(string id, bool isBoxSet, string dataPath, CancellationToken cancellationToken)
+        {
+            var language = ConfigurationManager.Configuration.PreferredMetadataLanguage;
+
+            var mainResult = await FetchMainResult(id, isBoxSet, cancellationToken).ConfigureAwait(false);
 
             if (mainResult == null) return;
 
-            ProcessMainInfo(item, mainResult);
+            var dataFilePath = Path.Combine(dataPath, language + ".json");
+
+            Directory.CreateDirectory(dataPath);
+
+            JsonSerializer.SerializeToFile(mainResult, dataFilePath);
+        }
+
+        /// <summary>
+        /// Gets the data file path.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="language">The language.</param>
+        /// <returns>System.String.</returns>
+        private string GetDataFilePath(BaseItem item, string language)
+        {
+            var id = item.GetProviderId(MetadataProviders.Tmdb);
+
+            if (string.IsNullOrEmpty(id))
+            {
+                return null;
+            }
+
+            var path = GetMovieDataPath(ConfigurationManager.ApplicationPaths, item is BoxSet, id);
+
+            path = Path.Combine(path, language + ".json");
+
+            return path;
         }
 
         /// <summary>
         /// Fetches the main result.
         /// </summary>
-        /// <param name="item">The item.</param>
         /// <param name="id">The id.</param>
+        /// <param name="isBoxSet">if set to <c>true</c> [is box set].</param>
         /// <param name="cancellationToken">The cancellation token</param>
         /// <returns>Task{CompleteMovieData}.</returns>
-        protected async Task<CompleteMovieData> FetchMainResult(BaseItem item, string id, CancellationToken cancellationToken)
+        protected async Task<CompleteMovieData> FetchMainResult(string id, bool isBoxSet, CancellationToken cancellationToken)
         {
-            var baseUrl = item is BoxSet ? GetBoxSetInfo3 : GetMovieInfo3;
+            var baseUrl = isBoxSet ? GetBoxSetInfo3 : GetMovieInfo3;
 
             string url = string.Format(baseUrl, id, ApiKey, ConfigurationManager.Configuration.PreferredMetadataLanguage);
             CompleteMovieData mainResult;
@@ -529,7 +637,7 @@ namespace MediaBrowser.Providers.Movies
 
                     if (String.IsNullOrEmpty(mainResult.overview))
                     {
-                        Logger.Error("MovieDbProvider - Unable to find information for " + item.Name + " (id:" + id + ")");
+                        Logger.Error("MovieDbProvider - Unable to find information for (id:" + id + ")");
                         return null;
                     }
                 }
@@ -542,7 +650,8 @@ namespace MediaBrowser.Providers.Movies
         /// </summary>
         /// <param name="movie">The movie.</param>
         /// <param name="movieData">The movie data.</param>
-        protected virtual void ProcessMainInfo(BaseItem movie, CompleteMovieData movieData)
+        /// <param name="isRefreshingDueToTmdbUpdate">if set to <c>true</c> [is refreshing due to TMDB update].</param>
+        protected virtual void ProcessMainInfo(BaseItem movie, CompleteMovieData movieData, bool isRefreshingDueToTmdbUpdate)
         {
             if (movie != null && movieData != null)
             {
@@ -580,12 +689,19 @@ namespace MediaBrowser.Providers.Movies
                 float rating;
                 string voteAvg = movieData.vote_average.ToString(CultureInfo.InvariantCulture);
 
-                //tmdb appears to have unified their numbers to always report "7.3" regardless of country
+                // tmdb appears to have unified their numbers to always report "7.3" regardless of country
                 // so I removed the culture-specific processing here because it was not working for other countries -ebr
-                if (float.TryParse(voteAvg, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out rating))
+                // Don't import this when responding to tmdb updates because we don't want to blow away imdb data
+                if (!isRefreshingDueToTmdbUpdate && float.TryParse(voteAvg, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out rating))
+                {
                     movie.CommunityRating = rating;
+                }
 
-                movie.VoteCount = movieData.vote_count;
+                // Don't import this when responding to tmdb updates because we don't want to blow away imdb data
+                if (!isRefreshingDueToTmdbUpdate)
+                {
+                    movie.VoteCount = movieData.vote_count;
+                }
 
                 //release date and certification are retrieved based on configured country and we fall back on US if not there and to minimun release date if still no match
                 if (movieData.releases != null && movieData.releases.countries != null)
@@ -667,8 +783,9 @@ namespace MediaBrowser.Providers.Movies
                     }
                 }
 
-                //genres
-                if (movieData.genres != null && !movie.LockedFields.Contains(MetadataFields.Genres))
+                // genres
+                // Don't import this when responding to tmdb updates because we don't want to blow away imdb data
+                if (movieData.genres != null && !movie.LockedFields.Contains(MetadataFields.Genres) && !isRefreshingDueToTmdbUpdate)
                 {
                     movie.Genres.Clear();
 

@@ -1,6 +1,9 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Release|x86" />
-  <MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.Workbench ActiveDocument="MediaBrowser.Server.Mono\Program.cs">
+    <Files>
+      <File FileName="MediaBrowser.Server.Mono\Program.cs" Line="82" Column="4" />
+    </Files>
     <Pads>
       <Pad Id="ProjectPad">
         <State expanded="True">
@@ -16,9 +19,8 @@
           </Node>
           <Node name="MediaBrowser.Server.Implementations" expanded="True" />
           <Node name="MediaBrowser.Server.Mono" expanded="True">
-            <Node name="FFMpeg" expanded="True">
-              <Node name="FFMpegDownloader.cs" selected="True" />
-            </Node>
+            <Node name="FFMpeg" expanded="True" />
+            <Node name="Program.cs" selected="True" />
           </Node>
         </State>
       </Pad>
