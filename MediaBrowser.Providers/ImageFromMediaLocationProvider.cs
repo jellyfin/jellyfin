@@ -165,7 +165,7 @@ namespace MediaBrowser.Providers
         }
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-        
+
         /// <summary>
         /// Fills in image paths based on files win the folder
         /// </summary>
@@ -192,13 +192,13 @@ namespace MediaBrowser.Providers
 
                 image = GetImage(item, args, string.Format("season-{0}", num));
             }
-            
+
             // Support plex/xbmc convention
             if (image == null && (item is Movie || item is MusicVideo || item is AdultVideo))
             {
                 image = GetImage(item, args, "movie");
             }
-            
+
             // Look for a file with the same name as the item
             if (image == null)
             {
@@ -233,7 +233,7 @@ namespace MediaBrowser.Providers
 
                 image = GetImage(item, args, string.Format("season-{0}-banner", num));
             }
-            
+
             if (image != null)
             {
                 item.SetImage(ImageType.Banner, image.FullName);
@@ -344,9 +344,45 @@ namespace MediaBrowser.Providers
             PopulateBackdrops(item, args, backdropFiles, "background", "background-");
             PopulateBackdrops(item, args, backdropFiles, "art", "art-");
 
+            PopulateBackdropsFromExtraFanart(args, backdropFiles);
+
             if (backdropFiles.Count > 0)
             {
                 item.BackdropImagePaths = backdropFiles;
+            }
+        }
+
+        /// <summary>
+        /// Populates the backdrops from extra fanart.
+        /// </summary>
+        /// <param name="args">The args.</param>
+        /// <param name="backdrops">The backdrops.</param>
+        private void PopulateBackdropsFromExtraFanart(ItemResolveArgs args, List<string> backdrops)
+        {
+            if (!args.IsDirectory)
+            {
+                return;
+            }
+
+            if (args.ContainsFileSystemEntryByName("extrafanart"))
+            {
+                var path = Path.Combine(args.Path, "extrafanart");
+
+                var imageFiles = Directory.EnumerateFiles(path, "*", SearchOption.TopDirectoryOnly)
+                    .Where(i =>
+                    {
+                        var extension = Path.GetExtension(i);
+
+                        if (string.IsNullOrEmpty(extension))
+                        {
+                            return false;
+                        }
+
+                        return BaseItem.SupportedImageExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase);
+                    })
+                    .ToList();
+
+                backdrops.AddRange(imageFiles);
             }
         }
 
