@@ -354,7 +354,7 @@ namespace MediaBrowser.Controller.Providers
         }
 
         private Dictionary<string, string> _fileStampExtensionsDictionary;
-        private  Dictionary<string, string> FileStampExtensionsDictionary
+        private Dictionary<string, string> FileStampExtensionsDictionary
         {
             get
             {
@@ -400,46 +400,50 @@ namespace MediaBrowser.Controller.Providers
 
             // Record the name of each file 
             // Need to sort these because accoring to msdn docs, our i/o methods are not guaranteed in any order
-            foreach (var file in resolveArgs.FileSystemChildren
-                .Where(i => IncludeInFileStamp(i, extensions, numExtensions))
-                .OrderBy(f => f.Name))
-            {
-                sb.Append(file.Name);
-            }
-
-            foreach (var file in resolveArgs.MetadataFiles
-                .Where(i => IncludeInFileStamp(i, extensions, numExtensions))
-                .OrderBy(f => f.Name))
-            {
-                sb.Append(file.Name);
-            }
+            AddFiles(sb, resolveArgs.FileSystemChildren, extensions, numExtensions);
+            AddFiles(sb, resolveArgs.MetadataFiles, extensions, numExtensions);
 
             return sb.ToString().GetMD5();
         }
 
+        private static readonly Dictionary<string, string> FoldersToMonitor = new[] { "extrafanart" }
+            .ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
+
         /// <summary>
-        /// Includes the in file stamp.
+        /// Adds the files.
         /// </summary>
-        /// <param name="file">The file.</param>
+        /// <param name="sb">The sb.</param>
+        /// <param name="files">The files.</param>
         /// <param name="extensions">The extensions.</param>
         /// <param name="numExtensions">The num extensions.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        private bool IncludeInFileStamp(FileSystemInfo file, Dictionary<string,string> extensions, int numExtensions)
+        private void AddFiles(StringBuilder sb, IEnumerable<FileSystemInfo> files, Dictionary<string, string> extensions, int numExtensions)
         {
-            try
+            foreach (var file in files
+                .OrderBy(f => f.Name))
             {
-                if ((file.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
+                try
                 {
-                    return false;
+                    if ((file.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
+                    {
+                        if (FoldersToMonitor.ContainsKey(file.Name))
+                        {
+                            sb.Append(file.Name);
+
+                            var children = ((DirectoryInfo) file).EnumerateFiles("*", SearchOption.TopDirectoryOnly).ToList();
+                            AddFiles(sb, children, extensions, numExtensions);
+                        }
+                    }
+
+                    // It's a file
+                    else if (numExtensions == 0 || extensions.ContainsKey(file.Extension))
+                    {
+                        sb.Append(file.Name);
+                    }
                 }
-
-                return numExtensions == 0 || extensions.ContainsKey(file.Extension);
-            }
-            catch (IOException ex)
-            {
-                Logger.ErrorException("Error accessing file attributes for {0}", ex, file.FullName);
-
-                return false;
+                catch (IOException ex)
+                {
+                    Logger.ErrorException("Error accessing file attributes for {0}", ex, file.FullName);
+                }
             }
         }
     }
