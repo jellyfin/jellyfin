@@ -100,7 +100,7 @@ namespace MediaBrowser.Providers.Movies
             // Don't check for tvdb updates anymore frequently than 24 hours
             if (timestampFileInfo.Exists && (DateTime.UtcNow - timestampFileInfo.LastWriteTimeUtc).TotalDays < 1)
             {
-                //return;
+                return;
             }
 
             // Find out the last time we queried tvdb for updates
