@@ -252,7 +252,7 @@ namespace MediaBrowser.Providers.TV
             // The prescan task will take care of updates so we don't need to re-download here
             if (!files.Contains("banners.xml", StringComparer.OrdinalIgnoreCase) || !files.Contains("actors.xml", StringComparer.OrdinalIgnoreCase) || !files.Contains(seriesXmlFilename, StringComparer.OrdinalIgnoreCase))
             {
-                await DownloadSeriesZip(seriesId, seriesDataPath, cancellationToken).ConfigureAwait(false);
+                await DownloadSeriesZip(seriesId, seriesDataPath, null, cancellationToken).ConfigureAwait(false);
             }
 
             // Examine if there's no local metadata, or save local is on (to get updates)
@@ -279,7 +279,7 @@ namespace MediaBrowser.Providers.TV
         /// <param name="seriesDataPath">The series data path.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        internal async Task DownloadSeriesZip(string seriesId, string seriesDataPath, CancellationToken cancellationToken)
+        internal async Task DownloadSeriesZip(string seriesId, string seriesDataPath, long? lastTvDbUpdateTime, CancellationToken cancellationToken)
         {
             var url = string.Format(SeriesGetZip, TVUtils.TvdbApiKey, seriesId, ConfigurationManager.Configuration.PreferredMetadataLanguage);
 
@@ -301,12 +301,14 @@ namespace MediaBrowser.Providers.TV
                 }
             }
 
-            foreach (var file in Directory.EnumerateFiles(seriesDataPath, "*.xml", SearchOption.AllDirectories).ToList())
+            // Sanitize all files, except for extracted episode files
+            foreach (var file in Directory.EnumerateFiles(seriesDataPath, "*.xml", SearchOption.AllDirectories).ToList()
+                .Where(i => !Path.GetFileName(i).StartsWith("episode-", StringComparison.OrdinalIgnoreCase)))
             {
                 await SanitizeXmlFile(file).ConfigureAwait(false);
             }
 
-            await ExtractEpisodes(seriesDataPath, Path.Combine(seriesDataPath, ConfigurationManager.Configuration.PreferredMetadataLanguage + ".xml")).ConfigureAwait(false);
+            await ExtractEpisodes(seriesDataPath, Path.Combine(seriesDataPath, ConfigurationManager.Configuration.PreferredMetadataLanguage + ".xml"), lastTvDbUpdateTime).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -369,8 +371,9 @@ namespace MediaBrowser.Providers.TV
         /// </summary>
         /// <param name="seriesDataPath">The series data path.</param>
         /// <param name="xmlFile">The XML file.</param>
+        /// <param name="lastTvDbUpdateTime">The last tv db update time.</param>
         /// <returns>Task.</returns>
-        private async Task ExtractEpisodes(string seriesDataPath, string xmlFile)
+        private async Task ExtractEpisodes(string seriesDataPath, string xmlFile, long? lastTvDbUpdateTime)
         {
             var settings = new XmlReaderSettings
             {
@@ -398,7 +401,7 @@ namespace MediaBrowser.Providers.TV
                                     {
                                         var outerXml = reader.ReadOuterXml();
 
-                                        await SaveEpsiodeXml(seriesDataPath, outerXml).ConfigureAwait(false);
+                                        await SaveEpsiodeXml(seriesDataPath, outerXml, lastTvDbUpdateTime).ConfigureAwait(false);
                                         break;
                                     }
 
@@ -412,7 +415,7 @@ namespace MediaBrowser.Providers.TV
             }
         }
 
-        private async Task SaveEpsiodeXml(string seriesDataPath, string xml)
+        private async Task SaveEpsiodeXml(string seriesDataPath, string xml, long? lastTvDbUpdateTime)
         {
             var settings = new XmlReaderSettings
             {
@@ -425,6 +428,7 @@ namespace MediaBrowser.Providers.TV
             var seasonNumber = -1;
             var episodeNumber = -1;
             var absoluteNumber = -1;
+            var lastUpdateString = string.Empty;
 
             using (var streamReader = new StringReader(xml))
             {
@@ -440,6 +444,12 @@ namespace MediaBrowser.Providers.TV
                         {
                             switch (reader.Name)
                             {
+                                case "lastupdated":
+                                    {
+                                        lastUpdateString = reader.ReadElementContentAsString();
+                                        break;
+                                    }
+
                                 case "EpisodeNumber":
                                     {
                                         var val = reader.ReadElementContentAsString();
@@ -491,21 +501,21 @@ namespace MediaBrowser.Providers.TV
                 }
             }
 
-            var file = Path.Combine(seriesDataPath, string.Format("episode-{0}-{1}.xml", seasonNumber, episodeNumber));
-
-            using (var writer = XmlWriter.Create(file, new XmlWriterSettings
+            var hasEpisodeChanged = true;
+            if (!string.IsNullOrEmpty(lastUpdateString) && lastTvDbUpdateTime.HasValue)
             {
-                Encoding = Encoding.UTF8,
-                Async = true
-            }))
-            {
-                await writer.WriteRawAsync(xml).ConfigureAwait(false);
+                long num;
+                if (long.TryParse(lastUpdateString, NumberStyles.Any, UsCulture, out num))
+                {
+                    hasEpisodeChanged = num >= lastTvDbUpdateTime.Value;
+                }
             }
 
-            if (absoluteNumber != -1)
-            {
-                file = Path.Combine(seriesDataPath, string.Format("episode-abs-{0}.xml", absoluteNumber));
+            var file = Path.Combine(seriesDataPath, string.Format("episode-{0}-{1}.xml", seasonNumber, episodeNumber));
 
+            // Only save the file if not already there, or if the episode has changed
+            if (hasEpisodeChanged || !File.Exists(file))
+            {
                 using (var writer = XmlWriter.Create(file, new XmlWriterSettings
                 {
                     Encoding = Encoding.UTF8,
@@ -513,6 +523,24 @@ namespace MediaBrowser.Providers.TV
                 }))
                 {
                     await writer.WriteRawAsync(xml).ConfigureAwait(false);
+                }
+            }
+
+            if (absoluteNumber != -1)
+            {
+                file = Path.Combine(seriesDataPath, string.Format("episode-abs-{0}.xml", absoluteNumber));
+
+                // Only save the file if not already there, or if the episode has changed
+                if (hasEpisodeChanged || !File.Exists(file))
+                {
+                    using (var writer = XmlWriter.Create(file, new XmlWriterSettings
+                    {
+                        Encoding = Encoding.UTF8,
+                        Async = true
+                    }))
+                    {
+                        await writer.WriteRawAsync(xml).ConfigureAwait(false);
+                    }
                 }
             }
         }

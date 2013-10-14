@@ -13,14 +13,14 @@ namespace MediaBrowser.Providers.Music
     /// <summary>
     /// Class MusicAlbumDynamicInfoProvider
     /// </summary>
-    public class MusicAlbumDynamicInfoProvider : BaseMetadataProvider, IDynamicInfoProvider
+    public class AlbumDynamicInfoProvider : BaseMetadataProvider, IDynamicInfoProvider
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseMetadataProvider" /> class.
         /// </summary>
         /// <param name="logManager">The log manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
-        public MusicAlbumDynamicInfoProvider(ILogManager logManager, IServerConfigurationManager configurationManager)
+        public AlbumDynamicInfoProvider(ILogManager logManager, IServerConfigurationManager configurationManager)
             : base(logManager, configurationManager)
         {
         }

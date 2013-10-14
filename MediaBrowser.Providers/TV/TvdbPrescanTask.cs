@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Net;
+﻿using System.Globalization;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Logging;
@@ -55,6 +56,8 @@ namespace MediaBrowser.Providers.TV
             _config = config;
         }
 
+        protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
+
         /// <summary>
         /// Runs the specified progress.
         /// </summary>
@@ -72,7 +75,7 @@ namespace MediaBrowser.Providers.TV
             var path = RemoteSeriesProvider.GetSeriesDataPath(_config.CommonApplicationPaths);
 
             Directory.CreateDirectory(path);
-            
+
             var timestampFile = Path.Combine(path, "time.txt");
 
             var timestampFileInfo = new FileInfo(timestampFile);
@@ -106,7 +109,7 @@ namespace MediaBrowser.Providers.TV
                     newUpdateTime = GetUpdateTime(stream);
                 }
 
-                await UpdateSeries(existingDirectories, path, progress, cancellationToken).ConfigureAwait(false);
+                await UpdateSeries(existingDirectories, path, null, progress, cancellationToken).ConfigureAwait(false);
             }
             else
             {
@@ -114,7 +117,13 @@ namespace MediaBrowser.Providers.TV
 
                 newUpdateTime = seriesToUpdate.Item2;
 
-                await UpdateSeries(seriesToUpdate.Item1, path, progress, cancellationToken).ConfigureAwait(false);
+                long lastUpdateValue;
+
+                long.TryParse(lastUpdateTime, NumberStyles.Any, UsCulture, out lastUpdateValue);
+
+                var nullableUpdateValue = lastUpdateValue == 0 ? (long?)null : lastUpdateValue;
+
+                await UpdateSeries(seriesToUpdate.Item1, path, nullableUpdateValue, progress, cancellationToken).ConfigureAwait(false);
             }
 
             File.WriteAllText(timestampFile, newUpdateTime, Encoding.UTF8);
@@ -251,10 +260,11 @@ namespace MediaBrowser.Providers.TV
         /// </summary>
         /// <param name="seriesIds">The series ids.</param>
         /// <param name="seriesDataPath">The series data path.</param>
+        /// <param name="lastTvDbUpdateTime">The last tv db update time.</param>
         /// <param name="progress">The progress.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        private async Task UpdateSeries(IEnumerable<string> seriesIds, string seriesDataPath, IProgress<double> progress, CancellationToken cancellationToken)
+        private async Task UpdateSeries(IEnumerable<string> seriesIds, string seriesDataPath, long? lastTvDbUpdateTime, IProgress<double> progress, CancellationToken cancellationToken)
         {
             var list = seriesIds.ToList();
             var numComplete = 0;
@@ -263,7 +273,7 @@ namespace MediaBrowser.Providers.TV
             {
                 try
                 {
-                    await UpdateSeries(seriesId, seriesDataPath, cancellationToken).ConfigureAwait(false);
+                    await UpdateSeries(seriesId, seriesDataPath, lastTvDbUpdateTime, cancellationToken).ConfigureAwait(false);
                 }
                 catch (HttpException ex)
                 {
@@ -289,9 +299,10 @@ namespace MediaBrowser.Providers.TV
         /// </summary>
         /// <param name="id">The id.</param>
         /// <param name="seriesDataPath">The series data path.</param>
+        /// <param name="lastTvDbUpdateTime">The last tv db update time.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        private Task UpdateSeries(string id, string seriesDataPath, CancellationToken cancellationToken)
+        private Task UpdateSeries(string id, string seriesDataPath, long? lastTvDbUpdateTime, CancellationToken cancellationToken)
         {
             _logger.Info("Updating series " + id);
 
@@ -299,7 +310,7 @@ namespace MediaBrowser.Providers.TV
 
             Directory.CreateDirectory(seriesDataPath);
 
-            return RemoteSeriesProvider.Current.DownloadSeriesZip(id, seriesDataPath, cancellationToken);
+            return RemoteSeriesProvider.Current.DownloadSeriesZip(id, seriesDataPath, lastTvDbUpdateTime, cancellationToken);
         }
     }
 }
