@@ -4,6 +4,7 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Providers.Savers;
 using System;
@@ -35,6 +36,11 @@ namespace MediaBrowser.Providers.Movies
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         public override bool Supports(BaseItem item)
         {
+            if (item.LocationType != LocationType.FileSystem)
+            {
+                return false;
+            }
+
             var trailer = item as Trailer;
 
             if (trailer != null)
