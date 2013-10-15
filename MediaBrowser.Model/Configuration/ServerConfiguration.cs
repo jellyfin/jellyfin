@@ -228,12 +228,15 @@ namespace MediaBrowser.Model.Configuration
 
         public bool EnableVideoImageExtraction { get; set; }
 
+        public ImageSavingConvention ImageSavingConvention { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>
         public ServerConfiguration()
             : base()
         {
+            ImageSavingConvention = ImageSavingConvention.Legacy;
             HttpServerPortNumber = 8096;
             LegacyWebSocketPortNumber = 8945;
             EnableHttpLevelLogging = true;
@@ -276,5 +279,11 @@ namespace MediaBrowser.Model.Configuration
 
             SeasonZeroDisplayName = "Specials";
         }
+    }
+
+    public enum ImageSavingConvention
+    {
+        Legacy,
+        Compatible
     }
 }

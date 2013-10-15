@@ -206,7 +206,8 @@ namespace MediaBrowser.Providers
 
                 if (!string.IsNullOrEmpty(name))
                 {
-                    image = GetImage(item, args, name);
+                    image = GetImage(item, args, name) ??
+                        GetImage(item, args, name + "-poster");
                 }
             }
 

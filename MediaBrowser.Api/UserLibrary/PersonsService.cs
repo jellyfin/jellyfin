@@ -22,6 +22,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// Gets or sets the person types.
         /// </summary>
         /// <value>The person types.</value>
+        [ApiMember(Name = "PersonTypes", Description = "Optional filter by person type. Accepts multiple, comma-delimited.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string PersonTypes { get; set; }
     }
 
