@@ -509,8 +509,6 @@ namespace MediaBrowser.Providers.Movies
 
             var hasAltMeta = HasAltMeta(item);
 
-            var isRefreshingDueToTmdbUpdate = hasAltMeta && !isForcedRefresh;
-
             if (string.IsNullOrEmpty(dataFilePath) || !File.Exists(dataFilePath))
             {
                 var isBoxSet = item is BoxSet;
@@ -528,8 +526,6 @@ namespace MediaBrowser.Providers.Movies
                 Directory.CreateDirectory(directory);
 
                 JsonSerializer.SerializeToFile(mainResult, dataFilePath);
-
-                isRefreshingDueToTmdbUpdate = false;
             }
 
             if (isForcedRefresh || ConfigurationManager.Configuration.EnableTmdbUpdates || !hasAltMeta)
@@ -538,7 +534,7 @@ namespace MediaBrowser.Providers.Movies
 
                 var mainResult = JsonSerializer.DeserializeFromFile<CompleteMovieData>(dataFilePath);
 
-                ProcessMainInfo(item, mainResult, isRefreshingDueToTmdbUpdate);
+                ProcessMainInfo(item, mainResult);
             }
         }
 
@@ -650,8 +646,7 @@ namespace MediaBrowser.Providers.Movies
         /// </summary>
         /// <param name="movie">The movie.</param>
         /// <param name="movieData">The movie data.</param>
-        /// <param name="isRefreshingDueToTmdbUpdate">if set to <c>true</c> [is refreshing due to TMDB update].</param>
-        protected virtual void ProcessMainInfo(BaseItem movie, CompleteMovieData movieData, bool isRefreshingDueToTmdbUpdate)
+        protected virtual void ProcessMainInfo(BaseItem movie, CompleteMovieData movieData)
         {
             if (movie != null && movieData != null)
             {
@@ -691,14 +686,14 @@ namespace MediaBrowser.Providers.Movies
 
                 // tmdb appears to have unified their numbers to always report "7.3" regardless of country
                 // so I removed the culture-specific processing here because it was not working for other countries -ebr
-                // Don't import this when responding to tmdb updates because we don't want to blow away imdb data
-                if (!isRefreshingDueToTmdbUpdate && float.TryParse(voteAvg, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out rating))
+                // Movies get this from imdb
+                if (movie is BoxSet && float.TryParse(voteAvg, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out rating))
                 {
                     movie.CommunityRating = rating;
                 }
 
-                // Don't import this when responding to tmdb updates because we don't want to blow away imdb data
-                if (!isRefreshingDueToTmdbUpdate)
+                // Movies get this from imdb
+                if (movie is BoxSet)
                 {
                     movie.VoteCount = movieData.vote_count;
                 }
@@ -784,8 +779,8 @@ namespace MediaBrowser.Providers.Movies
                 }
 
                 // genres
-                // Don't import this when responding to tmdb updates because we don't want to blow away imdb data
-                if (movieData.genres != null && !movie.LockedFields.Contains(MetadataFields.Genres) && !isRefreshingDueToTmdbUpdate)
+                // Movies get this from imdb
+                if (movieData.genres != null && !movie.LockedFields.Contains(MetadataFields.Genres) && movie is BoxSet)
                 {
                     movie.Genres.Clear();
 

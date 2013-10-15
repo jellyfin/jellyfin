@@ -18,6 +18,14 @@
                 <form id="metadataImagesConfigurationForm">
                     <ul data-role="listview" class="ulForm">
                         <li>
+                            <label for="selectImageSavingConvention">Image saving convention: </label>
+                            <select name="selectImageSavingConvention" id="selectImageSavingConvention">
+                                <option value="Compatible">Compatible - MB3/Plex/Xbmc</option>
+                                <option value="Legacy">Legacy - MB3/MB2</option>
+                            </select>
+                            <div class="fieldDescription">Media Browser recognized images from most major media applications. Choosing your downloading convention is useful if you also use other products.</div>
+                        </li>
+                        <li>
                             <label for="txtNumbackdrops">Max number of backdrops per item: </label>
                             <input type="number" id="txtNumbackdrops" name="txtNumbackdrops" pattern="[0-9]*" required="required" min="1" />
                         </li>

@@ -4,6 +4,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Globalization;
@@ -92,7 +93,11 @@ namespace MediaBrowser.Server.Implementations.Providers
                 saveLocally = false;
             }
 
-            var path = GetSavePath(item, type, imageIndex, mimeType, saveLocally);
+            var path = saveLocally && _config.Configuration.ImageSavingConvention == ImageSavingConvention.Compatible ?
+                GetCompatibleSavePath(item, type, imageIndex, mimeType) :
+                GetLegacySavePath(item, type, imageIndex, mimeType, saveLocally);
+
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
 
             var currentPath = GetCurrentImagePath(item, type, imageIndex);
 
@@ -112,8 +117,8 @@ namespace MediaBrowser.Server.Implementations.Providers
                         {
                             file.Attributes &= ~FileAttributes.Hidden;
                         }
-                    } 
-                    
+                    }
+
                     using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
                     {
                         await source.CopyToAsync(fs, StreamDefaults.DefaultCopyToBufferSize, cancellationToken).ConfigureAwait(false);
@@ -210,7 +215,7 @@ namespace MediaBrowser.Server.Implementations.Providers
         /// or
         /// imageIndex
         /// </exception>
-        private string GetSavePath(BaseItem item, ImageType type, int? imageIndex, string mimeType, bool saveLocally)
+        private string GetLegacySavePath(BaseItem item, ImageType type, int? imageIndex, string mimeType, bool saveLocally)
         {
             string filename;
 
@@ -271,22 +276,81 @@ namespace MediaBrowser.Server.Implementations.Providers
                 path = _remoteImageCache.GetResourcePath(item.GetType().FullName + item.Id, filename);
             }
 
-            var parentPath = Path.GetDirectoryName(path);
-
-            Directory.CreateDirectory(parentPath);
-
             return path;
         }
 
+        /// <summary>
+        /// Gets the compatible save path.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="type">The type.</param>
+        /// <param name="imageIndex">Index of the image.</param>
+        /// <param name="mimeType">Type of the MIME.</param>
+        /// <returns>System.String.</returns>
+        /// <exception cref="System.ArgumentNullException">imageIndex</exception>
+        private string GetCompatibleSavePath(BaseItem item, ImageType type, int? imageIndex, string mimeType)
+        {
+            var extension = mimeType.Split('/').Last();
+
+            if (string.Equals(extension, "jpeg", StringComparison.OrdinalIgnoreCase))
+            {
+                extension = "jpg";
+            }
+            extension = "." + extension.ToLower();
+
+            // Backdrop paths
+            if (type == ImageType.Backdrop)
+            {
+                if (!imageIndex.HasValue)
+                {
+                    throw new ArgumentNullException("imageIndex");
+                }
+
+                if (imageIndex.Value == 0)
+                {
+                    return Path.Combine(item.MetaLocation, "fanart" + extension);
+                }
+
+                return Path.Combine(item.MetaLocation, "extrafanart", "fanart" + imageIndex.Value.ToString(UsCulture) + extension);
+            }
+
+            if (type == ImageType.Primary)
+            {
+                if (item is Episode)
+                {
+                    return Path.ChangeExtension(item.Path, extension);
+                }
+
+                if (item.IsInMixedFolder)
+                {
+                    return GetSavePathForItemInMixedFolder(item, type, string.Empty, extension);
+                }
+
+                var filename = Path.GetFileNameWithoutExtension(item.Path) + "-poster" + extension;
+                return Path.Combine(item.MetaLocation, filename);
+            }
+
+            // All other paths are the same
+            return GetLegacySavePath(item, type, imageIndex, mimeType, true);
+        }
+
+        /// <summary>
+        /// Gets the save path for item in mixed folder.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="type">The type.</param>
+        /// <param name="imageFilename">The image filename.</param>
+        /// <param name="extension">The extension.</param>
+        /// <returns>System.String.</returns>
         private string GetSavePathForItemInMixedFolder(BaseItem item, ImageType type, string imageFilename, string extension)
         {
             if (type == ImageType.Primary)
             {
-                return Path.ChangeExtension(item.Path, extension);
+                imageFilename = "poster";
             }
             var folder = Path.GetDirectoryName(item.Path);
 
-            return Path.Combine(folder, Path.GetFileNameWithoutExtension(item.Path) + "-" + imageFilename);
+            return Path.Combine(folder, Path.GetFileNameWithoutExtension(item.Path) + "-" + imageFilename + extension);
         }
     }
 }

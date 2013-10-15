@@ -28,6 +28,7 @@
 
                     config.SaveLocalMeta = $('#chkSaveLocalMetadata', page).checked();
                     config.EnableVideoImageExtraction = $('#chkVIdeoImages', page).checked();
+                    config.ImageSavingConvention = $('#selectImageSavingConvention', page).val();
 
                     ApiClient.updateServerConfiguration(config).done(function (result) {
 

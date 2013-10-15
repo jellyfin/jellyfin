@@ -43,6 +43,8 @@
 
         $('#chkVIdeoImages', page).checked(config.EnableVideoImageExtraction).checkboxradio("refresh");
 
+        $('#selectImageSavingConvention', page).val(config.ImageSavingConvention).selectmenu("refresh");
+
         Dashboard.hideLoadingMsg();
     },
 
@@ -53,6 +55,8 @@
 
         ApiClient.getServerConfiguration().done(function (config) {
 
+            config.ImageSavingConvention = $('#selectImageSavingConvention', form).val();
+            
             config.MaxBackdrops = $('#txtNumbackdrops', form).val();
 
             config.DownloadMovieImages.Art = $('#chkDownloadMovieArt', form).checked();
