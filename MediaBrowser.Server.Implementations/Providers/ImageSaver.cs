@@ -93,52 +93,128 @@ namespace MediaBrowser.Server.Implementations.Providers
                 saveLocally = false;
             }
 
-            var path = saveLocally && _config.Configuration.ImageSavingConvention == ImageSavingConvention.Compatible ?
-                GetCompatibleSavePath(item, type, imageIndex, mimeType) :
-                GetLegacySavePath(item, type, imageIndex, mimeType, saveLocally);
+            var paths = GetSavePaths(item, type, imageIndex, mimeType, saveLocally);
 
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            // If there are more than one output paths, the stream will need to be seekable
+            if (paths.Length > 1 && !source.CanSeek)
+            {
+                var memoryStream = new MemoryStream();
+                using (source)
+                {
+                    await source.CopyToAsync(memoryStream).ConfigureAwait(false);
+                }
+                memoryStream.Position = 0;
+                source = memoryStream;
+            }
 
             var currentPath = GetCurrentImagePath(item, type, imageIndex);
 
-            try
+            using (source)
             {
-                _directoryWatchers.TemporarilyIgnore(path);
+                var isFirst = true;
 
-                using (source)
+                foreach (var path in paths)
                 {
-                    // If the file is currently hidden we'll have to remove that or the save will fail
-                    var file = new FileInfo(path);
-
-                    // This will fail if the file is hidden
-                    if (file.Exists)
+                    // Seek back to the beginning
+                    if (!isFirst)
                     {
-                        if ((file.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
-                        {
-                            file.Attributes &= ~FileAttributes.Hidden;
-                        }
+                        source.Position = 0;
                     }
 
-                    using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
+                    await SaveImageToLocation(source, path, cancellationToken).ConfigureAwait(false);
+
+                    isFirst = false;
+                }
+            }
+
+            // Set the path into the BaseItem
+            SetImagePath(item, type, imageIndex, paths[0]);
+
+            // Delete the current path
+            if (!string.IsNullOrEmpty(currentPath) && !paths.Contains(currentPath, StringComparer.OrdinalIgnoreCase))
+            {
+                _directoryWatchers.TemporarilyIgnore(currentPath);
+
+                try
+                {
+                    File.Delete(currentPath);
+                }
+                finally
+                {
+                    _directoryWatchers.RemoveTempIgnore(currentPath);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Saves the image to location.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="path">The path.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        private async Task SaveImageToLocation(Stream source, string path, CancellationToken cancellationToken)
+        {
+            _directoryWatchers.TemporarilyIgnore(path);
+
+            try
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
+
+                // If the file is currently hidden we'll have to remove that or the save will fail
+                var file = new FileInfo(path);
+
+                // This will fail if the file is hidden
+                if (file.Exists)
+                {
+                    if ((file.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
                     {
-                        await source.CopyToAsync(fs, StreamDefaults.DefaultCopyToBufferSize, cancellationToken).ConfigureAwait(false);
+                        file.Attributes &= ~FileAttributes.Hidden;
                     }
                 }
 
-                SetImagePath(item, type, imageIndex, path);
-
-                if (!string.IsNullOrEmpty(currentPath) && !string.Equals(path, currentPath, StringComparison.OrdinalIgnoreCase))
+                using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
                 {
-                    File.Delete(currentPath);
+                    await source.CopyToAsync(fs, StreamDefaults.DefaultCopyToBufferSize, cancellationToken).ConfigureAwait(false);
                 }
             }
             finally
             {
                 _directoryWatchers.RemoveTempIgnore(path);
             }
-
         }
 
+        /// <summary>
+        /// Gets the save paths.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="type">The type.</param>
+        /// <param name="imageIndex">Index of the image.</param>
+        /// <param name="mimeType">Type of the MIME.</param>
+        /// <param name="saveLocally">if set to <c>true</c> [save locally].</param>
+        /// <returns>IEnumerable{System.String}.</returns>
+        private string[] GetSavePaths(BaseItem item, ImageType type, int? imageIndex, string mimeType, bool saveLocally)
+        {
+            if (_config.Configuration.ImageSavingConvention == ImageSavingConvention.Legacy || !saveLocally)
+            {
+                return new[] { GetLegacySavePath(item, type, imageIndex, mimeType, saveLocally) };
+            }
+
+            return GetCompatibleSavePaths(item, type, imageIndex, mimeType);
+        }
+
+        /// <summary>
+        /// Gets the current image path.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="type">The type.</param>
+        /// <param name="imageIndex">Index of the image.</param>
+        /// <returns>System.String.</returns>
+        /// <exception cref="System.ArgumentNullException">
+        /// imageIndex
+        /// or
+        /// imageIndex
+        /// </exception>
         private string GetCurrentImagePath(BaseItem item, ImageType type, int? imageIndex)
         {
             switch (type)
@@ -161,6 +237,18 @@ namespace MediaBrowser.Server.Implementations.Providers
             }
         }
 
+        /// <summary>
+        /// Sets the image path.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="type">The type.</param>
+        /// <param name="imageIndex">Index of the image.</param>
+        /// <param name="path">The path.</param>
+        /// <exception cref="System.ArgumentNullException">
+        /// imageIndex
+        /// or
+        /// imageIndex
+        /// </exception>
         private void SetImagePath(BaseItem item, ImageType type, int? imageIndex, string path)
         {
             switch (type)
@@ -280,15 +368,15 @@ namespace MediaBrowser.Server.Implementations.Providers
         }
 
         /// <summary>
-        /// Gets the compatible save path.
+        /// Gets the compatible save paths.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="type">The type.</param>
         /// <param name="imageIndex">Index of the image.</param>
         /// <param name="mimeType">Type of the MIME.</param>
-        /// <returns>System.String.</returns>
+        /// <returns>IEnumerable{System.String}.</returns>
         /// <exception cref="System.ArgumentNullException">imageIndex</exception>
-        private string GetCompatibleSavePath(BaseItem item, ImageType type, int? imageIndex, string mimeType)
+        private string[] GetCompatibleSavePaths(BaseItem item, ImageType type, int? imageIndex, string mimeType)
         {
             var extension = mimeType.Split('/').Last();
 
@@ -308,30 +396,88 @@ namespace MediaBrowser.Server.Implementations.Providers
 
                 if (imageIndex.Value == 0)
                 {
-                    return Path.Combine(item.MetaLocation, "fanart" + extension);
+                    return new[]
+                        {
+                            Path.Combine(item.MetaLocation, "fanart" + extension)
+                        };
                 }
 
-                return Path.Combine(item.MetaLocation, "extrafanart", "fanart" + imageIndex.Value.ToString(UsCulture) + extension);
+                var outputIndex = imageIndex.Value;
+
+                return new[]
+                    {
+                        Path.Combine(item.MetaLocation, "extrafanart", "fanart" + outputIndex.ToString(UsCulture) + extension),
+                        Path.Combine(item.MetaLocation, "extrathumbs", "thumb" + outputIndex.ToString(UsCulture) + extension)
+                    };
             }
 
             if (type == ImageType.Primary)
             {
+                if (item is Season && item.IndexNumber.HasValue)
+                {
+                    var seriesFolder = Path.GetDirectoryName(item.Path);
+
+                    var seasonMarker = item.IndexNumber.Value == 0
+                                           ? "-specials"
+                                           : item.IndexNumber.Value.ToString("00", UsCulture);
+
+                    var imageFilename = "season" + seasonMarker + "-poster" + extension;
+
+                    return new[] { Path.Combine(seriesFolder, imageFilename) };
+                }
+
                 if (item is Episode)
                 {
-                    return Path.ChangeExtension(item.Path, extension);
+                    var seasonFolder = Path.GetDirectoryName(item.Path);
+
+                    var imageFilename = Path.GetFileNameWithoutExtension(item.Path) + "-thumb" + extension;
+
+                    return new[] { Path.Combine(seasonFolder, imageFilename) };
                 }
 
                 if (item.IsInMixedFolder)
                 {
-                    return GetSavePathForItemInMixedFolder(item, type, string.Empty, extension);
+                    return new[] { GetSavePathForItemInMixedFolder(item, type, string.Empty, extension) };
                 }
 
                 var filename = Path.GetFileNameWithoutExtension(item.Path) + "-poster" + extension;
-                return Path.Combine(item.MetaLocation, filename);
+                return new[] { Path.Combine(item.MetaLocation, filename) };
             }
 
+            if (type == ImageType.Banner)
+            {
+                if (item is Season && item.IndexNumber.HasValue)
+                {
+                    var seriesFolder = Path.GetDirectoryName(item.Path);
+
+                    var seasonMarker = item.IndexNumber.Value == 0
+                                           ? "-specials"
+                                           : item.IndexNumber.Value.ToString("00", UsCulture);
+
+                    var imageFilename = "season" + seasonMarker + "-banner" + extension;
+
+                    return new[] { Path.Combine(seriesFolder, imageFilename) };
+                }
+            }
+
+            if (type == ImageType.Thumb)
+            {
+                if (item is Season && item.IndexNumber.HasValue)
+                {
+                    var seriesFolder = Path.GetDirectoryName(item.Path);
+
+                    var seasonMarker = item.IndexNumber.Value == 0
+                                           ? "-specials"
+                                           : item.IndexNumber.Value.ToString("00", UsCulture);
+
+                    var imageFilename = "season" + seasonMarker + "-landscape" + extension;
+
+                    return new[] { Path.Combine(seriesFolder, imageFilename) };
+                }
+            }
+            
             // All other paths are the same
-            return GetLegacySavePath(item, type, imageIndex, mimeType, true);
+            return new[] { GetLegacySavePath(item, type, imageIndex, mimeType, true) };
         }
 
         /// <summary>
