@@ -37,6 +37,10 @@
     <Reference Include="Alchemy">
       <HintPath>..\packages\Alchemy.2.2.1\lib\net40\Alchemy.dll</HintPath>
     </Reference>
+    <Reference Include="BdInfo, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\MediaBrowser.BdInfo.1.0.0.3\lib\net45\BdInfo.dll</HintPath>
+    </Reference>
     <Reference Include="ServiceStack.OrmLite.SqliteNET">
       <HintPath>..\packages\ServiceStack.OrmLite.Sqlite32.3.9.63\lib\net40\ServiceStack.OrmLite.SqliteNET.dll</HintPath>
     </Reference>
@@ -57,9 +61,6 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
-    <Reference Include="BDInfo">
-      <HintPath>..\packages\MediaBrowser.BdInfo.1.0.0.2\lib\net45\BdInfo.dll</HintPath>
-    </Reference>
     <Reference Include="MoreLinq">
       <HintPath>..\packages\morelinq.1.0.16006\lib\net35\MoreLinq.dll</HintPath>
     </Reference>
