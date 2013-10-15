@@ -29,7 +29,7 @@ namespace MediaBrowser.Providers.TV
                 return ItemUpdateType.ImageUpdate;
             }
         }
-        
+
         /// <summary>
         /// Supportses the specified item.
         /// </summary>
@@ -72,7 +72,7 @@ namespace MediaBrowser.Providers.TV
                 return BaseItem.SupportedImageExtensions;
             }
         }
-        
+
         /// <summary>
         /// Fetches metadata and returns true or false indicating if any work that requires persistence was done
         /// </summary>
@@ -104,7 +104,6 @@ namespace MediaBrowser.Providers.TV
         /// Validates the primary image path still exists
         /// </summary>
         /// <param name="episode">The episode.</param>
-        /// <param name="metadataFolderPath">The metadata folder path.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         private void ValidateImage(Episode episode)
         {
@@ -130,18 +129,34 @@ namespace MediaBrowser.Providers.TV
         /// <param name="episodeFileName">Name of the episode file.</param>
         private void SetPrimaryImagePath(Episode item, Folder parent, string metadataFolder, string episodeFileName)
         {
-            // Look for the image file in the metadata folder, and if found, set PrimaryImagePath
-            var imageFiles = new[] {
-                Path.Combine(metadataFolder, Path.ChangeExtension(episodeFileName, ".jpg")),
-                Path.Combine(metadataFolder, Path.ChangeExtension(episodeFileName, ".png"))
-            };
-
-            var file = parent.ResolveArgs.GetMetaFileByPath(imageFiles[0]) ??
-                       parent.ResolveArgs.GetMetaFileByPath(imageFiles[1]);
-
-            if (file != null)
+            foreach (var extension in BaseItem.SupportedImageExtensions)
             {
-                item.PrimaryImagePath = file.FullName;
+                var path = Path.Combine(metadataFolder, Path.ChangeExtension(episodeFileName, extension));
+
+                var file = parent.ResolveArgs.GetMetaFileByPath(path);
+
+                if (file != null)
+                {
+                    item.PrimaryImagePath = file.FullName;
+                    return;
+                }
+            }
+
+            var seasonFolder = Path.GetDirectoryName(item.Path);
+
+            foreach (var extension in BaseItem.SupportedImageExtensions)
+            {
+                var imageFilename = Path.GetFileNameWithoutExtension(episodeFileName) + "-thumb" + extension;
+
+                var path = Path.Combine(seasonFolder, imageFilename);
+
+                var file = parent.ResolveArgs.GetMetaFileByPath(path);
+
+                if (file != null)
+                {
+                    item.PrimaryImagePath = file.FullName;
+                    return;
+                }
             }
         }
     }

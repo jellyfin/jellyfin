@@ -24,7 +24,8 @@ namespace MediaBrowser.Server.Implementations.Library
             "ps3_update",
             "ps3_vprm",
             "adv_obj",
-            "extrafanart"
+            "extrafanart",
+            "extrathumbs"
 
         }.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
 
