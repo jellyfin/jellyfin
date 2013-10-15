@@ -406,7 +406,7 @@ namespace MediaBrowser.Controller.Providers
             return sb.ToString().GetMD5();
         }
 
-        private static readonly Dictionary<string, string> FoldersToMonitor = new[] { "extrafanart" }
+        private static readonly Dictionary<string, string> FoldersToMonitor = new[] { "extrafanart", "extrathumbs" }
             .ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
 
         /// <summary>

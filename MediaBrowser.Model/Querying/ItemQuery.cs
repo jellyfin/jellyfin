@@ -229,6 +229,12 @@ namespace MediaBrowser.Model.Querying
         /// </summary>
         /// <value>The album artist starts with or greater.</value>
         public string AlbumArtistStartsWithOrGreater { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [include index containers].
+        /// </summary>
+        /// <value><c>true</c> if [include index containers]; otherwise, <c>false</c>.</value>
+        public bool IncludeIndexContainers { get; set; }
         
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemQuery" /> class.

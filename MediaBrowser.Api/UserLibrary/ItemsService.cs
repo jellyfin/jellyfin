@@ -179,6 +179,8 @@ namespace MediaBrowser.Api.UserLibrary
 
         [ApiMember(Name = "IsHD", Description = "Optional filter by items that are HD or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool? IsHD { get; set; }
+
+        public bool IncludeIndexContainers { get; set; }
     }
 
     /// <summary>
@@ -285,20 +287,37 @@ namespace MediaBrowser.Api.UserLibrary
             var item = string.IsNullOrEmpty(request.ParentId) ? user.RootFolder : _dtoService.GetItemByDtoId(request.ParentId, user.Id);
 
             // Default list type = children
+            IEnumerable<BaseItem> items;
 
             if (!string.IsNullOrEmpty(request.Ids))
             {
                 var idList = request.Ids.Split(',').ToList();
 
-                return idList.Select(i => _dtoService.GetItemByDtoId(i, user.Id));
+                items = idList.Select(i => _dtoService.GetItemByDtoId(i, user.Id));
             }
 
-            if (request.Recursive)
+            else if (request.Recursive)
             {
-                return ((Folder)item).GetRecursiveChildren(user);
+                items = ((Folder) item).GetRecursiveChildren(user);
+            }
+            else
+            {
+                items = ((Folder)item).GetChildren(user, true, request.IndexBy);
             }
 
-            return ((Folder)item).GetChildren(user, true, request.IndexBy);
+            if (request.IncludeIndexContainers)
+            {
+                var list = items.ToList();
+
+                var containers = list.Select(i => i.IndexContainer)
+                    .Where(i => i != null);
+
+                list.AddRange(containers);
+
+                return list.Distinct();
+            }
+
+            return items;
         }
 
         /// <summary>
@@ -648,7 +667,7 @@ namespace MediaBrowser.Api.UserLibrary
 
                 if (string.IsNullOrEmpty(personTypes))
                 {
-                    items = items.Where(item => item.People != null && item.People.Any(p => string.Equals(p.Name, request.Person, StringComparison.OrdinalIgnoreCase)));
+                    items = items.Where(item => item.People.Any(p => string.Equals(p.Name, request.Person, StringComparison.OrdinalIgnoreCase)));
                 }
                 else
                 {
