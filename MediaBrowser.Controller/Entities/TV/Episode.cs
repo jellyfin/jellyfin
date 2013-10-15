@@ -171,5 +171,25 @@ namespace MediaBrowser.Controller.Entities.TV
             return (ParentIndexNumber != null ? ParentIndexNumber.Value.ToString("000-") : "")
                     + (IndexNumber != null ? IndexNumber.Value.ToString("0000 - ") : "") + Name;
         }
+
+        /// <summary>
+        /// Determines whether [contains episode number] [the specified number].
+        /// </summary>
+        /// <param name="number">The number.</param>
+        /// <returns><c>true</c> if [contains episode number] [the specified number]; otherwise, <c>false</c>.</returns>
+        public bool ContainsEpisodeNumber(int number)
+        {
+            if (IndexNumber.HasValue)
+            {
+                if (IndexNumberEnd.HasValue)
+                {
+                    return number >= IndexNumber.Value && number <= IndexNumberEnd.Value;
+                }
+
+                return IndexNumber.Value == number;
+            }
+
+            return false;
+        }
     }
 }
