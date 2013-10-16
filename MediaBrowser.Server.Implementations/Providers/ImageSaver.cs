@@ -396,11 +396,6 @@ namespace MediaBrowser.Server.Implementations.Providers
 
                 if (imageIndex.Value == 0)
                 {
-                    if (item is Series)
-                    {
-                        return new[] { Path.Combine(item.Path, "season-all-fanart" + extension) };
-                    }
-
                     if (item is Season && item.IndexNumber.HasValue)
                     {
                         var seriesFolder = Path.GetDirectoryName(item.Path);
@@ -431,11 +426,6 @@ namespace MediaBrowser.Server.Implementations.Providers
 
             if (type == ImageType.Primary)
             {
-                if (item is Series)
-                {
-                    return new[] { Path.Combine(item.Path, "season-all-poster" + extension) };
-                }
-
                 if (item is Season && item.IndexNumber.HasValue)
                 {
                     var seriesFolder = Path.GetDirectoryName(item.Path);
@@ -469,11 +459,6 @@ namespace MediaBrowser.Server.Implementations.Providers
 
             if (type == ImageType.Banner)
             {
-                if (item is Series)
-                {
-                    return new[] { Path.Combine(item.Path, "season-all-banner" + extension) };
-                }
-
                 if (item is Season && item.IndexNumber.HasValue)
                 {
                     var seriesFolder = Path.GetDirectoryName(item.Path);
@@ -490,11 +475,6 @@ namespace MediaBrowser.Server.Implementations.Providers
 
             if (type == ImageType.Thumb)
             {
-                if (item is Series)
-                {
-                    return new[] { Path.Combine(item.Path, "season-all-landscape" + extension) };
-                }
-
                 if (item is Season && item.IndexNumber.HasValue)
                 {
                     var seriesFolder = Path.GetDirectoryName(item.Path);

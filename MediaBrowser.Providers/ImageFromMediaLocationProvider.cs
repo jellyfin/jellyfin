@@ -243,8 +243,7 @@ namespace MediaBrowser.Providers
             // Support plex/xbmc convention
             if (image == null && item is Series)
             {
-                image = GetImage(item, args, "show") ??
-                    GetImage(item, args, "season-all-poster");
+                image = GetImage(item, args, "show");
             }
 
             // Support plex/xbmc convention
@@ -306,11 +305,7 @@ namespace MediaBrowser.Providers
             if (image == null)
             {
                 // Supprt xbmc conventions
-                if (item is Series)
-                {
-                    image = GetImage(item, args, "season-all-banner");
-                }
-                else if (item is Season && item.IndexNumber.HasValue)
+                if (item is Season && item.IndexNumber.HasValue)
                 {
                     var seasonMarker = item.IndexNumber.Value == 0
                                            ? "-specials"
@@ -351,11 +346,7 @@ namespace MediaBrowser.Providers
             if (image == null)
             {
                 // Supprt xbmc conventions
-                if (item is Series)
-                {
-                    image = GetImage(item, args, "season-all-landscape");
-                }
-                else if (item is Season && item.IndexNumber.HasValue)
+                if (item is Season && item.IndexNumber.HasValue)
                 {
                     var seasonMarker = item.IndexNumber.Value == 0
                                            ? "-specials"
@@ -399,16 +390,6 @@ namespace MediaBrowser.Providers
             PopulateBackdrops(item, args, backdropFiles, "fanart", "fanart-");
             PopulateBackdrops(item, args, backdropFiles, "background", "background-");
             PopulateBackdrops(item, args, backdropFiles, "art", "art-");
-
-            if (item is Series)
-            {
-                var image = GetImage(item, args, "season-all-fanart");
-
-                if (image != null)
-                {
-                    backdropFiles.Add(image.FullName);
-                }
-            }
 
             if (item is Season && item.IndexNumber.HasValue)
             {
