@@ -1,4 +1,6 @@
-﻿using MediaBrowser.Controller.Dto;
+﻿using System.Collections;
+using System.Globalization;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -46,6 +48,18 @@ namespace MediaBrowser.Api
         [ApiMember(Name = "Fields", Description = "Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: Budget, Chapters, CriticRatingSummary, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, OverviewHtml, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines, TrailerUrls", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string Fields { get; set; }
 
+        [ApiMember(Name = "ExcludeLocationTypes", Description = "Optional. If specified, results will be filtered based on LocationType. This allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string ExcludeLocationTypes { get; set; }
+
+        [ApiMember(Name = "MinPremiereDate", Description = "Optional. The minimum premiere date. Format = yyyyMMddHHmmss", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string MinPremiereDate { get; set; }
+
+        [ApiMember(Name = "MaxPremiereDate", Description = "Optional. The maximum premiere date. Format = yyyyMMddHHmmss", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string MaxPremiereDate { get; set; }
+
+        [ApiMember(Name = "HasPremiereDate", Description = "Optional filter by items with premiere dates.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public bool? HasPremiereDate { get; set; }
+        
         /// <summary>
         /// Gets the item fields.
         /// </summary>
@@ -159,7 +173,7 @@ namespace MediaBrowser.Api
             var itemsList = user.RootFolder
                 .GetRecursiveChildren(user, i => i is Series)
                 .AsParallel()
-                .Select(i => GetNextUp((Series)i, user))
+                .Select(i => GetNextUp((Series)i, user, request))
                 .ToList();
 
             itemsList = itemsList
@@ -202,14 +216,17 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="series">The series.</param>
         /// <param name="user">The user.</param>
+        /// <param name="request">The request.</param>
         /// <returns>Task{Episode}.</returns>
-        private Tuple<Episode, DateTime> GetNextUp(Series series, User user)
+        private Tuple<Episode, DateTime> GetNextUp(Series series, User user, GetNextUpEpisodes request)
         {
             var allEpisodes = series.GetRecursiveChildren(user)
                 .OfType<Episode>()
                 .OrderByDescending(i => i.PremiereDate ?? DateTime.MinValue)
                 .ThenByDescending(i => i.IndexNumber ?? 0)
                 .ToList();
+
+            allEpisodes = FilterItems(request, allEpisodes).ToList();
 
             Episode lastWatched = null;
             var lastWatchedDate = DateTime.MinValue;
@@ -242,6 +259,43 @@ namespace MediaBrowser.Api
             }
 
             return new Tuple<Episode, DateTime>(null, lastWatchedDate);
+        }
+
+
+        private IEnumerable<Episode> FilterItems(GetNextUpEpisodes request, IEnumerable<Episode> items)
+        {
+            // ExcludeLocationTypes
+            if (!string.IsNullOrEmpty(request.ExcludeLocationTypes))
+            {
+                var vals = request.ExcludeLocationTypes.Split(',');
+
+                items = items
+                    .Where(f => !vals.Contains(f.LocationType.ToString(), StringComparer.OrdinalIgnoreCase))
+                    .ToList();
+            }
+            
+            if (!string.IsNullOrEmpty(request.MinPremiereDate))
+            {
+                var date = DateTime.ParseExact(request.MinPremiereDate, "yyyyMMddHHmmss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
+
+                items = items.Where(i => !i.PremiereDate.HasValue || i.PremiereDate.Value >= date);
+            }
+
+            if (!string.IsNullOrEmpty(request.MaxPremiereDate))
+            {
+                var date = DateTime.ParseExact(request.MaxPremiereDate, "yyyyMMddHHmmss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
+
+                items = items.Where(i => !i.PremiereDate.HasValue || i.PremiereDate.Value <= date);
+            }
+
+            if (request.HasPremiereDate.HasValue)
+            {
+                var val = request.HasPremiereDate.Value;
+
+                items = items.Where(i => i.PremiereDate.HasValue == val);
+            }
+
+            return items;
         }
 
         /// <summary>

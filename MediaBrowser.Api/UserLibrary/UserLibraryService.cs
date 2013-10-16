@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Dto;
+﻿using System.Globalization;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
@@ -184,8 +185,8 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public Guid UserId { get; set; }
 
-        [ApiMember(Name = "DatePlayed", Description = "The date the item was played (if any)", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public DateTime? DatePlayed { get; set; }
+        [ApiMember(Name = "DatePlayed", Description = "The date the item was played (if any). Format = yyyyMMddHHmmss", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string DatePlayed { get; set; }
 
         /// <summary>
         /// Gets or sets the id.
@@ -671,7 +672,14 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var user = _userManager.GetUserById(request.UserId);
 
-            var task = UpdatePlayedStatus(user, request.Id, true, request.DatePlayed);
+            DateTime? datePlayed = null;
+            
+            if (!string.IsNullOrEmpty(request.DatePlayed))
+            {
+                datePlayed = DateTime.ParseExact(request.DatePlayed, "yyyyMMddHHmmss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
+            }
+
+            var task = UpdatePlayedStatus(user, request.Id, true, datePlayed);
 
             return ToOptimizedResult(task.Result);
         }

@@ -101,7 +101,7 @@ namespace MediaBrowser.Providers.TV
             }
         }
 
-        protected override DateTime CompareDate(BaseItem item)
+        protected override bool NeedsRefreshBasedOnCompareDate(BaseItem item, BaseProviderInfo providerInfo)
         {
             var season = (Season)item;
             var seriesId = season.Series != null ? season.Series.GetProviderId(MetadataProviders.Tvdb) : null;
@@ -115,11 +115,10 @@ namespace MediaBrowser.Providers.TV
 
                 if (imagesFileInfo.Exists)
                 {
-                    return imagesFileInfo.LastWriteTimeUtc;
+                    return imagesFileInfo.LastWriteTimeUtc > providerInfo.LastRefreshed;
                 }
             }
-
-            return base.CompareDate(item);
+            return false;
         }
 
         /// <summary>

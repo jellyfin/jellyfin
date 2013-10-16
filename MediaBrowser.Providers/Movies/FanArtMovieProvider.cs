@@ -300,17 +300,17 @@ namespace MediaBrowser.Providers.Movies
 
             string path;
 
-            if (ConfigurationManager.Configuration.DownloadMovieImages.Disc && !item.HasImage(ImageType.Disc))
-            {
-                var node = doc.SelectSingleNode("//fanart/movie/movieposters/movieposter[@lang = \"" + language + "\"]/@url") ??
-                           doc.SelectSingleNode("//fanart/movie/movieposters/movieposter/@url");
-                path = node != null ? node.Value : null;
-                if (!string.IsNullOrEmpty(path))
-                {
-                    await _providerManager.SaveImage(item, path, FanArtResourcePool, ImageType.Disc, null, cancellationToken)
-                                        .ConfigureAwait(false);
-                }
-            }
+            //if (ConfigurationManager.Configuration.DownloadMovieImages.Disc && !item.HasImage(ImageType.Disc))
+            //{
+            //    var node = doc.SelectSingleNode("//fanart/movie/movieposters/movieposter[@lang = \"" + language + "\"]/@url") ??
+            //               doc.SelectSingleNode("//fanart/movie/movieposters/movieposter/@url");
+            //    path = node != null ? node.Value : null;
+            //    if (!string.IsNullOrEmpty(path))
+            //    {
+            //        await _providerManager.SaveImage(item, path, FanArtResourcePool, ImageType.Disc, null, cancellationToken)
+            //                            .ConfigureAwait(false);
+            //    }
+            //}
 
             cancellationToken.ThrowIfCancellationRequested();
             

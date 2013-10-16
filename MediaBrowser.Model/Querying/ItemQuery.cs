@@ -235,13 +235,31 @@ namespace MediaBrowser.Model.Querying
         /// </summary>
         /// <value><c>true</c> if [include index containers]; otherwise, <c>false</c>.</value>
         public bool IncludeIndexContainers { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the location types.
+        /// </summary>
+        /// <value>The location types.</value>
+        public LocationType[] LocationTypes { get; set; }
+        /// <summary>
+        /// Gets or sets the exclude location types.
+        /// </summary>
+        /// <value>The exclude location types.</value>
+        public LocationType[] ExcludeLocationTypes { get; set; }
+
+        public bool? HasPremiereDate { get; set; }
+        public DateTime? MinPremiereDate { get; set; }
+        public DateTime? MaxPremiereDate { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemQuery" /> class.
         /// </summary>
         public ItemQuery()
         {
-            SortBy = new string[] {};
+            LocationTypes = new LocationType[] { };
+            ExcludeLocationTypes = new LocationType[] { };
+            
+            SortBy = new string[] { };
 
             Filters = new ItemFilter[] {};
 

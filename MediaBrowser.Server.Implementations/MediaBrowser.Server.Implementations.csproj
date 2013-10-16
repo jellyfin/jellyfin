@@ -37,9 +37,9 @@
     <Reference Include="Alchemy">
       <HintPath>..\packages\Alchemy.2.2.1\lib\net40\Alchemy.dll</HintPath>
     </Reference>
-    <Reference Include="BdInfo, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="BDInfo, Version=1.0.5037.22194, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\MediaBrowser.BdInfo.1.0.0.3\lib\net45\BdInfo.dll</HintPath>
+      <HintPath>..\packages\MediaBrowser.BdInfo.1.0.0.5\lib\net20\BDInfo.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.OrmLite.SqliteNET">
       <HintPath>..\packages\ServiceStack.OrmLite.Sqlite32.3.9.63\lib\net40\ServiceStack.OrmLite.SqliteNET.dll</HintPath>
