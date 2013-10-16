@@ -75,7 +75,7 @@ namespace MediaBrowser.Providers.Music
         {
             return item.LocationType == LocationType.FileSystem && item.ResolveArgs.ContainsMetaFileByName("artist.xml");
         }
-        
+
         /// <summary>
         /// Finds the id.
         /// </summary>

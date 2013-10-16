@@ -74,7 +74,7 @@ namespace MediaBrowser.Providers.Music
         {
             var url = GetImageUrl(item);
 
-            if (!string.IsNullOrWhiteSpace(url))
+            if (!string.IsNullOrWhiteSpace(url) && !item.HasImage(ImageType.Primary))
             {
                 await _providerManager.SaveImage(item, url, LastfmBaseProvider.LastfmResourcePool, ImageType.Primary, null, cancellationToken)
                                     .ConfigureAwait(false);
