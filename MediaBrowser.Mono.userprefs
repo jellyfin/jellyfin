@@ -2,7 +2,7 @@
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Release|x86" />
   <MonoDevelop.Ide.Workbench ActiveDocument="MediaBrowser.Server.Mono\Program.cs">
     <Files>
-      <File FileName="MediaBrowser.Server.Mono\Program.cs" Line="82" Column="4" />
+      <File FileName="MediaBrowser.Server.Mono\Program.cs" Line="60" Column="5" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
