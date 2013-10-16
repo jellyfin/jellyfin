@@ -725,6 +725,13 @@ namespace MediaBrowser.Controller.Entities
 
                 foreach (var item in itemsRemoved)
                 {
+                    if (item.LocationType == LocationType.Virtual ||
+                        item.LocationType == LocationType.Remote)
+                    {
+                        // Don't remove these because there's no way to accurately validate them.
+                        continue;
+                    }
+                    
                     if (!string.IsNullOrEmpty(item.Path) && IsPathOffline(item.Path))
                     {
                         item.IsOffline = true;

@@ -1,5 +1,4 @@
-﻿using System.IO;
-using MediaBrowser.Common.Configuration;
+﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Implementations.Configuration;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -7,6 +6,7 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
+using System.IO;
 
 namespace MediaBrowser.Server.Implementations.Configuration
 {

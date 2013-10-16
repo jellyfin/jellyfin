@@ -3,6 +3,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Threading;
@@ -33,7 +34,7 @@ namespace MediaBrowser.Providers.TV
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         public override bool Supports(BaseItem item)
         {
-            return item is Episode;
+            return item is Episode && item.LocationType != LocationType.Virtual && item.LocationType != LocationType.Remote;
         }
 
         /// <summary>

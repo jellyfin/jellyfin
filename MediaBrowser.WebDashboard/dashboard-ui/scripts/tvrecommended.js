@@ -12,7 +12,8 @@
             Limit: 8,
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,SeriesInfo,UserData",
-            Filters: "IsUnplayed"
+            Filters: "IsUnplayed",
+            ExcludeLocationTypes: "Virtual"
         };
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {

@@ -12,8 +12,8 @@
         Fields: "DateCreated,SeriesInfo",
         StartIndex: 0
     };
-	
-	LibraryBrowser.loadSavedQueryValues('episodes', query);
+
+    LibraryBrowser.loadSavedQueryValues('episodes', query);
 
     function reloadItems(page) {
 
@@ -61,11 +61,23 @@
                 query.StartIndex = 0;
                 reloadItems(page);
             });
-			
-			LibraryBrowser.saveQueryValues('episodes', query);
+
+            LibraryBrowser.saveQueryValues('episodes', query);
 
             Dashboard.hideLoadingMsg();
         });
+    }
+
+    function formatDigit(i) {
+        return i < 10 ? "0" + i : i;
+    }
+
+    function getDateFormat(date) {
+
+        // yyyyMMddHHmmss
+        var d = date;
+
+        return "" + d.getFullYear() + formatDigit(d.getMonth() + 1) + formatDigit(d.getDate()) + formatDigit(d.getHours()) + formatDigit(d.getMinutes()) + formatDigit(d.getSeconds());
     }
 
     $(document).on('pageinit', "#episodesPage", function () {
@@ -166,6 +178,24 @@
             reloadItems(page);
         });
 
+        $('#chkMissingEpisode', this).on('change', function () {
+
+            query.LocationTypes = this.checked ? "virtual" : null;
+            query.MaxPremiereDate = this.checked ? getDateFormat(new Date()) : null;
+            query.HasPremiereDate = this.checked ? true : null;
+
+            reloadItems(page);
+        });
+
+        $('#chkFutureEpisode', this).on('change', function () {
+
+            query.LocationTypes = this.checked ? "virtual" : null;
+            query.MinPremiereDate = this.checked ? getDateFormat(new Date()) : null;
+            query.HasPremiereDate = this.checked ? true : null;
+
+            reloadItems(page);
+        });
+
         $('.alphabetPicker', this).on('alphaselect', function (e, character) {
 
             query.NameStartsWithOrGreater = character;
@@ -229,10 +259,10 @@
 
         $('#chkSubtitle', this).checked(query.HasSubtitles == true).checkboxradio('refresh');
         $('#chkTrailer', this).checked(query.HasTrailer == true).checkboxradio('refresh');
-        $('#chkSpecialFeature', this).checked(query.HasSpecialFeature == true).checkboxradio('refresh');
         $('#chkThemeSong', this).checked(query.HasThemeSong == true).checkboxradio('refresh');
         $('#chkThemeVideo', this).checked(query.HasThemeVideo == true).checkboxradio('refresh');
         $('#chkSpecialFeature', this).checked(query.ParentIndexNumber == 0).checkboxradio('refresh');
+        $('#chkMissingEpisode', this).checked(query.LocationTypes == "virtual").checkboxradio('refresh');
 
         $('.alphabetPicker', this).alphaValue(query.NameStartsWithOrGreater);
 

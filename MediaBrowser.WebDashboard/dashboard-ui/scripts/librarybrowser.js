@@ -842,6 +842,10 @@
         },
         getNewIndicatorHtml: function (item) {
 
+            if (item.LocationType == 'Virtual') {
+                return '';
+            }
+            
             if (item.Type == "Season") {
                 if (item.RecursiveUnplayedItemCount) {
                     return '<div class="posterRibbon">' + item.RecursiveUnplayedItemCount + ' New</div>';
@@ -1785,7 +1789,7 @@
 
         renderStudios: function (elem, item, context) {
 
-            if (item.Studios && item.Studios.length) {
+            if (item.Studios && item.Studios.length && item.Type != "Series") {
 
                 var prefix = item.Studios.length > 1 ? "Studios" : "Studio";
                 var html = prefix + ':&nbsp;&nbsp;';

@@ -8,7 +8,8 @@
 
             Limit: 24,
             Fields: "PrimaryImageAspectRatio,SeriesInfo,DateCreated",
-            UserId: Dashboard.getCurrentUserId()
+            UserId: Dashboard.getCurrentUserId(),
+            ExcludeLocationTypes: "Virtual"
         };
 
         ApiClient.getNextUpEpisodes(options).done(function (result) {

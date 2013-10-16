@@ -1,0 +1,55 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Metadata</title>
+</head>
+<body>
+    <div id="metadataTvPage" data-role="page" class="page type-interior">
+
+        <div data-role="content">
+
+            <div class="content-primary">
+                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                    <a href="metadata.html" data-role="button">Basics</a>
+                    <a href="metadatatv.html" data-role="button" class="ui-btn-active">TV Settings</a>
+                    <a href="metadataimages.html" data-role="button">Images</a>
+                    <a href="advancedmetadata.html" data-role="button">Advanced</a>
+                </div>
+
+                <form id="metadataTvForm">
+                    <ul data-role="listview" class="ulForm">
+                        <li>
+                            <input type="checkbox" id="chkEnableTvdbUpdates" name="chkEnableTvdbUpdates" />
+                            <label for="chkEnableTvdbUpdates">Enable automatic tvdb updates</label>
+                            <div class="fieldDescription">If enabled, tv series and episodes will be updated automatically as they are updated on the tvdb.com.</div>
+                        </li>
+                        <li>
+                            <input type="checkbox" id="chkCreateMissingEpisodes" name="chkCreateMissingEpisodes" />
+                            <label for="chkCreateMissingEpisodes">Import missing epsiodes</label>
+                            <div class="fieldDescription">Display missing episodes as part of your library.</div>
+                        </li>
+                        <li>
+                            <input type="checkbox" id="chkCreateFutureEpisodes" name="chkCreateFutureEpisodes" />
+                            <label for="chkCreateFutureEpisodes">Import future epsiodes</label>
+                            <div class="fieldDescription">Display future episodes as part of your library. Automatic Tvdb updates are recommended to stay up to date with new metadata.</div>
+                        </li>
+                        <li>
+                            <button type="submit" data-theme="b" data-icon="ok">
+                                Save
+                            </button>
+                            <button type="button" onclick="Dashboard.navigate('dashboard.html');" data-icon="delete">
+                                Cancel
+                            </button>
+                        </li>
+                    </ul>
+                </form>
+            </div>
+
+        </div>
+
+        <script type="text/javascript">
+            $('#metadataTvForm').on('submit', MetadataTVPage.onSubmit);
+        </script>
+    </div>
+</body>
+</html>

@@ -30,7 +30,7 @@
                 $('#offlineIndicator', page).hide();
             }
 
-            if (MediaPlayer.canPlay(item) && item.LocationType !== "Offline") {
+            if (MediaPlayer.canPlay(item) && item.LocationType !== "Offline" && item.LocationType !== "Virtual") {
                 $('#playButtonContainer', page).show();
             } else {
                 $('#playButtonContainer', page).hide();

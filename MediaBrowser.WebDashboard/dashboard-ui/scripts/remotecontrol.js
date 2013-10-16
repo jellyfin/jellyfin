@@ -288,7 +288,7 @@
 
                     browseButtonContainer.show();
 
-                    if (item.Type != 'Person' && item.Type != 'Genre' && item.Type != 'Studio' && item.Type != 'GameGenre' && item.Type != 'MusicGenre') {
+                    if (item.Type != 'Person' && item.Type != 'Genre' && item.Type != 'Studio' && item.Type != 'GameGenre' && item.Type != 'MusicGenre' && item.LocationType != 'Virtual') {
                         playButtonContainer.show();
                         queueButtonContainer.show();
                     }
@@ -457,7 +457,11 @@
         html += '<label for="selectCommand">Select command</label>';
         html += '<select id="selectCommand" data-mini="true">';
 
-        html += '<option value="Play" selected>Play</label>';
+        if (item.LocationType == 'Virtual') {
+            html += '<option value="Play" selected>Browse</label>';
+        } else {
+            html += '<option value="Play" selected>Play</label>';
+        }
 
         if (item.Chapters && item.Chapters.length) {
             html += '<option value="PlayFromChapter">Play from scene</label>';

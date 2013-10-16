@@ -473,14 +473,17 @@ namespace MediaBrowser.Server.Implementations.Session
         {
             var session = GetSessionForRemoteControl(sessionId);
 
+            var items = command.ItemIds.Select(i => _libraryManager.GetItemById(new Guid(i)))
+                .ToList();
+
+            if (items.Any(i => i.LocationType == LocationType.Virtual))
+            {
+                throw new ArgumentException("Virtual items are not playable.");
+            }
+            
             if (command.PlayCommand != PlayCommand.PlayNow)
             {
-                if (command.ItemIds.Any(i =>
-                    {
-                        var item = _libraryManager.GetItemById(new Guid(i));
-
-                        return !session.QueueableMediaTypes.Contains(item.MediaType, StringComparer.OrdinalIgnoreCase);
-                    }))
+                if (items.Any(i => !session.QueueableMediaTypes.Contains(i.MediaType, StringComparer.OrdinalIgnoreCase)))
                 {
                     throw new ArgumentException(string.Format("Session {0} is unable to queue the requested media type.", session.Id));
                 }
