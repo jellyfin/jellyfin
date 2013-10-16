@@ -237,7 +237,6 @@ namespace MediaBrowser.ServerApplication
                                        {
                                            previews.Add(new PreviewItem(item.GetImage(ImageType.Thumb), "Thumb"));
                                        }
-                                       if (item.BackdropImagePaths != null)
                                            previews.AddRange(
                                                item.BackdropImagePaths.Select(
                                                    image => new PreviewItem(image, "Backdrop")));

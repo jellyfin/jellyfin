@@ -836,12 +836,12 @@ namespace MediaBrowser.Api.UserLibrary
         {
             if (imageType == ImageType.Backdrop)
             {
-                return item.BackdropImagePaths != null && item.BackdropImagePaths.Count > 0;
+                return item.BackdropImagePaths.Count > 0;
             }
 
             if (imageType == ImageType.Screenshot)
             {
-                return item.ScreenshotImagePaths != null && item.ScreenshotImagePaths.Count > 0;
+                return item.ScreenshotImagePaths.Count > 0;
             }
 
             return item.HasImage(imageType);
