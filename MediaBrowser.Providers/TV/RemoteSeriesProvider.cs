@@ -218,8 +218,6 @@ namespace MediaBrowser.Providers.TV
 
             if (!string.IsNullOrEmpty(seriesId))
             {
-                series.SetProviderId(MetadataProviders.Tvdb, seriesId);
-
                 var seriesDataPath = GetSeriesDataPath(ConfigurationManager.ApplicationPaths, seriesId);
 
                 await FetchSeriesData(series, seriesId, seriesDataPath, force, cancellationToken).ConfigureAwait(false);
@@ -255,19 +253,25 @@ namespace MediaBrowser.Providers.TV
                 await DownloadSeriesZip(seriesId, seriesDataPath, null, cancellationToken).ConfigureAwait(false);
             }
 
-            // Examine if there's no local metadata, or save local is on (to get updates)
-            if (isForcedRefresh || ConfigurationManager.Configuration.EnableTvDbUpdates || !HasLocalMeta(series))
+            // Have to check this here since we prevent the normal enforcement through ProviderManager
+            if (!series.DontFetchMeta)
             {
-                var seriesXmlPath = Path.Combine(seriesDataPath, seriesXmlFilename);
-                var actorsXmlPath = Path.Combine(seriesDataPath, "actors.xml");
-
-                FetchSeriesInfo(series, seriesXmlPath, cancellationToken);
-
-                if (!series.LockedFields.Contains(MetadataFields.Cast))
+                // Examine if there's no local metadata, or save local is on (to get updates)
+                if (isForcedRefresh || ConfigurationManager.Configuration.EnableTvDbUpdates || !HasLocalMeta(series))
                 {
-                    series.People.Clear();
+                    series.SetProviderId(MetadataProviders.Tvdb, seriesId);
 
-                    FetchActors(series, actorsXmlPath, cancellationToken);
+                    var seriesXmlPath = Path.Combine(seriesDataPath, seriesXmlFilename);
+                    var actorsXmlPath = Path.Combine(seriesDataPath, "actors.xml");
+
+                    FetchSeriesInfo(series, seriesXmlPath, cancellationToken);
+
+                    if (!series.LockedFields.Contains(MetadataFields.Cast))
+                    {
+                        series.People.Clear();
+
+                        FetchActors(series, actorsXmlPath, cancellationToken);
+                    }
                 }
             }
         }

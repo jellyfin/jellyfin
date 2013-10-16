@@ -173,71 +173,14 @@ namespace MediaBrowser.Providers
         /// <param name="args">The args.</param>
         private void PopulateBaseItemImages(BaseItem item, ItemResolveArgs args)
         {
-            // Primary Image
-            var image = GetImage(item, args, "folder") ??
-                GetImage(item, args, "poster") ??
-                GetImage(item, args, "cover") ??
-                GetImage(item, args, "default");
-
-            // Support plex/xbmc convention
-            if (image == null && item is Series)
-            {
-                image = GetImage(item, args, "show");
-            }
-
-            // Support plex/xbmc convention
-            if (image == null && item is Season && item.IndexNumber.HasValue)
-            {
-                var num = item.IndexNumber.Value.ToString(_usCulture);
-
-                image = GetImage(item, args, string.Format("season-{0}", num));
-            }
-
-            // Support plex/xbmc convention
-            if (image == null && (item is Movie || item is MusicVideo || item is AdultVideo))
-            {
-                image = GetImage(item, args, "movie");
-            }
-
-            // Look for a file with the same name as the item
-            if (image == null)
-            {
-                var name = Path.GetFileNameWithoutExtension(item.Path);
-
-                if (!string.IsNullOrEmpty(name))
-                {
-                    image = GetImage(item, args, name) ??
-                        GetImage(item, args, name + "-poster");
-                }
-            }
-
-            if (image != null)
-            {
-                item.SetImage(ImageType.Primary, image.FullName);
-            }
+            PopulatePrimaryImage(item, args);
 
             // Logo Image
-            image = GetImage(item, args, "logo");
+            var image = GetImage(item, args, "logo");
 
             if (image != null)
             {
                 item.SetImage(ImageType.Logo, image.FullName);
-            }
-
-            // Banner Image
-            image = GetImage(item, args, "banner");
-
-            // Support plex/xbmc convention
-            if (image == null && item is Season && item.IndexNumber.HasValue)
-            {
-                var num = item.IndexNumber.Value.ToString(_usCulture);
-
-                image = GetImage(item, args, string.Format("season-{0}-banner", num));
-            }
-
-            if (image != null)
-            {
-                item.SetImage(ImageType.Banner, image.FullName);
             }
 
             // Clearart
@@ -255,14 +198,6 @@ namespace MediaBrowser.Providers
             if (image != null)
             {
                 item.SetImage(ImageType.Disc, image.FullName);
-            }
-
-            // Thumbnail Image
-            image = GetImage(item, args, "thumb");
-
-            if (image != null)
-            {
-                item.SetImage(ImageType.Thumb, image.FullName);
             }
 
             // Box Image
@@ -289,44 +224,164 @@ namespace MediaBrowser.Providers
                 item.SetImage(ImageType.Menu, image.FullName);
             }
 
+            PopulateBanner(item, args);
+            PopulateThumb(item, args);
+
             // Backdrop Image
             PopulateBackdrops(item, args);
+            PopulateScreenshots(item, args);
+        }
 
-            // Screenshot Image
-            image = GetImage(item, args, "screenshot");
+        private void PopulatePrimaryImage(BaseItem item, ItemResolveArgs args)
+        {
+            // Primary Image
+            var image = GetImage(item, args, "folder") ??
+                GetImage(item, args, "poster") ??
+                GetImage(item, args, "cover") ??
+                GetImage(item, args, "default");
 
-            var screenshotFiles = new List<string>();
+            // Support plex/xbmc convention
+            if (image == null && item is Series)
+            {
+                image = GetImage(item, args, "show") ??
+                    GetImage(item, args, "season-all-poster");
+            }
+
+            // Support plex/xbmc convention
+            if (image == null && item is Season && item.IndexNumber.HasValue)
+            {
+                var seasonMarker = item.IndexNumber.Value == 0
+                                       ? "-specials"
+                                       : item.IndexNumber.Value.ToString("00", _usCulture);
+
+                // Get this one directly from the file system since we have to go up a level
+                var filename = "season" + seasonMarker + "-poster";
+
+                var path = Path.GetDirectoryName(item.Path);
+
+                path = Path.Combine(path, filename);
+
+                image = new FileInfo(path);
+
+                if (!image.Exists)
+                {
+                    image = null;
+                }
+            }
+
+            // Support plex/xbmc convention
+            if (image == null && (item is Movie || item is MusicVideo || item is AdultVideo))
+            {
+                image = GetImage(item, args, "movie");
+            }
+
+            // Look for a file with the same name as the item
+            if (image == null)
+            {
+                var name = Path.GetFileNameWithoutExtension(item.Path);
+
+                if (!string.IsNullOrEmpty(name))
+                {
+                    image = GetImage(item, args, name) ??
+                        GetImage(item, args, name + "-poster");
+                }
+            }
 
             if (image != null)
             {
-                screenshotFiles.Add(image.FullName);
+                item.SetImage(ImageType.Primary, image.FullName);
             }
+        }
 
-            var unfound = 0;
-            for (var i = 1; i <= 20; i++)
+        /// <summary>
+        /// Populates the banner.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="args">The args.</param>
+        private void PopulateBanner(BaseItem item, ItemResolveArgs args)
+        {
+            // Banner Image
+            var image = GetImage(item, args, "banner");
+
+            if (image == null)
             {
-                // Screenshot Image
-                image = GetImage(item, args, "screenshot" + i);
-
-                if (image != null)
+                // Supprt xbmc conventions
+                if (item is Series)
                 {
-                    screenshotFiles.Add(image.FullName);
+                    image = GetImage(item, args, "season-all-banner");
                 }
-                else
+                else if (item is Season && item.IndexNumber.HasValue)
                 {
-                    unfound++;
+                    var seasonMarker = item.IndexNumber.Value == 0
+                                           ? "-specials"
+                                           : item.IndexNumber.Value.ToString("00", _usCulture);
 
-                    if (unfound >= 3)
+                    // Get this one directly from the file system since we have to go up a level
+                    var filename = "season" + seasonMarker + "-banner";
+
+                    var path = Path.GetDirectoryName(item.Path);
+
+                    path = Path.Combine(path, filename);
+
+                    image = new FileInfo(path);
+
+                    if (!image.Exists)
                     {
-                        break;
+                        image = null;
                     }
                 }
             }
 
-            if (screenshotFiles.Count > 0)
+            if (image != null)
             {
-                item.ScreenshotImagePaths = screenshotFiles;
+                item.SetImage(ImageType.Banner, image.FullName);
             }
+        }
+
+        /// <summary>
+        /// Populates the thumb.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="args">The args.</param>
+        private void PopulateThumb(BaseItem item, ItemResolveArgs args)
+        {
+            // Thumbnail Image
+            var image = GetImage(item, args, "thumb");
+
+            if (image == null)
+            {
+                // Supprt xbmc conventions
+                if (item is Series)
+                {
+                    image = GetImage(item, args, "season-all-landscape");
+                }
+                else if (item is Season && item.IndexNumber.HasValue)
+                {
+                    var seasonMarker = item.IndexNumber.Value == 0
+                                           ? "-specials"
+                                           : item.IndexNumber.Value.ToString("00", _usCulture);
+
+                    // Get this one directly from the file system since we have to go up a level
+                    var filename = "season" + seasonMarker + "-landscape";
+
+                    var path = Path.GetDirectoryName(item.Path);
+
+                    path = Path.Combine(path, filename);
+
+                    image = new FileInfo(path);
+
+                    if (!image.Exists)
+                    {
+                        image = null;
+                    }
+                }
+            }
+
+            if (image != null)
+            {
+                item.SetImage(ImageType.Thumb, image.FullName);
+            }
+
         }
 
         /// <summary>
@@ -344,6 +399,37 @@ namespace MediaBrowser.Providers
             PopulateBackdrops(item, args, backdropFiles, "fanart", "fanart-");
             PopulateBackdrops(item, args, backdropFiles, "background", "background-");
             PopulateBackdrops(item, args, backdropFiles, "art", "art-");
+
+            if (item is Series)
+            {
+                var image = GetImage(item, args, "season-all-fanart");
+
+                if (image != null)
+                {
+                    backdropFiles.Add(image.FullName);
+                }
+            }
+
+            if (item is Season && item.IndexNumber.HasValue)
+            {
+                var seasonMarker = item.IndexNumber.Value == 0
+                                       ? "-specials"
+                                       : item.IndexNumber.Value.ToString("00", _usCulture);
+
+                // Get this one directly from the file system since we have to go up a level
+                var filename = "season" + seasonMarker + "-fanart";
+
+                var path = Path.GetDirectoryName(item.Path);
+
+                path = Path.Combine(path, filename);
+
+                var image = new FileInfo(path);
+
+                if (image.Exists)
+                {
+                    backdropFiles.Add(image.FullName);
+                }
+            }
 
             PopulateBackdropsFromExtraFanart(args, backdropFiles);
 
@@ -423,6 +509,50 @@ namespace MediaBrowser.Providers
                         break;
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Populates the screenshots.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="args">The args.</param>
+        private void PopulateScreenshots(BaseItem item, ItemResolveArgs args)
+        {
+            // Screenshot Image
+            var image = GetImage(item, args, "screenshot");
+
+            var screenshotFiles = new List<string>();
+
+            if (image != null)
+            {
+                screenshotFiles.Add(image.FullName);
+            }
+
+            var unfound = 0;
+            for (var i = 1; i <= 20; i++)
+            {
+                // Screenshot Image
+                image = GetImage(item, args, "screenshot" + i);
+
+                if (image != null)
+                {
+                    screenshotFiles.Add(image.FullName);
+                }
+                else
+                {
+                    unfound++;
+
+                    if (unfound >= 3)
+                    {
+                        break;
+                    }
+                }
+            }
+
+            if (screenshotFiles.Count > 0)
+            {
+                item.ScreenshotImagePaths = screenshotFiles;
             }
         }
     }
