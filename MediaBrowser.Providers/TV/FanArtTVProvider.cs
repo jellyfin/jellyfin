@@ -126,6 +126,7 @@ namespace MediaBrowser.Providers.TV
                 catch (DirectoryNotFoundException)
                 {
                     // Don't blow up
+                    return true;
                 }
             }
             

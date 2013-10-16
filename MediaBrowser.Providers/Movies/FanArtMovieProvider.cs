@@ -141,12 +141,14 @@ namespace MediaBrowser.Providers.Movies
                 !ConfigurationManager.Configuration.DownloadMovieImages.Disc &&
                 !ConfigurationManager.Configuration.DownloadMovieImages.Backdrops &&
                 !ConfigurationManager.Configuration.DownloadMovieImages.Banner &&
-                !ConfigurationManager.Configuration.DownloadMovieImages.Thumb)
+                !ConfigurationManager.Configuration.DownloadMovieImages.Thumb &&
+                !ConfigurationManager.Configuration.DownloadMovieImages.Primary)
             {
                 return false;
             }
 
-            if (item.HasImage(ImageType.Art) &&
+            if (item.HasImage(ImageType.Primary) &&
+                item.HasImage(ImageType.Art) &&
                 item.HasImage(ImageType.Logo) &&
                 item.HasImage(ImageType.Disc) &&
                 item.HasImage(ImageType.Banner) &&
@@ -298,6 +300,20 @@ namespace MediaBrowser.Providers.Movies
 
             string path;
 
+            if (ConfigurationManager.Configuration.DownloadMovieImages.Disc && !item.HasImage(ImageType.Disc))
+            {
+                var node = doc.SelectSingleNode("//fanart/movie/movieposters/movieposter[@lang = \"" + language + "\"]/@url") ??
+                           doc.SelectSingleNode("//fanart/movie/movieposters/movieposter/@url");
+                path = node != null ? node.Value : null;
+                if (!string.IsNullOrEmpty(path))
+                {
+                    await _providerManager.SaveImage(item, path, FanArtResourcePool, ImageType.Disc, null, cancellationToken)
+                                        .ConfigureAwait(false);
+                }
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+            
             if (ConfigurationManager.Configuration.DownloadMovieImages.Logo && !item.HasImage(ImageType.Logo))
             {
                 var node =
