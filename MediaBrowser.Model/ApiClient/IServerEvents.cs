@@ -47,7 +47,6 @@ namespace MediaBrowser.Model.ApiClient
         /// Occurs when [library changed].
         /// </summary>
         event EventHandler<LibraryChangedEventArgs> LibraryChanged;
-
         /// <summary>
         /// Occurs when [browse command].
         /// </summary>
@@ -104,5 +103,10 @@ namespace MediaBrowser.Model.ApiClient
         /// Occurs when [connected].
         /// </summary>
         event EventHandler<EventArgs> Connected;
+        /// <summary>
+        /// Gets a value indicating whether this instance is connected.
+        /// </summary>
+        /// <value><c>true</c> if this instance is connected; otherwise, <c>false</c>.</value>
+        bool IsConnected { get; }
     }
 }
