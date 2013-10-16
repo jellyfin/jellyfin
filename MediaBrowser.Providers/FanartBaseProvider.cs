@@ -67,15 +67,6 @@ namespace MediaBrowser.Providers
             get { return true; }
         }
 
-        /// <summary>
-        /// Gets the priority.
-        /// </summary>
-        /// <value>The priority.</value>
-        public override MetadataProviderPriority Priority
-        {
-            get { return MetadataProviderPriority.Third; }
-        }
-
         #region Result Objects
 
         protected class FanArtImageInfo
