@@ -53,6 +53,15 @@ namespace MediaBrowser.Providers.TV
             return item is Season;
         }
 
+        /// <summary>
+        /// Gets the priority.
+        /// </summary>
+        /// <value>The priority.</value>
+        public override MetadataProviderPriority Priority
+        {
+            get { return MetadataProviderPriority.Third; }
+        }
+
         protected override DateTime CompareDate(BaseItem item)
         {
             var season = (Season)item;

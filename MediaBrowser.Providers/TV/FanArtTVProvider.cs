@@ -49,6 +49,15 @@ namespace MediaBrowser.Providers.TV
             return item is Series;
         }
 
+        /// <summary>
+        /// Gets the priority.
+        /// </summary>
+        /// <value>The priority.</value>
+        public override MetadataProviderPriority Priority
+        {
+            get { return MetadataProviderPriority.Third; }
+        }
+
         public override ItemUpdateType ItemUpdateType
         {
             get
@@ -74,12 +83,14 @@ namespace MediaBrowser.Providers.TV
                 !ConfigurationManager.Configuration.DownloadSeriesImages.Logo &&
                 !ConfigurationManager.Configuration.DownloadSeriesImages.Thumb &&
                 !ConfigurationManager.Configuration.DownloadSeriesImages.Backdrops &&
-                !ConfigurationManager.Configuration.DownloadSeriesImages.Banner)
+                !ConfigurationManager.Configuration.DownloadSeriesImages.Banner &&
+                !ConfigurationManager.Configuration.DownloadSeriesImages.Primary)
             {
                 return false;
             }
 
-            if (item.HasImage(ImageType.Art) &&
+            if (item.HasImage(ImageType.Primary) &&
+                item.HasImage(ImageType.Art) &&
                 item.HasImage(ImageType.Logo) &&
                 item.HasImage(ImageType.Banner) &&
                 item.HasImage(ImageType.Thumb) &&
@@ -91,7 +102,7 @@ namespace MediaBrowser.Providers.TV
             return base.NeedsRefreshInternal(item, providerInfo);
         }
 
-        protected override DateTime CompareDate(BaseItem item)
+        protected override bool NeedsRefreshBasedOnCompareDate(BaseItem item, BaseProviderInfo providerInfo)
         {
             var id = item.GetProviderId(MetadataProviders.Tvdb);
 
@@ -109,7 +120,7 @@ namespace MediaBrowser.Providers.TV
 
                     if (files.Count > 0)
                     {
-                        return files.Max();
+                        return files.Max() > providerInfo.LastRefreshed;
                     }
                 }
                 catch (DirectoryNotFoundException)
@@ -117,8 +128,8 @@ namespace MediaBrowser.Providers.TV
                     // Don't blow up
                 }
             }
-
-            return base.CompareDate(item);
+            
+            return false;
         }
 
         /// <summary>
@@ -215,7 +226,21 @@ namespace MediaBrowser.Providers.TV
             cancellationToken.ThrowIfCancellationRequested();
 
             var language = ConfigurationManager.Configuration.PreferredMetadataLanguage.ToLower();
-            
+
+            if (ConfigurationManager.Configuration.DownloadSeriesImages.Primary && !item.HasImage(ImageType.Primary))
+            {
+                var node = doc.SelectSingleNode("//fanart/series/tvposters/tvposter[@lang = \"" + language + "\"]/@url") ??
+                           doc.SelectSingleNode("//fanart/series/tvposters/tvposter/@url");
+                var path = node != null ? node.Value : null;
+                if (!string.IsNullOrEmpty(path))
+                {
+                    await _providerManager.SaveImage(item, path, FanArtResourcePool, ImageType.Primary, null, cancellationToken)
+                          .ConfigureAwait(false);
+                }
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             if (ConfigurationManager.Configuration.DownloadSeriesImages.Logo && !item.HasImage(ImageType.Logo))
             {
                 var node = doc.SelectSingleNode("//fanart/series/hdtvlogos/hdtvlogo[@lang = \"" + language + "\"]/@url") ??
