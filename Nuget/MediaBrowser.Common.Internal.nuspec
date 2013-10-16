@@ -13,7 +13,7 @@
         <copyright>Copyright © Media Browser 2013</copyright>
         <dependencies>
             <dependency id="MediaBrowser.Common" version="3.0.225" />
-            <dependency id="NLog" version="2.0.1.2" />
+            <dependency id="NLog" version="2.1.0" />
             <dependency id="ServiceStack.Text" version="3.9.58" />
             <dependency id="SimpleInjector" version="2.3.2" />
             <dependency id="sharpcompress" version="0.10.1.3" />

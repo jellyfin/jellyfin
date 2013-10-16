@@ -100,5 +100,9 @@ namespace MediaBrowser.Model.ApiClient
         /// Occurs when [user data changed].
         /// </summary>
         event EventHandler<UserDataChangedEventArgs> UserDataChanged;
+        /// <summary>
+        /// Occurs when [connected].
+        /// </summary>
+        event EventHandler<EventArgs> Connected;
     }
 }
