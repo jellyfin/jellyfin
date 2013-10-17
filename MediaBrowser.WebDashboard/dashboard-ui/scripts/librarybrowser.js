@@ -21,7 +21,7 @@
         loadSavedQueryValues: function (key, query) {
 
             var values = localStorage.getItem(key + '_' + Dashboard.getCurrentUserId());
-            
+
             if (values) {
 
                 values = JSON.parse(values);
@@ -250,7 +250,7 @@
 
                 html += '</div>';
 
-                if (item.LocationType == "Offline") {
+                if (item.LocationType == "Offline" || item.LocationType == "Virtual") {
                     html += LibraryBrowser.getOfflineIndicatorHtml(item);
                 } else {
                     html += LibraryBrowser.getNewIndicatorHtml(item);
@@ -793,7 +793,7 @@
                     html += "</div>";
                 }
 
-                if (item.LocationType == "Offline") {
+                if (item.LocationType == "Offline" || item.LocationType == "Virtual") {
                     html += LibraryBrowser.getOfflineIndicatorHtml(item);
                 } else if (options.showNewIndicator !== false) {
                     html += LibraryBrowser.getNewIndicatorHtml(item);
@@ -836,16 +836,28 @@
             return name;
         },
 
-        getOfflineIndicatorHtml: function () {
+        getOfflineIndicatorHtml: function (item) {
 
-            return '<div class="posterRibbon offlinePosterRibbon">Offline</div>';
+            if (item.LocationType == "Offline") {
+                return '<div class="posterRibbon offlinePosterRibbon">Offline</div>';
+            }
+
+            try {
+                if (item.PremiereDate && (new Date().getTime() < parseISO8601Date(item.PremiereDate).getTime())) {
+                    return '<div class="posterRibbon unairedPosterRibbon">Unaired</div>';
+                }
+            } catch (err) {
+
+            }
+
+            return '<div class="posterRibbon missingPosterRibbon">Missing</div>';
         },
         getNewIndicatorHtml: function (item) {
 
             if (item.LocationType == 'Virtual') {
                 return '';
             }
-            
+
             if (item.Type == "Season") {
                 if (item.RecursiveUnplayedItemCount) {
                     return '<div class="posterRibbon">' + item.RecursiveUnplayedItemCount + ' New</div>';

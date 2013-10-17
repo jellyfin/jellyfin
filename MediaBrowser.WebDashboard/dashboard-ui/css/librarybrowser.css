@@ -638,7 +638,14 @@ a.itemTag:hover {
 
 .offlinePosterRibbon {
     background: rgb(255, 106, 0);
-    background: rgba(255, 106, 0, .85);
+}
+
+.unairedPosterRibbon {
+    background: rgb(208, 107, 100);
+}
+
+.missingPosterRibbon {
+    background: rgb(248, 58, 34);
 }
 
 .itemProgress {

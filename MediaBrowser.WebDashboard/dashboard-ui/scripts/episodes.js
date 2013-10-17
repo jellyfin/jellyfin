@@ -180,18 +180,22 @@
 
         $('#chkMissingEpisode', this).on('change', function () {
 
-            query.LocationTypes = this.checked ? "virtual" : null;
+            var futureChecked = $('#chkFutureEpisode', page).checked();
+            
+            query.LocationTypes = this.checked || futureChecked ? "virtual" : null;
+            query.HasPremiereDate = this.checked || futureChecked ? true : null;
             query.MaxPremiereDate = this.checked ? getDateFormat(new Date()) : null;
-            query.HasPremiereDate = this.checked ? true : null;
 
             reloadItems(page);
         });
 
         $('#chkFutureEpisode', this).on('change', function () {
 
-            query.LocationTypes = this.checked ? "virtual" : null;
+            var missingChecked = $('#chkMissingEpisode', page).checked();
+
+            query.LocationTypes = this.checked || missingChecked ? "virtual" : null;
+            query.HasPremiereDate = this.checked || missingChecked ? true : null;
             query.MinPremiereDate = this.checked ? getDateFormat(new Date()) : null;
-            query.HasPremiereDate = this.checked ? true : null;
 
             reloadItems(page);
         });
