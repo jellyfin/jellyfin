@@ -13,8 +13,6 @@
         StartIndex: 0
     };
 
-    LibraryBrowser.loadSavedQueryValues('episodes', query);
-
     function reloadItems(page) {
 
         Dashboard.showLoadingMsg();
@@ -44,6 +42,10 @@
 
             $('#items', page).html(html).trigger('create');
 
+            $('.btnChangeToDefaultSort', page).on('click', function () {
+                $('.defaultSort', page)[0].click();
+            });
+
             $('.selectPage', page).on('change', function () {
                 query.StartIndex = (parseInt(this.value) - 1) * query.Limit;
                 reloadItems(page);
@@ -65,7 +67,9 @@
                 reloadItems(page);
             });
 
-            LibraryBrowser.saveQueryValues('episodes', query);
+            if (getParameterByName('savequery') != 'false') {
+                LibraryBrowser.saveQueryValues('episodes', query);
+            }
 
             Dashboard.hideLoadingMsg();
         });
@@ -226,6 +230,23 @@
             query.Limit = limit;
             query.StartIndex = 0;
         }
+        
+        LibraryBrowser.loadSavedQueryValues('episodes', query);
+
+        var filters = getParameterByName('filters');
+        if (filters) {
+            query.Filters = filters;
+        }
+
+        var sortby = getParameterByName('sortby');
+        if (sortby) {
+            query.SortBy = sortby;
+        }
+
+        var sortorder = getParameterByName('sortorder');
+        if (sortorder) {
+            query.SortOrder = sortorder;
+        }
 
         reloadItems(this);
 
@@ -234,13 +255,13 @@
         // Reset form values using the last used query
         $('.radioSortBy', this).each(function () {
 
-            this.checked = query.SortBy == this.getAttribute('data-sortby');
+            this.checked = (query.SortBy || '').toLowerCase() == (this.getAttribute('data-sortby') || '').toLowerCase();
 
         }).checkboxradio('refresh');
 
         $('.radioSortOrder', this).each(function () {
 
-            this.checked = query.SortOrder == this.getAttribute('data-sortorder');
+            this.checked = (query.SortOrder || '').toLowerCase() == (this.getAttribute('data-sortorder') || '').toLowerCase();
 
         }).checkboxradio('refresh');
 
@@ -249,7 +270,7 @@
             var filters = "," + (query.Filters || "");
             var filterName = this.getAttribute('data-filter');
 
-            this.checked = filters.indexOf(',' + filterName) != -1;
+            this.checked = filters.toLowerCase().indexOf(',' + filterName.toLowerCase()) != -1;
 
         }).checkboxradio('refresh');
 

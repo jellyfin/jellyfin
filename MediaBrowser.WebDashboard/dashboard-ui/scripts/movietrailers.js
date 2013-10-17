@@ -49,6 +49,10 @@
             
             $('#items', page).html(html).trigger('create');
 
+            $('.btnChangeToDefaultSort', page).on('click', function () {
+                $('.defaultSort', page)[0].click();
+            });
+
             $('.selectPage', page).on('change', function () {
                 query.StartIndex = (parseInt(this.value) - 1) * query.Limit;
                 reloadItems(page);

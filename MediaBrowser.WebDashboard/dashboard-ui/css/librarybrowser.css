@@ -7,6 +7,11 @@
     padding-top: 35px !important;
 }
 
+.headerArrowImage {
+    height: 24px;
+    margin-left: .5em;
+}
+
 .viewMenuBar {
     background: #444;
     background-image: linear-gradient(#444,#2d2d2d);
@@ -635,7 +640,6 @@ a.itemTag:hover {
     padding: 3px 10px;
     border-bottom-left-radius: 10px;
     color: #fff;
-
     background: rgb(0, 143, 187);
     background: rgba(0, 143, 187, .8);
 }
