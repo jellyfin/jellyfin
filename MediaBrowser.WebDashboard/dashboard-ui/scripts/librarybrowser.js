@@ -2092,7 +2092,8 @@
 
         var selectedCssClass = ' selectedViewLink';
         var selectedHtml = "<span class='selectedViewIndicator'>&#9654;</span>";
-        var view = page.getAttribute('data-view');
+        
+        var view = page.getAttribute('data-view') || getParameterByName('context');
 
         if (counts.MovieCount || counts.TrailerCount) {
 
@@ -2102,7 +2103,7 @@
 
         if (counts.EpisodeCount || counts.SeriesCount) {
             html += '<a class="viewMenuLink viewMenuImageLink" href="tvrecommended.html" title="TV"><img src="css/images/views/tvshows.png" alt="TV" /></a>';
-            html += '<a class="viewMenuLink viewMenuTextLink' + (view == 'tvshows' ? selectedCssClass : '') + '" href="tvrecommended.html">' + (view == 'tvshows' ? selectedHtml : '') + '<span class="viewName">TV</span></a>';
+            html += '<a class="viewMenuLink viewMenuTextLink' + (view == 'tv' ? selectedCssClass : '') + '" href="tvrecommended.html">' + (view == 'tv' ? selectedHtml : '') + '<span class="viewName">TV</span></a>';
         }
 
         if (counts.SongCount || counts.MusicVideoCount) {
