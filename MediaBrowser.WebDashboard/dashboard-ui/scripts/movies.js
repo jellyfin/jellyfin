@@ -28,6 +28,9 @@
 
             $('.listTopPaging', page).html(LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, true)).trigger('create');
 
+            var checkSortOption = $('.radioSortBy:checked', page);
+            $('.viewSummary', page).html(LibraryBrowser.getViewSummaryHtml(query, checkSortOption)).trigger('create');
+
             if (view == "Backdrop") {
                 html += LibraryBrowser.getPosterDetailViewHtml({
                     items: result.Items,
@@ -58,6 +61,10 @@
             html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
 
             $('#items', page).html(html).trigger('create');
+
+            $('.btnChangeToDefaultSort', page).on('click', function () {
+                $('.defaultSort', page)[0].click();
+            });
 
             $('.selectPage', page).on('change', function () {
                 query.StartIndex = (parseInt(this.value) - 1) * query.Limit;

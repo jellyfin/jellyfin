@@ -1099,6 +1099,26 @@
             }
         },
 
+        getViewSummaryHtml: function (query, checkedSortOption) {
+
+            var html = '';
+
+            if (query.SortBy) {
+
+                var id = checkedSortOption[0].id;
+                var sortBy = checkedSortOption.siblings('label[for=' + id + ']').text();
+
+                html += 'Sorted by ' + sortBy.trim().toLowerCase() + ' in ' + (query.SortOrder || 'ascending').toLowerCase() + ' order';
+
+                if (!checkedSortOption.hasClass('defaultSort')) {
+                    html += '<button class="btnChangeToDefaultSort" type="button" data-icon="delete" data-inline="true" data-mini="true" data-iconpos="notext">Remove</button>';
+                }
+
+            }
+
+            return html;
+        },
+
         getPagingHtml: function (query, totalRecordCount) {
 
             if (query.Limit) {
@@ -2092,7 +2112,7 @@
 
         var selectedCssClass = ' selectedViewLink';
         var selectedHtml = "<span class='selectedViewIndicator'>&#9654;</span>";
-        
+
         var view = page.getAttribute('data-view') || getParameterByName('context');
 
         if (counts.MovieCount || counts.TrailerCount) {

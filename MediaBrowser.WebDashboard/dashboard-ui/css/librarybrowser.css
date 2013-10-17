@@ -20,6 +20,10 @@
     border-bottom: 1px solid #111;
 }
 
+.viewSummary {
+    padding: .5em 0;
+}
+
 .viewMenuLink {
     text-decoration: none;
     color: #ccc;
@@ -133,7 +137,7 @@
 
 .viewSettings {
     text-align: center;
-    margin: .5em 0 .25em;
+    margin: 0 0 .25em;
 }
 
 .listPaging {
