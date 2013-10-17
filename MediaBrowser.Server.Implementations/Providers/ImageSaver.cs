@@ -408,7 +408,7 @@ namespace MediaBrowser.Server.Implementations.Providers
 
                         return new[] { Path.Combine(seriesFolder, imageFilename) };
                     }
-                    
+
                     return new[]
                         {
                             Path.Combine(item.MetaLocation, "fanart" + extension)
@@ -426,13 +426,6 @@ namespace MediaBrowser.Server.Implementations.Providers
 
             if (type == ImageType.Primary)
             {
-                if (item is Series)
-                {
-                    var imageFilename = "poster" + extension;
-
-                    return new[] { Path.Combine(item.Path, imageFilename) };
-                }
-
                 if (item is Season && item.IndexNumber.HasValue)
                 {
                     var seriesFolder = Path.GetDirectoryName(item.Path);
@@ -460,7 +453,7 @@ namespace MediaBrowser.Server.Implementations.Providers
                     return new[] { GetSavePathForItemInMixedFolder(item, type, string.Empty, extension) };
                 }
 
-                var filename = Path.GetFileNameWithoutExtension(item.Path) + "-poster" + extension;
+                var filename = "poster" + extension;
                 return new[] { Path.Combine(item.MetaLocation, filename) };
             }
 
