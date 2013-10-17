@@ -131,8 +131,20 @@ namespace MediaBrowser.Api.UserLibrary
                 .Select(i => i.Name)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
 
-                .Select(name => LibraryManager.GetPerson(name)
-            );
+                .Select(name =>
+                {
+                    try
+                    {
+                        return LibraryManager.GetPerson(name);
+                    }
+                    catch
+                    {
+                        return null;
+                        // Already logged at lower levels
+                    }
+                }
+
+            ).Where(i => i != null);
         }
 
         /// <summary>
