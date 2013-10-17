@@ -266,7 +266,9 @@
         $('#chkThemeSong', this).checked(query.HasThemeSong == true).checkboxradio('refresh');
         $('#chkThemeVideo', this).checked(query.HasThemeVideo == true).checkboxradio('refresh');
         $('#chkSpecialFeature', this).checked(query.ParentIndexNumber == 0).checkboxradio('refresh');
-        $('#chkMissingEpisode', this).checked(query.LocationTypes == "virtual").checkboxradio('refresh');
+        
+        $('#chkMissingEpisode', this).checked(query.MaxPremiereDate != null).checkboxradio('refresh');
+        $('#chkFutureEpisode', this).checked(query.MinPremiereDate != null).checkboxradio('refresh');
 
         $('.alphabetPicker', this).alphaValue(query.NameStartsWithOrGreater);
 
