@@ -107,11 +107,21 @@ namespace MediaBrowser.Providers.Music
                 }
             }
 
-            var year = songs.Select(i => i.ProductionYear ?? 1800).FirstOrDefault(i => i != 1800);
+            var date = songs.Select(i => i.PremiereDate).FirstOrDefault(i => i.HasValue);
 
-            if (year != 1800)
+            if (date != null)
             {
-                album.ProductionYear = year;
+                album.PremiereDate = date.Value;
+                album.ProductionYear = date.Value.Year;
+            }
+            else
+            {
+                var year = songs.Select(i => i.ProductionYear ?? 1800).FirstOrDefault(i => i != 1800);
+
+                if (year != 1800)
+                {
+                    album.ProductionYear = year;
+                }
             }
 
             if (!item.LockedFields.Contains(MetadataFields.Studios))
