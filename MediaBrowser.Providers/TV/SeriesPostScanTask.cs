@@ -181,7 +181,7 @@ namespace MediaBrowser.Providers.TV
         private async Task<bool> AddMissingEpisodes(Series series, string seriesDataPath, List<Episode> existingEpisodes, IEnumerable<Tuple<int, int>> episodeLookup, CancellationToken cancellationToken)
         {
             var hasChanges = false;
-            
+
             foreach (var tuple in episodeLookup)
             {
                 if (tuple.Item1 <= 0)
@@ -375,8 +375,9 @@ namespace MediaBrowser.Providers.TV
 
             var xmlPath = Path.Combine(seriesDataPath, filename);
 
-            // It appears the best way to filter out invalid entries is to only include those with valid air dates
+            DateTime? airDate = null;
 
+            // It appears the best way to filter out invalid entries is to only include those with valid air dates
             using (var streamReader = new StreamReader(xmlPath, Encoding.UTF8))
             {
                 // Use XmlReader for best performance
@@ -397,6 +398,16 @@ namespace MediaBrowser.Providers.TV
                         {
                             switch (reader.Name)
                             {
+                                case "EpisodeName":
+                                    {
+                                        var val = reader.ReadElementContentAsString();
+                                        if (string.IsNullOrWhiteSpace(val))
+                                        {
+                                            // Not valid, ignore these
+                                            return null;
+                                        }
+                                        break;
+                                    }
                                 case "FirstAired":
                                     {
                                         var val = reader.ReadElementContentAsString();
@@ -406,7 +417,7 @@ namespace MediaBrowser.Providers.TV
                                             DateTime date;
                                             if (DateTime.TryParse(val, out date))
                                             {
-                                                return date.ToUniversalTime();
+                                                airDate = date.ToUniversalTime();
                                             }
                                         }
 
@@ -422,7 +433,7 @@ namespace MediaBrowser.Providers.TV
                 }
             }
 
-            return null;
+            return airDate;
         }
     }
 }
