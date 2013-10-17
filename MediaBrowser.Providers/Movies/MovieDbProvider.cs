@@ -128,7 +128,7 @@ namespace MediaBrowser.Providers.Movies
         {
             get
             {
-                return "2";
+                return "3";
             }
         }
 
@@ -674,7 +674,15 @@ namespace MediaBrowser.Providers.Movies
 
                 if (movieData.belongs_to_collection != null)
                 {
-                    movie.SetProviderId(MetadataProviders.TmdbCollection, movieData.belongs_to_collection.id.ToString(CultureInfo.InvariantCulture));
+                    movie.SetProviderId(MetadataProviders.TmdbCollection,
+                                        movieData.belongs_to_collection.id.ToString(CultureInfo.InvariantCulture));
+
+                    var movieItem = movie as Movie;
+
+                    if (movieItem != null)
+                    {
+                        movieItem.TmdbCollectionName = movieData.belongs_to_collection.name;
+                    }
                 }
                 else
                 {

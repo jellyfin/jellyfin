@@ -21,6 +21,12 @@ namespace MediaBrowser.Controller.Entities.Movies
         }
 
         /// <summary>
+        /// Gets or sets the name of the TMDB collection.
+        /// </summary>
+        /// <value>The name of the TMDB collection.</value>
+        public string TmdbCollectionName { get; set; }
+
+        /// <summary>
         /// Gets the user data key.
         /// </summary>
         /// <returns>System.String.</returns>
