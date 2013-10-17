@@ -861,12 +861,6 @@
                 return '';
             }
 
-            if (item.Type == "Season") {
-                if (item.RecursiveUnplayedItemCount) {
-                    return '<div class="posterRibbon">' + item.RecursiveUnplayedItemCount + ' New</div>';
-                }
-            }
-
             if (item.Type == "Series") {
                 if (item.RecursiveUnplayedItemCount && item.PlayedPercentage) {
                     return '<div class="posterRibbon">' + item.RecursiveUnplayedItemCount + ' New</div>';

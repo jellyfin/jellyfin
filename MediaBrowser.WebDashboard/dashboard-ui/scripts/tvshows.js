@@ -12,8 +12,6 @@
         Fields: "SeriesInfo,DateCreated",
         StartIndex: 0
     };
-	
-	LibraryBrowser.loadSavedQueryValues('tvshows', query);
 
     function reloadItems(page) {
 
@@ -225,6 +223,8 @@
             query.StartIndex = 0;
         }
 
+        LibraryBrowser.loadSavedQueryValues('tvshows', query);
+
         reloadItems(this);
 
     }).on('pageshow', "#tvShowsPage", function () {
@@ -232,7 +232,13 @@
         // Reset form values using the last used query
         $('.radioSortBy', this).each(function () {
 
-            this.checked = query.SortBy == this.getAttribute('data-sortby');
+            this.checked = (query.SortBy || '').toLowerCase() == this.getAttribute('data-sortby').toLowerCase();
+
+        }).checkboxradio('refresh');
+
+        $('.radioSortOrder', this).each(function () {
+
+            this.checked = (query.SortOrder || '').toLowerCase() == this.getAttribute('data-sortorder').toLowerCase();
 
         }).checkboxradio('refresh');
 
@@ -242,12 +248,6 @@
             var filterName = this.getAttribute('data-filter');
 
             this.checked = filters.indexOf(',' + filterName) != -1;
-
-        }).checkboxradio('refresh');
-
-        $('.radioSortOrder', this).each(function () {
-
-            this.checked = query.SortOrder == this.getAttribute('data-sortorder');
 
         }).checkboxradio('refresh');
 

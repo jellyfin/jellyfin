@@ -25,9 +25,31 @@
             LibraryBrowser.renderDetailPageBackdrop(page, item);
 
             if (item.LocationType == "Offline") {
+
                 $('#offlineIndicator', page).show();
-            } else {
+            }
+            else {
                 $('#offlineIndicator', page).hide();
+            }
+
+            var isMissingEpisode = false;
+            
+            if (item.LocationType == "Virtual" && item.Type == "Episode") {
+                try {
+                    if (item.PremiereDate && (new Date().getTime() >= parseISO8601Date(item.PremiereDate).getTime())) {
+                        isMissingEpisode = true;
+                    }
+                } catch (err) {
+
+                }
+            }
+            
+            if (isMissingEpisode) {
+
+                $('#missingIndicator', page).show();
+            }
+            else {
+                $('#missingIndicator', page).hide();
             }
 
             if (MediaPlayer.canPlay(item) && item.LocationType !== "Offline" && item.LocationType !== "Virtual") {
