@@ -408,6 +408,8 @@ namespace MediaBrowser.Common.Implementations.Updates
                     CurrentInstallations.Remove(tuple);
                 }
 
+                progress.Report(100);
+
                 CompletedInstallations.Add(installationInfo);
 
                 EventHelper.QueueEventIfNotNull(PackageInstallationCompleted, this, installationEventArgs, _logger);

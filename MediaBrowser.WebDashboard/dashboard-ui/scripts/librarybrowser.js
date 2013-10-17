@@ -850,6 +850,9 @@
 
             }
 
+            if (item.IsFolder) {
+                return '';
+            }
             return '<div class="posterRibbon missingPosterRibbon">Missing</div>';
         },
         getNewIndicatorHtml: function (item) {
