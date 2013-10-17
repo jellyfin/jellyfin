@@ -197,7 +197,7 @@ namespace MediaBrowser.Server.Implementations.Providers
         {
             if (_config.Configuration.ImageSavingConvention == ImageSavingConvention.Legacy || !saveLocally)
             {
-                return new[] { GetLegacySavePath(item, type, imageIndex, mimeType, saveLocally) };
+                return new[] { GetStandardSavePath(item, type, imageIndex, mimeType, saveLocally) };
             }
 
             return GetCompatibleSavePaths(item, type, imageIndex, mimeType);
@@ -303,7 +303,7 @@ namespace MediaBrowser.Server.Implementations.Providers
         /// or
         /// imageIndex
         /// </exception>
-        private string GetLegacySavePath(BaseItem item, ImageType type, int? imageIndex, string mimeType, bool saveLocally)
+        private string GetStandardSavePath(BaseItem item, ImageType type, int? imageIndex, string mimeType, bool saveLocally)
         {
             string filename;
 
@@ -426,6 +426,13 @@ namespace MediaBrowser.Server.Implementations.Providers
 
             if (type == ImageType.Primary)
             {
+                if (item is Series)
+                {
+                    var imageFilename = "poster" + extension;
+
+                    return new[] { Path.Combine(item.Path, imageFilename) };
+                }
+
                 if (item is Season && item.IndexNumber.HasValue)
                 {
                     var seriesFolder = Path.GetDirectoryName(item.Path);
@@ -490,7 +497,7 @@ namespace MediaBrowser.Server.Implementations.Providers
             }
 
             // All other paths are the same
-            return new[] { GetLegacySavePath(item, type, imageIndex, mimeType, true) };
+            return new[] { GetStandardSavePath(item, type, imageIndex, mimeType, true) };
         }
 
         /// <summary>

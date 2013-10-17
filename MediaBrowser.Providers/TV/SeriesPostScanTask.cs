@@ -160,7 +160,7 @@ namespace MediaBrowser.Providers.TV
                 }
             }
 
-            var anyRemoved = await RemoveObsoleteMissingEpsiodes(series, existingEpisodes, cancellationToken).ConfigureAwait(false);
+            var anyRemoved = await RemoveObsoleteMissingEpisodes(series, existingEpisodes, cancellationToken).ConfigureAwait(false);
 
             if (hasChanges || anyRemoved)
             {
@@ -236,7 +236,7 @@ namespace MediaBrowser.Providers.TV
         /// <summary>
         /// Removes the virtual entry after a corresponding physical version has been added
         /// </summary>
-        private async Task<bool> RemoveObsoleteMissingEpsiodes(Series series, List<Episode> existingEpisodes, CancellationToken cancellationToken)
+        private async Task<bool> RemoveObsoleteMissingEpisodes(Series series, List<Episode> existingEpisodes, CancellationToken cancellationToken)
         {
             var physicalEpisodes = existingEpisodes
                 .Where(i => i.LocationType != LocationType.Virtual)
