@@ -96,6 +96,16 @@ namespace MediaBrowser.Providers.Savers
                 }
             }
 
+            var movie = item as Movie;
+
+            if (movie != null)
+            {
+                if (!string.IsNullOrEmpty(movie.TmdbCollectionName))
+                {
+                    builder.Append("<TmdbCollectionName>" + SecurityElement.Escape(movie.TmdbCollectionName) + "</TmdbCollectionName>");
+                }
+            }
+            
             var video = (Video)item;
 
             XmlSaverHelpers.AddMediaInfo(video, builder, _itemRepository);

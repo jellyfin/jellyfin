@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Logging;
@@ -46,6 +47,20 @@ namespace MediaBrowser.Providers.Movies
         {
             switch (reader.Name)
             {
+                case "TmdbCollectionName":
+
+                    {
+                        var val = reader.ReadElementContentAsString();
+                        var movie = item as Movie;
+
+                        if (!string.IsNullOrWhiteSpace(val) && movie != null)
+                        {
+                            movie.TmdbCollectionName = val;
+                        }
+                        
+                        break;
+                    }
+
                 case "Chapters":
 
                     //_chaptersTask = FetchChaptersFromXmlNode(item, reader.ReadSubtree(), _itemRepo, CancellationToken.None);
