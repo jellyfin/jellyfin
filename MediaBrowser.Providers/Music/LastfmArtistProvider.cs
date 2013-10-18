@@ -136,7 +136,7 @@ namespace MediaBrowser.Providers.Music
             // They seem to throw bad request failures on any term with a slash
             var nameToSearch = item.Name.Replace('/', ' ');
 
-            var url = string.Format("http://www.musicbrainz.org/ws/2/artist/?query=artist:{0}", UrlEncode(nameToSearch));
+            var url = string.Format("http://www.musicbrainz.org/ws/2/artist/?query=artist:\"{0}\"", UrlEncode(nameToSearch));
 
             var doc = await FanArtAlbumProvider.Current.GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
 
@@ -152,7 +152,7 @@ namespace MediaBrowser.Providers.Music
             if (HasDiacritics(item.Name))
             {
                 // Try again using the search with accent characters url
-                url = string.Format("http://www.musicbrainz.org/ws/2/artist/?query=artistaccent:{0}", UrlEncode(nameToSearch));
+                url = string.Format("http://www.musicbrainz.org/ws/2/artist/?query=artistaccent:\"{0}\"", UrlEncode(nameToSearch));
 
                 doc = await FanArtAlbumProvider.Current.GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
 
