@@ -80,6 +80,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
                 catch (OperationCanceledException)
                 {
                     // Don't clutter the log
+                    break;
                 }
                 catch (Exception ex)
                 {

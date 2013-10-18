@@ -129,6 +129,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
                 catch (OperationCanceledException)
                 {
                     _logger.Info("Pre-scan task cancelled: {0}", task.GetType().Name);
+                    break;
                 }
                 catch (Exception ex)
                 {
