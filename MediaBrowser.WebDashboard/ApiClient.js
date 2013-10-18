@@ -1163,6 +1163,20 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
+        self.deleteItem = function (itemId) {
+
+            if (!itemId) {
+                throw new Error("null itemId");
+            }
+
+            var url = self.getUrl("Items/" + itemId);
+
+            return self.ajax({
+                type: "DELETE",
+                url: url
+            });
+        };
+
         self.updateItemImageIndex = function (itemId, itemType, itemName, imageType, imageIndex, newIndex) {
 
             if (!imageType) {

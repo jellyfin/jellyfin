@@ -350,15 +350,22 @@
             }
 
             $('#btnRefresh', page).button('enable');
+            $('#btnDelete', page).button('enable');
 
             $('#refreshLoading', page).hide();
 
             currentItem = item;
 
             if (item.IsFolder) {
-                $('#fldRecursive', page).css("display", "inline-block")
+                $('#fldRecursive', page).css("display", "inline-block");
             } else {
                 $('#fldRecursive', page).hide();
+            }
+
+            if (item.LocationType == "Virtual") {
+                $('#fldDelete', page).show();
+            } else {
+                $('#fldDelete', page).hide();
             }
 
             LibraryBrowser.renderName(item, $('.itemName', page), true);
@@ -1143,7 +1150,8 @@
 
         $('#btnRefresh', this).on('click', function () {
 
-            $(this).button('disable');
+            $('#btnDelete', page).button('disable');
+            $('#btnRefresh', page).button('disable');
 
             $('#refreshLoading', page).show();
 
@@ -1178,6 +1186,28 @@
                 reload(page);
 
             });
+        });
+
+        $('#btnDelete', this).on('click', function () {
+
+            Dashboard.confirm("Are you sure you wish to delete this item?", "Confirm Deletion", function (result) {
+
+                if (result) {
+
+                    $('#btnDelete', page).button('disable');
+                    $('#btnRefresh', page).button('disable');
+
+                    $('#refreshLoading', page).show();
+
+                    ApiClient.deleteItem(currentItem.Id).done(function () {
+
+                        Dashboard.navigate('edititemmetadata.html?id=' + currentItem.ParentId);
+
+                    });
+                }
+
+            });
+
         });
 
         $('.libraryTree', page).on('itemclicked', function (event, data) {
