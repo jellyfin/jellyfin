@@ -204,11 +204,13 @@
 
         if (showCollectionType) {
             $('#fldCollectionType', popup).show();
+            $('#selectCollectionType', popup).attr('required', 'required').selectmenu('refresh');
         } else {
             $('#fldCollectionType', popup).hide();
+            $('#selectCollectionType', popup).removeAttr('required').selectmenu('refresh');
         }
 
-        $('#selectCollectionType', popup).html(MediaLibraryPage.getCollectionTypeOptionsHtml()).selectmenu('refresh');
+        $('#selectCollectionType', popup).html(MediaLibraryPage.getCollectionTypeOptionsHtml()).val('').selectmenu('refresh');
 
         popup.on("popupafteropen", function () {
             $('#textEntryForm input:first', this).focus();
@@ -222,7 +224,15 @@
             if (callback) {
 
                 if (showCollectionType) {
-                    callback($('#txtValue', popup).val(), $('#selectCollectionType', popup).val());
+
+                    var collectionType = $('#selectCollectionType', popup).val();
+                    
+                    // The server expects an empty value for mixed
+                    if (collectionType == 'mixed') {
+                        collectionType = '';
+                    }
+
+                    callback($('#txtValue', popup).val(), collectionType);
                 } else {
                     callback($('#txtValue', popup).val());
                 }
@@ -246,19 +256,19 @@
 
         return [
 
-            { name: "General or mixed content", value: "" },
-            { name: "Adult videos", value: "adultvideos" },
+            { name: "", value: "" },
+            { name: "Movies", value: "movies" },
+            { name: "Music", value: "music" },
+            { name: "TV shows", value: "tvshows" },
             { name: "Books*", value: "books" },
             { name: "Box sets", value: "boxsets" },
             { name: "Games*", value: "games" },
             { name: "Home videos", value: "homevideos" },
-            { name: "Movies", value: "movies" },
-            { name: "Music", value: "music" },
             { name: "Music videos", value: "musicvideos" },
             { name: "Photos*", value: "photos" },
             { name: "Trailers", value: "trailers" },
-            { name: "TV shows", value: "tvshows" }
-
+            { name: "Adult videos", value: "adultvideos" },
+            { name: "General or mixed content", value: "mixed" }
         ];
 
     },

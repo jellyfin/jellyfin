@@ -677,10 +677,6 @@ a.itemTag:hover {
     text-align: center;
 }
 
-.timelineItemsContainer {
-    text-align: left;
-}
-
 @media all and (min-width: 1200px) {
 
     .scenePosterViewItem img {

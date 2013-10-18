@@ -25,6 +25,10 @@ THE SOFTWARE.
 
 (function() {
 
+    if (navigator.userAgent.toLowerCase().indexOf('firefox') == -1) {
+        return;
+    }
+    
 // test for native support
 var test = document.createElement('input');
 try {

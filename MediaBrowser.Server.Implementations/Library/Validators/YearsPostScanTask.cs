@@ -22,7 +22,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         {
             var allYears = _libraryManager.RootFolder.RecursiveChildren
                 .Select(i => i.ProductionYear ?? -1)
-                .Where(i => i != -1)
+                .Where(i => i > 0)
                 .Distinct()
                 .ToList();
 
