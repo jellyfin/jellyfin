@@ -459,8 +459,10 @@ namespace MediaBrowser.ServerApplication
             {
                 ServerManager.Start(HttpServerUrlPrefix, ServerConfigurationManager.Configuration.EnableHttpLevelLogging);
             }
-            catch
+            catch (Exception ex)
             {
+                Logger.ErrorException("Error starting http server", ex);
+
                 if (retryOnFailure)
                 {
                     RegisterServerWithAdministratorAccess();

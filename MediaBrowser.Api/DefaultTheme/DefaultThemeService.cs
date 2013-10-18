@@ -64,16 +64,18 @@ namespace MediaBrowser.Api.DefaultTheme
         private readonly IDtoService _dtoService;
         private readonly ILogger _logger;
         private readonly ILibraryManager _libraryManager;
+        private readonly IUserDataManager _userDataManager;
 
         private readonly IImageProcessor _imageProcessor;
 
-        public DefaultThemeService(IUserManager userManager, IDtoService dtoService, ILogger logger, ILibraryManager libraryManager, IImageProcessor imageProcessor)
+        public DefaultThemeService(IUserManager userManager, IDtoService dtoService, ILogger logger, ILibraryManager libraryManager, IImageProcessor imageProcessor, IUserDataManager userDataManager)
         {
             _userManager = userManager;
             _dtoService = dtoService;
             _logger = logger;
             _libraryManager = libraryManager;
             _imageProcessor = imageProcessor;
+            _userDataManager = userDataManager;
         }
 
         public object Get(GetHomeView request)
@@ -124,6 +126,7 @@ namespace MediaBrowser.Api.DefaultTheme
                 .ToList();
 
             var gamesWithImages = items.OfType<Game>().Where(i => !string.IsNullOrEmpty(i.PrimaryImagePath)).ToList();
+
             var itemsWithBackdrops = FilterItemsForBackdropDisplay(items.Where(i => i.BackdropImagePaths.Count > 0)).ToList();
 
             var view = new GamesView();
@@ -143,8 +146,15 @@ namespace MediaBrowser.Api.DefaultTheme
             .OrderBy(i => Guid.NewGuid())
             .Select(i => GetItemStub(i, ImageType.Primary))
             .Where(i => i != null)
-            .Take(3)
+            .Take(1)
             .ToList();
+
+            view.MiniSpotlights = itemsWithBackdrops
+                .OfType<Game>()
+                .OrderBy(i => Guid.NewGuid())
+                .Take(3)
+                .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+                .ToList();
             
             return view;
         }
@@ -190,7 +200,7 @@ namespace MediaBrowser.Api.DefaultTheme
                .OrderBy(i => Guid.NewGuid())
                .Select(i => GetItemStub(i, ImageType.Backdrop))
                .Where(i => i != null)
-               .Take(3)
+               .Take(1)
                .ToList();
 
             var romanceGenres = request.RomanceGenre.Split(',').ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
@@ -201,7 +211,7 @@ namespace MediaBrowser.Api.DefaultTheme
              .OrderBy(i => Guid.NewGuid())
              .Select(i => GetItemStub(i, ImageType.Backdrop))
              .Where(i => i != null)
-             .Take(3)
+             .Take(1)
              .ToList();
 
             view.ComedyItems = seriesWithBackdrops
@@ -209,11 +219,17 @@ namespace MediaBrowser.Api.DefaultTheme
              .OrderBy(i => Guid.NewGuid())
              .Select(i => GetItemStub(i, ImageType.Backdrop))
              .Where(i => i != null)
-             .Take(3)
+             .Take(1)
              .ToList();
 
-            view.ActorItems = GetActors(series);
+            view.ActorItems = GetActors(series, user.Id);
 
+            view.MiniSpotlights = seriesWithBackdrops
+              .OrderBy(i => Guid.NewGuid())
+              .Take(3)
+              .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+              .ToList();
+            
             return view;
         }
 
@@ -262,7 +278,7 @@ namespace MediaBrowser.Api.DefaultTheme
                .OrderBy(i => Guid.NewGuid())
                .Select(i => GetItemStub(i, ImageType.Backdrop))
                .Where(i => i != null)
-               .Take(3)
+               .Take(1)
                .ToList();
 
             view.TrailerItems = items
@@ -271,7 +287,7 @@ namespace MediaBrowser.Api.DefaultTheme
              .OrderBy(i => Guid.NewGuid())
              .Select(i => GetItemStub(i, ImageType.Primary))
              .Where(i => i != null)
-             .Take(3)
+             .Take(1)
              .ToList();
 
             view.BoxSetItems = items
@@ -280,7 +296,7 @@ namespace MediaBrowser.Api.DefaultTheme
              .OrderBy(i => Guid.NewGuid())
              .Select(i => GetItemStub(i, ImageType.Backdrop))
              .Where(i => i != null)
-             .Take(3)
+             .Take(1)
              .ToList();
 
             view.ThreeDItems = moviesWithBackdrops
@@ -288,7 +304,7 @@ namespace MediaBrowser.Api.DefaultTheme
              .OrderBy(i => Guid.NewGuid())
              .Select(i => GetItemStub(i, ImageType.Backdrop))
              .Where(i => i != null)
-             .Take(3)
+             .Take(1)
              .ToList();
 
             var romanceGenres = request.RomanceGenre.Split(',').ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
@@ -299,7 +315,7 @@ namespace MediaBrowser.Api.DefaultTheme
              .OrderBy(i => Guid.NewGuid())
              .Select(i => GetItemStub(i, ImageType.Backdrop))
              .Where(i => i != null)
-             .Take(3)
+             .Take(1)
              .ToList();
 
             view.ComedyItems = moviesWithBackdrops
@@ -307,7 +323,7 @@ namespace MediaBrowser.Api.DefaultTheme
              .OrderBy(i => Guid.NewGuid())
              .Select(i => GetItemStub(i, ImageType.Backdrop))
              .Where(i => i != null)
-             .Take(3)
+             .Take(1)
              .ToList();
 
             view.HDItems = hdMovies
@@ -315,7 +331,7 @@ namespace MediaBrowser.Api.DefaultTheme
              .OrderBy(i => Guid.NewGuid())
              .Select(i => GetItemStub(i, ImageType.Backdrop))
              .Where(i => i != null)
-             .Take(3)
+             .Take(1)
              .ToList();
 
             view.FamilyMovies = familyMovies
@@ -323,10 +339,16 @@ namespace MediaBrowser.Api.DefaultTheme
              .OrderBy(i => Guid.NewGuid())
              .Select(i => GetItemStub(i, ImageType.Backdrop))
              .Where(i => i != null)
-             .Take(3)
+             .Take(1)
              .ToList();
 
-            view.PeopleItems = GetActors(items);
+            view.PeopleItems = GetActors(items, user.Id);
+
+            view.MiniSpotlights = moviesWithBackdrops
+              .OrderBy(i => Guid.NewGuid())
+              .Take(3)
+              .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+              .ToList();
 
             return view;
         }
@@ -366,7 +388,7 @@ namespace MediaBrowser.Api.DefaultTheme
             }
         }
 
-        private List<ItemStub> GetActors(IEnumerable<BaseItem> mediaItems)
+        private List<ItemStub> GetActors(IEnumerable<BaseItem> mediaItems, Guid userId)
         {
             var actors = mediaItems.SelectMany(i => i.People)
                 .Select(i => i.Name)
@@ -374,7 +396,7 @@ namespace MediaBrowser.Api.DefaultTheme
                 .OrderBy(i => Guid.NewGuid())
                 .ToList();
 
-            return actors.Select(actor =>
+            var result = actors.Select(actor =>
             {
                 try
                 {
@@ -382,7 +404,12 @@ namespace MediaBrowser.Api.DefaultTheme
 
                     if (!string.IsNullOrEmpty(person.PrimaryImagePath))
                     {
-                        return GetItemStub(person, ImageType.Primary);
+                        var userdata = _userDataManager.GetUserData(userId, person.GetUserDataKey());
+
+                        if (userdata.IsFavorite || (userdata.Likes ?? false))
+                        {
+                            return GetItemStub(person, ImageType.Primary);
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -393,8 +420,35 @@ namespace MediaBrowser.Api.DefaultTheme
                 return null;
             })
             .Where(i => i != null)
-            .Take(3)
+            .Take(1)
             .ToList();
+
+            if (result.Count == 0)
+            {
+                result = actors.Select(actor =>
+                {
+                    try
+                    {
+                        var person = _libraryManager.GetPerson(actor);
+
+                        if (!string.IsNullOrEmpty(person.PrimaryImagePath))
+                        {
+                            return GetItemStub(person, ImageType.Primary);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.ErrorException("Error getting person {0}", ex, actor);
+                    }
+
+                    return null;
+                })
+                            .Where(i => i != null)
+                            .Take(1)
+                            .ToList();
+            }
+
+            return result;
         }
 
         private ItemStub GetItemStub(BaseItem item, ImageType imageType)
