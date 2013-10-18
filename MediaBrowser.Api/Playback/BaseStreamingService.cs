@@ -364,7 +364,7 @@ namespace MediaBrowser.Api.Playback
 
             var path = Kernel.Instance.FFMpegManager.GetSubtitleCachePath(video, subtitleStream.Index, offset, ".ass");
 
-            if (performConversion && !File.Exists(path))
+            if (performConversion)
             {
                 InputType type;
 
@@ -403,7 +403,7 @@ namespace MediaBrowser.Api.Playback
 
             var path = Kernel.Instance.FFMpegManager.GetSubtitleCachePath(video, subtitleStream.Index, offset, ".ass");
 
-            if (performConversion && !File.Exists(path))
+            if (performConversion)
             {
                 try
                 {
