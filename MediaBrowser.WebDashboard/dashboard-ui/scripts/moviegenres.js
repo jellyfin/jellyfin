@@ -24,6 +24,8 @@
 
             $('.listTopPaging', page).html(LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, true)).trigger('create');
 
+            updateFilterControls(page);
+
             var checkSortOption = $('.radioSortBy:checked', page);
             $('.viewSummary', page).html(LibraryBrowser.getViewSummaryHtml(query, checkSortOption)).trigger('create');
 
@@ -37,7 +39,11 @@
             $('#items', page).html(html).trigger('create');
 
             $('.btnChangeToDefaultSort', page).on('click', function () {
-                $('.defaultSort', page)[0].click();
+                query.StartIndex = 0;
+                query.SortOrder = 'Ascending';
+                query.SortBy = $('.defaultSort', page).data('sortby');
+
+                reloadItems(page);
             });
 
             $('.selectPage', page).on('change', function () {
@@ -60,11 +66,27 @@
                 query.StartIndex = 0;
                 reloadItems(page);
             });
-			
-			LibraryBrowser.saveQueryValues('moviegenres', query);
+
+            LibraryBrowser.saveQueryValues('moviegenres', query);
 
             Dashboard.hideLoadingMsg();
         });
+    }
+
+    function updateFilterControls(page) {
+
+        // Reset form values using the last used query
+        $('.radioSortBy', page).each(function () {
+
+            this.checked = (query.SortBy || '').toLowerCase() == this.getAttribute('data-sortby').toLowerCase();
+
+        }).checkboxradio('refresh');
+
+        $('.radioSortOrder', page).each(function () {
+
+            this.checked = (query.SortOrder || '').toLowerCase() == this.getAttribute('data-sortorder').toLowerCase();
+
+        }).checkboxradio('refresh');
     }
 
     $(document).on('pageinit', "#movieGenresPage", function () {
@@ -116,18 +138,7 @@
 
     }).on('pageshow', "#movieGenresPage", function () {
 
-        // Reset form values using the last used query
-        $('.radioSortBy', this).each(function () {
-
-            this.checked = (query.SortBy || '').toLowerCase() == this.getAttribute('data-sortby').toLowerCase();
-
-        }).checkboxradio('refresh');
-
-        $('.radioSortOrder', this).each(function () {
-
-            this.checked = (query.SortOrder || '').toLowerCase() == this.getAttribute('data-sortorder').toLowerCase();
-
-        }).checkboxradio('refresh');
+        updateFilterControls(this);
     });
 
 })(jQuery, document);

@@ -45,6 +45,8 @@
 
             $('.listTopPaging', page).html(LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, true)).trigger('create');
 
+            updateFilterControls(page);
+            
             var checkSortOption = $('.radioSortBy:checked', page);
             $('.viewSummary', page).html(LibraryBrowser.getViewSummaryHtml(query, checkSortOption)).trigger('create');
 
@@ -61,7 +63,11 @@
             $('#items', page).html(html).trigger('create');
 
             $('.btnChangeToDefaultSort', page).on('click', function () {
-                $('.defaultSort', page)[0].click();
+                query.StartIndex = 0;
+                query.SortOrder = 'Ascending';
+                query.SortBy = $('.defaultSort', page).data('sortby');
+
+                reloadItems(page);
             });
 
             $('.selectPage', page).on('change', function () {
@@ -116,8 +122,6 @@
 			LibraryBrowser.saveQueryValues('songs', query);
 
             Dashboard.hideLoadingMsg();
-
-            $(page).trigger('itemsreloaded');
         });
     }
 
@@ -162,9 +166,6 @@
 
         updateFilterControls(this);
 
-    }).on('itemsreloaded', "#songsPage", function () {
-
-        updateFilterControls(this);
     });
 
 })(jQuery, document);

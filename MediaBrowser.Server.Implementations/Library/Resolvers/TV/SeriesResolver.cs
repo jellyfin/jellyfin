@@ -43,7 +43,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
                 }
                 
                 // Optimization to avoid running these tests against Seasons
-                if (args.Parent is Series || args.Parent is MusicArtist || args.Parent is MusicAlbum || args.Parent is BoxSet)
+                if (args.Parent is Series || args.Parent is MusicArtist || args.Parent is MusicAlbum)
                 {
                     return null;
                 }

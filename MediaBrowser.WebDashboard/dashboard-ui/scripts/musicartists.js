@@ -23,6 +23,8 @@
 
             $('.listTopPaging', page).html(LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, true)).trigger('create');
 
+            updateFilterControls(page);
+
             var checkSortOption = $('.radioSortBy:checked', page);
             $('.viewSummary', page).html(LibraryBrowser.getViewSummaryHtml(query, checkSortOption)).trigger('create');
 
@@ -38,7 +40,11 @@
             $('#items', page).html(html).trigger('create');
 
             $('.btnChangeToDefaultSort', page).on('click', function () {
-                $('.defaultSort', page)[0].click();
+                query.StartIndex = 0;
+                query.SortOrder = 'Ascending';
+                query.SortBy = $('.defaultSort', page).data('sortby');
+
+                reloadItems(page);
             });
 
             $('.selectPage', page).on('change', function () {
@@ -61,11 +67,29 @@
                 query.StartIndex = 0;
                 reloadItems(page);
             });
-			
-			LibraryBrowser.saveQueryValues('musicartists', query);
+
+            LibraryBrowser.saveQueryValues('musicartists', query);
 
             Dashboard.hideLoadingMsg();
         });
+    }
+
+    function updateFilterControls(page) {
+
+        // Reset form values using the last used query
+        $('.radioSortBy', page).each(function () {
+
+            this.checked = (query.SortBy || '').toLowerCase() == this.getAttribute('data-sortby').toLowerCase();
+
+        }).checkboxradio('refresh');
+
+        $('.radioSortOrder', page).each(function () {
+
+            this.checked = (query.SortOrder || '').toLowerCase() == this.getAttribute('data-sortorder').toLowerCase();
+
+        }).checkboxradio('refresh');
+
+        $('.alphabetPicker', page).alphaValue(query.NameStartsWithOrGreater);
     }
 
     $(document).on('pageinit', "#musicArtistsPage", function () {
@@ -131,20 +155,7 @@
 
     }).on('pageshow', "#musicArtistsPage", function () {
 
-        // Reset form values using the last used query
-        $('.radioSortBy', this).each(function () {
-
-            this.checked = (query.SortBy || '').toLowerCase() == this.getAttribute('data-sortby').toLowerCase();
-
-        }).checkboxradio('refresh');
-
-        $('.radioSortOrder', this).each(function () {
-
-            this.checked = (query.SortOrder || '').toLowerCase() == this.getAttribute('data-sortorder').toLowerCase();
-
-        }).checkboxradio('refresh');
-
-        $('.alphabetPicker', this).alphaValue(query.NameStartsWithOrGreater);
+        updateFilterControls(this);
     });
 
 })(jQuery, document);

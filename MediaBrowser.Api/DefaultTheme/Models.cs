@@ -13,9 +13,8 @@ namespace MediaBrowser.Api.DefaultTheme
         public ImageType ImageType { get; set; }
     }
 
-    public class MoviesView
+    public class MoviesView : BaseView
     {
-        public List<BaseItemDto> SpotlightItems { get; set; }
         public List<ItemStub> MovieItems { get; set; }
         public List<ItemStub> PeopleItems { get; set; }
 
@@ -34,9 +33,8 @@ namespace MediaBrowser.Api.DefaultTheme
         public double HDMoviePercentage { get; set; }
     }
 
-    public class TvView
+    public class TvView : BaseView
     {
-        public List<BaseItemDto> SpotlightItems { get; set; }
         public List<ItemStub> ShowsItems { get; set; }
         public List<ItemStub> ActorItems { get; set; }
 
@@ -44,10 +42,17 @@ namespace MediaBrowser.Api.DefaultTheme
         public List<ItemStub> ComedyItems { get; set; }
     }
 
-    public class GamesView
+    public class GamesView : BaseView
+    {
+        public List<ItemStub> MultiPlayerItems { get; set; }
+
+    }
+
+    public class BaseView
     {
         public List<BaseItemDto> SpotlightItems { get; set; }
-        public List<ItemStub> MultiPlayerItems { get; set; }
+
+        public List<BaseItemDto> MiniSpotlights { get; set; }
     }
 
     public class HomeView

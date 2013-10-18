@@ -26,6 +26,8 @@
 
             $('.listTopPaging', page).html(LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, true)).trigger('create');
 
+            updateFilterControls();
+
             var checkSortOption = $('.radioSortBy:checked', page);
             $('.viewSummary', page).html(LibraryBrowser.getViewSummaryHtml(query, checkSortOption)).trigger('create');
 
@@ -43,7 +45,12 @@
             $('#items', page).html(html).trigger('create');
 
             $('.btnChangeToDefaultSort', page).on('click', function () {
-                $('.defaultSort', page)[0].click();
+
+                query.StartIndex = 0;
+                query.SortOrder = 'Ascending';
+                query.SortBy = $('.defaultSort', page).data('sortby');
+                
+                reloadItems(page);
             });
 
             $('.selectPage', page).on('change', function () {
@@ -73,6 +80,54 @@
 
             Dashboard.hideLoadingMsg();
         });
+    }
+
+    function updateFilterControls(page) {
+        
+
+        // Reset form values using the last used query
+        $('.radioSortBy', page).each(function () {
+
+            this.checked = (query.SortBy || '').toLowerCase() == this.getAttribute('data-sortby').toLowerCase();
+
+        }).checkboxradio('refresh');
+
+        $('.radioSortOrder', page).each(function () {
+
+            this.checked = (query.SortOrder || '').toLowerCase() == this.getAttribute('data-sortorder').toLowerCase();
+
+        }).checkboxradio('refresh');
+
+        $('.chkStandardFilter', page).each(function () {
+
+            var filters = "," + (query.Filters || "");
+            var filterName = this.getAttribute('data-filter');
+
+            this.checked = filters.toLowerCase().indexOf(',' + filterName.toLowerCase()) != -1;
+
+        }).checkboxradio('refresh');
+
+        $('.chkVideoTypeFilter', page).each(function () {
+
+            var filters = "," + (query.VideoTypes || "");
+            var filterName = this.getAttribute('data-filter');
+
+            this.checked = filters.indexOf(',' + filterName) != -1;
+
+        }).checkboxradio('refresh');
+
+        $('#chk3D', page).checked(query.Is3D == true).checkboxradio('refresh');
+
+        $('#chkSubtitle', page).checked(query.HasSubtitles == true).checkboxradio('refresh');
+        $('#chkTrailer', page).checked(query.HasTrailer == true).checkboxradio('refresh');
+        $('#chkThemeSong', page).checked(query.HasThemeSong == true).checkboxradio('refresh');
+        $('#chkThemeVideo', page).checked(query.HasThemeVideo == true).checkboxradio('refresh');
+        $('#chkSpecialFeature', page).checked(query.ParentIndexNumber == 0).checkboxradio('refresh');
+
+        $('#chkMissingEpisode', page).checked(query.MaxPremiereDate != null).checkboxradio('refresh');
+        $('#chkFutureEpisode', page).checked(query.MinPremiereDate != null).checkboxradio('refresh');
+
+        $('.alphabetPicker', page).alphaValue(query.NameStartsWithOrGreater);
     }
 
     function formatDigit(i) {
@@ -188,7 +243,7 @@
         $('#chkMissingEpisode', this).on('change', function () {
 
             var futureChecked = $('#chkFutureEpisode', page).checked();
-            
+
             query.LocationTypes = this.checked || futureChecked ? "virtual" : null;
             query.HasPremiereDate = this.checked || futureChecked ? true : null;
             query.MaxPremiereDate = this.checked ? getDateFormat(new Date()) : null;
@@ -230,7 +285,7 @@
             query.Limit = limit;
             query.StartIndex = 0;
         }
-        
+
         LibraryBrowser.loadSavedQueryValues('episodes', query);
 
         var filters = getParameterByName('filters');
@@ -252,50 +307,7 @@
 
     }).on('pageshow', "#episodesPage", function () {
 
-        // Reset form values using the last used query
-        $('.radioSortBy', this).each(function () {
-
-            this.checked = (query.SortBy || '').toLowerCase() == this.getAttribute('data-sortby').toLowerCase();
-
-        }).checkboxradio('refresh');
-
-        $('.radioSortOrder', this).each(function () {
-
-            this.checked = (query.SortOrder || '').toLowerCase() == this.getAttribute('data-sortorder').toLowerCase();
-
-        }).checkboxradio('refresh');
-
-        $('.chkStandardFilter', this).each(function () {
-
-            var filters = "," + (query.Filters || "");
-            var filterName = this.getAttribute('data-filter');
-
-            this.checked = filters.toLowerCase().indexOf(',' + filterName.toLowerCase()) != -1;
-
-        }).checkboxradio('refresh');
-
-        $('.chkVideoTypeFilter', this).each(function () {
-
-            var filters = "," + (query.VideoTypes || "");
-            var filterName = this.getAttribute('data-filter');
-
-            this.checked = filters.indexOf(',' + filterName) != -1;
-
-        }).checkboxradio('refresh');
-
-        $('#chk3D', this).checked(query.Is3D == true).checkboxradio('refresh');
-
-        $('#chkSubtitle', this).checked(query.HasSubtitles == true).checkboxradio('refresh');
-        $('#chkTrailer', this).checked(query.HasTrailer == true).checkboxradio('refresh');
-        $('#chkThemeSong', this).checked(query.HasThemeSong == true).checkboxradio('refresh');
-        $('#chkThemeVideo', this).checked(query.HasThemeVideo == true).checkboxradio('refresh');
-        $('#chkSpecialFeature', this).checked(query.ParentIndexNumber == 0).checkboxradio('refresh');
-        
-        $('#chkMissingEpisode', this).checked(query.MaxPremiereDate != null).checkboxradio('refresh');
-        $('#chkFutureEpisode', this).checked(query.MinPremiereDate != null).checkboxradio('refresh');
-
-        $('.alphabetPicker', this).alphaValue(query.NameStartsWithOrGreater);
-
+        updateFilterControls(this);
     });
 
 })(jQuery, document);

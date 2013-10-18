@@ -1096,13 +1096,13 @@
         getViewSummaryHtml: function (query, checkedSortOption) {
 
             var html = '';
-
+            return html;
             if (query.SortBy) {
 
                 var id = checkedSortOption[0].id;
                 var sortBy = checkedSortOption.siblings('label[for=' + id + ']').text();
 
-                html += 'Sorted by ' + sortBy.trim().toLowerCase() + ' in ' + (query.SortOrder || 'ascending').toLowerCase() + ' order';
+                html += 'Sorted by ' + sortBy.trim().toLowerCase() + ', ' + (query.SortOrder || 'ascending').toLowerCase();
 
                 if (!checkedSortOption.hasClass('defaultSort')) {
                     html += '<button class="btnChangeToDefaultSort" type="button" data-icon="delete" data-inline="true" data-mini="true" data-iconpos="notext">Remove</button>';

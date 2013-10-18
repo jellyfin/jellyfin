@@ -27,6 +27,8 @@
 
             $('.listTopPaging', page).html(LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, true)).trigger('create');
 
+            updateFilterControls(page);
+
             var checkSortOption = $('.radioSortBy:checked', page);
             $('.viewSummary', page).html(LibraryBrowser.getViewSummaryHtml(query, checkSortOption)).trigger('create');
 
@@ -62,7 +64,11 @@
             $('#items', page).html(html).trigger('create');
 
             $('.btnChangeToDefaultSort', page).on('click', function () {
-                $('.defaultSort', page)[0].click();
+                query.StartIndex = 0;
+                query.SortOrder = 'Ascending';
+                query.SortBy = $('.defaultSort', page).data('sortby');
+
+                reloadItems(page);
             });
 
             $('.selectPage', page).on('change', function () {
@@ -86,10 +92,56 @@
                 reloadItems(page);
             });
 
-			LibraryBrowser.saveQueryValues('games', query);
-			
+            LibraryBrowser.saveQueryValues('games', query);
+
             Dashboard.hideLoadingMsg();
         });
+    }
+
+    function updateFilterControls(page) {
+
+        // Reset form values using the last used query
+        $('.radioSortBy', page).each(function () {
+
+            this.checked = (query.SortBy || '').toLowerCase() == this.getAttribute('data-sortby').toLowerCase();
+
+        }).checkboxradio('refresh');
+
+        $('.radioSortOrder', page).each(function () {
+
+            this.checked = (query.SortOrder || '').toLowerCase() == this.getAttribute('data-sortorder').toLowerCase();
+
+        }).checkboxradio('refresh');
+
+        $('.radioPlayers', page).each(function () {
+
+            var val = this.getAttribute('data-value');
+
+            if (val == "all") {
+
+                this.checked = query.MinPlayers == null;
+            } else {
+                this.checked = query.MinPlayers == val;
+            }
+
+        }).checkboxradio('refresh');
+
+        $('.chkStandardFilter', page).each(function () {
+
+            var filters = "," + (query.Filters || "");
+            var filterName = this.getAttribute('data-filter');
+
+            this.checked = filters.indexOf(',' + filterName) != -1;
+
+        }).checkboxradio('refresh');
+
+        $('#selectView', page).val(view).selectmenu('refresh');
+
+        $('#chkTrailer', page).checked(query.HasTrailer == true).checkboxradio('refresh');
+        $('#chkThemeSong', page).checked(query.HasThemeSong == true).checkboxradio('refresh');
+        $('#chkThemeVideo', page).checked(query.HasThemeVideo == true).checkboxradio('refresh');
+
+        $('.alphabetPicker', page).alphaValue(query.NameStartsWith);
     }
 
     $(document).on('pageinit', "#gamesPage", function () {
@@ -109,13 +161,13 @@
         });
 
         $('.radioPlayers', this).on('click', function () {
-            
+
             query.StartIndex = 0;
 
             var val = this.getAttribute('data-value');
 
             query.MinPlayers = val == "all" ? null : val;
-            
+
             reloadItems(page);
         });
 
@@ -205,49 +257,7 @@
 
     }).on('pageshow', "#gamesPage", function () {
 
-
-        // Reset form values using the last used query
-        $('.radioSortBy', this).each(function () {
-
-            this.checked = (query.SortBy || '').toLowerCase() == this.getAttribute('data-sortby').toLowerCase();
-
-        }).checkboxradio('refresh');
-
-        $('.radioSortOrder', this).each(function () {
-
-            this.checked = (query.SortOrder || '').toLowerCase() == this.getAttribute('data-sortorder').toLowerCase();
-
-        }).checkboxradio('refresh');
-
-        $('.radioPlayers', this).each(function () {
-
-            var val = this.getAttribute('data-value');
-
-            if (val == "all") {
-
-                this.checked = query.MinPlayers == null;
-            } else {
-                this.checked = query.MinPlayers == val;
-            }
-
-        }).checkboxradio('refresh');
-
-        $('.chkStandardFilter', this).each(function () {
-
-            var filters = "," + (query.Filters || "");
-            var filterName = this.getAttribute('data-filter');
-
-            this.checked = filters.indexOf(',' + filterName) != -1;
-
-        }).checkboxradio('refresh');
-
-        $('#selectView', this).val(view).selectmenu('refresh');
-
-        $('#chkTrailer', this).checked(query.HasTrailer == true).checkboxradio('refresh');
-        $('#chkThemeSong', this).checked(query.HasThemeSong == true).checkboxradio('refresh');
-        $('#chkThemeVideo', this).checked(query.HasThemeVideo == true).checkboxradio('refresh');
-
-        $('.alphabetPicker', this).alphaValue(query.NameStartsWith);
+        updateFilterControls(this);
     });
 
 })(jQuery, document);
