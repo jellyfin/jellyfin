@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System.Collections.Concurrent;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Model.Entities;
@@ -84,6 +85,21 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
             get { return FFMpegPath; }
         }
 
+        /// <summary>
+        /// The _semaphoreLocks
+        /// </summary>
+        private readonly ConcurrentDictionary<string, SemaphoreSlim> _semaphoreLocks = new ConcurrentDictionary<string, SemaphoreSlim>();
+
+        /// <summary>
+        /// Gets the lock.
+        /// </summary>
+        /// <param name="filename">The filename.</param>
+        /// <returns>System.Object.</returns>
+        private SemaphoreSlim GetLock(string filename)
+        {
+            return _semaphoreLocks.GetOrAdd(filename, key => new SemaphoreSlim(1, 1));
+        }
+        
         /// <summary>
         /// Gets the media info.
         /// </summary>
@@ -368,11 +384,40 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// <param name="offset">The offset.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
+        public async Task ConvertTextSubtitleToAss(string inputPath, string outputPath, string language, TimeSpan offset,
+                                                   CancellationToken cancellationToken)
+        {
+            var semaphore = GetLock(outputPath);
+
+            await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                if (!File.Exists(outputPath))
+                {
+                    await ConvertTextSubtitleToAssInternal(inputPath, outputPath, language, offset, cancellationToken).ConfigureAwait(false);
+                }
+            }
+            finally
+            {
+                semaphore.Release();
+            }
+        }
+
+        /// <summary>
+        /// Converts the text subtitle to ass.
+        /// </summary>
+        /// <param name="inputPath">The input path.</param>
+        /// <param name="outputPath">The output path.</param>
+        /// <param name="language">The language.</param>
+        /// <param name="offset">The offset.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">inputPath
         /// or
         /// outputPath</exception>
         /// <exception cref="System.ApplicationException"></exception>
-        public async Task ConvertTextSubtitleToAss(string inputPath, string outputPath, string language, TimeSpan offset,
+        private async Task ConvertTextSubtitleToAssInternal(string inputPath, string outputPath, string language, TimeSpan offset,
                                                    CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(inputPath))
@@ -562,9 +607,23 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentException">Must use inputPath list overload</exception>
-        public Task ExtractTextSubtitle(string[] inputFiles, InputType type, int subtitleStreamIndex, TimeSpan offset, string outputPath, CancellationToken cancellationToken)
+        public async Task ExtractTextSubtitle(string[] inputFiles, InputType type, int subtitleStreamIndex, TimeSpan offset, string outputPath, CancellationToken cancellationToken)
         {
-            return ExtractTextSubtitleInternal(GetInputArgument(inputFiles, type), subtitleStreamIndex, offset, outputPath, cancellationToken);
+            var semaphore = GetLock(outputPath);
+
+            await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                if (!File.Exists(outputPath))
+                {
+                    await ExtractTextSubtitleInternal(GetInputArgument(inputFiles, type), subtitleStreamIndex, offset, outputPath, cancellationToken).ConfigureAwait(false);
+                }
+            }
+            finally
+            {
+                semaphore.Release();
+            }
         }
 
         /// <summary>
