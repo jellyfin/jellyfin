@@ -163,7 +163,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
                             var newHeight = Convert.ToInt32(newSize.Height);
 
                             // Graphics.FromImage will throw an exception if the PixelFormat is Indexed, so we need to handle that here
-                            using (var thumbnail = !ImageExtensions.IsPixelFormatSupportedByGraphicsObject(originalImage.PixelFormat) ? new Bitmap(originalImage, newWidth, newHeight) : new Bitmap(newWidth, newHeight, originalImage.PixelFormat))
+                            using (var thumbnail = new Bitmap(newWidth, newHeight, PixelFormat.Format32bppPArgb))
                             {
                                 // Preserve the original resolution
                                 thumbnail.SetResolution(originalImage.HorizontalResolution, originalImage.VerticalResolution);
