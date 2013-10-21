@@ -362,7 +362,7 @@
                 $('#fldRecursive', page).hide();
             }
 
-            if (item.LocationType == "Virtual") {
+            if (item.LocationType == "Virtual" || item.LocationType == "Remote") {
                 $('#fldDelete', page).show();
             } else {
                 $('#fldDelete', page).hide();
