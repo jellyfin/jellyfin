@@ -70,6 +70,56 @@ namespace MediaBrowser.Model.Dto
         /// <value>The unique types.</value>
         public List<string> UniqueTypes { get; set; }
 
+        public int FavoriteAdultVideoCount { get; set; }
+        /// <summary>
+        /// Gets or sets the movie count.
+        /// </summary>
+        /// <value>The movie count.</value>
+        public int FavoriteMovieCount { get; set; }
+        /// <summary>
+        /// Gets or sets the series count.
+        /// </summary>
+        /// <value>The series count.</value>
+        public int FavoriteSeriesCount { get; set; }
+        /// <summary>
+        /// Gets or sets the episode count.
+        /// </summary>
+        /// <value>The episode count.</value>
+        public int FavoriteEpisodeCount { get; set; }
+        /// <summary>
+        /// Gets or sets the game count.
+        /// </summary>
+        /// <value>The game count.</value>
+        public int FavoriteGameCount { get; set; }
+        /// <summary>
+        /// Gets or sets the song count.
+        /// </summary>
+        /// <value>The song count.</value>
+        public int FavoriteSongCount { get; set; }
+        /// <summary>
+        /// Gets or sets the album count.
+        /// </summary>
+        /// <value>The album count.</value>
+        public int FavoriteAlbumCount { get; set; }
+        /// <summary>
+        /// Gets or sets the music video count.
+        /// </summary>
+        /// <value>The music video count.</value>
+        public int FavoriteMusicVideoCount { get; set; }
+        /// <summary>
+        /// Gets or sets the box set count.
+        /// </summary>
+        /// <value>The box set count.</value>
+        public int FavoriteBoxSetCount { get; set; }
+        /// <summary>
+        /// Gets or sets the book count.
+        /// </summary>
+        /// <value>The book count.</value>
+        public int FavoriteBookCount { get; set; }
+
+        public int FavoritePersonCount { get; set; }
+        public int FavoriteArtistCount { get; set; }
+        
         public ItemCounts()
         {
             UniqueTypes = new List<string>();

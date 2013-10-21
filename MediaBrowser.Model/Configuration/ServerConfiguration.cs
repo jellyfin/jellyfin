@@ -88,24 +88,6 @@ namespace MediaBrowser.Model.Configuration
         public string MetadataCountryCode { get; set; }
 
         /// <summary>
-        /// Gets or sets the size of the TMDB fetched poster.
-        /// </summary>
-        /// <value>The size of the TMDB fetched poster.</value>
-        public string TmdbFetchedPosterSize { get; set; }
-
-        /// <summary>
-        /// Gets or sets the size of the TMDB fetched profile.
-        /// </summary>
-        /// <value>The size of the TMDB fetched profile.</value>
-        public string TmdbFetchedProfileSize { get; set; }
-
-        /// <summary>
-        /// Gets or sets the size of the TMDB fetched backdrop.
-        /// </summary>
-        /// <value>The size of the TMDB fetched backdrop.</value>
-        public string TmdbFetchedBackdropSize { get; set; }
-
-        /// <summary>
         /// Gets or sets the max backdrops.
         /// </summary>
         /// <value>The max backdrops.</value>
@@ -274,9 +256,6 @@ namespace MediaBrowser.Model.Configuration
             MetadataRefreshDays = 30;
             PreferredMetadataLanguage = "en";
             MetadataCountryCode = "US";
-            TmdbFetchedProfileSize = "original"; //w185 w45 h632 or original
-            TmdbFetchedPosterSize = "original"; //w500, w342, w185 or original
-            TmdbFetchedBackdropSize = "original"; //w1280, w780 or original
             DownloadMovieImages = new ImageDownloadOptions();
             DownloadSeriesImages = new ImageDownloadOptions();
             DownloadSeasonImages = new ImageDownloadOptions();

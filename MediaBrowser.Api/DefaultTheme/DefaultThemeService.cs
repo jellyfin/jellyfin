@@ -51,8 +51,8 @@ namespace MediaBrowser.Api.DefaultTheme
         public string RomanceGenre { get; set; }
     }
 
-    [Route("/MBT/DefaultTheme/Home", "GET")]
-    public class GetHomeView : IReturn<HomeView>
+    [Route("/MBT/DefaultTheme/Favorites", "GET")]
+    public class GetFavoritesView : IReturn<FavoritesView>
     {
         [ApiMember(Name = "UserId", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
         public Guid UserId { get; set; }
@@ -78,47 +78,103 @@ namespace MediaBrowser.Api.DefaultTheme
             _userDataManager = userDataManager;
         }
 
-        public object Get(GetHomeView request)
-        {
-            var result = GetHomeView(request);
-
-            return ToOptimizedResult(result);
-        }
-
-        private HomeView GetHomeView(GetHomeView request)
+        public object Get(GetFavoritesView request)
         {
             var user = _userManager.GetUserById(request.UserId);
 
-            var allItems = user.RootFolder.GetRecursiveChildren(user)
+            var allItems = user.RootFolder.GetRecursiveChildren(user, i => _userDataManager.GetUserData(user.Id, i.GetUserDataKey()).IsFavorite)
                 .ToList();
 
-            var itemsWithBackdrops = allItems.Where(i => i.BackdropImagePaths.Count > 0).ToList();
+            var itemsWithImages = allItems.Where(i => !string.IsNullOrEmpty(i.PrimaryImagePath))
+                .ToList();
 
-            var view = new HomeView();
+            var itemsWithBackdrops = allItems.Where(i => i.BackdropImagePaths.Count > 0)
+                .ToList();
+
+            var view = new FavoritesView();
 
             var fields = new List<ItemFields>();
 
-            var eligibleSpotlightItems = itemsWithBackdrops
-                .Where(i => i is Game || i is Movie || i is Series || i is MusicArtist);
+            view.BackdropItems = FilterItemsForBackdropDisplay(itemsWithBackdrops.OrderBy(i => Guid.NewGuid()))
+                .Take(10)
+                .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+                .ToList();
 
-            var dtos = FilterItemsForBackdropDisplay(eligibleSpotlightItems)
+            var spotlightItems = itemsWithBackdrops.OrderBy(i => Guid.NewGuid())
+                                                   .Take(10)
+                                                   .ToList();
+
+            view.SpotlightItems = spotlightItems
+              .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+              .ToList();
+
+            view.Albums = itemsWithImages
+                .OfType<MusicAlbum>()
                 .OrderBy(i => Guid.NewGuid())
-                .Take(50)
-                .Select(i => _dtoService.GetBaseItemDto(i, fields, user));
+                .Take(4)
+                .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+                .ToList();
 
-            view.SpotlightItems = dtos.ToList();
+            view.Books = itemsWithImages
+                .OfType<Book>()
+                .OrderBy(i => Guid.NewGuid())
+                .Take(6)
+                .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+                .ToList();
 
-            return view;
+            view.Episodes = itemsWithImages
+                .OfType<Episode>()
+                .OrderBy(i => Guid.NewGuid())
+                .Take(6)
+                .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+                .ToList();
+
+            view.Games = itemsWithImages
+                .OfType<Game>()
+                .OrderBy(i => Guid.NewGuid())
+                .Take(6)
+                .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+                .ToList();
+
+            view.Movies = itemsWithImages
+                .OfType<Movie>()
+                .OrderBy(i => Guid.NewGuid())
+                .Take(6)
+                .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+                .ToList();
+
+            view.Series = itemsWithImages
+                .OfType<Series>()
+                .OrderBy(i => Guid.NewGuid())
+                .Take(6)
+                .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+                .ToList();
+
+            view.Songs = itemsWithImages
+                .OfType<Audio>()
+                .OrderBy(i => Guid.NewGuid())
+                .Take(4)
+                .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+                .ToList();
+
+            view.Artists = itemsWithImages
+                .OfType<MusicArtist>()
+                .OrderBy(i => Guid.NewGuid())
+                .Take(4)
+                .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+                .ToList();
+
+            view.MiniSpotlights = itemsWithBackdrops
+                .Except(spotlightItems)
+                .OrderBy(i => Guid.NewGuid())
+                .Take(5)
+                .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+                .ToList();
+
+            return ToOptimizedResult(view);
         }
 
         public object Get(GetGamesView request)
-        {
-            var result = GetGamesView(request);
-
-            return ToOptimizedResult(result);
-        }
-
-        private GamesView GetGamesView(GetGamesView request)
         {
             var user = _userManager.GetUserById(request.UserId);
 
@@ -129,17 +185,23 @@ namespace MediaBrowser.Api.DefaultTheme
 
             var itemsWithBackdrops = FilterItemsForBackdropDisplay(items.Where(i => i.BackdropImagePaths.Count > 0)).ToList();
 
+            var gamesWithBackdrops = itemsWithBackdrops.OfType<Game>().ToList();
+
             var view = new GamesView();
 
             var fields = new List<ItemFields>();
 
-            var dtos = itemsWithBackdrops
-                .OfType<Game>()
+            view.BackdropItems = gamesWithBackdrops
                 .OrderBy(i => Guid.NewGuid())
-                .Take(50)
-                .Select(i => _dtoService.GetBaseItemDto(i, fields, user));
+                .Take(10)
+                .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+                .ToList();
 
-            view.SpotlightItems = dtos.ToList();
+            view.SpotlightItems = gamesWithBackdrops
+                .OrderBy(i => Guid.NewGuid())
+                .Take(10)
+                .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+                .ToList();
 
             view.MultiPlayerItems = gamesWithImages
             .Where(i => i.PlayersSupported.HasValue && i.PlayersSupported.Value > 1)
@@ -149,31 +211,16 @@ namespace MediaBrowser.Api.DefaultTheme
             .Take(1)
             .ToList();
 
-            view.MiniSpotlights = itemsWithBackdrops
-                .OfType<Game>()
+            view.MiniSpotlights = gamesWithBackdrops
                 .OrderBy(i => Guid.NewGuid())
-                .Take(3)
+                .Take(5)
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
                 .ToList();
-            
-            return view;
-        }
 
-        public object Get(GetMovieView request)
-        {
-            var result = GetMovieView(request);
-
-            return ToOptimizedResult(result);
+            return ToOptimizedResult(view);
         }
 
         public object Get(GetTvView request)
-        {
-            var result = GetTvView(request);
-
-            return ToOptimizedResult(result);
-        }
-
-        private TvView GetTvView(GetTvView request)
         {
             var user = _userManager.GetUserById(request.UserId);
 
@@ -187,13 +234,14 @@ namespace MediaBrowser.Api.DefaultTheme
 
             var fields = new List<ItemFields>();
 
-            var dtos = FilterItemsForBackdropDisplay(seriesWithBackdrops)
-                .OrderBy(i => Guid.NewGuid())
-                .Take(50)
-                .AsParallel()
-                .Select(i => _dtoService.GetBaseItemDto(i, fields, user));
+            var seriesWithBestBackdrops = FilterItemsForBackdropDisplay(seriesWithBackdrops).ToList();
 
-            view.SpotlightItems = dtos.ToList();
+            view.BackdropItems = seriesWithBestBackdrops
+                .OrderBy(i => Guid.NewGuid())
+                .Take(10)
+                .AsParallel()
+                .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+                .ToList();
 
             view.ShowsItems = series
                .Where(i => i.BackdropImagePaths.Count > 0)
@@ -224,16 +272,45 @@ namespace MediaBrowser.Api.DefaultTheme
 
             view.ActorItems = GetActors(series, user.Id);
 
-            view.MiniSpotlights = seriesWithBackdrops
+            var spotlightSeries = seriesWithBestBackdrops
+                .Where(i => i.CommunityRating.HasValue && i.CommunityRating >= 8.5)
+                .ToList();
+
+            if (spotlightSeries.Count < 20)
+            {
+                spotlightSeries = seriesWithBestBackdrops;
+            }
+
+            spotlightSeries = spotlightSeries
+                .OrderBy(i => Guid.NewGuid())
+                .Take(10)
+                .ToList();
+
+            view.SpotlightItems = spotlightSeries
+                .AsParallel()
+                .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+                .ToList();
+
+            var miniSpotlightItems = seriesWithBackdrops
+                .Except(spotlightSeries.OfType<Series>())
+                .Where(i => i.CommunityRating.HasValue && i.CommunityRating >= 8)
+                .ToList();
+
+            if (miniSpotlightItems.Count < 15)
+            {
+                miniSpotlightItems = seriesWithBackdrops;
+            }
+
+            view.MiniSpotlights = miniSpotlightItems
               .OrderBy(i => Guid.NewGuid())
-              .Take(3)
+              .Take(5)
               .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
               .ToList();
-            
-            return view;
+
+            return ToOptimizedResult(view);
         }
 
-        private MoviesView GetMovieView(GetMovieView request)
+        public object Get(GetMovieView request)
         {
             var user = _userManager.GetUserById(request.UserId);
 
@@ -241,7 +318,7 @@ namespace MediaBrowser.Api.DefaultTheme
                 .ToList();
 
             // Exclude trailers from backdrops because they're not always 1080p
-            var itemsWithBackdrops = items.Where(i => i.BackdropImagePaths.Count > 0 && !(i is Trailer))
+            var itemsWithBackdrops = items.Where(i => i.BackdropImagePaths.Count > 0)
                 .ToList();
 
             var view = new MoviesView();
@@ -267,12 +344,14 @@ namespace MediaBrowser.Api.DefaultTheme
 
             var fields = new List<ItemFields>();
 
-            var dtos = FilterItemsForBackdropDisplay(itemsWithBackdrops)
-                .OrderBy(i => Guid.NewGuid())
-                .Take(50)
-                .Select(i => _dtoService.GetBaseItemDto(i, fields, user));
+            var itemsWithTopBackdrops = FilterItemsForBackdropDisplay(itemsWithBackdrops).ToList();
 
-            view.SpotlightItems = dtos.ToList();
+            view.BackdropItems = itemsWithTopBackdrops
+                .OrderBy(i => Guid.NewGuid())
+                .Take(10)
+                .AsParallel()
+                .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+                .ToList();
 
             view.MovieItems = moviesWithBackdrops
                .OrderBy(i => Guid.NewGuid())
@@ -344,13 +423,52 @@ namespace MediaBrowser.Api.DefaultTheme
 
             view.PeopleItems = GetActors(items, user.Id);
 
-            view.MiniSpotlights = moviesWithBackdrops
+            var spotlightItems = itemsWithTopBackdrops
+                .Where(i => i.CommunityRating.HasValue && i.CommunityRating >= 8)
+                .ToList();
+
+            if (spotlightItems.Count < 20)
+            {
+                spotlightItems = itemsWithTopBackdrops;
+            }
+
+            spotlightItems = spotlightItems
+                .OrderBy(i => Guid.NewGuid())
+                .Take(10)
+                .ToList();
+
+            view.SpotlightItems = spotlightItems
+                .AsParallel()
+                .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+                .ToList();
+
+            var miniSpotlightItems = moviesWithBackdrops
+                .Except(spotlightItems)
+                .Where(i => i.CommunityRating.HasValue && i.CommunityRating >= 7.5)
+                .ToList();
+
+            if (miniSpotlightItems.Count < 15)
+            {
+                miniSpotlightItems = itemsWithTopBackdrops;
+            }
+
+            miniSpotlightItems = miniSpotlightItems
               .OrderBy(i => Guid.NewGuid())
-              .Take(3)
+              .ToList();
+
+            // Avoid implicitly captured closure
+            var currentUserId = user.Id;
+            miniSpotlightItems.InsertRange(2, moviesWithBackdrops
+                .Where(i => _userDataManager.GetUserData(currentUserId, i.GetUserDataKey()).PlaybackPositionTicks > 0)
+                .OrderByDescending(i => _userDataManager.GetUserData(currentUserId, i.GetUserDataKey()).LastPlayedDate ?? DateTime.MaxValue)
+                .Take(3));
+
+            view.MiniSpotlights = miniSpotlightItems
+              .Take(5)
               .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
               .ToList();
 
-            return view;
+            return ToOptimizedResult(view);
         }
 
         private IEnumerable<BaseItem> FilterItemsForBackdropDisplay(IEnumerable<BaseItem> items)

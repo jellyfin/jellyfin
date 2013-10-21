@@ -246,8 +246,10 @@ namespace MediaBrowser.Providers
                 image = GetImage(item, args, "show");
             }
 
+            var isFileSystemItem = item.LocationType == LocationType.FileSystem;
+
             // Support plex/xbmc convention
-            if (image == null && item is Season && item.IndexNumber.HasValue)
+            if (image == null && item is Season && item.IndexNumber.HasValue && isFileSystemItem)
             {
                 var seasonMarker = item.IndexNumber.Value == 0
                                        ? "-specials"
@@ -275,7 +277,7 @@ namespace MediaBrowser.Providers
             }
 
             // Look for a file with the same name as the item
-            if (image == null)
+            if (image == null && isFileSystemItem)
             {
                 var name = Path.GetFileNameWithoutExtension(item.Path);
 
@@ -305,7 +307,7 @@ namespace MediaBrowser.Providers
             if (image == null)
             {
                 // Supprt xbmc conventions
-                if (item is Season && item.IndexNumber.HasValue)
+                if (item is Season && item.IndexNumber.HasValue && item.LocationType == LocationType.FileSystem)
                 {
                     var seasonMarker = item.IndexNumber.Value == 0
                                            ? "-specials"
@@ -346,7 +348,7 @@ namespace MediaBrowser.Providers
             if (image == null)
             {
                 // Supprt xbmc conventions
-                if (item is Season && item.IndexNumber.HasValue)
+                if (item is Season && item.IndexNumber.HasValue && item.LocationType == LocationType.FileSystem)
                 {
                     var seasonMarker = item.IndexNumber.Value == 0
                                            ? "-specials"
@@ -391,7 +393,9 @@ namespace MediaBrowser.Providers
             PopulateBackdrops(item, args, backdropFiles, "background", "background-");
             PopulateBackdrops(item, args, backdropFiles, "art", "art-");
 
-            if (item is Season && item.IndexNumber.HasValue)
+            var isFileSystemItem =  item.LocationType == LocationType.FileSystem;
+
+            if (item is Season && item.IndexNumber.HasValue && isFileSystemItem)
             {
                 var seasonMarker = item.IndexNumber.Value == 0
                                        ? "-specials"
@@ -412,7 +416,10 @@ namespace MediaBrowser.Providers
                 }
             }
 
-            PopulateBackdropsFromExtraFanart(args, backdropFiles);
+            if (isFileSystemItem)
+            {
+                PopulateBackdropsFromExtraFanart(args, backdropFiles);
+            }
 
             if (backdropFiles.Count > 0)
             {

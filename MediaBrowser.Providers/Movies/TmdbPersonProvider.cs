@@ -360,7 +360,7 @@ namespace MediaBrowser.Providers.Movies
                 {
                     var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
 
-                    await DownloadAndSaveImage(person, tmdbSettings.images.base_url + ConfigurationManager.Configuration.TmdbFetchedProfileSize + profile.file_path,
+                    await DownloadAndSaveImage(person, tmdbSettings.images.base_url + "original" + profile.file_path,
                                              MimeTypes.GetMimeType(profile.file_path), cancellationToken).ConfigureAwait(false);
                 }
             }

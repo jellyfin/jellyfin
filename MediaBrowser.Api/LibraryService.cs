@@ -204,6 +204,7 @@ namespace MediaBrowser.Api
 
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
+        private readonly IUserDataManager _userDataManager;
 
         private readonly IDtoService _dtoService;
 
@@ -211,12 +212,13 @@ namespace MediaBrowser.Api
         /// Initializes a new instance of the <see cref="LibraryService" /> class.
         /// </summary>
         public LibraryService(IItemRepository itemRepo, ILibraryManager libraryManager, IUserManager userManager,
-                              IDtoService dtoService)
+                              IDtoService dtoService, IUserDataManager userDataManager)
         {
             _itemRepo = itemRepo;
             _libraryManager = libraryManager;
             _userManager = userManager;
             _dtoService = dtoService;
+            _userDataManager = userDataManager;
         }
 
         public object Get(GetFile request)
@@ -332,25 +334,57 @@ namespace MediaBrowser.Api
         {
             var items = GetAllLibraryItems(request.UserId, _userManager, _libraryManager).ToList();
 
+            var albums = items.OfType<MusicAlbum>().ToList();
+            var episodes = items.OfType<Episode>().ToList();
+            var games = items.OfType<Game>().ToList();
+            var movies = items.OfType<Movie>().ToList();
+            var musicVideos = items.OfType<MusicVideo>().ToList();
+            var adultVideos = items.OfType<AdultVideo>().ToList();
+            var boxsets = items.OfType<BoxSet>().ToList();
+            var books = items.OfType<Book>().ToList();
+            var songs = items.OfType<Audio>().ToList();
+            var series = items.OfType<Series>().ToList();
+
+
+
             var counts = new ItemCounts
             {
-                AlbumCount = items.OfType<MusicAlbum>().Count(),
-                EpisodeCount = items.OfType<Episode>().Count(),
-                GameCount = items.OfType<Game>().Count(),
+                AlbumCount = albums.Count,
+                EpisodeCount = episodes.Count,
+                GameCount = games.Count,
                 GameSystemCount = items.OfType<GameSystem>().Count(),
-                MovieCount = items.OfType<Movie>().Count(),
-                SeriesCount = items.OfType<Series>().Count(),
-                SongCount = items.OfType<Audio>().Count(),
+                MovieCount = movies.Count,
+                SeriesCount = series.Count,
+                SongCount = songs.Count,
                 TrailerCount = items.OfType<Trailer>().Count(),
-                MusicVideoCount = items.OfType<MusicVideo>().Count(),
-                AdultVideoCount = items.OfType<AdultVideo>().Count(),
-                BoxSetCount = items.OfType<BoxSet>().Count(),
-                BookCount = items.OfType<Book>().Count(),
+                MusicVideoCount = musicVideos.Count,
+                AdultVideoCount = adultVideos.Count,
+                BoxSetCount = boxsets.Count,
+                BookCount = books.Count,
 
                 UniqueTypes = items.Select(i => i.GetType().Name).Distinct().ToList()
             };
 
+            if (request.UserId.HasValue)
+            {
+                counts.FavoriteAlbumCount = FavoriteCount(albums, request.UserId.Value);
+                counts.FavoriteEpisodeCount = FavoriteCount(episodes, request.UserId.Value);
+                counts.FavoriteGameCount = FavoriteCount(games, request.UserId.Value);
+                counts.FavoriteMovieCount = FavoriteCount(movies, request.UserId.Value);
+                counts.FavoriteMusicVideoCount = FavoriteCount(musicVideos, request.UserId.Value);
+                counts.FavoriteAdultVideoCount = FavoriteCount(adultVideos, request.UserId.Value);
+                counts.FavoriteBoxSetCount = FavoriteCount(boxsets, request.UserId.Value);
+                counts.FavoriteBookCount = FavoriteCount(books, request.UserId.Value);
+                counts.FavoriteSongCount = FavoriteCount(songs, request.UserId.Value);
+                counts.FavoriteSeriesCount = FavoriteCount(series, request.UserId.Value);
+            }
+
             return ToOptimizedResult(counts);
+        }
+
+        private int FavoriteCount(IEnumerable<BaseItem> items, Guid userId)
+        {
+            return items.Count(i => _userDataManager.GetUserData(userId, i.GetUserDataKey()).IsFavorite);
         }
 
         /// <summary>

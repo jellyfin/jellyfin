@@ -50,13 +50,20 @@ namespace MediaBrowser.Api.DefaultTheme
 
     public class BaseView
     {
+        public List<BaseItemDto> BackdropItems { get; set; }
         public List<BaseItemDto> SpotlightItems { get; set; }
-
         public List<BaseItemDto> MiniSpotlights { get; set; }
     }
 
-    public class HomeView
+    public class FavoritesView : BaseView
     {
-        public List<BaseItemDto> SpotlightItems { get; set; }
+        public List<BaseItemDto> Movies { get; set; }
+        public List<BaseItemDto> Series { get; set; }
+        public List<BaseItemDto> Episodes { get; set; }
+        public List<BaseItemDto> Games { get; set; }
+        public List<BaseItemDto> Books { get; set; }
+        public List<BaseItemDto> Albums { get; set; }
+        public List<BaseItemDto> Songs { get; set; }
+        public List<BaseItemDto> Artists { get; set; }
     }
 }
