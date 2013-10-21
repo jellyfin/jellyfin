@@ -84,8 +84,7 @@
             options = options || {};
 
             var fileOptions = {
-                includeDirectories: true,
-                includeFiles: true
+                includeDirectories: true
             };
 
             if (options.includeDirectories != null) {
