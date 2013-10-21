@@ -207,7 +207,7 @@ namespace MediaBrowser.Providers.Movies
             {
                 var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
 
-                var tmdbImageUrl = tmdbSettings.images.base_url + ConfigurationManager.Configuration.TmdbFetchedPosterSize;
+                var tmdbImageUrl = tmdbSettings.images.base_url + "original";
                 // get highest rated poster for our language
 
                 var postersSortedByVote = images.posters.OrderByDescending(i => i.vote_average);
@@ -250,7 +250,7 @@ namespace MediaBrowser.Providers.Movies
             {
                 var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
 
-                var tmdbImageUrl = tmdbSettings.images.base_url + ConfigurationManager.Configuration.TmdbFetchedBackdropSize;
+                var tmdbImageUrl = tmdbSettings.images.base_url + "original";
 
                 for (var i = 0; i < images.backdrops.Count; i++)
                 {

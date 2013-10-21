@@ -73,9 +73,9 @@ namespace MediaBrowser.Providers.Movies
 
             progress.Report(80);
 
-            innerProgress = new ActionableProgress<double>();
-            innerProgress.RegisterAction(pct => progress.Report(80 + pct * .2));
-            await Run(innerProgress, true, cancellationToken).ConfigureAwait(false);
+            //innerProgress = new ActionableProgress<double>();
+            //innerProgress.RegisterAction(pct => progress.Report(80 + pct * .2));
+            //await Run(innerProgress, true, cancellationToken).ConfigureAwait(false);
 
             progress.Report(100);
         }
