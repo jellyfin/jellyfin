@@ -82,13 +82,16 @@ namespace MediaBrowser.Api.DefaultTheme
         {
             var user = _userManager.GetUserById(request.UserId);
 
-            var allItems = user.RootFolder.GetRecursiveChildren(user, i => _userDataManager.GetUserData(user.Id, i.GetUserDataKey()).IsFavorite)
+            var allItems = user.RootFolder.GetRecursiveChildren(user)
                 .ToList();
 
-            var itemsWithImages = allItems.Where(i => !string.IsNullOrEmpty(i.PrimaryImagePath))
+            var allFavoriteItems = allItems.Where(i => _userDataManager.GetUserData(user.Id, i.GetUserDataKey()).IsFavorite)
                 .ToList();
 
-            var itemsWithBackdrops = allItems.Where(i => i.BackdropImagePaths.Count > 0)
+            var itemsWithImages = allFavoriteItems.Where(i => !string.IsNullOrEmpty(i.PrimaryImagePath))
+                .ToList();
+
+            var itemsWithBackdrops = allFavoriteItems.Where(i => i.BackdropImagePaths.Count > 0)
                 .ToList();
 
             var view = new FavoritesView();
@@ -157,17 +160,44 @@ namespace MediaBrowser.Api.DefaultTheme
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
                 .ToList();
 
-            view.Artists = itemsWithImages
-                .OfType<MusicArtist>()
-                .OrderBy(i => Guid.NewGuid())
-                .Take(4)
-                .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
-                .ToList();
-
             view.MiniSpotlights = itemsWithBackdrops
                 .Except(spotlightItems)
                 .OrderBy(i => Guid.NewGuid())
                 .Take(5)
+                .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+                .ToList();
+
+            var artists = allItems.OfType<Audio>()
+                .SelectMany(i =>
+            {
+                var list = new List<string>();
+
+                if (!string.IsNullOrEmpty(i.AlbumArtist))
+                {
+                    list.Add(i.AlbumArtist);
+                }
+                list.AddRange(i.Artists);
+
+                return list;
+            })
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(i => Guid.NewGuid())
+            .Select(i =>
+            {
+                try
+                {
+                    return _libraryManager.GetArtist(i);
+                }
+                catch
+                {
+                    return null;
+                }
+            })
+                .Where(i => i != null && _userDataManager.GetUserData(user.Id, i.GetUserDataKey()).IsFavorite)
+                .Take(4)
+                .ToList();
+
+            view.Artists = artists
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
                 .ToList();
 

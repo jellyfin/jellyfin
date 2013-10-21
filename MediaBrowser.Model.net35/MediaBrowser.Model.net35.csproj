@@ -277,6 +277,9 @@
     <Compile Include="..\MediaBrowser.Model\Querying\ArtistsQuery.cs">
       <Link>Querying\ArtistsQuery.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Querying\ItemCountsQuery.cs">
+      <Link>Querying\ItemCountsQuery.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Querying\ItemFields.cs">
       <Link>Querying\ItemFields.cs</Link>
     </Compile>
