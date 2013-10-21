@@ -1,6 +1,6 @@
 ﻿(function (window, document, $) {
 
-    function refreshDirectoryBrowser(page, path) {
+    function refreshDirectoryBrowser(page, path, fileOptions) {
 
         Dashboard.showLoadingMsg();
 
@@ -16,7 +16,7 @@
             promise = ApiClient.getNetworkDevices();
         }
         else if (path) {
-            promise = ApiClient.getDirectoryContents(path, { includeDirectories: true });
+            promise = ApiClient.getDirectoryContents(path, fileOptions);
         } else {
             promise = ApiClient.getDrives();
         }
@@ -46,18 +46,20 @@
                     parentPath = "Network";
                 }
 
-                html += '<li><a class="lnkDirectory" data-path="' + parentPath + '" href="#">..</a></li>';
+                html += '<li><a class="lnkPath lnkDirectory" data-path="' + parentPath + '" href="#">..</a></li>';
             }
 
             for (var i = 0, length = folders.length; i < length; i++) {
 
                 var folder = folders[i];
 
-                html += '<li><a class="lnkDirectory" data-path="' + folder.Path + '" href="#">' + folder.Name + '</a></li>';
+                var cssClass = folder.Type == "File" ? "lnkPath lnkFile" : "lnkPath lnkDirectory";
+
+                html += '<li><a class="' + cssClass + '" data-path="' + folder.Path + '" href="#">' + folder.Name + '</a></li>';
             }
 
             if (!path) {
-                html += '<li><a class="lnkDirectory" data-path="Network" href="#">Network</a></li>';
+                html += '<li><a class="lnkPath lnkDirectory" data-path="Network" href="#">Network</a></li>';
             }
 
             $('#ulDirectoryPickerList', page).html(html).listview('refresh');
@@ -81,6 +83,19 @@
 
             options = options || {};
 
+            var fileOptions = {
+                includeDirectories: true,
+                includeFiles: true
+            };
+
+            if (options.includeDirectories != null) {
+                fileOptions.includeDirectories = options.includeDirectories;
+            }
+
+            if (options.includeFiles != null) {
+                fileOptions.includeFiles = options.includeFiles;
+            }
+
             options.header = options.header || "Select Media Path";
             options.instruction = options.instruction || "Any path will do, but for optimal playback of bluray, dvd folders, and games, <b>network paths (UNC)</b> are recommended.";
 
@@ -95,7 +110,7 @@
             html += '<p class="directoryPickerHeadline">' + options.instruction + '</p>';
 
             html += '<div style="margin:0;">';
-            html += '<label for="txtDirectoryPickerPath" class="lblDirectoryPickerPath">Current Folder:</label>';
+            html += '<label for="txtDirectoryPickerPath" class="lblDirectoryPickerPath">Current Path:</label>';
             html += '<div style="width:92%;display:inline-block;"><input id="txtDirectoryPickerPath" name="txtDirectoryPickerPath" type="text" required="required" style="font-weight:bold;" /></div>';
             html += '<button class="btnRefreshDirectories" type="button" data-icon="refresh" data-inline="true" data-mini="true" data-iconpos="notext">Refresh</button>';
             html += '</div>';
@@ -107,7 +122,7 @@
 
 
             html += '</div>';
-            
+
 
             html += '<p>';
             html += '<button type="submit" data-theme="b" data-icon="ok">OK</button>';
@@ -129,21 +144,26 @@
 
                 $(this).off("click").off("change").off("popupafterclose").remove();
 
-            }).on("click", ".lnkDirectory", function () {
+            }).on("click", ".lnkPath", function () {
 
                 var path = this.getAttribute('data-path');
 
-                refreshDirectoryBrowser(page, path);
+                if ($(this).hasClass('lnkFile')) {
+                    $('#txtDirectoryPickerPath', page).val(path);
+                } else {
+                    refreshDirectoryBrowser(page, path, fileOptions);
+                }
+
 
             }).on("click", ".btnRefreshDirectories", function () {
 
                 var path = $('#txtDirectoryPickerPath', page).val();
 
-                refreshDirectoryBrowser(page, path);
+                refreshDirectoryBrowser(page, path, fileOptions);
 
             }).on("change", "#txtDirectoryPickerPath", function () {
 
-                refreshDirectoryBrowser(page, this.value);
+                refreshDirectoryBrowser(page, this.value, fileOptions);
             });
 
             var txtCurrentPath = $('#txtDirectoryPickerPath', popup);
