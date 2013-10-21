@@ -61,7 +61,7 @@ namespace MediaBrowser.Providers.Movies
         /// <returns>Task.</returns>
         public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            if (!_config.Configuration.EnableInternetProviders || !_config.Configuration.EnableTmdbUpdates)
+            if (!_config.Configuration.EnableInternetProviders)
             {
                 progress.Report(100);
                 return;
@@ -97,8 +97,10 @@ namespace MediaBrowser.Providers.Movies
 
             var timestampFileInfo = new FileInfo(timestampFile);
 
+            var refreshDays = _config.Configuration.EnableTmdbUpdates ? 1 : 7;
+
             // Don't check for tvdb updates anymore frequently than 24 hours
-            if (timestampFileInfo.Exists && (DateTime.UtcNow - timestampFileInfo.LastWriteTimeUtc).TotalDays < 1)
+            if (timestampFileInfo.Exists && (DateTime.UtcNow - timestampFileInfo.LastWriteTimeUtc).TotalDays < refreshDays)
             {
                 return;
             }

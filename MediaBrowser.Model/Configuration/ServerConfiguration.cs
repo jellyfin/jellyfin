@@ -220,9 +220,31 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value><c>true</c> if [create virtual future episodes]; otherwise, <c>false</c>.</value>
         public bool CreateVirtualFutureEpisodes { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the image saving convention.
+        /// </summary>
+        /// <value>The image saving convention.</value>
         public ImageSavingConvention ImageSavingConvention { get; set; }
 
+        /// <summary>
+        /// Gets or sets the width of the min movie backdrop.
+        /// </summary>
+        /// <value>The width of the min movie backdrop.</value>
+        public int MinMovieBackdropWidth { get; set; }
+
+        /// <summary>
+        /// Gets or sets the width of the min movie poster.
+        /// </summary>
+        /// <value>The width of the min movie poster.</value>
+        public int MinMoviePosterWidth { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the width of the min series backdrop.
+        /// </summary>
+        /// <value>The width of the min series backdrop.</value>
+        public int MinSeriesBackdropWidth { get; set; }
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>
@@ -268,6 +290,10 @@ namespace MediaBrowser.Model.Configuration
             SortRemoveWords = new[] { "the", "a", "an" };
 
             SeasonZeroDisplayName = "Specials";
+
+            MinMovieBackdropWidth = 1920;
+            MinSeriesBackdropWidth = 1920;
+            MinMoviePosterWidth = 1000;
         }
     }
 
