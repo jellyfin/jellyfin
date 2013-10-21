@@ -44,6 +44,12 @@ namespace MediaBrowser.Model.Querying
         public ItemFields[] Fields { get; set; }
 
         /// <summary>
+        /// Gets or sets the filters.
+        /// </summary>
+        /// <value>The filters.</value>
+        public ItemFilter[] Filters { get; set; }
+
+        /// <summary>
         /// Gets or sets the exclude item types.
         /// </summary>
         /// <value>The exclude item types.</value>
@@ -91,6 +97,7 @@ namespace MediaBrowser.Model.Querying
         public ItemsByNameQuery()
         {
             ImageTypes = new ImageType[] { };
+            Filters = new ItemFilter[] { };
             Fields = new ItemFields[] { };
             Recursive = true;
             MediaTypes = new string[] { };

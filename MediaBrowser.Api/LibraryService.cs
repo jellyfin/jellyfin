@@ -345,8 +345,6 @@ namespace MediaBrowser.Api
             var songs = items.OfType<Audio>().ToList();
             var series = items.OfType<Series>().ToList();
 
-
-
             var counts = new ItemCounts
             {
                 AlbumCount = albums.Count,
@@ -377,6 +375,54 @@ namespace MediaBrowser.Api
                 counts.FavoriteBookCount = FavoriteCount(books, request.UserId.Value);
                 counts.FavoriteSongCount = FavoriteCount(songs, request.UserId.Value);
                 counts.FavoriteSeriesCount = FavoriteCount(series, request.UserId.Value);
+
+                var people = items.SelectMany(i => i.People)
+                    .Select(i => i.Name)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .Select(i =>
+                    {
+                        try
+                        {
+                            return _libraryManager.GetPerson(i);
+                        }
+                        catch
+                        {
+                            return null;
+                        }
+                    })
+                        .Where(i => i != null)
+                        .ToList();
+
+                counts.FavoritePersonCount = FavoriteCount(people, request.UserId.Value);
+
+                var artists = songs.SelectMany(i =>
+                {
+                    var list = new List<string>();
+
+                    if (!string.IsNullOrEmpty(i.AlbumArtist))
+                    {
+                        list.Add(i.AlbumArtist);
+                    }
+                    list.AddRange(i.Artists);
+
+                    return list;
+                })
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Select(i =>
+                {
+                    try
+                    {
+                        return _libraryManager.GetArtist(i);
+                    }
+                    catch
+                    {
+                        return null;
+                    }
+                })
+                    .Where(i => i != null)
+                    .ToList();
+
+                counts.FavoriteArtistCount = FavoriteCount(artists, request.UserId.Value);
             }
 
             return ToOptimizedResult(counts);
@@ -617,7 +663,7 @@ namespace MediaBrowser.Api
         }
 
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
-        
+
         public object Get(GetYearIndex request)
         {
             IEnumerable<BaseItem> items = GetAllLibraryItems(request.UserId, _userManager, _libraryManager);
@@ -627,7 +673,7 @@ namespace MediaBrowser.Api
                 var vals = request.IncludeItemTypes.Split(',');
                 items = items.Where(f => vals.Contains(f.GetType().Name, StringComparer.OrdinalIgnoreCase));
             }
-            
+
             var lookup = items
                 .ToLookup(i => i.ProductionYear ?? -1)
                 .OrderBy(i => i.Key)
