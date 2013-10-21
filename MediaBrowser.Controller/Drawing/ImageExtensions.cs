@@ -167,7 +167,7 @@ namespace MediaBrowser.Controller.Drawing
             }
 
             // Graphics.FromImage will throw an exception if the PixelFormat is Indexed, so we need to handle that here
-            var thumbnail = bmp.PixelFormat == PixelFormat.Indexed ? new Bitmap(croppedWidth, croppedHeight) : new Bitmap(croppedWidth, croppedHeight, bmp.PixelFormat);
+            var thumbnail = new Bitmap(croppedWidth, croppedHeight, PixelFormat.Format32bppPArgb);
 
             // Preserve the original resolution
             thumbnail.SetResolution(bmp.HorizontalResolution, bmp.VerticalResolution);
@@ -178,7 +178,7 @@ namespace MediaBrowser.Controller.Drawing
                 thumbnailGraph.SmoothingMode = SmoothingMode.HighQuality;
                 thumbnailGraph.InterpolationMode = InterpolationMode.HighQualityBicubic;
                 thumbnailGraph.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                thumbnailGraph.CompositingMode = CompositingMode.SourceOver;
+                thumbnailGraph.CompositingMode = CompositingMode.SourceCopy;
 
                 thumbnailGraph.DrawImage(bmp,
                   new RectangleF(0, 0, croppedWidth, croppedHeight),
