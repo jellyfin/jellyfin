@@ -174,7 +174,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
                                     thumbnailGraph.SmoothingMode = SmoothingMode.HighQuality;
                                     thumbnailGraph.InterpolationMode = InterpolationMode.HighQualityBicubic;
                                     thumbnailGraph.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                                    thumbnailGraph.CompositingMode = CompositingMode.SourceOver;
+                                    thumbnailGraph.CompositingMode = string.IsNullOrEmpty(options.BackgroundColor) && !options.PercentPlayed.HasValue && !options.AddPlayedIndicator ? CompositingMode.SourceCopy : CompositingMode.SourceOver;
 
                                     SetBackgroundColor(thumbnailGraph, options);
 
