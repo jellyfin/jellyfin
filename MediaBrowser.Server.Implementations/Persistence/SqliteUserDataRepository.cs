@@ -86,13 +86,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
                                };
 
             _connection.RunQueries(queries, _logger);
-
-            var oldFile = Path.Combine(_appPaths.DataPath, "userdata.db");
-
-            if (File.Exists(oldFile))
-            {
-                await UserDataMigration.Migrate(oldFile, _connection, _logger, _jsonSerializer).ConfigureAwait(false);
-            }
         }
 
         /// <summary>

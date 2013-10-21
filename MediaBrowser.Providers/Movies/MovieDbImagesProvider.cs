@@ -56,7 +56,7 @@ namespace MediaBrowser.Providers.Movies
         /// <value>The priority.</value>
         public override MetadataProviderPriority Priority
         {
-            get { return MetadataProviderPriority.Fifth; }
+            get { return MetadataProviderPriority.Fourth; }
         }
 
         /// <summary>
@@ -202,15 +202,20 @@ namespace MediaBrowser.Providers.Movies
 
             var status = ProviderRefreshStatus.Success;
 
+            var eligiblePosters = images.posters == null ? 
+                new List<Poster>() : 
+                images.posters.Where(i => i.width >= ConfigurationManager.Configuration.MinMoviePosterWidth)
+                .ToList();
+
             //        poster
-            if (images.posters != null && images.posters.Count > 0 && !item.HasImage(ImageType.Primary))
+            if (eligiblePosters.Count > 0 && !item.HasImage(ImageType.Primary))
             {
                 var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
 
                 var tmdbImageUrl = tmdbSettings.images.base_url + "original";
                 // get highest rated poster for our language
 
-                var postersSortedByVote = images.posters.OrderByDescending(i => i.vote_average);
+                var postersSortedByVote = eligiblePosters.OrderByDescending(i => i.vote_average);
 
                 var poster = postersSortedByVote.FirstOrDefault(p => p.iso_639_1 != null && p.iso_639_1.Equals(ConfigurationManager.Configuration.PreferredMetadataLanguage, StringComparison.OrdinalIgnoreCase));
                 if (poster == null && !ConfigurationManager.Configuration.PreferredMetadataLanguage.Equals("en"))
@@ -245,14 +250,18 @@ namespace MediaBrowser.Providers.Movies
 
             cancellationToken.ThrowIfCancellationRequested();
 
+            var eligibleBackdrops = images.backdrops == null ? new List<Backdrop>() :
+                images.backdrops.Where(i => i.width >= ConfigurationManager.Configuration.MinMovieBackdropWidth)
+                .ToList();
+
             // backdrops - only download if earlier providers didn't find any (fanart)
-            if (images.backdrops != null && images.backdrops.Count > 0 && ConfigurationManager.Configuration.DownloadMovieImages.Backdrops && item.BackdropImagePaths.Count == 0)
+            if (eligibleBackdrops.Count > 0 && ConfigurationManager.Configuration.DownloadMovieImages.Backdrops && item.BackdropImagePaths.Count == 0)
             {
                 var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
 
                 var tmdbImageUrl = tmdbSettings.images.base_url + "original";
 
-                for (var i = 0; i < images.backdrops.Count; i++)
+                for (var i = 0; i < eligibleBackdrops.Count; i++)
                 {
                     var bdName = "backdrop" + (i == 0 ? "" : i.ToString(CultureInfo.InvariantCulture));
 
@@ -262,12 +271,12 @@ namespace MediaBrowser.Providers.Movies
                     {
                         var img = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
                         {
-                            Url = tmdbImageUrl + images.backdrops[i].file_path,
+                            Url = tmdbImageUrl + eligibleBackdrops[i].file_path,
                             CancellationToken = cancellationToken
 
                         }).ConfigureAwait(false);
 
-                        await _providerManager.SaveImage(item, img, MimeTypes.GetMimeType(images.backdrops[i].file_path), ImageType.Backdrop, item.BackdropImagePaths.Count, cancellationToken)
+                        await _providerManager.SaveImage(item, img, MimeTypes.GetMimeType(eligibleBackdrops[i].file_path), ImageType.Backdrop, item.BackdropImagePaths.Count, cancellationToken)
                           .ConfigureAwait(false);
                     }
 
