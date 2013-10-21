@@ -49,13 +49,6 @@ namespace MediaBrowser.Controller.Library
         AggregateFolder RootFolder { get; }
 
         /// <summary>
-        /// Gets the person sync.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <returns>Person.</returns>
-        Person GetPersonSync(string name);
-
-        /// <summary>
         /// Gets a Person
         /// </summary>
         /// <param name="name">The name.</param>
