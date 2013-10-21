@@ -156,6 +156,9 @@ namespace MediaBrowser.Api
     {
         [ApiMember(Name = "UserId", Description = "Optional. Get counts from a specific user's library.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public Guid? UserId { get; set; }
+
+        [ApiMember(Name = "IsFavorite", Description = "Optional. Get counts of favorite items", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool? IsFavorite { get; set; }
     }
 
     [Route("/Items/{Id}/Ancestors", "GET")]
@@ -334,27 +337,29 @@ namespace MediaBrowser.Api
         {
             var items = GetAllLibraryItems(request.UserId, _userManager, _libraryManager).ToList();
 
-            var albums = items.OfType<MusicAlbum>().ToList();
-            var episodes = items.OfType<Episode>().ToList();
-            var games = items.OfType<Game>().ToList();
-            var movies = items.OfType<Movie>().ToList();
-            var musicVideos = items.OfType<MusicVideo>().ToList();
-            var adultVideos = items.OfType<AdultVideo>().ToList();
-            var boxsets = items.OfType<BoxSet>().ToList();
-            var books = items.OfType<Book>().ToList();
-            var songs = items.OfType<Audio>().ToList();
-            var series = items.OfType<Series>().ToList();
+            var filteredItems = request.UserId.HasValue ? FilterItems(items, request, request.UserId.Value).ToList() : items;
+
+            var albums = filteredItems.OfType<MusicAlbum>().ToList();
+            var episodes = filteredItems.OfType<Episode>().ToList();
+            var games = filteredItems.OfType<Game>().ToList();
+            var movies = filteredItems.OfType<Movie>().ToList();
+            var musicVideos = filteredItems.OfType<MusicVideo>().ToList();
+            var adultVideos = filteredItems.OfType<AdultVideo>().ToList();
+            var boxsets = filteredItems.OfType<BoxSet>().ToList();
+            var books = filteredItems.OfType<Book>().ToList();
+            var songs = filteredItems.OfType<Audio>().ToList();
+            var series = filteredItems.OfType<Series>().ToList();
 
             var counts = new ItemCounts
             {
                 AlbumCount = albums.Count,
                 EpisodeCount = episodes.Count,
                 GameCount = games.Count,
-                GameSystemCount = items.OfType<GameSystem>().Count(),
+                GameSystemCount = filteredItems.OfType<GameSystem>().Count(),
                 MovieCount = movies.Count,
                 SeriesCount = series.Count,
                 SongCount = songs.Count,
-                TrailerCount = items.OfType<Trailer>().Count(),
+                TrailerCount = filteredItems.OfType<Trailer>().Count(),
                 MusicVideoCount = musicVideos.Count,
                 AdultVideoCount = adultVideos.Count,
                 BoxSetCount = boxsets.Count,
@@ -363,50 +368,38 @@ namespace MediaBrowser.Api
                 UniqueTypes = items.Select(i => i.GetType().Name).Distinct().ToList()
             };
 
-            if (request.UserId.HasValue)
+            var people = items.SelectMany(i => i.People)
+             .Select(i => i.Name)
+             .Distinct(StringComparer.OrdinalIgnoreCase)
+             .Select(i =>
+             {
+                 try
+                 {
+                     return _libraryManager.GetPerson(i);
+                 }
+                 catch
+                 {
+                     return null;
+                 }
+             })
+             .Where(i => i != null)
+             .ToList();
+
+            people = request.UserId.HasValue ? FilterItems(people, request, request.UserId.Value).ToList() : people;
+            counts.PersonCount = people.Count;
+
+            var artists = items.OfType<Audio>().SelectMany(i =>
             {
-                counts.FavoriteAlbumCount = FavoriteCount(albums, request.UserId.Value);
-                counts.FavoriteEpisodeCount = FavoriteCount(episodes, request.UserId.Value);
-                counts.FavoriteGameCount = FavoriteCount(games, request.UserId.Value);
-                counts.FavoriteMovieCount = FavoriteCount(movies, request.UserId.Value);
-                counts.FavoriteMusicVideoCount = FavoriteCount(musicVideos, request.UserId.Value);
-                counts.FavoriteAdultVideoCount = FavoriteCount(adultVideos, request.UserId.Value);
-                counts.FavoriteBoxSetCount = FavoriteCount(boxsets, request.UserId.Value);
-                counts.FavoriteBookCount = FavoriteCount(books, request.UserId.Value);
-                counts.FavoriteSongCount = FavoriteCount(songs, request.UserId.Value);
-                counts.FavoriteSeriesCount = FavoriteCount(series, request.UserId.Value);
+                var list = new List<string>();
 
-                var people = items.SelectMany(i => i.People)
-                    .Select(i => i.Name)
-                    .Distinct(StringComparer.OrdinalIgnoreCase)
-                    .Select(i =>
-                    {
-                        try
-                        {
-                            return _libraryManager.GetPerson(i);
-                        }
-                        catch
-                        {
-                            return null;
-                        }
-                    })
-                        .Where(i => i != null)
-                        .ToList();
-
-                counts.FavoritePersonCount = FavoriteCount(people, request.UserId.Value);
-
-                var artists = songs.SelectMany(i =>
+                if (!string.IsNullOrEmpty(i.AlbumArtist))
                 {
-                    var list = new List<string>();
+                    list.Add(i.AlbumArtist);
+                }
+                list.AddRange(i.Artists);
 
-                    if (!string.IsNullOrEmpty(i.AlbumArtist))
-                    {
-                        list.Add(i.AlbumArtist);
-                    }
-                    list.AddRange(i.Artists);
-
-                    return list;
-                })
+                return list;
+            })
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .Select(i =>
                 {
@@ -419,18 +412,31 @@ namespace MediaBrowser.Api
                         return null;
                     }
                 })
-                    .Where(i => i != null)
-                    .ToList();
+                .Where(i => i != null)
+                .ToList();
 
-                counts.FavoriteArtistCount = FavoriteCount(artists, request.UserId.Value);
-            }
+            artists = request.UserId.HasValue ? FilterItems(artists, request, request.UserId.Value).ToList() : artists;
+            counts.ArtistCount = artists.Count;
 
             return ToOptimizedResult(counts);
         }
 
+        private IEnumerable<T> FilterItems<T>(IEnumerable<T> items, GetItemCounts request, Guid userId)
+            where T : BaseItem
+        {
+            if (request.IsFavorite.HasValue)
+            {
+                var val = request.IsFavorite.Value;
+
+                items = items.Where(i => _userDataManager.GetUserData(userId, i.GetUserDataKey()).IsFavorite == val);
+            }
+
+            return items;
+        }
+        
         private int FavoriteCount(IEnumerable<BaseItem> items, Guid userId)
         {
-            return items.Count(i => _userDataManager.GetUserData(userId, i.GetUserDataKey()).IsFavorite);
+            return items.AsParallel().Count(i => _userDataManager.GetUserData(userId, i.GetUserDataKey()).IsFavorite);
         }
 
         /// <summary>

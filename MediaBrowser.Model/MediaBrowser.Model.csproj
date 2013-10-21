@@ -82,6 +82,7 @@
     <Compile Include="Notifications\NotificationResult.cs" />
     <Compile Include="Notifications\NotificationsSummary.cs" />
     <Compile Include="Querying\ArtistsQuery.cs" />
+    <Compile Include="Querying\ItemCountsQuery.cs" />
     <Compile Include="Querying\ItemReviewsResult.cs" />
     <Compile Include="Querying\ItemsByNameQuery.cs" />
     <Compile Include="Entities\BaseItemInfo.cs" />

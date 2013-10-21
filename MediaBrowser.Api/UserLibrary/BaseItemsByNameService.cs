@@ -200,7 +200,7 @@ namespace MediaBrowser.Api.UserLibrary
                 {
                     var userdata = UserDataRepository.GetUserData(user.Id, i.GetUserDataKey());
 
-                    return userdata != null && userdata.Likes.HasValue && userdata.IsFavorite;
+                    return userdata != null && userdata.IsFavorite;
                 });
             }
 
