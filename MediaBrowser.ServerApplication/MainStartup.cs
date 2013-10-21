@@ -122,7 +122,7 @@ namespace MediaBrowser.ServerApplication
                     {
                         return string.Equals(runningPath, i.MainModule.FileName) && currentProcess.Id != i.Id;
                     }
-                    catch (Win32Exception)
+                    catch (Exception)
                     {
                         return false;
                     }
