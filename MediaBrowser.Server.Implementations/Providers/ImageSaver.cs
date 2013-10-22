@@ -341,8 +341,6 @@ namespace MediaBrowser.Server.Implementations.Providers
                 extension = "jpg";
             }
 
-            filename += "." + extension.ToLower();
-
             string path = null;
 
             if (saveLocally)
@@ -354,9 +352,11 @@ namespace MediaBrowser.Server.Implementations.Providers
 
                 if (string.IsNullOrEmpty(path) && !string.IsNullOrEmpty(item.MetaLocation))
                 {
-                    path = Path.Combine(item.MetaLocation, filename);
+                    path = Path.Combine(item.MetaLocation, filename + extension.ToLower());
                 }
             }
+
+            filename += "." + extension.ToLower();
 
             // None of the save local conditions passed, so store it in our internal folders
             if (string.IsNullOrEmpty(path))

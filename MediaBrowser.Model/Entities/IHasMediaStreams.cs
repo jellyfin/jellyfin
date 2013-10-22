@@ -21,6 +21,6 @@ namespace MediaBrowser.Model.Entities
         /// Gets or sets the primary image path.
         /// </summary>
         /// <value>The primary image path.</value>
-        string PrimaryImagePath { get; set; }
+        string PrimaryImagePath { get; }
     }
 }

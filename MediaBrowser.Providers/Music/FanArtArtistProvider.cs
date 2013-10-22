@@ -338,7 +338,7 @@ namespace MediaBrowser.Providers.Music
                 if (nodes != null)
                 {
                     var numBackdrops = 0;
-                    item.BackdropImagePaths.Clear();
+
                     foreach (XmlNode node in nodes)
                     {
                         path = node.Value;

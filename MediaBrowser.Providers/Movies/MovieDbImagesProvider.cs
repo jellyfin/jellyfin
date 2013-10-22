@@ -202,10 +202,12 @@ namespace MediaBrowser.Providers.Movies
 
             var status = ProviderRefreshStatus.Success;
 
-            var eligiblePosters = images.posters == null ? 
-                new List<Poster>() : 
+            var eligiblePosters = images.posters == null ?
+                new List<Poster>() :
                 images.posters.Where(i => i.width >= ConfigurationManager.Configuration.MinMoviePosterWidth)
                 .ToList();
+
+            eligiblePosters = eligiblePosters.OrderByDescending(i => i.vote_average).ToList();
 
             //        poster
             if (eligiblePosters.Count > 0 && !item.HasImage(ImageType.Primary))
@@ -215,24 +217,26 @@ namespace MediaBrowser.Providers.Movies
                 var tmdbImageUrl = tmdbSettings.images.base_url + "original";
                 // get highest rated poster for our language
 
-                var postersSortedByVote = eligiblePosters.OrderByDescending(i => i.vote_average);
+                var poster = eligiblePosters.FirstOrDefault(p => string.Equals(p.iso_639_1, ConfigurationManager.Configuration.PreferredMetadataLanguage, StringComparison.OrdinalIgnoreCase));
 
-                var poster = postersSortedByVote.FirstOrDefault(p => p.iso_639_1 != null && p.iso_639_1.Equals(ConfigurationManager.Configuration.PreferredMetadataLanguage, StringComparison.OrdinalIgnoreCase));
-                if (poster == null && !ConfigurationManager.Configuration.PreferredMetadataLanguage.Equals("en"))
+                if (poster == null)
                 {
-                    // couldn't find our specific language, find english (if that wasn't our language)
-                    poster = postersSortedByVote.FirstOrDefault(p => p.iso_639_1 != null && p.iso_639_1.Equals("en", StringComparison.OrdinalIgnoreCase));
+                    // couldn't find our specific language, find english
+                    poster = eligiblePosters.FirstOrDefault(p => string.Equals(p.iso_639_1, "en", StringComparison.OrdinalIgnoreCase));
                 }
+
                 if (poster == null)
                 {
                     //still couldn't find it - try highest rated null one
-                    poster = postersSortedByVote.FirstOrDefault(p => p.iso_639_1 == null);
+                    poster = eligiblePosters.FirstOrDefault(p => p.iso_639_1 == null);
                 }
+
                 if (poster == null)
                 {
                     //finally - just get the highest rated one
-                    poster = postersSortedByVote.FirstOrDefault();
+                    poster = eligiblePosters.FirstOrDefault();
                 }
+
                 if (poster != null)
                 {
                     var img = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
