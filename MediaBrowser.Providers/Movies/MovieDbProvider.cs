@@ -181,8 +181,8 @@ namespace MediaBrowser.Providers.Movies
 
         private const string TmdbConfigUrl = "http://api.themoviedb.org/3/configuration?api_key={0}";
         private const string Search3 = @"http://api.themoviedb.org/3/search/{3}?api_key={1}&query={0}&language={2}";
-        private const string GetMovieInfo3 = @"http://api.themoviedb.org/3/movie/{0}?api_key={1}&language={2}&append_to_response=casts,releases,images,keywords,trailers";
-        private const string GetBoxSetInfo3 = @"http://api.themoviedb.org/3/collection/{0}?api_key={1}&language={2}&append_to_response=images";
+        private const string GetMovieInfo3 = @"http://api.themoviedb.org/3/movie/{0}?api_key={1}&append_to_response=casts,releases,images,keywords,trailers";
+        private const string GetBoxSetInfo3 = @"http://api.themoviedb.org/3/collection/{0}?api_key={1}&append_to_response=images";
 
         internal static string ApiKey = "f6bd687ffa63cd282b6ff2c6877f2669";
         internal static string AcceptHeader = "application/json,image/*";
@@ -517,13 +517,20 @@ namespace MediaBrowser.Providers.Movies
 
                 if (mainResult == null) return;
 
-                var path = GetMovieDataPath(ConfigurationManager.ApplicationPaths, isBoxSet, mainResult.id.ToString(_usCulture));
+                var movieDataPath = GetMovieDataPath(ConfigurationManager.ApplicationPaths, isBoxSet, mainResult.id.ToString(_usCulture));
 
-                dataFilePath = Path.Combine(path, language + ".json");
+                dataFilePath = Path.Combine(movieDataPath, language + ".json");
 
                 var directory = Path.GetDirectoryName(dataFilePath);
 
                 Directory.CreateDirectory(directory);
+
+                JsonSerializer.SerializeToFile(mainResult, dataFilePath);
+
+                // Now get the language-less version
+                mainResult = await FetchMainResult(id, isBoxSet, null, cancellationToken).ConfigureAwait(false);
+
+                dataFilePath = Path.Combine(movieDataPath, "default.json");
 
                 JsonSerializer.SerializeToFile(mainResult, dataFilePath);
             }
@@ -559,6 +566,13 @@ namespace MediaBrowser.Providers.Movies
             Directory.CreateDirectory(dataPath);
 
             JsonSerializer.SerializeToFile(mainResult, dataFilePath);
+
+            // Now get the language-less version
+            mainResult = await FetchMainResult(id, isBoxSet, null, cancellationToken).ConfigureAwait(false);
+
+            dataFilePath = Path.Combine(dataPath, "default.json");
+
+            JsonSerializer.SerializeToFile(mainResult, dataFilePath);
         }
 
         /// <summary>
@@ -567,7 +581,7 @@ namespace MediaBrowser.Providers.Movies
         /// <param name="item">The item.</param>
         /// <param name="language">The language.</param>
         /// <returns>System.String.</returns>
-        private string GetDataFilePath(BaseItem item, string language)
+        internal string GetDataFilePath(BaseItem item, string language)
         {
             var id = item.GetProviderId(MetadataProviders.Tmdb);
 
@@ -591,11 +605,17 @@ namespace MediaBrowser.Providers.Movies
         /// <param name="language">The language.</param>
         /// <param name="cancellationToken">The cancellation token</param>
         /// <returns>Task{CompleteMovieData}.</returns>
-        protected async Task<CompleteMovieData> FetchMainResult(string id, bool isBoxSet, string language, CancellationToken cancellationToken)
+        private async Task<CompleteMovieData> FetchMainResult(string id, bool isBoxSet, string language, CancellationToken cancellationToken)
         {
             var baseUrl = isBoxSet ? GetBoxSetInfo3 : GetMovieInfo3;
 
-            string url = string.Format(baseUrl, id, ApiKey, language);
+            var url = string.Format(baseUrl, id, ApiKey);
+
+            if (!string.IsNullOrEmpty(language))
+            {
+                url += "&language=" + language;
+            }
+
             CompleteMovieData mainResult;
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -615,7 +635,7 @@ namespace MediaBrowser.Providers.Movies
 
             if (mainResult != null && string.IsNullOrEmpty(mainResult.overview))
             {
-                if (language.ToLower() != "en")
+                if (!string.IsNullOrEmpty(language) && !string.Equals(language, "en", StringComparison.OrdinalIgnoreCase))
                 {
                     Logger.Info("MovieDbProvider couldn't find meta for language " + language + ". Trying English...");
 
@@ -647,7 +667,7 @@ namespace MediaBrowser.Providers.Movies
         /// </summary>
         /// <param name="movie">The movie.</param>
         /// <param name="movieData">The movie data.</param>
-        protected virtual void ProcessMainInfo(BaseItem movie, CompleteMovieData movieData)
+        private void ProcessMainInfo(BaseItem movie, CompleteMovieData movieData)
         {
             if (movie != null && movieData != null)
             {
@@ -871,13 +891,15 @@ namespace MediaBrowser.Providers.Movies
             }
         }
 
-        #region Result Objects
-
+        public void Dispose()
+        {
+            Dispose(true);
+        }
 
         /// <summary>
         /// Class TmdbTitle
         /// </summary>
-        protected class TmdbTitle
+        internal class TmdbTitle
         {
             /// <summary>
             /// Gets or sets the iso_3166_1.
@@ -894,7 +916,7 @@ namespace MediaBrowser.Providers.Movies
         /// <summary>
         /// Class TmdbAltTitleResults
         /// </summary>
-        protected class TmdbAltTitleResults
+        internal class TmdbAltTitleResults
         {
             /// <summary>
             /// Gets or sets the id.
@@ -911,7 +933,7 @@ namespace MediaBrowser.Providers.Movies
         /// <summary>
         /// Class TmdbMovieSearchResult
         /// </summary>
-        protected class TmdbMovieSearchResult
+        internal class TmdbMovieSearchResult
         {
             /// <summary>
             /// Gets or sets a value indicating whether this <see cref="TmdbMovieSearchResult" /> is adult.
@@ -972,7 +994,7 @@ namespace MediaBrowser.Providers.Movies
         /// <summary>
         /// Class TmdbMovieSearchResults
         /// </summary>
-        protected class TmdbMovieSearchResults
+        internal class TmdbMovieSearchResults
         {
             /// <summary>
             /// Gets or sets the page.
@@ -996,7 +1018,7 @@ namespace MediaBrowser.Providers.Movies
             public int total_results { get; set; }
         }
 
-        protected class BelongsToCollection
+        internal class BelongsToCollection
         {
             public int id { get; set; }
             public string name { get; set; }
@@ -1004,31 +1026,31 @@ namespace MediaBrowser.Providers.Movies
             public string backdrop_path { get; set; }
         }
 
-        protected class GenreItem
+        internal class GenreItem
         {
             public int id { get; set; }
             public string name { get; set; }
         }
 
-        protected class ProductionCompany
+        internal class ProductionCompany
         {
             public string name { get; set; }
             public int id { get; set; }
         }
 
-        protected class ProductionCountry
+        internal class ProductionCountry
         {
             public string iso_3166_1 { get; set; }
             public string name { get; set; }
         }
 
-        protected class SpokenLanguage
+        internal class SpokenLanguage
         {
             public string iso_639_1 { get; set; }
             public string name { get; set; }
         }
 
-        protected class Cast
+        internal class Cast
         {
             public int id { get; set; }
             public string name { get; set; }
@@ -1038,7 +1060,7 @@ namespace MediaBrowser.Providers.Movies
             public string profile_path { get; set; }
         }
 
-        protected class Crew
+        internal class Crew
         {
             public int id { get; set; }
             public string name { get; set; }
@@ -1047,36 +1069,77 @@ namespace MediaBrowser.Providers.Movies
             public string profile_path { get; set; }
         }
 
-        protected class Casts
+        internal class Casts
         {
             public List<Cast> cast { get; set; }
             public List<Crew> crew { get; set; }
         }
 
-        protected class Country
+        internal class Country
         {
             public string iso_3166_1 { get; set; }
             public string certification { get; set; }
             public DateTime release_date { get; set; }
         }
 
-        protected class Releases
+        internal class Releases
         {
             public List<Country> countries { get; set; }
         }
 
-        protected class Keyword
+        internal class Backdrop
+        {
+            public string file_path { get; set; }
+            public int width { get; set; }
+            public int height { get; set; }
+            public object iso_639_1 { get; set; }
+            public double aspect_ratio { get; set; }
+            public double vote_average { get; set; }
+            public int vote_count { get; set; }
+        }
+
+        internal class Poster
+        {
+            public string file_path { get; set; }
+            public int width { get; set; }
+            public int height { get; set; }
+            public string iso_639_1 { get; set; }
+            public double aspect_ratio { get; set; }
+            public double vote_average { get; set; }
+            public int vote_count { get; set; }
+        }
+
+        internal class Images
+        {
+            public List<Backdrop> backdrops { get; set; }
+            public List<Poster> posters { get; set; }
+        }
+
+        internal class Keyword
         {
             public int id { get; set; }
             public string name { get; set; }
         }
 
-        protected class Keywords
+        internal class Keywords
         {
             public List<Keyword> keywords { get; set; }
         }
 
-        protected class CompleteMovieData
+        internal class Youtube
+        {
+            public string name { get; set; }
+            public string size { get; set; }
+            public string source { get; set; }
+        }
+
+        internal class Trailers
+        {
+            public List<object> quicktime { get; set; }
+            public List<Youtube> youtube { get; set; }
+        }
+
+        internal class CompleteMovieData
         {
             public bool adult { get; set; }
             public string backdrop_path { get; set; }
@@ -1086,7 +1149,6 @@ namespace MediaBrowser.Providers.Movies
             public string homepage { get; set; }
             public int id { get; set; }
             public string imdb_id { get; set; }
-            public string name { get; set; }
             public string original_title { get; set; }
             public string overview { get; set; }
             public double popularity { get; set; }
@@ -1100,27 +1162,17 @@ namespace MediaBrowser.Providers.Movies
             public string status { get; set; }
             public string tagline { get; set; }
             public string title { get; set; }
+            public string name { get; set; }
             public double vote_average { get; set; }
             public int vote_count { get; set; }
             public Casts casts { get; set; }
             public Releases releases { get; set; }
+            public Images images { get; set; }
             public Keywords keywords { get; set; }
             public Trailers trailers { get; set; }
         }
 
-        public class Trailers
-        {
-            public List<Youtube> youtube { get; set; }
-        }
-
-        public class Youtube
-        {
-            public string name { get; set; }
-            public string size { get; set; }
-            public string source { get; set; }
-        }
-
-        public class TmdbImageSettings
+        internal class TmdbImageSettings
         {
             public List<string> backdrop_sizes { get; set; }
             public string base_url { get; set; }
@@ -1128,15 +1180,9 @@ namespace MediaBrowser.Providers.Movies
             public List<string> profile_sizes { get; set; }
         }
 
-        public class TmdbSettingsResult
+        internal class TmdbSettingsResult
         {
             public TmdbImageSettings images { get; set; }
-        }
-        #endregion
-
-        public void Dispose()
-        {
-            Dispose(true);
         }
     }
 }

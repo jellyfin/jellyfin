@@ -97,6 +97,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
 
                     var sources = additionalBackdrops
                         .Select(musicArtist.GetImageSourceInfo)
+                        .Where(i => i != null)
                         .ToList();
 
                     foreach (var path in additionalBackdrops)
