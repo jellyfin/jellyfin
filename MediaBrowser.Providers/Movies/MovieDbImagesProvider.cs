@@ -9,6 +9,7 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -142,6 +143,23 @@ namespace MediaBrowser.Providers.Movies
             return base.NeedsRefreshInternal(item, providerInfo);
         }
 
+        protected override bool NeedsRefreshBasedOnCompareDate(BaseItem item, BaseProviderInfo providerInfo)
+        {
+            var path = MovieDbProvider.Current.GetDataFilePath(item, "default");
+
+            if (!string.IsNullOrEmpty(path))
+            {
+                var fileInfo = new FileInfo(path);
+
+                if (fileInfo.Exists)
+                {
+                    return fileInfo.LastWriteTimeUtc > providerInfo.LastRefreshed;
+                }
+            }
+
+            return false;
+        }
+
         /// <summary>
         /// Fetches metadata and returns true or false indicating if any work that requires persistence was done
         /// </summary>
@@ -151,17 +169,14 @@ namespace MediaBrowser.Providers.Movies
         /// <returns>Task{System.Boolean}.</returns>
         public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
-            BaseProviderInfo data;
+            var images = FetchImages(item, item.GetProviderId(MetadataProviders.Tmdb), cancellationToken);
 
-            if (!item.ProviderData.TryGetValue(Id, out data))
+            var status = ProviderRefreshStatus.Success;
+
+            if (images != null)
             {
-                data = new BaseProviderInfo();
-                item.ProviderData[Id] = data;
+                status = await ProcessImages(item, images, cancellationToken).ConfigureAwait(false);
             }
-
-            var images = await FetchImages(item, item.GetProviderId(MetadataProviders.Tmdb), cancellationToken).ConfigureAwait(false);
-
-            var status = await ProcessImages(item, images, cancellationToken).ConfigureAwait(false);
 
             SetLastRefreshed(item, DateTime.UtcNow, status);
             return true;
@@ -174,18 +189,21 @@ namespace MediaBrowser.Providers.Movies
         /// <param name="id">The id.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{MovieImages}.</returns>
-        private async Task<MovieImages> FetchImages(BaseItem item, string id, CancellationToken cancellationToken)
+        private MovieDbProvider.Images FetchImages(BaseItem item, string id, CancellationToken cancellationToken)
         {
-            using (var json = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
-            {
-                Url = string.Format(GetImages, id, MovieDbProvider.ApiKey, item is BoxSet ? "collection" : "movie"),
-                CancellationToken = cancellationToken,
-                AcceptHeader = MovieDbProvider.AcceptHeader
+            var path = MovieDbProvider.Current.GetDataFilePath(item, "default");
 
-            }).ConfigureAwait(false))
+            if (!string.IsNullOrEmpty(path))
             {
-                return _jsonSerializer.DeserializeFromStream<MovieImages>(json);
+                var fileInfo = new FileInfo(path);
+
+                if (fileInfo.Exists)
+                {
+                    return _jsonSerializer.DeserializeFromFile<MovieDbProvider.CompleteMovieData>(path).images;
+                }
             }
+
+            return null;
         }
 
         /// <summary>
@@ -195,14 +213,14 @@ namespace MediaBrowser.Providers.Movies
         /// <param name="images">The images.</param>
         /// <param name="cancellationToken">The cancellation token</param>
         /// <returns>Task.</returns>
-        protected virtual async Task<ProviderRefreshStatus> ProcessImages(BaseItem item, MovieImages images, CancellationToken cancellationToken)
+        private async Task<ProviderRefreshStatus> ProcessImages(BaseItem item, MovieDbProvider.Images images, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
             var status = ProviderRefreshStatus.Success;
 
             var eligiblePosters = images.posters == null ?
-                new List<Poster>() :
+                new List<MovieDbProvider.Poster>() :
                 images.posters.Where(i => i.width >= ConfigurationManager.Configuration.MinMoviePosterWidth)
                 .ToList();
 
@@ -255,7 +273,7 @@ namespace MediaBrowser.Providers.Movies
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var eligibleBackdrops = images.backdrops == null ? new List<Backdrop>() :
+            var eligibleBackdrops = images.backdrops == null ? new List<MovieDbProvider.Backdrop>() :
                 images.backdrops.Where(i => i.width >= ConfigurationManager.Configuration.MinMovieBackdropWidth)
                 .ToList();
 
@@ -294,107 +312,5 @@ namespace MediaBrowser.Providers.Movies
 
             return status;
         }
-
-        /// <summary>
-        /// Class Backdrop
-        /// </summary>
-        protected class Backdrop
-        {
-            /// <summary>
-            /// Gets or sets the file_path.
-            /// </summary>
-            /// <value>The file_path.</value>
-            public string file_path { get; set; }
-            /// <summary>
-            /// Gets or sets the width.
-            /// </summary>
-            /// <value>The width.</value>
-            public int width { get; set; }
-            /// <summary>
-            /// Gets or sets the height.
-            /// </summary>
-            /// <value>The height.</value>
-            public int height { get; set; }
-            /// <summary>
-            /// Gets or sets the iso_639_1.
-            /// </summary>
-            /// <value>The iso_639_1.</value>
-            public string iso_639_1 { get; set; }
-            /// <summary>
-            /// Gets or sets the aspect_ratio.
-            /// </summary>
-            /// <value>The aspect_ratio.</value>
-            public double aspect_ratio { get; set; }
-            /// <summary>
-            /// Gets or sets the vote_average.
-            /// </summary>
-            /// <value>The vote_average.</value>
-            public double vote_average { get; set; }
-            /// <summary>
-            /// Gets or sets the vote_count.
-            /// </summary>
-            /// <value>The vote_count.</value>
-            public int vote_count { get; set; }
-        }
-
-        /// <summary>
-        /// Class Poster
-        /// </summary>
-        protected class Poster
-        {
-            /// <summary>
-            /// Gets or sets the file_path.
-            /// </summary>
-            /// <value>The file_path.</value>
-            public string file_path { get; set; }
-            /// <summary>
-            /// Gets or sets the width.
-            /// </summary>
-            /// <value>The width.</value>
-            public int width { get; set; }
-            /// <summary>
-            /// Gets or sets the height.
-            /// </summary>
-            /// <value>The height.</value>
-            public int height { get; set; }
-            /// <summary>
-            /// Gets or sets the iso_639_1.
-            /// </summary>
-            /// <value>The iso_639_1.</value>
-            public string iso_639_1 { get; set; }
-            /// <summary>
-            /// Gets or sets the aspect_ratio.
-            /// </summary>
-            /// <value>The aspect_ratio.</value>
-            public double aspect_ratio { get; set; }
-            /// <summary>
-            /// Gets or sets the vote_average.
-            /// </summary>
-            /// <value>The vote_average.</value>
-            public double vote_average { get; set; }
-            /// <summary>
-            /// Gets or sets the vote_count.
-            /// </summary>
-            /// <value>The vote_count.</value>
-            public int vote_count { get; set; }
-        }
-
-        /// <summary>
-        /// Class MovieImages
-        /// </summary>
-        protected class MovieImages
-        {
-            /// <summary>
-            /// Gets or sets the backdrops.
-            /// </summary>
-            /// <value>The backdrops.</value>
-            public List<Backdrop> backdrops { get; set; }
-            /// <summary>
-            /// Gets or sets the posters.
-            /// </summary>
-            /// <value>The posters.</value>
-            public List<Poster> posters { get; set; }
-        }
-
     }
 }
