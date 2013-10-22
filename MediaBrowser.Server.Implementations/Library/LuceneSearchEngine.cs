@@ -87,6 +87,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
                     return list;
                 })
+                .Where(i => !string.IsNullOrEmpty(i))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
