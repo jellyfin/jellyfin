@@ -240,12 +240,6 @@ namespace MediaBrowser.Model.Configuration
         public int MinMoviePosterWidth { get; set; }
         
         /// <summary>
-        /// Gets or sets the width of the min series backdrop.
-        /// </summary>
-        /// <value>The width of the min series backdrop.</value>
-        public int MinSeriesBackdropWidth { get; set; }
-        
-        /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>
         public ServerConfiguration()
@@ -292,7 +286,6 @@ namespace MediaBrowser.Model.Configuration
             SeasonZeroDisplayName = "Specials";
 
             MinMovieBackdropWidth = 1920;
-            MinSeriesBackdropWidth = 1920;
             MinMoviePosterWidth = 1000;
         }
     }
