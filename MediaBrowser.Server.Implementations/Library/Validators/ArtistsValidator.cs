@@ -90,10 +90,22 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
                     MergeImages(musicArtist.Images, artist.Images);
 
                     // Merge backdrops
-                    var backdrops = musicArtist.BackdropImagePaths.ToList();
-                    backdrops.InsertRange(0, artist.BackdropImagePaths);
-                    artist.BackdropImagePaths = backdrops.Distinct(StringComparer.OrdinalIgnoreCase)
+                    var additionalBackdrops = musicArtist
+                        .BackdropImagePaths
+                        .Except(artist.BackdropImagePaths)
                         .ToList();
+
+                    var sources = additionalBackdrops
+                        .Select(musicArtist.GetImageSourceInfo)
+                        .ToList();
+
+                    foreach (var path in additionalBackdrops)
+                    {
+                        artist.RemoveImageSourceForPath(path);
+                    }
+
+                    artist.BackdropImagePaths.AddRange(additionalBackdrops);
+                    artist.ImageSources.AddRange(sources);
                 }
 
                 if (!artist.LockedFields.Contains(MetadataFields.Genres))

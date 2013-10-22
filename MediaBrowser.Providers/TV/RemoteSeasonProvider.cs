@@ -121,6 +121,15 @@ namespace MediaBrowser.Providers.TV
             return false;
         }
 
+        protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
+        {
+            if (item.HasImage(ImageType.Primary) && item.HasImage(ImageType.Banner) && item.BackdropImagePaths.Count > 0)
+            {
+                return false;
+            }
+            return base.NeedsRefreshInternal(item, providerInfo);
+        }
+
         /// <summary>
         /// Fetches metadata and returns true or false indicating if any work that requires persistence was done
         /// </summary>
@@ -146,7 +155,7 @@ namespace MediaBrowser.Providers.TV
                 try
                 {
                     var fanartData = FetchFanartXmlData(imagesXmlPath, seasonNumber.Value, cancellationToken);
-                    await DownloadImages(item, fanartData, ConfigurationManager.Configuration.MaxBackdrops, cancellationToken).ConfigureAwait(false);
+                    await DownloadImages(item, fanartData, 1, cancellationToken).ConfigureAwait(false);
                 }
                 catch (FileNotFoundException)
                 {
@@ -186,13 +195,18 @@ namespace MediaBrowser.Providers.TV
                 }
             }
 
-            if (ConfigurationManager.Configuration.DownloadSeasonImages.Backdrops && item.BackdropImagePaths.Count == 0)
+            if (ConfigurationManager.Configuration.DownloadSeasonImages.Backdrops && item.BackdropImagePaths.Count < backdropLimit)
             {
                 var bdNo = item.BackdropImagePaths.Count;
 
                 foreach (var backdrop in data.Backdrops)
                 {
-                    var url = TVUtils.BannerUrl + backdrop;
+                    var url = TVUtils.BannerUrl + backdrop.Url;
+
+                    if (item.ContainsImageWithSourceUrl(url))
+                    {
+                        continue;
+                    }
 
                     await _providerManager.SaveImage(item, url, RemoteSeriesProvider.Current.TvDbResourcePool, ImageType.Backdrop, bdNo, cancellationToken)
                       .ConfigureAwait(false);
@@ -260,6 +274,7 @@ namespace MediaBrowser.Providers.TV
             string bannerType2 = null;
             string url = null;
             int? bannerSeason = null;
+            string resolution = null;
 
             while (reader.Read())
             {
@@ -319,7 +334,11 @@ namespace MediaBrowser.Providers.TV
                 }
                 else if (string.Equals(bannerType, "fanart", StringComparison.OrdinalIgnoreCase))
                 {
-                    data.Backdrops.Add(url);
+                    data.Backdrops.Add(new ImageInfo
+                    {
+                        Url = url,
+                        Resolution = resolution
+                    });
                 }
             }
         }

@@ -94,7 +94,7 @@ namespace MediaBrowser.Providers.TV
                 item.HasImage(ImageType.Logo) &&
                 item.HasImage(ImageType.Banner) &&
                 item.HasImage(ImageType.Thumb) &&
-                item.BackdropImagePaths.Count > 0)
+                item.BackdropImagePaths.Count >= ConfigurationManager.Configuration.MaxBackdrops)
             {
                 return false;
             }
@@ -298,7 +298,9 @@ namespace MediaBrowser.Providers.TV
                 }
             }
 
-            if (ConfigurationManager.Configuration.DownloadMovieImages.Backdrops && item.BackdropImagePaths.Count == 0)
+            var backdropLimit = ConfigurationManager.Configuration.MaxBackdrops;
+
+            if (ConfigurationManager.Configuration.DownloadMovieImages.Backdrops && item.BackdropImagePaths.Count < backdropLimit)
             {
                 var nodes = doc.SelectNodes("//fanart/series/showbackgrounds//@url");
 
@@ -310,14 +312,14 @@ namespace MediaBrowser.Providers.TV
                     {
                         var path = node.Value;
 
-                        if (!string.IsNullOrEmpty(path))
+                        if (!string.IsNullOrEmpty(path) && !item.ContainsImageWithSourceUrl(path))
                         {
                             await _providerManager.SaveImage(item, path, FanArtResourcePool, ImageType.Backdrop, numBackdrops, cancellationToken)
                                   .ConfigureAwait(false);
 
                             numBackdrops++;
 
-                            if (item.BackdropImagePaths.Count >= ConfigurationManager.Configuration.MaxBackdrops) break;
+                            if (item.BackdropImagePaths.Count >= backdropLimit) break;
                         }
                     }
 

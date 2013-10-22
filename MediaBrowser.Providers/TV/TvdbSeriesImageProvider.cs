@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Net;
+﻿using System.Linq;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
@@ -133,6 +134,15 @@ namespace MediaBrowser.Providers.TV
             return base.CompareDate(item);
         }
 
+        protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
+        {
+            if (item.HasImage(ImageType.Primary) && item.HasImage(ImageType.Banner) && item.BackdropImagePaths.Count >= ConfigurationManager.Configuration.MaxBackdrops)
+            {
+                return false;
+            }
+            return base.NeedsRefreshInternal(item, providerInfo);
+        }
+        
         /// <summary>
         /// Fetches metadata and returns true or false indicating if any work that requires persistence was done
         /// </summary>
@@ -154,10 +164,10 @@ namespace MediaBrowser.Providers.TV
 
                 var imagesXmlPath = Path.Combine(seriesDataPath, "banners.xml");
 
-                if (!series.HasImage(ImageType.Primary) || !series.HasImage(ImageType.Banner) || series.BackdropImagePaths.Count == 0)
-                {
-                    var backdropLimit = ConfigurationManager.Configuration.MaxBackdrops;
+                var backdropLimit = ConfigurationManager.Configuration.MaxBackdrops;
 
+                if (!series.HasImage(ImageType.Primary) || !series.HasImage(ImageType.Banner) || series.BackdropImagePaths.Count < backdropLimit)
+                {
                     Directory.CreateDirectory(seriesDataPath);
                     
                     try
@@ -169,13 +179,6 @@ namespace MediaBrowser.Providers.TV
                     {
                         // No biggie. Not all series have images
                     }
-                }
-
-                BaseProviderInfo data;
-                if (!item.ProviderData.TryGetValue(Id, out data))
-                {
-                    data = new BaseProviderInfo();
-                    item.ProviderData[Id] = data;
                 }
 
                 SetLastRefreshed(item, DateTime.UtcNow);
@@ -213,13 +216,39 @@ namespace MediaBrowser.Providers.TV
                 }
             }
 
-            if (ConfigurationManager.Configuration.DownloadSeriesImages.Backdrops && item.BackdropImagePaths.Count == 0)
+            if (ConfigurationManager.Configuration.DownloadSeriesImages.Backdrops && item.BackdropImagePaths.Count < backdropLimit)
             {
                 var bdNo = item.BackdropImagePaths.Count;
 
-                foreach (var backdrop in data.Backdrops)
+                var eligibleBackdrops = data.Backdrops
+                    .Where(i =>
+                    {
+                        if (string.IsNullOrEmpty(i.Resolution))
+                        {
+                            return true;
+                        }
+
+                        var parts = i.Resolution.Split('x');
+
+                        int width;
+
+                        if (int.TryParse(parts[0], NumberStyles.Any, UsCulture, out width))
+                        {
+                            return width >= ConfigurationManager.Configuration.MinSeriesBackdropWidth;
+                        }
+
+                        return true;
+                    })
+                    .ToList();
+
+                foreach (var backdrop in eligibleBackdrops)
                 {
-                    var url = TVUtils.BannerUrl + backdrop;
+                    var url = TVUtils.BannerUrl + backdrop.Url;
+
+                    if (item.ContainsImageWithSourceUrl(url))
+                    {
+                        continue;
+                    }
 
                     await _providerManager.SaveImage(item, url, RemoteSeriesProvider.Current.TvDbResourcePool, ImageType.Backdrop, bdNo, cancellationToken)
                       .ConfigureAwait(false);
@@ -285,6 +314,7 @@ namespace MediaBrowser.Providers.TV
 
             string type = null;
             string url = null;
+            string resolution = null;
 
             while (reader.Read())
             {
@@ -312,13 +342,6 @@ namespace MediaBrowser.Providers.TV
                                         return;
                                     }
                                 }
-                                else if (string.Equals(type, "fanart", StringComparison.OrdinalIgnoreCase))
-                                {
-                                    if (data.Backdrops.Count >= backdropLimit)
-                                    {
-                                        return;
-                                    }
-                                }
                                 else
                                 {
                                     return;
@@ -330,6 +353,12 @@ namespace MediaBrowser.Providers.TV
                         case "BannerPath":
                             {
                                 url = reader.ReadElementContentAsString() ?? string.Empty;
+                                break;
+                            }
+
+                        case "BannerType2":
+                            {
+                                resolution = reader.ReadElementContentAsString() ?? string.Empty;
                                 break;
                             }
 
@@ -352,7 +381,11 @@ namespace MediaBrowser.Providers.TV
                 }
                 else if (string.Equals(type, "fanart", StringComparison.OrdinalIgnoreCase))
                 {
-                    data.Backdrops.Add(url);
+                    data.Backdrops.Add(new ImageInfo
+                    {
+                        Url = url,
+                        Resolution = resolution
+                    });
                 }
             }
         }
@@ -364,6 +397,12 @@ namespace MediaBrowser.Providers.TV
         public string LanguageBanner { get; set; }
         public string Poster { get; set; }
         public string Banner { get; set; }
-        public List<string> Backdrops = new List<string>();
+        public List<ImageInfo> Backdrops = new List<ImageInfo>();
+    }
+
+    internal class ImageInfo
+    {
+        public string Url { get; set; }
+        public string Resolution { get; set; }
     }
 }

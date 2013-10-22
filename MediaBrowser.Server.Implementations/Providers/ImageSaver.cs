@@ -56,9 +56,11 @@ namespace MediaBrowser.Server.Implementations.Providers
         /// <param name="mimeType">Type of the MIME.</param>
         /// <param name="type">The type.</param>
         /// <param name="imageIndex">Index of the image.</param>
+        /// <param name="sourceUrl">The source URL.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public async Task SaveImage(BaseItem item, Stream source, string mimeType, ImageType type, int? imageIndex, CancellationToken cancellationToken)
+        /// <exception cref="System.ArgumentNullException">mimeType</exception>
+        public async Task SaveImage(BaseItem item, Stream source, string mimeType, ImageType type, int? imageIndex, string sourceUrl, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(mimeType))
             {
@@ -128,7 +130,7 @@ namespace MediaBrowser.Server.Implementations.Providers
             }
 
             // Set the path into the BaseItem
-            SetImagePath(item, type, imageIndex, paths[0]);
+            SetImagePath(item, type, imageIndex, paths[0], sourceUrl);
 
             // Delete the current path
             if (!string.IsNullOrEmpty(currentPath) && !paths.Contains(currentPath, StringComparer.OrdinalIgnoreCase))
@@ -137,7 +139,18 @@ namespace MediaBrowser.Server.Implementations.Providers
 
                 try
                 {
-                    File.Delete(currentPath);
+                    var currentFile = new FileInfo(currentPath);
+
+                    // This will fail if the file is hidden
+                    if (currentFile.Exists)
+                    {
+                        if ((currentFile.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
+                        {
+                            currentFile.Attributes &= ~FileAttributes.Hidden;
+                        }
+
+                        currentFile.Delete();
+                    }
                 }
                 finally
                 {
@@ -244,12 +257,11 @@ namespace MediaBrowser.Server.Implementations.Providers
         /// <param name="type">The type.</param>
         /// <param name="imageIndex">Index of the image.</param>
         /// <param name="path">The path.</param>
-        /// <exception cref="System.ArgumentNullException">
-        /// imageIndex
+        /// <param name="sourceUrl">The source URL.</param>
+        /// <exception cref="System.ArgumentNullException">imageIndex
         /// or
-        /// imageIndex
-        /// </exception>
-        private void SetImagePath(BaseItem item, ImageType type, int? imageIndex, string path)
+        /// imageIndex</exception>
+        private void SetImagePath(BaseItem item, ImageType type, int? imageIndex, string path, string sourceUrl)
         {
             switch (type)
             {
@@ -281,6 +293,15 @@ namespace MediaBrowser.Server.Implementations.Providers
                     else
                     {
                         item.BackdropImagePaths.Add(path);
+                    }
+
+                    if (string.IsNullOrEmpty(sourceUrl))
+                    {
+                        item.RemoveImageSourceForPath(path);
+                    }
+                    else
+                    {
+                        item.AddImageSource(path, sourceUrl);
                     }
                     break;
                 default:
