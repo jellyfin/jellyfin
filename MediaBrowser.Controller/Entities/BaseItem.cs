@@ -47,6 +47,7 @@ namespace MediaBrowser.Controller.Entities
             LockedFields = new List<MetadataFields>();
             Taglines = new List<string>();
             RemoteTrailers = new List<MediaUrl>();
+            ImageSources = new List<ImageSourceInfo>();
         }
 
         /// <summary>
@@ -232,23 +233,6 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The locked fields.</value>
         public List<MetadataFields> LockedFields { get; set; }
-
-        /// <summary>
-        /// Determines whether the item has a saved local image of the specified name (jpg or png).
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <returns><c>true</c> if [has local image] [the specified item]; otherwise, <c>false</c>.</returns>
-        /// <exception cref="System.ArgumentNullException">name</exception>
-        public bool HasLocalImage(string name)
-        {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentNullException("name");
-            }
-
-            return ResolveArgs.ContainsMetaFileByName(name + ".jpg") ||
-                ResolveArgs.ContainsMetaFileByName(name + ".png");
-        }
 
         /// <summary>
         /// Should be overridden to return the proper folder where metadata lives
@@ -535,6 +519,12 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The backdrop image paths.</value>
         public List<string> BackdropImagePaths { get; set; }
+
+        /// <summary>
+        /// Gets or sets the backdrop image sources.
+        /// </summary>
+        /// <value>The backdrop image sources.</value>
+        public List<ImageSourceInfo> ImageSources { get; set; }
 
         /// <summary>
         /// Gets or sets the screenshot image paths.
@@ -1508,8 +1498,10 @@ namespace MediaBrowser.Controller.Entities
 
                 BackdropImagePaths.Remove(file);
 
+                RemoveImageSourceForPath(file);
+                
                 // Delete the source file
-                File.Delete(file);
+                DeleteImagePath(file);
             }
             else if (type == ImageType.Screenshot)
             {
@@ -1523,12 +1515,12 @@ namespace MediaBrowser.Controller.Entities
                 ScreenshotImagePaths.Remove(file);
 
                 // Delete the source file
-                File.Delete(file);
+                DeleteImagePath(file);
             }
             else
             {
                 // Delete the source file
-                File.Delete(GetImage(type));
+                DeleteImagePath(GetImage(type));
 
                 // Remove it from the item
                 SetImage(type, null);
@@ -1536,6 +1528,26 @@ namespace MediaBrowser.Controller.Entities
 
             // Refresh metadata
             return RefreshMetadata(CancellationToken.None, forceSave: true);
+        }
+
+        /// <summary>
+        /// Deletes the image path.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        private void DeleteImagePath(string path)
+        {
+            var currentFile = new FileInfo(path);
+
+            // This will fail if the file is hidden
+            if (currentFile.Exists)
+            {
+                if ((currentFile.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
+                {
+                    currentFile.Attributes &= ~FileAttributes.Hidden;
+                }
+
+                currentFile.Delete();
+            }
         }
 
         /// <summary>
@@ -1570,7 +1582,83 @@ namespace MediaBrowser.Controller.Entities
             foreach (var path in deletedImages)
             {
                 BackdropImagePaths.Remove(path);
+
+                RemoveImageSourceForPath(path);
             }
+        }
+
+        /// <summary>
+        /// Adds the image source.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <param name="url">The URL.</param>
+        public void AddImageSource(string path, string url)
+        {
+            RemoveImageSourceForPath(path);
+
+            var pathMd5 = path.ToLower().GetMD5();
+
+            ImageSources.Add(new ImageSourceInfo
+            {
+                ImagePathMD5 = pathMd5,
+                ImageUrlMD5 = url.ToLower().GetMD5()
+            });
+        }
+
+        /// <summary>
+        /// Gets the image source info.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>ImageSourceInfo.</returns>
+        public ImageSourceInfo GetImageSourceInfo(string path)
+        {
+            if (ImageSources.Count == 0)
+            {
+                return null;
+            }
+
+            var pathMd5 = path.ToLower().GetMD5();
+
+            return ImageSources.FirstOrDefault(i => i.ImagePathMD5 == pathMd5);
+        }
+
+        /// <summary>
+        /// Removes the image source for path.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        public void RemoveImageSourceForPath(string path)
+        {
+            if (ImageSources.Count == 0)
+            {
+                return;
+            }
+
+            var pathMd5 = path.ToLower().GetMD5();
+
+            // Remove existing
+            foreach (var entry in ImageSources
+                .Where(i => i.ImagePathMD5 == pathMd5)
+                .ToList())
+            {
+                ImageSources.Remove(entry);
+            }
+        }
+
+        /// <summary>
+        /// Determines whether [contains image with source URL] [the specified URL].
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <returns><c>true</c> if [contains image with source URL] [the specified URL]; otherwise, <c>false</c>.</returns>
+        public bool ContainsImageWithSourceUrl(string url)
+        {
+            if (ImageSources.Count == 0)
+            {
+                return false;
+            }
+
+            var md5 = url.ToLower().GetMD5();
+
+            return ImageSources.Any(i => i.ImageUrlMD5 == md5);
         }
 
         /// <summary>

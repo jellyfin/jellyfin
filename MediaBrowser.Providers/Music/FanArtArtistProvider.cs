@@ -332,6 +332,8 @@ namespace MediaBrowser.Providers.Music
             }
             cancellationToken.ThrowIfCancellationRequested();
 
+            var backdropLimit = ConfigurationManager.Configuration.MaxBackdrops;
+
             if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Backdrops && item.BackdropImagePaths.Count == 0)
             {
                 var nodes = doc.SelectNodes("//fanart/music/artistbackgrounds//@url");
@@ -342,14 +344,14 @@ namespace MediaBrowser.Providers.Music
                     foreach (XmlNode node in nodes)
                     {
                         path = node.Value;
-                        if (!string.IsNullOrEmpty(path))
+                        if (!string.IsNullOrEmpty(path) && !item.ContainsImageWithSourceUrl(path))
                         {
                             try
                             {
                                 await _providerManager.SaveImage(item, path, FanArtResourcePool, ImageType.Backdrop, numBackdrops, cancellationToken)
                                     .ConfigureAwait(false);
                                 numBackdrops++;
-                                if (numBackdrops >= ConfigurationManager.Configuration.MaxBackdrops) break;
+                                if (numBackdrops >= backdropLimit) break;
                             }
                             catch (HttpException ex)
                             {

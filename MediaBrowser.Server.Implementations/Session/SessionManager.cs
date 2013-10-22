@@ -174,6 +174,11 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <param name="item">The item.</param>
         private void RemoveNowPlayingItem(SessionInfo session, BaseItem item)
         {
+            if (item == null)
+            {
+                throw new ArgumentNullException("item");
+            }
+
             if (session.NowPlayingItem != null && session.NowPlayingItem.Id == item.Id)
             {
                 session.NowPlayingItem = null;
@@ -319,6 +324,16 @@ namespace MediaBrowser.Server.Implementations.Session
                 throw new ArgumentNullException("info");
             }
 
+            if (info.Item == null)
+            {
+                throw new ArgumentException("PlaybackStopInfo.Item cannot be null");
+            }
+
+            if (info.SessionId == Guid.Empty)
+            {
+                throw new ArgumentException("PlaybackStopInfo.SessionId cannot be Guid.Empty");
+            }
+            
             if (info.PositionTicks.HasValue && info.PositionTicks.Value < 0)
             {
                 throw new ArgumentOutOfRangeException("positionTicks");

@@ -390,7 +390,7 @@ namespace MediaBrowser.Providers.Movies
 
             }).ConfigureAwait(false))
             {
-                await ProviderManager.SaveImage(item, sourceStream, mimeType, ImageType.Primary, null, cancellationToken)
+                await ProviderManager.SaveImage(item, sourceStream, mimeType, ImageType.Primary, null, source, cancellationToken)
                                    .ConfigureAwait(false);
 
                 Logger.Debug("TmdbPersonProvider downloaded and saved image for {0}", item.Name);

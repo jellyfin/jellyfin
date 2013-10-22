@@ -513,7 +513,7 @@ namespace MediaBrowser.Providers.Movies
             {
                 var isBoxSet = item is BoxSet;
 
-                var mainResult = await FetchMainResult(id, isBoxSet, cancellationToken).ConfigureAwait(false);
+                var mainResult = await FetchMainResult(id, isBoxSet, language, cancellationToken).ConfigureAwait(false);
 
                 if (mainResult == null) return;
 
@@ -550,7 +550,7 @@ namespace MediaBrowser.Providers.Movies
         {
             var language = ConfigurationManager.Configuration.PreferredMetadataLanguage;
 
-            var mainResult = await FetchMainResult(id, isBoxSet, cancellationToken).ConfigureAwait(false);
+            var mainResult = await FetchMainResult(id, isBoxSet, language, cancellationToken).ConfigureAwait(false);
 
             if (mainResult == null) return;
 
@@ -588,13 +588,14 @@ namespace MediaBrowser.Providers.Movies
         /// </summary>
         /// <param name="id">The id.</param>
         /// <param name="isBoxSet">if set to <c>true</c> [is box set].</param>
+        /// <param name="language">The language.</param>
         /// <param name="cancellationToken">The cancellation token</param>
         /// <returns>Task{CompleteMovieData}.</returns>
-        protected async Task<CompleteMovieData> FetchMainResult(string id, bool isBoxSet, CancellationToken cancellationToken)
+        protected async Task<CompleteMovieData> FetchMainResult(string id, bool isBoxSet, string language, CancellationToken cancellationToken)
         {
             var baseUrl = isBoxSet ? GetBoxSetInfo3 : GetMovieInfo3;
 
-            string url = string.Format(baseUrl, id, ApiKey, ConfigurationManager.Configuration.PreferredMetadataLanguage);
+            string url = string.Format(baseUrl, id, ApiKey, language);
             CompleteMovieData mainResult;
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -614,13 +615,13 @@ namespace MediaBrowser.Providers.Movies
 
             if (mainResult != null && string.IsNullOrEmpty(mainResult.overview))
             {
-                if (ConfigurationManager.Configuration.PreferredMetadataLanguage.ToLower() != "en")
+                if (language.ToLower() != "en")
                 {
-                    Logger.Info("MovieDbProvider couldn't find meta for language " + ConfigurationManager.Configuration.PreferredMetadataLanguage + ". Trying English...");
+                    Logger.Info("MovieDbProvider couldn't find meta for language " + language + ". Trying English...");
 
                     url = string.Format(baseUrl, id, ApiKey, "en");
 
-                    using (Stream json = await GetMovieDbResponse(new HttpRequestOptions
+                    using (var json = await GetMovieDbResponse(new HttpRequestOptions
                     {
                         Url = url,
                         CancellationToken = cancellationToken,

@@ -9,7 +9,6 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -135,7 +134,7 @@ namespace MediaBrowser.Providers.Movies
             }
 
             // Don't refresh if we already have both poster and backdrop and we're not refreshing images
-            if (item.HasImage(ImageType.Primary) && item.BackdropImagePaths.Count > 0)
+            if (item.HasImage(ImageType.Primary) && item.BackdropImagePaths.Count >= ConfigurationManager.Configuration.MaxBackdrops)
             {
                 return false;
             }
@@ -239,14 +238,16 @@ namespace MediaBrowser.Providers.Movies
 
                 if (poster != null)
                 {
+                    var url = tmdbImageUrl + poster.file_path;
+
                     var img = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
                     {
-                        Url = tmdbImageUrl + poster.file_path,
+                        Url = url,
                         CancellationToken = cancellationToken
 
                     }).ConfigureAwait(false);
 
-                    await _providerManager.SaveImage(item, img, MimeTypes.GetMimeType(poster.file_path), ImageType.Primary, null, cancellationToken)
+                    await _providerManager.SaveImage(item, img, MimeTypes.GetMimeType(poster.file_path), ImageType.Primary, null, url, cancellationToken)
                                         .ConfigureAwait(false);
 
                 }
@@ -258,8 +259,10 @@ namespace MediaBrowser.Providers.Movies
                 images.backdrops.Where(i => i.width >= ConfigurationManager.Configuration.MinMovieBackdropWidth)
                 .ToList();
 
+            var backdropLimit = ConfigurationManager.Configuration.MaxBackdrops;
+
             // backdrops - only download if earlier providers didn't find any (fanart)
-            if (eligibleBackdrops.Count > 0 && ConfigurationManager.Configuration.DownloadMovieImages.Backdrops && item.BackdropImagePaths.Count == 0)
+            if (eligibleBackdrops.Count > 0 && ConfigurationManager.Configuration.DownloadMovieImages.Backdrops && item.BackdropImagePaths.Count < backdropLimit)
             {
                 var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
 
@@ -267,24 +270,22 @@ namespace MediaBrowser.Providers.Movies
 
                 for (var i = 0; i < eligibleBackdrops.Count; i++)
                 {
-                    var bdName = "backdrop" + (i == 0 ? "" : i.ToString(CultureInfo.InvariantCulture));
+                    var url = tmdbImageUrl + eligibleBackdrops[i].file_path;
 
-                    var hasLocalBackdrop = item.LocationType == LocationType.FileSystem && ConfigurationManager.Configuration.SaveLocalMeta ? item.HasLocalImage(bdName) : item.BackdropImagePaths.Count > i;
-
-                    if (!hasLocalBackdrop)
+                    if (!item.ContainsImageWithSourceUrl(url))
                     {
                         var img = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
                         {
-                            Url = tmdbImageUrl + eligibleBackdrops[i].file_path,
+                            Url = url,
                             CancellationToken = cancellationToken
 
                         }).ConfigureAwait(false);
 
-                        await _providerManager.SaveImage(item, img, MimeTypes.GetMimeType(eligibleBackdrops[i].file_path), ImageType.Backdrop, item.BackdropImagePaths.Count, cancellationToken)
+                        await _providerManager.SaveImage(item, img, MimeTypes.GetMimeType(eligibleBackdrops[i].file_path), ImageType.Backdrop, item.BackdropImagePaths.Count, url, cancellationToken)
                           .ConfigureAwait(false);
                     }
 
-                    if (item.BackdropImagePaths.Count >= ConfigurationManager.Configuration.MaxBackdrops)
+                    if (item.BackdropImagePaths.Count >= backdropLimit)
                     {
                         break;
                     }

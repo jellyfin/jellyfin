@@ -699,11 +699,32 @@ namespace MediaBrowser.Api.Images
             var temp1 = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid() + ".tmp");
             var temp2 = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid() + ".tmp");
 
+            // Copying over will fail against hidden files
+            RemoveHiddenAttribute(file1);
+            RemoveHiddenAttribute(file2);
+
             File.Copy(file1, temp1);
             File.Copy(file2, temp2);
 
             File.Copy(temp1, file2, true);
             File.Copy(temp2, file1, true);
+
+            File.Delete(temp1);
+            File.Delete(temp2);
+        }
+
+        private void RemoveHiddenAttribute(string path)
+        {
+            var currentFile = new FileInfo(path);
+
+            // This will fail if the file is hidden
+            if (currentFile.Exists)
+            {
+                if ((currentFile.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
+                {
+                    currentFile.Attributes &= ~FileAttributes.Hidden;
+                }
+            }
         }
 
         /// <summary>
@@ -854,7 +875,7 @@ namespace MediaBrowser.Api.Images
                 // Handle image/png; charset=utf-8
                 mimeType = mimeType.Split(';').FirstOrDefault();
 
-                await _providerManager.SaveImage(entity, memoryStream, mimeType, imageType, imageIndex, CancellationToken.None).ConfigureAwait(false);
+                await _providerManager.SaveImage(entity, memoryStream, mimeType, imageType, imageIndex, null, CancellationToken.None).ConfigureAwait(false);
 
                 await entity.RefreshMetadata(CancellationToken.None, forceRefresh: true, forceSave: true, allowSlowProviders: false).ConfigureAwait(false);
             }
