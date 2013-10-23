@@ -37,36 +37,36 @@ namespace MediaBrowser.Server.Implementations.Library
         /// Saves the user data.
         /// </summary>
         /// <param name="userId">The user id.</param>
-        /// <param name="key">The key.</param>
+        /// <param name="item">The item.</param>
         /// <param name="userData">The user data.</param>
         /// <param name="reason">The reason.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">
-        /// userData
+        /// <exception cref="System.ArgumentNullException">userData
         /// or
         /// cancellationToken
         /// or
         /// userId
         /// or
-        /// key
-        /// </exception>
-        public async Task SaveUserData(Guid userId, string key, UserItemData userData, UserDataSaveReason reason, CancellationToken cancellationToken)
+        /// key</exception>
+        public async Task SaveUserData(Guid userId, BaseItem item, UserItemData userData, UserDataSaveReason reason, CancellationToken cancellationToken)
         {
             if (userData == null)
             {
                 throw new ArgumentNullException("userData");
             }
+            if (item == null)
+            {
+                throw new ArgumentNullException("item");
+            }
             if (userId == Guid.Empty)
             {
                 throw new ArgumentNullException("userId");
             }
-            if (string.IsNullOrEmpty(key))
-            {
-                throw new ArgumentNullException("key");
-            }
 
             cancellationToken.ThrowIfCancellationRequested();
+
+            var key = item.GetUserDataKey();
 
             try
             {
@@ -89,7 +89,8 @@ namespace MediaBrowser.Server.Implementations.Library
                 Key = key,
                 UserData = userData,
                 SaveReason = reason,
-                UserId = userId
+                UserId = userId,
+                Item = item
 
             }, _logger);
         }

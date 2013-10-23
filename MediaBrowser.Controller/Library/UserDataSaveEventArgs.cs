@@ -32,5 +32,11 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <value>The user data.</value>
         public UserItemData UserData { get; set; }
+
+        /// <summary>
+        /// Gets or sets the item.
+        /// </summary>
+        /// <value>The item.</value>
+        public BaseItem Item { get; set; }
     }
 }
