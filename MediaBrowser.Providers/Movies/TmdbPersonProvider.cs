@@ -205,7 +205,7 @@ namespace MediaBrowser.Providers.Movies
             string url = string.Format(@"http://api.themoviedb.org/3/search/person?api_key={1}&query={0}", WebUtility.UrlEncode(person.Name), MovieDbProvider.ApiKey);
             PersonSearchResults searchResult = null;
 
-            using (Stream json = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
+            using (var json = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
             {
                 Url = url,
                 CancellationToken = cancellationToken,
@@ -231,15 +231,11 @@ namespace MediaBrowser.Providers.Movies
         {
             var personDataPath = GetPersonDataPath(ConfigurationManager.ApplicationPaths, id);
 
-            Directory.CreateDirectory(personDataPath);
-
-            var files = Directory.EnumerateFiles(personDataPath, "*.json", SearchOption.TopDirectoryOnly)
-                .Select(Path.GetFileName)
-                .ToList();
+            var file = Path.Combine(personDataPath, DataFileName);
 
             // Only download if not already there
             // The prescan task will take care of updates so we don't need to re-download here
-            if (!files.Contains(DataFileName, StringComparer.OrdinalIgnoreCase))
+            if (!File.Exists(file))
             {
                 await DownloadPersonInfo(id, cancellationToken).ConfigureAwait(false);
             }
