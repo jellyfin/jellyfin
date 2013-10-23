@@ -362,6 +362,8 @@ namespace MediaBrowser.Server.Implementations.Providers
                 extension = "jpg";
             }
 
+            extension = "." + extension.ToLower();
+
             string path = null;
 
             if (saveLocally)
@@ -373,16 +375,14 @@ namespace MediaBrowser.Server.Implementations.Providers
 
                 if (string.IsNullOrEmpty(path) && !string.IsNullOrEmpty(item.MetaLocation))
                 {
-                    path = Path.Combine(item.MetaLocation, filename + extension.ToLower());
+                    path = Path.Combine(item.MetaLocation, filename + extension);
                 }
             }
-
-            filename += "." + extension.ToLower();
 
             // None of the save local conditions passed, so store it in our internal folders
             if (string.IsNullOrEmpty(path))
             {
-                path = _remoteImageCache.GetResourcePath(item.GetType().FullName + item.Id, filename);
+                path = _remoteImageCache.GetResourcePath(item.GetType().FullName + item.Id, filename + extension);
             }
 
             return path;

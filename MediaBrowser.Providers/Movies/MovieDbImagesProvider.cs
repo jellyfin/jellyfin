@@ -145,6 +145,11 @@ namespace MediaBrowser.Providers.Movies
 
         protected override bool NeedsRefreshBasedOnCompareDate(BaseItem item, BaseProviderInfo providerInfo)
         {
+            if (string.IsNullOrEmpty(item.GetProviderId(MetadataProviders.Tmdb)))
+            {
+                return false;
+            }
+            
             var path = MovieDbProvider.Current.GetDataFilePath(item, "default");
 
             if (!string.IsNullOrEmpty(path))
@@ -169,13 +174,18 @@ namespace MediaBrowser.Providers.Movies
         /// <returns>Task{System.Boolean}.</returns>
         public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
-            var images = FetchImages(item, item.GetProviderId(MetadataProviders.Tmdb), cancellationToken);
+            var id = item.GetProviderId(MetadataProviders.Tmdb);
 
             var status = ProviderRefreshStatus.Success;
 
-            if (images != null)
+            if (!string.IsNullOrEmpty(id))
             {
-                status = await ProcessImages(item, images, cancellationToken).ConfigureAwait(false);
+                var images = FetchImages(item);
+
+                if (images != null)
+                {
+                    status = await ProcessImages(item, images, cancellationToken).ConfigureAwait(false);
+                }
             }
 
             SetLastRefreshed(item, DateTime.UtcNow, status);
@@ -186,10 +196,8 @@ namespace MediaBrowser.Providers.Movies
         /// Fetches the images.
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <param name="id">The id.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{MovieImages}.</returns>
-        private MovieDbProvider.Images FetchImages(BaseItem item, string id, CancellationToken cancellationToken)
+        private MovieDbProvider.Images FetchImages(BaseItem item)
         {
             var path = MovieDbProvider.Current.GetDataFilePath(item, "default");
 
