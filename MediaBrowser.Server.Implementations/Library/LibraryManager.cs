@@ -701,18 +701,13 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new ArgumentNullException();
             }
 
-            var validFilename = FileSystem.GetValidFilename(name);
+            var validFilename = FileSystem.GetValidFilename(name).Trim();
 
             string subFolderPrefix = null;
 
             if (typeof(T) == typeof(Person) && ConfigurationManager.Configuration.EnablePeoplePrefixSubFolders)
             {
                 subFolderPrefix = validFilename.Substring(0, 1);
-
-                if (string.IsNullOrWhiteSpace(subFolderPrefix))
-                {
-                    subFolderPrefix = "0";
-                }
             }
 
             var key = string.IsNullOrEmpty(subFolderPrefix) ?
