@@ -608,7 +608,7 @@ namespace MediaBrowser.Api.UserLibrary
             // Set favorite status
             data.IsFavorite = isFavorite;
 
-            await _userDataRepository.SaveUserData(user.Id, key, data, UserDataSaveReason.UpdateUserRating, CancellationToken.None).ConfigureAwait(false);
+            await _userDataRepository.SaveUserData(user.Id, item, data, UserDataSaveReason.UpdateUserRating, CancellationToken.None).ConfigureAwait(false);
 
             data = _userDataRepository.GetUserData(user.Id, key);
 
@@ -657,7 +657,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             data.Likes = likes;
 
-            await _userDataRepository.SaveUserData(user.Id, key, data, UserDataSaveReason.UpdateUserRating, CancellationToken.None).ConfigureAwait(false);
+            await _userDataRepository.SaveUserData(user.Id, item, data, UserDataSaveReason.UpdateUserRating, CancellationToken.None).ConfigureAwait(false);
 
             data = _userDataRepository.GetUserData(user.Id, key);
 

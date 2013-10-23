@@ -123,17 +123,13 @@ namespace MediaBrowser.Providers.TV
 
                     if (parts.Length == 3)
                     {
-                        var seasonNumberString = parts[1];
-
                         int seasonNumber;
 
-                        if (int.TryParse(seasonNumberString, NumberStyles.Integer, UsCulture, out seasonNumber))
+                        if (int.TryParse(parts[1], NumberStyles.Integer, UsCulture, out seasonNumber))
                         {
-                            var episodeNumberString = parts[2];
-
                             int episodeNumber;
 
-                            if (int.TryParse(episodeNumberString, NumberStyles.Integer, UsCulture, out episodeNumber))
+                            if (int.TryParse(parts[2], NumberStyles.Integer, UsCulture, out episodeNumber))
                             {
                                 return new Tuple<int, int>(seasonNumber, episodeNumber);
                             }
@@ -145,22 +141,17 @@ namespace MediaBrowser.Providers.TV
                 .Where(i => i.Item1 != -1 && i.Item2 != -1)
                 .ToList();
 
-            var existingEpisodes = series.RecursiveChildren
-                .OfType<Episode>()
-                .Where(i => i.IndexNumber.HasValue && i.ParentIndexNumber.HasValue)
-                .ToList();
-
             var hasChanges = false;
 
             if (_config.Configuration.CreateVirtualMissingEpisodes || _config.Configuration.CreateVirtualFutureEpisodes)
             {
                 if (_config.Configuration.EnableInternetProviders)
                 {
-                    hasChanges = await AddMissingEpisodes(series, seriesDataPath, existingEpisodes, episodeLookup, cancellationToken).ConfigureAwait(false);
+                    hasChanges = await AddMissingEpisodes(series, seriesDataPath, episodeLookup, cancellationToken).ConfigureAwait(false);
                 }
             }
 
-            var anyRemoved = await RemoveObsoleteMissingEpisodes(series, existingEpisodes, cancellationToken).ConfigureAwait(false);
+            var anyRemoved = await RemoveObsoleteMissingEpisodes(series, cancellationToken).ConfigureAwait(false);
 
             if (hasChanges || anyRemoved)
             {
@@ -174,12 +165,15 @@ namespace MediaBrowser.Providers.TV
         /// </summary>
         /// <param name="series">The series.</param>
         /// <param name="seriesDataPath">The series data path.</param>
-        /// <param name="existingEpisodes">The existing episodes.</param>
         /// <param name="episodeLookup">The episode lookup.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        private async Task<bool> AddMissingEpisodes(Series series, string seriesDataPath, List<Episode> existingEpisodes, IEnumerable<Tuple<int, int>> episodeLookup, CancellationToken cancellationToken)
+        private async Task<bool> AddMissingEpisodes(Series series, string seriesDataPath, IEnumerable<Tuple<int, int>> episodeLookup, CancellationToken cancellationToken)
         {
+            var existingEpisodes = series.RecursiveChildren
+                .OfType<Episode>()
+                .ToList();
+
             var hasChanges = false;
 
             foreach (var tuple in episodeLookup)
@@ -209,8 +203,9 @@ namespace MediaBrowser.Providers.TV
                 {
                     continue;
                 }
+                var now = DateTime.UtcNow;
 
-                if (airDate.Value < DateTime.UtcNow && _config.Configuration.CreateVirtualMissingEpisodes)
+                if (airDate.Value < now && _config.Configuration.CreateVirtualMissingEpisodes)
                 {
                     // tvdb has a lot of nearly blank episodes
                     _logger.Info("Creating virtual missing episode {0} {1}x{2}", series.Name, tuple.Item1, tuple.Item2);
@@ -219,7 +214,7 @@ namespace MediaBrowser.Providers.TV
 
                     hasChanges = true;
                 }
-                else if (airDate.Value > DateTime.UtcNow && _config.Configuration.CreateVirtualFutureEpisodes)
+                else if (airDate.Value > now && _config.Configuration.CreateVirtualFutureEpisodes)
                 {
                     // tvdb has a lot of nearly blank episodes
                     _logger.Info("Creating virtual future episode {0} {1}x{2}", series.Name, tuple.Item1, tuple.Item2);
@@ -236,14 +231,21 @@ namespace MediaBrowser.Providers.TV
         /// <summary>
         /// Removes the virtual entry after a corresponding physical version has been added
         /// </summary>
-        private async Task<bool> RemoveObsoleteMissingEpisodes(Series series, List<Episode> existingEpisodes, CancellationToken cancellationToken)
+        private async Task<bool> RemoveObsoleteMissingEpisodes(Series series, CancellationToken cancellationToken)
         {
+            var existingEpisodes = series.RecursiveChildren
+                .OfType<Episode>()
+                .ToList();
+
             var physicalEpisodes = existingEpisodes
                 .Where(i => i.LocationType != LocationType.Virtual)
                 .ToList();
 
-            var episodesToRemove = existingEpisodes
+            var virtualEpisodes = existingEpisodes
                 .Where(i => i.LocationType == LocationType.Virtual)
+                .ToList();
+
+            var episodesToRemove = virtualEpisodes
                 .Where(i =>
                 {
                     if (i.IndexNumber.HasValue && i.ParentIndexNumber.HasValue)
@@ -279,7 +281,8 @@ namespace MediaBrowser.Providers.TV
         /// <returns>Task.</returns>
         private async Task AddEpisode(Series series, int seasonNumber, int episodeNumber, CancellationToken cancellationToken)
         {
-            var season = series.Children.OfType<Season>().FirstOrDefault(i => i.IndexNumber.HasValue && i.IndexNumber.Value == seasonNumber);
+            var season = series.Children.OfType<Season>()
+                .FirstOrDefault(i => i.IndexNumber.HasValue && i.IndexNumber.Value == seasonNumber);
 
             if (season == null)
             {
@@ -290,7 +293,7 @@ namespace MediaBrowser.Providers.TV
 
             var episode = new Episode
             {
-                Name = string.Format("Episode {0}", episodeNumber.ToString(UsCulture)),
+                Name = name,
                 IndexNumber = episodeNumber,
                 ParentIndexNumber = seasonNumber,
                 Parent = season,

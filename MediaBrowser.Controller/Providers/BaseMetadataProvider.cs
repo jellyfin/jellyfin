@@ -248,11 +248,6 @@ namespace MediaBrowser.Controller.Providers
                 return true;
             }
 
-            if (RequiresInternet && DateTime.UtcNow > (providerInfo.LastRefreshed.AddDays(ConfigurationManager.Configuration.MetadataRefreshDays)))
-            {
-                return true;
-            }
-
             if (providerInfo.LastRefreshStatus != ProviderRefreshStatus.Success)
             {
                 return true;

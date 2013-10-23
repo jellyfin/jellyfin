@@ -254,7 +254,7 @@ namespace MediaBrowser.Server.Implementations.Session
                 data.Played = true;
             }
 
-            await _userDataRepository.SaveUserData(user.Id, key, data, UserDataSaveReason.PlaybackStart, CancellationToken.None).ConfigureAwait(false);
+            await _userDataRepository.SaveUserData(user.Id, info.Item, data, UserDataSaveReason.PlaybackStart, CancellationToken.None).ConfigureAwait(false);
 
             // Nothing to save here
             // Fire events to inform plugins
@@ -298,7 +298,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
                 UpdatePlayState(info.Item, data, info.PositionTicks.Value);
 
-                await _userDataRepository.SaveUserData(user.Id, key, data, UserDataSaveReason.PlaybackProgress, CancellationToken.None).ConfigureAwait(false);
+                await _userDataRepository.SaveUserData(user.Id, info.Item, data, UserDataSaveReason.PlaybackProgress, CancellationToken.None).ConfigureAwait(false);
             }
 
             EventHelper.QueueEventIfNotNull(PlaybackProgress, this, new PlaybackProgressEventArgs
@@ -361,7 +361,7 @@ namespace MediaBrowser.Server.Implementations.Session
                 data.PlaybackPositionTicks = 0;
             }
 
-            await _userDataRepository.SaveUserData(user.Id, key, data, UserDataSaveReason.PlaybackFinished, CancellationToken.None).ConfigureAwait(false);
+            await _userDataRepository.SaveUserData(user.Id, info.Item, data, UserDataSaveReason.PlaybackFinished, CancellationToken.None).ConfigureAwait(false);
 
             EventHelper.QueueEventIfNotNull(PlaybackStopped, this, new PlaybackProgressEventArgs
             {
