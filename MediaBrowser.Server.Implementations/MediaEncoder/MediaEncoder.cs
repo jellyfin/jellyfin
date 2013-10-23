@@ -1,11 +1,11 @@
-﻿using System.Collections.Concurrent;
-using MediaBrowser.Common.Configuration;
+﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -48,11 +48,6 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// The audio image resource pool
         /// </summary>
         private readonly SemaphoreSlim _audioImageResourcePool = new SemaphoreSlim(1, 1);
-
-        /// <summary>
-        /// The _subtitle extraction resource pool
-        /// </summary>
-        private readonly SemaphoreSlim _subtitleExtractionResourcePool = new SemaphoreSlim(2, 2);
 
         /// <summary>
         /// The FF probe resource pool
@@ -455,8 +450,6 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
 
             _logger.Debug("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
-            await _subtitleExtractionResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
-
             var logFilePath = Path.Combine(_appPaths.LogDirectoryPath, "ffmpeg-sub-convert-" + Guid.NewGuid() + ".txt");
 
             var logFileStream = new FileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read,
@@ -468,8 +461,6 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
             }
             catch (Exception ex)
             {
-                _subtitleExtractionResourcePool.Release();
-
                 logFileStream.Dispose();
 
                 _logger.ErrorException("Error starting ffmpeg", ex);
@@ -485,7 +476,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
             {
                 try
                 {
-                    _logger.Info("Killing ffmpeg process");
+                    _logger.Info("Killing ffmpeg subtitle extraction process");
 
                     process.Kill();
 
@@ -493,23 +484,13 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
 
                     await logTask.ConfigureAwait(false);
                 }
-                catch (Win32Exception ex)
+                catch (Exception ex)
                 {
-                    _logger.ErrorException("Error killing process", ex);
-                }
-                catch (InvalidOperationException ex)
-                {
-                    _logger.ErrorException("Error killing process", ex);
-                }
-                catch (NotSupportedException ex)
-                {
-                    _logger.ErrorException("Error killing process", ex);
+                    _logger.ErrorException("Error killing subtitle extraction process", ex);
                 }
                 finally
                 {
-
                     logFileStream.Dispose();
-                    _subtitleExtractionResourcePool.Release();
                 }
             }
 
@@ -674,8 +655,6 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
 
             _logger.Debug("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
-            await _subtitleExtractionResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
-
             var logFilePath = Path.Combine(_appPaths.LogDirectoryPath, "ffmpeg-sub-extract-" + Guid.NewGuid() + ".txt");
 
             var logFileStream = new FileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous);
@@ -686,8 +665,6 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
             }
             catch (Exception ex)
             {
-                _subtitleExtractionResourcePool.Release();
-
                 logFileStream.Dispose();
 
                 _logger.ErrorException("Error starting ffmpeg", ex);
@@ -703,28 +680,19 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
             {
                 try
                 {
-                    _logger.Info("Killing ffmpeg process");
+                    _logger.Info("Killing ffmpeg subtitle extraction process");
 
                     process.Kill();
 
                     process.WaitForExit(1000);
                 }
-                catch (Win32Exception ex)
+                catch (Exception ex)
                 {
-                    _logger.ErrorException("Error killing process", ex);
-                }
-                catch (InvalidOperationException ex)
-                {
-                    _logger.ErrorException("Error killing process", ex);
-                }
-                catch (NotSupportedException ex)
-                {
-                    _logger.ErrorException("Error killing process", ex);
+                    _logger.ErrorException("Error killing subtitle extraction process", ex);
                 }
                 finally
                 {
                     logFileStream.Dispose();
-                    _subtitleExtractionResourcePool.Release();
                 }
             }
 
@@ -758,11 +726,17 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
 
             if (failed)
             {
-                var msg = string.Format("ffmpeg subtitle extraction failed for {0}", inputPath);
+                var msg = string.Format("ffmpeg subtitle extraction failed for {0} to {1}", inputPath, outputPath);
 
                 _logger.Error(msg);
 
                 throw new ApplicationException(msg);
+            }
+            else
+            {
+                var msg = string.Format("ffmpeg subtitle extraction completed for {0} to {1}", inputPath, outputPath);
+
+                _logger.Info(msg);
             }
 
             await SetAssFont(outputPath).ConfigureAwait(false);
@@ -775,6 +749,8 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// <returns>Task.</returns>
         private async Task SetAssFont(string file)
         {
+            _logger.Info("Setting ass font within {0}", file);
+
             string text;
             Encoding encoding;
 
