@@ -194,9 +194,6 @@ namespace MediaBrowser.Providers.Movies
 
         protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
         {
-            if (HasAltMeta(item) && !ConfigurationManager.Configuration.EnableTmdbUpdates)
-                return false;
-
             // Boxsets require two passes because we need the children to be refreshed
             if (item is BoxSet && string.IsNullOrEmpty(item.GetProviderId(MetadataProviders.Tmdb)))
             {
@@ -220,6 +217,8 @@ namespace MediaBrowser.Providers.Movies
                 {
                     return fileInfo.LastWriteTimeUtc > providerInfo.LastRefreshed;
                 }
+
+                return true;
             }
 
             return base.NeedsRefreshBasedOnCompareDate(item, providerInfo);
@@ -507,8 +506,6 @@ namespace MediaBrowser.Providers.Movies
 
             var dataFilePath = GetDataFilePath(item, language);
 
-            var hasAltMeta = HasAltMeta(item);
-
             if (string.IsNullOrEmpty(dataFilePath) || !File.Exists(dataFilePath))
             {
                 var isBoxSet = item is BoxSet;
@@ -535,7 +532,7 @@ namespace MediaBrowser.Providers.Movies
                 JsonSerializer.SerializeToFile(mainResult, dataFilePath);
             }
 
-            if (isForcedRefresh || ConfigurationManager.Configuration.EnableTmdbUpdates || !hasAltMeta)
+            if (isForcedRefresh || ConfigurationManager.Configuration.EnableTmdbUpdates || !HasAltMeta(item))
             {
                 dataFilePath = GetDataFilePath(item, language);
 

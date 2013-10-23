@@ -2,7 +2,6 @@
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
@@ -83,7 +82,7 @@ namespace MediaBrowser.Providers.Movies
             // Find out the last time we queried tvdb for updates
             var lastUpdateTime = timestampFileInfo.Exists ? File.ReadAllText(timestampFile, Encoding.UTF8) : string.Empty;
 
-            var existingDirectories = Directory.EnumerateDirectories(path).Select(Path.GetFileName).ToList();
+            var existingDirectories = GetExistingIds(path).ToList();
 
             if (!string.IsNullOrEmpty(lastUpdateTime))
             {
@@ -105,12 +104,24 @@ namespace MediaBrowser.Providers.Movies
 
                     var idsToUpdate = updatedIds.Where(i => !string.IsNullOrWhiteSpace(i) && existingDictionary.ContainsKey(i));
 
-                    await UpdatePeople(idsToUpdate, path, progress, cancellationToken).ConfigureAwait(false);
+                    await UpdatePeople(idsToUpdate, progress, cancellationToken).ConfigureAwait(false);
                 }
             }
 
             File.WriteAllText(timestampFile, DateTime.UtcNow.Ticks.ToString(UsCulture), Encoding.UTF8);
             progress.Report(100);
+        }
+
+        /// <summary>
+        /// Gets the existing ids.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>IEnumerable{System.String}.</returns>
+        private IEnumerable<string> GetExistingIds(string path)
+        {
+            return Directory.EnumerateDirectories(path)
+                .SelectMany(Directory.EnumerateDirectories)
+                .Select(Path.GetFileNameWithoutExtension);
         }
 
         /// <summary>
@@ -159,11 +170,10 @@ namespace MediaBrowser.Providers.Movies
         /// Updates the people.
         /// </summary>
         /// <param name="ids">The ids.</param>
-        /// <param name="peopleDataPath">The people data path.</param>
         /// <param name="progress">The progress.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        private async Task UpdatePeople(IEnumerable<string> ids, string peopleDataPath, IProgress<double> progress, CancellationToken cancellationToken)
+        private async Task UpdatePeople(IEnumerable<string> ids, IProgress<double> progress, CancellationToken cancellationToken)
         {
             var list = ids.ToList();
             var numComplete = 0;
@@ -172,7 +182,7 @@ namespace MediaBrowser.Providers.Movies
             {
                 try
                 {
-                    await UpdatePerson(id, peopleDataPath, cancellationToken).ConfigureAwait(false);
+                    await UpdatePerson(id, cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -192,18 +202,13 @@ namespace MediaBrowser.Providers.Movies
         /// Updates the person.
         /// </summary>
         /// <param name="id">The id.</param>
-        /// <param name="peopleDataPath">The people data path.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        private Task UpdatePerson(string id, string peopleDataPath, CancellationToken cancellationToken)
+        private Task UpdatePerson(string id, CancellationToken cancellationToken)
         {
             _logger.Info("Updating person from tmdb " + id);
 
-            var personDataPath = Path.Combine(peopleDataPath, id);
-
-            Directory.CreateDirectory(peopleDataPath);
-
-            return TmdbPersonProvider.Current.DownloadPersonInfo(id, personDataPath, cancellationToken);
+            return TmdbPersonProvider.Current.DownloadPersonInfo(id, cancellationToken);
         }
 
         class Result
