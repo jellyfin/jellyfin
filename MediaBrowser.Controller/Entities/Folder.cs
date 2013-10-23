@@ -808,9 +808,15 @@ namespace MediaBrowser.Controller.Entities
                     cancellationToken.ThrowIfCancellationRequested();
 
                     var child = currentTuple.Item1;
-
-                    //refresh it
-                    await child.RefreshMetadata(cancellationToken, forceSave: currentTuple.Item2, forceRefresh: forceRefreshMetadata, resetResolveArgs: false).ConfigureAwait(false);
+                    try
+                    {
+                        //refresh it
+                        await child.RefreshMetadata(cancellationToken, forceSave: currentTuple.Item2, forceRefresh: forceRefreshMetadata, resetResolveArgs: false).ConfigureAwait(false);
+                    }
+                    catch (IOException ex)
+                    {
+                        Logger.ErrorException("Error refreshing {0}", ex, child.Path ?? child.Name);
+                    }
 
                     // Refresh children if a folder and the item changed or recursive is set to true
                     var refreshChildren = child.IsFolder && (currentTuple.Item2 || (recursive.HasValue && recursive.Value));
@@ -845,8 +851,15 @@ namespace MediaBrowser.Controller.Entities
 
                         await ((Folder)child).ValidateChildren(innerProgress, cancellationToken, recursive, forceRefreshMetadata).ConfigureAwait(false);
 
-                        // Some folder providers are unable to refresh until children have been refreshed.
-                        await child.RefreshMetadata(cancellationToken, resetResolveArgs: false).ConfigureAwait(false);
+                        try
+                        {
+                            // Some folder providers are unable to refresh until children have been refreshed.
+                            await child.RefreshMetadata(cancellationToken, resetResolveArgs: false).ConfigureAwait(false);
+                        }
+                        catch (IOException ex)
+                        {
+                            Logger.ErrorException("Error refreshing {0}", ex, child.Path ?? child.Name);
+                        }
                     }
                     else
                     {
