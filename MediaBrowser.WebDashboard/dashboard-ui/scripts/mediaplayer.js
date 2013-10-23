@@ -1474,7 +1474,7 @@
                 return i.Type == "Subtitle";
             });
 
-            var currentIndex = getParameterByName('SubtitleStreamIndex', currentMediaElement.currentSrc);
+            var currentIndex = getParameterByName('SubtitleStreamIndex', currentMediaElement.currentSrc) || -1;
 
             var html = '';
 
@@ -1549,7 +1549,7 @@
                 return i.Type == "Video";
             })[0];
 
-            var currentVideoBitrate = getParameterByName('videoBitrate', currentMediaElement.currentSrc) || getParameterByName('VideoBitrate', currentMediaElement.currentSrc);
+            var currentVideoBitrate = getParameterByName('videoBitrate', currentMediaElement.currentSrc);
 
             var maxAllowedWidth = Math.max(screen.height, screen.width);
 
