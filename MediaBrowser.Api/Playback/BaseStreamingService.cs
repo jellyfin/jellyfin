@@ -693,15 +693,7 @@ namespace MediaBrowser.Api.Playback
 
         protected int? GetVideoBitrateParam(StreamState state)
         {
-            if (state.VideoRequest.VideoBitRate.HasValue)
-            {
-                // Make sure we don't request a bitrate higher than the source
-                var currentBitrate = state.VideoStream == null ? state.VideoRequest.VideoBitRate.Value : state.VideoStream.BitRate ?? state.VideoRequest.VideoBitRate.Value;
-
-                return Math.Min(currentBitrate, state.VideoRequest.VideoBitRate.Value);
-            }
-
-            return null;
+            return state.VideoRequest.VideoBitRate;
         }
 
         protected int? GetAudioBitrateParam(StreamState state)
