@@ -244,7 +244,13 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value>The width of the min movie poster.</value>
         public int MinMoviePosterWidth { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [enable people prefix sub folders].
+        /// </summary>
+        /// <value><c>true</c> if [enable people prefix sub folders]; otherwise, <c>false</c>.</value>
+        public bool EnablePeoplePrefixSubFolders { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>

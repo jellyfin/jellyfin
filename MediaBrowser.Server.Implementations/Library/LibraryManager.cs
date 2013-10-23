@@ -703,7 +703,21 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var validFilename = FileSystem.GetValidFilename(name);
 
-            var key = Path.Combine(path, validFilename);
+            string subFolderPrefix = null;
+
+            if (typeof(T) == typeof(Person) && ConfigurationManager.Configuration.EnablePeoplePrefixSubFolders)
+            {
+                subFolderPrefix = validFilename.Substring(0, 1);
+
+                if (string.IsNullOrWhiteSpace(subFolderPrefix))
+                {
+                    subFolderPrefix = "0";
+                }
+            }
+
+            var key = string.IsNullOrEmpty(subFolderPrefix) ?
+                Path.Combine(path, validFilename) :
+                Path.Combine(path, subFolderPrefix, validFilename);
 
             BaseItem obj;
 
