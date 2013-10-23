@@ -476,7 +476,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
             {
                 try
                 {
-                    _logger.Info("Killing ffmpeg subtitle extraction process");
+                    _logger.Info("Killing ffmpeg subtitle conversion process");
 
                     process.Kill();
 
@@ -486,7 +486,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error killing subtitle extraction process", ex);
+                    _logger.ErrorException("Error killing subtitle conversion process", ex);
                 }
                 finally
                 {
