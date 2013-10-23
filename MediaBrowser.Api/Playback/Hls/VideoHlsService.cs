@@ -96,10 +96,10 @@ namespace MediaBrowser.Api.Playback.Hls
                 // Boost volume to 200% when downsampling from 6ch to 2ch
                 if (channels.HasValue && channels.Value <= 2 && state.AudioStream.Channels.HasValue && state.AudioStream.Channels.Value > 5)
                 {
-                    volParam = ",volume=2.000000";
+                    volParam = "volume=2.000000";
                 }
                 
-                args += string.Format(" -af \"aresample=async=1000{0}\"", volParam);
+                args += string.Format(" -af \"{0}\"", volParam);
 
                 return args;
             }
