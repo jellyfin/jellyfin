@@ -972,12 +972,12 @@
 
             var day = LibraryBrowser.getFutureDateText(date);
 
-            if (item.SeriesStudio) {
-                day += " on " + item.SeriesStudio;
-            }
-
             if (item.AirTime) {
                 day += " at " + item.AirTime;
+            }
+
+            if (item.SeriesStudio) {
+                day += " on " + item.SeriesStudio;
             }
 
             return day;

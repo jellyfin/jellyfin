@@ -245,7 +245,10 @@
 
             query.LocationTypes = this.checked || missingChecked ? "virtual" : null;
             query.HasPremiereDate = this.checked || missingChecked ? true : null;
-            query.MinPremiereDate = this.checked ? LibraryBrowser.getDateParamValue(new Date()) : null;
+
+            var now = new Date();
+
+            query.MinPremiereDate = this.checked ? LibraryBrowser.getDateParamValue(new Date(now.getFullYear(), now.getMonth(), now.getDate())) : null;
 
             reloadItems(page);
         });

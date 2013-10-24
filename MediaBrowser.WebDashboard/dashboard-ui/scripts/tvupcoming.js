@@ -4,6 +4,8 @@
 
         var page = this;
 
+        var now = new Date();
+
         var options = {
 
             SortBy: "PremiereDate,AirTime",
@@ -13,7 +15,7 @@
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,SeriesInfo,UserData",
             HasPremiereDate: true,
-            MinPremiereDate: LibraryBrowser.getDateParamValue(new Date())
+            MinPremiereDate: LibraryBrowser.getDateParamValue(new Date(now.getFullYear(), now.getMonth(), now.getDate()))
         };
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
