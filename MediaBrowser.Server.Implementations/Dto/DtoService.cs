@@ -868,6 +868,19 @@ namespace MediaBrowser.Server.Implementations.Dto
                 }
             }
 
+            // If there is no thumb, indicate what parent has one in case the Ui wants to allow inheritance
+            if (!dto.HasThumb)
+            {
+                var parentWithImage = GetParentImageItem(item, ImageType.Thumb, owner);
+
+                if (parentWithImage != null)
+                {
+                    dto.ParentThumbItemId = GetDtoId(parentWithImage);
+
+                    dto.ParentThumbImageTag = GetImageCacheTag(parentWithImage, ImageType.Thumb, parentWithImage.GetImage(ImageType.Thumb));
+                }
+            }
+
             if (fields.Contains(ItemFields.Path))
             {
                 dto.Path = item.Path;
@@ -1022,6 +1035,13 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                 dto.SeriesId = GetDtoId(series);
                 dto.SeriesName = series.Name;
+                dto.AirTime = series.AirTime;
+                dto.SeriesStudio = series.Studios.FirstOrDefault();
+
+                if (series.HasImage(ImageType.Thumb))
+                {
+                    dto.SeriesThumbImageTag = GetImageCacheTag(series, ImageType.Thumb, series.GetImage(ImageType.Thumb));
+                }
             }
 
             // Add SeasonInfo
@@ -1033,6 +1053,8 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                 dto.SeriesId = GetDtoId(series);
                 dto.SeriesName = series.Name;
+                dto.AirTime = series.AirTime;
+                dto.SeriesStudio = series.Studios.FirstOrDefault();
             }
 
             var game = item as Game;

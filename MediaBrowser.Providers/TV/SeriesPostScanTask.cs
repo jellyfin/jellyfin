@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -25,13 +24,11 @@ namespace MediaBrowser.Providers.TV
         private readonly ILibraryManager _libraryManager;
         private readonly IServerConfigurationManager _config;
         private readonly ILogger _logger;
-        private readonly IDirectoryWatchers _directoryWatchers;
 
-        public SeriesPostScanTask(ILibraryManager libraryManager, ILogger logger, IDirectoryWatchers directoryWatchers, IServerConfigurationManager config)
+        public SeriesPostScanTask(ILibraryManager libraryManager, ILogger logger, IServerConfigurationManager config)
         {
             _libraryManager = libraryManager;
             _logger = logger;
-            _directoryWatchers = directoryWatchers;
             _config = config;
         }
 
@@ -53,7 +50,7 @@ namespace MediaBrowser.Providers.TV
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await new MissingEpisodeProvider(_logger, _directoryWatchers, _config).Run(series, cancellationToken).ConfigureAwait(false);
+                await new MissingEpisodeProvider(_logger, _config).Run(series, cancellationToken).ConfigureAwait(false);
 
                 var episodes = series.RecursiveChildren
                     .OfType<Episode>()
@@ -88,14 +85,12 @@ namespace MediaBrowser.Providers.TV
     {
         private readonly IServerConfigurationManager _config;
         private readonly ILogger _logger;
-        private readonly IDirectoryWatchers _directoryWatchers;
 
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
-        public MissingEpisodeProvider(ILogger logger, IDirectoryWatchers directoryWatchers, IServerConfigurationManager config)
+        public MissingEpisodeProvider(ILogger logger, IServerConfigurationManager config)
         {
             _logger = logger;
-            _directoryWatchers = directoryWatchers;
             _config = config;
         }
 
@@ -141,19 +136,21 @@ namespace MediaBrowser.Providers.TV
                 .Where(i => i.Item1 != -1 && i.Item2 != -1)
                 .ToList();
 
-            var hasChanges = false;
+            var anySeasonsRemoved = await RemoveObsoleteOrMissingSeasons(series, episodeLookup, cancellationToken).ConfigureAwait(false);
+
+            var anyEpisodesRemoved = await RemoveObsoleteOrMissingEpisodes(series, episodeLookup, cancellationToken).ConfigureAwait(false);
+
+            var hasNewEpisodes = false;
 
             if (_config.Configuration.CreateVirtualMissingEpisodes || _config.Configuration.CreateVirtualFutureEpisodes)
             {
                 if (_config.Configuration.EnableInternetProviders)
                 {
-                    hasChanges = await AddMissingEpisodes(series, seriesDataPath, episodeLookup, cancellationToken).ConfigureAwait(false);
+                    hasNewEpisodes = await AddMissingEpisodes(series, seriesDataPath, episodeLookup, cancellationToken).ConfigureAwait(false);
                 }
             }
 
-            var anyRemoved = await RemoveObsoleteMissingEpisodes(series, cancellationToken).ConfigureAwait(false);
-
-            if (hasChanges || anyRemoved)
+            if (hasNewEpisodes || anySeasonsRemoved || anyEpisodesRemoved)
             {
                 await series.RefreshMetadata(cancellationToken, true).ConfigureAwait(false);
                 await series.ValidateChildren(new Progress<double>(), cancellationToken, true).ConfigureAwait(false);
@@ -231,7 +228,7 @@ namespace MediaBrowser.Providers.TV
         /// <summary>
         /// Removes the virtual entry after a corresponding physical version has been added
         /// </summary>
-        private async Task<bool> RemoveObsoleteMissingEpisodes(Series series, CancellationToken cancellationToken)
+        private async Task<bool> RemoveObsoleteOrMissingEpisodes(Series series, IEnumerable<Tuple<int, int>> episodeLookup, CancellationToken cancellationToken)
         {
             var existingEpisodes = series.RecursiveChildren
                 .OfType<Episode>()
@@ -250,10 +247,27 @@ namespace MediaBrowser.Providers.TV
                 {
                     if (i.IndexNumber.HasValue && i.ParentIndexNumber.HasValue)
                     {
-                        return physicalEpisodes.Any(p => p.ParentIndexNumber.HasValue && p.ParentIndexNumber.Value == i.ParentIndexNumber.Value && p.ContainsEpisodeNumber(i.IndexNumber.Value));
+                        var seasonNumber = i.ParentIndexNumber.Value;
+                        var episodeNumber = i.IndexNumber.Value;
+
+                        // If there's a physical episode with the same season and episode number, delete it
+                        if (physicalEpisodes.Any(p =>
+                                p.ParentIndexNumber.HasValue && p.ParentIndexNumber.Value == seasonNumber &&
+                                p.ContainsEpisodeNumber(episodeNumber)))
+                        {
+                            return true;
+                        }
+
+                        // If the episode no longer exists in the remote lookup, delete it
+                        if (!episodeLookup.Any(e => e.Item1 == seasonNumber && e.Item2 == episodeNumber))
+                        {
+                            return true;
+                        }
+
+                        return false;
                     }
 
-                    return false;
+                    return true;
                 })
                 .ToList();
 
@@ -261,7 +275,7 @@ namespace MediaBrowser.Providers.TV
 
             foreach (var episodeToRemove in episodesToRemove)
             {
-                _logger.Info("Removing {0} {1}x{2}", series.Name, episodeToRemove.ParentIndexNumber, episodeToRemove.IndexNumber);
+                _logger.Info("Removing missing/unaired episode {0} {1}x{2}", series.Name, episodeToRemove.ParentIndexNumber, episodeToRemove.IndexNumber);
 
                 await episodeToRemove.Parent.RemoveChild(episodeToRemove, cancellationToken).ConfigureAwait(false);
 
@@ -271,6 +285,67 @@ namespace MediaBrowser.Providers.TV
             return hasChanges;
         }
 
+        /// <summary>
+        /// Removes the obsolete or missing seasons.
+        /// </summary>
+        /// <param name="series">The series.</param>
+        /// <param name="episodeLookup">The episode lookup.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{System.Boolean}.</returns>
+        private async Task<bool> RemoveObsoleteOrMissingSeasons(Series series, IEnumerable<Tuple<int, int>> episodeLookup, CancellationToken cancellationToken)
+        {
+            var existingSeasons = series.Children
+                .OfType<Season>()
+                .ToList();
+
+            var physicalSeasons = existingSeasons
+                .Where(i => i.LocationType != LocationType.Virtual)
+                .ToList();
+
+            var virtualSeasons = existingSeasons
+                .Where(i => i.LocationType == LocationType.Virtual)
+                .ToList();
+
+            var seasonsToRemove = virtualSeasons
+                .Where(i =>
+                {
+                    if (i.IndexNumber.HasValue)
+                    {
+                        var seasonNumber = i.IndexNumber.Value;
+
+                        // If there's a physical season with the same number, delete it
+                        if (physicalSeasons.Any(p => p.IndexNumber.HasValue && p.IndexNumber.Value == seasonNumber))
+                        {
+                            return true;
+                        }
+
+                        // If the season no longer exists in the remote lookup, delete it
+                        if (episodeLookup.All(e => e.Item1 != seasonNumber))
+                        {
+                            return true;
+                        }
+
+                        return false;
+                    }
+
+                    return true;
+                })
+                .ToList();
+
+            var hasChanges = false;
+
+            foreach (var seasonToRemove in seasonsToRemove)
+            {
+                _logger.Info("Removing virtual season {0} {1}", series.Name, seasonToRemove.IndexNumber);
+
+                await seasonToRemove.Parent.RemoveChild(seasonToRemove, cancellationToken).ConfigureAwait(false);
+
+                hasChanges = true;
+            }
+
+            return hasChanges;
+        }
+        
         /// <summary>
         /// Adds the episode.
         /// </summary>
@@ -319,35 +394,17 @@ namespace MediaBrowser.Providers.TV
 
             var name = string.Format("Season {0}", seasonNumber.ToString(UsCulture));
 
-            var path = Path.Combine(series.Path, name);
-
             var season = new Season
             {
                 Name = name,
                 IndexNumber = seasonNumber,
-                Path = path,
                 Parent = series,
-                DisplayMediaType = typeof(Season).Name
+                DisplayMediaType = typeof(Season).Name,
+                Id = (series.Id + seasonNumber.ToString(UsCulture) + name).GetMBId(typeof(Season))
             };
 
-            _directoryWatchers.TemporarilyIgnore(path);
-
-            try
-            {
-                var info = Directory.CreateDirectory(path);
-
-                season.DateCreated = info.CreationTimeUtc;
-                season.DateModified = info.LastWriteTimeUtc;
-
-                await series.AddChild(season, cancellationToken).ConfigureAwait(false);
-
-                await season.RefreshMetadata(cancellationToken).ConfigureAwait(false);
-            }
-            finally
-            {
-                _directoryWatchers.RemoveTempIgnore(path);
-            }
-
+            await series.AddChild(season, cancellationToken).ConfigureAwait(false);
+            await season.RefreshMetadata(cancellationToken).ConfigureAwait(false);
 
             return season;
         }

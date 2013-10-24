@@ -386,7 +386,7 @@ namespace MediaBrowser.Providers.Movies
                     name = name.Replace(",", " ");
                     name = name.Replace(".", " ");
                     name = name.Replace("_", " ");
-                    name = name.Replace("-", "");
+                    name = name.Replace("-", " ");
 
                     // Search again if the new name is different
                     if (!string.Equals(name, originalName))

@@ -130,18 +130,6 @@
         $('.alphabetPicker', page).alphaValue(query.NameStartsWithOrGreater);
     }
 
-    function formatDigit(i) {
-        return i < 10 ? "0" + i : i;
-    }
-
-    function getDateFormat(date) {
-
-        // yyyyMMddHHmmss
-        var d = date;
-
-        return "" + d.getFullYear() + formatDigit(d.getMonth() + 1) + formatDigit(d.getDate()) + formatDigit(d.getHours()) + formatDigit(d.getMinutes()) + formatDigit(d.getSeconds());
-    }
-
     $(document).on('pageinit', "#episodesPage", function () {
 
         var page = this;
@@ -246,7 +234,7 @@
 
             query.LocationTypes = this.checked || futureChecked ? "virtual" : null;
             query.HasPremiereDate = this.checked || futureChecked ? true : null;
-            query.MaxPremiereDate = this.checked ? getDateFormat(new Date()) : null;
+            query.MaxPremiereDate = this.checked ? LibraryBrowser.getDateParamValue(new Date()) : null;
 
             reloadItems(page);
         });
@@ -257,7 +245,7 @@
 
             query.LocationTypes = this.checked || missingChecked ? "virtual" : null;
             query.HasPremiereDate = this.checked || missingChecked ? true : null;
-            query.MinPremiereDate = this.checked ? getDateFormat(new Date()) : null;
+            query.MinPremiereDate = this.checked ? LibraryBrowser.getDateParamValue(new Date()) : null;
 
             reloadItems(page);
         });

@@ -46,10 +46,21 @@
             localStorage.setItem(key + '_' + Dashboard.getCurrentUserId(), JSON.stringify(values));
         },
 
+        getDateParamValue: function (date) {
+
+            function formatDigit(i) {
+                return i < 10 ? "0" + i : i;
+            }
+
+            var d = date;
+
+            return "" + d.getFullYear() + formatDigit(d.getMonth() + 1) + formatDigit(d.getDate()) + formatDigit(d.getHours()) + formatDigit(d.getMinutes()) + formatDigit(d.getSeconds());
+        },
+
         getPosterDetailViewHtml: function (options) {
 
             var items = options.items;
-            var currentYear;
+            var currentIndexValue;
 
             if (!options.shape) {
                 options.shape = options.preferBackdrop ? "backdrop" : "poster";
@@ -66,10 +77,10 @@
                 if (options.timeline) {
                     var year = item.ProductionYear || "Unknown Year";
 
-                    if (year != currentYear) {
+                    if (year != currentIndexValue) {
 
                         html += '<h2 class="timelineHeader">' + year + '</h2>';
-                        currentYear = year;
+                        currentIndexValue = year;
                     }
                 }
 
@@ -643,6 +654,7 @@
         getPosterViewHtml: function (options) {
 
             var items = options.items;
+            var currentIndexValue;
 
             options.shape = options.shape || "portrait";
 
@@ -653,6 +665,29 @@
             for (var i = 0, length = items.length; i < length; i++) {
 
                 var item = items[i];
+
+                var futureDateText;
+
+                if (item.PremiereDate) {
+                    try {
+
+                        futureDateText = LibraryBrowser.getFutureDateText(parseISO8601Date(item.PremiereDate), true);
+
+                    } catch (err) {
+
+                    }
+                }
+
+                if (options.showPremiereDateIndex && futureDateText) {
+
+                    var val = futureDateText || "Unknown Date";
+
+                    if (val != currentIndexValue) {
+
+                        html += '<h2 class="timelineHeader">' + val + '</h2>';
+                        currentIndexValue = val;
+                    }
+                }
 
                 var imgUrl = null;
                 var background = null;
@@ -668,7 +703,37 @@
                         tag: item.BackdropImageTags[0]
                     });
 
-                } else if (item.ImageTags && item.ImageTags.Primary) {
+                }
+                else if (options.preferThumb && item.ImageTags && item.ImageTags.Thumb) {
+
+                    imgUrl = ApiClient.getImageUrl(item, {
+                        type: "Thumb",
+                        height: 198,
+                        width: 352,
+                        tag: item.ImageTags.Thumb
+                    });
+
+                }
+                else if (options.preferThumb && item.SeriesThumbImageTag) {
+
+                    imgUrl = ApiClient.getImageUrl(item.SeriesId, {
+                        type: "Thumb",
+                        height: 198,
+                        width: 352,
+                        tag: item.SeriesThumbImageTag
+                    });
+
+                }
+                else if (options.preferThumb && item.ParentThumbItemId) {
+
+                    imgUrl = ApiClient.getThumbImageUrl(item, {
+                        type: "Thumb",
+                        height: 198,
+                        width: 352
+                    });
+
+                }
+                else if (item.ImageTags && item.ImageTags.Primary) {
 
                     height = 300;
                     width = primaryImageAspectRatio ? parseInt(height * primaryImageAspectRatio) : null;
@@ -701,6 +766,35 @@
                         height: 198,
                         width: 352,
                         tag: item.BackdropImageTags[0]
+                    });
+
+                }
+                else if (item.ImageTags && item.ImageTags.Thumb) {
+
+                    imgUrl = ApiClient.getImageUrl(item, {
+                        type: "Thumb",
+                        height: 198,
+                        width: 352,
+                        tag: item.ImageTags.Thumb
+                    });
+
+                }
+                else if (item.SeriesThumbImageTag) {
+
+                    imgUrl = ApiClient.getImageUrl(item.SeriesId, {
+                        type: "Thumb",
+                        height: 198,
+                        width: 352,
+                        tag: item.SeriesThumbImageTag
+                    });
+
+                }
+                else if (item.ParentThumbItemId) {
+
+                    imgUrl = ApiClient.getThumbImageUrl(item, {
+                        type: "Thumb",
+                        height: 198,
+                        width: 352
                     });
 
                 }
@@ -786,6 +880,22 @@
                     html += "</div>";
                 }
 
+                if (options.showPremiereDate && item.PremiereDate) {
+
+                    try {
+
+                        var date = parseISO8601Date(item.PremiereDate);
+
+                        html += "<div class='posterItemText'>";
+                        html += LibraryBrowser.getPremiereDateText(item, date);
+                        html += "</div>";
+
+                    } catch (err) {
+
+                    }
+
+                }
+
                 if (options.showProgressBar) {
 
                     html += "<div class='posterItemText posterItemProgress'>";
@@ -794,7 +904,9 @@
                 }
 
                 if (item.LocationType == "Offline" || item.LocationType == "Virtual") {
-                    html += LibraryBrowser.getOfflineIndicatorHtml(item);
+                    if (options.showLocationTypeIndicator !== false) {
+                        html += LibraryBrowser.getOfflineIndicatorHtml(item);
+                    }
                 } else if (options.showNewIndicator !== false) {
                     html += LibraryBrowser.getNewIndicatorHtml(item);
                 }
@@ -804,6 +916,71 @@
             }
 
             return html;
+        },
+
+        isSameDay: function (date1, date2) {
+
+            return date1.getFullYear() == date2.getFullYear() && date1.getDate() == date2.getDate();
+
+        },
+
+        getFutureDateText: function (date, includeDayNamesInFuture) {
+
+            var weekday = [];
+            weekday[0] = "Sunday";
+            weekday[1] = "Monday";
+            weekday[2] = "Tuesday";
+            weekday[3] = "Wednesday";
+            weekday[4] = "Thursday";
+            weekday[5] = "Friday";
+            weekday[6] = "Saturday";
+
+            var currentDate = new Date();
+
+            var day;
+
+            if (LibraryBrowser.isSameDay(date, currentDate)) {
+                return "Today";
+            }
+
+            currentDate.setDate(currentDate.getDate() + 1);
+            if (LibraryBrowser.isSameDay(date, currentDate)) {
+                return "Tomorrow";
+            }
+
+            var todayDayOfWeek = new Date().getDay();
+            currentDate.setDate(currentDate.getDate() + 1);
+
+            while (currentDate.getDay() > todayDayOfWeek) {
+
+                currentDate.setDate(currentDate.getDate() + 1);
+
+                if (LibraryBrowser.isSameDay(date, currentDate)) {
+
+                    return weekday[currentDate.getDay()];
+                }
+            }
+
+            if (includeDayNamesInFuture) {
+                return weekday[date.getDay()] + " " + date.toLocaleDateString();
+            }
+
+            return date.toLocaleDateString();
+        },
+
+        getPremiereDateText: function (item, date) {
+
+            var day = LibraryBrowser.getFutureDateText(date);
+
+            if (item.SeriesStudio) {
+                day += " on " + item.SeriesStudio;
+            }
+
+            if (item.AirTime) {
+                day += " at " + item.AirTime;
+            }
+
+            return day;
         },
 
         getPosterViewDisplayName: function (item) {

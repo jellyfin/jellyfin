@@ -2018,9 +2018,26 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
 
             options.imageType = "logo";
 
-            var logoItemId = item.HasLogo ? item.Id : item.ParentLogoItemId;
+            var logoItemId = item.ImageTags && item.ImageTags.Logo ? item.Id : item.ParentLogoItemId;
 
             return logoItemId ? self.getImageUrl(logoItemId, options) : null;
+        };
+
+        self.getThumbImageUrl = function (item, options) {
+
+            if (!item) {
+                throw new Error("null item");
+            }
+
+            options = options || {
+
+            };
+
+            options.imageType = "thumb";
+
+            var itemId = item.ImageTags && item.ImageTags.Thumb ? item.Id : item.ParentThumbItemId;
+
+            return itemId ? self.getImageUrl(itemId, options) : null;
         };
 
         /**

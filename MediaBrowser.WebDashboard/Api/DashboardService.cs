@@ -513,6 +513,7 @@ namespace MediaBrowser.WebDashboard.Api
                                       "tvrecommended.js",
                                       "tvshows.js",
                                       "tvstudios.js",
+                                      "tvupcoming.js",
                                       "updatepasswordpage.js",
                                       "userimagepage.js",
                                       "userprofilespage.js",

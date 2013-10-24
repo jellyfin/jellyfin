@@ -37,7 +37,8 @@
             Filters: "IsResumable",
             Limit: 8,
             Recursive: true,
-            Fields: "PrimaryImageAspectRatio,SeriesInfo,UserData"
+            Fields: "PrimaryImageAspectRatio,SeriesInfo,UserData",
+            ExcludeLocationTypes: "Virtual"
         };
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
