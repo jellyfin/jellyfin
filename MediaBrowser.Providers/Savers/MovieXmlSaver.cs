@@ -138,16 +138,7 @@ namespace MediaBrowser.Providers.Savers
                 return Path.ChangeExtension(item.Path, ".xml");
             }
 
-            var filename = GetXmlFilename(item);
-
-            return Path.Combine(item.MetaLocation, filename);
-        }
-
-        private static string GetXmlFilename(BaseItem item)
-        {
-            const string filename = "movie.xml";
-
-            return Path.Combine(item.MetaLocation, filename);
+            return Path.Combine(item.MetaLocation, "movie.xml");
         }
     }
 }
