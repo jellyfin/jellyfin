@@ -295,6 +295,9 @@ namespace MediaBrowser.Providers.TV
 
             }).ConfigureAwait(false))
             {
+                // Delete existing files
+                DeleteXmlFiles(seriesDataPath);
+
                 // Copy to memory stream because we need a seekable stream
                 using (var ms = new MemoryStream())
                 {
@@ -313,6 +316,23 @@ namespace MediaBrowser.Providers.TV
             }
 
             await ExtractEpisodes(seriesDataPath, Path.Combine(seriesDataPath, ConfigurationManager.Configuration.PreferredMetadataLanguage + ".xml"), lastTvDbUpdateTime).ConfigureAwait(false);
+        }
+
+        private void DeleteXmlFiles(string path)
+        {
+            try
+            {
+                foreach (var file in new DirectoryInfo(path)
+                    .EnumerateFiles("*.xml", SearchOption.AllDirectories)
+                    .ToList())
+                {
+                    file.Delete();
+                }
+            }
+            catch (DirectoryNotFoundException)
+            {
+                // No biggie
+            }
         }
 
         /// <summary>

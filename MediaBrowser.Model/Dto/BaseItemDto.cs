@@ -468,6 +468,30 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The parent art image tag.</value>
         public Guid? ParentArtImageTag { get; set; }
+
+        /// <summary>
+        /// Gets or sets the series thumb image tag.
+        /// </summary>
+        /// <value>The series thumb image tag.</value>
+        public Guid? SeriesThumbImageTag { get; set; }
+
+        /// <summary>
+        /// Gets or sets the series studio.
+        /// </summary>
+        /// <value>The series studio.</value>
+        public string SeriesStudio { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the parent thumb item id.
+        /// </summary>
+        /// <value>The parent thumb item id.</value>
+        public string ParentThumbItemId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the parent thumb image tag.
+        /// </summary>
+        /// <value>The parent thumb image tag.</value>
+        public Guid? ParentThumbImageTag { get; set; }
         
         /// <summary>
         /// Gets or sets the chapters.
