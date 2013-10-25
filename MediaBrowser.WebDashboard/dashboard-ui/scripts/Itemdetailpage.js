@@ -20,9 +20,20 @@
             LibraryBrowser.renderParentName(item, $('.parentName', page));
 
             var context = getContext(item);
-            setInitialCollapsibleState(page, item, context);
-            renderDetails(page, item, context);
-            LibraryBrowser.renderDetailPageBackdrop(page, item);
+
+            Dashboard.getCurrentUser().done(function (user) {
+
+                setInitialCollapsibleState(page, item, context, user);
+                renderDetails(page, item, context);
+                LibraryBrowser.renderDetailPageBackdrop(page, item);
+
+                if (user.Configuration.IsAdministrator) {
+                    $('#editButtonContainer', page).show();
+                } else {
+                    $('#editButtonContainer', page).hide();
+                }
+
+            });
 
             if (item.LocationType == "Offline") {
 
@@ -33,7 +44,7 @@
             }
 
             var isMissingEpisode = false;
-            
+
             if (item.LocationType == "Virtual" && item.Type == "Episode") {
                 try {
                     if (item.PremiereDate && (new Date().getTime() >= parseISO8601Date(item.PremiereDate, { toLocal: true }).getTime())) {
@@ -43,7 +54,7 @@
 
                 }
             }
-            
+
             if (isMissingEpisode) {
 
                 $('#missingIndicator', page).show();
@@ -57,16 +68,6 @@
             } else {
                 $('#playButtonContainer', page).hide();
             }
-
-            Dashboard.getCurrentUser().done(function (user) {
-
-                if (user.Configuration.IsAdministrator) {
-                    $('#editButtonContainer', page).show();
-                } else {
-                    $('#editButtonContainer', page).hide();
-                }
-
-            });
 
             $(".autoNumeric").autoNumeric('init');
 
@@ -150,11 +151,11 @@
         }
     }
 
-    function setInitialCollapsibleState(page, item, context) {
+    function setInitialCollapsibleState(page, item, context, user) {
 
         if (item.ChildCount) {
             $('#childrenCollapsible', page).removeClass('hide');
-            renderChildren(page, item);
+            renderChildren(page, item, user);
         }
         else {
             $('#childrenCollapsible', page).addClass('hide');
@@ -235,7 +236,7 @@
             $('.itemCommunityRating', page).hide();
         }
 
-        if (item.Type != "Episode" && item.Type != "Movie") {
+        if (item.Type != "Episode" && item.Type != "Movie" && item.Type != "Series") {
             var premiereDateElem = $('#itemPremiereDate', page).show();
             LibraryBrowser.renderPremiereDate(premiereDateElem, item);
         } else {
@@ -445,12 +446,12 @@
             }).join(',');
         }
 
-        if (item.Studios.length) {
-            html += ' on <a class="textlink" href="itembynamedetails.html?context=' + context + '&studio=' + ApiClient.encodeName(item.Studios[0].Name) + '">' + item.Studios[0].Name + '</a>';
-        }
-
         if (item.AirTime) {
             html += ' at ' + item.AirTime;
+        }
+
+        if (item.Studios.length) {
+            html += ' on <a class="textlink" href="itembynamedetails.html?context=' + context + '&studio=' + ApiClient.encodeName(item.Studios[0].Name) + '">' + item.Studios[0].Name + '</a>';
         }
 
         if (html) {
@@ -481,17 +482,21 @@
         }
     }
 
-    function renderChildren(page, item) {
+    function renderChildren(page, item, user) {
 
         var sortBy = item.Type == "BoxSet" ? "ProductionYear,SortName" : "SortName";
 
-        ApiClient.getItems(Dashboard.getCurrentUserId(), {
-
+        var query = {
             ParentId: item.Id,
             SortBy: sortBy,
             Fields: "PrimaryImageAspectRatio,ItemCounts,DateCreated,AudioInfo"
+        };
 
-        }).done(function (result) {
+        if (item.Type == "Series" || item.Type == "Season" && !user.Configuration.DisplayVirtualEpisodes) {
+            query.ExcludeLocationTypes = "virtual";
+        }
+
+        ApiClient.getItems(Dashboard.getCurrentUserId(), query).done(function (result) {
 
             if (item.Type == "MusicAlbum") {
 

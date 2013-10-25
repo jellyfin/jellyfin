@@ -120,7 +120,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             var result = await WebSocket.ReceiveAsync(buffer, cancellationToken).ConfigureAwait(false);
 
-            if (result.CloseStatus.HasValue && result.CloseStatus.Value != WebSocketCloseStatus.Empty)
+            if (result.CloseStatus.HasValue)
             {
                 _logger.Info("Web socket connection closed by client. Reason: {0}", result.CloseStatus.Value);
                 return null;

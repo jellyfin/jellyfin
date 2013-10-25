@@ -2027,8 +2027,7 @@
 
             if (item.Genres && item.Genres.length) {
 
-                var prefix = item.Genres.length > 1 ? "Genres" : "Genre";
-                var html = prefix + ':&nbsp;&nbsp;';
+                var html = '';
 
                 for (var i = 0, length = item.Genres.length; i < length; i++) {
 

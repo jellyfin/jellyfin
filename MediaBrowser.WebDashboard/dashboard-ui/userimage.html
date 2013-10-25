@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <title> </title>
+    <title></title>
 </head>
 <body>
     <div id="userImagePage" data-role="page" class="page type-interior userProfilesConfigurationPage">
@@ -10,9 +10,10 @@
             <div class="content-primary">
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
                     <a href="#" onclick="Dashboard.navigate('edituser.html', true);" data-role="button">Profile</a>
+                    <a href="#" data-role="button" onclick="Dashboard.navigate('usersettings.html', true);">Settings</a>
                     <a href="#" data-role="button" class="ui-btn-active">Image</a>
                     <a href="#" data-role="button" onclick="Dashboard.navigate('updatepassword.html', true);">Password</a>
-                    <a href="#" data-role="button" onclick="Dashboard.navigate('library.html', true);" class="lnkMediaLibrary" style="display:none;">Media Library</a>
+                    <a href="#" data-role="button" onclick="Dashboard.navigate('library.html', true);" class="lnkMediaLibrary" style="display: none;">Media Library</a>
                 </div>
                 <div class="readOnlyContent">
                     <p id="fldImage"></p>

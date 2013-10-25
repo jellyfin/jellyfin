@@ -1,0 +1,56 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+</head>
+<body>
+    <div id="userSettingsPage" data-role="page" class="page type-interior userProfilesConfigurationPage">
+
+        <div data-role="content">
+            <div class="content-primary">
+                <div data-role="controlgroup" data-type="horizontal" class="localnav" id="userProfileNavigation" style="display: none;" data-mini="true">
+                    <a href="#" data-role="button" onclick="Dashboard.navigate('edituser.html', true);">Profile</a>
+                    <a href="#" data-role="button" class="ui-btn-active">Settings</a>
+                    <a href="#" data-role="button" onclick="Dashboard.navigate('userimage.html', true);">Image</a>
+                    <a href="#" data-role="button" onclick="Dashboard.navigate('updatepassword.html', true);">Password</a>
+                    <a href="#" data-role="button" onclick="Dashboard.navigate('library.html', true);" class="lnkMediaLibrary" style="display: none;">Media Library</a>
+                </div>
+                <form id="userSettingsForm">
+                    <ul data-role="listview" class="ulForm">
+                        <li>
+                            <input type="checkbox" id="chkDisplayVirtualEpisodes" name="chkDisplayVirtualEpisodes" />
+                            <label for="chkDisplayVirtualEpisodes">Display missing and unaired episodes within seasons</label>
+                        </li>
+                    </ul>
+                    <h2>Video Playback Settings</h2>
+                    <ul data-role="listview" class="ulForm">
+                        <li>
+                            <label for="selectAudioLanguage">Audio language preference: </label>
+                            <select name="selectAudioLanguage" id="selectAudioLanguage"></select>
+                        </li>
+                        <li>
+                            <label for="selectSubtitleLanguage">Subtitle language preference: </label>
+                            <select name="selectSubtitleLanguage" id="selectSubtitleLanguage"></select>
+                        </li>
+                        <li>
+                            <input type="checkbox" id="chkForcedSubtitlesOnly" name="chkForcedSubtitlesOnly" />
+                            <label for="chkForcedSubtitlesOnly">Display only forced subtitles</label>
+                        </li>
+                        <li>
+                            <button type="submit" data-theme="b" data-icon="ok">
+                                Save
+                            </button>
+                            <button type="button" onclick="history.back();" data-icon="delete">
+                                Cancel
+                            </button>
+                        </li>
+                    </ul>
+                </form>
+            </div>
+        </div>
+        <script type="text/javascript">
+            $('#userSettingsForm').on('submit', UserSettingsPage.onSubmit);
+        </script>
+    </div>
+</body>
+</html>
