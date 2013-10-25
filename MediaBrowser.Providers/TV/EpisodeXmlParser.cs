@@ -123,6 +123,22 @@ namespace MediaBrowser.Providers.TV
                         break;
                     }
 
+                case "EpisodeNumberEnd":
+                    {
+                        var number = reader.ReadElementContentAsString();
+
+                        if (!string.IsNullOrWhiteSpace(number))
+                        {
+                            int num;
+
+                            if (int.TryParse(number, out num))
+                            {
+                                item.IndexNumberEnd = num;
+                            }
+                        }
+                        break;
+                    }
+
                 case "EpisodeName":
                     {
                         var name = reader.ReadElementContentAsString();
