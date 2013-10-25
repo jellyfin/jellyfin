@@ -357,7 +357,10 @@ namespace MediaBrowser.Controller.Entities
         {
             var path = Path;
 
-            if (LocationType == LocationType.Remote || LocationType == LocationType.Virtual)
+            var locationType = LocationType;
+
+            if (locationType == LocationType.Remote ||
+                locationType == LocationType.Virtual)
             {
                 return new ItemResolveArgs(ConfigurationManager.ApplicationPaths, LibraryManager);
             }
@@ -1499,7 +1502,7 @@ namespace MediaBrowser.Controller.Entities
                 BackdropImagePaths.Remove(file);
 
                 RemoveImageSourceForPath(file);
-                
+
                 // Delete the source file
                 DeleteImagePath(file);
             }
@@ -1718,6 +1721,14 @@ namespace MediaBrowser.Controller.Entities
             if (string.IsNullOrEmpty(imagePath))
             {
                 throw new ArgumentNullException("imagePath");
+            }
+
+            var locationType = LocationType;
+
+            if (locationType == LocationType.Remote ||
+                locationType == LocationType.Virtual)
+            {
+                return File.GetLastWriteTimeUtc(imagePath);
             }
 
             var metaFileEntry = ResolveArgs.GetMetaFileByPath(imagePath);

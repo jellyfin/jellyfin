@@ -211,17 +211,6 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableVideoImageExtraction { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [create virtual missing episodes].
-        /// </summary>
-        /// <value><c>true</c> if [create virtual missing episodes]; otherwise, <c>false</c>.</value>
-        public bool CreateVirtualMissingEpisodes { get; set; }
-        /// <summary>
-        /// Gets or sets a value indicating whether [create virtual future episodes].
-        /// </summary>
-        /// <value><c>true</c> if [create virtual future episodes]; otherwise, <c>false</c>.</value>
-        public bool CreateVirtualFutureEpisodes { get; set; }
-
-        /// <summary>
         /// Gets or sets the image saving convention.
         /// </summary>
         /// <value>The image saving convention.</value>
