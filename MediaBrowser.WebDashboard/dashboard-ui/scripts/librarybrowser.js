@@ -79,7 +79,7 @@
 
                     if (year != currentIndexValue) {
 
-                        html += '<h2 class="timelineHeader">' + year + '</h2>';
+                        html += '<h2 class="timelineHeader detailSectionHeader">' + year + '</h2>';
                         currentIndexValue = year;
                     }
                 }
@@ -684,7 +684,7 @@
 
                     if (val != currentIndexValue) {
 
-                        html += '<h2 class="timelineHeader">' + val + '</h2>';
+                        html += '<h2 class="timelineHeader detailSectionHeader" style="text-align:center;">' + val + '</h2>';
                         currentIndexValue = val;
                     }
                 }
