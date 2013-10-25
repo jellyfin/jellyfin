@@ -390,7 +390,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
             {
                 if (!File.Exists(outputPath))
                 {
-                    await ConvertTextSubtitleToAssInternal(inputPath, outputPath, language, offset, cancellationToken).ConfigureAwait(false);
+                    await ConvertTextSubtitleToAssInternal(inputPath, outputPath, language, offset).ConfigureAwait(false);
                 }
             }
             finally
@@ -399,6 +399,8 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
             }
         }
 
+        private const int FastSeekOffsetSeconds = 1;
+
         /// <summary>
         /// Converts the text subtitle to ass.
         /// </summary>
@@ -406,14 +408,12 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// <param name="outputPath">The output path.</param>
         /// <param name="language">The language.</param>
         /// <param name="offset">The offset.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">inputPath
         /// or
         /// outputPath</exception>
         /// <exception cref="System.ApplicationException"></exception>
-        private async Task ConvertTextSubtitleToAssInternal(string inputPath, string outputPath, string language, TimeSpan offset,
-                                                   CancellationToken cancellationToken)
+        private async Task ConvertTextSubtitleToAssInternal(string inputPath, string outputPath, string language, TimeSpan offset)
         {
             if (string.IsNullOrEmpty(inputPath))
             {
@@ -425,7 +425,8 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                 throw new ArgumentNullException("outputPath");
             }
 
-            var slowSeekParam = offset.TotalSeconds > 0 ? " -ss " + offset.TotalSeconds.ToString(UsCulture) : string.Empty;
+            var slowSeekParam = GetSlowSeekCommandLineParameter(offset);
+            var fastSeekParam = GetFastSeekCommandLineParameter(offset);
 
             var encodingParam = string.IsNullOrEmpty(language) ? string.Empty :
                 GetSubtitleLanguageEncodingParam(language) + " ";
@@ -441,8 +442,13 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                             UseShellExecute = false,
                             FileName = FFMpegPath,
                             Arguments =
-                                string.Format("{0}-i \"{1}\"{2} \"{3}\"", encodingParam, inputPath, slowSeekParam,
-                                              outputPath),
+                                string.Format("{0}{1}-i \"{2}\"{3} \"{4}\"", 
+                                fastSeekParam, 
+                                encodingParam, 
+                                inputPath, 
+                                slowSeekParam,
+                                outputPath),
+
                             WindowStyle = ProcessWindowStyle.Hidden,
                             ErrorDialog = false
                         }
@@ -533,6 +539,28 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
             await SetAssFont(outputPath).ConfigureAwait(false);
         }
 
+        protected string GetFastSeekCommandLineParameter(TimeSpan offset)
+        {
+            var seconds = offset.TotalSeconds - FastSeekOffsetSeconds;
+
+            if (seconds > 0)
+            {
+                return string.Format("-ss {0} ", seconds.ToString(UsCulture));
+            }
+
+            return string.Empty;
+        }
+
+        protected string GetSlowSeekCommandLineParameter(TimeSpan offset)
+        {
+            if (offset.TotalSeconds - FastSeekOffsetSeconds > 0)
+            {
+                return string.Format(" -ss {0}", FastSeekOffsetSeconds.ToString(UsCulture));
+            }
+
+            return string.Empty;
+        }
+        
         /// <summary>
         /// Gets the subtitle language encoding param.
         /// </summary>
