@@ -66,18 +66,20 @@ namespace MediaBrowser.Server.Implementations.Session
         public event EventHandler<PlaybackProgressEventArgs> PlaybackStopped;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SessionManager"/> class.
+        /// Initializes a new instance of the <see cref="SessionManager" /> class.
         /// </summary>
         /// <param name="userDataRepository">The user data repository.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="userRepository">The user repository.</param>
-        public SessionManager(IUserDataManager userDataRepository, IServerConfigurationManager configurationManager, ILogger logger, IUserRepository userRepository)
+        /// <param name="libraryManager">The library manager.</param>
+        public SessionManager(IUserDataManager userDataRepository, IServerConfigurationManager configurationManager, ILogger logger, IUserRepository userRepository, ILibraryManager libraryManager)
         {
             _userDataRepository = userDataRepository;
             _configurationManager = configurationManager;
             _logger = logger;
             _userRepository = userRepository;
+            _libraryManager = libraryManager;
         }
 
         /// <summary>
