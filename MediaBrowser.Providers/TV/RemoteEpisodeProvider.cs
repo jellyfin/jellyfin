@@ -119,10 +119,16 @@ namespace MediaBrowser.Providers.TV
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
         {
-            // Don't proceed if there's local metadata
-            if (!ConfigurationManager.Configuration.EnableTvDbUpdates && HasLocalMeta(item))
+            var locationType = item.LocationType;
+
+            // Always use tvdb updates for non-file system episodes
+            if (locationType != LocationType.Remote && locationType != LocationType.Virtual)
             {
-                return false;
+                // Don't proceed if there's local metadata
+                if (!ConfigurationManager.Configuration.EnableTvDbUpdates && HasLocalMeta(item))
+                {
+                    return false;
+                }
             }
 
             return base.NeedsRefreshInternal(item, providerInfo);
