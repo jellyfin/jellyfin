@@ -399,6 +399,12 @@ namespace MediaBrowser.Api.Playback
         /// <returns>System.String.</returns>
         private string GetConvertedAssPath(Video video, MediaStream subtitleStream, long? startTimeTicks, bool performConversion)
         {
+            // If it's already ass, no conversion neccessary
+            //if (string.Equals(Path.GetExtension(subtitleStream.Path), ".ass", StringComparison.OrdinalIgnoreCase))
+            //{
+            //    return subtitleStream.Path;
+            //}
+
             var offset = TimeSpan.FromTicks(startTimeTicks ?? 0);
 
             var path = Kernel.Instance.FFMpegManager.GetSubtitleCachePath(video, subtitleStream.Index, offset, ".ass");

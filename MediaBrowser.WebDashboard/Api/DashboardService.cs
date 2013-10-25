@@ -516,6 +516,7 @@ namespace MediaBrowser.WebDashboard.Api
                                       "updatepasswordpage.js",
                                       "userimagepage.js",
                                       "userprofilespage.js",
+                                      "usersettings.js",
                                       "wizardfinishpage.js",
                                       "wizardservice.js",
                                       "wizardstartpage.js",
