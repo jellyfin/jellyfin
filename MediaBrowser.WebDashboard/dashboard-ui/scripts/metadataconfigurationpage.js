@@ -43,6 +43,7 @@
         $('#selectCountry', page).val(config.MetadataCountryCode).selectmenu("refresh");
         $('#chkEnableInternetProviders', page).checked(config.EnableInternetProviders).checkboxradio("refresh");
         $('#chkEnableTmdbPersonUpdates', page).checked(config.EnableTmdbUpdates).checkboxradio("refresh");
+        $('#chkEnableTvdbUpdates', page).checked(config.EnableTvDbUpdates).checkboxradio("refresh");
 
         Dashboard.hideLoadingMsg();
     },
@@ -91,6 +92,7 @@
             config.SaveLocalMeta = $('#chkSaveLocal', form).checked();
             config.PreferredMetadataLanguage = $('#selectLanguage', form).val();
             config.MetadataCountryCode = $('#selectCountry', form).val();
+            config.EnableTvDbUpdates = $('#chkEnableTvdbUpdates', form).checked();
 
             ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
         });

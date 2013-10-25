@@ -142,12 +142,9 @@ namespace MediaBrowser.Providers.TV
 
             var hasNewEpisodes = false;
 
-            if (_config.Configuration.CreateVirtualMissingEpisodes || _config.Configuration.CreateVirtualFutureEpisodes)
+            if (_config.Configuration.EnableInternetProviders)
             {
-                if (_config.Configuration.EnableInternetProviders)
-                {
-                    hasNewEpisodes = await AddMissingEpisodes(series, seriesDataPath, episodeLookup, cancellationToken).ConfigureAwait(false);
-                }
+                hasNewEpisodes = await AddMissingEpisodes(series, seriesDataPath, episodeLookup, cancellationToken).ConfigureAwait(false);
             }
 
             if (hasNewEpisodes || anySeasonsRemoved || anyEpisodesRemoved)
@@ -202,7 +199,7 @@ namespace MediaBrowser.Providers.TV
                 }
                 var now = DateTime.UtcNow;
 
-                if (airDate.Value < now && _config.Configuration.CreateVirtualMissingEpisodes)
+                if (airDate.Value < now)
                 {
                     // tvdb has a lot of nearly blank episodes
                     _logger.Info("Creating virtual missing episode {0} {1}x{2}", series.Name, tuple.Item1, tuple.Item2);
@@ -211,7 +208,7 @@ namespace MediaBrowser.Providers.TV
 
                     hasChanges = true;
                 }
-                else if (airDate.Value > now && _config.Configuration.CreateVirtualFutureEpisodes)
+                else if (airDate.Value > now)
                 {
                     // tvdb has a lot of nearly blank episodes
                     _logger.Info("Creating virtual future episode {0} {1}x{2}", series.Name, tuple.Item1, tuple.Item2);

@@ -47,7 +47,7 @@
         if (item.Type == "Episode" && item.LocationType == "Virtual") {
 
             try {
-                if (item.PremiereDate && (new Date().getTime() >= parseISO8601Date(item.PremiereDate).getTime())) {
+                if (item.PremiereDate && (new Date().getTime() >= parseISO8601Date(item.PremiereDate, { toLocal: true }).getTime())) {
                     htmlName += '<img src="css/images/editor/missing.png" title="Missing episode." />';
                 }
             } catch (err) {

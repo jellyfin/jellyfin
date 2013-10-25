@@ -36,7 +36,7 @@
             
             if (item.LocationType == "Virtual" && item.Type == "Episode") {
                 try {
-                    if (item.PremiereDate && (new Date().getTime() >= parseISO8601Date(item.PremiereDate).getTime())) {
+                    if (item.PremiereDate && (new Date().getTime() >= parseISO8601Date(item.PremiereDate, { toLocal: true }).getTime())) {
                         isMissingEpisode = true;
                     }
                 } catch (err) {
@@ -610,7 +610,7 @@
 
                 try {
 
-                    var date = parseISO8601Date(review.Date, true).toLocaleDateString();
+                    var date = parseISO8601Date(review.Date, { toLocal: true }).toLocaleDateString();
 
                     html += '<span class="reviewDate">' + date + '</span>';
                 }

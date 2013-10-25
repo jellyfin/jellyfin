@@ -796,7 +796,7 @@ namespace MediaBrowser.Controller.Entities
 
             foreach (var tuple in list)
             {
-                if (tasks.Count > 5)
+                if (tasks.Count > 7)
                 {
                     await Task.WhenAll(tasks).ConfigureAwait(false);
                 }
@@ -1347,7 +1347,12 @@ namespace MediaBrowser.Controller.Entities
 
             try
             {
-                if (ResolveArgs.PhysicalLocations.Contains(path, StringComparer.OrdinalIgnoreCase))
+                if (LocationType == LocationType.Remote && string.Equals(Path, path, StringComparison.OrdinalIgnoreCase))
+                {
+                    return this;
+                }
+                
+                if (LocationType != LocationType.Virtual && ResolveArgs.PhysicalLocations.Contains(path, StringComparer.OrdinalIgnoreCase))
                 {
                     return this;
                 }
@@ -1358,8 +1363,13 @@ namespace MediaBrowser.Controller.Entities
             }
 
             //this should be functionally equivilent to what was here since it is IEnum and works on a thread-safe copy
-            return RecursiveChildren.FirstOrDefault(i =>
+            return RecursiveChildren.Where(i => i.LocationType != LocationType.Virtual).FirstOrDefault(i =>
             {
+                if (i.LocationType == LocationType.Remote)
+                {
+                    return string.Equals(i.Path, path, StringComparison.OrdinalIgnoreCase);
+                }
+
                 try
                 {
                     return i.ResolveArgs.PhysicalLocations.Contains(path, StringComparer.OrdinalIgnoreCase);

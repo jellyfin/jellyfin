@@ -671,7 +671,7 @@
                 if (item.PremiereDate) {
                     try {
 
-                        futureDateText = LibraryBrowser.getFutureDateText(parseISO8601Date(item.PremiereDate), true);
+                        futureDateText = LibraryBrowser.getFutureDateText(parseISO8601Date(item.PremiereDate, { toLocal: true }), true);
 
                     } catch (err) {
 
@@ -884,7 +884,7 @@
 
                     try {
 
-                        var date = parseISO8601Date(item.PremiereDate);
+                        var date = parseISO8601Date(item.PremiereDate, { toLocal: true });
 
                         html += "<div class='posterItemText'>";
                         html += LibraryBrowser.getPremiereDateText(item, date);
@@ -1020,7 +1020,10 @@
             }
 
             try {
-                if (item.PremiereDate && (new Date().getTime() < parseISO8601Date(item.PremiereDate).getTime())) {
+
+                var date = parseISO8601Date(item.PremiereDate, { toLocal: true });
+
+                if (item.PremiereDate && (new Date().getTime() < date.getTime())) {
                     return '<div class="posterRibbon unairedPosterRibbon">Unaired</div>';
                 }
             } catch (err) {
@@ -1051,7 +1054,10 @@
 
                 if (!isPlayed) {
                     try {
-                        if (date && (new Date().getTime() - parseISO8601Date(date).getTime()) < 604800000) {
+
+                        var parsedDate = parseISO8601Date(item.PremiereDate, { toLocal: true });
+
+                        if (date && (new Date().getTime() - parsedDate.getTime()) < 604800000) {
                             return "<div class='posterRibbon'>New</div>";
                         }
                     } catch (err) {

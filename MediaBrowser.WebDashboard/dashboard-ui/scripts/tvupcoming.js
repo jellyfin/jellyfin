@@ -11,7 +11,7 @@
             SortBy: "PremiereDate,AirTime",
             SortOrder: "Ascending",
             IncludeItemTypes: "Episode",
-            Limit: 40,
+            Limit: 30,
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,SeriesInfo,UserData",
             HasPremiereDate: true,
@@ -21,7 +21,7 @@
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
 
             if (!result.Items.length) {
-                $('#upcomingItems', page).html("Nothing here. To utilize this feature, please enable future episodes in the dashboard metadata configuration.");
+                $('#upcomingItems', page).html("<p>Nothing here. Please ensure <a href='metadata.html'>downloading of internet metadata</a> is enabled.</p>").trigger('create');
                 return;
             }
             $('#upcomingItems', page).html(LibraryBrowser.getPosterViewHtml({
