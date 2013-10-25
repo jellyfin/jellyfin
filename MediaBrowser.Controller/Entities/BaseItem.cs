@@ -1530,7 +1530,8 @@ namespace MediaBrowser.Controller.Entities
             }
 
             // Refresh metadata
-            return RefreshMetadata(CancellationToken.None, forceSave: true);
+            // Need to disable slow providers or the image might get re-downloaded
+            return RefreshMetadata(CancellationToken.None, forceSave: true, allowSlowProviders: false);
         }
 
         /// <summary>

@@ -884,10 +884,10 @@
 
                     try {
 
-                        var date = parseISO8601Date(item.PremiereDate, { toLocal: true });
+                        //var date = parseISO8601Date(item.PremiereDate, { toLocal: true });
 
                         html += "<div class='posterItemText'>";
-                        html += LibraryBrowser.getPremiereDateText(item, date);
+                        html += LibraryBrowser.getPremiereDateText(item);
                         html += "</div>";
 
                     } catch (err) {
@@ -970,6 +970,26 @@
 
         getPremiereDateText: function (item, date) {
 
+            if (!date) {
+
+                var text = '';
+                
+                if (item.AirTime) {
+                    text += item.AirTime;
+                }
+
+                if (item.SeriesStudio) {
+                    
+                    if (text) {
+                        text += " on " + item.SeriesStudio;
+                    } else {
+                        text += item.SeriesStudio;
+                    }
+                }
+
+                return text;
+            }
+            
             var day = LibraryBrowser.getFutureDateText(date);
 
             if (item.AirTime) {

@@ -211,7 +211,7 @@ namespace MediaBrowser.Providers.TV
                 else if (airDate.Value > now)
                 {
                     // tvdb has a lot of nearly blank episodes
-                    _logger.Info("Creating virtual future episode {0} {1}x{2}", series.Name, tuple.Item1, tuple.Item2);
+                    _logger.Info("Creating virtual unaired episode {0} {1}x{2}", series.Name, tuple.Item1, tuple.Item2);
 
                     await AddEpisode(series, tuple.Item1, tuple.Item2, cancellationToken).ConfigureAwait(false);
 

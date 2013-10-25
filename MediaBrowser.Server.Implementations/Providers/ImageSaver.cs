@@ -67,30 +67,20 @@ namespace MediaBrowser.Server.Implementations.Providers
                 throw new ArgumentNullException("mimeType");
             }
 
-            var saveLocally = _config.Configuration.SaveLocalMeta;
+            var saveLocally = _config.Configuration.SaveLocalMeta || item is IItemByName || item is User;
 
-            if (item is IItemByName)
-            {
-                saveLocally = true;
-            }
-            else if (item is User)
-            {
-                saveLocally = true;
-            }
-            else if (item is Audio || item.Parent == null || string.IsNullOrEmpty(item.MetaLocation))
+            if (item is Audio || item.Parent == null)
             {
                 saveLocally = false;
             }
 
-            if (type != ImageType.Primary)
+            if (type != ImageType.Primary && item is Episode)
             {
-                if (item is Episode)
-                {
-                    saveLocally = false;
-                }
+                saveLocally = false;
             }
 
-            if (item.LocationType == LocationType.Remote || item.LocationType == LocationType.Virtual)
+            var locationType = item.LocationType;
+            if (locationType == LocationType.Remote || locationType == LocationType.Virtual)
             {
                 saveLocally = false;
             }
@@ -373,7 +363,7 @@ namespace MediaBrowser.Server.Implementations.Providers
                     path = GetSavePathForItemInMixedFolder(item, type, filename, extension);
                 }
 
-                if (string.IsNullOrEmpty(path) && !string.IsNullOrEmpty(item.MetaLocation))
+                if (string.IsNullOrEmpty(path))
                 {
                     path = Path.Combine(item.MetaLocation, filename + extension);
                 }
