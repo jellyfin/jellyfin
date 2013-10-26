@@ -240,17 +240,16 @@ namespace MediaBrowser.Providers.TV
         {
             cancellationToken.ThrowIfCancellationRequested();
 
+            var status = ProviderRefreshStatus.Success;
+
             var episode = (Episode)item;
 
             var seriesId = episode.Series != null ? episode.Series.GetProviderId(MetadataProviders.Tvdb) : null;
 
             if (!string.IsNullOrEmpty(seriesId))
             {
-                var seriesDataPath = RemoteSeriesProvider.GetSeriesDataPath(ConfigurationManager.ApplicationPaths,
-                                                                            seriesId);
+                var seriesDataPath = RemoteSeriesProvider.GetSeriesDataPath(ConfigurationManager.ApplicationPaths, seriesId);
 
-                var status = ProviderRefreshStatus.Success;
-                
                 try
                 {
                     status = await FetchEpisodeData(episode, seriesDataPath, cancellationToken).ConfigureAwait(false);
@@ -259,20 +258,10 @@ namespace MediaBrowser.Providers.TV
                 {
                     // Don't fail the provider because this will just keep on going and going.
                 }
-
-                BaseProviderInfo data;
-                if (!item.ProviderData.TryGetValue(Id, out data))
-                {
-                    data = new BaseProviderInfo();
-                    item.ProviderData[Id] = data;
-                }
-
-                SetLastRefreshed(item, DateTime.UtcNow, status);
-                return true;
             }
 
-            Logger.Info("Episode provider not fetching because series does not have a tvdb id: " + item.Path);
-            return false;
+            SetLastRefreshed(item, DateTime.UtcNow, status);
+            return true;
         }
 
 

@@ -1,10 +1,9 @@
-﻿using System.Collections;
-using System.Globalization;
-using MediaBrowser.Controller.Dto;
+﻿using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using ServiceStack.ServiceHost;
 using System;
@@ -48,18 +47,9 @@ namespace MediaBrowser.Api
         [ApiMember(Name = "Fields", Description = "Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: Budget, Chapters, CriticRatingSummary, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, OverviewHtml, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines, TrailerUrls", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string Fields { get; set; }
 
-        [ApiMember(Name = "ExcludeLocationTypes", Description = "Optional. If specified, results will be filtered based on LocationType. This allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
-        public string ExcludeLocationTypes { get; set; }
+        [ApiMember(Name = "SeriesId", Description = "Optional. Filter by series id", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string SeriesId { get; set; }
 
-        [ApiMember(Name = "MinPremiereDate", Description = "Optional. The minimum premiere date. Format = yyyyMMddHHmmss", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public string MinPremiereDate { get; set; }
-
-        [ApiMember(Name = "MaxPremiereDate", Description = "Optional. The maximum premiere date. Format = yyyyMMddHHmmss", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public string MaxPremiereDate { get; set; }
-
-        [ApiMember(Name = "HasPremiereDate", Description = "Optional filter by items with premiere dates.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public bool? HasPremiereDate { get; set; }
-        
         /// <summary>
         /// Gets the item fields.
         /// </summary>
@@ -170,10 +160,15 @@ namespace MediaBrowser.Api
         {
             var user = _userManager.GetUserById(request.UserId);
 
-            var itemsList = user.RootFolder
-                .GetRecursiveChildren(user, i => i is Series)
+            var items = user.RootFolder
+                .GetRecursiveChildren(user)
+                .OfType<Series>();
+
+            items = FilterSeries(request, items);
+
+            var itemsList = items
                 .AsParallel()
-                .Select(i => GetNextUp((Series)i, user, request))
+                .Select(i => GetNextUp(i, user, request))
                 .ToList();
 
             itemsList = itemsList
@@ -264,35 +259,19 @@ namespace MediaBrowser.Api
 
         private IEnumerable<Episode> FilterItems(GetNextUpEpisodes request, IEnumerable<Episode> items)
         {
-            // ExcludeLocationTypes
-            if (!string.IsNullOrEmpty(request.ExcludeLocationTypes))
+            // Make this configurable when needed
+            items = items.Where(i => i.LocationType != LocationType.Virtual);
+
+            return items;
+        }
+
+        private IEnumerable<Series> FilterSeries(GetNextUpEpisodes request, IEnumerable<Series> items)
+        {
+            if (!string.IsNullOrWhiteSpace(request.SeriesId))
             {
-                var vals = request.ExcludeLocationTypes.Split(',');
+                var id = new Guid(request.SeriesId);
 
-                items = items
-                    .Where(f => !vals.Contains(f.LocationType.ToString(), StringComparer.OrdinalIgnoreCase))
-                    .ToList();
-            }
-            
-            if (!string.IsNullOrEmpty(request.MinPremiereDate))
-            {
-                var date = DateTime.ParseExact(request.MinPremiereDate, "yyyyMMddHHmmss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
-
-                items = items.Where(i => !i.PremiereDate.HasValue || i.PremiereDate.Value >= date);
-            }
-
-            if (!string.IsNullOrEmpty(request.MaxPremiereDate))
-            {
-                var date = DateTime.ParseExact(request.MaxPremiereDate, "yyyyMMddHHmmss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
-
-                items = items.Where(i => !i.PremiereDate.HasValue || i.PremiereDate.Value <= date);
-            }
-
-            if (request.HasPremiereDate.HasValue)
-            {
-                var val = request.HasPremiereDate.Value;
-
-                items = items.Where(i => i.PremiereDate.HasValue == val);
+                items = items.Where(i => i.Id == id);
             }
 
             return items;

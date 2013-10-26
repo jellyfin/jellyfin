@@ -56,8 +56,9 @@ namespace MediaBrowser.Model.Configuration
 
         public bool IsDisabled { get; set; }
 
-        public bool DisplayVirtualEpisodes { get; set; }
-        
+        public bool DisplayMissingEpisodes { get; set; }
+        public bool DisplayUnairedEpisodes { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="UserConfiguration" /> class.
         /// </summary>
@@ -65,7 +66,6 @@ namespace MediaBrowser.Model.Configuration
         {
             IsAdministrator = true;
             BlockNotRated = false;
-            DisplayVirtualEpisodes = true;
         }
     }
 }
