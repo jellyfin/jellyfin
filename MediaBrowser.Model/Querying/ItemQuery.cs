@@ -254,6 +254,8 @@ namespace MediaBrowser.Model.Querying
         /// <value><c>null</c> if [is unaired episode] contains no value, <c>true</c> if [is unaired episode]; otherwise, <c>false</c>.</value>
         public bool? IsUnaired { get; set; }
 
+        public bool? IsVirtualUnaired { get; set; }
+        
         /// <summary>
         /// Gets or sets the exclude location types.
         /// </summary>

@@ -193,6 +193,9 @@ namespace MediaBrowser.Api.UserLibrary
 
         [ApiMember(Name = "IsUnaired", Description = "Optional filter by items that are unaired episodes or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool? IsUnaired { get; set; }
+
+        [ApiMember(Name = "IsVirtualUnaired", Description = "Optional filter by items that are virtual unaired episodes or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool? IsVirtualUnaired { get; set; }
     }
 
     /// <summary>
@@ -470,6 +473,20 @@ namespace MediaBrowser.Api.UserLibrary
                 });
             }
 
+            if (request.IsVirtualUnaired.HasValue)
+            {
+                var val = request.IsVirtualUnaired.Value;
+                items = items.Where(i =>
+                {
+                    var e = i as Episode;
+                    if (e != null)
+                    {
+                        return e.IsVirtualUnaired == val;
+                    }
+                    return true;
+                });
+            }
+
             return items;
         }
 
@@ -487,7 +504,7 @@ namespace MediaBrowser.Api.UserLibrary
                         var e = i as Season;
                         if (e != null)
                         {
-                            return !e.IsMissingOrUnaired;
+                            return !e.IsMissingOrVirtualUnaired;
                         }
                         return true;
                     });
@@ -517,6 +534,20 @@ namespace MediaBrowser.Api.UserLibrary
                     if (e != null)
                     {
                         return e.IsUnaired == val;
+                    }
+                    return true;
+                });
+            }
+
+            if (request.IsVirtualUnaired.HasValue)
+            {
+                var val = request.IsVirtualUnaired.Value;
+                items = items.Where(i =>
+                {
+                    var e = i as Season;
+                    if (e != null)
+                    {
+                        return e.IsVirtualUnaired == val;
                     }
                     return true;
                 });

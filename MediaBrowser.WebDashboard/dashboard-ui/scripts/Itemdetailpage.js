@@ -497,7 +497,7 @@
                 query.IsMissing = false;
             }
             if (!user.Configuration.DisplayUnairedEpisodes) {
-                query.IsUnaired = false;
+                query.IsVirtualUnaired = false;
             }
         }
 

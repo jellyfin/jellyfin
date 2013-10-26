@@ -156,12 +156,17 @@ namespace MediaBrowser.Controller.Entities.TV
 
         public bool IsUnaired
         {
-            get { return LocationType == Model.Entities.LocationType.Virtual && Children.OfType<Episode>().All(i => i.IsUnaired); }
+            get { return Children.OfType<Episode>().All(i => i.IsUnaired); }
         }
 
-        public bool IsMissingOrUnaired
+        public bool IsVirtualUnaired
         {
-            get { return LocationType == Model.Entities.LocationType.Virtual && Children.OfType<Episode>().All(i => i.IsUnaired || i.IsMissingEpisode); }
+            get { return LocationType == Model.Entities.LocationType.Virtual && IsUnaired; }
+        }
+
+        public bool IsMissingOrVirtualUnaired
+        {
+            get { return LocationType == Model.Entities.LocationType.Virtual && Children.OfType<Episode>().All(i => i.IsVirtualUnaired || i.IsMissingEpisode); }
         }
     }
 }
