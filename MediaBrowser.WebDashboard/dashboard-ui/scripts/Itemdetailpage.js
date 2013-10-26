@@ -64,9 +64,22 @@
             }
 
             if (MediaPlayer.canPlay(item) && item.LocationType !== "Offline" && item.LocationType !== "Virtual") {
-                $('#playButtonContainer', page).show();
+
+                var url = MediaPlayer.getPlayUrl(item);
+
+                if (url) {
+                    $('#playExternalButtonContainer', page).show();
+                    $('#playButtonContainer', page).hide();
+                } else {
+                    $('#playButtonContainer', page).show();
+                    $('#playExternalButtonContainer', page).hide();
+                }
+                
+                $('#btnPlayExternal', page).attr('href', url || '#');
+
             } else {
                 $('#playButtonContainer', page).hide();
+                $('#playExternalButtonContainer', page).hide();
             }
 
             $(".autoNumeric").autoNumeric('init');

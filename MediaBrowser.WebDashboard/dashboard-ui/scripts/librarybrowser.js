@@ -1278,9 +1278,19 @@
                 links.push('<a class="textlink" href="http://musicbrainz.org/release-group/' + providerIds.MusicBrainzReleaseGroup + '" target="_blank">MusicBrainz Release Group</a>');
 
             }
-            if (providerIds.Gamesdb)
+            if (providerIds.Gamesdb) {
                 links.push('<a class="textlink" href="http://thegamesdb.net/game/' + providerIds.Gamesdb + '" target="_blank">GamesDB</a>');
+            }
 
+            if (providerIds.NesBox) {
+                
+                if (item.GameSystem == "Nintendo") {
+                    links.push('<a class="textlink" href="http://nesbox.com/game/' + providerIds.NesBox + '" target="_blank">NESbox</a>');
+                }
+                else if (item.GameSystem == "Super Nintendo") {
+                    links.push('<a class="textlink" href="http://snesbox.com/game/' + providerIds.NesBox + '" target="_blank">SNESbox</a>');
+                }
+            }
 
             if (providerIds.Zap2It)
                 links.push('<a class="textlink" href="http://tvlistings.zap2it.com/tv/dexter/' + providerIds.Zap2It + '?aid=zap2it" target="_blank">Zap2It</a>');

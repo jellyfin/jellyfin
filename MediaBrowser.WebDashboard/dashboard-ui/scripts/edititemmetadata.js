@@ -425,6 +425,14 @@
             $('#fldGamesDb', page).hide();
         }
 
+        if (item.MediaType == "Game" && (item.GameSystem == "Nintendo" || item.GameSystem == "Super Nintendo")) {
+            $('#fldNesBoxName', page).show();
+            $('#fldNesBoxRom', page).show();
+        } else {
+            $('#fldNesBoxName', page).hide();
+            $('#fldNesBoxRom', page).hide();
+        }
+
         if (item.MediaType == "Game") {
             $('#fldPlayers', page).show();
         } else {
@@ -714,6 +722,8 @@
         $('#txtMusicBrainzReleaseGroupId', page).val(providerIds.MusicBrainzReleaseGroup || "");
         $('#txtRottenTomatoes', page).val(providerIds.RottenTomatoes || "");
         $('#txtZap2It', page).val(providerIds.Zap2It || "");
+        $('#txtNesBoxName', page).val(providerIds.NesBox || "");
+        $('#txtNesBoxRom', page).val(providerIds.NesBoxRom || "");
 
         if (item.RunTimeTicks) {
 
@@ -951,7 +961,9 @@
                     Musicbrainz: $('#txtMusicBrainz', form).val(),
                     MusicBrainzReleaseGroup: $('#txtMusicBrainzReleaseGroupId', form).val(),
                     RottenTomatoes: $('#txtRottenTomatoes', form).val(),
-                    Zap2It: $('#txtZap2It', form).val()
+                    Zap2It: $('#txtZap2It', form).val(),
+                    NesBox: $('#txtNesBoxName', form).val(),
+                    NesBoxRom: $('#txtNesBoxRom', form).val()
                 }
             };
 
@@ -1049,6 +1061,35 @@
                 $('#btnOpenGamesDb', page).attr('href', 'http://thegamesdb.net/game/' + val);
             } else {
                 $('#btnOpenGamesDb', page).attr('href', '#');
+            }
+
+        });
+
+        $('#txtNesBoxName', this).on('change', function () {
+
+            var val = this.value;
+            var urlPrefix = currentItem.GameSystem == "Nintendo" ? "http://nesbox.com/game/" : "http://snesbox.com/game/";
+
+            if (val) {
+
+                $('#btnOpenNesBox', page).attr('href', urlPrefix + val);
+            } else {
+                $('#btnOpenNesBox', page).attr('href', '#');
+            }
+
+        });
+
+        $('#txtNesBoxRom', this).on('change', function () {
+
+            var val = this.value;
+            var romName = $('#txtNesBoxName', page).val();
+            var urlPrefix = currentItem.GameSystem == "Nintendo" ? "http://nesbox.com/game/" : "http://snesbox.com/game/";
+
+            if (val && romName) {
+
+                $('#btnOpenNesBoxRom', page).attr('href', urlPrefix + romName + '/rom/' + val);
+            } else {
+                $('#btnOpenNesBoxRom', page).attr('href', '#');
             }
 
         });
