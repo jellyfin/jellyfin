@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
@@ -11,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -373,11 +373,19 @@ namespace MediaBrowser.Providers.TV
             {
                 if (string.Equals(type, "poster", StringComparison.OrdinalIgnoreCase))
                 {
-                    data.Poster = url;
+                    // Just grab the first
+                    if (string.IsNullOrWhiteSpace(data.Poster))
+                    {
+                        data.Poster = url;
+                    }
                 }
                 else if (string.Equals(type, "series", StringComparison.OrdinalIgnoreCase))
                 {
-                    data.Banner = url;
+                    // Just grab the first
+                    if (string.IsNullOrWhiteSpace(data.Banner))
+                    {
+                        data.Banner = url;
+                    }
                 }
                 else if (string.Equals(type, "fanart", StringComparison.OrdinalIgnoreCase))
                 {

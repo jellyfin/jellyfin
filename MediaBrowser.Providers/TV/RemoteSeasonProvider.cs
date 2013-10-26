@@ -325,11 +325,19 @@ namespace MediaBrowser.Providers.TV
                 {
                     if (string.Equals(bannerType2, "season", StringComparison.OrdinalIgnoreCase))
                     {
-                        data.Poster = url;
+                        // Just grab the first
+                        if (string.IsNullOrWhiteSpace(data.Poster))
+                        {
+                            data.Poster = url;
+                        }
                     }
                     else if (string.Equals(bannerType2, "seasonwide", StringComparison.OrdinalIgnoreCase))
                     {
-                        data.Banner = url;
+                        // Just grab the first
+                        if (string.IsNullOrWhiteSpace(data.Banner))
+                        {
+                            data.Banner = url;
+                        }
                     }
                 }
                 else if (string.Equals(bannerType, "fanart", StringComparison.OrdinalIgnoreCase))
