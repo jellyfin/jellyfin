@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using MediaBrowser.Controller.Dto;
+﻿using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
@@ -181,22 +180,19 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "IsHD", Description = "Optional filter by items that are HD or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool? IsHD { get; set; }
 
-        [ApiMember(Name = "ExcludeLocationTypes", Description = "Optional. If specified, results will be filtered based on LocationType. This allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
-        public string ExcludeLocationTypes { get; set; }
-
         [ApiMember(Name = "LocationTypes", Description = "Optional. If specified, results will be filtered based on LocationType. This allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string LocationTypes { get; set; }
 
-        [ApiMember(Name = "MinPremiereDate", Description = "Optional. The minimum premiere date. Format = yyyyMMddHHmmss", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public string MinPremiereDate { get; set; }
-
-        [ApiMember(Name = "MaxPremiereDate", Description = "Optional. The maximum premiere date. Format = yyyyMMddHHmmss", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public string MaxPremiereDate { get; set; }
-
-        [ApiMember(Name = "HasPremiereDate", Description = "Optional filter by items with premiere dates.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public bool? HasPremiereDate { get; set; }
+        [ApiMember(Name = "ExcludeLocationTypes", Description = "Optional. If specified, results will be filtered based on LocationType. This allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string ExcludeLocationTypes { get; set; }
 
         public bool IncludeIndexContainers { get; set; }
+
+        [ApiMember(Name = "IsMissing", Description = "Optional filter by items that are missing episodes or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool? IsMissing { get; set; }
+
+        [ApiMember(Name = "IsUnaired", Description = "Optional filter by items that are unaired episodes or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool? IsUnaired { get; set; }
     }
 
     /// <summary>
@@ -269,6 +265,8 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 items = ApplyFilter(items, filter, user, _userDataRepository);
             }
+
+            items = FilterVirtualEpisodes(request, items, user);
 
             items = items.AsEnumerable();
 
@@ -440,6 +438,93 @@ namespace MediaBrowser.Api.UserLibrary
             return items;
         }
 
+        private IEnumerable<BaseItem> FilterVirtualEpisodes(GetItems request, IEnumerable<BaseItem> items, User user)
+        {
+            items = FilterVirtualSeasons(request, items, user);
+
+            if (request.IsMissing.HasValue)
+            {
+                var val = request.IsMissing.Value;
+                items = items.Where(i =>
+                {
+                    var e = i as Episode;
+                    if (e != null)
+                    {
+                        return e.IsMissingEpisode == val;
+                    }
+                    return true;
+                });
+            }
+
+            if (request.IsUnaired.HasValue)
+            {
+                var val = request.IsUnaired.Value;
+                items = items.Where(i =>
+                {
+                    var e = i as Episode;
+                    if (e != null)
+                    {
+                        return e.IsUnaired == val;
+                    }
+                    return true;
+                });
+            }
+
+            return items;
+        }
+
+        private IEnumerable<BaseItem> FilterVirtualSeasons(GetItems request, IEnumerable<BaseItem> items, User user)
+        {
+            if (request.IsMissing.HasValue && request.IsUnaired.HasValue)
+            {
+                var isMissing = request.IsMissing.Value;
+                var isUnaired = request.IsUnaired.Value;
+
+                if (!isMissing && !isUnaired)
+                {
+                    return items.Where(i =>
+                    {
+                        var e = i as Season;
+                        if (e != null)
+                        {
+                            return !e.IsMissingOrUnaired;
+                        }
+                        return true;
+                    });
+                }
+            }
+
+            if (request.IsMissing.HasValue)
+            {
+                var val = request.IsMissing.Value;
+                items = items.Where(i =>
+                {
+                    var e = i as Season;
+                    if (e != null)
+                    {
+                        return e.IsMissingSeason == val;
+                    }
+                    return true;
+                });
+            }
+
+            if (request.IsUnaired.HasValue)
+            {
+                var val = request.IsUnaired.Value;
+                items = items.Where(i =>
+                {
+                    var e = i as Season;
+                    if (e != null)
+                    {
+                        return e.IsUnaired == val;
+                    }
+                    return true;
+                });
+            }
+
+            return items;
+        }
+
         /// <summary>
         /// Applies the additional filters.
         /// </summary>
@@ -593,18 +678,18 @@ namespace MediaBrowser.Api.UserLibrary
                 items = items.Where(f => vals.Contains(f.GetType().Name, StringComparer.OrdinalIgnoreCase));
             }
 
-            // ExcludeLocationTypes
-            if (!string.IsNullOrEmpty(request.ExcludeLocationTypes))
-            {
-                var vals = request.ExcludeLocationTypes.Split(',');
-                items = items.Where(f => !vals.Contains(f.LocationType.ToString(), StringComparer.OrdinalIgnoreCase));
-            }
-
             // LocationTypes
             if (!string.IsNullOrEmpty(request.LocationTypes))
             {
                 var vals = request.LocationTypes.Split(',');
                 items = items.Where(f => vals.Contains(f.LocationType.ToString(), StringComparer.OrdinalIgnoreCase));
+            }
+
+            // ExcludeLocationTypes
+            if (!string.IsNullOrEmpty(request.ExcludeLocationTypes))
+            {
+                var vals = request.ExcludeLocationTypes.Split(',');
+                items = items.Where(f => !vals.Contains(f.LocationType.ToString(), StringComparer.OrdinalIgnoreCase));
             }
 
             if (!string.IsNullOrEmpty(request.NameStartsWithOrGreater))
@@ -826,7 +911,8 @@ namespace MediaBrowser.Api.UserLibrary
 
             if (request.IsHD.HasValue)
             {
-                items = items.OfType<Video>().Where(i => i.IsHD == request.IsHD.Value);
+                var val = request.IsHD.Value;
+                items = items.OfType<Video>().Where(i => i.IsHD == val);
             }
 
             if (request.ParentIndexNumber.HasValue)
@@ -851,27 +937,6 @@ namespace MediaBrowser.Api.UserLibrary
 
                     return true;
                 });
-            }
-
-            if (!string.IsNullOrEmpty(request.MinPremiereDate))
-            {
-                var date = DateTime.ParseExact(request.MinPremiereDate, "yyyyMMddHHmmss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
-
-                items = items.Where(i => !i.PremiereDate.HasValue || i.PremiereDate.Value >= date);
-            }
-
-            if (!string.IsNullOrEmpty(request.MaxPremiereDate))
-            {
-                var date = DateTime.ParseExact(request.MaxPremiereDate, "yyyyMMddHHmmss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
-
-                items = items.Where(i => !i.PremiereDate.HasValue || i.PremiereDate.Value <= date);
-            }
-
-            if (request.HasPremiereDate.HasValue)
-            {
-                var val = request.HasPremiereDate.Value;
-
-                items = items.Where(i => i.PremiereDate.HasValue == val);
             }
 
             return items;

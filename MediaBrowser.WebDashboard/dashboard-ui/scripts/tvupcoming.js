@@ -14,8 +14,7 @@
             Limit: 30,
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,SeriesInfo,UserData",
-            HasPremiereDate: true,
-            MinPremiereDate: LibraryBrowser.getDateParamValue(new Date(now.getFullYear(), now.getMonth(), now.getDate()))
+            IsUnaired: true
         };
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {

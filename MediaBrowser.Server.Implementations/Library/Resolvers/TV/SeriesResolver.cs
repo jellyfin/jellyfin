@@ -52,7 +52,8 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
 
                 // If there's a collection type and it's not tv, it can't be a series
                 if (!string.IsNullOrEmpty(collectionType) &&
-                    !string.Equals(collectionType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))
+                    !string.Equals(collectionType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase) &&
+                    !string.Equals(collectionType, CollectionType.BoxSets, StringComparison.OrdinalIgnoreCase))
                 {
                     return null;
                 }

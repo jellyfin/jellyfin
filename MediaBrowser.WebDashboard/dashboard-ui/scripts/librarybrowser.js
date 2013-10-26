@@ -937,15 +937,15 @@
 
             var currentDate = new Date();
 
-            var day;
-
             if (LibraryBrowser.isSameDay(date, currentDate)) {
                 return "Today";
             }
 
+            var prefix = '';
+
             currentDate.setDate(currentDate.getDate() + 1);
             if (LibraryBrowser.isSameDay(date, currentDate)) {
-                return "Tomorrow";
+                prefix = "Tomorrow - ";
             }
 
             var todayDayOfWeek = new Date().getDay();
@@ -962,10 +962,10 @@
             }
 
             if (includeDayNamesInFuture) {
-                return weekday[date.getDay()] + " " + date.toLocaleDateString();
+                return prefix + weekday[date.getDay()] + " " + date.toLocaleDateString();
             }
 
-            return date.toLocaleDateString();
+            return prefix + date.toLocaleDateString();
         },
 
         getPremiereDateText: function (item, date) {
@@ -973,13 +973,13 @@
             if (!date) {
 
                 var text = '';
-                
+
                 if (item.AirTime) {
                     text += item.AirTime;
                 }
 
                 if (item.SeriesStudio) {
-                    
+
                     if (text) {
                         text += " on " + item.SeriesStudio;
                     } else {
@@ -989,7 +989,7 @@
 
                 return text;
             }
-            
+
             var day = LibraryBrowser.getFutureDateText(date);
 
             if (item.AirTime) {

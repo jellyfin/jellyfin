@@ -245,7 +245,11 @@
 
     getCollectionTypeOptionsHtml: function () {
 
-        return MediaLibraryPage.getCollectionTypeOptions().map(function (i) {
+        return MediaLibraryPage.getCollectionTypeOptions().filter(function(i) {
+
+            return i.isSelectable !== false;
+
+        }).map(function (i) {
 
             return '<option value="' + i.value + '">' + i.name + '</option>';
 
@@ -268,7 +272,7 @@
             { name: "Photos*", value: "photos" },
             { name: "Trailers", value: "trailers" },
             { name: "Adult videos", value: "adultvideos" },
-            { name: "General or mixed content", value: "mixed" }
+            { name: "General or mixed content", value: "mixed", isSelectable: false }
         ];
 
     },

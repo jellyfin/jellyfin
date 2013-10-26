@@ -335,7 +335,9 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetItemCounts request)
         {
-            var items = GetAllLibraryItems(request.UserId, _userManager, _libraryManager).ToList();
+            var items = GetAllLibraryItems(request.UserId, _userManager, _libraryManager)
+                .Where(i => i.LocationType != LocationType.Virtual)
+                .ToList();
 
             var filteredItems = request.UserId.HasValue ? FilterItems(items, request, request.UserId.Value).ToList() : items;
 

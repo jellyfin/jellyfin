@@ -492,8 +492,13 @@
             Fields: "PrimaryImageAspectRatio,ItemCounts,DateCreated,AudioInfo"
         };
 
-        if (item.Type == "Series" || item.Type == "Season" && !user.Configuration.DisplayVirtualEpisodes) {
-            query.ExcludeLocationTypes = "virtual";
+        if (item.Type == "Series" || item.Type == "Season") {
+            if (!user.Configuration.DisplayMissingEpisodes) {
+                query.IsMissing = false;
+            }
+            if (!user.Configuration.DisplayUnairedEpisodes) {
+                query.IsUnaired = false;
+            }
         }
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), query).done(function (result) {

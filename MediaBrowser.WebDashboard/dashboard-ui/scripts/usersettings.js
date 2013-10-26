@@ -30,7 +30,8 @@
         });
 
         $('#chkForcedSubtitlesOnly', page).checked(user.Configuration.UseForcedSubtitlesOnly || false).checkboxradio("refresh");
-        $('#chkDisplayVirtualEpisodes', page).checked(user.Configuration.DisplayVirtualEpisodes || false).checkboxradio("refresh");
+        $('#chkDisplayMissingEpisodes', page).checked(user.Configuration.DisplayMissingEpisodes || false).checkboxradio("refresh");
+        $('#chkDisplayUnairedEpisodes', page).checked(user.Configuration.DisplayUnairedEpisodes || false).checkboxradio("refresh");
 
         Dashboard.hideLoadingMsg();
     }
@@ -55,7 +56,8 @@
         user.Configuration.AudioLanguagePreference = $('#selectAudioLanguage', page).val();
         user.Configuration.SubtitleLanguagePreference = $('#selectSubtitleLanguage', page).val();
         user.Configuration.UseForcedSubtitlesOnly = $('#chkForcedSubtitlesOnly', page).checked();
-        user.Configuration.DisplayVirtualEpisodes = $('#chkDisplayVirtualEpisodes', page).checked();
+        user.Configuration.DisplayMissingEpisodes = $('#chkDisplayMissingEpisodes', page).checked();
+        user.Configuration.DisplayUnairedEpisodes = $('#chkDisplayUnairedEpisodes', page).checked();
 
         ApiClient.updateUser(user).done(function () {
             onSaveComplete(page);
