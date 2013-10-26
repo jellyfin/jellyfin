@@ -203,7 +203,12 @@ namespace MediaBrowser.Controller.Entities.TV
 
         public bool IsUnaired
         {
-            get { return LocationType == Model.Entities.LocationType.Virtual && PremiereDate.HasValue && PremiereDate.Value >= DateTime.UtcNow; }
+            get { return PremiereDate.HasValue && PremiereDate.Value >= DateTime.UtcNow; }
+        }
+
+        public bool IsVirtualUnaired
+        {
+            get { return LocationType == Model.Entities.LocationType.Virtual && IsUnaired; }
         }
     }
 }
