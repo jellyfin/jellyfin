@@ -269,7 +269,7 @@ namespace MediaBrowser.Api.Playback
             // If fixed dimensions were supplied
             if (request.Width.HasValue && request.Height.HasValue)
             {
-                return string.Format(" -vf \"scale={0}:{1}{2}\"", request.Width.Value, request.Height.Value, assSubtitleParam);
+                return string.Format(" -vf \"scale=trunc({0}/2)*2:trunc({1}/2)*2{2}\"", request.Width.Value, request.Height.Value, assSubtitleParam);
             }
 
             var isH264Output = outputVideoCodec.Equals("libx264", StringComparison.OrdinalIgnoreCase);
