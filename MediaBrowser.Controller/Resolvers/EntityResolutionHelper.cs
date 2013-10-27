@@ -43,6 +43,7 @@ namespace MediaBrowser.Controller.Resolvers
                 ".flv",
                 ".f4v",
                 ".3gp",
+                ".rec",
                 ".webm",
                 ".mts"
         };
