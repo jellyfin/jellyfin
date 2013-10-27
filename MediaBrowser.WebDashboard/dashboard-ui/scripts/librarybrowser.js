@@ -2310,37 +2310,11 @@
 
     var itemCountsPromise;
 
-    function renderHeader(page, user, counts) {
+    function renderHeader(page, user) {
 
         var html = '<div class="viewMenuBar">';
 
-        html += '<a class="viewMenuLink" href="index.html" title="Home"><img src="css/images/mblogoicon.png" alt="Home" /></a>';
-
-        var selectedCssClass = ' selectedViewLink';
-        var selectedHtml = "<span class='selectedViewIndicator'>&#9654;</span>";
-
-        var view = page.getAttribute('data-view') || getParameterByName('context');
-
-        if (counts.MovieCount || counts.TrailerCount) {
-
-            html += '<a class="viewMenuLink viewMenuImageLink" href="moviesrecommended.html" title="Movies"><img src="css/images/views/movies.png" alt="Movies" /></a>';
-            html += '<a class="viewMenuLink viewMenuTextLink' + (view == 'movies' ? selectedCssClass : '') + '" href="moviesrecommended.html">' + (view == 'movies' ? selectedHtml : '') + '<span class="viewName">Movies</span></a>';
-        }
-
-        if (counts.EpisodeCount || counts.SeriesCount) {
-            html += '<a class="viewMenuLink viewMenuImageLink" href="tvrecommended.html" title="TV"><img src="css/images/views/tvshows.png" alt="TV" /></a>';
-            html += '<a class="viewMenuLink viewMenuTextLink' + (view == 'tv' ? selectedCssClass : '') + '" href="tvrecommended.html">' + (view == 'tv' ? selectedHtml : '') + '<span class="viewName">TV</span></a>';
-        }
-
-        if (counts.SongCount || counts.MusicVideoCount) {
-            html += '<a class="viewMenuLink viewMenuImageLink" href="musicrecommended.html" title="Music"><img src="css/images/views/music.png" alt="Music" /></a>';
-            html += '<a class="viewMenuLink viewMenuTextLink' + (view == 'music' ? selectedCssClass : '') + '" href="musicrecommended.html">' + (view == 'music' ? selectedHtml : '') + '<span class="viewName">Music</span></a>';
-        }
-
-        if (counts.GameCount) {
-            html += '<a class="viewMenuLink viewMenuImageLink" href="gamesrecommended.html" title="Games"><img src="css/images/views/games.png" alt="Games" /></a>';
-            html += '<a class="viewMenuLink viewMenuTextLink' + (view == 'games' ? selectedCssClass : '') + '" href="gamesrecommended.html">' + (view == 'games' ? selectedHtml : '') + '<span class="viewName">Games</span></a>';
-        }
+        html += '<a class="viewMenuLink homeMenuLink" href="index.html" title="Home"><img src="css/images/mblogoicon.png" alt="Home" /></a>';
 
         html += '<a class="viewMenuLink viewMenuImageLink remoteControlMenuLink" href="#" onclick="RemoteControl.showMenu();" title="Remote Control"><img src="css/images/remote.png" alt="Remote Control" /></a>';
 
@@ -2377,6 +2351,39 @@
 
         Search.onSearchRendered($('.viewMenuBar', page));
     }
+    
+    function insertViews(page, user, counts) {
+
+        var html = '';
+        
+        var selectedCssClass = ' selectedViewLink';
+        var selectedHtml = "<span class='selectedViewIndicator'>&#9654;</span>";
+
+        var view = page.getAttribute('data-view') || getParameterByName('context');
+
+        if (counts.MovieCount || counts.TrailerCount) {
+
+            html += '<a class="viewMenuLink viewMenuImageLink" href="moviesrecommended.html" title="Movies"><img src="css/images/views/movies.png" alt="Movies" /></a>';
+            html += '<a class="viewMenuLink viewMenuTextLink' + (view == 'movies' ? selectedCssClass : '') + '" href="moviesrecommended.html">' + (view == 'movies' ? selectedHtml : '') + '<span class="viewName">Movies</span></a>';
+        }
+
+        if (counts.EpisodeCount || counts.SeriesCount) {
+            html += '<a class="viewMenuLink viewMenuImageLink" href="tvrecommended.html" title="TV"><img src="css/images/views/tvshows.png" alt="TV" /></a>';
+            html += '<a class="viewMenuLink viewMenuTextLink' + (view == 'tv' ? selectedCssClass : '') + '" href="tvrecommended.html">' + (view == 'tv' ? selectedHtml : '') + '<span class="viewName">TV</span></a>';
+        }
+
+        if (counts.SongCount || counts.MusicVideoCount) {
+            html += '<a class="viewMenuLink viewMenuImageLink" href="musicrecommended.html" title="Music"><img src="css/images/views/music.png" alt="Music" /></a>';
+            html += '<a class="viewMenuLink viewMenuTextLink' + (view == 'music' ? selectedCssClass : '') + '" href="musicrecommended.html">' + (view == 'music' ? selectedHtml : '') + '<span class="viewName">Music</span></a>';
+        }
+
+        if (counts.GameCount) {
+            html += '<a class="viewMenuLink viewMenuImageLink" href="gamesrecommended.html" title="Games"><img src="css/images/views/games.png" alt="Games" /></a>';
+            html += '<a class="viewMenuLink viewMenuTextLink' + (view == 'games' ? selectedCssClass : '') + '" href="gamesrecommended.html">' + (view == 'games' ? selectedHtml : '') + '<span class="viewName">Games</span></a>';
+        }
+
+        $('.homeMenuLink', page).after(html);
+    }
 
     $(document).on('pagebeforeshow', ".libraryPage", function () {
 
@@ -2384,17 +2391,17 @@
 
         if (!$('.viewMenuBar', page).length) {
 
-            itemCountsPromise = itemCountsPromise || ApiClient.getItemCounts(Dashboard.getCurrentUserId());
+            Dashboard.getCurrentUser().done(function (user) {
 
-            itemCountsPromise.done(function (counts) {
+                renderHeader(page, user);
 
-                Dashboard.getCurrentUser().done(function (user) {
+                itemCountsPromise = itemCountsPromise || ApiClient.getItemCounts(Dashboard.getCurrentUserId());
 
-                    renderHeader(page, user, counts);
+                itemCountsPromise.done(function (counts) {
 
+                    insertViews(page, user, counts);
                 });
             });
-
         }
     });
 
