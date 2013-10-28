@@ -1519,7 +1519,11 @@
 
             var markAsPlayed = $link.hasClass('imgPlayedOff');
 
-            ApiClient.updatePlayedStatus(Dashboard.getCurrentUserId(), id, markAsPlayed);
+            if (markAsPlayed) {
+                ApiClient.markPlayed(Dashboard.getCurrentUserId(), id);
+            } else {
+                ApiClient.markUnplayed(Dashboard.getCurrentUserId(), id);
+            }
 
             if (markAsPlayed) {
                 link.src = "css/images/userdata/playedon.png";

@@ -74,7 +74,7 @@
                     $('#playButtonContainer', page).show();
                     $('#playExternalButtonContainer', page).hide();
                 }
-                
+
                 $('#btnPlayExternal', page).attr('href', url || '#');
 
             } else {
@@ -1043,6 +1043,11 @@
             }
 
             LibraryBrowser.showPlayMenu(this, currentItem.Id, currentItem.Type, mediaType, userdata.PlaybackPositionTicks);
+        });
+
+        $('#btnPlayExternal', page).on('click', function () {
+
+            ApiClient.markPlayed(Dashboard.getCurrentUserId(), currentItem.Id, new Date());
         });
 
         $('#btnEdit', page).on('click', function () {
