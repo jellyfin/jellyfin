@@ -1337,6 +1337,13 @@ namespace MediaBrowser.Controller.Entities
 
             var data = userManager.GetUserData(user.Id, key);
 
+            if (datePlayed.HasValue)
+            {
+                // Incremenet
+                data.PlayCount++;
+            }
+
+            // Ensure it's at least one
             data.PlayCount = Math.Max(data.PlayCount, 1);
 
             data.LastPlayedDate = datePlayed ?? data.LastPlayedDate;
