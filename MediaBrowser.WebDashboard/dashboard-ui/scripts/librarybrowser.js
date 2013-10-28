@@ -941,31 +941,7 @@
                 return "Today";
             }
 
-            var prefix = '';
-
-            currentDate.setDate(currentDate.getDate() + 1);
-            if (LibraryBrowser.isSameDay(date, currentDate)) {
-                prefix = "Tomorrow - ";
-            }
-
-            var todayDayOfWeek = new Date().getDay();
-            currentDate.setDate(currentDate.getDate() + 1);
-
-            while (currentDate.getDay() > todayDayOfWeek) {
-
-                currentDate.setDate(currentDate.getDate() + 1);
-
-                if (LibraryBrowser.isSameDay(date, currentDate)) {
-
-                    return weekday[currentDate.getDay()];
-                }
-            }
-
-            if (includeDayNamesInFuture) {
-                return prefix + weekday[date.getDay()] + " " + date.toLocaleDateString();
-            }
-
-            return prefix + date.toLocaleDateString();
+            return weekday[date.getDay()] + " " + date.toLocaleDateString();
         },
 
         getPremiereDateText: function (item, date) {
