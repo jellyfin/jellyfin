@@ -203,7 +203,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
         public bool IsUnaired
         {
-            get { return PremiereDate.HasValue && PremiereDate.Value >= DateTime.UtcNow.Date; }
+            get { return PremiereDate.HasValue && PremiereDate.Value.ToLocalTime().Date >= DateTime.Now.Date; }
         }
 
         public bool IsVirtualUnaired
