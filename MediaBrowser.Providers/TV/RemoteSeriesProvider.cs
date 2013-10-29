@@ -1109,21 +1109,37 @@ namespace MediaBrowser.Providers.TV
                 var nodes = doc.SelectNodes("//Series");
                 var comparableName = GetComparableName(name);
                 if (nodes != null)
+                {
                     foreach (XmlNode node in nodes)
                     {
-                        var n = node.SelectSingleNode("./SeriesName");
-                        if (n != null && string.Equals(GetComparableName(n.InnerText), comparableName, StringComparison.OrdinalIgnoreCase))
+                        var titles = new List<string>();
+
+                        var nameNode = node.SelectSingleNode("./SeriesName");
+                        if (nameNode != null)
                         {
-                            n = node.SelectSingleNode("./seriesid");
-                            if (n != null)
-                                return n.InnerText;
+                            titles.Add(GetComparableName(nameNode.InnerText));
                         }
-                        else
+
+                        var aliasNode = node.SelectSingleNode("./AliasNames");
+                        if (aliasNode != null)
                         {
-                            if (n != null)
-                                Logger.Info("TVDb Provider - " + n.InnerText + " did not match " + comparableName);
+                            var alias = aliasNode.InnerText.Split('|').Select(GetComparableName);
+                            titles.AddRange(alias);
+                        }
+
+                        if (titles.Any(t => string.Equals(t, comparableName, StringComparison.OrdinalIgnoreCase)))
+                        {
+                            var id = node.SelectSingleNode("./seriesid");
+                            if (id != null)
+                                return id.InnerText;
+                        }
+
+                        foreach (var title in titles)
+                        {
+                            Logger.Info("TVDb Provider - " + title + " did not match " + comparableName);
                         }
                     }
+                }
             }
 
             // Try stripping off the year if it was supplied
