@@ -941,31 +941,7 @@
                 return "Today";
             }
 
-            var prefix = '';
-
-            currentDate.setDate(currentDate.getDate() + 1);
-            if (LibraryBrowser.isSameDay(date, currentDate)) {
-                prefix = "Tomorrow - ";
-            }
-
-            var todayDayOfWeek = new Date().getDay();
-            currentDate.setDate(currentDate.getDate() + 1);
-
-            while (currentDate.getDay() > todayDayOfWeek) {
-
-                currentDate.setDate(currentDate.getDate() + 1);
-
-                if (LibraryBrowser.isSameDay(date, currentDate)) {
-
-                    return weekday[currentDate.getDay()];
-                }
-            }
-
-            if (includeDayNamesInFuture) {
-                return prefix + weekday[date.getDay()] + " " + date.toLocaleDateString();
-            }
-
-            return prefix + date.toLocaleDateString();
+            return weekday[date.getDay()] + " " + date.toLocaleDateString();
         },
 
         getPremiereDateText: function (item, date) {
@@ -1278,9 +1254,19 @@
                 links.push('<a class="textlink" href="http://musicbrainz.org/release-group/' + providerIds.MusicBrainzReleaseGroup + '" target="_blank">MusicBrainz Release Group</a>');
 
             }
-            if (providerIds.Gamesdb)
+            if (providerIds.Gamesdb) {
                 links.push('<a class="textlink" href="http://thegamesdb.net/game/' + providerIds.Gamesdb + '" target="_blank">GamesDB</a>');
+            }
 
+            if (providerIds.NesBox) {
+                
+                if (item.GameSystem == "Nintendo") {
+                    links.push('<a class="textlink" href="http://nesbox.com/game/' + providerIds.NesBox + '" target="_blank">NESbox</a>');
+                }
+                else if (item.GameSystem == "Super Nintendo") {
+                    links.push('<a class="textlink" href="http://snesbox.com/game/' + providerIds.NesBox + '" target="_blank">SNESbox</a>');
+                }
+            }
 
             if (providerIds.Zap2It)
                 links.push('<a class="textlink" href="http://tvlistings.zap2it.com/tv/dexter/' + providerIds.Zap2It + '?aid=zap2it" target="_blank">Zap2It</a>');
@@ -1533,7 +1519,11 @@
 
             var markAsPlayed = $link.hasClass('imgPlayedOff');
 
-            ApiClient.updatePlayedStatus(Dashboard.getCurrentUserId(), id, markAsPlayed);
+            if (markAsPlayed) {
+                ApiClient.markPlayed(Dashboard.getCurrentUserId(), id);
+            } else {
+                ApiClient.markUnplayed(Dashboard.getCurrentUserId(), id);
+            }
 
             if (markAsPlayed) {
                 link.src = "css/images/userdata/playedon.png";
@@ -2300,37 +2290,11 @@
 
     var itemCountsPromise;
 
-    function renderHeader(page, user, counts) {
+    function renderHeader(page, user) {
 
         var html = '<div class="viewMenuBar">';
 
-        html += '<a class="viewMenuLink" href="index.html" title="Home"><img src="css/images/mblogoicon.png" alt="Home" /></a>';
-
-        var selectedCssClass = ' selectedViewLink';
-        var selectedHtml = "<span class='selectedViewIndicator'>&#9654;</span>";
-
-        var view = page.getAttribute('data-view') || getParameterByName('context');
-
-        if (counts.MovieCount || counts.TrailerCount) {
-
-            html += '<a class="viewMenuLink viewMenuImageLink" href="moviesrecommended.html" title="Movies"><img src="css/images/views/movies.png" alt="Movies" /></a>';
-            html += '<a class="viewMenuLink viewMenuTextLink' + (view == 'movies' ? selectedCssClass : '') + '" href="moviesrecommended.html">' + (view == 'movies' ? selectedHtml : '') + '<span class="viewName">Movies</span></a>';
-        }
-
-        if (counts.EpisodeCount || counts.SeriesCount) {
-            html += '<a class="viewMenuLink viewMenuImageLink" href="tvrecommended.html" title="TV"><img src="css/images/views/tvshows.png" alt="TV" /></a>';
-            html += '<a class="viewMenuLink viewMenuTextLink' + (view == 'tv' ? selectedCssClass : '') + '" href="tvrecommended.html">' + (view == 'tv' ? selectedHtml : '') + '<span class="viewName">TV</span></a>';
-        }
-
-        if (counts.SongCount || counts.MusicVideoCount) {
-            html += '<a class="viewMenuLink viewMenuImageLink" href="musicrecommended.html" title="Music"><img src="css/images/views/music.png" alt="Music" /></a>';
-            html += '<a class="viewMenuLink viewMenuTextLink' + (view == 'music' ? selectedCssClass : '') + '" href="musicrecommended.html">' + (view == 'music' ? selectedHtml : '') + '<span class="viewName">Music</span></a>';
-        }
-
-        if (counts.GameCount) {
-            html += '<a class="viewMenuLink viewMenuImageLink" href="gamesrecommended.html" title="Games"><img src="css/images/views/games.png" alt="Games" /></a>';
-            html += '<a class="viewMenuLink viewMenuTextLink' + (view == 'games' ? selectedCssClass : '') + '" href="gamesrecommended.html">' + (view == 'games' ? selectedHtml : '') + '<span class="viewName">Games</span></a>';
-        }
+        html += '<a class="viewMenuLink homeMenuLink" href="index.html" title="Home"><img src="css/images/mblogoicon.png" alt="Home" /></a>';
 
         html += '<a class="viewMenuLink viewMenuImageLink remoteControlMenuLink" href="#" onclick="RemoteControl.showMenu();" title="Remote Control"><img src="css/images/remote.png" alt="Remote Control" /></a>';
 
@@ -2367,6 +2331,39 @@
 
         Search.onSearchRendered($('.viewMenuBar', page));
     }
+    
+    function insertViews(page, user, counts) {
+
+        var html = '';
+        
+        var selectedCssClass = ' selectedViewLink';
+        var selectedHtml = "<span class='selectedViewIndicator'>&#9654;</span>";
+
+        var view = page.getAttribute('data-view') || getParameterByName('context');
+
+        if (counts.MovieCount || counts.TrailerCount) {
+
+            html += '<a class="viewMenuLink viewMenuImageLink" href="moviesrecommended.html" title="Movies"><img src="css/images/views/movies.png" alt="Movies" /></a>';
+            html += '<a class="viewMenuLink viewMenuTextLink' + (view == 'movies' ? selectedCssClass : '') + '" href="moviesrecommended.html">' + (view == 'movies' ? selectedHtml : '') + '<span class="viewName">Movies</span></a>';
+        }
+
+        if (counts.EpisodeCount || counts.SeriesCount) {
+            html += '<a class="viewMenuLink viewMenuImageLink" href="tvrecommended.html" title="TV"><img src="css/images/views/tvshows.png" alt="TV" /></a>';
+            html += '<a class="viewMenuLink viewMenuTextLink' + (view == 'tv' ? selectedCssClass : '') + '" href="tvrecommended.html">' + (view == 'tv' ? selectedHtml : '') + '<span class="viewName">TV</span></a>';
+        }
+
+        if (counts.SongCount || counts.MusicVideoCount) {
+            html += '<a class="viewMenuLink viewMenuImageLink" href="musicrecommended.html" title="Music"><img src="css/images/views/music.png" alt="Music" /></a>';
+            html += '<a class="viewMenuLink viewMenuTextLink' + (view == 'music' ? selectedCssClass : '') + '" href="musicrecommended.html">' + (view == 'music' ? selectedHtml : '') + '<span class="viewName">Music</span></a>';
+        }
+
+        if (counts.GameCount) {
+            html += '<a class="viewMenuLink viewMenuImageLink" href="gamesrecommended.html" title="Games"><img src="css/images/views/games.png" alt="Games" /></a>';
+            html += '<a class="viewMenuLink viewMenuTextLink' + (view == 'games' ? selectedCssClass : '') + '" href="gamesrecommended.html">' + (view == 'games' ? selectedHtml : '') + '<span class="viewName">Games</span></a>';
+        }
+
+        $('.homeMenuLink', page).after(html);
+    }
 
     $(document).on('pagebeforeshow', ".libraryPage", function () {
 
@@ -2374,17 +2371,17 @@
 
         if (!$('.viewMenuBar', page).length) {
 
-            itemCountsPromise = itemCountsPromise || ApiClient.getItemCounts(Dashboard.getCurrentUserId());
+            Dashboard.getCurrentUser().done(function (user) {
 
-            itemCountsPromise.done(function (counts) {
+                renderHeader(page, user);
 
-                Dashboard.getCurrentUser().done(function (user) {
+                itemCountsPromise = itemCountsPromise || ApiClient.getItemCounts(Dashboard.getCurrentUserId());
 
-                    renderHeader(page, user, counts);
+                itemCountsPromise.done(function (counts) {
 
+                    insertViews(page, user, counts);
                 });
             });
-
         }
     });
 

@@ -275,6 +275,7 @@ namespace MediaBrowser.Providers.TV
             string url = null;
             int? bannerSeason = null;
             string resolution = null;
+            string language = null;
 
             while (reader.Read())
             {
@@ -282,6 +283,12 @@ namespace MediaBrowser.Providers.TV
                 {
                     switch (reader.Name)
                     {
+                        case "Language":
+                            {
+                                language = reader.ReadElementContentAsString() ?? string.Empty;
+                                break;
+                            }
+
                         case "BannerType":
                             {
                                 bannerType = reader.ReadElementContentAsString() ?? string.Empty;
@@ -333,10 +340,21 @@ namespace MediaBrowser.Providers.TV
                     }
                     else if (string.Equals(bannerType2, "seasonwide", StringComparison.OrdinalIgnoreCase))
                     {
-                        // Just grab the first
-                        if (string.IsNullOrWhiteSpace(data.Banner))
+                        if (string.IsNullOrWhiteSpace(language) || string.Equals(language, "en", StringComparison.OrdinalIgnoreCase))
                         {
-                            data.Banner = url;
+                            // Just grab the first
+                            if (string.IsNullOrWhiteSpace(data.Banner))
+                            {
+                                data.Banner = url;
+                            }
+                        }
+                        else if (string.Equals(language, ConfigurationManager.Configuration.PreferredMetadataLanguage, StringComparison.OrdinalIgnoreCase))
+                        {
+                            // Just grab the first
+                            if (string.IsNullOrWhiteSpace(data.LanguageBanner))
+                            {
+                                data.LanguageBanner = url;
+                            }
                         }
                     }
                 }

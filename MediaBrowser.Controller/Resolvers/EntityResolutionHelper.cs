@@ -44,7 +44,8 @@ namespace MediaBrowser.Controller.Resolvers
                 ".f4v",
                 ".3gp",
                 ".webm",
-                ".mts"
+                ".mts",
+                ".rec"
         };
 
         private static readonly Dictionary<string, string> VideoFileExtensionsDictionary = VideoFileExtensions.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);

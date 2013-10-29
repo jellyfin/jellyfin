@@ -49,6 +49,7 @@
   <ItemGroup>
     <Compile Include="FanartBaseProvider.cs" />
     <Compile Include="FolderProviderFromXml.cs" />
+    <Compile Include="Games\GameXmlParser.cs" />
     <Compile Include="Games\GameProviderFromXml.cs" />
     <Compile Include="Games\GameSystemProviderFromXml.cs" />
     <Compile Include="ImageFromMediaLocationProvider.cs" />

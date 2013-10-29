@@ -3,11 +3,11 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Providers.Savers;
 using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Providers.Savers;
 
 namespace MediaBrowser.Providers.Games
 {
@@ -78,7 +78,7 @@ namespace MediaBrowser.Providers.Games
 
                 try
                 {
-                    new BaseItemXmlParser<Game>(Logger).Fetch(game, metaFile, cancellationToken);
+                    new GameXmlParser(Logger).Fetch(game, metaFile, cancellationToken);
                 }
                 finally
                 {

@@ -750,7 +750,32 @@
             if (item.Type == "MusicAlbum" || item.Type == "MusicArtist" || item.Type == "Artist" || item.Type == "MusicGenre") {
                 return true;
             }
+
+            if (item.GameSystem == "Nintendo" && item.MediaType == "Game" && item.ProviderIds.NesBox && item.ProviderIds.NesBoxRom) {
+                return true;
+            }
+
+            if (item.GameSystem == "Super Nintendo" && item.MediaType == "Game" && item.ProviderIds.NesBox && item.ProviderIds.NesBoxRom) {
+                return true;
+            }
+
             return self.canPlayMediaType(item.MediaType);
+        };
+
+        self.getPlayUrl = function(item) {
+
+
+            if (item.GameSystem == "Nintendo" && item.MediaType == "Game" && item.ProviderIds.NesBox && item.ProviderIds.NesBoxRom) {
+
+                return "http://nesbox.com/game/" + item.ProviderIds.NesBox + '/rom/' + item.ProviderIds.NesBoxRom;
+            }
+
+            if (item.GameSystem == "Super Nintendo" && item.MediaType == "Game" && item.ProviderIds.NesBox && item.ProviderIds.NesBoxRom) {
+
+                return "http://snesbox.com/game/" + item.ProviderIds.NesBox + '/rom/' + item.ProviderIds.NesBoxRom;
+            }
+
+            return null;
         };
 
         self.canPlayMediaType = function (mediaType) {
@@ -785,7 +810,7 @@
             Dashboard.getCurrentUser().done(function (user) {
 
                 var item = items[0];
-
+                
                 var videoType = (item.VideoType || "").toLowerCase();
 
                 var expirementalText = "This feature is experimental. It may not work at all with some titles. Do you wish to continue?";
