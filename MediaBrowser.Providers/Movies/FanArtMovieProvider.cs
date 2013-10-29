@@ -300,14 +300,14 @@ namespace MediaBrowser.Providers.Movies
 
             string path;
 
-            if (ConfigurationManager.Configuration.DownloadMovieImages.Disc && !item.HasImage(ImageType.Disc))
+            if (ConfigurationManager.Configuration.DownloadMovieImages.Primary && !item.HasImage(ImageType.Primary))
             {
                 var node = doc.SelectSingleNode("//fanart/movie/movieposters/movieposter[@lang = \"" + language + "\"]/@url") ??
                            doc.SelectSingleNode("//fanart/movie/movieposters/movieposter/@url");
                 path = node != null ? node.Value : null;
                 if (!string.IsNullOrEmpty(path))
                 {
-                    await _providerManager.SaveImage(item, path, FanArtResourcePool, ImageType.Disc, null, cancellationToken)
+                    await _providerManager.SaveImage(item, path, FanArtResourcePool, ImageType.Primary, null, cancellationToken)
                                         .ConfigureAwait(false);
                 }
             }
