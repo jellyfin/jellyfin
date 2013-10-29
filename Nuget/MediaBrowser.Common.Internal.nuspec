@@ -15,7 +15,7 @@
             <dependency id="MediaBrowser.Common" version="3.0.234" />
             <dependency id="NLog" version="2.1.0" />
             <dependency id="ServiceStack.Text" version="3.9.58" />
-            <dependency id="SimpleInjector" version="2.3.2" />
+            <dependency id="SimpleInjector" version="2.3.6" />
             <dependency id="sharpcompress" version="0.10.1.3" />
         </dependencies>
     </metadata>
