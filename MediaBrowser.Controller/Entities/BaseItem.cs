@@ -212,6 +212,7 @@ namespace MediaBrowser.Controller.Entities
         public static IProviderManager ProviderManager { get; set; }
         public static ILocalizationManager LocalizationManager { get; set; }
         public static IItemRepository ItemRepository { get; set; }
+        public static IFileSystem FileSystem { get; set; }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
@@ -395,7 +396,7 @@ namespace MediaBrowser.Controller.Entities
                 // When resolving the root, we need it's grandchildren (children of user views)
                 var flattenFolderDepth = isPhysicalRoot ? 2 : 0;
 
-                args.FileSystemDictionary = FileData.GetFilteredFileSystemEntries(args.Path, Logger, args, flattenFolderDepth: flattenFolderDepth, resolveShortcuts: isPhysicalRoot || args.IsVf);
+                args.FileSystemDictionary = FileData.GetFilteredFileSystemEntries(args.Path, FileSystem, Logger, args, flattenFolderDepth: flattenFolderDepth, resolveShortcuts: isPhysicalRoot || args.IsVf);
 
                 // Need to remove subpaths that may have been resolved from shortcuts
                 // Example: if \\server\movies exists, then strip out \\server\movies\action
@@ -413,7 +414,7 @@ namespace MediaBrowser.Controller.Entities
             }
 
             //update our dates
-            EntityResolutionHelper.EnsureDates(this, args, false);
+            EntityResolutionHelper.EnsureDates(FileSystem, this, args, false);
 
             IsOffline = false;
 
