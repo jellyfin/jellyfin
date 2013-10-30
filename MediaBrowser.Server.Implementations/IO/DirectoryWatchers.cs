@@ -87,10 +87,12 @@ namespace MediaBrowser.Server.Implementations.IO
         private ILibraryManager LibraryManager { get; set; }
         private IServerConfigurationManager ConfigurationManager { get; set; }
 
+        private readonly IFileSystem _fileSystem;
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="DirectoryWatchers" /> class.
         /// </summary>
-        public DirectoryWatchers(ILogManager logManager, ITaskManager taskManager, ILibraryManager libraryManager, IServerConfigurationManager configurationManager)
+        public DirectoryWatchers(ILogManager logManager, ITaskManager taskManager, ILibraryManager libraryManager, IServerConfigurationManager configurationManager, IFileSystem fileSystem)
         {
             if (taskManager == null)
             {
@@ -101,6 +103,7 @@ namespace MediaBrowser.Server.Implementations.IO
             TaskManager = taskManager;
             Logger = logManager.GetLogger("DirectoryWatchers");
             ConfigurationManager = configurationManager;
+            _fileSystem = fileSystem;
 
             SystemEvents.PowerModeChanged += SystemEvents_PowerModeChanged;
         }
@@ -418,7 +421,7 @@ namespace MediaBrowser.Server.Implementations.IO
         {
             try
             {
-                var data = FileSystem.GetFileSystemInfo(path);
+                var data = _fileSystem.GetFileSystemInfo(path);
 
                 if (!data.Exists
                     || data.Attributes.HasFlag(FileAttributes.Directory)

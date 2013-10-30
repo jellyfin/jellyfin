@@ -4,8 +4,46 @@ using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
 
-namespace MediaBrowser.Controller.IO
+namespace MediaBrowser.ServerApplication.IO
 {
+    public class NativeFileSystem : CommonFileSystem
+    {
+        public override bool IsShortcut(string filename)
+        {
+            return base.IsShortcut(filename) ||
+                   string.Equals(Path.GetExtension(filename), ".lnk", StringComparison.OrdinalIgnoreCase);
+        }
+
+        public override string ResolveShortcut(string filename)
+        {
+            var path = base.ResolveShortcut(filename);
+
+            if (!string.IsNullOrEmpty(path))
+            {
+                return path;
+            }
+
+            if (string.Equals(Path.GetExtension(filename), ".lnk", StringComparison.OrdinalIgnoreCase))
+            {
+                return ResolveLnk(filename);
+            }
+
+            return null;
+        }
+
+        private string ResolveLnk(string filename)
+        {
+            var link = new ShellLink();
+            ((IPersistFile)link).Load(filename, NativeMethods.STGM_READ);
+            // TODO: if I can get hold of the hwnd call resolve first. This handles moved and renamed files.  
+            // ((IShellLinkW)link).Resolve(hwnd, 0) 
+            var sb = new StringBuilder(NativeMethods.MAX_PATH);
+            WIN32_FIND_DATA data;
+            ((IShellLinkW)link).GetPath(sb, sb.Capacity, out data, 0);
+            return sb.ToString();
+        }
+    }
+
     /// <summary>
     /// Class NativeMethods
     /// </summary>
@@ -45,7 +83,6 @@ namespace MediaBrowser.Controller.IO
         /// </summary>
         public uint dwHighDateTime;
     }
-
 
     /// <summary>
     /// Struct WIN32_FIND_DATA
@@ -184,7 +221,6 @@ namespace MediaBrowser.Controller.IO
         SLR_INVOKE_MSI = 0x80
     }
 
-
     /// <summary>
     /// The IShellLink interface allows Shell links to be created, modified, and resolved
     /// </summary>
@@ -311,7 +347,6 @@ namespace MediaBrowser.Controller.IO
         void GetClassID(out Guid pClassID);
     }
 
-
     /// <summary>
     /// Interface IPersistFile
     /// </summary>
@@ -374,4 +409,5 @@ namespace MediaBrowser.Controller.IO
     public class ShellLink
     {
     }
+
 }

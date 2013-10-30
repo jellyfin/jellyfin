@@ -47,6 +47,7 @@ using MediaBrowser.Server.Implementations.ServerManager;
 using MediaBrowser.Server.Implementations.Session;
 using MediaBrowser.Server.Implementations.WebSocket;
 using MediaBrowser.ServerApplication.FFMpeg;
+using MediaBrowser.ServerApplication.IO;
 using MediaBrowser.ServerApplication.Native;
 using MediaBrowser.ServerApplication.Networking;
 using MediaBrowser.WebDashboard.Api;
@@ -246,6 +247,9 @@ namespace MediaBrowser.ServerApplication
 
             RegisterSingleInstance<IBlurayExaminer>(() => new BdInfoExaminer());
 
+            var fileSystemManager = FileSystemFactory.CreateFileSystemManager();
+            RegisterSingleInstance(fileSystemManager);
+
             var mediaEncoderTask = RegisterMediaEncoder();
 
             UserDataManager = new UserDataManager(LogManager);
@@ -263,10 +267,10 @@ namespace MediaBrowser.ServerApplication
             UserManager = new UserManager(Logger, ServerConfigurationManager, UserRepository);
             RegisterSingleInstance(UserManager);
 
-            LibraryManager = new LibraryManager(Logger, TaskManager, UserManager, ServerConfigurationManager, UserDataManager, () => DirectoryWatchers);
+            LibraryManager = new LibraryManager(Logger, TaskManager, UserManager, ServerConfigurationManager, UserDataManager, () => DirectoryWatchers, fileSystemManager);
             RegisterSingleInstance(LibraryManager);
 
-            DirectoryWatchers = new DirectoryWatchers(LogManager, TaskManager, LibraryManager, ServerConfigurationManager);
+            DirectoryWatchers = new DirectoryWatchers(LogManager, TaskManager, LibraryManager, ServerConfigurationManager, fileSystemManager);
             RegisterSingleInstance(DirectoryWatchers);
 
             ProviderManager = new ProviderManager(HttpClient, ServerConfigurationManager, DirectoryWatchers, LogManager, LibraryManager);

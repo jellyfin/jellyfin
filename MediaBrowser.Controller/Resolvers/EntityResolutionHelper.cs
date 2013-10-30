@@ -126,10 +126,11 @@ namespace MediaBrowser.Controller.Resolvers
         /// <summary>
         /// Ensures DateCreated and DateModified have values
         /// </summary>
+        /// <param name="fileSystem">The file system.</param>
         /// <param name="item">The item.</param>
         /// <param name="args">The args.</param>
         /// <param name="includeCreationTime">if set to <c>true</c> [include creation time].</param>
-        public static void EnsureDates(BaseItem item, ItemResolveArgs args, bool includeCreationTime)
+        public static void EnsureDates(IFileSystem fileSystem, BaseItem item, ItemResolveArgs args, bool includeCreationTime)
         {
             if (!Path.IsPathRooted(item.Path))
             {
@@ -152,7 +153,7 @@ namespace MediaBrowser.Controller.Resolvers
                 }
                 else
                 {
-                    var fileData = FileSystem.GetFileSystemInfo(item.Path);
+                    var fileData = fileSystem.GetFileSystemInfo(item.Path);
 
                     if (fileData.Exists)
                     {

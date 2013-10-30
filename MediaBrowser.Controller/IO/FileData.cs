@@ -15,6 +15,7 @@ namespace MediaBrowser.Controller.IO
         /// Gets the filtered file system entries.
         /// </summary>
         /// <param name="path">The path.</param>
+        /// <param name="fileSystem">The file system.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="args">The args.</param>
         /// <param name="searchPattern">The search pattern.</param>
@@ -22,7 +23,7 @@ namespace MediaBrowser.Controller.IO
         /// <param name="resolveShortcuts">if set to <c>true</c> [resolve shortcuts].</param>
         /// <returns>Dictionary{System.StringFileSystemInfo}.</returns>
         /// <exception cref="System.ArgumentNullException">path</exception>
-        public static Dictionary<string, FileSystemInfo> GetFilteredFileSystemEntries(string path, ILogger logger, ItemResolveArgs args, string searchPattern = "*", int flattenFolderDepth = 0, bool resolveShortcuts = true)
+        public static Dictionary<string, FileSystemInfo> GetFilteredFileSystemEntries(string path, IFileSystem fileSystem, ILogger logger, ItemResolveArgs args, string searchPattern = "*", int flattenFolderDepth = 0, bool resolveShortcuts = true)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -56,9 +57,9 @@ namespace MediaBrowser.Controller.IO
 
                 var fullName = entry.FullName;
 
-                if (resolveShortcuts && FileSystem.IsShortcut(fullName))
+                if (resolveShortcuts && fileSystem.IsShortcut(fullName))
                 {
-                    var newPath = FileSystem.ResolveShortcut(fullName);
+                    var newPath = fileSystem.ResolveShortcut(fullName);
 
                     if (string.IsNullOrWhiteSpace(newPath))
                     {
@@ -77,7 +78,7 @@ namespace MediaBrowser.Controller.IO
                 }
                 else if (flattenFolderDepth > 0 && isDirectory)
                 {
-                    foreach (var child in GetFilteredFileSystemEntries(fullName, logger, args, flattenFolderDepth: flattenFolderDepth - 1, resolveShortcuts: resolveShortcuts))
+                    foreach (var child in GetFilteredFileSystemEntries(fullName, fileSystem, logger, args, flattenFolderDepth: flattenFolderDepth - 1, resolveShortcuts: resolveShortcuts))
                     {
                         dict[child.Key] = child.Value;
                     }

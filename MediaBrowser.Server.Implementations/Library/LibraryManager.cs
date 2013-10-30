@@ -169,6 +169,8 @@ namespace MediaBrowser.Server.Implementations.Library
         private readonly ConcurrentDictionary<string, UserRootFolder> _userRootFolders =
             new ConcurrentDictionary<string, UserRootFolder>();
 
+        private readonly IFileSystem _fileSystem;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryManager" /> class.
         /// </summary>
@@ -177,7 +179,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="userManager">The user manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="userDataRepository">The user data repository.</param>
-        public LibraryManager(ILogger logger, ITaskManager taskManager, IUserManager userManager, IServerConfigurationManager configurationManager, IUserDataManager userDataRepository, Func<IDirectoryWatchers> directoryWatchersFactory)
+        public LibraryManager(ILogger logger, ITaskManager taskManager, IUserManager userManager, IServerConfigurationManager configurationManager, IUserDataManager userDataRepository, Func<IDirectoryWatchers> directoryWatchersFactory, IFileSystem fileSystem)
         {
             _logger = logger;
             _taskManager = taskManager;
@@ -185,6 +187,7 @@ namespace MediaBrowser.Server.Implementations.Library
             ConfigurationManager = configurationManager;
             _userDataRepository = userDataRepository;
             _directoryWatchersFactory = directoryWatchersFactory;
+            _fileSystem = fileSystem;
             ByReferenceItems = new ConcurrentDictionary<Guid, BaseItem>();
 
             ConfigurationManager.ConfigurationUpdated += ConfigurationUpdated;
@@ -417,7 +420,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (item != null)
             {
-                ResolverHelper.SetInitialItemValues(item, args);
+                ResolverHelper.SetInitialItemValues(item, args, _fileSystem);
 
                 // Now handle the issue with posibly having the same item referenced from multiple physical
                 // places within the library.  Be sure we always end up with just one instance.
@@ -482,7 +485,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 // When resolving the root, we need it's grandchildren (children of user views)
                 var flattenFolderDepth = isPhysicalRoot ? 2 : 0;
 
-                args.FileSystemDictionary = FileData.GetFilteredFileSystemEntries(args.Path, _logger, args, flattenFolderDepth: flattenFolderDepth, resolveShortcuts: isPhysicalRoot || args.IsVf);
+                args.FileSystemDictionary = FileData.GetFilteredFileSystemEntries(args.Path, _fileSystem, _logger, args, flattenFolderDepth: flattenFolderDepth, resolveShortcuts: isPhysicalRoot || args.IsVf);
 
                 // Need to remove subpaths that may have been resolved from shortcuts
                 // Example: if \\server\movies exists, then strip out \\server\movies\action
@@ -701,7 +704,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new ArgumentNullException();
             }
 
-            var validFilename = FileSystem.GetValidFilename(name).Trim();
+            var validFilename = _fileSystem.GetValidFilename(name).Trim();
 
             string subFolderPrefix = null;
 
@@ -1066,7 +1069,7 @@ namespace MediaBrowser.Server.Implementations.Library
                     Name = Path.GetFileName(dir),
 
                     Locations = Directory.EnumerateFiles(dir, "*.mblink", SearchOption.TopDirectoryOnly)
-                                .Select(FileSystem.ResolveShortcut)
+                                .Select(_fileSystem.ResolveShortcut)
                                 .OrderBy(i => i)
                                 .ToList(),
 
@@ -1150,7 +1153,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 try
                 {
                     // Try to resolve the path into a video 
-                    video = ResolvePath(FileSystem.GetFileSystemInfo(info.Path)) as Video;
+                    video = ResolvePath(_fileSystem.GetFileSystemInfo(info.Path)) as Video;
 
                     if (video == null)
                     {

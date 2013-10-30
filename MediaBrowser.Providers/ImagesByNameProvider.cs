@@ -18,9 +18,12 @@ namespace MediaBrowser.Providers
     /// </summary>
     public class ImagesByNameProvider : ImageFromMediaLocationProvider
     {
-        public ImagesByNameProvider(ILogManager logManager, IServerConfigurationManager configurationManager)
+        private readonly IFileSystem _fileSystem;
+        
+        public ImagesByNameProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IFileSystem fileSystem)
             : base(logManager, configurationManager)
         {
+            _fileSystem = fileSystem;
         }
 
         public override ItemUpdateType ItemUpdateType
@@ -150,7 +153,7 @@ namespace MediaBrowser.Providers
         /// <returns>System.String.</returns>
         protected string GetLocation(BaseItem item)
         {
-            var name = FileSystem.GetValidFilename(item.Name);
+            var name = _fileSystem.GetValidFilename(item.Name);
 
             return Path.Combine(ConfigurationManager.ApplicationPaths.GeneralPath, name);
         }
