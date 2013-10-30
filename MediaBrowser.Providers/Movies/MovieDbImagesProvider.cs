@@ -66,6 +66,11 @@ namespace MediaBrowser.Providers.Movies
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         public override bool Supports(BaseItem item)
         {
+            return SupportsItem(item);
+        }
+
+        public static bool SupportsItem(BaseItem item)
+        {
             var trailer = item as Trailer;
 
             if (trailer != null)
@@ -180,7 +185,7 @@ namespace MediaBrowser.Providers.Movies
 
             if (!string.IsNullOrEmpty(id))
             {
-                var images = FetchImages(item);
+                var images = FetchImages(item, _jsonSerializer);
 
                 if (images != null)
                 {
@@ -196,8 +201,9 @@ namespace MediaBrowser.Providers.Movies
         /// Fetches the images.
         /// </summary>
         /// <param name="item">The item.</param>
+        /// <param name="jsonSerializer">The json serializer.</param>
         /// <returns>Task{MovieImages}.</returns>
-        private MovieDbProvider.Images FetchImages(BaseItem item)
+        internal static MovieDbProvider.Images FetchImages(BaseItem item, IJsonSerializer jsonSerializer)
         {
             var path = MovieDbProvider.Current.GetDataFilePath(item, "default");
 
@@ -207,7 +213,7 @@ namespace MediaBrowser.Providers.Movies
 
                 if (fileInfo.Exists)
                 {
-                    return _jsonSerializer.DeserializeFromFile<MovieDbProvider.CompleteMovieData>(path).images;
+                    return jsonSerializer.DeserializeFromFile<MovieDbProvider.CompleteMovieData>(path).images;
                 }
             }
 
@@ -227,12 +233,8 @@ namespace MediaBrowser.Providers.Movies
 
             var status = ProviderRefreshStatus.Success;
 
-            var eligiblePosters = images.posters == null ?
-                new List<MovieDbProvider.Poster>() :
-                images.posters.Where(i => i.width >= ConfigurationManager.Configuration.MinMoviePosterWidth)
+            var eligiblePosters = new ManualMovieDbImageProvider(_jsonSerializer, ConfigurationManager).GetPosters(images, item)
                 .ToList();
-
-            eligiblePosters = eligiblePosters.OrderByDescending(i => i.vote_average).ToList();
 
             //        poster
             if (eligiblePosters.Count > 0 && !item.HasImage(ImageType.Primary))
@@ -242,48 +244,24 @@ namespace MediaBrowser.Providers.Movies
                 var tmdbImageUrl = tmdbSettings.images.base_url + "original";
                 // get highest rated poster for our language
 
-                var poster = eligiblePosters.FirstOrDefault(p => string.Equals(p.iso_639_1, ConfigurationManager.Configuration.PreferredMetadataLanguage, StringComparison.OrdinalIgnoreCase));
+                var poster = eligiblePosters[0];
 
-                if (poster == null)
+                var url = tmdbImageUrl + poster.file_path;
+
+                var img = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
                 {
-                    // couldn't find our specific language, find english
-                    poster = eligiblePosters.FirstOrDefault(p => string.Equals(p.iso_639_1, "en", StringComparison.OrdinalIgnoreCase));
-                }
+                    Url = url,
+                    CancellationToken = cancellationToken
 
-                if (poster == null)
-                {
-                    //still couldn't find it - try highest rated null one
-                    poster = eligiblePosters.FirstOrDefault(p => p.iso_639_1 == null);
-                }
+                }).ConfigureAwait(false);
 
-                if (poster == null)
-                {
-                    //finally - just get the highest rated one
-                    poster = eligiblePosters.FirstOrDefault();
-                }
-
-                if (poster != null)
-                {
-                    var url = tmdbImageUrl + poster.file_path;
-
-                    var img = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
-                    {
-                        Url = url,
-                        CancellationToken = cancellationToken
-
-                    }).ConfigureAwait(false);
-
-                    await _providerManager.SaveImage(item, img, MimeTypes.GetMimeType(poster.file_path), ImageType.Primary, null, url, cancellationToken)
-                                        .ConfigureAwait(false);
-
-                }
+                await _providerManager.SaveImage(item, img, MimeTypes.GetMimeType(poster.file_path), ImageType.Primary, null, url, cancellationToken)
+                                    .ConfigureAwait(false);
             }
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var eligibleBackdrops = images.backdrops == null ? new List<MovieDbProvider.Backdrop>() :
-                images.backdrops.Where(i => i.width >= ConfigurationManager.Configuration.MinMovieBackdropWidth)
-                .ToList();
+            var eligibleBackdrops = new ManualMovieDbImageProvider(_jsonSerializer, ConfigurationManager).GetBackdrops(images, item).ToList();
 
             var backdropLimit = ConfigurationManager.Configuration.MaxBackdrops;
 

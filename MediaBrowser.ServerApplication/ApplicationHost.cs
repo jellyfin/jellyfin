@@ -275,7 +275,7 @@ namespace MediaBrowser.ServerApplication
             DirectoryWatchers = new DirectoryWatchers(LogManager, TaskManager, LibraryManager, ServerConfigurationManager, FileSystemManager);
             RegisterSingleInstance(DirectoryWatchers);
 
-            ProviderManager = new ProviderManager(HttpClient, ServerConfigurationManager, DirectoryWatchers, LogManager, LibraryManager);
+            ProviderManager = new ProviderManager(HttpClient, ServerConfigurationManager, DirectoryWatchers, LogManager);
             RegisterSingleInstance(ProviderManager);
 
             RegisterSingleInstance<ILibrarySearchEngine>(() => new LuceneSearchEngine(ApplicationPaths, LogManager, LibraryManager));
@@ -449,7 +449,7 @@ namespace MediaBrowser.ServerApplication
                                     GetExports<IPeoplePrescanTask>(),
                                     GetExports<IMetadataSaver>());
 
-            ProviderManager.AddParts(GetExports<BaseMetadataProvider>());
+            ProviderManager.AddParts(GetExports<BaseMetadataProvider>(), GetExports<IImageProvider>());
 
             ImageProcessor.AddParts(GetExports<IImageEnhancer>());
 
