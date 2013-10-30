@@ -58,6 +58,7 @@ namespace MediaBrowser.Model.Configuration
 
         public bool DisplayMissingEpisodes { get; set; }
         public bool DisplayUnairedEpisodes { get; set; }
+        public bool EnableRemoteControlOfOtherUsers { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserConfiguration" /> class.
@@ -65,6 +66,7 @@ namespace MediaBrowser.Model.Configuration
         public UserConfiguration()
         {
             IsAdministrator = true;
+            EnableRemoteControlOfOtherUsers = true;
             BlockNotRated = false;
         }
     }
