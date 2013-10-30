@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.Logging;
 using System;
 using System.IO;
 using System.Text;
@@ -10,6 +11,13 @@ namespace MediaBrowser.ServerApplication.IO
     /// </summary>
     public class CommonFileSystem : IFileSystem
     {
+        protected ILogger Logger;
+
+        public CommonFileSystem(ILogger logger)
+        {
+            Logger = logger;
+        }
+
         /// <summary>
         /// Determines whether the specified filename is shortcut.
         /// </summary>
@@ -136,6 +144,25 @@ namespace MediaBrowser.ServerApplication.IO
             }
 
             return builder.ToString();
+        }
+
+        /// <summary>
+        /// Gets the creation time UTC.
+        /// </summary>
+        /// <param name="info">The info.</param>
+        /// <returns>DateTime.</returns>
+        public DateTime GetCreationTimeUtc(FileSystemInfo info)
+        {
+            // This could throw an error on some file systems that have dates out of range
+            try
+            {
+                return info.CreationTimeUtc;
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error determining CreationTimeUtc for {0}", ex, info.FullName);
+                return DateTime.MinValue;
+            }
         }
     }
 

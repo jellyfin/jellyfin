@@ -771,7 +771,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 {
                     Name = name,
                     Id = id,
-                    DateCreated = fileInfo.CreationTimeUtc,
+                    DateCreated = _fileSystem.GetCreationTimeUtc(fileInfo),
                     DateModified = fileInfo.LastWriteTimeUtc,
                     Path = path
                 };

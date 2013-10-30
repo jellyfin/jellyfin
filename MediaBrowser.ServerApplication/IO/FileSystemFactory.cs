@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.ServerApplication.IO
 {
@@ -11,9 +12,9 @@ namespace MediaBrowser.ServerApplication.IO
         /// Creates the file system manager.
         /// </summary>
         /// <returns>IFileSystem.</returns>
-        public static IFileSystem CreateFileSystemManager()
+        public static IFileSystem CreateFileSystemManager(ILogManager logManager)
         {
-            return new NativeFileSystem();
+            return new NativeFileSystem(logManager.GetLogger("FileSystem"));
         }
     }
 }
