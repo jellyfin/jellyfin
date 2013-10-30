@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Model.Entities;
@@ -600,6 +600,8 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                     return "-sub_charenc windows-1251";
                 case "vie":
                     return "-sub_charenc windows-1258";
+                case "kor":
+                		return "-sub_charenc cp949";
                 default:
                     return "-sub_charenc windows-1252";
             }
