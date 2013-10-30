@@ -170,6 +170,8 @@ namespace MediaBrowser.ServerApplication
 
         private Task<IHttpServer> _httpServerCreationTask;
 
+        private IFileSystem FileSystemManager { get; set; }
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="ApplicationHost"/> class.
         /// </summary>
@@ -247,8 +249,8 @@ namespace MediaBrowser.ServerApplication
 
             RegisterSingleInstance<IBlurayExaminer>(() => new BdInfoExaminer());
 
-            var fileSystemManager = FileSystemFactory.CreateFileSystemManager();
-            RegisterSingleInstance(fileSystemManager);
+            FileSystemManager = FileSystemFactory.CreateFileSystemManager();
+            RegisterSingleInstance(FileSystemManager);
 
             var mediaEncoderTask = RegisterMediaEncoder();
 
@@ -267,10 +269,10 @@ namespace MediaBrowser.ServerApplication
             UserManager = new UserManager(Logger, ServerConfigurationManager, UserRepository);
             RegisterSingleInstance(UserManager);
 
-            LibraryManager = new LibraryManager(Logger, TaskManager, UserManager, ServerConfigurationManager, UserDataManager, () => DirectoryWatchers, fileSystemManager);
+            LibraryManager = new LibraryManager(Logger, TaskManager, UserManager, ServerConfigurationManager, UserDataManager, () => DirectoryWatchers, FileSystemManager);
             RegisterSingleInstance(LibraryManager);
 
-            DirectoryWatchers = new DirectoryWatchers(LogManager, TaskManager, LibraryManager, ServerConfigurationManager, fileSystemManager);
+            DirectoryWatchers = new DirectoryWatchers(LogManager, TaskManager, LibraryManager, ServerConfigurationManager, FileSystemManager);
             RegisterSingleInstance(DirectoryWatchers);
 
             ProviderManager = new ProviderManager(HttpClient, ServerConfigurationManager, DirectoryWatchers, LogManager, LibraryManager);
@@ -416,6 +418,7 @@ namespace MediaBrowser.ServerApplication
             User.UserManager = UserManager;
             LocalizedStrings.ApplicationPaths = ApplicationPaths;
             Folder.UserManager = UserManager;
+            BaseItem.FileSystem = FileSystemManager;
         }
 
         /// <summary>
