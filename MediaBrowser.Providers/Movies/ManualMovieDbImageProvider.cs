@@ -90,28 +90,33 @@ namespace MediaBrowser.Providers.Movies
         {
             var language = _config.Configuration.PreferredMetadataLanguage;
 
+            var isLanguageEn = string.Equals(language, "en", StringComparison.OrdinalIgnoreCase);
+
             var eligiblePosters = images.posters == null ?
                 new List<MovieDbProvider.Poster>() :
                 images.posters.Where(i => i.width >= _config.Configuration.MinMoviePosterWidth)
                 .ToList();
 
-            return eligiblePosters.OrderByDescending(i => i.vote_average)
-                .ThenByDescending(i =>
+            return eligiblePosters.OrderByDescending(i =>
                 {
                     if (string.Equals(language, i.iso_639_1, StringComparison.OrdinalIgnoreCase))
                     {
                         return 3;
                     }
-                    if (string.Equals("en", i.iso_639_1, StringComparison.OrdinalIgnoreCase))
+                    if (!isLanguageEn)
                     {
-                        return 2;
+                        if (string.Equals("en", i.iso_639_1, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return 2;
+                        }
                     }
                     if (string.IsNullOrEmpty(i.iso_639_1))
                     {
-                        return 1;
+                        return isLanguageEn ? 3 : 2;
                     }
                     return 0;
                 })
+                .ThenByDescending(i => i.vote_average)
                 .ToList();
         }
 
