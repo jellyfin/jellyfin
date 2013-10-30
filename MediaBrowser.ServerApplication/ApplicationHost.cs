@@ -249,7 +249,7 @@ namespace MediaBrowser.ServerApplication
 
             RegisterSingleInstance<IBlurayExaminer>(() => new BdInfoExaminer());
 
-            FileSystemManager = FileSystemFactory.CreateFileSystemManager();
+            FileSystemManager = FileSystemFactory.CreateFileSystemManager(LogManager);
             RegisterSingleInstance(FileSystemManager);
 
             var mediaEncoderTask = RegisterMediaEncoder();

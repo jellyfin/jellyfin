@@ -31,27 +31,6 @@ namespace MediaBrowser.Controller.IO
         }
 
         /// <summary>
-        /// Gets the creation time UTC.
-        /// </summary>
-        /// <param name="info">The info.</param>
-        /// <param name="logger">The logger.</param>
-        /// <returns>DateTime.</returns>
-        public static DateTime GetCreationTimeUtc(FileSystemInfo info, ILogger logger)
-        {
-            // This could throw an error on some file systems that have dates out of range
-
-            try
-            {
-                return info.CreationTimeUtc;
-            }
-            catch (Exception ex)
-            {
-                logger.ErrorException("Error determining CreationTimeUtc for {0}", ex, info.FullName);
-                return DateTime.MinValue;
-            }
-        }
-
-        /// <summary>
         /// Copies all.
         /// </summary>
         /// <param name="source">The source.</param>

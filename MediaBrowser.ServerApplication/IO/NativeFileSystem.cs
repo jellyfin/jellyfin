@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediaBrowser.Model.Logging;
+using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Security;
@@ -8,6 +9,11 @@ namespace MediaBrowser.ServerApplication.IO
 {
     public class NativeFileSystem : CommonFileSystem
     {
+        public NativeFileSystem(ILogger logger)
+            : base(logger)
+        {
+        }
+
         public override bool IsShortcut(string filename)
         {
             return base.IsShortcut(filename) ||

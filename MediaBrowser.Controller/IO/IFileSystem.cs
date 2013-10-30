@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 
 namespace MediaBrowser.Controller.IO
 {
@@ -41,5 +42,12 @@ namespace MediaBrowser.Controller.IO
         /// <param name="filename">The filename.</param>
         /// <returns>System.String.</returns>
         string GetValidFilename(string filename);
+
+        /// <summary>
+        /// Gets the creation time UTC.
+        /// </summary>
+        /// <param name="info">The info.</param>
+        /// <returns>DateTime.</returns>
+        DateTime GetCreationTimeUtc(FileSystemInfo info);
     }
 }

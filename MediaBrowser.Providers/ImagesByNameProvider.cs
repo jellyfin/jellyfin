@@ -114,7 +114,7 @@ namespace MediaBrowser.Providers
             return files.Select(f =>
             {
                 var lastWriteTime = FileSystem.GetLastWriteTimeUtc(f, Logger);
-                var creationTime = FileSystem.GetCreationTimeUtc(f, Logger);
+                var creationTime = _fileSystem.GetCreationTimeUtc(f);
 
                 return creationTime > lastWriteTime ? creationTime : lastWriteTime;
 
