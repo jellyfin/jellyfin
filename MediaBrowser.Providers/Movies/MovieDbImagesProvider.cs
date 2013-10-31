@@ -7,6 +7,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
@@ -152,7 +153,7 @@ namespace MediaBrowser.Providers.Movies
             {
                 return false;
             }
-            
+
             var path = MovieDbProvider.Current.GetDataFilePath(item, "default");
 
             if (!string.IsNullOrEmpty(path))
@@ -179,43 +180,16 @@ namespace MediaBrowser.Providers.Movies
         {
             var id = item.GetProviderId(MetadataProviders.Tmdb);
 
-            var status = ProviderRefreshStatus.Success;
-
             if (!string.IsNullOrEmpty(id))
             {
-                var images = FetchImages(item, _jsonSerializer);
+                var images = await new ManualMovieDbImageProvider(_jsonSerializer, ConfigurationManager).GetAllImages(item,
+                            cancellationToken).ConfigureAwait(false);
 
-                if (images != null)
-                {
-                    status = await ProcessImages(item, images, cancellationToken).ConfigureAwait(false);
-                }
+                await ProcessImages(item, images.ToList(), cancellationToken).ConfigureAwait(false);
             }
 
-            SetLastRefreshed(item, DateTime.UtcNow, status);
+            SetLastRefreshed(item, DateTime.UtcNow);
             return true;
-        }
-
-        /// <summary>
-        /// Fetches the images.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="jsonSerializer">The json serializer.</param>
-        /// <returns>Task{MovieImages}.</returns>
-        internal static MovieDbProvider.Images FetchImages(BaseItem item, IJsonSerializer jsonSerializer)
-        {
-            var path = MovieDbProvider.Current.GetDataFilePath(item, "default");
-
-            if (!string.IsNullOrEmpty(path))
-            {
-                var fileInfo = new FileInfo(path);
-
-                if (fileInfo.Exists)
-                {
-                    return jsonSerializer.DeserializeFromFile<MovieDbProvider.CompleteMovieData>(path).images;
-                }
-            }
-
-            return null;
         }
 
         /// <summary>
@@ -225,26 +199,20 @@ namespace MediaBrowser.Providers.Movies
         /// <param name="images">The images.</param>
         /// <param name="cancellationToken">The cancellation token</param>
         /// <returns>Task.</returns>
-        private async Task<ProviderRefreshStatus> ProcessImages(BaseItem item, MovieDbProvider.Images images, CancellationToken cancellationToken)
+        private async Task ProcessImages(BaseItem item, List<RemoteImageInfo> images, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var status = ProviderRefreshStatus.Success;
-
-            var eligiblePosters = new ManualMovieDbImageProvider(_jsonSerializer, ConfigurationManager).GetPosters(images, item)
+            var eligiblePosters = images
+                .Where(i => i.Type == ImageType.Primary)
                 .ToList();
 
             //        poster
             if (eligiblePosters.Count > 0 && !item.HasImage(ImageType.Primary))
             {
-                var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
-
-                var tmdbImageUrl = tmdbSettings.images.base_url + "original";
-                // get highest rated poster for our language
-
                 var poster = eligiblePosters[0];
 
-                var url = tmdbImageUrl + poster.file_path;
+                var url = poster.Url;
 
                 var img = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
                 {
@@ -253,26 +221,24 @@ namespace MediaBrowser.Providers.Movies
 
                 }).ConfigureAwait(false);
 
-                await _providerManager.SaveImage(item, img, MimeTypes.GetMimeType(poster.file_path), ImageType.Primary, null, url, cancellationToken)
+                await _providerManager.SaveImage(item, img, MimeTypes.GetMimeType(url), ImageType.Primary, null, url, cancellationToken)
                                     .ConfigureAwait(false);
             }
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var eligibleBackdrops = new ManualMovieDbImageProvider(_jsonSerializer, ConfigurationManager).GetBackdrops(images, item).ToList();
+            var eligibleBackdrops = images
+                .Where(i => i.Type == ImageType.Backdrop)
+                .ToList();
 
             var backdropLimit = ConfigurationManager.Configuration.MaxBackdrops;
 
             // backdrops - only download if earlier providers didn't find any (fanart)
             if (eligibleBackdrops.Count > 0 && ConfigurationManager.Configuration.DownloadMovieImages.Backdrops && item.BackdropImagePaths.Count < backdropLimit)
             {
-                var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
-
-                var tmdbImageUrl = tmdbSettings.images.base_url + "original";
-
                 for (var i = 0; i < eligibleBackdrops.Count; i++)
                 {
-                    var url = tmdbImageUrl + eligibleBackdrops[i].file_path;
+                    var url = eligibleBackdrops[i].Url;
 
                     if (!item.ContainsImageWithSourceUrl(url))
                     {
@@ -283,7 +249,7 @@ namespace MediaBrowser.Providers.Movies
 
                         }).ConfigureAwait(false);
 
-                        await _providerManager.SaveImage(item, img, MimeTypes.GetMimeType(eligibleBackdrops[i].file_path), ImageType.Backdrop, item.BackdropImagePaths.Count, url, cancellationToken)
+                        await _providerManager.SaveImage(item, img, MimeTypes.GetMimeType(url), ImageType.Backdrop, item.BackdropImagePaths.Count, url, cancellationToken)
                           .ConfigureAwait(false);
                     }
 
@@ -293,8 +259,6 @@ namespace MediaBrowser.Providers.Movies
                     }
                 }
             }
-
-            return status;
         }
     }
 }

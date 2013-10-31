@@ -39,6 +39,13 @@ namespace MediaBrowser.Providers.TV
 
         private async Task RunInternal(IProgress<double> progress, CancellationToken cancellationToken)
         {
+            if (!_config.Configuration.EnableInternetProviders ||
+                _config.Configuration.InternetProviderExcludeTypes.Contains(typeof(Series).Name, StringComparer.OrdinalIgnoreCase))
+            {
+                progress.Report(100);
+                return;
+            }
+
             var seriesList = _libraryManager.RootFolder
                 .RecursiveChildren
                 .OfType<Series>()
@@ -136,21 +143,27 @@ namespace MediaBrowser.Providers.TV
                 .Where(i => i.Item1 != -1 && i.Item2 != -1)
                 .ToList();
 
-            var anySeasonsRemoved = await RemoveObsoleteOrMissingSeasons(series, episodeLookup, cancellationToken).ConfigureAwait(false);
+            var anySeasonsRemoved = await RemoveObsoleteOrMissingSeasons(series, episodeLookup, cancellationToken)
+                .ConfigureAwait(false);
 
-            var anyEpisodesRemoved = await RemoveObsoleteOrMissingEpisodes(series, episodeLookup, cancellationToken).ConfigureAwait(false);
+            var anyEpisodesRemoved = await RemoveObsoleteOrMissingEpisodes(series, episodeLookup, cancellationToken)
+                .ConfigureAwait(false);
 
             var hasNewEpisodes = false;
 
             if (_config.Configuration.EnableInternetProviders)
             {
-                hasNewEpisodes = await AddMissingEpisodes(series, seriesDataPath, episodeLookup, cancellationToken).ConfigureAwait(false);
+                hasNewEpisodes = await AddMissingEpisodes(series, seriesDataPath, episodeLookup, cancellationToken)
+                    .ConfigureAwait(false);
             }
 
             if (hasNewEpisodes || anySeasonsRemoved || anyEpisodesRemoved)
             {
-                await series.RefreshMetadata(cancellationToken, true).ConfigureAwait(false);
-                await series.ValidateChildren(new Progress<double>(), cancellationToken, true).ConfigureAwait(false);
+                await series.RefreshMetadata(cancellationToken, true)
+                    .ConfigureAwait(false);
+
+                await series.ValidateChildren(new Progress<double>(), cancellationToken, true)
+                    .ConfigureAwait(false);
             }
         }
 

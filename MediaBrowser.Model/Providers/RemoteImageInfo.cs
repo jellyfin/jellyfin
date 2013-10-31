@@ -1,4 +1,6 @@
 ﻿
+using MediaBrowser.Model.Entities;
+
 namespace MediaBrowser.Model.Providers
 {
     /// <summary>
@@ -47,5 +49,11 @@ namespace MediaBrowser.Model.Providers
         /// </summary>
         /// <value>The language.</value>
         public string Language { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type.
+        /// </summary>
+        /// <value>The type.</value>
+        public ImageType Type { get; set; }
     }
 }

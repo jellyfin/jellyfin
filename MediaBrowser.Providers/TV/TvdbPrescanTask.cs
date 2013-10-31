@@ -1,12 +1,13 @@
-﻿using System.Globalization;
-using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -69,7 +70,8 @@ namespace MediaBrowser.Providers.TV
         /// <returns>Task.</returns>
         public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            if (!_config.Configuration.EnableInternetProviders)
+            if (!_config.Configuration.EnableInternetProviders || 
+                _config.Configuration.InternetProviderExcludeTypes.Contains(typeof(Series).Name, StringComparer.OrdinalIgnoreCase))
             {
                 progress.Report(100);
                 return;
