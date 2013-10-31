@@ -20,6 +20,13 @@ namespace MediaBrowser.Api.LiveTv
     {
         // Add filter by service if needed, and/or other filters
     }
+
+    [Route("/LiveTv/Recordings", "GET")]
+    [Api(Description = "Gets available live tv recordings.")]
+    public class GetRecordings : IReturn<List<RecordingInfo>>
+    {
+        // Add filter by service if needed, and/or other filters
+    }
     
     public class LiveTvService : BaseApiService
     {
@@ -40,6 +47,14 @@ namespace MediaBrowser.Api.LiveTv
             return ToOptimizedResult(result);
         }
 
+        private LiveTvServiceInfo GetServiceInfo(ILiveTvService service)
+        {
+            return new LiveTvServiceInfo
+            {
+                Name = service.Name
+            };
+        }
+
         public object Get(GetChannels request)
         {
             var result = GetChannelsAsync(request).Result;
@@ -47,25 +62,35 @@ namespace MediaBrowser.Api.LiveTv
             return ToOptimizedResult(result);
         }
 
-        public async Task<IEnumerable<ChannelInfoDto>> GetChannelsAsync(GetChannels request)
+        private async Task<IEnumerable<ChannelInfoDto>> GetChannelsAsync(GetChannels request)
         {
             var services = _liveTvManager.Services;
 
-            var channelTasks = services.Select(i => i.GetChannelsAsync(CancellationToken.None));
+            var tasks = services.Select(i => i.GetChannelsAsync(CancellationToken.None));
 
-            var channelLists = await Task.WhenAll(channelTasks).ConfigureAwait(false);
+            var channelLists = await Task.WhenAll(tasks).ConfigureAwait(false);
 
             // Aggregate all channels from all services
             return channelLists.SelectMany(i => i)
                 .Select(_liveTvManager.GetChannelInfoDto);
         }
-        
-        private LiveTvServiceInfo GetServiceInfo(ILiveTvService service)
+
+        public object Get(GetRecordings request)
         {
-            return new LiveTvServiceInfo
-            {
-                Name = service.Name
-            };
+            var result = GetRecordingsAsync(request).Result;
+
+            return ToOptimizedResult(result);
+        }
+
+        private async Task<IEnumerable<RecordingInfo>> GetRecordingsAsync(GetRecordings request)
+        {
+            var services = _liveTvManager.Services;
+
+            var tasks = services.Select(i => i.GetRecordingsAsync(CancellationToken.None));
+
+            var recordings = await Task.WhenAll(tasks).ConfigureAwait(false);
+
+            return recordings.SelectMany(i => i);
         }
     }
 }

@@ -73,6 +73,7 @@
     <Compile Include="LiveTv\ChannelInfoDto.cs" />
     <Compile Include="LiveTv\ChannelType.cs" />
     <Compile Include="LiveTv\LiveTvServiceInfo.cs" />
+    <Compile Include="LiveTv\RecordingInfo.cs" />
     <Compile Include="Net\WebSocketMessage.cs" />
     <Compile Include="Net\WebSocketMessageType.cs" />
     <Compile Include="Net\WebSocketState.cs" />

@@ -12,6 +12,8 @@ namespace MediaBrowser.Model.LiveTv
         /// <value>The name.</value>
         public string Name { get; set; }
 
+        public string Id { get; set; }
+        
         /// <summary>
         /// Gets or sets the name of the service.
         /// </summary>

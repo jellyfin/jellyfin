@@ -220,6 +220,9 @@
     <Compile Include="..\MediaBrowser.Model\LiveTv\LiveTvServiceInfo.cs">
       <Link>LiveTv\LiveTvServiceInfo.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\LiveTv\RecordingInfo.cs">
+      <Link>LiveTv\RecordingInfo.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Logging\ILogger.cs">
       <Link>Logging\ILogger.cs</Link>
     </Compile>
