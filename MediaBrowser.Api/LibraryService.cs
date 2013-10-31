@@ -5,8 +5,10 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Querying;
 using ServiceStack.ServiceHost;
 using System;
@@ -32,6 +34,21 @@ namespace MediaBrowser.Api
         public string Id { get; set; }
     }
 
+    [Route("/Items/{Id}/RemoteImages/{Type}", "GET")]
+    [Api(Description = "Gets available remote images for an item")]
+    public class GetRemoteImages : IReturn<List<RemoteImageInfo>>
+    {
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Id { get; set; }
+
+        [ApiMember(Name = "Type", Description = "The image type", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public ImageType Type { get; set; }
+    }
+    
     /// <summary>
     /// Class GetCriticReviews
     /// </summary>
@@ -208,6 +225,7 @@ namespace MediaBrowser.Api
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
         private readonly IUserDataManager _userDataManager;
+        private readonly IProviderManager _providerManager;
 
         private readonly IDtoService _dtoService;
 
@@ -215,13 +233,14 @@ namespace MediaBrowser.Api
         /// Initializes a new instance of the <see cref="LibraryService" /> class.
         /// </summary>
         public LibraryService(IItemRepository itemRepo, ILibraryManager libraryManager, IUserManager userManager,
-                              IDtoService dtoService, IUserDataManager userDataManager)
+                              IDtoService dtoService, IUserDataManager userDataManager, IProviderManager providerManager)
         {
             _itemRepo = itemRepo;
             _libraryManager = libraryManager;
             _userManager = userManager;
             _dtoService = dtoService;
             _userDataManager = userDataManager;
+            _providerManager = providerManager;
         }
 
         public object Get(GetFile request)
@@ -238,6 +257,15 @@ namespace MediaBrowser.Api
             }
 
             return ToStaticFileResult(item.Path);
+        }
+
+        public object Get(GetRemoteImages request)
+        {
+            var item = _dtoService.GetItemByDtoId(request.Id);
+
+            var result = _providerManager.GetAvailableRemoteImages(item, request.Type, CancellationToken.None).Result;
+
+            return ToOptimizedResult(result);
         }
 
         /// <summary>
@@ -335,7 +363,9 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetItemCounts request)
         {
-            var items = GetAllLibraryItems(request.UserId, _userManager, _libraryManager).ToList();
+            var items = GetAllLibraryItems(request.UserId, _userManager, _libraryManager)
+                .Where(i => i.LocationType != LocationType.Virtual)
+                .ToList();
 
             var filteredItems = request.UserId.HasValue ? FilterItems(items, request, request.UserId.Value).ToList() : items;
 

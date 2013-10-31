@@ -49,6 +49,7 @@
   <ItemGroup>
     <Compile Include="FanartBaseProvider.cs" />
     <Compile Include="FolderProviderFromXml.cs" />
+    <Compile Include="Games\GameXmlParser.cs" />
     <Compile Include="Games\GameProviderFromXml.cs" />
     <Compile Include="Games\GameSystemProviderFromXml.cs" />
     <Compile Include="ImageFromMediaLocationProvider.cs" />
@@ -59,6 +60,7 @@
     <Compile Include="MediaInfo\FFProbeVideoInfoProvider.cs" />
     <Compile Include="MediaInfo\VideoImageProvider.cs" />
     <Compile Include="Movies\BoxSetProviderFromXml.cs" />
+    <Compile Include="Movies\ManualMovieDbImageProvider.cs" />
     <Compile Include="Movies\MovieUpdatesPrescanTask.cs" />
     <Compile Include="Movies\MovieXmlParser.cs" />
     <Compile Include="Movies\FanArtMovieProvider.cs" />

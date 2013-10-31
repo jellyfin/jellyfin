@@ -30,8 +30,9 @@ namespace MediaBrowser.Providers.Movies
         internal static TmdbPersonProvider Current { get; private set; }
 
         const string DataFileName = "info.json";
+        private readonly IFileSystem _fileSystem;
 
-        public TmdbPersonProvider(IJsonSerializer jsonSerializer, ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager)
+        public TmdbPersonProvider(IJsonSerializer jsonSerializer, ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager, IFileSystem fileSystem)
             : base(logManager, configurationManager)
         {
             if (jsonSerializer == null)
@@ -40,6 +41,7 @@ namespace MediaBrowser.Providers.Movies
             }
             JsonSerializer = jsonSerializer;
             ProviderManager = providerManager;
+            _fileSystem = fileSystem;
             Current = this;
         }
 
@@ -105,7 +107,7 @@ namespace MediaBrowser.Providers.Movies
 
                 if (fileInfo.Exists)
                 {
-                    return fileInfo.LastWriteTimeUtc > providerInfo.LastRefreshed;
+                    return _fileSystem.GetLastWriteTimeUtc(fileInfo) > providerInfo.LastRefreshed;
                 }
 
                 return true;
@@ -270,7 +272,7 @@ namespace MediaBrowser.Providers.Movies
             {
                 Directory.CreateDirectory(personDataPath);
 
-                using (var fs = new FileStream(Path.Combine(personDataPath, DataFileName), FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, true))
+                using (var fs = _fileSystem.GetFileStream(Path.Combine(personDataPath, DataFileName), FileMode.Create, FileAccess.Write, FileShare.Read, true))
                 {
                     await json.CopyToAsync(fs).ConfigureAwait(false);
                 }

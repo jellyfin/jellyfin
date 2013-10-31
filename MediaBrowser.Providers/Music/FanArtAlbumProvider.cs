@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -37,6 +38,7 @@ namespace MediaBrowser.Providers.Music
         protected IHttpClient HttpClient { get; private set; }
 
         internal static FanArtAlbumProvider Current { get; private set; }
+        private readonly IFileSystem _fileSystem;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FanArtAlbumProvider"/> class.
@@ -45,10 +47,11 @@ namespace MediaBrowser.Providers.Music
         /// <param name="logManager">The log manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="providerManager">The provider manager.</param>
-        public FanArtAlbumProvider(IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager)
+        public FanArtAlbumProvider(IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager, IFileSystem fileSystem)
             : base(logManager, configurationManager)
         {
             _providerManager = providerManager;
+            _fileSystem = fileSystem;
             HttpClient = httpClient;
 
             Current = this;
@@ -140,7 +143,7 @@ namespace MediaBrowser.Providers.Music
 
                 if (file.Exists)
                 {
-                    return file.LastWriteTimeUtc;
+                    return _fileSystem.GetLastWriteTimeUtc(file);
                 }
             } 
             

@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using System;
@@ -44,7 +45,8 @@ namespace MediaBrowser.Controller.Resolvers
                 ".f4v",
                 ".3gp",
                 ".webm",
-                ".mts"
+                ".mts",
+                ".rec"
         };
 
         private static readonly Dictionary<string, string> VideoFileExtensionsDictionary = VideoFileExtensions.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
@@ -125,10 +127,11 @@ namespace MediaBrowser.Controller.Resolvers
         /// <summary>
         /// Ensures DateCreated and DateModified have values
         /// </summary>
+        /// <param name="fileSystem">The file system.</param>
         /// <param name="item">The item.</param>
         /// <param name="args">The args.</param>
         /// <param name="includeCreationTime">if set to <c>true</c> [include creation time].</param>
-        public static void EnsureDates(BaseItem item, ItemResolveArgs args, bool includeCreationTime)
+        public static void EnsureDates(IFileSystem fileSystem, BaseItem item, ItemResolveArgs args, bool includeCreationTime)
         {
             if (!Path.IsPathRooted(item.Path))
             {
@@ -144,22 +147,22 @@ namespace MediaBrowser.Controller.Resolvers
                 {
                     if (includeCreationTime)
                     {
-                        item.DateCreated = childData.CreationTimeUtc;
+                        item.DateCreated = fileSystem.GetCreationTimeUtc(childData);
                     }
 
-                    item.DateModified = childData.LastWriteTimeUtc;
+                    item.DateModified = fileSystem.GetLastWriteTimeUtc(childData);
                 }
                 else
                 {
-                    var fileData = FileSystem.GetFileSystemInfo(item.Path);
+                    var fileData = fileSystem.GetFileSystemInfo(item.Path);
 
                     if (fileData.Exists)
                     {
                         if (includeCreationTime)
                         {
-                            item.DateCreated = fileData.CreationTimeUtc;
+                            item.DateCreated = fileSystem.GetCreationTimeUtc(fileData);
                         }
-                        item.DateModified = fileData.LastWriteTimeUtc;
+                        item.DateModified = fileSystem.GetLastWriteTimeUtc(fileData);
                     }
                 }
             }
@@ -167,9 +170,9 @@ namespace MediaBrowser.Controller.Resolvers
             {
                 if (includeCreationTime)
                 {
-                    item.DateCreated = args.FileInfo.CreationTimeUtc;
+                    item.DateCreated = fileSystem.GetCreationTimeUtc(args.FileInfo);
                 }
-                item.DateModified = args.FileInfo.LastWriteTimeUtc;
+                item.DateModified = fileSystem.GetLastWriteTimeUtc(args.FileInfo);
             }
         }
     }

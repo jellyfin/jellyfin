@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Session;
 using ServiceStack.ServiceHost;
@@ -182,16 +183,18 @@ namespace MediaBrowser.Api
         private readonly ISessionManager _sessionManager;
 
         private readonly IDtoService _dtoService;
+        private readonly IUserManager _userManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SessionsService" /> class.
         /// </summary>
         /// <param name="sessionManager">The session manager.</param>
         /// <param name="dtoService">The dto service.</param>
-        public SessionsService(ISessionManager sessionManager, IDtoService dtoService)
+        public SessionsService(ISessionManager sessionManager, IDtoService dtoService, IUserManager userManager)
         {
             _sessionManager = sessionManager;
             _dtoService = dtoService;
+            _userManager = userManager;
         }
 
         /// <summary>
@@ -206,6 +209,16 @@ namespace MediaBrowser.Api
             if (request.SupportsRemoteControl.HasValue)
             {
                 result = result.Where(i => i.SupportsRemoteControl == request.SupportsRemoteControl.Value);
+            }
+
+            if (request.ControllableByUserId.HasValue)
+            {
+                var user = _userManager.GetUserById(request.ControllableByUserId.Value);
+
+                if (!user.Configuration.EnableRemoteControlOfOtherUsers)
+                {
+                    result = result.Where(i => i.User == null || i.User.Id == request.ControllableByUserId.Value);
+                }
             }
 
             return ToOptimizedResult(result.Select(_dtoService.GetSessionInfoDto).ToList());

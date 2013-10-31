@@ -36,6 +36,8 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         TmdbCollection,
         MusicBrainzReleaseGroup,
-        Zap2It
+        Zap2It,
+        NesBox,
+        NesBoxRom
     }
 }

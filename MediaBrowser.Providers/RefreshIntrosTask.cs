@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.IO;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Logging;
 using System;
@@ -22,15 +23,18 @@ namespace MediaBrowser.Providers
         /// </summary>
         private readonly ILogger _logger;
 
+        private readonly IFileSystem _fileSystem;
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="RefreshIntrosTask"/> class.
         /// </summary>
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="logger">The logger.</param>
-        public RefreshIntrosTask(ILibraryManager libraryManager, ILogger logger)
+        public RefreshIntrosTask(ILibraryManager libraryManager, ILogger logger, IFileSystem fileSystem)
         {
             _libraryManager = libraryManager;
             _logger = logger;
+            _fileSystem = fileSystem;
         }
 
         /// <summary>
@@ -77,7 +81,7 @@ namespace MediaBrowser.Providers
         /// <returns>Task.</returns>
         private async Task RefreshIntro(string path, CancellationToken cancellationToken)
         {
-            var item = _libraryManager.ResolvePath(FileSystem.GetFileSystemInfo(path));
+            var item = _libraryManager.ResolvePath(_fileSystem.GetFileSystemInfo(path));
 
             if (item == null)
             {

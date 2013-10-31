@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
@@ -18,9 +19,12 @@ namespace MediaBrowser.Providers
     /// </summary>
     public class ImagesByNameProvider : ImageFromMediaLocationProvider
     {
-        public ImagesByNameProvider(ILogManager logManager, IServerConfigurationManager configurationManager)
+        private readonly IFileSystem _fileSystem;
+        
+        public ImagesByNameProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IFileSystem fileSystem)
             : base(logManager, configurationManager)
         {
+            _fileSystem = fileSystem;
         }
 
         public override ItemUpdateType ItemUpdateType
@@ -110,8 +114,8 @@ namespace MediaBrowser.Providers
 
             return files.Select(f =>
             {
-                var lastWriteTime = FileSystem.GetLastWriteTimeUtc(f, Logger);
-                var creationTime = FileSystem.GetCreationTimeUtc(f, Logger);
+                var lastWriteTime = _fileSystem.GetLastWriteTimeUtc(f);
+                var creationTime = _fileSystem.GetCreationTimeUtc(f);
 
                 return creationTime > lastWriteTime ? creationTime : lastWriteTime;
 
@@ -150,7 +154,7 @@ namespace MediaBrowser.Providers
         /// <returns>System.String.</returns>
         protected string GetLocation(BaseItem item)
         {
-            var name = FileSystem.GetValidFilename(item.Name);
+            var name = _fileSystem.GetValidFilename(item.Name);
 
             return Path.Combine(ConfigurationManager.ApplicationPaths.GeneralPath, name);
         }

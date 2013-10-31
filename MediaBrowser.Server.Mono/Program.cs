@@ -17,6 +17,7 @@ using System.Security.Cryptography.X509Certificates;
 using Gtk;
 using Gdk;
 using System.Threading.Tasks;
+using System.Reflection;
 
 namespace MediaBrowser.Server.Mono
 {
@@ -203,6 +204,8 @@ namespace MediaBrowser.Server.Mono
 
 			logger.Info("Server: {0}", Environment.MachineName);
 			logger.Info("Operating system: {0}", Environment.OSVersion.ToString());
+
+			MonoBug11817WorkAround.Apply ();
 		}
 
 		/// <summary>
@@ -278,6 +281,36 @@ namespace MediaBrowser.Server.Mono
 		public bool CheckValidationResult (ServicePoint srvPoint, X509Certificate certificate, WebRequest request, int certificateProblem)
 		{
 			return true;
+		}
+	}
+
+	public class MonoBug11817WorkAround
+	{
+		public static void Apply()
+		{
+			var property = typeof(TimeZoneInfo).GetProperty("TimeZoneDirectory", BindingFlags.Static | BindingFlags.NonPublic);
+
+			if (property == null) return;
+
+			var zoneInfo = FindZoneInfoFolder();
+			property.SetValue(null, zoneInfo, new object[0]);
+		}
+
+		public static string FindZoneInfoFolder()
+		{
+			var current = new DirectoryInfo(Directory.GetCurrentDirectory());
+
+			while(current != null)
+			{
+				var zoneinfoTestPath = Path.Combine(current.FullName, "zoneinfo");
+
+				if (Directory.Exists(zoneinfoTestPath))
+					return zoneinfoTestPath;
+
+				current = current.Parent;
+			}
+
+			return null;
 		}
 	}
 }

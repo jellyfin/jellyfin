@@ -35,16 +35,18 @@ namespace MediaBrowser.Server.Implementations.Providers
         /// The _directory watchers
         /// </summary>
         private readonly IDirectoryWatchers _directoryWatchers;
+        private readonly IFileSystem _fileSystem;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ImageSaver"/> class.
         /// </summary>
         /// <param name="config">The config.</param>
         /// <param name="directoryWatchers">The directory watchers.</param>
-        public ImageSaver(IServerConfigurationManager config, IDirectoryWatchers directoryWatchers)
+        public ImageSaver(IServerConfigurationManager config, IDirectoryWatchers directoryWatchers, IFileSystem fileSystem)
         {
             _config = config;
             _directoryWatchers = directoryWatchers;
+            _fileSystem = fileSystem;
             _remoteImageCache = new FileSystemRepository(config.ApplicationPaths.DownloadedImagesDataPath);
         }
 
@@ -67,30 +69,20 @@ namespace MediaBrowser.Server.Implementations.Providers
                 throw new ArgumentNullException("mimeType");
             }
 
-            var saveLocally = _config.Configuration.SaveLocalMeta;
+            var saveLocally = _config.Configuration.SaveLocalMeta || item is IItemByName || item is User;
 
-            if (item is IItemByName)
-            {
-                saveLocally = true;
-            }
-            else if (item is User)
-            {
-                saveLocally = true;
-            }
-            else if (item is Audio || item.Parent == null || string.IsNullOrEmpty(item.MetaLocation))
+            if (item is Audio || item.Parent == null)
             {
                 saveLocally = false;
             }
 
-            if (type != ImageType.Primary)
+            if (type != ImageType.Primary && item is Episode)
             {
-                if (item is Episode)
-                {
-                    saveLocally = false;
-                }
+                saveLocally = false;
             }
 
-            if (item.LocationType == LocationType.Remote || item.LocationType == LocationType.Virtual)
+            var locationType = item.LocationType;
+            if (locationType == LocationType.Remote || locationType == LocationType.Virtual)
             {
                 saveLocally = false;
             }
@@ -186,7 +178,7 @@ namespace MediaBrowser.Server.Implementations.Providers
                     }
                 }
 
-                using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
+                using (var fs = _fileSystem.GetFileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, true))
                 {
                     await source.CopyToAsync(fs, StreamDefaults.DefaultCopyToBufferSize, cancellationToken).ConfigureAwait(false);
                 }
@@ -373,7 +365,7 @@ namespace MediaBrowser.Server.Implementations.Providers
                     path = GetSavePathForItemInMixedFolder(item, type, filename, extension);
                 }
 
-                if (string.IsNullOrEmpty(path) && !string.IsNullOrEmpty(item.MetaLocation))
+                if (string.IsNullOrEmpty(path))
                 {
                     path = Path.Combine(item.MetaLocation, filename + extension);
                 }

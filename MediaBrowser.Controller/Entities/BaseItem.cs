@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.IO;
@@ -212,6 +213,7 @@ namespace MediaBrowser.Controller.Entities
         public static IProviderManager ProviderManager { get; set; }
         public static ILocalizationManager LocalizationManager { get; set; }
         public static IItemRepository ItemRepository { get; set; }
+        public static IFileSystem FileSystem { get; set; }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
@@ -395,7 +397,7 @@ namespace MediaBrowser.Controller.Entities
                 // When resolving the root, we need it's grandchildren (children of user views)
                 var flattenFolderDepth = isPhysicalRoot ? 2 : 0;
 
-                args.FileSystemDictionary = FileData.GetFilteredFileSystemEntries(args.Path, Logger, args, flattenFolderDepth: flattenFolderDepth, resolveShortcuts: isPhysicalRoot || args.IsVf);
+                args.FileSystemDictionary = FileData.GetFilteredFileSystemEntries(args.Path, FileSystem, Logger, args, flattenFolderDepth: flattenFolderDepth, resolveShortcuts: isPhysicalRoot || args.IsVf);
 
                 // Need to remove subpaths that may have been resolved from shortcuts
                 // Example: if \\server\movies exists, then strip out \\server\movies\action
@@ -413,7 +415,7 @@ namespace MediaBrowser.Controller.Entities
             }
 
             //update our dates
-            EntityResolutionHelper.EnsureDates(this, args, false);
+            EntityResolutionHelper.EnsureDates(FileSystem, this, args, false);
 
             IsOffline = false;
 
@@ -1337,6 +1339,13 @@ namespace MediaBrowser.Controller.Entities
 
             var data = userManager.GetUserData(user.Id, key);
 
+            if (datePlayed.HasValue)
+            {
+                // Incremenet
+                data.PlayCount++;
+            }
+
+            // Ensure it's at least one
             data.PlayCount = Math.Max(data.PlayCount, 1);
 
             data.LastPlayedDate = datePlayed ?? data.LastPlayedDate;
@@ -1530,7 +1539,8 @@ namespace MediaBrowser.Controller.Entities
             }
 
             // Refresh metadata
-            return RefreshMetadata(CancellationToken.None, forceSave: true);
+            // Need to disable slow providers or the image might get re-downloaded
+            return RefreshMetadata(CancellationToken.None, forceSave: true, allowSlowProviders: false);
         }
 
         /// <summary>
@@ -1728,7 +1738,7 @@ namespace MediaBrowser.Controller.Entities
             if (locationType == LocationType.Remote ||
                 locationType == LocationType.Virtual)
             {
-                return File.GetLastWriteTimeUtc(imagePath);
+                return FileSystem.GetLastWriteTimeUtc(imagePath);
             }
 
             var metaFileEntry = ResolveArgs.GetMetaFileByPath(imagePath);
@@ -1745,7 +1755,7 @@ namespace MediaBrowser.Controller.Entities
             }
 
             // See if we can avoid a file system lookup by looking for the file in ResolveArgs
-            return metaFileEntry == null ? File.GetLastWriteTimeUtc(imagePath) : metaFileEntry.LastWriteTimeUtc;
+            return metaFileEntry == null ? FileSystem.GetLastWriteTimeUtc(imagePath) : FileSystem.GetLastWriteTimeUtc(metaFileEntry);
         }
     }
 }

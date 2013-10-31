@@ -552,32 +552,6 @@ namespace MediaBrowser.Controller.Providers
                     }
                     break;
 
-                case "GamesDbId":
-                    var gamesdbId = reader.ReadElementContentAsString();
-                    if (!string.IsNullOrWhiteSpace(gamesdbId))
-                    {
-                        item.SetProviderId(MetadataProviders.Gamesdb, gamesdbId);
-                    }
-                    break;
-
-                case "Players":
-                    {
-                        var val = reader.ReadElementContentAsString();
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            int num;
-
-                            if (int.TryParse(val, NumberStyles.Integer, _usCulture, out num))
-                            {
-                                var game = item as Game;
-                                if (game != null)
-                                {
-                                    game.PlayersSupported = num;
-                                }
-                            }
-                        }
-                        break;
-                    }
                 case "VoteCount":
                     {
                         var val = reader.ReadElementContentAsString();
@@ -588,19 +562,6 @@ namespace MediaBrowser.Controller.Providers
                             if (int.TryParse(val, NumberStyles.Integer, _usCulture, out num))
                             {
                                 item.VoteCount = num;
-                            }
-                        }
-                        break;
-                    }
-                case "GameSystem":
-                    {
-                        var val = reader.ReadElementContentAsString();
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            var game = item as Game;
-                            if (game != null)
-                            {
-                                game.GameSystem = val;
                             }
                         }
                         break;

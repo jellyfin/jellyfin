@@ -1,24 +1,96 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Model.Logging;
 using System;
-using System.Collections.Specialized;
 using System.IO;
 using System.Text;
 
-namespace MediaBrowser.Controller.IO
+namespace MediaBrowser.Common.Implementations.IO
 {
     /// <summary>
-    /// Class FileSystem
+    /// Class CommonFileSystem
     /// </summary>
-    public static class FileSystem
+    public class CommonFileSystem : IFileSystem
     {
+        protected ILogger Logger;
+
+        private readonly bool _supportsAsyncFileStreams;
+
+        public CommonFileSystem(ILogger logger, bool supportsAsyncFileStreams)
+        {
+            Logger = logger;
+            _supportsAsyncFileStreams = supportsAsyncFileStreams;
+        }
+
+        /// <summary>
+        /// Determines whether the specified filename is shortcut.
+        /// </summary>
+        /// <param name="filename">The filename.</param>
+        /// <returns><c>true</c> if the specified filename is shortcut; otherwise, <c>false</c>.</returns>
+        /// <exception cref="System.ArgumentNullException">filename</exception>
+        public virtual bool IsShortcut(string filename)
+        {
+            if (string.IsNullOrEmpty(filename))
+            {
+                throw new ArgumentNullException("filename");
+            }
+
+            var extension = Path.GetExtension(filename);
+
+            return string.Equals(extension, ".mblink", StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Resolves the shortcut.
+        /// </summary>
+        /// <param name="filename">The filename.</param>
+        /// <returns>System.String.</returns>
+        /// <exception cref="System.ArgumentNullException">filename</exception>
+        public virtual string ResolveShortcut(string filename)
+        {
+            if (string.IsNullOrEmpty(filename))
+            {
+                throw new ArgumentNullException("filename");
+            }
+
+            if (string.Equals(Path.GetExtension(filename), ".mblink", StringComparison.OrdinalIgnoreCase))
+            {
+                return File.ReadAllText(filename);
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Creates the shortcut.
+        /// </summary>
+        /// <param name="shortcutPath">The shortcut path.</param>
+        /// <param name="target">The target.</param>
+        /// <exception cref="System.ArgumentNullException">
+        /// shortcutPath
+        /// or
+        /// target
+        /// </exception>
+        public void CreateShortcut(string shortcutPath, string target)
+        {
+            if (string.IsNullOrEmpty(shortcutPath))
+            {
+                throw new ArgumentNullException("shortcutPath");
+            }
+
+            if (string.IsNullOrEmpty(target))
+            {
+                throw new ArgumentNullException("target");
+            }
+
+            File.WriteAllText(shortcutPath, target);
+        }
+
         /// <summary>
         /// Gets the file system info.
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns>FileSystemInfo.</returns>
-        public static FileSystemInfo GetFileSystemInfo(string path)
+        public FileSystemInfo GetFileSystemInfo(string path)
         {
             // Take a guess to try and avoid two file system hits, but we'll double-check by calling Exists
             if (Path.HasExtension(path))
@@ -46,48 +118,6 @@ namespace MediaBrowser.Controller.IO
         }
 
         /// <summary>
-        /// Gets the creation time UTC.
-        /// </summary>
-        /// <param name="info">The info.</param>
-        /// <param name="logger">The logger.</param>
-        /// <returns>DateTime.</returns>
-        public static DateTime GetLastWriteTimeUtc(FileSystemInfo info, ILogger logger)
-        {
-            // This could throw an error on some file systems that have dates out of range
-
-            try
-            {
-                return info.LastWriteTimeUtc;
-            }
-            catch (Exception ex)
-            {
-                logger.ErrorException("Error determining LastAccessTimeUtc for {0}", ex, info.FullName);
-                return DateTime.MinValue;
-            }
-        }
-
-        /// <summary>
-        /// Gets the creation time UTC.
-        /// </summary>
-        /// <param name="info">The info.</param>
-        /// <param name="logger">The logger.</param>
-        /// <returns>DateTime.</returns>
-        public static DateTime GetCreationTimeUtc(FileSystemInfo info, ILogger logger)
-        {
-            // This could throw an error on some file systems that have dates out of range
-
-            try
-            {
-                return info.CreationTimeUtc;
-            }
-            catch (Exception ex)
-            {
-                logger.ErrorException("Error determining CreationTimeUtc for {0}", ex, info.FullName);
-                return DateTime.MinValue;
-            }
-        }
-
-        /// <summary>
         /// The space char
         /// </summary>
         private const char SpaceChar = ' ';
@@ -102,7 +132,7 @@ namespace MediaBrowser.Controller.IO
         /// <param name="filename">The filename.</param>
         /// <returns>System.String.</returns>
         /// <exception cref="System.ArgumentNullException">filename</exception>
-        public static string GetValidFilename(string filename)
+        public string GetValidFilename(string filename)
         {
             if (string.IsNullOrEmpty(filename))
             {
@@ -120,144 +150,71 @@ namespace MediaBrowser.Controller.IO
         }
 
         /// <summary>
-        /// Resolves the shortcut.
+        /// Gets the creation time UTC.
         /// </summary>
-        /// <param name="filename">The filename.</param>
-        /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">filename</exception>
-        public static string ResolveShortcut(string filename)
+        /// <param name="info">The info.</param>
+        /// <returns>DateTime.</returns>
+        public DateTime GetCreationTimeUtc(FileSystemInfo info)
         {
-            if (string.IsNullOrEmpty(filename))
+            // This could throw an error on some file systems that have dates out of range
+            try
             {
-                throw new ArgumentNullException("filename");
+                return info.CreationTimeUtc;
             }
-
-            if (string.Equals(Path.GetExtension(filename), ".mblink", StringComparison.OrdinalIgnoreCase))
+            catch (Exception ex)
             {
-                return File.ReadAllText(filename);
-            }
-
-            //return new WindowsShortcut(filename).ResolvedPath;
-
-            var link = new ShellLink();
-            ((IPersistFile)link).Load(filename, NativeMethods.STGM_READ);
-            // TODO: if I can get hold of the hwnd call resolve first. This handles moved and renamed files.  
-            // ((IShellLinkW)link).Resolve(hwnd, 0) 
-            var sb = new StringBuilder(NativeMethods.MAX_PATH);
-            WIN32_FIND_DATA data;
-            ((IShellLinkW)link).GetPath(sb, sb.Capacity, out data, 0);
-            return sb.ToString();
-        }
-
-        /// <summary>
-        /// Creates a shortcut file pointing to a specified path
-        /// </summary>
-        /// <param name="shortcutPath">The shortcut path.</param>
-        /// <param name="target">The target.</param>
-        /// <exception cref="System.ArgumentNullException">shortcutPath</exception>
-        public static void CreateShortcut(string shortcutPath, string target)
-        {
-            if (string.IsNullOrEmpty(shortcutPath))
-            {
-                throw new ArgumentNullException("shortcutPath");
-            }
-
-            if (string.IsNullOrEmpty(target))
-            {
-                throw new ArgumentNullException("target");
-            }
-
-            File.WriteAllText(shortcutPath, target);
-
-            //var link = new ShellLink();
-
-            //((IShellLinkW)link).SetPath(target);
-
-            //((IPersistFile)link).Save(shortcutPath, true);
-        }
-
-        private static readonly Dictionary<string, string> ShortcutExtensionsDictionary = new[] { ".mblink", ".lnk" }
-            .ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
-
-        /// <summary>
-        /// Determines whether the specified filename is shortcut.
-        /// </summary>
-        /// <param name="filename">The filename.</param>
-        /// <returns><c>true</c> if the specified filename is shortcut; otherwise, <c>false</c>.</returns>
-        /// <exception cref="System.ArgumentNullException">filename</exception>
-        public static bool IsShortcut(string filename)
-        {
-            if (string.IsNullOrEmpty(filename))
-            {
-                throw new ArgumentNullException("filename");
-            }
-
-            var extension = Path.GetExtension(filename);
-
-            return !string.IsNullOrEmpty(extension) && ShortcutExtensionsDictionary.ContainsKey(extension);
-        }
-
-        /// <summary>
-        /// Copies all.
-        /// </summary>
-        /// <param name="source">The source.</param>
-        /// <param name="target">The target.</param>
-        /// <exception cref="System.ArgumentNullException">source</exception>
-        /// <exception cref="System.ArgumentException">The source and target directories are the same</exception>
-        public static void CopyAll(string source, string target)
-        {
-            if (string.IsNullOrEmpty(source))
-            {
-                throw new ArgumentNullException("source");
-            }
-            if (string.IsNullOrEmpty(target))
-            {
-                throw new ArgumentNullException("target");
-            }
-
-            if (source.Equals(target, StringComparison.OrdinalIgnoreCase))
-            {
-                throw new ArgumentException("The source and target directories are the same");
-            }
-
-            // Check if the target directory exists, if not, create it. 
-            Directory.CreateDirectory(target);
-
-            foreach (var file in Directory.EnumerateFiles(source))
-            {
-                File.Copy(file, Path.Combine(target, Path.GetFileName(file)), true);
-            }
-
-            // Copy each subdirectory using recursion. 
-            foreach (var dir in Directory.EnumerateDirectories(source))
-            {
-                CopyAll(dir, Path.Combine(target, Path.GetFileName(dir)));
+                Logger.ErrorException("Error determining CreationTimeUtc for {0}", ex, info.FullName);
+                return DateTime.MinValue;
             }
         }
 
         /// <summary>
-        /// Parses the ini file.
+        /// Gets the creation time UTC.
+        /// </summary>
+        /// <param name="info">The info.</param>
+        /// <param name="logger">The logger.</param>
+        /// <returns>DateTime.</returns>
+        public DateTime GetLastWriteTimeUtc(FileSystemInfo info)
+        {
+            // This could throw an error on some file systems that have dates out of range
+            try
+            {
+                return info.LastWriteTimeUtc;
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error determining LastAccessTimeUtc for {0}", ex, info.FullName);
+                return DateTime.MinValue;
+            }
+        }
+
+        /// <summary>
+        /// Gets the last write time UTC.
         /// </summary>
         /// <param name="path">The path.</param>
-        /// <returns>NameValueCollection.</returns>
-        public static NameValueCollection ParseIniFile(string path)
+        /// <returns>DateTime.</returns>
+        public DateTime GetLastWriteTimeUtc(string path)
         {
-            var values = new NameValueCollection();
+            return GetLastWriteTimeUtc(GetFileSystemInfo(path));
+        }
 
-            foreach (var line in File.ReadAllLines(path))
+        /// <summary>
+        /// Gets the file stream.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <param name="mode">The mode.</param>
+        /// <param name="access">The access.</param>
+        /// <param name="share">The share.</param>
+        /// <param name="isAsync">if set to <c>true</c> [is asynchronous].</param>
+        /// <returns>FileStream.</returns>
+        public FileStream GetFileStream(string path, FileMode mode, FileAccess access, FileShare share, bool isAsync = false)
+        {
+            if (_supportsAsyncFileStreams && isAsync)
             {
-                var data = line.Split('=');
-
-                if (data.Length < 2) continue;
-
-                var key = data[0];
-
-                var value = data.Length == 2 ? data[1] : string.Join(string.Empty, data, 1, data.Length - 1);
-
-                values[key] = value;
+                return new FileStream(path, mode, access, share, 4096, true);
             }
 
-            return values;
+            return new FileStream(path, mode, access, share);
         }
     }
 
@@ -381,4 +338,5 @@ namespace MediaBrowser.Controller.IO
         }
 
     }
+
 }

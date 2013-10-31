@@ -13,6 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Server.Implementations.Providers
 {
@@ -48,6 +49,9 @@ namespace MediaBrowser.Server.Implementations.Providers
         /// <value>The metadata providers enumerable.</value>
         private BaseMetadataProvider[] MetadataProviders { get; set; }
 
+        private IImageProvider[] ImageProviders { get; set; }
+        private readonly IFileSystem _fileSystem;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ProviderManager" /> class.
         /// </summary>
@@ -55,22 +59,25 @@ namespace MediaBrowser.Server.Implementations.Providers
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="directoryWatchers">The directory watchers.</param>
         /// <param name="logManager">The log manager.</param>
-        /// <param name="libraryManager">The library manager.</param>
-        public ProviderManager(IHttpClient httpClient, IServerConfigurationManager configurationManager, IDirectoryWatchers directoryWatchers, ILogManager logManager, ILibraryManager libraryManager)
+        public ProviderManager(IHttpClient httpClient, IServerConfigurationManager configurationManager, IDirectoryWatchers directoryWatchers, ILogManager logManager, IFileSystem fileSystem)
         {
             _logger = logManager.GetLogger("ProviderManager");
             _httpClient = httpClient;
             ConfigurationManager = configurationManager;
             _directoryWatchers = directoryWatchers;
+            _fileSystem = fileSystem;
         }
 
         /// <summary>
         /// Adds the metadata providers.
         /// </summary>
         /// <param name="providers">The providers.</param>
-        public void AddParts(IEnumerable<BaseMetadataProvider> providers)
+        /// <param name="imageProviders">The image providers.</param>
+        public void AddParts(IEnumerable<BaseMetadataProvider> providers, IEnumerable<IImageProvider> imageProviders)
         {
             MetadataProviders = providers.OrderBy(e => e.Priority).ToArray();
+
+            ImageProviders = imageProviders.ToArray();
         }
 
         /// <summary>
@@ -288,7 +295,7 @@ namespace MediaBrowser.Server.Implementations.Providers
             {
                 using (dataToSave)
                 {
-                    using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
+                    using (var fs = _fileSystem.GetFileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, true))
                     {
                         await dataToSave.CopyToAsync(fs, StreamDefaults.DefaultCopyToBufferSize, cancellationToken).ConfigureAwait(false);
                     }
@@ -342,7 +349,60 @@ namespace MediaBrowser.Server.Implementations.Providers
         /// <returns>Task.</returns>
         public Task SaveImage(BaseItem item, Stream source, string mimeType, ImageType type, int? imageIndex, string sourceUrl, CancellationToken cancellationToken)
         {
-            return new ImageSaver(ConfigurationManager, _directoryWatchers).SaveImage(item, source, mimeType, type, imageIndex, sourceUrl, cancellationToken);
+            return new ImageSaver(ConfigurationManager, _directoryWatchers, _fileSystem).SaveImage(item, source, mimeType, type, imageIndex, sourceUrl, cancellationToken);
+        }
+
+        /// <summary>
+        /// Gets the available remote images.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="type">The type.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{IEnumerable{RemoteImageInfo}}.</returns>
+        public async Task<IEnumerable<RemoteImageInfo>> GetAvailableRemoteImages(BaseItem item, ImageType type, CancellationToken cancellationToken)
+        {
+            var providers = GetSupportedImageProviders(item, type);
+
+            var tasks = providers.Select(i => Task.Run(async () =>
+            {
+                try
+                {
+                    var result = await i.GetAvailableImages(item, type, cancellationToken).ConfigureAwait(false);
+                    return result.ToList();
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("{0} failed in GetAvailableImages for type {1}", ex, i.GetType().Name, item.GetType().Name);
+                    return new List<RemoteImageInfo>();
+                }
+            }));
+
+            var results = await Task.WhenAll(tasks).ConfigureAwait(false);
+
+            return results.SelectMany(i => i);
+        }
+
+        /// <summary>
+        /// Gets the supported image providers.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="type">The type.</param>
+        /// <returns>IEnumerable{IImageProvider}.</returns>
+        private IEnumerable<IImageProvider> GetSupportedImageProviders(BaseItem item, ImageType type)
+        {
+            return ImageProviders.Where(i =>
+            {
+                try
+                {
+                    return i.Supports(item, type);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("{0} failed in Supports for type {1}", ex, i.GetType().Name, item.GetType().Name);
+                    return false;
+                }
+
+            });
         }
     }
 }

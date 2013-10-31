@@ -59,6 +59,8 @@ namespace MediaBrowser.Api.Playback
         protected IMediaEncoder MediaEncoder { get; private set; }
         protected IDtoService DtoService { get; private set; }
 
+        protected IFileSystem FileSystem { get; private set; }
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseStreamingService" /> class.
         /// </summary>
@@ -67,8 +69,9 @@ namespace MediaBrowser.Api.Playback
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="isoManager">The iso manager.</param>
         /// <param name="mediaEncoder">The media encoder.</param>
-        protected BaseStreamingService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService)
+        protected BaseStreamingService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService, IFileSystem fileSystem)
         {
+            FileSystem = fileSystem;
             DtoService = dtoService;
             ApplicationPaths = appPaths;
             UserManager = userManager;
@@ -269,7 +272,7 @@ namespace MediaBrowser.Api.Playback
             // If fixed dimensions were supplied
             if (request.Width.HasValue && request.Height.HasValue)
             {
-                return string.Format(" -vf \"scale={0}:{1}{2}\"", request.Width.Value, request.Height.Value, assSubtitleParam);
+                return string.Format(" -vf \"scale=trunc({0}/2)*2:trunc({1}/2)*2{2}\"", request.Width.Value, request.Height.Value, assSubtitleParam);
             }
 
             var isH264Output = outputVideoCodec.Equals("libx264", StringComparison.OrdinalIgnoreCase);
@@ -653,7 +656,7 @@ namespace MediaBrowser.Api.Playback
             var logFilePath = Path.Combine(ApplicationPaths.LogDirectoryPath, "ffmpeg-" + Guid.NewGuid() + ".txt");
 
             // FFMpeg writes debug/error info to stderr. This is useful when debugging so let's put it in the log directory.
-            state.LogFileStream = new FileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous);
+            state.LogFileStream = FileSystem.GetFileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, true);
 
             process.Exited += (sender, args) => OnFfMpegProcessExited(process, state);
 

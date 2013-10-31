@@ -1,7 +1,9 @@
-﻿using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Logging;
 
@@ -15,12 +17,8 @@ namespace MediaBrowser.Providers.Music
         /// <summary>
         /// Initializes a new instance of the <see cref="FanArtArtistByNameProvider" /> class.
         /// </summary>
-        /// <param name="httpClient">The HTTP client.</param>
-        /// <param name="logManager">The log manager.</param>
-        /// <param name="configurationManager">The configuration manager.</param>
-        /// <param name="providerManager">The provider manager.</param>
-        public FanArtArtistByNameProvider(IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager)
-            : base(httpClient, logManager, configurationManager, providerManager)
+        public FanArtArtistByNameProvider(IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager, IFileSystem fileSystem)
+            : base(httpClient, logManager, configurationManager, providerManager, fileSystem)
         {
         }
 

@@ -1,6 +1,4 @@
-﻿using MediaBrowser.Model.Entities;
-using System;
-
+﻿
 namespace MediaBrowser.Model.Querying
 {
     public class NextUpQuery
@@ -11,6 +9,12 @@ namespace MediaBrowser.Model.Querying
         /// <value>The user id.</value>
         public string UserId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the series id.
+        /// </summary>
+        /// <value>The series id.</value>
+        public string SeriesId { get; set; }
+        
         /// <summary>
         /// Skips over a given number of items within the results. Use for paging.
         /// </summary>
@@ -28,20 +32,5 @@ namespace MediaBrowser.Model.Querying
         /// </summary>
         /// <value>The fields.</value>
         public ItemFields[] Fields { get; set; }
-
-        /// <summary>
-        /// Gets or sets the exclude location types.
-        /// </summary>
-        /// <value>The exclude location types.</value>
-        public LocationType[] ExcludeLocationTypes { get; set; }
-
-        public bool? HasPremiereDate { get; set; }
-        public DateTime? MinPremiereDate { get; set; }
-        public DateTime? MaxPremiereDate { get; set; }
-
-        public NextUpQuery()
-        {
-            ExcludeLocationTypes = new LocationType[] { };
-        }
     }
 }

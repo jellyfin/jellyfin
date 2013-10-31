@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
@@ -27,16 +28,18 @@ namespace MediaBrowser.Api.WebSocket
         /// The _kernel
         /// </summary>
         private readonly ILogManager _logManager;
+        private readonly IFileSystem _fileSystem;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LogFileWebSocketListener" /> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
         /// <param name="logManager">The log manager.</param>
-        public LogFileWebSocketListener(ILogger logger, ILogManager logManager)
+        public LogFileWebSocketListener(ILogger logger, ILogManager logManager, IFileSystem fileSystem)
             : base(logger)
         {
             _logManager = logManager;
+            _fileSystem = fileSystem;
             _logManager.LoggerLoaded += kernel_LoggerLoaded;
         }
 
@@ -53,7 +56,7 @@ namespace MediaBrowser.Api.WebSocket
                 state.StartLine = 0;
             }
 
-            var lines = await GetLogLines(state.LastLogFilePath, state.StartLine).ConfigureAwait(false);
+            var lines = await GetLogLines(state.LastLogFilePath, state.StartLine, _fileSystem).ConfigureAwait(false);
 
             state.StartLine += lines.Count;
 
@@ -96,11 +99,11 @@ namespace MediaBrowser.Api.WebSocket
         /// <param name="logFilePath">The log file path.</param>
         /// <param name="startLine">The start line.</param>
         /// <returns>Task{IEnumerable{System.String}}.</returns>
-        internal static async Task<List<string>> GetLogLines(string logFilePath, int startLine)
+        internal static async Task<List<string>> GetLogLines(string logFilePath, int startLine, IFileSystem fileSystem)
         {
             var lines = new List<string>();
 
-            using (var fs = new FileStream(logFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, StreamDefaults.DefaultFileStreamBufferSize, true))
+            using (var fs = fileSystem.GetFileStream(logFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
             {
                 using (var reader = new StreamReader(fs))
                 {

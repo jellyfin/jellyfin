@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.IO;
@@ -15,10 +16,12 @@ namespace MediaBrowser.Providers.Music
     class ArtistProviderFromXml : BaseMetadataProvider
     {
         public static ArtistProviderFromXml Current;
+        private readonly IFileSystem _fileSystem;
 
-        public ArtistProviderFromXml(ILogManager logManager, IServerConfigurationManager configurationManager)
+        public ArtistProviderFromXml(ILogManager logManager, IServerConfigurationManager configurationManager, IFileSystem fileSystem)
             : base(logManager, configurationManager)
         {
+            _fileSystem = fileSystem;
             Current = this;
         }
 
@@ -51,7 +54,7 @@ namespace MediaBrowser.Providers.Music
                 return false;
             }
 
-            return FileSystem.GetLastWriteTimeUtc(xml, Logger) > providerInfo.LastRefreshed;
+            return _fileSystem.GetLastWriteTimeUtc(xml) > providerInfo.LastRefreshed;
         }
 
         /// <summary>

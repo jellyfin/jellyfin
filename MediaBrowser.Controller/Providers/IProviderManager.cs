@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Providers;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -52,6 +53,16 @@ namespace MediaBrowser.Controller.Providers
         /// Adds the metadata providers.
         /// </summary>
         /// <param name="providers">The providers.</param>
-        void AddParts(IEnumerable<BaseMetadataProvider> providers);
+        /// <param name="imageProviders">The image providers.</param>
+        void AddParts(IEnumerable<BaseMetadataProvider> providers, IEnumerable<IImageProvider> imageProviders);
+
+        /// <summary>
+        /// Gets the available remote images.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="type">The type.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{IEnumerable{RemoteImageInfo}}.</returns>
+        Task<IEnumerable<RemoteImageInfo>> GetAvailableRemoteImages(BaseItem item, ImageType type, CancellationToken cancellationToken);
     }
 }
