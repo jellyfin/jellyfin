@@ -3,12 +3,162 @@
     var currentItem;
     var currentFile;
 
+    var browsableImagePageSize = 10;
+    var browsableImageStartIndex = 0;
+    var browsableImageType = 'Primary';
+
     function updateTabs(page, item) {
 
         var query = MetadataEditor.getEditQueryString(item);
 
         $('#btnEditPeople', page).attr('href', 'edititempeople.html?' + query);
         $('#btnEditMetadata', page).attr('href', 'edititemmetadata.html?' + query);
+    }
+
+    function reloadBrowsableImages(page) {
+
+        var options = {
+            itemId: currentItem.Id,
+            imageType: browsableImageType,
+            startIndex: browsableImageStartIndex,
+            limit: browsableImagePageSize
+        };
+
+        ApiClient.getAvailableRemoteImages(options).done(function (result) {
+
+            renderRemoteImages(page, currentItem, result, browsableImageType, options.startIndex, options.limit);
+        });
+
+    }
+
+    function renderRemoteImages(page, item, imagesResult, imageType, startIndex, limit) {
+
+        $('.availableImagesPaging', page).html(getPagingHtml(startIndex, limit, imagesResult.TotalRecordCount)).trigger('create');
+
+        var html = '';
+
+        for (var i = 0, length = imagesResult.Images.length; i < length; i++) {
+
+            html += getRemoteImageHtml(imagesResult.Images[i], imageType);
+        }
+
+        $('.availableImagesList', page).html(html).trigger('create');
+
+        $('.selectPage', page).on('change', function () {
+            browsableImageStartIndex = (parseInt(this.value) - 1) * browsableImagePageSize;
+            reloadBrowsableImages(page);
+        });
+
+        $('.btnNextPage', page).on('click', function () {
+            browsableImageStartIndex += browsableImagePageSize;
+            reloadBrowsableImages(page);
+        });
+
+        $('.btnPreviousPage', page).on('click', function () {
+            browsableImageStartIndex -= browsableImagePageSize;
+            reloadBrowsableImages(page);
+        });
+
+    }
+
+
+    function getRemoteImageHtml(image, imageType) {
+
+        var html = '';
+
+        html += '<div class="remoteImageContainer">';
+
+        var cssClass = "remoteImage";
+
+        if (imageType == "Backdrop") {
+            cssClass += " remoteBackdropImage";
+        }
+        else {
+            cssClass += " remotePosterImage";
+        }
+
+        html += '<div class="' + cssClass + '" style="background-image:url(\'' + image.Url + '\');">';
+        html += '</div>';
+
+        html += '<div class="remoteImageDetails">';
+        html += image.ProviderName;
+        html += '</div>';
+
+        if (image.Width || image.Height) {
+
+            html += '<div class="remoteImageDetails">';
+            html += image.Width + 'x' + image.Height;
+            
+            if (image.Language) {
+
+                html += ' • ' + image.Language;
+            }
+            html += '</div>';
+        }
+
+        if (image.CommunityRating) {
+            html += '<div class="remoteImageDetails">';
+            html += image.CommunityRating.toFixed(1);
+
+            if (image.VoteCount) {
+                html += ' • ' + image.VoteCount + ' votes';
+            }
+
+            html += '</div>';
+        }
+
+        html += '<div><button type="button" data-icon="save" data-mini="true">Download</button></div>';
+        
+        html += '</div>';
+
+        return html;
+    }
+
+    function getPagingHtml(startIndex, limit, totalRecordCount) {
+
+        var html = '';
+
+        var pageCount = Math.ceil(totalRecordCount / limit);
+        var pageNumber = (startIndex / limit) + 1;
+
+        var dropdownHtml = '<select class="selectPage" data-enhance="false" data-role="none">';
+        for (var i = 1; i <= pageCount; i++) {
+
+            if (i == pageNumber) {
+                dropdownHtml += '<option value="' + i + '" selected="selected">' + i + '</option>';
+            } else {
+                dropdownHtml += '<option value="' + i + '">' + i + '</option>';
+            }
+        }
+        dropdownHtml += '</select>';
+
+        var recordsEnd = Math.min(startIndex + limit, totalRecordCount);
+
+        // 20 is the minimum page size
+        var showControls = totalRecordCount > 20;
+
+        html += '<div class="listPaging">';
+
+        html += '<span style="margin-right: 10px;">';
+
+        var startAtDisplay = totalRecordCount ? startIndex + 1 : 0;
+        html += startAtDisplay + '-' + recordsEnd + ' of ' + totalRecordCount;
+
+        if (showControls) {
+            html += ', page ' + dropdownHtml + ' of ' + pageCount;
+        }
+
+        html += '</span>';
+
+        if (showControls) {
+            html += '<button data-icon="arrow-left" data-iconpos="notext" data-inline="true" data-mini="true" class="btnPreviousPage" ' + (startIndex ? '' : 'disabled') + '>Previous Page</button>';
+
+            html += '<button data-icon="arrow-right" data-iconpos="notext" data-inline="true" data-mini="true" class="btnNextPage" ' + (startIndex + limit > totalRecordCount ? 'disabled' : '') + '>Next Page</button>';
+        }
+
+        html += '</div>';
+
+        return html;
     }
 
     function reload(page) {
@@ -273,7 +423,7 @@
         $('.libraryTree', page).on('itemclicked', function (event, data) {
 
             if (data.id != currentItem.Id) {
-                
+
                 MetadataEditor.currentItemId = data.id;
                 MetadataEditor.currentItemName = data.itemName;
                 MetadataEditor.currentItemType = data.itemType;
@@ -284,6 +434,19 @@
 
                 reload(page);
             }
+        });
+
+        $('#lnkBrowseImages', page).on('click', function () {
+
+            reloadBrowsableImages(page);
+        });
+
+        $('#selectBrowsableImageType', page).on('change', function () {
+
+            browsableImageType = this.value;
+            browsableImageStartIndex = 0;
+
+            reloadBrowsableImages(page);
         });
 
     }).on('pageshow', "#editItemImagesPage", function () {

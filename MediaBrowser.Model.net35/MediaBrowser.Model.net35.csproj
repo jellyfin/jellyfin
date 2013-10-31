@@ -277,6 +277,9 @@
     <Compile Include="..\MediaBrowser.Model\Providers\RemoteImageInfo.cs">
       <Link>Providers\RemoteImageInfo.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Providers\RemoteImageResult.cs">
+      <Link>Providers\RemoteImageResult.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Querying\ArtistsQuery.cs">
       <Link>Querying\ArtistsQuery.cs</Link>
     </Compile>

@@ -306,16 +306,20 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.getAvailableRemoteImages = function (itemId, imageType) {
+        self.getAvailableRemoteImages = function (options) {
 
-            if (!itemId) {
-                throw new Error("null itemId");
-            }
-            if (!imageType) {
-                throw new Error("null imageType");
+            if (!options) {
+                throw new Error("null options");
             }
 
-            var url = self.getUrl("Items/" + itemId + "/RemoteImages/" + imageType);
+            var urlPrefix = "Items/" + options.itemId;
+
+            var imageType = options.imageType;
+            
+            delete options.itemId;
+            delete options.imageType;
+
+            var url = self.getUrl(urlPrefix + "/RemoteImages/" + imageType, options);
 
             return self.ajax({
                 type: "GET",

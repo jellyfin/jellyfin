@@ -69,11 +69,11 @@ namespace MediaBrowser.Server.Implementations.Providers
                 throw new ArgumentNullException("mimeType");
             }
 
-            var saveLocally = _config.Configuration.SaveLocalMeta || item is IItemByName || item is User;
+            var saveLocally = _config.Configuration.SaveLocalMeta && item.Parent != null && !(item is Audio);
 
-            if (item is Audio || item.Parent == null)
+            if (item is IItemByName || item is User)
             {
-                saveLocally = false;
+                saveLocally = true;
             }
 
             if (type != ImageType.Primary && item is Episode)
