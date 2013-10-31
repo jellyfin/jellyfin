@@ -34,6 +34,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         public delegate HttpClient GetHttpClientHandler(bool enableHttpCompression);
 
         private readonly GetHttpClientHandler _getHttpClientHandler;
+        private readonly IFileSystem _fileSystem;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpClientManager"/> class.
@@ -46,7 +47,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         /// or
         /// logger
         /// </exception>
-        public HttpClientManager(IApplicationPaths appPaths, ILogger logger, GetHttpClientHandler getHttpClientHandler)
+        public HttpClientManager(IApplicationPaths appPaths, ILogger logger, GetHttpClientHandler getHttpClientHandler, IFileSystem fileSystem)
         {
             if (appPaths == null)
             {
@@ -59,6 +60,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
             _logger = logger;
             _getHttpClientHandler = getHttpClientHandler;
+            _fileSystem = fileSystem;
             _appPaths = appPaths;
         }
 
@@ -417,7 +419,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                             // We're not able to track progress
                             using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
                             {
-                                using (var fs = new FileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
+                                using (var fs = _fileSystem.GetFileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.Read, true))
                                 {
                                     await stream.CopyToAsync(fs, StreamDefaults.DefaultCopyToBufferSize, options.CancellationToken).ConfigureAwait(false);
                                 }
@@ -427,7 +429,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                         {
                             using (var stream = ProgressStream.CreateReadProgressStream(await response.Content.ReadAsStreamAsync().ConfigureAwait(false), options.Progress.Report, contentLength.Value))
                             {
-                                using (var fs = new FileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
+                                using (var fs = _fileSystem.GetFileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.Read, true))
                                 {
                                     await stream.CopyToAsync(fs, StreamDefaults.DefaultCopyToBufferSize, options.CancellationToken).ConfigureAwait(false);
                                 }

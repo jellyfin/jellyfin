@@ -190,7 +190,6 @@
     <Compile Include="FFMpeg\FFMpegInfo.cs" />
     <Compile Include="IO\FileSystemFactory.cs" />
     <Compile Include="Native\Assemblies.cs" />
-    <Compile Include="IO\CommonFileSystem.cs" />
     <Compile Include="Native\HttpClientFactory.cs" />
     <Compile Include="Native\NativeApp.cs" />
     <Compile Include="IO\NativeFileSystem.cs" />

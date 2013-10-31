@@ -1,5 +1,4 @@
-﻿using System.Net;
-using MediaBrowser.Common.Configuration;
+﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Implementations.Archiving;
 using MediaBrowser.Common.Implementations.IO;
@@ -7,6 +6,7 @@ using MediaBrowser.Common.Implementations.ScheduledTasks;
 using MediaBrowser.Common.Implementations.Security;
 using MediaBrowser.Common.Implementations.Serialization;
 using MediaBrowser.Common.Implementations.Updates;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.ScheduledTasks;
@@ -21,6 +21,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Threading;
@@ -150,15 +151,17 @@ namespace MediaBrowser.Common.Implementations
         /// Gets or sets the installation manager.
         /// </summary>
         /// <value>The installation manager.</value>
-        protected IInstallationManager InstallationManager { get; set; }
+        protected IInstallationManager InstallationManager { get; private set; }
 
+        protected IFileSystem FileSystemManager { get; private set; }
+        
         /// <summary>
         /// Gets or sets the zip client.
         /// </summary>
         /// <value>The zip client.</value>
-        protected IZipClient ZipClient { get; set; }
+        protected IZipClient ZipClient { get; private set; }
 
-        protected IIsoManager IsoManager { get; set; }
+        protected IIsoManager IsoManager { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseApplicationHost{TApplicationPathsType}"/> class.
@@ -347,7 +350,10 @@ namespace MediaBrowser.Common.Implementations
 
                 RegisterSingleInstance(TaskManager);
 
-                HttpClient = new HttpClientManager.HttpClientManager(ApplicationPaths, Logger, CreateHttpClient);
+                FileSystemManager = CreateFileSystemManager();
+                RegisterSingleInstance(FileSystemManager);
+
+                HttpClient = new HttpClientManager.HttpClientManager(ApplicationPaths, Logger, CreateHttpClient, FileSystemManager);
                 RegisterSingleInstance(HttpClient);
 
                 NetworkManager = CreateNetworkManager();
@@ -365,6 +371,11 @@ namespace MediaBrowser.Common.Implementations
                 IsoManager = new IsoManager();
                 RegisterSingleInstance(IsoManager);
             });
+        }
+
+        protected virtual IFileSystem CreateFileSystemManager()
+        {
+            return new CommonFileSystem(Logger, true);
         }
 
         protected abstract HttpClient CreateHttpClient(bool enableHttpCompression);

@@ -4,6 +4,7 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -40,6 +41,7 @@ namespace MediaBrowser.Providers.Movies
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
         internal static FanArtMovieProvider Current { get; private set; }
+        private readonly IFileSystem _fileSystem;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FanArtMovieProvider" /> class.
@@ -49,7 +51,7 @@ namespace MediaBrowser.Providers.Movies
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="providerManager">The provider manager.</param>
         /// <exception cref="System.ArgumentNullException">httpClient</exception>
-        public FanArtMovieProvider(IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager)
+        public FanArtMovieProvider(IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager, IFileSystem fileSystem)
             : base(logManager, configurationManager)
         {
             if (httpClient == null)
@@ -58,6 +60,7 @@ namespace MediaBrowser.Providers.Movies
             }
             HttpClient = httpClient;
             _providerManager = providerManager;
+            _fileSystem = fileSystem;
             Current = this;
         }
 
@@ -174,7 +177,7 @@ namespace MediaBrowser.Providers.Movies
                 {
                     var files = new DirectoryInfo(path)
                         .EnumerateFiles("*.xml", SearchOption.TopDirectoryOnly)
-                        .Select(i => i.LastWriteTimeUtc)
+                        .Select(i => _fileSystem.GetLastWriteTimeUtc(i))
                         .ToList();
 
                     if (files.Count > 0)
@@ -275,7 +278,7 @@ namespace MediaBrowser.Providers.Movies
 
             }).ConfigureAwait(false))
             {
-                using (var xmlFileStream = new FileStream(xmlPath, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
+                using (var xmlFileStream = _fileSystem.GetFileStream(xmlPath, FileMode.Create, FileAccess.Write, FileShare.Read, true))
                 {
                     await response.CopyToAsync(xmlFileStream).ConfigureAwait(false);
                 }

@@ -3,6 +3,7 @@ using MediaBrowser.Common.IO;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
@@ -51,16 +52,18 @@ namespace MediaBrowser.Server.Implementations.Drawing
         /// The _app paths
         /// </summary>
         private readonly IServerApplicationPaths _appPaths;
+        private readonly IFileSystem _fileSystem;
 
         private readonly string _imageSizeCachePath;
         private readonly string _croppedWhitespaceImageCachePath;
         private readonly string _enhancedImageCachePath;
         private readonly string _resizedImageCachePath;
 
-        public ImageProcessor(ILogger logger, IServerApplicationPaths appPaths)
+        public ImageProcessor(ILogger logger, IServerApplicationPaths appPaths, IFileSystem fileSystem)
         {
             _logger = logger;
             _appPaths = appPaths;
+            _fileSystem = fileSystem;
 
             _imageSizeCachePath = Path.Combine(_appPaths.ImageCachePath, "image-sizes");
             _croppedWhitespaceImageCachePath = Path.Combine(_appPaths.ImageCachePath, "cropped-images");
@@ -113,7 +116,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
             try
             {
-                using (var fileStream = new FileStream(cacheFilePath, FileMode.Open, FileAccess.Read, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
+                using (var fileStream = _fileSystem.GetFileStream(cacheFilePath, FileMode.Open, FileAccess.Read, FileShare.Read, true))
                 {
                     await fileStream.CopyToAsync(toStream).ConfigureAwait(false);
                     return;
@@ -131,7 +134,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
             // Check again in case of lock contention
             try
             {
-                using (var fileStream = new FileStream(cacheFilePath, FileMode.Open, FileAccess.Read, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
+                using (var fileStream = _fileSystem.GetFileStream(cacheFilePath, FileMode.Open, FileAccess.Read, FileShare.Read, true))
                 {
                     await fileStream.CopyToAsync(toStream).ConfigureAwait(false);
                     semaphore.Release();
@@ -150,7 +153,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
             try
             {
-                using (var fileStream = new FileStream(originalImagePath, FileMode.Open, FileAccess.Read, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, true))
+                using (var fileStream = _fileSystem.GetFileStream(originalImagePath, FileMode.Open, FileAccess.Read, FileShare.Read, true))
                 {
                     // Copy to memory stream to avoid Image locking file
                     using (var memoryStream = new MemoryStream())
@@ -228,7 +231,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
                     Directory.CreateDirectory(parentPath);
 
                     // Save to the cache location
-                    using (var cacheFileStream = new FileStream(cacheFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
+                    using (var cacheFileStream = _fileSystem.GetFileStream(cacheFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, true))
                     {
                         // Save to the filestream
                         await cacheFileStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
@@ -359,7 +362,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
             try
             {
-                using (var fileStream = new FileStream(originalImagePath, FileMode.Open, FileAccess.Read, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, true))
+                using (var fileStream = _fileSystem.GetFileStream(originalImagePath, FileMode.Open, FileAccess.Read, FileShare.Read, true))
                 {
                     // Copy to memory stream to avoid Image locking file
                     using (var memoryStream = new MemoryStream())
@@ -376,7 +379,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
                                 Directory.CreateDirectory(parentPath);
 
-                                using (var outputStream = new FileStream(croppedImagePath, FileMode.Create, FileAccess.Write, FileShare.Read))
+                                using (var outputStream = _fileSystem.GetFileStream(croppedImagePath, FileMode.Create, FileAccess.Write, FileShare.Read, false))
                                 {
                                     croppedImage.Save(outputFormat, outputStream, 100);
                                 }
@@ -525,7 +528,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
                     // Cache file doesn't exist no biggie
                 }
 
-                var size = ImageHeader.GetDimensions(path, _logger);
+                var size = ImageHeader.GetDimensions(path, _logger, _fileSystem);
 
                 var parentPath = Path.GetDirectoryName(fullCachePath);
 
@@ -685,7 +688,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
             try
             {
-                using (var fileStream = new FileStream(originalImagePath, FileMode.Open, FileAccess.Read, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, true))
+                using (var fileStream = _fileSystem.GetFileStream(originalImagePath, FileMode.Open, FileAccess.Read, FileShare.Read, true))
                 {
                     // Copy to memory stream to avoid Image locking file
                     using (var memoryStream = new MemoryStream())
@@ -702,7 +705,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
                                 Directory.CreateDirectory(parentDirectory);
 
                                 //And then save it in the cache
-                                using (var outputStream = new FileStream(enhancedImagePath, FileMode.Create, FileAccess.Write, FileShare.Read))
+                                using (var outputStream = _fileSystem.GetFileStream(enhancedImagePath, FileMode.Create, FileAccess.Write, FileShare.Read, false))
                                 {
                                     newImage.Save(ImageFormat.Png, outputStream, 100);
                                 }

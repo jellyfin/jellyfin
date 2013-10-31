@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.ScheduledTasks;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
@@ -322,6 +323,18 @@ namespace MediaBrowser.Server.Implementations.IO
         /// <param name="e">The <see cref="FileSystemEventArgs" /> instance containing the event data.</param>
         void watcher_Changed(object sender, FileSystemEventArgs e)
         {
+            try
+            {
+                OnWatcherChanged(e);
+            }
+            catch (IOException ex)
+            {
+                Logger.ErrorException("IOException in watcher changed", ex);
+            }
+        }
+
+        private void OnWatcherChanged(FileSystemEventArgs e)
+        {
             var name = e.Name;
 
             // Ignore certain files
@@ -437,7 +450,7 @@ namespace MediaBrowser.Server.Implementations.IO
 
             try
             {
-                using (new FileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite))
+                using (_fileSystem.GetFileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite))
                 {
                     //file is not locked
                     return false;

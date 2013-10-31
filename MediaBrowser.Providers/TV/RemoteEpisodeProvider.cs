@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
@@ -36,6 +37,7 @@ namespace MediaBrowser.Providers.TV
         /// </summary>
         /// <value>The HTTP client.</value>
         protected IHttpClient HttpClient { get; private set; }
+        private readonly IFileSystem _fileSystem;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RemoteEpisodeProvider" /> class.
@@ -44,11 +46,12 @@ namespace MediaBrowser.Providers.TV
         /// <param name="logManager">The log manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="providerManager">The provider manager.</param>
-        public RemoteEpisodeProvider(IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager)
+        public RemoteEpisodeProvider(IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager, IFileSystem fileSystem)
             : base(logManager, configurationManager)
         {
             HttpClient = httpClient;
             _providerManager = providerManager;
+            _fileSystem = fileSystem;
         }
 
         /// <summary>
@@ -149,7 +152,7 @@ namespace MediaBrowser.Providers.TV
 
                 if (files.Count > 0)
                 {
-                    return files.Select(i => i.LastWriteTimeUtc).Max() > providerInfo.LastRefreshed;
+                    return files.Select(i => _fileSystem.GetLastWriteTimeUtc(i)).Max() > providerInfo.LastRefreshed;
                 }
             }
             

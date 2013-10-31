@@ -165,7 +165,7 @@ namespace MediaBrowser.Controller.Entities
                 // Ensure it's been lazy loaded
                 var config = Configuration;
 
-                return File.GetLastWriteTimeUtc(ConfigurationFilePath);
+                return FileSystem.GetLastWriteTimeUtc(ConfigurationFilePath);
             }
         }
 

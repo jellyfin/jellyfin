@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.IO;
@@ -1737,7 +1738,7 @@ namespace MediaBrowser.Controller.Entities
             if (locationType == LocationType.Remote ||
                 locationType == LocationType.Virtual)
             {
-                return File.GetLastWriteTimeUtc(imagePath);
+                return FileSystem.GetLastWriteTimeUtc(imagePath);
             }
 
             var metaFileEntry = ResolveArgs.GetMetaFileByPath(imagePath);
@@ -1754,7 +1755,7 @@ namespace MediaBrowser.Controller.Entities
             }
 
             // See if we can avoid a file system lookup by looking for the file in ResolveArgs
-            return metaFileEntry == null ? File.GetLastWriteTimeUtc(imagePath) : metaFileEntry.LastWriteTimeUtc;
+            return metaFileEntry == null ? FileSystem.GetLastWriteTimeUtc(imagePath) : FileSystem.GetLastWriteTimeUtc(metaFileEntry);
         }
     }
 }

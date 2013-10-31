@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Providers;
@@ -13,15 +14,17 @@ namespace MediaBrowser.Providers.Games
 {
     public class GameProviderFromXml : BaseMetadataProvider
     {
+        private readonly IFileSystem _fileSystem;
+
         /// <summary>
         /// 
         /// </summary>
         /// <param name="logManager"></param>
         /// <param name="configurationManager"></param>
-        public GameProviderFromXml(ILogManager logManager, IServerConfigurationManager configurationManager)
+        public GameProviderFromXml(ILogManager logManager, IServerConfigurationManager configurationManager, IFileSystem fileSystem)
             : base(logManager, configurationManager)
         {
-
+            _fileSystem = fileSystem;
         }
 
         /// <summary>
@@ -45,7 +48,7 @@ namespace MediaBrowser.Providers.Games
                 return false;
             }
 
-            return FileSystem.GetLastWriteTimeUtc(xml, Logger) > providerInfo.LastRefreshed;
+            return _fileSystem.GetLastWriteTimeUtc(xml) > providerInfo.LastRefreshed;
         }
 
         /// <summary>

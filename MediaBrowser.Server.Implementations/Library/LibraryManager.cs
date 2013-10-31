@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Configuration;
@@ -772,7 +773,7 @@ namespace MediaBrowser.Server.Implementations.Library
                     Name = name,
                     Id = id,
                     DateCreated = _fileSystem.GetCreationTimeUtc(fileInfo),
-                    DateModified = fileInfo.LastWriteTimeUtc,
+                    DateModified = _fileSystem.GetLastWriteTimeUtc(fileInfo),
                     Path = path
                 };
                 isNew = true;

@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Api.Images;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
@@ -27,8 +28,8 @@ namespace MediaBrowser.Api.Playback.Progressive
         protected readonly IItemRepository ItemRepository;
         protected readonly IImageProcessor ImageProcessor;
 
-        protected BaseProgressiveStreamingService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IItemRepository itemRepository, IDtoService dtoService, IImageProcessor imageProcessor) :
-            base(appPaths, userManager, libraryManager, isoManager, mediaEncoder, dtoService)
+        protected BaseProgressiveStreamingService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IItemRepository itemRepository, IDtoService dtoService, IImageProcessor imageProcessor, IFileSystem fileSystem) :
+            base(appPaths, userManager, libraryManager, isoManager, mediaEncoder, dtoService, fileSystem)
         {
             ItemRepository = itemRepository;
             ImageProcessor = imageProcessor;
@@ -346,7 +347,7 @@ namespace MediaBrowser.Api.Playback.Progressive
                 ApiEntryPoint.Instance.OnTranscodeBeginRequest(outputPath, TranscodingJobType.Progressive);
             }
 
-            var result = new ProgressiveStreamWriter(outputPath, Logger);
+            var result = new ProgressiveStreamWriter(outputPath, Logger, FileSystem);
 
             result.Options["Accept-Ranges"] = "none";
             result.Options["Content-Type"] = contentType;

@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
@@ -42,6 +43,7 @@ namespace MediaBrowser.Providers.TV
         /// The _config
         /// </summary>
         private readonly IServerConfigurationManager _config;
+        private readonly IFileSystem _fileSystem;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TvdbPrescanTask"/> class.
@@ -49,11 +51,12 @@ namespace MediaBrowser.Providers.TV
         /// <param name="logger">The logger.</param>
         /// <param name="httpClient">The HTTP client.</param>
         /// <param name="config">The config.</param>
-        public TvdbPrescanTask(ILogger logger, IHttpClient httpClient, IServerConfigurationManager config)
+        public TvdbPrescanTask(ILogger logger, IHttpClient httpClient, IServerConfigurationManager config, IFileSystem fileSystem)
         {
             _logger = logger;
             _httpClient = httpClient;
             _config = config;
+            _fileSystem = fileSystem;
         }
 
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
@@ -81,7 +84,7 @@ namespace MediaBrowser.Providers.TV
             var timestampFileInfo = new FileInfo(timestampFile);
 
             // Don't check for tvdb updates anymore frequently than 24 hours
-            if (timestampFileInfo.Exists && (DateTime.UtcNow - timestampFileInfo.LastWriteTimeUtc).TotalDays < 1)
+            if (timestampFileInfo.Exists && (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(timestampFileInfo)).TotalDays < 1)
             {
                 return;
             }

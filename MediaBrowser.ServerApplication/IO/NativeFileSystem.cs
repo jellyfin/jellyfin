@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Logging;
+﻿using MediaBrowser.Common.Implementations.IO;
+using MediaBrowser.Model.Logging;
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -10,7 +11,7 @@ namespace MediaBrowser.ServerApplication.IO
     public class NativeFileSystem : CommonFileSystem
     {
         public NativeFileSystem(ILogger logger)
-            : base(logger)
+            : base(logger, true)
         {
         }
 

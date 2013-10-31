@@ -1,25 +1,24 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Release|x86" />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
   <MonoDevelop.Ide.Workbench ActiveDocument="MediaBrowser.Server.Mono\Program.cs">
     <Files>
-      <File FileName="MediaBrowser.Server.Mono\Program.cs" Line="60" Column="5" />
+      <File FileName="MediaBrowser.Server.Mono\Program.cs" Line="259" Column="4" />
+      <File FileName="MediaBrowser.ServerApplication\ApplicationHost.cs" Line="58" Column="12" />
+      <File FileName="MediaBrowser.Server.Mono\IO\FileSystemFactory.cs" Line="22" Column="1" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
         <State expanded="True">
-          <Node name="MediaBrowser.Common.Implementations" expanded="True">
-            <Node name="HttpClientManager" expanded="True" />
-          </Node>
-          <Node name="MediaBrowser.Controller" expanded="True">
-            <Node name="Drawing" expanded="True" />
-          </Node>
+          <Node name="MediaBrowser.Common" expanded="True" />
+          <Node name="MediaBrowser.Common.Implementations" expanded="True" />
+          <Node name="MediaBrowser.Controller" expanded="True" />
           <Node name="MediaBrowser.Model" expanded="True">
             <Node name="References" expanded="True" />
             <Node name="Web" expanded="True" />
           </Node>
           <Node name="MediaBrowser.Server.Implementations" expanded="True" />
           <Node name="MediaBrowser.Server.Mono" expanded="True">
-            <Node name="FFMpeg" expanded="True" />
+            <Node name="IO" expanded="True" />
             <Node name="Program.cs" selected="True" />
           </Node>
         </State>

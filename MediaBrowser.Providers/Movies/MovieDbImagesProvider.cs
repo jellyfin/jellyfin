@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -22,11 +23,6 @@ namespace MediaBrowser.Providers.Movies
     public class MovieDbImagesProvider : BaseMetadataProvider
     {
         /// <summary>
-        /// The get images
-        /// </summary>
-        private const string GetImages = @"http://api.themoviedb.org/3/{2}/{0}/images?api_key={1}";
-
-        /// <summary>
         /// The _provider manager
         /// </summary>
         private readonly IProviderManager _providerManager;
@@ -35,6 +31,7 @@ namespace MediaBrowser.Providers.Movies
         /// The _json serializer
         /// </summary>
         private readonly IJsonSerializer _jsonSerializer;
+        private readonly IFileSystem _fileSystem;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MovieDbImagesProvider"/> class.
@@ -43,11 +40,12 @@ namespace MediaBrowser.Providers.Movies
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="providerManager">The provider manager.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
-        public MovieDbImagesProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager, IJsonSerializer jsonSerializer)
+        public MovieDbImagesProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager, IJsonSerializer jsonSerializer, IFileSystem fileSystem)
             : base(logManager, configurationManager)
         {
             _providerManager = providerManager;
             _jsonSerializer = jsonSerializer;
+            _fileSystem = fileSystem;
         }
 
         /// <summary>
@@ -163,7 +161,7 @@ namespace MediaBrowser.Providers.Movies
 
                 if (fileInfo.Exists)
                 {
-                    return fileInfo.LastWriteTimeUtc > providerInfo.LastRefreshed;
+                    return _fileSystem.GetLastWriteTimeUtc(fileInfo) > providerInfo.LastRefreshed;
                 }
             }
 

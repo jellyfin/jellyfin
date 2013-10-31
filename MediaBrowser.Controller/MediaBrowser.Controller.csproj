@@ -94,7 +94,6 @@
     <Compile Include="Entities\ImageSourceInfo.cs" />
     <Compile Include="Entities\LinkedChild.cs" />
     <Compile Include="Entities\MusicVideo.cs" />
-    <Compile Include="IO\IFileSystem.cs" />
     <Compile Include="Library\ILibraryPostScanTask.cs" />
     <Compile Include="Library\ILibraryPrescanTask.cs" />
     <Compile Include="Library\IMetadataSaver.cs" />
@@ -141,7 +140,6 @@
     <Compile Include="Entities\Video.cs" />
     <Compile Include="Entities\CollectionFolder.cs" />
     <Compile Include="Entities\Year.cs" />
-    <Compile Include="IO\FileSystem.cs" />
     <Compile Include="IO\IDirectoryWatchers.cs" />
     <Compile Include="IServerApplicationHost.cs" />
     <Compile Include="IServerApplicationPaths.cs" />

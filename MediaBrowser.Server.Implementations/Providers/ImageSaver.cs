@@ -35,16 +35,18 @@ namespace MediaBrowser.Server.Implementations.Providers
         /// The _directory watchers
         /// </summary>
         private readonly IDirectoryWatchers _directoryWatchers;
+        private readonly IFileSystem _fileSystem;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ImageSaver"/> class.
         /// </summary>
         /// <param name="config">The config.</param>
         /// <param name="directoryWatchers">The directory watchers.</param>
-        public ImageSaver(IServerConfigurationManager config, IDirectoryWatchers directoryWatchers)
+        public ImageSaver(IServerConfigurationManager config, IDirectoryWatchers directoryWatchers, IFileSystem fileSystem)
         {
             _config = config;
             _directoryWatchers = directoryWatchers;
+            _fileSystem = fileSystem;
             _remoteImageCache = new FileSystemRepository(config.ApplicationPaths.DownloadedImagesDataPath);
         }
 
@@ -176,7 +178,7 @@ namespace MediaBrowser.Server.Implementations.Providers
                     }
                 }
 
-                using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
+                using (var fs = _fileSystem.GetFileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, true))
                 {
                     await source.CopyToAsync(fs, StreamDefaults.DefaultCopyToBufferSize, cancellationToken).ConfigureAwait(false);
                 }
