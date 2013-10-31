@@ -306,6 +306,24 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
+        self.getAvailableRemoteImages = function (itemId, imageType) {
+
+            if (!itemId) {
+                throw new Error("null itemId");
+            }
+            if (!imageType) {
+                throw new Error("null imageType");
+            }
+
+            var url = self.getUrl("Items/" + itemId + "/RemoteImages/" + imageType);
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
         /**
          * Gets the current server status
          */

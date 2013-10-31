@@ -6,6 +6,7 @@ using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -40,44 +41,50 @@ namespace MediaBrowser.Providers.Movies
 
         public async Task<IEnumerable<RemoteImageInfo>> GetAvailableImages(BaseItem item, ImageType imageType, CancellationToken cancellationToken)
         {
-            var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
+            var images = await GetAllImages(item, cancellationToken).ConfigureAwait(false);
 
-            var results = MovieDbImagesProvider.FetchImages(item, _jsonSerializer);
+            return images.Where(i => i.Type == imageType);
+        }
+
+        public async Task<IEnumerable<RemoteImageInfo>> GetAllImages(BaseItem item, CancellationToken cancellationToken)
+        {
+            var list = new List<RemoteImageInfo>();
+
+            var results = FetchImages(item, _jsonSerializer);
+
+            if (results == null)
+            {
+                return list;
+            }
+
+            var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
 
             var tmdbImageUrl = tmdbSettings.images.base_url + "original";
 
-            if (imageType == ImageType.Primary)
+            list.AddRange(GetPosters(results, item).Select(i => new RemoteImageInfo
             {
-                var sources = GetPosters(results, item);
+                Url = tmdbImageUrl + i.file_path,
+                CommunityRating = i.vote_average,
+                VoteCount = i.vote_count,
+                Width = i.width,
+                Height = i.height,
+                Language = i.iso_639_1,
+                ProviderName = Name,
+                Type = ImageType.Primary
+            }));
 
-                return sources.Select(i => new RemoteImageInfo
-                {
-                    Url = tmdbImageUrl + i.file_path,
-                    CommunityRating = i.vote_average,
-                    VoteCount = i.vote_count,
-                    Width = i.width,
-                    Height = i.height,
-                    Language = i.iso_639_1,
-                    ProviderName = Name
-                });
-            }
-
-            if (imageType == ImageType.Backdrop)
+            list.AddRange(GetBackdrops(results, item).Select(i => new RemoteImageInfo
             {
-                var sources = GetBackdrops(results, item);
-
-                return sources.Select(i => new RemoteImageInfo
-                {
-                    Url = tmdbImageUrl + i.file_path,
-                    CommunityRating = i.vote_average,
-                    VoteCount = i.vote_count,
-                    Width = i.width,
-                    Height = i.height,
-                    ProviderName = Name
-                });
-            }
-
-            throw new ArgumentException("Unrecognized ImageType: " + imageType);
+                Url = tmdbImageUrl + i.file_path,
+                CommunityRating = i.vote_average,
+                VoteCount = i.vote_count,
+                Width = i.width,
+                Height = i.height,
+                ProviderName = Name,
+                Type = ImageType.Backdrop
+            }));
+            
+            return list;
         }
         
         /// <summary>
@@ -86,7 +93,7 @@ namespace MediaBrowser.Providers.Movies
         /// <param name="images">The images.</param>
         /// <param name="item">The item.</param>
         /// <returns>IEnumerable{MovieDbProvider.Poster}.</returns>
-        public IEnumerable<MovieDbProvider.Poster> GetPosters(MovieDbProvider.Images images, BaseItem item)
+        private IEnumerable<MovieDbProvider.Poster> GetPosters(MovieDbProvider.Images images, BaseItem item)
         {
             var language = _config.Configuration.PreferredMetadataLanguage;
 
@@ -126,13 +133,36 @@ namespace MediaBrowser.Providers.Movies
         /// <param name="images">The images.</param>
         /// <param name="item">The item.</param>
         /// <returns>IEnumerable{MovieDbProvider.Backdrop}.</returns>
-        public IEnumerable<MovieDbProvider.Backdrop> GetBackdrops(MovieDbProvider.Images images, BaseItem item)
+        private IEnumerable<MovieDbProvider.Backdrop> GetBackdrops(MovieDbProvider.Images images, BaseItem item)
         {
             var eligibleBackdrops = images.backdrops == null ? new List<MovieDbProvider.Backdrop>() :
                 images.backdrops.Where(i => i.width >= _config.Configuration.MinMovieBackdropWidth)
                 .ToList();
 
             return eligibleBackdrops.OrderByDescending(i => i.vote_average);
+        }
+
+        /// <summary>
+        /// Fetches the images.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="jsonSerializer">The json serializer.</param>
+        /// <returns>Task{MovieImages}.</returns>
+        private MovieDbProvider.Images FetchImages(BaseItem item, IJsonSerializer jsonSerializer)
+        {
+            var path = MovieDbProvider.Current.GetDataFilePath(item, "default");
+
+            if (!string.IsNullOrEmpty(path))
+            {
+                var fileInfo = new FileInfo(path);
+
+                if (fileInfo.Exists)
+                {
+                    return jsonSerializer.DeserializeFromFile<MovieDbProvider.CompleteMovieData>(path).images;
+                }
+            }
+
+            return null;
         }
     }
 }
