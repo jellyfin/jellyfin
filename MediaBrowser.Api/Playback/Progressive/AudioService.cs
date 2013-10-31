@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.MediaInfo;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
@@ -40,8 +41,8 @@ namespace MediaBrowser.Api.Playback.Progressive
     /// </summary>
     public class AudioService : BaseProgressiveStreamingService
     {
-        public AudioService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IItemRepository itemRepo, IDtoService dtoService, IImageProcessor imageProcessor)
-            : base(appPaths, userManager, libraryManager, isoManager, mediaEncoder, itemRepo, dtoService, imageProcessor)
+        public AudioService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IItemRepository itemRepo, IDtoService dtoService, IImageProcessor imageProcessor, IFileSystem fileSystem)
+            : base(appPaths, userManager, libraryManager, isoManager, mediaEncoder, itemRepo, dtoService, imageProcessor, fileSystem)
         {
         }
 

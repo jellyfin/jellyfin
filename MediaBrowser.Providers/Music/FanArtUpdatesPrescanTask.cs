@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Logging;
@@ -31,15 +32,17 @@ namespace MediaBrowser.Providers.Music
         /// </summary>
         private readonly IServerConfigurationManager _config;
         private readonly IJsonSerializer _jsonSerializer;
+        private readonly IFileSystem _fileSystem;
 
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
-        public FanArtUpdatesPrescanTask(IJsonSerializer jsonSerializer, IServerConfigurationManager config, ILogger logger, IHttpClient httpClient)
+        public FanArtUpdatesPrescanTask(IJsonSerializer jsonSerializer, IServerConfigurationManager config, ILogger logger, IHttpClient httpClient, IFileSystem fileSystem)
         {
             _jsonSerializer = jsonSerializer;
             _config = config;
             _logger = logger;
             _httpClient = httpClient;
+            _fileSystem = fileSystem;
         }
 
         /// <summary>
@@ -65,7 +68,7 @@ namespace MediaBrowser.Providers.Music
             var timestampFileInfo = new FileInfo(timestampFile);
 
             // Don't check for tvdb updates anymore frequently than 24 hours
-            if (timestampFileInfo.Exists && (DateTime.UtcNow - timestampFileInfo.LastWriteTimeUtc).TotalDays < 1)
+            if (timestampFileInfo.Exists && (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(timestampFileInfo)).TotalDays < 1)
             {
                 return;
             }

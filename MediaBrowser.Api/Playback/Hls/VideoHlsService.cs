@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.MediaInfo;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
@@ -39,8 +40,8 @@ namespace MediaBrowser.Api.Playback.Hls
         /// <param name="isoManager">The iso manager.</param>
         /// <param name="mediaEncoder">The media encoder.</param>
         /// <param name="dtoService">The dto service.</param>
-        public VideoHlsService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService)
-            : base(appPaths, userManager, libraryManager, isoManager, mediaEncoder, dtoService)
+        public VideoHlsService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService, IFileSystem fileSystem)
+            : base(appPaths, userManager, libraryManager, isoManager, mediaEncoder, dtoService, fileSystem)
         {
         }
 

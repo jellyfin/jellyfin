@@ -5,6 +5,7 @@ using MediaBrowser.Common.Constants;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Implementations;
 using MediaBrowser.Common.Implementations.ScheduledTasks;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
@@ -170,8 +171,6 @@ namespace MediaBrowser.ServerApplication
 
         private Task<IHttpServer> _httpServerCreationTask;
 
-        private IFileSystem FileSystemManager { get; set; }
-        
         /// <summary>
         /// Initializes a new instance of the <see cref="ApplicationHost"/> class.
         /// </summary>
@@ -237,7 +236,7 @@ namespace MediaBrowser.ServerApplication
 
             await base.RegisterResources().ConfigureAwait(false);
 
-            RegisterSingleInstance<IHttpResultFactory>(new HttpResultFactory(LogManager));
+            RegisterSingleInstance<IHttpResultFactory>(new HttpResultFactory(LogManager, FileSystemManager));
 
             RegisterSingleInstance<IServerApplicationHost>(this);
             RegisterSingleInstance<IServerApplicationPaths>(ApplicationPaths);
@@ -248,9 +247,6 @@ namespace MediaBrowser.ServerApplication
             RegisterSingleInstance<IWebSocketServer>(() => new AlchemyServer(Logger));
 
             RegisterSingleInstance<IBlurayExaminer>(() => new BdInfoExaminer());
-
-            FileSystemManager = FileSystemFactory.CreateFileSystemManager(LogManager);
-            RegisterSingleInstance(FileSystemManager);
 
             var mediaEncoderTask = RegisterMediaEncoder();
 
@@ -275,7 +271,7 @@ namespace MediaBrowser.ServerApplication
             DirectoryWatchers = new DirectoryWatchers(LogManager, TaskManager, LibraryManager, ServerConfigurationManager, FileSystemManager);
             RegisterSingleInstance(DirectoryWatchers);
 
-            ProviderManager = new ProviderManager(HttpClient, ServerConfigurationManager, DirectoryWatchers, LogManager);
+            ProviderManager = new ProviderManager(HttpClient, ServerConfigurationManager, DirectoryWatchers, LogManager, FileSystemManager);
             RegisterSingleInstance(ProviderManager);
 
             RegisterSingleInstance<ILibrarySearchEngine>(() => new LuceneSearchEngine(ApplicationPaths, LogManager, LibraryManager));
@@ -289,10 +285,10 @@ namespace MediaBrowser.ServerApplication
             ServerManager = new ServerManager(this, JsonSerializer, Logger, ServerConfigurationManager);
             RegisterSingleInstance(ServerManager);
 
-            LocalizationManager = new LocalizationManager(ServerConfigurationManager);
+            LocalizationManager = new LocalizationManager(ServerConfigurationManager, FileSystemManager);
             RegisterSingleInstance(LocalizationManager);
 
-            ImageProcessor = new ImageProcessor(Logger, ServerConfigurationManager.ApplicationPaths);
+            ImageProcessor = new ImageProcessor(Logger, ServerConfigurationManager.ApplicationPaths, FileSystemManager);
             RegisterSingleInstance(ImageProcessor);
 
             DtoService = new DtoService(Logger, LibraryManager, UserManager, UserDataManager, ItemRepository, ImageProcessor);
@@ -317,15 +313,20 @@ namespace MediaBrowser.ServerApplication
             return new NetworkManager();
         }
 
+        protected override IFileSystem CreateFileSystemManager()
+        {
+            return FileSystemFactory.CreateFileSystemManager(LogManager);
+        }
+
         /// <summary>
         /// Registers the media encoder.
         /// </summary>
         /// <returns>Task.</returns>
         private async Task RegisterMediaEncoder()
         {
-            var info = await new FFMpegDownloader(Logger, ApplicationPaths, HttpClient, ZipClient).GetFFMpegInfo().ConfigureAwait(false);
+            var info = await new FFMpegDownloader(Logger, ApplicationPaths, HttpClient, ZipClient, FileSystemManager).GetFFMpegInfo().ConfigureAwait(false);
 
-            MediaEncoder = new MediaEncoder(LogManager.GetLogger("MediaEncoder"), ApplicationPaths, JsonSerializer, info.Path, info.ProbePath, info.Version);
+            MediaEncoder = new MediaEncoder(LogManager.GetLogger("MediaEncoder"), ApplicationPaths, JsonSerializer, info.Path, info.ProbePath, info.Version, FileSystemManager);
             RegisterSingleInstance(MediaEncoder);
         }
 
@@ -335,7 +336,7 @@ namespace MediaBrowser.ServerApplication
         private void SetKernelProperties()
         {
             Parallel.Invoke(
-                 () => ServerKernel.FFMpegManager = new FFMpegManager(ApplicationPaths, MediaEncoder, Logger, ItemRepository),
+                 () => ServerKernel.FFMpegManager = new FFMpegManager(ApplicationPaths, MediaEncoder, Logger, ItemRepository, FileSystemManager),
                  () => LocalizedStrings.StringFiles = GetExports<LocalizedStringData>(),
                  SetStaticProperties
                  );

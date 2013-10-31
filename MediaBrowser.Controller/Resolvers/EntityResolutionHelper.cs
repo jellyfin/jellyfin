@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using System;
@@ -149,7 +150,7 @@ namespace MediaBrowser.Controller.Resolvers
                         item.DateCreated = fileSystem.GetCreationTimeUtc(childData);
                     }
 
-                    item.DateModified = childData.LastWriteTimeUtc;
+                    item.DateModified = fileSystem.GetLastWriteTimeUtc(childData);
                 }
                 else
                 {
@@ -161,7 +162,7 @@ namespace MediaBrowser.Controller.Resolvers
                         {
                             item.DateCreated = fileSystem.GetCreationTimeUtc(fileData);
                         }
-                        item.DateModified = fileData.LastWriteTimeUtc;
+                        item.DateModified = fileSystem.GetLastWriteTimeUtc(fileData);
                     }
                 }
             }
@@ -171,7 +172,7 @@ namespace MediaBrowser.Controller.Resolvers
                 {
                     item.DateCreated = fileSystem.GetCreationTimeUtc(args.FileInfo);
                 }
-                item.DateModified = args.FileInfo.LastWriteTimeUtc;
+                item.DateModified = fileSystem.GetLastWriteTimeUtc(args.FileInfo);
             }
         }
     }

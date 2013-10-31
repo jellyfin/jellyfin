@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Logging;
@@ -34,6 +35,7 @@ namespace MediaBrowser.Providers.Movies
         /// </summary>
         private readonly IServerConfigurationManager _config;
         private readonly IJsonSerializer _json;
+        private readonly IFileSystem _fileSystem;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PersonUpdatesPreScanTask"/> class.
@@ -41,12 +43,13 @@ namespace MediaBrowser.Providers.Movies
         /// <param name="logger">The logger.</param>
         /// <param name="httpClient">The HTTP client.</param>
         /// <param name="config">The config.</param>
-        public PersonUpdatesPreScanTask(ILogger logger, IHttpClient httpClient, IServerConfigurationManager config, IJsonSerializer json)
+        public PersonUpdatesPreScanTask(ILogger logger, IHttpClient httpClient, IServerConfigurationManager config, IJsonSerializer json, IFileSystem fileSystem)
         {
             _logger = logger;
             _httpClient = httpClient;
             _config = config;
             _json = json;
+            _fileSystem = fileSystem;
         }
 
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
@@ -74,7 +77,7 @@ namespace MediaBrowser.Providers.Movies
             var timestampFileInfo = new FileInfo(timestampFile);
 
             // Don't check for tvdb updates anymore frequently than 24 hours
-            if (timestampFileInfo.Exists && (DateTime.UtcNow - timestampFileInfo.LastWriteTimeUtc).TotalDays < 1)
+            if (timestampFileInfo.Exists && (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(timestampFileInfo)).TotalDays < 1)
             {
                 return;
             }

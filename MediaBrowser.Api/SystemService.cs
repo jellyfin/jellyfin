@@ -1,6 +1,8 @@
 ﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.System;
@@ -75,6 +77,9 @@ namespace MediaBrowser.Api
         /// </summary>
         private readonly IServerConfigurationManager _configurationManager;
 
+        private readonly IFileSystem _fileSystem;
+
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SystemService" /> class.
         /// </summary>
@@ -82,7 +87,7 @@ namespace MediaBrowser.Api
         /// <param name="appHost">The app host.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <exception cref="System.ArgumentNullException">jsonSerializer</exception>
-        public SystemService(IJsonSerializer jsonSerializer, IServerApplicationHost appHost, IServerConfigurationManager configurationManager)
+        public SystemService(IJsonSerializer jsonSerializer, IServerApplicationHost appHost, IServerConfigurationManager configurationManager, IFileSystem fileSystem)
             : base()
         {
             if (jsonSerializer == null)
@@ -96,6 +101,7 @@ namespace MediaBrowser.Api
 
             _appHost = appHost;
             _configurationManager = configurationManager;
+            _fileSystem = fileSystem;
             _jsonSerializer = jsonSerializer;
         }
 
@@ -118,7 +124,7 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetConfiguration request)
         {
-            var dateModified = File.GetLastWriteTimeUtc(_configurationManager.ApplicationPaths.SystemConfigurationFilePath);
+            var dateModified = _fileSystem.GetLastWriteTimeUtc(_configurationManager.ApplicationPaths.SystemConfigurationFilePath);
 
             var cacheKey = (_configurationManager.ApplicationPaths.SystemConfigurationFilePath + dateModified.Ticks).GetMD5();
 

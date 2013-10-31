@@ -50,6 +50,7 @@ namespace MediaBrowser.Server.Implementations.Providers
         private BaseMetadataProvider[] MetadataProviders { get; set; }
 
         private IImageProvider[] ImageProviders { get; set; }
+        private readonly IFileSystem _fileSystem;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ProviderManager" /> class.
@@ -58,12 +59,13 @@ namespace MediaBrowser.Server.Implementations.Providers
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="directoryWatchers">The directory watchers.</param>
         /// <param name="logManager">The log manager.</param>
-        public ProviderManager(IHttpClient httpClient, IServerConfigurationManager configurationManager, IDirectoryWatchers directoryWatchers, ILogManager logManager)
+        public ProviderManager(IHttpClient httpClient, IServerConfigurationManager configurationManager, IDirectoryWatchers directoryWatchers, ILogManager logManager, IFileSystem fileSystem)
         {
             _logger = logManager.GetLogger("ProviderManager");
             _httpClient = httpClient;
             ConfigurationManager = configurationManager;
             _directoryWatchers = directoryWatchers;
+            _fileSystem = fileSystem;
         }
 
         /// <summary>
@@ -293,7 +295,7 @@ namespace MediaBrowser.Server.Implementations.Providers
             {
                 using (dataToSave)
                 {
-                    using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
+                    using (var fs = _fileSystem.GetFileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, true))
                     {
                         await dataToSave.CopyToAsync(fs, StreamDefaults.DefaultCopyToBufferSize, cancellationToken).ConfigureAwait(false);
                     }
@@ -347,7 +349,7 @@ namespace MediaBrowser.Server.Implementations.Providers
         /// <returns>Task.</returns>
         public Task SaveImage(BaseItem item, Stream source, string mimeType, ImageType type, int? imageIndex, string sourceUrl, CancellationToken cancellationToken)
         {
-            return new ImageSaver(ConfigurationManager, _directoryWatchers).SaveImage(item, source, mimeType, type, imageIndex, sourceUrl, cancellationToken);
+            return new ImageSaver(ConfigurationManager, _directoryWatchers, _fileSystem).SaveImage(item, source, mimeType, type, imageIndex, sourceUrl, cancellationToken);
         }
 
         /// <summary>

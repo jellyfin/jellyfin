@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -47,6 +48,7 @@ namespace MediaBrowser.Providers.Movies
         /// </summary>
         /// <value>The HTTP client.</value>
         protected IHttpClient HttpClient { get; private set; }
+        private readonly IFileSystem _fileSystem;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MovieDbProvider" /> class.
@@ -56,12 +58,13 @@ namespace MediaBrowser.Providers.Movies
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="httpClient">The HTTP client.</param>
         /// <param name="providerManager">The provider manager.</param>
-        public MovieDbProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IJsonSerializer jsonSerializer, IHttpClient httpClient, IProviderManager providerManager)
+        public MovieDbProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IJsonSerializer jsonSerializer, IHttpClient httpClient, IProviderManager providerManager, IFileSystem fileSystem)
             : base(logManager, configurationManager)
         {
             JsonSerializer = jsonSerializer;
             HttpClient = httpClient;
             ProviderManager = providerManager;
+            _fileSystem = fileSystem;
             Current = this;
         }
 
@@ -216,7 +219,7 @@ namespace MediaBrowser.Providers.Movies
 
                 if (fileInfo.Exists)
                 {
-                    return fileInfo.LastWriteTimeUtc > providerInfo.LastRefreshed;
+                    return _fileSystem.GetLastWriteTimeUtc(fileInfo) > providerInfo.LastRefreshed;
                 }
 
                 return true;

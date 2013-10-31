@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.ScheduledTasks;
 using System;
 using System.Collections.Generic;
@@ -20,13 +21,16 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
         /// <value>The configuration manager.</value>
         private IConfigurationManager ConfigurationManager { get; set; }
 
+        private readonly IFileSystem _fileSystem;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DeleteLogFileTask" /> class.
         /// </summary>
         /// <param name="configurationManager">The configuration manager.</param>
-        public DeleteLogFileTask(IConfigurationManager configurationManager)
+        public DeleteLogFileTask(IConfigurationManager configurationManager, IFileSystem fileSystem)
         {
             ConfigurationManager = configurationManager;
+            _fileSystem = fileSystem;
         }
 
         /// <summary>
@@ -58,7 +62,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
             var minDateModified = DateTime.UtcNow.AddDays(-(ConfigurationManager.CommonConfiguration.LogFileRetentionDays));
 
             var filesToDelete = new DirectoryInfo(ConfigurationManager.CommonApplicationPaths.LogDirectoryPath).EnumerateFileSystemInfos("*", SearchOption.AllDirectories)
-                          .Where(f => f.LastWriteTimeUtc < minDateModified)
+                          .Where(f => _fileSystem.GetLastWriteTimeUtc(f) < minDateModified)
                           .ToList();
 
             var index = 0;

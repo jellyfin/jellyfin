@@ -1,4 +1,6 @@
-﻿using MediaBrowser.Model.Logging;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -40,9 +42,10 @@ namespace MediaBrowser.Server.Implementations.Drawing
         /// </summary>
         /// <param name="path">The path of the image to get the dimensions of.</param>
         /// <param name="logger">The logger.</param>
+        /// <param name="fileSystem">The file system.</param>
         /// <returns>The dimensions of the specified image.</returns>
         /// <exception cref="ArgumentException">The image was of an unrecognised format.</exception>
-        public static Size GetDimensions(string path, ILogger logger)
+        public static Size GetDimensions(string path, ILogger logger, IFileSystem fileSystem)
         {
             try
             {
@@ -60,7 +63,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
             }
 
             // Buffer to memory stream to avoid image locking file
-            using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (var fs = fileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
                 using (var memoryStream = new MemoryStream())
                 {

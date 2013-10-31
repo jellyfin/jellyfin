@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.MediaInfo;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
@@ -53,6 +54,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// The FF probe resource pool
         /// </summary>
         private readonly SemaphoreSlim _ffProbeResourcePool = new SemaphoreSlim(1, 1);
+        private readonly IFileSystem _fileSystem;
 
         public string FFMpegPath { get; private set; }
 
@@ -61,12 +63,13 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         public string Version { get; private set; }
 
         public MediaEncoder(ILogger logger, IApplicationPaths appPaths,
-                            IJsonSerializer jsonSerializer, string ffMpegPath, string ffProbePath, string version)
+                            IJsonSerializer jsonSerializer, string ffMpegPath, string ffProbePath, string version, IFileSystem fileSystem)
         {
             _logger = logger;
             _appPaths = appPaths;
             _jsonSerializer = jsonSerializer;
             Version = version;
+            _fileSystem = fileSystem;
             FFProbePath = ffProbePath;
             FFMpegPath = ffMpegPath;
         }
@@ -458,8 +461,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
 
             var logFilePath = Path.Combine(_appPaths.LogDirectoryPath, "ffmpeg-sub-convert-" + Guid.NewGuid() + ".txt");
 
-            var logFileStream = new FileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read,
-                                               StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous);
+            var logFileStream = _fileSystem.GetFileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, true);
 
             try
             {
@@ -685,7 +687,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
 
             var logFilePath = Path.Combine(_appPaths.LogDirectoryPath, "ffmpeg-sub-extract-" + Guid.NewGuid() + ".txt");
 
-            var logFileStream = new FileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous);
+            var logFileStream = _fileSystem.GetFileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, true);
 
             try
             {

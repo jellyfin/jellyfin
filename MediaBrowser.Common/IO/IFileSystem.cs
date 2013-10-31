@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace MediaBrowser.Controller.IO
+namespace MediaBrowser.Common.IO
 {
     /// <summary>
     /// Interface IFileSystem
@@ -49,5 +49,30 @@ namespace MediaBrowser.Controller.IO
         /// <param name="info">The info.</param>
         /// <returns>DateTime.</returns>
         DateTime GetCreationTimeUtc(FileSystemInfo info);
+
+        /// <summary>
+        /// Gets the last write time UTC.
+        /// </summary>
+        /// <param name="info">The information.</param>
+        /// <returns>DateTime.</returns>
+        DateTime GetLastWriteTimeUtc(FileSystemInfo info);
+
+        /// <summary>
+        /// Gets the last write time UTC.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>DateTime.</returns>
+        DateTime GetLastWriteTimeUtc(string path);
+
+        /// <summary>
+        /// Gets the file stream.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <param name="mode">The mode.</param>
+        /// <param name="access">The access.</param>
+        /// <param name="share">The share.</param>
+        /// <param name="isAsync">if set to <c>true</c> [is asynchronous].</param>
+        /// <returns>FileStream.</returns>
+        FileStream GetFileStream(string path, FileMode mode, FileAccess access, FileShare share, bool isAsync = false);
     }
 }

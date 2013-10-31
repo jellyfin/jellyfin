@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Providers;
@@ -13,10 +14,12 @@ namespace MediaBrowser.Providers.Movies
     class PersonProviderFromXml : BaseMetadataProvider
     {
         internal static PersonProviderFromXml Current { get; private set; }
+        private readonly IFileSystem _fileSystem;
 
-        public PersonProviderFromXml(ILogManager logManager, IServerConfigurationManager configurationManager)
+        public PersonProviderFromXml(ILogManager logManager, IServerConfigurationManager configurationManager, IFileSystem fileSystem)
             : base(logManager, configurationManager)
         {
+            _fileSystem = fileSystem;
             Current = this;
         }
 
@@ -49,7 +52,7 @@ namespace MediaBrowser.Providers.Movies
                 return false;
             }
 
-            return FileSystem.GetLastWriteTimeUtc(xml, Logger) > providerInfo.LastRefreshed;
+            return _fileSystem.GetLastWriteTimeUtc(xml) > providerInfo.LastRefreshed;
         }
 
         /// <summary>

@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -22,6 +23,7 @@ namespace MediaBrowser.Providers.TV
         /// The _provider manager
         /// </summary>
         private readonly IProviderManager _providerManager;
+        private readonly IFileSystem _fileSystem;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FanArtSeasonProvider"/> class.
@@ -29,10 +31,11 @@ namespace MediaBrowser.Providers.TV
         /// <param name="logManager">The log manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="providerManager">The provider manager.</param>
-        public FanArtSeasonProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager)
+        public FanArtSeasonProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager, IFileSystem fileSystem)
             : base(logManager, configurationManager)
         {
             _providerManager = providerManager;
+            _fileSystem = fileSystem;
         }
 
         public override ItemUpdateType ItemUpdateType
@@ -76,7 +79,7 @@ namespace MediaBrowser.Providers.TV
 
                 if (imagesFileInfo.Exists)
                 {
-                    return imagesFileInfo.LastWriteTimeUtc;
+                    return _fileSystem.GetLastWriteTimeUtc(imagesFileInfo);
                 }
             }
 

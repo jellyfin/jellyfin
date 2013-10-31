@@ -88,6 +88,7 @@
       <Link>FFMpeg\FFMpegDownloader.cs</Link>
     </Compile>
     <Compile Include="FFMpeg\FFMpegDownloadInfo.cs" />
+    <Compile Include="IO\FileSystemFactory.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -129,6 +130,7 @@
     <Folder Include="Native\" />
     <Folder Include="FFMpeg\" />
     <Folder Include="Networking\" />
+    <Folder Include="IO\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

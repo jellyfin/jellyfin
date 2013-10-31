@@ -1,10 +1,10 @@
-﻿using MediaBrowser.Controller.IO;
+﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Model.Logging;
 using System;
 using System.IO;
 using System.Text;
 
-namespace MediaBrowser.ServerApplication.IO
+namespace MediaBrowser.Common.Implementations.IO
 {
     /// <summary>
     /// Class CommonFileSystem
@@ -13,9 +13,12 @@ namespace MediaBrowser.ServerApplication.IO
     {
         protected ILogger Logger;
 
-        public CommonFileSystem(ILogger logger)
+        private readonly bool _supportsAsyncFileStreams;
+
+        public CommonFileSystem(ILogger logger, bool supportsAsyncFileStreams)
         {
             Logger = logger;
+            _supportsAsyncFileStreams = supportsAsyncFileStreams;
         }
 
         /// <summary>
@@ -164,8 +167,56 @@ namespace MediaBrowser.ServerApplication.IO
                 return DateTime.MinValue;
             }
         }
-    }
 
+        /// <summary>
+        /// Gets the creation time UTC.
+        /// </summary>
+        /// <param name="info">The info.</param>
+        /// <param name="logger">The logger.</param>
+        /// <returns>DateTime.</returns>
+        public DateTime GetLastWriteTimeUtc(FileSystemInfo info)
+        {
+            // This could throw an error on some file systems that have dates out of range
+            try
+            {
+                return info.LastWriteTimeUtc;
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error determining LastAccessTimeUtc for {0}", ex, info.FullName);
+                return DateTime.MinValue;
+            }
+        }
+
+        /// <summary>
+        /// Gets the last write time UTC.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>DateTime.</returns>
+        public DateTime GetLastWriteTimeUtc(string path)
+        {
+            return GetLastWriteTimeUtc(GetFileSystemInfo(path));
+        }
+
+        /// <summary>
+        /// Gets the file stream.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <param name="mode">The mode.</param>
+        /// <param name="access">The access.</param>
+        /// <param name="share">The share.</param>
+        /// <param name="isAsync">if set to <c>true</c> [is asynchronous].</param>
+        /// <returns>FileStream.</returns>
+        public FileStream GetFileStream(string path, FileMode mode, FileAccess access, FileShare share, bool isAsync = false)
+        {
+            if (_supportsAsyncFileStreams && isAsync)
+            {
+                return new FileStream(path, mode, access, share, 4096, true);
+            }
+
+            return new FileStream(path, mode, access, share);
+        }
+    }
 
     /// <summary>
     ///  Adapted from http://stackoverflow.com/questions/309495/windows-shortcut-lnk-parser-in-java
