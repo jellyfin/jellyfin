@@ -1,5 +1,7 @@
 ﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Controller.Plugins;
@@ -26,11 +28,12 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
         private readonly IJsonSerializer _json;
         private readonly INotificationsRepository _notificationsRepo;
         private readonly IUserManager _userManager;
+        private readonly IFileSystem _fileSystem;
 
         private readonly TimeSpan _frequency = TimeSpan.FromHours(6);
         private readonly TimeSpan _maxAge = TimeSpan.FromDays(31);
 
-        public RemoteNotifications(IApplicationPaths appPaths, ILogger logger, IHttpClient httpClient, IJsonSerializer json, INotificationsRepository notificationsRepo, IUserManager userManager)
+        public RemoteNotifications(IApplicationPaths appPaths, ILogger logger, IHttpClient httpClient, IJsonSerializer json, INotificationsRepository notificationsRepo, IUserManager userManager, IFileSystem fileSystem)
         {
             _appPaths = appPaths;
             _logger = logger;
@@ -38,6 +41,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
             _json = json;
             _notificationsRepo = notificationsRepo;
             _userManager = userManager;
+            _fileSystem = fileSystem;
         }
 
         /// <summary>
@@ -56,7 +60,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
         {
             var dataPath = Path.Combine(_appPaths.DataPath, "remotenotifications.json");
 
-            var lastRunTime = File.Exists(dataPath) ? File.GetLastWriteTimeUtc(dataPath) : DateTime.MinValue;
+            var lastRunTime = File.Exists(dataPath) ? _fileSystem.GetLastWriteTimeUtc(dataPath) : DateTime.MinValue;
 
             try
             {

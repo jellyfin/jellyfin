@@ -1,12 +1,13 @@
 ﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.ScheduledTasks;
+using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
 {
@@ -23,14 +24,17 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
 
         private readonly ILogger _logger;
 
+        private readonly IFileSystem _fileSystem;
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="DeleteCacheFileTask" /> class.
         /// </summary>
         /// <param name="appPaths">The app paths.</param>
-        public DeleteCacheFileTask(IApplicationPaths appPaths, ILogger logger)
+        public DeleteCacheFileTask(IApplicationPaths appPaths, ILogger logger, IFileSystem fileSystem)
         {
             ApplicationPaths = appPaths;
             _logger = logger;
+            _fileSystem = fileSystem;
         }
 
         /// <summary>
@@ -94,7 +98,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
         private void DeleteCacheFilesFromDirectory(CancellationToken cancellationToken, string directory, DateTime minDateModified, IProgress<double> progress)
         {
             var filesToDelete = new DirectoryInfo(directory).EnumerateFiles("*", SearchOption.AllDirectories)
-                .Where(f => f.LastWriteTimeUtc < minDateModified)
+                .Where(f => _fileSystem.GetLastWriteTimeUtc(f) < minDateModified)
                 .ToList();
 
             var index = 0;

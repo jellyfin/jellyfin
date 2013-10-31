@@ -50,6 +50,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="Providers\MovieDbProviderTests.cs" />
     <Compile Include="Resolvers\MovieResolverTests.cs" />
     <Compile Include="Resolvers\TvUtilTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -62,6 +63,10 @@
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj">
       <Project>{7eeeb4bb-f3e8-48fc-b4c5-70f0fff8329b}</Project>
       <Name>MediaBrowser.Model</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.Providers\MediaBrowser.Providers.csproj">
+      <Project>{442B5058-DCAF-4263-BB6A-F21E31120A1B}</Project>
+      <Name>MediaBrowser.Providers</Name>
     </ProjectReference>
   </ItemGroup>
   <Choose>

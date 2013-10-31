@@ -64,9 +64,22 @@
             }
 
             if (MediaPlayer.canPlay(item) && item.LocationType !== "Offline" && item.LocationType !== "Virtual") {
-                $('#playButtonContainer', page).show();
+
+                var url = MediaPlayer.getPlayUrl(item);
+
+                if (url) {
+                    $('#playExternalButtonContainer', page).show();
+                    $('#playButtonContainer', page).hide();
+                } else {
+                    $('#playButtonContainer', page).show();
+                    $('#playExternalButtonContainer', page).hide();
+                }
+
+                $('#btnPlayExternal', page).attr('href', url || '#');
+
             } else {
                 $('#playButtonContainer', page).hide();
+                $('#playExternalButtonContainer', page).hide();
             }
 
             $(".autoNumeric").autoNumeric('init');
@@ -492,8 +505,13 @@
             Fields: "PrimaryImageAspectRatio,ItemCounts,DateCreated,AudioInfo"
         };
 
-        if (item.Type == "Series" || item.Type == "Season" && !user.Configuration.DisplayVirtualEpisodes) {
-            query.ExcludeLocationTypes = "virtual";
+        if (item.Type == "Series" || item.Type == "Season") {
+            if (!user.Configuration.DisplayMissingEpisodes) {
+                query.IsMissing = false;
+            }
+            if (!user.Configuration.DisplayUnairedEpisodes) {
+                query.IsVirtualUnaired = false;
+            }
         }
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), query).done(function (result) {
@@ -1025,6 +1043,11 @@
             }
 
             LibraryBrowser.showPlayMenu(this, currentItem.Id, currentItem.Type, mediaType, userdata.PlaybackPositionTicks);
+        });
+
+        $('#btnPlayExternal', page).on('click', function () {
+
+            ApiClient.markPlayed(Dashboard.getCurrentUserId(), currentItem.Id, new Date());
         });
 
         $('#btnEdit', page).on('click', function () {

@@ -133,6 +133,8 @@
         $('#selectView', page).val(view).selectmenu('refresh');
 
         $('#chk3D', page).checked(query.Is3D == true).checkboxradio('refresh');
+        $('#chkHD', page).checked(query.IsHD == true).checkboxradio('refresh');
+        $('#chkSD', page).checked(query.IsHD == false).checkboxradio('refresh');
 
         $('#chkSubtitle', page).checked(query.HasSubtitles == true).checkboxradio('refresh');
         $('#chkTrailer', page).checked(query.HasTrailer == true).checkboxradio('refresh');
@@ -214,6 +216,22 @@
 
             query.StartIndex = 0;
             query.Is3D = this.checked ? true : null;
+
+            reloadItems(page);
+        });
+
+        $('#chkHD', this).on('change', function () {
+
+            query.StartIndex = 0;
+            query.IsHD = this.checked ? true : null;
+
+            reloadItems(page);
+        });
+
+        $('#chkSD', this).on('change', function () {
+
+            query.StartIndex = 0;
+            query.IsHD = this.checked ? false : null;
 
             reloadItems(page);
         });

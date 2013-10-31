@@ -38,8 +38,8 @@ namespace MediaBrowser.Api.Playback.Hls
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="isoManager">The iso manager.</param>
         /// <param name="mediaEncoder">The media encoder.</param>
-        protected BaseHlsService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService)
-            : base(appPaths, userManager, libraryManager, isoManager, mediaEncoder, dtoService)
+        protected BaseHlsService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService, IFileSystem fileSystem)
+            : base(appPaths, userManager, libraryManager, isoManager, mediaEncoder, dtoService, fileSystem)
         {
         }
 
@@ -209,7 +209,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 string fileText;
 
                 // Need to use FileShare.ReadWrite because we're reading the file at the same time it's being written
-                using (var fileStream = new FileStream(playlist, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous))
+                using (var fileStream = FileSystem.GetFileStream(playlist, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
                 {
                     using (var reader = new StreamReader(fileStream))
                     {

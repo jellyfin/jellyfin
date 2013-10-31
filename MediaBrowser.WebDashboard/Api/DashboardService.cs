@@ -5,6 +5,7 @@ using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Logging;
@@ -118,6 +119,7 @@ namespace MediaBrowser.WebDashboard.Api
 
         private readonly ISessionManager _sessionManager;
         private readonly IDtoService _dtoService;
+        private readonly IFileSystem _fileSystem;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DashboardService" /> class.
@@ -126,13 +128,14 @@ namespace MediaBrowser.WebDashboard.Api
         /// <param name="appHost">The app host.</param>
         /// <param name="serverConfigurationManager">The server configuration manager.</param>
         /// <param name="sessionManager">The session manager.</param>
-        public DashboardService(ITaskManager taskManager, IServerApplicationHost appHost, IServerConfigurationManager serverConfigurationManager, ISessionManager sessionManager, IDtoService dtoService)
+        public DashboardService(ITaskManager taskManager, IServerApplicationHost appHost, IServerConfigurationManager serverConfigurationManager, ISessionManager sessionManager, IDtoService dtoService, IFileSystem fileSystem)
         {
             _taskManager = taskManager;
             _appHost = appHost;
             _serverConfigurationManager = serverConfigurationManager;
             _sessionManager = sessionManager;
             _dtoService = dtoService;
+            _fileSystem = fileSystem;
         }
 
         /// <summary>
@@ -324,7 +327,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// <returns>Task{Stream}.</returns>
         private Stream GetRawResourceStream(string path)
         {
-            return new FileStream(GetDashboardResourcePath(path), FileMode.Open, FileAccess.Read, FileShare.ReadWrite, StreamDefaults.DefaultFileStreamBufferSize, true);
+            return _fileSystem.GetFileStream(GetDashboardResourcePath(path), FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true);
         }
 
         /// <summary>
@@ -611,7 +614,7 @@ namespace MediaBrowser.WebDashboard.Api
         {
             path = GetDashboardResourcePath(path);
 
-            using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, StreamDefaults.DefaultFileStreamBufferSize, true))
+            using (var fs = _fileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
             {
                 using (var streamReader = new StreamReader(fs))
                 {

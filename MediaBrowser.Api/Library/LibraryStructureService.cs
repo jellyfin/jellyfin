@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
@@ -186,6 +187,8 @@ namespace MediaBrowser.Api.Library
 
         private readonly IDirectoryWatchers _directoryWatchers;
 
+        private readonly IFileSystem _fileSystem;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryStructureService"/> class.
         /// </summary>
@@ -193,7 +196,7 @@ namespace MediaBrowser.Api.Library
         /// <param name="userManager">The user manager.</param>
         /// <param name="libraryManager">The library manager.</param>
         /// <exception cref="System.ArgumentNullException">appPaths</exception>
-        public LibraryStructureService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IDirectoryWatchers directoryWatchers)
+        public LibraryStructureService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IDirectoryWatchers directoryWatchers, IFileSystem fileSystem)
         {
             if (appPaths == null)
             {
@@ -204,6 +207,7 @@ namespace MediaBrowser.Api.Library
             _appPaths = appPaths;
             _libraryManager = libraryManager;
             _directoryWatchers = directoryWatchers;
+            _fileSystem = fileSystem;
         }
 
         /// <summary>
@@ -241,13 +245,13 @@ namespace MediaBrowser.Api.Library
             {
                 if (string.IsNullOrEmpty(request.UserId))
                 {
-                    LibraryHelpers.AddVirtualFolder(request.Name, request.CollectionType, null, _appPaths);
+                    LibraryHelpers.AddVirtualFolder(_fileSystem, request.Name, request.CollectionType, null, _appPaths);
                 }
                 else
                 {
                     var user = _userManager.GetUserById(new Guid(request.UserId));
 
-                    LibraryHelpers.AddVirtualFolder(request.Name, request.CollectionType, user, _appPaths);
+                    LibraryHelpers.AddVirtualFolder(_fileSystem, request.Name, request.CollectionType, user, _appPaths);
                 }
 
                 // Need to add a delay here or directory watchers may still pick up the changes
@@ -352,13 +356,13 @@ namespace MediaBrowser.Api.Library
             {
                 if (string.IsNullOrEmpty(request.UserId))
                 {
-                    LibraryHelpers.AddMediaPath(request.Name, request.Path, null, _appPaths);
+                    LibraryHelpers.AddMediaPath(_fileSystem, request.Name, request.Path, null, _appPaths);
                 }
                 else
                 {
                     var user = _userManager.GetUserById(new Guid(request.UserId));
 
-                    LibraryHelpers.AddMediaPath(request.Name, request.Path, user, _appPaths);
+                    LibraryHelpers.AddMediaPath(_fileSystem, request.Name, request.Path, user, _appPaths);
                 }
 
                 // Need to add a delay here or directory watchers may still pick up the changes
@@ -389,13 +393,13 @@ namespace MediaBrowser.Api.Library
             {
                 if (string.IsNullOrEmpty(request.UserId))
                 {
-                    LibraryHelpers.RemoveMediaPath(request.Name, request.Path, null, _appPaths);
+                    LibraryHelpers.RemoveMediaPath(_fileSystem, request.Name, request.Path, null, _appPaths);
                 }
                 else
                 {
                     var user = _userManager.GetUserById(new Guid(request.UserId));
 
-                    LibraryHelpers.RemoveMediaPath(request.Name, request.Path, user, _appPaths);
+                    LibraryHelpers.RemoveMediaPath(_fileSystem, request.Name, request.Path, user, _appPaths);
                 }
 
                 // Need to add a delay here or directory watchers may still pick up the changes

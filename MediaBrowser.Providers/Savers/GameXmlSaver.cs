@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Providers.Movies;
 using System;
 using System.Collections.Generic;
@@ -70,6 +71,20 @@ namespace MediaBrowser.Providers.Savers
                 builder.Append("<GameSystem>" + SecurityElement.Escape(game.GameSystem) + "</GameSystem>");
             }
 
+            var val = game.GetProviderId(MetadataProviders.NesBox);
+
+            if (!string.IsNullOrEmpty(val))
+            {
+                builder.Append("<NesBox>" + SecurityElement.Escape(val) + "</NesBox>");
+            }
+
+            val = game.GetProviderId(MetadataProviders.NesBoxRom);
+
+            if (!string.IsNullOrEmpty(val))
+            {
+                builder.Append("<NesBoxRom>" + SecurityElement.Escape(val) + "</NesBoxRom>");
+            }
+
             XmlSaverHelpers.AddCommonNodes(item, builder);
 
             builder.Append("</Item>");
@@ -79,7 +94,9 @@ namespace MediaBrowser.Providers.Savers
             XmlSaverHelpers.Save(builder, xmlFilePath, new List<string>
                 {
                     "Players",
-                    "GameSystem"
+                    "GameSystem",
+                    "NesBox",
+                    "NesBoxRom"
                 });
 
             // Set last refreshed so that the provider doesn't trigger after the file save

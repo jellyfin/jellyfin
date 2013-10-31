@@ -116,7 +116,8 @@
 
         }).checkboxradio('refresh');
 
-        $('#chk3D', page).checked(query.Is3D == true).checkboxradio('refresh');
+        $('#chkHD', page).checked(query.IsHD == true).checkboxradio('refresh');
+        $('#chkSD', page).checked(query.IsHD == false).checkboxradio('refresh');
 
         $('#chkSubtitle', page).checked(query.HasSubtitles == true).checkboxradio('refresh');
         $('#chkTrailer', page).checked(query.HasTrailer == true).checkboxradio('refresh');
@@ -124,8 +125,8 @@
         $('#chkThemeVideo', page).checked(query.HasThemeVideo == true).checkboxradio('refresh');
         $('#chkSpecialFeature', page).checked(query.ParentIndexNumber == 0).checkboxradio('refresh');
 
-        $('#chkMissingEpisode', page).checked(query.MaxPremiereDate != null).checkboxradio('refresh');
-        $('#chkFutureEpisode', page).checked(query.MinPremiereDate != null).checkboxradio('refresh');
+        $('#chkMissingEpisode', page).checked(query.IsMissing == true).checkboxradio('refresh');
+        $('#chkFutureEpisode', page).checked(query.IsUnaired == true).checkboxradio('refresh');
 
         $('.alphabetPicker', page).alphaValue(query.NameStartsWithOrGreater);
     }
@@ -181,14 +182,6 @@
             reloadItems(page);
         });
 
-        $('#chk3D', this).on('change', function () {
-
-            query.StartIndex = 0;
-            query.Is3D = this.checked ? true : null;
-
-            reloadItems(page);
-        });
-
         $('#chkSubtitle', this).on('change', function () {
 
             query.StartIndex = 0;
@@ -230,25 +223,32 @@
 
         $('#chkMissingEpisode', this).on('change', function () {
 
-            var futureChecked = $('#chkFutureEpisode', page).checked();
-
-            query.LocationTypes = this.checked || futureChecked ? "virtual" : null;
-            query.HasPremiereDate = this.checked || futureChecked ? true : null;
-            query.MaxPremiereDate = this.checked ? LibraryBrowser.getDateParamValue(new Date()) : null;
-
+            query.StartIndex = 0;
+            query.IsMissing = this.checked ? true : null;
+            
             reloadItems(page);
         });
 
         $('#chkFutureEpisode', this).on('change', function () {
 
-            var missingChecked = $('#chkMissingEpisode', page).checked();
+            query.StartIndex = 0;
+            query.IsUnaired = this.checked ? true : null;
 
-            query.LocationTypes = this.checked || missingChecked ? "virtual" : null;
-            query.HasPremiereDate = this.checked || missingChecked ? true : null;
+            reloadItems(page);
+        });
 
-            var now = new Date();
+        $('#chkHD', this).on('change', function () {
 
-            query.MinPremiereDate = this.checked ? LibraryBrowser.getDateParamValue(new Date(now.getFullYear(), now.getMonth(), now.getDate())) : null;
+            query.StartIndex = 0;
+            query.IsHD = this.checked ? true : null;
+
+            reloadItems(page);
+        });
+
+        $('#chkSD', this).on('change', function () {
+
+            query.StartIndex = 0;
+            query.IsHD = this.checked ? false : null;
 
             reloadItems(page);
         });

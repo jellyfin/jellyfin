@@ -108,6 +108,7 @@
     <Compile Include="Notifications\INotificationsRepository.cs" />
     <Compile Include="Notifications\NotificationUpdateEventArgs.cs" />
     <Compile Include="Providers\IDynamicInfoProvider.cs" />
+    <Compile Include="Providers\IImageProvider.cs" />
     <Compile Include="Session\ISessionManager.cs" />
     <Compile Include="Drawing\ImageExtensions.cs" />
     <Compile Include="Entities\AggregateFolder.cs" />
@@ -139,9 +140,7 @@
     <Compile Include="Entities\Video.cs" />
     <Compile Include="Entities\CollectionFolder.cs" />
     <Compile Include="Entities\Year.cs" />
-    <Compile Include="IO\FileSystem.cs" />
     <Compile Include="IO\IDirectoryWatchers.cs" />
-    <Compile Include="IO\NativeMethods.cs" />
     <Compile Include="IServerApplicationHost.cs" />
     <Compile Include="IServerApplicationPaths.cs" />
     <Compile Include="Library\SearchHintInfo.cs" />

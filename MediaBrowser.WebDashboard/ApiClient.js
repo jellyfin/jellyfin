@@ -306,6 +306,24 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
+        self.getAvailableRemoteImages = function (itemId, imageType) {
+
+            if (!itemId) {
+                throw new Error("null itemId");
+            }
+            if (!imageType) {
+                throw new Error("null imageType");
+            }
+
+            var url = self.getUrl("Items/" + itemId + "/RemoteImages/" + imageType);
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
         /**
          * Gets the current server status
          */
@@ -2731,16 +2749,42 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        /**
-         * Marks an item as played or unplayed
-         * This should not be used to update playstate following playback.
-         * There are separate playstate check-in methods for that. This should be used for a
-         * separate option to reset playstate.
-         * @param {String} userId
-         * @param {String} itemId
-         * @param {Boolean} wasPlayed
-         */
-        self.updatePlayedStatus = function (userId, itemId, wasPlayed) {
+        self.getDateParamValue = function (date) {
+            function formatDigit(i) {
+                return i < 10 ? "0" + i : i;
+            }
+
+            var d = date;
+
+            return "" + d.getFullYear() + formatDigit(d.getMonth() + 1) + formatDigit(d.getDate()) + formatDigit(d.getHours()) + formatDigit(d.getMinutes()) + formatDigit(d.getSeconds());
+        };
+
+        self.markPlayed = function (userId, itemId, date) {
+
+            if (!userId) {
+                throw new Error("null userId");
+            }
+
+            if (!itemId) {
+                throw new Error("null itemId");
+            }
+
+            var options = {};
+
+            if (date) {
+                options.DatePlayed = self.getDateParamValue(date);
+            }
+
+            var url = self.getUrl("Users/" + userId + "/PlayedItems/" + itemId, options);
+
+            return self.ajax({
+                type: "POST",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        self.markUnplayed = function (userId, itemId) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -2752,10 +2796,8 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
 
             var url = self.getUrl("Users/" + userId + "/PlayedItems/" + itemId);
 
-            var method = wasPlayed ? "POST" : "DELETE";
-
             return self.ajax({
-                type: method,
+                type: "DELETE",
                 url: url,
                 dataType: "json"
             });

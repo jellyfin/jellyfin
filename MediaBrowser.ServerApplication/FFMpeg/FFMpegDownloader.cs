@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
@@ -20,18 +21,20 @@ namespace MediaBrowser.ServerApplication.FFMpeg
         private readonly IApplicationPaths _appPaths;
         private readonly ILogger _logger;
         private readonly IZipClient _zipClient;
+        private readonly IFileSystem _fileSystem;
 
         private readonly string[] _fontUrls = new[]
             {
                 "https://www.dropbox.com/s/pj847twf7riq0j7/ARIALUNI.7z?dl=1"
             };
 
-        public FFMpegDownloader(ILogger logger, IApplicationPaths appPaths, IHttpClient httpClient, IZipClient zipClient)
+        public FFMpegDownloader(ILogger logger, IApplicationPaths appPaths, IHttpClient httpClient, IZipClient zipClient, IFileSystem fileSystem)
         {
             _logger = logger;
             _appPaths = appPaths;
             _httpClient = httpClient;
             _zipClient = zipClient;
+            _fileSystem = fileSystem;
         }
 
         public async Task<FFMpegInfo> GetFFMpegInfo()
@@ -272,9 +275,8 @@ namespace MediaBrowser.ServerApplication.FFMpeg
 
                 var bytes = Encoding.UTF8.GetBytes(contents);
 
-                using (var fileStream = new FileStream(fontConfigFile, FileMode.Create, FileAccess.Write,
-                                                    FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize,
-                                                    FileOptions.Asynchronous))
+                using (var fileStream = _fileSystem.GetFileStream(fontConfigFile, FileMode.Create, FileAccess.Write,
+                                                    FileShare.Read, true))
                 {
                     await fileStream.WriteAsync(bytes, 0, bytes.Length);
                 }

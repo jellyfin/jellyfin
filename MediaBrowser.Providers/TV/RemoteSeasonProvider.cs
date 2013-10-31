@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -23,6 +24,7 @@ namespace MediaBrowser.Providers.TV
         /// The _provider manager
         /// </summary>
         private readonly IProviderManager _providerManager;
+        private readonly IFileSystem _fileSystem;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RemoteSeasonProvider"/> class.
@@ -31,10 +33,11 @@ namespace MediaBrowser.Providers.TV
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="providerManager">The provider manager.</param>
         /// <exception cref="System.ArgumentNullException">httpClient</exception>
-        public RemoteSeasonProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager)
+        public RemoteSeasonProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager, IFileSystem fileSystem)
             : base(logManager, configurationManager)
         {
             _providerManager = providerManager;
+            _fileSystem = fileSystem;
         }
 
         /// <summary>
@@ -115,7 +118,7 @@ namespace MediaBrowser.Providers.TV
 
                 if (imagesFileInfo.Exists)
                 {
-                    return imagesFileInfo.LastWriteTimeUtc > providerInfo.LastRefreshed;
+                    return _fileSystem.GetLastWriteTimeUtc(imagesFileInfo) > providerInfo.LastRefreshed;
                 }
             }
             return false;
@@ -275,6 +278,7 @@ namespace MediaBrowser.Providers.TV
             string url = null;
             int? bannerSeason = null;
             string resolution = null;
+            string language = null;
 
             while (reader.Read())
             {
@@ -282,6 +286,12 @@ namespace MediaBrowser.Providers.TV
                 {
                     switch (reader.Name)
                     {
+                        case "Language":
+                            {
+                                language = reader.ReadElementContentAsString() ?? string.Empty;
+                                break;
+                            }
+
                         case "BannerType":
                             {
                                 bannerType = reader.ReadElementContentAsString() ?? string.Empty;
@@ -325,11 +335,30 @@ namespace MediaBrowser.Providers.TV
                 {
                     if (string.Equals(bannerType2, "season", StringComparison.OrdinalIgnoreCase))
                     {
-                        data.Poster = url;
+                        // Just grab the first
+                        if (string.IsNullOrWhiteSpace(data.Poster))
+                        {
+                            data.Poster = url;
+                        }
                     }
                     else if (string.Equals(bannerType2, "seasonwide", StringComparison.OrdinalIgnoreCase))
                     {
-                        data.Banner = url;
+                        if (string.IsNullOrWhiteSpace(language) || string.Equals(language, "en", StringComparison.OrdinalIgnoreCase))
+                        {
+                            // Just grab the first
+                            if (string.IsNullOrWhiteSpace(data.Banner))
+                            {
+                                data.Banner = url;
+                            }
+                        }
+                        else if (string.Equals(language, ConfigurationManager.Configuration.PreferredMetadataLanguage, StringComparison.OrdinalIgnoreCase))
+                        {
+                            // Just grab the first
+                            if (string.IsNullOrWhiteSpace(data.LanguageBanner))
+                            {
+                                data.LanguageBanner = url;
+                            }
+                        }
                     }
                 }
                 else if (string.Equals(bannerType, "fanart", StringComparison.OrdinalIgnoreCase))

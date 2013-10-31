@@ -1,7 +1,7 @@
-﻿using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -21,11 +21,13 @@ namespace MediaBrowser.Providers.Movies
     {
         internal static MovieProviderFromXml Current { get; private set; }
         private readonly IItemRepository _itemRepo;
+        private readonly IFileSystem _fileSystem;
 
-        public MovieProviderFromXml(ILogManager logManager, IServerConfigurationManager configurationManager, IItemRepository itemRepo)
+        public MovieProviderFromXml(ILogManager logManager, IServerConfigurationManager configurationManager, IItemRepository itemRepo, IFileSystem fileSystem)
             : base(logManager, configurationManager)
         {
             _itemRepo = itemRepo;
+            _fileSystem = fileSystem;
             Current = this;
         }
 
@@ -71,7 +73,7 @@ namespace MediaBrowser.Providers.Movies
                 return false;
             }
 
-            return FileSystem.GetLastWriteTimeUtc(xml, Logger) > providerInfo.LastRefreshed;
+            return _fileSystem.GetLastWriteTimeUtc(xml) > providerInfo.LastRefreshed;
         }
 
         /// <summary>

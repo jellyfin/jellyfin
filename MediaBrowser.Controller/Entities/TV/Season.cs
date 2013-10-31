@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Library;
+﻿using System.Linq;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
 using System;
 using System.Collections.Generic;
@@ -146,6 +147,26 @@ namespace MediaBrowser.Controller.Entities.TV
         protected override string CreateSortName()
         {
             return IndexNumber != null ? IndexNumber.Value.ToString("0000") : Name;
+        }
+
+        public bool IsMissingSeason
+        {
+            get { return LocationType == Model.Entities.LocationType.Virtual && Children.OfType<Episode>().All(i => i.IsMissingEpisode); }
+        }
+
+        public bool IsUnaired
+        {
+            get { return Children.OfType<Episode>().All(i => i.IsUnaired); }
+        }
+
+        public bool IsVirtualUnaired
+        {
+            get { return LocationType == Model.Entities.LocationType.Virtual && IsUnaired; }
+        }
+
+        public bool IsMissingOrVirtualUnaired
+        {
+            get { return LocationType == Model.Entities.LocationType.Virtual && Children.OfType<Episode>().All(i => i.IsVirtualUnaired || i.IsMissingEpisode); }
         }
     }
 }

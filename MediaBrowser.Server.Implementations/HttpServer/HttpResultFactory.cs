@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Logging;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
@@ -25,13 +26,15 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// The _logger
         /// </summary>
         private readonly ILogger _logger;
+        private readonly IFileSystem _fileSystem;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpResultFactory"/> class.
         /// </summary>
         /// <param name="logManager">The log manager.</param>
-        public HttpResultFactory(ILogManager logManager)
+        public HttpResultFactory(ILogManager logManager, IFileSystem fileSystem)
         {
+            _fileSystem = fileSystem;
             _logger = logManager.GetLogger("HttpResultFactory");
         }
 
@@ -288,7 +291,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 throw new ArgumentException("FileShare must be either Read or ReadWrite");
             }
 
-            var dateModified = File.GetLastWriteTimeUtc(path);
+            var dateModified = _fileSystem.GetLastWriteTimeUtc(path);
 
             var cacheKey = path + dateModified.Ticks;
 
@@ -303,7 +306,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <returns>Stream.</returns>
         private Stream GetFileStream(string path, FileShare fileShare)
         {
-            return new FileStream(path, FileMode.Open, FileAccess.Read, fileShare, StreamDefaults.DefaultFileStreamBufferSize, FileOptions.Asynchronous);
+            return _fileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, fileShare, true);
         }
 
         /// <summary>

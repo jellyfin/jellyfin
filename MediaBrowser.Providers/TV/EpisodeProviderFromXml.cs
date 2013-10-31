@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.IO;
@@ -20,11 +21,13 @@ namespace MediaBrowser.Providers.TV
     {
         internal static EpisodeProviderFromXml Current { get; private set; }
         private readonly IItemRepository _itemRepo;
+        private readonly IFileSystem _fileSystem;
 
-        public EpisodeProviderFromXml(ILogManager logManager, IServerConfigurationManager configurationManager, IItemRepository itemRepo)
+        public EpisodeProviderFromXml(ILogManager logManager, IServerConfigurationManager configurationManager, IItemRepository itemRepo, IFileSystem fileSystem)
             : base(logManager, configurationManager)
         {
             _itemRepo = itemRepo;
+            _fileSystem = fileSystem;
             Current = this;
         }
 
@@ -76,7 +79,7 @@ namespace MediaBrowser.Providers.TV
                 return false;
             }
 
-            return FileSystem.GetLastWriteTimeUtc(file, Logger) > providerInfo.LastRefreshed;
+            return _fileSystem.GetLastWriteTimeUtc(file) > providerInfo.LastRefreshed;
         }
 
         /// <summary>

@@ -373,6 +373,11 @@ namespace MediaBrowser.Server.Implementations.Dto
             dto.GameSystem = item.GameSystem;
         }
 
+        private void SetGameSystemProperties(BaseItemDto dto, GameSystem item)
+        {
+            dto.GameSystem = item.GameSystemName;
+        }
+
         /// <summary>
         /// Gets the backdrop image tags.
         /// </summary>
@@ -1062,6 +1067,13 @@ namespace MediaBrowser.Server.Implementations.Dto
             if (game != null)
             {
                 SetGameProperties(dto, game);
+            }
+
+            var gameSystem = item as GameSystem;
+
+            if (gameSystem != null)
+            {
+                SetGameSystemProperties(dto, gameSystem);
             }
 
             var musicVideo = item as MusicVideo;

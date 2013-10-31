@@ -10,16 +10,14 @@
             SortOrder: "Descending",
             MediaTypes: "Game",
             Limit: 5,
-            Recursive: true,
-            Fields: "PrimaryImageAspectRatio",
-            Filters: "IsUnplayed"
+            Recursive: true
         };
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
 
             $('#recentlyAddedItems', page).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                useAverageAspectRatio: true,
+                useAverageAspectRatio: false,
                 showNewIndicator: false,
                 transparent: true,
                 borderless: true
@@ -34,7 +32,6 @@
             MediaTypes: "Game",
             Limit: 5,
             Recursive: true,
-            Fields: "PrimaryImageAspectRatio",
             Filters: "IsPlayed"
         };
 
@@ -48,35 +45,7 @@
 
             $('#recentlyPlayedItems', page).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                useAverageAspectRatio: true,
-                transparent: true,
-                borderless: true
-            }));
-
-        });
-
-        options = {
-
-            SortBy: "PlayCount",
-            SortOrder: "Descending",
-            MediaTypes: "Game",
-            Limit: 5,
-            Recursive: true,
-            Fields: "PrimaryImageAspectRatio",
-            Filters: "IsPlayed"
-        };
-
-        ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
-
-            if (result.Items.length) {
-                $('#frequentlyPlayedSection', page).show();
-            } else {
-                $('#frequentlyPlayedSection', page).hide();
-            }
-
-            $('#frequentlyPlayedItems', page).html(LibraryBrowser.getPosterViewHtml({
-                items: result.Items,
-                useAverageAspectRatio: true,
+                useAverageAspectRatio: false,
                 transparent: true,
                 borderless: true
             }));

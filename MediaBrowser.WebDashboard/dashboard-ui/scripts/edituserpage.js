@@ -43,11 +43,13 @@
         if (!loggedInUser.Configuration.IsAdministrator) {
             $('#parentalControlDiv', page).hide();
             $('#fldIsAdmin', page).hide();
+            $('#fldEnableRemoteControlOtherUsers', page).hide();
             $('#accessControlDiv', page).hide();
         } else {
             $('#parentalControlDiv', page).show();
             $('#accessControlDiv', page).show();
             $('#fldIsAdmin', page).show();
+            $('#fldEnableRemoteControlOtherUsers', page).show();
         }
 
         Dashboard.setPageTitle(user.Name || "Add User");
@@ -80,6 +82,7 @@
 
         $('#chkDisabled', page).checked(user.Configuration.IsDisabled || false).checkboxradio("refresh");
         $('#chkIsHidden', page).checked(user.Configuration.IsHidden || false).checkboxradio("refresh");
+        $('#chkEnableRemoteControlOtherUsers', page).checked(user.Configuration.EnableRemoteControlOfOtherUsers || false).checkboxradio("refresh");
 
         Dashboard.hideLoadingMsg();
     }
@@ -110,6 +113,7 @@
 
         user.Configuration.IsHidden = $('#chkIsHidden', page).checked();
         user.Configuration.IsDisabled = $('#chkDisabled', page).checked();
+        user.Configuration.EnableRemoteControlOfOtherUsers = $('#chkEnableRemoteControlOtherUsers', page).checked();
 
         var userId = getParameterByName("userId");
 

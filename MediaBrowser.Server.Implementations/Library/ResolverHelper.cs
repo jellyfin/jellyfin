@@ -1,5 +1,7 @@
 ﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
 using System;
@@ -18,7 +20,8 @@ namespace MediaBrowser.Server.Implementations.Library
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="args">The args.</param>
-        public static void SetInitialItemValues(BaseItem item, ItemResolveArgs args)
+        /// <param name="fileSystem">The file system.</param>
+        public static void SetInitialItemValues(BaseItem item, ItemResolveArgs args, IFileSystem fileSystem)
         {
             item.ResetResolveArgs(args);
 
@@ -48,7 +51,7 @@ namespace MediaBrowser.Server.Implementations.Library
             item.DontFetchMeta = item.Path.IndexOf("[dontfetchmeta]", StringComparison.OrdinalIgnoreCase) != -1;
 
             // Make sure DateCreated and DateModified have values
-            EntityResolutionHelper.EnsureDates(item, args, true);
+            EntityResolutionHelper.EnsureDates(fileSystem, item, args, true);
         }
 
         /// <summary>

@@ -241,16 +241,27 @@ namespace MediaBrowser.Model.Querying
         /// </summary>
         /// <value>The location types.</value>
         public LocationType[] LocationTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is missing episode.
+        /// </summary>
+        /// <value><c>null</c> if [is missing episode] contains no value, <c>true</c> if [is missing episode]; otherwise, <c>false</c>.</value>
+        public bool? IsMissing { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is unaired episode.
+        /// </summary>
+        /// <value><c>null</c> if [is unaired episode] contains no value, <c>true</c> if [is unaired episode]; otherwise, <c>false</c>.</value>
+        public bool? IsUnaired { get; set; }
+
+        public bool? IsVirtualUnaired { get; set; }
+        
         /// <summary>
         /// Gets or sets the exclude location types.
         /// </summary>
         /// <value>The exclude location types.</value>
         public LocationType[] ExcludeLocationTypes { get; set; }
-
-        public bool? HasPremiereDate { get; set; }
-        public DateTime? MinPremiereDate { get; set; }
-        public DateTime? MaxPremiereDate { get; set; }
-
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemQuery" /> class.
         /// </summary>

@@ -4,6 +4,7 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -49,6 +50,8 @@ namespace MediaBrowser.Providers.TV
         /// <value>The HTTP client.</value>
         protected IHttpClient HttpClient { get; private set; }
 
+        private readonly IFileSystem _fileSystem;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="RemoteSeriesProvider" /> class.
         /// </summary>
@@ -57,7 +60,7 @@ namespace MediaBrowser.Providers.TV
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="zipClient">The zip client.</param>
         /// <exception cref="System.ArgumentNullException">httpClient</exception>
-        public RemoteSeriesProvider(IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager, IZipClient zipClient)
+        public RemoteSeriesProvider(IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager, IZipClient zipClient, IFileSystem fileSystem)
             : base(logManager, configurationManager)
         {
             if (httpClient == null)
@@ -66,6 +69,7 @@ namespace MediaBrowser.Providers.TV
             }
             HttpClient = httpClient;
             _zipClient = zipClient;
+            _fileSystem = fileSystem;
             Current = this;
         }
 
@@ -176,7 +180,7 @@ namespace MediaBrowser.Providers.TV
                 {
                     var files = new DirectoryInfo(path)
                         .EnumerateFiles("*.xml", SearchOption.TopDirectoryOnly)
-                        .Select(i => i.LastWriteTimeUtc)
+                        .Select(i => _fileSystem.GetLastWriteTimeUtc(i))
                         .ToList();
 
                     if (files.Count > 0)
@@ -344,7 +348,7 @@ namespace MediaBrowser.Providers.TV
         {
             string validXml;
 
-            using (var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, true))
+            using (var fileStream = _fileSystem.GetFileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read, true))
             {
                 using (var reader = new StreamReader(fileStream))
                 {
@@ -354,7 +358,7 @@ namespace MediaBrowser.Providers.TV
                 }
             }
 
-            using (var fileStream = new FileStream(file, FileMode.Create, FileAccess.Write, FileShare.Read, StreamDefaults.DefaultFileStreamBufferSize, true))
+            using (var fileStream = _fileSystem.GetFileStream(file, FileMode.Create, FileAccess.Write, FileShare.Read, true))
             {
                 using (var writer = new StreamWriter(fileStream))
                 {
@@ -1109,21 +1113,37 @@ namespace MediaBrowser.Providers.TV
                 var nodes = doc.SelectNodes("//Series");
                 var comparableName = GetComparableName(name);
                 if (nodes != null)
+                {
                     foreach (XmlNode node in nodes)
                     {
-                        var n = node.SelectSingleNode("./SeriesName");
-                        if (n != null && string.Equals(GetComparableName(n.InnerText), comparableName, StringComparison.OrdinalIgnoreCase))
+                        var titles = new List<string>();
+
+                        var nameNode = node.SelectSingleNode("./SeriesName");
+                        if (nameNode != null)
                         {
-                            n = node.SelectSingleNode("./seriesid");
-                            if (n != null)
-                                return n.InnerText;
+                            titles.Add(GetComparableName(nameNode.InnerText));
                         }
-                        else
+
+                        var aliasNode = node.SelectSingleNode("./AliasNames");
+                        if (aliasNode != null)
                         {
-                            if (n != null)
-                                Logger.Info("TVDb Provider - " + n.InnerText + " did not match " + comparableName);
+                            var alias = aliasNode.InnerText.Split('|').Select(GetComparableName);
+                            titles.AddRange(alias);
+                        }
+
+                        if (titles.Any(t => string.Equals(t, comparableName, StringComparison.OrdinalIgnoreCase)))
+                        {
+                            var id = node.SelectSingleNode("./seriesid");
+                            if (id != null)
+                                return id.InnerText;
+                        }
+
+                        foreach (var title in titles)
+                        {
+                            Logger.Info("TVDb Provider - " + title + " did not match " + comparableName);
                         }
                     }
+                }
             }
 
             // Try stripping off the year if it was supplied

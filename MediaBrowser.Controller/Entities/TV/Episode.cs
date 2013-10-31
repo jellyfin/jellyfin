@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 
@@ -190,6 +191,24 @@ namespace MediaBrowser.Controller.Entities.TV
             }
 
             return false;
+        }
+
+        public bool IsMissingEpisode
+        {
+            get
+            {
+                return LocationType == Model.Entities.LocationType.Virtual && PremiereDate.HasValue && PremiereDate.Value < DateTime.UtcNow;
+            }
+        }
+
+        public bool IsUnaired
+        {
+            get { return PremiereDate.HasValue && PremiereDate.Value.ToLocalTime().Date >= DateTime.Now.Date; }
+        }
+
+        public bool IsVirtualUnaired
+        {
+            get { return LocationType == Model.Entities.LocationType.Virtual && IsUnaired; }
         }
     }
 }

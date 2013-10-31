@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -35,6 +36,8 @@ namespace MediaBrowser.Controller.MediaInfo
         private readonly ILogger _logger;
         private readonly IItemRepository _itemRepo;
 
+        private readonly IFileSystem _fileSystem;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="FFMpegManager" /> class.
         /// </summary>
@@ -43,12 +46,13 @@ namespace MediaBrowser.Controller.MediaInfo
         /// <param name="logger">The logger.</param>
         /// <param name="itemRepo">The item repo.</param>
         /// <exception cref="System.ArgumentNullException">zipClient</exception>
-        public FFMpegManager(IServerApplicationPaths appPaths, IMediaEncoder encoder, ILogger logger, IItemRepository itemRepo)
+        public FFMpegManager(IServerApplicationPaths appPaths, IMediaEncoder encoder, ILogger logger, IItemRepository itemRepo, IFileSystem fileSystem)
         {
             _appPaths = appPaths;
             _encoder = encoder;
             _logger = logger;
             _itemRepo = itemRepo;
+            _fileSystem = fileSystem;
 
             VideoImageCache = new FileSystemRepository(VideoImagesDataPath);
             SubtitleCache = new FileSystemRepository(SubtitleCachePath);
@@ -203,7 +207,7 @@ namespace MediaBrowser.Controller.MediaInfo
 
             if (stream.IsExternal)
             {
-                ticksParam += File.GetLastWriteTimeUtc(stream.Path).Ticks;
+                ticksParam += _fileSystem.GetLastWriteTimeUtc(stream.Path).Ticks;
             }
 
             return SubtitleCache.GetResourcePath(input.Id + "_" + subtitleStreamIndex + "_" + input.DateModified.Ticks + ticksParam, outputExtension);
