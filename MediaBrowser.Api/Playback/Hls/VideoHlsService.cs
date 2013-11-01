@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Dto;
@@ -80,11 +80,6 @@ namespace MediaBrowser.Api.Playback.Hls
                     args += " -ac " + channels.Value;
                 }
 
-                if (state.Request.AudioSampleRate.HasValue)
-                {
-                    args += " -ar " + state.Request.AudioSampleRate.Value;
-                }
-
                 var bitrate = GetAudioBitrateParam(state);
 
                 if (bitrate.HasValue)
@@ -93,14 +88,20 @@ namespace MediaBrowser.Api.Playback.Hls
                 }
 
                 var volParam = string.Empty;
+                var AudioSampleRate = string.Empty;
 
                 // Boost volume to 200% when downsampling from 6ch to 2ch
                 if (channels.HasValue && channels.Value <= 2 && state.AudioStream.Channels.HasValue && state.AudioStream.Channels.Value > 5)
                 {
                     volParam = ",volume=2.000000";
                 }
+                
+                if (state.Request.AudioSampleRate.HasValue)
+                {
+                    AudioSampleRate= state.Request.AudioSampleRate.Value + ":";
+                }
 
-                args += string.Format(" -af \"adelay=1,aresample=async=1000{0}\"", volParam);
+                args += string.Format(" -af \"adelay=1,aresample={0}async=1000{1}\"",AudioSampleRate, volParam);
 
                 return args;
             }
