@@ -225,8 +225,12 @@ namespace MediaBrowser.Providers.Movies
                                 break;
                             }
                         default:
-                            reader.Skip();
-                            break;
+                            {
+                                using (reader.ReadSubtree())
+                                {
+                                }
+                                break;
+                            }
                     }
                 }
             }
