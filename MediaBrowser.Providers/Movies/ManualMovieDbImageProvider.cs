@@ -143,7 +143,8 @@ namespace MediaBrowser.Providers.Movies
                 images.backdrops
                 .ToList();
 
-            return eligibleBackdrops.OrderByDescending(i => i.vote_average).ThenByDescending(i => i.vote_count);
+            return eligibleBackdrops.OrderByDescending(i => i.vote_average)
+                .ThenByDescending(i => i.vote_count);
         }
 
         /// <summary>

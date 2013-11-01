@@ -100,10 +100,8 @@ namespace MediaBrowser.Providers.Movies
 
             var timestampFileInfo = new FileInfo(timestampFile);
 
-            var refreshDays = _config.Configuration.EnableTmdbUpdates ? 1 : 7;
-
             // Don't check for tvdb updates anymore frequently than 24 hours
-            if (timestampFileInfo.Exists && (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(timestampFileInfo)).TotalDays < refreshDays)
+            if (timestampFileInfo.Exists && (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(timestampFileInfo)).TotalDays < 1)
             {
                 return;
             }

@@ -73,7 +73,7 @@ namespace MediaBrowser.Providers.TV
             if (!string.IsNullOrEmpty(seriesId))
             {
                 // Process images
-                var imagesXmlPath = Path.Combine(FanArtTvProvider.GetSeriesDataPath(ConfigurationManager.ApplicationPaths, seriesId), "fanart.xml");
+                var imagesXmlPath = FanArtTvProvider.Current.GetFanartXmlPath(seriesId);
 
                 var imagesFileInfo = new FileInfo(imagesXmlPath);
 
@@ -104,7 +104,7 @@ namespace MediaBrowser.Providers.TV
             if (!string.IsNullOrEmpty(seriesId))
             {
                 // Process images
-                var imagesXmlPath = Path.Combine(FanArtTvProvider.GetSeriesDataPath(ConfigurationManager.ApplicationPaths, seriesId), "fanart.xml");
+                var imagesXmlPath = FanArtTvProvider.Current.GetFanartXmlPath(seriesId);
 
                 var imagesFileInfo = new FileInfo(imagesXmlPath);
 
@@ -118,19 +118,10 @@ namespace MediaBrowser.Providers.TV
                         await FetchImages(season, xmlDoc, cancellationToken).ConfigureAwait(false);
                     }
                 }
-
-                BaseProviderInfo data;
-                if (!item.ProviderData.TryGetValue(Id, out data))
-                {
-                    data = new BaseProviderInfo();
-                    item.ProviderData[Id] = data;
-                }
-
-                SetLastRefreshed(item, DateTime.UtcNow);
-                return true;
             }
 
-            return false;
+            SetLastRefreshed(item, DateTime.UtcNow);
+            return true;
         }
 
         /// <summary>

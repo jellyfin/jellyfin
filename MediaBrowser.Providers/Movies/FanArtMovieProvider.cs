@@ -201,12 +201,9 @@ namespace MediaBrowser.Providers.Movies
                     await DownloadMovieXml(movieId, cancellationToken).ConfigureAwait(false);
                 }
 
-                if (File.Exists(xmlPath))
-                {
-                    var images = await _providerManager.GetAvailableRemoteImages(item, cancellationToken, ManualFanartMovieImageProvider.ProviderName).ConfigureAwait(false);
+                var images = await _providerManager.GetAvailableRemoteImages(item, cancellationToken, ManualFanartMovieImageProvider.ProviderName).ConfigureAwait(false);
 
-                    await FetchImages(item, images.ToList(), cancellationToken).ConfigureAwait(false);
-                }
+                await FetchImages(item, images.ToList(), cancellationToken).ConfigureAwait(false);
             }
 
             SetLastRefreshed(item, DateTime.UtcNow);
