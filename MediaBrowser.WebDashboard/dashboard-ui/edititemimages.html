@@ -23,7 +23,7 @@
                 </div>
 
                 <div style="margin: -25px 0 1em;">
-                    <a id="lnkBrowseImages" href="#popupDownload" data-rel="popup" data-position-to="window" data-role="button" data-inline="true" data-icon="plus" data-mini="true" data-transition="pop">Browse Images</a>
+                    <a id="lnkBrowseImages" href="#popupDownload" data-rel="popup" data-position-to="window" data-role="button" data-inline="true" data-icon="plus" data-mini="true" data-transition="pop">Browse Online Images</a>
                     <a href="#popupUpload" data-rel="popup" data-position-to="window" data-role="button" data-inline="true" data-icon="plus" data-mini="true" data-transition="pop">Upload Image</a>
                 </div>
 
@@ -93,12 +93,20 @@
 
             <a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>
             <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
-                <h3 style="margin: .5em 0;">Browse Images</h3>
+                <h3 style="margin: .5em 0;">Browse Online Images</h3>
             </div>
 
             <div data-role="content" class="ui-content" style="padding: 5px 15px;">
 
                 <div style="text-align: center;">
+                    <div style="margin: 0; display: inline-block;">
+                        <label for="selectImageProvider">Provider:</label>
+                    </div>
+                    <div style="margin: 0; display: inline-block;">
+                        <select id="selectImageProvider" name="selectImageProvider" data-mini="true" data-inline="true">
+                            <option value="">All</option>
+                        </select>
+                    </div>
                     <div style="margin: 0; display: inline-block;">
                         <label for="selectBrowsableImageType">Image type:</label>
                     </div>

@@ -15,18 +15,66 @@
         $('#btnEditMetadata', page).attr('href', 'edititemmetadata.html?' + query);
     }
 
+    function getBaseRemoteOptions() {
+        var options = {};
+
+        if (currentItem.Type == "Artist") {
+            options.artist = currentItem.Name;
+        }
+        else if (currentItem.Type == "Artist") {
+            options.artist = currentItem.Name;
+        }
+        else if (currentItem.Type == "Person") {
+            options.person = currentItem.Name;
+        }
+        else if (currentItem.Type == "Genre") {
+            options.genre = currentItem.Name;
+        }
+        else if (currentItem.Type == "GameGenre") {
+            options.gameGenre = currentItem.Name;
+        }
+        else if (currentItem.Type == "MusicGenre") {
+            options.musicGenre = currentItem.Name;
+        }
+        else if (currentItem.Type == "Studio") {
+            options.studio = currentItem.Name;
+        }
+        else {
+            options.itemId = currentItem.Id;
+        }
+
+        return options;
+    }
+
     function reloadBrowsableImages(page) {
 
-        var options = {
-            itemId: currentItem.Id,
-            imageType: browsableImageType,
-            startIndex: browsableImageStartIndex,
-            limit: browsableImagePageSize
-        };
+        Dashboard.showLoadingMsg();
+
+        var options = getBaseRemoteOptions();
+
+        options.type = browsableImageType;
+        options.startIndex = browsableImageStartIndex;
+        options.limit = browsableImagePageSize;
+
+        var provider = $('#selectImageProvider', page).val();
+
+        if (provider) {
+            options.ProviderName = provider;
+        }
 
         ApiClient.getAvailableRemoteImages(options).done(function (result) {
 
             renderRemoteImages(page, currentItem, result, browsableImageType, options.startIndex, options.limit);
+
+            $('#selectBrowsableImageType', page).val(browsableImageType).selectmenu('refresh');
+
+            var providersHtml = result.Providers.map(function (p) {
+                return '<option value="' + p + '">' + p + '</option>';
+            });
+
+            $('#selectImageProvider', page).html('<option value="">All</option>' + providersHtml).val(provider).selectmenu('refresh');
+
+            Dashboard.hideLoadingMsg();
         });
 
     }
@@ -59,8 +107,29 @@
             reloadBrowsableImages(page);
         });
 
+        $('.btnDownloadRemoteImage', page).on('click', function () {
+
+            downloadRemoteImage(page, this.getAttribute('data-imageurl'), this.getAttribute('data-imagetype'), this.getAttribute('data-imageprovider'));
+        });
+
     }
 
+    function downloadRemoteImage(page, url, type, provider) {
+
+        var options = getBaseRemoteOptions();
+
+        options.Type = type;
+        options.ImageUrl = url;
+        options.ProviderName = provider;
+
+        Dashboard.showLoadingMsg();
+        
+        ApiClient.downloadRemoteImage(options).done(function () {
+
+            $('#popupDownload', page).popup("close");
+            reload(page);
+        });
+    }
 
     function getRemoteImageHtml(image, imageType) {
 
@@ -70,15 +139,21 @@
 
         var cssClass = "remoteImage";
 
-        if (imageType == "Backdrop") {
+        if (imageType == "Backdrop" || imageType == "Art" || imageType == "Thumb" || imageType == "Logo") {
             cssClass += " remoteBackdropImage";
+        }
+        else if (imageType == "Banner") {
+            cssClass += " remoteBannerImage";
+        }
+        else if (imageType == "Disc") {
+            cssClass += " remoteDiscImage";
         }
         else {
             cssClass += " remotePosterImage";
         }
 
-        html += '<div class="' + cssClass + '" style="background-image:url(\'' + image.Url + '\');">';
-        html += '</div>';
+        html += '<a target="_blank" href="' + image.Url + '" class="' + cssClass + '" style="background-image:url(\'' + image.Url + '\');">';
+        html += '</a>';
 
         html += '<div class="remoteImageDetails">';
         html += image.ProviderName;
@@ -88,7 +163,7 @@
 
             html += '<div class="remoteImageDetails">';
             html += image.Width + 'x' + image.Height;
-            
+
             if (image.Language) {
 
                 html += ' • ' + image.Language;
@@ -96,19 +171,30 @@
             html += '</div>';
         }
 
-        if (image.CommunityRating) {
-            html += '<div class="remoteImageDetails">';
-            html += image.CommunityRating.toFixed(1);
+        if (image.CommunityRating != null) {
 
-            if (image.VoteCount) {
-                html += ' • ' + image.VoteCount + ' votes';
+            html += '<div class="remoteImageDetails">';
+
+            if (image.RatingType == "Likes") {
+                html += image.CommunityRating + (image.CommunityRating == 1 ? " like" : " likes");
+            } else {
+
+                if (image.CommunityRating) {
+                    html += image.CommunityRating.toFixed(1);
+
+                    if (image.VoteCount) {
+                        html += ' • ' + image.VoteCount + ' votes';
+                    }
+                } else {
+                    html += "Unrated";
+                }
             }
 
             html += '</div>';
         }
 
-        html += '<div><button type="button" data-icon="save" data-mini="true">Download</button></div>';
-        
+        html += '<div><button class="btnDownloadRemoteImage" data-imageprovider="' + image.ProviderName + '" data-imageurl="' + image.Url + '" data-imagetype="' + image.Type + '" type="button" data-icon="save" data-mini="true">Download</button></div>';
+
         html += '</div>';
 
         return html;
@@ -135,7 +221,7 @@
         var recordsEnd = Math.min(startIndex + limit, totalRecordCount);
 
         // 20 is the minimum page size
-        var showControls = totalRecordCount > 20;
+        var showControls = totalRecordCount > limit;
 
         html += '<div class="listPaging">';
 
@@ -444,6 +530,13 @@
         $('#selectBrowsableImageType', page).on('change', function () {
 
             browsableImageType = this.value;
+            browsableImageStartIndex = 0;
+
+            reloadBrowsableImages(page);
+        });
+
+        $('#selectImageProvider', page).on('change', function () {
+
             browsableImageStartIndex = 0;
 
             reloadBrowsableImages(page);

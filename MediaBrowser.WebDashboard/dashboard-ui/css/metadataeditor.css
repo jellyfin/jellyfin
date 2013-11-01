@@ -29,7 +29,7 @@
 .availableImagesList {
     overflow-y: auto;
     width: 300px;
-    height: 500px;
+    height: 400px;
     text-align: center;
 }
 
@@ -49,6 +49,7 @@
     background-position: center bottom;
     background-repeat: no-repeat;
     background-size: contain;
+    display: block;
 }
 
 .remotePosterImage {
@@ -59,6 +60,16 @@
 .remoteBackdropImage {
     width: 272px;
     height: 153px;
+}
+
+.remoteBannerImage {
+    width: 272px;
+    height: 50px;
+}
+
+.remoteDiscImage {
+    width: 180px;
+    height: 180px;
 }
 
 @media all and (min-width: 500px) {
@@ -72,6 +83,7 @@
 
     .availableImagesList {
         width: 500px;
+        height: 450px;
     }
 
     .editPageSidebar {
@@ -88,6 +100,11 @@
     .editPageInnerContent {
         float: right;
         width: 70%;
+    }
+
+    .remoteBannerImage {
+        width: 450px;
+        height: 83px;
     }
 }
 
@@ -155,34 +172,6 @@
     }
 }
 
-@media all and (min-width: 1600px) {
-
-    .availableImagesList {
-        width: 1500px;
-    }
-}
-
-@media all and (min-width: 1700px) {
-
-    .availableImagesList {
-        width: 1600px;
-    }
-}
-
-@media all and (min-width: 1800px) {
-
-    .availableImagesList {
-        width: 1700px;
-    }
-}
-
-@media all and (min-width: 1900px) {
-
-    .availableImagesList {
-        width: 1800px;
-    }
-}
-
 @media all and (min-height: 800px) {
 
     .availableImagesList {
@@ -196,4 +185,3 @@
         height: 700px;
     }
 }
-

@@ -305,6 +305,42 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 url: url
             });
         };
+        
+        function getRemoteImagePrefix(options) {
+            
+            var urlPrefix;
+
+            if (options.artist) {
+                urlPrefix = "Artists/" + encodeName(options.artist);
+                delete options.artist;
+            }
+            else if (options.person) {
+                urlPrefix = "Persons/" + encodeName(options.person);
+                delete options.person;
+            }
+            else if (options.genre) {
+                urlPrefix = "Genres/" + encodeName(options.genre);
+                delete options.genre;
+            }
+            else if (options.musicGenre) {
+                urlPrefix = "MusicGenres/" + encodeName(options.musicGenre);
+                delete options.musicGenre;
+            }
+            else if (options.gameGenre) {
+                urlPrefix = "GameGenres/" + encodeName(options.gameGenre);
+                delete options.gameGenre;
+            }
+            else if (options.studio) {
+                urlPrefix = "Studios/" + encodeName(options.studio);
+                delete options.studio;
+            }
+            else {
+                urlPrefix = "Items/" + options.itemId;
+                delete options.itemId;
+            }
+
+            return urlPrefix;
+        }
 
         self.getAvailableRemoteImages = function (options) {
 
@@ -312,19 +348,30 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 throw new Error("null options");
             }
 
-            var urlPrefix = "Items/" + options.itemId;
+            var urlPrefix = getRemoteImagePrefix(options);
 
-            var imageType = options.imageType;
-            
-            delete options.itemId;
-            delete options.imageType;
-
-            var url = self.getUrl(urlPrefix + "/RemoteImages/" + imageType, options);
+            var url = self.getUrl(urlPrefix + "/RemoteImages", options);
 
             return self.ajax({
                 type: "GET",
                 url: url,
                 dataType: "json"
+            });
+        };
+
+        self.downloadRemoteImage = function (options) {
+
+            if (!options) {
+                throw new Error("null options");
+            }
+
+            var urlPrefix = getRemoteImagePrefix(options);
+
+            var url = self.getUrl(urlPrefix + "/RemoteImages/Download", options);
+
+            return self.ajax({
+                type: "POST",
+                url: url
             });
         };
 
