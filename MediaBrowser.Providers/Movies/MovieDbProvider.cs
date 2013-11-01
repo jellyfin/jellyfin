@@ -198,8 +198,7 @@ namespace MediaBrowser.Providers.Movies
 
         protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
         {
-            // Boxsets require two passes because we need the children to be refreshed
-            if (item is BoxSet && string.IsNullOrEmpty(item.GetProviderId(MetadataProviders.Tmdb)))
+            if (string.IsNullOrEmpty(item.GetProviderId(MetadataProviders.Tmdb)))
             {
                 return true;
             }

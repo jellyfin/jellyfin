@@ -110,6 +110,7 @@
     <Compile Include="TV\FanArtSeasonProvider.cs" />
     <Compile Include="TV\FanArtTVProvider.cs" />
     <Compile Include="TV\FanArtTvUpdatesPrescanTask.cs" />
+    <Compile Include="TV\ManualFanartSeasonProvider.cs" />
     <Compile Include="TV\ManualTvdbEpisodeImageProvider.cs" />
     <Compile Include="TV\RemoteEpisodeProvider.cs" />
     <Compile Include="TV\RemoteSeasonProvider.cs" />

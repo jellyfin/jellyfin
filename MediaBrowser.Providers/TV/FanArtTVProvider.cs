@@ -82,26 +82,6 @@ namespace MediaBrowser.Providers.TV
                 return false;
             }
 
-            if (!ConfigurationManager.Configuration.DownloadSeriesImages.Art &&
-                !ConfigurationManager.Configuration.DownloadSeriesImages.Logo &&
-                !ConfigurationManager.Configuration.DownloadSeriesImages.Thumb &&
-                !ConfigurationManager.Configuration.DownloadSeriesImages.Backdrops &&
-                !ConfigurationManager.Configuration.DownloadSeriesImages.Banner &&
-                !ConfigurationManager.Configuration.DownloadSeriesImages.Primary)
-            {
-                return false;
-            }
-
-            if (item.HasImage(ImageType.Primary) &&
-                item.HasImage(ImageType.Art) &&
-                item.HasImage(ImageType.Logo) &&
-                item.HasImage(ImageType.Banner) &&
-                item.HasImage(ImageType.Thumb) &&
-                item.BackdropImagePaths.Count >= ConfigurationManager.Configuration.MaxBackdrops)
-            {
-                return false;
-            }
-
             return base.NeedsRefreshInternal(item, providerInfo);
         }
 
@@ -112,28 +92,14 @@ namespace MediaBrowser.Providers.TV
             if (!string.IsNullOrEmpty(id))
             {
                 // Process images
-                var path = GetSeriesDataPath(ConfigurationManager.ApplicationPaths, id);
+                var xmlPath = GetFanartXmlPath(id);
 
-                try
-                {
-                    var files = new DirectoryInfo(path)
-                        .EnumerateFiles("*.xml", SearchOption.TopDirectoryOnly)
-                        .Select(i => _fileSystem.GetLastWriteTimeUtc(i))
-                        .ToList();
+                var fileInfo = new FileInfo(xmlPath);
 
-                    if (files.Count > 0)
-                    {
-                        return files.Max() > providerInfo.LastRefreshed;
-                    }
-                }
-                catch (DirectoryNotFoundException)
-                {
-                    // Don't blow up
-                    return true;
-                }
+                return !fileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(fileInfo) > providerInfo.LastRefreshed;
             }
-            
-            return false;
+
+            return base.NeedsRefreshBasedOnCompareDate(item, providerInfo);
         }
 
         /// <summary>
@@ -184,6 +150,12 @@ namespace MediaBrowser.Providers.TV
 
             return dataPath;
         }
+
+        public string GetFanartXmlPath(string tvdbId)
+        {
+            var dataPath = GetSeriesDataPath(ConfigurationManager.ApplicationPaths, tvdbId);
+            return Path.Combine(dataPath, "fanart.xml");
+        }
         
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
         
@@ -195,13 +167,12 @@ namespace MediaBrowser.Providers.TV
 
             if (!string.IsNullOrEmpty(seriesId))
             {
-                var seriesDataPath = GetSeriesDataPath(ConfigurationManager.ApplicationPaths, seriesId);
-                var xmlPath = Path.Combine(seriesDataPath, "fanart.xml");
+                var xmlPath = GetFanartXmlPath(seriesId);
 
                 // Only download the xml if it doesn't already exist. The prescan task will take care of getting updates
                 if (!File.Exists(xmlPath))
                 {
-                    await DownloadSeriesXml(seriesDataPath, seriesId, cancellationToken).ConfigureAwait(false);
+                    await DownloadSeriesXml(seriesId, cancellationToken).ConfigureAwait(false);
                 }
 
                 if (File.Exists(xmlPath))
@@ -334,19 +305,18 @@ namespace MediaBrowser.Providers.TV
         /// <summary>
         /// Downloads the series XML.
         /// </summary>
-        /// <param name="seriesDataPath">The series data path.</param>
         /// <param name="tvdbId">The TVDB id.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        internal async Task DownloadSeriesXml(string seriesDataPath, string tvdbId, CancellationToken cancellationToken)
+        internal async Task DownloadSeriesXml(string tvdbId, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            string url = string.Format(FanArtBaseUrl, ApiKey, tvdbId);
+            var url = string.Format(FanArtBaseUrl, ApiKey, tvdbId);
 
-            var xmlPath = Path.Combine(seriesDataPath, "fanart.xml");
+            var xmlPath = GetFanartXmlPath(tvdbId);
 
-            Directory.CreateDirectory(seriesDataPath);
+            Directory.CreateDirectory(Path.GetDirectoryName(xmlPath));
 
             using (var response = await HttpClient.Get(new HttpRequestOptions
             {
