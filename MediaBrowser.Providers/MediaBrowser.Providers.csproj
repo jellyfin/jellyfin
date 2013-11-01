@@ -61,6 +61,7 @@
     <Compile Include="MediaInfo\VideoImageProvider.cs" />
     <Compile Include="Movies\BoxSetProviderFromXml.cs" />
     <Compile Include="Movies\ManualMovieDbImageProvider.cs" />
+    <Compile Include="Movies\ManualFanartMovieImageProvider.cs" />
     <Compile Include="Movies\MovieUpdatesPrescanTask.cs" />
     <Compile Include="Movies\MovieXmlParser.cs" />
     <Compile Include="Movies\FanArtMovieProvider.cs" />

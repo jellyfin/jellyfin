@@ -18,4 +18,10 @@ namespace MediaBrowser.Model.Dto
         /// <value>The original primary image aspect ratio.</value>
         double? OriginalPrimaryImageAspectRatio { get; set; }
     }
+
+    public enum RatingType
+    {
+        Score,
+        Likes
+    }
 }

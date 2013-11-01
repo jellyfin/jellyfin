@@ -22,17 +22,30 @@ namespace MediaBrowser.Controller.Providers
         /// Supportses the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <param name="imageType">Type of the image.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        bool Supports(BaseItem item, ImageType imageType);
+        bool Supports(BaseItem item);
 
         /// <summary>
-        /// Gets the available images.
+        /// Gets the images.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="imageType">Type of the image.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{IEnumerable{RemoteImageInfo}}.</returns>
-        Task<IEnumerable<RemoteImageInfo>> GetAvailableImages(BaseItem item, ImageType imageType, CancellationToken cancellationToken);
+        Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, ImageType imageType, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the images.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{IEnumerable{RemoteImageInfo}}.</returns>
+        Task<IEnumerable<RemoteImageInfo>> GetAllImages(BaseItem item, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the priority.
+        /// </summary>
+        /// <value>The priority.</value>
+        int Priority { get; }
     }
 }

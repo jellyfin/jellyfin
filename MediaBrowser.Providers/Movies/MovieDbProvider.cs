@@ -216,16 +216,13 @@ namespace MediaBrowser.Providers.Movies
             if (!string.IsNullOrEmpty(path))
             {
                 var fileInfo = new FileInfo(path);
+                var defaultFileInfo = new FileInfo(Path.Combine(Path.GetDirectoryName(path), "default.json"));
 
-                if (fileInfo.Exists)
-                {
-                    return _fileSystem.GetLastWriteTimeUtc(fileInfo) > providerInfo.LastRefreshed;
-                }
-
-                return true;
+                return !fileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(fileInfo) > providerInfo.LastRefreshed || 
+                    !defaultFileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(defaultFileInfo) > providerInfo.LastRefreshed;
             }
 
-            return base.NeedsRefreshBasedOnCompareDate(item, providerInfo);
+            return true;
         }
 
         /// <summary>
@@ -510,7 +507,7 @@ namespace MediaBrowser.Providers.Movies
 
             var dataFilePath = GetDataFilePath(item, language);
 
-            if (string.IsNullOrEmpty(dataFilePath) || !File.Exists(dataFilePath))
+            if (string.IsNullOrEmpty(dataFilePath) || !File.Exists(dataFilePath) || !File.Exists(Path.Combine(Path.GetDirectoryName(dataFilePath), "default.json")))
             {
                 var isBoxSet = item is BoxSet;
 

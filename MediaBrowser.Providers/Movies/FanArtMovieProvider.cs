@@ -4,7 +4,6 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -34,11 +33,6 @@ namespace MediaBrowser.Providers.Movies
         /// The _provider manager
         /// </summary>
         private readonly IProviderManager _providerManager;
-
-        /// <summary>
-        /// The us culture
-        /// </summary>
-        private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
         internal static FanArtMovieProvider Current { get; private set; }
         private readonly IFileSystem _fileSystem;
@@ -139,28 +133,6 @@ namespace MediaBrowser.Providers.Movies
                 return false;
             }
 
-            if (!ConfigurationManager.Configuration.DownloadMovieImages.Art &&
-                !ConfigurationManager.Configuration.DownloadMovieImages.Logo &&
-                !ConfigurationManager.Configuration.DownloadMovieImages.Disc &&
-                !ConfigurationManager.Configuration.DownloadMovieImages.Backdrops &&
-                !ConfigurationManager.Configuration.DownloadMovieImages.Banner &&
-                !ConfigurationManager.Configuration.DownloadMovieImages.Thumb &&
-                !ConfigurationManager.Configuration.DownloadMovieImages.Primary)
-            {
-                return false;
-            }
-
-            if (item.HasImage(ImageType.Primary) &&
-                item.HasImage(ImageType.Art) &&
-                item.HasImage(ImageType.Logo) &&
-                item.HasImage(ImageType.Disc) &&
-                item.HasImage(ImageType.Banner) &&
-                item.HasImage(ImageType.Thumb) &&
-                item.BackdropImagePaths.Count >= ConfigurationManager.Configuration.MaxBackdrops)
-            {
-                return false;
-            }
-
             return base.NeedsRefreshInternal(item, providerInfo);
         }
 
@@ -171,24 +143,11 @@ namespace MediaBrowser.Providers.Movies
             if (!string.IsNullOrEmpty(id))
             {
                 // Process images
-                var path = GetMovieDataPath(ConfigurationManager.ApplicationPaths, id);
+                var xmlPath = GetFanartXmlPath(id);
 
-                try
-                {
-                    var files = new DirectoryInfo(path)
-                        .EnumerateFiles("*.xml", SearchOption.TopDirectoryOnly)
-                        .Select(i => _fileSystem.GetLastWriteTimeUtc(i))
-                        .ToList();
+                var fileInfo = new FileInfo(xmlPath);
 
-                    if (files.Count > 0)
-                    {
-                        return files.Max() > providerInfo.LastRefreshed;
-                    }
-                }
-                catch (DirectoryNotFoundException)
-                {
-                    return true;
-                }
+                return !fileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(fileInfo) > providerInfo.LastRefreshed;
             }
 
             return base.NeedsRefreshBasedOnCompareDate(item, providerInfo);
@@ -251,6 +210,12 @@ namespace MediaBrowser.Providers.Movies
 
             SetLastRefreshed(item, DateTime.UtcNow);
             return true;
+        }
+
+        public string GetFanartXmlPath(string tmdbId)
+        {
+            var movieDataPath = GetMovieDataPath(ConfigurationManager.ApplicationPaths, tmdbId);
+            return Path.Combine(movieDataPath, "fanart.xml");
         }
 
         /// <summary>

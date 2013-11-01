@@ -18,5 +18,11 @@ namespace MediaBrowser.Model.Providers
         /// </summary>
         /// <value>The total record count.</value>
         public int TotalRecordCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the providers.
+        /// </summary>
+        /// <value>The providers.</value>
+        public List<string> Providers { get; set; }
     }
 }
