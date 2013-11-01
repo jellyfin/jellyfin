@@ -27,6 +27,11 @@ namespace MediaBrowser.Providers.Movies
 
         public string Name
         {
+            get { return ProviderName; }
+        }
+
+        public static string ProviderName
+        {
             get { return "TheMovieDb"; }
         }
 
@@ -99,7 +104,7 @@ namespace MediaBrowser.Providers.Movies
 
             var eligiblePosters = images.posters == null ?
                 new List<MovieDbProvider.Poster>() :
-                images.posters.Where(i => i.width >= _config.Configuration.MinMoviePosterWidth)
+                images.posters
                 .ToList();
 
             return eligiblePosters.OrderByDescending(i =>
@@ -135,7 +140,7 @@ namespace MediaBrowser.Providers.Movies
         private IEnumerable<MovieDbProvider.Backdrop> GetBackdrops(MovieDbProvider.Images images, BaseItem item)
         {
             var eligibleBackdrops = images.backdrops == null ? new List<MovieDbProvider.Backdrop>() :
-                images.backdrops.Where(i => i.width >= _config.Configuration.MinMovieBackdropWidth)
+                images.backdrops
                 .ToList();
 
             return eligibleBackdrops.OrderByDescending(i => i.vote_average).ThenByDescending(i => i.vote_count);
@@ -149,7 +154,7 @@ namespace MediaBrowser.Providers.Movies
         /// <returns>Task{MovieImages}.</returns>
         private MovieDbProvider.Images FetchImages(BaseItem item, IJsonSerializer jsonSerializer)
         {
-            var path = MovieDbProvider.Current.GetDataFilePath(item, "default");
+            var path = MovieDbProvider.Current.GetImagesDataFilePath(item);
 
             if (!string.IsNullOrEmpty(path))
             {

@@ -39,6 +39,8 @@ namespace MediaBrowser.Providers.TV
         protected IHttpClient HttpClient { get; private set; }
         private readonly IFileSystem _fileSystem;
 
+        internal static RemoteEpisodeProvider Current;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="RemoteEpisodeProvider" /> class.
         /// </summary>
@@ -52,6 +54,7 @@ namespace MediaBrowser.Providers.TV
             HttpClient = httpClient;
             _providerManager = providerManager;
             _fileSystem = fileSystem;
+            Current = this;
         }
 
         /// <summary>
@@ -165,7 +168,7 @@ namespace MediaBrowser.Providers.TV
         /// <param name="episode">The episode.</param>
         /// <param name="seriesDataPath">The series data path.</param>
         /// <returns>List{FileInfo}.</returns>
-        private List<FileInfo> GetEpisodeXmlFiles(Episode episode, string seriesDataPath)
+        internal List<FileInfo> GetEpisodeXmlFiles(Episode episode, string seriesDataPath)
         {
             var files = new List<FileInfo>();
 
