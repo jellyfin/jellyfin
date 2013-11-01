@@ -55,24 +55,22 @@ namespace MediaBrowser.Providers.TV
 
             var series = ((Season) item).Series;
 
-            if (series == null)
+            if (series != null)
             {
-                return Task.FromResult<IEnumerable<RemoteImageInfo>>(list);
-            }
+                var id = series.GetProviderId(MetadataProviders.Tvdb);
 
-            var id = series.GetProviderId(MetadataProviders.Tvdb);
-
-            if (!string.IsNullOrEmpty(id) && item.IndexNumber.HasValue)
-            {
-                var xmlPath = FanArtTvProvider.Current.GetFanartXmlPath(id);
-
-                try
+                if (!string.IsNullOrEmpty(id) && item.IndexNumber.HasValue)
                 {
-                    AddImages(list, item.IndexNumber.Value, xmlPath, cancellationToken);
-                }
-                catch (FileNotFoundException)
-                {
-                    // No biggie. Don't blow up
+                    var xmlPath = FanArtTvProvider.Current.GetFanartXmlPath(id);
+
+                    try
+                    {
+                        AddImages(list, item.IndexNumber.Value, xmlPath, cancellationToken);
+                    }
+                    catch (FileNotFoundException)
+                    {
+                        // No biggie. Don't blow up
+                    }
                 }
             }
 
@@ -168,6 +166,14 @@ namespace MediaBrowser.Providers.TV
                                 }
                                 break;
                             }
+                        case "showbackgrounds":
+                            {
+                                using (var subReader = reader.ReadSubtree())
+                                {
+                                    PopulateImageCategory(list, subReader, cancellationToken, ImageType.Backdrop, 1920, 1080, seasonNumber);
+                                }
+                                break;
+                            }
                         default:
                             reader.Skip();
                             break;
@@ -189,11 +195,17 @@ namespace MediaBrowser.Providers.TV
                     switch (reader.Name)
                     {
                         case "seasonthumb":
+                        case "showbackground":
                             {
                                 var url = reader.GetAttribute("url");
                                 var season = reader.GetAttribute("season");
 
-                                if (!string.IsNullOrEmpty(url) && string.Equals(season, seasonNumber.ToString(_usCulture)))
+                                int imageSeasonNumber;
+
+                                if (!string.IsNullOrEmpty(url) && 
+                                    !string.IsNullOrEmpty(season) && 
+                                    int.TryParse(season, NumberStyles.Any, _usCulture, out imageSeasonNumber) &&
+                                    seasonNumber == imageSeasonNumber)
                                 {
                                     var likesString = reader.GetAttribute("likes");
                                     int likes;
@@ -216,6 +228,7 @@ namespace MediaBrowser.Providers.TV
 
                                     list.Add(info);
                                 }
+
                                 break;
                             }
                         default:
