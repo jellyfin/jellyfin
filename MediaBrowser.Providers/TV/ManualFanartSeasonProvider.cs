@@ -53,7 +53,7 @@ namespace MediaBrowser.Providers.TV
         {
             var list = new List<RemoteImageInfo>();
 
-            var series = ((Season) item).Series;
+            var series = ((Season)item).Series;
 
             if (series != null)
             {
@@ -175,8 +175,12 @@ namespace MediaBrowser.Providers.TV
                                 break;
                             }
                         default:
-                            reader.Skip();
-                            break;
+                            {
+                                using (reader.ReadSubtree())
+                                {
+                                }
+                                break;
+                            }
                     }
                 }
             }
@@ -202,8 +206,8 @@ namespace MediaBrowser.Providers.TV
 
                                 int imageSeasonNumber;
 
-                                if (!string.IsNullOrEmpty(url) && 
-                                    !string.IsNullOrEmpty(season) && 
+                                if (!string.IsNullOrEmpty(url) &&
+                                    !string.IsNullOrEmpty(season) &&
                                     int.TryParse(season, NumberStyles.Any, _usCulture, out imageSeasonNumber) &&
                                     seasonNumber == imageSeasonNumber)
                                 {
