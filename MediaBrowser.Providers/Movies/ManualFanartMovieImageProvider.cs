@@ -28,6 +28,11 @@ namespace MediaBrowser.Providers.Movies
 
         public string Name
         {
+            get { return ProviderName; }
+        }
+
+        public static string ProviderName
+        {
             get { return "FanArt"; }
         }
 
@@ -67,6 +72,7 @@ namespace MediaBrowser.Providers.Movies
 
             var isLanguageEn = string.Equals(language, "en", StringComparison.OrdinalIgnoreCase);
             
+            // Sort first by width to prioritize HD versions
             list = list.OrderByDescending(i => i.Width ?? 0)
                 .ThenByDescending(i =>
                 {

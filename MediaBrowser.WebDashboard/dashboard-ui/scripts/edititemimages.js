@@ -123,7 +123,7 @@
         options.ProviderName = provider;
 
         Dashboard.showLoadingMsg();
-        
+
         ApiClient.downloadRemoteImage(options).done(function () {
 
             $('#popupDownload', page).popup("close");
@@ -149,7 +149,7 @@
             cssClass += " remoteDiscImage";
         }
         else {
-            cssClass += " remotePosterImage";
+            cssClass += currentItem.Type == "Episode" ? " remoteBackdropImage" : " remotePosterImage";
         }
 
         html += '<a target="_blank" href="' + image.Url + '" class="' + cssClass + '" style="background-image:url(\'' + image.Url + '\');">';
@@ -162,7 +162,7 @@
         if (image.Width || image.Height) {
 
             html += '<div class="remoteImageDetails">';
-            html += image.Width + 'x' + image.Height;
+            html += image.Width + ' x ' + image.Height;
 
             if (image.Language) {
 
@@ -500,7 +500,7 @@
 
         };
 
-        self.showDownloadMenu = function(type) {
+        self.showDownloadMenu = function (type) {
             browsableImageType = type;
             $('.lnkBrowseImages').trigger('click');
         };
