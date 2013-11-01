@@ -492,12 +492,12 @@ namespace MediaBrowser.Api.UserLibrary
 
         private IEnumerable<BaseItem> FilterVirtualSeasons(GetItems request, IEnumerable<BaseItem> items, User user)
         {
-            if (request.IsMissing.HasValue && request.IsUnaired.HasValue)
+            if (request.IsMissing.HasValue && request.IsVirtualUnaired.HasValue)
             {
                 var isMissing = request.IsMissing.Value;
-                var isUnaired = request.IsUnaired.Value;
+                var isVirtualUnaired = request.IsVirtualUnaired.Value;
 
-                if (!isMissing && !isUnaired)
+                if (!isMissing && !isVirtualUnaired)
                 {
                     return items.Where(i =>
                     {
