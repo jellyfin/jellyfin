@@ -198,8 +198,7 @@ namespace MediaBrowser.Providers.Movies
 
         protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
         {
-            // Boxsets require two passes because we need the children to be refreshed
-            if (item is BoxSet && string.IsNullOrEmpty(item.GetProviderId(MetadataProviders.Tmdb)))
+            if (string.IsNullOrEmpty(item.GetProviderId(MetadataProviders.Tmdb)))
             {
                 return true;
             }
@@ -209,20 +208,17 @@ namespace MediaBrowser.Providers.Movies
 
         protected override bool NeedsRefreshBasedOnCompareDate(BaseItem item, BaseProviderInfo providerInfo)
         {
-            var language = ConfigurationManager.Configuration.PreferredMetadataLanguage;
-
-            var path = GetDataFilePath(item, language);
+            var path = GetDataFilePath(item);
 
             if (!string.IsNullOrEmpty(path))
             {
+                var imagesFilePath = GetImagesDataFilePath(item);
+
                 var fileInfo = new FileInfo(path);
+                var imagesFileInfo = new FileInfo(imagesFilePath);
 
-                if (fileInfo.Exists)
-                {
-                    return _fileSystem.GetLastWriteTimeUtc(fileInfo) > providerInfo.LastRefreshed;
-                }
-
-                return true;
+                return !fileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(fileInfo) > providerInfo.LastRefreshed ||
+                    !imagesFileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(imagesFileInfo) > providerInfo.LastRefreshed;
             }
 
             return base.NeedsRefreshBasedOnCompareDate(item, providerInfo);
@@ -508,9 +504,9 @@ namespace MediaBrowser.Providers.Movies
 
             var language = ConfigurationManager.Configuration.PreferredMetadataLanguage;
 
-            var dataFilePath = GetDataFilePath(item, language);
+            var dataFilePath = GetDataFilePath(item);
 
-            if (string.IsNullOrEmpty(dataFilePath) || !File.Exists(dataFilePath))
+            if (string.IsNullOrEmpty(dataFilePath) || !File.Exists(dataFilePath) || !File.Exists(GetImagesDataFilePath(item)))
             {
                 var isBoxSet = item is BoxSet;
 
@@ -538,7 +534,7 @@ namespace MediaBrowser.Providers.Movies
 
             if (isForcedRefresh || ConfigurationManager.Configuration.EnableTmdbUpdates || !HasAltMeta(item))
             {
-                dataFilePath = GetDataFilePath(item, language);
+                dataFilePath = GetDataFilePath(item);
 
                 var mainResult = JsonSerializer.DeserializeFromFile<CompleteMovieData>(dataFilePath);
 
@@ -580,10 +576,11 @@ namespace MediaBrowser.Providers.Movies
         /// Gets the data file path.
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <param name="language">The language.</param>
         /// <returns>System.String.</returns>
-        internal string GetDataFilePath(BaseItem item, string language)
+        internal string GetDataFilePath(BaseItem item)
         {
+            var language = ConfigurationManager.Configuration.PreferredMetadataLanguage;
+            
             var id = item.GetProviderId(MetadataProviders.Tmdb);
 
             if (string.IsNullOrEmpty(id))
@@ -594,6 +591,18 @@ namespace MediaBrowser.Providers.Movies
             var path = GetMovieDataPath(ConfigurationManager.ApplicationPaths, item is BoxSet, id);
 
             path = Path.Combine(path, language + ".json");
+
+            return path;
+        }
+
+        internal string GetImagesDataFilePath(BaseItem item)
+        {
+            var path = GetDataFilePath(item);
+
+            if (!string.IsNullOrEmpty(path))
+            {
+                path = Path.Combine(Path.GetDirectoryName(path), "default.json");
+            }
 
             return path;
         }

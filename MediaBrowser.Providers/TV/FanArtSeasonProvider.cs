@@ -6,11 +6,13 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Providers;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml;
 
 namespace MediaBrowser.Providers.TV
 {
@@ -73,7 +75,7 @@ namespace MediaBrowser.Providers.TV
             if (!string.IsNullOrEmpty(seriesId))
             {
                 // Process images
-                var imagesXmlPath = Path.Combine(FanArtTvProvider.GetSeriesDataPath(ConfigurationManager.ApplicationPaths, seriesId), "fanart.xml");
+                var imagesXmlPath = FanArtTvProvider.Current.GetFanartXmlPath(seriesId);
 
                 var imagesFileInfo = new FileInfo(imagesXmlPath);
 
@@ -99,69 +101,31 @@ namespace MediaBrowser.Providers.TV
 
             var season = (Season)item;
 
-            var seriesId = season.Series != null ? season.Series.GetProviderId(MetadataProviders.Tvdb) : null;
+            // Process images
+            var images = await _providerManager.GetAvailableRemoteImages(item, cancellationToken, ManualFanartSeasonImageProvider.ProviderName).ConfigureAwait(false);
 
-            if (!string.IsNullOrEmpty(seriesId))
-            {
-                // Process images
-                var imagesXmlPath = Path.Combine(FanArtTvProvider.GetSeriesDataPath(ConfigurationManager.ApplicationPaths, seriesId), "fanart.xml");
+            await FetchImages(season, images.ToList(), cancellationToken).ConfigureAwait(false);
 
-                var imagesFileInfo = new FileInfo(imagesXmlPath);
-
-                if (imagesFileInfo.Exists)
-                {
-                    if (!season.HasImage(ImageType.Thumb))
-                    {
-                        var xmlDoc = new XmlDocument();
-                        xmlDoc.Load(imagesXmlPath);
-
-                        await FetchImages(season, xmlDoc, cancellationToken).ConfigureAwait(false);
-                    }
-                }
-
-                BaseProviderInfo data;
-                if (!item.ProviderData.TryGetValue(Id, out data))
-                {
-                    data = new BaseProviderInfo();
-                    item.ProviderData[Id] = data;
-                }
-
-                SetLastRefreshed(item, DateTime.UtcNow);
-                return true;
-            }
-
-            return false;
+            SetLastRefreshed(item, DateTime.UtcNow);
+            return true;
         }
 
         /// <summary>
         /// Fetches the images.
         /// </summary>
         /// <param name="season">The season.</param>
-        /// <param name="doc">The doc.</param>
+        /// <param name="images">The images.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        private async Task FetchImages(Season season, XmlDocument doc, CancellationToken cancellationToken)
+        private async Task FetchImages(Season season, List<RemoteImageInfo> images, CancellationToken cancellationToken)
         {
-            var seasonNumber = season.IndexNumber ?? -1;
-
-            if (seasonNumber == -1)
-            {
-                return;
-            }
-
-            var language = ConfigurationManager.Configuration.PreferredMetadataLanguage.ToLower();
-
             if (ConfigurationManager.Configuration.DownloadSeasonImages.Thumb && !season.HasImage(ImageType.Thumb))
             {
-                var node = doc.SelectSingleNode("//fanart/series/seasonthumbs/seasonthumb[@lang = \"" + language + "\"][@season = \"" + seasonNumber + "\"]/@url") ??
-                           doc.SelectSingleNode("//fanart/series/seasonthumbs/seasonthumb[@season = \"" + seasonNumber + "\"]/@url");
-                
-                var path = node != null ? node.Value : null;
-                
-                if (!string.IsNullOrEmpty(path))
+                var image = images.FirstOrDefault(i => i.Type == ImageType.Thumb);
+
+                if (image != null)
                 {
-                    await _providerManager.SaveImage(season, path, FanArtResourcePool, ImageType.Thumb, null, cancellationToken)
-                                        .ConfigureAwait(false);
+                    await _providerManager.SaveImage(season, image.Url, FanArtResourcePool, ImageType.Thumb, null, cancellationToken).ConfigureAwait(false);
                 }
             }
         }

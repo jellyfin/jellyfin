@@ -61,6 +61,7 @@
     <Compile Include="MediaInfo\VideoImageProvider.cs" />
     <Compile Include="Movies\BoxSetProviderFromXml.cs" />
     <Compile Include="Movies\ManualMovieDbImageProvider.cs" />
+    <Compile Include="Movies\ManualFanartMovieImageProvider.cs" />
     <Compile Include="Movies\MovieUpdatesPrescanTask.cs" />
     <Compile Include="Movies\MovieXmlParser.cs" />
     <Compile Include="Movies\FanArtMovieProvider.cs" />
@@ -109,6 +110,9 @@
     <Compile Include="TV\FanArtSeasonProvider.cs" />
     <Compile Include="TV\FanArtTVProvider.cs" />
     <Compile Include="TV\FanArtTvUpdatesPrescanTask.cs" />
+    <Compile Include="TV\ManualFanartSeasonProvider.cs" />
+    <Compile Include="TV\ManualFanartSeriesProvider.cs" />
+    <Compile Include="TV\ManualTvdbEpisodeImageProvider.cs" />
     <Compile Include="TV\RemoteEpisodeProvider.cs" />
     <Compile Include="TV\RemoteSeasonProvider.cs" />
     <Compile Include="TV\RemoteSeriesProvider.cs" />

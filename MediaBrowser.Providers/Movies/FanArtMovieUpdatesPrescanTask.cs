@@ -86,7 +86,7 @@ namespace MediaBrowser.Providers.Movies
 
                 progress.Report(5);
 
-                await UpdateMovies(moviesToUpdate, path, progress, cancellationToken).ConfigureAwait(false);
+                await UpdateMovies(moviesToUpdate, progress, cancellationToken).ConfigureAwait(false);
             }
 
             var newUpdateTime = Convert.ToInt64(DateTimeToUnixTimestamp(DateTime.UtcNow)).ToString(UsCulture);
@@ -127,14 +127,16 @@ namespace MediaBrowser.Providers.Movies
             }
         }
 
-        private async Task UpdateMovies(IEnumerable<string> idList, string moviesDataPath, IProgress<double> progress, CancellationToken cancellationToken)
+        private async Task UpdateMovies(IEnumerable<string> idList, IProgress<double> progress, CancellationToken cancellationToken)
         {
             var list = idList.ToList();
             var numComplete = 0;
 
             foreach (var id in list)
             {
-                await UpdateMovie(id, moviesDataPath, cancellationToken).ConfigureAwait(false);
+                _logger.Info("Updating movie " + id);
+
+                await FanArtMovieProvider.Current.DownloadMovieXml(id, cancellationToken).ConfigureAwait(false);
 
                 numComplete++;
                 double percent = numComplete;
@@ -143,17 +145,6 @@ namespace MediaBrowser.Providers.Movies
 
                 progress.Report(percent + 5);
             }
-        }
-
-        private Task UpdateMovie(string tmdbId, string movieDataPath, CancellationToken cancellationToken)
-        {
-            _logger.Info("Updating movie " + tmdbId);
-
-            movieDataPath = Path.Combine(movieDataPath, tmdbId);
-
-            Directory.CreateDirectory(movieDataPath);
-
-            return FanArtMovieProvider.Current.DownloadMovieXml(movieDataPath, tmdbId, cancellationToken);
         }
 
         /// <summary>
