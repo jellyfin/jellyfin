@@ -35,7 +35,14 @@ namespace MediaBrowser.Server.Implementations.Sorting
             
             if (x.ProductionYear.HasValue)
             {
-                return new DateTime(x.ProductionYear.Value, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+                try
+                {
+                    return new DateTime(x.ProductionYear.Value, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+                }
+                catch (ArgumentOutOfRangeException)
+                {
+                    // Don't blow up if the item has a bad ProductionYear, just return MinValue
+                }
             }
             return DateTime.MinValue;
         }

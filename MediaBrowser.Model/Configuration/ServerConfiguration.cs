@@ -275,7 +275,10 @@ namespace MediaBrowser.Model.Configuration
             MetadataCountryCode = "US";
             DownloadMovieImages = new ImageDownloadOptions();
             DownloadSeriesImages = new ImageDownloadOptions();
-            DownloadSeasonImages = new ImageDownloadOptions();
+            DownloadSeasonImages = new ImageDownloadOptions
+            {
+                Backdrops = false
+            };
             DownloadMusicArtistImages = new ImageDownloadOptions();
             DownloadMusicAlbumImages = new ImageDownloadOptions();
             MaxBackdrops = 3;

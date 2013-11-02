@@ -158,7 +158,7 @@ namespace MediaBrowser.Providers.TV
                 try
                 {
                     var fanartData = FetchFanartXmlData(imagesXmlPath, seasonNumber.Value, cancellationToken);
-                    await DownloadImages(item, fanartData, 1, cancellationToken).ConfigureAwait(false);
+                    await DownloadImages(item, fanartData, ConfigurationManager.Configuration.MaxBackdrops, cancellationToken).ConfigureAwait(false);
                 }
                 catch (FileNotFoundException)
                 {
