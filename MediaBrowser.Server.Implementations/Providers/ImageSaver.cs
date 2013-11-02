@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.IO;
+﻿using System.Collections.Generic;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -69,11 +70,11 @@ namespace MediaBrowser.Server.Implementations.Providers
                 throw new ArgumentNullException("mimeType");
             }
 
-            var saveLocally = _config.Configuration.SaveLocalMeta || item is IItemByName || item is User;
+            var saveLocally = _config.Configuration.SaveLocalMeta && item.Parent != null && !(item is Audio);
 
-            if (item is Audio || item.Parent == null)
+            if (item is IItemByName || item is User)
             {
-                saveLocally = false;
+                saveLocally = true;
             }
 
             if (type != ImageType.Primary && item is Episode)
@@ -268,7 +269,7 @@ namespace MediaBrowser.Server.Implementations.Providers
                     {
                         item.ScreenshotImagePaths[imageIndex.Value] = path;
                     }
-                    else
+                    else if (!item.ScreenshotImagePaths.Contains(path, StringComparer.OrdinalIgnoreCase))
                     {
                         item.ScreenshotImagePaths.Add(path);
                     }
@@ -282,7 +283,7 @@ namespace MediaBrowser.Server.Implementations.Providers
                     {
                         item.BackdropImagePaths[imageIndex.Value] = path;
                     }
-                    else
+                    else if (!item.BackdropImagePaths.Contains(path, StringComparer.OrdinalIgnoreCase))
                     {
                         item.BackdropImagePaths.Add(path);
                     }
@@ -333,14 +334,14 @@ namespace MediaBrowser.Server.Implementations.Providers
                     {
                         throw new ArgumentNullException("imageIndex");
                     }
-                    filename = imageIndex.Value == 0 ? "backdrop" : "backdrop" + imageIndex.Value.ToString(UsCulture);
+                    filename = GetBackdropSaveFilename(item.BackdropImagePaths, "backdrop", "backdrop", imageIndex.Value);
                     break;
                 case ImageType.Screenshot:
                     if (!imageIndex.HasValue)
                     {
                         throw new ArgumentNullException("imageIndex");
                     }
-                    filename = imageIndex.Value == 0 ? "screenshot" : "screenshot" + imageIndex.Value.ToString(UsCulture);
+                    filename = GetBackdropSaveFilename(item.ScreenshotImagePaths, "screenshot", "screenshot", imageIndex.Value);
                     break;
                 default:
                     filename = type.ToString().ToLower();
@@ -378,6 +379,24 @@ namespace MediaBrowser.Server.Implementations.Providers
             }
 
             return path;
+        }
+
+        private string GetBackdropSaveFilename(List<string> images, string zeroIndexFilename, string numberedIndexPrefix, int index)
+        {
+            var filesnames = images.Select(Path.GetFileNameWithoutExtension).ToList();
+
+            if (index == 0)
+            {
+                return zeroIndexFilename;
+            }
+
+            var current = index;
+            while (filesnames.Contains(numberedIndexPrefix + current.ToString(UsCulture), StringComparer.OrdinalIgnoreCase))
+            {
+                current++;
+            }
+
+            return numberedIndexPrefix + current.ToString(UsCulture);
         }
 
         /// <summary>

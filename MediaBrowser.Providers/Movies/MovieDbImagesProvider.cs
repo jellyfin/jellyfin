@@ -8,7 +8,6 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Providers;
-using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -28,10 +27,6 @@ namespace MediaBrowser.Providers.Movies
         /// </summary>
         private readonly IProviderManager _providerManager;
 
-        /// <summary>
-        /// The _json serializer
-        /// </summary>
-        private readonly IJsonSerializer _jsonSerializer;
         private readonly IFileSystem _fileSystem;
 
         /// <summary>
@@ -40,12 +35,10 @@ namespace MediaBrowser.Providers.Movies
         /// <param name="logManager">The log manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="providerManager">The provider manager.</param>
-        /// <param name="jsonSerializer">The json serializer.</param>
-        public MovieDbImagesProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager, IJsonSerializer jsonSerializer, IFileSystem fileSystem)
+        public MovieDbImagesProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager, IFileSystem fileSystem)
             : base(logManager, configurationManager)
         {
             _providerManager = providerManager;
-            _jsonSerializer = jsonSerializer;
             _fileSystem = fileSystem;
         }
 
@@ -149,12 +142,7 @@ namespace MediaBrowser.Providers.Movies
 
         protected override bool NeedsRefreshBasedOnCompareDate(BaseItem item, BaseProviderInfo providerInfo)
         {
-            if (string.IsNullOrEmpty(item.GetProviderId(MetadataProviders.Tmdb)))
-            {
-                return false;
-            }
-
-            var path = MovieDbProvider.Current.GetDataFilePath(item, "default");
+            var path = MovieDbProvider.Current.GetImagesDataFilePath(item);
 
             if (!string.IsNullOrEmpty(path))
             {
@@ -182,8 +170,7 @@ namespace MediaBrowser.Providers.Movies
 
             if (!string.IsNullOrEmpty(id))
             {
-                var images = await new ManualMovieDbImageProvider(_jsonSerializer, ConfigurationManager).GetAllImages(item,
-                            cancellationToken).ConfigureAwait(false);
+                var images = await _providerManager.GetAvailableRemoteImages(item, cancellationToken, ManualMovieDbImageProvider.ProviderName).ConfigureAwait(false);
 
                 await ProcessImages(item, images.ToList(), cancellationToken).ConfigureAwait(false);
             }
@@ -204,7 +191,7 @@ namespace MediaBrowser.Providers.Movies
             cancellationToken.ThrowIfCancellationRequested();
 
             var eligiblePosters = images
-                .Where(i => i.Type == ImageType.Primary)
+                .Where(i => i.Type == ImageType.Primary && i.Width.HasValue && i.Width.Value >= ConfigurationManager.Configuration.MinMoviePosterWidth)
                 .ToList();
 
             //        poster
@@ -228,7 +215,7 @@ namespace MediaBrowser.Providers.Movies
             cancellationToken.ThrowIfCancellationRequested();
 
             var eligibleBackdrops = images
-                .Where(i => i.Type == ImageType.Backdrop)
+                .Where(i => i.Type == ImageType.Backdrop && i.Width.HasValue && i.Width.Value >= ConfigurationManager.Configuration.MinMovieBackdropWidth)
                 .ToList();
 
             var backdropLimit = ConfigurationManager.Configuration.MaxBackdrops;

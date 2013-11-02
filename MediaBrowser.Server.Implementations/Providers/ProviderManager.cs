@@ -7,13 +7,13 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Providers;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Server.Implementations.Providers
 {
@@ -77,7 +77,7 @@ namespace MediaBrowser.Server.Implementations.Providers
         {
             MetadataProviders = providers.OrderBy(e => e.Priority).ToArray();
 
-            ImageProviders = imageProviders.ToArray();
+            ImageProviders = imageProviders.OrderByDescending(i => i.Priority).ToArray();
         }
 
         /// <summary>
@@ -356,52 +356,79 @@ namespace MediaBrowser.Server.Implementations.Providers
         /// Gets the available remote images.
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <param name="type">The type.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="providerName">Name of the provider.</param>
+        /// <param name="type">The type.</param>
         /// <returns>Task{IEnumerable{RemoteImageInfo}}.</returns>
-        public async Task<IEnumerable<RemoteImageInfo>> GetAvailableRemoteImages(BaseItem item, ImageType type, CancellationToken cancellationToken)
+        public async Task<IEnumerable<RemoteImageInfo>> GetAvailableRemoteImages(BaseItem item, CancellationToken cancellationToken, string providerName = null, ImageType? type = null)
         {
-            var providers = GetSupportedImageProviders(item, type);
+            var providers = GetImageProviders(item);
+
+            if (!string.IsNullOrEmpty(providerName))
+            {
+                providers = providers.Where(i => string.Equals(i.Name, providerName, StringComparison.OrdinalIgnoreCase));
+            }
+
+            var preferredLanguage = ConfigurationManager.Configuration.PreferredMetadataLanguage;
 
             var tasks = providers.Select(i => Task.Run(async () =>
             {
                 try
                 {
-                    var result = await i.GetAvailableImages(item, type, cancellationToken).ConfigureAwait(false);
-                    return result.ToList();
+                    if (type.HasValue)
+                    {
+                        var result = await i.GetImages(item, type.Value, cancellationToken).ConfigureAwait(false);
+
+                        return FilterImages(result, preferredLanguage);
+                    }
+                    else
+                    {
+                        var result = await i.GetAllImages(item, cancellationToken).ConfigureAwait(false);
+                        return FilterImages(result, preferredLanguage);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("{0} failed in GetAvailableImages for type {1}", ex, i.GetType().Name, item.GetType().Name);
+                    _logger.ErrorException("{0} failed in GetImages for type {1}", ex, i.GetType().Name, item.GetType().Name);
                     return new List<RemoteImageInfo>();
                 }
-            }));
+
+            }, cancellationToken));
 
             var results = await Task.WhenAll(tasks).ConfigureAwait(false);
 
             return results.SelectMany(i => i);
         }
 
+        private IEnumerable<RemoteImageInfo> FilterImages(IEnumerable<RemoteImageInfo> images, string preferredLanguage)
+        {
+            if (string.Equals(preferredLanguage, "en", StringComparison.OrdinalIgnoreCase))
+            {
+                images = images.Where(i => string.IsNullOrEmpty(i.Language) ||
+                                           string.Equals(i.Language, "en", StringComparison.OrdinalIgnoreCase));
+            }
+
+            return images;
+        }
+
         /// <summary>
         /// Gets the supported image providers.
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <param name="type">The type.</param>
         /// <returns>IEnumerable{IImageProvider}.</returns>
-        private IEnumerable<IImageProvider> GetSupportedImageProviders(BaseItem item, ImageType type)
+        public IEnumerable<IImageProvider> GetImageProviders(BaseItem item)
         {
             return ImageProviders.Where(i =>
             {
                 try
                 {
-                    return i.Supports(item, type);
+                    return i.Supports(item);
                 }
                 catch (Exception ex)
                 {
                     _logger.ErrorException("{0} failed in Supports for type {1}", ex, i.GetType().Name, item.GetType().Name);
                     return false;
                 }
-
             });
         }
     }

@@ -1,4 +1,4 @@
-﻿
+﻿using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Model.Providers
@@ -55,5 +55,12 @@ namespace MediaBrowser.Model.Providers
         /// </summary>
         /// <value>The type.</value>
         public ImageType Type { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the rating.
+        /// </summary>
+        /// <value>The type of the rating.</value>
+        public RatingType RatingType { get; set; }
     }
+
 }

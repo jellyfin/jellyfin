@@ -3,12 +3,248 @@
     var currentItem;
     var currentFile;
 
+    var browsableImagePageSize = 10;
+    var browsableImageStartIndex = 0;
+    var browsableImageType = 'Primary';
+
     function updateTabs(page, item) {
 
         var query = MetadataEditor.getEditQueryString(item);
 
         $('#btnEditPeople', page).attr('href', 'edititempeople.html?' + query);
         $('#btnEditMetadata', page).attr('href', 'edititemmetadata.html?' + query);
+    }
+
+    function getBaseRemoteOptions() {
+        var options = {};
+
+        if (currentItem.Type == "Artist") {
+            options.artist = currentItem.Name;
+        }
+        else if (currentItem.Type == "Artist") {
+            options.artist = currentItem.Name;
+        }
+        else if (currentItem.Type == "Person") {
+            options.person = currentItem.Name;
+        }
+        else if (currentItem.Type == "Genre") {
+            options.genre = currentItem.Name;
+        }
+        else if (currentItem.Type == "GameGenre") {
+            options.gameGenre = currentItem.Name;
+        }
+        else if (currentItem.Type == "MusicGenre") {
+            options.musicGenre = currentItem.Name;
+        }
+        else if (currentItem.Type == "Studio") {
+            options.studio = currentItem.Name;
+        }
+        else {
+            options.itemId = currentItem.Id;
+        }
+
+        return options;
+    }
+
+    function reloadBrowsableImages(page) {
+
+        Dashboard.showLoadingMsg();
+
+        var options = getBaseRemoteOptions();
+
+        options.type = browsableImageType;
+        options.startIndex = browsableImageStartIndex;
+        options.limit = browsableImagePageSize;
+
+        var provider = $('#selectImageProvider', page).val();
+
+        if (provider) {
+            options.ProviderName = provider;
+        }
+
+        ApiClient.getAvailableRemoteImages(options).done(function (result) {
+
+            renderRemoteImages(page, currentItem, result, browsableImageType, options.startIndex, options.limit);
+
+            $('#selectBrowsableImageType', page).val(browsableImageType).selectmenu('refresh');
+
+            var providersHtml = result.Providers.map(function (p) {
+                return '<option value="' + p + '">' + p + '</option>';
+            });
+
+            $('#selectImageProvider', page).html('<option value="">All</option>' + providersHtml).val(provider).selectmenu('refresh');
+
+            Dashboard.hideLoadingMsg();
+        });
+
+    }
+
+    function renderRemoteImages(page, item, imagesResult, imageType, startIndex, limit) {
+
+        $('.availableImagesPaging', page).html(getPagingHtml(startIndex, limit, imagesResult.TotalRecordCount)).trigger('create');
+
+        var html = '';
+
+        for (var i = 0, length = imagesResult.Images.length; i < length; i++) {
+
+            html += getRemoteImageHtml(imagesResult.Images[i], imageType);
+        }
+
+        $('.availableImagesList', page).html(html).trigger('create');
+
+        $('.selectPage', page).on('change', function () {
+            browsableImageStartIndex = (parseInt(this.value) - 1) * browsableImagePageSize;
+            reloadBrowsableImages(page);
+        });
+
+        $('.btnNextPage', page).on('click', function () {
+            browsableImageStartIndex += browsableImagePageSize;
+            reloadBrowsableImages(page);
+        });
+
+        $('.btnPreviousPage', page).on('click', function () {
+            browsableImageStartIndex -= browsableImagePageSize;
+            reloadBrowsableImages(page);
+        });
+
+        $('.btnDownloadRemoteImage', page).on('click', function () {
+
+            downloadRemoteImage(page, this.getAttribute('data-imageurl'), this.getAttribute('data-imagetype'), this.getAttribute('data-imageprovider'));
+        });
+
+    }
+
+    function downloadRemoteImage(page, url, type, provider) {
+
+        var options = getBaseRemoteOptions();
+
+        options.Type = type;
+        options.ImageUrl = url;
+        options.ProviderName = provider;
+
+        Dashboard.showLoadingMsg();
+
+        ApiClient.downloadRemoteImage(options).done(function () {
+
+            $('#popupDownload', page).popup("close");
+            reload(page);
+        });
+    }
+
+    function getRemoteImageHtml(image, imageType) {
+
+        var html = '';
+
+        html += '<div class="remoteImageContainer">';
+
+        var cssClass = "remoteImage";
+
+        if (imageType == "Backdrop" || imageType == "Art" || imageType == "Thumb" || imageType == "Logo") {
+            cssClass += " remoteBackdropImage";
+        }
+        else if (imageType == "Banner") {
+            cssClass += " remoteBannerImage";
+        }
+        else if (imageType == "Disc") {
+            cssClass += " remoteDiscImage";
+        }
+        else {
+            cssClass += currentItem.Type == "Episode" ? " remoteBackdropImage" : " remotePosterImage";
+        }
+
+        html += '<a target="_blank" href="' + image.Url + '" class="' + cssClass + '" style="background-image:url(\'' + image.Url + '\');">';
+        html += '</a>';
+
+        html += '<div class="remoteImageDetails">';
+        html += image.ProviderName;
+        html += '</div>';
+
+        if (image.Width || image.Height) {
+
+            html += '<div class="remoteImageDetails">';
+            html += image.Width + ' x ' + image.Height;
+
+            if (image.Language) {
+
+                html += ' • ' + image.Language;
+            }
+            html += '</div>';
+        }
+
+        if (image.CommunityRating != null) {
+
+            html += '<div class="remoteImageDetails">';
+
+            if (image.RatingType == "Likes") {
+                html += image.CommunityRating + (image.CommunityRating == 1 ? " like" : " likes");
+            } else {
+
+                if (image.CommunityRating) {
+                    html += image.CommunityRating.toFixed(1);
+
+                    if (image.VoteCount) {
+                        html += ' • ' + image.VoteCount + ' votes';
+                    }
+                } else {
+                    html += "Unrated";
+                }
+            }
+
+            html += '</div>';
+        }
+
+        html += '<div><button class="btnDownloadRemoteImage" data-imageprovider="' + image.ProviderName + '" data-imageurl="' + image.Url + '" data-imagetype="' + image.Type + '" type="button" data-icon="save" data-mini="true">Download</button></div>';
+
+        html += '</div>';
+
+        return html;
+    }
+
+    function getPagingHtml(startIndex, limit, totalRecordCount) {
+
+        var html = '';
+
+        var pageCount = Math.ceil(totalRecordCount / limit);
+        var pageNumber = (startIndex / limit) + 1;
+
+        var dropdownHtml = '<select class="selectPage" data-enhance="false" data-role="none">';
+        for (var i = 1; i <= pageCount; i++) {
+
+            if (i == pageNumber) {
+                dropdownHtml += '<option value="' + i + '" selected="selected">' + i + '</option>';
+            } else {
+                dropdownHtml += '<option value="' + i + '">' + i + '</option>';
+            }
+        }
+        dropdownHtml += '</select>';
+
+        var recordsEnd = Math.min(startIndex + limit, totalRecordCount);
+
+        // 20 is the minimum page size
+        var showControls = totalRecordCount > limit;
+
+        html += '<div class="listPaging">';
+
+        html += '<span style="margin-right: 10px;">';
+
+        var startAtDisplay = totalRecordCount ? startIndex + 1 : 0;
+        html += startAtDisplay + '-' + recordsEnd + ' of ' + totalRecordCount;
+
+        if (showControls) {
+            html += ', page ' + dropdownHtml + ' of ' + pageCount;
+        }
+
+        html += '</span>';
+
+        if (showControls) {
+            html += '<button data-icon="arrow-left" data-iconpos="notext" data-inline="true" data-mini="true" class="btnPreviousPage" ' + (startIndex ? '' : 'disabled') + '>Previous Page</button>';
+
+            html += '<button data-icon="arrow-right" data-iconpos="notext" data-inline="true" data-mini="true" class="btnNextPage" ' + (startIndex + limit > totalRecordCount ? 'disabled' : '') + '>Next Page</button>';
+        }
+
+        html += '</div>';
+
+        return html;
     }
 
     function reload(page) {
@@ -75,6 +311,8 @@
             }
 
             html += '<button type="button" data-icon="delete" data-mini="true" data-inline="true" data-iconpos="notext" onclick="EditItemImagesPage.deleteImage(\'' + image.ImageType + '\', ' + (image.ImageIndex != null ? image.ImageIndex : "null") + ');">Delete</button>';
+
+            html += '<button type="button" data-icon="cloud" data-mini="true" data-inline="true" data-iconpos="notext" onclick="EditItemImagesPage.showDownloadMenu(\'' + image.ImageType + '\');">Browse Online Images</button>';
 
             html += '</p>';
 
@@ -261,6 +499,11 @@
 
 
         };
+
+        self.showDownloadMenu = function (type) {
+            browsableImageType = type;
+            $('.lnkBrowseImages').trigger('click');
+        };
     }
 
     window.EditItemImagesPage = new editItemImages();
@@ -273,7 +516,7 @@
         $('.libraryTree', page).on('itemclicked', function (event, data) {
 
             if (data.id != currentItem.Id) {
-                
+
                 MetadataEditor.currentItemId = data.id;
                 MetadataEditor.currentItemName = data.itemName;
                 MetadataEditor.currentItemType = data.itemType;
@@ -284,6 +527,26 @@
 
                 reload(page);
             }
+        });
+
+        $('.lnkBrowseImages', page).on('click', function () {
+
+            reloadBrowsableImages(page);
+        });
+
+        $('#selectBrowsableImageType', page).on('change', function () {
+
+            browsableImageType = this.value;
+            browsableImageStartIndex = 0;
+
+            reloadBrowsableImages(page);
+        });
+
+        $('#selectImageProvider', page).on('change', function () {
+
+            browsableImageStartIndex = 0;
+
+            reloadBrowsableImages(page);
         });
 
     }).on('pageshow', "#editItemImagesPage", function () {

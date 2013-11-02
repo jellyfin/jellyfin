@@ -91,7 +91,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             var chapterDbFile = Path.Combine(_appPaths.DataPath, "chapters.db");
 
-            var chapterConnection = SqliteExtensions.ConnectToDb(chapterDbFile).Result;
+            var chapterConnection = SqliteExtensions.ConnectToDb(chapterDbFile, _logger).Result;
 
             _chapterRepository = new SqliteChapterRepository(chapterConnection, logManager);
         }
@@ -104,7 +104,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         {
             var dbFile = Path.Combine(_appPaths.DataPath, "library.db");
 
-            _connection = await SqliteExtensions.ConnectToDb(dbFile).ConfigureAwait(false);
+            _connection = await SqliteExtensions.ConnectToDb(dbFile, _logger).ConfigureAwait(false);
 
             string[] queries = {
 

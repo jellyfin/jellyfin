@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
@@ -26,20 +27,20 @@ namespace MediaBrowser.Providers.Movies
 
         public string Name
         {
-            get { return "TheMovieDB"; }
+            get { return ProviderName; }
         }
 
-        public bool Supports(BaseItem item, ImageType imageType)
+        public static string ProviderName
         {
-            if (MovieDbImagesProvider.SupportsItem(item))
-            {
-                return imageType == ImageType.Primary || imageType == ImageType.Backdrop;
-            }
-
-            return false;
+            get { return "TheMovieDb"; }
         }
 
-        public async Task<IEnumerable<RemoteImageInfo>> GetAvailableImages(BaseItem item, ImageType imageType, CancellationToken cancellationToken)
+        public bool Supports(BaseItem item)
+        {
+            return MovieDbImagesProvider.SupportsItem(item);
+        }
+
+        public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, ImageType imageType, CancellationToken cancellationToken)
         {
             var images = await GetAllImages(item, cancellationToken).ConfigureAwait(false);
 
@@ -70,7 +71,8 @@ namespace MediaBrowser.Providers.Movies
                 Height = i.height,
                 Language = i.iso_639_1,
                 ProviderName = Name,
-                Type = ImageType.Primary
+                Type = ImageType.Primary,
+                RatingType = RatingType.Score
             }));
 
             list.AddRange(GetBackdrops(results, item).Select(i => new RemoteImageInfo
@@ -81,7 +83,8 @@ namespace MediaBrowser.Providers.Movies
                 Width = i.width,
                 Height = i.height,
                 ProviderName = Name,
-                Type = ImageType.Backdrop
+                Type = ImageType.Backdrop,
+                RatingType = RatingType.Score
             }));
             
             return list;
@@ -101,7 +104,7 @@ namespace MediaBrowser.Providers.Movies
 
             var eligiblePosters = images.posters == null ?
                 new List<MovieDbProvider.Poster>() :
-                images.posters.Where(i => i.width >= _config.Configuration.MinMoviePosterWidth)
+                images.posters
                 .ToList();
 
             return eligiblePosters.OrderByDescending(i =>
@@ -124,6 +127,7 @@ namespace MediaBrowser.Providers.Movies
                     return 0;
                 })
                 .ThenByDescending(i => i.vote_average)
+                .ThenByDescending(i => i.vote_count)
                 .ToList();
         }
 
@@ -136,10 +140,11 @@ namespace MediaBrowser.Providers.Movies
         private IEnumerable<MovieDbProvider.Backdrop> GetBackdrops(MovieDbProvider.Images images, BaseItem item)
         {
             var eligibleBackdrops = images.backdrops == null ? new List<MovieDbProvider.Backdrop>() :
-                images.backdrops.Where(i => i.width >= _config.Configuration.MinMovieBackdropWidth)
+                images.backdrops
                 .ToList();
 
-            return eligibleBackdrops.OrderByDescending(i => i.vote_average);
+            return eligibleBackdrops.OrderByDescending(i => i.vote_average)
+                .ThenByDescending(i => i.vote_count);
         }
 
         /// <summary>
@@ -150,7 +155,7 @@ namespace MediaBrowser.Providers.Movies
         /// <returns>Task{MovieImages}.</returns>
         private MovieDbProvider.Images FetchImages(BaseItem item, IJsonSerializer jsonSerializer)
         {
-            var path = MovieDbProvider.Current.GetDataFilePath(item, "default");
+            var path = MovieDbProvider.Current.GetImagesDataFilePath(item);
 
             if (!string.IsNullOrEmpty(path))
             {
@@ -163,6 +168,11 @@ namespace MediaBrowser.Providers.Movies
             }
 
             return null;
+        }
+
+        public int Priority
+        {
+            get { return 2; }
         }
     }
 }

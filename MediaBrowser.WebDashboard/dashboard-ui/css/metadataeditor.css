@@ -26,7 +26,65 @@
     top: -2px;
 }
 
+.availableImagesList {
+    overflow-y: auto;
+    width: 300px;
+    height: 400px;
+    text-align: center;
+}
+
+.remoteImageContainer {
+    display: inline-block;
+    border: 1px solid #ccc;
+    margin: 5px;
+    vertical-align: top;
+}
+
+.remoteImageDetails {
+    background: #eee;
+    padding: 3px 5px;
+}
+
+.remoteImage {
+    background-position: center bottom;
+    background-repeat: no-repeat;
+    background-size: contain;
+    display: block;
+}
+
+.remotePosterImage {
+    width: 150px;
+    height: 225px;
+}
+
+.remoteBackdropImage {
+    width: 272px;
+    height: 153px;
+}
+
+.remoteBannerImage {
+    width: 272px;
+    height: 50px;
+}
+
+.remoteDiscImage {
+    width: 180px;
+    height: 180px;
+}
+
+@media all and (min-width: 500px) {
+
+    .availableImagesList {
+        width: 400px;
+    }
+}
+
 @media all and (min-width: 600px) {
+
+    .availableImagesList {
+        width: 500px;
+        height: 450px;
+    }
 
     .editPageSidebar {
         position: fixed;
@@ -42,5 +100,88 @@
     .editPageInnerContent {
         float: right;
         width: 70%;
+    }
+
+    .remoteBannerImage {
+        width: 450px;
+        height: 83px;
+    }
+}
+
+
+@media all and (min-width: 700px) {
+
+    .availableImagesList {
+        width: 600px;
+    }
+}
+
+@media all and (min-width: 800px) {
+
+    .availableImagesList {
+        width: 700px;
+    }
+}
+
+@media all and (min-width: 900px) {
+
+    .availableImagesList {
+        width: 800px;
+    }
+}
+
+@media all and (min-width: 1000px) {
+
+    .availableImagesList {
+        width: 900px;
+    }
+}
+
+@media all and (min-width: 1100px) {
+
+    .availableImagesList {
+        width: 1000px;
+    }
+}
+
+@media all and (min-width: 1200px) {
+
+    .availableImagesList {
+        width: 1100px;
+    }
+}
+
+@media all and (min-width: 1300px) {
+
+    .availableImagesList {
+        width: 1200px;
+    }
+}
+
+@media all and (min-width: 1400px) {
+
+    .availableImagesList {
+        width: 1300px;
+    }
+}
+
+@media all and (min-width: 1500px) {
+
+    .availableImagesList {
+        width: 1400px;
+    }
+}
+
+@media all and (min-height: 800px) {
+
+    .availableImagesList {
+        height: 600px;
+    }
+}
+
+@media all and (min-height: 900px) {
+
+    .availableImagesList {
+        height: 700px;
     }
 }

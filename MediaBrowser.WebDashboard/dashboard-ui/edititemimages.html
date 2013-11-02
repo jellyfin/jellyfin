@@ -23,7 +23,8 @@
                 </div>
 
                 <div style="margin: -25px 0 1em;">
-                    <a href="#popupUpload" data-rel="popup" data-role="button" data-inline="true" data-icon="plus" data-mini="true" data-transition="pop">Upload Image</a>
+                    <a class="lnkBrowseImages" href="#popupDownload" data-rel="popup" data-position-to="window" data-role="button" data-inline="true" data-icon="plus" data-mini="true" data-transition="pop">Browse Online Images</a>
+                    <a href="#popupUpload" data-rel="popup" data-position-to="window" data-role="button" data-inline="true" data-icon="plus" data-mini="true" data-transition="pop">Upload Image</a>
                 </div>
 
                 <div id="imagesContainer" style="display: none;">
@@ -53,7 +54,7 @@
             </div>
         </div>
 
-        <div data-role="popup" id="popupUpload" class="ui-corner-all" data-theme="c">
+        <div data-role="popup" id="popupUpload" data-theme="c" data-corners="false">
             <form id="uploadItemImageForm" style="max-width: 100%; margin: 0 1.5em 1.5em;">
                 <h2>Add/Update Image</h2>
                 <div>
@@ -86,6 +87,52 @@
                     <a data-role="button" data-rel="back" data-icon="delete" data-theme="c" onclick="$('#uploadImage').val('').trigger('change');">Cancel</a>
                 </div>
             </form>
+        </div>
+
+        <div data-role="popup" id="popupDownload" class="popup" data-corners="false">
+
+            <a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>
+            <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
+                <h3 style="margin: .5em 0;">Browse Online Images</h3>
+            </div>
+
+            <div data-role="content" class="ui-content" style="padding: 5px 15px;">
+
+                <div style="text-align: center;">
+                    <div style="margin: 0; display: inline-block;">
+                        <label for="selectImageProvider">Provider:</label>
+                    </div>
+                    <div style="margin: 0; display: inline-block;">
+                        <select id="selectImageProvider" name="selectImageProvider" data-mini="true" data-inline="true">
+                            <option value="">All</option>
+                        </select>
+                    </div>
+                    <div style="margin: 0; display: inline-block;">
+                        <label for="selectBrowsableImageType">Image type:</label>
+                    </div>
+                    <div style="margin: 0; display: inline-block;">
+                        <select id="selectBrowsableImageType" name="selectBrowsableImageType" data-mini="true" data-inline="true">
+                            <option value="Primary">Primary</option>
+                            <option value="Art">Art</option>
+                            <option value="Backdrop">Backdrop</option>
+                            <option value="Banner">Banner</option>
+                            <option value="Box">Box</option>
+                            <option value="BoxRear">Box rear</option>
+                            <option value="Disc">Disc</option>
+                            <option value="Logo">Logo</option>
+                            <option value="Menu">Menu</option>
+                            <option value="Screenshot">Screenshot</option>
+                            <option value="Thumb">Thumb</option>
+                        </select>
+                    </div>
+                    <div class="availableImagesPaging" style="margin: 0; display: inline-block;"></div>
+                </div>
+
+                <div class="availableImagesList"></div>
+                <div style="text-align: center;">
+                    <a href="#" data-rel="back" data-role="button" data-mini="true" data-inline="true" data-icon="delete">Close</a>
+                </div>
+            </div>
         </div>
 
         <script type="text/javascript">
