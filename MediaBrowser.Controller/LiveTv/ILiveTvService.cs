@@ -24,5 +24,7 @@ namespace MediaBrowser.Controller.LiveTv
         Task<IEnumerable<ChannelInfo>> GetChannelsAsync(CancellationToken cancellationToken);
 
         Task<IEnumerable<RecordingInfo>> GetRecordingsAsync(CancellationToken cancellationToken);
+
+        Task<IEnumerable<EpgFullInfo>> GetEpgAsync(CancellationToken cancellationToken);
     }
 }

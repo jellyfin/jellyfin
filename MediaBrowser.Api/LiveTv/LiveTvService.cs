@@ -27,6 +27,13 @@ namespace MediaBrowser.Api.LiveTv
     {
         // Add filter by service if needed, and/or other filters
     }
+
+    [Route("/LiveTv/EPG", "GET")]
+    [Api(Description = "Gets available live tv epgs..")]
+    public class GetEpg : IReturn<List<EpgFullInfo>>
+    {
+        // Add filter by service if needed, and/or other filters
+    }
     
     public class LiveTvService : BaseApiService
     {
@@ -91,6 +98,24 @@ namespace MediaBrowser.Api.LiveTv
             var recordings = await Task.WhenAll(tasks).ConfigureAwait(false);
 
             return recordings.SelectMany(i => i);
+        }
+
+        public object Get(GetEpg request)
+        {
+            var result = GetEpgAsync(request).Result;
+
+            return ToOptimizedResult(result);
+        }
+
+        private async Task<IEnumerable<EpgFullInfo>> GetEpgAsync(GetEpg request)
+        {
+            var services = _liveTvManager.Services;
+
+            var tasks = services.Select(i => i.GetEpgAsync(CancellationToken.None));
+
+            var epg = await Task.WhenAll(tasks).ConfigureAwait(false);
+
+            return epg.SelectMany(i => i);
         }
     }
 }
