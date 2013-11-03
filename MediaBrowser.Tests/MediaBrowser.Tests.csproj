@@ -54,6 +54,7 @@
     <Compile Include="Resolvers\MovieResolverTests.cs" />
     <Compile Include="Resolvers\TvUtilTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Server.Implementations\Library\ResolverHelperTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj">
@@ -67,6 +68,10 @@
     <ProjectReference Include="..\MediaBrowser.Providers\MediaBrowser.Providers.csproj">
       <Project>{442B5058-DCAF-4263-BB6A-F21E31120A1B}</Project>
       <Name>MediaBrowser.Providers</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.Server.Implementations\MediaBrowser.Server.Implementations.csproj">
+      <Project>{2E781478-814D-4A48-9D80-BFF206441A65}</Project>
+      <Name>MediaBrowser.Server.Implementations</Name>
     </ProjectReference>
   </ItemGroup>
   <Choose>
