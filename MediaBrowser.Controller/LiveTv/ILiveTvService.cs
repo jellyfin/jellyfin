@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.LiveTv;
 
 namespace MediaBrowser.Controller.LiveTv
 {
@@ -21,5 +22,9 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{IEnumerable{ChannelInfo}}.</returns>
         Task<IEnumerable<ChannelInfo>> GetChannelsAsync(CancellationToken cancellationToken);
+
+        Task<IEnumerable<RecordingInfo>> GetRecordingsAsync(CancellationToken cancellationToken);
+
+        Task<IEnumerable<EpgFullInfo>> GetEpgAsync(CancellationToken cancellationToken);
     }
 }

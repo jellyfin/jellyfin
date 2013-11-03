@@ -128,14 +128,17 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// Connects to db.
         /// </summary>
         /// <param name="dbPath">The db path.</param>
+        /// <param name="logger">The logger.</param>
         /// <returns>Task{IDbConnection}.</returns>
         /// <exception cref="System.ArgumentNullException">dbPath</exception>
-        public static async Task<IDbConnection> ConnectToDb(string dbPath)
+        public static async Task<IDbConnection> ConnectToDb(string dbPath, ILogger logger)
         {
             if (string.IsNullOrEmpty(dbPath))
             {
                 throw new ArgumentNullException("dbPath");
             }
+
+            logger.Info("Opening {0}", dbPath);
 
 			#if __MonoCS__
 			var connectionstr = new SqliteConnectionStringBuilder
