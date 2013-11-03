@@ -221,7 +221,7 @@ namespace MediaBrowser.Providers.Movies
                     !imagesFileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(imagesFileInfo) > providerInfo.LastRefreshed;
             }
 
-            return true;
+            return base.NeedsRefreshBasedOnCompareDate(item, providerInfo);
         }
 
         /// <summary>

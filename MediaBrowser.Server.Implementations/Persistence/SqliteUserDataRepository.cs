@@ -73,7 +73,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         {
             var dbFile = Path.Combine(_appPaths.DataPath, "userdata_v2.db");
 
-            _connection = await SqliteExtensions.ConnectToDb(dbFile).ConfigureAwait(false);
+            _connection = await SqliteExtensions.ConnectToDb(dbFile, _logger).ConfigureAwait(false);
 
             string[] queries = {
 

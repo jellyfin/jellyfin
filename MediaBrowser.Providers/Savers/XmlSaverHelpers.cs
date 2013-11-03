@@ -562,8 +562,8 @@ namespace MediaBrowser.Providers.Savers
                     {
                         var timespan = TimeSpan.FromTicks(item.RunTimeTicks.Value);
 
-                        builder.Append("<Duration>" + Convert.ToInt32(timespan.TotalMinutes).ToString(UsCulture) + "</Duration>");
-                        builder.Append("<DurationSeconds>" + Convert.ToInt32(timespan.TotalSeconds).ToString(UsCulture) + "</DurationSeconds>");
+                        builder.Append("<Duration>" + Convert.ToInt64(timespan.TotalMinutes).ToString(UsCulture) + "</Duration>");
+                        builder.Append("<DurationSeconds>" + Convert.ToInt64(timespan.TotalSeconds).ToString(UsCulture) + "</DurationSeconds>");
                     }
 
                     if (video != null && video.Video3DFormat.HasValue)
