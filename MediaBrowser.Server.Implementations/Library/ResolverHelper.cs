@@ -71,7 +71,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <summary>
         /// The MB name regex
         /// </summary>
-        private static readonly Regex MBNameRegex = new Regex(@"(\[boxset\]|\[tmdbid=\d+\]|\[tvdbid=\d+\])", RegexOptions.Compiled);
+        private static readonly Regex MBNameRegex = new Regex(@"(\[.*?\])", RegexOptions.Compiled);
 
         /// <summary>
         /// Strip out attribute items and return just the name we will use for items
