@@ -261,7 +261,10 @@ namespace MediaBrowser.Model.Querying
         /// </summary>
         /// <value>The exclude location types.</value>
         public LocationType[] ExcludeLocationTypes { get; set; }
-        
+
+        public double? MinCommunityRating { get; set; }
+        public double? MinCriticRating { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemQuery" /> class.
         /// </summary>

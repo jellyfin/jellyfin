@@ -33,6 +33,9 @@ namespace MediaBrowser.Api.DefaultTheme
 
         [ApiMember(Name = "RomanceGenre", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string RomanceGenre { get; set; }
+
+        [ApiMember(Name = "TopCommunityRating", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public double TopCommunityRating { get; set; }
     }
 
     [Route("/MBT/DefaultTheme/Movies", "GET")]
@@ -260,7 +263,14 @@ namespace MediaBrowser.Api.DefaultTheme
 
             var seriesWithBackdrops = series.Where(i => i.BackdropImagePaths.Count > 0).ToList();
 
-            var view = new TvView();
+            var view = new TvView
+            {
+                SeriesCount = series.Count,
+
+                FavoriteSeriesCount = series.Count(i => _userDataManager.GetUserData(user.Id, i.GetUserDataKey()).IsFavorite),
+
+                TopCommunityRatedSeriesCount = series.Count(i => i.CommunityRating.HasValue && i.CommunityRating.Value >= request.TopCommunityRating)
+            };
 
             var fields = new List<ItemFields>();
 

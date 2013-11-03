@@ -196,6 +196,12 @@ namespace MediaBrowser.Api.UserLibrary
 
         [ApiMember(Name = "IsVirtualUnaired", Description = "Optional filter by items that are virtual unaired episodes or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool? IsVirtualUnaired { get; set; }
+
+        [ApiMember(Name = "MinCommunityRating", Description = "Optional filter by minimum community rating.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public double? MinCommunityRating { get; set; }
+
+        [ApiMember(Name = "MinCriticRating", Description = "Optional filter by minimum critic rating.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public double? MinCriticRating { get; set; }
     }
 
     /// <summary>
@@ -564,6 +570,20 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>IEnumerable{BaseItem}.</returns>
         private IEnumerable<BaseItem> ApplyAdditionalFilters(GetItems request, IEnumerable<BaseItem> items, User user)
         {
+            if (request.MinCommunityRating.HasValue)
+            {
+                var val = request.MinCommunityRating.Value;
+
+                items = items.Where(i => i.CommunityRating.HasValue && i.CommunityRating >= val);
+            }
+
+            if (request.MinCriticRating.HasValue)
+            {
+                var val = request.MinCriticRating.Value;
+
+                items = items.Where(i => i.CriticRating.HasValue && i.CriticRating >= val);
+            }
+
             // Artists
             if (!string.IsNullOrEmpty(request.Artists))
             {
