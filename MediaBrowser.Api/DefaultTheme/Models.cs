@@ -44,7 +44,22 @@ namespace MediaBrowser.Api.DefaultTheme
         public int SeriesCount { get; set; }
         public int FavoriteSeriesCount { get; set; }
         public int TopCommunityRatedSeriesCount { get; set; }
-        public int InProgressSeriesCount { get; set; }
+        public int ComedySeriesCount { get; set; }
+        public int RomanticSeriesCount { get; set; }
+
+        public List<ItemByNameInfo> FavoriteGenres { get; set; }
+        public List<ItemByNameInfo> FavoriteStudios { get; set; }
+        public List<string> SeriesIdsInProgress { get; set; }
+
+        public List<BaseItemDto> LatestEpisodes { get; set; }
+        public List<BaseItemDto> NextUpEpisodes { get; set; }
+        public List<BaseItemDto> ResumableEpisodes { get; set; }
+    }
+
+    public class ItemByNameInfo
+    {
+        public string Name { get; set; }
+        public int ItemCount { get; set; }
     }
 
     public class GamesView : BaseView

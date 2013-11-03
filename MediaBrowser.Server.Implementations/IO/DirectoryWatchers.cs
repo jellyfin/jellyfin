@@ -329,7 +329,7 @@ namespace MediaBrowser.Server.Implementations.IO
             }
             catch (IOException ex)
             {
-                Logger.ErrorException("IOException in watcher changed", ex);
+                Logger.ErrorException("IOException in watcher changed. Path: {0}", ex, e.FullPath);
             }
         }
 

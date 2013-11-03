@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
@@ -36,6 +37,15 @@ namespace MediaBrowser.Api.DefaultTheme
 
         [ApiMember(Name = "TopCommunityRating", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public double TopCommunityRating { get; set; }
+
+        [ApiMember(Name = "NextUpEpisodeLimit", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int NextUpEpisodeLimit { get; set; }
+
+        [ApiMember(Name = "ResumableEpisodeLimit", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int ResumableEpisodeLimit { get; set; }
+
+        [ApiMember(Name = "LatestEpisodeLimit", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int LatestEpisodeLimit { get; set; }
     }
 
     [Route("/MBT/DefaultTheme/Movies", "GET")]
@@ -70,8 +80,9 @@ namespace MediaBrowser.Api.DefaultTheme
         private readonly IUserDataManager _userDataManager;
 
         private readonly IImageProcessor _imageProcessor;
+        private readonly IItemRepository _itemRepo;
 
-        public DefaultThemeService(IUserManager userManager, IDtoService dtoService, ILogger logger, ILibraryManager libraryManager, IImageProcessor imageProcessor, IUserDataManager userDataManager)
+        public DefaultThemeService(IUserManager userManager, IDtoService dtoService, ILogger logger, ILibraryManager libraryManager, IImageProcessor imageProcessor, IUserDataManager userDataManager, IItemRepository itemRepo)
         {
             _userManager = userManager;
             _dtoService = dtoService;
@@ -79,6 +90,7 @@ namespace MediaBrowser.Api.DefaultTheme
             _libraryManager = libraryManager;
             _imageProcessor = imageProcessor;
             _userDataManager = userDataManager;
+            _itemRepo = itemRepo;
         }
 
         public object Get(GetFavoritesView request)
@@ -114,6 +126,8 @@ namespace MediaBrowser.Api.DefaultTheme
               .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
               .ToList();
 
+            fields.Add(ItemFields.PrimaryImageAspectRatio);
+            
             view.Albums = itemsWithImages
                 .OfType<MusicAlbum>()
                 .OrderBy(i => Guid.NewGuid())
@@ -255,6 +269,9 @@ namespace MediaBrowser.Api.DefaultTheme
 
         public object Get(GetTvView request)
         {
+            var romanceGenres = request.RomanceGenre.Split(',').ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
+            var comedyGenres = request.ComedyGenre.Split(',').ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
+
             var user = _userManager.GetUserById(request.UserId);
 
             var series = user.RootFolder.GetRecursiveChildren(user)
@@ -269,8 +286,15 @@ namespace MediaBrowser.Api.DefaultTheme
 
                 FavoriteSeriesCount = series.Count(i => _userDataManager.GetUserData(user.Id, i.GetUserDataKey()).IsFavorite),
 
-                TopCommunityRatedSeriesCount = series.Count(i => i.CommunityRating.HasValue && i.CommunityRating.Value >= request.TopCommunityRating)
+                TopCommunityRatedSeriesCount = series.Count(i => i.CommunityRating.HasValue && i.CommunityRating.Value >= request.TopCommunityRating),
+
+                ComedySeriesCount = series.Count(i => i.Genres.Any(comedyGenres.ContainsKey)),
+
+                RomanticSeriesCount = series.Count(i => i.Genres.Any(romanceGenres.ContainsKey))
             };
+
+            SetFavoriteGenres(view, series, user);
+            SetFavoriteStudios(view, series, user);
 
             var fields = new List<ItemFields>();
 
@@ -290,9 +314,6 @@ namespace MediaBrowser.Api.DefaultTheme
                .Where(i => i != null)
                .Take(1)
                .ToList();
-
-            var romanceGenres = request.RomanceGenre.Split(',').ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
-            var comedyGenres = request.ComedyGenre.Split(',').ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
 
             view.RomanceItems = seriesWithBackdrops
              .Where(i => i.Genres.Any(romanceGenres.ContainsKey))
@@ -347,7 +368,112 @@ namespace MediaBrowser.Api.DefaultTheme
               .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
               .ToList();
 
+            var nextUpEpisodes = new TvShowsService(_userManager, _userDataManager, _libraryManager, _itemRepo, _dtoService)
+                .GetNextUpEpisodes(new GetNextUpEpisodes { UserId = user.Id }, series)
+                .ToList();
+
+            fields.Add(ItemFields.PrimaryImageAspectRatio);
+
+            view.NextUpEpisodes = nextUpEpisodes
+                .Take(request.NextUpEpisodeLimit)
+                .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+                .ToList();
+
+            view.SeriesIdsInProgress = nextUpEpisodes.Select(i => i.Series.Id.ToString("N")).ToList();
+
+            var ownedEpisodes = series
+                .SelectMany(i => i.GetRecursiveChildren(user, j => j.LocationType != LocationType.Virtual))
+                .OfType<Episode>()
+                .ToList();
+
+            // Avoid implicitly captured closure
+            var currentUser = user;
+
+            view.LatestEpisodes = ownedEpisodes
+                .OrderByDescending(i => i.DateCreated)
+                .Where(i => !_userDataManager.GetUserData(currentUser.Id, i.GetUserDataKey()).Played)
+                .Take(request.LatestEpisodeLimit)
+                .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+                .ToList();
+
+            view.ResumableEpisodes = ownedEpisodes
+                .Where(i => _userDataManager.GetUserData(currentUser.Id, i.GetUserDataKey()).PlaybackPositionTicks > 0)
+                .OrderByDescending(i => _userDataManager.GetUserData(currentUser.Id, i.GetUserDataKey()).LastPlayedDate ?? DateTime.MinValue)
+                .Take(request.ResumableEpisodeLimit)
+                .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+                .ToList();
+
             return ToOptimizedResult(view);
+        }
+
+        private void SetFavoriteGenres(TvView view, IEnumerable<BaseItem> inputItems, User user)
+        {
+            var all = inputItems.SelectMany(i => i.Genres)
+                .Distinct(StringComparer.OrdinalIgnoreCase);
+
+            view.FavoriteGenres = all.Select(i =>
+            {
+                try
+                {
+                    var itemByName = _libraryManager.GetGenre(i);
+
+                    var counts = itemByName.GetItemByNameCounts(user);
+
+                    var count = counts == null ? 0 : counts.SeriesCount;
+
+                    if (count > 0 && _userDataManager.GetUserData(user.Id, itemByName.GetUserDataKey()).IsFavorite)
+                    {
+                        return new ItemByNameInfo
+                        {
+                            Name = itemByName.Name,
+                            ItemCount = count
+                        };
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error getting genre {0}", ex, i);
+
+                }
+
+                return null;
+
+            }).Where(i => i != null).ToList();
+        }
+
+        private void SetFavoriteStudios(TvView view, IEnumerable<BaseItem> inputItems, User user)
+        {
+            var all = inputItems.SelectMany(i => i.Studios)
+                .Distinct(StringComparer.OrdinalIgnoreCase);
+
+            view.FavoriteStudios = all.Select(i =>
+            {
+                try
+                {
+                    var itemByName = _libraryManager.GetStudio(i);
+
+                    var counts = itemByName.GetItemByNameCounts(user);
+
+                    var count = counts == null ? 0 : counts.SeriesCount;
+
+                    if (count > 0 && _userDataManager.GetUserData(user.Id, itemByName.GetUserDataKey()).IsFavorite)
+                    {
+                        return new ItemByNameInfo
+                        {
+                            Name = itemByName.Name,
+                            ItemCount = count
+                        };
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error getting studio {0}", ex, i);
+
+                }
+
+                return null;
+
+            }).Where(i => i != null).ToList();
         }
 
         public object Get(GetMovieView request)
