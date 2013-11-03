@@ -40,6 +40,11 @@ namespace MediaBrowser.Api.DefaultTheme
 
         public List<ItemStub> RomanceItems { get; set; }
         public List<ItemStub> ComedyItems { get; set; }
+
+        public int SeriesCount { get; set; }
+        public int FavoriteSeriesCount { get; set; }
+        public int TopCommunityRatedSeriesCount { get; set; }
+        public int InProgressSeriesCount { get; set; }
     }
 
     public class GamesView : BaseView
