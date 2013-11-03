@@ -536,9 +536,12 @@ namespace MediaBrowser.Providers.Movies
             {
                 dataFilePath = GetDataFilePath(item);
 
-                var mainResult = JsonSerializer.DeserializeFromFile<CompleteMovieData>(dataFilePath);
+                if (!string.IsNullOrEmpty(dataFilePath))
+                {
+                    var mainResult = JsonSerializer.DeserializeFromFile<CompleteMovieData>(dataFilePath);
 
-                ProcessMainInfo(item, mainResult);
+                    ProcessMainInfo(item, mainResult);
+                }
             }
         }
 

@@ -227,12 +227,6 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value>The width of the min series backdrop.</value>
         public int MinSeriesBackdropWidth { get; set; }
-        
-        /// <summary>
-        /// Gets or sets the width of the min movie poster.
-        /// </summary>
-        /// <value>The width of the min movie poster.</value>
-        public int MinMoviePosterWidth { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [enable people prefix sub folders].
@@ -291,7 +285,6 @@ namespace MediaBrowser.Model.Configuration
 
             MinMovieBackdropWidth = 1920;
             MinSeriesBackdropWidth = 1920;
-            MinMoviePosterWidth = 1000;
         }
     }
 

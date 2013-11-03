@@ -191,7 +191,7 @@ namespace MediaBrowser.Providers.Movies
             cancellationToken.ThrowIfCancellationRequested();
 
             var eligiblePosters = images
-                .Where(i => i.Type == ImageType.Primary && i.Width.HasValue && i.Width.Value >= ConfigurationManager.Configuration.MinMoviePosterWidth)
+                .Where(i => i.Type == ImageType.Primary)
                 .ToList();
 
             //        poster
