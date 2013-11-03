@@ -383,15 +383,15 @@ namespace MediaBrowser.Server.Implementations.Providers
 
         private string GetBackdropSaveFilename(List<string> images, string zeroIndexFilename, string numberedIndexPrefix, int index)
         {
-            var filesnames = images.Select(Path.GetFileNameWithoutExtension).ToList();
-
             if (index == 0)
             {
                 return zeroIndexFilename;
             }
 
+            var filenames = images.Select(Path.GetFileNameWithoutExtension).ToList();
+
             var current = index;
-            while (filesnames.Contains(numberedIndexPrefix + current.ToString(UsCulture), StringComparer.OrdinalIgnoreCase))
+            while (filenames.Contains(numberedIndexPrefix + current.ToString(UsCulture), StringComparer.OrdinalIgnoreCase))
             {
                 current++;
             }
@@ -449,9 +449,11 @@ namespace MediaBrowser.Server.Implementations.Providers
 
                 var outputIndex = imageIndex.Value;
 
+                var extraFanartFilename = GetBackdropSaveFilename(item.BackdropImagePaths, "fanart", "fanart", outputIndex);
+
                 return new[]
                     {
-                        Path.Combine(item.MetaLocation, "extrafanart", "fanart" + outputIndex.ToString(UsCulture) + extension),
+                        Path.Combine(item.MetaLocation, "extrafanart", extraFanartFilename + extension),
                         Path.Combine(item.MetaLocation, "extrathumbs", "thumb" + outputIndex.ToString(UsCulture) + extension)
                     };
             }
