@@ -71,7 +71,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <summary>
         /// The MB name regex
         /// </summary>
-        private static readonly Regex MBNameRegex = new Regex("(\\[.*\\])", RegexOptions.Compiled);
+        private static readonly Regex MBNameRegex = new Regex(@"(\[boxset\]|\[tmdbid=\d+\]|\[tvdbid=\d+\])", RegexOptions.Compiled);
 
         /// <summary>
         /// Strip out attribute items and return just the name we will use for items
@@ -85,9 +85,14 @@ namespace MediaBrowser.Server.Implementations.Library
             var fn = isDirectory ? Path.GetFileName(path) : Path.GetFileNameWithoutExtension(path);
 
             //now - strip out anything inside brackets
-            fn = MBNameRegex.Replace(fn, string.Empty);
+            fn = StripBrackets(fn);
 
             return fn;
+        }
+
+        public static string StripBrackets(string inputString) {
+            var output = MBNameRegex.Replace(inputString, string.Empty).Trim();
+            return Regex.Replace(output, @"\s+", " ");
         }
 
     }
