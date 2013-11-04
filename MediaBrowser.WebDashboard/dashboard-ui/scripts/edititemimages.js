@@ -131,6 +131,10 @@
         });
     }
 
+    function getDisplayUrl(url) {
+        return ApiClient.getUrl("Images/Remote", { url: url });
+    }
+
     function getRemoteImageHtml(image, imageType) {
 
         var html = '';
@@ -152,9 +156,9 @@
             cssClass += currentItem.Type == "Episode" ? " remoteBackdropImage" : " remotePosterImage";
         }
 
-        var displayUrl = image.ThumbnailUrl || image.Url;
-        
-        html += '<a target="_blank" href="' + image.Url + '" class="' + cssClass + '" style="background-image:url(\'' + displayUrl + '\');">';
+        var displayUrl = getDisplayUrl(image.ThumbnailUrl || image.Url);
+
+        html += '<a target="_blank" href="' + getDisplayUrl(image.Url) + '" class="' + cssClass + '" style="background-image:url(\'' + displayUrl + '\');">';
         html += '</a>';
 
         html += '<div class="remoteImageDetails">';
@@ -537,6 +541,9 @@
                 $.mobile.urlHistory.ignoreNextHashChange = true;
                 window.location.hash = 'editItemImagesPage?id=' + data.id;
 
+                browsableImageStartIndex = 0;
+                browsableImageType = 'Primary';
+
                 reload(page);
             }
         });
@@ -566,6 +573,9 @@
         var page = this;
 
         reload(page);
+
+        browsableImageStartIndex = 0;
+        browsableImageType = 'Primary';
 
         $('#uploadImage', page).on("change", function () {
             setFiles(page, this.files);
