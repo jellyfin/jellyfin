@@ -41,12 +41,6 @@ namespace MediaBrowser.Api.DefaultTheme
         public List<ItemStub> RomanceItems { get; set; }
         public List<ItemStub> ComedyItems { get; set; }
 
-        public int SeriesCount { get; set; }
-        public int FavoriteSeriesCount { get; set; }
-        public int TopCommunityRatedSeriesCount { get; set; }
-        public int ComedySeriesCount { get; set; }
-        public int RomanticSeriesCount { get; set; }
-
         public List<ItemByNameInfo> FavoriteGenres { get; set; }
         public List<ItemByNameInfo> FavoriteStudios { get; set; }
         public List<string> SeriesIdsInProgress { get; set; }
