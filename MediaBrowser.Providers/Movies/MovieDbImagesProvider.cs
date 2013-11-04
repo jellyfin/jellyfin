@@ -215,7 +215,7 @@ namespace MediaBrowser.Providers.Movies
             cancellationToken.ThrowIfCancellationRequested();
 
             var eligibleBackdrops = images
-                .Where(i => i.Type == ImageType.Backdrop && i.Width.HasValue && i.Width.Value >= ConfigurationManager.Configuration.MinMovieBackdropWidth)
+                .Where(i => i.Type == ImageType.Backdrop && i.Width.HasValue && i.Width.Value >= ConfigurationManager.Configuration.MinMovieBackdropDownloadWidth)
                 .ToList();
 
             var backdropLimit = ConfigurationManager.Configuration.MaxBackdrops;

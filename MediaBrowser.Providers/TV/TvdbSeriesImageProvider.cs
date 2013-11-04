@@ -238,7 +238,7 @@ namespace MediaBrowser.Providers.TV
 
                         if (int.TryParse(parts[0], NumberStyles.Any, UsCulture, out width))
                         {
-                            return width >= ConfigurationManager.Configuration.MinSeriesBackdropWidth;
+                            return width >= ConfigurationManager.Configuration.MinSeriesBackdropDownloadWidth;
                         }
 
                         return true;

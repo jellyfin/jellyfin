@@ -220,13 +220,13 @@ namespace MediaBrowser.Model.Configuration
         /// Gets or sets the width of the min movie backdrop.
         /// </summary>
         /// <value>The width of the min movie backdrop.</value>
-        public int MinMovieBackdropWidth { get; set; }
+        public int MinMovieBackdropDownloadWidth { get; set; }
 
         /// <summary>
         /// Gets or sets the width of the min series backdrop.
         /// </summary>
         /// <value>The width of the min series backdrop.</value>
-        public int MinSeriesBackdropWidth { get; set; }
+        public int MinSeriesBackdropDownloadWidth { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [enable people prefix sub folders].
@@ -283,8 +283,8 @@ namespace MediaBrowser.Model.Configuration
 
             SeasonZeroDisplayName = "Specials";
 
-            MinMovieBackdropWidth = 1920;
-            MinSeriesBackdropWidth = 1920;
+            MinMovieBackdropDownloadWidth = 1280;
+            MinSeriesBackdropDownloadWidth = 1280;
         }
     }
 
