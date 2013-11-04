@@ -48,10 +48,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
         /// The _logger
         /// </summary>
         private readonly ILogger _logger;
-        /// <summary>
-        /// The _app paths
-        /// </summary>
-        private readonly IServerApplicationPaths _appPaths;
+
         private readonly IFileSystem _fileSystem;
 
         private readonly string _imageSizeCachePath;
@@ -62,13 +59,12 @@ namespace MediaBrowser.Server.Implementations.Drawing
         public ImageProcessor(ILogger logger, IServerApplicationPaths appPaths, IFileSystem fileSystem)
         {
             _logger = logger;
-            _appPaths = appPaths;
             _fileSystem = fileSystem;
 
-            _imageSizeCachePath = Path.Combine(_appPaths.ImageCachePath, "image-sizes");
-            _croppedWhitespaceImageCachePath = Path.Combine(_appPaths.ImageCachePath, "cropped-images");
-            _enhancedImageCachePath = Path.Combine(_appPaths.ImageCachePath, "enhanced-images");
-            _resizedImageCachePath = Path.Combine(_appPaths.ImageCachePath, "resized-images");
+            _imageSizeCachePath = Path.Combine(appPaths.ImageCachePath, "image-sizes");
+            _croppedWhitespaceImageCachePath = Path.Combine(appPaths.ImageCachePath, "cropped-images");
+            _enhancedImageCachePath = Path.Combine(appPaths.ImageCachePath, "enhanced-images");
+            _resizedImageCachePath = Path.Combine(appPaths.ImageCachePath, "resized-images");
         }
 
         public void AddParts(IEnumerable<IImageEnhancer> enhancers)

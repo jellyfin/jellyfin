@@ -113,6 +113,7 @@
     <Compile Include="TV\ManualFanartSeasonProvider.cs" />
     <Compile Include="TV\ManualFanartSeriesProvider.cs" />
     <Compile Include="TV\ManualTvdbEpisodeImageProvider.cs" />
+    <Compile Include="TV\ManualTvdbSeasonImageProvider.cs" />
     <Compile Include="TV\RemoteEpisodeProvider.cs" />
     <Compile Include="TV\RemoteSeasonProvider.cs" />
     <Compile Include="TV\RemoteSeriesProvider.cs" />

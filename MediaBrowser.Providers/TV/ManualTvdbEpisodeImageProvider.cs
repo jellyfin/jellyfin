@@ -36,9 +36,11 @@ namespace MediaBrowser.Providers.TV
             return item is Episode;
         }
 
-        public Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, ImageType imageType, CancellationToken cancellationToken)
+        public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, ImageType imageType, CancellationToken cancellationToken)
         {
-            return GetAllImages(item, cancellationToken);
+            var images = await GetAllImages(item, cancellationToken).ConfigureAwait(false);
+
+            return images.Where(i => i.Type == imageType);
         }
 
         public Task<IEnumerable<RemoteImageInfo>> GetAllImages(BaseItem item, CancellationToken cancellationToken)

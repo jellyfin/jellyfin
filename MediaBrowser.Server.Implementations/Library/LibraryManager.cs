@@ -60,25 +60,25 @@ namespace MediaBrowser.Server.Implementations.Library
         /// Gets the list of entity resolution ignore rules
         /// </summary>
         /// <value>The entity resolution ignore rules.</value>
-        private IEnumerable<IResolverIgnoreRule> EntityResolutionIgnoreRules { get; set; }
+        private IResolverIgnoreRule[] EntityResolutionIgnoreRules { get; set; }
 
         /// <summary>
         /// Gets the list of BasePluginFolders added by plugins
         /// </summary>
         /// <value>The plugin folders.</value>
-        private IEnumerable<IVirtualFolderCreator> PluginFolderCreators { get; set; }
+        private IVirtualFolderCreator[] PluginFolderCreators { get; set; }
 
         /// <summary>
         /// Gets the list of currently registered entity resolvers
         /// </summary>
         /// <value>The entity resolvers enumerable.</value>
-        private IEnumerable<IItemResolver> EntityResolvers { get; set; }
+        private IItemResolver[] EntityResolvers { get; set; }
 
         /// <summary>
         /// Gets or sets the comparers.
         /// </summary>
         /// <value>The comparers.</value>
-        private IEnumerable<IBaseItemComparer> Comparers { get; set; }
+        private IBaseItemComparer[] Comparers { get; set; }
 
         /// <summary>
         /// Gets the active item repository
@@ -218,11 +218,11 @@ namespace MediaBrowser.Server.Implementations.Library
             IEnumerable<IPeoplePrescanTask> peoplePrescanTasks,
             IEnumerable<IMetadataSaver> savers)
         {
-            EntityResolutionIgnoreRules = rules;
-            PluginFolderCreators = pluginFolders;
+            EntityResolutionIgnoreRules = rules.ToArray();
+            PluginFolderCreators = pluginFolders.ToArray();
             EntityResolvers = resolvers.OrderBy(i => i.Priority).ToArray();
             IntroProviders = introProviders;
-            Comparers = itemComparers;
+            Comparers = itemComparers.ToArray();
             PrescanTasks = prescanTasks;
             PostscanTasks = postscanTasks;
             PeoplePrescanTasks = peoplePrescanTasks;

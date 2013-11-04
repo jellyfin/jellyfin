@@ -21,6 +21,11 @@ namespace MediaBrowser.Model.Providers
         public string Url { get; set; }
 
         /// <summary>
+        /// Gets a url used for previewing a smaller version
+        /// </summary>
+        public string ThumbnailUrl { get; set; }
+        
+        /// <summary>
         /// Gets or sets the height.
         /// </summary>
         /// <value>The height.</value>
