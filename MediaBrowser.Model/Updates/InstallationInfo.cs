@@ -20,6 +20,12 @@ namespace MediaBrowser.Model.Updates
         public string Name { get; set; }
 
         /// <summary>
+        /// Gets or sets the assembly guid.
+        /// </summary>
+        /// <value>The guid of the assembly.</value>
+        public string AssemblyGuid { get; set; }
+
+        /// <summary>
         /// Gets or sets the version.
         /// </summary>
         /// <value>The version.</value>

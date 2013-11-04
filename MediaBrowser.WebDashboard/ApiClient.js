@@ -730,7 +730,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         /**
          * Installs or updates a new plugin
          */
-        self.installPlugin = function (name, updateClass, version) {
+        self.installPlugin = function (name, guid, updateClass, version) {
 
             if (!name) {
                 throw new Error("null name");
@@ -741,7 +741,8 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             }
 
             var options = {
-                updateClass: updateClass
+                updateClass: updateClass,
+                AssemblyGuid: guid
             };
 
             if (version) {
@@ -785,13 +786,17 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         /**
          * Gets information about an installable package
          */
-        self.getPackageInfo = function (name) {
+        self.getPackageInfo = function (name, guid) {
 
             if (!name) {
                 throw new Error("null name");
             }
 
-            var url = self.getUrl("Packages/" + name);
+            var options = {
+                AssemblyGuid: guid
+            };
+
+            var url = self.getUrl("Packages/" + name, options);
 
             return self.ajax({
                 type: "GET",

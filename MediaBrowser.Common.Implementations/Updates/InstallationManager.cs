@@ -255,14 +255,16 @@ namespace MediaBrowser.Common.Implementations.Updates
         /// Gets the package.
         /// </summary>
         /// <param name="name">The name.</param>
+        /// <param name="guid">The assembly guid</param>
         /// <param name="classification">The classification.</param>
         /// <param name="version">The version.</param>
         /// <returns>Task{PackageVersionInfo}.</returns>
-        public async Task<PackageVersionInfo> GetPackage(string name, PackageVersionClass classification, Version version)
+        public async Task<PackageVersionInfo> GetPackage(string name, string guid, PackageVersionClass classification, Version version)
         {
             var packages = await GetAvailablePackages(CancellationToken.None).ConfigureAwait(false);
 
-            var package = packages.FirstOrDefault(p => p.name.Equals(name, StringComparison.OrdinalIgnoreCase));
+            var package = packages.FirstOrDefault(p => string.Equals(p.guid, guid ?? "none", StringComparison.OrdinalIgnoreCase)) 
+                            ?? packages.FirstOrDefault(p => p.name.Equals(name, StringComparison.OrdinalIgnoreCase));
 
             if (package == null)
             {
@@ -276,14 +278,15 @@ namespace MediaBrowser.Common.Implementations.Updates
         /// Gets the latest compatible version.
         /// </summary>
         /// <param name="name">The name.</param>
+        /// <param name="guid">The assembly guid if this is a plug-in</param>
         /// <param name="currentServerVersion">The current server version.</param>
         /// <param name="classification">The classification.</param>
         /// <returns>Task{PackageVersionInfo}.</returns>
-        public async Task<PackageVersionInfo> GetLatestCompatibleVersion(string name, Version currentServerVersion, PackageVersionClass classification = PackageVersionClass.Release)
+        public async Task<PackageVersionInfo> GetLatestCompatibleVersion(string name, string guid, Version currentServerVersion, PackageVersionClass classification = PackageVersionClass.Release)
         {
             var packages = await GetAvailablePackages(CancellationToken.None).ConfigureAwait(false);
 
-            return GetLatestCompatibleVersion(packages, name, currentServerVersion, classification);
+            return GetLatestCompatibleVersion(packages, name, guid, currentServerVersion, classification);
         }
 
         /// <summary>
@@ -294,9 +297,10 @@ namespace MediaBrowser.Common.Implementations.Updates
         /// <param name="currentServerVersion">The current server version.</param>
         /// <param name="classification">The classification.</param>
         /// <returns>PackageVersionInfo.</returns>
-        public PackageVersionInfo GetLatestCompatibleVersion(IEnumerable<PackageInfo> availablePackages, string name, Version currentServerVersion, PackageVersionClass classification = PackageVersionClass.Release)
+        public PackageVersionInfo GetLatestCompatibleVersion(IEnumerable<PackageInfo> availablePackages, string name, string guid, Version currentServerVersion, PackageVersionClass classification = PackageVersionClass.Release)
         {
-            var package = availablePackages.FirstOrDefault(p => p.name.Equals(name, StringComparison.OrdinalIgnoreCase));
+            var package = availablePackages.FirstOrDefault(p => string.Equals(p.guid, guid ?? "none", StringComparison.OrdinalIgnoreCase)) 
+                            ?? availablePackages.FirstOrDefault(p => p.name.Equals(name, StringComparison.OrdinalIgnoreCase));
 
             if (package == null)
             {
@@ -331,14 +335,14 @@ namespace MediaBrowser.Common.Implementations.Updates
             // Figure out what needs to be installed
             var packages = plugins.Select(p =>
             {
-                var latestPluginInfo = GetLatestCompatibleVersion(catalog, p.Name, applicationVersion, p.Configuration.UpdateClass);
+                var latestPluginInfo = GetLatestCompatibleVersion(catalog, p.Name, p.Id.ToString(), applicationVersion, p.Configuration.UpdateClass);
 
                 return latestPluginInfo != null && latestPluginInfo.version != null && latestPluginInfo.version > p.Version ? latestPluginInfo : null;
 
             }).Where(i => i != null).ToList();
 
             return packages
-                .Where(p => !string.IsNullOrWhiteSpace(p.sourceUrl) && !CompletedInstallations.Any(i => string.Equals(i.Name, p.name, StringComparison.OrdinalIgnoreCase)));
+                .Where(p => !string.IsNullOrWhiteSpace(p.sourceUrl) && !CompletedInstallations.Any(i => string.Equals(i.AssemblyGuid, p.guid, StringComparison.OrdinalIgnoreCase)));
         }
 
         /// <summary>
@@ -365,6 +369,7 @@ namespace MediaBrowser.Common.Implementations.Updates
             {
                 Id = Guid.NewGuid(),
                 Name = package.name,
+                AssemblyGuid = package.guid,
                 UpdateClass = package.classification,
                 Version = package.versionStr
             };
@@ -471,7 +476,8 @@ namespace MediaBrowser.Common.Implementations.Updates
             if (!string.Equals(extension, ".zip", StringComparison.OrdinalIgnoreCase) && !string.Equals(extension, ".rar", StringComparison.OrdinalIgnoreCase) && !string.Equals(extension, ".7z", StringComparison.OrdinalIgnoreCase))
             {
                 // Set last update time if we were installed before
-                var plugin = _applicationHost.Plugins.FirstOrDefault(p => p.Name.Equals(package.name, StringComparison.OrdinalIgnoreCase));
+                var plugin = _applicationHost.Plugins.FirstOrDefault(p => string.Equals(p.Id.ToString(), package.guid, StringComparison.OrdinalIgnoreCase))
+                            ?? _applicationHost.Plugins.FirstOrDefault(p => p.Name.Equals(package.name, StringComparison.OrdinalIgnoreCase));
 
                 if (plugin != null)
                 {
