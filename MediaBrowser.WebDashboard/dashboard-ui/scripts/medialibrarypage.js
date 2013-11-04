@@ -272,7 +272,7 @@
             { name: "Photos*", value: "photos" },
             { name: "Trailers", value: "trailers" },
             { name: "Adult videos", value: "adultvideos" },
-            { name: "General or mixed content", value: "mixed", isSelectable: false }
+            { name: "Mixed content", value: "mixed" }
         ];
 
     },

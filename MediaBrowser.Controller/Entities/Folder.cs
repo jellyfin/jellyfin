@@ -718,7 +718,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 var newChildren = validChildren.Select(c => c.Item1).ToList();
 
-                //that's all the new and changed ones - now see if there are any that are missing
+                // That's all the new and changed ones - now see if there are any that are missing
                 var itemsRemoved = currentChildren.Values.Except(newChildren).ToList();
 
                 var actualRemovals = new List<BaseItem>();
@@ -936,13 +936,14 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>IEnumerable{BaseItem}.</returns>
         protected virtual IEnumerable<BaseItem> GetNonCachedChildren()
         {
+            var resolveArgs = ResolveArgs;
 
-            if (ResolveArgs == null || ResolveArgs.FileSystemDictionary == null)
+            if (resolveArgs == null || resolveArgs.FileSystemDictionary == null)
             {
-                Logger.Error("Null for {0}", Path);
+                Logger.Error("ResolveArgs null for {0}", Path);
             }
 
-            return LibraryManager.ResolvePaths<BaseItem>(ResolveArgs.FileSystemChildren, this);
+            return LibraryManager.ResolvePaths<BaseItem>(resolveArgs.FileSystemChildren, this);
         }
 
         /// <summary>

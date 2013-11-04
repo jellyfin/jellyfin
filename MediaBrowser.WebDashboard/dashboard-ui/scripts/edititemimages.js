@@ -152,22 +152,32 @@
             cssClass += currentItem.Type == "Episode" ? " remoteBackdropImage" : " remotePosterImage";
         }
 
-        html += '<a target="_blank" href="' + image.Url + '" class="' + cssClass + '" style="background-image:url(\'' + image.Url + '\');">';
+        var displayUrl = image.ThumbnailUrl || image.Url;
+        html += '<a target="_blank" href="' + image.Url + '" class="' + cssClass + '" style="background-image:url(\'' + displayUrl + '\');">';
         html += '</a>';
 
         html += '<div class="remoteImageDetails">';
         html += image.ProviderName;
         html += '</div>';
 
-        if (image.Width || image.Height) {
+        if (image.Width || image.Height || image.Language) {
 
             html += '<div class="remoteImageDetails">';
-            html += image.Width + ' x ' + image.Height;
 
-            if (image.Language) {
+            if (image.Width || image.Height) {
+                html += image.Width + ' x ' + image.Height;
 
-                html += ' • ' + image.Language;
+                if (image.Language) {
+
+                    html += ' • ' + image.Language;
+                }
+            } else {
+                if (image.Language) {
+
+                    html += image.Language;
+                }
             }
+
             html += '</div>';
         }
 
