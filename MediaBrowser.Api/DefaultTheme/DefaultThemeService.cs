@@ -280,18 +280,7 @@ namespace MediaBrowser.Api.DefaultTheme
 
             var seriesWithBackdrops = series.Where(i => i.BackdropImagePaths.Count > 0).ToList();
 
-            var view = new TvView
-            {
-                SeriesCount = series.Count,
-
-                FavoriteSeriesCount = series.Count(i => _userDataManager.GetUserData(user.Id, i.GetUserDataKey()).IsFavorite),
-
-                TopCommunityRatedSeriesCount = series.Count(i => i.CommunityRating.HasValue && i.CommunityRating.Value >= request.TopCommunityRating),
-
-                ComedySeriesCount = series.Count(i => i.Genres.Any(comedyGenres.ContainsKey)),
-
-                RomanticSeriesCount = series.Count(i => i.Genres.Any(romanceGenres.ContainsKey))
-            };
+            var view = new TvView();
 
             SetFavoriteGenres(view, series, user);
             SetFavoriteStudios(view, series, user);
