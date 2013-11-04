@@ -495,8 +495,7 @@ namespace MediaBrowser.Api
                 {
                     try
                     {
-                        await
-                            parent.ValidateChildren(new Progress<double>(), CancellationToken.None)
+                        await parent.ValidateChildren(new Progress<double>(), CancellationToken.None)
                                   .ConfigureAwait(false);
                     }
                     catch (Exception ex)

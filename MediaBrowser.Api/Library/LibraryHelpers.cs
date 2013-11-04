@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.IO;
 using System;
 using System.IO;
 using System.Linq;
@@ -21,57 +20,6 @@ namespace MediaBrowser.Api.Library
         /// The shortcut file search
         /// </summary>
         private const string ShortcutFileSearch = "*" + ShortcutFileExtension;
-
-        /// <summary>
-        /// Adds the virtual folder.
-        /// </summary>
-        /// <param name="fileSystem">The file system.</param>
-        /// <param name="name">The name.</param>
-        /// <param name="collectionType">Type of the collection.</param>
-        /// <param name="user">The user.</param>
-        /// <param name="appPaths">The app paths.</param>
-        /// <exception cref="System.ArgumentException">There is already a media collection with the name  + name + .</exception>
-        public static void AddVirtualFolder(IFileSystem fileSystem, string name, string collectionType, User user, IServerApplicationPaths appPaths)
-        {
-            name = fileSystem.GetValidFilename(name);
-
-            var rootFolderPath = user != null ? user.RootFolderPath : appPaths.DefaultUserViewsPath;
-            var virtualFolderPath = Path.Combine(rootFolderPath, name);
-
-            if (Directory.Exists(virtualFolderPath))
-            {
-                throw new ArgumentException("There is already a media collection with the name " + name + ".");
-            }
-
-            Directory.CreateDirectory(virtualFolderPath);
-
-            if (!string.IsNullOrEmpty(collectionType))
-            {
-                var path = Path.Combine(virtualFolderPath, collectionType + ".collection");
-
-                File.Create(path);
-            }
-        }
-
-        /// <summary>
-        /// Removes the virtual folder.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="user">The user.</param>
-        /// <param name="appPaths">The app paths.</param>
-        /// <exception cref="System.IO.DirectoryNotFoundException">The media folder does not exist</exception>
-        public static void RemoveVirtualFolder(string name, User user, IServerApplicationPaths appPaths)
-        {
-            var rootFolderPath = user != null ? user.RootFolderPath : appPaths.DefaultUserViewsPath;
-            var path = Path.Combine(rootFolderPath, name);
-
-            if (!Directory.Exists(path))
-            {
-                throw new DirectoryNotFoundException("The media folder does not exist");
-            }
-
-            Directory.Delete(path, true);
-        }
 
         /// <summary>
         /// Renames the virtual folder.

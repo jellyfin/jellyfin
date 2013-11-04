@@ -1347,12 +1347,14 @@ namespace MediaBrowser.Controller.Entities
 
             try
             {
-                if (LocationType == LocationType.Remote && string.Equals(Path, path, StringComparison.OrdinalIgnoreCase))
+                var locationType = LocationType;
+
+                if (locationType == LocationType.Remote && string.Equals(Path, path, StringComparison.OrdinalIgnoreCase))
                 {
                     return this;
                 }
-                
-                if (LocationType != LocationType.Virtual && ResolveArgs.PhysicalLocations.Contains(path, StringComparer.OrdinalIgnoreCase))
+
+                if (locationType != LocationType.Virtual && ResolveArgs.PhysicalLocations.Contains(path, StringComparer.OrdinalIgnoreCase))
                 {
                     return this;
                 }
