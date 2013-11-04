@@ -358,39 +358,36 @@ namespace MediaBrowser.Server.Implementations.IO
 
             var tempIgnorePaths = _tempIgnoredPaths.Keys.ToList();
 
-            if (e.ChangeType == WatcherChangeTypes.Changed)
+            // If the parent of an ignored path has a change event, ignore that too
+            if (tempIgnorePaths.Any(i =>
             {
-                // If the parent of an ignored path has a change event, ignore that too
-                if (tempIgnorePaths.Any(i =>
+                if (string.Equals(i, e.FullPath, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (string.Equals(i, e.FullPath, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return true;
-                    }
+                    return true;
+                }
 
-                    // Go up a level
-                    var parent = Path.GetDirectoryName(i);
+                // Go up a level
+                var parent = Path.GetDirectoryName(i);
+                if (string.Equals(parent, e.FullPath, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+
+                // Go up another level
+                if (!string.IsNullOrEmpty(parent))
+                {
+                    parent = Path.GetDirectoryName(i);
                     if (string.Equals(parent, e.FullPath, StringComparison.OrdinalIgnoreCase))
                     {
                         return true;
                     }
-
-                    // Go up another level
-                    if (!string.IsNullOrEmpty(parent))
-                    {
-                        parent = Path.GetDirectoryName(i);
-                        if (string.Equals(parent, e.FullPath, StringComparison.OrdinalIgnoreCase))
-                        {
-                            return true;
-                        }
-                    }
-
-                    return false;
-
-                }))
-                {
-                    return;
                 }
+
+                return false;
+
+            }))
+            {
+                return;
             }
 
             if (tempIgnorePaths.Contains(e.FullPath, StringComparer.OrdinalIgnoreCase))
