@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -7,6 +6,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -28,7 +28,7 @@ namespace MediaBrowser.Providers.TV
 
         public string Name
         {
-            get { return "TvDb"; }
+            get { return "TheTVDB"; }
         }
 
         public bool Supports(BaseItem item)
@@ -56,7 +56,8 @@ namespace MediaBrowser.Providers.TV
 
                 var files = TvdbEpisodeProvider.Current.GetEpisodeXmlFiles(episode, seriesDataPath);
 
-                var result = files.Select(i => GetImageInfo(i, cancellationToken)).Where(i => i != null);
+                var result = files.Select(i => GetImageInfo(i, cancellationToken))
+                    .Where(i => i != null);
 
                 return Task.FromResult(result);
             }

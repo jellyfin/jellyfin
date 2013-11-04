@@ -97,6 +97,7 @@ namespace MediaBrowser.Providers.TV
                     return 0;
                 })
                 .ThenByDescending(i => i.CommunityRating ?? 0)
+                .ThenByDescending(i => i.VoteCount ?? 0)
                 .ToList();
 
             return Task.FromResult<IEnumerable<RemoteImageInfo>>(list);

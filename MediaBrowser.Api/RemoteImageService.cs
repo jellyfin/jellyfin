@@ -1,4 +1,11 @@
-﻿using MediaBrowser.Controller.Dto;
+﻿using System;
+using System.IO;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Controller;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
@@ -62,16 +69,31 @@ namespace MediaBrowser.Api
         public string ImageUrl { get; set; }
     }
 
+    [Route("/Images/Remote", "GET")]
+    [Api(Description = "Gets a remote image")]
+    public class GetRemoteImage
+    {
+        [ApiMember(Name = "Url", Description = "The image url", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string Url { get; set; }
+    }
+
     public class RemoteImageService : BaseApiService
     {
         private readonly IProviderManager _providerManager;
 
+        private readonly IServerApplicationPaths _appPaths;
+        private readonly IHttpClient _httpClient;
+        private readonly IFileSystem _fileSystem;
+
         private readonly IDtoService _dtoService;
 
-        public RemoteImageService(IProviderManager providerManager, IDtoService dtoService)
+        public RemoteImageService(IProviderManager providerManager, IDtoService dtoService, IServerApplicationPaths appPaths, IHttpClient httpClient, IFileSystem fileSystem)
         {
             _providerManager = providerManager;
             _dtoService = dtoService;
+            _appPaths = appPaths;
+            _httpClient = httpClient;
+            _fileSystem = fileSystem;
         }
 
         public object Get(GetRemoteImages request)
@@ -127,6 +149,79 @@ namespace MediaBrowser.Api
 
             await item.RefreshMetadata(CancellationToken.None, forceSave: true, allowSlowProviders: false)
                     .ConfigureAwait(false);
+        }
+
+        public object Get(GetRemoteImage request)
+        {
+            var task = GetRemoteImage(request);
+
+            return task.Result;
+        }
+
+        private async Task<object> GetRemoteImage(GetRemoteImage request)
+        {
+            var urlHash = request.Url.GetMD5();
+            var pointerCachePath = GetFullCachePath(urlHash.ToString());
+
+            string contentPath;
+
+            try
+            {
+                using (var reader = new StreamReader(pointerCachePath))
+                {
+                    contentPath = await reader.ReadToEndAsync().ConfigureAwait(false);
+                }
+
+                if (File.Exists(contentPath))
+                {
+                    return ToStaticFileResult(contentPath);
+                }
+            }
+            catch (FileNotFoundException)
+            {
+                // Means the file isn't cached yet
+            }
+
+            await DownloadImage(request.Url, urlHash, pointerCachePath).ConfigureAwait(false);
+
+            // Read the pointer file again
+            using (var reader = new StreamReader(pointerCachePath))
+            {
+                contentPath = await reader.ReadToEndAsync().ConfigureAwait(false);
+            }
+
+            return ToStaticFileResult(contentPath);
+        }
+
+        private async Task DownloadImage(string url, Guid urlHash, string pointerCachePath)
+        {
+            var result = await _httpClient.GetResponse(new HttpRequestOptions
+            {
+                Url = url
+
+            }).ConfigureAwait(false);
+
+            var ext = result.ContentType.Split('/').Last();
+
+            var fullCachePath = GetFullCachePath(urlHash + "." + ext);
+
+            using (var stream = result.Content)
+            {
+                using (var filestream = _fileSystem.GetFileStream(fullCachePath, FileMode.Create, FileAccess.Write, FileShare.Read, true))
+                {
+                    await stream.CopyToAsync(filestream).ConfigureAwait(false);
+                }
+            }
+
+            using (var writer = new StreamWriter(pointerCachePath))
+            {
+                await writer.WriteAsync(fullCachePath).ConfigureAwait(false);
+            }
+        }
+
+        private string GetFullCachePath(string filename)
+        {
+            return Path.Combine(_appPaths.DownloadedImagesDataPath, filename.Substring(0, 1), filename);
         }
     }
 }

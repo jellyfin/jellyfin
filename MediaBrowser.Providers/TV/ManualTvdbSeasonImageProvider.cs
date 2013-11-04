@@ -35,7 +35,7 @@ namespace MediaBrowser.Providers.TV
 
         public static string ProviderName
         {
-            get { return "TvDb"; }
+            get { return "TheTVDB"; }
         }
 
         public bool Supports(BaseItem item)
@@ -147,6 +147,7 @@ namespace MediaBrowser.Providers.TV
                     return 0;
                 })
                 .ThenByDescending(i => i.CommunityRating ?? 0)
+                .ThenByDescending(i => i.VoteCount ?? 0)
                 .ToList();
         }
 
