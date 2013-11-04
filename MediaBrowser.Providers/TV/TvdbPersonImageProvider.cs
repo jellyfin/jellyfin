@@ -107,7 +107,7 @@ namespace MediaBrowser.Providers.TV
         /// <returns>Task.</returns>
         private async Task DownloadImageFromSeries(BaseItem item, Series series, CancellationToken cancellationToken)
         {
-            var tvdbPath = RemoteSeriesProvider.GetSeriesDataPath(ConfigurationManager.ApplicationPaths, series.GetProviderId(MetadataProviders.Tvdb));
+            var tvdbPath = TvdbSeriesProvider.GetSeriesDataPath(ConfigurationManager.ApplicationPaths, series.GetProviderId(MetadataProviders.Tvdb));
 
             var actorXmlPath = Path.Combine(tvdbPath, "actors.xml");
 
@@ -117,7 +117,7 @@ namespace MediaBrowser.Providers.TV
             {
                 url = TVUtils.BannerUrl + url;
 
-                await _providerManager.SaveImage(item, url, RemoteSeriesProvider.Current.TvDbResourcePool,
+                await _providerManager.SaveImage(item, url, TvdbSeriesProvider.Current.TvDbResourcePool,
                                                ImageType.Primary, null, cancellationToken).ConfigureAwait(false);
             }
         }

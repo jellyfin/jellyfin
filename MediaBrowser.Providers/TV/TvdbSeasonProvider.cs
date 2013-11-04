@@ -19,7 +19,7 @@ namespace MediaBrowser.Providers.TV
     /// <summary>
     /// Class RemoteSeasonProvider
     /// </summary>
-    class RemoteSeasonProvider : BaseMetadataProvider
+    class TvdbSeasonProvider : BaseMetadataProvider
     {
         /// <summary>
         /// The _provider manager
@@ -28,13 +28,13 @@ namespace MediaBrowser.Providers.TV
         private readonly IFileSystem _fileSystem;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="RemoteSeasonProvider"/> class.
+        /// Initializes a new instance of the <see cref="TvdbSeasonProvider"/> class.
         /// </summary>
         /// <param name="logManager">The log manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="providerManager">The provider manager.</param>
         /// <exception cref="System.ArgumentNullException">httpClient</exception>
-        public RemoteSeasonProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager, IFileSystem fileSystem)
+        public TvdbSeasonProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager, IFileSystem fileSystem)
             : base(logManager, configurationManager)
         {
             _providerManager = providerManager;
@@ -113,7 +113,7 @@ namespace MediaBrowser.Providers.TV
             if (!string.IsNullOrEmpty(seriesId))
             {
                 // Process images
-                var imagesXmlPath = Path.Combine(RemoteSeriesProvider.GetSeriesDataPath(ConfigurationManager.ApplicationPaths, seriesId), "banners.xml");
+                var imagesXmlPath = Path.Combine(TvdbSeriesProvider.GetSeriesDataPath(ConfigurationManager.ApplicationPaths, seriesId), "banners.xml");
 
                 var imagesFileInfo = new FileInfo(imagesXmlPath);
 
@@ -145,7 +145,7 @@ namespace MediaBrowser.Providers.TV
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var images = await _providerManager.GetAvailableRemoteImages(item, cancellationToken, ManualFanartSeriesImageProvider.ProviderName).ConfigureAwait(false);
+            var images = await _providerManager.GetAvailableRemoteImages(item, cancellationToken, ManualTvdbSeasonImageProvider.ProviderName).ConfigureAwait(false);
 
             const int backdropLimit = 1;
 
@@ -163,7 +163,7 @@ namespace MediaBrowser.Providers.TV
 
                 if (image != null)
                 {
-                    await _providerManager.SaveImage(item, image.Url, RemoteSeriesProvider.Current.TvDbResourcePool, ImageType.Primary, null, cancellationToken)
+                    await _providerManager.SaveImage(item, image.Url, TvdbSeriesProvider.Current.TvDbResourcePool, ImageType.Primary, null, cancellationToken)
                       .ConfigureAwait(false);
                 }
             }
@@ -174,7 +174,7 @@ namespace MediaBrowser.Providers.TV
 
                 if (image != null)
                 {
-                    await _providerManager.SaveImage(item, image.Url, RemoteSeriesProvider.Current.TvDbResourcePool, ImageType.Banner, null, cancellationToken)
+                    await _providerManager.SaveImage(item, image.Url, TvdbSeriesProvider.Current.TvDbResourcePool, ImageType.Banner, null, cancellationToken)
                       .ConfigureAwait(false);
                 }
             }
@@ -192,7 +192,7 @@ namespace MediaBrowser.Providers.TV
                         continue;
                     }
 
-                    await _providerManager.SaveImage(item, url, RemoteSeriesProvider.Current.TvDbResourcePool, ImageType.Backdrop, bdNo, cancellationToken).ConfigureAwait(false);
+                    await _providerManager.SaveImage(item, url, TvdbSeriesProvider.Current.TvDbResourcePool, ImageType.Backdrop, bdNo, cancellationToken).ConfigureAwait(false);
 
                     bdNo++;
 

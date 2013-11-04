@@ -52,9 +52,9 @@ namespace MediaBrowser.Providers.TV
             if (!string.IsNullOrEmpty(seriesId))
             {
                 // Process images
-                var seriesDataPath = RemoteSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, seriesId);
+                var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, seriesId);
 
-                var files = RemoteEpisodeProvider.Current.GetEpisodeXmlFiles(episode, seriesDataPath);
+                var files = TvdbEpisodeProvider.Current.GetEpisodeXmlFiles(episode, seriesDataPath);
 
                 var result = files.Select(i => GetImageInfo(i, cancellationToken)).Where(i => i != null);
 

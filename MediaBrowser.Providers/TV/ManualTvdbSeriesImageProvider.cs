@@ -18,12 +18,12 @@ using System.Xml;
 
 namespace MediaBrowser.Providers.TV
 {
-    public class ManualTvdbSeasonImageProvider : IImageProvider
+    public class ManualTvdbSeriesImageProvider : IImageProvider
     {
         private readonly IServerConfigurationManager _config;
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
-        public ManualTvdbSeasonImageProvider(IServerConfigurationManager config)
+        public ManualTvdbSeriesImageProvider(IServerConfigurationManager config)
         {
             _config = config;
         }
@@ -40,7 +40,7 @@ namespace MediaBrowser.Providers.TV
 
         public bool Supports(BaseItem item)
         {
-            return item is Season;
+            return item is Series;
         }
 
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, ImageType imageType, CancellationToken cancellationToken)
@@ -52,11 +52,9 @@ namespace MediaBrowser.Providers.TV
 
         public Task<IEnumerable<RemoteImageInfo>> GetAllImages(BaseItem item, CancellationToken cancellationToken)
         {
-            var season = (Season)item;
+            var seriesId = item.GetProviderId(MetadataProviders.Tvdb);
 
-            var seriesId = season.Series != null ? season.Series.GetProviderId(MetadataProviders.Tvdb) : null;
-
-            if (!string.IsNullOrEmpty(seriesId) && season.IndexNumber.HasValue)
+            if (!string.IsNullOrEmpty(seriesId))
             {
                 // Process images
                 var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, seriesId);
@@ -65,7 +63,7 @@ namespace MediaBrowser.Providers.TV
 
                 try
                 {
-                    var result = GetImages(path, season.IndexNumber.Value, cancellationToken);
+                    var result = GetImages(path, cancellationToken);
 
                     return Task.FromResult(result);
                 }
@@ -78,7 +76,7 @@ namespace MediaBrowser.Providers.TV
             return Task.FromResult<IEnumerable<RemoteImageInfo>>(new RemoteImageInfo[] { });
         }
 
-        private IEnumerable<RemoteImageInfo> GetImages(string xmlPath, int seasonNumber, CancellationToken cancellationToken)
+        private IEnumerable<RemoteImageInfo> GetImages(string xmlPath, CancellationToken cancellationToken)
         {
             var settings = new XmlReaderSettings
             {
@@ -110,7 +108,7 @@ namespace MediaBrowser.Providers.TV
                                     {
                                         using (var subtree = reader.ReadSubtree())
                                         {
-                                            AddImage(subtree, list, seasonNumber);
+                                            AddImage(subtree, list);
                                         }
                                         break;
                                     }
@@ -128,34 +126,33 @@ namespace MediaBrowser.Providers.TV
             var isLanguageEn = string.Equals(language, "en", StringComparison.OrdinalIgnoreCase);
 
             return list.OrderByDescending(i =>
+            {
+                if (string.Equals(language, i.Language, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (string.Equals(language, i.Language, StringComparison.OrdinalIgnoreCase))
+                    return 3;
+                }
+                if (!isLanguageEn)
+                {
+                    if (string.Equals("en", i.Language, StringComparison.OrdinalIgnoreCase))
                     {
-                        return 3;
+                        return 2;
                     }
-                    if (!isLanguageEn)
-                    {
-                        if (string.Equals("en", i.Language, StringComparison.OrdinalIgnoreCase))
-                        {
-                            return 2;
-                        }
-                    }
-                    if (string.IsNullOrEmpty(i.Language))
-                    {
-                        return isLanguageEn ? 3 : 2;
-                    }
-                    return 0;
-                })
+                }
+                if (string.IsNullOrEmpty(i.Language))
+                {
+                    return isLanguageEn ? 3 : 2;
+                }
+                return 0;
+            })
                 .ThenByDescending(i => i.CommunityRating ?? 0)
                 .ToList();
         }
 
-        private void AddImage(XmlReader reader, List<RemoteImageInfo> images, int seasonNumber)
+        private void AddImage(XmlReader reader, List<RemoteImageInfo> images)
         {
             reader.MoveToContent();
 
             string bannerType = null;
-            string bannerType2 = null;
             string url = null;
             int? bannerSeason = null;
             int? width = null;
@@ -214,12 +211,19 @@ namespace MediaBrowser.Providers.TV
                         case "BannerType":
                             {
                                 bannerType = reader.ReadElementContentAsString() ?? string.Empty;
+
+                                break;
+                            }
+
+                        case "BannerPath":
+                            {
+                                url = reader.ReadElementContentAsString() ?? string.Empty;
                                 break;
                             }
 
                         case "BannerType2":
                             {
-                                bannerType2 = reader.ReadElementContentAsString() ?? string.Empty;
+                                var bannerType2 = reader.ReadElementContentAsString() ?? string.Empty;
 
                                 // Sometimes the resolution is stuffed in here
                                 var resolutionParts = bannerType2.Split('x');
@@ -243,12 +247,6 @@ namespace MediaBrowser.Providers.TV
                                 break;
                             }
 
-                        case "BannerPath":
-                            {
-                                url = reader.ReadElementContentAsString() ?? string.Empty;
-                                break;
-                            }
-
                         case "Season":
                             {
                                 var val = reader.ReadElementContentAsString();
@@ -268,7 +266,7 @@ namespace MediaBrowser.Providers.TV
                 }
             }
 
-            if (!string.IsNullOrEmpty(url) && bannerSeason.HasValue && bannerSeason.Value == seasonNumber)
+            if (!string.IsNullOrEmpty(url) && !bannerSeason.HasValue)
             {
                 var imageInfo = new RemoteImageInfo
                 {
@@ -287,18 +285,15 @@ namespace MediaBrowser.Providers.TV
                     imageInfo.ThumbnailUrl = TVUtils.BannerUrl + thumbnailUrl;
                 }
 
-                if (string.Equals(bannerType, "season", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(bannerType, "poster", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (string.Equals(bannerType2, "season", StringComparison.OrdinalIgnoreCase))
-                    {
-                        imageInfo.Type = ImageType.Primary;
-                        images.Add(imageInfo);
-                    }
-                    else if (string.Equals(bannerType2, "seasonwide", StringComparison.OrdinalIgnoreCase))
-                    {
-                        imageInfo.Type = ImageType.Banner;
-                        images.Add(imageInfo);
-                    }
+                    imageInfo.Type = ImageType.Primary;
+                    images.Add(imageInfo);
+                }
+                else if (string.Equals(bannerType, "series", StringComparison.OrdinalIgnoreCase))
+                {
+                    imageInfo.Type = ImageType.Banner;
+                    images.Add(imageInfo);
                 }
                 else if (string.Equals(bannerType, "fanart", StringComparison.OrdinalIgnoreCase))
                 {

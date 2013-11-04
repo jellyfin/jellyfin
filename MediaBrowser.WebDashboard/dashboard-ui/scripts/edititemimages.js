@@ -153,6 +153,7 @@
         }
 
         var displayUrl = image.ThumbnailUrl || image.Url;
+        
         html += '<a target="_blank" href="' + image.Url + '" class="' + cssClass + '" style="background-image:url(\'' + displayUrl + '\');">';
         html += '</a>';
 

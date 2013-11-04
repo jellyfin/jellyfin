@@ -77,7 +77,7 @@ namespace MediaBrowser.Providers.TV
                 return;
             }
 
-            var path = RemoteSeriesProvider.GetSeriesDataPath(_config.CommonApplicationPaths);
+            var path = TvdbSeriesProvider.GetSeriesDataPath(_config.CommonApplicationPaths);
 
             Directory.CreateDirectory(path);
 
@@ -107,7 +107,7 @@ namespace MediaBrowser.Providers.TV
                     Url = ServerTimeUrl,
                     CancellationToken = cancellationToken,
                     EnableHttpCompression = true,
-                    ResourcePool = RemoteSeriesProvider.Current.TvDbResourcePool
+                    ResourcePool = TvdbSeriesProvider.Current.TvDbResourcePool
 
                 }).ConfigureAwait(false))
                 {
@@ -195,7 +195,7 @@ namespace MediaBrowser.Providers.TV
                 Url = string.Format(UpdatesUrl, lastUpdateTime),
                 CancellationToken = cancellationToken,
                 EnableHttpCompression = true,
-                ResourcePool = RemoteSeriesProvider.Current.TvDbResourcePool
+                ResourcePool = TvdbSeriesProvider.Current.TvDbResourcePool
 
             }).ConfigureAwait(false))
             {
@@ -315,7 +315,7 @@ namespace MediaBrowser.Providers.TV
 
             Directory.CreateDirectory(seriesDataPath);
 
-            return RemoteSeriesProvider.Current.DownloadSeriesZip(id, seriesDataPath, lastTvDbUpdateTime, cancellationToken);
+            return TvdbSeriesProvider.Current.DownloadSeriesZip(id, seriesDataPath, lastTvDbUpdateTime, cancellationToken);
         }
     }
 }
