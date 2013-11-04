@@ -1430,10 +1430,22 @@ namespace MediaBrowser.Server.Implementations.Library
                 .OfType<CollectionFolder>()
                 .Where(i =>
                 {
+                    var locationType = i.LocationType;
+
+                    if (locationType == LocationType.Remote || locationType == LocationType.Virtual)
+                    {
+                        return false;
+                    }
+
+                    if (string.Equals(i.Path, item.Path, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+
                     try
                     {
-                        return i.LocationType != LocationType.Remote && i.LocationType != LocationType.Virtual &&
-                               i.ResolveArgs.PhysicalLocations.Contains(item.Path);
+                        
+                        return i.ResolveArgs.PhysicalLocations.Contains(item.Path);
                     }
                     catch (IOException ex)
                     {
