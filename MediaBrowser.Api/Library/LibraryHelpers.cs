@@ -22,44 +22,6 @@ namespace MediaBrowser.Api.Library
         private const string ShortcutFileSearch = "*" + ShortcutFileExtension;
 
         /// <summary>
-        /// Renames the virtual folder.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="newName">The new name.</param>
-        /// <param name="user">The user.</param>
-        /// <param name="appPaths">The app paths.</param>
-        /// <exception cref="System.IO.DirectoryNotFoundException">The media collection does not exist</exception>
-        /// <exception cref="System.ArgumentException">There is already a media collection with the name  + newPath + .</exception>
-        public static void RenameVirtualFolder(string name, string newName, User user, IServerApplicationPaths appPaths)
-        {
-            var rootFolderPath = user != null ? user.RootFolderPath : appPaths.DefaultUserViewsPath;
-
-            var currentPath = Path.Combine(rootFolderPath, name);
-            var newPath = Path.Combine(rootFolderPath, newName);
-
-            if (!Directory.Exists(currentPath))
-            {
-                throw new DirectoryNotFoundException("The media collection does not exist");
-            }
-
-            if (!string.Equals(currentPath, newPath, StringComparison.OrdinalIgnoreCase) && Directory.Exists(newPath))
-            {
-                throw new ArgumentException("There is already a media collection with the name " + newPath + ".");
-            }
-            //Only make a two-phase move when changing capitalization
-            if (string.Equals(currentPath, newPath, StringComparison.OrdinalIgnoreCase))
-            {
-                //Create an unique name
-                var temporaryName = Guid.NewGuid().ToString();
-                var temporaryPath = Path.Combine(rootFolderPath, temporaryName);
-                Directory.Move(currentPath,temporaryPath);
-                currentPath = temporaryPath;
-            }
-
-            Directory.Move(currentPath, newPath);
-        }
-
-        /// <summary>
         /// Deletes a shortcut from within a virtual folder, within either the default view or a user view
         /// </summary>
         /// <param name="fileSystem">The file system.</param>
