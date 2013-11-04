@@ -501,6 +501,7 @@
         };
 
         self.showDownloadMenu = function (type) {
+            browsableImageStartIndex = 0;
             browsableImageType = type;
             $('.lnkBrowseImages').trigger('click');
         };

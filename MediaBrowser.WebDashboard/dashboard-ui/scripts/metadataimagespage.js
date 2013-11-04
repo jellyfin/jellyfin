@@ -14,6 +14,8 @@
     load: function (page, config) {
 
         $('#txtNumbackdrops', page).val(config.MaxBackdrops);
+        $('#txtMinMovieBackdropDownloadWidth', page).val(config.MinMovieBackdropDownloadWidth);
+        $('#txtMinSeriesBackdropDownloadWidth', page).val(config.MinSeriesBackdropDownloadWidth);
 
         $('#chkDownloadMovieArt', page).checked(config.DownloadMovieImages.Art).checkboxradio("refresh");
         $('#chkDownloadMovieBackdrops', page).checked(config.DownloadMovieImages.Backdrops).checkboxradio("refresh");
@@ -58,6 +60,8 @@
             config.ImageSavingConvention = $('#selectImageSavingConvention', form).val();
             
             config.MaxBackdrops = $('#txtNumbackdrops', form).val();
+            config.MinMovieBackdropDownloadWidth = $('#txtMinMovieBackdropDownloadWidth', form).val();
+            config.MinSeriesBackdropDownloadWidth = $('#txtMinSeriesBackdropDownloadWidth', form).val();
 
             config.DownloadMovieImages.Art = $('#chkDownloadMovieArt', form).checked();
             config.DownloadMovieImages.Backdrops = $('#chkDownloadMovieBackdrops', form).checked();
