@@ -1,5 +1,4 @@
-﻿using System.IO;
-using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
@@ -8,6 +7,7 @@ using MediaBrowser.Model.Logging;
 using ServiceStack.ServiceHost;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -302,20 +302,49 @@ namespace MediaBrowser.Api.Library
         /// <param name="request">The request.</param>
         public void Post(RenameVirtualFolder request)
         {
+            string rootFolderPath;
+
+            if (string.IsNullOrEmpty(request.UserId))
+            {
+                rootFolderPath = _appPaths.DefaultUserViewsPath;
+            }
+            else
+            {
+                var user = _userManager.GetUserById(new Guid(request.UserId));
+
+                rootFolderPath = user.RootFolderPath;
+            }
+
+            var currentPath = Path.Combine(rootFolderPath, request.Name);
+            var newPath = Path.Combine(rootFolderPath, request.NewName);
+
+            if (!Directory.Exists(currentPath))
+            {
+                throw new DirectoryNotFoundException("The media collection does not exist");
+            }
+
+            if (!string.Equals(currentPath, newPath, StringComparison.OrdinalIgnoreCase) && Directory.Exists(newPath))
+            {
+                throw new ArgumentException("There is already a media collection with the name " + newPath + ".");
+            }
+
             _directoryWatchers.Stop();
+            _directoryWatchers.TemporarilyIgnore(currentPath);
+            _directoryWatchers.TemporarilyIgnore(newPath);
 
             try
             {
-                if (string.IsNullOrEmpty(request.UserId))
+                // Only make a two-phase move when changing capitalization
+                if (string.Equals(currentPath, newPath, StringComparison.OrdinalIgnoreCase))
                 {
-                    LibraryHelpers.RenameVirtualFolder(request.Name, request.NewName, null, _appPaths);
+                    //Create an unique name
+                    var temporaryName = Guid.NewGuid().ToString();
+                    var temporaryPath = Path.Combine(rootFolderPath, temporaryName);
+                    Directory.Move(currentPath, temporaryPath);
+                    currentPath = temporaryPath;
                 }
-                else
-                {
-                    var user = _userManager.GetUserById(new Guid(request.UserId));
 
-                    LibraryHelpers.RenameVirtualFolder(request.Name, request.NewName, user, _appPaths);
-                }
+                Directory.Move(currentPath, newPath);
 
                 // Need to add a delay here or directory watchers may still pick up the changes
                 var task = Task.Delay(1000);
@@ -325,6 +354,8 @@ namespace MediaBrowser.Api.Library
             finally
             {
                 _directoryWatchers.Start();
+                _directoryWatchers.RemoveTempIgnore(currentPath);
+                _directoryWatchers.RemoveTempIgnore(newPath);
             }
 
             if (request.RefreshLibrary)
