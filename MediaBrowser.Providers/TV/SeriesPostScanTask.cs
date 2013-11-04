@@ -111,7 +111,7 @@ namespace MediaBrowser.Providers.TV
                 return;
             }
 
-            var seriesDataPath = RemoteSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, tvdbId);
+            var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, tvdbId);
 
             var episodeFiles = Directory.EnumerateFiles(seriesDataPath, "*.xml", SearchOption.TopDirectoryOnly)
                 .Select(Path.GetFileNameWithoutExtension)

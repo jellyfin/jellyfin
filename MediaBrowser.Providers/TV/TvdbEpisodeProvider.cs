@@ -25,7 +25,7 @@ namespace MediaBrowser.Providers.TV
     /// <summary>
     /// Class RemoteEpisodeProvider
     /// </summary>
-    class RemoteEpisodeProvider : BaseMetadataProvider
+    class TvdbEpisodeProvider : BaseMetadataProvider
     {
         /// <summary>
         /// The _provider manager
@@ -39,16 +39,16 @@ namespace MediaBrowser.Providers.TV
         protected IHttpClient HttpClient { get; private set; }
         private readonly IFileSystem _fileSystem;
 
-        internal static RemoteEpisodeProvider Current;
+        internal static TvdbEpisodeProvider Current;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="RemoteEpisodeProvider" /> class.
+        /// Initializes a new instance of the <see cref="TvdbEpisodeProvider" /> class.
         /// </summary>
         /// <param name="httpClient">The HTTP client.</param>
         /// <param name="logManager">The log manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="providerManager">The provider manager.</param>
-        public RemoteEpisodeProvider(IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager, IFileSystem fileSystem)
+        public TvdbEpisodeProvider(IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager, IFileSystem fileSystem)
             : base(logManager, configurationManager)
         {
             HttpClient = httpClient;
@@ -149,7 +149,7 @@ namespace MediaBrowser.Providers.TV
             if (!string.IsNullOrEmpty(seriesId))
             {
                 // Process images
-                var seriesDataPath = RemoteSeriesProvider.GetSeriesDataPath(ConfigurationManager.ApplicationPaths, seriesId);
+                var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(ConfigurationManager.ApplicationPaths, seriesId);
 
                 var files = GetEpisodeXmlFiles(episode, seriesDataPath);
 
@@ -254,7 +254,7 @@ namespace MediaBrowser.Providers.TV
 
             if (!string.IsNullOrEmpty(seriesId))
             {
-                var seriesDataPath = RemoteSeriesProvider.GetSeriesDataPath(ConfigurationManager.ApplicationPaths, seriesId);
+                var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(ConfigurationManager.ApplicationPaths, seriesId);
 
                 try
                 {
@@ -438,7 +438,7 @@ namespace MediaBrowser.Providers.TV
                                                 {
                                                     var url = TVUtils.BannerUrl + val;
 
-                                                    await _providerManager.SaveImage(item, url, RemoteSeriesProvider.Current.TvDbResourcePool, ImageType.Primary, null, cancellationToken).ConfigureAwait(false);
+                                                    await _providerManager.SaveImage(item, url, TvdbSeriesProvider.Current.TvDbResourcePool, ImageType.Primary, null, cancellationToken).ConfigureAwait(false);
                                                 }
                                                 catch (HttpException)
                                                 {

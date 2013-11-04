@@ -26,7 +26,7 @@ namespace MediaBrowser.Providers.TV
     /// <summary>
     /// Class RemoteSeriesProvider
     /// </summary>
-    class RemoteSeriesProvider : BaseMetadataProvider, IDisposable
+    class TvdbSeriesProvider : BaseMetadataProvider, IDisposable
     {
         /// <summary>
         /// The tv db
@@ -37,7 +37,7 @@ namespace MediaBrowser.Providers.TV
         /// Gets the current.
         /// </summary>
         /// <value>The current.</value>
-        internal static RemoteSeriesProvider Current { get; private set; }
+        internal static TvdbSeriesProvider Current { get; private set; }
 
         /// <summary>
         /// The _zip client
@@ -53,14 +53,14 @@ namespace MediaBrowser.Providers.TV
         private readonly IFileSystem _fileSystem;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="RemoteSeriesProvider" /> class.
+        /// Initializes a new instance of the <see cref="TvdbSeriesProvider" /> class.
         /// </summary>
         /// <param name="httpClient">The HTTP client.</param>
         /// <param name="logManager">The log manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="zipClient">The zip client.</param>
         /// <exception cref="System.ArgumentNullException">httpClient</exception>
-        public RemoteSeriesProvider(IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager, IZipClient zipClient, IFileSystem fileSystem)
+        public TvdbSeriesProvider(IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager, IZipClient zipClient, IFileSystem fileSystem)
             : base(logManager, configurationManager)
         {
             if (httpClient == null)

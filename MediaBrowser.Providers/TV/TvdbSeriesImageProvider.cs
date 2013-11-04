@@ -3,20 +3,17 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Providers;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml;
 
 namespace MediaBrowser.Providers.TV
 {
@@ -125,7 +122,7 @@ namespace MediaBrowser.Providers.TV
             if (!string.IsNullOrEmpty(seriesId))
             {
                 // Process images
-                var imagesXmlPath = Path.Combine(RemoteSeriesProvider.GetSeriesDataPath(ConfigurationManager.ApplicationPaths, seriesId), "banners.xml");
+                var imagesXmlPath = Path.Combine(TvdbSeriesProvider.GetSeriesDataPath(ConfigurationManager.ApplicationPaths, seriesId), "banners.xml");
 
                 var imagesFileInfo = new FileInfo(imagesXmlPath);
 
@@ -158,64 +155,36 @@ namespace MediaBrowser.Providers.TV
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var series = (Series)item;
-            var seriesId = series.GetProviderId(MetadataProviders.Tvdb);
+            var images = await _providerManager.GetAvailableRemoteImages(item, cancellationToken, ManualTvdbSeriesImageProvider.ProviderName).ConfigureAwait(false);
 
-            if (!string.IsNullOrEmpty(seriesId))
-            {
-                // Process images
-                var seriesDataPath = RemoteSeriesProvider.GetSeriesDataPath(ConfigurationManager.ApplicationPaths, seriesId);
+            const int backdropLimit = 1;
 
-                var imagesXmlPath = Path.Combine(seriesDataPath, "banners.xml");
+            await DownloadImages(item, images.ToList(), backdropLimit, cancellationToken).ConfigureAwait(false);
 
-                var backdropLimit = ConfigurationManager.Configuration.MaxBackdrops;
-
-                if (!series.HasImage(ImageType.Primary) || !series.HasImage(ImageType.Banner) || series.BackdropImagePaths.Count < backdropLimit)
-                {
-                    Directory.CreateDirectory(seriesDataPath);
-                    
-                    try
-                    {
-                        var fanartData = FetchFanartXmlData(imagesXmlPath, backdropLimit, cancellationToken);
-                        await DownloadImages(item, fanartData, backdropLimit, cancellationToken).ConfigureAwait(false);
-                    }
-                    catch (FileNotFoundException)
-                    {
-                        // No biggie. Not all series have images
-                    }
-                }
-
-                SetLastRefreshed(item, DateTime.UtcNow);
-                return true;
-            }
-
-            return false;
+            SetLastRefreshed(item, DateTime.UtcNow);
+            return true;
         }
 
-        protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
-
-        private async Task DownloadImages(BaseItem item, FanartXmlData data, int backdropLimit, CancellationToken cancellationToken)
+        private async Task DownloadImages(BaseItem item, List<RemoteImageInfo> images, int backdropLimit, CancellationToken cancellationToken)
         {
             if (!item.HasImage(ImageType.Primary))
             {
-                var url = data.LanguagePoster ?? data.Poster;
-                if (!string.IsNullOrEmpty(url))
-                {
-                    url = TVUtils.BannerUrl + url;
+                var image = images.FirstOrDefault(i => i.Type == ImageType.Primary);
 
-                    await _providerManager.SaveImage(item, url, RemoteSeriesProvider.Current.TvDbResourcePool, ImageType.Primary, null, cancellationToken)
+                if (image != null)
+                {
+                    await _providerManager.SaveImage(item, image.Url, TvdbSeriesProvider.Current.TvDbResourcePool, ImageType.Primary, null, cancellationToken)
                       .ConfigureAwait(false);
                 }
             }
 
             if (ConfigurationManager.Configuration.DownloadSeriesImages.Banner && !item.HasImage(ImageType.Banner))
             {
-                var url = data.LanguageBanner ?? data.Banner;
-                if (!string.IsNullOrEmpty(url))
-                {
-                    url = TVUtils.BannerUrl + url;
+                var image = images.FirstOrDefault(i => i.Type == ImageType.Banner);
 
-                    await _providerManager.SaveImage(item, url, RemoteSeriesProvider.Current.TvDbResourcePool, ImageType.Banner, null, cancellationToken)
+                if (image != null)
+                {
+                    await _providerManager.SaveImage(item, image.Url, TvdbSeriesProvider.Current.TvDbResourcePool, ImageType.Banner, null, cancellationToken)
                       .ConfigureAwait(false);
                 }
             }
@@ -224,38 +193,18 @@ namespace MediaBrowser.Providers.TV
             {
                 var bdNo = item.BackdropImagePaths.Count;
 
-                var eligibleBackdrops = data.Backdrops
-                    .Where(i =>
-                    {
-                        if (string.IsNullOrEmpty(i.Resolution))
-                        {
-                            return true;
-                        }
-
-                        var parts = i.Resolution.Split('x');
-
-                        int width;
-
-                        if (int.TryParse(parts[0], NumberStyles.Any, UsCulture, out width))
-                        {
-                            return width >= ConfigurationManager.Configuration.MinSeriesBackdropDownloadWidth;
-                        }
-
-                        return true;
-                    })
-                    .ToList();
-
-                foreach (var backdrop in eligibleBackdrops)
+                foreach (var backdrop in images.Where(i => i.Type == ImageType.Backdrop && 
+                    (!i.Width.HasValue || 
+                    i.Width.Value >= ConfigurationManager.Configuration.MinSeriesBackdropDownloadWidth)))
                 {
-                    var url = TVUtils.BannerUrl + backdrop.Url;
+                    var url = backdrop.Url;
 
                     if (item.ContainsImageWithSourceUrl(url))
                     {
                         continue;
                     }
 
-                    await _providerManager.SaveImage(item, url, RemoteSeriesProvider.Current.TvDbResourcePool, ImageType.Backdrop, bdNo, cancellationToken)
-                      .ConfigureAwait(false);
+                    await _providerManager.SaveImage(item, url, TvdbSeriesProvider.Current.TvDbResourcePool, ImageType.Backdrop, bdNo, cancellationToken).ConfigureAwait(false);
 
                     bdNo++;
 
@@ -263,158 +212,5 @@ namespace MediaBrowser.Providers.TV
                 }
             }
         }
-
-        private FanartXmlData FetchFanartXmlData(string bannersXmlPath, int backdropLimit, CancellationToken cancellationToken)
-        {
-            var settings = new XmlReaderSettings
-            {
-                CheckCharacters = false,
-                IgnoreProcessingInstructions = true,
-                IgnoreComments = true,
-                ValidationType = ValidationType.None
-            };
-
-            var data = new FanartXmlData();
-
-            using (var streamReader = new StreamReader(bannersXmlPath, Encoding.UTF8))
-            {
-                // Use XmlReader for best performance
-                using (var reader = XmlReader.Create(streamReader, settings))
-                {
-                    reader.MoveToContent();
-
-                    // Loop through each element
-                    while (reader.Read())
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
-
-                        if (reader.NodeType == XmlNodeType.Element)
-                        {
-                            switch (reader.Name)
-                            {
-                                case "Banner":
-                                    {
-                                        using (var subtree = reader.ReadSubtree())
-                                        {
-                                            FetchInfoFromBannerNode(data, subtree, backdropLimit);
-                                        }
-                                        break;
-                                    }
-                                default:
-                                    reader.Skip();
-                                    break;
-                            }
-                        }
-                    }
-                }
-            }
-
-            return data;
-        }
-
-        private void FetchInfoFromBannerNode(FanartXmlData data, XmlReader reader, int backdropLimit)
-        {
-            reader.MoveToContent();
-
-            string type = null;
-            string url = null;
-            string resolution = null;
-
-            while (reader.Read())
-            {
-                if (reader.NodeType == XmlNodeType.Element)
-                {
-                    switch (reader.Name)
-                    {
-                        case "BannerType":
-                            {
-                                type = reader.ReadElementContentAsString() ?? string.Empty;
-
-                                if (string.Equals(type, "poster", StringComparison.OrdinalIgnoreCase))
-                                {
-                                    // Already got it
-                                    if (!string.IsNullOrEmpty(data.Poster))
-                                    {
-                                        return;
-                                    }
-                                }
-                                else if (string.Equals(type, "series", StringComparison.OrdinalIgnoreCase))
-                                {
-                                    // Already got it
-                                    if (!string.IsNullOrEmpty(data.Banner))
-                                    {
-                                        return;
-                                    }
-                                }
-                                else
-                                {
-                                    return;
-                                }
-
-                                break;
-                            }
-
-                        case "BannerPath":
-                            {
-                                url = reader.ReadElementContentAsString() ?? string.Empty;
-                                break;
-                            }
-
-                        case "BannerType2":
-                            {
-                                resolution = reader.ReadElementContentAsString() ?? string.Empty;
-                                break;
-                            }
-
-                        default:
-                            reader.Skip();
-                            break;
-                    }
-                }
-            }
-
-            if (!string.IsNullOrEmpty(url))
-            {
-                if (string.Equals(type, "poster", StringComparison.OrdinalIgnoreCase))
-                {
-                    // Just grab the first
-                    if (string.IsNullOrWhiteSpace(data.Poster))
-                    {
-                        data.Poster = url;
-                    }
-                }
-                else if (string.Equals(type, "series", StringComparison.OrdinalIgnoreCase))
-                {
-                    // Just grab the first
-                    if (string.IsNullOrWhiteSpace(data.Banner))
-                    {
-                        data.Banner = url;
-                    }
-                }
-                else if (string.Equals(type, "fanart", StringComparison.OrdinalIgnoreCase))
-                {
-                    data.Backdrops.Add(new ImageInfo
-                    {
-                        Url = url,
-                        Resolution = resolution
-                    });
-                }
-            }
-        }
-    }
-
-    internal class FanartXmlData
-    {
-        public string LanguagePoster { get; set; }
-        public string LanguageBanner { get; set; }
-        public string Poster { get; set; }
-        public string Banner { get; set; }
-        public List<ImageInfo> Backdrops = new List<ImageInfo>();
-    }
-
-    internal class ImageInfo
-    {
-        public string Url { get; set; }
-        public string Resolution { get; set; }
     }
 }
