@@ -15,7 +15,7 @@ namespace MediaBrowser.Api
     /// Class GetPackage
     /// </summary>
     [Route("/Packages/{Name}", "GET")]
-    [Api(("Gets a package, by name"))]
+    [Api(("Gets a package, by name or assembly guid"))]
     public class GetPackage : IReturn<PackageInfo>
     {
         /// <summary>
@@ -24,6 +24,13 @@ namespace MediaBrowser.Api
         /// <value>The name.</value>
         [ApiMember(Name = "Name", Description = "The name of the package", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        [ApiMember(Name = "AssemblyGuid", Description = "The guid of the associated assembly", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string AssemblyGuid { get; set; }
     }
 
     /// <summary>
@@ -75,6 +82,13 @@ namespace MediaBrowser.Api
         /// <value>The name.</value>
         [ApiMember(Name = "Name", Description = "Package name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        [ApiMember(Name = "AssemblyGuid", Description = "Guid of the associated assembly", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string AssemblyGuid { get; set; }
 
         /// <summary>
         /// Gets or sets the version.
@@ -157,7 +171,8 @@ namespace MediaBrowser.Api
         {
             var packages = _installationManager.GetAvailablePackages(CancellationToken.None, applicationVersion: _appHost.ApplicationVersion).Result;
 
-            var result = packages.FirstOrDefault(p => p.name.Equals(request.Name, StringComparison.OrdinalIgnoreCase));
+            var result = packages.FirstOrDefault(p => string.Equals(p.guid, request.AssemblyGuid ?? "none", StringComparison.OrdinalIgnoreCase))
+                         ?? packages.FirstOrDefault(p => p.name.Equals(request.Name, StringComparison.OrdinalIgnoreCase));
 
             return ToOptimizedResult(result);
         }
@@ -194,8 +209,8 @@ namespace MediaBrowser.Api
         public void Post(InstallPackage request)
         {
             var package = string.IsNullOrEmpty(request.Version) ?
-                _installationManager.GetLatestCompatibleVersion(request.Name, _appHost.ApplicationVersion, request.UpdateClass).Result :
-                _installationManager.GetPackage(request.Name, request.UpdateClass, Version.Parse(request.Version)).Result;
+                _installationManager.GetLatestCompatibleVersion(request.Name, request.AssemblyGuid, _appHost.ApplicationVersion, request.UpdateClass).Result :
+                _installationManager.GetPackage(request.Name, request.AssemblyGuid, request.UpdateClass, Version.Parse(request.Version)).Result;
 
             if (package == null)
             {

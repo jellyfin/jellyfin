@@ -192,8 +192,9 @@
         Dashboard.showLoadingMsg();
 
         var name = getParameterByName('name');
+        var guid = getParameterByName('guid');
 
-        var promise1 = ApiClient.getPackageInfo(name);
+        var promise1 = ApiClient.getPackageInfo(name, guid);
         var promise2 = ApiClient.getInstalledPlugins();
         var promise3 = ApiClient.getPluginSecurityInfo();
 
@@ -205,9 +206,9 @@
 
     });
 
-    function performInstallation(packageName, updateClass, version) {
+    function performInstallation(packageName, guid, updateClass, version) {
 
-        ApiClient.installPlugin(packageName, updateClass, version).done(function () {
+        ApiClient.installPlugin(packageName, guid, updateClass, version).done(function () {
 
             Dashboard.hideLoadingMsg();
         });
@@ -226,6 +227,7 @@
             $('#btnInstall', page).button('disable');
 
             var name = getParameterByName('name');
+            var guid = getParameterByName('guid');
 
             ApiClient.getInstalledPlugins().done(function (plugins) {
 
@@ -246,14 +248,14 @@
                         if (confirmResult) {
 
                             Dashboard.showLoadingMsg();
-                            performInstallation(name, vals[1], version);
+                            performInstallation(name, guid, vals[1], version);
                         } else {
                             $('#btnInstall', page).button('enable');
                         }
 
                     });
                 } else {
-                    performInstallation(name, vals[1], version);
+                    performInstallation(name, guid, vals[1], version);
                 }
             });
 

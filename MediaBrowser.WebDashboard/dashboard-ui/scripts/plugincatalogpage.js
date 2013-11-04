@@ -76,7 +76,7 @@
                 currentCategory = category;
             }
 
-            var href = plugin.externalUrl ? plugin.externalUrl : "addPlugin.html?name=" + encodeURIComponent(plugin.name);
+            var href = plugin.externalUrl ? plugin.externalUrl : "addPlugin.html?name=" + encodeURIComponent(plugin.name) + "&guid=" + plugin.guid;
             var target = plugin.externalUrl ? ' target="_blank"' : '';
 
             html += "<a class='posterItem backdropPosterItem transparentPosterItem borderlessPosterItem' href='" + href + "' " + target + ">";
