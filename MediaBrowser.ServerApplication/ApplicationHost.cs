@@ -683,7 +683,7 @@ namespace MediaBrowser.ServerApplication
         {
             var availablePackages = await InstallationManager.GetAvailablePackagesWithoutRegistrationInfo(cancellationToken).ConfigureAwait(false);
 
-            var version = InstallationManager.GetLatestCompatibleVersion(availablePackages, Constants.MbServerPkgName, ApplicationVersion,
+            var version = InstallationManager.GetLatestCompatibleVersion(availablePackages, Constants.MbServerPkgName, null, ApplicationVersion,
                                                            ConfigurationManager.CommonConfiguration.SystemUpdateLevel);
 
             return version != null ? new CheckForUpdateResult { AvailableVersion = version.version, IsUpdateAvailable = version.version > ApplicationVersion, Package = version } :

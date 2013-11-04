@@ -58,34 +58,37 @@ namespace MediaBrowser.Common.Updates
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{List{PackageInfo}}.</returns>
         Task<IEnumerable<PackageInfo>> GetAvailablePackagesWithoutRegistrationInfo(CancellationToken cancellationToken);
-        
+
         /// <summary>
         /// Gets the package.
         /// </summary>
         /// <param name="name">The name.</param>
+        /// <param name="guid">The assembly guid</param>
         /// <param name="classification">The classification.</param>
         /// <param name="version">The version.</param>
         /// <returns>Task{PackageVersionInfo}.</returns>
-        Task<PackageVersionInfo> GetPackage(string name, PackageVersionClass classification, Version version);
+        Task<PackageVersionInfo> GetPackage(string name, string guid, PackageVersionClass classification, Version version);
 
         /// <summary>
         /// Gets the latest compatible version.
         /// </summary>
         /// <param name="name">The name.</param>
+        /// <param name="guid">The assembly guid</param>
         /// <param name="currentServerVersion">The current server version.</param>
         /// <param name="classification">The classification.</param>
         /// <returns>Task{PackageVersionInfo}.</returns>
-        Task<PackageVersionInfo> GetLatestCompatibleVersion(string name, Version currentServerVersion, PackageVersionClass classification = PackageVersionClass.Release);
+        Task<PackageVersionInfo> GetLatestCompatibleVersion(string name, string guid, Version currentServerVersion, PackageVersionClass classification = PackageVersionClass.Release);
 
         /// <summary>
         /// Gets the latest compatible version.
         /// </summary>
         /// <param name="availablePackages">The available packages.</param>
         /// <param name="name">The name.</param>
+        /// <param name="guid">The assembly guid</param>
         /// <param name="currentServerVersion">The current server version.</param>
         /// <param name="classification">The classification.</param>
         /// <returns>PackageVersionInfo.</returns>
-        PackageVersionInfo GetLatestCompatibleVersion(IEnumerable<PackageInfo> availablePackages, string name, Version currentServerVersion, PackageVersionClass classification = PackageVersionClass.Release);
+        PackageVersionInfo GetLatestCompatibleVersion(IEnumerable<PackageInfo> availablePackages, string name, string guid, Version currentServerVersion, PackageVersionClass classification = PackageVersionClass.Release);
 
         /// <summary>
         /// Gets the available plugin updates.
