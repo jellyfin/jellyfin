@@ -105,6 +105,13 @@ namespace MediaBrowser.Model.Updates
         public PackageTargetSystem targetSystem { get; set; }
 
         /// <summary>
+        /// The guid of the assembly associated with this package (if a plug-in).
+        /// This is used to identify the proper item for automatic updates.
+        /// </summary>
+        /// <value>The name.</value>
+        public string guid { get; set; }
+
+        /// <summary>
         /// Gets or sets whether or not this package is registered.
         /// </summary>
         /// <value>True if registered.</value>

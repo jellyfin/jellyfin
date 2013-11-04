@@ -470,7 +470,7 @@
 
                 html += '<p><strong>A new version of ' + update.name + ' is available!</strong></p>';
 
-                html += '<button type="button" data-icon="download" data-theme="b" onclick="DashboardPage.installPluginUpdate(this);" data-name="' + update.name + '" data-version="' + update.versionStr + '" data-classification="' + update.classification + '">Update Now</button>';
+                html += '<button type="button" data-icon="download" data-theme="b" onclick="DashboardPage.installPluginUpdate(this);" data-name="' + update.name + '" data-guid="' + update.guid + '" data-version="' + update.versionStr + '" data-classification="' + update.classification + '">Update Now</button>';
             }
 
             elem.html(html).trigger('create');
@@ -487,12 +487,13 @@
         $(button).button('disable');
 
         var name = button.getAttribute('data-name');
+        var guid = button.getAttribute('data-guid');
         var version = button.getAttribute('data-version');
         var classification = button.getAttribute('data-classification');
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.installPlugin(name, classification, version).done(function () {
+        ApiClient.installPlugin(name, guid, classification, version).done(function () {
 
             Dashboard.hideLoadingMsg();
         });

@@ -16,6 +16,12 @@ namespace MediaBrowser.Model.Updates
         public string name { get; set; }
 
         /// <summary>
+        /// Gets or sets the guid.
+        /// </summary>
+        /// <value>The guid.</value>
+        public string guid { get; set; }
+
+        /// <summary>
         /// Gets or sets the version STR.
         /// </summary>
         /// <value>The version STR.</value>
