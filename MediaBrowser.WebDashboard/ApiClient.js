@@ -305,9 +305,9 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 url: url
             });
         };
-        
+
         function getRemoteImagePrefix(options) {
-            
+
             var urlPrefix;
 
             if (options.artist) {
