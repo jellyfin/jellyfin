@@ -1,32 +1,25 @@
-﻿using System;
-using System.IO;
-using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
 using ServiceStack.ServiceHost;
+using ServiceStack.Text.Controller;
+using System;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Api
+namespace MediaBrowser.Api.Images
 {
-    [Route("/Items/{Id}/RemoteImages", "GET")]
-    [Api(Description = "Gets available remote images for an item")]
-    public class GetRemoteImages : IReturn<RemoteImageResult>
+    public class BaseRemoteImageRequest : IReturn<RemoteImageResult>
     {
-        /// <summary>
-        /// Gets or sets the id.
-        /// </summary>
-        /// <value>The id.</value>
-        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string Id { get; set; }
-
         [ApiMember(Name = "Type", Description = "The image type", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public ImageType? Type { get; set; }
 
@@ -48,9 +41,9 @@ namespace MediaBrowser.Api
         public string ProviderName { get; set; }
     }
 
-    [Route("/Items/{Id}/RemoteImages/Download", "POST")]
-    [Api(Description = "Downloads a remote image for an item")]
-    public class DownloadRemoteImage : IReturnVoid
+    [Route("/Items/{Id}/RemoteImages", "GET")]
+    [Api(Description = "Gets available remote images for an item")]
+    public class GetRemoteImages : BaseRemoteImageRequest
     {
         /// <summary>
         /// Gets or sets the id.
@@ -58,7 +51,27 @@ namespace MediaBrowser.Api
         /// <value>The id.</value>
         [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Id { get; set; }
+    }
 
+    [Route("/Artists/{Name}/RemoteImages", "GET")]
+    [Route("/Genres/{Name}/RemoteImages", "GET")]
+    [Route("/GameGenres/{Name}/RemoteImages", "GET")]
+    [Route("/MusicGenres/{Name}/RemoteImages", "GET")]
+    [Route("/Persons/{Name}/RemoteImages", "GET")]
+    [Route("/Studios/{Name}/RemoteImages", "GET")]
+    [Api(Description = "Gets available remote images for an item")]
+    public class GetItemByNameRemoteImages : BaseRemoteImageRequest
+    {
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "Name", Description = "Name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Name { get; set; }
+    }
+
+    public class BaseDownloadRemoteImage : IReturnVoid
+    {
         [ApiMember(Name = "Type", Description = "The image type", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
         public ImageType Type { get; set; }
 
@@ -68,7 +81,36 @@ namespace MediaBrowser.Api
         [ApiMember(Name = "ImageUrl", Description = "The image url", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string ImageUrl { get; set; }
     }
+    
+    [Route("/Items/{Id}/RemoteImages/Download", "POST")]
+    [Api(Description = "Downloads a remote image for an item")]
+    public class DownloadRemoteImage : BaseDownloadRemoteImage
+    {
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Id { get; set; }
+    }
 
+    [Route("/Artists/{Name}/RemoteImages/Download", "POST")]
+    [Route("/Genres/{Name}/RemoteImages/Download", "POST")]
+    [Route("/GameGenres/{Name}/RemoteImages/Download", "POST")]
+    [Route("/MusicGenres/{Name}/RemoteImages/Download", "POST")]
+    [Route("/Persons/{Name}/RemoteImages/Download", "POST")]
+    [Route("/Studios/{Name}/RemoteImages/Download", "POST")]
+    [Api(Description = "Downloads a remote image for an item")]
+    public class DownloadItemByNameRemoteImage : BaseDownloadRemoteImage
+    {
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "Name", Description = "Name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public string Name { get; set; }
+    }
+    
     [Route("/Images/Remote", "GET")]
     [Api(Description = "Gets a remote image")]
     public class GetRemoteImage
@@ -86,20 +128,39 @@ namespace MediaBrowser.Api
         private readonly IFileSystem _fileSystem;
 
         private readonly IDtoService _dtoService;
+        private readonly ILibraryManager _libraryManager;
 
-        public RemoteImageService(IProviderManager providerManager, IDtoService dtoService, IServerApplicationPaths appPaths, IHttpClient httpClient, IFileSystem fileSystem)
+        public RemoteImageService(IProviderManager providerManager, IDtoService dtoService, IServerApplicationPaths appPaths, IHttpClient httpClient, IFileSystem fileSystem, ILibraryManager libraryManager)
         {
             _providerManager = providerManager;
             _dtoService = dtoService;
             _appPaths = appPaths;
             _httpClient = httpClient;
             _fileSystem = fileSystem;
+            _libraryManager = libraryManager;
         }
 
         public object Get(GetRemoteImages request)
         {
             var item = _dtoService.GetItemByDtoId(request.Id);
 
+            var result = GetRemoteImageResult(item, request);
+
+            return ToOptimizedResult(result);
+        }
+
+        public object Get(GetItemByNameRemoteImages request)
+        {
+            var pathInfo = PathInfo.Parse(RequestContext.PathInfo);
+            var type = pathInfo.GetArgumentValue<string>(0);
+
+            var item = GetItemByName(request.Name, type, _libraryManager);
+
+            return GetRemoteImageResult(item, request);
+        }
+        
+        private RemoteImageResult GetRemoteImageResult(BaseItem item, BaseRemoteImageRequest request)
+        {
             var images = _providerManager.GetAvailableRemoteImages(item, CancellationToken.None, request.ProviderName, request.Type).Result;
 
             var imagesList = images.ToList();
@@ -124,20 +185,42 @@ namespace MediaBrowser.Api
 
             result.Images = imagesList;
 
-            return ToOptimizedResult(result);
+            return result;
         }
 
+        /// <summary>
+        /// Posts the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
         public void Post(DownloadRemoteImage request)
         {
-            var task = DownloadRemoteImage(request);
+            var item = _dtoService.GetItemByDtoId(request.Id);
+
+            var task = DownloadRemoteImage(item, request);
 
             Task.WaitAll(task);
         }
 
-        private async Task DownloadRemoteImage(DownloadRemoteImage request)
+        public void Post(DownloadItemByNameRemoteImage request)
         {
-            var item = _dtoService.GetItemByDtoId(request.Id);
+            var pathInfo = PathInfo.Parse(RequestContext.PathInfo);
+            var type = pathInfo.GetArgumentValue<string>(0);
 
+            var item = GetItemByName(request.Name, type, _libraryManager);
+
+            var task = DownloadRemoteImage(item, request);
+
+            Task.WaitAll(task);
+        }
+        
+        /// <summary>
+        /// Downloads the remote image.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="request">The request.</param>
+        /// <returns>Task.</returns>
+        private async Task DownloadRemoteImage(BaseItem item, BaseDownloadRemoteImage request)
+        {
             int? index = null;
 
             if (request.Type == ImageType.Backdrop)
@@ -151,6 +234,11 @@ namespace MediaBrowser.Api
                     .ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Gets the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>System.Object.</returns>
         public object Get(GetRemoteImage request)
         {
             var task = GetRemoteImage(request);
@@ -158,6 +246,11 @@ namespace MediaBrowser.Api
             return task.Result;
         }
 
+        /// <summary>
+        /// Gets the remote image.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>Task{System.Object}.</returns>
         private async Task<object> GetRemoteImage(GetRemoteImage request)
         {
             var urlHash = request.Url.GetMD5();
@@ -193,6 +286,13 @@ namespace MediaBrowser.Api
             return ToStaticFileResult(contentPath);
         }
 
+        /// <summary>
+        /// Downloads the image.
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <param name="urlHash">The URL hash.</param>
+        /// <param name="pointerCachePath">The pointer cache path.</param>
+        /// <returns>Task.</returns>
         private async Task DownloadImage(string url, Guid urlHash, string pointerCachePath)
         {
             var result = await _httpClient.GetResponse(new HttpRequestOptions
@@ -219,6 +319,11 @@ namespace MediaBrowser.Api
             }
         }
 
+        /// <summary>
+        /// Gets the full cache path.
+        /// </summary>
+        /// <param name="filename">The filename.</param>
+        /// <returns>System.String.</returns>
         private string GetFullCachePath(string filename)
         {
             return Path.Combine(_appPaths.DownloadedImagesDataPath, filename.Substring(0, 1), filename);

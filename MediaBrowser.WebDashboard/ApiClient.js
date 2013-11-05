@@ -311,27 +311,27 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             var urlPrefix;
 
             if (options.artist) {
-                urlPrefix = "Artists/" + encodeName(options.artist);
+                urlPrefix = "Artists/" + self.encodeName(options.artist);
                 delete options.artist;
             }
             else if (options.person) {
-                urlPrefix = "Persons/" + encodeName(options.person);
+                urlPrefix = "Persons/" + self.encodeName(options.person);
                 delete options.person;
             }
             else if (options.genre) {
-                urlPrefix = "Genres/" + encodeName(options.genre);
+                urlPrefix = "Genres/" + self.encodeName(options.genre);
                 delete options.genre;
             }
             else if (options.musicGenre) {
-                urlPrefix = "MusicGenres/" + encodeName(options.musicGenre);
+                urlPrefix = "MusicGenres/" + self.encodeName(options.musicGenre);
                 delete options.musicGenre;
             }
             else if (options.gameGenre) {
-                urlPrefix = "GameGenres/" + encodeName(options.gameGenre);
+                urlPrefix = "GameGenres/" + self.encodeName(options.gameGenre);
                 delete options.gameGenre;
             }
             else if (options.studio) {
-                urlPrefix = "Studios/" + encodeName(options.studio);
+                urlPrefix = "Studios/" + self.encodeName(options.studio);
                 delete options.studio;
             }
             else {

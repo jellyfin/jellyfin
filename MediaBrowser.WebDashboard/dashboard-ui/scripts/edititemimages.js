@@ -198,7 +198,7 @@
                     html += image.CommunityRating.toFixed(1);
 
                     if (image.VoteCount) {
-                        html += ' • ' + image.VoteCount + ' votes';
+                        html += ' • ' + image.VoteCount + (image.VoteCount == 1 ? " vote" : " votes");
                     }
                 } else {
                     html += "Unrated";
