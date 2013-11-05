@@ -172,7 +172,7 @@ namespace MediaBrowser.Providers.Music
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (ConfigurationManager.Configuration.DownloadSeriesImages.Primary && !item.HasImage(ImageType.Primary))
+            if (ConfigurationManager.Configuration.DownloadMusicAlbumImages.Primary && !item.HasImage(ImageType.Primary))
             {
                 var image = images.FirstOrDefault(i => i.Type == ImageType.Primary);
 
@@ -184,7 +184,7 @@ namespace MediaBrowser.Providers.Music
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (ConfigurationManager.Configuration.DownloadSeriesImages.Disc && !item.HasImage(ImageType.Disc))
+            if (ConfigurationManager.Configuration.DownloadMusicAlbumImages.Disc && !item.HasImage(ImageType.Disc))
             {
                 var image = images.FirstOrDefault(i => i.Type == ImageType.Disc);
 

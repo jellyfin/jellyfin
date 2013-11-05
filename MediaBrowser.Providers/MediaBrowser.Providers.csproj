@@ -91,6 +91,7 @@
     <Compile Include="Music\LastfmHelper.cs" />
     <Compile Include="Music\AlbumDynamicInfoProvider.cs" />
     <Compile Include="Music\ManualFanartAlbumProvider.cs" />
+    <Compile Include="Music\ManualFanartArtistProvider.cs" />
     <Compile Include="Music\MusicVideoXmlParser.cs" />
     <Compile Include="Music\SoundtrackPostScanTask.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
