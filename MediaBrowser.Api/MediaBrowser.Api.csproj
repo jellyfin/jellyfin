@@ -100,7 +100,7 @@
     <Compile Include="Playback\StreamState.cs" />
     <Compile Include="Playback\Progressive\VideoService.cs" />
     <Compile Include="PluginService.cs" />
-    <Compile Include="RemoteImageService.cs" />
+    <Compile Include="Images\RemoteImageService.cs" />
     <Compile Include="ScheduledTasks\ScheduledTaskService.cs" />
     <Compile Include="ScheduledTasks\ScheduledTasksWebSocketListener.cs" />
     <Compile Include="ApiEntryPoint.cs" />
