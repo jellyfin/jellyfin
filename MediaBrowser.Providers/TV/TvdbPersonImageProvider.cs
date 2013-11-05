@@ -91,7 +91,7 @@ namespace MediaBrowser.Providers.TV
 
         public override MetadataProviderPriority Priority
         {
-            get { return MetadataProviderPriority.Third; }
+            get { return MetadataProviderPriority.Fourth; }
         }
     }
 }

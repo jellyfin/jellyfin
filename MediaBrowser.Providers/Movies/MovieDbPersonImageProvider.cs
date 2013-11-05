@@ -18,9 +18,9 @@ using System.Threading.Tasks;
 namespace MediaBrowser.Providers.Movies
 {
     /// <summary>
-    /// Class MovieDbImagesProvider
+    /// Class MovieDbPersonImageProvider.
     /// </summary>
-    public class MovieDbImagesProvider : BaseMetadataProvider
+    public class MovieDbPersonImageProvider : BaseMetadataProvider
     {
         /// <summary>
         /// The _provider manager
@@ -30,12 +30,12 @@ namespace MediaBrowser.Providers.Movies
         private readonly IFileSystem _fileSystem;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MovieDbImagesProvider"/> class.
+        /// Initializes a new instance of the <see cref="MediaBrowser.Providers.Movies.MovieDbImagesProvider"/> class.
         /// </summary>
         /// <param name="logManager">The log manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="providerManager">The provider manager.</param>
-        public MovieDbImagesProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager, IFileSystem fileSystem)
+        public MovieDbPersonImageProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager, IFileSystem fileSystem)
             : base(logManager, configurationManager)
         {
             _providerManager = providerManager;
@@ -48,7 +48,7 @@ namespace MediaBrowser.Providers.Movies
         /// <value>The priority.</value>
         public override MetadataProviderPriority Priority
         {
-            get { return MetadataProviderPriority.Fourth; }
+            get { return MetadataProviderPriority.Third; }
         }
 
         /// <summary>
@@ -58,20 +58,7 @@ namespace MediaBrowser.Providers.Movies
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         public override bool Supports(BaseItem item)
         {
-            return SupportsItem(item);
-        }
-
-        public static bool SupportsItem(BaseItem item)
-        {
-            var trailer = item as Trailer;
-
-            if (trailer != null)
-            {
-                return !trailer.IsLocalTrailer;
-            }
-
-            // Don't support local trailers
-            return item is Movie || item is BoxSet || item is MusicVideo;
+            return item is Person;
         }
 
         public override ItemUpdateType ItemUpdateType
@@ -132,7 +119,7 @@ namespace MediaBrowser.Providers.Movies
             }
 
             // Don't refresh if we already have both poster and backdrop and we're not refreshing images
-            if (item.HasImage(ImageType.Primary) && item.BackdropImagePaths.Count >= ConfigurationManager.Configuration.MaxBackdrops)
+            if (item.HasImage(ImageType.Primary))
             {
                 return false;
             }
@@ -140,18 +127,29 @@ namespace MediaBrowser.Providers.Movies
             return base.NeedsRefreshInternal(item, providerInfo);
         }
 
+        /// <summary>
+        /// Needses the refresh based on compare date.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="providerInfo">The provider info.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         protected override bool NeedsRefreshBasedOnCompareDate(BaseItem item, BaseProviderInfo providerInfo)
         {
-            var path = MovieDbProvider.Current.GetImagesDataFilePath(item);
+            var provderId = item.GetProviderId(MetadataProviders.Tmdb);
 
-            if (!string.IsNullOrEmpty(path))
+            if (!string.IsNullOrEmpty(provderId))
             {
+                // Process images
+                var path = MovieDbPersonProvider.GetPersonDataFilePath(ConfigurationManager.ApplicationPaths, provderId);
+
                 var fileInfo = new FileInfo(path);
 
                 if (fileInfo.Exists)
                 {
                     return _fileSystem.GetLastWriteTimeUtc(fileInfo) > providerInfo.LastRefreshed;
                 }
+
+                return false;
             }
 
             return false;
@@ -166,7 +164,7 @@ namespace MediaBrowser.Providers.Movies
         /// <returns>Task{System.Boolean}.</returns>
         public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
-            var images = await _providerManager.GetAvailableRemoteImages(item, cancellationToken, ManualMovieDbImageProvider.ProviderName).ConfigureAwait(false);
+            var images = await _providerManager.GetAvailableRemoteImages(item, cancellationToken, ManualMovieDbPersonImageProvider.ProviderName).ConfigureAwait(false);
 
             await ProcessImages(item, images.ToList(), cancellationToken).ConfigureAwait(false);
 
@@ -205,41 +203,6 @@ namespace MediaBrowser.Providers.Movies
 
                 await _providerManager.SaveImage(item, img, MimeTypes.GetMimeType(url), ImageType.Primary, null, url, cancellationToken)
                                     .ConfigureAwait(false);
-            }
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var eligibleBackdrops = images
-                .Where(i => i.Type == ImageType.Backdrop && i.Width.HasValue && i.Width.Value >= ConfigurationManager.Configuration.MinMovieBackdropDownloadWidth)
-                .ToList();
-
-            var backdropLimit = ConfigurationManager.Configuration.MaxBackdrops;
-
-            // backdrops - only download if earlier providers didn't find any (fanart)
-            if (eligibleBackdrops.Count > 0 && ConfigurationManager.Configuration.DownloadMovieImages.Backdrops && item.BackdropImagePaths.Count < backdropLimit)
-            {
-                for (var i = 0; i < eligibleBackdrops.Count; i++)
-                {
-                    var url = eligibleBackdrops[i].Url;
-
-                    if (!item.ContainsImageWithSourceUrl(url))
-                    {
-                        var img = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
-                        {
-                            Url = url,
-                            CancellationToken = cancellationToken
-
-                        }).ConfigureAwait(false);
-
-                        await _providerManager.SaveImage(item, img, MimeTypes.GetMimeType(url), ImageType.Backdrop, item.BackdropImagePaths.Count, url, cancellationToken)
-                          .ConfigureAwait(false);
-                    }
-
-                    if (item.BackdropImagePaths.Count >= backdropLimit)
-                    {
-                        break;
-                    }
-                }
             }
         }
     }

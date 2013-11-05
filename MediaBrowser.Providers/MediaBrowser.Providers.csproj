@@ -62,6 +62,8 @@
     <Compile Include="Movies\BoxSetProviderFromXml.cs" />
     <Compile Include="Movies\ManualMovieDbImageProvider.cs" />
     <Compile Include="Movies\ManualFanartMovieImageProvider.cs" />
+    <Compile Include="Movies\ManualMovieDbPersonImageProvider.cs" />
+    <Compile Include="Movies\MovieDbPersonImageProvider.cs" />
     <Compile Include="Movies\MovieUpdatesPrescanTask.cs" />
     <Compile Include="Movies\MovieXmlParser.cs" />
     <Compile Include="Movies\FanArtMovieProvider.cs" />
@@ -72,7 +74,7 @@
     <Compile Include="Movies\OpenMovieDatabaseProvider.cs" />
     <Compile Include="Movies\PersonProviderFromXml.cs" />
     <Compile Include="Movies\PersonUpdatesPreScanTask.cs" />
-    <Compile Include="Movies\TmdbPersonProvider.cs" />
+    <Compile Include="Movies\MovieDbPersonProvider.cs" />
     <Compile Include="Music\AlbumInfoFromSongProvider.cs" />
     <Compile Include="Music\ArtistInfoFromSongProvider.cs" />
     <Compile Include="Music\ArtistProviderFromXml.cs" />

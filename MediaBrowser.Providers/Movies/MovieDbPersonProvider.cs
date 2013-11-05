@@ -23,16 +23,16 @@ namespace MediaBrowser.Providers.Movies
     /// <summary>
     /// Class TmdbPersonProvider
     /// </summary>
-    public class TmdbPersonProvider : BaseMetadataProvider
+    public class MovieDbPersonProvider : BaseMetadataProvider
     {
         protected readonly IProviderManager ProviderManager;
 
-        internal static TmdbPersonProvider Current { get; private set; }
+        internal static MovieDbPersonProvider Current { get; private set; }
 
         const string DataFileName = "info.json";
         private readonly IFileSystem _fileSystem;
 
-        public TmdbPersonProvider(IJsonSerializer jsonSerializer, ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager, IFileSystem fileSystem)
+        public MovieDbPersonProvider(IJsonSerializer jsonSerializer, ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager, IFileSystem fileSystem)
             : base(logManager, configurationManager)
         {
             if (jsonSerializer == null)
@@ -123,6 +123,15 @@ namespace MediaBrowser.Providers.Movies
             var seriesDataPath = Path.Combine(GetPersonsDataPath(appPaths), letter, tmdbId);
 
             return seriesDataPath;
+        }
+
+        internal static string GetPersonDataFilePath(IApplicationPaths appPaths, string tmdbId)
+        {
+            var letter = tmdbId.GetMD5().ToString().Substring(0, 1);
+
+            var seriesDataPath = Path.Combine(GetPersonsDataPath(appPaths), letter, tmdbId);
+
+            return Path.Combine(seriesDataPath, DataFileName);
         }
 
         internal static string GetPersonsDataPath(IApplicationPaths appPaths)
@@ -231,20 +240,18 @@ namespace MediaBrowser.Providers.Movies
         /// <returns>Task.</returns>
         private async Task FetchInfo(Person person, string id, bool isForcedRefresh, CancellationToken cancellationToken)
         {
-            var personDataPath = GetPersonDataPath(ConfigurationManager.ApplicationPaths, id);
-
-            var file = Path.Combine(personDataPath, DataFileName);
+            var dataFilePath = GetPersonDataFilePath(ConfigurationManager.ApplicationPaths, id);
 
             // Only download if not already there
             // The prescan task will take care of updates so we don't need to re-download here
-            if (!File.Exists(file))
+            if (!File.Exists(dataFilePath))
             {
                 await DownloadPersonInfo(id, cancellationToken).ConfigureAwait(false);
             }
 
             if (isForcedRefresh || ConfigurationManager.Configuration.EnableTmdbUpdates || !HasAltMeta(person))
             {
-                var info = JsonSerializer.DeserializeFromFile<PersonResult>(Path.Combine(personDataPath, DataFileName));
+                var info = JsonSerializer.DeserializeFromFile<PersonResult>(dataFilePath);
 
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -398,7 +405,7 @@ namespace MediaBrowser.Providers.Movies
         /// <summary>
         /// Class PersonSearchResult
         /// </summary>
-        protected class PersonSearchResult
+        public class PersonSearchResult
         {
             /// <summary>
             /// Gets or sets a value indicating whether this <see cref="PersonSearchResult" /> is adult.
@@ -425,7 +432,7 @@ namespace MediaBrowser.Providers.Movies
         /// <summary>
         /// Class PersonSearchResults
         /// </summary>
-        protected class PersonSearchResults
+        public class PersonSearchResults
         {
             /// <summary>
             /// Gets or sets the page.
@@ -449,7 +456,7 @@ namespace MediaBrowser.Providers.Movies
             public int Total_Results { get; set; }
         }
 
-        protected class Cast
+        public class Cast
         {
             public int id { get; set; }
             public string title { get; set; }
@@ -460,7 +467,7 @@ namespace MediaBrowser.Providers.Movies
             public bool adult { get; set; }
         }
 
-        protected class Crew
+        public class Crew
         {
             public int id { get; set; }
             public string title { get; set; }
@@ -472,13 +479,13 @@ namespace MediaBrowser.Providers.Movies
             public bool adult { get; set; }
         }
 
-        protected class Credits
+        public class Credits
         {
             public List<Cast> cast { get; set; }
             public List<Crew> crew { get; set; }
         }
 
-        protected class Profile
+        public class Profile
         {
             public string file_path { get; set; }
             public int width { get; set; }
@@ -487,12 +494,12 @@ namespace MediaBrowser.Providers.Movies
             public double aspect_ratio { get; set; }
         }
 
-        protected class Images
+        public class Images
         {
             public List<Profile> profiles { get; set; }
         }
 
-        protected class PersonResult
+        public class PersonResult
         {
             public bool adult { get; set; }
             public List<object> also_known_as { get; set; }
