@@ -153,6 +153,8 @@
 
         var page = this;
 
+        $('#selectTargetSystem', page).val(query.TargetSystems).selectmenu('refresh');
+
         // Reset form values using the last used query
         $('.chkPremiumFilter', page).each(function () {
 
