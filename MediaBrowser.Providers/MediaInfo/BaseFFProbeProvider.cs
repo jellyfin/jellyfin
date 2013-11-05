@@ -212,7 +212,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 stream.Width = streamInfo.width;
                 stream.Height = streamInfo.height;
-                stream.AspectRatio = streamInfo.display_aspect_ratio;
+                stream.AspectRatio = GetAspectRatio(streamInfo);
 
                 stream.AverageFrameRate = GetFrameRate(streamInfo.avg_frame_rate);
                 stream.RealFrameRate = GetFrameRate(streamInfo.r_frame_rate);
@@ -248,6 +248,68 @@ namespace MediaBrowser.Providers.MediaInfo
 
             return stream;
         }
+
+        private string GetAspectRatio(MediaStreamInfo info)
+        {
+            if (info.height > 0 && info.width > 0)
+            {
+                double ratio = info.width;
+                ratio /= info.height;
+
+                if (IsClose(ratio, 1.777777778))
+                {
+                    return "16:9";
+                }
+
+                if (IsClose(ratio, 1.3333333333))
+                {
+                    return "4:3";
+                }
+
+                if (IsClose(ratio, 1.41))
+                {
+                    return "1.41:1";
+                }
+
+                if (IsClose(ratio, 1.5))
+                {
+                    return "1.5:1";
+                }
+
+                if (IsClose(ratio, 1.6))
+                {
+                    return "1.6:1";
+                }
+
+                if (IsClose(ratio, 1.66666666667))
+                {
+                    return "5:3";
+                }
+
+                if (IsClose(ratio, 1.85))
+                {
+                    return "1.85:1";
+                }
+
+                if (IsClose(ratio, 2.39))
+                {
+                    return "2.39:1";
+                }
+
+                if (IsClose(ratio, 2.4))
+                {
+                    return "2.4:1";
+                }
+            }
+
+            return info.display_aspect_ratio;
+        }
+
+        private bool IsClose(double d1, double d2)
+        {
+            return Math.Abs(d1 - d2) <= .005;
+        }
+
 
         /// <summary>
         /// Gets a frame rate from a string value in ffprobe output
