@@ -153,7 +153,16 @@
             cssClass += " remoteDiscImage";
         }
         else {
-            cssClass += currentItem.Type == "Episode" ? " remoteBackdropImage" : " remotePosterImage";
+            
+            if (currentItem.Type == "Episode") {
+                cssClass += " remoteBackdropImage";
+            }
+            else if (currentItem.Type == "MusicAlbum" || currentItem.Type == "MusicArtist" || currentItem.Type == "Artist") {
+                cssClass += " remoteDiscImage";
+            }
+            else {
+                cssClass += " remotePosterImage";
+            }
         }
 
         var displayUrl = getDisplayUrl(image.ThumbnailUrl || image.Url);

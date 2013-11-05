@@ -4,13 +4,14 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Providers;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -139,50 +140,25 @@ namespace MediaBrowser.Providers.Music
                 return false;
             }
 
-            if (!ConfigurationManager.Configuration.DownloadMusicArtistImages.Art &&
-              !ConfigurationManager.Configuration.DownloadMusicArtistImages.Backdrops &&
-              !ConfigurationManager.Configuration.DownloadMusicArtistImages.Banner &&
-              !ConfigurationManager.Configuration.DownloadMusicArtistImages.Logo &&
-              !ConfigurationManager.Configuration.DownloadMusicArtistImages.Primary &&
-
-                // The fanart album provider depends on xml downloaded here, so honor it's settings too
-                !ConfigurationManager.Configuration.DownloadMusicAlbumImages.Disc &&
-                !ConfigurationManager.Configuration.DownloadMusicAlbumImages.Primary)
-            {
-                return false;
-            }
-
             return base.NeedsRefreshInternal(item, providerInfo);
         }
 
-        protected override DateTime CompareDate(BaseItem item)
+        protected override bool NeedsRefreshBasedOnCompareDate(BaseItem item, BaseProviderInfo providerInfo)
         {
             var musicBrainzId = item.GetProviderId(MetadataProviders.Musicbrainz);
 
             if (!string.IsNullOrEmpty(musicBrainzId))
             {
                 // Process images
-                var path = GetArtistDataPath(ConfigurationManager.ApplicationPaths, musicBrainzId);
+                var artistXmlPath = GetArtistDataPath(ConfigurationManager.CommonApplicationPaths, musicBrainzId);
+                artistXmlPath = Path.Combine(artistXmlPath, "fanart.xml");
 
-                try
-                {
-                    var files = new DirectoryInfo(path)
-                        .EnumerateFiles("*.xml", SearchOption.TopDirectoryOnly)
-                        .Select(i => _fileSystem.GetLastWriteTimeUtc(i))
-                        .ToList();
+                var file = new FileInfo(artistXmlPath);
 
-                    if (files.Count > 0)
-                    {
-                        return files.Max();
-                    }
-                }
-                catch (DirectoryNotFoundException)
-                {
-                    
-                }
+                return !file.Exists || _fileSystem.GetLastWriteTimeUtc(file) > providerInfo.LastRefreshed;
             }
 
-            return base.CompareDate(item);
+            return base.NeedsRefreshBasedOnCompareDate(item, providerInfo);
         }
 
         /// <summary>
@@ -191,22 +167,22 @@ namespace MediaBrowser.Providers.Music
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
         /// <summary>
-        /// Gets the series data path.
+        /// Gets the artist data path.
         /// </summary>
-        /// <param name="appPaths">The app paths.</param>
-        /// <param name="musicBrainzArtistId">The music brainz artist id.</param>
+        /// <param name="appPaths">The application paths.</param>
+        /// <param name="musicBrainzArtistId">The music brainz artist identifier.</param>
         /// <returns>System.String.</returns>
         internal static string GetArtistDataPath(IApplicationPaths appPaths, string musicBrainzArtistId)
         {
-            var seriesDataPath = Path.Combine(GetArtistDataPath(appPaths), musicBrainzArtistId);
+            var dataPath = Path.Combine(GetArtistDataPath(appPaths), musicBrainzArtistId);
 
-            return seriesDataPath;
+            return dataPath;
         }
 
         /// <summary>
-        /// Gets the series data path.
+        /// Gets the artist data path.
         /// </summary>
-        /// <param name="appPaths">The app paths.</param>
+        /// <param name="appPaths">The application paths.</param>
         /// <returns>System.String.</returns>
         internal static string GetArtistDataPath(IApplicationPaths appPaths)
         {
@@ -243,17 +219,9 @@ namespace MediaBrowser.Providers.Music
               ConfigurationManager.Configuration.DownloadMusicArtistImages.Logo ||
               ConfigurationManager.Configuration.DownloadMusicArtistImages.Primary)
             {
-                if (File.Exists(xmlPath))
-                {
-                    await FetchFromXml(item, xmlPath, cancellationToken).ConfigureAwait(false);
-                }
-            }
+                var images = await _providerManager.GetAvailableRemoteImages(item, cancellationToken, ManualFanartArtistProvider.ProviderName).ConfigureAwait(false);
 
-            BaseProviderInfo data;
-            if (!item.ProviderData.TryGetValue(Id, out data))
-            {
-                data = new BaseProviderInfo();
-                item.ProviderData[Id] = data;
+                await FetchFromXml(item, images.ToList(), cancellationToken).ConfigureAwait(false);
             }
 
             SetLastRefreshed(item, DateTime.UtcNow);
@@ -296,151 +264,75 @@ namespace MediaBrowser.Providers.Music
         /// Fetches from XML.
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <param name="xmlFilePath">The XML file path.</param>
+        /// <param name="images">The images.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        private async Task FetchFromXml(BaseItem item, string xmlFilePath, CancellationToken cancellationToken)
+        private async Task FetchFromXml(BaseItem item, List<RemoteImageInfo> images , CancellationToken cancellationToken)
         {
-            var doc = new XmlDocument();
-            doc.Load(xmlFilePath);
-
             cancellationToken.ThrowIfCancellationRequested();
 
-            string path;
+            if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Primary && !item.HasImage(ImageType.Primary))
+            {
+                var image = images.FirstOrDefault(i => i.Type == ImageType.Primary);
+
+                if (image != null)
+                {
+                    await _providerManager.SaveImage(item, image.Url, FanArtResourcePool, ImageType.Primary, null, cancellationToken).ConfigureAwait(false);
+                }
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Logo && !item.HasImage(ImageType.Logo))
             {
-                var node =
-                    doc.SelectSingleNode("//fanart/music/hdmusiclogos/hdmusiclogo/@url") ??
-                    doc.SelectSingleNode("//fanart/music/musiclogos/musiclogo/@url");
-                path = node != null ? node.Value : null;
-                if (!string.IsNullOrEmpty(path))
+                var image = images.FirstOrDefault(i => i.Type == ImageType.Logo);
+
+                if (image != null)
                 {
-                    try
-                    {
-                        await _providerManager.SaveImage(item, path, FanArtResourcePool, ImageType.Logo, null, cancellationToken)
-                            .ConfigureAwait(false);
-                    }
-                    catch (HttpException ex)
-                    {
-                        // Sometimes fanart has bad url's in their xml. Nothing we can do here but catch it
-                        if (!ex.StatusCode.HasValue || ex.StatusCode.Value != HttpStatusCode.NotFound)
-                        {
-                            throw;
-                        }
-                    }
+                    await _providerManager.SaveImage(item, image.Url, FanArtResourcePool, ImageType.Logo, null, cancellationToken).ConfigureAwait(false);
                 }
-            }
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var backdropLimit = ConfigurationManager.Configuration.MaxBackdrops;
-
-            if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Backdrops && item.BackdropImagePaths.Count == 0)
-            {
-                var nodes = doc.SelectNodes("//fanart/music/artistbackgrounds//@url");
-                if (nodes != null)
-                {
-                    var numBackdrops = 0;
-
-                    foreach (XmlNode node in nodes)
-                    {
-                        path = node.Value;
-                        if (!string.IsNullOrEmpty(path) && !item.ContainsImageWithSourceUrl(path))
-                        {
-                            try
-                            {
-                                await _providerManager.SaveImage(item, path, FanArtResourcePool, ImageType.Backdrop, numBackdrops, cancellationToken)
-                                    .ConfigureAwait(false);
-                                numBackdrops++;
-                                if (numBackdrops >= backdropLimit) break;
-                            }
-                            catch (HttpException ex)
-                            {
-                                // Sometimes fanart has bad url's in their xml. Nothing we can do here but catch it
-                                if (!ex.StatusCode.HasValue || ex.StatusCode.Value != HttpStatusCode.NotFound)
-                                {
-                                    throw;
-                                }
-                            }
-                        }
-                    }
-
-                }
-
             }
 
             cancellationToken.ThrowIfCancellationRequested();
 
             if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Art && !item.HasImage(ImageType.Art))
             {
-                var node =
-                    doc.SelectSingleNode("//fanart/music/hdmusicarts/hdmusicart/@url") ??
-                    doc.SelectSingleNode("//fanart/music/musicarts/musicart/@url");
-                path = node != null ? node.Value : null;
-                if (!string.IsNullOrEmpty(path))
+                var image = images.FirstOrDefault(i => i.Type == ImageType.Art);
+
+                if (image != null)
                 {
-                    try
-                    {
-                        await _providerManager.SaveImage(item, path, FanArtResourcePool, ImageType.Art, null, cancellationToken)
-                            .ConfigureAwait(false);
-                    }
-                    catch (HttpException ex)
-                    {
-                        // Sometimes fanart has bad url's in their xml. Nothing we can do here but catch it
-                        if (!ex.StatusCode.HasValue || ex.StatusCode.Value != HttpStatusCode.NotFound)
-                        {
-                            throw;
-                        }
-                    }
+                    await _providerManager.SaveImage(item, image.Url, FanArtResourcePool, ImageType.Art, null, cancellationToken).ConfigureAwait(false);
                 }
             }
+
             cancellationToken.ThrowIfCancellationRequested();
 
             if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Banner && !item.HasImage(ImageType.Banner))
             {
-                var node = doc.SelectSingleNode("//fanart/music/hdmusicbanners/hdmusicbanner/@url") ??
-                           doc.SelectSingleNode("//fanart/music/musicbanners/musicbanner/@url");
-                path = node != null ? node.Value : null;
-                if (!string.IsNullOrEmpty(path))
+                var image = images.FirstOrDefault(i => i.Type == ImageType.Banner);
+
+                if (image != null)
                 {
-                    try
-                    {
-                        await _providerManager.SaveImage(item, path, FanArtResourcePool, ImageType.Banner, null, cancellationToken)
-                            .ConfigureAwait(false);
-                    }
-                    catch (HttpException ex)
-                    {
-                        // Sometimes fanart has bad url's in their xml. Nothing we can do here but catch it
-                        if (!ex.StatusCode.HasValue || ex.StatusCode.Value != HttpStatusCode.NotFound)
-                        {
-                            throw;
-                        }
-                    }
+                    await _providerManager.SaveImage(item, image.Url, FanArtResourcePool, ImageType.Banner, null, cancellationToken).ConfigureAwait(false);
                 }
             }
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            // Artist thumbs are actually primary images (they are square/portrait)
-            if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Primary && !item.HasImage(ImageType.Primary))
+            var backdropLimit = ConfigurationManager.Configuration.MaxBackdrops;
+            if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Backdrops &&
+                item.BackdropImagePaths.Count < backdropLimit)
             {
-                var node = doc.SelectSingleNode("//fanart/music/artistthumbs/artistthumb/@url");
-                path = node != null ? node.Value : null;
-                if (!string.IsNullOrEmpty(path))
+                var numBackdrops = item.BackdropImagePaths.Count;
+
+                foreach (var image in images.Where(i => i.Type == ImageType.Backdrop))
                 {
-                    try
-                    {
-                        await _providerManager.SaveImage(item, path, FanArtResourcePool, ImageType.Primary, null, cancellationToken)
-                            .ConfigureAwait(false);
-                    }
-                    catch (HttpException ex)
-                    {
-                        // Sometimes fanart has bad url's in their xml. Nothing we can do here but catch it
-                        if (!ex.StatusCode.HasValue || ex.StatusCode.Value != HttpStatusCode.NotFound)
-                        {
-                            throw;
-                        }
-                    }
+                    await _providerManager.SaveImage(item, image.Url, FanArtResourcePool, ImageType.Backdrop, numBackdrops, cancellationToken)
+                                        .ConfigureAwait(false);
+
+                    numBackdrops++;
+
+                    if (item.BackdropImagePaths.Count >= backdropLimit) break;
                 }
             }
         }

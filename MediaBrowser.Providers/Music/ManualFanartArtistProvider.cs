@@ -17,12 +17,12 @@ using System.Xml;
 
 namespace MediaBrowser.Providers.Music
 {
-    public class ManualFanartAlbumProvider : IImageProvider
+    public class ManualFanartArtistProvider : IImageProvider
     {
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly IServerConfigurationManager _config;
 
-        public ManualFanartAlbumProvider(IServerConfigurationManager config)
+        public ManualFanartArtistProvider(IServerConfigurationManager config)
         {
             _config = config;
         }
@@ -39,7 +39,7 @@ namespace MediaBrowser.Providers.Music
 
         public bool Supports(BaseItem item)
         {
-            return item is MusicAlbum;
+            return item is MusicArtist || item is Artist;
         }
 
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, ImageType imageType, CancellationToken cancellationToken)
@@ -53,20 +53,16 @@ namespace MediaBrowser.Providers.Music
         {
             var list = new List<RemoteImageInfo>();
 
-            var artistMusicBrainzId = item.Parent.GetProviderId(MetadataProviders.Musicbrainz);
+            var artistMusicBrainzId = item.GetProviderId(MetadataProviders.Musicbrainz);
 
             if (!string.IsNullOrEmpty(artistMusicBrainzId))
             {
                 var artistXmlPath = FanArtArtistProvider.GetArtistDataPath(_config.CommonApplicationPaths, artistMusicBrainzId);
                 artistXmlPath = Path.Combine(artistXmlPath, "fanart.xml");
 
-                var musicBrainzReleaseGroupId = item.GetProviderId(MetadataProviders.MusicBrainzReleaseGroup);
-
-                var musicBrainzId = item.GetProviderId(MetadataProviders.Musicbrainz);
-
                 try
                 {
-                    AddImages(list, artistXmlPath, musicBrainzId, musicBrainzReleaseGroupId, cancellationToken);
+                    AddImages(list, artistXmlPath, cancellationToken);
                 }
                 catch (FileNotFoundException)
                 {
@@ -111,10 +107,8 @@ namespace MediaBrowser.Providers.Music
         /// </summary>
         /// <param name="list">The list.</param>
         /// <param name="xmlPath">The XML path.</param>
-        /// <param name="releaseId">The release identifier.</param>
-        /// <param name="releaseGroupId">The release group identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        private void AddImages(List<RemoteImageInfo> list, string xmlPath, string releaseId, string releaseGroupId, CancellationToken cancellationToken)
+        private void AddImages(List<RemoteImageInfo> list, string xmlPath, CancellationToken cancellationToken)
         {
             using (var streamReader = new StreamReader(xmlPath, Encoding.UTF8))
             {
@@ -142,7 +136,7 @@ namespace MediaBrowser.Providers.Music
                                     {
                                         using (var subReader = reader.ReadSubtree())
                                         {
-                                            AddImagesFromMusicNode(list, releaseId, releaseGroupId, subReader, cancellationToken);
+                                            AddImagesFromMusicNode(list, subReader, cancellationToken);
                                         }
                                         break;
                                     }
@@ -161,11 +155,9 @@ namespace MediaBrowser.Providers.Music
         /// Adds the images from music node.
         /// </summary>
         /// <param name="list">The list.</param>
-        /// <param name="releaseId">The release identifier.</param>
-        /// <param name="releaseGroupId">The release group identifier.</param>
         /// <param name="reader">The reader.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        private void AddImagesFromMusicNode(List<RemoteImageInfo> list, string releaseId, string releaseGroupId, XmlReader reader, CancellationToken cancellationToken)
+        private void AddImagesFromMusicNode(List<RemoteImageInfo> list, XmlReader reader, CancellationToken cancellationToken)
         {
             reader.MoveToContent();
 
@@ -175,11 +167,67 @@ namespace MediaBrowser.Providers.Music
                 {
                     switch (reader.Name)
                     {
-                        case "albums":
+                        case "hdmusiclogos":
                             {
                                 using (var subReader = reader.ReadSubtree())
                                 {
-                                    AddImagesFromAlbumsNode(list, releaseId, releaseGroupId, subReader, cancellationToken);
+                                    AddImagesFromImageTypeNode(list, ImageType.Logo, 800, 310, subReader, cancellationToken);
+                                }
+                                break;
+                            }
+                        case "musiclogos":
+                            {
+                                using (var subReader = reader.ReadSubtree())
+                                {
+                                    AddImagesFromImageTypeNode(list, ImageType.Logo, 400, 155, subReader, cancellationToken);
+                                }
+                                break;
+                            }
+                        case "artistbackgrounds":
+                            {
+                                using (var subReader = reader.ReadSubtree())
+                                {
+                                    AddImagesFromImageTypeNode(list, ImageType.Backdrop, 1920, 1080, subReader, cancellationToken);
+                                }
+                                break;
+                            }
+                        case "hdmusicarts":
+                            {
+                                using (var subReader = reader.ReadSubtree())
+                                {
+                                    AddImagesFromImageTypeNode(list, ImageType.Art, 1000, 562, subReader, cancellationToken);
+                                }
+                                break;
+                            }
+                        case "musicarts":
+                            {
+                                using (var subReader = reader.ReadSubtree())
+                                {
+                                    AddImagesFromImageTypeNode(list, ImageType.Art, 500, 281, subReader, cancellationToken);
+                                }
+                                break;
+                            }
+                        case "hdmusicbanners":
+                            {
+                                using (var subReader = reader.ReadSubtree())
+                                {
+                                    AddImagesFromImageTypeNode(list, ImageType.Banner, 1000, 185, subReader, cancellationToken);
+                                }
+                                break;
+                            }
+                        case "musicbanners":
+                            {
+                                using (var subReader = reader.ReadSubtree())
+                                {
+                                    AddImagesFromImageTypeNode(list, ImageType.Banner, 1000, 185, subReader, cancellationToken);
+                                }
+                                break;
+                            }
+                        case "artistthumbs":
+                            {
+                                using (var subReader = reader.ReadSubtree())
+                                {
+                                    AddImagesFromImageTypeNode(list, ImageType.Primary, 1000, 1000, subReader, cancellationToken);
                                 }
                                 break;
                             }
@@ -199,11 +247,12 @@ namespace MediaBrowser.Providers.Music
         /// Adds the images from albums node.
         /// </summary>
         /// <param name="list">The list.</param>
-        /// <param name="releaseId">The release identifier.</param>
-        /// <param name="releaseGroupId">The release group identifier.</param>
+        /// <param name="type">The type.</param>
+        /// <param name="width">The width.</param>
+        /// <param name="height">The height.</param>
         /// <param name="reader">The reader.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        private void AddImagesFromAlbumsNode(List<RemoteImageInfo> list, string releaseId, string releaseGroupId, XmlReader reader, CancellationToken cancellationToken)
+        private void AddImagesFromImageTypeNode(List<RemoteImageInfo> list, ImageType type, int width, int height, XmlReader reader, CancellationToken cancellationToken)
         {
             reader.MoveToContent();
 
@@ -213,56 +262,16 @@ namespace MediaBrowser.Providers.Music
                 {
                     switch (reader.Name)
                     {
-                        case "album":
+                        case "hdmusiclogo":
+                        case "musiclogo":
+                        case "artistbackground":
+                        case "hdmusicart":
+                        case "musicart":
+                        case "hdmusicbanner":
+                        case "musicbanner":
+                        case "artistthumb":
                             {
-                                var id = reader.GetAttribute("id");
-
-                                using (var subReader = reader.ReadSubtree())
-                                {
-                                    if (string.Equals(id, releaseId, StringComparison.OrdinalIgnoreCase) ||
-                                        string.Equals(id, releaseGroupId, StringComparison.OrdinalIgnoreCase))
-                                    {
-                                        AddImages(list, subReader, cancellationToken);
-                                    }
-                                }
-                                break;
-                            }
-                        default:
-                            {
-                                using (reader.ReadSubtree())
-                                {
-                                }
-                                break;
-                            }
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Adds the images.
-        /// </summary>
-        /// <param name="list">The list.</param>
-        /// <param name="reader">The reader.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        private void AddImages(List<RemoteImageInfo> list, XmlReader reader, CancellationToken cancellationToken)
-        {
-            reader.MoveToContent();
-
-            while (reader.Read())
-            {
-                if (reader.NodeType == XmlNodeType.Element)
-                {
-                    switch (reader.Name)
-                    {
-                        case "cdart":
-                            {
-                                AddImage(list, reader, ImageType.Disc, 1000, 1000);
-                                break;
-                            }
-                        case "albumcover":
-                            {
-                                AddImage(list, reader, ImageType.Primary, 1000, 1000);
+                                AddImage(list, reader, type, width, height);
                                 break;
                             }
                         default:
