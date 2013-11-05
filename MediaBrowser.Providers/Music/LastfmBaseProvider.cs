@@ -1,15 +1,12 @@
 ﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.Music
 {
@@ -95,36 +92,6 @@ namespace MediaBrowser.Providers.Music
         protected static string ApiKey = "7b76553c3eb1d341d642755aecc40a33";
 
         /// <summary>
-        /// Fetches the items data.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="cancellationToken"></param>
-        /// <returns>Task.</returns>
-        protected virtual async Task FetchData(BaseItem item, bool force, CancellationToken cancellationToken)
-        {
-            var id = item.GetProviderId(MetadataProviders.Musicbrainz) ?? await FindId(item, cancellationToken).ConfigureAwait(false);
-            if (!string.IsNullOrWhiteSpace(id))
-            {
-                Logger.Debug("LastfmProvider - getting info for {0}", item.Name);
-
-                cancellationToken.ThrowIfCancellationRequested();
-
-                item.SetProviderId(MetadataProviders.Musicbrainz, id);
-
-                await FetchLastfmData(item, id, force, cancellationToken).ConfigureAwait(false);
-            }
-            else
-            {
-                Logger.Info("LastfmProvider could not find " + item.Name + ". Check name on Last.fm.");
-            }
-
-        }
-
-        protected abstract Task<string> FindId(BaseItem item, CancellationToken cancellationToken);
-
-        protected abstract Task FetchLastfmData(BaseItem item, string id, bool force, CancellationToken cancellationToken);
-
-        /// <summary>
         /// Encodes an URL.
         /// </summary>
         /// <param name="name">The name.</param>
@@ -132,22 +99,6 @@ namespace MediaBrowser.Providers.Music
         protected static string UrlEncode(string name)
         {
             return WebUtility.UrlEncode(name);
-        }
-
-        /// <summary>
-        /// Fetches metadata and returns true or false indicating if any work that requires persistence was done
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="force">if set to <c>true</c> [force].</param>
-        /// <param name="cancellationToken">The cancellation token</param>
-        /// <returns>Task{System.Boolean}.</returns>
-        public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            await FetchData(item, force, cancellationToken).ConfigureAwait(false);
-            SetLastRefreshed(item, DateTime.UtcNow);
-            return true;
         }
     }
 

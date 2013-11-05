@@ -82,7 +82,7 @@ namespace MediaBrowser.Providers.Music
         /// <param name="item">The item.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.String}.</returns>
-        protected override async Task<string> FindId(BaseItem item, CancellationToken cancellationToken)
+        private async Task<string> FindId(BaseItem item, CancellationToken cancellationToken)
         {
             if (item is Artist)
             {
@@ -113,6 +113,32 @@ namespace MediaBrowser.Providers.Music
         }
 
         /// <summary>
+        /// Fetches metadata and returns true or false indicating if any work that requires persistence was done
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="force">if set to <c>true</c> [force].</param>
+        /// <param name="cancellationToken">The cancellation token</param>
+        /// <returns>Task{System.Boolean}.</returns>
+        public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var id = item.GetProviderId(MetadataProviders.Musicbrainz) ?? await FindId(item, cancellationToken).ConfigureAwait(false);
+            
+            if (!string.IsNullOrWhiteSpace(id))
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                item.SetProviderId(MetadataProviders.Musicbrainz, id);
+
+                await FetchLastfmData(item, id, force, cancellationToken).ConfigureAwait(false);
+            }
+
+            SetLastRefreshed(item, DateTime.UtcNow);
+            return true;
+        }
+
+        /// <summary>
         /// Finds the id from music artist entity.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -138,7 +164,7 @@ namespace MediaBrowser.Providers.Music
 
             var url = string.Format("http://www.musicbrainz.org/ws/2/artist/?query=artist:\"{0}\"", UrlEncode(nameToSearch));
 
-            var doc = await FanArtAlbumProvider.Current.GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
+            var doc = await LastfmAlbumProvider.Current.GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
 
             var ns = new XmlNamespaceManager(doc.NameTable);
             ns.AddNamespace("mb", "http://musicbrainz.org/ns/mmd-2.0#");
@@ -154,7 +180,7 @@ namespace MediaBrowser.Providers.Music
                 // Try again using the search with accent characters url
                 url = string.Format("http://www.musicbrainz.org/ws/2/artist/?query=artistaccent:\"{0}\"", UrlEncode(nameToSearch));
 
-                doc = await FanArtAlbumProvider.Current.GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
+                doc = await LastfmAlbumProvider.Current.GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
 
                 ns = new XmlNamespaceManager(doc.NameTable);
                 ns.AddNamespace("mb", "http://musicbrainz.org/ns/mmd-2.0#");
@@ -200,7 +226,7 @@ namespace MediaBrowser.Providers.Music
         /// <param name="musicBrainzId">The music brainz id.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        protected override async Task FetchLastfmData(BaseItem item, string musicBrainzId, bool force, CancellationToken cancellationToken)
+        protected virtual async Task FetchLastfmData(BaseItem item, string musicBrainzId, bool force, CancellationToken cancellationToken)
         {
             // Get artist info with provided id
             var url = RootUrl + string.Format("method=artist.getInfo&mbid={0}&api_key={1}&format=json", UrlEncode(musicBrainzId), ApiKey);

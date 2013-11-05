@@ -7,12 +7,13 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Providers;
 using System;
+using System.Collections.Generic;
 using System.IO;
-using System.Text;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml;
 
 namespace MediaBrowser.Providers.Music
 {
@@ -27,17 +28,11 @@ namespace MediaBrowser.Providers.Music
         private readonly IProviderManager _providerManager;
 
         /// <summary>
-        /// The _music brainz resource pool
-        /// </summary>
-        private readonly SemaphoreSlim _musicBrainzResourcePool = new SemaphoreSlim(1, 1);
-
-        /// <summary>
         /// Gets the HTTP client.
         /// </summary>
         /// <value>The HTTP client.</value>
         protected IHttpClient HttpClient { get; private set; }
 
-        internal static FanArtAlbumProvider Current { get; private set; }
         private readonly IFileSystem _fileSystem;
 
         /// <summary>
@@ -53,8 +48,6 @@ namespace MediaBrowser.Providers.Music
             _providerManager = providerManager;
             _fileSystem = fileSystem;
             HttpClient = httpClient;
-
-            Current = this;
         }
 
         /// <summary>
@@ -116,13 +109,13 @@ namespace MediaBrowser.Providers.Music
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
         {
-            if (string.IsNullOrEmpty(item.GetProviderId(MetadataProviders.Musicbrainz)))
+            if (!ConfigurationManager.Configuration.DownloadMusicAlbumImages.Disc &&
+                !ConfigurationManager.Configuration.DownloadMusicAlbumImages.Primary)
             {
                 return false;
             }
 
-            if (!ConfigurationManager.Configuration.DownloadMusicAlbumImages.Disc &&
-                !ConfigurationManager.Configuration.DownloadMusicAlbumImages.Primary)
+            if (item.HasImage(ImageType.Primary) && item.HasImage(ImageType.Disc))
             {
                 return false;
             }
@@ -159,163 +152,47 @@ namespace MediaBrowser.Providers.Music
         /// <returns>Task{System.Boolean}.</returns>
         public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
+            var images = await _providerManager.GetAvailableRemoteImages(item, cancellationToken, ManualFanartAlbumProvider.ProviderName).ConfigureAwait(false);
 
-            var artistMusicBrainzId = item.Parent.GetProviderId(MetadataProviders.Musicbrainz);
-
-            BaseProviderInfo data;
-
-            if (!item.ProviderData.TryGetValue(Id, out data))
-            {
-                data = new BaseProviderInfo();
-                item.ProviderData[Id] = data;
-            }
-
-            if (!string.IsNullOrEmpty(artistMusicBrainzId))
-            {
-                var artistXmlPath = FanArtArtistProvider.GetArtistDataPath(ConfigurationManager.CommonApplicationPaths, artistMusicBrainzId);
-                artistXmlPath = Path.Combine(artistXmlPath, "fanart.xml");
-
-                var artistXmlFileInfo = new FileInfo(artistXmlPath);
-
-                if (artistXmlFileInfo.Exists)
-                {
-                    var album = (MusicAlbum)item;
-
-                    var releaseEntryId = item.GetProviderId(MetadataProviders.Musicbrainz);
-
-                    var musicBrainzReleaseGroupId = album.GetProviderId(MetadataProviders.MusicBrainzReleaseGroup);
-                    // Fanart uses the release group id so we'll have to get that now using the release entry id
-                    if (string.IsNullOrEmpty(musicBrainzReleaseGroupId))
-                    {
-                        musicBrainzReleaseGroupId = await GetReleaseGroupId(releaseEntryId, cancellationToken).ConfigureAwait(false);
-
-                        album.SetProviderId(MetadataProviders.MusicBrainzReleaseGroup, musicBrainzReleaseGroupId);
-                    }
-
-                    var doc = new XmlDocument();
-
-                    doc.Load(artistXmlPath);
-
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    if (ConfigurationManager.Configuration.DownloadMusicAlbumImages.Disc && !item.HasImage(ImageType.Disc))
-                    {
-                        // Try try with the release entry Id, if that doesn't produce anything try the release group id
-                        var node = doc.SelectSingleNode("//fanart/music/albums/album[@id=\"" + releaseEntryId + "\"]/cdart/@url");
-
-                        if (node == null && !string.IsNullOrEmpty(musicBrainzReleaseGroupId))
-                        {
-                            node = doc.SelectSingleNode("//fanart/music/albums/album[@id=\"" + musicBrainzReleaseGroupId + "\"]/cdart/@url");
-                        }
-
-                        var path = node != null ? node.Value : null;
-
-                        if (!string.IsNullOrEmpty(path))
-                        {
-                            await _providerManager.SaveImage(item, path, FanArtResourcePool, ImageType.Disc, null, cancellationToken)
-                                .ConfigureAwait(false);
-                        }
-                    }
-
-                    if (ConfigurationManager.Configuration.DownloadMusicAlbumImages.Primary && !item.HasImage(ImageType.Primary))
-                    {
-                        // Try try with the release entry Id, if that doesn't produce anything try the release group id
-                        var node = doc.SelectSingleNode("//fanart/music/albums/album[@id=\"" + releaseEntryId + "\"]/albumcover/@url");
-
-                        if (node == null && !string.IsNullOrEmpty(musicBrainzReleaseGroupId))
-                        {
-                            node = doc.SelectSingleNode("//fanart/music/albums/album[@id=\"" + musicBrainzReleaseGroupId + "\"]/albumcover/@url");
-                        }
-
-                        var path = node != null ? node.Value : null;
-
-                        if (!string.IsNullOrEmpty(path))
-                        {
-                            await _providerManager.SaveImage(item, path, FanArtResourcePool, ImageType.Primary, null, cancellationToken)
-                                .ConfigureAwait(false);
-                        }
-                    }
-                }
-
-            }
-
+            await FetchFromXml(item, images.ToList(), cancellationToken).ConfigureAwait(false);
+            
             SetLastRefreshed(item, DateTime.UtcNow);
 
             return true;
         }
 
         /// <summary>
-        /// The _last music brainz request
+        /// Fetches from XML.
         /// </summary>
-        private DateTime _lastRequestDate = DateTime.MinValue;
-
-        /// <summary>
-        /// Gets the music brainz response.
-        /// </summary>
-        /// <param name="url">The URL.</param>
+        /// <param name="item">The item.</param>
+        /// <param name="images">The images.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{XmlDocument}.</returns>
-        internal async Task<XmlDocument> GetMusicBrainzResponse(string url, CancellationToken cancellationToken)
+        /// <returns>Task.</returns>
+        private async Task FetchFromXml(BaseItem item, List<RemoteImageInfo> images, CancellationToken cancellationToken)
         {
-            await _musicBrainzResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested();
 
-            try
+            if (ConfigurationManager.Configuration.DownloadSeriesImages.Primary && !item.HasImage(ImageType.Primary))
             {
-                var diff = 1500 - (DateTime.Now - _lastRequestDate).TotalMilliseconds;
+                var image = images.FirstOrDefault(i => i.Type == ImageType.Primary);
 
-                // MusicBrainz is extremely adamant about limiting to one request per second
-
-                if (diff > 0)
+                if (image != null)
                 {
-                    await Task.Delay(Convert.ToInt32(diff), cancellationToken).ConfigureAwait(false);
+                    await _providerManager.SaveImage(item, image.Url, FanArtResourcePool, ImageType.Primary, null, cancellationToken).ConfigureAwait(false);
                 }
-
-                _lastRequestDate = DateTime.Now;
-
-                var doc = new XmlDocument();
-
-                using (var xml = await HttpClient.Get(new HttpRequestOptions
-                {
-                    Url = url,
-                    CancellationToken = cancellationToken,
-                    UserAgent = Environment.MachineName
-
-                }).ConfigureAwait(false))
-                {
-                    using (var oReader = new StreamReader(xml, Encoding.UTF8))
-                    {
-                        doc.Load(oReader);
-                    }
-                }
-
-                return doc;
             }
-            finally
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (ConfigurationManager.Configuration.DownloadSeriesImages.Disc && !item.HasImage(ImageType.Disc))
             {
-                _lastRequestDate = DateTime.Now;
+                var image = images.FirstOrDefault(i => i.Type == ImageType.Disc);
 
-                _musicBrainzResourcePool.Release();
+                if (image != null)
+                {
+                    await _providerManager.SaveImage(item, image.Url, FanArtResourcePool, ImageType.Disc, null, cancellationToken).ConfigureAwait(false);
+                }
             }
-        }
-
-        /// <summary>
-        /// Gets the release group id internal.
-        /// </summary>
-        /// <param name="releaseEntryId">The release entry id.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{System.String}.</returns>
-        private async Task<string> GetReleaseGroupId(string releaseEntryId, CancellationToken cancellationToken)
-        {
-            var url = string.Format("http://www.musicbrainz.org/ws/2/release-group/?query=reid:{0}", releaseEntryId);
-
-            var doc = await GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
-
-            var ns = new XmlNamespaceManager(doc.NameTable);
-            ns.AddNamespace("mb", "http://musicbrainz.org/ns/mmd-2.0#");
-            var node = doc.SelectSingleNode("//mb:release-group-list/mb:release-group/@id", ns);
-
-            return node != null ? node.Value : null;
         }
     }
 }
