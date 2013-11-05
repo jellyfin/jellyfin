@@ -9,6 +9,12 @@ namespace MediaBrowser.Model.Updates
     public class PackageInfo
     {
         /// <summary>
+        /// The internal id of this package.
+        /// </summary>
+        /// <value>The id.</value>
+        public int id { get; set; }
+
+        /// <summary>
         /// Gets or sets the name.
         /// </summary>
         /// <value>The name.</value>
