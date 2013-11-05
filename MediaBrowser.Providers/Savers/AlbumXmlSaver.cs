@@ -2,7 +2,7 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Providers.Movies;
+using MediaBrowser.Providers.Music;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -61,7 +61,7 @@ namespace MediaBrowser.Providers.Savers
             XmlSaverHelpers.Save(builder, xmlFilePath, new List<string> { });
 
             // Set last refreshed so that the provider doesn't trigger after the file save
-            PersonProviderFromXml.Current.SetLastRefreshed(item, DateTime.UtcNow);
+            AlbumProviderFromXml.Current.SetLastRefreshed(item, DateTime.UtcNow);
         }
 
         /// <summary>

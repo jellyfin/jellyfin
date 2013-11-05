@@ -76,6 +76,7 @@
     <Compile Include="Movies\PersonUpdatesPreScanTask.cs" />
     <Compile Include="Movies\MovieDbPersonProvider.cs" />
     <Compile Include="Music\AlbumInfoFromSongProvider.cs" />
+    <Compile Include="Music\AlbumProviderFromXml.cs" />
     <Compile Include="Music\ArtistInfoFromSongProvider.cs" />
     <Compile Include="Music\ArtistProviderFromXml.cs" />
     <Compile Include="Music\FanArtAlbumProvider.cs" />
