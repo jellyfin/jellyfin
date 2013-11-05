@@ -11,24 +11,26 @@ using MoreLinq;
 using System;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace MediaBrowser.Providers.Music
 {
     public class LastfmAlbumProvider : LastfmBaseProvider
     {
-        private static readonly Task<string> BlankId = Task.FromResult("");
+        internal static LastfmAlbumProvider Current;
+
+        /// <summary>
+        /// The _music brainz resource pool
+        /// </summary>
+        private readonly SemaphoreSlim _musicBrainzResourcePool = new SemaphoreSlim(1, 1);
 
         public LastfmAlbumProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager)
             : base(jsonSerializer, httpClient, logManager, configurationManager)
         {
-        }
-
-        protected override Task<string> FindId(BaseItem item, CancellationToken cancellationToken)
-        {
-            // We don't fetch by id
-            return BlankId;
+            Current = this;
         }
 
         /// <summary>
@@ -61,14 +63,16 @@ namespace MediaBrowser.Providers.Music
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
         {
-            if (HasAltMeta(item))
+            var hasId = !string.IsNullOrEmpty(item.GetProviderId(MetadataProviders.Musicbrainz)) &&
+                        !string.IsNullOrEmpty(item.GetProviderId(MetadataProviders.MusicBrainzReleaseGroup));
+
+            if (hasId && HasAltMeta(item))
             {
                 return false;
             }
 
             // If song metadata has changed and we don't have an mbid, refresh
-            if (string.IsNullOrEmpty(item.GetProviderId(MetadataProviders.Musicbrainz)) &&
-                GetComparisonData(item as MusicAlbum) != providerInfo.FileStamp)
+            if (!hasId && GetComparisonData(item as MusicAlbum) != providerInfo.FileStamp)
             {
                 return true;
             }
@@ -76,8 +80,17 @@ namespace MediaBrowser.Providers.Music
             return base.NeedsRefreshInternal(item, providerInfo);
         }
 
-        protected override async Task FetchLastfmData(BaseItem item, string id, bool force, CancellationToken cancellationToken)
+        /// <summary>
+        /// Fetches metadata and returns true or false indicating if any work that requires persistence was done
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="force">if set to <c>true</c> [force].</param>
+        /// <param name="cancellationToken">The cancellation token</param>
+        /// <returns>Task{System.Boolean}.</returns>
+        public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             var album = (MusicAlbum)item;
 
             var result = await GetAlbumResult(album, cancellationToken).ConfigureAwait(false);
@@ -87,6 +100,20 @@ namespace MediaBrowser.Providers.Music
                 LastfmHelper.ProcessAlbumData(item, result.album);
             }
 
+            var releaseEntryId = item.GetProviderId(MetadataProviders.Musicbrainz);
+
+            if (!string.IsNullOrEmpty(releaseEntryId))
+            {
+                var musicBrainzReleaseGroupId = album.GetProviderId(MetadataProviders.MusicBrainzReleaseGroup);
+                
+                if (string.IsNullOrEmpty(musicBrainzReleaseGroupId))
+                {
+                    musicBrainzReleaseGroupId = await GetReleaseGroupId(releaseEntryId, cancellationToken).ConfigureAwait(false);
+
+                    album.SetProviderId(MetadataProviders.MusicBrainzReleaseGroup, musicBrainzReleaseGroupId);
+                }
+            }
+            
             BaseProviderInfo data;
             if (!item.ProviderData.TryGetValue(Id, out data))
             {
@@ -95,7 +122,11 @@ namespace MediaBrowser.Providers.Music
             }
 
             data.FileStamp = GetComparisonData(album);
+
+            SetLastRefreshed(item, DateTime.UtcNow);
+            return true;
         }
+
 
         private async Task<LastfmGetAlbumResult> GetAlbumResult(MusicAlbum item, CancellationToken cancellationToken)
         {
@@ -181,11 +212,6 @@ namespace MediaBrowser.Providers.Music
                 return JsonSerializer.DeserializeFromStream<LastfmGetAlbumResult>(json);
             }
         }
-        
-        protected override Task FetchData(BaseItem item, bool force, CancellationToken cancellationToken)
-        {
-            return FetchLastfmData(item, string.Empty, force, cancellationToken);
-        }
 
         public override bool Supports(BaseItem item)
         {
@@ -214,6 +240,78 @@ namespace MediaBrowser.Providers.Music
             albumArtists.AddRange(albumNames);
 
             return string.Join(string.Empty, albumArtists.OrderBy(i => i).ToArray()).GetMD5();
+        }
+
+        /// <summary>
+        /// Gets the release group id internal.
+        /// </summary>
+        /// <param name="releaseEntryId">The release entry id.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{System.String}.</returns>
+        private async Task<string> GetReleaseGroupId(string releaseEntryId, CancellationToken cancellationToken)
+        {
+            var url = string.Format("http://www.musicbrainz.org/ws/2/release-group/?query=reid:{0}", releaseEntryId);
+
+            var doc = await GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
+
+            var ns = new XmlNamespaceManager(doc.NameTable);
+            ns.AddNamespace("mb", "http://musicbrainz.org/ns/mmd-2.0#");
+            var node = doc.SelectSingleNode("//mb:release-group-list/mb:release-group/@id", ns);
+
+            return node != null ? node.Value : null;
+        }
+        /// <summary>
+        /// The _last music brainz request
+        /// </summary>
+        private DateTime _lastRequestDate = DateTime.MinValue;
+
+        /// <summary>
+        /// Gets the music brainz response.
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{XmlDocument}.</returns>
+        internal async Task<XmlDocument> GetMusicBrainzResponse(string url, CancellationToken cancellationToken)
+        {
+            await _musicBrainzResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                var diff = 1500 - (DateTime.Now - _lastRequestDate).TotalMilliseconds;
+
+                // MusicBrainz is extremely adamant about limiting to one request per second
+
+                if (diff > 0)
+                {
+                    await Task.Delay(Convert.ToInt32(diff), cancellationToken).ConfigureAwait(false);
+                }
+
+                _lastRequestDate = DateTime.Now;
+
+                var doc = new XmlDocument();
+
+                using (var xml = await HttpClient.Get(new HttpRequestOptions
+                {
+                    Url = url,
+                    CancellationToken = cancellationToken,
+                    UserAgent = Environment.MachineName
+
+                }).ConfigureAwait(false))
+                {
+                    using (var oReader = new StreamReader(xml, Encoding.UTF8))
+                    {
+                        doc.Load(oReader);
+                    }
+                }
+
+                return doc;
+            }
+            finally
+            {
+                _lastRequestDate = DateTime.Now;
+
+                _musicBrainzResourcePool.Release();
+            }
         }
     }
 }
