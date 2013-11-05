@@ -1,29 +1,24 @@
 ﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Providers;
 using System;
-using System.IO;
+using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml;
 
 namespace MediaBrowser.Providers.TV
 {
     public class TvdbPersonImageProvider : BaseMetadataProvider
     {
-        private readonly ILibraryManager _library;
         private readonly IProviderManager _providerManager;
 
-        public TvdbPersonImageProvider(ILogManager logManager, IServerConfigurationManager configurationManager, ILibraryManager library, IProviderManager providerManager)
+        public TvdbPersonImageProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IProviderManager providerManager)
             : base(logManager, configurationManager)
         {
-            _library = library;
             _providerManager = providerManager;
         }
 
@@ -67,157 +62,32 @@ namespace MediaBrowser.Providers.TV
         {
             if (string.IsNullOrEmpty(item.PrimaryImagePath))
             {
-                var seriesWithPerson = _library.RootFolder
-                    .RecursiveChildren
-                    .OfType<Series>()
-                    .Where(i => !string.IsNullOrEmpty(i.GetProviderId(MetadataProviders.Tvdb)) && i.People.Any(p => string.Equals(p.Name, item.Name, StringComparison.OrdinalIgnoreCase)))
-                    .ToList();
+                cancellationToken.ThrowIfCancellationRequested();
 
-                foreach (var series in seriesWithPerson)
-                {
-                    try
-                    {
-                        await DownloadImageFromSeries(item, series, cancellationToken).ConfigureAwait(false);
-                    }
-                    catch (FileNotFoundException)
-                    {
-                        // No biggie
-                        continue;
-                    }
+                var images = await _providerManager.GetAvailableRemoteImages(item, cancellationToken, ManualTvdbPersonImageProvider.ProviderName).ConfigureAwait(false);
 
-                    // break once we have an image
-                    if (!string.IsNullOrEmpty(item.PrimaryImagePath))
-                    {
-                        break;
-                    }
-                }
+                await DownloadImages(item, images.ToList(), cancellationToken).ConfigureAwait(false);
 
+                SetLastRefreshed(item, DateTime.UtcNow);
+                return true;
             }
 
             SetLastRefreshed(item, DateTime.UtcNow);
             return true;
         }
-
-        /// <summary>
-        /// Downloads the image from series.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="series">The series.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        private async Task DownloadImageFromSeries(BaseItem item, Series series, CancellationToken cancellationToken)
+        private async Task DownloadImages(BaseItem item, List<RemoteImageInfo> images, CancellationToken cancellationToken)
         {
-            var tvdbPath = TvdbSeriesProvider.GetSeriesDataPath(ConfigurationManager.ApplicationPaths, series.GetProviderId(MetadataProviders.Tvdb));
-
-            var actorXmlPath = Path.Combine(tvdbPath, "actors.xml");
-
-            var url = FetchImageUrl(item, actorXmlPath, cancellationToken);
-
-            if (!string.IsNullOrEmpty(url))
+            if (!item.HasImage(ImageType.Primary))
             {
-                url = TVUtils.BannerUrl + url;
+                var image = images.FirstOrDefault(i => i.Type == ImageType.Primary);
 
-                await _providerManager.SaveImage(item, url, TvdbSeriesProvider.Current.TvDbResourcePool,
-                                               ImageType.Primary, null, cancellationToken).ConfigureAwait(false);
-            }
-        }
-        private string FetchImageUrl(BaseItem item, string actorsXmlPath, CancellationToken cancellationToken)
-        {
-            var settings = new XmlReaderSettings
-            {
-                CheckCharacters = false,
-                IgnoreProcessingInstructions = true,
-                IgnoreComments = true,
-                ValidationType = ValidationType.None
-            };
-
-            using (var streamReader = new StreamReader(actorsXmlPath, Encoding.UTF8))
-            {
-                // Use XmlReader for best performance
-                using (var reader = XmlReader.Create(streamReader, settings))
+                if (image != null)
                 {
-                    reader.MoveToContent();
-
-                    // Loop through each element
-                    while (reader.Read())
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
-
-                        if (reader.NodeType == XmlNodeType.Element)
-                        {
-                            switch (reader.Name)
-                            {
-                                case "Actor":
-                                    {
-                                        using (var subtree = reader.ReadSubtree())
-                                        {
-                                            var url = FetchImageUrlFromActorNode(item, subtree);
-
-                                            if (!string.IsNullOrEmpty(url))
-                                            {
-                                                return url;
-                                            }
-                                        }
-                                        break;
-                                    }
-                                default:
-                                    reader.Skip();
-                                    break;
-                            }
-                        }
-                    }
+                    await _providerManager.SaveImage(item, image.Url, TvdbSeriesProvider.Current.TvDbResourcePool, ImageType.Primary, null, cancellationToken)
+                      .ConfigureAwait(false);
                 }
             }
-
-            return null;
         }
-
-        /// <summary>
-        /// Fetches the data from actor node.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="reader">The reader.</param>
-        private string FetchImageUrlFromActorNode(BaseItem item, XmlReader reader)
-        {
-            reader.MoveToContent();
-
-            string name = null;
-            string image = null;
-
-            while (reader.Read())
-            {
-                if (reader.NodeType == XmlNodeType.Element)
-                {
-                    switch (reader.Name)
-                    {
-                        case "Name":
-                            {
-                                name = (reader.ReadElementContentAsString() ?? string.Empty).Trim();
-                                break;
-                            }
-
-                        case "Image":
-                            {
-                                image = (reader.ReadElementContentAsString() ?? string.Empty).Trim();
-                                break;
-                            }
-
-                        default:
-                            reader.Skip();
-                            break;
-                    }
-                }
-            }
-
-            if (!string.IsNullOrEmpty(name) && !string.IsNullOrEmpty(image) &&
-                string.Equals(name, item.Name, StringComparison.OrdinalIgnoreCase))
-            {
-                return image;
-            }
-
-            return null;
-        }
-
 
         public override MetadataProviderPriority Priority
         {
