@@ -80,7 +80,7 @@ namespace MediaBrowser.Providers.Movies
         {
             get
             {
-                return ItemUpdateType.ImageUpdate | ItemUpdateType.MetadataDownload;
+                return ItemUpdateType.MetadataDownload;
             }
         }
 
