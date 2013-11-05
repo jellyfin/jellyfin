@@ -12,12 +12,12 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.Music
 {
-    class ArtistProviderFromXml : BaseMetadataProvider
+    class AlbumProviderFromXml : BaseMetadataProvider
     {
-        public static ArtistProviderFromXml Current;
+        public static AlbumProviderFromXml Current;
         private readonly IFileSystem _fileSystem;
 
-        public ArtistProviderFromXml(ILogManager logManager, IServerConfigurationManager configurationManager, IFileSystem fileSystem)
+        public AlbumProviderFromXml(ILogManager logManager, IServerConfigurationManager configurationManager, IFileSystem fileSystem)
             : base(logManager, configurationManager)
         {
             _fileSystem = fileSystem;
@@ -31,7 +31,7 @@ namespace MediaBrowser.Providers.Music
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         public override bool Supports(BaseItem item)
         {
-            return (item is Artist || item is MusicArtist) && item.LocationType == LocationType.FileSystem;
+            return item is MusicAlbum && item.LocationType == LocationType.FileSystem;
         }
 
         /// <summary>
@@ -43,7 +43,7 @@ namespace MediaBrowser.Providers.Music
             get { return MetadataProviderPriority.First; }
         }
 
-        private const string XmlFileName = "artist.xml";
+        private const string XmlFileName = "album.xml";
         protected override bool NeedsRefreshBasedOnCompareDate(BaseItem item, BaseProviderInfo providerInfo)
         {
             var xml = item.ResolveArgs.GetMetaFileByPath(Path.Combine(item.MetaLocation, XmlFileName));
@@ -88,16 +88,7 @@ namespace MediaBrowser.Providers.Music
 
                 try
                 {
-                    var artist = item as Artist;
-
-                    if (artist != null)
-                    {
-                        new BaseItemXmlParser<Artist>(Logger).Fetch(artist, path, cancellationToken);
-                    }
-                    else
-                    {
-                        new BaseItemXmlParser<MusicArtist>(Logger).Fetch((MusicArtist)item, path, cancellationToken);
-                    }
+                    new BaseItemXmlParser<MusicAlbum>(Logger).Fetch((MusicAlbum)item, path, cancellationToken);
                 }
                 finally
                 {
