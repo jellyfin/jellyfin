@@ -31,6 +31,9 @@ namespace MediaBrowser.Api.DefaultTheme
         public double FamilyMoviePercentage { get; set; }
 
         public double HDMoviePercentage { get; set; }
+
+        public List<BaseItemDto> LatestTrailers { get; set; }
+        public List<BaseItemDto> LatestMovies { get; set; }
     }
 
     public class TvView : BaseView

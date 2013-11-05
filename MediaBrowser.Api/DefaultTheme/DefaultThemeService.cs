@@ -62,6 +62,12 @@ namespace MediaBrowser.Api.DefaultTheme
 
         [ApiMember(Name = "RomanceGenre", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string RomanceGenre { get; set; }
+
+        [ApiMember(Name = "LatestMoviesLimit", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int LatestMoviesLimit { get; set; }
+
+        [ApiMember(Name = "LatestTrailersLimit", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int LatestTrailersLimit { get; set; }
     }
 
     [Route("/MBT/DefaultTheme/Favorites", "GET")]
@@ -481,6 +487,9 @@ namespace MediaBrowser.Api.DefaultTheme
             var movies = items.OfType<Movie>()
                 .ToList();
 
+            var trailers = items.OfType<Trailer>()
+               .ToList();
+            
             var hdMovies = movies.Where(i => i.IsHD).ToList();
 
             var familyGenres = request.FamilyGenre.Split(',').ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
@@ -515,8 +524,7 @@ namespace MediaBrowser.Api.DefaultTheme
                .Take(1)
                .ToList();
 
-            view.TrailerItems = items
-             .OfType<Trailer>()
+            view.TrailerItems = trailers
              .Where(i => !string.IsNullOrEmpty(i.PrimaryImagePath))
              .OrderBy(i => Guid.NewGuid())
              .Select(i => GetItemStub(i, ImageType.Primary))
@@ -622,6 +630,20 @@ namespace MediaBrowser.Api.DefaultTheme
               .Take(5)
               .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
               .ToList();
+
+            view.LatestMovies = movies
+                .OrderByDescending(i => i.DateCreated)
+                .Where(i => !_userDataManager.GetUserData(user.Id, i.GetUserDataKey()).Played)
+                .Take(request.LatestMoviesLimit)
+                .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+                .ToList();
+
+            view.LatestTrailers = trailers
+                .OrderByDescending(i => i.DateCreated)
+                .Where(i => !_userDataManager.GetUserData(user.Id, i.GetUserDataKey()).Played)
+                .Take(request.LatestTrailersLimit)
+                .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+                .ToList();
 
             return ToOptimizedResult(view);
         }
