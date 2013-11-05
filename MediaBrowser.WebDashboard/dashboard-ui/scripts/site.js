@@ -278,7 +278,15 @@ var Dashboard = {
 
     reloadPage: function () {
 
-        window.location.href = window.location.href;
+        var currentUrl = window.location.toString().toLowerCase();
+        
+        // If they're on a plugin config page just go back to the dashboard
+        // The plugin may not have been loaded yet, or could have been uninstalled
+        if (currentUrl.indexOf('configurationpage') != -1) {
+            window.location.href = "dashboard.html";
+        } else {
+            window.location.href = window.location.href;
+        }
     },
 
     hideDashboardVersionWarning: function () {
