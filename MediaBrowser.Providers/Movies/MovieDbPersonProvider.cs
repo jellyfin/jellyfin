@@ -13,7 +13,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -173,10 +172,6 @@ namespace MediaBrowser.Providers.Movies
             {
                 await FetchInfo(person, id, force, cancellationToken).ConfigureAwait(false);
             }
-            else
-            {
-                Logger.Debug("TmdbPersonProvider Unable to obtain id for " + item.Name);
-            }
 
             SetLastRefreshed(item, DateTime.UtcNow);
             return true;
@@ -256,10 +251,6 @@ namespace MediaBrowser.Providers.Movies
                 cancellationToken.ThrowIfCancellationRequested();
 
                 ProcessInfo(person, info);
-
-                Logger.Debug("TmdbPersonProvider downloaded and saved information for {0}", person.Name);
-
-                await FetchImages(person, info.images, cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -324,81 +315,6 @@ namespace MediaBrowser.Providers.Movies
             }
 
             person.SetProviderId(MetadataProviders.Tmdb, searchResult.id.ToString(_usCulture));
-        }
-
-        /// <summary>
-        /// Fetches the images.
-        /// </summary>
-        /// <param name="person">The person.</param>
-        /// <param name="searchResult">The search result.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        private async Task FetchImages(Person person, Images searchResult, CancellationToken cancellationToken)
-        {
-            if (searchResult != null && searchResult.profiles.Count > 0)
-            {
-                //get our language
-                var profile =
-                    searchResult.profiles.FirstOrDefault(
-                        p =>
-                        !string.IsNullOrEmpty(GetIso639(p)) &&
-                        GetIso639(p).Equals(ConfigurationManager.Configuration.PreferredMetadataLanguage,
-                                          StringComparison.OrdinalIgnoreCase));
-                if (profile == null)
-                {
-                    //didn't find our language - try first null one
-                    profile =
-                        searchResult.profiles.FirstOrDefault(
-                            p =>
-                                !string.IsNullOrEmpty(GetIso639(p)) &&
-                            GetIso639(p).Equals(ConfigurationManager.Configuration.PreferredMetadataLanguage,
-                                              StringComparison.OrdinalIgnoreCase));
-
-                }
-                if (profile == null)
-                {
-                    //still nothing - just get first one
-                    profile = searchResult.profiles[0];
-                }
-                if (profile != null && !person.HasImage(ImageType.Primary))
-                {
-                    var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
-
-                    await DownloadAndSaveImage(person, tmdbSettings.images.base_url + "original" + profile.file_path,
-                                             MimeTypes.GetMimeType(profile.file_path), cancellationToken).ConfigureAwait(false);
-                }
-            }
-        }
-
-        private string GetIso639(Profile p)
-        {
-            return p.iso_639_1 == null ? string.Empty : p.iso_639_1.ToString();
-        }
-
-        /// <summary>
-        /// Downloads the and save image.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="source">The source.</param>
-        /// <param name="mimeType">Type of the MIME.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{System.String}.</returns>
-        private async Task DownloadAndSaveImage(BaseItem item, string source, string mimeType, CancellationToken cancellationToken)
-        {
-            if (source == null) return;
-
-            using (var sourceStream = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
-            {
-                Url = source,
-                CancellationToken = cancellationToken
-
-            }).ConfigureAwait(false))
-            {
-                await ProviderManager.SaveImage(item, sourceStream, mimeType, ImageType.Primary, null, source, cancellationToken)
-                                   .ConfigureAwait(false);
-
-                Logger.Debug("TmdbPersonProvider downloaded and saved image for {0}", item.Name);
-            }
         }
 
         #region Result Objects
