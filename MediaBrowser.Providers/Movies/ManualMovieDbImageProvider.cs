@@ -86,8 +86,33 @@ namespace MediaBrowser.Providers.Movies
                 Type = ImageType.Backdrop,
                 RatingType = RatingType.Score
             }));
-            
-            return list;
+
+            var language = _config.Configuration.PreferredMetadataLanguage;
+
+            var isLanguageEn = string.Equals(language, "en", StringComparison.OrdinalIgnoreCase);
+
+            return list.OrderByDescending(i =>
+            {
+                if (string.Equals(language, i.Language, StringComparison.OrdinalIgnoreCase))
+                {
+                    return 3;
+                }
+                if (!isLanguageEn)
+                {
+                    if (string.Equals("en", i.Language, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return 2;
+                    }
+                }
+                if (string.IsNullOrEmpty(i.Language))
+                {
+                    return isLanguageEn ? 3 : 2;
+                }
+                return 0;
+            })
+                .ThenByDescending(i => i.CommunityRating ?? 0)
+                .ThenByDescending(i => i.VoteCount ?? 0)
+                .ToList();
         }
         
         /// <summary>
@@ -100,35 +125,7 @@ namespace MediaBrowser.Providers.Movies
         {
             var language = _config.Configuration.PreferredMetadataLanguage;
 
-            var isLanguageEn = string.Equals(language, "en", StringComparison.OrdinalIgnoreCase);
-
-            var eligiblePosters = images.posters == null ?
-                new List<MovieDbProvider.Poster>() :
-                images.posters
-                .ToList();
-
-            return eligiblePosters.OrderByDescending(i =>
-                {
-                    if (string.Equals(language, i.iso_639_1, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return 3;
-                    }
-                    if (!isLanguageEn)
-                    {
-                        if (string.Equals("en", i.iso_639_1, StringComparison.OrdinalIgnoreCase))
-                        {
-                            return 2;
-                        }
-                    }
-                    if (string.IsNullOrEmpty(i.iso_639_1))
-                    {
-                        return isLanguageEn ? 3 : 2;
-                    }
-                    return 0;
-                })
-                .ThenByDescending(i => i.vote_average)
-                .ThenByDescending(i => i.vote_count)
-                .ToList();
+            return images.posters ?? new List<MovieDbProvider.Poster>();
         }
 
         /// <summary>

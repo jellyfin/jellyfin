@@ -68,7 +68,7 @@ namespace MediaBrowser.Providers.Movies
                 return;
             }
 
-            var path = TmdbPersonProvider.GetPersonsDataPath(_config.CommonApplicationPaths);
+            var path = MovieDbPersonProvider.GetPersonsDataPath(_config.CommonApplicationPaths);
 
             Directory.CreateDirectory(path);
 
@@ -211,7 +211,7 @@ namespace MediaBrowser.Providers.Movies
         {
             _logger.Info("Updating person from tmdb " + id);
 
-            return TmdbPersonProvider.Current.DownloadPersonInfo(id, cancellationToken);
+            return MovieDbPersonProvider.Current.DownloadPersonInfo(id, cancellationToken);
         }
 
         class Result

@@ -186,7 +186,7 @@ namespace MediaBrowser.Providers.TV
 
         public int Priority
         {
-            get { return 1; }
+            get { return 0; }
         }
     }
 }
