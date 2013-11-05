@@ -342,6 +342,23 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             return urlPrefix;
         }
 
+        self.getRemoteImageProviders = function (options) {
+
+            if (!options) {
+                throw new Error("null options");
+            }
+
+            var urlPrefix = getRemoteImagePrefix(options);
+
+            var url = self.getUrl(urlPrefix + "/RemoteImages/Providers", options);
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
         self.getAvailableRemoteImages = function (options) {
 
             if (!options) {

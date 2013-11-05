@@ -261,7 +261,7 @@
 
         return html;
     }
-
+    
     function reload(page) {
 
         Dashboard.showLoadingMsg();
@@ -269,6 +269,23 @@
         MetadataEditor.getItemPromise().done(function (item) {
 
             currentItem = item;
+
+            ApiClient.getRemoteImageProviders(getBaseRemoteOptions()).done(function(providers) {
+                
+                if (providers.length) {
+                    $('.lnkBrowseAllImages', page).removeClass('hide');
+                } else {
+                    $('.lnkBrowseAllImages', page).addClass('hide');
+                }
+                
+                ApiClient.getItemImageInfos(currentItem.Id, currentItem.Type, currentItem.Name).done(function (imageInfos) {
+
+                    renderStandardImages(page, item, imageInfos, providers);
+                    renderBackdrops(page, item, imageInfos, providers);
+                    renderScreenshots(page, item, imageInfos, providers);
+                    Dashboard.hideLoadingMsg();
+                });
+            });
 
             LibraryBrowser.renderName(item, $('.itemName', page), true);
 
@@ -280,16 +297,10 @@
                 $('#btnEditPeople', page).show();
             }
 
-            ApiClient.getItemImageInfos(currentItem.Id, currentItem.Type, currentItem.Name).done(function (imageInfos) {
-                renderStandardImages(page, item, imageInfos);
-                renderBackdrops(page, item, imageInfos);
-                renderScreenshots(page, item, imageInfos);
-                Dashboard.hideLoadingMsg();
-            });
         });
     }
 
-    function renderImages(page, item, images, elem) {
+    function renderImages(page, item, images, imageProviders, elem) {
 
         var html = '';
 
@@ -327,7 +338,9 @@
 
             html += '<button type="button" data-icon="delete" data-mini="true" data-inline="true" data-iconpos="notext" onclick="EditItemImagesPage.deleteImage(\'' + image.ImageType + '\', ' + (image.ImageIndex != null ? image.ImageIndex : "null") + ');">Delete</button>';
 
-            html += '<button type="button" data-icon="cloud" data-mini="true" data-inline="true" data-iconpos="notext" onclick="EditItemImagesPage.showDownloadMenu(\'' + image.ImageType + '\');">Browse Online Images</button>';
+            if (imageProviders.length) {
+                html += '<button type="button" data-icon="cloud" data-mini="true" data-inline="true" data-iconpos="notext" onclick="EditItemImagesPage.showDownloadMenu(\'' + image.ImageType + '\');">Browse Online Images</button>';
+            }
 
             html += '</p>';
 
@@ -339,7 +352,7 @@
         elem.html(html).trigger('create');
     }
 
-    function renderStandardImages(page, item, imageInfos) {
+    function renderStandardImages(page, item, imageInfos, imageProviders) {
 
         var images = imageInfos.filter(function (i) {
             return i.ImageType != "Screenshot" && i.ImageType != "Backdrop" && i.ImageType != "Chapter";
@@ -347,13 +360,13 @@
 
         if (images.length) {
             $('#imagesContainer', page).show();
-            renderImages(page, item, images, $('#images', page));
+            renderImages(page, item, images, imageProviders, $('#images', page));
         } else {
             $('#imagesContainer', page).hide();
         }
     }
 
-    function renderBackdrops(page, item, imageInfos) {
+    function renderBackdrops(page, item, imageInfos, imageProviders) {
 
         var images = imageInfos.filter(function (i) {
             return i.ImageType == "Backdrop";
@@ -364,13 +377,13 @@
 
         if (images.length) {
             $('#backdropsContainer', page).show();
-            renderImages(page, item, images, $('#backdrops', page));
+            renderImages(page, item, images, imageProviders, $('#backdrops', page));
         } else {
             $('#backdropsContainer', page).hide();
         }
     }
 
-    function renderScreenshots(page, item, imageInfos) {
+    function renderScreenshots(page, item, imageInfos, imageProviders) {
 
         var images = imageInfos.filter(function (i) {
             return i.ImageType == "Screenshot";
@@ -381,7 +394,7 @@
 
         if (images.length) {
             $('#screenshotsContainer', page).show();
-            renderImages(page, item, images, $('#screenshots', page));
+            renderImages(page, item, images, imageProviders, $('#screenshots', page));
         } else {
             $('#screenshotsContainer', page).hide();
         }

@@ -61,6 +61,7 @@
     <Compile Include="Dto\ItemIndex.cs" />
     <Compile Include="LiveTv\EpgFullInfo.cs" />
     <Compile Include="LiveTv\EpgInfo.cs" />
+    <Compile Include="Providers\ImageProviderInfo.cs" />
     <Compile Include="Providers\RemoteImageInfo.cs" />
     <Compile Include="Dto\StudioDto.cs" />
     <Compile Include="Entities\CollectionType.cs" />
