@@ -11,7 +11,7 @@ namespace MediaBrowser.Controller.Entities.Movies
     /// <summary>
     /// Class Movie
     /// </summary>
-    public class Movie : Video
+    public class Movie : Video, IHasCriticRating
     {
         public List<Guid> SpecialFeatureIds { get; set; }
 
@@ -19,6 +19,18 @@ namespace MediaBrowser.Controller.Entities.Movies
         {
             SpecialFeatureIds = new List<Guid>();
         }
+
+        /// <summary>
+        /// Gets or sets the critic rating.
+        /// </summary>
+        /// <value>The critic rating.</value>
+        public float? CriticRating { get; set; }
+
+        /// <summary>
+        /// Gets or sets the critic rating summary.
+        /// </summary>
+        /// <value>The critic rating summary.</value>
+        public string CriticRatingSummary { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the TMDB collection.

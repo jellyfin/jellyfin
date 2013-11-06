@@ -581,7 +581,17 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 var val = request.MinCriticRating.Value;
 
-                items = items.Where(i => i.CriticRating.HasValue && i.CriticRating >= val);
+                items = items.Where(i =>
+                {
+                    var hasCriticRating = i as IHasCriticRating;
+
+                    if (hasCriticRating != null)
+                    {
+                        return hasCriticRating.CriticRating.HasValue && hasCriticRating.CriticRating >= val;
+                    }
+
+                    return false;
+                });
             }
 
             // Artists
