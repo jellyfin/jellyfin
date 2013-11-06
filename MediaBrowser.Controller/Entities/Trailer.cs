@@ -7,13 +7,25 @@ namespace MediaBrowser.Controller.Entities
     /// <summary>
     /// Class Trailer
     /// </summary>
-    public class Trailer : Video
+    public class Trailer : Video, IHasCriticRating
     {
         public Trailer()
         {
             RemoteTrailers = new List<MediaUrl>();
             Taglines = new List<string>();
         }
+
+        /// <summary>
+        /// Gets or sets the critic rating.
+        /// </summary>
+        /// <value>The critic rating.</value>
+        public float? CriticRating { get; set; }
+
+        /// <summary>
+        /// Gets or sets the critic rating summary.
+        /// </summary>
+        /// <value>The critic rating summary.</value>
+        public string CriticRatingSummary { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether this instance is local trailer.

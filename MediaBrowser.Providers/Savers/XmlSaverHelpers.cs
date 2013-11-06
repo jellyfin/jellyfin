@@ -209,14 +209,18 @@ namespace MediaBrowser.Providers.Savers
                 builder.Append("<Type>" + SecurityElement.Escape(item.DisplayMediaType) + "</Type>");
             }
 
-            if (item.CriticRating.HasValue)
+            var hasCriticRating = item as IHasCriticRating;
+            if (hasCriticRating != null)
             {
-                builder.Append("<CriticRating>" + SecurityElement.Escape(item.CriticRating.Value.ToString(UsCulture)) + "</CriticRating>");
-            }
+                if (hasCriticRating.CriticRating.HasValue)
+                {
+                    builder.Append("<CriticRating>" + SecurityElement.Escape(hasCriticRating.CriticRating.Value.ToString(UsCulture)) + "</CriticRating>");
+                }
 
-            if (!string.IsNullOrEmpty(item.CriticRatingSummary))
-            {
-                builder.Append("<CriticRatingSummary><![CDATA[" + item.CriticRatingSummary + "]]></CriticRatingSummary>");
+                if (!string.IsNullOrEmpty(hasCriticRating.CriticRatingSummary))
+                {
+                    builder.Append("<CriticRatingSummary><![CDATA[" + hasCriticRating.CriticRatingSummary + "]]></CriticRatingSummary>");
+                }
             }
 
             if (!string.IsNullOrEmpty(item.Overview))

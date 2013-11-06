@@ -112,18 +112,6 @@ namespace MediaBrowser.Controller.Entities
         public double? Revenue { get; set; }
 
         /// <summary>
-        /// Gets or sets the critic rating.
-        /// </summary>
-        /// <value>The critic rating.</value>
-        public float? CriticRating { get; set; }
-
-        /// <summary>
-        /// Gets or sets the critic rating summary.
-        /// </summary>
-        /// <value>The critic rating summary.</value>
-        public string CriticRatingSummary { get; set; }
-
-        /// <summary>
         /// Gets or sets the trailer URL.
         /// </summary>
         /// <value>The trailer URL.</value>

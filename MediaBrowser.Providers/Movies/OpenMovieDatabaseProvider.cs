@@ -139,22 +139,26 @@ namespace MediaBrowser.Providers.Movies
             {
                 var result = JsonSerializer.DeserializeFromStream<RootObject>(stream);
 
-                // Seeing some bogus RT data on omdb for series, so filter it out here
-                // RT doesn't even have tv series
-                int tomatoMeter;
-
-                if (!string.IsNullOrEmpty(result.tomatoMeter)
-                    && int.TryParse(result.tomatoMeter, NumberStyles.Integer, UsCulture, out tomatoMeter)
-                    && tomatoMeter >= 0)
+                var hasCriticRating = item as IHasCriticRating;
+                if (hasCriticRating != null)
                 {
-                    item.CriticRating = tomatoMeter;
-                }
+                    // Seeing some bogus RT data on omdb for series, so filter it out here
+                    // RT doesn't even have tv series
+                    int tomatoMeter;
 
-                if (!string.IsNullOrEmpty(result.tomatoConsensus)
-                    && !string.Equals(result.tomatoConsensus, "n/a", StringComparison.OrdinalIgnoreCase)
-                    && !string.Equals(result.tomatoConsensus, "No consensus yet.", StringComparison.OrdinalIgnoreCase))
-                {
-                    item.CriticRatingSummary = result.tomatoConsensus;
+                    if (!string.IsNullOrEmpty(result.tomatoMeter)
+                        && int.TryParse(result.tomatoMeter, NumberStyles.Integer, UsCulture, out tomatoMeter)
+                        && tomatoMeter >= 0)
+                    {
+                        hasCriticRating.CriticRating = tomatoMeter;
+                    }
+
+                    if (!string.IsNullOrEmpty(result.tomatoConsensus)
+                        && !string.Equals(result.tomatoConsensus, "n/a", StringComparison.OrdinalIgnoreCase)
+                        && !string.Equals(result.tomatoConsensus, "No consensus yet.", StringComparison.OrdinalIgnoreCase))
+                    {
+                        hasCriticRating.CriticRatingSummary = result.tomatoConsensus;
+                    }
                 }
 
                 int voteCount;

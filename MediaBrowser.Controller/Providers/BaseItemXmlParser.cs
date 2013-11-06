@@ -143,10 +143,16 @@ namespace MediaBrowser.Controller.Providers
                 case "CriticRating":
                     {
                         var text = reader.ReadElementContentAsString();
-                        float value;
-                        if (float.TryParse(text, NumberStyles.Any, _usCulture, out value))
+
+                        var hasCriticRating = item as IHasCriticRating;
+
+                        if (hasCriticRating != null && !string.IsNullOrEmpty(text))
                         {
-                            item.CriticRating = value;
+                            float value;
+                            if (float.TryParse(text, NumberStyles.Any, _usCulture, out value))
+                            {
+                                hasCriticRating.CriticRating = value;
+                            }
                         }
 
                         break;
@@ -207,7 +213,12 @@ namespace MediaBrowser.Controller.Providers
 
                         if (!string.IsNullOrWhiteSpace(val))
                         {
-                            item.CriticRatingSummary = val;
+                            var hasCriticRating = item as IHasCriticRating;
+
+                            if (hasCriticRating != null)
+                            {
+                                hasCriticRating.CriticRatingSummary = val;
+                            }
                         }
 
                         break;
