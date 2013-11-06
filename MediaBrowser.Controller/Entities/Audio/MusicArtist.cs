@@ -11,6 +11,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// </summary>
         /// <value>The last fm image URL.</value>
         public string LastFmImageUrl { get; set; }
+        public string LastFmImageSize { get; set; }
 
         /// <summary>
         /// Gets the user data key.
