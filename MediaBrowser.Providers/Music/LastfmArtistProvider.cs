@@ -58,7 +58,7 @@ namespace MediaBrowser.Providers.Music
         {
             get
             {
-                return "8";
+                return "9";
             }
         }
 
