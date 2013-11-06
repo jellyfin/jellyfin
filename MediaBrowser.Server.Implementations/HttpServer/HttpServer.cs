@@ -181,6 +181,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <param name="dto">The dto.</param>
         private void FilterResponse(IHttpRequest req, IHttpResponse res, object dto)
         {
+            // Try to prevent compatibility view
+            res.AddHeader("X-UA-Compatible", "IE=Edge");
+            
             var exception = dto as Exception;
 
             if (exception != null)
