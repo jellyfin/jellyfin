@@ -40,5 +40,37 @@ namespace MediaBrowser.Controller.Drawing
         public int? PercentPlayed { get; set; }
 
         public string BackgroundColor { get; set; }
+
+        public bool HasDefaultOptions()
+        {
+            return HasDefaultOptionsWithoutSize() && 
+                !Width.HasValue && 
+                !Height.HasValue && 
+                !MaxWidth.HasValue && 
+                !MaxHeight.HasValue;
+        }
+
+        public bool HasDefaultOptionsWithoutSize()
+        {
+            return !CropWhiteSpace &&
+                (!Quality.HasValue || Quality.Value == 100) &&
+                IsOutputFormatDefault &&
+                !AddPlayedIndicator &&
+                !PercentPlayed.HasValue &&
+                string.IsNullOrEmpty(BackgroundColor);
+        }
+
+        private bool IsOutputFormatDefault
+        {
+            get
+            {
+                if (OutputFormat == ImageOutputFormat.Original)
+                {
+                    return true;
+                }
+
+                return false;
+            }
+        }
     }
 }

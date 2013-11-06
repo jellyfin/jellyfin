@@ -141,5 +141,10 @@ namespace MediaBrowser.Model.Drawing
         /// </summary>
         /// <value>The width.</value>
         public double Width { get; set; }
+
+        public bool Equals(ImageSize size)
+        {
+            return Width.Equals(size.Width) && Height.Equals(size.Height);
+        }
     }
 }

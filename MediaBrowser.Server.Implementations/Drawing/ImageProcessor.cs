@@ -3,7 +3,6 @@ using MediaBrowser.Common.IO;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
@@ -85,6 +84,17 @@ namespace MediaBrowser.Server.Implementations.Drawing
             }
 
             var originalImagePath = options.OriginalImagePath;
+            
+            if (options.HasDefaultOptions())
+            {
+                // Just spit out the original file if all the options are default
+                using (var fileStream = _fileSystem.GetFileStream(originalImagePath, FileMode.Open, FileAccess.Read, FileShare.Read, true))
+                {
+                    await fileStream.CopyToAsync(toStream).ConfigureAwait(false);
+                    return;
+                }
+            }
+
             var dateModified = options.OriginalImageDateModified;
 
             if (options.CropWhiteSpace)
@@ -106,6 +116,16 @@ namespace MediaBrowser.Server.Implementations.Drawing
             // Determine the output size based on incoming parameters
             var newSize = DrawingUtils.Resize(originalImageSize, options.Width, options.Height, options.MaxWidth, options.MaxHeight);
 
+            if (options.HasDefaultOptionsWithoutSize() && newSize.Equals(originalImageSize))
+            {
+                // Just spit out the original file the new size equals the old
+                using (var fileStream = _fileSystem.GetFileStream(originalImagePath, FileMode.Open, FileAccess.Read, FileShare.Read, true))
+                {
+                    await fileStream.CopyToAsync(toStream).ConfigureAwait(false);
+                    return;
+                }
+            }
+            
             var quality = options.Quality ?? 90;
 
             var cacheFilePath = GetCacheFilePath(originalImagePath, newSize, quality, dateModified, options.OutputFormat, options.AddPlayedIndicator, options.PercentPlayed, options.BackgroundColor);
