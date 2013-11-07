@@ -70,15 +70,6 @@ namespace MediaBrowser.Server.Implementations.Providers
                 throw new ArgumentNullException("mimeType");
             }
 
-            if (type == ImageType.Backdrop && imageIndex == null)
-            {
-                imageIndex = item.BackdropImagePaths.Count;
-            }
-            else if (type == ImageType.Screenshot && imageIndex == null)
-            {
-                imageIndex = item.ScreenshotImagePaths.Count;
-            }
-
             var saveLocally = _config.Configuration.SaveLocalMeta && item.Parent != null && !(item is Audio);
 
             if (item is IItemByName || item is User)
@@ -95,6 +86,15 @@ namespace MediaBrowser.Server.Implementations.Providers
             if (locationType == LocationType.Remote || locationType == LocationType.Virtual)
             {
                 saveLocally = false;
+            }
+
+            if (type == ImageType.Backdrop && imageIndex == null)
+            {
+                imageIndex = item.BackdropImagePaths.Count;
+            }
+            else if (type == ImageType.Screenshot && imageIndex == null)
+            {
+                imageIndex = item.ScreenshotImagePaths.Count;
             }
 
             var paths = GetSavePaths(item, type, imageIndex, mimeType, saveLocally);
