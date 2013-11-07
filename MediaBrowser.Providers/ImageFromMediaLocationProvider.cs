@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
@@ -21,9 +22,12 @@ namespace MediaBrowser.Providers
     /// </summary>
     public class ImageFromMediaLocationProvider : BaseMetadataProvider
     {
-        public ImageFromMediaLocationProvider(ILogManager logManager, IServerConfigurationManager configurationManager)
+        protected readonly IFileSystem FileSystem;
+        
+        public ImageFromMediaLocationProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IFileSystem fileSystem)
             : base(logManager, configurationManager)
         {
+            FileSystem = fileSystem;
         }
 
         public override ItemUpdateType ItemUpdateType
@@ -541,6 +545,38 @@ namespace MediaBrowser.Providers
             if (screenshotFiles.Count > 0)
             {
                 item.ScreenshotImagePaths = screenshotFiles;
+            }
+        }
+
+        protected FileSystemInfo GetImageFromLocation(string path, string filenameWithoutExtension)
+        {
+            try
+            {
+                var files = new DirectoryInfo(path)
+                    .EnumerateFiles()
+                    .Where(i =>
+                    {
+                        var fileName = Path.GetFileNameWithoutExtension(i.FullName);
+
+                        if (!string.Equals(fileName, filenameWithoutExtension, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return false;
+                        }
+
+                        var ext = i.Extension;
+
+                        return !string.IsNullOrEmpty(ext) &&
+                            BaseItem.SupportedImageExtensions.Contains(ext, StringComparer.OrdinalIgnoreCase);
+                    })
+                    .ToList();
+
+                return BaseItem.SupportedImageExtensions
+                    .Select(ext => files.FirstOrDefault(i => string.Equals(ext, i.Extension, StringComparison.OrdinalIgnoreCase)))
+                    .FirstOrDefault(file => file != null);
+            }
+            catch (DirectoryNotFoundException)
+            {
+                return null;
             }
         }
     }
