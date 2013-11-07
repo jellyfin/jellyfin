@@ -288,7 +288,7 @@ namespace MediaBrowser.ServerApplication
             LocalizationManager = new LocalizationManager(ServerConfigurationManager, FileSystemManager);
             RegisterSingleInstance(LocalizationManager);
 
-            ImageProcessor = new ImageProcessor(Logger, ServerConfigurationManager.ApplicationPaths, FileSystemManager);
+            ImageProcessor = new ImageProcessor(Logger, ServerConfigurationManager.ApplicationPaths, FileSystemManager, JsonSerializer);
             RegisterSingleInstance(ImageProcessor);
 
             DtoService = new DtoService(Logger, LibraryManager, UserManager, UserDataManager, ItemRepository, ImageProcessor);
