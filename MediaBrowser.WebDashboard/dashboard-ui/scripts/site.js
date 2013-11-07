@@ -1120,7 +1120,25 @@ var Dashboard = {
         parts.push(seconds);
 
         return parts.join(':');
-    }
+    },
+    
+    ratePackage: function(link) {
+        var id = link.getAttribute('data-id');
+        var name = link.getAttribute('data-name');
+        var rating = link.getAttribute('data-rating');
+
+        var dialog = new RatingDialog($.mobile.activePage);
+        dialog.show({ header: "Rate and review " + name, id: id, rating: rating, callback: function(review) {
+            console.log(review);
+            dialog.close();
+            
+            ApiClient.createPackageReview(review).done(function() {
+                Dashboard.alert("Thank you for your review");
+            });
+        } });
+
+}
+
 };
 
 if (!window.WebSocket) {

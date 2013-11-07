@@ -3569,6 +3569,16 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 url: url
             });
         };
+
+        self.createPackageReview = function(review) {
+
+            var url = self.getUrl("PackageReviews/" + review.id, review);
+
+            return self.ajax({
+                type: "POST",
+                url: url,
+            });
+        };
     }
 
 }(jQuery, navigator, window.JSON, window.WebSocket, setTimeout, window);

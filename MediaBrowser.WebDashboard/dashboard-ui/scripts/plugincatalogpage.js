@@ -47,6 +47,28 @@
         Dashboard.hideLoadingMsg();
     }
 
+    function getRatingHtml(rating, id, name) {
+
+        var html = "<div style='margin-left: 5px; margin-right: 5px; display: inline-block'>";
+        if (!rating) rating = 0;
+
+        for (var i = 1; i <= 5; i++) {
+            html += "<a href='#' data-id=" + id + " data-name='" + name + "' data-rating=" + i + " onclick='Dashboard.ratePackage(this);' >";
+            if (rating < i - 1 || rating == 0) {
+                html += "<div class='storeStarRating emptyStarRating' title='Rate " + i + " stars'></div>";
+            } else if (rating < i) {
+                html += "<div class='storeStarRating halfStarRating' title='Rate " + i + " stars'></div>";
+            } else {
+                html += "<div class='storeStarRating' title='Rate " + i + " stars'></div>";
+            }
+            html += "</a>";
+        }
+
+        html += "</div>";
+
+        return html;
+    }
+
     function populateList(page, availablePlugins, installedPlugins) {
 
         Dashboard.showLoadingMsg();
@@ -79,7 +101,7 @@
             var href = plugin.externalUrl ? plugin.externalUrl : "addPlugin.html?name=" + encodeURIComponent(plugin.name) + "&guid=" + plugin.guid;
             var target = plugin.externalUrl ? ' target="_blank"' : '';
 
-            html += "<a class='posterItem backdropPosterItem transparentPosterItem borderlessPosterItem' href='" + href + "' " + target + ">";
+            html += "<div class='storeItem'><a class='posterItem storePosterItem borderlessPosterItem' style='background: #D4D4D4!important' href='" + href + "' " + target + ">";
 
             if (plugin.thumbImage) {
                 html += '<div class="posterItemImage" style="background-image:url(\'' + plugin.thumbImage + '\');background-size:cover;"></div>';
@@ -95,9 +117,9 @@
                 }
             }
 
-            var color = plugin.tileColor || LibraryBrowser.getMetroColor(plugin.name);
+            html += "</a>";
 
-            html += "<div class='posterItemText posterItemTextCentered' style='background:" + color + "'>";
+            html += "<div class='posterItemStoreText' style='font-size: 18px!important; font-weight: bold'>";
 
             var installedPlugin = plugin.isApp ? null : installedPlugins.filter(function (ip) {
                 return ip.Name == plugin.name;
@@ -108,10 +130,20 @@
             } else {
                 html += plugin.name;
             }
-
+            
             html += "</div>";
 
-            html += "</a>";
+            html += "<div class='posterItemStoreText' >";
+            html += plugin.price > 0 ? "$" + plugin.price.toFixed(2) : "Free";
+            html += getRatingHtml(plugin.avgRating, plugin.id, plugin.name);
+            html += " " + plugin.totalRatings + " Reviews";
+            
+            if (plugin.isPremium && plugin.isRegistered) {
+                html += "<span title='You are registered for this feature' style='cursor: default'> &reg;</span>";
+            }
+
+            html += "</div>";
+            html += "</div>";
 
             pluginhtml += html;
 
@@ -125,7 +157,6 @@
 
         Dashboard.hideLoadingMsg();
     }
-
 
     $(document).on('pageinit', "#pluginCatalogPage", function () {
 

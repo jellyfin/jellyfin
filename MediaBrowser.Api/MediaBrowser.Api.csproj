@@ -85,6 +85,7 @@
     <Compile Include="LocalizationService.cs" />
     <Compile Include="MoviesService.cs" />
     <Compile Include="NotificationsService.cs" />
+    <Compile Include="PackageReviewService.cs" />
     <Compile Include="PackageService.cs" />
     <Compile Include="Playback\Hls\AudioHlsService.cs" />
     <Compile Include="Playback\Hls\BaseHlsService.cs" />

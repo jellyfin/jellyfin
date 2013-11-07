@@ -36,6 +36,18 @@
     border: 0;
 }
 
+.posterItemStoreText {
+	font-family: 'Open Sans', sans-serif;
+	font-weight: normal;
+	font-size: 16px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    text-wrap: none;
+    white-space: nowrap;
+    text-shadow: none;
+}
+
+
 .posterItemText {
     text-overflow: ellipsis;
     overflow: hidden;
@@ -70,6 +82,20 @@
     .squarePosterItem .posterItemImage {
         height: 150px;
     }
+
+.storeItem {
+    width: 270px;
+	display: inline-block;
+	margin: 10px;
+}
+
+.storePosterItem {
+	width: 270px;
+}
+    .storePosterItem .posterItemImage {
+        height: 150px;
+    }
+
 
 .backdropPosterItem {
     width: 160px;
