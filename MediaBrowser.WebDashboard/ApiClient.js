@@ -3570,7 +3570,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.createPackageReview = function(review) {
+        self.createPackageReview = function (review) {
 
             var url = self.getUrl("PackageReviews/" + review.id, review);
 
