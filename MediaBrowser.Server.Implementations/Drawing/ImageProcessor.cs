@@ -7,6 +7,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -24,7 +25,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
     /// <summary>
     /// Class ImageProcessor
     /// </summary>
-    public class ImageProcessor : IImageProcessor
+    public class ImageProcessor : IImageProcessor, IDisposable
     {
         /// <summary>
         /// The us culture
@@ -34,7 +35,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
         /// <summary>
         /// The _cached imaged sizes
         /// </summary>
-        private readonly ConcurrentDictionary<string, ImageSize> _cachedImagedSizes = new ConcurrentDictionary<string, ImageSize>();
+        private readonly ConcurrentDictionary<Guid, ImageSize> _cachedImagedSizes;
 
         /// <summary>
         /// Gets the list of currently registered image processors
@@ -49,21 +50,41 @@ namespace MediaBrowser.Server.Implementations.Drawing
         private readonly ILogger _logger;
 
         private readonly IFileSystem _fileSystem;
+        private readonly IJsonSerializer _jsonSerializer;
+        private readonly IServerApplicationPaths _appPaths;
 
         private readonly string _imageSizeCachePath;
         private readonly string _croppedWhitespaceImageCachePath;
         private readonly string _enhancedImageCachePath;
         private readonly string _resizedImageCachePath;
 
-        public ImageProcessor(ILogger logger, IServerApplicationPaths appPaths, IFileSystem fileSystem)
+        public ImageProcessor(ILogger logger, IServerApplicationPaths appPaths, IFileSystem fileSystem, IJsonSerializer jsonSerializer)
         {
             _logger = logger;
             _fileSystem = fileSystem;
+            _jsonSerializer = jsonSerializer;
+            _appPaths = appPaths;
 
             _imageSizeCachePath = Path.Combine(appPaths.ImageCachePath, "image-sizes");
             _croppedWhitespaceImageCachePath = Path.Combine(appPaths.ImageCachePath, "cropped-images");
             _enhancedImageCachePath = Path.Combine(appPaths.ImageCachePath, "enhanced-images");
             _resizedImageCachePath = Path.Combine(appPaths.ImageCachePath, "resized-images");
+
+            _saveImageSizeTimer = new Timer(SaveImageSizeCallback, null, Timeout.Infinite, Timeout.Infinite);
+
+            Dictionary<Guid, ImageSize> sizeDictionary;
+
+            try
+            {
+                sizeDictionary = jsonSerializer.DeserializeFromFile<Dictionary<Guid, ImageSize>>(ImageSizeFile);
+            }
+            catch (IOException)
+            {
+                // No biggie
+                sizeDictionary = new Dictionary<Guid, ImageSize>();
+            }
+
+            _cachedImagedSizes = new ConcurrentDictionary<Guid, ImageSize>(sizeDictionary);
         }
 
         public void AddParts(IEnumerable<IImageEnhancer> enhancers)
@@ -84,7 +105,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
             }
 
             var originalImagePath = options.OriginalImagePath;
-            
+
             if (options.HasDefaultOptions())
             {
                 // Just spit out the original file if all the options are default
@@ -125,7 +146,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
                     return;
                 }
             }
-            
+
             var quality = options.Quality ?? 90;
 
             var cacheFilePath = GetCacheFilePath(originalImagePath, newSize, quality, dateModified, options.OutputFormat, options.AddPlayedIndicator, options.PercentPlayed, options.BackgroundColor);
@@ -485,11 +506,13 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
             ImageSize size;
 
-            if (!_cachedImagedSizes.TryGetValue(name, out size))
-            {
-                size = GetImageSizeInternal(name, path);
+            var cacheHash = name.GetMD5();
 
-                _cachedImagedSizes.AddOrUpdate(name, size, (keyName, oldValue) => size);
+            if (!_cachedImagedSizes.TryGetValue(cacheHash, out size))
+            {
+                size = GetImageSizeInternal(path);
+
+                _cachedImagedSizes.AddOrUpdate(cacheHash, size, (keyName, oldValue) => size);
             }
 
             return size;
@@ -498,62 +521,47 @@ namespace MediaBrowser.Server.Implementations.Drawing
         /// <summary>
         /// Gets the image size internal.
         /// </summary>
-        /// <param name="cacheKey">The cache key.</param>
         /// <param name="path">The path.</param>
         /// <returns>ImageSize.</returns>
-        private ImageSize GetImageSizeInternal(string cacheKey, string path)
+        private ImageSize GetImageSizeInternal(string path)
         {
-            // Now check the file system cache
-            var fullCachePath = GetCachePath(_imageSizeCachePath, cacheKey, ".txt");
+            var size = ImageHeader.GetDimensions(path, _logger, _fileSystem);
 
-            try
-            {
-                var result = File.ReadAllText(fullCachePath).Split('|');
+            StartSaveImageSizeTimer();
 
-                return new ImageSize
-                {
-                    Width = double.Parse(result[0], UsCulture),
-                    Height = double.Parse(result[1], UsCulture)
-                };
-            }
-            catch (IOException)
-            {
-                // Cache file doesn't exist or is currently being written to
-            }
+            return new ImageSize { Width = size.Width, Height = size.Height };
+        }
 
-            var syncLock = GetObjectLock(fullCachePath);
+        private readonly Timer _saveImageSizeTimer;
+        private const int SaveImageSizeTimeout = 5000;
+        private readonly object _saveImageSizeLock = new object();
+        private void StartSaveImageSizeTimer()
+        {
+            _saveImageSizeTimer.Change(SaveImageSizeTimeout, Timeout.Infinite);
+        }
 
-            lock (syncLock)
+        private void SaveImageSizeCallback(object state)
+        {
+            lock (_saveImageSizeLock)
             {
                 try
                 {
-                    var result = File.ReadAllText(fullCachePath).Split('|');
-
-                    return new ImageSize
-                    {
-                        Width = double.Parse(result[0], UsCulture),
-                        Height = double.Parse(result[1], UsCulture)
-                    };
+                    var path = ImageSizeFile;
+                    Directory.CreateDirectory(Path.GetDirectoryName(path));
+                    _jsonSerializer.SerializeToFile(_cachedImagedSizes, path);
                 }
-                catch (FileNotFoundException)
+                catch (Exception ex)
                 {
-                    // Cache file doesn't exist no biggie
+                    _logger.ErrorException("Error saving image size file", ex);
                 }
-                catch (DirectoryNotFoundException)
-                {
-                    // Cache file doesn't exist no biggie
-                }
+            }
+        }
 
-                var size = ImageHeader.GetDimensions(path, _logger, _fileSystem);
-
-                var parentPath = Path.GetDirectoryName(fullCachePath);
-
-                Directory.CreateDirectory(parentPath);
-
-                // Update the file system cache
-                File.WriteAllText(fullCachePath, size.Width.ToString(UsCulture) + @"|" + size.Height.ToString(UsCulture));
-
-                return new ImageSize { Width = size.Width, Height = size.Height };
+        private string ImageSizeFile
+        {
+            get
+            {
+                return Path.Combine(_appPaths.DataPath, "imagesizes.json");
             }
         }
 
@@ -881,6 +889,11 @@ namespace MediaBrowser.Server.Implementations.Drawing
                 }
 
             }).ToList();
+        }
+
+        public void Dispose()
+        {
+            _saveImageSizeTimer.Dispose();
         }
     }
 }

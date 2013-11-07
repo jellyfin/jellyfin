@@ -822,13 +822,18 @@ namespace MediaBrowser.Providers.Movies
 
                 // genres
                 // Movies get this from imdb
-                if (movieData.genres != null && !movie.LockedFields.Contains(MetadataFields.Genres) && movie is BoxSet)
+                if (movieData.genres != null && !movie.LockedFields.Contains(MetadataFields.Genres))
                 {
-                    movie.Genres.Clear();
-
-                    foreach (var genre in movieData.genres.Select(g => g.name))
+                    // Only grab them if a boxset or there are no genres.
+                    // For movies and trailers we'll use imdb via omdb
+                    if (movie is BoxSet || movie.Genres.Count == 0)
                     {
-                        movie.AddGenre(genre);
+                        movie.Genres.Clear();
+
+                        foreach (var genre in movieData.genres.Select(g => g.name))
+                        {
+                            movie.AddGenre(genre);
+                        }
                     }
                 }
 

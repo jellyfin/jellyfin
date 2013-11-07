@@ -70,9 +70,12 @@ namespace MediaBrowser.Providers.Music
         /// <returns>Task{System.Boolean}.</returns>
         public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
-            var images = await _providerManager.GetAvailableRemoteImages(item, cancellationToken, ManualLastFmImageProvider.ProviderName).ConfigureAwait(false);
+            if (!item.HasImage(ImageType.Primary))
+            {
+                var images = await _providerManager.GetAvailableRemoteImages(item, cancellationToken, ManualLastFmImageProvider.ProviderName).ConfigureAwait(false);
 
-            await DownloadImages(item, images.ToList(), cancellationToken).ConfigureAwait(false);
+                await DownloadImages(item, images.ToList(), cancellationToken).ConfigureAwait(false);
+            }
 
             SetLastRefreshed(item, DateTime.UtcNow);
 
