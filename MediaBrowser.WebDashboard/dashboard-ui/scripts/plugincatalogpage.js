@@ -119,7 +119,7 @@
 
             html += "</a>";
 
-            html += "<div class='posterItemStoreText' style='font-size: 18px!important; font-weight: bold'>";
+            html += "<div class='posterItemStoreText' style='font-weight: bold'>";
 
             var installedPlugin = plugin.isApp ? null : installedPlugins.filter(function (ip) {
                 return ip.Name == plugin.name;
@@ -136,8 +136,11 @@
             html += "<div class='posterItemStoreText' >";
             html += plugin.price > 0 ? "$" + plugin.price.toFixed(2) : "Free";
             html += getRatingHtml(plugin.avgRating, plugin.id, plugin.name);
+
+            html += "<span class='storeReviewCount'>";
             html += " " + plugin.totalRatings + " Reviews";
-            
+            html += "</span>";
+
             if (plugin.isPremium && plugin.isRegistered) {
                 html += "<span title='You are registered for this feature' style='cursor: default'> &reg;</span>";
             }

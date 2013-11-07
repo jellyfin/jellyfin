@@ -37,14 +37,14 @@
 }
 
 .posterItemStoreText {
-	font-family: 'Open Sans', sans-serif;
-	font-weight: normal;
-	font-size: 16px;
+    font-family: 'Open Sans', sans-serif;
+    font-weight: normal;
     text-overflow: ellipsis;
     overflow: hidden;
     text-wrap: none;
     white-space: nowrap;
     text-shadow: none;
+    padding-left: 2px;
 }
 
 
@@ -84,17 +84,21 @@
     }
 
 .storeItem {
-    width: 270px;
-	display: inline-block;
-	margin: 10px;
+    display: inline-block;
+    margin: 0 15px 15px 0;
 }
 
-.storePosterItem {
-	width: 270px;
+.storeItem, .storePosterItem {
+    width: 160px;
 }
+
     .storePosterItem .posterItemImage {
-        height: 150px;
+        height: 90px;
     }
+
+.storeReviewCount {
+    display: none;
+}
 
 
 .backdropPosterItem {
@@ -148,6 +152,14 @@
         .backdropPosterItem .posterItemImage {
             height: 108px;
         }
+
+    .storeItem, .storePosterItem {
+        width: 192px;
+    }
+
+        .storePosterItem .posterItemImage {
+            height: 108px;
+        }
 }
 
 @media all and (min-width: 750px) {
@@ -190,6 +202,22 @@
         .smallBackdropPosterItem .posterItemImage {
             height: 105px;
         }
+
+    .storeItem, .storePosterItem {
+        width: 270px;
+    }
+
+        .storePosterItem .posterItemImage {
+            height: 152px;
+        }
+
+    .posterItemStoreText {
+        font-size: 18px;
+    }
+
+    .storeReviewCount {
+        display: inline;
+    }
 }
 
 @media all and (min-width: 1440px) {
