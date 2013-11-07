@@ -251,17 +251,33 @@ namespace MediaBrowser.Providers.MediaInfo
 
         private string GetAspectRatio(MediaStreamInfo info)
         {
-            if (info.height > 0 && info.width > 0)
-            {
-                double ratio = info.width;
-                ratio /= info.height;
+            var original = info.display_aspect_ratio;
 
-                if (IsClose(ratio, 1.777777778))
+            int height;
+            int width;
+
+            var parts = (original ?? string.Empty).Split(':');
+            if (!(parts.Length == 2 &&
+                int.TryParse(parts[0], NumberStyles.Any, UsCulture, out width) &&
+                int.TryParse(parts[1], NumberStyles.Any, UsCulture, out height) &&
+                width > 0 &&
+                height > 0))
+            {
+                width = info.width;
+                height = info.height;
+            }
+
+            if (width > 0 && height > 0)
+            {
+                double ratio = width;
+                ratio /= height;
+
+                if (IsClose(ratio, 1.777777778, .03))
                 {
                     return "16:9";
                 }
 
-                if (IsClose(ratio, 1.3333333333))
+                if (IsClose(ratio, 1.3333333333, .05))
                 {
                     return "4:3";
                 }
@@ -286,30 +302,29 @@ namespace MediaBrowser.Providers.MediaInfo
                     return "5:3";
                 }
 
-                if (IsClose(ratio, 1.85))
+                if (IsClose(ratio, 1.85, .02))
                 {
                     return "1.85:1";
                 }
 
-                if (IsClose(ratio, 2.39))
+                if (IsClose(ratio, 2.35, .025))
                 {
-                    return "2.39:1";
+                    return "2.35:1";
                 }
 
-                if (IsClose(ratio, 2.4))
+                if (IsClose(ratio, 2.4, .025))
                 {
-                    return "2.4:1";
+                    return "2.40:1";
                 }
             }
 
-            return info.display_aspect_ratio;
+            return original;
         }
 
-        private bool IsClose(double d1, double d2)
+        private bool IsClose(double d1, double d2, double variance = .005)
         {
-            return Math.Abs(d1 - d2) <= .005;
+            return Math.Abs(d1 - d2) <= variance;
         }
-
 
         /// <summary>
         /// Gets a frame rate from a string value in ffprobe output

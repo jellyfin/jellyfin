@@ -334,7 +334,7 @@ namespace MediaBrowser.Providers.Music
 
         public int Priority
         {
-            get { return 0; }
+            get { return 1; }
         }
     }
 }

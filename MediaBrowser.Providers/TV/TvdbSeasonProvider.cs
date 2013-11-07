@@ -181,8 +181,6 @@ namespace MediaBrowser.Providers.TV
 
             if (ConfigurationManager.Configuration.DownloadSeasonImages.Backdrops && item.BackdropImagePaths.Count < backdropLimit)
             {
-                var bdNo = item.BackdropImagePaths.Count;
-
                 foreach (var backdrop in images.Where(i => i.Type == ImageType.Backdrop))
                 {
                     var url = backdrop.Url;
@@ -192,9 +190,7 @@ namespace MediaBrowser.Providers.TV
                         continue;
                     }
 
-                    await _providerManager.SaveImage(item, url, TvdbSeriesProvider.Current.TvDbResourcePool, ImageType.Backdrop, bdNo, cancellationToken).ConfigureAwait(false);
-
-                    bdNo++;
+                    await _providerManager.SaveImage(item, url, TvdbSeriesProvider.Current.TvDbResourcePool, ImageType.Backdrop, null, cancellationToken).ConfigureAwait(false);
 
                     if (item.BackdropImagePaths.Count >= backdropLimit) break;
                 }

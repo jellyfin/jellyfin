@@ -8,17 +8,14 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Providers;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml;
 
 namespace MediaBrowser.Providers.Music
 {
@@ -323,14 +320,10 @@ namespace MediaBrowser.Providers.Music
             if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Backdrops &&
                 item.BackdropImagePaths.Count < backdropLimit)
             {
-                var numBackdrops = item.BackdropImagePaths.Count;
-
                 foreach (var image in images.Where(i => i.Type == ImageType.Backdrop))
                 {
-                    await _providerManager.SaveImage(item, image.Url, FanArtResourcePool, ImageType.Backdrop, numBackdrops, cancellationToken)
+                    await _providerManager.SaveImage(item, image.Url, FanArtResourcePool, ImageType.Backdrop, null, cancellationToken)
                                         .ConfigureAwait(false);
-
-                    numBackdrops++;
 
                     if (item.BackdropImagePaths.Count >= backdropLimit) break;
                 }

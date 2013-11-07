@@ -34,21 +34,27 @@ namespace MediaBrowser.Providers.Music
 
             var musicArtist = artist as MusicArtist;
 
+            string imageSize; 
+
             if (musicArtist != null)
             {
-                musicArtist.LastFmImageUrl = GetImageUrl(data);
+                musicArtist.LastFmImageUrl = GetImageUrl(data, out imageSize);
+                musicArtist.LastFmImageSize = imageSize;
             }
 
             var artistByName = artist as Artist;
 
             if (artistByName != null)
             {
-                artistByName.LastFmImageUrl = GetImageUrl(data);
+                artistByName.LastFmImageUrl = GetImageUrl(data, out imageSize);
+                artistByName.LastFmImageSize = imageSize;
             }
         }
 
-        private static string GetImageUrl(IHasLastFmImages data)
+        private static string GetImageUrl(IHasLastFmImages data, out string size)
         {
+            size = null;
+
             if (data.image == null)
             {
                 return null;
@@ -61,12 +67,13 @@ namespace MediaBrowser.Providers.Music
             var img = validImages
                 .FirstOrDefault(i => string.Equals(i.size, "mega", StringComparison.OrdinalIgnoreCase)) ??
                 data.image.FirstOrDefault(i => string.Equals(i.size, "extralarge", StringComparison.OrdinalIgnoreCase)) ??
-                data.image.FirstOrDefault(i => string.Equals(i.size, "large", StringComparison.OrdinalIgnoreCase)) ?? 
-                data.image.FirstOrDefault(i => string.Equals(i.size, "medium", StringComparison.OrdinalIgnoreCase)) ?? 
+                data.image.FirstOrDefault(i => string.Equals(i.size, "large", StringComparison.OrdinalIgnoreCase)) ??
+                data.image.FirstOrDefault(i => string.Equals(i.size, "medium", StringComparison.OrdinalIgnoreCase)) ??
                 data.image.FirstOrDefault();
 
             if (img != null)
             {
+                size = img.size;
                 return img.url;
             }
 
@@ -81,7 +88,7 @@ namespace MediaBrowser.Providers.Music
             target.Overview = source.Overview;
             target.ProductionLocations = source.ProductionLocations.ToList();
         }
-        
+
         public static void ProcessAlbumData(BaseItem item, LastfmAlbum data)
         {
             if (!string.IsNullOrWhiteSpace(data.mbid)) item.SetProviderId(MetadataProviders.Musicbrainz, data.mbid);
@@ -107,7 +114,11 @@ namespace MediaBrowser.Providers.Music
             }
 
             var album = (MusicAlbum)item;
-            album.LastFmImageUrl = GetImageUrl(data);
+
+            string imageSize;
+
+            album.LastFmImageUrl = GetImageUrl(data, out imageSize);
+            album.LastFmImageSize = imageSize;
         }
 
         private static void AddTags(BaseItem item, LastfmTags tags)

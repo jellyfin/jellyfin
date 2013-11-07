@@ -22,7 +22,9 @@ namespace MediaBrowser.Server.Implementations.Sorting
 
         private float GetValue(BaseItem x)
         {
-            return x.CriticRating ?? 0;
+            var hasCriticRating = x as IHasCriticRating;
+
+            return hasCriticRating == null ? 0 : hasCriticRating.CriticRating ?? 0;
         }
 
         /// <summary>

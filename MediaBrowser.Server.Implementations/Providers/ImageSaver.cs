@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -8,6 +7,7 @@ using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -68,6 +68,15 @@ namespace MediaBrowser.Server.Implementations.Providers
             if (string.IsNullOrEmpty(mimeType))
             {
                 throw new ArgumentNullException("mimeType");
+            }
+
+            if (type == ImageType.Backdrop && imageIndex == null)
+            {
+                imageIndex = item.BackdropImagePaths.Count;
+            }
+            else if (type == ImageType.Screenshot && imageIndex == null)
+            {
+                imageIndex = item.ScreenshotImagePaths.Count;
             }
 
             var saveLocally = _config.Configuration.SaveLocalMeta && item.Parent != null && !(item is Audio);

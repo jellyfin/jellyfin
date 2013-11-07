@@ -260,14 +260,10 @@ namespace MediaBrowser.Providers.TV
             if (ConfigurationManager.Configuration.DownloadSeriesImages.Backdrops &&
                 item.BackdropImagePaths.Count < backdropLimit)
             {
-                var numBackdrops = item.BackdropImagePaths.Count;
-
                 foreach (var image in images.Where(i => i.Type == ImageType.Backdrop))
                 {
-                    await _providerManager.SaveImage(item, image.Url, FanArtResourcePool, ImageType.Backdrop, numBackdrops, cancellationToken)
+                    await _providerManager.SaveImage(item, image.Url, FanArtResourcePool, ImageType.Backdrop, null, cancellationToken)
                                         .ConfigureAwait(false);
-
-                    numBackdrops++;
 
                     if (item.BackdropImagePaths.Count >= backdropLimit) break;
                 }
