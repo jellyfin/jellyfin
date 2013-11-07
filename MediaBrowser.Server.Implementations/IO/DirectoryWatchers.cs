@@ -363,6 +363,7 @@ namespace MediaBrowser.Server.Implementations.IO
             {
                 if (string.Equals(i, e.FullPath, StringComparison.OrdinalIgnoreCase))
                 {
+                    Logger.Debug("Watcher ignoring change to {0}", e.FullPath);
                     return true;
                 }
 
@@ -370,6 +371,7 @@ namespace MediaBrowser.Server.Implementations.IO
                 var parent = Path.GetDirectoryName(i);
                 if (string.Equals(parent, e.FullPath, StringComparison.OrdinalIgnoreCase))
                 {
+                    Logger.Debug("Watcher ignoring change to {0}", e.FullPath);
                     return true;
                 }
 
@@ -379,20 +381,22 @@ namespace MediaBrowser.Server.Implementations.IO
                     parent = Path.GetDirectoryName(i);
                     if (string.Equals(parent, e.FullPath, StringComparison.OrdinalIgnoreCase))
                     {
+                        Logger.Debug("Watcher ignoring change to {0}", e.FullPath);
                         return true;
                     }
+                }
+
+                if (i.StartsWith(e.FullPath, StringComparison.OrdinalIgnoreCase) || 
+                    e.FullPath.StartsWith(i, StringComparison.OrdinalIgnoreCase))
+                {
+                    Logger.Debug("Watcher ignoring change to {0}", e.FullPath);
+                    return true;
                 }
 
                 return false;
 
             }))
             {
-                return;
-            }
-
-            if (tempIgnorePaths.Contains(e.FullPath, StringComparer.OrdinalIgnoreCase))
-            {
-                Logger.Debug("Watcher requested to ignore change to " + e.FullPath);
                 return;
             }
 

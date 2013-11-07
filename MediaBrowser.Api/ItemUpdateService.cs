@@ -219,8 +219,12 @@ namespace MediaBrowser.Api
             item.Budget = request.Budget;
             item.Revenue = request.Revenue;
 
-            item.CriticRating = request.CriticRating;
-            item.CriticRatingSummary = request.CriticRatingSummary;
+            var hasCriticRating = item as IHasCriticRating;
+            if (hasCriticRating != null)
+            {
+                hasCriticRating.CriticRating = request.CriticRating;
+                hasCriticRating.CriticRatingSummary = request.CriticRatingSummary;
+            }
 
             item.DisplayMediaType = request.DisplayMediaType;
             item.CommunityRating = request.CommunityRating;

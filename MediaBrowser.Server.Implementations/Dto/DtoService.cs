@@ -792,11 +792,15 @@ namespace MediaBrowser.Server.Implementations.Dto
             dto.MediaType = item.MediaType;
             dto.LocationType = item.LocationType;
 
-            dto.CriticRating = item.CriticRating;
-
-            if (fields.Contains(ItemFields.CriticRatingSummary))
+            var hasCriticRating = item as IHasCriticRating;
+            if (hasCriticRating != null)
             {
-                dto.CriticRatingSummary = item.CriticRatingSummary;
+                dto.CriticRating = hasCriticRating.CriticRating;
+
+                if (fields.Contains(ItemFields.CriticRatingSummary))
+                {
+                    dto.CriticRatingSummary = hasCriticRating.CriticRatingSummary;
+                }
             }
 
             var localTrailerCount = item.LocalTrailerIds.Count;

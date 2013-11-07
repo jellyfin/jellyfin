@@ -4,7 +4,10 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Providers;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -55,11 +58,6 @@ namespace MediaBrowser.Providers.Music
                 return false;
             }
 
-            if (string.IsNullOrWhiteSpace(GetImageUrl(item)))
-            {
-                return false;
-            }
-
             return base.NeedsRefreshInternal(item, providerInfo);
         }
 
@@ -72,16 +70,35 @@ namespace MediaBrowser.Providers.Music
         /// <returns>Task{System.Boolean}.</returns>
         public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
-            var url = GetImageUrl(item);
-
-            if (!string.IsNullOrWhiteSpace(url) && !item.HasImage(ImageType.Primary))
+            if (!item.HasImage(ImageType.Primary))
             {
-                await _providerManager.SaveImage(item, url, LastfmBaseProvider.LastfmResourcePool, ImageType.Primary, null, cancellationToken)
-                                    .ConfigureAwait(false);
+                var images = await _providerManager.GetAvailableRemoteImages(item, cancellationToken, ManualLastFmImageProvider.ProviderName).ConfigureAwait(false);
+
+                await DownloadImages(item, images.ToList(), cancellationToken).ConfigureAwait(false);
             }
 
             SetLastRefreshed(item, DateTime.UtcNow);
+
             return true;
+        }
+
+        private async Task DownloadImages(BaseItem item, List<RemoteImageInfo> images, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var configSetting = item is MusicAlbum
+                ? ConfigurationManager.Configuration.DownloadMusicAlbumImages
+                : ConfigurationManager.Configuration.DownloadMusicArtistImages;
+
+            if (configSetting.Primary && !item.HasImage(ImageType.Primary))
+            {
+                var image = images.FirstOrDefault(i => i.Type == ImageType.Primary);
+
+                if (image != null)
+                {
+                    await _providerManager.SaveImage(item, image.Url, LastfmBaseProvider.LastfmResourcePool, ImageType.Primary, null, cancellationToken).ConfigureAwait(false);
+                }
+            }
         }
 
         /// <summary>
@@ -91,37 +108,6 @@ namespace MediaBrowser.Providers.Music
         public override MetadataProviderPriority Priority
         {
             get { return MetadataProviderPriority.Fifth; }
-        }
-
-        /// <summary>
-        /// Gets the image URL.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns>System.String.</returns>
-        private string GetImageUrl(BaseItem item)
-        {
-            var musicArtist = item as MusicArtist;
-
-            if (musicArtist != null)
-            {
-                return musicArtist.LastFmImageUrl;
-            }
-
-            var artistByName = item as Artist;
-
-            if (artistByName != null)
-            {
-                return artistByName.LastFmImageUrl;
-            }
-
-            var album = item as MusicAlbum;
-
-            if (album != null)
-            {
-                return album.LastFmImageUrl;
-            }
-
-            return null;
         }
     }
 }

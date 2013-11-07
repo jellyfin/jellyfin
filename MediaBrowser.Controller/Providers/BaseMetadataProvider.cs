@@ -24,6 +24,7 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         /// <value>The logger.</value>
         protected ILogger Logger { get; set; }
+
         protected ILogManager LogManager { get; set; }
 
         /// <summary>
@@ -41,6 +42,7 @@ namespace MediaBrowser.Controller.Providers
         /// The true task result
         /// </summary>
         protected static readonly Task<bool> TrueTaskResult = Task.FromResult(true);
+
         protected static readonly Task<bool> FalseTaskResult = Task.FromResult(false);
 
         protected static readonly SemaphoreSlim XmlParsingResourcePool = new SemaphoreSlim(5, 5);
@@ -132,7 +134,8 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="providerVersion">The provider version.</param>
         /// <param name="status">The status.</param>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        public virtual void SetLastRefreshed(BaseItem item, DateTime value, string providerVersion, ProviderRefreshStatus status = ProviderRefreshStatus.Success)
+        public virtual void SetLastRefreshed(BaseItem item, DateTime value, string providerVersion,
+            ProviderRefreshStatus status = ProviderRefreshStatus.Success)
         {
             if (item == null)
             {
@@ -172,7 +175,8 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="item">The item.</param>
         /// <param name="value">The value.</param>
         /// <param name="status">The status.</param>
-        public void SetLastRefreshed(BaseItem item, DateTime value, ProviderRefreshStatus status = ProviderRefreshStatus.Success)
+        public void SetLastRefreshed(BaseItem item, DateTime value,
+            ProviderRefreshStatus status = ProviderRefreshStatus.Success)
         {
             SetLastRefreshed(item, value, ProviderVersion, status);
         }
@@ -238,7 +242,8 @@ namespace MediaBrowser.Controller.Providers
                 return true;
             }
 
-            if (RefreshOnFileSystemStampChange && item.LocationType == LocationType.FileSystem && HasFileSystemStampChanged(item, providerInfo))
+            if (RefreshOnFileSystemStampChange && item.LocationType == LocationType.FileSystem &&
+                HasFileSystemStampChanged(item, providerInfo))
             {
                 return true;
             }
@@ -349,21 +354,23 @@ namespace MediaBrowser.Controller.Providers
         }
 
         private Dictionary<string, string> _fileStampExtensionsDictionary;
+
         private Dictionary<string, string> FileStampExtensionsDictionary
         {
             get
             {
                 return _fileStampExtensionsDictionary ??
                        (_fileStampExtensionsDictionary =
-                        FilestampExtensions.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase));
+                           FilestampExtensions.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase));
             }
         }
+
         /// <summary>
         /// Gets the file system stamp.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>Guid.</returns>
-        private Guid GetFileSystemStamp(BaseItem item)
+        protected virtual Guid GetFileSystemStamp(BaseItem item)
         {
             // If there's no path or the item is a file, there's nothing to do
             if (item.LocationType != LocationType.FileSystem)
@@ -404,6 +411,20 @@ namespace MediaBrowser.Controller.Providers
         private static readonly Dictionary<string, string> FoldersToMonitor = new[] { "extrafanart", "extrathumbs" }
             .ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
 
+        protected Guid GetFileSystemStamp(IEnumerable<FileSystemInfo> files)
+        {
+            var sb = new StringBuilder();
+
+            var extensions = FileStampExtensionsDictionary;
+            var numExtensions = FilestampExtensions.Length;
+
+            // Record the name of each file 
+            // Need to sort these because accoring to msdn docs, our i/o methods are not guaranteed in any order
+            AddFiles(sb, files, extensions, numExtensions);
+
+            return sb.ToString().GetMD5();
+        }
+
         /// <summary>
         /// Adds the files.
         /// </summary>
@@ -424,7 +445,7 @@ namespace MediaBrowser.Controller.Providers
                         {
                             sb.Append(file.Name);
 
-                            var children = ((DirectoryInfo) file).EnumerateFiles("*", SearchOption.TopDirectoryOnly).ToList();
+                            var children = ((DirectoryInfo)file).EnumerateFiles("*", SearchOption.TopDirectoryOnly).ToList();
                             AddFiles(sb, children, extensions, numExtensions);
                         }
                     }
