@@ -861,21 +861,10 @@ namespace MediaBrowser.Api.Images
                     Position = 0
                 };
 
-                var imageIndex = 0;
-
-                if (imageType == ImageType.Screenshot)
-                {
-                    imageIndex = entity.ScreenshotImagePaths.Count;
-                }
-                else if (imageType == ImageType.Backdrop)
-                {
-                    imageIndex = entity.BackdropImagePaths.Count;
-                }
-
                 // Handle image/png; charset=utf-8
                 mimeType = mimeType.Split(';').FirstOrDefault();
 
-                await _providerManager.SaveImage(entity, memoryStream, mimeType, imageType, imageIndex, null, CancellationToken.None).ConfigureAwait(false);
+                await _providerManager.SaveImage(entity, memoryStream, mimeType, imageType, null, null, CancellationToken.None).ConfigureAwait(false);
 
                 await entity.RefreshMetadata(CancellationToken.None, forceRefresh: true, forceSave: true, allowSlowProviders: false).ConfigureAwait(false);
             }

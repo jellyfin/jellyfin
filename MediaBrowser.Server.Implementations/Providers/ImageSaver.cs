@@ -70,6 +70,15 @@ namespace MediaBrowser.Server.Implementations.Providers
                 throw new ArgumentNullException("mimeType");
             }
 
+            if (type == ImageType.Backdrop && imageIndex == null)
+            {
+                imageIndex = item.BackdropImagePaths.Count;
+            }
+            else if (type == ImageType.Screenshot && imageIndex == null)
+            {
+                imageIndex = item.ScreenshotImagePaths.Count;
+            }
+
             var saveLocally = _config.Configuration.SaveLocalMeta && item.Parent != null && !(item is Audio);
 
             if (item is IItemByName || item is User)

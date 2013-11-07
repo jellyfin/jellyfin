@@ -231,7 +231,7 @@ namespace MediaBrowser.Providers.Movies
 
                         }).ConfigureAwait(false);
 
-                        await _providerManager.SaveImage(item, img, MimeTypes.GetMimeType(url), ImageType.Backdrop, item.BackdropImagePaths.Count, url, cancellationToken)
+                        await _providerManager.SaveImage(item, img, MimeTypes.GetMimeType(url), ImageType.Backdrop, null, url, cancellationToken)
                           .ConfigureAwait(false);
                     }
 

@@ -34,6 +34,9 @@ namespace MediaBrowser.Api.DefaultTheme
 
         public List<BaseItemDto> LatestTrailers { get; set; }
         public List<BaseItemDto> LatestMovies { get; set; }
+
+        public List<ItemByNameInfo> FavoriteGenres { get; set; }
+        public List<ItemByNameInfo> FavoriteStudios { get; set; }
     }
 
     public class TvView : BaseView

@@ -282,14 +282,7 @@ namespace MediaBrowser.Api.Images
         /// <returns>Task.</returns>
         private async Task DownloadRemoteImage(BaseItem item, BaseDownloadRemoteImage request)
         {
-            int? index = null;
-
-            if (request.Type == ImageType.Backdrop)
-            {
-                index = item.BackdropImagePaths.Count;
-            }
-
-            await _providerManager.SaveImage(item, request.ImageUrl, null, request.Type, index, CancellationToken.None).ConfigureAwait(false);
+            await _providerManager.SaveImage(item, request.ImageUrl, null, request.Type, null, CancellationToken.None).ConfigureAwait(false);
 
             await item.RefreshMetadata(CancellationToken.None, forceSave: true, allowSlowProviders: false)
                     .ConfigureAwait(false);
