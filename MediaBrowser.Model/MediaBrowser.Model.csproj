@@ -59,6 +59,7 @@
     <Compile Include="Dto\ItemByNameCounts.cs" />
     <Compile Include="Dto\ItemCounts.cs" />
     <Compile Include="Dto\ItemIndex.cs" />
+    <Compile Include="Entities\PackageReviewInfo.cs" />
     <Compile Include="LiveTv\EpgFullInfo.cs" />
     <Compile Include="LiveTv\EpgInfo.cs" />
     <Compile Include="Providers\ImageProviderInfo.cs" />

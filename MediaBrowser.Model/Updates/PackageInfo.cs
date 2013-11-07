@@ -118,6 +118,24 @@ namespace MediaBrowser.Model.Updates
         public string guid { get; set; }
 
         /// <summary>
+        /// Gets or sets the total number of machines who have checked registration for this package (if premium).
+        /// </summary>
+        /// <value>The total hits.</value>
+        public int totalHits { get; set; }
+
+        /// <summary>
+        /// Gets or sets the total number of ratings for this package.
+        /// </summary>
+        /// <value>The total ratings.</value>
+        public int totalRatings { get; set; }
+
+        /// <summary>
+        /// Gets or sets the average rating for this package .
+        /// </summary>
+        /// <value>The rating.</value>
+        public float avgRating { get; set; }
+
+        /// <summary>
         /// Gets or sets whether or not this package is registered.
         /// </summary>
         /// <value>True if registered.</value>
