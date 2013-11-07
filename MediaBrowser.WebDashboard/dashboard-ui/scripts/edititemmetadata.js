@@ -351,6 +351,7 @@
 
             $('#btnRefresh', page).button('enable');
             $('#btnDelete', page).button('enable');
+            $('#btnSave', page).button('enable');
 
             $('#refreshLoading', page).hide();
 
@@ -1193,6 +1194,7 @@
 
             $('#btnDelete', page).button('disable');
             $('#btnRefresh', page).button('disable');
+            $('#btnSave', page).button('disable');
 
             $('#refreshLoading', page).show();
 
@@ -1237,13 +1239,18 @@
 
                     $('#btnDelete', page).button('disable');
                     $('#btnRefresh', page).button('disable');
+                    $('#btnSave', page).button('disable');
 
                     $('#refreshLoading', page).show();
 
+                    var parentId = currentItem.ParentId;
+                    
                     ApiClient.deleteItem(currentItem.Id).done(function () {
 
-                        Dashboard.navigate('edititemmetadata.html?id=' + currentItem.ParentId);
+                        var elem = $('#' + parentId)[0];
 
+                        $('.libraryTree').jstree("select_node", elem, true)
+                            .jstree("delete_node", '#' + currentItem.Id);
                     });
                 }
 
