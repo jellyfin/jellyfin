@@ -119,10 +119,6 @@
             html += " " + plugin.totalRatings + " Reviews";
             html += "</span>";
 
-            if (plugin.isPremium && plugin.isRegistered) {
-                html += "<span title='You are registered for this feature' style='cursor: default'> &reg;</span>";
-            }
-
             html += "</div>";
             html += "</div>";
 
