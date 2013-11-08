@@ -47,28 +47,6 @@
         Dashboard.hideLoadingMsg();
     }
 
-    function getRatingHtml(rating, id, name) {
-
-        var html = "<div style='margin-left: 5px; margin-right: 5px; display: inline-block'>";
-        if (!rating) rating = 0;
-
-        for (var i = 1; i <= 5; i++) {
-            html += "<a href='#' data-id=" + id + " data-name='" + name + "' data-rating=" + i + " onclick='Dashboard.ratePackage(this);' >";
-            if (rating < i - 1 || rating == 0) {
-                html += "<div class='storeStarRating emptyStarRating' title='Rate " + i + " stars'></div>";
-            } else if (rating < i) {
-                html += "<div class='storeStarRating halfStarRating' title='Rate " + i + " stars'></div>";
-            } else {
-                html += "<div class='storeStarRating' title='Rate " + i + " stars'></div>";
-            }
-            html += "</a>";
-        }
-
-        html += "</div>";
-
-        return html;
-    }
-
     function populateList(page, availablePlugins, installedPlugins) {
 
         Dashboard.showLoadingMsg();
@@ -135,7 +113,7 @@
 
             html += "<div class='posterItemStoreText' >";
             html += plugin.price > 0 ? "$" + plugin.price.toFixed(2) : "Free";
-            html += getRatingHtml(plugin.avgRating, plugin.id, plugin.name);
+            html += Dashboard.getStoreRatingHtml(plugin.avgRating, plugin.id, plugin.name);
 
             html += "<span class='storeReviewCount'>";
             html += " " + plugin.totalRatings + " Reviews";
