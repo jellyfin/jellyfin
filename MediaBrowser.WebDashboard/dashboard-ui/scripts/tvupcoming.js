@@ -4,11 +4,9 @@
 
         var page = this;
 
-        var now = new Date();
-
         var options = {
 
-            SortBy: "PremiereDate,AirTime",
+            SortBy: "PremiereDate,AirTime,SortName",
             SortOrder: "Ascending",
             IncludeItemTypes: "Episode",
             Limit: 30,

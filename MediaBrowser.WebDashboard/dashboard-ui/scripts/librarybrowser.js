@@ -1111,6 +1111,11 @@
                 return 1;
             }
 
+            // If really close to 4:3 (poster image), just return 2:3
+            if (Math.abs(1.33333333333 - result) <= .05) {
+                return 1.33333333333;
+            }
+
             return result;
         },
 

@@ -541,22 +541,22 @@
         });
 
         if (item.Type == "Season") {
-            $('#childrenTitle', page).html('Episodes (' + item.ChildCount + ')');
+            $('#childrenTitle', page).html('Episodes');
         }
         else if (item.Type == "Series") {
-            $('#childrenTitle', page).html('Seasons (' + item.SeasonCount + ')');
+            $('#childrenTitle', page).html('Seasons');
         }
         else if (item.Type == "BoxSet") {
-            $('#childrenTitle', page).html('Movies (' + item.ChildCount + ')');
+            $('#childrenTitle', page).html('Movies');
         }
         else if (item.Type == "MusicAlbum") {
-            $('#childrenTitle', page).html('Tracks (' + item.ChildCount + ')');
+            $('#childrenTitle', page).html('Tracks');
         }
         else if (item.Type == "GameSystem") {
-            $('#childrenTitle', page).html('Games (' + item.ChildCount + ')');
+            $('#childrenTitle', page).html('Games');
         }
         else {
-            $('#childrenTitle', page).html('Items (' + item.ChildCount + ')');
+            $('#childrenTitle', page).html('Items');
         }
     }
     function renderUserDataIcons(page, item) {
