@@ -13,6 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Server.Implementations.Providers
 {
@@ -37,17 +38,19 @@ namespace MediaBrowser.Server.Implementations.Providers
         /// </summary>
         private readonly IDirectoryWatchers _directoryWatchers;
         private readonly IFileSystem _fileSystem;
+        private readonly ILogger _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ImageSaver"/> class.
         /// </summary>
         /// <param name="config">The config.</param>
         /// <param name="directoryWatchers">The directory watchers.</param>
-        public ImageSaver(IServerConfigurationManager config, IDirectoryWatchers directoryWatchers, IFileSystem fileSystem)
+        public ImageSaver(IServerConfigurationManager config, IDirectoryWatchers directoryWatchers, IFileSystem fileSystem, ILogger logger)
         {
             _config = config;
             _directoryWatchers = directoryWatchers;
             _fileSystem = fileSystem;
+            _logger = logger;
             _remoteImageCache = new FileSystemRepository(config.ApplicationPaths.DownloadedImagesDataPath);
         }
 
@@ -170,7 +173,12 @@ namespace MediaBrowser.Server.Implementations.Providers
         /// <returns>Task.</returns>
         private async Task SaveImageToLocation(Stream source, string path, CancellationToken cancellationToken)
         {
+            _logger.Debug("Saving image to {0}", path);
+
+            var parentFolder = Path.GetDirectoryName(path);
+
             _directoryWatchers.TemporarilyIgnore(path);
+            _directoryWatchers.TemporarilyIgnore(parentFolder);
 
             try
             {
@@ -196,6 +204,7 @@ namespace MediaBrowser.Server.Implementations.Providers
             finally
             {
                 _directoryWatchers.RemoveTempIgnore(path);
+                _directoryWatchers.RemoveTempIgnore(parentFolder);
             }
         }
 
