@@ -1143,21 +1143,23 @@ var Dashboard = {
         });
     },
     
-    getStoreRatingHtml: function(rating, id, name) {
+    getStoreRatingHtml: function(rating, id, name, noLinks) {
 
         var html = "<div style='margin-left: 5px; margin-right: 5px; display: inline-block'>";
         if (!rating) rating = 0;
 
         for (var i = 1; i <= 5; i++) {
-            html += "<a href='#' data-id=" + id + " data-name='" + name + "' data-rating=" + i + " onclick='Dashboard.ratePackage(this);' >";
+            var title = noLinks ? rating + " stars" : "Rate " + i + (i > 1 ? " stars" : " star");
+            
+            html += noLinks ? "" : "<a href='#' data-id=" + id + " data-name='" + name + "' data-rating=" + i + " onclick='Dashboard.ratePackage(this);' >";
             if (rating < i - 1 || rating == 0) {
-                html += "<div class='storeStarRating emptyStarRating' title='Rate " + i + " stars'></div>";
+                html += "<div class='storeStarRating emptyStarRating' title='" + title + "'></div>";
             } else if (rating < i) {
-                html += "<div class='storeStarRating halfStarRating' title='Rate " + i + " stars'></div>";
+                html += "<div class='storeStarRating halfStarRating' title='" + title + "'></div>";
             } else {
-                html += "<div class='storeStarRating' title='Rate " + i + " stars'></div>";
+                html += "<div class='storeStarRating' title='" + title + "'></div>";
             }
-            html += "</a>";
+            html += noLinks ? "" : "</a>";
         }
 
         html += "</div>";

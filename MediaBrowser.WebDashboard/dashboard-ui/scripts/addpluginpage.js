@@ -62,6 +62,86 @@
             selectmenu.val(val).selectmenu('refresh');
         }
     }
+    
+    function populateReviews(id, page) {
+        // Get the latest positive and negative reviews
+        var promise1 = ApiClient.getPackageReviews(id, 4, null, 3, true);
+        var promise2 = ApiClient.getPackageReviews(id, null, 2, 3, true);
+
+        $.when(promise1, promise2).done(function (response1, response2) {
+            //positive
+            var html = '<div data-role="collapsible" data-content-theme="c" data-collapsed="true" style="margin-top: 2em;" >';
+            html += '<h3>Latest Outstanding Reviews</h3>';
+            var positive = response1[0];
+            var hasReviews = false;
+            if (positive && positive.length > 0) {
+                for (var i = 0; i < positive.length; i++) {
+                    var review = positive[i];
+                    if (review.title) {
+                        hasReviews = true;
+                        html += "<div>";
+                        html += "<span class='storeItemReviewText'>";
+                        html += new Date(review.timestamp).toDateString();
+                        html += " " + Dashboard.getStoreRatingHtml(review.rating, review.id, review.name, true);
+                        html += " " + review.title;
+                        html += "</span>";
+                        if (review.review) {
+                            html += "<p class='storeItemReviewText'>";
+                            html += review.review;
+                            html += "</p>";
+                        }
+
+                        html += "</div>";
+                        html += "<hr/>";
+                    }
+                }
+            }
+            if (!hasReviews) {
+                html += "<p>No Outstanding Reviews with additional information</p>";
+            }
+
+            html += "</div>";
+
+            //negative
+            html += '<div data-role="collapsible" data-content-theme="c" data-collapsed="true" style="margin-top: 2em;" >';
+            html += '<h3>Latest Negative Reviews</h3>';
+            var negative = response2[0];
+            hasReviews = false;
+            if (negative && negative.length > 0) {
+                for (var i = 0; i < negative.length; i++) {
+                    review = negative[i];
+                    if (review.title) {
+                        hasReviews = true;
+                        html += "<div>";
+                        html += "<span class='storeItemReviewText'>";
+                        html += new Date(review.timestamp).toDateString();
+                        html += " " + Dashboard.getStoreRatingHtml(review.rating, review.id, review.name, true);
+                        html += " " + review.title;
+                        html += "</span>";
+                        if (review.review) {
+                            html += "<p class='storeItemReviewText'>";
+                            html += review.review;
+                            html += "</p>";
+                        }
+
+                        html += "</div>";
+                        html += "<hr/>";
+                    }
+                }
+            }
+            
+            if (!hasReviews) {
+                html += "<p>No Negative Reviews with additional information</p>";
+            }
+
+            html += "</div>";
+
+
+            $('#latestReviews', page).html(html).trigger('create');
+
+        });
+
+    }
 
     function renderPackage(pkg, installedPlugins, pluginSecurityInfo, page) {
 
@@ -71,7 +151,8 @@
 
         populateVersions(pkg, page, installedPlugin);
         populateHistory(pkg, page);
-
+        if (pkg.totalRatings > 0) populateReviews(pkg.id, page);
+        
         Dashboard.setPageTitle(pkg.name);
 
         if (pkg.targetSystem == 'Server') {
@@ -158,6 +239,14 @@
         } else {
             $('.premiumPackage', page).hide();
         }
+        
+        //Ratings and Reviews
+        var ratingHtml = "<strong>Overall </strong>" + Dashboard.getStoreRatingHtml(pkg.avgRating, pkg.id, pkg.name);
+        ratingHtml += "<span class='storeReviewCount'>";
+        ratingHtml += " " + pkg.totalRatings + " Reviews";
+        ratingHtml += "</span>";
+
+        $('#ratingLine', page).html(ratingHtml);
 
         if (pkg.richDescUrl) {
             $('#pViewWebsite', page).show();
