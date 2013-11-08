@@ -165,7 +165,8 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 var folder = (Folder)item;
 
-                dto.ChildCount = folder.GetChildren(user, true).Count();
+                dto.ChildCount = folder.GetChildren(user, true)
+                    .Count();
 
                 if (!(folder is UserRootFolder))
                 {

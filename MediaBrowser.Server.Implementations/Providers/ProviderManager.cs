@@ -349,7 +349,7 @@ namespace MediaBrowser.Server.Implementations.Providers
         /// <returns>Task.</returns>
         public Task SaveImage(BaseItem item, Stream source, string mimeType, ImageType type, int? imageIndex, string sourceUrl, CancellationToken cancellationToken)
         {
-            return new ImageSaver(ConfigurationManager, _directoryWatchers, _fileSystem).SaveImage(item, source, mimeType, type, imageIndex, sourceUrl, cancellationToken);
+            return new ImageSaver(ConfigurationManager, _directoryWatchers, _fileSystem, _logger).SaveImage(item, source, mimeType, type, imageIndex, sourceUrl, cancellationToken);
         }
 
         /// <summary>
