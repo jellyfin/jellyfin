@@ -12,7 +12,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
      * @param {String} clientName 
      * @param {String} applicationVersion 
      */
-    return function(serverProtocol, serverHostName, serverPortNumber, clientName, applicationVersion) {
+    return function (serverProtocol, serverHostName, serverPortNumber, clientName, applicationVersion) {
 
         if (!serverProtocol) {
             throw new Error("Must supply a serverProtocol, e.g. http:");
@@ -30,7 +30,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         /**
          * Gets the server host name.
          */
-        self.serverHostName = function() {
+        self.serverHostName = function () {
 
             return serverHostName;
         };
@@ -38,7 +38,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         /**
          * Gets or sets the current user id.
          */
-        self.currentUserId = function(val) {
+        self.currentUserId = function (val) {
 
             if (val !== undefined) {
                 currentUserId = val;
@@ -47,7 +47,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             }
         };
 
-        deviceName = (function() {
+        deviceName = (function () {
 
             var name = "";
 
@@ -83,11 +83,11 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             return name;
         }());
 
-        self.deviceId = function() {
+        self.deviceId = function () {
             return deviceId;
         };
 
-        self.encodeName = function(name) {
+        self.encodeName = function (name) {
 
             name = name.split('/').join('-');
 
@@ -100,7 +100,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         /**
          * Wraps around jQuery ajax methods to add additional info to the request.
          */
-        self.ajax = function(request) {
+        self.ajax = function (request) {
 
             if (!request) {
                 throw new Error("Request cannot be null");
@@ -127,7 +127,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
          * @param {String} name
          * @param {Object} params
          */
-        self.getUrl = function(name, params) {
+        self.getUrl = function (name, params) {
 
             if (!name) {
                 throw new Error("Url name cannot be empty");
@@ -148,44 +148,44 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             return url;
         };
 
-        self.openWebSocket = function(port) {
+        self.openWebSocket = function (port) {
 
             var url = "ws://" + serverHostName + ":" + port + "/mediabrowser";
 
             webSocket = new WebSocket(url);
 
-            webSocket.onmessage = function(msg) {
+            webSocket.onmessage = function (msg) {
                 msg = JSON.parse(msg.data);
                 $(self).trigger("websocketmessage", [msg]);
             };
 
-            webSocket.onopen = function() {
-                setTimeout(function() {
+            webSocket.onopen = function () {
+                setTimeout(function () {
 
                     self.sendWebSocketMessage("Identity", clientName + "|" + deviceId + "|" + applicationVersion + "|" + deviceName);
 
                     $(self).trigger("websocketopen");
                 }, 500);
             };
-            webSocket.onerror = function() {
-                setTimeout(function() {
+            webSocket.onerror = function () {
+                setTimeout(function () {
                     $(self).trigger("websocketerror");
                 }, 0);
             };
-            webSocket.onclose = function() {
-                setTimeout(function() {
+            webSocket.onclose = function () {
+                setTimeout(function () {
                     $(self).trigger("websocketclose");
                 }, 0);
             };
         };
 
-        self.closeWebSocket = function() {
+        self.closeWebSocket = function () {
             if (webSocket && webSocket.readyState === WebSocket.OPEN) {
                 webSocket.close();
             }
         };
 
-        self.sendWebSocketMessage = function(name, data) {
+        self.sendWebSocketMessage = function (name, data) {
 
             var msg = { MessageType: name };
 
@@ -198,11 +198,11 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             webSocket.send(msg);
         };
 
-        self.isWebSocketOpen = function() {
+        self.isWebSocketOpen = function () {
             return webSocket && webSocket.readyState === WebSocket.OPEN;
         };
 
-        self.isWebSocketOpenOrConnecting = function() {
+        self.isWebSocketOpenOrConnecting = function () {
             return webSocket && (webSocket.readyState === WebSocket.OPEN || webSocket.readyState === WebSocket.CONNECTING);
         };
 
@@ -210,7 +210,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
          * Gets an item from the server
          * Omit itemId to get the root folder.
          */
-        self.getItem = function(userId, itemId) {
+        self.getItem = function (userId, itemId) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -228,7 +228,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         /**
          * Gets the root folder from the server
          */
-        self.getRootFolder = function(userId) {
+        self.getRootFolder = function (userId) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -243,7 +243,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.getNotificationSummary = function(userId) {
+        self.getNotificationSummary = function (userId) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -258,7 +258,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.getNotifications = function(userId, options) {
+        self.getNotifications = function (userId, options) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -273,7 +273,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.markNotificationsRead = function(userId, idList, isRead) {
+        self.markNotificationsRead = function (userId, idList, isRead) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -328,7 +328,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             return urlPrefix;
         }
 
-        self.getRemoteImageProviders = function(options) {
+        self.getRemoteImageProviders = function (options) {
 
             if (!options) {
                 throw new Error("null options");
@@ -345,7 +345,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.getAvailableRemoteImages = function(options) {
+        self.getAvailableRemoteImages = function (options) {
 
             if (!options) {
                 throw new Error("null options");
@@ -362,7 +362,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.downloadRemoteImage = function(options) {
+        self.downloadRemoteImage = function (options) {
 
             if (!options) {
                 throw new Error("null options");
@@ -381,7 +381,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         /**
          * Gets the current server status
          */
-        self.getSystemInfo = function() {
+        self.getSystemInfo = function () {
 
             var url = self.getUrl("System/Info");
 
@@ -392,7 +392,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.getInstantMixFromSong = function(itemId, options) {
+        self.getInstantMixFromSong = function (itemId, options) {
 
             var url = self.getUrl("Songs/" + itemId + "/InstantMix", options);
 
@@ -403,7 +403,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.getInstantMixFromAlbum = function(itemId, options) {
+        self.getInstantMixFromAlbum = function (itemId, options) {
 
             var url = self.getUrl("Albums/" + itemId + "/InstantMix", options);
 
@@ -414,7 +414,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.getInstantMixFromArtist = function(name, options) {
+        self.getInstantMixFromArtist = function (name, options) {
 
             var url = self.getUrl("Artists/" + self.encodeName(name) + "/InstantMix", options);
 
@@ -425,7 +425,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.getInstantMixFromMusicGenre = function(name, options) {
+        self.getInstantMixFromMusicGenre = function (name, options) {
 
             var url = self.getUrl("MusicGenres/" + self.encodeName(name) + "/InstantMix", options);
 
@@ -436,7 +436,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.getSimilarMovies = function(itemId, options) {
+        self.getSimilarMovies = function (itemId, options) {
 
             var url = self.getUrl("Movies/" + itemId + "/Similar", options);
 
@@ -447,7 +447,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.getSimilarTrailers = function(itemId, options) {
+        self.getSimilarTrailers = function (itemId, options) {
 
             var url = self.getUrl("Trailers/" + itemId + "/Similar", options);
 
@@ -458,7 +458,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.getSimilarShows = function(itemId, options) {
+        self.getSimilarShows = function (itemId, options) {
 
             var url = self.getUrl("Shows/" + itemId + "/Similar", options);
 
@@ -469,7 +469,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.getSimilarAlbums = function(itemId, options) {
+        self.getSimilarAlbums = function (itemId, options) {
 
             var url = self.getUrl("Albums/" + itemId + "/Similar", options);
 
@@ -480,7 +480,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.getSimilarGames = function(itemId, options) {
+        self.getSimilarGames = function (itemId, options) {
 
             var url = self.getUrl("Games/" + itemId + "/Similar", options);
 
@@ -494,7 +494,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         /**
          * Gets all cultures known to the server
          */
-        self.getCultures = function() {
+        self.getCultures = function () {
 
             var url = self.getUrl("Localization/cultures");
 
@@ -508,7 +508,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         /**
          * Gets all countries known to the server
          */
-        self.getCountries = function() {
+        self.getCountries = function () {
 
             var url = self.getUrl("Localization/countries");
 
@@ -522,7 +522,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         /**
          * Gets plugin security info
          */
-        self.getPluginSecurityInfo = function() {
+        self.getPluginSecurityInfo = function () {
 
             var url = self.getUrl("Plugins/SecurityInfo");
 
@@ -536,7 +536,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         /**
          * Gets the directory contents of a path on the server
          */
-        self.getDirectoryContents = function(path, options) {
+        self.getDirectoryContents = function (path, options) {
 
             if (!path) {
                 throw new Error("null path");
@@ -558,7 +558,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         /**
          * Gets a list of physical drives from the server
          */
-        self.getDrives = function() {
+        self.getDrives = function () {
 
             var url = self.getUrl("Environment/Drives");
 
@@ -572,7 +572,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         /**
          * Gets a list of network devices from the server
          */
-        self.getNetworkDevices = function() {
+        self.getNetworkDevices = function () {
 
             var url = self.getUrl("Environment/NetworkDevices");
 
@@ -586,7 +586,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         /**
          * Cancels a package installation
          */
-        self.cancelPackageInstallation = function(installationId) {
+        self.cancelPackageInstallation = function (installationId) {
 
             if (!installationId) {
                 throw new Error("null installationId");
@@ -603,7 +603,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         /**
          * Refreshes metadata for an item
          */
-        self.refreshItem = function(itemId, force, recursive) {
+        self.refreshItem = function (itemId, force, recursive) {
 
             if (!itemId) {
                 throw new Error("null itemId");
@@ -620,7 +620,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.refreshArtist = function(name, force) {
+        self.refreshArtist = function (name, force) {
 
             if (!name) {
                 throw new Error("null name");
@@ -636,7 +636,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.refreshGenre = function(name, force) {
+        self.refreshGenre = function (name, force) {
 
             if (!name) {
                 throw new Error("null name");
@@ -652,7 +652,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.refreshMusicGenre = function(name, force) {
+        self.refreshMusicGenre = function (name, force) {
 
             if (!name) {
                 throw new Error("null name");
@@ -668,7 +668,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.refreshGameGenre = function(name, force) {
+        self.refreshGameGenre = function (name, force) {
 
             if (!name) {
                 throw new Error("null name");
@@ -684,7 +684,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.refreshPerson = function(name, force) {
+        self.refreshPerson = function (name, force) {
 
             if (!name) {
                 throw new Error("null name");
@@ -700,7 +700,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.refreshStudio = function(name, force) {
+        self.refreshStudio = function (name, force) {
 
             if (!name) {
                 throw new Error("null name");
@@ -719,7 +719,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         /**
          * Installs or updates a new plugin
          */
-        self.installPlugin = function(name, guid, updateClass, version) {
+        self.installPlugin = function (name, guid, updateClass, version) {
 
             if (!name) {
                 throw new Error("null name");
@@ -749,7 +749,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         /**
          * Instructs the server to perform a restart.
          */
-        self.restartServer = function() {
+        self.restartServer = function () {
 
             var url = self.getUrl("System/Restart");
 
@@ -762,7 +762,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         /**
          * Instructs the server to perform a shutdown.
          */
-        self.shutdownServer = function() {
+        self.shutdownServer = function () {
 
             var url = self.getUrl("System/Shutdown");
 
@@ -775,7 +775,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         /**
          * Gets information about an installable package
          */
-        self.getPackageInfo = function(name, guid) {
+        self.getPackageInfo = function (name, guid) {
 
             if (!name) {
                 throw new Error("null name");
@@ -797,7 +797,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         /**
          * Gets the latest available application update (if any)
          */
-        self.getAvailableApplicationUpdate = function() {
+        self.getAvailableApplicationUpdate = function () {
 
             var url = self.getUrl("Packages/Updates", { PackageType: "System" });
 
@@ -811,7 +811,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         /**
          * Gets the latest available plugin updates (if any)
          */
-        self.getAvailablePluginUpdates = function() {
+        self.getAvailablePluginUpdates = function () {
 
             var url = self.getUrl("Packages/Updates", { PackageType: "UserInstalled" });
 
@@ -825,7 +825,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         /**
          * Gets the virtual folder for a view. Specify a userId to get a user view, or omit for the default view.
          */
-        self.getVirtualFolders = function(userId) {
+        self.getVirtualFolders = function (userId) {
 
             var url = userId ? "Users/" + userId + "/VirtualFolders" : "Library/VirtualFolders";
 
@@ -841,7 +841,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         /**
          * Gets all the paths of the locations in the physical root.
          */
-        self.getPhysicalPaths = function() {
+        self.getPhysicalPaths = function () {
 
             var url = self.getUrl("Library/PhysicalPaths");
 
@@ -855,7 +855,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         /**
          * Gets the current server configuration
          */
-        self.getServerConfiguration = function() {
+        self.getServerConfiguration = function () {
 
             var url = self.getUrl("System/Configuration");
 
@@ -869,7 +869,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         /**
          * Gets the server's scheduled tasks
          */
-        self.getScheduledTasks = function() {
+        self.getScheduledTasks = function () {
 
             var url = self.getUrl("ScheduledTasks");
 
@@ -883,7 +883,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         /**
         * Starts a scheduled task
         */
-        self.startScheduledTask = function(id) {
+        self.startScheduledTask = function (id) {
 
             if (!id) {
                 throw new Error("null id");
@@ -900,7 +900,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         /**
         * Gets a scheduled task
         */
-        self.getScheduledTask = function(id) {
+        self.getScheduledTask = function (id) {
 
             if (!id) {
                 throw new Error("null id");
@@ -915,7 +915,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.getNextUpEpisodes = function(options) {
+        self.getNextUpEpisodes = function (options) {
 
             var url = self.getUrl("Shows/NextUp", options);
 
@@ -929,7 +929,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         /**
         * Stops a scheduled task
         */
-        self.stopScheduledTask = function(id) {
+        self.stopScheduledTask = function (id) {
 
             if (!id) {
                 throw new Error("null id");
@@ -947,7 +947,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
          * Gets the configuration of a plugin
          * @param {String} Id
          */
-        self.getPluginConfiguration = function(id) {
+        self.getPluginConfiguration = function (id) {
 
             if (!id) {
                 throw new Error("null Id");
@@ -965,7 +965,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         /**
          * Gets a list of plugins that are available to be installed
          */
-        self.getAvailablePlugins = function(options) {
+        self.getAvailablePlugins = function (options) {
 
             options = $.extend({}, options || {});
             options.PackageType = "UserInstalled";
@@ -983,7 +983,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
          * Uninstalls a plugin
          * @param {String} Id
          */
-        self.uninstallPlugin = function(id) {
+        self.uninstallPlugin = function (id) {
 
             if (!id) {
                 throw new Error("null Id");
@@ -1001,7 +1001,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         * Removes a virtual folder from either the default view or a user view
         * @param {String} name
         */
-        self.removeVirtualFolder = function(name, userId, refreshLibrary) {
+        self.removeVirtualFolder = function (name, userId, refreshLibrary) {
 
             if (!name) {
                 throw new Error("null name");
@@ -1025,7 +1025,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
        * Adds a virtual folder to either the default view or a user view
        * @param {String} name
        */
-        self.addVirtualFolder = function(name, type, userId, refreshLibrary) {
+        self.addVirtualFolder = function (name, type, userId, refreshLibrary) {
 
             if (!name) {
                 throw new Error("null name");
@@ -1054,7 +1054,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
        * Renames a virtual folder, within either the default view or a user view
        * @param {String} name
        */
-        self.renameVirtualFolder = function(name, newName, userId, refreshLibrary) {
+        self.renameVirtualFolder = function (name, newName, userId, refreshLibrary) {
 
             if (!name) {
                 throw new Error("null name");
@@ -1079,7 +1079,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         * Adds an additional mediaPath to an existing virtual folder, within either the default view or a user view
         * @param {String} name
         */
-        self.addMediaPath = function(virtualFolderName, mediaPath, userId, refreshLibrary) {
+        self.addMediaPath = function (virtualFolderName, mediaPath, userId, refreshLibrary) {
 
             if (!virtualFolderName) {
                 throw new Error("null virtualFolderName");
@@ -1108,7 +1108,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         * Removes a media path from a virtual folder, within either the default view or a user view
         * @param {String} name
         */
-        self.removeMediaPath = function(virtualFolderName, mediaPath, userId, refreshLibrary) {
+        self.removeMediaPath = function (virtualFolderName, mediaPath, userId, refreshLibrary) {
 
             if (!virtualFolderName) {
                 throw new Error("null virtualFolderName");
@@ -1137,7 +1137,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
          * Deletes a user
          * @param {String} id
          */
-        self.deleteUser = function(id) {
+        self.deleteUser = function (id) {
 
             if (!id) {
                 throw new Error("null id");
@@ -1156,7 +1156,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
          * @param {String} userId
          * @param {String} imageType The type of image to delete, based on the server-side ImageType enum.
          */
-        self.deleteUserImage = function(userId, imageType, imageIndex) {
+        self.deleteUserImage = function (userId, imageType, imageIndex) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -1178,7 +1178,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.deleteItemImage = function(itemId, itemType, itemName, imageType, imageIndex) {
+        self.deleteItemImage = function (itemId, itemType, itemName, imageType, imageIndex) {
 
             if (!imageType) {
                 throw new Error("null imageType");
@@ -1218,7 +1218,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.deleteItem = function(itemId) {
+        self.deleteItem = function (itemId) {
 
             if (!itemId) {
                 throw new Error("null itemId");
@@ -1232,7 +1232,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.updateItemImageIndex = function(itemId, itemType, itemName, imageType, imageIndex, newIndex) {
+        self.updateItemImageIndex = function (itemId, itemType, itemName, imageType, imageIndex, newIndex) {
 
             if (!imageType) {
                 throw new Error("null imageType");
@@ -1268,7 +1268,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.getItemImageInfos = function(itemId, itemType, itemName) {
+        self.getItemImageInfos = function (itemId, itemType, itemName) {
 
             if (!itemType) {
                 throw new Error("null itemType");
@@ -1299,7 +1299,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.getCriticReviews = function(itemId, options) {
+        self.getCriticReviews = function (itemId, options) {
 
             if (!itemId) {
                 throw new Error("null itemId");
@@ -1314,7 +1314,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.getSessions = function(options) {
+        self.getSessions = function (options) {
 
             var url = self.getUrl("Sessions", options);
 
@@ -1331,7 +1331,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
          * @param {String} imageType The type of image to delete, based on the server-side ImageType enum.
          * @param {Object} file The file from the input element
          */
-        self.uploadUserImage = function(userId, imageType, file) {
+        self.uploadUserImage = function (userId, imageType, file) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -1353,16 +1353,16 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
 
             var reader = new FileReader();
 
-            reader.onerror = function() {
+            reader.onerror = function () {
                 deferred.reject();
             };
 
-            reader.onabort = function() {
+            reader.onabort = function () {
                 deferred.reject();
             };
 
             // Closure to capture the file information.
-            reader.onload = function(e) {
+            reader.onload = function (e) {
 
                 // Split by a comma to remove the url: prefix
                 var data = e.target.result.split(',')[1];
@@ -1374,11 +1374,11 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                     url: url,
                     data: data,
                     contentType: "image/" + file.name.substring(file.name.lastIndexOf('.') + 1)
-                }).done(function(result) {
+                }).done(function (result) {
 
                     deferred.resolveWith(null, [result]);
 
-                }).fail(function() {
+                }).fail(function () {
                     deferred.reject();
                 });
             };
@@ -1389,7 +1389,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             return deferred.promise();
         };
 
-        self.uploadItemImage = function(itemId, itemType, itemName, imageType, file) {
+        self.uploadItemImage = function (itemId, itemType, itemName, imageType, file) {
 
             if (!itemId) {
                 throw new Error("null itemId");
@@ -1431,16 +1431,16 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
 
             var reader = new FileReader();
 
-            reader.onerror = function() {
+            reader.onerror = function () {
                 deferred.reject();
             };
 
-            reader.onabort = function() {
+            reader.onabort = function () {
                 deferred.reject();
             };
 
             // Closure to capture the file information.
-            reader.onload = function(e) {
+            reader.onload = function (e) {
 
                 // Split by a comma to remove the url: prefix
                 var data = e.target.result.split(',')[1];
@@ -1450,11 +1450,11 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                     url: url,
                     data: data,
                     contentType: "image/" + file.name.substring(file.name.lastIndexOf('.') + 1)
-                }).done(function(result) {
+                }).done(function (result) {
 
                     deferred.resolveWith(null, [result]);
 
-                }).fail(function() {
+                }).fail(function () {
                     deferred.reject();
                 });
             };
@@ -1468,7 +1468,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         /**
          * Gets the list of installed plugins on the server
          */
-        self.getInstalledPlugins = function() {
+        self.getInstalledPlugins = function () {
 
             var url = self.getUrl("Plugins");
 
@@ -1483,7 +1483,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
          * Gets a user by id
          * @param {String} id
          */
-        self.getUser = function(id) {
+        self.getUser = function (id) {
 
             if (!id) {
                 throw new Error("Must supply a userId");
@@ -1501,7 +1501,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         /**
          * Gets a studio
          */
-        self.getStudio = function(name, userId) {
+        self.getStudio = function (name, userId) {
 
             if (!name) {
                 throw new Error("null name");
@@ -1525,7 +1525,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         /**
          * Gets a genre
          */
-        self.getGenre = function(name, userId) {
+        self.getGenre = function (name, userId) {
 
             if (!name) {
                 throw new Error("null name");
@@ -1546,7 +1546,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.getMusicGenre = function(name, userId) {
+        self.getMusicGenre = function (name, userId) {
 
             if (!name) {
                 throw new Error("null name");
@@ -1567,7 +1567,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.getGameGenre = function(name, userId) {
+        self.getGameGenre = function (name, userId) {
 
             if (!name) {
                 throw new Error("null name");
@@ -1591,7 +1591,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         /**
          * Gets an artist
          */
-        self.getArtist = function(name, userId) {
+        self.getArtist = function (name, userId) {
 
             if (!name) {
                 throw new Error("null name");
@@ -1615,7 +1615,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         /**
          * Gets a year
          */
-        self.getYear = function(yea, userId) {
+        self.getYear = function (yea, userId) {
 
             if (!name) {
                 throw new Error("null name");
@@ -1639,7 +1639,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         /**
          * Gets a Person
          */
-        self.getPerson = function(name, userId) {
+        self.getPerson = function (name, userId) {
 
             if (!name) {
                 throw new Error("null name");
@@ -1660,7 +1660,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.getPublicUsers = function() {
+        self.getPublicUsers = function () {
 
             var url = self.getUrl("users/public");
 
@@ -1674,7 +1674,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         /**
          * Gets all users from the server
          */
-        self.getUsers = function(options) {
+        self.getUsers = function (options) {
 
             var url = self.getUrl("users", options || {});
 
@@ -1688,7 +1688,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         /**
          * Gets all available parental ratings from the server
          */
-        self.getParentalRatings = function() {
+        self.getParentalRatings = function () {
 
             var url = self.getUrl("Localization/ParentalRatings");
 
@@ -1702,7 +1702,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         /**
          * Gets a list of all available conrete BaseItem types from the server
          */
-        self.getItemTypes = function(options) {
+        self.getItemTypes = function (options) {
 
             var url = self.getUrl("Library/ItemTypes", options);
 
@@ -1725,14 +1725,14 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
          * quality - A scale of 0-100. This should almost always be omitted as the default will suffice.
          * For best results do not specify both width and height together, as aspect ratio might be altered.
          */
-        self.getUserImageUrl = function(userId, options) {
+        self.getUserImageUrl = function (userId, options) {
 
             if (!userId) {
                 throw new Error("null userId");
             }
 
             options = options || {
-                
+
             };
 
             var url = "Users/" + userId + "/Images/" + options.type;
@@ -1760,14 +1760,14 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
          * quality - A scale of 0-100. This should almost always be omitted as the default will suffice.
          * For best results do not specify both width and height together, as aspect ratio might be altered.
          */
-        self.getPersonImageUrl = function(name, options) {
+        self.getPersonImageUrl = function (name, options) {
 
             if (!name) {
                 throw new Error("null name");
             }
 
             options = options || {
-                
+
             };
 
             var url = "Persons/" + self.encodeName(name) + "/Images/" + options.type;
@@ -1795,14 +1795,14 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
          * quality - A scale of 0-100. This should almost always be omitted as the default will suffice.
          * For best results do not specify both width and height together, as aspect ratio might be altered.
          */
-        self.getYearImageUrl = function(year, options) {
+        self.getYearImageUrl = function (year, options) {
 
             if (!year) {
                 throw new Error("null year");
             }
 
             options = options || {
-                
+
             };
 
             var url = "Years/" + year + "/Images/" + options.type;
@@ -1830,14 +1830,14 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
          * quality - A scale of 0-100. This should almost always be omitted as the default will suffice.
          * For best results do not specify both width and height together, as aspect ratio might be altered.
          */
-        self.getGenreImageUrl = function(name, options) {
+        self.getGenreImageUrl = function (name, options) {
 
             if (!name) {
                 throw new Error("null name");
             }
 
             options = options || {
-                
+
             };
 
             var url = "Genres/" + self.encodeName(name) + "/Images/" + options.type;
@@ -1865,14 +1865,14 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
          * quality - A scale of 0-100. This should almost always be omitted as the default will suffice.
          * For best results do not specify both width and height together, as aspect ratio might be altered.
          */
-        self.getMusicGenreImageUrl = function(name, options) {
+        self.getMusicGenreImageUrl = function (name, options) {
 
             if (!name) {
                 throw new Error("null name");
             }
 
             options = options || {
-                
+
             };
 
             var url = "MusicGenres/" + self.encodeName(name) + "/Images/" + options.type;
@@ -1900,14 +1900,14 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
          * quality - A scale of 0-100. This should almost always be omitted as the default will suffice.
          * For best results do not specify both width and height together, as aspect ratio might be altered.
          */
-        self.getGameGenreImageUrl = function(name, options) {
+        self.getGameGenreImageUrl = function (name, options) {
 
             if (!name) {
                 throw new Error("null name");
             }
 
             options = options || {
-                
+
             };
 
             var url = "GameGenres/" + self.encodeName(name) + "/Images/" + options.type;
@@ -1935,14 +1935,14 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
          * quality - A scale of 0-100. This should almost always be omitted as the default will suffice.
          * For best results do not specify both width and height together, as aspect ratio might be altered.
          */
-        self.getArtistImageUrl = function(name, options) {
+        self.getArtistImageUrl = function (name, options) {
 
             if (!name) {
                 throw new Error("null name");
             }
 
             options = options || {
-                
+
             };
 
             var url = "Artists/" + self.encodeName(name) + "/Images/" + options.type;
@@ -1970,14 +1970,14 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
          * quality - A scale of 0-100. This should almost always be omitted as the default will suffice.
          * For best results do not specify both width and height together, as aspect ratio might be altered.
          */
-        self.getStudioImageUrl = function(name, options) {
+        self.getStudioImageUrl = function (name, options) {
 
             if (!name) {
                 throw new Error("null name");
             }
 
             options = options || {
-                
+
             };
 
             var url = "Studios/" + self.encodeName(name) + "/Images/" + options.type;
@@ -2007,14 +2007,14 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
          * quality - A scale of 0-100. This should almost always be omitted as the default will suffice.
          * For best results do not specify both width and height together, as aspect ratio might be altered.
          */
-        self.getImageUrl = function(itemId, options) {
+        self.getImageUrl = function (itemId, options) {
 
             if (!itemId) {
                 throw new Error("itemId cannot be empty");
             }
 
             options = options || {
-                
+
             };
 
             var url = "Items/" + itemId + "/Images/" + options.type;
@@ -2043,14 +2043,14 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
          * quality - A scale of 0-100. This should almost always be omitted as the default will suffice.
          * For best results do not specify both width and height together, as aspect ratio might be altered.
          */
-        self.getLogoImageUrl = function(item, options) {
+        self.getLogoImageUrl = function (item, options) {
 
             if (!item) {
                 throw new Error("null item");
             }
 
             options = options || {
-                
+
             };
 
             options.imageType = "logo";
@@ -2060,14 +2060,14 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             return logoItemId ? self.getImageUrl(logoItemId, options) : null;
         };
 
-        self.getThumbImageUrl = function(item, options) {
+        self.getThumbImageUrl = function (item, options) {
 
             if (!item) {
                 throw new Error("null item");
             }
 
             options = options || {
-                
+
             };
 
             options.imageType = "thumb";
@@ -2090,14 +2090,14 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
          * quality - A scale of 0-100. This should almost always be omitted as the default will suffice.
          * For best results do not specify both width and height together, as aspect ratio might be altered.
          */
-        self.getBackdropImageUrl = function(item, options) {
+        self.getBackdropImageUrl = function (item, options) {
 
             if (!item) {
                 throw new Error("null item");
             }
 
             options = options || {
-                
+
             };
 
             options.imageType = "backdrop";
@@ -2134,7 +2134,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
          * @param {String} name
          * @param {String} password
          */
-        self.authenticateUserByName = function(name, password) {
+        self.authenticateUserByName = function (name, password) {
 
             if (!name) {
                 throw new Error("null name");
@@ -2161,7 +2161,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
          * @param {String} userId
          * @param {String} password
          */
-        self.authenticateUser = function(userId, password) {
+        self.authenticateUser = function (userId, password) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -2188,7 +2188,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
          * @param {String} currentPassword
          * @param {String} newPassword
          */
-        self.updateUserPassword = function(userId, currentPassword, newPassword) {
+        self.updateUserPassword = function (userId, currentPassword, newPassword) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -2197,7 +2197,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             var url = self.getUrl("Users/" + userId + "/Password");
 
             var postData = {
-                
+
             };
 
             postData.currentPassword = MediaBrowser.SHA1(currentPassword);
@@ -2217,7 +2217,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         * Resets a user's password
         * @param {String} userId
         */
-        self.resetUserPassword = function(userId) {
+        self.resetUserPassword = function (userId) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -2226,7 +2226,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             var url = self.getUrl("Users/" + userId + "/Password");
 
             var postData = {
-                
+
             };
 
             postData.resetPassword = true;
@@ -2242,7 +2242,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
          * Updates the server's configuration
          * @param {Object} configuration
          */
-        self.updateServerConfiguration = function(configuration) {
+        self.updateServerConfiguration = function (configuration) {
 
             if (!configuration) {
                 throw new Error("null configuration");
@@ -2258,7 +2258,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.updateItem = function(item) {
+        self.updateItem = function (item) {
 
             if (!item) {
                 throw new Error("null item");
@@ -2274,7 +2274,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.updateArtist = function(item) {
+        self.updateArtist = function (item) {
 
             if (!item) {
                 throw new Error("null item");
@@ -2290,7 +2290,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.updatePerson = function(item) {
+        self.updatePerson = function (item) {
 
             if (!item) {
                 throw new Error("null item");
@@ -2306,7 +2306,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.updateStudio = function(item) {
+        self.updateStudio = function (item) {
 
             if (!item) {
                 throw new Error("null item");
@@ -2322,7 +2322,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.updateGenre = function(item) {
+        self.updateGenre = function (item) {
 
             if (!item) {
                 throw new Error("null item");
@@ -2338,7 +2338,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.updateMusicGenre = function(item) {
+        self.updateMusicGenre = function (item) {
 
             if (!item) {
                 throw new Error("null item");
@@ -2354,7 +2354,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.updateGameGenre = function(item) {
+        self.updateGameGenre = function (item) {
 
             if (!item) {
                 throw new Error("null item");
@@ -2373,7 +2373,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         /**
          * Updates plugin security info
          */
-        self.updatePluginSecurityInfo = function(info) {
+        self.updatePluginSecurityInfo = function (info) {
 
             var url = self.getUrl("Plugins/SecurityInfo");
 
@@ -2389,7 +2389,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
          * Creates a user
          * @param {Object} user
          */
-        self.createUser = function(user) {
+        self.createUser = function (user) {
 
             if (!user) {
                 throw new Error("null user");
@@ -2410,7 +2410,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
          * Updates a user
          * @param {Object} user
          */
-        self.updateUser = function(user) {
+        self.updateUser = function (user) {
 
             if (!user) {
                 throw new Error("null user");
@@ -2431,7 +2431,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
          * @param {String} id
          * @param {Object} triggers
          */
-        self.updateScheduledTaskTriggers = function(id, triggers) {
+        self.updateScheduledTaskTriggers = function (id, triggers) {
 
             if (!id) {
                 throw new Error("null id");
@@ -2456,7 +2456,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
          * @param {String} Id
          * @param {Object} configuration
          */
-        self.updatePluginConfiguration = function(id, configuration) {
+        self.updatePluginConfiguration = function (id, configuration) {
 
             if (!id) {
                 throw new Error("null Id");
@@ -2476,7 +2476,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.getAncestorItems = function(itemId, userId) {
+        self.getAncestorItems = function (itemId, userId) {
 
             if (!itemId) {
                 throw new Error("null itemId");
@@ -2514,7 +2514,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
          * recursive - Whether or not the query should be recursive
          * searchTerm - search term to use as a filter
          */
-        self.getItems = function(userId, options) {
+        self.getItems = function (userId, options) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -2532,7 +2532,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         /**
             Gets artists from an item
         */
-        self.getArtists = function(userId, options) {
+        self.getArtists = function (userId, options) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -2553,7 +2553,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         /**
             Gets genres from an item
         */
-        self.getGenres = function(userId, options) {
+        self.getGenres = function (userId, options) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -2571,7 +2571,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.getMusicGenres = function(userId, options) {
+        self.getMusicGenres = function (userId, options) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -2589,7 +2589,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.getGameGenres = function(userId, options) {
+        self.getGameGenres = function (userId, options) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -2610,7 +2610,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         /**
             Gets people from an item
         */
-        self.getPeople = function(userId, options) {
+        self.getPeople = function (userId, options) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -2631,7 +2631,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         /**
             Gets studios from an item
         */
-        self.getStudios = function(userId, options) {
+        self.getStudios = function (userId, options) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -2652,7 +2652,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         /**
          * Gets local trailers for an item
          */
-        self.getLocalTrailers = function(userId, itemId) {
+        self.getLocalTrailers = function (userId, itemId) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -2670,7 +2670,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.getAdditionalVideoParts = function(userId, itemId) {
+        self.getAdditionalVideoParts = function (userId, itemId) {
 
             if (!itemId) {
                 throw new Error("null itemId");
@@ -2694,7 +2694,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         /**
          * Gets theme songs for an item
          */
-        self.getThemeSongs = function(userId, itemId) {
+        self.getThemeSongs = function (userId, itemId) {
 
             if (!itemId) {
                 throw new Error("null itemId");
@@ -2715,7 +2715,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.getThemeVideos = function(userId, itemId) {
+        self.getThemeVideos = function (userId, itemId) {
 
             if (!itemId) {
                 throw new Error("null itemId");
@@ -2736,7 +2736,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.getSearchHints = function(options) {
+        self.getSearchHints = function (options) {
 
             var url = self.getUrl("Search/Hints", options);
 
@@ -2750,7 +2750,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         /**
          * Gets special features for an item
          */
-        self.getSpecialFeatures = function(userId, itemId) {
+        self.getSpecialFeatures = function (userId, itemId) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -2768,7 +2768,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.getDateParamValue = function(date) {
+        self.getDateParamValue = function (date) {
 
             function formatDigit(i) {
                 return i < 10 ? "0" + i : i;
@@ -2779,7 +2779,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             return "" + d.getFullYear() + formatDigit(d.getMonth() + 1) + formatDigit(d.getDate()) + formatDigit(d.getHours()) + formatDigit(d.getMinutes()) + formatDigit(d.getSeconds());
         };
 
-        self.markPlayed = function(userId, itemId, date) {
+        self.markPlayed = function (userId, itemId, date) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -2804,7 +2804,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.markUnplayed = function(userId, itemId) {
+        self.markUnplayed = function (userId, itemId) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -2829,7 +2829,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
          * @param {String} itemId
          * @param {Boolean} isFavorite
          */
-        self.updateFavoriteStatus = function(userId, itemId, isFavorite) {
+        self.updateFavoriteStatus = function (userId, itemId, isFavorite) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -2856,7 +2856,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
          * @param {String} itemId
          * @param {Boolean} likes
          */
-        self.updateUserItemRating = function(userId, itemId, likes) {
+        self.updateUserItemRating = function (userId, itemId, likes) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -2883,7 +2883,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
          * @param {String} name
          * @param {Boolean} isFavorite
          */
-        self.updateFavoriteArtistStatus = function(userId, name, isFavorite) {
+        self.updateFavoriteArtistStatus = function (userId, name, isFavorite) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -2904,7 +2904,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.updateFavoritePersonStatus = function(userId, name, isFavorite) {
+        self.updateFavoritePersonStatus = function (userId, name, isFavorite) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -2925,7 +2925,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.updateFavoriteStudioStatus = function(userId, name, isFavorite) {
+        self.updateFavoriteStudioStatus = function (userId, name, isFavorite) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -2946,7 +2946,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.updateFavoriteGenreStatus = function(userId, name, isFavorite) {
+        self.updateFavoriteGenreStatus = function (userId, name, isFavorite) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -2967,7 +2967,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.updateFavoriteMusicGenreStatus = function(userId, name, isFavorite) {
+        self.updateFavoriteMusicGenreStatus = function (userId, name, isFavorite) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -2988,7 +2988,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.updateFavoriteGameGenreStatus = function(userId, name, isFavorite) {
+        self.updateFavoriteGameGenreStatus = function (userId, name, isFavorite) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -3015,7 +3015,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         * @param {String} name
         * @param {Boolean} likes
         */
-        self.updateArtistRating = function(userId, name, likes) {
+        self.updateArtistRating = function (userId, name, likes) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -3036,7 +3036,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.updatePersonRating = function(userId, name, likes) {
+        self.updatePersonRating = function (userId, name, likes) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -3057,7 +3057,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.updateStudioRating = function(userId, name, likes) {
+        self.updateStudioRating = function (userId, name, likes) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -3078,7 +3078,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.updateGenreRating = function(userId, name, likes) {
+        self.updateGenreRating = function (userId, name, likes) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -3099,7 +3099,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.updateMusicGenreRating = function(userId, name, likes) {
+        self.updateMusicGenreRating = function (userId, name, likes) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -3120,7 +3120,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.updateGameGenreRating = function(userId, name, likes) {
+        self.updateGameGenreRating = function (userId, name, likes) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -3146,7 +3146,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         * @param {String} userId
         * @param {String} name
         */
-        self.clearArtistRating = function(userId, name) {
+        self.clearArtistRating = function (userId, name) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -3165,7 +3165,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.clearPersonRating = function(userId, name) {
+        self.clearPersonRating = function (userId, name) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -3184,7 +3184,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.clearStudioRating = function(userId, name) {
+        self.clearStudioRating = function (userId, name) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -3203,7 +3203,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.clearGenreRating = function(userId, name) {
+        self.clearGenreRating = function (userId, name) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -3222,7 +3222,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.clearMusicGenreRating = function(userId, name) {
+        self.clearMusicGenreRating = function (userId, name) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -3241,7 +3241,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.clearGameGenreRating = function(userId, name) {
+        self.clearGameGenreRating = function (userId, name) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -3260,7 +3260,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.getItemCounts = function(userId) {
+        self.getItemCounts = function (userId) {
 
             var options = {};
 
@@ -3282,7 +3282,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
          * @param {String} userId
          * @param {String} itemId
          */
-        self.clearUserItemRating = function(userId, itemId) {
+        self.clearUserItemRating = function (userId, itemId) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -3306,7 +3306,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
          * @param {String} userId
          * @param {String} itemId
          */
-        self.reportPlaybackStart = function(userId, itemId, canSeek, queueableMediaTypes) {
+        self.reportPlaybackStart = function (userId, itemId, canSeek, queueableMediaTypes) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -3347,7 +3347,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
          * @param {String} userId
          * @param {String} itemId
          */
-        self.reportPlaybackProgress = function(userId, itemId, positionTicks, isPaused, isMuted) {
+        self.reportPlaybackProgress = function (userId, itemId, positionTicks, isPaused, isMuted) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -3391,7 +3391,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
          * @param {String} userId
          * @param {String} itemId
          */
-        self.reportPlaybackStopped = function(userId, itemId, positionTicks) {
+        self.reportPlaybackStopped = function (userId, itemId, positionTicks) {
 
             if (!userId) {
                 throw new Error("null userId");
@@ -3412,7 +3412,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             }
 
             var params = {
-                
+
             };
 
             if (positionTicks) {
@@ -3427,7 +3427,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.sendBrowseCommand = function(sessionId, options) {
+        self.sendBrowseCommand = function (sessionId, options) {
 
             if (!sessionId) {
                 throw new Error("null sessionId");
@@ -3445,7 +3445,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.sendPlayCommand = function(sessionId, options) {
+        self.sendPlayCommand = function (sessionId, options) {
 
             if (!sessionId) {
                 throw new Error("null sessionId");
@@ -3463,7 +3463,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.sendSystemCommand = function(sessionId, command) {
+        self.sendSystemCommand = function (sessionId, command) {
 
             if (!sessionId) {
                 throw new Error("null sessionId");
@@ -3481,7 +3481,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.sendMessageCommand = function(sessionId, options) {
+        self.sendMessageCommand = function (sessionId, options) {
 
             if (!sessionId) {
                 throw new Error("null sessionId");
@@ -3499,7 +3499,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.sendPlayStateCommand = function(sessionId, command, options) {
+        self.sendPlayStateCommand = function (sessionId, command, options) {
 
             if (!sessionId) {
                 throw new Error("null sessionId");
@@ -3517,7 +3517,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.createPackageReview = function(review) {
+        self.createPackageReview = function (review) {
 
             var url = self.getUrl("PackageReviews/" + review.id, review);
 
@@ -3526,7 +3526,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 url: url,
             });
         };
-        
+
         self.getPackageReviews = function (packageId, minRating, maxRating, limit, forceTitle) {
 
             if (!packageId) {
