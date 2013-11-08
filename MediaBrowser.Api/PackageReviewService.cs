@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Constants;
@@ -140,13 +141,16 @@ namespace MediaBrowser.Api
 
         public void Post(CreateReviewRequest request)
         {
+            var reviewText = WebUtility.HtmlEncode(request.Review ?? string.Empty);
+            var title = WebUtility.HtmlEncode(request.Title ?? string.Empty);
+
             var review = new Dictionary<string, string>
                              { { "id", request.Id.ToString(CultureInfo.InvariantCulture) },
                                { "mac", _netManager.GetMacAddress() },
                                { "rating", request.Rating.ToString(CultureInfo.InvariantCulture) },
                                { "recommend", request.Recommend.ToString() },
-                               { "title", request.Title },
-                               { "review", request.Review },
+                               { "title", title },
+                               { "review", reviewText },
                              };
 
             Task.WaitAll(_httpClient.Post(Constants.MbAdminUrl + "/service/packageReview/update", review, CancellationToken.None));
