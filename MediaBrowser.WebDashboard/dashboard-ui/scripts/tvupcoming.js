@@ -11,7 +11,7 @@
             IncludeItemTypes: "Episode",
             Limit: 30,
             Recursive: true,
-            Fields: "PrimaryImageAspectRatio,SeriesInfo,UserData",
+            Fields: "SeriesInfo,UserData",
             IsUnaired: true
         };
 
@@ -23,7 +23,6 @@
             }
             $('#upcomingItems', page).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                useAverageAspectRatio: true,
                 showLocationTypeIndicator: false,
                 showNewIndicator: false,
                 shape: "backdrop",

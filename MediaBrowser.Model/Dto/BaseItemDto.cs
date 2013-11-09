@@ -384,6 +384,12 @@ namespace MediaBrowser.Model.Dto
         public Guid? AlbumPrimaryImageTag { get; set; }
 
         /// <summary>
+        /// Gets or sets the series primary image tag.
+        /// </summary>
+        /// <value>The series primary image tag.</value>
+        public Guid? SeriesPrimaryImageTag { get; set; }
+        
+        /// <summary>
         /// Gets or sets the album artist.
         /// </summary>
         /// <value>The album artist.</value>

@@ -10,7 +10,9 @@
         IncludeItemTypes: "Episode",
         Recursive: true,
         Fields: "DateCreated,SeriesInfo",
-        StartIndex: 0
+        StartIndex: 0,
+        IsMissing: false,
+        IsVirtualUnaired: false
     };
 
     function reloadItems(page) {
@@ -49,7 +51,7 @@
                 query.StartIndex = 0;
                 query.SortOrder = 'Ascending';
                 query.SortBy = $('.defaultSort', page).data('sortby');
-                
+
                 reloadItems(page);
             });
 
@@ -83,7 +85,7 @@
     }
 
     function updateFilterControls(page) {
-        
+
 
         // Reset form values using the last used query
         $('.radioSortBy', page).each(function () {
@@ -224,15 +226,23 @@
         $('#chkMissingEpisode', this).on('change', function () {
 
             query.StartIndex = 0;
-            query.IsMissing = this.checked ? true : null;
-            
+            query.IsMissing = this.checked ? true : false;
+
             reloadItems(page);
         });
 
         $('#chkFutureEpisode', this).on('change', function () {
 
             query.StartIndex = 0;
-            query.IsUnaired = this.checked ? true : null;
+
+            if (this.checked) {
+                query.IsUnaired = true;
+                query.IsVirtualUnaired = null;
+            } else {
+                query.IsUnaired = null;
+                query.IsVirtualUnaired = false;
+            }
+
 
             reloadItems(page);
         });

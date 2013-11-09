@@ -502,7 +502,7 @@
         var query = {
             ParentId: item.Id,
             SortBy: sortBy,
-            Fields: "PrimaryImageAspectRatio,ItemCounts,DateCreated,AudioInfo"
+            Fields: "ItemCounts,DateCreated,AudioInfo"
         };
 
         if (item.Type == "Series" || item.Type == "Season") {

@@ -63,7 +63,7 @@
         return { attr: { id: item.Id, rel: rel, itemtype: item.Type }, data: htmlName, state: state };
     }
 
-    function loadNode(page, node, openItems, selectedId, callback) {
+    function loadNode(page, node, openItems, selectedId, currentUser, callback) {
 
         if (node == '-1') {
 
@@ -76,13 +76,20 @@
             return;
         }
 
-        ApiClient.getItems(Dashboard.getCurrentUserId(), {
-
+        var query = {
             ParentId: node.attr("id"),
             SortBy: 'SortName',
             Fields: 'MetadataSettings'
+        };
+        
+        if (!currentUser.Configuration.DisplayMissingEpisodes) {
+            query.IsMissing = false;
+        }
+        if (!currentUser.Configuration.DisplayUnairedEpisodes) {
+            query.IsVirtualUnaired = false;
+        }
 
-        }).done(function (result) {
+        ApiClient.getItems(Dashboard.getCurrentUserId(), query).done(function (result) {
 
             var nodes = result.Items.map(function (i) {
 
@@ -120,20 +127,20 @@
         $(document).scrollTop(0);
     }
 
-    function initializeTree(page, openItems, selectedId) {
+    function initializeTree(page, currentUser, openItems, selectedId) {
 
         $('.libraryTree', page).jstree({
 
             "plugins": ["themes", "ui", "json_data"],
 
             data: function (node, callback) {
-                loadNode(page, node, openItems, selectedId, callback);
+                loadNode(page, node, openItems, selectedId, currentUser, callback);
             },
 
             json_data: {
 
                 data: function (node, callback) {
-                    loadNode(page, node, openItems, selectedId, callback);
+                    loadNode(page, node, openItems, selectedId, currentUser, callback);
                 }
 
             },
@@ -164,22 +171,26 @@
 
         var page = this;
 
-        var id = MetadataEditor.currentItemId;
+        Dashboard.getCurrentUser().done(function(user) {
+            
+            var id = MetadataEditor.currentItemId;
 
-        if (id) {
+            if (id) {
 
-            ApiClient.getAncestorItems(id, Dashboard.getCurrentUserId()).done(function (ancestors) {
+                ApiClient.getAncestorItems(id, user.Id).done(function (ancestors) {
 
-                var ids = ancestors.map(function (i) {
-                    return i.Id;
+                    var ids = ancestors.map(function (i) {
+                        return i.Id;
+                    });
+
+                    initializeTree(page, user, ids, id);
                 });
 
-                initializeTree(page, ids, id);
-            });
+            } else {
+                initializeTree(page, user, []);
+            }
 
-        } else {
-            initializeTree(page, []);
-        }
+        });
 
     }).on('pagebeforehide', ".metadataEditorPage", function () {
 
