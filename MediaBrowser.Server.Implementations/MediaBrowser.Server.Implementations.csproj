@@ -250,7 +250,7 @@
     <EmbeddedResource Include="Localization\Ratings\gb.txt" />
     <EmbeddedResource Include="Localization\Ratings\nl.txt" />
     <EmbeddedResource Include="Localization\Ratings\br.txt" />
-    <EmbeddedResource Include="Localization\Ratings\da.txt" />
+    <EmbeddedResource Include="Localization\Ratings\dk.txt" />
     <EmbeddedResource Include="Localization\Ratings\de.txt" />
     <EmbeddedResource Include="Localization\Ratings\mx.txt" />
     <EmbeddedResource Include="Localization\Ratings\co.txt" />
