@@ -1391,7 +1391,7 @@
                 var rating = item.CommunityRating / 2;
 
                 for (var i = 1; i <= 5; i++) {
-                    if (rating < i - 1) {
+                    if (rating <= i - 1) {
                         html += "<div class='starRating emptyStarRating' title='" + item.CommunityRating + "'></div>";
                     }
                     else if (rating < i) {
