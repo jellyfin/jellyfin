@@ -1052,6 +1052,13 @@ namespace MediaBrowser.Server.Implementations.Dto
                 {
                     dto.SeriesThumbImageTag = GetImageCacheTag(series, ImageType.Thumb, series.GetImage(ImageType.Thumb));
                 }
+
+                var imagePath = series.PrimaryImagePath;
+
+                if (!string.IsNullOrEmpty(imagePath))
+                {
+                    dto.SeriesPrimaryImageTag = GetImageCacheTag(series, ImageType.Primary, imagePath);
+                }
             }
 
             // Add SeasonInfo
@@ -1065,6 +1072,13 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.SeriesName = series.Name;
                 dto.AirTime = series.AirTime;
                 dto.SeriesStudio = series.Studios.FirstOrDefault();
+
+                var imagePath = series.PrimaryImagePath;
+
+                if (!string.IsNullOrEmpty(imagePath))
+                {
+                    dto.SeriesPrimaryImageTag = GetImageCacheTag(series, ImageType.Primary, imagePath);
+                }
             }
 
             var game = item as Game;
