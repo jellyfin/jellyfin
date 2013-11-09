@@ -1152,7 +1152,7 @@ var Dashboard = {
             var title = noLinks ? rating + " stars" : "Rate " + i + (i > 1 ? " stars" : " star");
             
             html += noLinks ? "" : "<a href='#' data-id=" + id + " data-name='" + name + "' data-rating=" + i + " onclick='Dashboard.ratePackage(this);' >";
-            if (rating < i - 1 || rating == 0) {
+            if (rating <= i - 1) {
                 html += "<div class='storeStarRating emptyStarRating' title='" + title + "'></div>";
             } else if (rating < i) {
                 html += "<div class='storeStarRating halfStarRating' title='" + title + "'></div>";
