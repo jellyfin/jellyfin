@@ -97,7 +97,7 @@ namespace MediaBrowser.Api.LiveTv
 
             var recordings = await Task.WhenAll(tasks).ConfigureAwait(false);
 
-            return recordings.SelectMany(i => i);
+            return recordings.SelectMany(i => i).Select(_liveTvManager.GetRecordingInfo);
         }
 
         public object Get(GetEpg request)
