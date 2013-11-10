@@ -43,5 +43,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 Id = info.Id 
             };
         }
+
+        public RecordingInfo GetRecordingInfo(RecordingInfo info)
+        {
+            return info;
+        }
     }
 }

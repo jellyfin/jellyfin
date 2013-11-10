@@ -27,5 +27,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="info">The info.</param>
         /// <returns>ChannelInfoDto.</returns>
         ChannelInfoDto GetChannelInfoDto(ChannelInfo info);
+
+        RecordingInfo GetRecordingInfo(RecordingInfo info);
     }
 }
