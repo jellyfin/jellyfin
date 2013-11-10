@@ -589,7 +589,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
             var supportedEnhancers = GetSupportedEnhancers(item, imageType);
 
-            return GetImageCacheTag(item, imageType, imagePath, dateModified, supportedEnhancers);
+            return GetImageCacheTag(item, imageType, imagePath, dateModified, supportedEnhancers.ToList());
         }
 
         /// <summary>
@@ -602,7 +602,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
         /// <param name="imageEnhancers">The image enhancers.</param>
         /// <returns>Guid.</returns>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        public Guid GetImageCacheTag(BaseItem item, ImageType imageType, string originalImagePath, DateTime dateModified, IEnumerable<IImageEnhancer> imageEnhancers)
+        public Guid GetImageCacheTag(BaseItem item, ImageType imageType, string originalImagePath, DateTime dateModified, List<IImageEnhancer> imageEnhancers)
         {
             if (item == null)
             {
@@ -617,6 +617,12 @@ namespace MediaBrowser.Server.Implementations.Drawing
             if (string.IsNullOrEmpty(originalImagePath))
             {
                 throw new ArgumentNullException("originalImagePath");
+            }
+
+            // Optimization
+            if (imageEnhancers.Count == 0)
+            {
+                return (originalImagePath + dateModified.Ticks).GetMD5();
             }
 
             // Cache name is created with supported enhancers combined with the last config change so we pick up new config changes
@@ -879,7 +885,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
             {
                 try
                 {
-                    return i.Supports(item as BaseItem, imageType);
+                    return i.Supports(item, imageType);
                 }
                 catch (Exception ex)
                 {
@@ -888,7 +894,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
                     return false;
                 }
 
-            }).ToList();
+            });
         }
 
         public void Dispose()

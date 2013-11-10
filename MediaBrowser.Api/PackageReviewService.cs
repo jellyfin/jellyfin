@@ -1,9 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Constants;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Serialization;
 using ServiceStack.ServiceHost;
 
 namespace MediaBrowser.Api
@@ -51,27 +54,103 @@ namespace MediaBrowser.Api
         public string Review { get; set; }
     }
 
+    /// <summary>
+    /// Class InstallPackage
+    /// </summary>
+    [Route("/PackageReviews/{Id}", "GET")]
+    [Api(("Retrieve reviews for a package"))]
+    public class ReviewRequest : IReturn<List<PackageReviewInfo>>
+    {
+        /// <summary>
+        /// Gets or sets the Id.
+        /// </summary>
+        /// <value>The Id.</value>
+        [ApiMember(Name = "Id", Description = "Package Id", IsRequired = true, DataType = "int", ParameterType = "path", Verb = "GET")]
+        public int Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the max rating.
+        /// </summary>
+        /// <value>The max rating.</value>
+        [ApiMember(Name = "MaxRating", Description = "Retrieve only reviews less than or equal to this", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int MaxRating { get; set; }
+
+        /// <summary>
+        /// Gets or sets the min rating.
+        /// </summary>
+        /// <value>The max rating.</value>
+        [ApiMember(Name = "MinRating", Description = "Retrieve only reviews greator than or equal to this", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int MinRating { get; set; }
+
+        /// <summary>
+        /// Only retrieve reviews with at least a short review.
+        /// </summary>
+        /// <value>True if should only get reviews with a title.</value>
+        [ApiMember(Name = "ForceTitle", Description = "Whether or not to restrict results to those with a title", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool ForceTitle { get; set; }
+
+        /// <summary>
+        /// Gets or sets the limit for the query.
+        /// </summary>
+        /// <value>The max rating.</value>
+        [ApiMember(Name = "Limit", Description = "Limit the result to this many reviews (ordered by latest)", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int Limit { get; set; }
+
+    }
 
     public class PackageReviewService : BaseApiService
     {
         private readonly IHttpClient _httpClient;
         private readonly INetworkManager _netManager;
+        private readonly IJsonSerializer _serializer;
 
-        public PackageReviewService(IHttpClient client, INetworkManager net)
+        public PackageReviewService(IHttpClient client, INetworkManager net, IJsonSerializer serializer)
         {
             _httpClient = client;
             _netManager = net;
+            _serializer = serializer;
+        }
+
+        public object Get(ReviewRequest request)
+        {
+            var parms = "?id=" + request.Id;
+            
+            if (request.MaxRating > 0)
+            {
+                parms += "&max=" + request.MaxRating;
+            }
+            if (request.MinRating > 0)
+            {
+                parms += "&min=" + request.MinRating;
+            }
+            if (request.MinRating > 0)
+            {
+                parms += "&limit=" + request.Limit;
+            }
+            if (request.ForceTitle)
+            {
+                parms += "&title=true";
+            }
+
+            var result = _httpClient.Get(Constants.MbAdminUrl + "/service/packageReview/retrieve"+parms, CancellationToken.None).Result;
+
+            var reviews = _serializer.DeserializeFromStream<List<PackageReviewInfo>>(result);
+
+            return ToOptimizedResult(reviews);
         }
 
         public void Post(CreateReviewRequest request)
         {
+            var reviewText = WebUtility.HtmlEncode(request.Review ?? string.Empty);
+            var title = WebUtility.HtmlEncode(request.Title ?? string.Empty);
+
             var review = new Dictionary<string, string>
                              { { "id", request.Id.ToString(CultureInfo.InvariantCulture) },
                                { "mac", _netManager.GetMacAddress() },
                                { "rating", request.Rating.ToString(CultureInfo.InvariantCulture) },
                                { "recommend", request.Recommend.ToString() },
-                               { "title", request.Title },
-                               { "review", request.Review },
+                               { "title", title },
+                               { "review", reviewText },
                              };
 
             Task.WaitAll(_httpClient.Post(Constants.MbAdminUrl + "/service/packageReview/update", review, CancellationToken.None));
