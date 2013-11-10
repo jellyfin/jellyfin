@@ -33,5 +33,10 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         public string review { get; set; }
 
+        /// <summary>
+        /// Time of review
+        /// </summary>
+        public DateTime timestamp { get; set; }
+
     }
 }

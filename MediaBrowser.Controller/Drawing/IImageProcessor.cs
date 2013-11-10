@@ -68,7 +68,7 @@ namespace MediaBrowser.Controller.Drawing
         /// <param name="imageEnhancers">The image enhancers.</param>
         /// <returns>Guid.</returns>
         Guid GetImageCacheTag(BaseItem item, ImageType imageType, string originalImagePath, DateTime dateModified,
-                              IEnumerable<IImageEnhancer> imageEnhancers);
+                              List<IImageEnhancer> imageEnhancers);
 
         /// <summary>
         /// Processes the image.

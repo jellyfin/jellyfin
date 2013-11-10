@@ -25,8 +25,13 @@ namespace MediaBrowser.Providers.Music
                 }
             }
 
-            artist.PremiereDate = yearFormed > 0 ? new DateTime(yearFormed, 1, 1, 0, 0, 0, DateTimeKind.Utc) : (DateTime?)null;
-            artist.ProductionYear = yearFormed;
+            if (yearFormed > 0)
+            {
+                artist.PremiereDate = new DateTime(yearFormed, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
+                artist.ProductionYear = yearFormed;
+            }
+            
             if (data.tags != null && !artist.LockedFields.Contains(MetadataFields.Tags))
             {
                 AddTags(artist, data.tags);
@@ -102,10 +107,14 @@ namespace MediaBrowser.Providers.Music
 
             DateTime release;
 
-            if (DateTime.TryParse(data.releasedate, out release) && release.Year != 1901)
+            if (DateTime.TryParse(data.releasedate, out release))
             {
-                item.PremiereDate = release;
-                item.ProductionYear = release.Year;
+                // Lastfm sends back null as sometimes 1901, other times 0
+                if (release.Year > 1901)
+                {
+                    item.PremiereDate = release;
+                    item.ProductionYear = release.Year;
+                }
             }
 
             if (data.toptags != null && !item.LockedFields.Contains(MetadataFields.Tags))

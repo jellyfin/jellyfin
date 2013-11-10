@@ -66,8 +66,6 @@
                 options.shape = options.preferBackdrop ? "backdrop" : "poster";
             }
 
-            var primaryImageAspectRatio = options.useAverageAspectRatio ? LibraryBrowser.getAveragePrimaryImageAspectRatio(items) : null;
-
             var html = '';
 
             for (var i = 0, length = items.length; i < length; i++) {
@@ -87,7 +85,6 @@
                 var imgUrl = null;
                 var isDefault = false;
                 var height = null;
-                var width = null;
 
                 var cssClass = "tileItem";
 
@@ -117,23 +114,19 @@
                 else if (item.ImageTags && item.ImageTags.Primary) {
 
                     height = 300;
-                    width = primaryImageAspectRatio ? parseInt(height * primaryImageAspectRatio) : null;
 
                     imgUrl = LibraryBrowser.getImageUrl(item, 'Primary', 0, {
-                        height: height,
-                        width: width
+                        maxheight: height
                     });
 
                 }
                 else if (item.AlbumId && item.AlbumPrimaryImageTag) {
 
                     height = 300;
-                    width = primaryImageAspectRatio ? parseInt(height * primaryImageAspectRatio) : null;
 
                     imgUrl = ApiClient.getImageUrl(item.AlbumId, {
                         type: "Primary",
                         height: 100,
-                        width: width,
                         tag: item.AlbumPrimaryImageTag
                     });
 
@@ -1111,6 +1104,11 @@
                 return 1;
             }
 
+            // If really close to 4:3 (poster image), just return 2:3
+            if (Math.abs(1.33333333333 - result) <= .05) {
+                return 1.33333333333;
+            }
+
             return result;
         },
 
@@ -1386,7 +1384,7 @@
                 var rating = item.CommunityRating / 2;
 
                 for (var i = 1; i <= 5; i++) {
-                    if (rating < i - 1) {
+                    if (rating <= i - 1) {
                         html += "<div class='starRating emptyStarRating' title='" + item.CommunityRating + "'></div>";
                     }
                     else if (rating < i) {

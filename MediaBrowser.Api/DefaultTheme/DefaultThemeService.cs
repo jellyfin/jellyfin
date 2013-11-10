@@ -288,9 +288,6 @@ namespace MediaBrowser.Api.DefaultTheme
 
             var view = new TvView();
 
-            SetFavoriteGenres(view, series, user);
-            SetFavoriteStudios(view, series, user);
-
             var fields = new List<ItemFields>();
 
             var seriesWithBestBackdrops = FilterItemsForBackdropDisplay(seriesWithBackdrops).ToList();
@@ -401,146 +398,6 @@ namespace MediaBrowser.Api.DefaultTheme
             return ToOptimizedResult(view);
         }
 
-        private void SetFavoriteGenres(TvView view, IEnumerable<BaseItem> inputItems, User user)
-        {
-            var all = inputItems.SelectMany(i => i.Genres)
-                .Distinct(StringComparer.OrdinalIgnoreCase);
-
-            view.FavoriteGenres = all.Select(i =>
-            {
-                try
-                {
-                    var itemByName = _libraryManager.GetGenre(i);
-
-                    var counts = itemByName.GetItemByNameCounts(user);
-
-                    var count = counts == null ? 0 : counts.SeriesCount;
-
-                    if (count > 0 && _userDataManager.GetUserData(user.Id, itemByName.GetUserDataKey()).IsFavorite)
-                    {
-                        return new ItemByNameInfo
-                        {
-                            Name = itemByName.Name,
-                            ItemCount = count
-                        };
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error getting genre {0}", ex, i);
-
-                }
-
-                return null;
-
-            }).Where(i => i != null).ToList();
-        }
-
-        private void SetFavoriteStudios(TvView view, IEnumerable<BaseItem> inputItems, User user)
-        {
-            var all = inputItems.SelectMany(i => i.Studios)
-                .Distinct(StringComparer.OrdinalIgnoreCase);
-
-            view.FavoriteStudios = all.Select(i =>
-            {
-                try
-                {
-                    var itemByName = _libraryManager.GetStudio(i);
-
-                    var counts = itemByName.GetItemByNameCounts(user);
-
-                    var count = counts == null ? 0 : counts.SeriesCount;
-
-                    if (count > 0 && _userDataManager.GetUserData(user.Id, itemByName.GetUserDataKey()).IsFavorite)
-                    {
-                        return new ItemByNameInfo
-                        {
-                            Name = itemByName.Name,
-                            ItemCount = count
-                        };
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error getting studio {0}", ex, i);
-
-                }
-
-                return null;
-
-            }).Where(i => i != null).ToList();
-        }
-
-        private void SetFavoriteGenres(MoviesView view, IEnumerable<BaseItem> inputItems, User user)
-        {
-            var all = inputItems.SelectMany(i => i.Genres)
-                .Distinct(StringComparer.OrdinalIgnoreCase);
-
-            view.FavoriteGenres = all.Select(i =>
-            {
-                try
-                {
-                    var itemByName = _libraryManager.GetGenre(i);
-
-                    var counts = itemByName.GetItemByNameCounts(user);
-
-                    var count = counts == null ? 0 : counts.MovieCount;
-
-                    if (count > 0 && _userDataManager.GetUserData(user.Id, itemByName.GetUserDataKey()).IsFavorite)
-                    {
-                        return new ItemByNameInfo
-                        {
-                            Name = itemByName.Name,
-                            ItemCount = count
-                        };
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error getting genre {0}", ex, i);
-
-                }
-
-                return null;
-
-            }).Where(i => i != null).ToList();
-        }
-
-        private void SetFavoriteStudios(MoviesView view, IEnumerable<BaseItem> inputItems, User user)
-        {
-            var all = inputItems.SelectMany(i => i.Studios)
-                .Distinct(StringComparer.OrdinalIgnoreCase);
-
-            view.FavoriteStudios = all.Select(i =>
-            {
-                try
-                {
-                    var itemByName = _libraryManager.GetStudio(i);
-
-                    var counts = itemByName.GetItemByNameCounts(user);
-
-                    var count = counts == null ? 0 : counts.MovieCount;
-
-                    if (count > 0 && _userDataManager.GetUserData(user.Id, itemByName.GetUserDataKey()).IsFavorite)
-                    {
-                        return new ItemByNameInfo
-                        {
-                            Name = itemByName.Name,
-                            ItemCount = count
-                        };
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error getting studio {0}", ex, i);
-
-                }
-
-                return null;
-
-            }).Where(i => i != null).ToList();
-        }
-
         public object Get(GetMovieView request)
         {
             var user = _userManager.GetUserById(request.UserId);
@@ -557,9 +414,6 @@ namespace MediaBrowser.Api.DefaultTheme
             var movies = items.OfType<Movie>()
                 .ToList();
 
-            SetFavoriteGenres(view, movies, user);
-            SetFavoriteStudios(view, movies, user);
-            
             var trailers = items.OfType<Trailer>()
                .ToList();
             
