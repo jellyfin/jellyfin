@@ -35,7 +35,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <param name="channelId">The channel identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{IEnumerable{EpgFullInfo}}.</returns>
-        Task<IEnumerable<EpgFullInfo>> GetEpgAsync(string channelId, CancellationToken cancellationToken);
+        /// <returns>Task{EpgFullInfo}.</returns>
+        Task<EpgFullInfo> GetEpgAsync(string channelId, CancellationToken cancellationToken);
     }
 }
