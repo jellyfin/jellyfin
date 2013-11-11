@@ -528,7 +528,7 @@ namespace MediaBrowser.Api.Playback
             {
                 if (codec == AudioCodecs.Aac)
                 {
-                    return "libvo_aacenc";
+                    return "aac -strict experimental";
                 }
                 if (codec == AudioCodecs.Mp3)
                 {
