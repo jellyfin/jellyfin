@@ -12,27 +12,35 @@ namespace MediaBrowser.Api.LiveTv
     [Api(Description = "Gets available live tv services.")]
     public class GetServices : IReturn<List<LiveTvServiceInfo>>
     {
+        [ApiMember(Name = "ServiceName", Description = "Optional filter by service.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string ServiceName { get; set; }
     }
 
     [Route("/LiveTv/Channels", "GET")]
     [Api(Description = "Gets available live tv channels.")]
     public class GetChannels : IReturn<List<ChannelInfoDto>>
     {
-        // Add filter by service if needed, and/or other filters
+        [ApiMember(Name = "ServiceName", Description = "Optional filter by service.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string ServiceName { get; set; }
     }
 
     [Route("/LiveTv/Recordings", "GET")]
     [Api(Description = "Gets available live tv recordings.")]
     public class GetRecordings : IReturn<List<RecordingInfo>>
     {
-        // Add filter by service if needed, and/or other filters
+        [ApiMember(Name = "ServiceName", Description = "Optional filter by service.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string ServiceName { get; set; }
     }
 
     [Route("/LiveTv/EPG", "GET")]
     [Api(Description = "Gets available live tv epgs..")]
-    public class GetEpg : IReturn<List<EpgFullInfo>>
+    public class GetEpg : IReturn<EpgFullInfo>
     {
-        // Add filter by service if needed, and/or other filters
+        [ApiMember(Name = "ServiceName", Description = "The live tv service name", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string ServiceName { get; set; }
+
+        [ApiMember(Name = "ChannelId", Description = "The channel id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string ChannelId { get; set; }
     }
     
     public class LiveTvService : BaseApiService
@@ -44,14 +52,25 @@ namespace MediaBrowser.Api.LiveTv
             _liveTvManager = liveTvManager;
         }
 
+        private IEnumerable<ILiveTvService> GetServices(string serviceName)
+        {
+            IEnumerable<ILiveTvService> services = _liveTvManager.Services;
+
+            if (!string.IsNullOrEmpty(serviceName))
+            {
+                services = services.Where(i => string.Equals(i.Name, serviceName, System.StringComparison.OrdinalIgnoreCase));
+            }
+
+            return services;
+        }
+
         public object Get(GetServices request)
         {
-            var services = _liveTvManager.Services;
-
-            var result = services.Select(GetServiceInfo)
+            var services = GetServices(request.ServiceName)
+                .Select(GetServiceInfo)
                 .ToList();
 
-            return ToOptimizedResult(result);
+            return ToOptimizedResult(services);
         }
 
         private LiveTvServiceInfo GetServiceInfo(ILiveTvService service)
@@ -71,7 +90,7 @@ namespace MediaBrowser.Api.LiveTv
 
         private async Task<IEnumerable<ChannelInfoDto>> GetChannelsAsync(GetChannels request)
         {
-            var services = _liveTvManager.Services;
+            var services = GetServices(request.ServiceName);
 
             var tasks = services.Select(i => i.GetChannelsAsync(CancellationToken.None));
 
@@ -91,7 +110,7 @@ namespace MediaBrowser.Api.LiveTv
 
         private async Task<IEnumerable<RecordingInfo>> GetRecordingsAsync(GetRecordings request)
         {
-            var services = _liveTvManager.Services;
+            var services = GetServices(request.ServiceName);
 
             var tasks = services.Select(i => i.GetRecordingsAsync(CancellationToken.None));
 
@@ -109,13 +128,12 @@ namespace MediaBrowser.Api.LiveTv
 
         private async Task<IEnumerable<EpgFullInfo>> GetEpgAsync(GetEpg request)
         {
-            var services = _liveTvManager.Services;
+            var service = GetServices(request.ServiceName)
+                .First();
 
-            var tasks = services.Select(i => i.GetEpgAsync(CancellationToken.None));
+            var epg = await service.GetEpgAsync(request.ChannelId, CancellationToken.None).ConfigureAwait(false);
 
-            var epg = await Task.WhenAll(tasks).ConfigureAwait(false);
-
-            return epg.SelectMany(i => i);
+            return epg;
         }
     }
 }
