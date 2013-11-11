@@ -126,7 +126,7 @@ namespace MediaBrowser.Api.LiveTv
             return ToOptimizedResult(result);
         }
 
-        private async Task<IEnumerable<EpgFullInfo>> GetEpgAsync(GetEpg request)
+        private async Task<EpgFullInfo> GetEpgAsync(GetEpg request)
         {
             var service = GetServices(request.ServiceName)
                 .First();
