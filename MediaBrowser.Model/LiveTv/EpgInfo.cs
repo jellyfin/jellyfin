@@ -10,6 +10,11 @@ namespace MediaBrowser.Model.LiveTv
         public string Id { get; set; }
 
         /// <summary>
+        /// Name of the program
+        /// </summary>
+        public string Name { get; set; }
+
+        /// <summary>
         /// Description of the progam.
         /// </summary>
         public string Description { get; set; }
