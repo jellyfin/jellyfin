@@ -119,12 +119,13 @@ namespace MediaBrowser.Api.DefaultTheme
 
             var fields = new List<ItemFields>();
 
-            view.BackdropItems = FilterItemsForBackdropDisplay(itemsWithBackdrops.OrderBy(i => Guid.NewGuid()))
+            view.BackdropItems = FilterItemsForBackdropDisplay(itemsWithBackdrops)
+                .Randomize("backdrop")
                 .Take(10)
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
                 .ToList();
 
-            var spotlightItems = itemsWithBackdrops.OrderBy(i => Guid.NewGuid())
+            var spotlightItems = itemsWithBackdrops.Randomize("spotlight")
                                                    .Take(10)
                                                    .ToList();
 
@@ -133,59 +134,59 @@ namespace MediaBrowser.Api.DefaultTheme
               .ToList();
 
             fields.Add(ItemFields.PrimaryImageAspectRatio);
-            
+
             view.Albums = itemsWithImages
                 .OfType<MusicAlbum>()
-                .OrderBy(i => Guid.NewGuid())
+                .Randomize()
                 .Take(4)
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
                 .ToList();
 
             view.Books = itemsWithImages
                 .OfType<Book>()
-                .OrderBy(i => Guid.NewGuid())
+                .Randomize()
                 .Take(6)
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
                 .ToList();
 
             view.Episodes = itemsWithImages
                 .OfType<Episode>()
-                .OrderBy(i => Guid.NewGuid())
+                .Randomize()
                 .Take(6)
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
                 .ToList();
 
             view.Games = itemsWithImages
                 .OfType<Game>()
-                .OrderBy(i => Guid.NewGuid())
+                .Randomize()
                 .Take(6)
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
                 .ToList();
 
             view.Movies = itemsWithImages
                 .OfType<Movie>()
-                .OrderBy(i => Guid.NewGuid())
+                .Randomize()
                 .Take(6)
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
                 .ToList();
 
             view.Series = itemsWithImages
                 .OfType<Series>()
-                .OrderBy(i => Guid.NewGuid())
+                .Randomize()
                 .Take(6)
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
                 .ToList();
 
             view.Songs = itemsWithImages
                 .OfType<Audio>()
-                .OrderBy(i => Guid.NewGuid())
+                .Randomize()
                 .Take(4)
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
                 .ToList();
 
             view.MiniSpotlights = itemsWithBackdrops
                 .Except(spotlightItems)
-                .OrderBy(i => Guid.NewGuid())
+                .Randomize()
                 .Take(5)
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
                 .ToList();
@@ -204,7 +205,7 @@ namespace MediaBrowser.Api.DefaultTheme
                 return list;
             })
             .Distinct(StringComparer.OrdinalIgnoreCase)
-            .OrderBy(i => Guid.NewGuid())
+            .Randomize()
             .Select(i =>
             {
                 try
@@ -245,27 +246,27 @@ namespace MediaBrowser.Api.DefaultTheme
             var fields = new List<ItemFields>();
 
             view.BackdropItems = gamesWithBackdrops
-                .OrderBy(i => Guid.NewGuid())
+                .Randomize("backdrop")
                 .Take(10)
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
                 .ToList();
 
             view.SpotlightItems = gamesWithBackdrops
-                .OrderBy(i => Guid.NewGuid())
+                .Randomize("spotlight")
                 .Take(10)
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
                 .ToList();
 
             view.MultiPlayerItems = gamesWithImages
             .Where(i => i.PlayersSupported.HasValue && i.PlayersSupported.Value > 1)
-            .OrderBy(i => Guid.NewGuid())
+            .Randomize()
             .Select(i => GetItemStub(i, ImageType.Primary))
             .Where(i => i != null)
             .Take(1)
             .ToList();
 
             view.MiniSpotlights = gamesWithBackdrops
-                .OrderBy(i => Guid.NewGuid())
+                .Randomize("minispotlight")
                 .Take(5)
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
                 .ToList();
@@ -293,7 +294,7 @@ namespace MediaBrowser.Api.DefaultTheme
             var seriesWithBestBackdrops = FilterItemsForBackdropDisplay(seriesWithBackdrops).ToList();
 
             view.BackdropItems = seriesWithBestBackdrops
-                .OrderBy(i => Guid.NewGuid())
+                .Randomize("backdrop")
                 .Take(10)
                 .AsParallel()
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
@@ -301,7 +302,7 @@ namespace MediaBrowser.Api.DefaultTheme
 
             view.ShowsItems = series
                .Where(i => i.BackdropImagePaths.Count > 0)
-               .OrderBy(i => Guid.NewGuid())
+               .Randomize("all")
                .Select(i => GetItemStub(i, ImageType.Backdrop))
                .Where(i => i != null)
                .Take(1)
@@ -309,7 +310,7 @@ namespace MediaBrowser.Api.DefaultTheme
 
             view.RomanceItems = seriesWithBackdrops
              .Where(i => i.Genres.Any(romanceGenres.ContainsKey))
-             .OrderBy(i => Guid.NewGuid())
+             .Randomize("romance")
              .Select(i => GetItemStub(i, ImageType.Backdrop))
              .Where(i => i != null)
              .Take(1)
@@ -317,7 +318,7 @@ namespace MediaBrowser.Api.DefaultTheme
 
             view.ComedyItems = seriesWithBackdrops
              .Where(i => i.Genres.Any(comedyGenres.ContainsKey))
-             .OrderBy(i => Guid.NewGuid())
+             .Randomize("comedy")
              .Select(i => GetItemStub(i, ImageType.Backdrop))
              .Where(i => i != null)
              .Take(1)
@@ -335,7 +336,7 @@ namespace MediaBrowser.Api.DefaultTheme
             }
 
             spotlightSeries = spotlightSeries
-                .OrderBy(i => Guid.NewGuid())
+                .Randomize("spotlight")
                 .Take(10)
                 .ToList();
 
@@ -355,7 +356,7 @@ namespace MediaBrowser.Api.DefaultTheme
             }
 
             view.MiniSpotlights = miniSpotlightItems
-              .OrderBy(i => Guid.NewGuid())
+              .Randomize("minispotlight")
               .Take(5)
               .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
               .ToList();
@@ -416,7 +417,7 @@ namespace MediaBrowser.Api.DefaultTheme
 
             var trailers = items.OfType<Trailer>()
                .ToList();
-            
+
             var hdMovies = movies.Where(i => i.IsHD).ToList();
 
             var familyGenres = request.FamilyGenre.Split(',').ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
@@ -438,14 +439,14 @@ namespace MediaBrowser.Api.DefaultTheme
             var itemsWithTopBackdrops = FilterItemsForBackdropDisplay(itemsWithBackdrops).ToList();
 
             view.BackdropItems = itemsWithTopBackdrops
-                .OrderBy(i => Guid.NewGuid())
+                .Randomize("backdrop")
                 .Take(10)
                 .AsParallel()
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
                 .ToList();
 
             view.MovieItems = moviesWithBackdrops
-               .OrderBy(i => Guid.NewGuid())
+               .Randomize("all")
                .Select(i => GetItemStub(i, ImageType.Backdrop))
                .Where(i => i != null)
                .Take(1)
@@ -453,7 +454,7 @@ namespace MediaBrowser.Api.DefaultTheme
 
             view.TrailerItems = trailers
              .Where(i => !string.IsNullOrEmpty(i.PrimaryImagePath))
-             .OrderBy(i => Guid.NewGuid())
+             .Randomize()
              .Select(i => GetItemStub(i, ImageType.Primary))
              .Where(i => i != null)
              .Take(1)
@@ -462,7 +463,7 @@ namespace MediaBrowser.Api.DefaultTheme
             view.BoxSetItems = items
              .OfType<BoxSet>()
              .Where(i => i.BackdropImagePaths.Count > 0)
-             .OrderBy(i => Guid.NewGuid())
+             .Randomize()
              .Select(i => GetItemStub(i, ImageType.Backdrop))
              .Where(i => i != null)
              .Take(1)
@@ -470,7 +471,7 @@ namespace MediaBrowser.Api.DefaultTheme
 
             view.ThreeDItems = moviesWithBackdrops
              .Where(i => i.Is3D)
-             .OrderBy(i => Guid.NewGuid())
+             .Randomize("3d")
              .Select(i => GetItemStub(i, ImageType.Backdrop))
              .Where(i => i != null)
              .Take(1)
@@ -481,7 +482,7 @@ namespace MediaBrowser.Api.DefaultTheme
 
             view.RomanceItems = moviesWithBackdrops
              .Where(i => i.Genres.Any(romanceGenres.ContainsKey))
-             .OrderBy(i => Guid.NewGuid())
+             .Randomize("romance")
              .Select(i => GetItemStub(i, ImageType.Backdrop))
              .Where(i => i != null)
              .Take(1)
@@ -489,7 +490,7 @@ namespace MediaBrowser.Api.DefaultTheme
 
             view.ComedyItems = moviesWithBackdrops
              .Where(i => i.Genres.Any(comedyGenres.ContainsKey))
-             .OrderBy(i => Guid.NewGuid())
+             .Randomize("comedy")
              .Select(i => GetItemStub(i, ImageType.Backdrop))
              .Where(i => i != null)
              .Take(1)
@@ -497,7 +498,7 @@ namespace MediaBrowser.Api.DefaultTheme
 
             view.HDItems = hdMovies
              .Where(i => i.BackdropImagePaths.Count > 0)
-             .OrderBy(i => Guid.NewGuid())
+             .Randomize("hd")
              .Select(i => GetItemStub(i, ImageType.Backdrop))
              .Where(i => i != null)
              .Take(1)
@@ -505,7 +506,7 @@ namespace MediaBrowser.Api.DefaultTheme
 
             view.FamilyMovies = familyMovies
              .Where(i => i.BackdropImagePaths.Count > 0)
-             .OrderBy(i => Guid.NewGuid())
+             .Randomize("family")
              .Select(i => GetItemStub(i, ImageType.Backdrop))
              .Where(i => i != null)
              .Take(1)
@@ -523,7 +524,7 @@ namespace MediaBrowser.Api.DefaultTheme
             }
 
             spotlightItems = spotlightItems
-                .OrderBy(i => Guid.NewGuid())
+                .Randomize("spotlight")
                 .Take(10)
                 .ToList();
 
@@ -543,7 +544,7 @@ namespace MediaBrowser.Api.DefaultTheme
             }
 
             miniSpotlightItems = miniSpotlightItems
-              .OrderBy(i => Guid.NewGuid())
+              .Randomize("minispotlight")
               .ToList();
 
             // Avoid implicitly captured closure
@@ -615,7 +616,7 @@ namespace MediaBrowser.Api.DefaultTheme
             var actors = mediaItems.SelectMany(i => i.People)
                 .Select(i => i.Name)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
-                .OrderBy(i => Guid.NewGuid())
+                .Randomize()
                 .ToList();
 
             var result = actors.Select(actor =>
@@ -695,6 +696,31 @@ namespace MediaBrowser.Api.DefaultTheme
             }
 
             return stub;
+        }
+    }
+
+    static class RandomExtension
+    {
+        public static IEnumerable<T> Randomize<T>(this IEnumerable<T> sequence, string type = "none")
+            where T : BaseItem
+        {
+            var hour = DateTime.Now.Hour + 2;
+
+            var typeCode = type.GetHashCode();
+
+            return sequence.OrderBy(i =>
+            {
+                var val = i.Id.GetHashCode() + i.Genres.Count + i.People.Count + (i.ProductionYear ?? 0) + i.DateCreated.Minute + i.DateModified.Minute + typeCode;
+
+                return val % hour;
+            });
+        }
+
+        public static IEnumerable<string> Randomize(this IEnumerable<string> sequence)
+        {
+            var hour = DateTime.Now.Hour + 2;
+
+            return sequence.OrderBy(i => i.GetHashCode() % hour);
         }
     }
 }
