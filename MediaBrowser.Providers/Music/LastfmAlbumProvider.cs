@@ -11,21 +11,14 @@ using MoreLinq;
 using System;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml;
 
 namespace MediaBrowser.Providers.Music
 {
     public class LastfmAlbumProvider : LastfmBaseProvider
     {
         internal static LastfmAlbumProvider Current;
-
-        /// <summary>
-        /// The _music brainz resource pool
-        /// </summary>
-        private readonly SemaphoreSlim _musicBrainzResourcePool = new SemaphoreSlim(1, 1);
 
         public LastfmAlbumProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, ILogManager logManager, IServerConfigurationManager configurationManager)
             : base(jsonSerializer, httpClient, logManager, configurationManager)
@@ -39,7 +32,7 @@ namespace MediaBrowser.Providers.Music
         /// <value>The priority.</value>
         public override MetadataProviderPriority Priority
         {
-            get { return MetadataProviderPriority.Third; }
+            get { return MetadataProviderPriority.Fourth; }
         }
 
         protected override string ProviderVersion
@@ -98,20 +91,6 @@ namespace MediaBrowser.Providers.Music
             if (result != null && result.album != null)
             {
                 LastfmHelper.ProcessAlbumData(item, result.album);
-            }
-
-            var releaseEntryId = item.GetProviderId(MetadataProviders.Musicbrainz);
-
-            if (!string.IsNullOrEmpty(releaseEntryId))
-            {
-                var musicBrainzReleaseGroupId = album.GetProviderId(MetadataProviders.MusicBrainzReleaseGroup);
-                
-                if (string.IsNullOrEmpty(musicBrainzReleaseGroupId))
-                {
-                    musicBrainzReleaseGroupId = await GetReleaseGroupId(releaseEntryId, cancellationToken).ConfigureAwait(false);
-
-                    album.SetProviderId(MetadataProviders.MusicBrainzReleaseGroup, musicBrainzReleaseGroupId);
-                }
             }
             
             BaseProviderInfo data;
@@ -240,78 +219,6 @@ namespace MediaBrowser.Providers.Music
             albumArtists.AddRange(albumNames);
 
             return string.Join(string.Empty, albumArtists.OrderBy(i => i).ToArray()).GetMD5();
-        }
-
-        /// <summary>
-        /// Gets the release group id internal.
-        /// </summary>
-        /// <param name="releaseEntryId">The release entry id.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{System.String}.</returns>
-        private async Task<string> GetReleaseGroupId(string releaseEntryId, CancellationToken cancellationToken)
-        {
-            var url = string.Format("http://www.musicbrainz.org/ws/2/release-group/?query=reid:{0}", releaseEntryId);
-
-            var doc = await GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
-
-            var ns = new XmlNamespaceManager(doc.NameTable);
-            ns.AddNamespace("mb", "http://musicbrainz.org/ns/mmd-2.0#");
-            var node = doc.SelectSingleNode("//mb:release-group-list/mb:release-group/@id", ns);
-
-            return node != null ? node.Value : null;
-        }
-        /// <summary>
-        /// The _last music brainz request
-        /// </summary>
-        private DateTime _lastRequestDate = DateTime.MinValue;
-
-        /// <summary>
-        /// Gets the music brainz response.
-        /// </summary>
-        /// <param name="url">The URL.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{XmlDocument}.</returns>
-        internal async Task<XmlDocument> GetMusicBrainzResponse(string url, CancellationToken cancellationToken)
-        {
-            await _musicBrainzResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            try
-            {
-                var diff = 1500 - (DateTime.Now - _lastRequestDate).TotalMilliseconds;
-
-                // MusicBrainz is extremely adamant about limiting to one request per second
-
-                if (diff > 0)
-                {
-                    await Task.Delay(Convert.ToInt32(diff), cancellationToken).ConfigureAwait(false);
-                }
-
-                _lastRequestDate = DateTime.Now;
-
-                var doc = new XmlDocument();
-
-                using (var xml = await HttpClient.Get(new HttpRequestOptions
-                {
-                    Url = url,
-                    CancellationToken = cancellationToken,
-                    UserAgent = Environment.MachineName
-
-                }).ConfigureAwait(false))
-                {
-                    using (var oReader = new StreamReader(xml, Encoding.UTF8))
-                    {
-                        doc.Load(oReader);
-                    }
-                }
-
-                return doc;
-            }
-            finally
-            {
-                _lastRequestDate = DateTime.Now;
-
-                _musicBrainzResourcePool.Release();
-            }
         }
     }
 }

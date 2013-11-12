@@ -96,8 +96,6 @@ namespace MediaBrowser.Providers.Music
 
         public static void ProcessAlbumData(BaseItem item, LastfmAlbum data)
         {
-            if (!string.IsNullOrWhiteSpace(data.mbid)) item.SetProviderId(MetadataProviders.Musicbrainz, data.mbid);
-
             var overview = data.wiki != null ? data.wiki.content : null;
 
             if (!item.LockedFields.Contains(MetadataFields.Overview))

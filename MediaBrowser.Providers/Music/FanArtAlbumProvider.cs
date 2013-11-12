@@ -56,7 +56,7 @@ namespace MediaBrowser.Providers.Music
         /// <value>The priority.</value>
         public override MetadataProviderPriority Priority
         {
-            get { return MetadataProviderPriority.Fourth; }
+            get { return MetadataProviderPriority.Fifth; }
         }
 
         /// <summary>
@@ -97,7 +97,7 @@ namespace MediaBrowser.Providers.Music
         {
             get
             {
-                return "17";
+                return "18";
             }
         }
 
