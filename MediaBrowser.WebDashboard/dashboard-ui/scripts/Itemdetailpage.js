@@ -802,16 +802,16 @@
 
             var attributes = [];
 
+            if (stream.Language) {
+                attributes.push('<span class="mediaInfoAttribute">' + stream.Language + '</span>');
+            }
+
             if (stream.Codec && stream.Codec != "dca") {
                 attributes.push('<span class="mediaInfoAttribute">' + stream.Codec + '</span>');
             }
 
             if (stream.Profile && stream.Codec == "dca") {
                 attributes.push('<span class="mediaInfoAttribute">' + stream.Profile + '</span>');
-            }
-
-            if (stream.Language) {
-                attributes.push('<span class="mediaInfoAttribute">' + stream.Language + '</span>');
             }
 
             if (stream.Width || stream.Height) {
@@ -822,12 +822,15 @@
                 attributes.push('<span class="mediaInfoAttribute">' + stream.AspectRatio + '</span>');
             }
 
-            if (stream.BitRate && stream.Codec != "mjpeg") {
-                attributes.push('<span class="mediaInfoAttribute">' + (parseInt(stream.BitRate / 1000)) + ' kbps</span>');
+            if (stream.ChannelLayout) {
+                attributes.push('<span class="mediaInfoAttribute">' + stream.ChannelLayout + '</span>');
+            }
+            else if (stream.Channels) {
+                attributes.push('<span class="mediaInfoAttribute">' + stream.Channels + ' ch</span>');
             }
 
-            if (stream.Channels) {
-                attributes.push('<span class="mediaInfoAttribute">' + stream.Channels + ' ch</span>');
+            if (stream.BitRate && stream.Codec != "mjpeg") {
+                attributes.push('<span class="mediaInfoAttribute">' + (parseInt(stream.BitRate / 1000)) + ' kbps</span>');
             }
 
             if (stream.SampleRate) {
