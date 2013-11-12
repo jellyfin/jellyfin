@@ -23,6 +23,12 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value>The type of the scan.</value>
         public string ScanType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the channel layout.
+        /// </summary>
+        /// <value>The channel layout.</value>
+        public string ChannelLayout { get; set; }
         
         /// <summary>
         /// Gets or sets the bit rate.

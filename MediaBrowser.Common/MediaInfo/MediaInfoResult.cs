@@ -75,6 +75,12 @@ namespace MediaBrowser.Common.MediaInfo
         public int channels { get; set; }
 
         /// <summary>
+        /// Gets or sets the channel_layout.
+        /// </summary>
+        /// <value>The channel_layout.</value>
+        public string channel_layout { get; set; }
+        
+        /// <summary>
         /// Gets or sets the avg_frame_rate.
         /// </summary>
         /// <value>The avg_frame_rate.</value>

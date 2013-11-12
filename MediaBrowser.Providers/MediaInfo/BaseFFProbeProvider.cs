@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.MediaInfo;
+﻿using System.Linq;
+using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.MediaInfo;
@@ -201,6 +202,8 @@ namespace MediaBrowser.Providers.MediaInfo
                 {
                     stream.SampleRate = int.Parse(streamInfo.sample_rate, UsCulture);
                 }
+
+                stream.ChannelLayout = ParseChannelLayout(streamInfo.channel_layout);
             }
             else if (string.Equals(streamInfo.codec_type, "subtitle", StringComparison.OrdinalIgnoreCase))
             {
@@ -247,6 +250,16 @@ namespace MediaBrowser.Providers.MediaInfo
             }
 
             return stream;
+        }
+
+        private string ParseChannelLayout(string input)
+        {
+            if (string.IsNullOrEmpty(input))
+            {
+                return input;
+            }
+
+            return input.Split('(').FirstOrDefault();
         }
 
         private string GetAspectRatio(MediaStreamInfo info)
