@@ -53,7 +53,6 @@ namespace MediaBrowser.Server.Implementations.Drawing
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IServerApplicationPaths _appPaths;
 
-        private readonly string _imageSizeCachePath;
         private readonly string _croppedWhitespaceImageCachePath;
         private readonly string _enhancedImageCachePath;
         private readonly string _resizedImageCachePath;
@@ -65,7 +64,6 @@ namespace MediaBrowser.Server.Implementations.Drawing
             _jsonSerializer = jsonSerializer;
             _appPaths = appPaths;
 
-            _imageSizeCachePath = Path.Combine(appPaths.ImageCachePath, "image-sizes");
             _croppedWhitespaceImageCachePath = Path.Combine(appPaths.ImageCachePath, "cropped-images");
             _enhancedImageCachePath = Path.Combine(appPaths.ImageCachePath, "enhanced-images");
             _resizedImageCachePath = Path.Combine(appPaths.ImageCachePath, "resized-images");
@@ -78,9 +76,15 @@ namespace MediaBrowser.Server.Implementations.Drawing
             {
                 sizeDictionary = jsonSerializer.DeserializeFromFile<Dictionary<Guid, ImageSize>>(ImageSizeFile);
             }
-            catch (IOException)
+            catch (FileNotFoundException)
             {
                 // No biggie
+                sizeDictionary = new Dictionary<Guid, ImageSize>();
+            }
+            catch (Exception ex)
+            {
+                logger.ErrorException("Error parsing image size cache file", ex);
+
                 sizeDictionary = new Dictionary<Guid, ImageSize>();
             }
 

@@ -85,7 +85,7 @@ namespace MediaBrowser.Api.LiveTv
         {
             var result = GetChannelsAsync(request).Result;
 
-            return ToOptimizedResult(result);
+            return ToOptimizedResult(result.ToList());
         }
 
         private async Task<IEnumerable<ChannelInfoDto>> GetChannelsAsync(GetChannels request)
@@ -105,7 +105,7 @@ namespace MediaBrowser.Api.LiveTv
         {
             var result = GetRecordingsAsync(request).Result;
 
-            return ToOptimizedResult(result);
+            return ToOptimizedResult(result.ToList());
         }
 
         private async Task<IEnumerable<RecordingInfo>> GetRecordingsAsync(GetRecordings request)
