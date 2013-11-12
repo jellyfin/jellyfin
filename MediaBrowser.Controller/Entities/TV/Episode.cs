@@ -193,6 +193,7 @@ namespace MediaBrowser.Controller.Entities.TV
             return false;
         }
 
+        [IgnoreDataMember]
         public bool IsMissingEpisode
         {
             get
@@ -201,11 +202,13 @@ namespace MediaBrowser.Controller.Entities.TV
             }
         }
 
+        [IgnoreDataMember]
         public bool IsUnaired
         {
             get { return PremiereDate.HasValue && PremiereDate.Value.ToLocalTime().Date >= DateTime.Now.Date; }
         }
 
+        [IgnoreDataMember]
         public bool IsVirtualUnaired
         {
             get { return LocationType == Model.Entities.LocationType.Virtual && IsUnaired; }

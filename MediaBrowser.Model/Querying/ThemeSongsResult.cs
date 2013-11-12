@@ -19,11 +19,15 @@ namespace MediaBrowser.Model.Querying
 
         public ThemeMediaResult ThemeSongsResult { get; set; }
 
+        public ThemeMediaResult SoundtrackSongsResult { get; set; }
+        
         public AllThemeMediaResult()
         {
             ThemeVideosResult = new ThemeMediaResult();
 
             ThemeSongsResult = new ThemeMediaResult();
+
+            SoundtrackSongsResult = new ThemeMediaResult();
         }
     }
 }

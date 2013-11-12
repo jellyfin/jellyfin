@@ -25,11 +25,6 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public abstract class BaseItem : IHasProviderIds, ILibraryItem
     {
-        /// <summary>
-        /// MusicAlbums in the library that are the soundtrack for this item
-        /// </summary>
-        public List<Guid> SoundtrackIds { get; set; }
-
         protected BaseItem()
         {
             Genres = new List<string>();
@@ -43,7 +38,6 @@ namespace MediaBrowser.Controller.Entities
             Tags = new List<string>();
             ThemeSongIds = new List<Guid>();
             ThemeVideoIds = new List<Guid>();
-            SoundtrackIds = new List<Guid>();
             LocalTrailerIds = new List<Guid>();
             LockedFields = new List<MetadataFields>();
             Taglines = new List<string>();

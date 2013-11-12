@@ -11,9 +11,12 @@ namespace MediaBrowser.Controller.Entities.Audio
     /// </summary>
     public class MusicAlbum : Folder, IHasAlbumArtist, IHasArtist, IHasMusicGenres
     {
+        public List<Guid> SoundtrackIds { get; set; }
+        
         public MusicAlbum()
         {
             Artists = new List<string>();
+            SoundtrackIds = new List<Guid>();
         }
 
         public string LastFmImageUrl { get; set; }

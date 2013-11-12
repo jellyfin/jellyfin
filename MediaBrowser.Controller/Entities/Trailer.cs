@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Model.Entities;
+using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 
@@ -7,12 +8,15 @@ namespace MediaBrowser.Controller.Entities
     /// <summary>
     /// Class Trailer
     /// </summary>
-    public class Trailer : Video, IHasCriticRating
+    public class Trailer : Video, IHasCriticRating, IHasSoundtracks
     {
+        public List<Guid> SoundtrackIds { get; set; }
+        
         public Trailer()
         {
             RemoteTrailers = new List<MediaUrl>();
             Taglines = new List<string>();
+            SoundtrackIds = new List<Guid>();
         }
 
         /// <summary>

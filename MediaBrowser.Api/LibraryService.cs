@@ -116,7 +116,7 @@ namespace MediaBrowser.Api
     /// </summary>
     [Route("/Items/{Id}/ThemeMedia", "GET")]
     [Api(Description = "Gets theme videos and songs for an item")]
-    public class GetThemeMedia : IReturn<ThemeMediaResult>
+    public class GetThemeMedia : IReturn<AllThemeMediaResult>
     {
         /// <summary>
         /// Gets or sets the user id.
@@ -435,11 +435,6 @@ namespace MediaBrowser.Api
 
             return items;
         }
-        
-        private int FavoriteCount(IEnumerable<BaseItem> items, Guid userId)
-        {
-            return items.AsParallel().Count(i => _userDataManager.GetUserData(userId, i.GetUserDataKey()).IsFavorite);
-        }
 
         /// <summary>
         /// Posts the specified request.
@@ -572,7 +567,9 @@ namespace MediaBrowser.Api
             return ToOptimizedResult(new AllThemeMediaResult
             {
                 ThemeSongsResult = themeSongs,
-                ThemeVideosResult = themeVideos
+                ThemeVideosResult = themeVideos,
+
+                SoundtrackSongsResult = GetSoundtrackSongs(request.Id, request.UserId, request.InheritFromParent)
             });
         }
 
@@ -650,8 +647,7 @@ namespace MediaBrowser.Api
             }
 
             // Get everything
-            var fields =
-                Enum.GetNames(typeof(ItemFields))
+            var fields = Enum.GetNames(typeof(ItemFields))
                     .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
                     .ToList();
 
@@ -669,7 +665,7 @@ namespace MediaBrowser.Api
             };
         }
 
-        private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
+        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
         public object Get(GetYearIndex request)
         {
@@ -687,11 +683,61 @@ namespace MediaBrowser.Api
                 .Select(i => new ItemIndex
                 {
                     ItemCount = i.Count(),
-                    Name = i.Key == -1 ? string.Empty : i.Key.ToString(UsCulture)
+                    Name = i.Key == -1 ? string.Empty : i.Key.ToString(_usCulture)
                 })
                 .ToList();
 
             return ToOptimizedResult(lookup);
+        }
+
+        public ThemeMediaResult GetSoundtrackSongs(string id, Guid? userId, bool inheritFromParent)
+        {
+            var user = userId.HasValue ? _userManager.GetUserById(userId.Value) : null;
+
+            var item = string.IsNullOrEmpty(id)
+                           ? (userId.HasValue
+                                  ? user.RootFolder
+                                  : (Folder)_libraryManager.RootFolder)
+                           : _dtoService.GetItemByDtoId(id, userId);
+
+            while (GetSoundtrackSongIds(item).Count == 0 && inheritFromParent && item.Parent != null)
+            {
+                item = item.Parent;
+            }
+
+            // Get everything
+            var fields = Enum.GetNames(typeof(ItemFields))
+                    .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
+                    .ToList();
+
+            var dtos = GetSoundtrackSongIds(item)
+                .Select(_libraryManager.GetItemById)
+                .OfType<MusicAlbum>()
+                .SelectMany(i => i.RecursiveChildren)
+                .OfType<Audio>()
+                .OrderBy(i => i.SortName)
+                .Select(i => _dtoService.GetBaseItemDto(i, fields, user, item));
+
+            var items = dtos.ToArray();
+
+            return new ThemeMediaResult
+            {
+                Items = items,
+                TotalRecordCount = items.Length,
+                OwnerId = _dtoService.GetDtoId(item)
+            };
+        }
+
+        private List<Guid> GetSoundtrackSongIds(BaseItem item)
+        {
+            var hasSoundtracks = item as IHasSoundtracks;
+
+            if (hasSoundtracks != null)
+            {
+                return hasSoundtracks.SoundtrackIds;
+            }
+
+            return new List<Guid>();
         }
     }
 }

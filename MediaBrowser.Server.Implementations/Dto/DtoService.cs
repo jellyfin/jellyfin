@@ -102,9 +102,14 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             if (fields.Contains(ItemFields.SoundtrackIds))
             {
-                dto.SoundtrackIds = item.SoundtrackIds
-                    .Select(i => i.ToString("N"))
-                    .ToArray();
+                var hasSoundtracks = item as IHasSoundtracks;
+
+                if (hasSoundtracks != null)
+                {
+                    dto.SoundtrackIds = hasSoundtracks.SoundtrackIds
+                        .Select(i => i.ToString("N"))
+                        .ToArray();
+                }
             }
 
             var itemByName = item as IItemByName;
@@ -131,12 +136,9 @@ namespace MediaBrowser.Server.Implementations.Dto
                 //counts = item.ItemCounts;
                 return;
             }
-            else
+            if (!item.UserItemCounts.TryGetValue(user.Id, out counts))
             {
-                if (!item.UserItemCounts.TryGetValue(user.Id, out counts))
-                {
-                    counts = new ItemByNameCounts();
-                }
+                counts = new ItemByNameCounts();
             }
 
             dto.ChildCount = counts.TotalCount;
@@ -967,6 +969,10 @@ namespace MediaBrowser.Server.Implementations.Dto
             if (album != null)
             {
                 dto.Artists = album.Artists;
+
+                dto.SoundtrackIds = album.SoundtrackIds
+                    .Select(i => i.ToString("N"))
+                    .ToArray();
             }
 
             var hasAlbumArtist = item as IHasAlbumArtist;

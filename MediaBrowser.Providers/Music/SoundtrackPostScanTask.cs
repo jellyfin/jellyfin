@@ -60,17 +60,19 @@ namespace MediaBrowser.Providers.Music
             foreach (var movie in allItems
                 .Where(i => (i is Movie) || (i is Trailer)))
             {
+                var hasSoundtracks = (IHasSoundtracks) movie;
+
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var tmdbId = movie.GetProviderId(MetadataProviders.Tmdb);
 
                 if (string.IsNullOrEmpty(tmdbId))
                 {
-                    movie.SoundtrackIds = new List<Guid>();
+                    hasSoundtracks.SoundtrackIds = new List<Guid>();
                     continue;
                 }
 
-                movie.SoundtrackIds = allAlbums
+                hasSoundtracks.SoundtrackIds = allAlbums
                 .Where(i => string.Equals(tmdbId, i.GetProviderId(MetadataProviders.Tmdb), StringComparison.OrdinalIgnoreCase))
                 .Select(i => i.Id)
                 .ToList();
