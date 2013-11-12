@@ -651,13 +651,13 @@
 
             options.shape = options.shape || "portrait";
 
-            var primaryImageAspectRatio = options.useAverageAspectRatio ? LibraryBrowser.getAveragePrimaryImageAspectRatio(items) : null;
-
             var html = "";
 
             for (var i = 0, length = items.length; i < length; i++) {
 
                 var item = items[i];
+
+                var primaryImageAspectRatio = options.useAverageAspectRatio ? LibraryBrowser.getAveragePrimaryImageAspectRatio([item]) : null;
 
                 var futureDateText;
 

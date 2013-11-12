@@ -11,13 +11,16 @@ namespace MediaBrowser.Controller.Entities.Movies
     /// <summary>
     /// Class Movie
     /// </summary>
-    public class Movie : Video, IHasCriticRating
+    public class Movie : Video, IHasCriticRating, IHasSoundtracks
     {
         public List<Guid> SpecialFeatureIds { get; set; }
+
+        public List<Guid> SoundtrackIds { get; set; }
 
         public Movie()
         {
             SpecialFeatureIds = new List<Guid>();
+            SoundtrackIds = new List<Guid>();
         }
 
         /// <summary>

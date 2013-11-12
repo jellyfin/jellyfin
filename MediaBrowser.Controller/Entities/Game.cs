@@ -1,13 +1,17 @@
 ﻿using MediaBrowser.Model.Entities;
+using System;
 using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Entities
 {
-    public class Game : BaseItem
+    public class Game : BaseItem, IHasSoundtracks
     {
+        public List<Guid> SoundtrackIds { get; set; }
+        
         public Game()
         {
             MultiPartGameFiles = new List<string>();
+            SoundtrackIds = new List<Guid>();
         }
 
         /// <summary>

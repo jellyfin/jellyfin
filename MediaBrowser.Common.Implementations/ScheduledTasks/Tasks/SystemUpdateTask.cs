@@ -85,6 +85,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
 
             if (!updateInfo.IsUpdateAvailable)
             {
+                Logger.Debug("No application update available.");
                 progress.Report(100);
                 return;
             }

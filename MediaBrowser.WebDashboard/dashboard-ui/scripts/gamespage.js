@@ -10,7 +10,7 @@
         SortOrder: "Ascending",
         MediaTypes: "Game",
         Recursive: true,
-        Fields: "Genres,Studios,PrimaryImageAspectRatio",
+        Fields: "Genres,Studios",
         StartIndex: 0
     };
 

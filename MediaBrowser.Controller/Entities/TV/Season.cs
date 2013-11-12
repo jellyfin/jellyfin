@@ -149,21 +149,25 @@ namespace MediaBrowser.Controller.Entities.TV
             return IndexNumber != null ? IndexNumber.Value.ToString("0000") : Name;
         }
 
+        [IgnoreDataMember]
         public bool IsMissingSeason
         {
             get { return LocationType == Model.Entities.LocationType.Virtual && Children.OfType<Episode>().All(i => i.IsMissingEpisode); }
         }
 
+        [IgnoreDataMember]
         public bool IsUnaired
         {
             get { return Children.OfType<Episode>().All(i => i.IsUnaired); }
         }
 
+        [IgnoreDataMember]
         public bool IsVirtualUnaired
         {
             get { return LocationType == Model.Entities.LocationType.Virtual && IsUnaired; }
         }
 
+        [IgnoreDataMember]
         public bool IsMissingOrVirtualUnaired
         {
             get { return LocationType == Model.Entities.LocationType.Virtual && Children.OfType<Episode>().All(i => i.IsVirtualUnaired || i.IsMissingEpisode); }

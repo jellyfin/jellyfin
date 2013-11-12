@@ -11,9 +11,10 @@ namespace MediaBrowser.Controller.Entities.TV
     /// <summary>
     /// Class Series
     /// </summary>
-    public class Series : Folder
+    public class Series : Folder, IHasSoundtracks
     {
         public List<Guid> SpecialFeatureIds { get; set; }
+        public List<Guid> SoundtrackIds { get; set; }
 
         public int SeasonCount { get; set; }
 
@@ -22,6 +23,7 @@ namespace MediaBrowser.Controller.Entities.TV
             AirDays = new List<DayOfWeek>();
 
             SpecialFeatureIds = new List<Guid>();
+            SoundtrackIds = new List<Guid>();
         }
 
         /// <summary>
