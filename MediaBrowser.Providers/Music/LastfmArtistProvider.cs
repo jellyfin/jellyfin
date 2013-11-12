@@ -164,7 +164,7 @@ namespace MediaBrowser.Providers.Music
 
             var url = string.Format("http://www.musicbrainz.org/ws/2/artist/?query=artist:\"{0}\"", UrlEncode(nameToSearch));
 
-            var doc = await LastfmAlbumProvider.Current.GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
+            var doc = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
 
             var ns = new XmlNamespaceManager(doc.NameTable);
             ns.AddNamespace("mb", "http://musicbrainz.org/ns/mmd-2.0#");
@@ -180,7 +180,7 @@ namespace MediaBrowser.Providers.Music
                 // Try again using the search with accent characters url
                 url = string.Format("http://www.musicbrainz.org/ws/2/artist/?query=artistaccent:\"{0}\"", UrlEncode(nameToSearch));
 
-                doc = await LastfmAlbumProvider.Current.GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
+                doc = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
 
                 ns = new XmlNamespaceManager(doc.NameTable);
                 ns.AddNamespace("mb", "http://musicbrainz.org/ns/mmd-2.0#");
