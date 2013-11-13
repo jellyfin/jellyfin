@@ -142,29 +142,10 @@ namespace MediaBrowser.Api.Playback.Hls
                 args += GetOutputSizeParam(state, codec, performSubtitleConversion);
             }
 
-            // Get the output framerate based on the FrameRate param
-            var framerate = state.VideoRequest.Framerate ?? 0;
-
-            // We have to supply a framerate for hls, so if it's null, account for that here
-            if (state.VideoStream != null)
+            if (state.VideoRequest.Framerate.HasValue)
             {
-                if (framerate.Equals(0))
-                {
-                    framerate = state.VideoStream.AverageFrameRate ?? 0;
-                }
-                if (framerate.Equals(0))
-                {
-                    framerate = state.VideoStream.RealFrameRate ?? 0;
-                }
+                args += string.Format(" -r {0}", state.VideoRequest.Framerate.Value);
             }
-            if (framerate.Equals(0))
-            {
-                framerate = 23.976;
-            }
-
-            framerate = Math.Round(framerate);
-
-            args += string.Format(" -r {0}", framerate);
 
             args += " -vsync vfr";
 
