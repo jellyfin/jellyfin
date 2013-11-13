@@ -246,13 +246,13 @@ namespace MediaBrowser.Api.DefaultTheme
             var fields = new List<ItemFields>();
 
             view.BackdropItems = gamesWithBackdrops
-                .Randomize("backdrop")
+                .OrderBy(i => Guid.NewGuid())
                 .Take(10)
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
                 .ToList();
 
             view.SpotlightItems = gamesWithBackdrops
-                .Randomize("spotlight")
+                .OrderBy(i => Guid.NewGuid())
                 .Take(10)
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
                 .ToList();
@@ -294,7 +294,7 @@ namespace MediaBrowser.Api.DefaultTheme
             var seriesWithBestBackdrops = FilterItemsForBackdropDisplay(seriesWithBackdrops).ToList();
 
             view.BackdropItems = seriesWithBestBackdrops
-                .Randomize("backdrop")
+                .OrderBy(i => Guid.NewGuid())
                 .Take(10)
                 .AsParallel()
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
@@ -336,7 +336,7 @@ namespace MediaBrowser.Api.DefaultTheme
             }
 
             spotlightSeries = spotlightSeries
-                .Randomize("spotlight")
+                .OrderBy(i => Guid.NewGuid())
                 .Take(10)
                 .ToList();
 
@@ -374,8 +374,11 @@ namespace MediaBrowser.Api.DefaultTheme
 
             view.SeriesIdsInProgress = nextUpEpisodes.Select(i => i.Series.Id.ToString("N")).ToList();
 
+            // Avoid implicitly captured closure
+            var currentUser1 = user;
+
             var ownedEpisodes = series
-                .SelectMany(i => i.GetRecursiveChildren(user, j => j.LocationType != LocationType.Virtual))
+                .SelectMany(i => i.GetRecursiveChildren(currentUser1, j => j.LocationType != LocationType.Virtual))
                 .OfType<Episode>()
                 .ToList();
 
@@ -439,7 +442,7 @@ namespace MediaBrowser.Api.DefaultTheme
             var itemsWithTopBackdrops = FilterItemsForBackdropDisplay(itemsWithBackdrops).ToList();
 
             view.BackdropItems = itemsWithTopBackdrops
-                .Randomize("backdrop")
+                .OrderBy(i => Guid.NewGuid())
                 .Take(10)
                 .AsParallel()
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
@@ -524,7 +527,7 @@ namespace MediaBrowser.Api.DefaultTheme
             }
 
             spotlightItems = spotlightItems
-                .Randomize("spotlight")
+                .OrderBy(i => Guid.NewGuid())
                 .Take(10)
                 .ToList();
 
@@ -559,16 +562,19 @@ namespace MediaBrowser.Api.DefaultTheme
               .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
               .ToList();
 
+            // Avoid implicitly captured closure
+            var currentUserId1 = user.Id;
+            
             view.LatestMovies = movies
                 .OrderByDescending(i => i.DateCreated)
-                .Where(i => !_userDataManager.GetUserData(user.Id, i.GetUserDataKey()).Played)
+                .Where(i => !_userDataManager.GetUserData(currentUserId1, i.GetUserDataKey()).Played)
                 .Take(request.LatestMoviesLimit)
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
                 .ToList();
 
             view.LatestTrailers = trailers
                 .OrderByDescending(i => i.DateCreated)
-                .Where(i => !_userDataManager.GetUserData(user.Id, i.GetUserDataKey()).Played)
+                .Where(i => !_userDataManager.GetUserData(currentUserId1, i.GetUserDataKey()).Played)
                 .Take(request.LatestTrailersLimit)
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
                 .ToList();

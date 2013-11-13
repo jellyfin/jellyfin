@@ -294,5 +294,13 @@ namespace MediaBrowser.Controller.Library
         /// <param name="item">The item.</param>
         /// <returns>System.String.</returns>
         string FindCollectionType(BaseItem item);
+
+        /// <summary>
+        /// Saves the metadata.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="updateType">Type of the update.</param>
+        /// <returns>Task.</returns>
+        Task SaveMetadata(BaseItem item, ItemUpdateType updateType);
     }
 }
