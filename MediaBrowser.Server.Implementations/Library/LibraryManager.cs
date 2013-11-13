@@ -1312,7 +1312,11 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 try
                 {
-                    ItemUpdated(this, new ItemChangeEventArgs { Item = item });
+                    ItemUpdated(this, new ItemChangeEventArgs
+                    {
+                        Item = item,
+                        UpdateReason = updateReason
+                    });
                 }
                 catch (Exception ex)
                 {
@@ -1377,8 +1381,14 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="item">The item.</param>
         /// <param name="updateType">Type of the update.</param>
         /// <returns>Task.</returns>
-        private async Task SaveMetadata(BaseItem item, ItemUpdateType updateType)
+        public async Task SaveMetadata(BaseItem item, ItemUpdateType updateType)
         {
+            var locationType = item.LocationType;
+            if (locationType == LocationType.Remote || locationType == LocationType.Virtual)
+            {
+                throw new ArgumentException("Only file-system based items can save metadata.");
+            }
+
             foreach (var saver in _savers.Where(i => i.IsEnabledFor(item, updateType)))
             {
                 var path = saver.GetSavePath(item);
@@ -1444,7 +1454,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
                     try
                     {
-                        
+
                         return i.ResolveArgs.PhysicalLocations.Contains(item.Path);
                     }
                     catch (IOException ex)
