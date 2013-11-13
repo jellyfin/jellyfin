@@ -595,6 +595,8 @@ namespace MediaBrowser.Api
                                   : (Folder)_libraryManager.RootFolder)
                            : _dtoService.GetItemByDtoId(request.Id, request.UserId);
 
+            var originalItem = item;
+
             while (item.ThemeSongIds.Count == 0 && request.InheritFromParent && item.Parent != null)
             {
                 item = item.Parent;
@@ -605,7 +607,21 @@ namespace MediaBrowser.Api
                     .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
                     .ToList();
 
-            var dtos = item.ThemeSongIds.Select(_libraryManager.GetItemById)
+            var themeSongIds = item.ThemeSongIds;
+
+            if (themeSongIds.Count == 0 && request.InheritFromParent)
+            {
+                var album = originalItem as MusicAlbum;
+
+                if (album != null)
+                {
+                    themeSongIds = album.SoundtrackIds
+                        .SelectMany(i => _libraryManager.GetItemById(i).ThemeSongIds)
+                        .ToList();
+                }
+            }
+
+            var dtos = themeSongIds.Select(_libraryManager.GetItemById)
                             .OrderBy(i => i.SortName)
                             .Select(i => _dtoService.GetBaseItemDto(i, fields, user, item));
 
@@ -641,6 +657,8 @@ namespace MediaBrowser.Api
                                   : (Folder)_libraryManager.RootFolder)
                            : _dtoService.GetItemByDtoId(request.Id, request.UserId);
 
+            var originalItem = item;
+
             while (item.ThemeVideoIds.Count == 0 && request.InheritFromParent && item.Parent != null)
             {
                 item = item.Parent;
@@ -651,7 +669,21 @@ namespace MediaBrowser.Api
                     .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
                     .ToList();
 
-            var dtos = item.ThemeVideoIds.Select(_libraryManager.GetItemById)
+            var themeVideoIds = item.ThemeVideoIds;
+
+            if (themeVideoIds.Count == 0 && request.InheritFromParent)
+            {
+                var album = originalItem as MusicAlbum;
+
+                if (album != null)
+                {
+                    themeVideoIds = album.SoundtrackIds
+                        .SelectMany(i => _libraryManager.GetItemById(i).ThemeVideoIds)
+                        .ToList();
+                }
+            }
+
+            var dtos = themeVideoIds.Select(_libraryManager.GetItemById)
                             .OrderBy(i => i.SortName)
                             .Select(i => _dtoService.GetBaseItemDto(i, fields, user, item));
 
