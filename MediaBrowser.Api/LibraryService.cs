@@ -615,9 +615,15 @@ namespace MediaBrowser.Api
 
                 if (album != null)
                 {
-                    themeSongIds = album.SoundtrackIds
-                        .SelectMany(i => _libraryManager.GetItemById(i).ThemeSongIds)
-                        .ToList();
+                    var linkedItemWithThemes = album.SoundtrackIds
+                        .Select(i => _libraryManager.GetItemById(i))
+                        .FirstOrDefault(i => i.ThemeSongIds.Count > 0);
+
+                    if (linkedItemWithThemes != null)
+                    {
+                        themeSongIds = linkedItemWithThemes.ThemeSongIds;
+                        item = linkedItemWithThemes;
+                    }
                 }
             }
 
@@ -677,9 +683,15 @@ namespace MediaBrowser.Api
 
                 if (album != null)
                 {
-                    themeVideoIds = album.SoundtrackIds
-                        .SelectMany(i => _libraryManager.GetItemById(i).ThemeVideoIds)
-                        .ToList();
+                    var linkedItemWithThemes = album.SoundtrackIds
+                        .Select(i => _libraryManager.GetItemById(i))
+                        .FirstOrDefault(i => i.ThemeVideoIds.Count > 0);
+
+                    if (linkedItemWithThemes != null)
+                    {
+                        themeVideoIds = linkedItemWithThemes.ThemeVideoIds;
+                        item = linkedItemWithThemes;
+                    }
                 }
             }
 
