@@ -49,7 +49,7 @@
     }
 
 .searchHints {
-    width: 148px;
+    width: 248px;
     color: #000;
     background-color: #fff;
     border: 1px solid #999;
@@ -108,25 +108,25 @@
     padding: 2px 5px;
 }
 
-@media all and (min-width: 650px) {
+@media all and (min-width: 340px) {
 
     .headerSearch {
         display: inline-block;
     }
 }
 
-@media all and (min-width: 750px) {
+@media all and (min-width: 850px) {
 
     .txtSearch {
         width: 200px;
     }
 
     .searchHints {
-        width: 198px;
+        width: 248px;
     }
 }
 
-@media all and (min-width: 850px) {
+@media all and (min-width: 950px) {
     .txtSearch {
         width: 250px;
     }

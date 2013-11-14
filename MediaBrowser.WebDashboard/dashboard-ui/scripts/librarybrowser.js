@@ -2339,26 +2339,35 @@
 
         var view = page.getAttribute('data-view') || getParameterByName('context');
 
+        var viewCount = 0;
+
         if (counts.MovieCount || counts.TrailerCount) {
 
-            html += '<a class="viewMenuLink viewMenuImageLink" href="moviesrecommended.html" title="Movies"><img src="css/images/views/movies.png" alt="Movies" /></a>';
             html += '<a class="viewMenuLink viewMenuTextLink' + (view == 'movies' ? selectedCssClass : '') + '" href="moviesrecommended.html">' + (view == 'movies' ? selectedHtml : '') + '<span class="viewName">Movies</span></a>';
+            viewCount++;
         }
 
         if (counts.EpisodeCount || counts.SeriesCount) {
-            html += '<a class="viewMenuLink viewMenuImageLink" href="tvrecommended.html" title="TV"><img src="css/images/views/tvshows.png" alt="TV" /></a>';
             html += '<a class="viewMenuLink viewMenuTextLink' + (view == 'tv' ? selectedCssClass : '') + '" href="tvrecommended.html">' + (view == 'tv' ? selectedHtml : '') + '<span class="viewName">TV</span></a>';
+            viewCount++;
+        }
+
+        if (false) {
+            html += '<a class="viewMenuLink viewMenuTextLink' + (view == 'livetv' ? selectedCssClass : '') + '" href="livetvchannels.html">' + (view == 'livetv' ? selectedHtml : '') + '<span class="viewName">Live TV</span></a>';
+            viewCount++;
         }
 
         if (counts.SongCount || counts.MusicVideoCount) {
-            html += '<a class="viewMenuLink viewMenuImageLink" href="musicrecommended.html" title="Music"><img src="css/images/views/music.png" alt="Music" /></a>';
             html += '<a class="viewMenuLink viewMenuTextLink' + (view == 'music' ? selectedCssClass : '') + '" href="musicrecommended.html">' + (view == 'music' ? selectedHtml : '') + '<span class="viewName">Music</span></a>';
+            viewCount++;
         }
 
         if (counts.GameCount) {
-            html += '<a class="viewMenuLink viewMenuImageLink" href="gamesrecommended.html" title="Games"><img src="css/images/views/games.png" alt="Games" /></a>';
             html += '<a class="viewMenuLink viewMenuTextLink' + (view == 'games' ? selectedCssClass : '') + '" href="gamesrecommended.html">' + (view == 'games' ? selectedHtml : '') + '<span class="viewName">Games</span></a>';
+            viewCount++;
         }
+
+        $(page).addClass('pageViewCount' + viewCount);
 
         $('.homeMenuLink', page).after(html);
     }
