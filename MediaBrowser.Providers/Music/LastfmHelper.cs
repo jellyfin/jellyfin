@@ -103,15 +103,19 @@ namespace MediaBrowser.Providers.Music
                 item.Overview = overview;
             }
 
-            DateTime release;
-
-            if (DateTime.TryParse(data.releasedate, out release))
+            // Only grab the date here if the album doesn't already have one, since id3 tags are preferred
+            if (!item.PremiereDate.HasValue)
             {
-                // Lastfm sends back null as sometimes 1901, other times 0
-                if (release.Year > 1901)
+                DateTime release;
+
+                if (DateTime.TryParse(data.releasedate, out release))
                 {
-                    item.PremiereDate = release;
-                    item.ProductionYear = release.Year;
+                    // Lastfm sends back null as sometimes 1901, other times 0
+                    if (release.Year > 1901)
+                    {
+                        item.PremiereDate = release;
+                        item.ProductionYear = release.Year;
+                    }
                 }
             }
 
