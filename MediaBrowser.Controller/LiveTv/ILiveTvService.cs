@@ -26,16 +26,17 @@ namespace MediaBrowser.Controller.LiveTv
         /// <summary>
         /// Gets the recordings asynchronous.
         /// </summary>
+        /// <param name="query">The query.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{IEnumerable{RecordingInfo}}.</returns>
-        Task<IEnumerable<RecordingInfo>> GetRecordingsAsync(CancellationToken cancellationToken);
+        Task<IEnumerable<RecordingInfo>> GetRecordingsAsync(RecordingQuery query, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Gets the epg asynchronous.
+        /// Gets the channel guides.
         /// </summary>
-        /// <param name="channelId">The channel identifier.</param>
+        /// <param name="channelIdList">The channel identifier list.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{EpgFullInfo}.</returns>
-        Task<EpgFullInfo> GetEpgAsync(string channelId, CancellationToken cancellationToken);
+        /// <returns>Task{IEnumerable{ChannelGuide}}.</returns>
+        Task<IEnumerable<ChannelGuide>> GetChannelGuidesAsync(IEnumerable<string> channelIdList, CancellationToken cancellationToken);
     }
 }

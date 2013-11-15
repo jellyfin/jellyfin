@@ -14,6 +14,12 @@ namespace MediaBrowser.Controller.LiveTv
         public string Name { get; set; }
 
         /// <summary>
+        /// Gets or sets the number.
+        /// </summary>
+        /// <value>The number.</value>
+        public string Number { get; set; }
+
+        /// <summary>
         /// Get or sets the Id.
         /// </summary>
         /// <value>The id of the channel.</value>
