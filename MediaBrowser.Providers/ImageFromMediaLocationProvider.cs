@@ -388,16 +388,32 @@ namespace MediaBrowser.Providers
         /// <param name="args">The args.</param>
         private void PopulateBackdrops(BaseItem item, ItemResolveArgs args)
         {
+            var isFileSystemItem = item.LocationType == LocationType.FileSystem;
+
             var backdropFiles = new List<string>();
 
             PopulateBackdrops(item, args, backdropFiles, "backdrop", "backdrop");
+
+            // Support {name}-fanart.ext
+            if (isFileSystemItem)
+            {
+                var name = Path.GetFileNameWithoutExtension(item.Path);
+
+                if (!string.IsNullOrEmpty(name))
+                {
+                    var image = GetImage(item, args, name + "-fanart");
+
+                    if (image != null)
+                    {
+                        backdropFiles.Add(image.FullName);
+                    }
+                }
+            }
 
             // Support plex/xbmc conventions
             PopulateBackdrops(item, args, backdropFiles, "fanart", "fanart-");
             PopulateBackdrops(item, args, backdropFiles, "background", "background-");
             PopulateBackdrops(item, args, backdropFiles, "art", "art-");
-
-            var isFileSystemItem =  item.LocationType == LocationType.FileSystem;
 
             if (item is Season && item.IndexNumber.HasValue && isFileSystemItem)
             {
