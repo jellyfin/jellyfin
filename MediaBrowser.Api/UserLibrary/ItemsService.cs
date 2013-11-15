@@ -202,6 +202,9 @@ namespace MediaBrowser.Api.UserLibrary
 
         [ApiMember(Name = "MinCriticRating", Description = "Optional filter by minimum critic rating.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public double? MinCriticRating { get; set; }
+
+        [ApiMember(Name = "AiredDuringSeason", Description = "Gets all episodes that aired during a season, including specials.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int? AiredDuringSeason { get; set; }
     }
 
     /// <summary>
@@ -997,6 +1000,25 @@ namespace MediaBrowser.Api.UserLibrary
                     }
 
                     return true;
+                });
+            }
+
+            if (request.AiredDuringSeason.HasValue)
+            {
+                var val = request.AiredDuringSeason.Value;
+
+                items = items.Where(i =>
+                {
+                    var episode = i as Episode;
+
+                    if (episode != null)
+                    {
+                        var seasonNumber = episode.SpecialSeasonNumber ?? episode.ParentIndexNumber;
+
+                        return seasonNumber.HasValue && seasonNumber.Value == val;
+                    }
+
+                    return false;
                 });
             }
 

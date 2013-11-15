@@ -31,6 +31,12 @@ namespace MediaBrowser.Model.Dto
         public DateTime? DateCreated { get; set; }
 
         /// <summary>
+        /// Gets or sets the special season number.
+        /// </summary>
+        /// <value>The special season number.</value>
+        public int? SpecialSeasonNumber { get; set; }
+        
+        /// <summary>
         /// Gets or sets the name of the sort.
         /// </summary>
         /// <value>The name of the sort.</value>

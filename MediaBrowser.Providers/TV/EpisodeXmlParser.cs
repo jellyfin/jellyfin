@@ -139,6 +139,22 @@ namespace MediaBrowser.Providers.TV
                         break;
                     }
 
+                case "SpecialSeasonNumber":
+                    {
+                        var number = reader.ReadElementContentAsString();
+
+                        if (!string.IsNullOrWhiteSpace(number))
+                        {
+                            int num;
+
+                            if (int.TryParse(number, out num))
+                            {
+                                item.SpecialSeasonNumber = num;
+                            }
+                        }
+                        break;
+                    }
+
                 case "EpisodeName":
                     {
                         var name = reader.ReadElementContentAsString();
