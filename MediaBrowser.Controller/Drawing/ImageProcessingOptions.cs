@@ -52,8 +52,7 @@ namespace MediaBrowser.Controller.Drawing
 
         public bool HasDefaultOptionsWithoutSize()
         {
-            return !CropWhiteSpace &&
-                (!Quality.HasValue || Quality.Value == 100) &&
+            return (!Quality.HasValue || Quality.Value == 100) &&
                 IsOutputFormatDefault &&
                 !AddPlayedIndicator &&
                 !PercentPlayed.HasValue &&
