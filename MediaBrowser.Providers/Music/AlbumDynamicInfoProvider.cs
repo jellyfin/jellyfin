@@ -69,6 +69,24 @@ namespace MediaBrowser.Providers.Music
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
+            var date = songs.Select(i => i.PremiereDate)
+                .FirstOrDefault(i => i.HasValue);
+
+            if (date.HasValue)
+            {
+                album.PremiereDate = date.Value;
+                album.ProductionYear = date.Value.Year;
+            }
+            else
+            {
+                var year = songs.Select(i => i.ProductionYear ?? 1800).FirstOrDefault(i => i != 1800);
+
+                if (year != 1800)
+                {
+                    album.ProductionYear = year;
+                }
+            }
+            
             // Don't save to the db
             return FalseTaskResult;
         }
