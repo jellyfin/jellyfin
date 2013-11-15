@@ -402,41 +402,24 @@ namespace MediaBrowser.Api.Images
 
             foreach (var image in item.Images)
             {
-                var path = image.Value;
+                var info = GetImageInfo(image.Value, item, null, image.Key);
 
-                var fileInfo = new FileInfo(path);
-
-                var size = _imageProcessor.GetImageSize(path);
-
-                list.Add(new ImageInfo
+                if (info != null)
                 {
-                    Path = path,
-                    ImageType = image.Key,
-                    ImageTag = _imageProcessor.GetImageCacheTag(item, image.Key, path),
-                    Size = fileInfo.Length,
-                    Width = Convert.ToInt32(size.Width),
-                    Height = Convert.ToInt32(size.Height)
-                });
+                    list.Add(info);
+                }
             }
 
             var index = 0;
 
             foreach (var image in item.BackdropImagePaths)
             {
-                var fileInfo = new FileInfo(image);
+                var info = GetImageInfo(image, item, index, ImageType.Backdrop);
 
-                var size = _imageProcessor.GetImageSize(image);
-
-                list.Add(new ImageInfo
+                if (info != null)
                 {
-                    Path = image,
-                    ImageIndex = index,
-                    ImageType = ImageType.Backdrop,
-                    ImageTag = _imageProcessor.GetImageCacheTag(item, ImageType.Backdrop, image),
-                    Size = fileInfo.Length,
-                    Width = Convert.ToInt32(size.Width),
-                    Height = Convert.ToInt32(size.Height)
-                });
+                    list.Add(info);
+                }
 
                 index++;
             }
@@ -445,20 +428,12 @@ namespace MediaBrowser.Api.Images
 
             foreach (var image in item.ScreenshotImagePaths)
             {
-                var fileInfo = new FileInfo(image);
+                var info = GetImageInfo(image, item, index, ImageType.Screenshot);
 
-                var size = _imageProcessor.GetImageSize(image);
-
-                list.Add(new ImageInfo
+                if (info != null)
                 {
-                    Path = image,
-                    ImageIndex = index,
-                    ImageType = ImageType.Screenshot,
-                    ImageTag = _imageProcessor.GetImageCacheTag(item, ImageType.Screenshot, image),
-                    Size = fileInfo.Length,
-                    Width = Convert.ToInt32(size.Width),
-                    Height = Convert.ToInt32(size.Height)
-                });
+                    list.Add(info);
+                }
 
                 index++;
             }
@@ -475,20 +450,12 @@ namespace MediaBrowser.Api.Images
                     {
                         var image = chapter.ImagePath;
 
-                        var fileInfo = new FileInfo(image);
+                        var info = GetImageInfo(image, item, index, ImageType.Chapter);
 
-                        var size = _imageProcessor.GetImageSize(image);
-
-                        list.Add(new ImageInfo
+                        if (info != null)
                         {
-                            Path = image,
-                            ImageIndex = index,
-                            ImageType = ImageType.Chapter,
-                            ImageTag = _imageProcessor.GetImageCacheTag(item, ImageType.Chapter, image),
-                            Size = fileInfo.Length,
-                            Width = Convert.ToInt32(size.Width),
-                            Height = Convert.ToInt32(size.Height)
-                        });
+                            list.Add(info);
+                        }
                     }
 
                     index++;
@@ -496,6 +463,33 @@ namespace MediaBrowser.Api.Images
             }
 
             return list;
+        }
+
+        private ImageInfo GetImageInfo(string path, BaseItem item, int? imageIndex, ImageType type)
+        {
+            try
+            {
+                var fileInfo = new FileInfo(path);
+
+                var size = _imageProcessor.GetImageSize(path);
+
+                return new ImageInfo
+                {
+                    Path = path,
+                    ImageIndex = imageIndex,
+                    ImageType = type,
+                    ImageTag = _imageProcessor.GetImageCacheTag(item, type, path),
+                    Size = fileInfo.Length,
+                    Width = Convert.ToInt32(size.Width),
+                    Height = Convert.ToInt32(size.Height)
+                };
+            }
+            catch (IOException ex)
+            {
+                Logger.ErrorException("Error getting image information for {0}", ex, path);
+
+                return null;
+            }
         }
 
         /// <summary>
