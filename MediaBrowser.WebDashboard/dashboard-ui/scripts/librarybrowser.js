@@ -1257,7 +1257,7 @@
             }
 
             if (providerIds.NesBox) {
-                
+
                 if (item.GameSystem == "Nintendo") {
                     links.push('<a class="textlink" href="http://nesbox.com/game/' + providerIds.NesBox + '" target="_blank">NESbox</a>');
                 }
@@ -2287,6 +2287,7 @@
 (function (window, document, $) {
 
     var itemCountsPromise;
+    var liveTvServicesPromise;
 
     function renderHeader(page, user) {
 
@@ -2329,11 +2330,11 @@
 
         Search.onSearchRendered($('.viewMenuBar', page));
     }
-    
-    function insertViews(page, user, counts) {
+
+    function insertViews(page, user, counts, liveTvServices) {
 
         var html = '';
-        
+
         var selectedCssClass = ' selectedViewLink';
         var selectedHtml = "<span class='selectedViewIndicator'>&#9654;</span>";
 
@@ -2352,7 +2353,7 @@
             viewCount++;
         }
 
-        if (false) {
+        if (liveTvServices.length) {
             html += '<a class="viewMenuLink viewMenuTextLink' + (view == 'livetv' ? selectedCssClass : '') + '" href="livetvchannels.html">' + (view == 'livetv' ? selectedHtml : '') + '<span class="viewName">Live TV</span></a>';
             viewCount++;
         }
@@ -2383,10 +2384,16 @@
                 renderHeader(page, user);
 
                 itemCountsPromise = itemCountsPromise || ApiClient.getItemCounts(Dashboard.getCurrentUserId());
+                liveTvServicesPromise = liveTvServicesPromise || ApiClient.getLiveTvServices();
 
-                itemCountsPromise.done(function (counts) {
+                $.when(itemCountsPromise, liveTvServicesPromise).done(function (response1, response2) {
 
-                    insertViews(page, user, counts);
+                    var counts = response1[0];
+                    var liveTvServices = response2[0];
+                    
+                    insertViews(page, user, counts, liveTvServices);
+
+
                 });
             });
         }

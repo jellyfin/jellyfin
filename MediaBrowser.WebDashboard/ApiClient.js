@@ -378,6 +378,39 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
+        self.getLiveTvServices = function (options) {
+
+            var url = self.getUrl("/LiveTv/Services", options || {});
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        self.getLiveTvChannels = function (options) {
+
+            var url = self.getUrl("/LiveTv/Channels", options || {});
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        self.getLiveTvRecordings = function (options) {
+
+            var url = self.getUrl("/LiveTv/Recordings", options || {});
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
         /**
          * Gets the current server status
          */

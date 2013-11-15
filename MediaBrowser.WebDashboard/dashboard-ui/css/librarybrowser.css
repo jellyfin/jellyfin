@@ -129,7 +129,7 @@
 
     .libraryViewNav a {
         display: inline-block;
-        padding: .5em .25em;
+        padding: .25em .25em;
         color: #eee!important;
         text-decoration: none;
     }
@@ -486,6 +486,13 @@ a.itemTag:hover {
     }
 }
 
+@media all and (min-width: 750px) {
+
+    .libraryViewNav a {
+        padding: .5em 1em;
+    }
+}
+
 @media all and (max-width: 750px) {
 
     .itemBackdrop {
@@ -524,10 +531,6 @@ a.itemTag:hover {
 
     .noBackdrop .lnkSibling {
         bottom: 260px;
-    }
-
-    .libraryViewNav a {
-        padding: .5em 1em;
     }
 }
 
