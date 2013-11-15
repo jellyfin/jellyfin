@@ -40,13 +40,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 Name = info.Name,
                 ServiceName = info.ServiceName,
                 ChannelType = info.ChannelType,
-                Id = info.Id 
+                Id = info.Id,
+                Number = info.Number
             };
-        }
-
-        public RecordingInfo GetRecordingInfo(RecordingInfo info)
-        {
-            return info;
         }
     }
 }

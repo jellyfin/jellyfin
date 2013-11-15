@@ -32,17 +32,17 @@ namespace MediaBrowser.Api.LiveTv
         public string ServiceName { get; set; }
     }
 
-    [Route("/LiveTv/EPG", "GET")]
+    [Route("/LiveTv/Guide", "GET")]
     [Api(Description = "Gets available live tv epgs..")]
-    public class GetEpg : IReturn<EpgFullInfo>
+    public class GetGuide : IReturn<List<ChannelGuide>>
     {
-        [ApiMember(Name = "ServiceName", Description = "The live tv service name", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        [ApiMember(Name = "ServiceName", Description = "Live tv service name", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string ServiceName { get; set; }
 
-        [ApiMember(Name = "ChannelId", Description = "The channel id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string ChannelId { get; set; }
+        [ApiMember(Name = "ChannelIds", Description = "The channels to return guide information for.", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string ChannelIds { get; set; }
     }
-    
+
     public class LiveTvService : BaseApiService
     {
         private readonly ILiveTvManager _liveTvManager;
@@ -112,28 +112,33 @@ namespace MediaBrowser.Api.LiveTv
         {
             var services = GetServices(request.ServiceName);
 
-            var tasks = services.Select(i => i.GetRecordingsAsync(CancellationToken.None));
+            var query = new RecordingQuery
+            {
+
+            };
+
+            var tasks = services.Select(i => i.GetRecordingsAsync(query, CancellationToken.None));
 
             var recordings = await Task.WhenAll(tasks).ConfigureAwait(false);
 
-            return recordings.SelectMany(i => i).Select(_liveTvManager.GetRecordingInfo);
+            return recordings.SelectMany(i => i);
         }
 
-        public object Get(GetEpg request)
+        public object Get(GetGuide request)
         {
-            var result = GetEpgAsync(request).Result;
+            var result = GetGuideAsync(request).Result;
 
             return ToOptimizedResult(result);
         }
 
-        private async Task<EpgFullInfo> GetEpgAsync(GetEpg request)
+        private async Task<IEnumerable<ChannelGuide>> GetGuideAsync(GetGuide request)
         {
             var service = GetServices(request.ServiceName)
                 .First();
 
-            var epg = await service.GetEpgAsync(request.ChannelId, CancellationToken.None).ConfigureAwait(false);
+            var channels = request.ChannelIds.Split(',');
 
-            return epg;
+            return await service.GetChannelGuidesAsync(channels, CancellationToken.None).ConfigureAwait(false);
         }
     }
 }
