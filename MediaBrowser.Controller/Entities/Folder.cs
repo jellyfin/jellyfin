@@ -796,7 +796,7 @@ namespace MediaBrowser.Controller.Entities
 
             foreach (var tuple in list)
             {
-                if (tasks.Count > 7)
+                if (tasks.Count > 10)
                 {
                     await Task.WhenAll(tasks).ConfigureAwait(false);
                 }
@@ -873,7 +873,8 @@ namespace MediaBrowser.Controller.Entities
                             progress.Report((90 * percent) + 10);
                         }
                     }
-                }));
+
+                }, cancellationToken));
             }
 
             cancellationToken.ThrowIfCancellationRequested();

@@ -113,7 +113,7 @@ namespace MediaBrowser.Providers.TV
         {
             get
             {
-                return "1";
+                return "3";
             }
         }
 
@@ -400,6 +400,40 @@ namespace MediaBrowser.Providers.TV
                                         if (!string.IsNullOrWhiteSpace(val))
                                         {
                                             item.SetProviderId(MetadataProviders.Imdb, val);
+                                        }
+                                        break;
+                                    }
+
+                                case "airsafter_season":
+                                    {
+                                        var val = reader.ReadElementContentAsString();
+
+                                        if (!string.IsNullOrWhiteSpace(val))
+                                        {
+                                            int rval;
+
+                                            // int.TryParse is local aware, so it can be probamatic, force us culture
+                                            if (int.TryParse(val, NumberStyles.Integer, _usCulture, out rval))
+                                            {
+                                                item.SpecialSeasonNumber = rval;
+                                            }
+                                        }
+                                        break;
+                                    }
+
+                                case "airsbefore_season":
+                                    {
+                                        var val = reader.ReadElementContentAsString();
+
+                                        if (!string.IsNullOrWhiteSpace(val))
+                                        {
+                                            int rval;
+
+                                            // int.TryParse is local aware, so it can be probamatic, force us culture
+                                            if (int.TryParse(val, NumberStyles.Integer, _usCulture, out rval))
+                                            {
+                                                item.SpecialSeasonNumber = rval;
+                                            }
                                         }
                                         break;
                                     }

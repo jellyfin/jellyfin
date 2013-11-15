@@ -505,6 +505,15 @@
             Fields: "ItemCounts,DateCreated,AudioInfo"
         };
 
+        if (item.Type == "Season" && item.IndexNumber) {
+
+            query.ParentId = item.SeriesId;
+            query.Recursive = true;
+            query.IncludeItemTypes = "Episode";
+            query.AiredDuringSeason = item.IndexNumber;
+            query.SortBy = "PremiereDate,SortName";
+        }
+
         if (item.Type == "Series" || item.Type == "Season") {
             if (!user.Configuration.DisplayMissingEpisodes) {
                 query.IsMissing = false;
@@ -532,7 +541,8 @@
                     items: result.Items,
                     useAverageAspectRatio: true,
                     shape: shape,
-                    showParentName: false
+                    showParentName: false,
+                    displayAsSpecial: item.Type == "Season" && item.IndexNumber
                 });
 
                 $('#childrenContent', page).html(html);

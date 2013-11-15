@@ -201,7 +201,7 @@
                     }
                 }
 
-                var name = LibraryBrowser.getPosterViewDisplayName(item);
+                var name = LibraryBrowser.getPosterViewDisplayName(item, options.displayAsSpecial);
 
                 html += '<div class="tileName">' + name + '</div>';
 
@@ -972,11 +972,16 @@
             return day;
         },
 
-        getPosterViewDisplayName: function (item) {
+        getPosterViewDisplayName: function (item, displayAsSpecial) {
 
             var name = item.Name;
 
-            if (item.Type == "Episode" && item.IndexNumber != null && item.ParentIndexNumber != null) {
+            if (displayAsSpecial && item.Type == "Episode" && item.SpecialSeasonNumber) {
+
+                name = "Special - " + name;
+
+            }
+            else if (item.Type == "Episode" && item.IndexNumber != null && item.ParentIndexNumber != null) {
 
                 var displayIndexNumber = item.IndexNumber < 10 ? "0" + item.IndexNumber : item.IndexNumber;
 
@@ -990,7 +995,8 @@
 
                 name = number + " - " + name;
 
-            } else {
+            }
+            else {
                 if (item.IndexNumber != null && item.Type !== "Season") {
                     name = item.IndexNumber + " - " + name;
                 }

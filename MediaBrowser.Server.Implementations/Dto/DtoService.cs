@@ -1029,6 +1029,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             if (episode != null)
             {
                 dto.IndexNumberEnd = episode.IndexNumberEnd;
+                dto.SpecialSeasonNumber = episode.SpecialSeasonNumber;
             }
 
             // Add SeriesInfo

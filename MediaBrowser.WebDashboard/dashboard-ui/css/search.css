@@ -8,7 +8,7 @@
     vertical-align: middle;
     font: 13px arial,sans-serif;
     margin: 0 .15em 0 0;
-    width: 150px;
+    width: 80px;
     padding: 0;
     border: 1px solid #4d90fe;
 }
@@ -108,10 +108,17 @@
     padding: 2px 5px;
 }
 
-@media all and (min-width: 340px) {
+@media all and (min-width: 300px) {
 
     .headerSearch {
         display: inline-block;
+    }
+}
+
+@media all and (min-width: 340px) {
+
+    .txtSearch {
+        width: 150px;
     }
 }
 

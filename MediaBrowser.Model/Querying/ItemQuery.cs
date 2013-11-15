@@ -265,6 +265,8 @@ namespace MediaBrowser.Model.Querying
         public double? MinCommunityRating { get; set; }
         public double? MinCriticRating { get; set; }
 
+        public int? AiredDuringSeason { get; set; }
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemQuery" /> class.
         /// </summary>

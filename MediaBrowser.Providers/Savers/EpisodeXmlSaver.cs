@@ -75,6 +75,11 @@ namespace MediaBrowser.Providers.Savers
             {
                 builder.Append("<EpisodeNumberEnd>" + SecurityElement.Escape(episode.IndexNumberEnd.Value.ToString(_usCulture)) + "</EpisodeNumberEnd>");
             }
+
+            if (episode.SpecialSeasonNumber.HasValue)
+            {
+                builder.Append("<SpecialSeasonNumber>" + SecurityElement.Escape(episode.SpecialSeasonNumber.Value.ToString(_usCulture)) + "</SpecialSeasonNumber>");
+            }
             
             if (episode.ParentIndexNumber.HasValue)
             {
@@ -99,7 +104,8 @@ namespace MediaBrowser.Providers.Savers
                     "SeasonNumber",
                     "EpisodeNumber",
                     "EpisodeName",
-                    "EpisodeNumberEnd"
+                    "EpisodeNumberEnd",
+                    "SpecialSeasonNumber"
                 });
 
             // Set last refreshed so that the provider doesn't trigger after the file save
