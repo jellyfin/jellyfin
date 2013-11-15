@@ -110,7 +110,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
             var originalImagePath = options.OriginalImagePath;
 
-            if (options.HasDefaultOptions())
+            if (options.HasDefaultOptions() && options.Enhancers.Count == 0 && !options.CropWhiteSpace)
             {
                 // Just spit out the original file if all the options are default
                 using (var fileStream = _fileSystem.GetFileStream(originalImagePath, FileMode.Open, FileAccess.Read, FileShare.Read, true))
@@ -124,10 +124,12 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
             if (options.CropWhiteSpace)
             {
-                originalImagePath = await GetWhitespaceCroppedImage(originalImagePath, dateModified).ConfigureAwait(false);
+                var tuple = await GetWhitespaceCroppedImage(originalImagePath, dateModified).ConfigureAwait(false);
+
+                originalImagePath = tuple.Item1;
+                dateModified = tuple.Item2;
             }
 
-            // No enhancement - don't cache
             if (options.Enhancers.Count > 0)
             {
                 var tuple = await GetEnhancedImage(originalImagePath, dateModified, options.Item, options.ImageType, options.ImageIndex, options.Enhancers).ConfigureAwait(false);
@@ -141,9 +143,9 @@ namespace MediaBrowser.Server.Implementations.Drawing
             // Determine the output size based on incoming parameters
             var newSize = DrawingUtils.Resize(originalImageSize, options.Width, options.Height, options.MaxWidth, options.MaxHeight);
 
-            if (options.HasDefaultOptionsWithoutSize() && newSize.Equals(originalImageSize))
+            if (options.HasDefaultOptionsWithoutSize() && newSize.Equals(originalImageSize) && options.Enhancers.Count == 0)
             {
-                // Just spit out the original file the new size equals the old
+                // Just spit out the original file if the new size equals the old
                 using (var fileStream = _fileSystem.GetFileStream(originalImagePath, FileMode.Open, FileAccess.Read, FileShare.Read, true))
                 {
                     await fileStream.CopyToAsync(toStream).ConfigureAwait(false);
@@ -383,7 +385,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
         /// <param name="originalImagePath">The original image path.</param>
         /// <param name="dateModified">The date modified.</param>
         /// <returns>System.String.</returns>
-        private async Task<string> GetWhitespaceCroppedImage(string originalImagePath, DateTime dateModified)
+        private async Task<Tuple<string, DateTime>> GetWhitespaceCroppedImage(string originalImagePath, DateTime dateModified)
         {
             var name = originalImagePath;
             name += "datemodified=" + dateModified.Ticks;
@@ -398,7 +400,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
             if (File.Exists(croppedImagePath))
             {
                 semaphore.Release();
-                return croppedImagePath;
+                return new Tuple<string, DateTime>(croppedImagePath, _fileSystem.GetLastWriteTimeUtc(croppedImagePath));
             }
 
             try
@@ -416,9 +418,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
                             using (var croppedImage = originalImage.CropWhitespace())
                             {
-                                var parentPath = Path.GetDirectoryName(croppedImagePath);
-
-                                Directory.CreateDirectory(parentPath);
+                                Directory.CreateDirectory(Path.GetDirectoryName(croppedImagePath));
 
                                 using (var outputStream = _fileSystem.GetFileStream(croppedImagePath, FileMode.Create, FileAccess.Write, FileShare.Read, false))
                                 {
@@ -434,14 +434,14 @@ namespace MediaBrowser.Server.Implementations.Drawing
                 // We have to have a catch-all here because some of the .net image methods throw a plain old Exception
                 _logger.ErrorException("Error cropping image {0}", ex, originalImagePath);
 
-                return originalImagePath;
+                return new Tuple<string, DateTime>(originalImagePath, dateModified);
             }
             finally
             {
                 semaphore.Release();
             }
 
-            return croppedImagePath;
+            return new Tuple<string, DateTime>(croppedImagePath, _fileSystem.GetLastWriteTimeUtc(croppedImagePath));
         }
 
         /// <summary>
@@ -668,7 +668,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
                 // If the path changed update dateModified
                 if (!ehnancedImagePath.Equals(originalImagePath, StringComparison.OrdinalIgnoreCase))
                 {
-                    dateModified = File.GetLastWriteTimeUtc(ehnancedImagePath);
+                    dateModified = _fileSystem.GetLastWriteTimeUtc(ehnancedImagePath);
 
                     return new Tuple<string, DateTime>(ehnancedImagePath, dateModified);
                 }
