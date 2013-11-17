@@ -36,7 +36,9 @@ namespace MediaBrowser.Controller.Entities.TV
         /// Gets the season in which it aired.
         /// </summary>
         /// <value>The aired season.</value>
-        public int? SpecialSeasonNumber { get; set; }
+        public int? AirsBeforeSeasonNumber { get; set; }
+        public int? AirsAfterSeasonNumber { get; set; }
+        public int? AirsBeforeEpisodeNumber { get; set; }
 
         /// <summary>
         /// We want to group into series not show individually in an index

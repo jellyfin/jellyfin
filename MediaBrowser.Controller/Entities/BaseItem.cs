@@ -1728,11 +1728,9 @@ namespace MediaBrowser.Controller.Entities
             // If we didn't the metafile entry, check the Season
             if (metaFileEntry == null)
             {
-                var episode = this as Episode;
-
-                if (episode != null && episode.Season != null)
+                if (Parent != null)
                 {
-                    episode.Season.ResolveArgs.GetMetaFileByPath(imagePath);
+                    metaFileEntry = Parent.ResolveArgs.GetMetaFileByPath(imagePath);
                 }
             }
 

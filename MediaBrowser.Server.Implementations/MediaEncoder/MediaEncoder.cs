@@ -1,7 +1,6 @@
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.MediaInfo;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
@@ -48,12 +47,12 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// <summary>
         /// The audio image resource pool
         /// </summary>
-        private readonly SemaphoreSlim _audioImageResourcePool = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _audioImageResourcePool = new SemaphoreSlim(2, 2);
 
         /// <summary>
         /// The FF probe resource pool
         /// </summary>
-        private readonly SemaphoreSlim _ffProbeResourcePool = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _ffProbeResourcePool = new SemaphoreSlim(2, 2);
         private readonly IFileSystem _fileSystem;
 
         public string FFMpegPath { get; private set; }

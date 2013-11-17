@@ -21,6 +21,9 @@ namespace MediaBrowser.Api.DefaultTheme
     {
         [ApiMember(Name = "UserId", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
         public Guid UserId { get; set; }
+
+        [ApiMember(Name = "RecentlyPlayedGamesLimit", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int RecentlyPlayedGamesLimit { get; set; }
     }
 
     [Route("/MBT/DefaultTheme/TV", "GET")]
@@ -245,6 +248,19 @@ namespace MediaBrowser.Api.DefaultTheme
 
             var fields = new List<ItemFields>();
 
+            view.GameSystems = items
+                .OfType<GameSystem>()
+                .OrderBy(i => i.SortName)
+                .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+                .ToList();
+
+            var currentUserId = user.Id;
+            view.RecentlyPlayedGames = gamesWithImages
+                .OrderByDescending(i => _userDataManager.GetUserData(currentUserId, i.GetUserDataKey()).LastPlayedDate ?? DateTime.MinValue)
+                .Take(request.RecentlyPlayedGamesLimit)
+                .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+                .ToList();
+
             view.BackdropItems = gamesWithBackdrops
                 .OrderBy(i => Guid.NewGuid())
                 .Take(10)
@@ -264,12 +280,6 @@ namespace MediaBrowser.Api.DefaultTheme
             .Where(i => i != null)
             .Take(1)
             .ToList();
-
-            view.MiniSpotlights = gamesWithBackdrops
-                .Randomize("minispotlight")
-                .Take(5)
-                .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
-                .ToList();
 
             return ToOptimizedResult(view);
         }
@@ -323,8 +333,6 @@ namespace MediaBrowser.Api.DefaultTheme
              .Where(i => i != null)
              .Take(1)
              .ToList();
-
-            view.ActorItems = GetActors(series, user.Id);
 
             var spotlightSeries = seriesWithBestBackdrops
                 .Where(i => i.CommunityRating.HasValue && i.CommunityRating >= 8.5)
@@ -409,10 +417,6 @@ namespace MediaBrowser.Api.DefaultTheme
             var items = user.RootFolder.GetRecursiveChildren(user, i => i is Movie || i is Trailer || i is BoxSet)
                 .ToList();
 
-            // Exclude trailers from backdrops because they're not always 1080p
-            var itemsWithBackdrops = items.Where(i => i.BackdropImagePaths.Count > 0)
-                .ToList();
-
             var view = new MoviesView();
 
             var movies = items.OfType<Movie>()
@@ -439,7 +443,7 @@ namespace MediaBrowser.Api.DefaultTheme
 
             var fields = new List<ItemFields>();
 
-            var itemsWithTopBackdrops = FilterItemsForBackdropDisplay(itemsWithBackdrops).ToList();
+            var itemsWithTopBackdrops = FilterItemsForBackdropDisplay(moviesWithBackdrops).ToList();
 
             view.BackdropItems = itemsWithTopBackdrops
                 .OrderBy(i => Guid.NewGuid())
@@ -515,10 +519,10 @@ namespace MediaBrowser.Api.DefaultTheme
              .Take(1)
              .ToList();
 
-            view.PeopleItems = GetActors(items, user.Id);
-
+            var currentUserId = user.Id;
             var spotlightItems = itemsWithTopBackdrops
                 .Where(i => i.CommunityRating.HasValue && i.CommunityRating >= 8)
+                .Where(i => !_userDataManager.GetUserData(currentUserId, i.GetUserDataKey()).Played)
                 .ToList();
 
             if (spotlightItems.Count < 20)
@@ -551,14 +555,13 @@ namespace MediaBrowser.Api.DefaultTheme
               .ToList();
 
             // Avoid implicitly captured closure
-            var currentUserId = user.Id;
-            miniSpotlightItems.InsertRange(2, moviesWithBackdrops
+            miniSpotlightItems.InsertRange(0, moviesWithBackdrops
                 .Where(i => _userDataManager.GetUserData(currentUserId, i.GetUserDataKey()).PlaybackPositionTicks > 0)
                 .OrderByDescending(i => _userDataManager.GetUserData(currentUserId, i.GetUserDataKey()).LastPlayedDate ?? DateTime.MaxValue)
                 .Take(3));
 
             view.MiniSpotlights = miniSpotlightItems
-              .Take(5)
+              .Take(3)
               .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
               .ToList();
 
@@ -615,69 +618,6 @@ namespace MediaBrowser.Api.DefaultTheme
             {
                 return 0;
             }
-        }
-
-        private List<ItemStub> GetActors(IEnumerable<BaseItem> mediaItems, Guid userId)
-        {
-            var actors = mediaItems.SelectMany(i => i.People)
-                .Select(i => i.Name)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .Randomize()
-                .ToList();
-
-            var result = actors.Select(actor =>
-            {
-                try
-                {
-                    var person = _libraryManager.GetPerson(actor);
-
-                    if (!string.IsNullOrEmpty(person.PrimaryImagePath))
-                    {
-                        var userdata = _userDataManager.GetUserData(userId, person.GetUserDataKey());
-
-                        if (userdata.IsFavorite || (userdata.Likes ?? false))
-                        {
-                            return GetItemStub(person, ImageType.Primary);
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error getting person {0}", ex, actor);
-                }
-
-                return null;
-            })
-            .Where(i => i != null)
-            .Take(1)
-            .ToList();
-
-            if (result.Count == 0)
-            {
-                result = actors.Select(actor =>
-                {
-                    try
-                    {
-                        var person = _libraryManager.GetPerson(actor);
-
-                        if (!string.IsNullOrEmpty(person.PrimaryImagePath))
-                        {
-                            return GetItemStub(person, ImageType.Primary);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.ErrorException("Error getting person {0}", ex, actor);
-                    }
-
-                    return null;
-                })
-                            .Where(i => i != null)
-                            .Take(1)
-                            .ToList();
-            }
-
-            return result;
         }
 
         private ItemStub GetItemStub(BaseItem item, ImageType imageType)

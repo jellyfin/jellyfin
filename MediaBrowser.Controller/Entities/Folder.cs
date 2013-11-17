@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Resolvers;
@@ -1315,7 +1314,7 @@ namespace MediaBrowser.Controller.Entities
         public override async Task MarkPlayed(User user, DateTime? datePlayed, IUserDataManager userManager)
         {
             // Sweep through recursively and update status
-            var tasks = GetRecursiveChildren(user, true).Where(i => !i.IsFolder).Select(c => c.MarkPlayed(user, datePlayed, userManager));
+            var tasks = GetRecursiveChildren(user, true).Where(i => !i.IsFolder && i.LocationType != LocationType.Virtual).Select(c => c.MarkPlayed(user, datePlayed, userManager));
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
         }
@@ -1329,7 +1328,7 @@ namespace MediaBrowser.Controller.Entities
         public override async Task MarkUnplayed(User user, IUserDataManager userManager)
         {
             // Sweep through recursively and update status
-            var tasks = GetRecursiveChildren(user, true).Where(i => !i.IsFolder).Select(c => c.MarkUnplayed(user, userManager));
+            var tasks = GetRecursiveChildren(user, true).Where(i => !i.IsFolder && i.LocationType != LocationType.Virtual).Select(c => c.MarkUnplayed(user, userManager));
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
         }
