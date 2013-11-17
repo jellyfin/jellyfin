@@ -76,11 +76,19 @@ namespace MediaBrowser.Providers.Savers
                 builder.Append("<EpisodeNumberEnd>" + SecurityElement.Escape(episode.IndexNumberEnd.Value.ToString(_usCulture)) + "</EpisodeNumberEnd>");
             }
 
-            if (episode.SpecialSeasonNumber.HasValue)
+            if (episode.AirsAfterSeasonNumber.HasValue)
             {
-                builder.Append("<SpecialSeasonNumber>" + SecurityElement.Escape(episode.SpecialSeasonNumber.Value.ToString(_usCulture)) + "</SpecialSeasonNumber>");
+                builder.Append("<airsafter_season>" + SecurityElement.Escape(episode.AirsAfterSeasonNumber.Value.ToString(_usCulture)) + "</airsafter_season>");
             }
-            
+            if (episode.AirsBeforeEpisodeNumber.HasValue)
+            {
+                builder.Append("<airsbefore_episode>" + SecurityElement.Escape(episode.AirsBeforeEpisodeNumber.Value.ToString(_usCulture)) + "</airsbefore_episode>");
+            }
+            if (episode.AirsBeforeSeasonNumber.HasValue)
+            {
+                builder.Append("<airsbefore_season>" + SecurityElement.Escape(episode.AirsBeforeSeasonNumber.Value.ToString(_usCulture)) + "</airsbefore_season>");
+            }
+   
             if (episode.ParentIndexNumber.HasValue)
             {
                 builder.Append("<SeasonNumber>" + SecurityElement.Escape(episode.ParentIndexNumber.Value.ToString(_usCulture)) + "</SeasonNumber>");
@@ -105,7 +113,9 @@ namespace MediaBrowser.Providers.Savers
                     "EpisodeNumber",
                     "EpisodeName",
                     "EpisodeNumberEnd",
-                    "SpecialSeasonNumber"
+                    "airsafter_season",
+                    "airsbefore_episode",
+                    "airsbefore_season"
                 });
 
             // Set last refreshed so that the provider doesn't trigger after the file save

@@ -16,7 +16,6 @@ namespace MediaBrowser.Api.DefaultTheme
     public class MoviesView : BaseView
     {
         public List<ItemStub> MovieItems { get; set; }
-        public List<ItemStub> PeopleItems { get; set; }
 
         public List<ItemStub> BoxSetItems { get; set; }
         public List<ItemStub> TrailerItems { get; set; }
@@ -39,7 +38,6 @@ namespace MediaBrowser.Api.DefaultTheme
     public class TvView : BaseView
     {
         public List<ItemStub> ShowsItems { get; set; }
-        public List<ItemStub> ActorItems { get; set; }
 
         public List<ItemStub> RomanceItems { get; set; }
         public List<ItemStub> ComedyItems { get; set; }
@@ -60,7 +58,8 @@ namespace MediaBrowser.Api.DefaultTheme
     public class GamesView : BaseView
     {
         public List<ItemStub> MultiPlayerItems { get; set; }
-
+        public List<BaseItemDto> GameSystems { get; set; }
+        public List<BaseItemDto> RecentlyPlayedGames { get; set; }
     }
 
     public class BaseView

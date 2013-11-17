@@ -113,7 +113,7 @@ namespace MediaBrowser.Providers.TV
         {
             get
             {
-                return "3";
+                return "5";
             }
         }
 
@@ -404,6 +404,24 @@ namespace MediaBrowser.Providers.TV
                                         break;
                                     }
 
+                                case "airsbefore_episode":
+                                    {
+                                        var val = reader.ReadElementContentAsString();
+
+                                        if (!string.IsNullOrWhiteSpace(val))
+                                        {
+                                            int rval;
+
+                                            // int.TryParse is local aware, so it can be probamatic, force us culture
+                                            if (int.TryParse(val, NumberStyles.Integer, _usCulture, out rval))
+                                            {
+                                                item.AirsBeforeEpisodeNumber = rval;
+                                            }
+                                        }
+
+                                        break;
+                                    }
+
                                 case "airsafter_season":
                                     {
                                         var val = reader.ReadElementContentAsString();
@@ -415,9 +433,10 @@ namespace MediaBrowser.Providers.TV
                                             // int.TryParse is local aware, so it can be probamatic, force us culture
                                             if (int.TryParse(val, NumberStyles.Integer, _usCulture, out rval))
                                             {
-                                                item.SpecialSeasonNumber = rval;
+                                                item.AirsAfterSeasonNumber = rval;
                                             }
                                         }
+
                                         break;
                                     }
 
@@ -432,9 +451,10 @@ namespace MediaBrowser.Providers.TV
                                             // int.TryParse is local aware, so it can be probamatic, force us culture
                                             if (int.TryParse(val, NumberStyles.Integer, _usCulture, out rval))
                                             {
-                                                item.SpecialSeasonNumber = rval;
+                                                item.AirsBeforeSeasonNumber = rval;
                                             }
                                         }
+                                        
                                         break;
                                     }
 

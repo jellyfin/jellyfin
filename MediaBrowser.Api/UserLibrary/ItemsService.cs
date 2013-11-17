@@ -1013,9 +1013,9 @@ namespace MediaBrowser.Api.UserLibrary
 
                     if (episode != null)
                     {
-                        var seasonNumber = episode.SpecialSeasonNumber ?? episode.ParentIndexNumber;
+                        var seasonNumber = episode.AirsAfterSeasonNumber ?? episode.AirsBeforeEpisodeNumber ?? episode.ParentIndexNumber;
 
-                        return seasonNumber.HasValue && seasonNumber.Value == val;
+                        return episode.PremiereDate.HasValue && seasonNumber.HasValue && seasonNumber.Value == val;
                     }
 
                     return false;
