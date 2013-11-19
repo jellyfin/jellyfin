@@ -911,6 +911,15 @@
             return html;
         },
 
+        isYesterday: function (date1) {
+
+            var today = new Date();
+            today.setDate(today.getDate() - 1);
+
+            return date1.getFullYear() == today.getFullYear() && date1.getDate() == today.getDate();
+
+        },
+
         isSameDay: function (date1, date2) {
 
             return date1.getFullYear() == date2.getFullYear() && date1.getDate() == date2.getDate();
@@ -932,6 +941,10 @@
 
             if (LibraryBrowser.isSameDay(date, currentDate)) {
                 return "Today";
+            }
+
+            if (LibraryBrowser.isYesterday(date)) {
+                return "Yesterday";
             }
 
             return weekday[date.getDay()] + " " + date.toLocaleDateString();
@@ -2396,7 +2409,7 @@
 
                     var counts = response1[0];
                     var liveTvServices = response2[0];
-                    
+
                     insertViews(page, user, counts, liveTvServices);
 
 
