@@ -344,6 +344,9 @@ namespace MediaBrowser.Server.Implementations.Providers
                 case ImageType.Art:
                     filename = "clearart";
                     break;
+                case ImageType.Disc:
+                    filename = item is MusicAlbum ? "cdart" : "disc";
+                    break;
                 case ImageType.Primary:
                     filename = item is Episode ? Path.GetFileNameWithoutExtension(item.Path) : "folder";
                     break;
@@ -478,6 +481,11 @@ namespace MediaBrowser.Server.Implementations.Providers
 
             if (type == ImageType.Primary)
             {
+                if (item is MusicAlbum || item is Artist || item is MusicArtist)
+                {
+                    return new[] { Path.Combine(item.Path, "folder" + extension) };
+                }
+
                 if (item is Season && item.IndexNumber.HasValue)
                 {
                     var seriesFolder = Path.GetDirectoryName(item.Path);
