@@ -650,7 +650,7 @@ namespace MediaBrowser.Api.DefaultTheme
         public static IEnumerable<T> Randomize<T>(this IEnumerable<T> sequence, string type = "none")
             where T : BaseItem
         {
-            var hour = DateTime.Now.Hour + 2;
+            var hour = DateTime.Now.Hour + DateTime.Now.Day + 2;
 
             var typeCode = type.GetHashCode();
 
