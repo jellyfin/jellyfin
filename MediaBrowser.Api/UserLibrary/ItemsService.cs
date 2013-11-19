@@ -1013,7 +1013,7 @@ namespace MediaBrowser.Api.UserLibrary
 
                     if (episode != null)
                     {
-                        var seasonNumber = episode.AirsAfterSeasonNumber ?? episode.AirsBeforeEpisodeNumber ?? episode.ParentIndexNumber;
+                        var seasonNumber = episode.AirsAfterSeasonNumber ?? episode.AirsBeforeSeasonNumber ?? episode.ParentIndexNumber;
 
                         return episode.PremiereDate.HasValue && seasonNumber.HasValue && seasonNumber.Value == val;
                     }
