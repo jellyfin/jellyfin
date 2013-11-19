@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Dto;
+﻿using System.Globalization;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
@@ -205,6 +206,12 @@ namespace MediaBrowser.Api.UserLibrary
 
         [ApiMember(Name = "AiredDuringSeason", Description = "Gets all episodes that aired during a season, including specials.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int? AiredDuringSeason { get; set; }
+    
+        [ApiMember(Name = "MinPremiereDate", Description = "Optional. The minimum premiere date. Format = yyyyMMddHHmmss", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string MinPremiereDate { get; set; }
+
+        [ApiMember(Name = "MaxPremiereDate", Description = "Optional. The maximum premiere date. Format = yyyyMMddHHmmss", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string MaxPremiereDate { get; set; }
     }
 
     /// <summary>
@@ -1020,6 +1027,20 @@ namespace MediaBrowser.Api.UserLibrary
 
                     return false;
                 });
+            }
+
+            if (!string.IsNullOrEmpty(request.MinPremiereDate))
+            {
+                var date = DateTime.ParseExact(request.MinPremiereDate, "yyyyMMddHHmmss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
+
+                items = items.Where(i => i.PremiereDate.HasValue && i.PremiereDate.Value >= date);
+            }
+
+            if (!string.IsNullOrEmpty(request.MaxPremiereDate))
+            {
+                var date = DateTime.ParseExact(request.MaxPremiereDate, "yyyyMMddHHmmss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
+
+                items = items.Where(i => i.PremiereDate.HasValue && i.PremiereDate.Value <= date);
             }
 
             return items;

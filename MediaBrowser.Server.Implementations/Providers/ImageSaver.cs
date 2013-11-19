@@ -481,11 +481,6 @@ namespace MediaBrowser.Server.Implementations.Providers
 
             if (type == ImageType.Primary)
             {
-                if (item is MusicAlbum || item is Artist || item is MusicArtist)
-                {
-                    return new[] { Path.Combine(item.Path, "folder" + extension) };
-                }
-
                 if (item is Season && item.IndexNumber.HasValue)
                 {
                     var seriesFolder = Path.GetDirectoryName(item.Path);
@@ -513,8 +508,12 @@ namespace MediaBrowser.Server.Implementations.Providers
                     return new[] { GetSavePathForItemInMixedFolder(item, type, string.Empty, extension) };
                 }
 
-                var filename = "poster" + extension;
-                return new[] { Path.Combine(item.MetaLocation, filename) };
+                if (item is MusicAlbum || item is Artist || item is MusicArtist)
+                {
+                    return new[] { Path.Combine(item.MetaLocation, "folder" + extension) };
+                }
+
+                return new[] { Path.Combine(item.MetaLocation, "poster" + extension) };
             }
 
             if (type == ImageType.Banner)
