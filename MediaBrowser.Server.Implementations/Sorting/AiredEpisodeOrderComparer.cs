@@ -1,8 +1,8 @@
-﻿using System;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Querying;
+using System;
 
 namespace MediaBrowser.Server.Implementations.Sorting
 {
@@ -16,11 +16,14 @@ namespace MediaBrowser.Server.Implementations.Sorting
         /// <returns>System.Int32.</returns>
         public int Compare(BaseItem x, BaseItem y)
         {
-            var val = DateTime.Compare(x.PremiereDate ?? DateTime.MinValue, y.PremiereDate ?? DateTime.MinValue);
-
-            if (val != 0)
+            if (x.PremiereDate.HasValue && y.PremiereDate.HasValue)
             {
-                return val;
+                var val = DateTime.Compare(x.PremiereDate.Value, y.PremiereDate.Value);
+
+                if (val != 0)
+                {
+                    return val;
+                }
             }
 
             var episode1 = x as Episode;

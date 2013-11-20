@@ -206,7 +206,7 @@ namespace MediaBrowser.Api.UserLibrary
 
         [ApiMember(Name = "AiredDuringSeason", Description = "Gets all episodes that aired during a season, including specials.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int? AiredDuringSeason { get; set; }
-    
+
         [ApiMember(Name = "MinPremiereDate", Description = "Optional. The minimum premiere date. Format = yyyyMMddHHmmss", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string MinPremiereDate { get; set; }
 
@@ -1012,21 +1012,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             if (request.AiredDuringSeason.HasValue)
             {
-                var val = request.AiredDuringSeason.Value;
-
-                items = items.Where(i =>
-                {
-                    var episode = i as Episode;
-
-                    if (episode != null)
-                    {
-                        var seasonNumber = episode.AirsAfterSeasonNumber ?? episode.AirsBeforeSeasonNumber ?? episode.ParentIndexNumber;
-
-                        return episode.PremiereDate.HasValue && seasonNumber.HasValue && seasonNumber.Value == val;
-                    }
-
-                    return false;
-                });
+                items = FilterByAiredDuringSeason(items, request.AiredDuringSeason.Value);
             }
 
             if (!string.IsNullOrEmpty(request.MinPremiereDate))
@@ -1044,6 +1030,43 @@ namespace MediaBrowser.Api.UserLibrary
             }
 
             return items;
+        }
+
+        private IEnumerable<BaseItem> FilterByAiredDuringSeason(IEnumerable<BaseItem> items, int seasonNumber)
+        {
+            var episodes = items.OfType<Episode>().ToList();
+
+            // We can only enforce the air date requirement if the episodes have air dates
+            var enforceAirDate = episodes.Any(i => i.PremiereDate.HasValue);
+
+            return episodes.Where(i =>
+            {
+                var episode = i;
+
+                if (episode != null)
+                {
+                    var currentSeasonNumber = episode.AirsAfterSeasonNumber ?? episode.AirsBeforeSeasonNumber ?? episode.ParentIndexNumber;
+
+                    // If this produced nothing, try and get it from the parent folder
+                    if (!currentSeasonNumber.HasValue)
+                    {
+                        var season = episode.Parent as Season;
+                        if (season != null)
+                        {
+                            currentSeasonNumber = season.IndexNumber;
+                        }
+                    }
+
+                    if (enforceAirDate && !episode.PremiereDate.HasValue)
+                    {
+                        return false;
+                    }
+
+                    return currentSeasonNumber.HasValue && currentSeasonNumber.Value == seasonNumber;
+                }
+
+                return false;
+            });
         }
 
         /// <summary>
