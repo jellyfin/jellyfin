@@ -1244,7 +1244,6 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Adds the tagline.
         /// </summary>
-        /// <param name="item">The item.</param>
         /// <param name="tagline">The tagline.</param>
         /// <exception cref="System.ArgumentNullException">tagline</exception>
         public void AddTagline(string tagline)
