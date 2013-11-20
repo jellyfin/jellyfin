@@ -1198,6 +1198,7 @@ namespace MediaBrowser.Controller.Entities
                 if (existing != null)
                 {
                     existing.Type = PersonType.GuestStar;
+                    existing.SortOrder = person.SortOrder ?? existing.SortOrder;
                     return;
                 }
             }
@@ -1214,15 +1215,28 @@ namespace MediaBrowser.Controller.Entities
                 else
                 {
                     // Was there, if no role and we have one - fill it in
-                    if (string.IsNullOrWhiteSpace(existing.Role) && !string.IsNullOrWhiteSpace(person.Role)) existing.Role = person.Role;
+                    if (string.IsNullOrWhiteSpace(existing.Role) && !string.IsNullOrWhiteSpace(person.Role))
+                    {
+                        existing.Role = person.Role;
+                    }
+
+                    existing.SortOrder = person.SortOrder ?? existing.SortOrder;
                 }
             }
             else
             {
+                var existing = People.FirstOrDefault(p =>
+                            string.Equals(p.Name, person.Name, StringComparison.OrdinalIgnoreCase) &&
+                            string.Equals(p.Type, person.Type, StringComparison.OrdinalIgnoreCase));
+
                 // Check for dupes based on the combination of Name and Type
-                if (!People.Any(p => string.Equals(p.Name, person.Name, StringComparison.OrdinalIgnoreCase) && string.Equals(p.Type, person.Type, StringComparison.OrdinalIgnoreCase)))
+                if (existing == null)
                 {
                     People.Add(person);
+                }
+                else
+                {
+                    existing.SortOrder = person.SortOrder ?? existing.SortOrder;
                 }
             }
         }
