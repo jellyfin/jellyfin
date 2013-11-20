@@ -463,6 +463,12 @@ namespace MediaBrowser.Providers.Savers
                     builder.Append("<Name>" + SecurityElement.Escape(person.Name) + "</Name>");
                     builder.Append("<Type>" + SecurityElement.Escape(person.Type) + "</Type>");
                     builder.Append("<Role>" + SecurityElement.Escape(person.Role) + "</Role>");
+
+                    if (person.SortOrder.HasValue)
+                    {
+                        builder.Append("<SortOrder>" + SecurityElement.Escape(person.SortOrder.Value.ToString(UsCulture)) + "</SortOrder>");
+                    }
+
                     builder.Append("</Person>");
                 }
 

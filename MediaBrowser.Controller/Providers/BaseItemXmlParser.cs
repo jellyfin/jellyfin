@@ -1075,6 +1075,7 @@ namespace MediaBrowser.Controller.Providers
             var names = new List<string>();
             var type = "Actor";  // If type is not specified assume actor
             var role = string.Empty;
+            int? sortOrder = null;
 
             reader.MoveToContent();
 
@@ -1109,6 +1110,20 @@ namespace MediaBrowser.Controller.Providers
                                 }
                                 break;
                             }
+                        case "SortOrder":
+                            {
+                                var val = reader.ReadElementContentAsString();
+
+                                if (!string.IsNullOrWhiteSpace(val))
+                                {
+                                    int intVal;
+                                    if (int.TryParse(val, NumberStyles.Integer, _usCulture, out intVal))
+                                    {
+                                        sortOrder = intVal;
+                                    }
+                                }
+                                break;
+                            }
 
                         default:
                             reader.Skip();
@@ -1117,7 +1132,7 @@ namespace MediaBrowser.Controller.Providers
                 }
             }
 
-            return names.Select(n => new PersonInfo { Name = n.Trim(), Role = role, Type = type });
+            return names.Select(n => new PersonInfo { Name = n.Trim(), Role = role, Type = type, SortOrder = sortOrder });
         }
 
         /// <summary>
