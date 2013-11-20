@@ -89,6 +89,7 @@
     <Compile Include="Entities\GameGenre.cs" />
     <Compile Include="Entities\GameSystem.cs" />
     <Compile Include="Entities\IByReferenceItem.cs" />
+    <Compile Include="Entities\IHasAspectRatio.cs" />
     <Compile Include="Entities\IHasCriticRating.cs" />
     <Compile Include="Entities\IHasSoundtracks.cs" />
     <Compile Include="Entities\IItemByName.cs" />

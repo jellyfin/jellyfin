@@ -301,9 +301,13 @@ namespace MediaBrowser.Providers.Savers
                 builder.Append("<Website>" + SecurityElement.Escape(item.HomePageUrl) + "</Website>");
             }
 
-            if (!string.IsNullOrEmpty(item.AspectRatio))
+            var hasAspectRatio = item as IHasAspectRatio;
+            if (hasAspectRatio != null)
             {
-                builder.Append("<AspectRatio>" + SecurityElement.Escape(item.AspectRatio) + "</AspectRatio>");
+                if (!string.IsNullOrEmpty(hasAspectRatio.AspectRatio))
+                {
+                    builder.Append("<AspectRatio>" + SecurityElement.Escape(hasAspectRatio.AspectRatio) + "</AspectRatio>");
+                }
             }
 
             if (!string.IsNullOrEmpty(item.Language))

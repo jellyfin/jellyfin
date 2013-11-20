@@ -1056,6 +1056,23 @@ namespace MediaBrowser.Providers.TV
                                 break;
                             }
 
+                        case "SortOrder":
+                            {
+                                var val = reader.ReadElementContentAsString();
+
+                                if (!string.IsNullOrWhiteSpace(val))
+                                {
+                                    int rval;
+
+                                    // int.TryParse is local aware, so it can be probamatic, force us culture
+                                    if (int.TryParse(val, NumberStyles.Integer, UsCulture, out rval))
+                                    {
+                                        personInfo.SortOrder = rval;
+                                    }
+                                }
+                                break;
+                            }
+                        
                         default:
                             reader.Skip();
                             break;

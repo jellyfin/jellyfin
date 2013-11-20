@@ -14,7 +14,7 @@ namespace MediaBrowser.Controller.Entities
     /// <summary>
     /// Class Video
     /// </summary>
-    public class Video : BaseItem, IHasMediaStreams
+    public class Video : BaseItem, IHasMediaStreams, IHasAspectRatio
     {
         public bool IsMultiPart { get; set; }
 
@@ -65,6 +65,12 @@ namespace MediaBrowser.Controller.Entities
             return GetPlayableStreamFiles(Path);
         }
 
+        /// <summary>
+        /// Gets or sets the aspect ratio.
+        /// </summary>
+        /// <value>The aspect ratio.</value>
+        public string AspectRatio { get; set; }
+        
         /// <summary>
         /// Should be overridden to return the proper folder where metadata lives
         /// </summary>

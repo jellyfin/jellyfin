@@ -155,7 +155,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>IEnumerable{PersonInfo}.</returns>
         private IEnumerable<PersonInfo> GetAllPeople(IEnumerable<BaseItem> itemsList, string[] personTypes)
         {
-            var people = itemsList.SelectMany(i => i.People.OrderBy(p => p.Type));
+            var people = itemsList.SelectMany(i => i.People.OrderBy(p => p.SortOrder ?? int.MaxValue).ThenBy(p => p.Type));
 
             return personTypes.Length == 0 ?
 
