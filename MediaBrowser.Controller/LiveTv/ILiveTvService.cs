@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using MediaBrowser.Model.LiveTv;
 using System.Collections.Generic;
 using System.Threading;
@@ -24,6 +25,24 @@ namespace MediaBrowser.Controller.LiveTv
         /// <returns>Task{IEnumerable{ChannelInfo}}.</returns>
         Task<IEnumerable<ChannelInfo>> GetChannelsAsync(CancellationToken cancellationToken);
 
+        /// <summary>
+        /// Cancels the recording asynchronous.
+        /// </summary>
+        /// <param name="recordingId">The recording identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task CancelRecordingAsync(string recordingId, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Schedules the recording asynchronous.
+        /// </summary>
+        /// <param name="channelId">The channel identifier.</param>
+        /// <param name="startTime">The start time.</param>
+        /// <param name="duration">The duration.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task ScheduleRecordingAsync(string channelId, DateTime startTime, TimeSpan duration, CancellationToken cancellationToken);
+        
         /// <summary>
         /// Gets the channel image asynchronous.
         /// </summary>

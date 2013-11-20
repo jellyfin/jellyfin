@@ -511,7 +511,7 @@
             query.Recursive = true;
             query.IncludeItemTypes = "Episode";
             query.AiredDuringSeason = item.IndexNumber;
-            query.SortBy = "PremiereDate,SortName";
+            query.SortBy = "AiredEpisodeOrder";
         }
 
         if (item.Type == "Series" || item.Type == "Season") {
