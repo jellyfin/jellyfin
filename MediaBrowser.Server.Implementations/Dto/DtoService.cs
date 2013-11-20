@@ -433,7 +433,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             // Ordering by person type to ensure actors and artists are at the front.
             // This is taking advantage of the fact that they both begin with A
             // This should be improved in the future
-            var people = item.People.OrderBy(i => i.Type).ToList();
+            var people = item.People.OrderBy(i => i.SortOrder ?? int.MaxValue).ThenBy(i => i.Type).ToList();
 
             // Attach People by transforming them into BaseItemPerson (DTO)
             dto.People = new BaseItemPerson[people.Count];
@@ -760,7 +760,11 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.ProductionLocations = item.ProductionLocations;
             }
 
-            dto.AspectRatio = item.AspectRatio;
+            var hasAspectRatio = item as IHasAspectRatio;
+            if (hasAspectRatio != null)
+            {
+                dto.AspectRatio = hasAspectRatio.AspectRatio;
+            }
 
             dto.BackdropImageTags = GetBackdropImageTags(item);
 

@@ -483,6 +483,22 @@ namespace MediaBrowser.Controller.Entities
         [IgnoreDataMember]
         public Folder Parent { get; set; }
 
+        [IgnoreDataMember]
+        public IEnumerable<Folder> Parents
+        {
+            get
+            {
+                var parent = Parent;
+
+                while (parent != null)
+                {
+                    yield return parent;
+
+                    parent = parent.Parent;
+                }
+            }
+        }
+
         /// <summary>
         /// When the item first debuted. For movies this could be premiere date, episodes would be first aired
         /// </summary>
@@ -629,11 +645,6 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The original run time ticks.</value>
         public long? OriginalRunTimeTicks { get; set; }
-        /// <summary>
-        /// Gets or sets the aspect ratio.
-        /// </summary>
-        /// <value>The aspect ratio.</value>
-        public string AspectRatio { get; set; }
         /// <summary>
         /// Gets or sets the production year.
         /// </summary>

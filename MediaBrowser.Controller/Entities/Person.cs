@@ -50,6 +50,12 @@ namespace MediaBrowser.Controller.Entities
         public string Type { get; set; }
 
         /// <summary>
+        /// Gets or sets the sort order - ascending
+        /// </summary>
+        /// <value>The sort order.</value>
+        public int? SortOrder { get; set; }
+
+        /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
         /// <returns>A <see cref="System.String" /> that represents this instance.</returns>

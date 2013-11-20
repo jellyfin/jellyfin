@@ -681,6 +681,11 @@ namespace MediaBrowser.Api
             {
                 var album = originalItem as MusicAlbum;
 
+                if (album == null)
+                {
+                    album = originalItem.Parents.OfType<MusicAlbum>().FirstOrDefault();
+                }
+
                 if (album != null)
                 {
                     var linkedItemWithThemes = album.SoundtrackIds
@@ -744,17 +749,12 @@ namespace MediaBrowser.Api
                                   : (Folder)_libraryManager.RootFolder)
                            : _dtoService.GetItemByDtoId(id, userId);
 
-            while (GetSoundtrackSongIds(item).Count == 0 && inheritFromParent && item.Parent != null)
-            {
-                item = item.Parent;
-            }
-
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields))
                     .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
                     .ToList();
 
-            var dtos = GetSoundtrackSongIds(item)
+            var dtos = GetSoundtrackSongIds(item, inheritFromParent)
                 .Select(_libraryManager.GetItemById)
                 .OfType<MusicAlbum>()
                 .SelectMany(i => i.RecursiveChildren)
@@ -772,7 +772,7 @@ namespace MediaBrowser.Api
             };
         }
 
-        private List<Guid> GetSoundtrackSongIds(BaseItem item)
+        private IEnumerable<Guid> GetSoundtrackSongIds(BaseItem item, bool inherit)
         {
             var hasSoundtracks = item as IHasSoundtracks;
 
@@ -781,7 +781,14 @@ namespace MediaBrowser.Api
                 return hasSoundtracks.SoundtrackIds;
             }
 
-            return new List<Guid>();
+            if (!inherit)
+            {
+                return null;
+            }
+
+            hasSoundtracks = item.Parents.OfType<IHasSoundtracks>().FirstOrDefault();
+
+            return hasSoundtracks != null ? hasSoundtracks.SoundtrackIds : new List<Guid>();
         }
     }
 }

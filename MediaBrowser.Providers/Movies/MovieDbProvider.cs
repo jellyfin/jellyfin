@@ -845,7 +845,7 @@ namespace MediaBrowser.Providers.Movies
                     //actors come from cast
                     if (movieData.casts != null && movieData.casts.cast != null)
                     {
-                        foreach (var actor in movieData.casts.cast.OrderBy(a => a.order)) movie.AddPerson(new PersonInfo { Name = actor.name.Trim(), Role = actor.character, Type = PersonType.Actor });
+                        foreach (var actor in movieData.casts.cast.OrderBy(a => a.order)) movie.AddPerson(new PersonInfo { Name = actor.name.Trim(), Role = actor.character, Type = PersonType.Actor, SortOrder = actor.order });
                     }
 
                     //and the rest from crew

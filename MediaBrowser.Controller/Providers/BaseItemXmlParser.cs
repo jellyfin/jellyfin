@@ -375,9 +375,10 @@ namespace MediaBrowser.Controller.Providers
                     {
                         var val = reader.ReadElementContentAsString();
 
-                        if (!string.IsNullOrWhiteSpace(val))
+                        var hasAspectRatio = item as IHasAspectRatio;
+                        if (!string.IsNullOrWhiteSpace(val) && hasAspectRatio != null)
                         {
-                            item.AspectRatio = val;
+                            hasAspectRatio.AspectRatio = val;
                         }
                         break;
                     }

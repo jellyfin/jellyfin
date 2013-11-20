@@ -247,11 +247,16 @@ namespace MediaBrowser.Api
             item.PremiereDate = request.PremiereDate.HasValue ? request.PremiereDate.Value.ToUniversalTime() : (DateTime?)null;
             item.ProductionYear = request.ProductionYear;
             item.ProductionLocations = request.ProductionLocations;
-            item.AspectRatio = request.AspectRatio;
             item.Language = request.Language;
             item.OfficialRating = request.OfficialRating;
             item.CustomRating = request.CustomRating;
 
+            var hasAspectRatio = item as IHasAspectRatio;
+            if (hasAspectRatio != null)
+            {
+                hasAspectRatio.AspectRatio = request.AspectRatio;
+            }
+            
             item.DontFetchMeta = !(request.EnableInternetProviders ?? true);
             if (request.EnableInternetProviders ?? true)
             {
