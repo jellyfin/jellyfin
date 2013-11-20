@@ -266,6 +266,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Localization\Ratings\ca.txt" />
     <Content Include="swagger-ui\css\hightlight.default.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
