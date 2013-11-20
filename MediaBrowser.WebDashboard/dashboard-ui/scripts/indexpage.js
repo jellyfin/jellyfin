@@ -190,7 +190,7 @@
                 showViewsHeader = true;
                 views.push({ id: "gamesView", name: "Games", url: "gamesrecommended.html", img: "css/images/items/list/gamecollection.png", background: "#E12026" });
             }
-            
+
             if (showViewsHeader) {
                 $('#viewsHeader', page).show();
             } else {
@@ -249,11 +249,6 @@
             }));
 
         });
-    });
-
-    $(document).on('pagebeforeshow', "#indexPage", function () {
-
-        var page = this;
 
         reloadTips(page);
 
