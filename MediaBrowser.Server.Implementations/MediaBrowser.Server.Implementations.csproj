@@ -188,6 +188,7 @@
     </Compile>
     <Compile Include="Session\SessionWebSocketListener.cs" />
     <Compile Include="Session\WebSocketController.cs" />
+    <Compile Include="Sorting\AiredEpisodeOrderComparer.cs" />
     <Compile Include="Sorting\AirTimeComparer.cs" />
     <Compile Include="Sorting\AlbumArtistComparer.cs" />
     <Compile Include="Sorting\AlbumComparer.cs" />
