@@ -143,12 +143,19 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             args += keyFrameArg;
 
+            var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsExternal &&
+                                   (state.SubtitleStream.Codec.IndexOf("pgs", StringComparison.OrdinalIgnoreCase) != -1 ||
+                                    state.SubtitleStream.Codec.IndexOf("dvd", StringComparison.OrdinalIgnoreCase) != -1);
+
             var request = state.VideoRequest;
 
             // Add resolution params, if specified
-            if (request.Width.HasValue || request.Height.HasValue || request.MaxHeight.HasValue || request.MaxWidth.HasValue)
+            if (!hasGraphicalSubs)
             {
-                args += GetOutputSizeParam(state, codec, performSubtitleConversion);
+                if (request.Width.HasValue || request.Height.HasValue || request.MaxHeight.HasValue || request.MaxWidth.HasValue)
+                {
+                    args += GetOutputSizeParam(state, codec, performSubtitleConversion);
+                }
             }
 
             if (request.Framerate.HasValue)
@@ -175,13 +182,10 @@ namespace MediaBrowser.Api.Playback.Progressive
                 args += " -level " + state.VideoRequest.Level;
             }
 
-            if (state.SubtitleStream != null)
+            // This is for internal graphical subs
+            if (hasGraphicalSubs)
             {
-                // This is for internal graphical subs
-                if (!state.SubtitleStream.IsExternal && (state.SubtitleStream.Codec.IndexOf("pgs", StringComparison.OrdinalIgnoreCase) != -1 || state.SubtitleStream.Codec.IndexOf("dvd", StringComparison.OrdinalIgnoreCase) != -1))
-                {
-                    args += GetInternalGraphicalSubtitleParam(state, codec);
-                }
+                args += GetInternalGraphicalSubtitleParam(state, codec);
             }
 
             return args;
