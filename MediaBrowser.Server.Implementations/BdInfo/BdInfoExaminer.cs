@@ -127,7 +127,6 @@ namespace MediaBrowser.Server.Implementations.BdInfo
         {
             var stream = new MediaStream
             {
-                BitRate = Convert.ToInt32(audioStream.BitRate),
                 Codec = audioStream.CodecShortName,
                 Language = audioStream.LanguageCode,
                 Channels = audioStream.ChannelCount,
@@ -135,6 +134,13 @@ namespace MediaBrowser.Server.Implementations.BdInfo
                 Type = MediaStreamType.Audio,
                 Index = streams.Count
             };
+
+            var bitrate = Convert.ToInt32(audioStream.BitRate);
+
+            if (bitrate > 0)
+            {
+                stream.BitRate = bitrate;
+            }
 
             if (audioStream.LFE > 0)
             {
