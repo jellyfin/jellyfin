@@ -81,11 +81,9 @@
     <Compile Include="Music\ArtistInfoFromSongProvider.cs" />
     <Compile Include="Music\ArtistProviderFromXml.cs" />
     <Compile Include="Music\FanArtAlbumProvider.cs" />
-    <Compile Include="Music\FanArtArtistByNameProvider.cs" />
     <Compile Include="Music\FanArtArtistProvider.cs" />
     <Compile Include="Music\FanArtUpdatesPrescanTask.cs" />
     <Compile Include="Music\LastfmAlbumProvider.cs" />
-    <Compile Include="Music\LastfmArtistByNameProvider.cs" />
     <Compile Include="Music\LastFmImageProvider.cs" />
     <Compile Include="Music\LastfmArtistProvider.cs" />
     <Compile Include="Music\LastfmBaseProvider.cs" />

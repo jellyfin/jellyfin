@@ -43,7 +43,8 @@ namespace MediaBrowser.Providers.Savers
             // If new metadata has been downloaded or metadata was manually edited, proceed
             if (wasMetadataDownloaded || wasMetadataEdited)
             {
-                if (item is Artist)
+                var artist = item as MusicArtist;
+                if (artist != null && artist.IsAccessedByName)
                 {
                     return true;
                 }

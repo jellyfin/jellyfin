@@ -508,7 +508,7 @@ namespace MediaBrowser.Server.Implementations.Providers
                     return new[] { GetSavePathForItemInMixedFolder(item, type, string.Empty, extension) };
                 }
 
-                if (item is MusicAlbum || item is Artist || item is MusicArtist)
+                if (item is MusicAlbum || item is MusicArtist)
                 {
                     return new[] { Path.Combine(item.MetaLocation, "folder" + extension) };
                 }

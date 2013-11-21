@@ -92,7 +92,7 @@ namespace MediaBrowser.Api
         private readonly char[] _dashReplaceChars = new[] { '?', '/' };
         private const char SlugChar = '-';
 
-        protected Artist GetArtist(string name, ILibraryManager libraryManager)
+        protected MusicArtist GetArtist(string name, ILibraryManager libraryManager)
         {
             return libraryManager.GetArtist(DeSlugArtistName(name, libraryManager));
         }
@@ -147,21 +147,7 @@ namespace MediaBrowser.Api
                 return name;
             }
 
-            return libraryManager.RootFolder.GetRecursiveChildren()
-                .OfType<Audio>()
-                .SelectMany(i =>
-                {
-                    var list = new List<string>();
-
-                    if (!string.IsNullOrEmpty(i.AlbumArtist))
-                    {
-                        list.Add(i.AlbumArtist);
-                    }
-                    list.AddRange(i.Artists);
-
-                    return list;
-                })
-                .Distinct(StringComparer.OrdinalIgnoreCase)
+            return libraryManager.GetAllArtists()
                 .FirstOrDefault(i =>
                 {
                     i = _dashReplaceChars.Aggregate(i, (current, c) => current.Replace(c, SlugChar));

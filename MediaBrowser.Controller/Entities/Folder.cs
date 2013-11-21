@@ -1038,16 +1038,13 @@ namespace MediaBrowser.Controller.Entities
                     }
                 }
 
-                if (recursive)
+                if (recursive && child.IsFolder)
                 {
-                    var folder = child as Folder;
+                    var folder = (Folder)child;
 
-                    if (folder != null)
+                    if (folder.AddChildrenToList(user, includeLinkedChildren, list, true, filter))
                     {
-                        if (folder.AddChildrenToList(user, includeLinkedChildren, list, true, filter))
-                        {
-                            hasLinkedChildren = true;
-                        }
+                        hasLinkedChildren = true;
                     }
                 }
             }
@@ -1150,14 +1147,11 @@ namespace MediaBrowser.Controller.Entities
                     list.Add(child);
                 }
 
-                if (recursive)
+                if (recursive && child.IsFolder)
                 {
-                    var folder = child as Folder;
+                    var folder = (Folder)child;
 
-                    if (folder != null)
-                    {
-                        folder.AddChildrenToList(list, true, filter);
-                    }
+                    folder.AddChildrenToList(list, true, filter);
                 }
             }
         }

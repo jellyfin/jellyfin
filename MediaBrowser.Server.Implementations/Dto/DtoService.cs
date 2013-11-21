@@ -277,7 +277,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 Id = GetDtoId(item),
                 Name = item.Name,
                 MediaType = item.MediaType,
-                Type = item.GetType().Name,
+                Type = item.GetClientTypeName(),
                 RunTimeTicks = item.RunTimeTicks
             };
 
@@ -932,7 +932,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.RemoteTrailers = item.RemoteTrailers;
             }
 
-            dto.Type = item.GetType().Name;
+            dto.Type = item.GetClientTypeName();
             dto.CommunityRating = item.CommunityRating;
             dto.VoteCount = item.VoteCount;
 

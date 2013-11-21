@@ -1145,6 +1145,11 @@ namespace MediaBrowser.Controller.Entities
             return changed;
         }
 
+        public virtual string GetClientTypeName()
+        {
+            return GetType().Name;
+        }
+
         /// <summary>
         /// Determines if the item is considered new based on user settings
         /// </summary>

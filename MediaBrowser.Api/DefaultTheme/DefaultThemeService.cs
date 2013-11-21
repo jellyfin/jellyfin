@@ -194,20 +194,7 @@ namespace MediaBrowser.Api.DefaultTheme
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
                 .ToList();
 
-            var artists = allItems.OfType<Audio>()
-                .SelectMany(i =>
-            {
-                var list = new List<string>();
-
-                if (!string.IsNullOrEmpty(i.AlbumArtist))
-                {
-                    list.Add(i.AlbumArtist);
-                }
-                list.AddRange(i.Artists);
-
-                return list;
-            })
-            .Distinct(StringComparer.OrdinalIgnoreCase)
+            var artists = _libraryManager.GetAllArtists(allItems)
             .Randomize()
             .Select(i =>
             {

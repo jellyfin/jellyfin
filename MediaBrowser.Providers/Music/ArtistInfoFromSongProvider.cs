@@ -27,10 +27,15 @@ namespace MediaBrowser.Providers.Music
 
         protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
         {
-            // If song metadata has changed
-            if (GetComparisonData((MusicArtist)item) != providerInfo.FileStamp)
+            var artist = (MusicArtist)item;
+
+            if (!artist.IsAccessedByName)
             {
-                return true;
+                // If song metadata has changed
+                if (GetComparisonData(artist) != providerInfo.FileStamp)
+                {
+                    return true;
+                }
             }
 
             return base.NeedsRefreshInternal(item, providerInfo);
@@ -47,7 +52,7 @@ namespace MediaBrowser.Providers.Music
             return GetComparisonData(songs);
         }
 
-        private Guid GetComparisonData(List<Audio> songs)
+        private Guid GetComparisonData(IEnumerable<Audio> songs)
         {
             var genres = songs.SelectMany(i => i.Genres)
                .Distinct(StringComparer.OrdinalIgnoreCase)
@@ -60,23 +65,26 @@ namespace MediaBrowser.Providers.Music
         {
             var artist = (MusicArtist)item;
 
-            BaseProviderInfo data;
-            if (!item.ProviderData.TryGetValue(Id, out data))
+            if (!artist.IsAccessedByName)
             {
-                data = new BaseProviderInfo();
-                item.ProviderData[Id] = data;
+                BaseProviderInfo data;
+                if (!item.ProviderData.TryGetValue(Id, out data))
+                {
+                    data = new BaseProviderInfo();
+                    item.ProviderData[Id] = data;
+                }
+
+                var songs = artist.RecursiveChildren.OfType<Audio>().ToList();
+
+                if (!item.LockedFields.Contains(MetadataFields.Genres))
+                {
+                    artist.Genres = songs.SelectMany(i => i.Genres)
+                        .Distinct(StringComparer.OrdinalIgnoreCase)
+                        .ToList();
+                }
+
+                data.FileStamp = GetComparisonData(songs);
             }
-
-            var songs = artist.RecursiveChildren.OfType<Audio>().ToList();
-
-            if (!item.LockedFields.Contains(MetadataFields.Genres))
-            {
-                artist.Genres = songs.SelectMany(i => i.Genres)
-                    .Distinct(StringComparer.OrdinalIgnoreCase)
-                    .ToList();
-            }
-
-            data.FileStamp = GetComparisonData(songs);
 
             SetLastRefreshed(item, DateTime.UtcNow);
             return TrueTaskResult;

@@ -126,15 +126,6 @@ namespace MediaBrowser.Api
             UpdateItem(request, item);
 
             await _libraryManager.UpdateItem(item, ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
-
-            var musicArtist = Artist.FindMusicArtist(item, _libraryManager);
-
-            if (musicArtist != null)
-            {
-                UpdateItem(request, musicArtist);
-
-                await _libraryManager.UpdateItem(musicArtist, ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
-            }
         }
 
         public void Post(UpdateStudio request)

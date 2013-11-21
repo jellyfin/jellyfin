@@ -115,7 +115,6 @@
     <Compile Include="Session\ISessionManager.cs" />
     <Compile Include="Drawing\ImageExtensions.cs" />
     <Compile Include="Entities\AggregateFolder.cs" />
-    <Compile Include="Entities\Audio\Artist.cs" />
     <Compile Include="Entities\Audio\Audio.cs" />
     <Compile Include="Entities\Audio\MusicAlbum.cs" />
     <Compile Include="Entities\Audio\MusicArtist.cs" />

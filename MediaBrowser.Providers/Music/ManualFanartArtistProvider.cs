@@ -39,7 +39,7 @@ namespace MediaBrowser.Providers.Music
 
         public bool Supports(BaseItem item)
         {
-            return item is MusicArtist || item is Artist;
+            return item is MusicArtist;
         }
 
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, ImageType imageType, CancellationToken cancellationToken)
