@@ -36,12 +36,13 @@ namespace MediaBrowser.Controller.LiveTv
         /// <summary>
         /// Schedules the recording asynchronous.
         /// </summary>
+        /// <param name="name">The name for the recording</param>
         /// <param name="channelId">The channel identifier.</param>
         /// <param name="startTime">The start time.</param>
         /// <param name="duration">The duration.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task ScheduleRecordingAsync(string channelId, DateTime startTime, TimeSpan duration, CancellationToken cancellationToken);
+        Task ScheduleRecordingAsync(string name,string channelId, DateTime startTime, TimeSpan duration, CancellationToken cancellationToken);
         
         /// <summary>
         /// Gets the channel image asynchronous.
