@@ -345,18 +345,9 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
         /// <returns><c>true</c> if [is DVD directory] [the specified directory name]; otherwise, <c>false</c>.</returns>
         private bool IsDvdDirectory(string directoryName)
         {
-            return directoryName.Equals("video_ts", StringComparison.OrdinalIgnoreCase);
+            return string.Equals(directoryName, "video_ts", StringComparison.OrdinalIgnoreCase);
         }
 
-        /// <summary>
-        /// Determines whether [is hd DVD directory] [the specified directory name].
-        /// </summary>
-        /// <param name="directoryName">Name of the directory.</param>
-        /// <returns><c>true</c> if [is hd DVD directory] [the specified directory name]; otherwise, <c>false</c>.</returns>
-        private bool IsHdDvdDirectory(string directoryName)
-        {
-            return directoryName.Equals("hvdvd_ts", StringComparison.OrdinalIgnoreCase);
-        }
         /// <summary>
         /// Determines whether [is blu ray directory] [the specified directory name].
         /// </summary>
@@ -364,7 +355,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
         /// <returns><c>true</c> if [is blu ray directory] [the specified directory name]; otherwise, <c>false</c>.</returns>
         private bool IsBluRayDirectory(string directoryName)
         {
-            return directoryName.Equals("bdmv", StringComparison.OrdinalIgnoreCase);
+            return string.Equals(directoryName, "bdmv", StringComparison.OrdinalIgnoreCase);
         }
     }
 }
