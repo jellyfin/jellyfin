@@ -37,7 +37,7 @@
             return ApiClient.getGameGenre(name, Dashboard.getCurrentUserId());
         }
 
-        name = getParameterByName('artist');
+        name = getParameterByName('musicartist');
 
         if (name) {
             return ApiClient.getArtist(name, Dashboard.getCurrentUserId());
@@ -134,7 +134,7 @@
         if (context == "music" && item.Type == "MusicGenre") {
             $('#musicGenreTabs', page).show();
         }
-        if (context == "music" && item.Type == "Artist") {
+        if (context == "music" && item.Type == "MusicArtist") {
             $('#artistTabs', page).show();
         }
         if (context == "games" && item.Type == "GameGenre") {
@@ -389,7 +389,7 @@
         else if (currentItem.Type == "Studio") {
             query.Studios = currentItem.Name;
         }
-        else if (currentItem.Type == "Artist") {
+        else if (currentItem.Type == "MusicArtist") {
             query.Artists = currentItem.Name;
         }
     }

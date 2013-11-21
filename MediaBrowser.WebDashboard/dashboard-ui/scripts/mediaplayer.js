@@ -747,7 +747,7 @@
 
         self.canPlay = function (item) {
 
-            if (item.Type == "MusicAlbum" || item.Type == "MusicArtist" || item.Type == "Artist" || item.Type == "MusicGenre") {
+            if (item.Type == "MusicAlbum" || item.Type == "MusicArtist" || item.Type == "MusicGenre") {
                 return true;
             }
 

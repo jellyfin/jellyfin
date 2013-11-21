@@ -125,7 +125,7 @@
             imgUrl = "css/images/items/searchhints/tv.png";
 
         }
-        else if (hint.Type == "Audio" || hint.Type == "MusicAlbum" || hint.Type == "Artist") {
+        else if (hint.Type == "Audio" || hint.Type == "MusicAlbum" || hint.Type == "MusicArtist") {
 
             imgUrl = "css/images/items/searchhints/music.png";
 

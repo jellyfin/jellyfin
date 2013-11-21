@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using MediaBrowser.Common.MediaInfo;
+﻿using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.MediaInfo;
@@ -11,6 +10,7 @@ using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 

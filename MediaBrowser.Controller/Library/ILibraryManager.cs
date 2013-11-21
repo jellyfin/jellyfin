@@ -60,7 +60,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns>Task{Artist}.</returns>
-        Artist GetArtist(string name);
+        MusicArtist GetArtist(string name);
 
         /// <summary>
         /// Gets a Studio
@@ -302,5 +302,18 @@ namespace MediaBrowser.Controller.Library
         /// <param name="updateType">Type of the update.</param>
         /// <returns>Task.</returns>
         Task SaveMetadata(BaseItem item, ItemUpdateType updateType);
+
+        /// <summary>
+        /// Gets all artists.
+        /// </summary>
+        /// <returns>IEnumerable{System.String}.</returns>
+        IEnumerable<string> GetAllArtists();
+
+        /// <summary>
+        /// Gets all artists.
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <returns>IEnumerable{System.String}.</returns>
+        IEnumerable<string> GetAllArtists(IEnumerable<BaseItem> items);
     }
 }

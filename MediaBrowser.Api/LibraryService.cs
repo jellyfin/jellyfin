@@ -367,7 +367,7 @@ namespace MediaBrowser.Api
                 BoxSetCount = boxsets.Count,
                 BookCount = books.Count,
 
-                UniqueTypes = items.Select(i => i.GetType().Name).Distinct().ToList()
+                UniqueTypes = items.Select(i => i.GetClientTypeName()).Distinct().ToList()
             };
 
             var people = items.SelectMany(i => i.People)
@@ -390,19 +390,7 @@ namespace MediaBrowser.Api
             people = request.UserId.HasValue ? FilterItems(people, request, request.UserId.Value).ToList() : people;
             counts.PersonCount = people.Count;
 
-            var artists = items.OfType<Audio>().SelectMany(i =>
-            {
-                var list = new List<string>();
-
-                if (!string.IsNullOrEmpty(i.AlbumArtist))
-                {
-                    list.Add(i.AlbumArtist);
-                }
-                list.AddRange(i.Artists);
-
-                return list;
-            })
-                .Distinct(StringComparer.OrdinalIgnoreCase)
+            var artists = _libraryManager.GetAllArtists(items)
                 .Select(i =>
                 {
                     try

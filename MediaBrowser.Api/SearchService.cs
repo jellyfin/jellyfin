@@ -144,7 +144,7 @@ namespace MediaBrowser.Api
                 IndexNumber = item.IndexNumber,
                 ParentIndexNumber = item.ParentIndexNumber,
                 ItemId = _dtoService.GetDtoId(item),
-                Type = item.GetType().Name,
+                Type = item.GetClientTypeName(),
                 MediaType = item.MediaType,
                 MatchedTerm = hintInfo.MatchedTerm,
                 DisplayMediaType = item.DisplayMediaType,
@@ -187,9 +187,7 @@ namespace MediaBrowser.Api
 
                 result.SongCount = songs.Count;
                 
-                result.Artists = songs
-                    .SelectMany(i => i.Artists)
-                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                result.Artists = _libraryManager.GetAllArtists(songs)
                     .ToArray();
 
                 result.AlbumArtist = songs.Select(i => i.AlbumArtist).FirstOrDefault(i => !string.IsNullOrEmpty(i));

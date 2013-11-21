@@ -114,7 +114,7 @@
         if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "BoxSet") {
             return "movies";
         }
-        if (item.Type == "Audio" || item.Type == "MusicAlbum" || item.Type == "MusicArtist" || item.Type == "Artist" || item.Type == "MusicVideo") {
+        if (item.Type == "Audio" || item.Type == "MusicAlbum" || item.Type == "MusicArtist" || item.Type == "MusicVideo") {
             return "music";
         }
         if (item.MediaType == "Game") {
@@ -311,7 +311,7 @@
 
             var artist = artists[i];
 
-            html.push('<a class="textlink" href="itembynamedetails.html?context=music&artist=' + ApiClient.encodeName(artist) + '">' + artist + '</a>');
+            html.push('<a class="textlink" href="itembynamedetails.html?context=music&musicartist=' + ApiClient.encodeName(artist) + '">' + artist + '</a>');
 
         }
 

@@ -153,7 +153,7 @@
                     imgUrl = "css/images/items/list/person.png";
                     isDefault = true;
                 }
-                else if (item.Type == "Artist") {
+                else if (item.Type == "MusicArtist") {
 
                     imgUrl = "css/images/items/list/audiocollection.png";
                     isDefault = true;
@@ -229,7 +229,7 @@
 
                     //html += '<p class="itemMiscInfo">' + childText + '</p>';
                 }
-                else if (item.Type == "Genre" || item.Type == "Studio" || item.Type == "Person" || item.Type == "Artist" || item.Type == "MusicGenre" || item.Type == "GameGenre") {
+                else if (item.Type == "Genre" || item.Type == "Studio" || item.Type == "Person" || item.Type == "MusicArtist" || item.Type == "MusicGenre" || item.Type == "GameGenre") {
 
                     html += LibraryBrowser.getItemCountsHtml(options, item);
                 }
@@ -426,7 +426,7 @@
 
                     if (item.AlbumArtist) {
 
-                        html += '<td><a href="itembynamedetails.html?context=music&artist=' + ApiClient.encodeName(item.AlbumArtist) + '">' + item.AlbumArtist + '</a></td>';
+                        html += '<td><a href="itembynamedetails.html?context=music&musicartist=' + ApiClient.encodeName(item.AlbumArtist) + '">' + item.AlbumArtist + '</a></td>';
 
                     } else {
                         html += '<td></td>';
@@ -470,7 +470,7 @@
 
                 var artist = artists[i];
 
-                html.push('<a href="itembynamedetails.html?context=music&artist=' + ApiClient.encodeName(artist) + '">' + artist + '</a>');
+                html.push('<a href="itembynamedetails.html?context=music&musicartist=' + ApiClient.encodeName(artist) + '">' + artist + '</a>');
 
             }
 
@@ -495,7 +495,7 @@
             html += '<ul data-role="listview" style="min-width: 150px;" data-theme="c">';
             html += '<li data-role="list-divider" data-theme="a">Play Menu</li>';
 
-            if (itemType == "Artist") {
+            if (itemType == "MusicArtist") {
                 html += '<li><a href="#" onclick="MediaPlayer.playArtist(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Play</a></li>';
             } else if (itemType != "MusicGenre") {
                 html += '<li><a href="#" onclick="MediaPlayer.playById(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Play</a></li>';
@@ -508,7 +508,7 @@
                 html += '<li><a href="#" onclick="MediaPlayer.playInstantMixFromAlbum(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Instant Mix</a></li>';
                 html += '<li><a href="#" onclick="MediaPlayer.shuffleFolder(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Shuffle</a></li>';
             }
-            else if (itemType == "Artist") {
+            else if (itemType == "MusicArtist") {
                 html += '<li><a href="#" onclick="MediaPlayer.playInstantMixFromArtist(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Instant Mix</a></li>';
                 html += '<li><a href="#" onclick="MediaPlayer.shuffleArtist(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Shuffle</a></li>';
             }
@@ -522,7 +522,7 @@
             }
 
             if (isPlaying) {
-                if (itemType == "Artist") {
+                if (itemType == "MusicArtist") {
                     html += '<li><a href="#" onclick="MediaPlayer.queueArtist(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Queue</a></li>';
                 } else if (itemType != "MusicGenre") {
                     html += '<li><a href="#" onclick="MediaPlayer.queue(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Queue</a></li>';
@@ -587,8 +587,11 @@
             if (item.Type == "Person") {
                 return "itembynamedetails.html?person=" + ApiClient.encodeName(item.Name) + "&context=" + itemByNameContext;
             }
-            if (item.Type == "Artist") {
-                return "itembynamedetails.html?artist=" + ApiClient.encodeName(item.Name) + "&context=" + (itemByNameContext || "music");
+            
+            if (item.Type == "MusicArtist") {
+                if (itemByNameContext == "music") {
+                    return "itembynamedetails.html?musicartist=" + ApiClient.encodeName(item.Name) + "&context=" + (itemByNameContext || "music");
+                }
             }
 
             return item.IsFolder ? (id ? "itemList.html?parentId=" + id : "#") : "itemdetails.html?id=" + id;
@@ -634,7 +637,7 @@
 
                 return ApiClient.getGameGenreImageUrl(item.Name, options);
             }
-            if (item.Type == "Artist") {
+            if (item.Type == "MusicArtist") {
 
                 return ApiClient.getArtistImageUrl(item.Name, options);
             }
@@ -1055,7 +1058,7 @@
                 }
             }
 
-            if (!item.IsFolder && item.Type !== "Genre" && item.Type !== "Studio" && item.Type !== "Person" && item.Type !== "Artist" && item.Type !== "MusicGenre" && item.Type !== "GameGenre") {
+            if (!item.IsFolder && item.Type !== "Genre" && item.Type !== "Studio" && item.Type !== "Person" && item.Type !== "MusicArtist" && item.Type !== "MusicGenre" && item.Type !== "GameGenre") {
 
                 var date = item.DateCreated;
                 var isPlayed = item.UserData && item.UserData.Played;
@@ -1175,13 +1178,13 @@
             var html = [];
 
             if (item.AlbumArtist && item.Type == "Audio") {
-                html.push('<a class="detailPageParentLink" href="itembynamedetails.html?context=music&artist=' + ApiClient.encodeName(item.AlbumArtist) + '">' + item.AlbumArtist + '</a>');
+                html.push('<a class="detailPageParentLink" href="itembynamedetails.html?context=music&musicartist=' + ApiClient.encodeName(item.AlbumArtist) + '">' + item.AlbumArtist + '</a>');
             }
             else if (item.AlbumArtist && item.Type == "MusicAlbum") {
-                html.push('<a class="detailPageParentLink" href="itembynamedetails.html?context=music&artist=' + ApiClient.encodeName(item.AlbumArtist) + '">' + item.AlbumArtist + '</a>');
+                html.push('<a class="detailPageParentLink" href="itembynamedetails.html?context=music&musicartist=' + ApiClient.encodeName(item.AlbumArtist) + '">' + item.AlbumArtist + '</a>');
             }
             else if (item.Artists && item.Artists.length && item.Type == "MusicVideo") {
-                html.push('<a class="detailPageParentLink" href="itembynamedetails.html?context=music&artist=' + ApiClient.encodeName(item.Artists[0]) + '">' + item.Artists[0] + '</a>');
+                html.push('<a class="detailPageParentLink" href="itembynamedetails.html?context=music&musicartist=' + ApiClient.encodeName(item.Artists[0]) + '">' + item.Artists[0] + '</a>');
             }
             else if (item.SeriesName && item.Type == "Episode") {
 
@@ -1259,7 +1262,7 @@
             }
             if (providerIds.Musicbrainz) {
 
-                if (item.Type == "MusicArtist" || item.Type == "Artist") {
+                if (item.Type == "MusicArtist") {
                     links.push('<a class="textlink" href="http://musicbrainz.org/artist/' + providerIds.Musicbrainz + '" target="_blank">MusicBrainz</a>');
                 } else {
                     links.push('<a class="textlink" href="http://musicbrainz.org/release/' + providerIds.Musicbrainz + '" target="_blank">MusicBrainz Release</a>');
@@ -1494,7 +1497,7 @@
             else if (type == "GameGenre") {
                 itemId = item.Name;
             }
-            else if (type == "Artist") {
+            else if (type == "MusicArtist") {
                 itemId = item.Name;
             }
 
@@ -1566,7 +1569,7 @@
             else if (type == "Studio") {
                 ApiClient.updateFavoriteStudioStatus(Dashboard.getCurrentUserId(), id, markAsFavorite);
             }
-            else if (type == "Artist") {
+            else if (type == "MusicArtist") {
                 ApiClient.updateFavoriteArtistStatus(Dashboard.getCurrentUserId(), id, markAsFavorite);
             }
             else if (type == "Genre") {
@@ -1653,7 +1656,7 @@
             else if (type == "Studio") {
                 ApiClient.updateStudioRating(Dashboard.getCurrentUserId(), id, likes);
             }
-            else if (type == "Artist") {
+            else if (type == "MusicArtist") {
                 ApiClient.updateArtistRating(Dashboard.getCurrentUserId(), id, likes);
             }
             else if (type == "Genre") {
@@ -1678,7 +1681,7 @@
             else if (type == "Studio") {
                 ApiClient.clearStudioRating(Dashboard.getCurrentUserId(), id);
             }
-            else if (type == "Artist") {
+            else if (type == "MusicArtist") {
                 ApiClient.clearArtistRating(Dashboard.getCurrentUserId(), id);
             }
             else if (type == "Genre") {
@@ -1740,7 +1743,7 @@
                         type: "Primary"
                     });
                 }
-                else if (item.Type == "Artist") {
+                else if (item.Type == "MusicArtist") {
                     url = ApiClient.getArtistImageUrl(item.Name, {
                         maxheight: 480,
                         tag: imageTags.Primary,
@@ -1792,7 +1795,7 @@
                         type: "Backdrop"
                     });
                 }
-                else if (item.Type == "Artist") {
+                else if (item.Type == "MusicArtist") {
                     url = ApiClient.getArtistImageUrl(item.Name, {
                         maxheight: 480,
                         tag: item.BackdropImageTags[0],
@@ -1844,7 +1847,7 @@
                         type: "Thumb"
                     });
                 }
-                else if (item.Type == "Artist") {
+                else if (item.Type == "MusicArtist") {
                     url = ApiClient.getArtistImageUrl(item.Name, {
                         maxheight: 480,
                         tag: imageTags.Thumb,
@@ -1895,7 +1898,7 @@
             var identifierName = "id";
             var identifierValue = item.Id;
 
-            if (item.Type == "Person" || item.Type == "Genre" || item.Type == "Studio" || item.Type == "Artist" || item.Type == "MusicGenre" || item.Type == "GameGenre") {
+            if (item.Type == "Person" || item.Type == "Genre" || item.Type == "Studio" || item.Type == "MusicArtist" || item.Type == "MusicGenre" || item.Type == "GameGenre") {
                 identifierName = item.Type;
                 identifierValue = ApiClient.encodeName(item.Name);
             }
@@ -2062,7 +2065,7 @@
                         html += '&nbsp;&nbsp;/&nbsp;&nbsp;';
                     }
 
-                    var param = item.Type == "Audio" || item.Type == "Artist" || item.Type == "MusicArtist" || item.Type == "MusicAlbum" ? "musicgenre" : "genre";
+                    var param = item.Type == "Audio" || item.Type == "MusicArtist" || item.Type == "MusicAlbum" ? "musicgenre" : "genre";
 
                     if (item.MediaType == "Game") {
                         param = "gamegenre";

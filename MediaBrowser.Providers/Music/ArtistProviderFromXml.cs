@@ -31,7 +31,7 @@ namespace MediaBrowser.Providers.Music
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         public override bool Supports(BaseItem item)
         {
-            return (item is Artist || item is MusicArtist) && item.LocationType == LocationType.FileSystem;
+            return (item is MusicArtist) && item.LocationType == LocationType.FileSystem;
         }
 
         /// <summary>
@@ -88,16 +88,7 @@ namespace MediaBrowser.Providers.Music
 
                 try
                 {
-                    var artist = item as Artist;
-
-                    if (artist != null)
-                    {
-                        new BaseItemXmlParser<Artist>(Logger).Fetch(artist, path, cancellationToken);
-                    }
-                    else
-                    {
-                        new BaseItemXmlParser<MusicArtist>(Logger).Fetch((MusicArtist)item, path, cancellationToken);
-                    }
+                    new BaseItemXmlParser<MusicArtist>(Logger).Fetch((MusicArtist)item, path, cancellationToken);
                 }
                 finally
                 {

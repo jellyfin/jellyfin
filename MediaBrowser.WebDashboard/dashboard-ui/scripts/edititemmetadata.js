@@ -39,7 +39,7 @@
         }
 
         if (!item.ImageTags || !item.ImageTags.Logo) {
-            if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "Series" || item.Type == "Artist" || item.Type == "MusicArtist" || item.Type == "BoxSet") {
+            if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "Series" || item.Type == "MusicArtist" || item.Type == "BoxSet") {
                 htmlName += '<img src="css/images/editor/missinglogo.png" title="Missing logo image." />';
             }
         }
@@ -252,10 +252,10 @@
                 return;
             }
 
-            name = getParameterByName('artist', url);
+            name = getParameterByName('musicartist', url);
 
             if (name) {
-                self.currentItemType = "Artist";
+                self.currentItemType = "MusicArtist";
                 self.currentItemName = name;
                 return;
             }
@@ -294,7 +294,7 @@
                 return ApiClient.getGameGenre(currentItemName, Dashboard.getCurrentUserId());
             }
 
-            if (currentItemType == "Artist") {
+            if (currentItemType == "MusicArtist" && currentItemName) {
                 return ApiClient.getArtist(currentItemName, Dashboard.getCurrentUserId());
             }
 
@@ -314,7 +314,7 @@
                 item.Type == "Genre" ||
                 item.Type == "MusicGenre" ||
                 item.Type == "GameGenre" ||
-                item.Type == "Artist") {
+                item.Type == "MusicArtist") {
                 query = item.Type + "=" + ApiClient.encodeName(item.Name);
 
             } else {
@@ -387,7 +387,7 @@
             setFieldVisibilities(page, item);
             fillItemInfo(page, item);
 
-            if (item.Type == "Person" || item.Type == "Studio" || item.Type == "MusicGenre" || item.Type == "Genre" || item.Type == "Artist") {
+            if (item.Type == "Person" || item.Type == "Studio" || item.Type == "MusicGenre" || item.Type == "Genre" || item.Type == "MusicArtist") {
                 $('#btnEditPeople', page).hide();
             } else {
                 $('#btnEditPeople', page).show();
@@ -523,7 +523,7 @@
             $('#fldImdb', page).hide();
         }
 
-        if (item.Type == "Audio" || item.Type == "Artist" || item.Type == "MusicArtist" || item.Type == "MusicAlbum") {
+        if (item.Type == "Audio" || item.Type == "MusicArtist" || item.Type == "MusicAlbum") {
             $('#fldMusicBrainz', page).show();
         } else {
             $('#fldMusicBrainz', page).hide();
@@ -995,7 +995,7 @@
 
             var updatePromise;
 
-            if (currentItem.Type == "Artist") {
+            if (currentItem.Type == "MusicArtist") {
                 updatePromise = ApiClient.updateArtist(item);
             }
             else if (currentItem.Type == "Genre") {
@@ -1129,7 +1129,7 @@
 
             if (val) {
 
-                if (currentItem.Type == "MusicArtist" || currentItem.Type == "Artist") {
+                if (currentItem.Type == "MusicArtist") {
                     $('#btnOpenMusicbrainz', page).attr('href', 'http://musicbrainz.org/artist/' + val);
                 } else {
                     $('#btnOpenMusicbrainz', page).attr('href', 'http://musicbrainz.org/release/' + val);
@@ -1213,7 +1213,7 @@
 
             var force = true;
 
-            if (currentItem.Type == "Artist") {
+            if (currentItem.Type == "MusicArtist") {
                 refreshPromise = ApiClient.refreshArtist(currentItem.Name, force);
             }
             else if (currentItem.Type == "Genre") {

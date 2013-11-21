@@ -24,7 +24,7 @@
             return ApiClient.getGenre(name, Dashboard.getCurrentUserId());
         }
 
-        name = getParameterByName('artist');
+        name = getParameterByName('musicartist');
 
         if (name) {
             return ApiClient.getArtist(name, Dashboard.getCurrentUserId());

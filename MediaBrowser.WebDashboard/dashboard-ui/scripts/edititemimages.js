@@ -18,10 +18,10 @@
     function getBaseRemoteOptions() {
         var options = {};
 
-        if (currentItem.Type == "Artist") {
-            options.artist = currentItem.Name;
+        if (currentItem.Type == "Year") {
+            options.year = currentItem.Name;
         }
-        else if (currentItem.Type == "Artist") {
+        else if (currentItem.Type == "MusicArtist") {
             options.artist = currentItem.Name;
         }
         else if (currentItem.Type == "Person") {
@@ -157,7 +157,7 @@
             if (currentItem.Type == "Episode") {
                 cssClass += " remoteBackdropImage";
             }
-            else if (currentItem.Type == "MusicAlbum" || currentItem.Type == "MusicArtist" || currentItem.Type == "Artist") {
+            else if (currentItem.Type == "MusicAlbum" || currentItem.Type == "MusicArtist") {
                 cssClass += " remoteDiscImage";
             }
             else {
@@ -300,7 +300,7 @@
 
             updateTabs(page, item);
 
-            if (item.Type == "Person" || item.Type == "Studio" || item.Type == "MusicGenre" || item.Type == "Genre" || item.Type == "Artist" || item.Type == "GameGenre") {
+            if (item.Type == "Person" || item.Type == "Studio" || item.Type == "MusicGenre" || item.Type == "Genre" || item.Type == "MusicArtist" || item.Type == "GameGenre") {
                 $('#btnEditPeople', page).hide();
             } else {
                 $('#btnEditPeople', page).show();

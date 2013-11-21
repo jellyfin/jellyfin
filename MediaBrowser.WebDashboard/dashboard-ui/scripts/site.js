@@ -896,8 +896,8 @@ var Dashboard = {
         else if (type == "person") {
             url = "itembynamedetails.html?person=" + ApiClient.encodeName(cmd.ItemName) + "&context=" + context;
         }
-        else if (type == "artist") {
-            url = "itembynamedetails.html?artist=" + ApiClient.encodeName(cmd.ItemName) + "&context=" + (context || "music");
+        else if (type == "musicartist") {
+            url = "itembynamedetails.html?musicartist=" + ApiClient.encodeName(cmd.ItemName) + "&context=" + (context || "music");
         }
 
         if (url) {

@@ -12,6 +12,11 @@ namespace MediaBrowser.Controller.Entities
         Dictionary<Guid, ItemByNameCounts> UserItemCounts { get; set; }
     }
 
+    public interface IHasDualAccess : IItemByName
+    {
+        bool IsAccessedByName { get; }
+    }
+
     public static class IItemByNameExtensions
     {
         public static ItemByNameCounts GetItemByNameCounts(this IItemByName item, User user)

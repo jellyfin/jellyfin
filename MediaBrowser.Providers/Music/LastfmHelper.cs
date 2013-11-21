@@ -39,20 +39,11 @@ namespace MediaBrowser.Providers.Music
 
             var musicArtist = artist as MusicArtist;
 
-            string imageSize; 
-
             if (musicArtist != null)
             {
+                string imageSize;
                 musicArtist.LastFmImageUrl = GetImageUrl(data, out imageSize);
                 musicArtist.LastFmImageSize = imageSize;
-            }
-
-            var artistByName = artist as Artist;
-
-            if (artistByName != null)
-            {
-                artistByName.LastFmImageUrl = GetImageUrl(data, out imageSize);
-                artistByName.LastFmImageSize = imageSize;
             }
         }
 
@@ -83,15 +74,6 @@ namespace MediaBrowser.Providers.Music
             }
 
             return null;
-        }
-
-        public static void ProcessArtistData(MusicArtist source, Artist target)
-        {
-            target.PremiereDate = source.PremiereDate;
-            target.ProductionYear = source.ProductionYear;
-            target.Tags = source.Tags.ToList();
-            target.Overview = source.Overview;
-            target.ProductionLocations = source.ProductionLocations.ToList();
         }
 
         public static void ProcessAlbumData(BaseItem item, LastfmAlbum data)

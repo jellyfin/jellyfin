@@ -84,17 +84,6 @@ namespace MediaBrowser.Providers.Music
         /// <returns>Task{System.String}.</returns>
         private async Task<string> FindId(BaseItem item, CancellationToken cancellationToken)
         {
-            if (item is Artist)
-            {
-                // Since MusicArtists are refreshed first, try to find it from one of them
-                var id = FindIdFromMusicArtistEntity(item);
-
-                if (!string.IsNullOrEmpty(id))
-                {
-                    return id;
-                }
-            }
-
             try
             {
                 // If we don't get anything, go directly to music brainz
