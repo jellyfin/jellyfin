@@ -469,6 +469,17 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
+        self.getEpisodes = function (itemId, options) {
+
+            var url = self.getUrl("Shows/" + itemId + "/Episodes", options);
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
         self.getSimilarMovies = function (itemId, options) {
 
             var url = self.getUrl("Movies/" + itemId + "/Similar", options);

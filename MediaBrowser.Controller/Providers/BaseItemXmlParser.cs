@@ -1072,7 +1072,7 @@ namespace MediaBrowser.Controller.Providers
         /// <returns>IEnumerable{PersonInfo}.</returns>
         private IEnumerable<PersonInfo> GetPersonsFromXmlNode(XmlReader reader)
         {
-            var names = new List<string>();
+            var name = string.Empty;
             var type = "Actor";  // If type is not specified assume actor
             var role = string.Empty;
             int? sortOrder = null;
@@ -1086,7 +1086,7 @@ namespace MediaBrowser.Controller.Providers
                     switch (reader.Name)
                     {
                         case "Name":
-                            names.AddRange(SplitNames(reader.ReadElementContentAsString()));
+                            name = reader.ReadElementContentAsString() ?? string.Empty;
                             break;
 
                         case "Type":
@@ -1132,7 +1132,15 @@ namespace MediaBrowser.Controller.Providers
                 }
             }
 
-            return names.Select(n => new PersonInfo { Name = n.Trim(), Role = role, Type = type, SortOrder = sortOrder });
+            var personInfo = new PersonInfo
+            {
+                Name = name.Trim(), 
+                Role = role, 
+                Type = type, 
+                SortOrder = sortOrder
+            };
+
+            return new[] { personInfo };
         }
 
         /// <summary>

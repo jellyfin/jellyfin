@@ -90,6 +90,7 @@
     <Compile Include="Notifications\NotificationsSummary.cs" />
     <Compile Include="Providers\RemoteImageResult.cs" />
     <Compile Include="Querying\ArtistsQuery.cs" />
+    <Compile Include="Querying\EpisodeQuery.cs" />
     <Compile Include="Querying\ItemCountsQuery.cs" />
     <Compile Include="Querying\ItemReviewsResult.cs" />
     <Compile Include="Querying\ItemsByNameQuery.cs" />
