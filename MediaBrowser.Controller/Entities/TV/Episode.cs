@@ -50,6 +50,33 @@ namespace MediaBrowser.Controller.Entities.TV
             get { return true; }
         }
 
+        [IgnoreDataMember]
+        public int? AiredSeasonNumber
+        {
+            get
+            {
+                return AirsBeforeSeasonNumber ?? AirsAfterSeasonNumber ?? PhysicalSeasonNumber;
+            }
+        }
+
+        [IgnoreDataMember]
+        public int? PhysicalSeasonNumber
+        {
+            get
+            {
+                var value = ParentIndexNumber;
+
+                if (value.HasValue)
+                {
+                    return value;
+                }
+
+                var season = Parent as Season;
+
+                return season != null ? season.IndexNumber : null;
+            }
+        }
+
         /// <summary>
         /// We roll up into series
         /// </summary>

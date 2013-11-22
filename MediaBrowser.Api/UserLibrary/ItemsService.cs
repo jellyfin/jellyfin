@@ -1012,7 +1012,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             if (request.AiredDuringSeason.HasValue)
             {
-                items = FilterByAiredDuringSeason(items, request.AiredDuringSeason.Value);
+                items = TvShowsService.FilterEpisodesBySeason(items.OfType<Episode>(), request.AiredDuringSeason.Value, true);
             }
 
             if (!string.IsNullOrEmpty(request.MinPremiereDate))
@@ -1030,43 +1030,6 @@ namespace MediaBrowser.Api.UserLibrary
             }
 
             return items;
-        }
-
-        private IEnumerable<BaseItem> FilterByAiredDuringSeason(IEnumerable<BaseItem> items, int seasonNumber)
-        {
-            var episodes = items.OfType<Episode>().ToList();
-
-            // We can only enforce the air date requirement if the episodes have air dates
-            var enforceAirDate = episodes.Any(i => i.PremiereDate.HasValue);
-
-            return episodes.Where(i =>
-            {
-                var episode = i;
-
-                if (episode != null)
-                {
-                    var currentSeasonNumber = episode.AirsAfterSeasonNumber ?? episode.AirsBeforeSeasonNumber ?? episode.ParentIndexNumber;
-
-                    // If this produced nothing, try and get it from the parent folder
-                    if (!currentSeasonNumber.HasValue)
-                    {
-                        var season = episode.Parent as Season;
-                        if (season != null)
-                        {
-                            currentSeasonNumber = season.IndexNumber;
-                        }
-                    }
-
-                    if (enforceAirDate && !episode.PremiereDate.HasValue)
-                    {
-                        return false;
-                    }
-
-                    return currentSeasonNumber.HasValue && currentSeasonNumber.Value == seasonNumber;
-                }
-
-                return false;
-            });
         }
 
         /// <summary>

@@ -311,6 +311,9 @@
     <Compile Include="..\MediaBrowser.Model\Querying\ArtistsQuery.cs">
       <Link>Querying\ArtistsQuery.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Querying\EpisodeQuery.cs">
+      <Link>Querying\EpisodeQuery.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Querying\ItemCountsQuery.cs">
       <Link>Querying\ItemCountsQuery.cs</Link>
     </Compile>

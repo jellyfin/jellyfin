@@ -505,16 +505,18 @@
             Fields: "ItemCounts,DateCreated,AudioInfo"
         };
 
-        if (item.Type == "Season" && item.IndexNumber) {
+        var promise;
 
-            query.ParentId = item.SeriesId;
-            query.Recursive = true;
-            query.IncludeItemTypes = "Episode";
-            query.AiredDuringSeason = item.IndexNumber;
-            query.SortBy = "AiredEpisodeOrder";
+        if (item.Type == "Season" && item.IndexNumber != null) {
+
+            promise = ApiClient.getEpisodes(item.SeriesId, {
+
+                season: item.IndexNumber,
+                userId: Dashboard.getCurrentUserId()
+            });
         }
 
-        if (item.Type == "Series" || item.Type == "Season") {
+        if (item.Type == "Series") {
             if (!user.Configuration.DisplayMissingEpisodes) {
                 query.IsMissing = false;
             }
@@ -523,7 +525,9 @@
             }
         }
 
-        ApiClient.getItems(Dashboard.getCurrentUserId(), query).done(function (result) {
+        promise = promise || ApiClient.getItems(Dashboard.getCurrentUserId(), query);
+
+        promise.done(function (result) {
 
             if (item.Type == "MusicAlbum") {
 

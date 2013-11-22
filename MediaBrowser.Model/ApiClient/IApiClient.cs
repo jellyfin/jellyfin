@@ -226,6 +226,13 @@ namespace MediaBrowser.Model.ApiClient
         Task<ItemCounts> GetItemCountsAsync(ItemCountsQuery query);
 
         /// <summary>
+        /// Gets the episodes asynchronous.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>Task{ItemsResult}.</returns>
+        Task<ItemsResult> GetEpisodesAsync(EpisodeQuery query);
+        
+        /// <summary>
         /// Queries for items
         /// </summary>
         /// <param name="query">The query.</param>
