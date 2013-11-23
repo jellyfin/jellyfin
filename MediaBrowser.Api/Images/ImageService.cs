@@ -484,7 +484,7 @@ namespace MediaBrowser.Api.Images
                     Height = Convert.ToInt32(size.Height)
                 };
             }
-            catch (IOException ex)
+            catch (Exception ex)
             {
                 Logger.ErrorException("Error getting image information for {0}", ex, path);
 

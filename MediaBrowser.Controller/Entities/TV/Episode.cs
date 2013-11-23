@@ -55,7 +55,7 @@ namespace MediaBrowser.Controller.Entities.TV
         {
             get
             {
-                return AirsBeforeSeasonNumber ?? AirsAfterSeasonNumber ?? PhysicalSeasonNumber;
+                return AirsAfterSeasonNumber ?? AirsBeforeSeasonNumber ?? PhysicalSeasonNumber;
             }
         }
 

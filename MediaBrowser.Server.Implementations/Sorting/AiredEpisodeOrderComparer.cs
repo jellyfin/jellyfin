@@ -100,7 +100,7 @@ namespace MediaBrowser.Server.Implementations.Sorting
         {
             // First sort by season number
             // Since there are three sort orders, pad with 9 digits (3 for each, figure 1000 episode buffer should be enough)
-            var val = (item.AirsBeforeSeasonNumber ?? item.AirsAfterSeasonNumber ?? 0) * 1000000000;
+            var val = (item.AirsAfterSeasonNumber ?? item.AirsBeforeSeasonNumber ?? 0) * 1000000000;
 
             // Second sort order is if it airs after the season
             if (item.AirsAfterSeasonNumber.HasValue)
