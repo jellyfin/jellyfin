@@ -389,6 +389,21 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
+        self.getLiveTvChannel = function (id) {
+
+            if (!id) {
+                throw new Error("null id");
+            }
+
+            var url = self.getUrl("/LiveTv/Channels/" + id);
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
         self.getLiveTvChannels = function (options) {
 
             var url = self.getUrl("/LiveTv/Channels", options || {});
@@ -1236,7 +1251,11 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
 
             if (itemType == "Artist") {
                 url = self.getUrl("Artists/" + self.encodeName(itemName) + "/Images");
-            } else if (itemType == "Genre") {
+            }
+            else if (itemType == "Channel") {
+                url = self.getUrl("LiveTv/Channels/" + itemId + "/Images");
+            }
+            else if (itemType == "Genre") {
                 url = self.getUrl("Genres/" + self.encodeName(itemName) + "/Images");
             } else if (itemType == "GameGenre") {
                 url = self.getUrl("GameGenres/" + self.encodeName(itemName) + "/Images");
@@ -1292,7 +1311,11 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
 
             if (itemType == "Artist") {
                 url = self.getUrl("Artists/" + self.encodeName(itemName) + "/Images/" + imageType + "/" + imageIndex + "/Index", options);
-            } else if (itemType == "Genre") {
+            }
+            else if (itemType == "Channel") {
+                url = self.getUrl("LiveTv/Channels/" + itemId + "/Images/" + imageType + "/" + imageIndex + "/Index", options);
+            }
+            else if (itemType == "Genre") {
                 url = self.getUrl("Genres/" + self.encodeName(itemName) + "/Images/" + imageType + "/" + imageIndex + "/Index", options);
             } else if (itemType == "GameGenre") {
                 url = self.getUrl("GameGenres/" + self.encodeName(itemName) + "/Images/" + imageType + "/" + imageIndex + "/Index", options);
@@ -1322,7 +1345,11 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
 
             if (itemType == "Artist") {
                 url = self.getUrl("Artists/" + self.encodeName(itemName) + "/Images");
-            } else if (itemType == "Genre") {
+            }
+            else if (itemType == "Channel") {
+                url = self.getUrl("LiveTv/Channels/" + itemId + "/Images");
+            }
+            else if (itemType == "Genre") {
                 url = self.getUrl("Genres/" + self.encodeName(itemName) + "/Images");
             } else if (itemType == "GameGenre") {
                 url = self.getUrl("GameGenres/" + self.encodeName(itemName) + "/Images");
@@ -1455,7 +1482,11 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
 
             if (itemType == "Artist") {
                 url = self.getUrl("Artists/" + self.encodeName(itemName) + "/Images");
-            } else if (itemType == "Genre") {
+            }
+            else if (itemType == "Channel") {
+                url = self.getUrl("LiveTv/Channels/" + itemId + "/Images");
+            }
+            else if (itemType == "Genre") {
                 url = self.getUrl("Genres/" + self.encodeName(itemName) + "/Images");
             } else if (itemType == "GameGenre") {
                 url = self.getUrl("GameGenres/" + self.encodeName(itemName) + "/Images");
@@ -2309,6 +2340,22 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             }
 
             var url = self.getUrl("Items/" + item.Id);
+
+            return self.ajax({
+                type: "POST",
+                url: url,
+                data: JSON.stringify(item),
+                contentType: "application/json"
+            });
+        };
+
+        self.updateLiveTvChannel = function (item) {
+
+            if (!item) {
+                throw new Error("null item");
+            }
+
+            var url = self.getUrl("LiveTv/Channels/" + item.Id);
 
             return self.ajax({
                 type: "POST",

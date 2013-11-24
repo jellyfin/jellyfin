@@ -74,7 +74,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 Number = info.ChannelNumber,
                 PrimaryImageTag = GetLogoImageTag(info),
                 Type = info.GetType().Name,
-                Id = info.Id.ToString("N")
+                Id = info.Id.ToString("N"),
+                MediaType = info.MediaType
             };
         }
 

@@ -3,6 +3,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using ServiceStack.ServiceHost;
@@ -13,6 +14,14 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Api
 {
+    [Route("/LiveTv/Channels/{ChannelId}", "POST")]
+    [Api(("Updates an item"))]
+    public class UpdateChannel : BaseItemDto, IReturnVoid
+    {
+        [ApiMember(Name = "ChannelId", Description = "The id of the channel", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public string ChannelId { get; set; }
+    }
+
     [Route("/Items/{ItemId}", "POST")]
     [Api(("Updates an item"))]
     public class UpdateItem : BaseItemDto, IReturnVoid
@@ -73,14 +82,23 @@ namespace MediaBrowser.Api
     {
         private readonly ILibraryManager _libraryManager;
         private readonly IDtoService _dtoService;
+        private readonly ILiveTvManager _liveTv;
 
-        public ItemUpdateService(ILibraryManager libraryManager, IDtoService dtoService)
+        public ItemUpdateService(ILibraryManager libraryManager, IDtoService dtoService, ILiveTvManager liveTv)
         {
             _libraryManager = libraryManager;
             _dtoService = dtoService;
+            _liveTv = liveTv;
         }
 
         public void Post(UpdateItem request)
+        {
+            var task = UpdateItem(request);
+
+            Task.WaitAll(task);
+        }
+
+        public void Post(UpdateChannel request)
         {
             var task = UpdateItem(request);
 
@@ -106,6 +124,15 @@ namespace MediaBrowser.Api
         private async Task UpdateItem(UpdatePerson request)
         {
             var item = GetPerson(request.PersonName, _libraryManager);
+
+            UpdateItem(request, item);
+
+            await _libraryManager.UpdateItem(item, ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+        }
+
+        private async Task UpdateItem(UpdateChannel request)
+        {
+            var item = _liveTv.GetChannel(request.Id);
 
             UpdateItem(request, item);
 
@@ -226,8 +253,16 @@ namespace MediaBrowser.Api
             item.Overview = request.Overview;
             item.Genres = request.Genres;
             item.Tags = request.Tags;
-            item.Studios = request.Studios.Select(x => x.Name).ToList();
-            item.People = request.People.Select(x => new PersonInfo { Name = x.Name, Role = x.Role, Type = x.Type }).ToList();
+
+            if (request.Studios != null)
+            {
+                item.Studios = request.Studios.Select(x => x.Name).ToList();
+            }
+
+            if (request.People != null)
+            {
+                item.People = request.People.Select(x => new PersonInfo { Name = x.Name, Role = x.Role, Type = x.Type }).ToList();
+            }
 
             if (request.DateCreated.HasValue)
             {

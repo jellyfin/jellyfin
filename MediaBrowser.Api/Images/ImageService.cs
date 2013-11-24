@@ -38,6 +38,18 @@ namespace MediaBrowser.Api.Images
         public string Id { get; set; }
     }
 
+    [Route("/LiveTv/Channels/{Id}/Images", "GET")]
+    [Api(Description = "Gets information about an item's images")]
+    public class GetChannelImageInfos : IReturn<List<ImageInfo>>
+    {
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Id { get; set; }
+    }
+
     [Route("/Artists/{Name}/Images", "GET")]
     [Route("/Genres/{Name}/Images", "GET")]
     [Route("/GameGenres/{Name}/Images", "GET")]
@@ -386,6 +398,15 @@ namespace MediaBrowser.Api.Images
             return ToOptimizedResult(result);
         }
 
+        public object Get(GetChannelImageInfos request)
+        {
+            var item = _liveTv.GetChannel(request.Id);
+
+            var result = GetItemImageInfos(item);
+
+            return ToOptimizedResult(result);
+        }
+        
         public object Get(GetItemByNameImageInfos request)
         {
             var result = GetItemByNameImageInfos(request);
