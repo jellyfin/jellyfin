@@ -1,7 +1,7 @@
-﻿using System.Runtime.Serialization;
-using MediaBrowser.Model.Dto;
+﻿using MediaBrowser.Model.Dto;
 using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 namespace MediaBrowser.Controller.Entities
 {

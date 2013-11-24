@@ -1,6 +1,18 @@
-﻿using MediaBrowser.Controller.LiveTv;
+﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller;
+using MediaBrowser.Controller.Drawing;
+using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
+using MediaBrowser.Model.Logging;
+using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.LiveTv
 {
@@ -9,7 +21,25 @@ namespace MediaBrowser.Server.Implementations.LiveTv
     /// </summary>
     public class LiveTvManager : ILiveTvManager
     {
+        private readonly IServerApplicationPaths _appPaths;
+        private readonly IFileSystem _fileSystem;
+        private readonly ILogger _logger;
+        private readonly IItemRepository _itemRepo;
+        private readonly IImageProcessor _imageProcessor;
+
+        private List<Channel> _channels = new List<Channel>();
+
         private readonly List<ILiveTvService> _services = new List<ILiveTvService>();
+
+        public LiveTvManager(IServerApplicationPaths appPaths, IFileSystem fileSystem, ILogger logger, IItemRepository itemRepo, IImageProcessor imageProcessor)
+        {
+            _appPaths = appPaths;
+            _fileSystem = fileSystem;
+            _logger = logger;
+            _itemRepo = itemRepo;
+            _imageProcessor = imageProcessor;
+        }
+
         /// <summary>
         /// Gets the services.
         /// </summary>
@@ -33,16 +63,147 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         /// </summary>
         /// <param name="info">The info.</param>
         /// <returns>ChannelInfoDto.</returns>
-        public ChannelInfoDto GetChannelInfoDto(ChannelInfo info)
+        public ChannelInfoDto GetChannelInfoDto(Channel info)
         {
             return new ChannelInfoDto
             {
                 Name = info.Name,
                 ServiceName = info.ServiceName,
                 ChannelType = info.ChannelType,
-                Id = info.Id,
-                Number = info.Number
+                Id = info.ChannelId,
+                Number = info.ChannelNumber,
+                PrimaryImageTag = GetLogoImageTag(info)
             };
+        }
+
+        private Guid? GetLogoImageTag(Channel info)
+        {
+            var path = info.PrimaryImagePath;
+
+            if (string.IsNullOrEmpty(path))
+            {
+                return null;
+            }
+
+            try
+            {
+                return _imageProcessor.GetImageCacheTag(info, ImageType.Primary, path);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error getting channel image info for {0}", ex, info.Name);
+            }
+
+            return null;
+        }
+
+        public IEnumerable<Channel> GetChannels(ChannelQuery query)
+        {
+            return _channels.OrderBy(i =>
+            {
+                double number = 0;
+
+                if (!string.IsNullOrEmpty(i.ChannelNumber))
+                {
+                    double.TryParse(i.ChannelNumber, out number);
+                }
+
+                return number;
+
+            }).ThenBy(i => i.Name);
+        }
+
+        public Channel GetChannel(string serviceName, string channelId)
+        {
+            return _channels.FirstOrDefault(i => string.Equals(i.ServiceName, serviceName, StringComparison.OrdinalIgnoreCase) && string.Equals(i.ChannelId, channelId, StringComparison.OrdinalIgnoreCase));
+        }
+
+        internal async Task RefreshChannels(IProgress<double> progress, CancellationToken cancellationToken)
+        {
+            // Avoid implicitly captured closure
+            var currentCancellationToken = cancellationToken;
+
+            var tasks = _services.Select(i => i.GetChannelsAsync(currentCancellationToken));
+
+            var results = await Task.WhenAll(tasks).ConfigureAwait(false);
+
+            var allChannels = results.SelectMany(i => i);
+
+            var channnelTasks = allChannels.Select(i => GetChannel(i, cancellationToken));
+
+            var channelEntities = await Task.WhenAll(channnelTasks).ConfigureAwait(false);
+
+            _channels = channelEntities.ToList();
+        }
+
+        private async Task<Channel> GetChannel(ChannelInfo channelInfo, CancellationToken cancellationToken)
+        {
+            try
+            {
+                return await GetChannelInternal(channelInfo, cancellationToken).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error getting channel information for {0}", ex, channelInfo.Name);
+
+                return null;
+            }
+        }
+
+        private async Task<Channel> GetChannelInternal(ChannelInfo channelInfo, CancellationToken cancellationToken)
+        {
+            var path = Path.Combine(_appPaths.ItemsByNamePath, "channels", _fileSystem.GetValidFilename(channelInfo.ServiceName), _fileSystem.GetValidFilename(channelInfo.Name));
+
+            var fileInfo = new DirectoryInfo(path);
+
+            var isNew = false;
+
+            if (!fileInfo.Exists)
+            {
+                Directory.CreateDirectory(path);
+                fileInfo = new DirectoryInfo(path);
+
+                if (!fileInfo.Exists)
+                {
+                    throw new IOException("Path not created: " + path);
+                }
+
+                isNew = true;
+            }
+
+            var type = typeof(Channel);
+
+            var id = (path + channelInfo.Number).GetMBId(type);
+
+            var item = _itemRepo.RetrieveItem(id) as Channel;
+
+            if (item == null)
+            {
+                item = new Channel
+                {
+                    Name = channelInfo.Name,
+                    Id = id,
+                    DateCreated = _fileSystem.GetCreationTimeUtc(fileInfo),
+                    DateModified = _fileSystem.GetLastWriteTimeUtc(fileInfo),
+                    Path = path,
+                    ChannelId = channelInfo.Id,
+                    ChannelNumber = channelInfo.Number,
+                    ServiceName = channelInfo.ServiceName
+                };
+
+                isNew = true;
+            }
+
+            // Set this now so we don't cause additional file system access during provider executions
+            item.ResetResolveArgs(fileInfo);
+
+            await item.RefreshMetadata(cancellationToken, forceSave: isNew, resetResolveArgs: false);
+
+            return item;
         }
     }
 }

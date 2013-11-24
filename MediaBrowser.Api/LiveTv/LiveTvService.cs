@@ -22,6 +22,12 @@ namespace MediaBrowser.Api.LiveTv
     {
         [ApiMember(Name = "ServiceName", Description = "Optional filter by service.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string ServiceName { get; set; }
+
+        [ApiMember(Name = "Type", Description = "Optional filter by channel type.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public ChannelType? Type { get; set; }
+
+        [ApiMember(Name = "UserId", Description = "Optional filter by channel user id.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string UserId { get; set; }
     }
 
     [Route("/LiveTv/Recordings", "GET")]
@@ -83,22 +89,16 @@ namespace MediaBrowser.Api.LiveTv
 
         public object Get(GetChannels request)
         {
-            var result = GetChannelsAsync(request).Result;
+            var result = _liveTvManager.GetChannels(new ChannelQuery
+            {
+                ChannelType = request.Type,
+                ServiceName = request.ServiceName,
+                UserId = request.UserId
+
+            })
+            .Select(_liveTvManager.GetChannelInfoDto);
 
             return ToOptimizedResult(result.ToList());
-        }
-
-        private async Task<IEnumerable<ChannelInfoDto>> GetChannelsAsync(GetChannels request)
-        {
-            var services = GetServices(request.ServiceName);
-
-            var tasks = services.Select(i => i.GetChannelsAsync(CancellationToken.None));
-
-            var channelLists = await Task.WhenAll(tasks).ConfigureAwait(false);
-
-            // Aggregate all channels from all services
-            return channelLists.SelectMany(i => i)
-                .Select(_liveTvManager.GetChannelInfoDto);
         }
 
         public object Get(GetRecordings request)

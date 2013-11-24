@@ -61,6 +61,8 @@
     <Compile Include="Dto\ItemIndex.cs" />
     <Compile Include="Entities\PackageReviewInfo.cs" />
     <Compile Include="LiveTv\ChannelGuide.cs" />
+    <Compile Include="LiveTv\ChannelInfoDto.cs" />
+    <Compile Include="LiveTv\ChannelQuery.cs" />
     <Compile Include="LiveTv\ProgramInfo.cs" />
     <Compile Include="LiveTv\RecordingQuery.cs" />
     <Compile Include="Providers\ImageProviderInfo.cs" />
@@ -76,7 +78,6 @@
     <Compile Include="IO\IIsoManager.cs" />
     <Compile Include="IO\IIsoMount.cs" />
     <Compile Include="IO\IIsoMounter.cs" />
-    <Compile Include="LiveTv\ChannelInfoDto.cs" />
     <Compile Include="LiveTv\ChannelType.cs" />
     <Compile Include="LiveTv\LiveTvServiceInfo.cs" />
     <Compile Include="LiveTv\RecordingInfo.cs" />
