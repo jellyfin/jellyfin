@@ -104,6 +104,7 @@
     <Compile Include="Library\ItemUpdateType.cs" />
     <Compile Include="Library\IUserDataManager.cs" />
     <Compile Include="Library\UserDataSaveEventArgs.cs" />
+    <Compile Include="LiveTv\Channel.cs" />
     <Compile Include="LiveTv\ChannelInfo.cs" />
     <Compile Include="LiveTv\ILiveTvManager.cs" />
     <Compile Include="LiveTv\ILiveTvService.cs" />

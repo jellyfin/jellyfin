@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using MediaBrowser.Model.LiveTv;
+﻿using MediaBrowser.Model.LiveTv;
 using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.LiveTv
@@ -22,10 +21,25 @@ namespace MediaBrowser.Controller.LiveTv
         void AddParts(IEnumerable<ILiveTvService> services);
 
         /// <summary>
-        /// Gets the channel info dto.
+        /// Gets the channels.
         /// </summary>
-        /// <param name="info">The info.</param>
+        /// <param name="query">The query.</param>
+        /// <returns>IEnumerable{Channel}.</returns>
+        IEnumerable<Channel> GetChannels(ChannelQuery query);
+
+        /// <summary>
+        /// Gets the channel information dto.
+        /// </summary>
+        /// <param name="info">The information.</param>
         /// <returns>ChannelInfoDto.</returns>
-        ChannelInfoDto GetChannelInfoDto(ChannelInfo info);
+        ChannelInfoDto GetChannelInfoDto(Channel info);
+
+        /// <summary>
+        /// Gets the channel.
+        /// </summary>
+        /// <param name="serviceName">Name of the service.</param>
+        /// <param name="channelId">The channel identifier.</param>
+        /// <returns>Channel.</returns>
+        Channel GetChannel(string serviceName, string channelId);
     }
 }

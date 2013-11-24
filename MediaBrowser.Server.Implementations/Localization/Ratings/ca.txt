@@ -1,11 +1,6 @@
 ﻿CA-G,1
-GB-U,1
 CA-PG,5
-DE-0,5
 CA-14A,7
-DE-12,7
 CA-A,8
 CA-18A,9
-SE-11,9
-DE-16,9
 CA-R,10

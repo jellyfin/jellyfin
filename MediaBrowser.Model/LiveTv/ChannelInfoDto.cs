@@ -1,4 +1,5 @@
-﻿
+﻿using System;
+
 namespace MediaBrowser.Model.LiveTv
 {
     /// <summary>
@@ -18,6 +19,12 @@ namespace MediaBrowser.Model.LiveTv
         /// <value>The identifier.</value>
         public string Id { get; set; }
 
+        /// <summary>
+        /// Gets or sets the logo image tag.
+        /// </summary>
+        /// <value>The logo image tag.</value>
+        public Guid? PrimaryImageTag { get; set; }
+        
         /// <summary>
         /// Gets or sets the number.
         /// </summary>

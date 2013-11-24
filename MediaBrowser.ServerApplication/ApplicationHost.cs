@@ -294,7 +294,7 @@ namespace MediaBrowser.ServerApplication
             DtoService = new DtoService(Logger, LibraryManager, UserManager, UserDataManager, ItemRepository, ImageProcessor);
             RegisterSingleInstance(DtoService);
 
-            LiveTvManager = new LiveTvManager();
+            LiveTvManager = new LiveTvManager(ApplicationPaths, FileSystemManager, Logger, ItemRepository, ImageProcessor);
             RegisterSingleInstance(LiveTvManager);
 
             var displayPreferencesTask = Task.Run(async () => await ConfigureDisplayPreferencesRepositories().ConfigureAwait(false));

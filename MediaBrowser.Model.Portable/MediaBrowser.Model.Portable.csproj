@@ -230,6 +230,9 @@
     <Compile Include="..\MediaBrowser.Model\LiveTv\ChannelInfoDto.cs">
       <Link>LiveTv\ChannelInfoDto.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\LiveTv\ChannelQuery.cs">
+      <Link>LiveTv\ChannelQuery.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\LiveTv\ChannelType.cs">
       <Link>LiveTv\ChannelType.cs</Link>
     </Compile>
