@@ -4,7 +4,7 @@
 
         var html = '';
 
-        html += '<a class="squareTileItem tileItem" href="#">';
+        html += '<a class="squareTileItem tileItem" href="livetvchannel.html?id=' + channel.Id + '">';
 
         var imgUrl;
         var isDefault;
@@ -13,7 +13,7 @@
 
 
             imgUrl = apiClient.getUrl("LiveTV/Channels/" + channel.Id + "/Images/Primary", {
-                
+
                 tag: channel.PrimaryImageTag,
                 height: 300
 

@@ -30,9 +30,9 @@
                                 <div class="circle1"></div>
                                 <div style="margin-top: -15px;"></div>
                             </div>
-
-                            <button id="btnRefresh" type="button" data-icon="refresh" data-mini="true" data-theme="b" data-inline="true">Refresh</button>
-
+                            <div class="fldRefresh" style="display: none; vertical-align: bottom;">
+                                <button id="btnRefresh" type="button" data-icon="refresh" data-mini="true" data-theme="b" data-inline="true">Refresh</button>
+                            </div>
                             <div id="fldRecursive" style="display: none; vertical-align: bottom;">
                                 <label for="chkRecursive">Refresh child items</label>
                                 <input type="checkbox" id="chkRecursive" name="chkRecursive" data-mini="true" checked="checked" data-inline="true" />
@@ -42,7 +42,7 @@
                                     <button id="btnDelete" type="button" data-icon="delete" data-mini="true" data-theme="a" data-inline="true">Delete</button>
                                 </div>
                             </div>
-                            <div style="margin: .5em 0 1em;">
+                            <div class="fldRefresh" style="display: none; margin: .5em 0 1em;">
                                 <div class="fieldDescription">A refresh will cause internet metadata to be re-downloaded (if enabled, and dependent on metadata settings).</div>
                             </div>
                         </div>
@@ -56,15 +56,15 @@
                                 <label for="txtName">Name:</label>
                                 <input type="text" id="txtName" name="txtName" required="required" data-mini="true" />
                             </div>
-                            <div data-role="fieldcontain">
+                            <div data-role="fieldcontain" id="fldSortName" style="display: none;">
                                 <label for="txtSortName">Sort name:</label>
                                 <input type="text" id="txtSortName" name="txtSortName" data-mini="true" />
                             </div>
-                            <div data-role="fieldcontain">
+                            <div data-role="fieldcontain" id="fldSourceType" style="display: none;">
                                 <label for="txtDisplayMediaType">Source type:</label>
                                 <input type="text" id="txtDisplayMediaType" name="txtDisplayMediaType" data-mini="true" />
                             </div>
-                            <div data-role="fieldcontain">
+                            <div data-role="fieldcontain" id="fldDateAdded" style="display: none;">
                                 <label for="txtDateAdded">Date added:</label>
                                 <input type="date" id="txtDateAdded" name="txtDateAdded" data-mini="true" />
                             </div>
@@ -116,11 +116,11 @@
                                 <label for="txtOverview">Overview:</label>
                                 <textarea name="txtOverview" id="txtOverview" data-mini="true" data-role="fieldcontain"></textarea>
                             </div>
-                            <div data-role="fieldcontain">
+                            <div data-role="fieldcontain" id="fldPremiereDate" style="display: none;">
                                 <label id="lblPremiereDate" for="txtPremiereDate">Release date:</label>
                                 <input type="date" id="txtPremiereDate" name="txtPremiereDate" data-mini="true" />
                             </div>
-                            <div data-role="fieldcontain">
+                            <div data-role="fieldcontain" id="fldYear" style="display: none;">
                                 <label id="lblYear" for="txtProductionYear">Year:</label>
                                 <input type="number" id="txtProductionYear" name="txtProductionYear" data-mini="true" />
                             </div>
@@ -300,7 +300,7 @@
                                 <ul data-role="listview" data-inset="true" data-split-icon="delete" id="listStudios"></ul>
                             </div>
                         </div>
-                        <div data-role="collapsible">
+                        <div data-role="collapsible" id="tagsCollapsible" style="display: none;">
                             <h3>Tags</h3>
                             <div data-role="editableListviewContainer">
                                 <div data-role="fieldcontain">
@@ -310,7 +310,7 @@
                                 <ul data-role="listview" data-inset="true" data-split-icon="delete" id="listTags"></ul>
                             </div>
                         </div>
-                        <div data-role="collapsible">
+                        <div data-role="collapsible" id="metadataSettingsCollapsible" style="display: none;">
                             <h3>Metadata Settings</h3>
                             <div>
                                 <p>

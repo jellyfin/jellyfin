@@ -55,6 +55,7 @@
     <Compile Include="Games\GameSystemProviderFromXml.cs" />
     <Compile Include="ImageFromMediaLocationProvider.cs" />
     <Compile Include="ImagesByNameProvider.cs" />
+    <Compile Include="LiveTv\ChannelProviderFromXml.cs" />
     <Compile Include="MediaInfo\AudioImageProvider.cs" />
     <Compile Include="MediaInfo\BaseFFProbeProvider.cs" />
     <Compile Include="MediaInfo\FFProbeAudioInfoProvider.cs" />
@@ -100,6 +101,7 @@
     <Compile Include="Savers\AlbumXmlSaver.cs" />
     <Compile Include="Savers\ArtistXmlSaver.cs" />
     <Compile Include="Savers\BoxSetXmlSaver.cs" />
+    <Compile Include="Savers\ChannelXmlSaver.cs" />
     <Compile Include="Savers\EpisodeXmlSaver.cs" />
     <Compile Include="Savers\FolderXmlSaver.cs" />
     <Compile Include="Savers\GameSystemXmlSaver.cs" />

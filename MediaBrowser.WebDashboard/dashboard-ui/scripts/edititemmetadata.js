@@ -6,6 +6,10 @@
 
         var name = item.Name;
 
+        // Channel number
+        if (item.Number) {
+            name = item.Number + " - " + name;
+        }
         if (item.IndexNumber != null && item.Type != "Season") {
             name = item.IndexNumber + " - " + name;
         }
@@ -33,7 +37,7 @@
         }
 
         if (!item.BackdropImageTags || !item.BackdropImageTags.length) {
-            if (item.Type !== "Episode" && item.Type !== "Season" && item.MediaType !== "Audio") {
+            if (item.Type !== "Episode" && item.Type !== "Season" && item.MediaType !== "Audio" && item.Type !== "Channel") {
                 htmlName += '<img src="css/images/editor/missingbackdrop.png" title="Missing backdrop image." />';
             }
         }
@@ -63,25 +67,122 @@
         return { attr: { id: item.Id, rel: rel, itemtype: item.Type }, data: htmlName, state: state };
     }
 
+    function getLiveTvServiceNode(item, folderState) {
+
+        var state = folderState;
+
+        var name = item.Name;
+
+        var cssClass = "editorNode";
+
+        var htmlName = "<div class='" + cssClass + "'>";
+
+        htmlName += name;
+
+        htmlName += "</div>";
+
+        var rel = item.IsFolder ? 'folder' : 'default';
+
+        return { attr: { id: item.Name, rel: rel, itemtype: 'livetvservice' }, data: htmlName, state: state };
+    }
+
+    function loadChildrenOfRootNode(callback) {
+
+
+        var promise1 = ApiClient.getRootFolder(Dashboard.getCurrentUserId());
+
+        var promise2 = ApiClient.getLiveTvServices();
+
+        $.when(promise1, promise2).done(function (response1, response2) {
+
+            var rootFolder = response1[0];
+            var liveTvServices = response2[0];
+
+            var nodes = [];
+
+            nodes.push(getNode(rootFolder, 'open'));
+
+            if (liveTvServices.length) {
+                nodes.push({ attr: { id: 'livetv', rel: 'folder', itemtype: 'livetv' }, data: 'Live TV', state: 'open' });
+            }
+
+            callback(nodes);
+
+        });
+    }
+
+    function loadLiveTvServices(openItems, callback) {
+
+        ApiClient.getLiveTvServices().done(function (services) {
+
+            var nodes = services.map(function (i) {
+
+                var state = openItems.indexOf(i.Id) == -1 ? 'closed' : 'open';
+
+                return getLiveTvServiceNode(i, state);
+
+            });
+
+            callback(nodes);
+
+        });
+
+    }
+
+    function loadLiveTvChannels(service, openItems, callback) {
+
+        ApiClient.getLiveTvChannels({ ServiceName: service }).done(function (services) {
+
+            var nodes = services.map(function (i) {
+
+                var state = openItems.indexOf(i.Id) == -1 ? 'closed' : 'open';
+
+                return getNode(i, state);
+
+            });
+
+            callback(nodes);
+
+        });
+
+    }
+
     function loadNode(page, node, openItems, selectedId, currentUser, callback) {
 
         if (node == '-1') {
 
-            ApiClient.getRootFolder(Dashboard.getCurrentUserId()).done(function (folder) {
+            callback({ attr: { id: 'root', rel: 'folder', itemtype: 'root' }, data: 'Root', state: 'open' });
+            return;
+        }
 
-                callback(getNode(folder, 'open'));
+        var id = node.attr("id");
 
-            });
+        if (id == 'root') {
 
+            loadChildrenOfRootNode(callback);
+            return;
+        }
+
+        if (id == 'livetv') {
+
+            loadLiveTvServices(openItems, callback);
+            return;
+        }
+
+        var itemtype = node.attr("itemtype");
+
+        if (itemtype == 'livetvservice') {
+
+            loadLiveTvChannels(id, openItems, callback);
             return;
         }
 
         var query = {
-            ParentId: node.attr("id"),
+            ParentId: id,
             SortBy: 'SortName',
             Fields: 'MetadataSettings'
         };
-        
+
         if (!currentUser.Configuration.DisplayMissingEpisodes) {
             query.IsMissing = false;
         }
@@ -171,8 +272,8 @@
 
         var page = this;
 
-        Dashboard.getCurrentUser().done(function(user) {
-            
+        Dashboard.getCurrentUser().done(function (user) {
+
             var id = MetadataEditor.currentItemId;
 
             if (id) {
@@ -260,6 +361,14 @@
                 return;
             }
 
+            name = getParameterByName('channelid', url);
+
+            if (name) {
+                self.currentItemType = "Channel";
+                self.currentItemId = name;
+                return;
+            }
+
             var id = getParameterByName('id', url);
 
             if (id) {
@@ -273,6 +382,10 @@
             var currentItemType = self.currentItemType;
             var currentItemName = self.currentItemName;
             var currentItemId = self.currentItemId;
+
+            if (currentItemType == "Channel") {
+                return ApiClient.getLiveTvChannel(currentItemId);
+            }
 
             if (currentItemType == "Person") {
                 return ApiClient.getPerson(currentItemName, Dashboard.getCurrentUserId());
@@ -387,7 +500,7 @@
             setFieldVisibilities(page, item);
             fillItemInfo(page, item);
 
-            if (item.Type == "Person" || item.Type == "Studio" || item.Type == "MusicGenre" || item.Type == "Genre" || item.Type == "MusicArtist") {
+            if (item.Type == "Person" || item.Type == "Studio" || item.Type == "MusicGenre" || item.Type == "Genre" || item.Type == "MusicArtist" || item.Type == "GameGenre" || item.Type == "Channel") {
                 $('#btnEditPeople', page).hide();
             } else {
                 $('#btnEditPeople', page).show();
@@ -497,7 +610,7 @@
             $('#fldAirTime', page).hide();
         }
 
-        if (item.MediaType == "Video") {
+        if (item.MediaType == "Video" && item.Type != "Channel") {
             $('#fld3dFormat', page).show();
         } else {
             $('#fld3dFormat', page).hide();
@@ -535,20 +648,45 @@
             $('#fldMusicBrainzReleaseGroupId', page).hide();
         }
 
-        if (item.Type == "Person" || item.Type == "Genre" || item.Type == "Studio" || item.Type == "GameGenre" || item.Type == "MusicGenre") {
+        if (item.Type == "Person" || item.Type == "Genre" || item.Type == "Studio" || item.Type == "GameGenre" || item.Type == "MusicGenre" || item.Type == "Channel") {
             $('#fldCommunityRating', page).hide();
             $('#fldCommunityVoteCount', page).hide();
-            $('#fldOfficialRating', page).hide();
-            $('#fldCustomRating', page).hide();
             $('#genresCollapsible', page).hide();
             $('#studiosCollapsible', page).hide();
+
+            if (item.Type == "Channel") {
+                $('#fldOfficialRating', page).show();
+            } else {
+                $('#fldOfficialRating', page).hide();
+            }
+            $('#fldCustomRating', page).hide();
         } else {
             $('#fldCommunityRating', page).show();
             $('#fldCommunityVoteCount', page).show();
-            $('#fldOfficialRating', page).show();
-            $('#fldCustomRating', page).show();
             $('#genresCollapsible', page).show();
             $('#studiosCollapsible', page).show();
+            $('#fldOfficialRating', page).show();
+            $('#fldCustomRating', page).show();
+        }
+
+        if (item.Type == "Channel") {
+            $('#tagsCollapsible', page).hide();
+            $('#metadataSettingsCollapsible', page).hide();
+            $('#fldPremiereDate', page).hide();
+            $('#fldSortName', page).hide();
+            $('#fldDateAdded', page).hide();
+            $('#fldSourceType', page).hide();
+            $('#fldYear', page).hide();
+            $('.fldRefresh', page).hide();
+        } else {
+            $('#tagsCollapsible', page).show();
+            $('#metadataSettingsCollapsible', page).show();
+            $('#fldPremiereDate', page).show();
+            $('#fldSortName', page).show();
+            $('#fldDateAdded', page).show();
+            $('#fldSourceType', page).show();
+            $('#fldYear', page).show();
+            $('.fldRefresh', page).show();
         }
 
         if (item.Type == "Person") {
@@ -563,7 +701,7 @@
             $('#fldPlaceOfBirth', page).hide();
         }
 
-        if (item.MediaType == "Video") {
+        if (item.MediaType == "Video" && item.Type != "Channel") {
             $('#fldOriginalAspectRatio', page).show();
         } else {
             $('#fldOriginalAspectRatio', page).hide();
@@ -638,7 +776,9 @@
 
         populateListView($('#listAirDays', page), item.AirDays);
         populateListView($('#listGenres', page), item.Genres);
-        populateListView($('#listStudios', page), item.Studios.map(function (element) { return element.Name || ''; }));
+
+        populateListView($('#listStudios', page), (item.Studios || []).map(function (element) { return element.Name || ''; }));
+
         populateListView($('#listTags', page), item.Tags);
         var enableInternetProviders = (item.EnableInternetProviders || false);
         $("#enableInternetProviders", page).attr('checked', enableInternetProviders).checkboxradio('refresh');
@@ -1013,6 +1153,9 @@
             else if (currentItem.Type == "Studio") {
                 updatePromise = ApiClient.updateStudio(item);
             }
+            else if (currentItem.Type == "Channel") {
+                updatePromise = ApiClient.updateLiveTvChannel(item);
+            }
             else {
                 updatePromise = ApiClient.updateItem(item);
             }
@@ -1255,7 +1398,7 @@
                     $('#refreshLoading', page).show();
 
                     var parentId = currentItem.ParentId;
-                    
+
                     ApiClient.deleteItem(currentItem.Id).done(function () {
 
                         var elem = $('#' + parentId)[0];

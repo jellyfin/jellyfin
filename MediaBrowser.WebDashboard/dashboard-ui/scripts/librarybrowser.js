@@ -557,6 +557,9 @@
             // Handle search hints
             var id = item.Id || item.ItemId;
 
+            if (item.Type == "Channel") {
+                return "livetvchannel.html?id=" + id;
+            }
             if (item.Type == "Series") {
                 return "itemdetails.html?id=" + id;
             }
@@ -1701,6 +1704,10 @@
         getDetailImageHtml: function (item) {
 
             var imageTags = item.ImageTags || {};
+            
+            if (item.PrimaryImageTag) {
+                imageTags.Primary = item.PrimaryImageTag;
+            }
 
             var html = '';
 
@@ -1708,7 +1715,14 @@
 
             if (imageTags.Primary) {
 
-                if (item.Type == "Person") {
+                if (item.Type == "Channel") {
+                    url = ApiClient.getUrl("LiveTV/Channels/" + item.Id + "/Images/Primary", {
+                        maxheight: 480,
+                        tag: imageTags.Primary,
+                        type: "Primary"
+                    });
+                }
+                else if (item.Type == "Person") {
                     url = ApiClient.getPersonImageUrl(item.Name, {
                         maxheight: 480,
                         tag: imageTags.Primary,

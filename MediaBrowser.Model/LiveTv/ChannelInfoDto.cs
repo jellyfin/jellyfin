@@ -54,5 +54,11 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value>The type.</value>
         public string Type { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the media.
+        /// </summary>
+        /// <value>The type of the media.</value>
+        public string MediaType { get; set; }
     }
 }

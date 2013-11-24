@@ -61,5 +61,13 @@ namespace MediaBrowser.Controller.LiveTv
 
             return number.ToString("000-") + (Name ?? string.Empty);
         }
+
+        public override string MediaType
+        {
+            get
+            {
+                return ChannelType == ChannelType.Radio ? Model.Entities.MediaType.Audio : Model.Entities.MediaType.Video;
+            }
+        }
     }
 }
