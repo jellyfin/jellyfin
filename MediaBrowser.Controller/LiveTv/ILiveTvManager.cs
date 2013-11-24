@@ -37,9 +37,8 @@ namespace MediaBrowser.Controller.LiveTv
         /// <summary>
         /// Gets the channel.
         /// </summary>
-        /// <param name="serviceName">Name of the service.</param>
-        /// <param name="channelId">The channel identifier.</param>
+        /// <param name="id">The identifier.</param>
         /// <returns>Channel.</returns>
-        Channel GetChannel(string serviceName, string channelId);
+        Channel GetChannel(string id);
     }
 }

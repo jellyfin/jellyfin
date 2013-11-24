@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Drawing;
@@ -67,6 +68,19 @@ namespace MediaBrowser.Api.Images
         public string Id { get; set; }
     }
 
+    [Route("/LiveTV/Channels/{Id}/Images/{Type}", "GET")]
+    [Route("/LiveTV/Channels/{Id}/Images/{Type}/{Index}", "GET")]
+    [Api(Description = "Gets an item image")]
+    public class GetChannelImage : ImageRequest
+    {
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Channel Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Id { get; set; }
+    }
+    
     /// <summary>
     /// Class UpdateItemImageIndex
     /// </summary>
@@ -341,10 +355,12 @@ namespace MediaBrowser.Api.Images
         private readonly IDtoService _dtoService;
         private readonly IImageProcessor _imageProcessor;
 
+        private readonly ILiveTvManager _liveTv;
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="ImageService" /> class.
         /// </summary>
-        public ImageService(IUserManager userManager, ILibraryManager libraryManager, IApplicationPaths appPaths, IProviderManager providerManager, IItemRepository itemRepo, IDtoService dtoService, IImageProcessor imageProcessor)
+        public ImageService(IUserManager userManager, ILibraryManager libraryManager, IApplicationPaths appPaths, IProviderManager providerManager, IItemRepository itemRepo, IDtoService dtoService, IImageProcessor imageProcessor, ILiveTvManager liveTv)
         {
             _userManager = userManager;
             _libraryManager = libraryManager;
@@ -353,6 +369,7 @@ namespace MediaBrowser.Api.Images
             _itemRepo = itemRepo;
             _dtoService = dtoService;
             _imageProcessor = imageProcessor;
+            _liveTv = liveTv;
         }
 
         /// <summary>
@@ -490,6 +507,13 @@ namespace MediaBrowser.Api.Images
 
                 return null;
             }
+        }
+
+        public object Get(GetChannelImage request)
+        {
+            var item = _liveTv.GetChannel(request.Id);
+
+            return GetImage(request, item);
         }
 
         /// <summary>

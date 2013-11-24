@@ -307,7 +307,7 @@ namespace MediaBrowser.Api.Playback.Progressive
                 }
             }
 
-            return new ImageService(UserManager, LibraryManager, ApplicationPaths, null, ItemRepository, DtoService, ImageProcessor)
+            return new ImageService(UserManager, LibraryManager, ApplicationPaths, null, ItemRepository, DtoService, ImageProcessor, null)
             {
                 Logger = Logger,
                 RequestContext = RequestContext,

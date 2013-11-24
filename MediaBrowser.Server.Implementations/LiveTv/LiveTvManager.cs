@@ -70,9 +70,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 Name = info.Name,
                 ServiceName = info.ServiceName,
                 ChannelType = info.ChannelType,
-                Id = info.ChannelId,
+                ChannelId = info.ChannelId,
                 Number = info.ChannelNumber,
-                PrimaryImageTag = GetLogoImageTag(info)
+                PrimaryImageTag = GetLogoImageTag(info),
+                Type = info.GetType().Name,
+                Id = info.Id.ToString("N")
             };
         }
 
@@ -113,9 +115,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }).ThenBy(i => i.Name);
         }
 
-        public Channel GetChannel(string serviceName, string channelId)
+        public Channel GetChannel(string id)
         {
-            return _channels.FirstOrDefault(i => string.Equals(i.ServiceName, serviceName, StringComparison.OrdinalIgnoreCase) && string.Equals(i.ChannelId, channelId, StringComparison.OrdinalIgnoreCase));
+            var guid = new Guid(id);
+
+            return _channels.FirstOrDefault(i => i.Id == guid);
         }
 
         internal async Task RefreshChannels(IProgress<double> progress, CancellationToken cancellationToken)
@@ -125,36 +129,44 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var tasks = _services.Select(i => i.GetChannelsAsync(currentCancellationToken));
 
+            progress.Report(10);
+
             var results = await Task.WhenAll(tasks).ConfigureAwait(false);
 
-            var allChannels = results.SelectMany(i => i);
+            var allChannels = results.SelectMany(i => i).ToList();
 
-            var channnelTasks = allChannels.Select(i => GetChannel(i, cancellationToken));
+            var list = new List<Channel>();
 
-            var channelEntities = await Task.WhenAll(channnelTasks).ConfigureAwait(false);
+            var numComplete = 0;
 
-            _channels = channelEntities.ToList();
+            foreach (var channel in allChannels)
+            {
+                try
+                {
+                    var item = await GetChannel(channel, cancellationToken).ConfigureAwait(false);
+
+                    list.Add(item);
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error getting channel information for {0}", ex, channel.Name);
+                }
+
+                numComplete++;
+                double percent = numComplete;
+                percent /= allChannels.Count;
+
+                progress.Report(90 * percent + 10);
+            }
+
+            _channels = list;
         }
 
         private async Task<Channel> GetChannel(ChannelInfo channelInfo, CancellationToken cancellationToken)
-        {
-            try
-            {
-                return await GetChannelInternal(channelInfo, cancellationToken).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error getting channel information for {0}", ex, channelInfo.Name);
-
-                return null;
-            }
-        }
-
-        private async Task<Channel> GetChannelInternal(ChannelInfo channelInfo, CancellationToken cancellationToken)
         {
             var path = Path.Combine(_appPaths.ItemsByNamePath, "channels", _fileSystem.GetValidFilename(channelInfo.ServiceName), _fileSystem.GetValidFilename(channelInfo.Name));
 

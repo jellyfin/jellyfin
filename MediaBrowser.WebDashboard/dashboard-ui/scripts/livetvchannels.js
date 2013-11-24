@@ -6,8 +6,26 @@
 
         html += '<a class="squareTileItem tileItem" href="#">';
 
-        var imgUrl = "css/images/items/list/collection.png";
-        var isDefault = true;
+        var imgUrl;
+        var isDefault;
+
+        if (channel.PrimaryImageTag) {
+
+
+            imgUrl = apiClient.getUrl("LiveTV/Channels/" + channel.Id + "/Images/Primary", {
+                
+                tag: channel.PrimaryImageTag,
+                height: 300
+
+            });
+
+
+        } else {
+
+            imgUrl = "css/images/items/list/collection.png";
+            isDefault = true;
+        }
+
         var cssClass = isDefault ? "tileImage defaultTileImage" : "tileImage";
 
         html += '<div class="' + cssClass + '" style="background-image: url(\'' + imgUrl + '\');"></div>';
