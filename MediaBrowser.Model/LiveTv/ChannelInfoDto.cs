@@ -20,6 +20,12 @@ namespace MediaBrowser.Model.LiveTv
         public string Id { get; set; }
 
         /// <summary>
+        /// Gets or sets the channel identifier.
+        /// </summary>
+        /// <value>The channel identifier.</value>
+        public string ChannelId { get; set; }
+        
+        /// <summary>
         /// Gets or sets the logo image tag.
         /// </summary>
         /// <value>The logo image tag.</value>
@@ -42,5 +48,11 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value>The type of the channel.</value>
         public ChannelType ChannelType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type.
+        /// </summary>
+        /// <value>The type.</value>
+        public string Type { get; set; }
     }
 }

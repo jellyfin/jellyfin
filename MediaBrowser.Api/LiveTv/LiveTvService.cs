@@ -30,6 +30,18 @@ namespace MediaBrowser.Api.LiveTv
         public string UserId { get; set; }
     }
 
+    [Route("/LiveTv/Channels/{Id}", "GET")]
+    [Api(Description = "Gets a live tv channel")]
+    public class GetChannel : IReturn<ChannelInfoDto>
+    {
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Channel Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Id { get; set; }
+    }
+    
     [Route("/LiveTv/Recordings", "GET")]
     [Api(Description = "Gets available live tv recordings.")]
     public class GetRecordings : IReturn<List<RecordingInfo>>
@@ -99,6 +111,13 @@ namespace MediaBrowser.Api.LiveTv
             .Select(_liveTvManager.GetChannelInfoDto);
 
             return ToOptimizedResult(result.ToList());
+        }
+
+        public object Get(GetChannel request)
+        {
+            var result = _liveTvManager.GetChannel(request.Id);
+
+            return ToOptimizedResult(_liveTvManager.GetChannelInfoDto(result));
         }
 
         public object Get(GetRecordings request)

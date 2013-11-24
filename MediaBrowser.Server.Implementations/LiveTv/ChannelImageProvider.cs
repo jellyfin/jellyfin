@@ -33,12 +33,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
         {
-            if (item.HasImage(ImageType.Primary))
-            {
-                return false;
-            }
-
-            return base.NeedsRefreshInternal(item, providerInfo);
+            return !item.HasImage(ImageType.Primary);
         }
 
         public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
