@@ -632,3 +632,26 @@
     });
 
 })(jQuery, document, window, window.FileReader, escape);
+
+function onMouseOver() {
+    
+}
+function onMouseOut() {
+    
+}
+
+function bindEvents() {
+
+    var document = 1;
+    
+    var parentDiv = document.createElement('div');
+    var childDiv = document.createElement('div');
+
+    document.body.appendChild(parentDiv);
+    parentDiv.appendChild(childDiv);
+    var myObj = '';
+    
+    var div = document.getElementById('id');
+    myObj.element = div;
+    div.obj = myObj;
+}

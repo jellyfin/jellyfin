@@ -61,11 +61,11 @@ namespace MediaBrowser.Controller.LiveTv
         Task<IEnumerable<RecordingInfo>> GetRecordingsAsync(RecordingQuery query, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Gets the channel guides.
+        /// Gets the channel guide.
         /// </summary>
-        /// <param name="channelIdList">The channel identifier list.</param>
+        /// <param name="channelId">The channel identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{IEnumerable{ChannelGuide}}.</returns>
-        Task<IEnumerable<ChannelGuide>> GetChannelGuidesAsync(IEnumerable<string> channelIdList, CancellationToken cancellationToken);
+        /// <returns>Task{IEnumerable{ProgramInfo}}.</returns>
+        Task<IEnumerable<ProgramInfo>> GetChannelGuideAsync(string channelId, CancellationToken cancellationToken);
     }
 }

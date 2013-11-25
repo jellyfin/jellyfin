@@ -29,6 +29,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         private List<Channel> _channels = new List<Channel>();
 
+        private Dictionary<Guid, List<ProgramInfo>> _guide = new Dictionary<Guid, List<ProgramInfo>>();
+
         private readonly List<ILiveTvService> _services = new List<ILiveTvService>();
 
         public LiveTvManager(IServerApplicationPaths appPaths, IFileSystem fileSystem, ILogger logger, IItemRepository itemRepo, IImageProcessor imageProcessor)
@@ -77,6 +79,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 Id = info.Id.ToString("N"),
                 MediaType = info.MediaType
             };
+        }
+
+        private ILiveTvService GetService(ChannelInfo channel)
+        {
+            return _services.FirstOrDefault(i => string.Equals(channel.ServiceName, i.Name, StringComparison.OrdinalIgnoreCase));
         }
 
         private Guid? GetLogoImageTag(Channel info)
@@ -137,16 +144,30 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             var allChannels = results.SelectMany(i => i).ToList();
 
             var list = new List<Channel>();
+            var guide = new Dictionary<Guid, List<ProgramInfo>>();
 
             var numComplete = 0;
 
-            foreach (var channel in allChannels)
+            foreach (var channelInfo in allChannels)
             {
                 try
                 {
-                    var item = await GetChannel(channel, cancellationToken).ConfigureAwait(false);
+                    var item = await GetChannel(channelInfo, cancellationToken).ConfigureAwait(false);
+
+                    var service = GetService(channelInfo);
+
+                    var programs = await service.GetChannelGuideAsync(channelInfo.Id, cancellationToken).ConfigureAwait(false);
+                    var programList = programs.ToList();
+
+                    foreach (var program in programList)
+                    {
+                        program.ExternalChannelId = channelInfo.Id;
+                        program.ChannelId = item.Id.ToString("N");
+                        program.ServiceName = service.Name;
+                    }
 
                     list.Add(item);
+                    guide[item.Id] = programList;
                 }
                 catch (OperationCanceledException)
                 {
@@ -154,7 +175,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error getting channel information for {0}", ex, channel.Name);
+                    _logger.ErrorException("Error getting channel information for {0}", ex, channelInfo.Name);
                 }
 
                 numComplete++;
@@ -164,6 +185,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 progress.Report(90 * percent + 10);
             }
 
+            _guide = guide;
             _channels = list;
         }
 
@@ -217,6 +239,25 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             await item.RefreshMetadata(cancellationToken, forceSave: isNew, resetResolveArgs: false);
 
             return item;
+        }
+
+        public IEnumerable<ProgramInfo> GetPrograms(ProgramQuery query)
+        {
+            var programs = _guide.Values.SelectMany(i => i);
+
+            if (!string.IsNullOrEmpty(query.ServiceName))
+            {
+                programs = programs.Where(i => string.Equals(i.ServiceName, query.ServiceName, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (query.ChannelIdList.Length > 0)
+            {
+                var guids = query.ChannelIdList.Select(i => new Guid(i)).ToList();
+
+                programs = programs.Where(i => guids.Contains(new Guid(i.ChannelId)));
+            } 
+            
+            return programs;
         }
     }
 }
