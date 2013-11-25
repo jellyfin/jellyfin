@@ -47,7 +47,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
                 new SystemEventTrigger{ SystemEvent = SystemEvent.WakeFromSleep},
 
-                new IntervalTrigger{ Interval = TimeSpan.FromHours(4)}
+                new IntervalTrigger{ Interval = TimeSpan.FromHours(2)}
             };
         }
     }

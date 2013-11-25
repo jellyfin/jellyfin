@@ -1,11 +1,10 @@
-﻿using System;
-using MediaBrowser.Controller.LiveTv;
+﻿using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.LiveTv;
+using MediaBrowser.Model.Querying;
 using ServiceStack.ServiceHost;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.LiveTv
 {
@@ -19,7 +18,7 @@ namespace MediaBrowser.Api.LiveTv
 
     [Route("/LiveTv/Channels", "GET")]
     [Api(Description = "Gets available live tv channels.")]
-    public class GetChannels : IReturn<List<ChannelInfoDto>>
+    public class GetChannels : IReturn<QueryResult<ChannelInfoDto>>
     {
         [ApiMember(Name = "ServiceName", Description = "Optional filter by service.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string ServiceName { get; set; }
@@ -43,22 +42,14 @@ namespace MediaBrowser.Api.LiveTv
         public string Id { get; set; }
     }
 
-    [Route("/LiveTv/Recordings", "GET")]
-    [Api(Description = "Gets available live tv recordings.")]
-    public class GetRecordings : IReturn<List<RecordingInfo>>
-    {
-        [ApiMember(Name = "ServiceName", Description = "Optional filter by service.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string ServiceName { get; set; }
-    }
-
     [Route("/LiveTv/Programs", "GET")]
     [Api(Description = "Gets available live tv epgs..")]
-    public class GetPrograms : IReturn<List<ProgramInfo>>
+    public class GetPrograms : IReturn<QueryResult<ProgramInfoDto>>
     {
-        [ApiMember(Name = "ServiceName", Description = "Live tv service name", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        [ApiMember(Name = "ServiceName", Description = "Live tv service name", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string ServiceName { get; set; }
 
-        [ApiMember(Name = "ChannelIds", Description = "The channels to return guide information for.", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        [ApiMember(Name = "ChannelIds", Description = "The channels to return guide information for.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string ChannelIds { get; set; }
     }
 
@@ -108,10 +99,9 @@ namespace MediaBrowser.Api.LiveTv
                 ServiceName = request.ServiceName,
                 UserId = request.UserId
 
-            })
-            .Select(_liveTvManager.GetChannelInfoDto);
+            });
 
-            return ToOptimizedResult(result.ToList());
+            return ToOptimizedResult(result);
         }
 
         public object Get(GetChannel request)
@@ -119,29 +109,6 @@ namespace MediaBrowser.Api.LiveTv
             var result = _liveTvManager.GetChannel(request.Id);
 
             return ToOptimizedResult(_liveTvManager.GetChannelInfoDto(result));
-        }
-
-        public object Get(GetRecordings request)
-        {
-            var result = GetRecordingsAsync(request).Result;
-
-            return ToOptimizedResult(result.ToList());
-        }
-
-        private async Task<IEnumerable<RecordingInfo>> GetRecordingsAsync(GetRecordings request)
-        {
-            var services = GetServices(request.ServiceName);
-
-            var query = new RecordingQuery
-            {
-
-            };
-
-            var tasks = services.Select(i => i.GetRecordingsAsync(query, CancellationToken.None));
-
-            var recordings = await Task.WhenAll(tasks).ConfigureAwait(false);
-
-            return recordings.SelectMany(i => i);
         }
 
         public object Get(GetPrograms request)
@@ -152,7 +119,7 @@ namespace MediaBrowser.Api.LiveTv
                 ChannelIdList = (request.ChannelIds ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToArray()
             });
 
-            return ToOptimizedResult(result.ToList());
+            return ToOptimizedResult(result);
         }
     }
 }

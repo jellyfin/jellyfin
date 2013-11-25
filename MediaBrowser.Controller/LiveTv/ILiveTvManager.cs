@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Model.LiveTv;
+using MediaBrowser.Model.Querying;
 using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.LiveTv
@@ -25,7 +26,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <param name="query">The query.</param>
         /// <returns>IEnumerable{Channel}.</returns>
-        IEnumerable<Channel> GetChannels(ChannelQuery query);
+        QueryResult<ChannelInfoDto> GetChannels(ChannelQuery query);
 
         /// <summary>
         /// Gets the channel information dto.
@@ -46,6 +47,6 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <param name="query">The query.</param>
         /// <returns>IEnumerable{ProgramInfo}.</returns>
-        IEnumerable<ProgramInfo> GetPrograms(ProgramQuery query);
+        QueryResult<ProgramInfoDto> GetPrograms(ProgramQuery query);
     }
 }

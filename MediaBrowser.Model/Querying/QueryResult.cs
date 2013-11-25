@@ -1,17 +1,13 @@
-﻿using MediaBrowser.Model.Entities;
-
+﻿
 namespace MediaBrowser.Model.Querying
 {
-    /// <summary>
-    /// Class ItemReviewsResult
-    /// </summary>
-    public class ItemReviewsResult
+    public class QueryResult<T>
     {
         /// <summary>
-        /// Gets or sets the item reviews.
+        /// Gets or sets the items.
         /// </summary>
-        /// <value>The item reviews.</value>
-        public ItemReview[] ItemReviews { get; set; }
+        /// <value>The items.</value>
+        public T[] Items { get; set; }
 
         /// <summary>
         /// The total number of records available
@@ -22,9 +18,9 @@ namespace MediaBrowser.Model.Querying
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemsResult" /> class.
         /// </summary>
-        public ItemReviewsResult()
+        public QueryResult()
         {
-            ItemReviews = new ItemReview[] { };
+            Items = new T[] { };
         }
-   }
+    }
 }

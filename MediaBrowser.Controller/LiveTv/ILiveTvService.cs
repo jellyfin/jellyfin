@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Model.LiveTv;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -34,6 +33,14 @@ namespace MediaBrowser.Controller.LiveTv
         Task CancelRecordingAsync(string recordingId, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Deletes the recording asynchronous.
+        /// </summary>
+        /// <param name="recordingId">The recording identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task DeleteRecordingAsync(string recordingId, CancellationToken cancellationToken);
+        
+        /// <summary>
         /// Schedules the recording asynchronous.
         /// </summary>
         /// <param name="name">The name for the recording</param>
@@ -42,8 +49,8 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="duration">The duration.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task ScheduleRecordingAsync(string name,string channelId, DateTime startTime, TimeSpan duration, CancellationToken cancellationToken);
-        
+        Task ScheduleRecordingAsync(string name, string channelId, DateTime startTime, TimeSpan duration, CancellationToken cancellationToken);
+
         /// <summary>
         /// Gets the channel image asynchronous.
         /// </summary>
@@ -55,17 +62,16 @@ namespace MediaBrowser.Controller.LiveTv
         /// <summary>
         /// Gets the recordings asynchronous.
         /// </summary>
-        /// <param name="query">The query.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{IEnumerable{RecordingInfo}}.</returns>
-        Task<IEnumerable<RecordingInfo>> GetRecordingsAsync(RecordingQuery query, CancellationToken cancellationToken);
+        Task<IEnumerable<RecordingInfo>> GetRecordingsAsync(CancellationToken cancellationToken);
 
         /// <summary>
-        /// Gets the channel guide.
+        /// Gets the programs asynchronous.
         /// </summary>
         /// <param name="channelId">The channel identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{IEnumerable{ProgramInfo}}.</returns>
-        Task<IEnumerable<ProgramInfo>> GetChannelGuideAsync(string channelId, CancellationToken cancellationToken);
+        Task<IEnumerable<ProgramInfo>> GetProgramsAsync(string channelId, CancellationToken cancellationToken);
     }
 }

@@ -223,14 +223,14 @@
     <Compile Include="..\MediaBrowser.Model\LiveTv\LiveTvServiceInfo.cs">
       <Link>LiveTv\LiveTvServiceInfo.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\LiveTv\ProgramInfo.cs">
-      <Link>LiveTv\ProgramInfo.cs</Link>
+    <Compile Include="..\MediaBrowser.Model\LiveTv\ProgramInfoDto.cs">
+      <Link>LiveTv\ProgramInfoDto.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\LiveTv\ProgramQuery.cs">
       <Link>LiveTv\ProgramQuery.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\LiveTv\RecordingInfo.cs">
-      <Link>LiveTv\RecordingInfo.cs</Link>
+    <Compile Include="..\MediaBrowser.Model\LiveTv\RecordingInfoDto.cs">
+      <Link>LiveTv\RecordingInfoDto.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\LiveTv\RecordingQuery.cs">
       <Link>LiveTv\RecordingQuery.cs</Link>
@@ -316,9 +316,6 @@
     <Compile Include="..\MediaBrowser.Model\Querying\ItemQuery.cs">
       <Link>Querying\ItemQuery.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\Querying\ItemReviewsResult.cs">
-      <Link>Querying\ItemReviewsResult.cs</Link>
-    </Compile>
     <Compile Include="..\MediaBrowser.Model\Querying\ItemsByNameQuery.cs">
       <Link>Querying\ItemsByNameQuery.cs</Link>
     </Compile>
@@ -333,6 +330,9 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Querying\PersonsQuery.cs">
       <Link>Querying\PersonsQuery.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Querying\QueryResult.cs">
+      <Link>Querying\QueryResult.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Querying\SessionQuery.cs">
       <Link>Querying\SessionQuery.cs</Link>

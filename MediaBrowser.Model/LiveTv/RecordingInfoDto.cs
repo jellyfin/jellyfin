@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace MediaBrowser.Model.LiveTv
 {
-    public class RecordingInfo
+    public class RecordingInfoDto
     {
         /// <summary>
         /// Id of the recording.
