@@ -18,12 +18,6 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value>The identifier.</value>
         public string Id { get; set; }
-
-        /// <summary>
-        /// Gets or sets the channel identifier.
-        /// </summary>
-        /// <value>The channel identifier.</value>
-        public string ChannelId { get; set; }
         
         /// <summary>
         /// Gets or sets the logo image tag.

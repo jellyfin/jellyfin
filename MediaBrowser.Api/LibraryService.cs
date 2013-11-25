@@ -37,7 +37,7 @@ namespace MediaBrowser.Api
     /// </summary>
     [Route("/Items/{Id}/CriticReviews", "GET")]
     [Api(Description = "Gets critic reviews for an item")]
-    public class GetCriticReviews : IReturn<ItemReviewsResult>
+    public class GetCriticReviews : IReturn<QueryResult<ItemReview>>
     {
         /// <summary>
         /// Gets or sets the id.
@@ -509,16 +509,16 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>Task{ItemReviewsResult}.</returns>
-        private ItemReviewsResult GetCriticReviews(GetCriticReviews request)
+        private QueryResult<ItemReview> GetCriticReviews(GetCriticReviews request)
         {
             var reviews = _itemRepo.GetCriticReviews(new Guid(request.Id));
 
             var reviewsArray = reviews.ToArray();
 
-            var result = new ItemReviewsResult
-                {
-                    TotalRecordCount = reviewsArray.Length
-                };
+            var result = new QueryResult<ItemReview>
+            {
+                TotalRecordCount = reviewsArray.Length
+            };
 
             if (request.StartIndex.HasValue)
             {
@@ -529,7 +529,7 @@ namespace MediaBrowser.Api
                 reviewsArray = reviewsArray.Take(request.Limit.Value).ToArray();
             }
 
-            result.ItemReviews = reviewsArray;
+            result.Items = reviewsArray;
 
             return result;
         }

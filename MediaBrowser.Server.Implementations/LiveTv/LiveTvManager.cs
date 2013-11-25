@@ -13,6 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Server.Implementations.LiveTv
 {
@@ -27,11 +28,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         private readonly IItemRepository _itemRepo;
         private readonly IImageProcessor _imageProcessor;
 
-        private List<Channel> _channels = new List<Channel>();
-
-        private Dictionary<Guid, List<ProgramInfo>> _guide = new Dictionary<Guid, List<ProgramInfo>>();
-
         private readonly List<ILiveTvService> _services = new List<ILiveTvService>();
+
+        private List<Channel> _channels = new List<Channel>();
+        private List<ProgramInfoDto> _programs = new List<ProgramInfoDto>();
 
         public LiveTvManager(IServerApplicationPaths appPaths, IFileSystem fileSystem, ILogger logger, IItemRepository itemRepo, IImageProcessor imageProcessor)
         {
@@ -72,7 +72,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 Name = info.Name,
                 ServiceName = info.ServiceName,
                 ChannelType = info.ChannelType,
-                ChannelId = info.ChannelId,
                 Number = info.ChannelNumber,
                 PrimaryImageTag = GetLogoImageTag(info),
                 Type = info.GetType().Name,
@@ -107,9 +106,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return null;
         }
 
-        public IEnumerable<Channel> GetChannels(ChannelQuery query)
+        public QueryResult<ChannelInfoDto> GetChannels(ChannelQuery query)
         {
-            return _channels.OrderBy(i =>
+            var channels = _channels.OrderBy(i =>
             {
                 double number = 0;
 
@@ -120,7 +119,15 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
                 return number;
 
-            }).ThenBy(i => i.Name);
+            }).ThenBy(i => i.Name)
+            .Select(GetChannelInfoDto)
+            .ToArray();
+
+            return new QueryResult<ChannelInfoDto>
+            {
+                Items = channels,
+                TotalRecordCount = channels.Length
+            };
         }
 
         public Channel GetChannel(string id)
@@ -135,16 +142,16 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             // Avoid implicitly captured closure
             var currentCancellationToken = cancellationToken;
 
-            var tasks = _services.Select(i => i.GetChannelsAsync(currentCancellationToken));
+            var channelTasks = _services.Select(i => i.GetChannelsAsync(currentCancellationToken));
 
             progress.Report(10);
 
-            var results = await Task.WhenAll(tasks).ConfigureAwait(false);
+            var results = await Task.WhenAll(channelTasks).ConfigureAwait(false);
 
             var allChannels = results.SelectMany(i => i).ToList();
 
             var list = new List<Channel>();
-            var guide = new Dictionary<Guid, List<ProgramInfo>>();
+            var programs = new List<ProgramInfoDto>();
 
             var numComplete = 0;
 
@@ -156,18 +163,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
                     var service = GetService(channelInfo);
 
-                    var programs = await service.GetChannelGuideAsync(channelInfo.Id, cancellationToken).ConfigureAwait(false);
-                    var programList = programs.ToList();
+                    var channelPrograms = await service.GetProgramsAsync(channelInfo.Id, cancellationToken).ConfigureAwait(false);
 
-                    foreach (var program in programList)
-                    {
-                        program.ExternalChannelId = channelInfo.Id;
-                        program.ChannelId = item.Id.ToString("N");
-                        program.ServiceName = service.Name;
-                    }
+                    programs.AddRange(channelPrograms.Select(program => GetProgramInfoDto(program, item)));
 
                     list.Add(item);
-                    guide[item.Id] = programList;
                 }
                 catch (OperationCanceledException)
                 {
@@ -185,8 +185,27 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 progress.Report(90 * percent + 10);
             }
 
-            _guide = guide;
+            _programs = programs;
             _channels = list;
+        }
+
+        private ProgramInfoDto GetProgramInfoDto(ProgramInfo program, Channel channel)
+        {
+            var id = channel.ServiceName + channel.ChannelId + program.Id;
+            id = id.GetMD5().ToString("N");
+
+            return new ProgramInfoDto
+            {
+                ChannelId = channel.Id.ToString("N"),
+                Description = program.Description,
+                EndDate = program.EndDate,
+                Genres = program.Genres,
+                ExternalId = program.Id,
+                Id = id,
+                Name = program.Name,
+                ServiceName = channel.ServiceName,
+                StartDate = program.StartDate
+            };
         }
 
         private async Task<Channel> GetChannel(ChannelInfo channelInfo, CancellationToken cancellationToken)
@@ -241,9 +260,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return item;
         }
 
-        public IEnumerable<ProgramInfo> GetPrograms(ProgramQuery query)
+        public QueryResult<ProgramInfoDto> GetPrograms(ProgramQuery query)
         {
-            var programs = _guide.Values.SelectMany(i => i);
+            IEnumerable<ProgramInfoDto> programs = _programs
+                .OrderBy(i => i.StartDate)
+                .ThenBy(i => i.EndDate);
 
             if (!string.IsNullOrEmpty(query.ServiceName))
             {
@@ -255,9 +276,15 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 var guids = query.ChannelIdList.Select(i => new Guid(i)).ToList();
 
                 programs = programs.Where(i => guids.Contains(new Guid(i.ChannelId)));
-            } 
-            
-            return programs;
+            }
+
+            var returnArray = programs.ToArray();
+
+            return new QueryResult<ProgramInfoDto>
+            {
+                Items = returnArray,
+                TotalRecordCount = returnArray.Length
+            };
         }
     }
 }

@@ -415,6 +415,17 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
+        self.getLiveTvPrograms = function (options) {
+
+            var url = self.getUrl("/LiveTv/Programs", options || {});
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
         self.getLiveTvRecordings = function (options) {
 
             var url = self.getUrl("/LiveTv/Recordings", options || {});

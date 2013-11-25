@@ -1,6 +1,85 @@
 ﻿(function ($, document, apiClient) {
 
-    var currentItem
+    var currentItem;
+    
+    function getDisplayTime(date) {
+        
+        try {
+
+            date = parseISO8601Date(date, { toLocal: true });
+
+        } catch (err) {
+            return date;
+        }
+
+        date = date.toLocaleTimeString();
+
+        date = date.replace('0:00', '0');
+
+        return date;
+    }
+
+    function renderPrograms(page, result) {
+
+        var html = '';
+
+        var cssClass = "detailTable";
+
+        html += '<div class="detailTableContainer"><table class="' + cssClass + '">';
+
+        html += '<tr>';
+
+        html += '<th>Date</th>';
+        html += '<th>Start</th>';
+        html += '<th>End</th>';
+        html += '<th>Name</th>';
+        html += '<th>Genre</th>';
+
+        html += '</tr>';
+
+        for (var i = 0, length = result.Items.length; i < length; i++) {
+
+            var program = result.Items[i];
+
+            html += '<tr>';
+
+            var startDate = program.StartDate;
+
+            try {
+
+                startDate = parseISO8601Date(startDate, { toLocal: true });
+
+            } catch (err) {
+
+            }
+
+            html += '<td>' + startDate.toLocaleDateString() + '</td>';
+            
+            html += '<td>' + getDisplayTime(program.StartDate) + '</td>';
+
+            html += '<td>' + getDisplayTime(program.EndDate) + '</td>';
+
+            html += '<td>' + (program.Name || '') + '</td>';
+            html += '<td>' + program.Genres.join(' / ') + '</td>';
+
+            html += '</tr>';
+        }
+
+        html += '</table></div>';
+
+        $('#programList', page).html(html);
+    }
+
+    function loadPrograms(page) {
+
+        ApiClient.getLiveTvPrograms({
+            ChannelIds: currentItem.Id
+
+        }).done(function (result) {
+
+            renderPrograms(page, result);
+        });
+    }
 
     function reload(page) {
 
@@ -42,6 +121,8 @@
                 }
 
             });
+
+            loadPrograms(page);
 
             Dashboard.hideLoadingMsg();
         });

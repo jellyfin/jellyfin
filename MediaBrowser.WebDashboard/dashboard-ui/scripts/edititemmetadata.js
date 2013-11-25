@@ -131,9 +131,9 @@
 
     function loadLiveTvChannels(service, openItems, callback) {
 
-        ApiClient.getLiveTvChannels({ ServiceName: service }).done(function (services) {
+        ApiClient.getLiveTvChannels({ ServiceName: service }).done(function (result) {
 
-            var nodes = services.map(function (i) {
+            var nodes = result.Items.map(function (i) {
 
                 var state = openItems.indexOf(i.Id) == -1 ? 'closed' : 'open';
 

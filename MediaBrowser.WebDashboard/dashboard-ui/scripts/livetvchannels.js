@@ -76,7 +76,7 @@
 
         apiClient.getLiveTvChannels().done(function (result) {
 
-            renderChannels(page, result);
+            renderChannels(page, result.Items);
         });
     });
 

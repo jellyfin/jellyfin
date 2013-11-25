@@ -62,7 +62,7 @@
     <Compile Include="Entities\PackageReviewInfo.cs" />
     <Compile Include="LiveTv\ChannelInfoDto.cs" />
     <Compile Include="LiveTv\ChannelQuery.cs" />
-    <Compile Include="LiveTv\ProgramInfo.cs" />
+    <Compile Include="LiveTv\ProgramInfoDto.cs" />
     <Compile Include="LiveTv\ProgramQuery.cs" />
     <Compile Include="LiveTv\RecordingQuery.cs" />
     <Compile Include="Providers\ImageProviderInfo.cs" />
@@ -80,7 +80,7 @@
     <Compile Include="IO\IIsoMounter.cs" />
     <Compile Include="LiveTv\ChannelType.cs" />
     <Compile Include="LiveTv\LiveTvServiceInfo.cs" />
-    <Compile Include="LiveTv\RecordingInfo.cs" />
+    <Compile Include="LiveTv\RecordingInfoDto.cs" />
     <Compile Include="Net\WebSocketMessage.cs" />
     <Compile Include="Net\WebSocketMessageType.cs" />
     <Compile Include="Net\WebSocketState.cs" />
@@ -93,10 +93,10 @@
     <Compile Include="Querying\ArtistsQuery.cs" />
     <Compile Include="Querying\EpisodeQuery.cs" />
     <Compile Include="Querying\ItemCountsQuery.cs" />
-    <Compile Include="Querying\ItemReviewsResult.cs" />
     <Compile Include="Querying\ItemsByNameQuery.cs" />
     <Compile Include="Entities\BaseItemInfo.cs" />
     <Compile Include="Querying\NextUpQuery.cs" />
+    <Compile Include="Querying\QueryResult.cs" />
     <Compile Include="Querying\SessionQuery.cs" />
     <Compile Include="Querying\SimilarItemsQuery.cs" />
     <Compile Include="Querying\UserQuery.cs" />
