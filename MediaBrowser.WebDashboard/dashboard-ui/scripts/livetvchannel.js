@@ -29,6 +29,7 @@
 
         html += '<tr>';
 
+        html += '<th>&nbsp;</th>';
         html += '<th>Date</th>';
         html += '<th>Start</th>';
         html += '<th>End</th>';
@@ -42,6 +43,16 @@
             var program = result.Items[i];
 
             html += '<tr>';
+
+            html += '<td>';
+            
+            if (program.recordingId) {
+                html += '<button type="button" data-icon="delete" data-inline="true" data-mini="true" data-iconpos="notext">Cancel</button>';
+            } else {
+                html += '<button type="button" data-icon="star" data-inline="true" data-mini="true" data-theme="b" data-iconpos="notext">Record</button>';
+            }
+
+            html += '</td>';
 
             var startDate = program.StartDate;
 
@@ -67,7 +78,7 @@
 
         html += '</table></div>';
 
-        $('#programList', page).html(html);
+        $('#programList', page).html(html).trigger('create');
     }
 
     function loadPrograms(page) {

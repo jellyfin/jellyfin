@@ -21,6 +21,12 @@ namespace MediaBrowser.Controller.LiveTv
         public string ChannelName { get; set; }
 
         /// <summary>
+        /// Gets or sets the program identifier.
+        /// </summary>
+        /// <value>The program identifier.</value>
+        public string ProgramId { get; set; }
+        
+        /// <summary>
         /// Name of the recording.
         /// </summary>
         public string Name { get; set; }
@@ -46,14 +52,10 @@ namespace MediaBrowser.Controller.LiveTv
         public string Status { get; set; } //TODO: Enum for status?? Difference NextPvr,Argus,...
 
         /// <summary>
-        /// Quality of the Recording.
+        /// Gets or sets a value indicating whether this instance is recurring.
         /// </summary>
-        public string Quality { get; set; } // TODO: Enum for quality?? Difference NextPvr,Argus,...
-
-        /// <summary>
-        /// Recurring recording?
-        /// </summary>
-        public bool Recurring { get; set; }
+        /// <value><c>true</c> if this instance is recurring; otherwise, <c>false</c>.</value>
+        public bool IsRecurring { get; set; }
 
         /// <summary>
         /// Parent recurring.
