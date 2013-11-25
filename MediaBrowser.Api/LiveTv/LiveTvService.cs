@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.LiveTv;
+﻿using System;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.LiveTv;
 using ServiceStack.ServiceHost;
 using System.Collections.Generic;
@@ -41,7 +42,7 @@ namespace MediaBrowser.Api.LiveTv
         [ApiMember(Name = "Id", Description = "Channel Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Id { get; set; }
     }
-    
+
     [Route("/LiveTv/Recordings", "GET")]
     [Api(Description = "Gets available live tv recordings.")]
     public class GetRecordings : IReturn<List<RecordingInfo>>
@@ -50,9 +51,9 @@ namespace MediaBrowser.Api.LiveTv
         public string ServiceName { get; set; }
     }
 
-    [Route("/LiveTv/Guide", "GET")]
+    [Route("/LiveTv/Programs", "GET")]
     [Api(Description = "Gets available live tv epgs..")]
-    public class GetGuide : IReturn<List<ChannelGuide>>
+    public class GetPrograms : IReturn<List<ProgramInfo>>
     {
         [ApiMember(Name = "ServiceName", Description = "Live tv service name", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string ServiceName { get; set; }
@@ -143,21 +144,15 @@ namespace MediaBrowser.Api.LiveTv
             return recordings.SelectMany(i => i);
         }
 
-        public object Get(GetGuide request)
+        public object Get(GetPrograms request)
         {
-            var result = GetGuideAsync(request).Result;
+            var result = _liveTvManager.GetPrograms(new ProgramQuery
+            {
+                ServiceName = request.ServiceName,
+                ChannelIdList = (request.ChannelIds ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToArray()
+            });
 
-            return ToOptimizedResult(result);
-        }
-
-        private async Task<IEnumerable<ChannelGuide>> GetGuideAsync(GetGuide request)
-        {
-            var service = GetServices(request.ServiceName)
-                .First();
-
-            var channels = request.ChannelIds.Split(',');
-
-            return await service.GetChannelGuidesAsync(channels, CancellationToken.None).ConfigureAwait(false);
+            return ToOptimizedResult(result.ToList());
         }
     }
 }

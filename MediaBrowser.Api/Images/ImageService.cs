@@ -80,8 +80,8 @@ namespace MediaBrowser.Api.Images
         public string Id { get; set; }
     }
 
-    [Route("/LiveTV/Channels/{Id}/Images/{Type}", "GET")]
-    [Route("/LiveTV/Channels/{Id}/Images/{Type}/{Index}", "GET")]
+    [Route("/LiveTv/Channels/{Id}/Images/{Type}", "GET")]
+    [Route("/LiveTv/Channels/{Id}/Images/{Type}/{Index}", "GET")]
     [Api(Description = "Gets an item image")]
     public class GetChannelImage : ImageRequest
     {

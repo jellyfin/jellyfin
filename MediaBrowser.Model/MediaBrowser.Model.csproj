@@ -60,10 +60,10 @@
     <Compile Include="Dto\ItemCounts.cs" />
     <Compile Include="Dto\ItemIndex.cs" />
     <Compile Include="Entities\PackageReviewInfo.cs" />
-    <Compile Include="LiveTv\ChannelGuide.cs" />
     <Compile Include="LiveTv\ChannelInfoDto.cs" />
     <Compile Include="LiveTv\ChannelQuery.cs" />
     <Compile Include="LiveTv\ProgramInfo.cs" />
+    <Compile Include="LiveTv\ProgramQuery.cs" />
     <Compile Include="LiveTv\RecordingQuery.cs" />
     <Compile Include="Providers\ImageProviderInfo.cs" />
     <Compile Include="Providers\RemoteImageInfo.cs" />

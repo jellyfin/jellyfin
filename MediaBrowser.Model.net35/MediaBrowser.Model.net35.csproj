@@ -211,9 +211,6 @@
     <Compile Include="..\MediaBrowser.Model\IO\IZipClient.cs">
       <Link>IO\IZipClient.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\LiveTv\ChannelGuide.cs">
-      <Link>LiveTv\ChannelGuide.cs</Link>
-    </Compile>
     <Compile Include="..\MediaBrowser.Model\LiveTv\ChannelInfoDto.cs">
       <Link>LiveTv\ChannelInfoDto.cs</Link>
     </Compile>
@@ -228,6 +225,9 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\LiveTv\ProgramInfo.cs">
       <Link>LiveTv\ProgramInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\LiveTv\ProgramQuery.cs">
+      <Link>LiveTv\ProgramQuery.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\LiveTv\RecordingInfo.cs">
       <Link>LiveTv\RecordingInfo.cs</Link>

@@ -40,5 +40,12 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="id">The identifier.</param>
         /// <returns>Channel.</returns>
         Channel GetChannel(string id);
+
+        /// <summary>
+        /// Gets the programs.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>IEnumerable{ProgramInfo}.</returns>
+        IEnumerable<ProgramInfo> GetPrograms(ProgramQuery query);
     }
 }
