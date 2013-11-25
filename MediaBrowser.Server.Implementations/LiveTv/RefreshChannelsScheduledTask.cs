@@ -18,7 +18,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         public string Name
         {
-            get { return "Refresh Channels"; }
+            get { return "Refresh Guide"; }
         }
 
         public string Description
