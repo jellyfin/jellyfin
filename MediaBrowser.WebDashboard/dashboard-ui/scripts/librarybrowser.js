@@ -590,7 +590,7 @@
             if (item.Type == "Person") {
                 return "itembynamedetails.html?person=" + ApiClient.encodeName(item.Name) + "&context=" + itemByNameContext;
             }
-            
+
             if (item.Type == "MusicArtist") {
                 if (itemByNameContext == "music") {
                     return "itembynamedetails.html?musicartist=" + ApiClient.encodeName(item.Name) + "&context=" + (itemByNameContext || "music");
@@ -1704,7 +1704,7 @@
         getDetailImageHtml: function (item) {
 
             var imageTags = item.ImageTags || {};
-            
+
             if (item.PrimaryImageTag) {
                 imageTags.Primary = item.PrimaryImageTag;
             }
