@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.Net;
-using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,12 +24,12 @@ namespace MediaBrowser.Controller.LiveTv
         Task<IEnumerable<ChannelInfo>> GetChannelsAsync(CancellationToken cancellationToken);
 
         /// <summary>
-        /// Cancels the recording asynchronous.
+        /// Cancels the timer asynchronous.
         /// </summary>
-        /// <param name="recordingId">The recording identifier.</param>
+        /// <param name="timerId">The timer identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task CancelRecordingAsync(string recordingId, CancellationToken cancellationToken);
+        Task CancelTimerAsync(string timerId, CancellationToken cancellationToken);
 
         /// <summary>
         /// Deletes the recording asynchronous.
@@ -39,18 +38,23 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task DeleteRecordingAsync(string recordingId, CancellationToken cancellationToken);
-        
+
         /// <summary>
-        /// Schedules the recording asynchronous.
+        /// Creates the timer asynchronous.
         /// </summary>
-        /// <param name="name">The name for the recording</param>
-        /// <param name="channelId">The channel identifier.</param>
-        /// <param name="startTime">The start time.</param>
-        /// <param name="duration">The duration.</param>
+        /// <param name="info">The information.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task ScheduleRecordingAsync(string name, string channelId, DateTime startTime, TimeSpan duration, CancellationToken cancellationToken);
+        Task CreateTimerAsync(TimerInfo info, CancellationToken cancellationToken);
 
+        /// <summary>
+        /// Updates the timer asynchronous.
+        /// </summary>
+        /// <param name="info">The information.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task UpdateTimerAsync(TimerInfo info, CancellationToken cancellationToken);
+        
         /// <summary>
         /// Gets the channel image asynchronous.
         /// </summary>
@@ -66,6 +70,13 @@ namespace MediaBrowser.Controller.LiveTv
         /// <returns>Task{IEnumerable{RecordingInfo}}.</returns>
         Task<IEnumerable<RecordingInfo>> GetRecordingsAsync(CancellationToken cancellationToken);
 
+        /// <summary>
+        /// Gets the recordings asynchronous.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{IEnumerable{RecordingInfo}}.</returns>
+        Task<IEnumerable<TimerInfo>> GetTimersAsync(CancellationToken cancellationToken);
+        
         /// <summary>
         /// Gets the programs asynchronous.
         /// </summary>

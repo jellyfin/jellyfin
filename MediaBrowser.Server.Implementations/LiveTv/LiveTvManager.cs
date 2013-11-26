@@ -41,9 +41,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         private List<Channel> _channels = new List<Channel>();
         private List<ProgramInfoDto> _programs = new List<ProgramInfoDto>();
-        private List<RecordingInfoDto> _recordings = new List<RecordingInfoDto>();
-
-        private readonly SemaphoreSlim _updateSemaphore = new SemaphoreSlim(1, 1);
 
         public LiveTvManager(IServerApplicationPaths appPaths, IFileSystem fileSystem, ILogger logger, IItemRepository itemRepo, IImageProcessor imageProcessor, IUserManager userManager, ILocalizationManager localization, IUserDataManager userDataManager, IDtoService dtoService)
         {
@@ -102,11 +99,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
 
             return dto;
-        }
-
-        private ILiveTvService GetService(ChannelInfo channel)
-        {
-            return _services.FirstOrDefault(i => string.Equals(channel.ServiceName, i.Name, StringComparison.OrdinalIgnoreCase));
         }
 
         private Guid? GetLogoImageTag(Channel info)
@@ -210,7 +202,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 Quality = program.Quality,
                 OriginalAirDate = program.OriginalAirDate,
                 Audio = program.Audio,
-                CommunityRating = program.CommunityRating
+                CommunityRating = program.CommunityRating,
+                AspectRatio = program.AspectRatio
             };
         }
 
@@ -228,9 +221,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return name.ToLower().GetMD5();
         }
 
-        private async Task<Channel> GetChannel(ChannelInfo channelInfo, CancellationToken cancellationToken)
+        private async Task<Channel> GetChannel(ChannelInfo channelInfo, string serviceName, CancellationToken cancellationToken)
         {
-            var path = Path.Combine(_appPaths.ItemsByNamePath, "channels", _fileSystem.GetValidFilename(channelInfo.ServiceName), _fileSystem.GetValidFilename(channelInfo.Name));
+            var path = Path.Combine(_appPaths.ItemsByNamePath, "channels", _fileSystem.GetValidFilename(serviceName), _fileSystem.GetValidFilename(channelInfo.Name));
 
             var fileInfo = new DirectoryInfo(path);
 
@@ -249,7 +242,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 isNew = true;
             }
 
-            var id = GetInternalChannelId(channelInfo.ServiceName, channelInfo.Id);
+            var id = GetInternalChannelId(serviceName, channelInfo.Id);
 
             var item = _itemRepo.RetrieveItem(id) as Channel;
 
@@ -264,7 +257,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     Path = path,
                     ChannelId = channelInfo.Id,
                     ChannelNumber = channelInfo.Number,
-                    ServiceName = channelInfo.ServiceName
+                    ServiceName = serviceName
                 };
 
                 isNew = true;
@@ -278,7 +271,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return item;
         }
 
-        public QueryResult<ProgramInfoDto> GetPrograms(ProgramQuery query)
+        public async Task<QueryResult<ProgramInfoDto>> GetPrograms(ProgramQuery query, CancellationToken cancellationToken)
         {
             IEnumerable<ProgramInfoDto> programs = _programs
                 .OrderBy(i => i.StartDate)
@@ -298,6 +291,21 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var returnArray = programs.ToArray();
 
+            var recordings = await GetRecordings(new RecordingQuery
+            {
+
+
+            }, cancellationToken).ConfigureAwait(false);
+
+            foreach (var program in returnArray)
+            {
+                var recording = recordings.Items
+                    .FirstOrDefault(i => string.Equals(i.ProgramId, program.Id));
+
+                program.RecordingId = recording == null ? null : recording.Id;
+                program.RecordingStatus = recording == null ? (RecordingStatus?)null : recording.Status;
+            }
+
             return new QueryResult<ProgramInfoDto>
             {
                 Items = returnArray,
@@ -307,26 +315,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         internal async Task RefreshChannels(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            await _updateSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            try
-            {
-                await RefreshChannelsInternal(progress, cancellationToken).ConfigureAwait(false);
-            }
-            finally
-            {
-                _updateSemaphore.Release();
-            }
-
-            await RefreshRecordings(new Progress<double>(), cancellationToken).ConfigureAwait(false);
-        }
-
-        private async Task RefreshChannelsInternal(IProgress<double> progress, CancellationToken cancellationToken)
-        {
             // Avoid implicitly captured closure
             var currentCancellationToken = cancellationToken;
 
-            var channelTasks = _services.Select(i => i.GetChannelsAsync(currentCancellationToken));
+            var channelTasks = _services.Select(i => GetChannels(i, currentCancellationToken));
 
             progress.Report(10);
 
@@ -343,11 +335,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             {
                 try
                 {
-                    var item = await GetChannel(channelInfo, cancellationToken).ConfigureAwait(false);
+                    var item = await GetChannel(channelInfo.Item2, channelInfo.Item1, cancellationToken).ConfigureAwait(false);
 
-                    var service = GetService(channelInfo);
+                    var service = _services.First(i => string.Equals(channelInfo.Item1, i.Name, StringComparison.OrdinalIgnoreCase));
 
-                    var channelPrograms = await service.GetProgramsAsync(channelInfo.Id, cancellationToken).ConfigureAwait(false);
+                    var channelPrograms = await service.GetProgramsAsync(channelInfo.Item2.Id, cancellationToken).ConfigureAwait(false);
 
                     programs.AddRange(channelPrograms.Select(program => GetProgramInfoDto(program, item)));
 
@@ -359,7 +351,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error getting channel information for {0}", ex, channelInfo.Name);
+                    _logger.ErrorException("Error getting channel information for {0}", ex, channelInfo.Item2.Name);
                 }
 
                 numComplete++;
@@ -373,32 +365,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             _channels = list;
         }
 
-        internal async Task RefreshRecordings(IProgress<double> progress, CancellationToken cancellationToken)
+        private async Task<IEnumerable<Tuple<string, ChannelInfo>>> GetChannels(ILiveTvService service, CancellationToken cancellationToken)
         {
-            await _updateSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+            var channels = await service.GetChannelsAsync(cancellationToken).ConfigureAwait(false);
 
-            try
-            {
-                await RefreshRecordingsInternal(progress, cancellationToken).ConfigureAwait(false);
-            }
-            finally
-            {
-                _updateSemaphore.Release();
-            }
-        }
-
-        private async Task RefreshRecordingsInternal(IProgress<double> progress, CancellationToken cancellationToken)
-        {
-            var list = new List<RecordingInfoDto>();
-
-            foreach (var service in _services)
-            {
-                var recordings = await GetRecordings(service, cancellationToken).ConfigureAwait(false);
-
-                list.AddRange(recordings);
-            }
-
-            _recordings = list;
+            return channels.Select(i => new Tuple<string, ChannelInfo>(service.Name, i));
         }
 
         private async Task<IEnumerable<RecordingInfoDto>> GetRecordings(ILiveTvService service, CancellationToken cancellationToken)
@@ -419,7 +390,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 Description = info.Description,
                 EndDate = info.EndDate,
                 Name = info.Name,
-                IsRecurring = info.IsRecurring,
                 StartDate = info.StartDate,
                 Id = id,
                 ExternalId = info.Id,
@@ -427,23 +397,59 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 Status = info.Status
             };
 
-            if (!string.IsNullOrEmpty(info.ProgramId))
-            {
-                dto.ProgramId = GetInternalProgramIdId(service.Name, info.ProgramId).ToString("N");
-            }
-
             return dto;
         }
 
-        public QueryResult<RecordingInfoDto> GetRecordings()
+        public async Task<QueryResult<RecordingInfoDto>> GetRecordings(RecordingQuery query, CancellationToken cancellationToken)
         {
-            var returnArray = _recordings.ToArray();
+            var list = new List<RecordingInfoDto>();
+
+            foreach (var service in GetServices(query.ServiceName, query.ChannelId))
+            {
+                var recordings = await GetRecordings(service, cancellationToken).ConfigureAwait(false);
+
+                list.AddRange(recordings);
+            }
+
+            if (!string.IsNullOrEmpty(query.ChannelId))
+            {
+                list = list.Where(i => string.Equals(i.ChannelId, query.ChannelId))
+                    .ToList();
+            }
+
+            var returnArray = list.ToArray();
 
             return new QueryResult<RecordingInfoDto>
             {
                 Items = returnArray,
                 TotalRecordCount = returnArray.Length
             };
+        }
+
+        private IEnumerable<ILiveTvService> GetServices(string serviceName, string channelId)
+        {
+            IEnumerable<ILiveTvService> services = _services;
+
+            if (string.IsNullOrEmpty(serviceName) && !string.IsNullOrEmpty(channelId))
+            {
+                var channelIdGuid = new Guid(channelId);
+
+                serviceName = _channels.Where(i => i.Id == channelIdGuid)
+                    .Select(i => i.ServiceName)
+                    .FirstOrDefault();
+            }
+
+            if (!string.IsNullOrEmpty(serviceName))
+            {
+                services = services.Where(i => string.Equals(i.Name, serviceName, StringComparison.OrdinalIgnoreCase));
+            }
+
+            return services;
+        }
+
+        public Task ScheduleRecording(string programId)
+        {
+            throw new NotImplementedException();
         }
     }
 }

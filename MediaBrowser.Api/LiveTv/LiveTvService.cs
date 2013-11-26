@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.LiveTv;
+﻿using System.Threading;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
 using ServiceStack.ServiceHost;
@@ -49,8 +50,13 @@ namespace MediaBrowser.Api.LiveTv
     [Api(Description = "Gets live tv recordings")]
     public class GetRecordings : IReturn<QueryResult<RecordingInfoDto>>
     {
+        [ApiMember(Name = "ServiceName", Description = "Optional filter by service.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string ServiceName { get; set; }
+
+        [ApiMember(Name = "ChannelId", Description = "Optional filter by channel id.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string ChannelId { get; set; }
     }
-    
+
     [Route("/LiveTv/Programs", "GET")]
     [Api(Description = "Gets available live tv epgs..")]
     public class GetPrograms : IReturn<QueryResult<ProgramInfoDto>>
@@ -80,7 +86,7 @@ namespace MediaBrowser.Api.LiveTv
 
             if (!string.IsNullOrEmpty(serviceName))
             {
-                services = services.Where(i => string.Equals(i.Name, serviceName, System.StringComparison.OrdinalIgnoreCase));
+                services = services.Where(i => string.Equals(i.Name, serviceName, StringComparison.OrdinalIgnoreCase));
             }
 
             return services;
@@ -130,14 +136,20 @@ namespace MediaBrowser.Api.LiveTv
                 ServiceName = request.ServiceName,
                 ChannelIdList = (request.ChannelIds ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToArray(),
                 UserId = request.UserId
-            });
+
+            }, CancellationToken.None).Result;
 
             return ToOptimizedResult(result);
         }
 
         public object Get(GetRecordings request)
         {
-            var result = _liveTvManager.GetRecordings();
+            var result = _liveTvManager.GetRecordings(new RecordingQuery
+            {
+                ChannelId = request.ChannelId,
+                ServiceName = request.ServiceName
+
+            }, CancellationToken.None).Result;
 
             return ToOptimizedResult(result);
         }

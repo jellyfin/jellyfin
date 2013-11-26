@@ -1,6 +1,7 @@
 ﻿(function ($, document, apiClient) {
 
     var currentItem;
+    var programs;
 
     function getDisplayTime(date) {
 
@@ -17,6 +18,14 @@
         date = date.replace('0:00', '0');
 
         return date;
+    }
+
+    function cancelRecording(page, id) {
+
+    }
+
+    function scheduleRecording(page, id) {
+
     }
 
     function renderPrograms(page, result) {
@@ -46,10 +55,10 @@
 
             html += '<td>';
 
-            if (program.recordingId) {
-                html += '<button type="button" data-icon="delete" data-inline="true" data-mini="true" data-iconpos="notext">Cancel</button>';
+            if (program.RecordingId) {
+                html += '<button data-recordingid="' + program.RecordingId + '" class="btnCancelRecording" type="button" data-icon="delete" data-inline="true" data-mini="true" data-iconpos="notext">Cancel</button>';
             } else {
-                html += '<button type="button" data-icon="star" data-inline="true" data-mini="true" data-theme="b" data-iconpos="notext">Record</button>';
+                html += '<button data-recordingid="' + program.RecordingId + '" class="btnScheduleRecording" type="button" data-icon="facetime-video" data-inline="true" data-mini="true" data-theme="b" data-iconpos="notext">Record</button>';
             }
 
             html += '</td>';
@@ -78,7 +87,21 @@
 
         html += '</table></div>';
 
-        $('#programList', page).html(html).trigger('create');
+        var elem = $('#programList', page).html(html).trigger('create');
+
+        $('.btnCancelRecording', elem).on('click', function () {
+
+            var recordingId = this.getAttribute('data-recordingid');
+
+            cancelRecording(page, recordingId);
+        });
+
+        $('.btnScheduleRecording', elem).on('click', function () {
+
+            var recordingId = this.getAttribute('data-recordingid');
+
+            scheduleRecording(page, recordingId);
+        });
     }
 
     function loadPrograms(page) {
@@ -90,6 +113,9 @@
         }).done(function (result) {
 
             renderPrograms(page, result);
+            programs = result.Items;
+
+            Dashboard.hideLoadingMsg();
         });
     }
 
@@ -136,7 +162,6 @@
 
             loadPrograms(page);
 
-            Dashboard.hideLoadingMsg();
         });
     }
 
@@ -168,6 +193,7 @@
     }).on('pagehide', "#liveTvChannelPage", function () {
 
         currentItem = null;
+        programs = null;
     });
 
 })(jQuery, document, ApiClient);

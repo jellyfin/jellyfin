@@ -207,7 +207,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             if (!string.IsNullOrEmpty(image))
             {
-                dto.PrimaryImageTag = _imageProcessor.GetImageCacheTag(user, ImageType.Primary, image);
+                dto.PrimaryImageTag = GetImageCacheTag(user, ImageType.Primary, image);
 
                 try
                 {
@@ -285,13 +285,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             if (!string.IsNullOrEmpty(imagePath))
             {
-                try
-                {
-                    info.PrimaryImageTag = _imageProcessor.GetImageCacheTag(item, ImageType.Primary, imagePath);
-                }
-                catch (IOException)
-                {
-                }
+                info.PrimaryImageTag = GetImageCacheTag(item, ImageType.Primary, imagePath);
             }
 
             return info;

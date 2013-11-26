@@ -1,26 +1,16 @@
-﻿using System;
+﻿using MediaBrowser.Model.LiveTv;
+using System;
+using System.Collections.Generic;
 
-namespace MediaBrowser.Model.LiveTv
+namespace MediaBrowser.Controller.LiveTv
 {
-    public class RecordingInfoDto
+    public class TimerInfo
     {
         /// <summary>
         /// Id of the recording.
         /// </summary>
         public string Id { get; set; }
 
-        /// <summary>
-        /// Gets or sets the external identifier.
-        /// </summary>
-        /// <value>The external identifier.</value>
-        public string ExternalId { get; set; }
-        
-        /// <summary>
-        /// Gets or sets the program identifier.
-        /// </summary>
-        /// <value>The program identifier.</value>
-        public string ProgramId { get; set; }
-        
         /// <summary>
         /// ChannelId of the recording.
         /// </summary>
@@ -56,5 +46,22 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value>The status.</value>
         public RecordingStatus Status { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is recurring.
+        /// </summary>
+        /// <value><c>true</c> if this instance is recurring; otherwise, <c>false</c>.</value>
+        public bool IsRecurring { get; set; }
+
+        /// <summary>
+        /// Gets or sets the recurring days.
+        /// </summary>
+        /// <value>The recurring days.</value>
+        public List<DayOfWeek> RecurringDays { get; set; }
+
+        public TimerInfo()
+        {
+            RecurringDays = new List<DayOfWeek>();
+        }
     }
 }

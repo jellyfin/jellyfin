@@ -3,6 +3,8 @@ using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Entities.Audio
 {
@@ -30,11 +32,22 @@ namespace MediaBrowser.Controller.Entities.Audio
             {
                 if (IsAccessedByName)
                 {
-                    throw new InvalidOperationException("Artists accessed by name do not have children.");
+                    return new List<BaseItem>();
                 }
 
                 return base.ActualChildren;
             }
+        }
+
+        protected override Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool? recursive = null, bool forceRefreshMetadata = false)
+        {
+            if (IsAccessedByName)
+            {
+                // Should never get in here anyway
+                return Task.FromResult(true);
+            }
+
+            return base.ValidateChildrenInternal(progress, cancellationToken, recursive, forceRefreshMetadata);
         }
 
         public override string GetClientTypeName()
