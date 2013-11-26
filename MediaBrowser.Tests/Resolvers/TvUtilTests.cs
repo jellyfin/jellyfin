@@ -51,6 +51,12 @@ namespace MediaBrowser.Tests.Resolvers
             Assert.AreEqual(03, TVUtils.GetEpisodeNumberFromFile(@"Season 2009\Elementary - 2009x03x04x15 - Ep Name.ext", true));
             Assert.AreEqual(23, TVUtils.GetEpisodeNumberFromFile(@"Season 2009\Elementary - S2009E23-E24-E26 - The Woman.mp4", true));
             Assert.AreEqual(23, TVUtils.GetEpisodeNumberFromFile(@"Season 2009\S2009E23-E24-E26 - The Woman.mp4", true));
+
+            //Without season number
+            Assert.AreEqual(02, TVUtils.GetEpisodeNumberFromFile(@"Season 1\02 - blah.avi", true));
+            Assert.AreEqual(02, TVUtils.GetEpisodeNumberFromFile(@"Season 2\02 - blah 14 blah.avi", true));
+            Assert.AreEqual(02, TVUtils.GetEpisodeNumberFromFile(@"Season 1\02 - blah-02 a.avi", true));
+            Assert.AreEqual(02, TVUtils.GetEpisodeNumberFromFile(@"Season 2\02.avi", true));
         }
 
         [TestMethod]
@@ -104,6 +110,11 @@ namespace MediaBrowser.Tests.Resolvers
             Assert.AreEqual(26, TVUtils.GetEndingEpisodeNumberFromFile(@"Season 2009\Elementary - S2009E23-E24-E26 - The Woman.mp4"));
             Assert.AreEqual(26, TVUtils.GetEndingEpisodeNumberFromFile(@"Season 2009\S2009E23-E24-E26 - The Woman.mp4"));
 
+            //Without season number
+            Assert.AreEqual(null, TVUtils.GetEndingEpisodeNumberFromFile(@"Season 1\02 - blah.avi"));
+            Assert.AreEqual(null, TVUtils.GetEndingEpisodeNumberFromFile(@"Season 2\02 - blah 14 blah.avi"));
+            Assert.AreEqual(null, TVUtils.GetEndingEpisodeNumberFromFile(@"Season 1\02 - blah-02 a.avi"));
+            Assert.AreEqual(null, TVUtils.GetEndingEpisodeNumberFromFile(@"Season 2\02.avi"));
         }
 
         [TestMethod]
