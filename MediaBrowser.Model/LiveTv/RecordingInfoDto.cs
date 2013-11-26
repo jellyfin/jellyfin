@@ -55,5 +55,11 @@ namespace MediaBrowser.Model.LiveTv
         /// IsRecurring recording?
         /// </summary>
         public bool IsRecurring { get; set; }
+
+        /// <summary>
+        /// Gets or sets the status.
+        /// </summary>
+        /// <value>The status.</value>
+        public RecordingStatus Status { get; set; }
     }
 }

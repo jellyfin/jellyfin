@@ -1,9 +1,9 @@
 ﻿(function ($, document, apiClient) {
 
     var currentItem;
-    
+
     function getDisplayTime(date) {
-        
+
         try {
 
             date = parseISO8601Date(date, { toLocal: true });
@@ -45,7 +45,7 @@
             html += '<tr>';
 
             html += '<td>';
-            
+
             if (program.recordingId) {
                 html += '<button type="button" data-icon="delete" data-inline="true" data-mini="true" data-iconpos="notext">Cancel</button>';
             } else {
@@ -65,7 +65,7 @@
             }
 
             html += '<td>' + startDate.toLocaleDateString() + '</td>';
-            
+
             html += '<td>' + getDisplayTime(program.StartDate) + '</td>';
 
             html += '<td>' + getDisplayTime(program.EndDate) + '</td>';
@@ -84,7 +84,8 @@
     function loadPrograms(page) {
 
         ApiClient.getLiveTvPrograms({
-            ChannelIds: currentItem.Id
+            ChannelIds: currentItem.Id,
+            UserId: Dashboard.getCurrentUserId()
 
         }).done(function (result) {
 

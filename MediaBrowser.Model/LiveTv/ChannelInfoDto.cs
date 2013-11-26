@@ -1,4 +1,5 @@
 ﻿using System;
+using MediaBrowser.Model.Dto;
 
 namespace MediaBrowser.Model.LiveTv
 {
@@ -54,5 +55,11 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value>The type of the media.</value>
         public string MediaType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the user data.
+        /// </summary>
+        /// <value>The user data.</value>
+        public UserItemDataDto UserData { get; set; }
     }
 }

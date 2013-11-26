@@ -74,7 +74,11 @@
 
         var page = this;
 
-        apiClient.getLiveTvChannels().done(function (result) {
+        apiClient.getLiveTvChannels({
+            
+            userId: Dashboard.getCurrentUserId()
+
+        }).done(function (result) {
 
             renderChannels(page, result.Items);
         });

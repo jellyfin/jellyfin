@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using MediaBrowser.Model.LiveTv;
 
 namespace MediaBrowser.Controller.LiveTv
 {
@@ -22,6 +23,12 @@ namespace MediaBrowser.Controller.LiveTv
         public string Name { get; set; }
 
         /// <summary>
+        /// Gets or sets the official rating.
+        /// </summary>
+        /// <value>The official rating.</value>
+        public string OfficialRating { get; set; }
+        
+        /// <summary>
         /// Description of the progam.
         /// </summary>
         public string Description { get; set; }
@@ -41,6 +48,24 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         public List<string> Genres { get; set; }
 
+        /// <summary>
+        /// Gets or sets the quality.
+        /// </summary>
+        /// <value>The quality.</value>
+        public ProgramVideoQuality Quality { get; set; }
+
+        /// <summary>
+        /// Gets or sets the original air date.
+        /// </summary>
+        /// <value>The original air date.</value>
+        public DateTime? OriginalAirDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the audio.
+        /// </summary>
+        /// <value>The audio.</value>
+        public ProgramAudio Audio { get; set; }
+        
         public ProgramInfo()
         {
             Genres = new List<string>();
