@@ -257,7 +257,7 @@ namespace MediaBrowser.Controller.Library
 
                 if (match != null)
                 {
-                    return ParseEpisodeNumber(match.Value);
+                    return ParseEpisodeNumber(match.Groups["epnumber"].Value);
                 }
             }
 
