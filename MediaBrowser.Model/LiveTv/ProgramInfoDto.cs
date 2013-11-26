@@ -23,6 +23,12 @@ namespace MediaBrowser.Model.LiveTv
         public string ChannelId { get; set; }
 
         /// <summary>
+        /// Gets or sets the community rating.
+        /// </summary>
+        /// <value>The community rating.</value>
+        public float? CommunityRating { get; set; }
+        
+        /// <summary>
         /// Gets or sets the recording identifier.
         /// </summary>
         /// <value>The recording identifier.</value>

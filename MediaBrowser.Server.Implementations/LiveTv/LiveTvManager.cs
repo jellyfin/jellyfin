@@ -209,7 +209,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 OfficialRating = program.OfficialRating,
                 Quality = program.Quality,
                 OriginalAirDate = program.OriginalAirDate,
-                Audio = program.Audio
+                Audio = program.Audio,
+                CommunityRating = program.CommunityRating
             };
         }
 

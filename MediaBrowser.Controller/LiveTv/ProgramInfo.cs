@@ -1,6 +1,6 @@
-﻿using System;
+﻿using MediaBrowser.Model.LiveTv;
+using System;
 using System.Collections.Generic;
-using MediaBrowser.Model.LiveTv;
 
 namespace MediaBrowser.Controller.LiveTv
 {
@@ -65,6 +65,12 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value>The audio.</value>
         public ProgramAudio Audio { get; set; }
+
+        /// <summary>
+        /// Gets or sets the community rating.
+        /// </summary>
+        /// <value>The community rating.</value>
+        public float? CommunityRating { get; set; }
         
         public ProgramInfo()
         {
