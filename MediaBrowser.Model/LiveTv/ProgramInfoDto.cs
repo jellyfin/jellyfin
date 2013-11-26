@@ -27,13 +27,13 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value>The community rating.</value>
         public float? CommunityRating { get; set; }
-        
-        /// <summary>
-        /// Gets or sets the recording identifier.
-        /// </summary>
-        /// <value>The recording identifier.</value>
-        public string RecordingId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the aspect ratio.
+        /// </summary>
+        /// <value>The aspect ratio.</value>
+        public string AspectRatio { get; set; }
+        
         /// <summary>
         /// Gets or sets the official rating.
         /// </summary>
@@ -88,6 +88,18 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value>The original air date.</value>
         public DateTime? OriginalAirDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the recording identifier.
+        /// </summary>
+        /// <value>The recording identifier.</value>
+        public string RecordingId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the recording status.
+        /// </summary>
+        /// <value>The recording status.</value>
+        public RecordingStatus? RecordingStatus { get; set; }
         
         public ProgramInfoDto()
         {

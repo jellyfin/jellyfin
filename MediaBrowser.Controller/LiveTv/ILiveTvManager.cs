@@ -1,6 +1,8 @@
-﻿using MediaBrowser.Model.LiveTv;
+﻿using System.Threading;
+using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.LiveTv
 {
@@ -14,6 +16,13 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value>The services.</value>
         IReadOnlyList<ILiveTvService> Services { get; }
+
+        /// <summary>
+        /// Schedules the recording.
+        /// </summary>
+        /// <param name="programId">The program identifier.</param>
+        /// <returns>Task.</returns>
+        Task ScheduleRecording(string programId);
 
         /// <summary>
         /// Adds the parts.
@@ -31,8 +40,10 @@ namespace MediaBrowser.Controller.LiveTv
         /// <summary>
         /// Gets the recordings.
         /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>QueryResult{RecordingInfoDto}.</returns>
-        QueryResult<RecordingInfoDto> GetRecordings();
+        Task<QueryResult<RecordingInfoDto>> GetRecordings(RecordingQuery query, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the channel.
@@ -53,7 +64,8 @@ namespace MediaBrowser.Controller.LiveTv
         /// Gets the programs.
         /// </summary>
         /// <param name="query">The query.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>IEnumerable{ProgramInfo}.</returns>
-        QueryResult<ProgramInfoDto> GetPrograms(ProgramQuery query);
+        Task<QueryResult<ProgramInfoDto>> GetPrograms(ProgramQuery query, CancellationToken cancellationToken);
     }
 }
