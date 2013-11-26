@@ -17,6 +17,12 @@
         /// <value>The channel identifier.</value>
         public string[] ChannelIdList { get; set; }
 
+        /// <summary>
+        /// Gets or sets the user identifier.
+        /// </summary>
+        /// <value>The user identifier.</value>
+        public string UserId { get; set; }
+
         public ProgramQuery()
         {
             ChannelIdList = new string[] { };

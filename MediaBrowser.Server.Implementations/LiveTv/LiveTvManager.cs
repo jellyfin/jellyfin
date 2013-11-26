@@ -2,7 +2,11 @@
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Drawing;
+using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
@@ -28,6 +32,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         private readonly IItemRepository _itemRepo;
         private readonly IImageProcessor _imageProcessor;
 
+        private readonly IUserManager _userManager;
+        private readonly ILocalizationManager _localization;
+        private readonly IUserDataManager _userDataManager;
+        private readonly IDtoService _dtoService;
+
         private readonly List<ILiveTvService> _services = new List<ILiveTvService>();
 
         private List<Channel> _channels = new List<Channel>();
@@ -36,13 +45,17 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         private readonly SemaphoreSlim _updateSemaphore = new SemaphoreSlim(1, 1);
 
-        public LiveTvManager(IServerApplicationPaths appPaths, IFileSystem fileSystem, ILogger logger, IItemRepository itemRepo, IImageProcessor imageProcessor)
+        public LiveTvManager(IServerApplicationPaths appPaths, IFileSystem fileSystem, ILogger logger, IItemRepository itemRepo, IImageProcessor imageProcessor, IUserManager userManager, ILocalizationManager localization, IUserDataManager userDataManager, IDtoService dtoService)
         {
             _appPaths = appPaths;
             _fileSystem = fileSystem;
             _logger = logger;
             _itemRepo = itemRepo;
             _imageProcessor = imageProcessor;
+            _userManager = userManager;
+            _localization = localization;
+            _userDataManager = userDataManager;
+            _dtoService = dtoService;
         }
 
         /// <summary>
@@ -67,10 +80,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         /// Gets the channel info dto.
         /// </summary>
         /// <param name="info">The info.</param>
+        /// <param name="user">The user.</param>
         /// <returns>ChannelInfoDto.</returns>
-        public ChannelInfoDto GetChannelInfoDto(Channel info)
+        public ChannelInfoDto GetChannelInfoDto(Channel info, User user)
         {
-            return new ChannelInfoDto
+            var dto = new ChannelInfoDto
             {
                 Name = info.Name,
                 ServiceName = info.ServiceName,
@@ -81,6 +95,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 Id = info.Id.ToString("N"),
                 MediaType = info.MediaType
             };
+
+            if (user != null)
+            {
+                dto.UserData = _dtoService.GetUserItemDataDto(_userDataManager.GetUserData(user.Id, info.GetUserDataKey()));
+            }
+
+            return dto;
         }
 
         private ILiveTvService GetService(ChannelInfo channel)
@@ -111,7 +132,28 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         public QueryResult<ChannelInfoDto> GetChannels(ChannelQuery query)
         {
-            var channels = _channels.OrderBy(i =>
+            var user = string.IsNullOrEmpty(query.UserId) ? null : _userManager.GetUserById(new Guid(query.UserId));
+
+            IEnumerable<Channel> channels = _channels;
+
+            if (user != null)
+            {
+                channels = channels.Where(i => i.IsParentalAllowed(user, _localization))
+                    .OrderBy(i =>
+                    {
+                        double number = 0;
+
+                        if (!string.IsNullOrEmpty(i.ChannelNumber))
+                        {
+                            double.TryParse(i.ChannelNumber, out number);
+                        }
+
+                        return number;
+
+                    });
+            }
+
+            var returnChannels = channels.OrderBy(i =>
             {
                 double number = 0;
 
@@ -123,13 +165,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 return number;
 
             }).ThenBy(i => i.Name)
-            .Select(GetChannelInfoDto)
+            .Select(i => GetChannelInfoDto(i, user))
             .ToArray();
 
             return new QueryResult<ChannelInfoDto>
             {
-                Items = channels,
-                TotalRecordCount = channels.Length
+                Items = returnChannels,
+                TotalRecordCount = returnChannels.Length
             };
         }
 
@@ -138,6 +180,15 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             var guid = new Guid(id);
 
             return _channels.FirstOrDefault(i => i.Id == guid);
+        }
+
+        public ChannelInfoDto GetChannelInfoDto(string id, string userId)
+        {
+            var channel = GetChannel(id);
+
+            var user = string.IsNullOrEmpty(userId) ? null : _userManager.GetUserById(new Guid(userId));
+
+            return channel == null ? null : GetChannelInfoDto(channel, user);
         }
 
         private ProgramInfoDto GetProgramInfoDto(ProgramInfo program, Channel channel)
@@ -154,7 +205,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 Id = id,
                 Name = program.Name,
                 ServiceName = channel.ServiceName,
-                StartDate = program.StartDate
+                StartDate = program.StartDate,
+                OfficialRating = program.OfficialRating,
+                Quality = program.Quality,
+                OriginalAirDate = program.OriginalAirDate,
+                Audio = program.Audio
             };
         }
 
@@ -367,7 +422,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 StartDate = info.StartDate,
                 Id = id,
                 ExternalId = info.Id,
-                ChannelId = GetInternalChannelId(service.Name, info.ChannelId).ToString("N")
+                ChannelId = GetInternalChannelId(service.Name, info.ChannelId).ToString("N"),
+                Status = info.Status
             };
 
             if (!string.IsNullOrEmpty(info.ProgramId))
@@ -376,6 +432,17 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
 
             return dto;
+        }
+
+        public QueryResult<RecordingInfoDto> GetRecordings()
+        {
+            var returnArray = _recordings.ToArray();
+
+            return new QueryResult<RecordingInfoDto>
+            {
+                Items = returnArray,
+                TotalRecordCount = returnArray.Length
+            };
         }
     }
 }

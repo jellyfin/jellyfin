@@ -29,11 +29,10 @@ namespace MediaBrowser.Controller.LiveTv
         QueryResult<ChannelInfoDto> GetChannels(ChannelQuery query);
 
         /// <summary>
-        /// Gets the channel information dto.
+        /// Gets the recordings.
         /// </summary>
-        /// <param name="info">The information.</param>
-        /// <returns>ChannelInfoDto.</returns>
-        ChannelInfoDto GetChannelInfoDto(Channel info);
+        /// <returns>QueryResult{RecordingInfoDto}.</returns>
+        QueryResult<RecordingInfoDto> GetRecordings();
 
         /// <summary>
         /// Gets the channel.
@@ -41,6 +40,14 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="id">The identifier.</param>
         /// <returns>Channel.</returns>
         Channel GetChannel(string id);
+
+        /// <summary>
+        /// Gets the channel.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="userId">The user identifier.</param>
+        /// <returns>Channel.</returns>
+        ChannelInfoDto GetChannelInfoDto(string id, string userId);
 
         /// <summary>
         /// Gets the programs.

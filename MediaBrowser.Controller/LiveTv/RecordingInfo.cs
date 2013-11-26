@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediaBrowser.Model.LiveTv;
+using System;
 using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.LiveTv
@@ -47,9 +48,10 @@ namespace MediaBrowser.Controller.LiveTv
         public DateTime EndDate { get; set; }
 
         /// <summary>
-        /// Status of the recording.
+        /// Gets or sets the status.
         /// </summary>
-        public string Status { get; set; } //TODO: Enum for status?? Difference NextPvr,Argus,...
+        /// <value>The status.</value>
+        public RecordingStatus Status { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is recurring.

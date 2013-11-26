@@ -27,6 +27,12 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value>The recording identifier.</value>
         public string RecordingId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the official rating.
+        /// </summary>
+        /// <value>The official rating.</value>
+        public string OfficialRating { get; set; }
         
         /// <summary>
         /// Gets or sets the name of the service.
@@ -59,9 +65,38 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         public List<string> Genres { get; set; }
 
+        /// <summary>
+        /// Gets or sets the quality.
+        /// </summary>
+        /// <value>The quality.</value>
+        public ProgramVideoQuality Quality { get; set; }
+
+        /// <summary>
+        /// Gets or sets the audio.
+        /// </summary>
+        /// <value>The audio.</value>
+        public ProgramAudio Audio { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the original air date.
+        /// </summary>
+        /// <value>The original air date.</value>
+        public DateTime? OriginalAirDate { get; set; }
+        
         public ProgramInfoDto()
         {
             Genres = new List<string>();
         }
+    }
+
+    public enum ProgramVideoQuality
+    {
+        StandardDefinition,
+        HighDefinition
+    }
+
+    public enum ProgramAudio
+    {
+        Stereo
     }
 }
