@@ -516,7 +516,7 @@
             });
         }
 
-        if (item.Type == "Series") {
+        else if (item.Type == "Series" || item.Type == "Season") {
             if (!user.Configuration.DisplayMissingEpisodes) {
                 query.IsMissing = false;
             }

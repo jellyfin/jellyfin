@@ -199,8 +199,6 @@ namespace MediaBrowser.ServerApplication
         {
             await base.RunStartupTasks().ConfigureAwait(false);
 
-            DirectoryWatchers.Start();
-
             Logger.Info("Core startup complete");
 
             Parallel.ForEach(GetExports<IServerEntryPoint>(), entryPoint =>
