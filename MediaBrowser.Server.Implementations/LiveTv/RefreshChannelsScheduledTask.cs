@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.LiveTv
 {
-    class RefreshChannelsScheduledTask 
+    class RefreshChannelsScheduledTask : IScheduledTask
     {
         private readonly ILiveTvManager _liveTvManager;
 
