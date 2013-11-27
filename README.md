@@ -7,7 +7,7 @@ It features a REST-based api with built-in documention to facilitate client deve
 
 We have several client apps released and in production:
 
-- Android
+- [Android](https://play.google.com/store/apps/details?id=com.mb.android "Android")
 - Html5
 - [iOS](https://itunes.apple.com/us/app/media-browser-for-ios/id705058087 "iOS")
 - [Media Portal](http://www.team-mediaportal.com/ "Media Portal")
