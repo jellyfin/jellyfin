@@ -1,7 +1,7 @@
-﻿using System.Threading;
-using MediaBrowser.Model.LiveTv;
+﻿using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.LiveTv

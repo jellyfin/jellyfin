@@ -100,6 +100,18 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value>The recording status.</value>
         public RecordingStatus? RecordingStatus { get; set; }
+
+        /// <summary>
+        /// Gets or sets the timer identifier.
+        /// </summary>
+        /// <value>The timer identifier.</value>
+        public string TimerId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the timer status.
+        /// </summary>
+        /// <value>The timer status.</value>
+        public RecordingStatus? TimerStatus { get; set; }
         
         public ProgramInfoDto()
         {

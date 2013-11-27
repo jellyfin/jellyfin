@@ -286,7 +286,12 @@ namespace MediaBrowser.Api.Library
             }
             finally
             {
-                _directoryWatchers.Start();
+                // No need to start if scanning the library because it will handle it
+                if (!request.RefreshLibrary)
+                {
+                    _directoryWatchers.Start();
+                }
+
                 _directoryWatchers.RemoveTempIgnore(virtualFolderPath);
             }
 
@@ -353,7 +358,12 @@ namespace MediaBrowser.Api.Library
             }
             finally
             {
-                _directoryWatchers.Start();
+                // No need to start if scanning the library because it will handle it
+                if (!request.RefreshLibrary)
+                {
+                    _directoryWatchers.Start();
+                }
+
                 _directoryWatchers.RemoveTempIgnore(currentPath);
                 _directoryWatchers.RemoveTempIgnore(newPath);
             }
@@ -404,7 +414,12 @@ namespace MediaBrowser.Api.Library
             }
             finally
             {
-                _directoryWatchers.Start();
+                // No need to start if scanning the library because it will handle it
+                if (!request.RefreshLibrary)
+                {
+                    _directoryWatchers.Start();
+                }
+
                 _directoryWatchers.RemoveTempIgnore(path);
             }
 
@@ -442,7 +457,11 @@ namespace MediaBrowser.Api.Library
             }
             finally
             {
-                _directoryWatchers.Start();
+                // No need to start if scanning the library because it will handle it
+                if (!request.RefreshLibrary)
+                {
+                    _directoryWatchers.Start();
+                }
             }
 
             if (request.RefreshLibrary)
@@ -479,7 +498,11 @@ namespace MediaBrowser.Api.Library
             }
             finally
             {
-                _directoryWatchers.Start();
+                // No need to start if scanning the library because it will handle it
+                if (!request.RefreshLibrary)
+                {
+                    _directoryWatchers.Start();
+                }
             }
 
             if (request.RefreshLibrary)

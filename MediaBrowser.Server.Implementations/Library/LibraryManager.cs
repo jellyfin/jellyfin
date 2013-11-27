@@ -906,6 +906,20 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>Task.</returns>
         public async Task ValidateMediaLibraryInternal(IProgress<double> progress, CancellationToken cancellationToken)
         {
+            _directoryWatchersFactory().Stop();
+
+            try
+            {
+                await PerformLibraryValidation(progress, cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                _directoryWatchersFactory().Start();
+            }
+        }
+
+        private async Task PerformLibraryValidation(IProgress<double> progress, CancellationToken cancellationToken)
+        {
             _logger.Info("Validating media library");
 
             await RootFolder.RefreshMetadata(cancellationToken).ConfigureAwait(false);

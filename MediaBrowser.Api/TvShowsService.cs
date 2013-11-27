@@ -372,22 +372,12 @@ namespace MediaBrowser.Api
                 return episodes.Where(i => (i.PhysicalSeasonNumber ?? -1) == seasonNumber);
             }
 
-            var episodeList = episodes.ToList();
-
-            // We can only enforce the air date requirement if the episodes have air dates
-            var enforceAirDate = episodeList.Any(i => i.PremiereDate.HasValue);
-
-            return episodeList.Where(i =>
+            return episodes.Where(i =>
             {
                 var episode = i;
 
                 if (episode != null)
                 {
-                    if (enforceAirDate && !episode.PremiereDate.HasValue)
-                    {
-                        return false;
-                    }
-
                     var currentSeasonNumber = episode.AiredSeasonNumber;
 
                     return currentSeasonNumber.HasValue && currentSeasonNumber.Value == seasonNumber;
