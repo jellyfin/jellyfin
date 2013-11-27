@@ -430,7 +430,7 @@ namespace MediaBrowser.WebDashboard.Api
                                 "http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js", 
                                 "http://code.jquery.com/mobile/1.3.2/jquery.mobile-1.3.2.min.js",
                                 "scripts/all.js" + versionString,
-                                "thirdparty/jstree1.0fix2/jquery.jstree.js"
+                                "thirdparty/jstree1.0fix3/jquery.jstree.js"
             };
 
             var tags = files.Select(s => string.Format("<script src=\"{0}\"></script>", s)).ToArray();
@@ -483,6 +483,7 @@ namespace MediaBrowser.WebDashboard.Api
                                       "livetvchannels.js",
                                       "livetvguide.js",
                                       "livetvrecordings.js",
+                                      "livetvtimers.js",
                                       "loginpage.js",
                                       "logpage.js",
                                       "medialibrarypage.js",
