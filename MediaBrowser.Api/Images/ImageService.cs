@@ -269,6 +269,19 @@ namespace MediaBrowser.Api.Images
         public Guid Id { get; set; }
     }
 
+    [Route("/LiveTv/Channels/{Id}/Images/{Type}", "DELETE")]
+    [Route("/LiveTv/Channels/{Id}/Images/{Type}/{Index}", "DELETE")]
+    [Api(Description = "Deletes an item image")]
+    public class DeleteChannelImage : DeleteImageRequest, IReturnVoid
+    {
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Channel Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
+        public string Id { get; set; }
+    }
+    
     /// <summary>
     /// Class PostUserImage
     /// </summary>
@@ -344,6 +357,25 @@ namespace MediaBrowser.Api.Images
         public Stream RequestStream { get; set; }
     }
 
+    [Route("/LiveTv/Channels/{Id}/Images/{Type}", "POST")]
+    [Route("/LiveTv/Channels/{Id}/Images/{Type}/{Index}", "POST")]
+    [Api(Description = "Posts an item image")]
+    public class PostChannelImage : DeleteImageRequest, IRequiresRequestStream, IReturnVoid
+    {
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public string Id { get; set; }
+
+        /// <summary>
+        /// The raw Http Request Input Stream
+        /// </summary>
+        /// <value>The request stream.</value>
+        public Stream RequestStream { get; set; }
+    }
+    
     /// <summary>
     /// Class ImageService
     /// </summary>
@@ -622,6 +654,20 @@ namespace MediaBrowser.Api.Images
             Task.WaitAll(task);
         }
 
+        public void Post(PostChannelImage request)
+        {
+            var pathInfo = PathInfo.Parse(RequestContext.PathInfo);
+            var id = pathInfo.GetArgumentValue<string>(2);
+
+            request.Type = (ImageType)Enum.Parse(typeof(ImageType), pathInfo.GetArgumentValue<string>(4), true);
+
+            var item = _liveTv.GetChannel(id);
+
+            var task = PostImage(item, request.RequestStream, request.Type, RequestContext.ContentType);
+
+            Task.WaitAll(task);
+        }
+        
         /// <summary>
         /// Deletes the specified request.
         /// </summary>
@@ -648,6 +694,15 @@ namespace MediaBrowser.Api.Images
             Task.WaitAll(task);
         }
 
+        public void Delete(DeleteChannelImage request)
+        {
+            var item = _liveTv.GetChannel(request.Id);
+
+            var task = item.DeleteImage(request.Type, request.Index);
+
+            Task.WaitAll(task);
+        }
+        
         /// <summary>
         /// Deletes the specified request.
         /// </summary>

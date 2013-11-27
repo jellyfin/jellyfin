@@ -20,8 +20,7 @@
 
     .tileItem .criticRating {
         position: relative;
-        top: -1px;
-        font-size: 13px;
+        top: -2px;
     }
 
 .tileImage {

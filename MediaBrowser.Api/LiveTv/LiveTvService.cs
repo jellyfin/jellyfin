@@ -57,6 +57,17 @@ namespace MediaBrowser.Api.LiveTv
         public string ChannelId { get; set; }
     }
 
+    [Route("/LiveTv/Timers", "GET")]
+    [Api(Description = "Gets live tv timers")]
+    public class GetTimers : IReturn<QueryResult<TimerInfoDto>>
+    {
+        [ApiMember(Name = "ServiceName", Description = "Optional filter by service.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string ServiceName { get; set; }
+
+        [ApiMember(Name = "ChannelId", Description = "Optional filter by channel id.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string ChannelId { get; set; }
+    }
+
     [Route("/LiveTv/Programs", "GET")]
     [Api(Description = "Gets available live tv epgs..")]
     public class GetPrograms : IReturn<QueryResult<ProgramInfoDto>>
@@ -145,6 +156,18 @@ namespace MediaBrowser.Api.LiveTv
         public object Get(GetRecordings request)
         {
             var result = _liveTvManager.GetRecordings(new RecordingQuery
+            {
+                ChannelId = request.ChannelId,
+                ServiceName = request.ServiceName
+
+            }, CancellationToken.None).Result;
+
+            return ToOptimizedResult(result);
+        }
+
+        public object Get(GetTimers request)
+        {
+            var result = _liveTvManager.GetTimers(new TimerQuery
             {
                 ChannelId = request.ChannelId,
                 ServiceName = request.ServiceName

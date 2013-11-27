@@ -265,7 +265,7 @@
             }
         });
 
-    }).on('pageshow', "#editItemPeoplePage", function () {
+    }).on('pagebeforeshow', "#editItemPeoplePage", function () {
 
         var page = this;
 

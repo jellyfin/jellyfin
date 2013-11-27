@@ -102,7 +102,7 @@
     padding: 10px;
 }
 
-.libraryPage, .itemListContent {
+.libraryPage:not(.metadataEditorPage), .libraryPage:not(.metadataEditorPage) .itemListContent {
     background: #494949 url(images/bgflip.png) repeat-x!important;
     background-attachment: fixed!important;
 }
@@ -435,22 +435,22 @@ a.itemTag:hover {
     text-overflow: ellipsis;
 }
 
-.libraryPage ::-webkit-scrollbar {
+.libraryPage:not(.metadataEditorPage) ::-webkit-scrollbar {
     width: 10px;
     height: 10px;
 }
 
-.libraryPage ::-webkit-scrollbar-button:start:decrement,
-.libraryPage ::-webkit-scrollbar-button:end:increment {
+.libraryPage:not(.metadataEditorPage) ::-webkit-scrollbar-button:start:decrement,
+.libraryPage:not(.metadataEditorPage) ::-webkit-scrollbar-button:end:increment {
     display: none;
 }
 
-.libraryPage ::-webkit-scrollbar-track-piece {
+.libraryPage:not(.metadataEditorPage) ::-webkit-scrollbar-track-piece {
     background-color: #3b3b3b;
     -webkit-border-radius: 6px;
 }
 
-.libraryPage ::-webkit-scrollbar-thumb:vertical {
+.libraryPage:not(.metadataEditorPage) ::-webkit-scrollbar-thumb:vertical {
     -webkit-border-radius: 6px;
     background: #666 no-repeat center;
 }

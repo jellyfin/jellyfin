@@ -380,7 +380,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
 
         self.getLiveTvServices = function (options) {
 
-            var url = self.getUrl("/LiveTv/Services", options || {});
+            var url = self.getUrl("LiveTv/Services", options || {});
 
             return self.ajax({
                 type: "GET",
@@ -395,7 +395,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 throw new Error("null id");
             }
 
-            var url = self.getUrl("/LiveTv/Channels/" + id);
+            var url = self.getUrl("LiveTv/Channels/" + id);
 
             return self.ajax({
                 type: "GET",
@@ -406,7 +406,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
 
         self.getLiveTvChannels = function (options) {
 
-            var url = self.getUrl("/LiveTv/Channels", options || {});
+            var url = self.getUrl("LiveTv/Channels", options || {});
 
             return self.ajax({
                 type: "GET",
@@ -417,7 +417,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
 
         self.getLiveTvPrograms = function (options) {
 
-            var url = self.getUrl("/LiveTv/Programs", options || {});
+            var url = self.getUrl("LiveTv/Programs", options || {});
 
             return self.ajax({
                 type: "GET",
@@ -428,7 +428,76 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
 
         self.getLiveTvRecordings = function (options) {
 
-            var url = self.getUrl("/LiveTv/Recordings", options || {});
+            var url = self.getUrl("LiveTv/Recordings", options || {});
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        self.getLiveTvRecording = function (id) {
+
+            if (!id) {
+                throw new Error("null id");
+            }
+
+            var url = self.getUrl("LiveTv/Recordings/" + id);
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        self.deleteLiveTvRecording = function (id) {
+
+            if (!id) {
+                throw new Error("null id");
+            }
+
+            var url = self.getUrl("LiveTv/Recordings/" + id);
+
+            return self.ajax({
+                type: "DELETE",
+                url: url
+            });
+        };
+
+        self.cancelLiveTvTimer = function (id) {
+
+            if (!id) {
+                throw new Error("null id");
+            }
+
+            var url = self.getUrl("LiveTv/Timers/" + id);
+
+            return self.ajax({
+                type: "DELETE",
+                url: url
+            });
+        };
+
+        self.getLiveTvTimers = function (options) {
+
+            var url = self.getUrl("LiveTv/Timers", options || {});
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        self.getLiveTvTimer = function (id) {
+
+            if (!id) {
+                throw new Error("null id");
+            }
+
+            var url = self.getUrl("LiveTv/Timers/" + id);
 
             return self.ajax({
                 type: "GET",

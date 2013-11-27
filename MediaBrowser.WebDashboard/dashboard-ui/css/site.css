@@ -43,8 +43,12 @@ body {
         text-decoration: underline;
     }
 
+* {
+    font-family: 'Open Sans', Arial, Helvetica, sans-serif;
+}
+
 h1 {
-    font-family: 'Segoe UI Light', 'Open Sans', Arial, Helvetica, sans-serif;
+    font-family: 'Open Sans', Arial, Helvetica, sans-serif;
     font-weight: 200;
     font-size: 22pt;
 }
@@ -59,20 +63,20 @@ h1 {
 }
 
 h2 {
-    font-family: 'Segoe UI Semiight', 'Open Sans', Arial, Helvetica, sans-serif;
+    font-family: 'Open Sans', Arial, Helvetica, sans-serif;
     font-weight: 400;
     font-size: 20pt;
 }
 
-h1 a {
+.libraryPage:not(.metadataEditorPage) h1 a {
     font-weight: 200!important;
     text-decoration: none;
     color: #fff!important;
 }
 
-    h1 a:hover {
-        text-decoration: underline;
-    }
+h1 a:hover {
+    text-decoration: underline;
+}
 
 @media all and (min-width: 750px) {
     h1 {
@@ -217,7 +221,7 @@ form, .readOnlyContent {
 }
 
 .fieldDescription {
-    font-size: 11px;
+    font-size: 12px;
     padding-left: 5px;
 }
 

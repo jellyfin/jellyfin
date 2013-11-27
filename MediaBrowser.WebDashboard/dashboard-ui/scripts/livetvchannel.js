@@ -3,23 +3,6 @@
     var currentItem;
     var programs;
 
-    function getDisplayTime(date) {
-
-        try {
-
-            date = parseISO8601Date(date, { toLocal: true });
-
-        } catch (err) {
-            return date;
-        }
-
-        date = date.toLocaleTimeString();
-
-        date = date.replace('0:00', '0');
-
-        return date;
-    }
-
     function cancelRecording(page, id) {
 
     }
@@ -75,9 +58,9 @@
 
             html += '<td>' + startDate.toLocaleDateString() + '</td>';
 
-            html += '<td>' + getDisplayTime(program.StartDate) + '</td>';
+            html += '<td>' + LiveTvHelpers.getDisplayTime(program.StartDate) + '</td>';
 
-            html += '<td>' + getDisplayTime(program.EndDate) + '</td>';
+            html += '<td>' + LiveTvHelpers.getDisplayTime(program.EndDate) + '</td>';
 
             html += '<td>' + (program.Name || '') + '</td>';
             html += '<td>' + program.Genres.join(' / ') + '</td>';
@@ -134,6 +117,9 @@
             Dashboard.setPageTitle(name);
 
             $('.itemName', page).html(name);
+            $('.itemChannelNumber', page).html(item.Number);
+
+            $('.userDataIcons', page).html(LibraryBrowser.getUserDataIconsHtml(item));
 
             if (ApiClient.isWebSocketOpen()) {
 
@@ -164,6 +150,27 @@
 
         });
     }
+
+    window.LiveTvHelpers = {
+
+        getDisplayTime: function (date) {
+            
+            try {
+
+                date = parseISO8601Date(date, { toLocal: true });
+
+            } catch (err) {
+                return date;
+            }
+
+            date = date.toLocaleTimeString();
+
+            date = date.replace('0:00', '0');
+
+            return date;
+        }
+
+    };
 
     $(document).on('pageinit', "#liveTvChannelPage", function () {
 

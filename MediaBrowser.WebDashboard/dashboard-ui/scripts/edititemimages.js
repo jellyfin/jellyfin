@@ -153,7 +153,7 @@
             cssClass += " remoteDiscImage";
         }
         else {
-            
+
             if (currentItem.Type == "Episode") {
                 cssClass += " remoteBackdropImage";
             }
@@ -270,7 +270,7 @@
 
         return html;
     }
-    
+
     function reload(page) {
 
         Dashboard.showLoadingMsg();
@@ -278,23 +278,6 @@
         MetadataEditor.getItemPromise().done(function (item) {
 
             currentItem = item;
-
-            ApiClient.getRemoteImageProviders(getBaseRemoteOptions()).done(function(providers) {
-                
-                if (providers.length) {
-                    $('.lnkBrowseAllImages', page).removeClass('hide');
-                } else {
-                    $('.lnkBrowseAllImages', page).addClass('hide');
-                }
-                
-                ApiClient.getItemImageInfos(currentItem.Id, currentItem.Type, currentItem.Name).done(function (imageInfos) {
-
-                    renderStandardImages(page, item, imageInfos, providers);
-                    renderBackdrops(page, item, imageInfos, providers);
-                    renderScreenshots(page, item, imageInfos, providers);
-                    Dashboard.hideLoadingMsg();
-                });
-            });
 
             LibraryBrowser.renderName(item, $('.itemName', page), true);
 
@@ -306,6 +289,22 @@
                 $('#btnEditPeople', page).show();
             }
 
+            ApiClient.getRemoteImageProviders(getBaseRemoteOptions()).done(function (providers) {
+
+                if (providers.length) {
+                    $('.lnkBrowseAllImages', page).removeClass('hide');
+                } else {
+                    $('.lnkBrowseAllImages', page).addClass('hide');
+                }
+
+                ApiClient.getItemImageInfos(currentItem.Id, currentItem.Type, currentItem.Name).done(function (imageInfos) {
+
+                    renderStandardImages(page, item, imageInfos, providers);
+                    renderBackdrops(page, item, imageInfos, providers);
+                    renderScreenshots(page, item, imageInfos, providers);
+                    Dashboard.hideLoadingMsg();
+                });
+            });
         });
     }
 
@@ -317,18 +316,17 @@
 
             var image = images[i];
 
-            html += '<div style="display:inline-block;margin:5px;background:#202020;padding:10px;">';
+            html += '<div class="editorTile imageEditorTile">';
 
-            html += '<div style="float:left;height:100px;width:175px;vertical-align:top;background-repeat:no-repeat;background-size:contain;background-image:url(\'' + LibraryBrowser.getImageUrl(currentItem, image.ImageType, image.ImageIndex, { maxwidth: 300 }) + '\');"></div>';
+            html += '<div style="height:100px;vertical-align:top;background-repeat:no-repeat;background-size:contain;background-image:url(\'' + LibraryBrowser.getImageUrl(currentItem, image.ImageType, image.ImageIndex, { maxwidth: 300 }) + '\');"></div>';
 
-            html += '<div style="float:right;vertical-align:top;margin-left:1em;width:125px;">';
-            html += '<p style="margin-top:0;">' + image.ImageType + '</p>';
+            html += '<div>';
+            
+            html += '<p>' + image.ImageType + '</p>';
 
-            html += '<p>' + image.Width + ' * ' + image.Height + '</p>';
+            html += '<p>' + image.Width + ' X ' + image.Height + '</p>';
 
-            html += '<p>' + (parseInt(image.Size / 1024)) + ' KB</p>';
-
-            html += '<p style="margin-left:-5px;">';
+            html += '<p>';
 
             if (image.ImageType == "Backdrop" || image.ImageType == "Screenshot") {
 
@@ -345,11 +343,11 @@
                 }
             }
 
-            html += '<button type="button" data-icon="delete" data-mini="true" data-inline="true" data-iconpos="notext" onclick="EditItemImagesPage.deleteImage(\'' + image.ImageType + '\', ' + (image.ImageIndex != null ? image.ImageIndex : "null") + ');">Delete</button>';
-
             if (imageProviders.length) {
-                html += '<button type="button" data-icon="cloud" data-mini="true" data-inline="true" data-iconpos="notext" onclick="EditItemImagesPage.showDownloadMenu(\'' + image.ImageType + '\');">Browse Online Images</button>';
+                html += '<button type="button" data-icon="pencil" data-mini="true" data-inline="true" data-iconpos="notext" onclick="EditItemImagesPage.showDownloadMenu(\'' + image.ImageType + '\');">Browse Online Images</button>';
             }
+
+            html += '<button type="button" data-icon="delete" data-mini="true" data-inline="true" data-iconpos="notext" onclick="EditItemImagesPage.deleteImage(\'' + image.ImageType + '\', ' + (image.ImageIndex != null ? image.ImageIndex : "null") + ');">Delete</button>';
 
             html += '</p>';
 
@@ -456,7 +454,7 @@
             return function (e) {
 
                 // Render thumbnail.
-                var html = ['<img style="max-width:500px;max-height:200px;" src="', e.target.result, '" title="', escape(theFile.name), '"/>'].join('');
+                var html = ['<img style="max-width:300px;max-height:100px;" src="', e.target.result, '" title="', escape(theFile.name), '"/>'].join('');
 
                 $('#imageOutput', page).html(html);
                 $('#fldUpload', page).show();
@@ -590,7 +588,7 @@
             reloadBrowsableImages(page);
         });
 
-    }).on('pageshow', "#editItemImagesPage", function () {
+    }).on('pagebeforeshow', "#editItemImagesPage", function () {
 
         var page = this;
 
@@ -632,26 +630,3 @@
     });
 
 })(jQuery, document, window, window.FileReader, escape);
-
-function onMouseOver() {
-    
-}
-function onMouseOut() {
-    
-}
-
-function bindEvents() {
-
-    var document = 1;
-    
-    var parentDiv = document.createElement('div');
-    var childDiv = document.createElement('div');
-
-    document.body.appendChild(parentDiv);
-    parentDiv.appendChild(childDiv);
-    var myObj = '';
-    
-    var div = document.getElementById('id');
-    myObj.element = div;
-    div.obj = myObj;
-}

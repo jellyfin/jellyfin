@@ -417,7 +417,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     .ToList();
             }
 
-            var returnArray = list.ToArray();
+            var returnArray = list.OrderByDescending(i => i.StartDate)
+                .ToArray();
 
             return new QueryResult<RecordingInfoDto>
             {
@@ -451,5 +452,64 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         {
             throw new NotImplementedException();
         }
+
+        public async Task<QueryResult<TimerInfoDto>> GetTimers(TimerQuery query, CancellationToken cancellationToken)
+        {
+            var list = new List<TimerInfoDto>();
+
+            foreach (var service in GetServices(query.ServiceName, query.ChannelId))
+            {
+                var timers = await GetTimers(service, cancellationToken).ConfigureAwait(false);
+
+                list.AddRange(timers);
+            }
+
+            if (!string.IsNullOrEmpty(query.ChannelId))
+            {
+                list = list.Where(i => string.Equals(i.ChannelId, query.ChannelId))
+                    .ToList();
+            }
+
+            var returnArray = list.OrderByDescending(i => i.StartDate)
+                .ToArray();
+
+            return new QueryResult<TimerInfoDto>
+            {
+                Items = returnArray,
+                TotalRecordCount = returnArray.Length
+            };
+        }
+
+        private async Task<IEnumerable<TimerInfoDto>> GetTimers(ILiveTvService service, CancellationToken cancellationToken)
+        {
+            var timers = await service.GetTimersAsync(cancellationToken).ConfigureAwait(false);
+
+            return timers.Select(i => GetTimerInfoDto(i, service));
+        }
+
+        private TimerInfoDto GetTimerInfoDto(TimerInfo info, ILiveTvService service)
+        {
+            var id = service.Name + info.ChannelId + info.Id;
+            id = id.GetMD5().ToString("N");
+
+            var dto = new TimerInfoDto
+            {
+                ChannelName = info.ChannelName,
+                Description = info.Description,
+                EndDate = info.EndDate,
+                Name = info.Name,
+                StartDate = info.StartDate,
+                Id = id,
+                ExternalId = info.Id,
+                ChannelId = GetInternalChannelId(service.Name, info.ChannelId).ToString("N"),
+                Status = info.Status,
+                IsRecurring = info.IsRecurring,
+                RecurringDays = info.RecurringDays
+            };
+
+            return dto;
+        }
+
+
     }
 }

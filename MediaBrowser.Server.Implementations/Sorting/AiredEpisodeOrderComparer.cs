@@ -22,7 +22,7 @@ namespace MediaBrowser.Server.Implementations.Sorting
 
                 if (val != 0)
                 {
-                    return val;
+                    //return val;
                 }
             }
 
@@ -49,8 +49,8 @@ namespace MediaBrowser.Server.Implementations.Sorting
 
         private int Compare(Episode x, Episode y)
         {
-            var isXSpecial = (x.ParentIndexNumber ?? -1) == 0;
-            var isYSpecial = (y.ParentIndexNumber ?? -1) == 0;
+            var isXSpecial = (x.PhysicalSeasonNumber ?? -1) == 0;
+            var isYSpecial = (y.PhysicalSeasonNumber ?? -1) == 0;
 
             if (isXSpecial && isYSpecial)
             {
@@ -67,12 +67,12 @@ namespace MediaBrowser.Server.Implementations.Sorting
                 return CompareEpisodeToSpecial(x, y);
             }
 
-            return CompareEpisodeToSpecial(x, y) * -1;
+            return CompareEpisodeToSpecial(y, x) * -1;
         }
 
         private int CompareEpisodeToSpecial(Episode x, Episode y)
         {
-            var xSeason = x.ParentIndexNumber ?? -1;
+            var xSeason = x.PhysicalSeasonNumber ?? -1;
             var ySeason = y.AirsAfterSeasonNumber ?? y.AirsBeforeSeasonNumber ?? -1;
 
             if (xSeason != ySeason)
@@ -85,8 +85,9 @@ namespace MediaBrowser.Server.Implementations.Sorting
             // Compare episode number
 
             // Add 1 to to non-specials to account for AirsBeforeEpisodeNumber
-            var xEpisode = (x.IndexNumber ?? 0) * 1000 + 1;
-            var yEpisode = (y.AirsBeforeEpisodeNumber ?? 0) * 1000;
+            var xEpisode = x.IndexNumber ?? -1;
+            xEpisode++;
+            var yEpisode = y.AirsBeforeEpisodeNumber ?? 10000;
 
             return xEpisode.CompareTo(yEpisode);
         }
@@ -119,8 +120,8 @@ namespace MediaBrowser.Server.Implementations.Sorting
 
         private int CompareEpisodes(Episode x, Episode y)
         {
-            var xValue = ((x.ParentIndexNumber ?? -1) * 1000) + (x.IndexNumber ?? -1);
-            var yValue = ((y.ParentIndexNumber ?? -1) * 1000) + (y.IndexNumber ?? -1);
+            var xValue = ((x.PhysicalSeasonNumber ?? -1) * 1000) + (x.IndexNumber ?? -1);
+            var yValue = ((y.PhysicalSeasonNumber ?? -1) * 1000) + (y.IndexNumber ?? -1);
 
             return xValue.CompareTo(yValue);
         }

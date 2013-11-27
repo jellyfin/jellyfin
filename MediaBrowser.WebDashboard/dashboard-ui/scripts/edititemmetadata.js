@@ -251,7 +251,7 @@
 
             themes: {
                 theme: 'mb3',
-                url: 'thirdparty/jstree1.0fix2/themes/mb3/style.css?v=' + Dashboard.initialServerVersion
+                url: 'thirdparty/jstree1.0fix3/themes/mb3/style.css?v=' + Dashboard.initialServerVersion
             }
 
         }).off('select_node.jstree').on('select_node.jstree', function (event, data) {
@@ -468,14 +468,14 @@
         MetadataEditor.getItemPromise().done(function (item) {
 
             if (item.LocationType == "Offline") {
-                $('#ulSave', page).hide();
+                $('.saveButtonContainer', page).hide();
             } else {
-                $('#ulSave', page).show();
+                $('.saveButtonContainer', page).show();
             }
 
             $('#btnRefresh', page).button('enable');
             $('#btnDelete', page).button('enable');
-            $('#btnSave', page).button('enable');
+            $('.btnSave', page).button('enable');
 
             $('#refreshLoading', page).hide();
 
@@ -1348,7 +1348,7 @@
 
             $('#btnDelete', page).button('disable');
             $('#btnRefresh', page).button('disable');
-            $('#btnSave', page).button('disable');
+            $('.btnSave', page).button('disable');
 
             $('#refreshLoading', page).show();
 
@@ -1393,7 +1393,7 @@
 
                     $('#btnDelete', page).button('disable');
                     $('#btnRefresh', page).button('disable');
-                    $('#btnSave', page).button('disable');
+                    $('.btnSave', page).button('disable');
 
                     $('#refreshLoading', page).show();
 

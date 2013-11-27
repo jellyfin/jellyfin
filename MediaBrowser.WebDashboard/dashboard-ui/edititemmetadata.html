@@ -4,7 +4,7 @@
     <title>Media Browser</title>
 </head>
 <body>
-    <div id="editItemMetadataPage" data-role="page" class="page libraryPage metadataEditorPage" data-theme="a">
+    <div id="editItemMetadataPage" data-role="page" class="page libraryPage metadataEditorPage">
         <div data-role="content editPageContent">
             <div class="editPageSidebar">
                 <div class="libraryTree">
@@ -30,20 +30,26 @@
                                 <div class="circle1"></div>
                                 <div style="margin-top: -15px;"></div>
                             </div>
-                            <div class="fldRefresh" style="display: none; vertical-align: bottom;">
-                                <button id="btnRefresh" type="button" data-icon="refresh" data-mini="true" data-theme="b" data-inline="true">Refresh</button>
+                            <div style="vertical-align: bottom; display: inline-block;">
+                                <button class="saveButtonContainer btnSave" type="submit" data-theme="b" data-icon="ok" data-mini="true" data-inline="true">
+                                    Save
+                                </button>
                             </div>
-                            <div id="fldRecursive" style="display: none; vertical-align: bottom;">
-                                <label for="chkRecursive">Refresh child items</label>
-                                <input type="checkbox" id="chkRecursive" name="chkRecursive" data-mini="true" checked="checked" data-inline="true" />
-                            </div>
-                            <div style="display: inline-block;">
-                                <div id="fldDelete" style="vertical-align: bottom; display: none;">
-                                    <button id="btnDelete" type="button" data-icon="delete" data-mini="true" data-theme="a" data-inline="true">Delete</button>
+                            <div style="display: inline-block; vertical-align: bottom;">
+                                <div class="fldRefresh" style="display: none;">
+                                    <button id="btnRefresh" type="button" data-icon="refresh" data-mini="true" data-inline="true">Refresh</button>
                                 </div>
                             </div>
-                            <div class="fldRefresh" style="display: none; margin: .5em 0 1em;">
-                                <div class="fieldDescription">A refresh will cause internet metadata to be re-downloaded (if enabled, and dependent on metadata settings).</div>
+                            <div style="display: inline-block; vertical-align: bottom;">
+                                <div id="fldRecursive" style="display: none;">
+                                    <label for="chkRecursive">Refresh child items</label>
+                                    <input type="checkbox" id="chkRecursive" name="chkRecursive" data-mini="true" checked="checked" data-inline="true" />
+                                </div>
+                            </div>
+                            <div style="vertical-align: bottom; display: inline-block;">
+                                <div id="fldDelete" style="display: none;">
+                                    <button id="btnDelete" type="button" data-icon="delete" data-mini="true" data-theme="a" data-inline="true">Delete</button>
+                                </div>
                             </div>
                         </div>
 
@@ -199,7 +205,7 @@
                                 </select>
                             </div>
                         </div>
-                        <div data-role="collapsible" data-collapsed="false">
+                        <div data-role="collapsible" data-mini="true" data-collapsed="false">
                             <h3>External Id's</h3>
                             <div>
                                 <p id="albumAssociationMessage" style="display: none;">Associate this album with a movie, tv series and/or game, and we'll be able to link it to other items in your library.</p>
@@ -280,7 +286,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div data-role="collapsible" id="genresCollapsible" style="display: none;">
+                        <div data-role="collapsible" data-mini="true" id="genresCollapsible" style="display: none;">
                             <h3>Genres</h3>
                             <div data-role="editableListviewContainer">
                                 <div data-role="fieldcontain">
@@ -290,7 +296,7 @@
                                 <ul data-role="listview" data-inset="true" data-split-icon="delete" id="listGenres"></ul>
                             </div>
                         </div>
-                        <div data-role="collapsible" id="studiosCollapsible" style="display: none;">
+                        <div data-role="collapsible" data-mini="true" id="studiosCollapsible" style="display: none;">
                             <h3>Studios</h3>
                             <div data-role="editableListviewContainer">
                                 <div data-role="fieldcontain">
@@ -300,7 +306,7 @@
                                 <ul data-role="listview" data-inset="true" data-split-icon="delete" id="listStudios"></ul>
                             </div>
                         </div>
-                        <div data-role="collapsible" id="tagsCollapsible" style="display: none;">
+                        <div data-mini="true" data-role="collapsible" id="tagsCollapsible" style="display: none;">
                             <h3>Tags</h3>
                             <div data-role="editableListviewContainer">
                                 <div data-role="fieldcontain">
@@ -310,12 +316,12 @@
                                 <ul data-role="listview" data-inset="true" data-split-icon="delete" id="listTags"></ul>
                             </div>
                         </div>
-                        <div data-role="collapsible" id="metadataSettingsCollapsible" style="display: none;">
+                        <div data-role="collapsible" data-mini="true" id="metadataSettingsCollapsible" style="display: none;">
                             <h3>Metadata Settings</h3>
                             <div>
                                 <p>
                                     <label for="enableInternetProviders">Enable internet metadata providers for this item.</label>
-                                    <input type="checkbox" name="enableInternetProviders" id="enableInternetProviders" onchange="EditItemMetadataPage.setProviderSettingsContainerVisibility(this)" />
+                                    <input data-mini="true" type="checkbox" name="enableInternetProviders" id="enableInternetProviders" onchange="EditItemMetadataPage.setProviderSettingsContainerVisibility(this)" />
                                 </p>
                                 <p>
                                     Slide a field to 'off' to lock it and prevent it's data from being changed.
@@ -324,9 +330,9 @@
                                 </div>
                             </div>
                         </div>
-                        <ul id="ulSave" data-role="listview" class="ulForm" style="display: none;">
+                        <ul data-role="listview" class="saveButtonContainer ulForm" style="display: none;">
                             <li>
-                                <button id="btnSave" type="submit" data-theme="b" data-icon="ok">
+                                <button class="btnSave" type="submit" data-theme="b" data-icon="ok" data-mini="true">
                                     Save
                                 </button>
                             </li>

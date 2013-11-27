@@ -14,14 +14,16 @@
 
             renderHeader(page, item);
 
-            $('#itemImage', page).html(LibraryBrowser.getDetailImageHtml(item));
-
             LibraryBrowser.renderName(item, $('.itemName', page));
             LibraryBrowser.renderParentName(item, $('.parentName', page));
 
             var context = getContext(item);
 
             Dashboard.getCurrentUser().done(function (user) {
+
+                var imageHref = user.Configuration.IsAdministrator ? "edititemimages.html?id=" + item.Id : "";
+                
+                $('#itemImage', page).html(LibraryBrowser.getDetailImageHtml(item, imageHref));
 
                 setInitialCollapsibleState(page, item, context, user);
                 renderDetails(page, item, context);

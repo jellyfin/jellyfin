@@ -1504,7 +1504,7 @@
                 itemId = item.Name;
             }
 
-            if (item.MediaType || item.IsFolder) {
+            if ((item.MediaType || item.IsFolder) && item.Type != "Channel") {
                 if (userData.Played) {
                     html += '<img data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgPlayed" src="css/images/userdata/playedon.png" alt="Played" title="Played" onclick="LibraryBrowser.markPlayed(this);return false;" />';
                 } else {
@@ -1701,7 +1701,7 @@
             }
         },
 
-        getDetailImageHtml: function (item) {
+        getDetailImageHtml: function (item, href) {
 
             var imageTags = item.ImageTags || {};
 
@@ -1905,6 +1905,9 @@
             else if (item.Type == "Genre" || item.Type == "Studio") {
                 url = "css/images/items/detail/video.png";
             }
+            else if (item.Type == "Channel") {
+                url = "css/images/items/detail/tv.png";
+            }
             else {
                 url = "css/images/items/detail/video.png";
             }
@@ -1917,7 +1920,9 @@
                 identifierValue = ApiClient.encodeName(item.Name);
             }
 
-            var href = "itemgallery.html?" + identifierName + "=" + identifierValue;
+            if (!href) {
+                href = "itemgallery.html?" + identifierName + "=" + identifierValue;
+            }
 
             var linkToGallery = LibraryBrowser.shouldDisplayGallery(item);
 
@@ -2332,6 +2337,8 @@
         html += '<a class="viewMenuLink homeMenuLink" href="index.html" title="Home"><img src="css/images/mblogoicon.png" alt="Home" /></a>';
 
         html += '<a class="viewMenuLink viewMenuImageLink remoteControlMenuLink" href="#" onclick="RemoteControl.showMenu();" title="Remote Control"><img src="css/images/remote.png" alt="Remote Control" /></a>';
+
+        html += '<a class="viewMenuLink viewMenuImageLink editorMenuLink" href="edititemmetadata.html" title="Metadata Manager"><img src="css/images/editor.png" alt=""Metadata Manager" /></a>';
 
         html += '<div class="viewMenuSecondary">';
 
