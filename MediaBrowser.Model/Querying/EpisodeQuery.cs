@@ -20,4 +20,23 @@ namespace MediaBrowser.Model.Querying
             ExcludeLocationTypes = new LocationType[] { };
         }
     }
+
+    public class SeasonQuery
+    {
+        public string UserId { get; set; }
+
+        public string SeriesId { get; set; }
+
+        public LocationType[] ExcludeLocationTypes { get; set; }
+
+        public ItemFields[] Fields { get; set; }
+
+        public bool? IsSpecialSeason { get; set; }
+
+        public SeasonQuery()
+        {
+            Fields = new ItemFields[] { };
+            ExcludeLocationTypes = new LocationType[] { };
+        }
+    }
 }

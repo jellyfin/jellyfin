@@ -1504,7 +1504,7 @@
                 itemId = item.Name;
             }
 
-            if ((item.MediaType || item.IsFolder) && item.Type != "Channel") {
+            if ((item.MediaType || item.IsFolder) && item.Type != "Channel" && item.Type != "MusicArtist") {
                 if (userData.Played) {
                     html += '<img data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgPlayed" src="css/images/userdata/playedon.png" alt="Played" title="Played" onclick="LibraryBrowser.markPlayed(this);return false;" />';
                 } else {

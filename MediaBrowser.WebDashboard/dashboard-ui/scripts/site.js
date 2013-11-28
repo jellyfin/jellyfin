@@ -255,7 +255,7 @@ var Dashboard = {
     showServerRestartWarning: function (systemInfo) {
 
         var html = '<span style="margin-right: 1em;">Please restart Media Browser Server to finish updating.</span>';
-        
+
         if (systemInfo.CanSelfRestart) {
             html += '<button type="button" data-icon="refresh" onclick="$(this).button(\'disable\');Dashboard.restartServer();" data-theme="b" data-inline="true" data-mini="true">Restart Server</button>';
         }
@@ -279,7 +279,7 @@ var Dashboard = {
     reloadPage: function () {
 
         var currentUrl = window.location.toString().toLowerCase();
-        
+
         // If they're on a plugin config page just go back to the dashboard
         // The plugin may not have been loaded yet, or could have been uninstalled
         if (currentUrl.indexOf('configurationpage') != -1) {
@@ -643,6 +643,8 @@ var Dashboard = {
 
                 }
             }
+
+            html += '<a href="edititemmetadata.html" style="margin-top: .5em;">Metadata Manager</a>';
 
             // collapsible
             html += '</div>';
@@ -1121,8 +1123,8 @@ var Dashboard = {
 
         return parts.join(':');
     },
-    
-    ratePackage: function(link) {
+
+    ratePackage: function (link) {
         var id = link.getAttribute('data-id');
         var name = link.getAttribute('data-name');
         var rating = link.getAttribute('data-rating');
@@ -1132,25 +1134,25 @@ var Dashboard = {
             header: "Rate and review " + name,
             id: id,
             rating: rating,
-            callback: function(review) {
+            callback: function (review) {
                 console.log(review);
                 dialog.close();
 
-                ApiClient.createPackageReview(review).done(function() {
+                ApiClient.createPackageReview(review).done(function () {
                     Dashboard.alert("Thank you for your review");
                 });
             }
         });
     },
-    
-    getStoreRatingHtml: function(rating, id, name, noLinks) {
+
+    getStoreRatingHtml: function (rating, id, name, noLinks) {
 
         var html = "<div style='margin-left: 5px; margin-right: 5px; display: inline-block'>";
         if (!rating) rating = 0;
 
         for (var i = 1; i <= 5; i++) {
             var title = noLinks ? rating + " stars" : "Rate " + i + (i > 1 ? " stars" : " star");
-            
+
             html += noLinks ? "" : "<a href='#' data-id=" + id + " data-name='" + name + "' data-rating=" + i + " onclick='Dashboard.ratePackage(this);' >";
             if (rating <= i - 1) {
                 html += "<div class='storeStarRating emptyStarRating' title='" + title + "'></div>";

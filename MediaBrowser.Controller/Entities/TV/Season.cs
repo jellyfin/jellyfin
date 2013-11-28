@@ -1,9 +1,9 @@
-﻿using System.Linq;
-using MediaBrowser.Controller.Library;
+﻿using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.Serialization;
 
 namespace MediaBrowser.Controller.Entities.TV
@@ -171,6 +171,12 @@ namespace MediaBrowser.Controller.Entities.TV
         public bool IsMissingOrVirtualUnaired
         {
             get { return LocationType == Model.Entities.LocationType.Virtual && Children.OfType<Episode>().All(i => i.IsVirtualUnaired || i.IsMissingEpisode); }
+        }
+
+        [IgnoreDataMember]
+        public bool IsSpecialSeason
+        {
+            get { return (IndexNumber ?? -1) == 0; }
         }
     }
 }

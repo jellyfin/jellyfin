@@ -58,7 +58,7 @@ namespace MediaBrowser.Api
     }
 
     [Route("/Shows/{Id}/Episodes", "GET")]
-    [Api(Description = "Finds tv shows similar to a given one.")]
+    [Api(Description = "Gets episodes for a tv season")]
     public class GetEpisodes : IReturn<ItemsResult>, IHasItemFields
     {
         /// <summary>
@@ -83,6 +83,34 @@ namespace MediaBrowser.Api
 
         [ApiMember(Name = "ExcludeLocationTypes", Description = "Optional. If specified, results will be filtered based on LocationType. This allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string ExcludeLocationTypes { get; set; }
+    }
+
+    [Route("/Shows/{Id}/Seasons", "GET")]
+    [Api(Description = "Gets seasons for a tv series")]
+    public class GetSeasons : IReturn<ItemsResult>, IHasItemFields
+    {
+        /// <summary>
+        /// Gets or sets the user id.
+        /// </summary>
+        /// <value>The user id.</value>
+        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public Guid UserId { get; set; }
+
+        /// <summary>
+        /// Fields to return within the items, in addition to basic information
+        /// </summary>
+        /// <value>The fields.</value>
+        [ApiMember(Name = "Fields", Description = "Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: Budget, Chapters, CriticRatingSummary, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, OverviewHtml, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines, TrailerUrls", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string Fields { get; set; }
+
+        [ApiMember(Name = "Id", Description = "The series id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public Guid Id { get; set; }
+
+        [ApiMember(Name = "ExcludeLocationTypes", Description = "Optional. If specified, results will be filtered based on LocationType. This allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string ExcludeLocationTypes { get; set; }
+
+        [ApiMember(Name = "IsSpecialSeason", Description = "Optional. Filter by special season.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool? IsSpecialSeason { get; set; }
     }
 
     /// <summary>
@@ -314,6 +342,64 @@ namespace MediaBrowser.Api
             return items;
         }
 
+        public object Get(GetSeasons request)
+        {
+            var user = _userManager.GetUserById(request.UserId);
+
+            var series = _libraryManager.GetItemById(request.Id) as Series;
+
+            var fields = request.GetItemFields().ToList();
+
+            var seasons = series.GetChildren(user, true)
+                .OfType<Season>();
+
+            var sortOrder = ItemSortBy.SortName;
+
+            if (request.IsSpecialSeason.HasValue)
+            {
+                var val = request.IsSpecialSeason.Value;
+
+                seasons = seasons.Where(i => i.IsSpecialSeason == val);
+            }
+
+            var config = user.Configuration;
+
+            if (!config.DisplayMissingEpisodes && !config.DisplayUnairedEpisodes)
+            {
+                seasons = seasons.Where(i => !i.IsMissingOrVirtualUnaired);
+            }
+            else
+            {
+                if (!config.DisplayMissingEpisodes)
+                {
+                    seasons = seasons.Where(i => !i.IsMissingSeason);
+                }
+                if (!config.DisplayUnairedEpisodes)
+                {
+                    seasons = seasons.Where(i => !i.IsVirtualUnaired);
+                }
+            }
+
+            // ExcludeLocationTypes
+            if (!string.IsNullOrEmpty(request.ExcludeLocationTypes))
+            {
+                var vals = request.ExcludeLocationTypes.Split(',');
+                seasons = seasons.Where(f => !vals.Contains(f.LocationType.ToString(), StringComparer.OrdinalIgnoreCase));
+            }
+
+            seasons = _libraryManager.Sort(seasons, user, new[] { sortOrder }, SortOrder.Ascending)
+                .Cast<Season>();
+
+            var returnItems = seasons.Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+                .ToArray();
+
+            return new ItemsResult
+            {
+                TotalRecordCount = returnItems.Length,
+                Items = returnItems
+            };
+        }
+
         public object Get(GetEpisodes request)
         {
             var user = _userManager.GetUserById(request.UserId);
@@ -351,7 +437,7 @@ namespace MediaBrowser.Api
                 var vals = request.ExcludeLocationTypes.Split(',');
                 episodes = episodes.Where(f => !vals.Contains(f.LocationType.ToString(), StringComparer.OrdinalIgnoreCase));
             }
-            
+
             episodes = _libraryManager.Sort(episodes, user, new[] { sortOrder }, SortOrder.Ascending)
                 .Cast<Episode>();
 

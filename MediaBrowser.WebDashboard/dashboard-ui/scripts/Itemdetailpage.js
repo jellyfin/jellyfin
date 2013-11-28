@@ -22,7 +22,7 @@
             Dashboard.getCurrentUser().done(function (user) {
 
                 var imageHref = user.Configuration.IsAdministrator ? "edititemimages.html?id=" + item.Id : "";
-                
+
                 $('#itemImage', page).html(LibraryBrowser.getDetailImageHtml(item, imageHref));
 
                 setInitialCollapsibleState(page, item, context, user);
@@ -509,21 +509,32 @@
 
         var promise;
 
-        if (item.Type == "Season" && item.IndexNumber != null) {
+        if (item.Type == "Series") {
 
-            promise = ApiClient.getEpisodes(item.SeriesId, {
+            promise = ApiClient.getSeasons(item.Id, {
 
-                season: item.IndexNumber,
                 userId: Dashboard.getCurrentUserId()
             });
         }
+        else if (item.Type == "Season" && item.IndexNumber != null) {
 
-        else if (item.Type == "Series" || item.Type == "Season") {
-            if (!user.Configuration.DisplayMissingEpisodes) {
-                query.IsMissing = false;
-            }
-            if (!user.Configuration.DisplayUnairedEpisodes) {
-                query.IsVirtualUnaired = false;
+            if (item.IndexNumber == null) {
+
+                // If there's no known season number, just use generic folder browsing
+                if (!user.Configuration.DisplayMissingEpisodes) {
+                    query.IsMissing = false;
+                }
+                if (!user.Configuration.DisplayUnairedEpisodes) {
+                    query.IsVirtualUnaired = false;
+                }
+            } else {
+
+                // Use dedicated episodes endpoint
+                promise = ApiClient.getEpisodes(item.SeriesId, {
+
+                    season: item.IndexNumber,
+                    userId: Dashboard.getCurrentUserId()
+                });
             }
         }
 
@@ -607,7 +618,7 @@
 
         var html = '';
 
-        var reviews = result.ItemReviews;
+        var reviews = result.Items;
 
         for (var i = 0, length = reviews.length; i < length; i++) {
 

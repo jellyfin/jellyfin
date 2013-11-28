@@ -72,6 +72,11 @@
     height: 180px;
 }
 
+/* Fixes button running outside of list */
+.btnRemoveFromEditorList .ui-btn-inner {
+    padding-right: 0!important;
+}
+
 @media all and (min-width: 500px) {
 
     .availableImagesList {
@@ -130,6 +135,14 @@
 
 .editorTile p {
     margin: .5em 0;
+}
+
+.editorTile .tileContent{
+    color: #000;
+}
+
+.editorTile .ui-field-contain{
+    margin: 0 0 .5em;
 }
 
 @media all and (min-width: 700px) {

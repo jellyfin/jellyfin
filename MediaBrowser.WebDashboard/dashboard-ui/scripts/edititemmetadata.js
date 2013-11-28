@@ -151,17 +151,11 @@
 
         if (node == '-1') {
 
-            callback({ attr: { id: 'root', rel: 'folder', itemtype: 'root' }, data: 'Root', state: 'open' });
+            loadChildrenOfRootNode(callback);
             return;
         }
 
         var id = node.attr("id");
-
-        if (id == 'root') {
-
-            loadChildrenOfRootNode(callback);
-            return;
-        }
 
         if (id == 'livetv') {
 
@@ -989,7 +983,7 @@
         }
         var html = '';
         for (var i = 0; i < items.length; i++) {
-            html += '<li><a class="data">' + items[i] + '</a><a href="#" onclick="EditItemMetadataPage.removeElementFromListview(this)"></a></li>';
+            html += '<li data-mini="true"><a class="data">' + items[i] + '</a><a href="#" onclick="EditItemMetadataPage.removeElementFromListview(this)" class="btnRemoveFromEditorList"></a></li>';
         }
         list.html(html).listview('refresh');
     }

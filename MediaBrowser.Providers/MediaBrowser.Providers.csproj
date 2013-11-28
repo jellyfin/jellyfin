@@ -135,6 +135,7 @@
     <Compile Include="TV\TvdbPersonImageProvider.cs" />
     <Compile Include="TV\TvdbPrescanTask.cs" />
     <Compile Include="TV\TvdbSeriesImageProvider.cs" />
+    <Compile Include="UserRootFolderNameProvider.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">

@@ -27,7 +27,6 @@
 .viewMenuBar {
     background: #444;
     background-image: linear-gradient(#444,#2d2d2d);
-    font-size: 13px;
     font-weight: bold;
     position: fixed;
     right: 0;
@@ -35,6 +34,7 @@
     z-index: 1000;
     top: 0;
     border-bottom: 1px solid #111;
+    font-size: 13px;
 }
 
 .viewSummary {
@@ -47,6 +47,7 @@
     padding: 7px .5em 6px;
     display: inline-block;
     vertical-align: middle;
+    font-family: Arial;
 }
 
     .viewMenuLink:hover {
@@ -348,7 +349,6 @@ a.itemTag:hover {
     bottom: 0;
     left: 0;
     right: 0;
-    font-size: 13px;
     background-color: rgba(0,0,0,0.7);
 }
 
@@ -421,7 +421,7 @@ a.itemTag:hover {
         color: #000!important;
     }
 
-.itemName {
+.inlineItemName {
     font-size: 22px;
 }
 
@@ -782,8 +782,6 @@ a.itemTag:hover {
 
 .userDataIcons .itemProgressText {
     vertical-align: top;
-    position: relative;
-    top: 3px;
     margin-right: 1.5em;
 }
 
@@ -794,7 +792,6 @@ a.itemTag:hover {
 }
 
 .itemProgressText {
-    font-size: 12px;
     color: #ddd;
     vertical-align: middle;
 }

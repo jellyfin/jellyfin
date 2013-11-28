@@ -6,7 +6,7 @@
 
 .txtSearch {
     vertical-align: middle;
-    font: 13px arial,sans-serif;
+    font-size: 14px;
     margin: 0 .15em 0 0;
     width: 80px;
     padding: 0;
@@ -96,7 +96,7 @@
 }
 
 .searchHintSecondaryText {
-    font-size: 11px;
+    font-size: 12px;
     color: #999;
     margin-top: 3px;
     white-space: nowrap;
