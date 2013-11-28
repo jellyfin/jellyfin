@@ -344,7 +344,7 @@
             }
 
             if (imageProviders.length) {
-                html += '<button type="button" data-icon="pencil" data-mini="true" data-inline="true" data-iconpos="notext" onclick="EditItemImagesPage.showDownloadMenu(\'' + image.ImageType + '\');">Browse Online Images</button>';
+                html += '<button type="button" data-icon="cloud" data-mini="true" data-inline="true" data-iconpos="notext" onclick="EditItemImagesPage.showDownloadMenu(\'' + image.ImageType + '\');">Browse Online Images</button>';
             }
 
             html += '<button type="button" data-icon="delete" data-mini="true" data-inline="true" data-iconpos="notext" onclick="EditItemImagesPage.deleteImage(\'' + image.ImageType + '\', ' + (image.ImageIndex != null ? image.ImageIndex : "null") + ');">Delete</button>';
