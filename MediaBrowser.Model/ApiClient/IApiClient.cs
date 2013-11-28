@@ -231,6 +231,13 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="query">The query.</param>
         /// <returns>Task{ItemsResult}.</returns>
         Task<ItemsResult> GetEpisodesAsync(EpisodeQuery query);
+
+        /// <summary>
+        /// Gets the seasons asynchronous.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>Task{ItemsResult}.</returns>
+        Task<ItemsResult> GetSeasonsAsync(SeasonQuery query);
         
         /// <summary>
         /// Queries for items
