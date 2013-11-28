@@ -864,25 +864,33 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                 throw new ArgumentNullException("outputPath");
             }
 
-            var vf = "scale=iw*sar:ih, scale=600:-1";
-
+            var vf = "crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,scale=600:600/dar";
+						// apply some filters to thumbnail extracted below (below) crop any black lines that we made and get the correct ar then scale to width 600. This filter chain may have adverse effects on recorded tv thumbnails if ar changes during presentation ex. commercials @ diff ar
             if (threedFormat.HasValue)
             {
                 switch (threedFormat.Value)
                 {
                     case Video3DFormat.HalfSideBySide:
+                    vf = "crop=iw/2:ih:0:0,scale=(iw*2):ih,setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,scale=600:600/dar";
+                    // hsbs crop width in half,scale to correct size, set the display aspect,crop out any black bars we may have made the scale width to 600. Work out the correct height based on the display aspect it will maintain the aspect where -1 in this case (3d) may not.
+                        break;
                     case Video3DFormat.FullSideBySide:
-                        vf = "crop=iw/2:ih:0:0,scale=(iw*2):ih,scale=600:-1";
+                        vf = "crop=iw/2:ih:0:0,setdar=dar=a,,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,scale=600:600/dar";
+                        //fsbs crop width in half,set the display aspect,crop out any black bars we may have made the scale width to 600.
                         break;
                     case Video3DFormat.HalfTopAndBottom:
+                        vf = "crop=iw:ih/2:0:0,scale=(iw*2):ih),setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,scale=600:600/dar";
+                        //htab crop heigh in half,scale to correct size, set the display aspect,crop out any black bars we may have made the scale width to 600
+                        break; 
                     case Video3DFormat.FullTopAndBottom:
-                        vf = "crop=iw:ih/2:0:0,scale=iw:(ih*2),scale=600:-1";
+                        vf = "crop=iw:ih/2:0:0,setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,scale=600:600/dar";
+                        // ftab crop heigt in half, set the display aspect,crop out any black bars we may have made the scale width to 600
                         break;
                 }
             }
 
-            var args = useIFrame ? string.Format("-i {0} -threads 0 -v quiet -vframes 1 -filter:v select=\"eq(pict_type\\,I)\" -vf \"{2}\" -f image2 \"{1}\"", inputPath, outputPath, vf) :
-                string.Format("-i {0} -threads 0 -v quiet -vframes 1 -vf \"{2}\" -f image2 \"{1}\"", inputPath, outputPath, vf);
+            var args = useIFrame ? string.Format("-i {0} -threads 0 -v quiet -vframes 1 -vf \"thumbnail,{2}\" -f image2 \"{1}\"", inputPath, outputPath, vf) :
+                string.Format("-i {0} -threads 0 -v quiet -vframes 1 -vf \"{2}\" -f image2 \"{1}\"", inputPath, outputPath, vf); //use ffmpeg to sample 100 (we can drop this if required using thumbnail=50 for 50 frames) frames and pick the best thumbnail. Have a fall back jic
 
             var probeSize = GetProbeSizeArgument(type);
 
