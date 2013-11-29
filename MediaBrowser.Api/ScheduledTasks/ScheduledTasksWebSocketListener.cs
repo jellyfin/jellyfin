@@ -46,8 +46,10 @@ namespace MediaBrowser.Api.ScheduledTasks
         /// <returns>Task{IEnumerable{TaskInfo}}.</returns>
         protected override Task<IEnumerable<TaskInfo>> GetDataToSend(object state)
         {
-            return Task.FromResult(TaskManager.ScheduledTasks.OrderBy(i => i.Name)
-                         .Select(ScheduledTaskHelpers.GetTaskInfo));
+            return Task.FromResult(TaskManager.ScheduledTasks
+                .OrderBy(i => i.Name)
+                .Select(ScheduledTaskHelpers.GetTaskInfo)
+                .Where(i => !i.IsHidden));
         }
     }
 }

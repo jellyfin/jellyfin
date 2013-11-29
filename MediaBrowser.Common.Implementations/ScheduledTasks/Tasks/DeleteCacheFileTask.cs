@@ -29,7 +29,6 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
         /// <summary>
         /// Initializes a new instance of the <see cref="DeleteCacheFileTask" /> class.
         /// </summary>
-        /// <param name="appPaths">The app paths.</param>
         public DeleteCacheFileTask(IApplicationPaths appPaths, ILogger logger, IFileSystem fileSystem)
         {
             ApplicationPaths = appPaths;

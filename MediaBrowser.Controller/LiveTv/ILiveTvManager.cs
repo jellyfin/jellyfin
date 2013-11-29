@@ -25,6 +25,20 @@ namespace MediaBrowser.Controller.LiveTv
         Task ScheduleRecording(string programId);
 
         /// <summary>
+        /// Deletes the recording.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>Task.</returns>
+        Task DeleteRecording(string id);
+
+        /// <summary>
+        /// Cancels the timer.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>Task.</returns>
+        Task CancelTimer(string id);
+        
+        /// <summary>
         /// Adds the parts.
         /// </summary>
         /// <param name="services">The services.</param>

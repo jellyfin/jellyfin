@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Model.LiveTv;
 using System;
-using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.LiveTv
 {
@@ -21,6 +20,12 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         public string ChannelName { get; set; }
 
+        /// <summary>
+        /// Gets or sets the program identifier.
+        /// </summary>
+        /// <value>The program identifier.</value>
+        public string ProgramId { get; set; }
+        
         /// <summary>
         /// Name of the recording.
         /// </summary>
@@ -52,16 +57,5 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value><c>true</c> if this instance is recurring; otherwise, <c>false</c>.</value>
         public bool IsRecurring { get; set; }
-
-        /// <summary>
-        /// Gets or sets the recurring days.
-        /// </summary>
-        /// <value>The recurring days.</value>
-        public List<DayOfWeek> RecurringDays { get; set; }
-
-        public TimerInfo()
-        {
-            RecurringDays = new List<DayOfWeek>();
-        }
     }
 }

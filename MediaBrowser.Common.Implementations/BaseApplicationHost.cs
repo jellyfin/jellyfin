@@ -218,7 +218,7 @@ namespace MediaBrowser.Common.Implementations
             try
             {
                 // Increase the max http request limit
-                ServicePointManager.DefaultConnectionLimit = Math.Max(48, ServicePointManager.DefaultConnectionLimit);
+                ServicePointManager.DefaultConnectionLimit = Math.Max(96, ServicePointManager.DefaultConnectionLimit);
             }
             catch (Exception ex)
             {

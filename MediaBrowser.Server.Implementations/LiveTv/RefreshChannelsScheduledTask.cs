@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.LiveTv
 {
-    class RefreshChannelsScheduledTask : IScheduledTask
+    class RefreshChannelsScheduledTask : IScheduledTask, IConfigurableScheduledTask
     {
         private readonly ILiveTvManager _liveTvManager;
 
@@ -33,7 +33,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         public Task Execute(System.Threading.CancellationToken cancellationToken, IProgress<double> progress)
         {
-            var manager = (LiveTvManager) _liveTvManager;
+            var manager = (LiveTvManager)_liveTvManager;
 
             return manager.RefreshChannels(progress, cancellationToken);
         }
@@ -49,6 +49,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
                 new IntervalTrigger{ Interval = TimeSpan.FromHours(2)}
             };
+        }
+
+        public bool IsHidden
+        {
+            get { return _liveTvManager.Services.Count == 0; }
         }
     }
 }

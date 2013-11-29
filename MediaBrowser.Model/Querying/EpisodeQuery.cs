@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Model.Entities;
-
+﻿
 namespace MediaBrowser.Model.Querying
 {
     public class EpisodeQuery
@@ -8,7 +7,9 @@ namespace MediaBrowser.Model.Querying
 
         public string SeriesId { get; set; }
 
-        public LocationType[] ExcludeLocationTypes { get; set; }
+        public bool? IsMissing { get; set; }
+
+        public bool? IsVirtualUnaired { get; set; }
 
         public int? SeasonNumber { get; set; }
 
@@ -17,7 +18,6 @@ namespace MediaBrowser.Model.Querying
         public EpisodeQuery()
         {
             Fields = new ItemFields[] { };
-            ExcludeLocationTypes = new LocationType[] { };
         }
     }
 
@@ -27,7 +27,9 @@ namespace MediaBrowser.Model.Querying
 
         public string SeriesId { get; set; }
 
-        public LocationType[] ExcludeLocationTypes { get; set; }
+        public bool? IsMissing { get; set; }
+
+        public bool? IsVirtualUnaired { get; set; }
 
         public ItemFields[] Fields { get; set; }
 
@@ -36,7 +38,6 @@ namespace MediaBrowser.Model.Querying
         public SeasonQuery()
         {
             Fields = new ItemFields[] { };
-            ExcludeLocationTypes = new LocationType[] { };
         }
     }
 }

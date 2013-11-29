@@ -16,6 +16,15 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// <returns>TaskInfo.</returns>
         public static TaskInfo GetTaskInfo(IScheduledTaskWorker task)
         {
+            var isHidden = false;
+
+            var configurableTask = task.ScheduledTask as IConfigurableScheduledTask;
+
+            if (configurableTask != null)
+            {
+                isHidden = configurableTask.IsHidden;
+            }
+
             return new TaskInfo
             {
                 Name = task.Name,
@@ -25,7 +34,8 @@ namespace MediaBrowser.Common.ScheduledTasks
                 LastExecutionResult = task.LastExecutionResult,
                 Triggers = task.Triggers.Select(GetTriggerInfo).ToList(),
                 Description = task.Description,
-                Category = task.Category
+                Category = task.Category,
+                IsHidden = isHidden
             };
         }
 

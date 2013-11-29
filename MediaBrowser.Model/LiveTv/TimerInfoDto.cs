@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace MediaBrowser.Model.LiveTv
 {
     public class TimerInfoDto
     {
-          /// <summary>
+        /// <summary>
         /// Id of the recording.
         /// </summary>
         public string Id { get; set; }
@@ -15,7 +14,7 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value>The external identifier.</value>
         public string ExternalId { get; set; }
-        
+
         /// <summary>
         /// ChannelId of the recording.
         /// </summary>
@@ -25,6 +24,12 @@ namespace MediaBrowser.Model.LiveTv
         /// ChannelName of the recording.
         /// </summary>
         public string ChannelName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the program identifier.
+        /// </summary>
+        /// <value>The program identifier.</value>
+        public string ProgramId { get; set; }
 
         /// <summary>
         /// Name of the recording.
@@ -57,16 +62,5 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value><c>true</c> if this instance is recurring; otherwise, <c>false</c>.</value>
         public bool IsRecurring { get; set; }
-
-        /// <summary>
-        /// Gets or sets the recurring days.
-        /// </summary>
-        /// <value>The recurring days.</value>
-        public List<DayOfWeek> RecurringDays { get; set; }
-
-        public TimerInfoDto()
-        {
-            RecurringDays = new List<DayOfWeek>();
-        }
-  }
+    }
 }

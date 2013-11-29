@@ -17,14 +17,19 @@ namespace MediaBrowser.ServerApplication.Native
         /// <returns>HttpClient.</returns>
         public static HttpClient GetHttpClient(bool enableHttpCompression)
         {
-            return new HttpClient(new WebRequestHandler
+            var client = new HttpClient(new WebRequestHandler
             {
                 CachePolicy = new RequestCachePolicy(RequestCacheLevel.Revalidate),
                 AutomaticDecompression = enableHttpCompression ? DecompressionMethods.Deflate : DecompressionMethods.None
+                 
             })
             {
                 Timeout = TimeSpan.FromSeconds(20)
             };
+
+            client.DefaultRequestHeaders.Add("Connection", "Keep-Alive");
+
+            return client;
         }
     }
 }

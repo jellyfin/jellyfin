@@ -397,6 +397,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 Status = info.Status
             };
 
+            if (!string.IsNullOrEmpty(info.ProgramId))
+            {
+                dto.ProgramId = GetInternalProgramIdId(service.Name, info.ProgramId).ToString("N");
+            }
+
             return dto;
         }
 
@@ -503,13 +508,61 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 ExternalId = info.Id,
                 ChannelId = GetInternalChannelId(service.Name, info.ChannelId).ToString("N"),
                 Status = info.Status,
-                IsRecurring = info.IsRecurring,
-                RecurringDays = info.RecurringDays
+                IsRecurring = info.IsRecurring
             };
+
+            if (!string.IsNullOrEmpty(info.ProgramId))
+            {
+                dto.ProgramId = GetInternalProgramIdId(service.Name, info.ProgramId).ToString("N");
+            }
 
             return dto;
         }
 
+        public async Task DeleteRecording(string recordingId)
+        {
+            var recordings = await GetRecordings(new RecordingQuery
+            {
 
+            }, CancellationToken.None).ConfigureAwait(false);
+
+            var recording = recordings.Items
+                .FirstOrDefault(i => string.Equals(recordingId, i.Id, StringComparison.OrdinalIgnoreCase));
+
+            if (recording == null)
+            {
+                throw new ResourceNotFoundException(string.Format("Recording with Id {0} not found", recordingId));
+            }
+
+            var channel = GetChannel(recording.ChannelId);
+
+            var service = GetServices(channel.ServiceName, null)
+                .First();
+
+            await service.DeleteRecordingAsync(recording.ExternalId, CancellationToken.None).ConfigureAwait(false);
+        }
+
+        public async Task CancelTimer(string id)
+        {
+            var timers = await GetTimers(new TimerQuery
+            {
+
+            }, CancellationToken.None).ConfigureAwait(false);
+
+            var timer = timers.Items
+                .FirstOrDefault(i => string.Equals(id, i.Id, StringComparison.OrdinalIgnoreCase));
+
+            if (timer == null)
+            {
+                throw new ResourceNotFoundException(string.Format("Timer with Id {0} not found", id));
+            }
+
+            var channel = GetChannel(timer.ChannelId);
+
+            var service = GetServices(channel.ServiceName, null)
+                .First();
+
+            await service.CancelTimerAsync(timer.ExternalId, CancellationToken.None).ConfigureAwait(false);
+        }
     }
 }
