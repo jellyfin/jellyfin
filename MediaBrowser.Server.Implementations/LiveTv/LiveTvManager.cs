@@ -213,9 +213,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             };
         }
 
-        private Guid GetInternalChannelId(string serviceName, string externalChannelId)
+        private Guid GetInternalChannelId(string serviceName, string externalChannelId, string channelName)
         {
-            var name = serviceName + externalChannelId;
+            var name = serviceName + externalChannelId + channelName;
 
             return name.ToLower().GetMBId(typeof(Channel));
         }
@@ -248,7 +248,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 isNew = true;
             }
 
-            var id = GetInternalChannelId(serviceName, channelInfo.Id);
+            var id = GetInternalChannelId(serviceName, channelInfo.Id, channelInfo.Name);
 
             var item = _itemRepo.RetrieveItem(id) as Channel;
 
@@ -399,7 +399,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 StartDate = info.StartDate,
                 Id = id,
                 ExternalId = info.Id,
-                ChannelId = GetInternalChannelId(service.Name, info.ChannelId).ToString("N"),
+                ChannelId = GetInternalChannelId(service.Name, info.ChannelId, info.ChannelName).ToString("N"),
                 Status = info.Status
             };
 
@@ -512,7 +512,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 StartDate = info.StartDate,
                 Id = id,
                 ExternalId = info.Id,
-                ChannelId = GetInternalChannelId(service.Name, info.ChannelId).ToString("N"),
+                ChannelId = GetInternalChannelId(service.Name, info.ChannelId, info.ChannelName).ToString("N"),
                 Status = info.Status,
                 IsRecurring = info.IsRecurring
             };
