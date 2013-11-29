@@ -10,4 +10,11 @@ namespace MediaBrowser.Model.LiveTv
         Conflicted,
         Deleted
     }
+
+    public enum RecurrenceType
+    {
+        Manual,
+        NewProgramEvents,
+        AllProgramEvents
+    }
 }

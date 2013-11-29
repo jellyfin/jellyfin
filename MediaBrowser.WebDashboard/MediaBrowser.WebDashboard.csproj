@@ -284,10 +284,10 @@
     <Content Include="dashboard-ui\css\images\userdata\thumbs_up_on.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\css\images\userdata\playedoff.png">
+    <Content Include="dashboard-ui\css\images\userdata\checkedoff.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\css\images\userdata\playedon.png">
+    <Content Include="dashboard-ui\css\images\userdata\checkedon.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\css\librarybrowser.css">

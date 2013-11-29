@@ -81,8 +81,11 @@ namespace MediaBrowser.Api
         [ApiMember(Name = "Season", Description = "Optional filter by season number.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public int? Season { get; set; }
 
-        [ApiMember(Name = "ExcludeLocationTypes", Description = "Optional. If specified, results will be filtered based on LocationType. This allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
-        public string ExcludeLocationTypes { get; set; }
+        [ApiMember(Name = "IsMissing", Description = "Optional filter by items that are missing episodes or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool? IsMissing { get; set; }
+
+        [ApiMember(Name = "IsVirtualUnaired", Description = "Optional filter by items that are virtual unaired episodes or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool? IsVirtualUnaired { get; set; }
     }
 
     [Route("/Shows/{Id}/Seasons", "GET")]
@@ -106,11 +109,14 @@ namespace MediaBrowser.Api
         [ApiMember(Name = "Id", Description = "The series id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
         public Guid Id { get; set; }
 
-        [ApiMember(Name = "ExcludeLocationTypes", Description = "Optional. If specified, results will be filtered based on LocationType. This allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
-        public string ExcludeLocationTypes { get; set; }
-
         [ApiMember(Name = "IsSpecialSeason", Description = "Optional. Filter by special season.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool? IsSpecialSeason { get; set; }
+
+        [ApiMember(Name = "IsMissing", Description = "Optional filter by items that are missing episodes or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool? IsMissing { get; set; }
+
+        [ApiMember(Name = "IsVirtualUnaired", Description = "Optional filter by items that are virtual unaired episodes or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool? IsVirtualUnaired { get; set; }
     }
 
     /// <summary>
@@ -380,12 +386,7 @@ namespace MediaBrowser.Api
                 }
             }
 
-            // ExcludeLocationTypes
-            if (!string.IsNullOrEmpty(request.ExcludeLocationTypes))
-            {
-                var vals = request.ExcludeLocationTypes.Split(',');
-                seasons = seasons.Where(f => !vals.Contains(f.LocationType.ToString(), StringComparer.OrdinalIgnoreCase));
-            }
+            seasons = FilterVirtualSeasons(request, seasons);
 
             seasons = _libraryManager.Sort(seasons, user, new[] { sortOrder }, SortOrder.Ascending)
                 .Cast<Season>();
@@ -400,6 +401,34 @@ namespace MediaBrowser.Api
             };
         }
 
+        private IEnumerable<Season> FilterVirtualSeasons(GetSeasons request, IEnumerable<Season> items)
+        {
+            if (request.IsMissing.HasValue && request.IsVirtualUnaired.HasValue)
+            {
+                var isMissing = request.IsMissing.Value;
+                var isVirtualUnaired = request.IsVirtualUnaired.Value;
+
+                if (!isMissing && !isVirtualUnaired)
+                {
+                    return items.Where(i => !i.IsMissingOrVirtualUnaired);
+                }
+            }
+
+            if (request.IsMissing.HasValue)
+            {
+                var val = request.IsMissing.Value;
+                items = items.Where(i => i.IsMissingSeason == val);
+            }
+
+            if (request.IsVirtualUnaired.HasValue)
+            {
+                var val = request.IsVirtualUnaired.Value;
+                items = items.Where(i => i.IsVirtualUnaired == val);
+            }
+
+            return items;
+        }
+        
         public object Get(GetEpisodes request)
         {
             var user = _userManager.GetUserById(request.UserId);
@@ -431,11 +460,16 @@ namespace MediaBrowser.Api
                 episodes = episodes.Where(i => !i.IsVirtualUnaired);
             }
 
-            // ExcludeLocationTypes
-            if (!string.IsNullOrEmpty(request.ExcludeLocationTypes))
+            if (request.IsMissing.HasValue)
             {
-                var vals = request.ExcludeLocationTypes.Split(',');
-                episodes = episodes.Where(f => !vals.Contains(f.LocationType.ToString(), StringComparer.OrdinalIgnoreCase));
+                var val = request.IsMissing.Value;
+                episodes = episodes.Where(i => i.IsMissingEpisode == val);
+            }
+
+            if (request.IsVirtualUnaired.HasValue)
+            {
+                var val = request.IsVirtualUnaired.Value;
+                episodes = episodes.Where(i => i.IsVirtualUnaired == val);
             }
 
             episodes = _libraryManager.Sort(episodes, user, new[] { sortOrder }, SortOrder.Ascending)

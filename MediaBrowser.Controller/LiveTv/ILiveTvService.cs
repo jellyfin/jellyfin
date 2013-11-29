@@ -48,14 +48,6 @@ namespace MediaBrowser.Controller.LiveTv
         Task CreateTimerAsync(TimerInfo info, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Updates the timer asynchronous.
-        /// </summary>
-        /// <param name="info">The information.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        Task UpdateTimerAsync(TimerInfo info, CancellationToken cancellationToken);
-        
-        /// <summary>
         /// Gets the channel image asynchronous.
         /// </summary>
         /// <param name="channelId">The channel identifier.</param>

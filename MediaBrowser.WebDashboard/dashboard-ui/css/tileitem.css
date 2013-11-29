@@ -112,11 +112,6 @@
         font-weight: normal;
     }
 
-.tileItem .userDataIcons img {
-    height: 18px;
-    width: 18px;
-}
-
 @media all and (min-width: 540px) {
 
     .tileItem {
@@ -190,10 +185,6 @@
         display: inline-block;
     }
 
-        .smallBackdropTileItem .tileImage {
-            height: 95px;
-        }
-
     .backdropTileItem .tileImage {
         height: 105px;
     }
@@ -256,10 +247,6 @@
 
     .smallPosterTileItem {
         width: 22%;
-    }
-
-    .smallBackdropTileItem {
-        width: 30%;
     }
 }
 

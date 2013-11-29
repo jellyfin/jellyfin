@@ -506,6 +506,20 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
+        self.createLiveTvTimer = function (options) {
+
+            if (!options) {
+                throw new Error("null options");
+            }
+
+            var url = self.getUrl("LiveTv/Timers", options);
+
+            return self.ajax({
+                type: "POST",
+                url: url
+            });
+        };
+
         /**
          * Gets the current server status
          */
@@ -1019,9 +1033,11 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         /**
          * Gets the server's scheduled tasks
          */
-        self.getScheduledTasks = function () {
+        self.getScheduledTasks = function (options) {
 
-            var url = self.getUrl("ScheduledTasks");
+            options = options || {};
+            
+            var url = self.getUrl("ScheduledTasks", options);
 
             return self.ajax({
                 type: "GET",

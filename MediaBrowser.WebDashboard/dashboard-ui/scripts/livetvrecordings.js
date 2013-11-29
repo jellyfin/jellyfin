@@ -1,7 +1,30 @@
 ﻿(function ($, document, apiClient) {
 
+    function playRecording(page, id) {
+
+    }
+
+    function deleteRecording(page, id) {
+
+        Dashboard.confirm("Are you sure you wish to delete this recording?", "Confirm Recording Deletion", function (result) {
+
+            if (result) {
+
+                Dashboard.showLoadingMsg();
+
+                ApiClient.deleteLiveTvRecording(id).done(function () {
+
+                    Dashboard.alert('Recording deleted');
+
+                    reload(page);
+                });
+            }
+
+        });
+    }
+
     function renderRecordings(page, recordings) {
-        
+
         var html = '';
 
         var cssClass = "detailTable";
@@ -28,7 +51,6 @@
 
             html += '<td>';
             html += '<button data-recordingid="' + recording.Id + '" class="btnPlayRecording" type="button" data-icon="play" data-inline="true" data-mini="true" data-iconpos="notext">Play</button>';
-            html += '<button data-recordingid="' + recording.Id + '" class="btnEditRecording" type="button" data-icon="pencil" data-inline="true" data-mini="true" data-iconpos="notext">Edit</button>';
             html += '<button data-recordingid="' + recording.Id + '" class="btnDeleteRecording" type="button" data-icon="delete" data-inline="true" data-mini="true" data-iconpos="notext">Delete</button>';
             html += '</td>';
 
@@ -59,17 +81,35 @@
         html += '</table></div>';
 
         var elem = $('#items', page).html(html).trigger('create');
+
+        $('.btnPlayRecording', elem).on('click', function () {
+
+            var recordingId = this.getAttribute('data-recordingid');
+
+            playRecording(page, recordingId);
+        });
+
+        $('.btnDeleteRecording', elem).on('click', function () {
+
+            var recordingId = this.getAttribute('data-recordingid');
+
+            deleteRecording(page, recordingId);
+        });
+
+        Dashboard.hideLoadingMsg();
     }
-    
+
     function reload(page) {
 
-        apiClient.getLiveTvRecordings().done(function(result) {
+        Dashboard.showLoadingMsg();
+
+        apiClient.getLiveTvRecordings().done(function (result) {
 
             renderRecordings(page, result.Items);
 
         });
     }
-    
+
     $(document).on('pagebeforeshow', "#liveTvRecordingsPage", function () {
 
         var page = this;

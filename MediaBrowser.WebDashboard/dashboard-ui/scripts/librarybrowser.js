@@ -1506,9 +1506,9 @@
 
             if ((item.MediaType || item.IsFolder) && item.Type != "Channel" && item.Type != "MusicArtist") {
                 if (userData.Played) {
-                    html += '<img data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgPlayed" src="css/images/userdata/playedon.png" alt="Played" title="Played" onclick="LibraryBrowser.markPlayed(this);return false;" />';
+                    html += '<img data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgPlayed" src="css/images/userdata/checkedon.png" alt="Played" title="Played" onclick="LibraryBrowser.markPlayed(this);return false;" />';
                 } else {
-                    html += '<img data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgPlayedOff" src="css/images/userdata/playedoff.png" alt="Played" title="Played" onclick="LibraryBrowser.markPlayed(this);return false;" />';
+                    html += '<img data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgPlayedOff" src="css/images/userdata/checkedoff.png" alt="Played" title="Played" onclick="LibraryBrowser.markPlayed(this);return false;" />';
                 }
             }
 
@@ -1549,10 +1549,10 @@
             }
 
             if (markAsPlayed) {
-                link.src = "css/images/userdata/playedon.png";
+                link.src = "css/images/userdata/checkedon.png";
                 $link.addClass('imgPlayed').removeClass('imgPlayedOff');
             } else {
-                link.src = "css/images/userdata/playedoff.png";
+                link.src = "css/images/userdata/checkedoff.png";
                 $link.addClass('imgPlayedOff').removeClass('imgPlayed');
             }
         },
@@ -1713,53 +1713,55 @@
 
             var url;
 
+            var imageHeight = 510;
+
             if (imageTags.Primary) {
 
                 if (item.Type == "Channel") {
                     url = ApiClient.getUrl("LiveTV/Channels/" + item.Id + "/Images/Primary", {
-                        maxheight: 480,
+                        maxheight: imageHeight,
                         tag: imageTags.Primary,
                         type: "Primary"
                     });
                 }
                 else if (item.Type == "Person") {
                     url = ApiClient.getPersonImageUrl(item.Name, {
-                        maxheight: 480,
+                        maxheight: imageHeight,
                         tag: imageTags.Primary,
                         type: "Primary"
                     });
                 }
                 else if (item.Type == "Genre") {
                     url = ApiClient.getGenreImageUrl(item.Name, {
-                        maxheight: 480,
+                        maxheight: imageHeight,
                         tag: imageTags.Primary,
                         type: "Primary"
                     });
                 }
                 else if (item.Type == "MusicGenre") {
                     url = ApiClient.getMusicGenreImageUrl(item.Name, {
-                        maxheight: 480,
+                        maxheight: imageHeight,
                         tag: imageTags.Primary,
                         type: "Primary"
                     });
                 }
                 else if (item.Type == "GameGenre") {
                     url = ApiClient.getGameGenreImageUrl(item.Name, {
-                        maxheight: 480,
+                        maxheight: imageHeight,
                         tag: imageTags.Primary,
                         type: "Primary"
                     });
                 }
                 else if (item.Type == "Studio") {
                     url = ApiClient.getStudioImageUrl(item.Name, {
-                        maxheight: 480,
+                        maxheight: imageHeight,
                         tag: imageTags.Primary,
                         type: "Primary"
                     });
                 }
                 else if (item.Type == "MusicArtist") {
                     url = ApiClient.getArtistImageUrl(item.Name, {
-                        maxheight: 480,
+                        maxheight: imageHeight,
                         tag: imageTags.Primary,
                         type: "Primary"
                     });
@@ -1767,7 +1769,7 @@
                 else {
                     url = ApiClient.getImageUrl(item.Id, {
                         type: "Primary",
-                        maxheight: 480,
+                        maxheight: imageHeight,
                         tag: item.ImageTags.Primary
                     });
                 }
@@ -1776,42 +1778,42 @@
 
                 if (item.Type == "Person") {
                     url = ApiClient.getPersonImageUrl(item.Name, {
-                        maxheight: 480,
+                        maxheight: imageHeight,
                         tag: item.BackdropImageTags[0],
                         type: "Backdrop"
                     });
                 }
                 else if (item.Type == "Genre") {
                     url = ApiClient.getGenreImageUrl(item.Name, {
-                        maxheight: 480,
+                        maxheight: imageHeight,
                         tag: item.BackdropImageTags[0],
                         type: "Backdrop"
                     });
                 }
                 else if (item.Type == "MusicGenre") {
                     url = ApiClient.getMusicGenreImageUrl(item.Name, {
-                        maxheight: 480,
+                        maxheight: imageHeight,
                         tag: item.BackdropImageTags[0],
                         type: "Backdrop"
                     });
                 }
                 else if (item.Type == "GameGenre") {
                     url = ApiClient.getGameGenreImageUrl(item.Name, {
-                        maxheight: 480,
+                        maxheight: imageHeight,
                         tag: item.BackdropImageTags[0],
                         type: "Backdrop"
                     });
                 }
                 else if (item.Type == "Studio") {
                     url = ApiClient.getStudioImageUrl(item.Name, {
-                        maxheight: 480,
+                        maxheight: imageHeight,
                         tag: item.BackdropImageTags[0],
                         type: "Backdrop"
                     });
                 }
                 else if (item.Type == "MusicArtist") {
                     url = ApiClient.getArtistImageUrl(item.Name, {
-                        maxheight: 480,
+                        maxheight: imageHeight,
                         tag: item.BackdropImageTags[0],
                         type: "Backdrop"
                     });
@@ -1819,7 +1821,7 @@
                 else {
                     url = ApiClient.getImageUrl(item.Id, {
                         type: "Backdrop",
-                        maxheight: 480,
+                        maxheight: imageHeight,
                         tag: item.BackdropImageTags[0]
                     });
                 }
@@ -1828,42 +1830,42 @@
 
                 if (item.Type == "Person") {
                     url = ApiClient.getPersonImageUrl(item.Name, {
-                        maxheight: 480,
+                        maxheight: imageHeight,
                         tag: imageTags.Thumb,
                         type: "Thumb"
                     });
                 }
                 else if (item.Type == "Genre") {
                     url = ApiClient.getGenreImageUrl(item.Name, {
-                        maxheight: 480,
+                        maxheight: imageHeight,
                         tag: imageTags.Thumb,
                         type: "Thumb"
                     });
                 }
                 else if (item.Type == "MusicGenre") {
                     url = ApiClient.getMusicGenreImageUrl(item.Name, {
-                        maxheight: 480,
+                        maxheight: imageHeight,
                         tag: imageTags.Thumb,
                         type: "Thumb"
                     });
                 }
                 else if (item.Type == "GameGenre") {
                     url = ApiClient.getGameGenreImageUrl(item.Name, {
-                        maxheight: 480,
+                        maxheight: imageHeight,
                         tag: imageTags.Thumb,
                         type: "Thumb"
                     });
                 }
                 else if (item.Type == "Studio") {
                     url = ApiClient.getStudioImageUrl(item.Name, {
-                        maxheight: 480,
+                        maxheight: imageHeight,
                         tag: imageTags.Thumb,
                         type: "Thumb"
                     });
                 }
                 else if (item.Type == "MusicArtist") {
                     url = ApiClient.getArtistImageUrl(item.Name, {
-                        maxheight: 480,
+                        maxheight: imageHeight,
                         tag: imageTags.Thumb,
                         type: "Thumb"
                     });
@@ -1871,7 +1873,7 @@
                 else {
                     url = ApiClient.getImageUrl(item.Id, {
                         type: "Thumb",
-                        maxheight: 480,
+                        maxheight: imageHeight,
                         tag: item.ImageTags.Thumb
                     });
                 }
@@ -1880,7 +1882,7 @@
 
                 url = ApiClient.getImageUrl(item.Id, {
                     type: "Disc",
-                    maxheight: 480,
+                    maxheight: imageHeight,
                     tag: item.ImageTags.Disc
                 });
             }
@@ -1888,7 +1890,7 @@
 
                 url = ApiClient.getImageUrl(item.AlbumId, {
                     type: "Primary",
-                    maxheight: 480,
+                    maxheight: imageHeight,
                     tag: item.AlbumPrimaryImageTag
                 });
 
@@ -2007,7 +2009,7 @@
                 }
             }
 
-            if (item.RunTimeTicks) {
+            if (item.RunTimeTicks && item.Type != "Series") {
 
                 if (item.Type == "Audio") {
 
@@ -2349,7 +2351,7 @@
         if (user.PrimaryImageTag) {
 
             var url = ApiClient.getUserImageUrl(user.Id, {
-                width: 225,
+                height: 40,
                 tag: user.PrimaryImageTag,
                 type: "Primary"
             });

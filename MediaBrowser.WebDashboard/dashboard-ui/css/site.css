@@ -717,8 +717,8 @@ progress {
 /* Detail Page*/
 
 .imgUserItemRating {
-    height: 17px;
-    width: 17px;
+    height: 16px;
+    width: 16px;
     margin-right: 1em;
     cursor: pointer;
     vertical-align: top;
@@ -727,10 +727,6 @@ progress {
     .imgUserItemRating:hover {
         opacity: .5;
     }
-
-.imgPlayed, .imgPlayedOff {
-    border-radius: 4px;
-}
 
 /* Now playing bar */
 #nowPlayingBar {
@@ -1039,6 +1035,34 @@ input[type="range"]::-ms-fill-upper {
 
     .itemVideo {
         left: -560px;
+    }
+}
+
+@media (min-width: 1700px) {
+    .itemVideo:not(.fullscreenVideo) {
+        width: 500px;
+    }
+
+    .positionSlider {
+        width: 500px;
+    }
+
+    .itemVideo {
+        left: -660px;
+    }
+}
+
+@media (min-width: 2400px) {
+    .itemVideo:not(.fullscreenVideo) {
+        width: 550px;
+    }
+
+    .positionSlider {
+        width: 550px;
+    }
+
+    .itemVideo {
+        left: -710px;
     }
 }
 

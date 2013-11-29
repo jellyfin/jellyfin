@@ -1,5 +1,28 @@
 ﻿(function ($, document, apiClient) {
 
+    function editTimer(page, id) {
+
+    }
+
+    function deleteTimer(page, id) {
+
+        Dashboard.confirm("Are you sure you wish to delete this timer?", "Confirm Timer Deletion", function (result) {
+
+            if (result) {
+
+                Dashboard.showLoadingMsg();
+
+                ApiClient.cancelLiveTvTimer(id).done(function () {
+
+                    Dashboard.alert('Timer deleted');
+
+                    reload(page);
+                });
+            }
+
+        });
+    }
+
     function renderTimers(page, timers) {
 
         var html = '';
@@ -61,6 +84,20 @@
         html += '</table></div>';
 
         var elem = $('#items', page).html(html).trigger('create');
+
+        $('.btnEditTimer', elem).on('click', function () {
+
+            var id = this.getAttribute('data-timerid');
+
+            editTimer(page, id);
+        });
+
+        $('.btnDeleteTimer', elem).on('click', function () {
+
+            var id = this.getAttribute('data-timerid');
+
+            deleteTimer(page, id);
+        });
     }
 
     function reload(page) {

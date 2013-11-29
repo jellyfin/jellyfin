@@ -1,4 +1,5 @@
 ﻿using System.Threading;
+using System.Threading.Tasks;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
@@ -82,6 +83,22 @@ namespace MediaBrowser.Api.LiveTv
         public string UserId { get; set; }
     }
 
+    [Route("/LiveTv/Recordings/{Id}", "DELETE")]
+    [Api(Description = "Deletes a live tv recording")]
+    public class DeleteRecording : IReturnVoid
+    {
+        [ApiMember(Name = "Id", Description = "Recording Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Id { get; set; }
+    }
+
+    [Route("/LiveTv/Timers/{Id}", "DELETE")]
+    [Api(Description = "Cancels a live tv timer")]
+    public class CancelTimer : IReturnVoid
+    {
+        [ApiMember(Name = "Id", Description = "Timer Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Id { get; set; }
+    }
+    
     public class LiveTvService : BaseApiService
     {
         private readonly ILiveTvManager _liveTvManager;
@@ -175,6 +192,20 @@ namespace MediaBrowser.Api.LiveTv
             }, CancellationToken.None).Result;
 
             return ToOptimizedResult(result);
+        }
+
+        public void Delete(DeleteRecording request)
+        {
+            var task = _liveTvManager.DeleteRecording(request.Id);
+
+            Task.WaitAll(task);
+        }
+
+        public void Delete(CancelTimer request)
+        {
+            var task = _liveTvManager.CancelTimer(request.Id);
+
+            Task.WaitAll(task);
         }
     }
 }

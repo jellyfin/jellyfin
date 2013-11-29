@@ -41,6 +41,12 @@ namespace MediaBrowser.Controller.LiveTv
         public DateTime EndDate { get; set; }
 
         /// <summary>
+        /// Gets or sets the program identifier.
+        /// </summary>
+        /// <value>The program identifier.</value>
+        public string ProgramId { get; set; }
+
+        /// <summary>
         /// Gets or sets the status.
         /// </summary>
         /// <value>The status.</value>
