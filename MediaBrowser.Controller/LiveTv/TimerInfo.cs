@@ -57,5 +57,17 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value><c>true</c> if this instance is recurring; otherwise, <c>false</c>.</value>
         public bool IsRecurring { get; set; }
+
+        /// <summary>
+        /// Gets or sets the pre padding seconds.
+        /// </summary>
+        /// <value>The pre padding seconds.</value>
+        public int PrePaddingSeconds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the post padding seconds.
+        /// </summary>
+        /// <value>The post padding seconds.</value>
+        public int PostPaddingSeconds { get; set; }
     }
 }
