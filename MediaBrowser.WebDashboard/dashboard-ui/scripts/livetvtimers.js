@@ -55,7 +55,12 @@
             html += '</td>';
 
             html += '<td>' + (timer.Name || '') + '</td>';
-            html += '<td>' + (timer.ChannelName || '') + '</td>';
+
+            html += '<td>';
+            if (timer.ChannelId) {
+                html += '<a href="livetvchannel.html?id=' + timer.ChannelId + '">' + timer.ChannelName + '</a>';
+            }
+            html += '</td>';
 
             var startDate = timer.StartDate;
 

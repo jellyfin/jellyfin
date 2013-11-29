@@ -55,7 +55,12 @@
             html += '</td>';
 
             html += '<td>' + (recording.Name || '') + '</td>';
-            html += '<td>' + (recording.ChannelName || '') + '</td>';
+
+            html += '<td>';
+            if (recording.ChannelId) {
+                html += '<a href="livetvchannel.html?id=' + recording.ChannelId + '">' + recording.ChannelName + '</a>';
+            }
+            html += '</td>';
 
             var startDate = recording.StartDate;
 
