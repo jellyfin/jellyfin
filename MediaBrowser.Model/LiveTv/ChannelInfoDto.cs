@@ -1,5 +1,7 @@
-﻿using System;
-using MediaBrowser.Model.Dto;
+﻿using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
+using System;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Model.LiveTv
 {
@@ -19,12 +21,12 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value>The identifier.</value>
         public string Id { get; set; }
-        
+
         /// <summary>
-        /// Gets or sets the logo image tag.
+        /// Gets or sets the image tags.
         /// </summary>
-        /// <value>The logo image tag.</value>
-        public Guid? PrimaryImageTag { get; set; }
+        /// <value>The image tags.</value>
+        public Dictionary<ImageType, Guid> ImageTags { get; set; }
         
         /// <summary>
         /// Gets or sets the number.
@@ -61,5 +63,10 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value>The user data.</value>
         public UserItemDataDto UserData { get; set; }
+
+        public ChannelInfoDto()
+        {
+            ImageTags = new Dictionary<ImageType, Guid>();
+        }
     }
 }
