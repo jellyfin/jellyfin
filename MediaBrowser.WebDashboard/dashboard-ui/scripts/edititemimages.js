@@ -318,11 +318,13 @@
 
             html += '<div class="editorTile imageEditorTile">';
 
-            html += '<div style="height:100px;vertical-align:top;background-repeat:no-repeat;background-size:contain;background-image:url(\'' + LibraryBrowser.getImageUrl(currentItem, image.ImageType, image.ImageIndex, { maxwidth: 300 }) + '\');"></div>';
+            html += '<div style="height:108px;vertical-align:top;background-repeat:no-repeat;background-size:contain;background-image:url(\'' + LibraryBrowser.getImageUrl(currentItem, image.ImageType, image.ImageIndex, { maxheight: 216 }) + '\');"></div>';
 
             html += '<div>';
             
-            html += '<p>' + image.ImageType + '</p>';
+            if (image.ImageType !== "Backdrop" && image.ImageType !== "Screenshot") {
+                html += '<p>' + image.ImageType + '</p>';
+            }
 
             html += '<p>' + image.Width + ' X ' + image.Height + '</p>';
 
