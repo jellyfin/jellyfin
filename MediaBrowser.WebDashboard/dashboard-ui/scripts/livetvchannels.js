@@ -9,12 +9,12 @@
         var imgUrl;
         var isDefault;
 
-        if (channel.PrimaryImageTag) {
+        if (channel.ImageTags.Primary) {
 
 
             imgUrl = apiClient.getUrl("LiveTV/Channels/" + channel.Id + "/Images/Primary", {
 
-                tag: channel.PrimaryImageTag,
+                tag: channel.ImageTags.Primary,
                 height: 300
 
             });

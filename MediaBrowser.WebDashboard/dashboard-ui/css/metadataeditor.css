@@ -145,6 +145,10 @@
     margin: 0 0 .5em;
 }
 
+.imageEditorCollapsible .ui-collapsible-content {
+    padding: 0 0 1em 0;
+}
+
 @media all and (min-width: 700px) {
 
     .availableImagesList {

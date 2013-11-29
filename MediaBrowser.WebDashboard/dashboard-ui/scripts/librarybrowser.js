@@ -2340,7 +2340,9 @@
 
         html += '<a class="viewMenuLink viewMenuImageLink remoteControlMenuLink" href="#" onclick="RemoteControl.showMenu();" title="Remote Control"><img src="css/images/remote.png" alt="Remote Control" /></a>';
 
-        html += '<a class="viewMenuLink viewMenuImageLink editorMenuLink" href="edititemmetadata.html" title="Metadata Manager"><img src="css/images/editor.png" alt=""Metadata Manager" /></a>';
+        if (user.Configuration.IsAdministrator) {
+            html += '<a class="viewMenuLink viewMenuImageLink editorMenuLink" href="edititemmetadata.html" title="Metadata Manager"><img src="css/images/editor.png" alt=""Metadata Manager" /></a>';
+        }
 
         html += '<div class="viewMenuSecondary">';
 

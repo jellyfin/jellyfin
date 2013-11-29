@@ -87,7 +87,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 ServiceName = info.ServiceName,
                 ChannelType = info.ChannelType,
                 Number = info.ChannelNumber,
-                PrimaryImageTag = GetLogoImageTag(info),
                 Type = info.GetType().Name,
                 Id = info.Id.ToString("N"),
                 MediaType = info.MediaType
@@ -96,6 +95,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             if (user != null)
             {
                 dto.UserData = _dtoService.GetUserItemDataDto(_userDataManager.GetUserData(user.Id, info.GetUserDataKey()));
+            }
+
+            var imageTag = GetLogoImageTag(info);
+
+            if (imageTag.HasValue)
+            {
+                dto.ImageTags[ImageType.Primary] = imageTag.Value;
             }
 
             return dto;
