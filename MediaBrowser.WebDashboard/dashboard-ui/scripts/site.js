@@ -806,7 +806,7 @@ var Dashboard = {
             }).done(function (result) {
 
                 if (msg.Data.PlayCommand == "PlayNext") {
-                    MediaPlayer.queueItems(result.Items);
+                    MediaPlayer.queueItemsNext(result.Items);
                 }
                 else if (msg.Data.PlayCommand == "PlayLast") {
                     MediaPlayer.queueItems(result.Items);

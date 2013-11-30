@@ -326,7 +326,8 @@
             $('#ports', page).html('Running on ports <b>' + port + '</b> and <b>' + dashboardInfo.SystemInfo.WebSocketPortNumber + '</b>');
         }
 
-        $('#programDataPath', page).html(dashboardInfo.SystemInfo.ProgramDataPath);
+        $('#logPath', page).html(dashboardInfo.SystemInfo.LogPath);
+        $('#imagesByNamePath', page).html(dashboardInfo.SystemInfo.ItemsByNamePath);
 
         var host = ApiClient.serverHostName();
 

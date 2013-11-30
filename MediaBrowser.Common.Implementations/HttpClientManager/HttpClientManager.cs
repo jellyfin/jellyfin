@@ -27,7 +27,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         /// <summary>
         /// When one request to a host times out, we'll ban all other requests for this period of time, to prevent scans from stalling
         /// </summary>
-        private int TimeoutSeconds = 30;
+        private const int TimeoutSeconds = 30;
 
         /// <summary>
         /// The _logger
@@ -42,16 +42,14 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         private readonly IFileSystem _fileSystem;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="HttpClientManager"/> class.
+        /// Initializes a new instance of the <see cref="HttpClientManager" /> class.
         /// </summary>
         /// <param name="appPaths">The app paths.</param>
         /// <param name="logger">The logger.</param>
-        /// <param name="getHttpClientHandler">The get HTTP client handler.</param>
-        /// <exception cref="System.ArgumentNullException">
-        /// appPaths
+        /// <param name="fileSystem">The file system.</param>
+        /// <exception cref="System.ArgumentNullException">appPaths
         /// or
-        /// logger
-        /// </exception>
+        /// logger</exception>
         public HttpClientManager(IApplicationPaths appPaths, ILogger logger, IFileSystem fileSystem)
         {
             if (appPaths == null)
@@ -143,7 +141,6 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         /// Gets the response internal.
         /// </summary>
         /// <param name="options">The options.</param>
-        /// <param name="httpMethod">The HTTP method.</param>
         /// <returns>Task{HttpResponseInfo}.</returns>
         /// <exception cref="HttpException">
         /// </exception>
@@ -490,27 +487,19 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             }
             catch (OperationCanceledException ex)
             {
-                var exception = GetCancellationException(options.Url, options.CancellationToken, ex);
-
-                throw exception;
+                throw GetTempFileException(ex, options, tempFile);
             }
             catch (HttpRequestException ex)
             {
-                _logger.ErrorException("Error getting response from " + options.Url, ex);
-
-                throw new HttpException(ex.Message, ex);
+                throw GetTempFileException(ex, options, tempFile);
             }
             catch (WebException ex)
             {
-                _logger.ErrorException("Error getting response from " + options.Url, ex);
-
-                throw new HttpException(ex.Message, ex);
+                throw GetTempFileException(ex, options, tempFile);
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error getting response from " + options.Url, ex);
-
-                throw;
+                throw GetTempFileException(ex, options, tempFile);
             }
             finally
             {
@@ -519,65 +508,6 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                     options.ResourcePool.Release();
                 }
             }
-        }
-
-        /// <summary>
-        /// Gets the message.
-        /// </summary>
-        /// <param name="options">The options.</param>
-        /// <returns>HttpResponseMessage.</returns>
-        private HttpRequestMessage GetHttpRequestMessage(HttpRequestOptions options)
-        {
-            var message = new HttpRequestMessage(HttpMethod.Get, options.Url);
-
-            foreach (var pair in options.RequestHeaders.ToList())
-            {
-                if (!message.Headers.TryAddWithoutValidation(pair.Key, pair.Value))
-                {
-                    _logger.Error("Unable to add request header {0} with value {1}", pair.Key, pair.Value);
-                }
-            }
-
-            return message;
-        }
-
-        /// <summary>
-        /// Gets the length of the content.
-        /// </summary>
-        /// <param name="response">The response.</param>
-        /// <returns>System.Nullable{System.Int64}.</returns>
-        private long? GetContentLength(HttpResponseMessage response)
-        {
-            IEnumerable<string> lengthValues = null;
-
-            // Seeing some InvalidOperationException here under mono
-            try
-            {
-                response.Headers.TryGetValues("content-length", out lengthValues);
-            }
-            catch (InvalidOperationException ex)
-            {
-                _logger.ErrorException("Error accessing response.Headers.TryGetValues Content-Length", ex);
-            }
-
-            if (lengthValues == null)
-            {
-                try
-                {
-                    response.Content.Headers.TryGetValues("content-length", out lengthValues);
-                }
-                catch (InvalidOperationException ex)
-                {
-                    _logger.ErrorException("Error accessing response.Content.Headers.TryGetValues Content-Length", ex);
-                }
-            }
-
-            if (lengthValues == null)
-            {
-                return null;
-            }
-
-            return long.Parse(string.Join(string.Empty, lengthValues.ToArray()), UsCulture);
         }
 
         private long? GetContentLength(HttpWebResponse response)
@@ -616,16 +546,23 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
             _logger.ErrorException("Error getting response from " + options.Url, ex);
 
-            var httpRequestException = ex as HttpRequestException;
-
             // Cleanup
             DeleteTempFile(tempFile);
+
+            var httpRequestException = ex as HttpRequestException;
 
             if (httpRequestException != null)
             {
                 return new HttpException(ex.Message, ex);
             }
 
+            var webException = ex as WebException;
+
+            if (webException != null)
+            {
+                return new HttpException(ex.Message, ex);
+            }
+            
             return ex;
         }
 
@@ -709,19 +646,6 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             }
 
             return exception;
-        }
-
-        /// <summary>
-        /// Ensures the success status code.
-        /// </summary>
-        /// <param name="response">The response.</param>
-        /// <exception cref="MediaBrowser.Model.Net.HttpException"></exception>
-        private void EnsureSuccessStatusCode(HttpResponseMessage response)
-        {
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new HttpException(response.ReasonPhrase) { StatusCode = response.StatusCode };
-            }
         }
 
         private void EnsureSuccessStatusCode(HttpWebResponse response)

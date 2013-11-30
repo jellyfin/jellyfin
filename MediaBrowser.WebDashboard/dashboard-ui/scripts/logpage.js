@@ -2,9 +2,11 @@
 
     onPageShow: function () {
 
+        var page = this;
+        
         LogPage.startLine = 0;
 
-        $('#logContents', this).html('');
+        $('#logContents', page).html('');
 
         $(ApiClient).on("websocketmessage", LogPage.onWebSocketMessage).on("websocketopen", LogPage.onWebSocketConnectionChange).on("websocketerror", LogPage.onWebSocketConnectionChange).on("websocketclose", LogPage.onWebSocketConnectionChange);
 
@@ -18,6 +20,12 @@
         else if (autoScroll == "false") {
             LogPage.updateAutoScroll(false);
         }
+
+        ApiClient.getSystemInfo().done(function(systemInfo) {
+
+            $('#logPath', page).html(systemInfo.LogPath);
+
+        });
     },
 
     onPageHide: function () {

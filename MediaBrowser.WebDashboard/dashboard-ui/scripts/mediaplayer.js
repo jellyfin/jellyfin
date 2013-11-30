@@ -503,20 +503,6 @@
             var h264Codec = 'h264';
             var h264AudioCodec = 'aac';
 
-            if (videoStream && videoStream.Width && videoStream.Width <= baseParams.maxWidth) {
-
-                var videoCodec = (videoStream.Codec || '').toLowerCase();
-
-                if (videoCodec.indexOf('h264') != -1 &&
-                    videoStream.Width &&
-                    videoStream.Width <= 1280 &&
-                    videoStream.BitRate &&
-                    videoStream.BitRate <= 2000000) {
-
-                    //h264Codec = 'copy';
-                }
-            }
-
             if (startPosition) {
                 baseParams.StartTimeTicks = startPosition;
             }
@@ -541,12 +527,6 @@
                 timeStampOffsetMs: 0
             }));
 
-            var ogvVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.ogv', $.extend({}, baseParams, {
-                videoCodec: 'theora',
-                audioCodec: 'Vorbis'
-            }));
-
-
             var html = '';
 
             var requiresControls = $.browser.msie || $.browser.android || ($.browser.webkit && !$.browser.chrome);
@@ -570,7 +550,6 @@
                 html += '<source type="video/webm" src="' + webmVideoUrl + '" />';
             }
 
-            html += '<source type="video/ogg" src="' + ogvVideoUrl + '" />';
             html += '</video';
 
             var nowPlayingBar = $('#nowPlayingBar').show();
@@ -659,6 +638,12 @@
 
                     setCurrentTime(getCurrentTicks(this), item, true);
                 }
+
+            }).on("error", function () {
+
+
+                var errorCode = this.error ? this.error.code : '';
+                console.log('Html5 Video error code: ' + errorCode);
 
             }).on("ended.playbackstopped", onPlaybackStopped).on('ended.playnext', playNextAfterEnded);
 
@@ -1199,6 +1184,18 @@
                         currentPlaylistIndex = newIndex;
                     });
                 }
+            }
+        };
+
+        self.queueItemsNext = function (items) {
+
+            var insertIndex = 1;
+
+            for (var i = 0, length = items.length; i < length; i++) {
+
+                self.playlist.splice(insertIndex, 0, items[i]);
+
+                insertIndex++;
             }
         };
 

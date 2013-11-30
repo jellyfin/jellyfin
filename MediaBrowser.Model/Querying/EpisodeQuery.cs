@@ -5,6 +5,8 @@ namespace MediaBrowser.Model.Querying
     {
         public string UserId { get; set; }
 
+        public string SeasonId { get; set; }
+        
         public string SeriesId { get; set; }
 
         public bool? IsMissing { get; set; }
