@@ -14,6 +14,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Net;
+using System.Net;
 
 namespace MediaBrowser.Providers.Music
 {
@@ -174,23 +176,33 @@ namespace MediaBrowser.Providers.Music
 
             if (ConfigurationManager.Configuration.DownloadMusicAlbumImages.Primary && !item.HasImage(ImageType.Primary))
             {
-                var image = images.FirstOrDefault(i => i.Type == ImageType.Primary);
-
-                if (image != null)
-                {
-                    await _providerManager.SaveImage(item, image.Url, FanArtResourcePool, ImageType.Primary, null, cancellationToken).ConfigureAwait(false);
-                }
+                await SaveImage(item, images, ImageType.Primary, cancellationToken).ConfigureAwait(false);
             }
 
             cancellationToken.ThrowIfCancellationRequested();
 
             if (ConfigurationManager.Configuration.DownloadMusicAlbumImages.Disc && !item.HasImage(ImageType.Disc))
             {
-                var image = images.FirstOrDefault(i => i.Type == ImageType.Disc);
+                await SaveImage(item, images, ImageType.Disc, cancellationToken).ConfigureAwait(false);
+            }
+        }
 
-                if (image != null)
+        private async Task SaveImage(BaseItem item, List<RemoteImageInfo> images, ImageType type, CancellationToken cancellationToken)
+        {
+            foreach (var image in images.Where(i => i.Type == type))
+            {
+                try
                 {
-                    await _providerManager.SaveImage(item, image.Url, FanArtResourcePool, ImageType.Disc, null, cancellationToken).ConfigureAwait(false);
+                    await _providerManager.SaveImage(item, image.Url, FanArtResourcePool, type, null, cancellationToken).ConfigureAwait(false);
+                    break;
+                }
+                catch (HttpException ex)
+                {
+                    // Sometimes fanart has bad url's in their xml
+                    if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.NotFound)
+                    {
+                        continue;
+                    }
                 }
             }
         }

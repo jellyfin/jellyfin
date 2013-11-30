@@ -16,6 +16,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Net;
+using System.Net;
 
 namespace MediaBrowser.Providers.Music
 {
@@ -270,48 +272,28 @@ namespace MediaBrowser.Providers.Music
 
             if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Primary && !item.HasImage(ImageType.Primary))
             {
-                var image = images.FirstOrDefault(i => i.Type == ImageType.Primary);
-
-                if (image != null)
-                {
-                    await _providerManager.SaveImage(item, image.Url, FanArtResourcePool, ImageType.Primary, null, cancellationToken).ConfigureAwait(false);
-                }
+                await SaveImage(item, images, ImageType.Primary, cancellationToken).ConfigureAwait(false);
             }
 
             cancellationToken.ThrowIfCancellationRequested();
 
             if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Logo && !item.HasImage(ImageType.Logo))
             {
-                var image = images.FirstOrDefault(i => i.Type == ImageType.Logo);
-
-                if (image != null)
-                {
-                    await _providerManager.SaveImage(item, image.Url, FanArtResourcePool, ImageType.Logo, null, cancellationToken).ConfigureAwait(false);
-                }
+                await SaveImage(item, images, ImageType.Logo, cancellationToken).ConfigureAwait(false);
             }
 
             cancellationToken.ThrowIfCancellationRequested();
 
             if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Art && !item.HasImage(ImageType.Art))
             {
-                var image = images.FirstOrDefault(i => i.Type == ImageType.Art);
-
-                if (image != null)
-                {
-                    await _providerManager.SaveImage(item, image.Url, FanArtResourcePool, ImageType.Art, null, cancellationToken).ConfigureAwait(false);
-                }
+                await SaveImage(item, images, ImageType.Art, cancellationToken).ConfigureAwait(false);
             }
 
             cancellationToken.ThrowIfCancellationRequested();
 
             if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Banner && !item.HasImage(ImageType.Banner))
             {
-                var image = images.FirstOrDefault(i => i.Type == ImageType.Banner);
-
-                if (image != null)
-                {
-                    await _providerManager.SaveImage(item, image.Url, FanArtResourcePool, ImageType.Banner, null, cancellationToken).ConfigureAwait(false);
-                }
+                await SaveImage(item, images, ImageType.Banner, cancellationToken).ConfigureAwait(false);
             }
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -326,6 +308,26 @@ namespace MediaBrowser.Providers.Music
                                         .ConfigureAwait(false);
 
                     if (item.BackdropImagePaths.Count >= backdropLimit) break;
+                }
+            }
+        }
+
+        private async Task SaveImage(BaseItem item, List<RemoteImageInfo> images, ImageType type, CancellationToken cancellationToken)
+        {
+            foreach (var image in images.Where(i => i.Type == type))
+            {
+                try
+                {
+                    await _providerManager.SaveImage(item, image.Url, FanArtResourcePool, type, null, cancellationToken).ConfigureAwait(false);
+                    break;
+                }
+                catch (HttpException ex)
+                {
+                    // Sometimes fanart has bad url's in their xml
+                    if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.NotFound)
+                    {
+                        continue;
+                    }
                 }
             }
         }

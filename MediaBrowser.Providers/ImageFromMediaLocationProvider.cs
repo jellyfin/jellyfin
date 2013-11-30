@@ -101,8 +101,6 @@ namespace MediaBrowser.Providers
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var args = GetResolveArgsContainingImages(item);
-
             // Make sure current image paths still exist
             item.ValidateImages();
 
@@ -113,6 +111,8 @@ namespace MediaBrowser.Providers
             item.ValidateScreenshots();
 
             cancellationToken.ThrowIfCancellationRequested();
+
+            var args = GetResolveArgsContainingImages(item);
 
             PopulateBaseItemImages(item, args);
 
