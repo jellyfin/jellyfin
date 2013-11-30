@@ -762,7 +762,7 @@
             return self.canPlayMediaType(item.MediaType);
         };
 
-        self.getPlayUrl = function(item) {
+        self.getPlayUrl = function (item) {
 
 
             if (item.GameSystem == "Nintendo" && item.MediaType == "Game" && item.ProviderIds.NesBox && item.ProviderIds.NesBoxRom) {
@@ -810,7 +810,7 @@
             Dashboard.getCurrentUser().done(function (user) {
 
                 var item = items[0];
-                
+
                 var videoType = (item.VideoType || "").toLowerCase();
 
                 var expirementalText = "This feature is experimental. It may not work at all with some titles. Do you wish to continue?";
@@ -1202,10 +1202,12 @@
             }
         };
 
-        self.queueItem = function (item) {
+        self.queueItems = function (items) {
 
-            self.playlist.push(item);
+            for (var i = 0, length = items.length; i < length; i++) {
 
+                self.playlist.push(items[i]);
+            }
         };
 
         self.queue = function (id) {
@@ -1222,16 +1224,12 @@
 
                     }).done(function (result) {
 
-                        for (var i = 0, length = result.Items.length; i < length; i++) {
-
-                            self.queueItem(result.Items[i]);
-
-                        }
+                        self.queueItems(result.Items);
 
                     });
 
                 } else {
-                    self.queueItem(item);
+                    self.queueItems([item]);
                 }
 
             });
@@ -1248,11 +1246,7 @@
 
             }).done(function (result) {
 
-                for (var i = 0, length = result.Items.length; i < length; i++) {
-
-                    self.queueItem(result.Items[i]);
-
-                }
+                self.queueItems(result.Items);
 
             });
 

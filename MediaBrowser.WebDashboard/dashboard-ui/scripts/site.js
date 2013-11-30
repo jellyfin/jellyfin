@@ -804,7 +804,16 @@ var Dashboard = {
                 Ids: msg.Data.ItemIds.join(',')
 
             }).done(function (result) {
-                MediaPlayer.play(result.Items, msg.Data.StartPositionTicks);
+
+                if (msg.Data.PlayCommand == "PlayNext") {
+                    MediaPlayer.queueItems(result.Items);
+                }
+                else if (msg.Data.PlayCommand == "PlayLast") {
+                    MediaPlayer.queueItems(result.Items);
+                }
+                else {
+                    MediaPlayer.play(result.Items, msg.Data.StartPositionTicks);
+                }
 
             });
 

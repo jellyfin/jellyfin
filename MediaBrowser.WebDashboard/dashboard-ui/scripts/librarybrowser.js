@@ -1476,7 +1476,7 @@
 
             var html = '';
 
-            if (item.Type != "Audio") {
+            if (item.Type != "Audio" && item.Type != "Season" && item.Type != "Series") {
                 html += LibraryBrowser.getItemProgressBarHtml(item);
             }
 
