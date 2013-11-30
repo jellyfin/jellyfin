@@ -14,7 +14,9 @@ namespace MediaBrowser.Model.LiveTv
     public enum RecurrenceType
     {
         Manual,
-        NewProgramEvents,
-        AllProgramEvents
+        NewProgramEventsOneChannel,
+        AllProgramEventsOneChannel,
+        NewProgramEventsAllChannels,
+        AllProgramEventsAllChannels
     }
 }

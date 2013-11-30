@@ -3,19 +3,13 @@ using System;
 
 namespace MediaBrowser.Controller.LiveTv
 {
-    public class TimerInfo
+    public class RecurringTimerInfo
     {
         /// <summary>
         /// Id of the recording.
         /// </summary>
         public string Id { get; set; }
 
-        /// <summary>
-        /// Gets or sets the recurring timer identifier.
-        /// </summary>
-        /// <value>The recurring timer identifier.</value>
-        public string RecurringTimerId { get; set; }
-        
         /// <summary>
         /// ChannelId of the recording.
         /// </summary>
@@ -31,7 +25,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value>The program identifier.</value>
         public string ProgramId { get; set; }
-        
+
         /// <summary>
         /// Name of the recording.
         /// </summary>
@@ -69,5 +63,11 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value>The post padding seconds.</value>
         public int PostPaddingSeconds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the recurrence.
+        /// </summary>
+        /// <value>The type of the recurrence.</value>
+        public RecurrenceType RecurrenceType { get; set; }
     }
 }

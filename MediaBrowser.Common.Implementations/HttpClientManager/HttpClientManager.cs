@@ -25,6 +25,11 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
     public class HttpClientManager : IHttpClient
     {
         /// <summary>
+        /// When one request to a host times out, we'll ban all other requests for this period of time, to prevent scans from stalling
+        /// </summary>
+        private int TimeoutSeconds = 30;
+
+        /// <summary>
         /// The _logger
         /// </summary>
         private readonly ILogger _logger;
@@ -122,13 +127,13 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                 request.UserAgent = options.UserAgent;
             }
 
+            // This is a hack to prevent KeepAlive from getting disabled internally by the HttpWebRequest
+            // May need to remove this for mono
             var sp = request.ServicePoint;
-
             if (_httpBehaviorPropertyInfo == null)
             {
                 _httpBehaviorPropertyInfo = sp.GetType().GetProperty("HttpBehaviour", BindingFlags.Instance | BindingFlags.NonPublic);
             }
-
             _httpBehaviorPropertyInfo.SetValue(sp, (byte)0, null);
 
             return request;
@@ -150,7 +155,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
             var client = GetHttpClient(GetHostFromUrl(options.Url), options.EnableHttpCompression);
 
-            if ((DateTime.UtcNow - client.LastTimeout).TotalSeconds < 30)
+            if ((DateTime.UtcNow - client.LastTimeout).TotalSeconds < TimeoutSeconds)
             {
                 throw new HttpException(string.Format("Cancelling connection to {0} due to a previous timeout.", options.Url)) { IsTimedOut = true };
             }
@@ -162,7 +167,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                 await options.ResourcePool.WaitAsync(options.CancellationToken).ConfigureAwait(false);
             }
 
-            if ((DateTime.UtcNow - client.LastTimeout).TotalSeconds < 30)
+            if ((DateTime.UtcNow - client.LastTimeout).TotalSeconds < TimeoutSeconds)
             {
                 if (options.ResourcePool != null)
                 {
