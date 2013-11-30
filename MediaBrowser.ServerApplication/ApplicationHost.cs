@@ -609,6 +609,8 @@ namespace MediaBrowser.ServerApplication
                 CompletedInstallations = InstallationManager.CompletedInstallations.ToList(),
                 Id = _systemId,
                 ProgramDataPath = ApplicationPaths.ProgramDataPath,
+                LogPath = ApplicationPaths.LogDirectoryPath,
+                ItemsByNamePath = ApplicationPaths.ItemsByNamePath,
                 MacAddress = GetMacAddress(),
                 HttpServerPortNumber = ServerConfigurationManager.Configuration.HttpServerPortNumber,
                 OperatingSystem = Environment.OSVersion.ToString(),

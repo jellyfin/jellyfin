@@ -81,6 +81,9 @@ namespace MediaBrowser.Api
         [ApiMember(Name = "Season", Description = "Optional filter by season number.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public int? Season { get; set; }
 
+        [ApiMember(Name = "SeasonId", Description = "Optional. Filter by season id", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string SeasonId { get; set; }
+        
         [ApiMember(Name = "IsMissing", Description = "Optional filter by items that are missing episodes or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool? IsMissing { get; set; }
 
@@ -442,7 +445,25 @@ namespace MediaBrowser.Api
 
             var sortOrder = ItemSortBy.SortName;
 
-            if (request.Season.HasValue)
+            if (!string.IsNullOrEmpty(request.SeasonId))
+            {
+                var season = _libraryManager.GetItemById(request.Id) as Season;
+
+                if (season.IndexNumber.HasValue)
+                {
+                    episodes = FilterEpisodesBySeason(episodes, season.IndexNumber.Value, true);
+
+                    sortOrder = ItemSortBy.AiredEpisodeOrder;
+                }
+                else
+                {
+                    episodes = season.RecursiveChildren.OfType<Episode>();
+
+                    sortOrder = ItemSortBy.SortName;
+                }
+            }
+
+            else if (request.Season.HasValue)
             {
                 episodes = FilterEpisodesBySeason(episodes, request.Season.Value, true);
 
