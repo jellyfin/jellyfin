@@ -68,6 +68,13 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{IEnumerable{RecordingInfo}}.</returns>
         Task<IEnumerable<TimerInfo>> GetTimersAsync(CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the recurring timers asynchronous.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{IEnumerable{RecurringTimerInfo}}.</returns>
+        Task<IEnumerable<RecurringTimerInfo>> GetRecurringTimersAsync(CancellationToken cancellationToken);
         
         /// <summary>
         /// Gets the programs asynchronous.

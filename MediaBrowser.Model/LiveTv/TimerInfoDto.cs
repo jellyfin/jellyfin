@@ -58,10 +58,10 @@ namespace MediaBrowser.Model.LiveTv
         public RecordingStatus Status { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is recurring.
+        /// Gets or sets the recurring timer identifier.
         /// </summary>
-        /// <value><c>true</c> if this instance is recurring; otherwise, <c>false</c>.</value>
-        public bool IsRecurring { get; set; }
+        /// <value>The recurring timer identifier.</value>
+        public string RecurringTimerId { get; set; }
 
         /// <summary>
         /// Gets or sets the pre padding seconds.
