@@ -702,16 +702,6 @@ namespace MediaBrowser.ServerApplication
             OnApplicationUpdated(package.version);
         }
 
-        /// <summary>
-        /// Creates the HTTP client.
-        /// </summary>
-        /// <param name="enableHttpCompression">if set to <c>true</c> [enable HTTP compression].</param>
-        /// <returns>HttpClient.</returns>
-        protected override HttpClient CreateHttpClient(bool enableHttpCompression)
-        {
-            return HttpClientFactory.GetHttpClient(enableHttpCompression);
-        }
-
         protected override void ConfigureAutoRunAtStartup(bool autorun)
         {
             Autorun.Configure(autorun);
