@@ -22,7 +22,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -353,7 +352,7 @@ namespace MediaBrowser.Common.Implementations
                 FileSystemManager = CreateFileSystemManager();
                 RegisterSingleInstance(FileSystemManager);
 
-                HttpClient = new HttpClientManager.HttpClientManager(ApplicationPaths, Logger, CreateHttpClient, FileSystemManager);
+                HttpClient = new HttpClientManager.HttpClientManager(ApplicationPaths, Logger, FileSystemManager);
                 RegisterSingleInstance(HttpClient);
 
                 NetworkManager = CreateNetworkManager();
@@ -377,8 +376,6 @@ namespace MediaBrowser.Common.Implementations
         {
             return new CommonFileSystem(Logger, true);
         }
-
-        protected abstract HttpClient CreateHttpClient(bool enableHttpCompression);
 
         /// <summary>
         /// Gets a list of types within an assembly
