@@ -1036,7 +1036,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         self.getScheduledTasks = function (options) {
 
             options = options || {};
-            
+
             var url = self.getUrl("ScheduledTasks", options);
 
             return self.ajax({
@@ -1395,6 +1395,19 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             }
 
             var url = self.getUrl("Items/" + itemId);
+
+            return self.ajax({
+                type: "DELETE",
+                url: url
+            });
+        };
+
+        self.stopActiveEncodings = function () {
+
+            var url = self.getUrl("Videos/ActiveEncodings", {
+
+                deviceId: deviceId
+            });
 
             return self.ajax({
                 type: "DELETE",
