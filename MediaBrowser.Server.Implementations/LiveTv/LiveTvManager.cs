@@ -514,7 +514,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 ExternalId = info.Id,
                 ChannelId = GetInternalChannelId(service.Name, info.ChannelId, info.ChannelName).ToString("N"),
                 Status = info.Status,
-                RecurringTimerId = info.RecurringTimerId,
+                SeriesTimerId = info.SeriesTimerId,
                 PrePaddingSeconds = info.PrePaddingSeconds,
                 PostPaddingSeconds = info.PostPaddingSeconds
             };
