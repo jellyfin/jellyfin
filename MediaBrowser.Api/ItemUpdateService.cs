@@ -105,13 +105,27 @@ namespace MediaBrowser.Api
             Task.WaitAll(task);
         }
 
-        private Task UpdateItem(UpdateItem request)
+        private async Task UpdateItem(UpdateItem request)
         {
             var item = _dtoService.GetItemByDtoId(request.ItemId);
 
+            var newEnableInternetProviders = request.EnableInternetProviders ?? true;
+            var dontFetchMetaChanged = item.DontFetchMeta != !newEnableInternetProviders;
+
             UpdateItem(request, item);
 
-            return _libraryManager.UpdateItem(item, ItemUpdateType.MetadataEdit, CancellationToken.None);
+            await _libraryManager.UpdateItem(item, ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+
+            if (dontFetchMetaChanged && item.IsFolder)
+            {
+                var folder = (Folder)item;
+
+                foreach (var child in folder.RecursiveChildren.ToList())
+                {
+                    child.DontFetchMeta = !newEnableInternetProviders;
+                    await _libraryManager.UpdateItem(child, ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+                }
+            }
         }
 
         public void Post(UpdatePerson request)
