@@ -7,7 +7,7 @@ namespace MediaBrowser.Controller.Entities
     public class Game : BaseItem, IHasSoundtracks
     {
         public List<Guid> SoundtrackIds { get; set; }
-        
+
         public Game()
         {
             MultiPartGameFiles = new List<string>();
@@ -83,6 +83,16 @@ namespace MediaBrowser.Controller.Entities
                 return "Game-Gamesdb-" + id;
             }
             return base.GetUserDataKey();
+        }
+
+        public override IEnumerable<string> GetDeletePaths()
+        {
+            if (!IsInMixedFolder)
+            {
+                return new[] { System.IO.Path.GetDirectoryName(Path) };
+            }
+
+            return base.GetDeletePaths();
         }
     }
 }

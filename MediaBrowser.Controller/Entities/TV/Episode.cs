@@ -248,5 +248,10 @@ namespace MediaBrowser.Controller.Entities.TV
         {
             get { return LocationType == Model.Entities.LocationType.Virtual && IsUnaired; }
         }
+
+        public override IEnumerable<string> GetDeletePaths()
+        {
+            return new[] { Path };
+        }
     }
 }

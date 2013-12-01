@@ -258,5 +258,14 @@ namespace MediaBrowser.Controller.Entities
             }).ToList();
         }
 
+        public override IEnumerable<string> GetDeletePaths()
+        {
+            if (!IsInMixedFolder)
+            {
+                return new[] { System.IO.Path.GetDirectoryName(Path) };
+            }
+
+            return base.GetDeletePaths();
+        }
     }
 }
