@@ -172,7 +172,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
         private void SetProviderIdFromPath(Video item)
         {
             //we need to only look at the name of this actual item (not parents)
-            var justName = Path.GetFileName(item.Path);
+            var justName = item.IsInMixedFolder ? Path.GetFileName(item.Path) : Path.GetFileName(Path.GetDirectoryName(item.Path));
 
             var id = justName.GetAttributeValue("tmdbid");
 
