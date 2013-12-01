@@ -441,36 +441,71 @@ namespace MediaBrowser.Providers.Movies
 
             if (searchResult != null)
             {
-                foreach (var possible in searchResult.results)
-                {
-                    string matchedName = possible.title ?? possible.name;
-                    string id = possible.id.ToString(CultureInfo.InvariantCulture);
-
-                    if (matchedName != null)
-                    {
-                        Logger.Debug("Match " + matchedName + " for " + name);
-                        if (year != null)
-                        {
-                            DateTime r;
-
-                            //These dates are always in this exact format
-                            if (DateTime.TryParseExact(possible.release_date, "yyyy-MM-dd", EnUs, DateTimeStyles.None, out r))
-                            {
-                                if (Math.Abs(r.Year - year.Value) > 1) // allow a 1 year tolerance on release date
-                                {
-                                    Logger.Debug("Result " + matchedName + " released on " + r + " did not match year " + year);
-                                    continue;
-                                }
-                            }
-                        }
-                        //matched name and year
-                        return id;
-                    }
-
-                }
+                return FindIdOfBestResult(searchResult.results, name, year);
             }
 
             return null;
+        }
+
+        private string FindIdOfBestResult(List<TmdbMovieSearchResult> results, string name, int? year)
+        {
+            if (year.HasValue)
+            {
+                // Take the first result from the same year
+                var id = results.Where(i =>
+                {
+                    // Make sure it has a name
+                    if (!string.IsNullOrEmpty(i.title ?? i.name))
+                    {
+                        DateTime r;
+
+                        // These dates are always in this exact format
+                        if (DateTime.TryParseExact(i.release_date, "yyyy-MM-dd", EnUs, DateTimeStyles.None, out r))
+                        {
+                            return r.Year == year.Value;
+                        }
+                    }
+
+                    return false;
+                })
+                    .Select(i => i.id.ToString(CultureInfo.InvariantCulture))
+                    .FirstOrDefault();
+
+                if (!string.IsNullOrEmpty(id))
+                {
+                    return id;
+                }
+
+                // Take the first result within one year
+                id = results.Where(i =>
+               {
+                   // Make sure it has a name
+                   if (!string.IsNullOrEmpty(i.title ?? i.name))
+                   {
+                       DateTime r;
+
+                       // These dates are always in this exact format
+                       if (DateTime.TryParseExact(i.release_date, "yyyy-MM-dd", EnUs, DateTimeStyles.None, out r))
+                       {
+                           return Math.Abs(r.Year - year.Value) <= 1;
+                       }
+                   }
+
+                   return false;
+               })
+                   .Select(i => i.id.ToString(CultureInfo.InvariantCulture))
+                   .FirstOrDefault();
+
+                if (!string.IsNullOrEmpty(id))
+                {
+                    return id;
+                }
+            }
+
+            // Just take the first one
+            return results.Where(i => !string.IsNullOrEmpty(i.title ?? i.name))
+                .Select(i => i.id.ToString(CultureInfo.InvariantCulture))
+                .FirstOrDefault();
         }
 
         /// <summary>
@@ -601,7 +636,7 @@ namespace MediaBrowser.Providers.Movies
 
             return path;
         }
-        
+
         internal string GetImagesDataFilePath(BaseItem item)
         {
             var path = GetDataFilePath(item);
