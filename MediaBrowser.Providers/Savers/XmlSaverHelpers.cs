@@ -63,6 +63,7 @@ namespace MediaBrowser.Providers.Savers
                     "TMDbCollectionId",
                     "TMDbId",
                     "Trailer",
+                    "Trailers",
                     "TVcomId",
                     "TvDbId",
                     "Type",
@@ -177,7 +178,7 @@ namespace MediaBrowser.Providers.Savers
                     }
                 }
             }
-            
+
             return builder.ToString();
         }
 
@@ -269,7 +270,14 @@ namespace MediaBrowser.Providers.Savers
 
             if (item.RemoteTrailers.Count > 0)
             {
-                builder.Append("<Trailer>" + SecurityElement.Escape(item.RemoteTrailers[0].Url) + "</Trailer>");
+                builder.Append("<Trailers>");
+
+                foreach (var trailer in item.RemoteTrailers)
+                {
+                    builder.Append("<Trailer>" + SecurityElement.Escape(trailer.Url) + "</Trailer>");
+                }
+
+                builder.Append("</Trailers>");
             }
 
             if (item.Budget.HasValue)

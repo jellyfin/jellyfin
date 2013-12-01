@@ -100,7 +100,7 @@
         overflow-y: scroll;
         overflow-x: auto!important;
         display: block;
-        border-right: 1px solid #ccc;
+        border-right: 1px solid #555;
     }
 
     .editPageInnerContent {
@@ -118,14 +118,13 @@
     display: inline-block;
     margin: 5px;
     padding: 10px;
-    border: 1px solid #ccc;
-    background: #eee;
-    background-image: -webkit-gradient(linear,left top,left bottom,from(#fff),to(#f1f1f1));
-    background-image: -webkit-linear-gradient(#fff,#f1f1f1);
-    background-image: -moz-linear-gradient(#fff,#f1f1f1);
-    background-image: -ms-linear-gradient(#fff,#f1f1f1);
-    background-image: -o-linear-gradient(#fff,#f1f1f1);
-    background-image: linear-gradient(#fff,#f1f1f1);
+    border: 1px solid #505050;
+    background-image: -webkit-gradient(linear,left top,left bottom,from(#444),to(#2d2d2d));
+    background-image: -webkit-linear-gradient(#444,#2d2d2d);
+    background-image: -moz-linear-gradient(#444,#2d2d2d);
+    background-image: -ms-linear-gradient(#444,#2d2d2d);
+    background-image: -o-linear-gradient(#444,#2d2d2d);
+    background-image: linear-gradient(#444,#2d2d2d);
 }
 
 .imageEditorTile {
@@ -137,11 +136,7 @@
     margin: .5em 0;
 }
 
-.editorTile .tileContent{
-    color: #000;
-}
-
-.editorTile .ui-field-contain{
+.editorTile .ui-field-contain {
     margin: 0 0 .5em;
 }
 
@@ -209,6 +204,17 @@
 
     .availableImagesList {
         width: 1400px;
+    }
+}
+
+@media all and (min-width: 1800px) {
+
+    .editPageSidebar {
+        width: 22.5%;
+    }
+
+    .editPageInnerContent {
+        width: 75%;
     }
 }
 

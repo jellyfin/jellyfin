@@ -5,6 +5,14 @@
     font-weight: normal!important;
     display: block;
     position: relative;
+
+    /*border: 1px solid #505050;
+    background-image: -webkit-gradient(linear,left top,left bottom,from(#444),to(#2d2d2d));
+    background-image: -webkit-linear-gradient(#444,#2d2d2d);
+    background-image: -moz-linear-gradient(#444,#2d2d2d);
+    background-image: -ms-linear-gradient(#444,#2d2d2d);
+    background-image: -o-linear-gradient(#444,#2d2d2d);
+    background-image: linear-gradient(#444,#2d2d2d);*/
 }
 
     .tileItem .starRating {

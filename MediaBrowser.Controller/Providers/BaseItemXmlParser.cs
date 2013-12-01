@@ -68,6 +68,7 @@ namespace MediaBrowser.Controller.Providers
             item.Genres.Clear();
             item.People.Clear();
             item.Tags.Clear();
+            item.RemoteTrailers.Clear();
 
             //Fetch(item, metadataFile, settings, Encoding.GetEncoding("ISO-8859-1"), cancellationToken);
             Fetch(item, metadataFile, settings, Encoding.UTF8, cancellationToken);
@@ -478,6 +479,15 @@ namespace MediaBrowser.Controller.Providers
                         if (!string.IsNullOrWhiteSpace(val))
                         {
                             item.AddTrailerUrl(val, false);
+                        }
+                        break;
+                    }
+
+                case "Trailers":
+                    {
+                        using (var subtree = reader.ReadSubtree())
+                        {
+                            FetchDataFromTrailersNode(subtree, item);
                         }
                         break;
                     }
@@ -922,6 +932,35 @@ namespace MediaBrowser.Controller.Providers
             }
         }
 
+        private void FetchDataFromTrailersNode(XmlReader reader, T item)
+        {
+            reader.MoveToContent();
+
+            while (reader.Read())
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    switch (reader.Name)
+                    {
+                        case "Trailer":
+                            {
+                                var val = reader.ReadElementContentAsString();
+
+                                if (!string.IsNullOrWhiteSpace(val))
+                                {
+                                    item.AddTrailerUrl(val, false);
+                                }
+                                break;
+                            }
+
+                        default:
+                            reader.Skip();
+                            break;
+                    }
+                }
+            }
+        }
+        
         protected async Task FetchChaptersFromXmlNode(BaseItem item, XmlReader reader, IItemRepository repository, CancellationToken cancellationToken)
         {
             var runtime = item.RunTimeTicks ?? 0;

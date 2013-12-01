@@ -78,7 +78,7 @@ h1 a {
     text-decoration: none;
 }
 
-.libraryPage:not(.metadataEditorPage) h1 a {
+.libraryPage h1 a {
     color: #fff!important;
 }
 

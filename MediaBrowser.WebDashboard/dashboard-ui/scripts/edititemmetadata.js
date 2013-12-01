@@ -245,7 +245,7 @@
 
             themes: {
                 theme: 'mb3',
-                url: 'thirdparty/jstree1.0fix3/themes/mb3/style.css?v=' + Dashboard.initialServerVersion
+                url: 'thirdparty/jstree1.0/themes/mb3/style.css?v=' + Dashboard.initialServerVersion
             }
 
         }).off('select_node.jstree').on('select_node.jstree', function (event, data) {

@@ -610,76 +610,76 @@
     <Content Include="dashboard-ui\thirdparty\html5slider.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jstree1.0fix3\jquery.jstree.js">
+    <Content Include="dashboard-ui\thirdparty\jstree1.0\jquery.jstree.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jstree1.0fix3\themes\apple\bg.jpg">
+    <Content Include="dashboard-ui\thirdparty\jstree1.0\themes\apple\bg.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jstree1.0fix3\themes\apple\d.png">
+    <Content Include="dashboard-ui\thirdparty\jstree1.0\themes\apple\d.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jstree1.0fix3\themes\apple\dot_for_ie.gif">
+    <Content Include="dashboard-ui\thirdparty\jstree1.0\themes\apple\dot_for_ie.gif">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jstree1.0fix3\themes\apple\style.css">
+    <Content Include="dashboard-ui\thirdparty\jstree1.0\themes\apple\style.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jstree1.0fix3\themes\apple\throbber.gif">
+    <Content Include="dashboard-ui\thirdparty\jstree1.0\themes\apple\throbber.gif">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jstree1.0fix3\themes\classic\d.gif">
+    <Content Include="dashboard-ui\thirdparty\jstree1.0\themes\classic\d.gif">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jstree1.0fix3\themes\classic\d.png">
+    <Content Include="dashboard-ui\thirdparty\jstree1.0\themes\classic\d.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jstree1.0fix3\themes\classic\dot_for_ie.gif">
+    <Content Include="dashboard-ui\thirdparty\jstree1.0\themes\classic\dot_for_ie.gif">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jstree1.0fix3\themes\classic\style.css">
+    <Content Include="dashboard-ui\thirdparty\jstree1.0\themes\classic\style.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jstree1.0fix3\themes\classic\throbber.gif">
+    <Content Include="dashboard-ui\thirdparty\jstree1.0\themes\classic\throbber.gif">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jstree1.0fix3\themes\default-rtl\d.gif">
+    <Content Include="dashboard-ui\thirdparty\jstree1.0\themes\default-rtl\d.gif">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jstree1.0fix3\themes\default-rtl\d.png">
+    <Content Include="dashboard-ui\thirdparty\jstree1.0\themes\default-rtl\d.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jstree1.0fix3\themes\default-rtl\dots.gif">
+    <Content Include="dashboard-ui\thirdparty\jstree1.0\themes\default-rtl\dots.gif">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jstree1.0fix3\themes\default-rtl\style.css">
+    <Content Include="dashboard-ui\thirdparty\jstree1.0\themes\default-rtl\style.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jstree1.0fix3\themes\default-rtl\throbber.gif">
+    <Content Include="dashboard-ui\thirdparty\jstree1.0\themes\default-rtl\throbber.gif">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jstree1.0fix3\themes\default\d.gif">
+    <Content Include="dashboard-ui\thirdparty\jstree1.0\themes\default\d.gif">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jstree1.0fix3\themes\default\d.png">
+    <Content Include="dashboard-ui\thirdparty\jstree1.0\themes\default\d.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jstree1.0fix3\themes\default\style.css">
+    <Content Include="dashboard-ui\thirdparty\jstree1.0\themes\default\style.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jstree1.0fix3\themes\default\throbber.gif">
+    <Content Include="dashboard-ui\thirdparty\jstree1.0\themes\default\throbber.gif">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jstree1.0fix3\themes\mb3\d.gif">
+    <Content Include="dashboard-ui\thirdparty\jstree1.0\themes\mb3\d.gif">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jstree1.0fix3\themes\mb3\d.png">
+    <Content Include="dashboard-ui\thirdparty\jstree1.0\themes\mb3\d.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jstree1.0fix3\themes\mb3\style.css">
+    <Content Include="dashboard-ui\thirdparty\jstree1.0\themes\mb3\style.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jstree1.0fix3\themes\mb3\throbber.gif">
+    <Content Include="dashboard-ui\thirdparty\jstree1.0\themes\mb3\throbber.gif">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\tvgenres.html">

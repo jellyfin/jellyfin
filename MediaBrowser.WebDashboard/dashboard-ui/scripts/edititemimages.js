@@ -321,7 +321,7 @@
             html += '<div style="height:108px;vertical-align:top;background-repeat:no-repeat;background-size:contain;background-image:url(\'' + LibraryBrowser.getImageUrl(currentItem, image.ImageType, image.ImageIndex, { maxheight: 216 }) + '\');"></div>';
 
             html += '<div>';
-            
+
             if (image.ImageType !== "Backdrop" && image.ImageType !== "Screenshot") {
                 html += '<p>' + image.ImageType + '</p>';
             }
@@ -345,11 +345,11 @@
                 }
             }
 
+            html += '<button type="button" data-icon="delete" data-mini="true" data-inline="true" data-iconpos="notext" onclick="EditItemImagesPage.deleteImage(\'' + image.ImageType + '\', ' + (image.ImageIndex != null ? image.ImageIndex : "null") + ');">Delete</button>';
+
             if (imageProviders.length) {
                 html += '<button type="button" data-icon="cloud" data-mini="true" data-inline="true" data-iconpos="notext" onclick="EditItemImagesPage.showDownloadMenu(\'' + image.ImageType + '\');">Browse Online Images</button>';
             }
-
-            html += '<button type="button" data-icon="delete" data-mini="true" data-inline="true" data-iconpos="notext" onclick="EditItemImagesPage.deleteImage(\'' + image.ImageType + '\', ' + (image.ImageIndex != null ? image.ImageIndex : "null") + ');">Delete</button>';
 
             html += '</p>';
 

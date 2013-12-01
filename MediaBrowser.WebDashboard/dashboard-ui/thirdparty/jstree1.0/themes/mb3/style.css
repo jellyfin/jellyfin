@@ -12,7 +12,7 @@
 .jstree-mb3 .jstree-closed > ins { background-position:-54px 0; }
 .jstree-mb3 .jstree-leaf > ins { background-position:-36px 0; }
 
-.jstree-mb3 .jstree-hovered { background:#ddd; border:1px solid transparent; padding:0 2px 0 1px; }
+.jstree-mb3 .jstree-hovered { background:#666; border:1px solid transparent; padding:0 2px 0 1px; }
 .jstree-mb3 .jstree-clicked { background:#3388CC;border:1px solid transparent; padding:0 2px 0 1px; }
 
 .jstree-mb3 a .jstree-icon { background-position:-56px -19px; }
@@ -58,7 +58,7 @@
 #vakata-contextmenu.jstree-mb3-context li ul { margin-left:-4px; }
 
 .jstree a {
-    color: #000!important;
+    color: #fff!important;
 }
 .jstree-mb3 .jstree-clicked {
     color: #fff!important;
@@ -71,7 +71,7 @@
 .jstree li {
     margin-left: 10px;
     min-width: 10px;
-    border-bottom: 1px solid #ccc;
+    border-bottom: 1px solid #505050;
 }
 
 .jstree li:last-child {
