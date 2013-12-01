@@ -1765,5 +1765,14 @@ namespace MediaBrowser.Controller.Entities
             // See if we can avoid a file system lookup by looking for the file in ResolveArgs
             return metaFileEntry == null ? FileSystem.GetLastWriteTimeUtc(imagePath) : FileSystem.GetLastWriteTimeUtc(metaFileEntry);
         }
+
+        /// <summary>
+        /// Gets the file system path to delete when the item is to be deleted
+        /// </summary>
+        /// <returns></returns>
+        public virtual IEnumerable<string> GetDeletePaths()
+        {
+            return new[] { Path };
+        }
     }
 }

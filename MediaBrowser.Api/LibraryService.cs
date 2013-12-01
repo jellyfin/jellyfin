@@ -465,13 +465,16 @@ namespace MediaBrowser.Api
 
             if (item.LocationType == LocationType.FileSystem)
             {
-                if (Directory.Exists(item.Path))
+                foreach (var path in item.GetDeletePaths().ToList())
                 {
-                    Directory.Delete(item.Path, true);
-                }
-                else if (File.Exists(item.Path))
-                {
-                    File.Delete(item.Path);
+                    if (Directory.Exists(path))
+                    {
+                        Directory.Delete(path, true);
+                    }
+                    else if (File.Exists(path))
+                    {
+                        File.Delete(path);
+                    }
                 }
 
                 if (parent != null)
