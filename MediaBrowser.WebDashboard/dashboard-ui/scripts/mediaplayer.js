@@ -108,6 +108,10 @@
             var position = Math.floor(10000000 * endTime) + startTimeTicksOffset;
 
             ApiClient.reportPlaybackStopped(Dashboard.getCurrentUserId(), currentItem.Id, position);
+
+            if (currentItem.MediaType == "Video") {
+                ApiClient.stopActiveEncodings();
+            }
         }
 
         function playNextAfterEnded() {
@@ -184,9 +188,13 @@
                     sendProgressUpdate(currentItem.Id);
 
                 });
-                startTimeTicksOffset = ticks;
 
-                element.src = currentSrc;
+                ApiClient.stopActiveEncodings().done(function () {
+
+                    startTimeTicksOffset = ticks;
+
+                    element.src = currentSrc;
+                });
             }
         }
 
@@ -479,7 +487,8 @@
                 maxWidth: Math.min(screenWidth, 1280),
                 StartTimeTicks: 0,
                 SubtitleStreamIndex: getInitialSubtitleStreamIndex(item.MediaStreams, user),
-                AudioStreamIndex: getInitialAudioStreamIndex(item.MediaStreams, user)
+                AudioStreamIndex: getInitialAudioStreamIndex(item.MediaStreams, user),
+                deviceId: ApiClient.deviceId()
             };
 
             var videoStream = item.MediaStreams.filter(function (i) {
