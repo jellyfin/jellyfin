@@ -34,7 +34,9 @@
     z-index: 1000;
     top: 0;
     border-bottom: 1px solid #111;
-    font-size: 13px;
+}
+.viewMenuLink {
+    font-size: 90%;
 }
 
 .viewSummary {
@@ -812,7 +814,7 @@ a.itemTag:hover {
     width: 27px;
     z-index: 1000;
     text-align: center;
-    font-size: 13px;
+    font-size: 14px;
     display: none;
     line-height: 1;
 }

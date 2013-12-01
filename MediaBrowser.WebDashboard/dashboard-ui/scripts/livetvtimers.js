@@ -33,14 +33,14 @@
 
         html += '<tr>';
 
-        html += '<th>&nbsp;</th>';
+        html += '<th class="tabletColumn">&nbsp;</th>';
         html += '<th>Name</th>';
-        html += '<th>Channel</th>';
+        html += '<th class="desktopColumn">Channel</th>';
         html += '<th>Date</th>';
         html += '<th>Start</th>';
-        html += '<th>End</th>';
-        html += '<th>Status</th>';
-        html += '<th>Recurring</th>';
+        html += '<th class="tabletColumn">End</th>';
+        html += '<th class="tabletColumn">Status</th>';
+        html += '<th class="desktopColumn">Recurring</th>';
 
         html += '</tr>';
 
@@ -50,13 +50,15 @@
 
             html += '<tr>';
 
-            html += '<td>';
+            html += '<td class="tabletColumn">';
             html += '<button data-timerid="' + timer.Id + '" class="btnDeleteTimer" type="button" data-icon="delete" data-inline="true" data-mini="true" data-iconpos="notext">Delete</button>';
             html += '</td>';
 
-            html += '<td>' + (timer.Name || '') + '</td>';
-
             html += '<td>';
+            html += '<a href="livetvtimer.html?id=' + timer.Id + '">' + timer.Name + '</a>';
+            html += '</td>';
+
+            html += '<td class="desktopColumn">';
             if (timer.ChannelId) {
                 html += '<a href="livetvchannel.html?id=' + timer.ChannelId + '">' + timer.ChannelName + '</a>';
             }
@@ -76,11 +78,11 @@
 
             html += '<td>' + LiveTvHelpers.getDisplayTime(timer.StartDate) + '</td>';
 
-            html += '<td>' + LiveTvHelpers.getDisplayTime(timer.EndDate) + '</td>';
+            html += '<td class="tabletColumn">' + LiveTvHelpers.getDisplayTime(timer.EndDate) + '</td>';
 
-            html += '<td>' + (timer.Status || '') + '</td>';
+            html += '<td class="tabletColumn">' + (timer.Status || '') + '</td>';
 
-            html += '<td>';
+            html += '<td class="desktopColumn">';
 
             if (timer.IsRecurring) {
                 html += '&nbsp;';

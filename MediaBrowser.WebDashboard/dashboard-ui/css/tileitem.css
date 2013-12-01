@@ -2,7 +2,6 @@
     background: #333;
     padding: 10px 7px 5px;
     margin: 3px 0;
-    text-shadow: none;
     font-weight: normal!important;
     display: block;
     position: relative;
@@ -195,10 +194,6 @@
 
     .posterTileItem {
         width: 30.5%;
-    }
-
-    .tileItem .itemProgress {
-        font-size: 17px;
     }
 }
 

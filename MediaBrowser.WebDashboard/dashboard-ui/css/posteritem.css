@@ -37,7 +37,6 @@
 }
 
 .posterItemStoreText {
-    font-family: 'Open Sans', sans-serif;
     font-weight: normal;
     text-overflow: ellipsis;
     overflow: hidden;

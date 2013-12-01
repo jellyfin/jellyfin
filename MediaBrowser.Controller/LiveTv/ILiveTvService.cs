@@ -48,6 +48,22 @@ namespace MediaBrowser.Controller.LiveTv
         Task CreateTimerAsync(TimerInfo info, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Creates the series timer asynchronous.
+        /// </summary>
+        /// <param name="info">The information.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task CreateSeriesTimerAsync(SeriesTimerInfo info, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Updates the series timer asynchronous.
+        /// </summary>
+        /// <param name="info">The information.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task UpdateSeriesTimerAsync(SeriesTimerInfo info, CancellationToken cancellationToken);
+        
+        /// <summary>
         /// Gets the channel image asynchronous.
         /// </summary>
         /// <param name="channelId">The channel identifier.</param>
@@ -70,11 +86,11 @@ namespace MediaBrowser.Controller.LiveTv
         Task<IEnumerable<TimerInfo>> GetTimersAsync(CancellationToken cancellationToken);
 
         /// <summary>
-        /// Gets the recurring timers asynchronous.
+        /// Gets the series timers asynchronous.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{IEnumerable{RecurringTimerInfo}}.</returns>
-        Task<IEnumerable<RecurringTimerInfo>> GetRecurringTimersAsync(CancellationToken cancellationToken);
+        /// <returns>Task{IEnumerable{SeriesTimerInfo}}.</returns>
+        Task<IEnumerable<SeriesTimerInfo>> GetSeriesTimersAsync(CancellationToken cancellationToken);
         
         /// <summary>
         /// Gets the programs asynchronous.

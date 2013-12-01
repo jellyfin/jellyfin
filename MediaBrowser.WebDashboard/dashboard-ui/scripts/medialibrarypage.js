@@ -87,7 +87,7 @@
     getVirtualFolderHtml: function (virtualFolder, isCollapsed, index) {
 
         isCollapsed = isCollapsed ? "true" : "false";
-        var html = '<div class="collapsibleVirtualFolder" data-role="collapsible" data-collapsed="' + isCollapsed + '" data-content-theme="c">';
+        var html = '<div class="collapsibleVirtualFolder" data-mini="true" data-role="collapsible" data-collapsed="' + isCollapsed + '" data-content-theme="c">';
 
         html += '<h3>' + virtualFolder.Name + '</h3>';
 

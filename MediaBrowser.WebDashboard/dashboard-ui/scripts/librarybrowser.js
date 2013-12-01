@@ -392,8 +392,8 @@
             }
 
             html += LibraryBrowser.getSongHeaderCellHtml('Runtime', 'tabletColumn', options.enableColumnSorting, 'Runtime,AlbumArtist,Album,SortName', options.sortBy, options.sortOrder);
-            html += LibraryBrowser.getSongHeaderCellHtml('Play Count', 'tabletColumn', options.enableColumnSorting, 'PlayCount,AlbumArtist,Album,SortName', options.sortBy, options.sortOrder);
-            html += LibraryBrowser.getSongHeaderCellHtml('', 'tabletColumn userDataCell', options.enableColumnSorting);
+            html += LibraryBrowser.getSongHeaderCellHtml('Plays', 'desktopColumn', options.enableColumnSorting, 'PlayCount,AlbumArtist,Album,SortName', options.sortBy, options.sortOrder);
+            html += LibraryBrowser.getSongHeaderCellHtml('', 'desktopColumn userDataCell', options.enableColumnSorting);
 
             html += '</tr>';
 
@@ -426,10 +426,10 @@
 
                     if (item.AlbumArtist) {
 
-                        html += '<td><a href="itembynamedetails.html?context=music&musicartist=' + ApiClient.encodeName(item.AlbumArtist) + '">' + item.AlbumArtist + '</a></td>';
+                        html += '<td class="tabletColumn"><a href="itembynamedetails.html?context=music&musicartist=' + ApiClient.encodeName(item.AlbumArtist) + '">' + item.AlbumArtist + '</a></td>';
 
                     } else {
-                        html += '<td></td>';
+                        html += '<td class="tabletColumn"></td>';
                     }
                 }
 
@@ -450,9 +450,9 @@
 
                 html += '<td class="tabletColumn">' + time + '</td>';
 
-                html += '<td class="tabletColumn">' + (item.UserData ? item.UserData.PlayCount : 0) + '</td>';
+                html += '<td class="desktopColumn">' + (item.UserData ? item.UserData.PlayCount : 0) + '</td>';
 
-                html += '<td class="tabletColumn userDataCell">' + LibraryBrowser.getUserDataIconsHtml(item) + '</td>';
+                html += '<td class="desktopColumn userDataCell">' + LibraryBrowser.getUserDataIconsHtml(item) + '</td>';
 
                 html += '</tr>';
             }

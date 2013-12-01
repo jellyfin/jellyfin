@@ -11,10 +11,10 @@ namespace MediaBrowser.Controller.LiveTv
         public string Id { get; set; }
 
         /// <summary>
-        /// Gets or sets the recurring timer identifier.
+        /// Gets or sets the series timer identifier.
         /// </summary>
-        /// <value>The recurring timer identifier.</value>
-        public string RecurringTimerId { get; set; }
+        /// <value>The series timer identifier.</value>
+        public string SeriesTimerId { get; set; }
         
         /// <summary>
         /// ChannelId of the recording.

@@ -32,7 +32,7 @@
 
 body {
     overflow-y: scroll!important;
-    font-size: 14px;
+    font-size: 90%;
 }
 
 .textlink {
@@ -45,19 +45,19 @@ body {
 
 * {
     font-family: 'Open Sans', Arial, Helvetica, sans-serif;
+    text-shadow: none;
 }
 
 .ui-header .ui-btn-inner, .ui-footer .ui-btn-inner, .ui-mini .ui-btn-inner {
-    font-size: 13.5px;
+    font-size: 13px;
 }
+
 .ui-li-desc {
     font-size: 13px;
 }
 
 h1 {
-    font-family: 'Open Sans', Arial, Helvetica, sans-serif;
-    font-weight: 200;
-    font-size: 22pt;
+    font-weight: 300;
 }
 
 .toolsSidebar h1 {
@@ -70,9 +70,7 @@ h1 {
 }
 
 h2 {
-    font-family: 'Open Sans', Arial, Helvetica, sans-serif;
     font-weight: 400;
-    font-size: 20pt;
 }
 
 h1 a {
@@ -86,16 +84,6 @@ h1 a {
 
 h1 a:hover {
     text-decoration: underline;
-}
-
-@media all and (min-width: 750px) {
-    h1 {
-        font-size: 28pt;
-    }
-
-    h2 {
-        font-size: 22pt;
-    }
 }
 
 pre, textarea.pre {
@@ -233,6 +221,7 @@ form, .readOnlyContent {
 .fieldDescription {
     font-size: 12px;
     padding-left: 5px;
+    font-weight: normal;
 }
 
 .warningFieldDescription {
@@ -455,7 +444,6 @@ form, .readOnlyContent {
 .directoryPickerHeadline {
     border: 1px solid #f7c942;
     color: #222;
-    text-shadow: 0 1px 0 #fff;
     background: #fff9df;
     background-image: -webkit-gradient(linear,left top,left bottom,from(#fffadf),to(#fff3a5));
     background-image: -webkit-linear-gradient(#fffadf,#fff3a5);

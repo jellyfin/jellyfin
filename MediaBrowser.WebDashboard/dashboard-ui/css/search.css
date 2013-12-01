@@ -93,11 +93,12 @@
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
+    font-size: 14px;
 }
 
 .searchHintSecondaryText {
     font-size: 12px;
-    color: #999;
+    color: #555;
     margin-top: 3px;
     white-space: nowrap;
     text-overflow: ellipsis;

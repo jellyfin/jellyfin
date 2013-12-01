@@ -29,20 +29,16 @@
     border-spacing: 0;
     border-top: 1px solid #444;
     border-bottom: 1px solid #444;
-    padding: 3px 5px;
+    padding: 5px 5px;
 }
 
 .detailTable th {
     border-spacing: 0;
     border-bottom: 1px solid #444;
     padding: 5px;
-    font-weight: normal;
+    font-weight: bold;
     text-align: left;
     vertical-align: top;
-}
-
-.detailTable tr:hover {
-    background: #555;
 }
 
 .userDataCell {
@@ -50,7 +46,7 @@
     text-align: right;
 }
 
-.tabletColumn {
+.tabletColumn, .desktopColumn {
     display: none;
 }
 
@@ -66,8 +62,14 @@
         opacity: .6;
     }
 
-@media all and (min-width: 750px) {
+@media all and (min-width: 600px) {
     .tabletColumn {
+        display: table-cell;
+    }
+}
+
+@media all and (min-width: 1100px) {
+    .desktopColumn {
         display: table-cell;
     }
 }
