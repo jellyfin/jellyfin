@@ -89,7 +89,6 @@
     <Compile Include="Music\LastfmArtistProvider.cs" />
     <Compile Include="Music\LastfmBaseProvider.cs" />
     <Compile Include="Music\LastfmHelper.cs" />
-    <Compile Include="Music\AlbumDynamicInfoProvider.cs" />
     <Compile Include="Music\ManualFanartAlbumProvider.cs" />
     <Compile Include="Music\ManualFanartArtistProvider.cs" />
     <Compile Include="Music\ManualLastFmImageProvider.cs" />

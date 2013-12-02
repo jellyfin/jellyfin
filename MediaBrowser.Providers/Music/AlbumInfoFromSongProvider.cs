@@ -37,7 +37,7 @@ namespace MediaBrowser.Providers.Music
         {
             get
             {
-                return "1";
+                return "2";
             }
         }
 
@@ -65,7 +65,7 @@ namespace MediaBrowser.Providers.Music
 
         private Guid GetComparisonData(List<Audio> songs)
         {
-            var albumNames = songs.Select(i => i.AlbumArtist)
+            var albumArtistNames = songs.Select(i => i.AlbumArtist)
                 .Where(i => !string.IsNullOrEmpty(i))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
@@ -78,10 +78,10 @@ namespace MediaBrowser.Providers.Music
                .Distinct(StringComparer.OrdinalIgnoreCase)
                .ToList();
 
-            albumNames.AddRange(studios);
-            albumNames.AddRange(genres);
+            albumArtistNames.AddRange(studios);
+            albumArtistNames.AddRange(genres);
 
-            return string.Join(string.Empty, albumNames.OrderBy(i => i).ToArray()).GetMD5();
+            return string.Join(string.Empty, albumArtistNames.OrderBy(i => i).ToArray()).GetMD5();
         }
 
         public override Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
@@ -119,7 +119,34 @@ namespace MediaBrowser.Providers.Music
                 album.Genres = songs.SelectMany(i => i.Genres)
                     .Distinct(StringComparer.OrdinalIgnoreCase)
                     .ToList();
+            } 
+            
+            album.AlbumArtist = songs
+                .Select(i => i.AlbumArtist)
+                .FirstOrDefault(i => !string.IsNullOrEmpty(i));
+
+            album.Artists = songs.SelectMany(i => i.Artists)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            var date = songs.Select(i => i.PremiereDate)
+                .FirstOrDefault(i => i.HasValue);
+
+            if (date.HasValue)
+            {
+                album.PremiereDate = date.Value;
+                album.ProductionYear = date.Value.Year;
             }
+            else
+            {
+                var year = songs.Select(i => i.ProductionYear ?? 1800).FirstOrDefault(i => i != 1800);
+
+                if (year != 1800)
+                {
+                    album.ProductionYear = year;
+                }
+            }
+
 
             data.FileStamp = GetComparisonData(songs);
 
