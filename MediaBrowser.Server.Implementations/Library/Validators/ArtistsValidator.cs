@@ -137,7 +137,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
 
             if (userId.HasValue)
             {
-                artist.UserItemCounts[userId.Value] = counts;
+                artist.SetItemByNameCounts(userId.Value, counts);
             }
         }
 

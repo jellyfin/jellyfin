@@ -75,7 +75,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 // Dummy up the original url
                 var url = channel.ServiceName + channel.ChannelId;
 
-                await _providerManager.SaveImage(channel, response.Content, response.ContentType, ImageType.Primary, null, url, cancellationToken).ConfigureAwait(false);
+                await _providerManager.SaveImage(channel, response.Stream, response.MimeType, ImageType.Primary, null, url, cancellationToken).ConfigureAwait(false);
             }
         }
 
