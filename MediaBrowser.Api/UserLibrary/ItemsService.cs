@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.IO;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -6,6 +7,7 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using ServiceStack.ServiceHost;
@@ -212,6 +214,21 @@ namespace MediaBrowser.Api.UserLibrary
 
         [ApiMember(Name = "MaxPremiereDate", Description = "Optional. The maximum premiere date. Format = yyyyMMddHHmmss", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string MaxPremiereDate { get; set; }
+
+        [ApiMember(Name = "HasOverview", Description = "Optional filter by items that have an overview or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool? HasOverview { get; set; }
+
+        [ApiMember(Name = "HasImdbId", Description = "Optional filter by items that have an imdb id or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool? HasImdbId { get; set; }
+
+        [ApiMember(Name = "HasTmdbId", Description = "Optional filter by items that have a tmdb id or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool? HasTmdbId { get; set; }
+
+        [ApiMember(Name = "HasTvdbId", Description = "Optional filter by items that have a tvdb id or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool? HasTvdbId { get; set; }
+        
+        [ApiMember(Name = "IsYearMismatched", Description = "Optional filter by items that are potentially misidentified.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool? IsYearMismatched { get; set; }
     }
 
     /// <summary>
@@ -1029,7 +1046,90 @@ namespace MediaBrowser.Api.UserLibrary
                 items = items.Where(i => i.PremiereDate.HasValue && i.PremiereDate.Value <= date);
             }
 
+            if (request.HasOverview.HasValue)
+            {
+                var filterValue = request.HasOverview.Value;
+
+                items = items.Where(i =>
+                {
+                    var hasValue = !string.IsNullOrEmpty(i.Overview);
+
+                    return hasValue == filterValue;
+                });
+            }
+
+            if (request.HasImdbId.HasValue)
+            {
+                var filterValue = request.HasImdbId.Value;
+
+                items = items.Where(i =>
+                {
+                    var hasValue = !string.IsNullOrEmpty(i.GetProviderId(MetadataProviders.Imdb));
+
+                    return hasValue == filterValue;
+                });
+            }
+
+            if (request.HasTmdbId.HasValue)
+            {
+                var filterValue = request.HasTmdbId.Value;
+
+                items = items.Where(i =>
+                {
+                    var hasValue = !string.IsNullOrEmpty(i.GetProviderId(MetadataProviders.Tmdb));
+
+                    return hasValue == filterValue;
+                });
+            }
+
+            if (request.HasTvdbId.HasValue)
+            {
+                var filterValue = request.HasTvdbId.Value;
+
+                items = items.Where(i =>
+                {
+                    var hasValue = !string.IsNullOrEmpty(i.GetProviderId(MetadataProviders.Tvdb));
+
+                    return hasValue == filterValue;
+                });
+            }
+
+            if (request.IsYearMismatched.HasValue)
+            {
+                var filterValue = request.IsYearMismatched.Value;
+
+                items = items.Where(i => IsYearMismatched(i) == filterValue);
+            }
+
             return items;
+        }
+
+        private bool IsYearMismatched(BaseItem item)
+        {
+            if (item.ProductionYear.HasValue)
+            {
+                var path = item.Path;
+
+                if (!string.IsNullOrEmpty(path))
+                {
+                    int? yearInName;
+                    string name;
+                    NameParser.ParseName(Path.GetFileName(path), out name, out yearInName);
+
+                    // Go up a level if we didn't get a year
+                    if (!yearInName.HasValue)
+                    {
+                        NameParser.ParseName(Path.GetFileName(Path.GetDirectoryName(path)), out name, out yearInName);
+                    }
+
+                    if (yearInName.HasValue)
+                    {
+                        return yearInName.Value != item.ProductionYear.Value;
+                    }
+                }
+            }
+
+            return false;
         }
 
         /// <summary>

@@ -117,6 +117,7 @@
     <Compile Include="Notifications\NotificationUpdateEventArgs.cs" />
     <Compile Include="Providers\IDynamicInfoProvider.cs" />
     <Compile Include="Providers\IImageProvider.cs" />
+    <Compile Include="Providers\NameParser.cs" />
     <Compile Include="Session\ISessionManager.cs" />
     <Compile Include="Drawing\ImageExtensions.cs" />
     <Compile Include="Entities\AggregateFolder.cs" />
