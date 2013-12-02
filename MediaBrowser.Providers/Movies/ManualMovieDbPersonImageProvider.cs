@@ -46,7 +46,12 @@ namespace MediaBrowser.Providers.Movies
             return images.Where(i => i.Type == imageType);
         }
 
-        public async Task<IEnumerable<RemoteImageInfo>> GetAllImages(BaseItem item, CancellationToken cancellationToken)
+        public Task<IEnumerable<RemoteImageInfo>> GetAllImages(BaseItem item, CancellationToken cancellationToken)
+        {
+            return GetAllImagesInternal(item, true, cancellationToken);
+        }
+
+        public async Task<IEnumerable<RemoteImageInfo>> GetAllImagesInternal(BaseItem item, bool retryOnMissingData, CancellationToken cancellationToken)
         {
             var id = item.GetProviderId(MetadataProviders.Tmdb);
 
@@ -70,11 +75,18 @@ namespace MediaBrowser.Providers.Movies
                 {
 
                 }
+
+                if (retryOnMissingData)
+                {
+                    await MovieDbPersonProvider.Current.DownloadPersonInfo(id, cancellationToken).ConfigureAwait(false);
+
+                    return await GetAllImagesInternal(item, false, cancellationToken).ConfigureAwait(false);
+                }
             }
 
             return new List<RemoteImageInfo>();
         }
-
+        
         private IEnumerable<RemoteImageInfo> GetImages(MovieDbPersonProvider.Images images, string baseImageUrl)
         {
             var list = new List<RemoteImageInfo>();

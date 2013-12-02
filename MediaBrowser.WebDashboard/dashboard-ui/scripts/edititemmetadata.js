@@ -669,7 +669,6 @@
             $('#fldPremiereDate', page).hide();
             $('#fldSortName', page).hide();
             $('#fldDateAdded', page).hide();
-            $('#fldSourceType', page).hide();
             $('#fldYear', page).hide();
             $('.fldRefresh', page).hide();
         } else {
@@ -678,9 +677,14 @@
             $('#fldPremiereDate', page).show();
             $('#fldSortName', page).show();
             $('#fldDateAdded', page).show();
-            $('#fldSourceType', page).show();
             $('#fldYear', page).show();
             $('.fldRefresh', page).show();
+        }
+
+        if (item.MediaType == "Video" && item.Type != "Channel") {
+            $('#fldSourceType', page).show();
+        } else {
+            $('#fldSourceType', page).hide();
         }
 
         if (item.Type == "Person") {
