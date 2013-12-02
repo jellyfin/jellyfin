@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Entities
 {
-    public class Game : BaseItem, IHasSoundtracks
+    public class Game : BaseItem, IHasSoundtracks, IHasTrailers
     {
         public List<Guid> SoundtrackIds { get; set; }
 
@@ -12,8 +12,18 @@ namespace MediaBrowser.Controller.Entities
         {
             MultiPartGameFiles = new List<string>();
             SoundtrackIds = new List<Guid>();
+            RemoteTrailers = new List<MediaUrl>();
+            LocalTrailerIds = new List<Guid>();
         }
 
+        public List<Guid> LocalTrailerIds { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the remote trailers.
+        /// </summary>
+        /// <value>The remote trailers.</value>
+        public List<MediaUrl> RemoteTrailers { get; set; }
+        
         /// <summary>
         /// Gets the type of the media.
         /// </summary>

@@ -11,7 +11,7 @@ namespace MediaBrowser.Controller.Entities.Movies
     /// <summary>
     /// Class Movie
     /// </summary>
-    public class Movie : Video, IHasCriticRating, IHasSoundtracks, IHasBudget
+    public class Movie : Video, IHasCriticRating, IHasSoundtracks, IHasBudget, IHasTrailers
     {
         public List<Guid> SpecialFeatureIds { get; set; }
 
@@ -21,7 +21,13 @@ namespace MediaBrowser.Controller.Entities.Movies
         {
             SpecialFeatureIds = new List<Guid>();
             SoundtrackIds = new List<Guid>();
+            RemoteTrailers = new List<MediaUrl>();
+            LocalTrailerIds = new List<Guid>();
         }
+
+        public List<Guid> LocalTrailerIds { get; set; }
+        
+        public List<MediaUrl> RemoteTrailers { get; set; }
 
         /// <summary>
         /// Gets or sets the budget.

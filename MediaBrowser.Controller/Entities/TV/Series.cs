@@ -11,7 +11,7 @@ namespace MediaBrowser.Controller.Entities.TV
     /// <summary>
     /// Class Series
     /// </summary>
-    public class Series : Folder, IHasSoundtracks
+    public class Series : Folder, IHasSoundtracks, IHasTrailers
     {
         public List<Guid> SpecialFeatureIds { get; set; }
         public List<Guid> SoundtrackIds { get; set; }
@@ -24,8 +24,14 @@ namespace MediaBrowser.Controller.Entities.TV
 
             SpecialFeatureIds = new List<Guid>();
             SoundtrackIds = new List<Guid>();
+            RemoteTrailers = new List<MediaUrl>();
+            LocalTrailerIds = new List<Guid>();
         }
 
+        public List<Guid> LocalTrailerIds { get; set; }
+        
+        public List<MediaUrl> RemoteTrailers { get; set; }
+        
         /// <summary>
         /// Gets or sets the status.
         /// </summary>

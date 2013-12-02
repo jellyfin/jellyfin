@@ -37,10 +37,8 @@ namespace MediaBrowser.Controller.Entities
             Tags = new List<string>();
             ThemeSongIds = new List<Guid>();
             ThemeVideoIds = new List<Guid>();
-            LocalTrailerIds = new List<Guid>();
             LockedFields = new List<MetadataFields>();
             Taglines = new List<string>();
-            RemoteTrailers = new List<MediaUrl>();
             ImageSources = new List<ImageSourceInfo>();
         }
 
@@ -91,12 +89,6 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The taglines.</value>
         public List<string> Taglines { get; set; }
-
-        /// <summary>
-        /// Gets or sets the trailer URL.
-        /// </summary>
-        /// <value>The trailer URL.</value>
-        public List<MediaUrl> RemoteTrailers { get; set; }
 
         /// <summary>
         /// Return the id that should be used to key display prefs for this item.
@@ -654,7 +646,6 @@ namespace MediaBrowser.Controller.Entities
 
         public List<Guid> ThemeSongIds { get; set; }
         public List<Guid> ThemeVideoIds { get; set; }
-        public List<Guid> LocalTrailerIds { get; set; }
 
         [IgnoreDataMember]
         public virtual string OfficialRatingForComparison
@@ -897,7 +888,11 @@ namespace MediaBrowser.Controller.Entities
 
                 themeVideosChanged = await RefreshThemeVideos(cancellationToken, forceSave, forceRefresh, allowSlowProviders).ConfigureAwait(false);
 
-                localTrailersChanged = await RefreshLocalTrailers(cancellationToken, forceSave, forceRefresh, allowSlowProviders).ConfigureAwait(false);
+                var hasTrailers = this as IHasTrailers;
+                if (hasTrailers != null)
+                {
+                    localTrailersChanged = await RefreshLocalTrailers(hasTrailers, cancellationToken, forceSave, forceRefresh, allowSlowProviders).ConfigureAwait(false);
+                }
             }
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -917,18 +912,18 @@ namespace MediaBrowser.Controller.Entities
             return changed;
         }
 
-        private async Task<bool> RefreshLocalTrailers(CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false, bool allowSlowProviders = true)
+        private async Task<bool> RefreshLocalTrailers(IHasTrailers item, CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false, bool allowSlowProviders = true)
         {
             var newItems = LoadLocalTrailers().ToList();
             var newItemIds = newItems.Select(i => i.Id).ToList();
 
-            var itemsChanged = !LocalTrailerIds.SequenceEqual(newItemIds);
+            var itemsChanged = !item.LocalTrailerIds.SequenceEqual(newItemIds);
 
             var tasks = newItems.Select(i => i.RefreshMetadata(cancellationToken, forceSave, forceRefresh, allowSlowProviders, resetResolveArgs: false));
 
             var results = await Task.WhenAll(tasks).ConfigureAwait(false);
 
-            LocalTrailerIds = newItemIds;
+            item.LocalTrailerIds = newItemIds;
 
             return itemsChanged || results.Contains(true);
         }

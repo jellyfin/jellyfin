@@ -885,7 +885,19 @@ namespace MediaBrowser.Api.UserLibrary
 
             if (request.HasTrailer.HasValue)
             {
-                items = items.Where(i => request.HasTrailer.Value ? i.LocalTrailerIds.Count > 0 : i.LocalTrailerIds.Count == 0);
+                var val = request.HasTrailer.Value;
+                items = items.Where(i =>
+                {
+                    var trailerCount = 0;
+
+                    var hasTrailers = i as IHasTrailers;
+                    if (hasTrailers != null)
+                    {
+                        trailerCount = hasTrailers.LocalTrailerIds.Count;
+                    }
+
+                    return val ? trailerCount > 0 : trailerCount == 0;
+                });
             }
 
             if (request.HasThemeSong.HasValue)

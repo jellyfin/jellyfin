@@ -268,16 +268,20 @@ namespace MediaBrowser.Providers.Savers
                 }
             }
 
-            if (item.RemoteTrailers.Count > 0)
+            var hasTrailers = item as IHasTrailers;
+            if (hasTrailers != null)
             {
-                builder.Append("<Trailers>");
-
-                foreach (var trailer in item.RemoteTrailers)
+                if (hasTrailers.RemoteTrailers.Count > 0)
                 {
-                    builder.Append("<Trailer>" + SecurityElement.Escape(trailer.Url) + "</Trailer>");
-                }
+                    builder.Append("<Trailers>");
 
-                builder.Append("</Trailers>");
+                    foreach (var trailer in hasTrailers.RemoteTrailers)
+                    {
+                        builder.Append("<Trailer>" + SecurityElement.Escape(trailer.Url) + "</Trailer>");
+                    }
+
+                    builder.Append("</Trailers>");
+                }
             }
 
             var hasBudget = item as IHasBudget;
