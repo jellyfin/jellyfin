@@ -71,6 +71,12 @@ namespace MediaBrowser.Controller.LiveTv
         /// <value>The days.</value>
         public List<DayOfWeek> Days { get; set; }
 
+        /// <summary>
+        /// Gets or sets the priority.
+        /// </summary>
+        /// <value>The priority.</value>
+        public int Priority { get; set; }
+
         public SeriesTimerInfo()
         {
             Days = new List<DayOfWeek>();

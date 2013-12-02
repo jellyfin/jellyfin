@@ -129,17 +129,13 @@ namespace MediaBrowser.Server.Implementations.Dto
         /// <param name="user">The user.</param>
         private void AttachItemByNameCounts(BaseItemDto dto, IItemByName item, User user)
         {
-            ItemByNameCounts counts;
-
             if (user == null)
             {
                 //counts = item.ItemCounts;
                 return;
             }
-            if (!item.UserItemCounts.TryGetValue(user.Id, out counts))
-            {
-                counts = new ItemByNameCounts();
-            }
+
+            ItemByNameCounts counts = item.GetItemByNameCounts(user.Id) ?? new ItemByNameCounts();
 
             dto.ChildCount = counts.TotalCount;
 

@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Model.Dto;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -9,7 +10,7 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public interface IItemByName
     {
-        Dictionary<Guid, ItemByNameCounts> UserItemCounts { get; set; }
+        List<ItemByNameCounts> UserItemCountList { get; set; }
     }
 
     public interface IHasDualAccess : IItemByName
@@ -17,23 +18,29 @@ namespace MediaBrowser.Controller.Entities
         bool IsAccessedByName { get; }
     }
 
-    public static class IItemByNameExtensions
+    public static class ItemByNameExtensions
     {
-        public static ItemByNameCounts GetItemByNameCounts(this IItemByName item, User user)
+        public static ItemByNameCounts GetItemByNameCounts(this IItemByName item, Guid userId)
         {
-            if (user == null)
+            if (userId == Guid.Empty)
             {
-                throw new ArgumentNullException("user");
+                throw new ArgumentNullException("userId");
             }
 
-            ItemByNameCounts counts;
+            return item.UserItemCountList.FirstOrDefault(i => i.UserId == userId);
+        }
 
-            if (item.UserItemCounts.TryGetValue(user.Id, out counts))
+        public static void SetItemByNameCounts(this IItemByName item, Guid userId, ItemByNameCounts counts)
+        {
+            var current = item.UserItemCountList.FirstOrDefault(i => i.UserId == userId);
+
+            if (current != null)
             {
-                return counts;
+                item.UserItemCountList.Remove(current);
             }
 
-            return null;
+            counts.UserId = userId;
+            item.UserItemCountList.Add(counts);
         }
     }
 }

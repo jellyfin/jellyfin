@@ -90,29 +90,17 @@ namespace MediaBrowser.Model.LiveTv
         public DateTime? OriginalAirDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the recording identifier.
+        /// Gets or sets a value indicating whether this instance is repeat.
         /// </summary>
-        /// <value>The recording identifier.</value>
-        public string RecordingId { get; set; }
+        /// <value><c>true</c> if this instance is repeat; otherwise, <c>false</c>.</value>
+        public bool IsRepeat { get; set; }
 
         /// <summary>
-        /// Gets or sets the recording status.
+        /// Gets or sets the episode title.
         /// </summary>
-        /// <value>The recording status.</value>
-        public RecordingStatus? RecordingStatus { get; set; }
+        /// <value>The episode title.</value>
+        public string EpisodeTitle { get; set; }
 
-        /// <summary>
-        /// Gets or sets the timer identifier.
-        /// </summary>
-        /// <value>The timer identifier.</value>
-        public string TimerId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the timer status.
-        /// </summary>
-        /// <value>The timer status.</value>
-        public RecordingStatus? TimerStatus { get; set; }
-        
         public ProgramInfoDto()
         {
             Genres = new List<string>();

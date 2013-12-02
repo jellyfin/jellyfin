@@ -77,6 +77,18 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value>The community rating.</value>
         public float? CommunityRating { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is repeat.
+        /// </summary>
+        /// <value><c>true</c> if this instance is repeat; otherwise, <c>false</c>.</value>
+        public bool IsRepeat { get; set; }
+
+        /// <summary>
+        /// Gets or sets the episode title.
+        /// </summary>
+        /// <value>The episode title.</value>
+        public string EpisodeTitle { get; set; }
         
         public ProgramInfo()
         {

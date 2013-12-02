@@ -48,7 +48,7 @@ namespace MediaBrowser.Server.Implementations.Sorting
 
             if (itemByName != null)
             {
-                var counts = itemByName.GetItemByNameCounts(User);
+                var counts = itemByName.GetItemByNameCounts(User.Id);
 
                 if (counts != null)
                 {

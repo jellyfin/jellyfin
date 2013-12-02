@@ -106,7 +106,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
             {
                 var itemCounts = CountHelpers.GetCounts(counts[libraryId]);
 
-                itemByName.UserItemCounts[libraryId] = itemCounts;
+                itemByName.SetItemByNameCounts(libraryId, itemCounts);
             }
 
             await itemByName.RefreshMetadata(cancellationToken).ConfigureAwait(false);

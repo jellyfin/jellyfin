@@ -14,7 +14,7 @@ namespace MediaBrowser.Controller.Entities.Audio
     public class MusicArtist : Folder, IItemByName, IHasMusicGenres, IHasDualAccess
     {
         [IgnoreDataMember]
-        public Dictionary<Guid, ItemByNameCounts> UserItemCounts { get; set; }
+        public List<ItemByNameCounts> UserItemCountList { get; set; }
 
         public bool IsAccessedByName { get; set; }
 
@@ -69,7 +69,7 @@ namespace MediaBrowser.Controller.Entities.Audio
 
         public MusicArtist()
         {
-            UserItemCounts = new Dictionary<Guid, ItemByNameCounts>();
+            UserItemCountList = new List<ItemByNameCounts>();
         }
 
         /// <summary>

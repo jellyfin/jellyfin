@@ -11,7 +11,7 @@ namespace MediaBrowser.Controller.LiveTv
     {
         public Channel()
         {
-            UserItemCounts = new Dictionary<Guid, ItemByNameCounts>();
+            UserItemCountList = new List<ItemByNameCounts>();
         }
 
         /// <summary>
@@ -24,7 +24,7 @@ namespace MediaBrowser.Controller.LiveTv
         }
 
         [IgnoreDataMember]
-        public Dictionary<Guid, ItemByNameCounts> UserItemCounts { get; set; }
+        public List<ItemByNameCounts> UserItemCountList { get; set; }
 
         /// <summary>
         /// Gets or sets the number.

@@ -209,7 +209,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 OriginalAirDate = program.OriginalAirDate,
                 Audio = program.Audio,
                 CommunityRating = program.CommunityRating,
-                AspectRatio = program.AspectRatio
+                AspectRatio = program.AspectRatio,
+                IsRepeat = program.IsRepeat,
+                EpisodeTitle = program.EpisodeTitle
             };
         }
 
@@ -296,21 +298,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
 
             var returnArray = programs.ToArray();
-
-            var recordings = await GetRecordings(new RecordingQuery
-            {
-
-
-            }, cancellationToken).ConfigureAwait(false);
-
-            foreach (var program in returnArray)
-            {
-                var recording = recordings.Items
-                    .FirstOrDefault(i => string.Equals(i.ProgramId, program.Id));
-
-                program.RecordingId = recording == null ? null : recording.Id;
-                program.RecordingStatus = recording == null ? (RecordingStatus?)null : recording.Status;
-            }
 
             return new QueryResult<ProgramInfoDto>
             {
@@ -400,7 +387,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 Id = id,
                 ExternalId = info.Id,
                 ChannelId = GetInternalChannelId(service.Name, info.ChannelId, info.ChannelName).ToString("N"),
-                Status = info.Status
+                Status = info.Status,
+                Path = info.Path,
+                Genres = info.Genres,
+                IsRepeat = info.IsRepeat,
+                EpisodeTitle = info.EpisodeTitle
             };
 
             if (!string.IsNullOrEmpty(info.ProgramId))
