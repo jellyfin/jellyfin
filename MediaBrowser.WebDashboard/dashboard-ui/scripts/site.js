@@ -644,7 +644,7 @@ var Dashboard = {
                 }
             }
 
-            html += '<a href="edititemmetadata.html" style="margin-top: .5em;">Metadata Manager</a>';
+            html += '<a href="edititemmetadata.html" style="margin-top: 1em;">Metadata Manager</a>';
 
             // collapsible
             html += '</div>';

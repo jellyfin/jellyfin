@@ -78,68 +78,99 @@
         </div>
         <div data-role="panel" id="filterPanel" data-position="right" data-display="overlay" data-theme="b" data-position-fixed="true">
             <form>
-                <fieldset data-role="controlgroup">
-                    <legend>
-                        <strong>Filters:</strong>
-                    </legend>
-                    <input class="chkStandardFilter" type="checkbox" name="chkIsFavorite" id="chkIsFavorite" data-theme="c" data-filter="IsFavorite" data-mini="true">
-                    <label for="chkIsFavorite">Favorite</label>
-
-                    <input class="chkStandardFilter" type="checkbox" name="chkLikes" id="chkLikes" data-theme="c" data-filter="Likes" data-mini="true">
-                    <label for="chkLikes">Likes</label>
-
-                    <input class="chkStandardFilter" type="checkbox" name="chkDislikes" id="chkDislikes" data-theme="c" data-filter="Dislikes" data-mini="true">
-                    <label for="chkDislikes">Dislikes</label>
+                <fieldset data-role="controlgroup" data-type="horizontal" style="margin-bottom: 1em;">
+                    <legend>Filters:</legend>
+                    <input type="radio" name="radioFilterTypes" id="radioBasicFilters" value="on" checked="checked" data-mini="true" data-theme="c">
+                    <label for="radioBasicFilters">Basic</label>
+                    <input type="radio" name="radioFilterTypes" id="radioAdvancedFilters" value="off" data-mini="true" data-theme="c">
+                    <label for="radioAdvancedFilters">Advanced</label>
                 </fieldset>
 
-                <fieldset data-role="controlgroup">
-                    <legend>
-                        <strong>Status:</strong>
-                    </legend>
-                    <input class="chkStatus" type="checkbox" name="chkStatusContinuing" id="chkStatusContinuing" data-theme="c" data-filter="Continuing" data-mini="true">
-                    <label for="chkStatusContinuing">Continuing</label>
-                    <input class="chkStatus" type="checkbox" name="chkStatusEnded" id="chkStatusEnded" data-theme="c" data-filter="Ended" data-mini="true">
-                    <label for="chkStatusEnded">Ended</label>
-                </fieldset>
+                <div class="basicFilters">
+                    <fieldset data-role="controlgroup">
+                        <legend>
+                            <strong>Filters:</strong>
+                        </legend>
+                        <input class="chkStandardFilter" type="checkbox" name="chkIsFavorite" id="chkIsFavorite" data-theme="c" data-filter="IsFavorite" data-mini="true">
+                        <label for="chkIsFavorite">Favorite</label>
 
-                <fieldset data-role="controlgroup">
-                    <legend>
-                        <strong>Air Days:</strong>
-                    </legend>
-                    <input class="chkAirDays" type="checkbox" name="chkSunday" id="chkSunday" data-theme="c" data-filter="Sunday" data-mini="true">
-                    <label for="chkSunday">Sunday</label>
-                    <input class="chkAirDays" type="checkbox" name="chkMonday" id="chkMonday" data-theme="c" data-filter="Monday" data-mini="true">
-                    <label for="chkMonday">Monday</label>
-                    <input class="chkAirDays" type="checkbox" name="chkTuesday" id="chkTuesday" data-theme="c" data-filter="Tuesday" data-mini="true">
-                    <label for="chkTuesday">Tuesday</label>
-                    <input class="chkAirDays" type="checkbox" name="chkWednesday" id="chkWednesday" data-theme="c" data-filter="Wednesday" data-mini="true">
-                    <label for="chkWednesday">Wednesday</label>
-                    <input class="chkAirDays" type="checkbox" name="chkThursday" id="chkThursday" data-theme="c" data-filter="Thursday" data-mini="true">
-                    <label for="chkThursday">Thursday</label>
-                    <input class="chkAirDays" type="checkbox" name="chkFriday" id="chkFriday" data-theme="c" data-filter="Friday" data-mini="true">
-                    <label for="chkFriday">Friday</label>
-                    <input class="chkAirDays" type="checkbox" name="chkSaturday" id="chkSaturday" data-theme="c" data-filter="Saturday" data-mini="true">
-                    <label for="chkSaturday">Saturday</label>
-                </fieldset>
+                        <input class="chkStandardFilter" type="checkbox" name="chkLikes" id="chkLikes" data-theme="c" data-filter="Likes" data-mini="true">
+                        <label for="chkLikes">Likes</label>
 
-                <fieldset data-role="controlgroup">
-                    <legend>
-                        <strong>Features:</strong>
-                    </legend>
+                        <input class="chkStandardFilter" type="checkbox" name="chkDislikes" id="chkDislikes" data-theme="c" data-filter="Dislikes" data-mini="true">
+                        <label for="chkDislikes">Dislikes</label>
+                    </fieldset>
 
-                    <input class="chkFeatureFilter" type="checkbox" data-theme="c" name="chkTrailer" id="chkTrailer" data-mini="true">
-                    <label for="chkTrailer">Trailer</label>
+                    <fieldset data-role="controlgroup">
+                        <legend>
+                            <strong>Status:</strong>
+                        </legend>
+                        <input class="chkStatus" type="checkbox" name="chkStatusContinuing" id="chkStatusContinuing" data-theme="c" data-filter="Continuing" data-mini="true">
+                        <label for="chkStatusContinuing">Continuing</label>
+                        <input class="chkStatus" type="checkbox" name="chkStatusEnded" id="chkStatusEnded" data-theme="c" data-filter="Ended" data-mini="true">
+                        <label for="chkStatusEnded">Ended</label>
+                    </fieldset>
 
-                    <input class="chkFeatureFilter" type="checkbox" data-theme="c" name="chkSpecialFeature" id="chkSpecialFeature" data-mini="true">
-                    <label for="chkSpecialFeature">Special features</label>
+                    <fieldset data-role="controlgroup">
+                        <legend>
+                            <strong>Air Days:</strong>
+                        </legend>
+                        <input class="chkAirDays" type="checkbox" name="chkSunday" id="chkSunday" data-theme="c" data-filter="Sunday" data-mini="true">
+                        <label for="chkSunday">Sunday</label>
+                        <input class="chkAirDays" type="checkbox" name="chkMonday" id="chkMonday" data-theme="c" data-filter="Monday" data-mini="true">
+                        <label for="chkMonday">Monday</label>
+                        <input class="chkAirDays" type="checkbox" name="chkTuesday" id="chkTuesday" data-theme="c" data-filter="Tuesday" data-mini="true">
+                        <label for="chkTuesday">Tuesday</label>
+                        <input class="chkAirDays" type="checkbox" name="chkWednesday" id="chkWednesday" data-theme="c" data-filter="Wednesday" data-mini="true">
+                        <label for="chkWednesday">Wednesday</label>
+                        <input class="chkAirDays" type="checkbox" name="chkThursday" id="chkThursday" data-theme="c" data-filter="Thursday" data-mini="true">
+                        <label for="chkThursday">Thursday</label>
+                        <input class="chkAirDays" type="checkbox" name="chkFriday" id="chkFriday" data-theme="c" data-filter="Friday" data-mini="true">
+                        <label for="chkFriday">Friday</label>
+                        <input class="chkAirDays" type="checkbox" name="chkSaturday" id="chkSaturday" data-theme="c" data-filter="Saturday" data-mini="true">
+                        <label for="chkSaturday">Saturday</label>
+                    </fieldset>
+                </div>
+                <div class="advancedFilters" style="display: none;">
 
-                    <input class="chkFeatureFilter" type="checkbox" data-theme="c" name="chkThemeSong" id="chkThemeSong" data-mini="true">
-                    <label for="chkThemeSong">Theme song</label>
+                    <fieldset data-role="controlgroup">
+                        <legend>
+                            <strong>Management:</strong>
+                        </legend>
 
-                    <input class="chkFeatureFilter" type="checkbox" data-theme="c" name="chkThemeVideo" id="chkThemeVideo" data-mini="true">
-                    <label for="chkThemeVideo">Theme video</label>
+                        <input class="chkMissingImdbId" type="checkbox" data-theme="c" name="chkMissingImdbId" id="chkMissingImdbId" data-mini="true">
+                        <label for="chkMissingImdbId">Missing IMDb Id</label>
 
-                </fieldset>
+                        <input class="chkMissingTvdbId" type="checkbox" data-theme="c" name="chkMissingTvdbId" id="chkMissingTvdbId" data-mini="true">
+                        <label for="chkMissingTvdbId">Missing Tvdb Id</label>
+
+                        <input class="chkMissingOverview" type="checkbox" data-theme="c" name="chkMissingOverview" id="chkMissingOverview" data-mini="true">
+                        <label for="chkMissingOverview">Missing Overview</label>
+
+                        <input class="chkYearMismatch" type="checkbox" data-theme="c" name="chkYearMismatch" id="chkYearMismatch" data-mini="true">
+                        <label for="chkYearMismatch">File/Metadata Years Mismatched</label>
+
+                    </fieldset>
+
+                    <fieldset data-role="controlgroup">
+                        <legend>
+                            <strong>Features:</strong>
+                        </legend>
+
+                        <input class="chkFeatureFilter" type="checkbox" data-theme="c" name="chkTrailer" id="chkTrailer" data-mini="true">
+                        <label for="chkTrailer">Trailer</label>
+
+                        <input class="chkFeatureFilter" type="checkbox" data-theme="c" name="chkSpecialFeature" id="chkSpecialFeature" data-mini="true">
+                        <label for="chkSpecialFeature">Special features</label>
+
+                        <input class="chkFeatureFilter" type="checkbox" data-theme="c" name="chkThemeSong" id="chkThemeSong" data-mini="true">
+                        <label for="chkThemeSong">Theme song</label>
+
+                        <input class="chkFeatureFilter" type="checkbox" data-theme="c" name="chkThemeVideo" id="chkThemeVideo" data-mini="true">
+                        <label for="chkThemeVideo">Theme video</label>
+
+                    </fieldset>
+                </div>
             </form>
         </div>
     </div>

@@ -516,17 +516,16 @@
                 userId: Dashboard.getCurrentUserId()
             });
         }
-        else if (item.Type == "Season" && item.IndexNumber != null) {
+        else if (item.Type == "Season") {
 
             if (item.IndexNumber == null) {
 
-                // If there's no known season number, just use generic folder browsing
-                if (!user.Configuration.DisplayMissingEpisodes) {
-                    query.IsMissing = false;
-                }
-                if (!user.Configuration.DisplayUnairedEpisodes) {
-                    query.IsVirtualUnaired = false;
-                }
+                // Use dedicated episodes endpoint
+                promise = ApiClient.getEpisodes(item.SeriesId, {
+
+                    seasonId: item.Id,
+                    userId: Dashboard.getCurrentUserId()
+                });
             } else {
 
                 // Use dedicated episodes endpoint

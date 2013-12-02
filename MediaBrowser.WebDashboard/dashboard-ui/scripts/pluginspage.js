@@ -49,7 +49,7 @@
 
             html += "<h3>" + plugin.Name + "</h3>";
 
-            html += "<p><strong>" + plugin.Version + "</strong></p>";
+            html += "<p>" + plugin.Version + "</p>";
 
             html += "</a>";
 

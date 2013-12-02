@@ -15,7 +15,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -190,12 +189,6 @@ namespace MediaBrowser.Providers.Movies
         internal static string ApiKey = "f6bd687ffa63cd282b6ff2c6877f2669";
         internal static string AcceptHeader = "application/json,image/*";
 
-        static readonly Regex[] NameMatches = new[] {
-            new Regex(@"(?<name>.*)\((?<year>\d{4})\)"), // matches "My Movie (2001)" and gives us the name and the year
-            new Regex(@"(?<name>.*)(\.(?<year>\d{4})(\.|$)).*$"), 
-            new Regex(@"(?<name>.*)") // last resort matches the whole string as the name
-        };
-
         protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
         {
             if (string.IsNullOrEmpty(item.GetProviderId(MetadataProviders.Tmdb)))
@@ -310,30 +303,6 @@ namespace MediaBrowser.Providers.Movies
         }
 
         /// <summary>
-        /// Parses the name.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="justName">Name of the just.</param>
-        /// <param name="year">The year.</param>
-        public static void ParseName(string name, out string justName, out int? year)
-        {
-            justName = null;
-            year = null;
-            foreach (var re in NameMatches)
-            {
-                Match m = re.Match(name);
-                if (m.Success)
-                {
-                    justName = m.Groups["name"].Value.Trim();
-                    string y = m.Groups["year"] != null ? m.Groups["year"].Value : null;
-                    int temp;
-                    year = Int32.TryParse(y, out temp) ? temp : (int?)null;
-                    break;
-                }
-            }
-        }
-
-        /// <summary>
         /// Finds the id.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -343,7 +312,7 @@ namespace MediaBrowser.Providers.Movies
         {
             int? yearInName;
             string name = item.Name;
-            ParseName(name, out name, out yearInName);
+            NameParser.ParseName(name, out name, out yearInName);
 
             var year = item.ProductionYear ?? yearInName;
 

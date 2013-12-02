@@ -262,7 +262,10 @@ namespace MediaBrowser.Controller.Entities
         {
             if (!IsInMixedFolder)
             {
-                return new[] { System.IO.Path.GetDirectoryName(Path) };
+                if (VideoType == VideoType.VideoFile || VideoType == VideoType.Iso)
+                {
+                    return new[] { System.IO.Path.GetDirectoryName(Path) };
+                }
             }
 
             return base.GetDeletePaths();

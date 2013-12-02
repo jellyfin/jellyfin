@@ -138,6 +138,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the type of the location.
         /// </summary>
         /// <value>The type of the location.</value>
+        [IgnoreDataMember]
         public virtual LocationType LocationType
         {
             get
