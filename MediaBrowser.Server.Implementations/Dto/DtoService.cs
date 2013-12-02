@@ -808,11 +808,17 @@ namespace MediaBrowser.Server.Implementations.Dto
                 }
             }
 
-            var localTrailerCount = item.LocalTrailerIds.Count;
-
-            if (localTrailerCount > 0)
+            var hasTrailers = item as IHasTrailers;
+            if (hasTrailers != null)
             {
-                dto.LocalTrailerCount = localTrailerCount;
+                dto.LocalTrailerCount = hasTrailers.LocalTrailerIds.Count;
+            }
+
+            if (fields.Contains(ItemFields.RemoteTrailers))
+            {
+                dto.RemoteTrailers = hasTrailers != null ?
+                    hasTrailers.RemoteTrailers :
+                    new List<MediaUrl>();
             }
 
             dto.Name = item.Name;
@@ -923,11 +929,6 @@ namespace MediaBrowser.Server.Implementations.Dto
             if (fields.Contains(ItemFields.Taglines))
             {
                 dto.Taglines = item.Taglines;
-            }
-
-            if (fields.Contains(ItemFields.RemoteTrailers))
-            {
-                dto.RemoteTrailers = item.RemoteTrailers;
             }
 
             dto.Type = item.GetClientTypeName();

@@ -68,7 +68,12 @@ namespace MediaBrowser.Controller.Providers
             item.Genres.Clear();
             item.People.Clear();
             item.Tags.Clear();
-            item.RemoteTrailers.Clear();
+
+            var hasTrailers = item as IHasTrailers;
+            if (hasTrailers != null)
+            {
+                hasTrailers.RemoteTrailers.Clear();
+            }
 
             //Fetch(item, metadataFile, settings, Encoding.GetEncoding("ISO-8859-1"), cancellationToken);
             Fetch(item, metadataFile, settings, Encoding.UTF8, cancellationToken);
@@ -484,9 +489,13 @@ namespace MediaBrowser.Controller.Providers
                     {
                         var val = reader.ReadElementContentAsString();
 
-                        if (!string.IsNullOrWhiteSpace(val))
+                        var hasTrailers = item as IHasTrailers;
+                        if (hasTrailers != null)
                         {
-                            item.AddTrailerUrl(val, false);
+                            if (!string.IsNullOrWhiteSpace(val))
+                            {
+                                hasTrailers.AddTrailerUrl(val, false);
+                            }
                         }
                         break;
                     }
@@ -495,7 +504,11 @@ namespace MediaBrowser.Controller.Providers
                     {
                         using (var subtree = reader.ReadSubtree())
                         {
-                            FetchDataFromTrailersNode(subtree, item);
+                            var hasTrailers = item as IHasTrailers;
+                            if (hasTrailers != null)
+                            {
+                                FetchDataFromTrailersNode(subtree, hasTrailers);
+                            }
                         }
                         break;
                     }
@@ -940,7 +953,7 @@ namespace MediaBrowser.Controller.Providers
             }
         }
 
-        private void FetchDataFromTrailersNode(XmlReader reader, T item)
+        private void FetchDataFromTrailersNode(XmlReader reader, IHasTrailers item)
         {
             reader.MoveToContent();
 

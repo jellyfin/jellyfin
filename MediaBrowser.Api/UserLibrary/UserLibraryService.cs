@@ -489,7 +489,15 @@ namespace MediaBrowser.Api.UserLibrary
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true)).ToList();
 
-            var dtos = item.LocalTrailerIds
+            var trailerIds = new List<Guid>();
+
+            var hasTrailers = item as IHasTrailers;
+            if (hasTrailers != null)
+            {
+                trailerIds = hasTrailers.LocalTrailerIds;
+            }
+
+            var dtos = trailerIds
                 .Select(_libraryManager.GetItemById)
                 .OrderBy(i => i.SortName)
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user, item));

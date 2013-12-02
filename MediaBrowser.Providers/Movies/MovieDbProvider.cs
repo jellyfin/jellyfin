@@ -874,14 +874,18 @@ namespace MediaBrowser.Providers.Movies
             if (movieData.trailers != null && movieData.trailers.youtube != null &&
                 movieData.trailers.youtube.Count > 0)
             {
-                movie.RemoteTrailers = movieData.trailers.youtube.Select(i => new MediaUrl
+                var hasTrailers = movie as IHasTrailers;
+                if (hasTrailers != null)
                 {
-                    Url = string.Format("http://www.youtube.com/watch?v={0}", i.source),
-                    IsDirectLink = false,
-                    Name = i.name,
-                    VideoSize = string.Equals("hd", i.size, StringComparison.OrdinalIgnoreCase) ? VideoSize.HighDefinition : VideoSize.StandardDefinition
+                    hasTrailers.RemoteTrailers = movieData.trailers.youtube.Select(i => new MediaUrl
+                    {
+                        Url = string.Format("http://www.youtube.com/watch?v={0}", i.source),
+                        IsDirectLink = false,
+                        Name = i.name,
+                        VideoSize = string.Equals("hd", i.size, StringComparison.OrdinalIgnoreCase) ? VideoSize.HighDefinition : VideoSize.StandardDefinition
 
-                }).ToList();
+                    }).ToList();
+                }
             }
         }
 
