@@ -87,22 +87,10 @@ namespace MediaBrowser.Controller.Entities
         public Guid Id { get; set; }
 
         /// <summary>
-        /// Gets or sets the budget.
-        /// </summary>
-        /// <value>The budget.</value>
-        public double? Budget { get; set; }
-
-        /// <summary>
         /// Gets or sets the taglines.
         /// </summary>
         /// <value>The taglines.</value>
         public List<string> Taglines { get; set; }
-
-        /// <summary>
-        /// Gets or sets the revenue.
-        /// </summary>
-        /// <value>The revenue.</value>
-        public double? Revenue { get; set; }
 
         /// <summary>
         /// Gets or sets the trailer URL.

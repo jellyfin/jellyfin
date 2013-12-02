@@ -162,10 +162,14 @@ namespace MediaBrowser.Controller.Providers
                 case "Budget":
                     {
                         var text = reader.ReadElementContentAsString();
-                        double value;
-                        if (double.TryParse(text, NumberStyles.Any, _usCulture, out value))
+                        var hasBudget = item as IHasBudget;
+                        if (hasBudget != null)
                         {
-                            item.Budget = value;
+                            double value;
+                            if (double.TryParse(text, NumberStyles.Any, _usCulture, out value))
+                            {
+                                hasBudget.Budget = value;
+                            }
                         }
 
                         break;
@@ -174,10 +178,14 @@ namespace MediaBrowser.Controller.Providers
                 case "Revenue":
                     {
                         var text = reader.ReadElementContentAsString();
-                        double value;
-                        if (double.TryParse(text, NumberStyles.Any, _usCulture, out value))
+                        var hasBudget = item as IHasBudget;
+                        if (hasBudget != null)
                         {
-                            item.Revenue = value;
+                            double value;
+                            if (double.TryParse(text, NumberStyles.Any, _usCulture, out value))
+                            {
+                                hasBudget.Revenue = value;
+                            }
                         }
 
                         break;

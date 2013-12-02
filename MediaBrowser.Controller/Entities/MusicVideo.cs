@@ -4,7 +4,7 @@ using System;
 
 namespace MediaBrowser.Controller.Entities
 {
-    public class MusicVideo : Video, IHasArtist, IHasMusicGenres
+    public class MusicVideo : Video, IHasArtist, IHasMusicGenres, IHasBudget
     {
         /// <summary>
         /// Gets or sets the artist.
@@ -17,6 +17,18 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The album.</value>
         public string Album { get; set; }
+
+        /// <summary>
+        /// Gets or sets the budget.
+        /// </summary>
+        /// <value>The budget.</value>
+        public double? Budget { get; set; }
+
+        /// <summary>
+        /// Gets or sets the revenue.
+        /// </summary>
+        /// <value>The revenue.</value>
+        public double? Revenue { get; set; }
 
         /// <summary>
         /// Determines whether the specified name has artist.
