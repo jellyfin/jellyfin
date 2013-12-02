@@ -248,8 +248,12 @@ namespace MediaBrowser.Api
                 item.ForcedSortName = request.SortName;
             }
 
-            item.Budget = request.Budget;
-            item.Revenue = request.Revenue;
+            var hasBudget = item as IHasBudget;
+            if (hasBudget != null)
+            {
+                hasBudget.Budget = request.Budget;
+                hasBudget.Revenue = request.Revenue;
+            }
 
             var hasCriticRating = item as IHasCriticRating;
             if (hasCriticRating != null)

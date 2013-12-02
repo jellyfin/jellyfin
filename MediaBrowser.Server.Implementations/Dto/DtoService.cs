@@ -727,14 +727,18 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.EnableInternetProviders = !item.DontFetchMeta;
             }
 
-            if (fields.Contains(ItemFields.Budget))
+            var hasBudget = item as IHasBudget;
+            if (hasBudget != null)
             {
-                dto.Budget = item.Budget;
-            }
+                if (fields.Contains(ItemFields.Budget))
+                {
+                    dto.Budget = hasBudget.Budget;
+                }
 
-            if (fields.Contains(ItemFields.Revenue))
-            {
-                dto.Revenue = item.Revenue;
+                if (fields.Contains(ItemFields.Revenue))
+                {
+                    dto.Revenue = hasBudget.Revenue;
+                }
             }
 
             dto.EndDate = item.EndDate;

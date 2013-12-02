@@ -280,14 +280,18 @@ namespace MediaBrowser.Providers.Savers
                 builder.Append("</Trailers>");
             }
 
-            if (item.Budget.HasValue)
+            var hasBudget = item as IHasBudget;
+            if (hasBudget != null)
             {
-                builder.Append("<Budget>" + SecurityElement.Escape(item.Budget.Value.ToString(UsCulture)) + "</Budget>");
-            }
+                if (hasBudget.Budget.HasValue)
+                {
+                    builder.Append("<Budget>" + SecurityElement.Escape(hasBudget.Budget.Value.ToString(UsCulture)) + "</Budget>");
+                }
 
-            if (item.Revenue.HasValue)
-            {
-                builder.Append("<Revenue>" + SecurityElement.Escape(item.Revenue.Value.ToString(UsCulture)) + "</Revenue>");
+                if (hasBudget.Revenue.HasValue)
+                {
+                    builder.Append("<Revenue>" + SecurityElement.Escape(hasBudget.Revenue.Value.ToString(UsCulture)) + "</Revenue>");
+                }
             }
 
             if (item.CommunityRating.HasValue)
