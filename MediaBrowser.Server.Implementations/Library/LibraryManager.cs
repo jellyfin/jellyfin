@@ -1407,19 +1407,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>BaseItem.</returns>
         public BaseItem RetrieveItem(Guid id)
         {
-            var item = ItemRepository.RetrieveItem(id);
-
-            if (item != null && item.IsFolder)
-            {
-                LoadSavedChildren(item as Folder);
-            }
-
-            return item;
-        }
-
-        private void LoadSavedChildren(Folder item)
-        {
-            item.LoadSavedChildren();
+            return ItemRepository.RetrieveItem(id);
         }
 
         private readonly ConcurrentDictionary<string, SemaphoreSlim> _fileLocks = new ConcurrentDictionary<string, SemaphoreSlim>();
