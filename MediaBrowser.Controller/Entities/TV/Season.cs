@@ -149,16 +149,34 @@ namespace MediaBrowser.Controller.Entities.TV
             return IndexNumber != null ? IndexNumber.Value.ToString("0000") : Name;
         }
 
+        private IEnumerable<Episode> GetEpisodes()
+        {
+            var series = Series;
+
+            if (series != null && series.ContainsEpisodesWithoutSeasonFolders)
+            {
+                var seasonNumber = IndexNumber;
+
+                if (seasonNumber.HasValue)
+                {
+                    return series.RecursiveChildren.OfType<Episode>()
+                        .Where(i => i.ParentIndexNumber.HasValue && i.ParentIndexNumber.Value == seasonNumber.Value);
+                }
+            }
+
+            return Children.OfType<Episode>();
+        }
+
         [IgnoreDataMember]
         public bool IsMissingSeason
         {
-            get { return LocationType == Model.Entities.LocationType.Virtual && Children.OfType<Episode>().All(i => i.IsMissingEpisode); }
+            get { return LocationType == Model.Entities.LocationType.Virtual && GetEpisodes().All(i => i.IsMissingEpisode); }
         }
 
         [IgnoreDataMember]
         public bool IsUnaired
         {
-            get { return Children.OfType<Episode>().All(i => i.IsUnaired); }
+            get { return GetEpisodes().All(i => i.IsUnaired); }
         }
 
         [IgnoreDataMember]
@@ -170,7 +188,7 @@ namespace MediaBrowser.Controller.Entities.TV
         [IgnoreDataMember]
         public bool IsMissingOrVirtualUnaired
         {
-            get { return LocationType == Model.Entities.LocationType.Virtual && Children.OfType<Episode>().All(i => i.IsVirtualUnaired || i.IsMissingEpisode); }
+            get { return LocationType == Model.Entities.LocationType.Virtual && GetEpisodes().All(i => i.IsVirtualUnaired || i.IsMissingEpisode); }
         }
 
         [IgnoreDataMember]
