@@ -101,10 +101,35 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             return client;
         }
 
-        private PropertyInfo _httpBehaviorPropertyInfo;
-
-        private HttpWebRequest GetRequest(HttpRequestOptions options, string method, bool enableHttpCompression)
+        private WebRequest GetMonoRequest(HttpRequestOptions options, string method, bool enableHttpCompression)
         {
+            var request = WebRequest.Create(options.Url);
+
+            if (!string.IsNullOrEmpty(options.AcceptHeader))
+            {
+                request.Headers.Add("Accept", options.AcceptHeader);
+            }
+
+            request.CachePolicy = new RequestCachePolicy(RequestCacheLevel.Revalidate);
+            request.ConnectionGroupName = GetHostFromUrl(options.Url);
+            request.Method = method;
+            request.Timeout = 20000;
+
+            if (!string.IsNullOrEmpty(options.UserAgent))
+            {
+                request.Headers.Add("User-Agent", options.UserAgent);
+            }
+
+            return request;
+        }
+
+        private PropertyInfo _httpBehaviorPropertyInfo;
+        private WebRequest GetRequest(HttpRequestOptions options, string method, bool enableHttpCompression)
+        {
+#if __MonoCS__
+            return GetMonoRequest(options, method, enableHttpCompression);
+#endif
+            
             var request = HttpWebRequest.CreateHttp(options.Url);
 
             if (!string.IsNullOrEmpty(options.AcceptHeader))
