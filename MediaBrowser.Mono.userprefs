@@ -4,7 +4,7 @@
     <Files>
       <File FileName="MediaBrowser.Server.Mono\Program.cs" Line="1" Column="1" />
       <File FileName="MediaBrowser.Server.Mono\IO\FileSystemFactory.cs" Line="1" Column="1" />
-      <File FileName="MediaBrowser.Server.Implementations\Persistence\SqliteExtensions.cs" Line="2" Column="14" />
+      <File FileName="MediaBrowser.Server.Implementations\Persistence\SqliteExtensions.cs" Line="22" Column="29" />
       <File FileName="MediaBrowser.Server.Mono\Native\ServerAuthorization.cs" Line="1" Column="1" />
       <File FileName="MediaBrowser.Server.Mono\Native\NativeApp.cs" Line="1" Column="1" />
       <File FileName="MediaBrowser.Server.Mono\Native\Assemblies.cs" Line="1" Column="1" />

@@ -90,11 +90,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
             {
                 Url = url,
                 CancellationToken = CancellationToken.None,
-                Progress = new Progress<double>(),
-
-                // Make it look like a browser
-                // Try to hide that we're direct linking
-                UserAgent = "Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.47 Safari/537.36"
+                Progress = new Progress<double>()
             });
         }
 
