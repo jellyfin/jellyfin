@@ -168,7 +168,7 @@
 
     function setInitialCollapsibleState(page, item, context, user) {
 
-        if (item.ChildCount) {
+        if (item.IsFolder) {
             $('#childrenCollapsible', page).removeClass('hide');
             renderChildren(page, item, user);
         }
@@ -513,7 +513,7 @@
 
             promise = ApiClient.getSeasons(item.Id, {
 
-                userId: Dashboard.getCurrentUserId()
+                userId: user.Id
             });
         }
         else if (item.Type == "Season") {
@@ -524,7 +524,7 @@
                 promise = ApiClient.getEpisodes(item.SeriesId, {
 
                     seasonId: item.Id,
-                    userId: Dashboard.getCurrentUserId()
+                    userId: user.Id
                 });
             } else {
 
@@ -532,7 +532,7 @@
                 promise = ApiClient.getEpisodes(item.SeriesId, {
 
                     season: item.IndexNumber,
-                    userId: Dashboard.getCurrentUserId()
+                    userId: user.Id
                 });
             }
         }
