@@ -86,7 +86,7 @@ namespace MediaBrowser.Controller.Entities.TV
         {
             get
             {
-                return Season;
+                return FindParent<Season>();
             }
         }
 
@@ -176,20 +176,6 @@ namespace MediaBrowser.Controller.Entities.TV
         public Series Series
         {
             get { return _series ?? (_series = FindParent<Series>()); }
-        }
-
-        /// <summary>
-        /// The _season
-        /// </summary>
-        private Season _season;
-        /// <summary>
-        /// This Episode's Season Instance
-        /// </summary>
-        /// <value>The season.</value>
-        [IgnoreDataMember]
-        public Season Season
-        {
-            get { return _season ?? (_season = FindParent<Season>()); }
         }
 
         /// <summary>

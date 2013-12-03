@@ -4,6 +4,7 @@ using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.Serialization;
 
 namespace MediaBrowser.Controller.Entities.TV
@@ -99,6 +100,15 @@ namespace MediaBrowser.Controller.Entities.TV
             Season.AddMetadataFiles(args);
 
             return args;
+        }
+
+        [IgnoreDataMember]
+        public bool ContainsEpisodesWithoutSeasonFolders
+        {
+            get
+            {
+                return Children.OfType<Video>().Any();
+            }
         }
     }
 }
