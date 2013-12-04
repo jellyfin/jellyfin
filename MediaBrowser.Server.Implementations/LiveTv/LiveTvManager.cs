@@ -391,8 +391,15 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 Path = info.Path,
                 Genres = info.Genres,
                 IsRepeat = info.IsRepeat,
-                EpisodeTitle = info.EpisodeTitle
+                EpisodeTitle = info.EpisodeTitle,
+                ChannelType = info.ChannelType,
+                MediaType = info.ChannelType == ChannelType.Radio ? MediaType.Audio : MediaType.Video,
+                CommunityRating = info.CommunityRating,
+                OfficialRating = info.OfficialRating
             };
+
+            var duration = info.EndDate - info.StartDate;
+            dto.DurationMs = Convert.ToInt32(duration.TotalMilliseconds);
 
             if (!string.IsNullOrEmpty(info.ProgramId))
             {
@@ -510,6 +517,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 PostPaddingSeconds = info.PostPaddingSeconds
             };
 
+            var duration = info.EndDate - info.StartDate;
+            dto.DurationMs = Convert.ToInt32(duration.TotalMilliseconds);
+
             if (!string.IsNullOrEmpty(info.ProgramId))
             {
                 dto.ProgramId = GetInternalProgramIdId(service.Name, info.ProgramId).ToString("N");
@@ -562,6 +572,20 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 .First();
 
             await service.CancelTimerAsync(timer.ExternalId, CancellationToken.None).ConfigureAwait(false);
+        }
+
+        public async Task<RecordingInfoDto> GetRecording(string id, CancellationToken cancellationToken)
+        {
+            var results = await GetRecordings(new RecordingQuery(), cancellationToken).ConfigureAwait(false);
+
+            return results.Items.FirstOrDefault(i => string.Equals(i.Id, id, StringComparison.CurrentCulture));
+        }
+
+        public async Task<TimerInfoDto> GetTimer(string id, CancellationToken cancellationToken)
+        {
+            var results = await GetTimers(new TimerQuery(), cancellationToken).ConfigureAwait(false);
+
+            return results.Items.FirstOrDefault(i => string.Equals(i.Id, id, StringComparison.CurrentCulture));
         }
     }
 }

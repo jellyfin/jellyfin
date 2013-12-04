@@ -34,7 +34,13 @@
             html += '</td>';
 
             html += '<td>';
-            html += '<a href="livetvrecording.html?id=' + recording.Id + '">' + recording.Name + '</a>';
+            html += '<a href="livetvrecording.html?id=' + recording.Id + '">';
+            html += recording.Name;
+            
+            if (recording.EpisodeTitle) {
+                html += "<br/>" + recording.EpisodeTitle;
+            }
+            html += '</a>';
             html += '</td>';
 
             html += '<td class="desktopColumn">';
@@ -57,7 +63,9 @@
 
             html += '<td>' + LiveTvHelpers.getDisplayTime(recording.StartDate) + '</td>';
 
-            html += '<td class="tabletColumn">' + LiveTvHelpers.getDisplayTime(recording.EndDate) + '</td>';
+            var minutes = recording.DurationMs / 60000;
+
+            html += '<td class="tabletColumn">' + minutes.toFixed(0) + ' mins</td>';
 
             html += '<td class="tabletColumn">' + (recording.Status || '') + '</td>';
 

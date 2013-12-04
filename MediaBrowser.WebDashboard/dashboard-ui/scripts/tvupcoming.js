@@ -7,8 +7,10 @@
     function getDateFormat(date) {
 
         // yyyyMMddHHmmss
-        var d = date;
-
+        // Convert to UTC
+        // http://stackoverflow.com/questions/948532/how-do-you-convert-a-javascript-date-to-utc/14610512#14610512
+        var d = new Date(date.getTime());
+        
         return "" + d.getFullYear() + formatDigit(d.getMonth() + 1) + formatDigit(d.getDate()) + formatDigit(d.getHours()) + formatDigit(d.getMinutes()) + formatDigit(d.getSeconds());
     }
 
@@ -28,15 +30,15 @@
 
         var missedItemsQuery = $.extend({
 
-        }, query);
+            IsUnaired: false
 
+        }, query);
+        
         var yesterday = new Date();
 
-        yesterday.setHours(23, 50, 0, 0);
         yesterday.setDate(yesterday.getDate() - 1);
-        missedItemsQuery.MaxPremiereDate = getDateFormat(yesterday);
-
         yesterday.setHours(0, 0, 0, 0);
+        
         missedItemsQuery.MinPremiereDate = getDateFormat(yesterday);
 
         var unairedQuery = $.extend({

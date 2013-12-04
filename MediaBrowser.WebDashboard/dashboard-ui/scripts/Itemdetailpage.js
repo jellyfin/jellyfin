@@ -364,14 +364,34 @@
             return;
         }
 
-        var friendly = item.Type == "Audio" ? "song" : item.Type.toLowerCase();
+        var promise;
 
-        ApiClient.getItems(Dashboard.getCurrentUserId(), {
+        if (item.Type == "Season") {
 
-            AdjacentTo: item.Id,
-            ParentId: item.ParentId
+            promise = ApiClient.getSeasons(item.SeriesId, {
 
-        }).done(function (result) {
+                userId: Dashboard.getCurrentUserId(),
+                AdjacentTo: item.Id
+            });
+        }
+        else if (item.Type == "Episode") {
+
+            // Use dedicated episodes endpoint
+            promise = ApiClient.getEpisodes(item.SeriesId, {
+
+                seasonId: item.SeasonId,
+                userId: Dashboard.getCurrentUserId(),
+                AdjacentTo: item.Id
+            });
+
+        } else {
+            promise = ApiClient.getItems(Dashboard.getCurrentUserId(), {
+                AdjacentTo: item.Id,
+                ParentId: item.ParentId
+            });
+        }
+
+        promise.done(function (result) {
 
             for (var i = 0, length = result.Items.length; i < length; i++) {
 
@@ -381,13 +401,15 @@
                     continue;
                 }
 
+                var friendlyTypeName = item.Type == "Audio" ? "song" : item.Type.toLowerCase();
+
                 if (curr.IndexNumber < item.IndexNumber) {
 
-                    $('.lnkPreviousItem', page).removeClass('hide').attr('href', 'itemdetails.html?id=' + curr.Id).html('← Previous ' + friendly);
+                    $('.lnkPreviousItem', page).removeClass('hide').attr('href', 'itemdetails.html?id=' + curr.Id).html('← Previous ' + friendlyTypeName);
                 }
                 else if (curr.IndexNumber > item.IndexNumber) {
 
-                    $('.lnkNextItem', page).removeClass('hide').attr('href', 'itemdetails.html?id=' + curr.Id).html('Next ' + friendly + ' →');
+                    $('.lnkNextItem', page).removeClass('hide').attr('href', 'itemdetails.html?id=' + curr.Id).html('Next ' + friendlyTypeName + ' →');
                 }
             }
         });
@@ -518,23 +540,12 @@
         }
         else if (item.Type == "Season") {
 
-            if (item.IndexNumber == null) {
+            // Use dedicated episodes endpoint
+            promise = ApiClient.getEpisodes(item.SeriesId, {
 
-                // Use dedicated episodes endpoint
-                promise = ApiClient.getEpisodes(item.SeriesId, {
-
-                    seasonId: item.Id,
-                    userId: user.Id
-                });
-            } else {
-
-                // Use dedicated episodes endpoint
-                promise = ApiClient.getEpisodes(item.SeriesId, {
-
-                    season: item.IndexNumber,
-                    userId: user.Id
-                });
-            }
+                seasonId: item.Id,
+                userId: user.Id
+            });
         }
 
         promise = promise || ApiClient.getItems(Dashboard.getCurrentUserId(), query);

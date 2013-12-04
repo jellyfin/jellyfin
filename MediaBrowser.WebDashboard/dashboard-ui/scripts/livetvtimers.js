@@ -38,7 +38,7 @@
         html += '<th class="desktopColumn">Channel</th>';
         html += '<th>Date</th>';
         html += '<th>Start</th>';
-        html += '<th class="tabletColumn">End</th>';
+        html += '<th class="tabletColumn">Length</th>';
         html += '<th class="tabletColumn">Status</th>';
         html += '<th class="desktopColumn">Recurring</th>';
 
@@ -78,7 +78,9 @@
 
             html += '<td>' + LiveTvHelpers.getDisplayTime(timer.StartDate) + '</td>';
 
-            html += '<td class="tabletColumn">' + LiveTvHelpers.getDisplayTime(timer.EndDate) + '</td>';
+            var minutes = timer.DurationMs / 60000;
+
+            html += '<td class="tabletColumn">' + minutes.toFixed(0) + ' mins</td>';
 
             html += '<td class="tabletColumn">' + (timer.Status || '') + '</td>';
 

@@ -735,7 +735,7 @@
                 else if (item.ImageTags && item.ImageTags.Primary) {
 
                     height = 300;
-                    width = primaryImageAspectRatio ? parseInt(height * primaryImageAspectRatio) : null;
+                    width = primaryImageAspectRatio ? (height * primaryImageAspectRatio).toFixed(0) : null;
 
                     imgUrl = ApiClient.getImageUrl(item.Id, {
                         type: "Primary",
@@ -748,7 +748,7 @@
                 else if (item.AlbumId && item.AlbumPrimaryImageTag) {
 
                     height = 300;
-                    width = primaryImageAspectRatio ? parseInt(height * primaryImageAspectRatio) : null;
+                    width = primaryImageAspectRatio ? (height * primaryImageAspectRatio).toFixed(0) : null;
 
                     imgUrl = ApiClient.getImageUrl(item.AlbumId, {
                         type: "Primary",
@@ -1200,7 +1200,7 @@
             }
             else if (item.ParentIndexNumber && item.Type == "Episode") {
 
-                html.push('<a class="detailPageParentLink" href="itemdetails.html?id=' + item.ParentId + '">Season ' + item.ParentIndexNumber + '</a>');
+                html.push('<a class="detailPageParentLink" href="itemdetails.html?id=' + item.SeasonId + '">Season ' + item.ParentIndexNumber + '</a>');
             }
             else if (item.Album && item.Type == "Audio" && (item.AlbumId || item.ParentId)) {
                 html.push('<a class="detailPageParentLink" href="itemdetails.html?id=' + (item.AlbumId || item.ParentId) + '">' + item.Album + '</a>');
@@ -2009,18 +2009,29 @@
                 }
             }
 
+            var minutes;
+
             if (item.RunTimeTicks && item.Type != "Series") {
 
                 if (item.Type == "Audio") {
 
                     miscInfo.push(Dashboard.getDisplayTime(item.RunTimeTicks));
                 } else {
-                    var minutes = item.RunTimeTicks / 600000000;
+                    minutes = item.RunTimeTicks / 600000000;
 
                     minutes = minutes || 1;
 
-                    miscInfo.push(parseInt(minutes) + "min");
+                    miscInfo.push(minutes.toFixed(0) + "min");
                 }
+            }
+
+            if (item.DurationMs) {
+
+                minutes = item.DurationMs / 60000;
+
+                minutes = minutes || 1;
+
+                miscInfo.push(minutes.toFixed(0) + "min");
             }
 
             if (item.OfficialRating && item.Type !== "Season" && item.Type !== "Episode") {

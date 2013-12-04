@@ -66,6 +66,10 @@
     border-top: 0;
 }
 
+.posterItemText + .posterItemProgress {
+    padding-top: 0;
+}
+
 .posterItemDefaultText {
     position: absolute;
     top: 30%;
