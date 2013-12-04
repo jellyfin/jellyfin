@@ -74,5 +74,11 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value>The post padding seconds.</value>
         public int PostPaddingSeconds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the duration ms.
+        /// </summary>
+        /// <value>The duration ms.</value>
+        public int DurationMs { get; set; }
     }
 }

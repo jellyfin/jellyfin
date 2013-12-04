@@ -52,6 +52,22 @@ namespace MediaBrowser.Controller.LiveTv
         QueryResult<ChannelInfoDto> GetChannels(ChannelQuery query);
 
         /// <summary>
+        /// Gets the recording.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{RecordingInfoDto}.</returns>
+        Task<RecordingInfoDto> GetRecording(string id, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the timer.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{TimerInfoDto}.</returns>
+        Task<TimerInfoDto> GetTimer(string id, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Gets the recordings.
         /// </summary>
         /// <param name="query">The query.</param>

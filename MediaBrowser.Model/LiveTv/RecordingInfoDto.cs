@@ -81,6 +81,36 @@ namespace MediaBrowser.Model.LiveTv
         /// <value>The episode title.</value>
         public string EpisodeTitle { get; set; }
 
+        /// <summary>
+        /// Gets or sets the duration ms.
+        /// </summary>
+        /// <value>The duration ms.</value>
+        public int DurationMs { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the media.
+        /// </summary>
+        /// <value>The type of the media.</value>
+        public string MediaType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the channel.
+        /// </summary>
+        /// <value>The type of the channel.</value>
+        public ChannelType ChannelType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the official rating.
+        /// </summary>
+        /// <value>The official rating.</value>
+        public string OfficialRating { get; set; }
+
+        /// <summary>
+        /// Gets or sets the community rating.
+        /// </summary>
+        /// <value>The community rating.</value>
+        public float? CommunityRating { get; set; }
+
         public RecordingInfoDto()
         {
             Genres = new List<string>();

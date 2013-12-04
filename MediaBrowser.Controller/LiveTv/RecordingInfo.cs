@@ -20,7 +20,13 @@ namespace MediaBrowser.Controller.LiveTv
         /// ChannelName of the recording.
         /// </summary>
         public string ChannelName { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the type of the channel.
+        /// </summary>
+        /// <value>The type of the channel.</value>
+        public ChannelType ChannelType { get; set; }
+     
         /// <summary>
         /// Name of the recording.
         /// </summary>
@@ -75,6 +81,18 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value>The episode title.</value>
         public string EpisodeTitle { get; set; }
+
+        /// <summary>
+        /// Gets or sets the official rating.
+        /// </summary>
+        /// <value>The official rating.</value>
+        public string OfficialRating { get; set; }
+
+        /// <summary>
+        /// Gets or sets the community rating.
+        /// </summary>
+        /// <value>The community rating.</value>
+        public float? CommunityRating { get; set; }
 
         public RecordingInfo()
         {

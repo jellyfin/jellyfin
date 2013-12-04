@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Dto;
+﻿using MediaBrowser.Api.UserLibrary;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -89,6 +90,9 @@ namespace MediaBrowser.Api
 
         [ApiMember(Name = "IsVirtualUnaired", Description = "Optional filter by items that are virtual unaired episodes or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool? IsVirtualUnaired { get; set; }
+
+        [ApiMember(Name = "AdjacentTo", Description = "Optional. Return items that are siblings of a supplied item.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string AdjacentTo { get; set; }
     }
 
     [Route("/Shows/{Id}/Seasons", "GET")]
@@ -120,6 +124,9 @@ namespace MediaBrowser.Api
 
         [ApiMember(Name = "IsVirtualUnaired", Description = "Optional filter by items that are virtual unaired episodes or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool? IsVirtualUnaired { get; set; }
+
+        [ApiMember(Name = "AdjacentTo", Description = "Optional. Return items that are siblings of a supplied item.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string AdjacentTo { get; set; }
     }
 
     /// <summary>
@@ -394,6 +401,13 @@ namespace MediaBrowser.Api
             seasons = _libraryManager.Sort(seasons, user, new[] { sortOrder }, SortOrder.Ascending)
                 .Cast<Season>();
 
+            // This must be the last filter
+            if (!string.IsNullOrEmpty(request.AdjacentTo))
+            {
+                seasons = ItemsService.FilterForAdjacency(seasons, request.AdjacentTo)
+                    .Cast<Season>();
+            }
+
             var returnItems = seasons.Select(i => _dtoService.GetBaseItemDto(i, fields, user))
                 .ToArray();
 
@@ -447,7 +461,7 @@ namespace MediaBrowser.Api
 
             if (!string.IsNullOrEmpty(request.SeasonId))
             {
-                var season = _libraryManager.GetItemById(request.Id) as Season;
+                var season = _libraryManager.GetItemById(new Guid(request.SeasonId)) as Season;
 
                 if (season.IndexNumber.HasValue)
                 {
@@ -495,6 +509,13 @@ namespace MediaBrowser.Api
 
             episodes = _libraryManager.Sort(episodes, user, new[] { sortOrder }, SortOrder.Ascending)
                 .Cast<Episode>();
+
+            // This must be the last filter
+            if (!string.IsNullOrEmpty(request.AdjacentTo))
+            {
+                episodes = ItemsService.FilterForAdjacency(episodes, request.AdjacentTo)
+                    .Cast<Episode>();
+            }
 
             var returnItems = episodes.Select(i => _dtoService.GetBaseItemDto(i, fields, user))
                 .ToArray();

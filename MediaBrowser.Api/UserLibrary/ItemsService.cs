@@ -310,6 +310,12 @@ namespace MediaBrowser.Api.UserLibrary
 
             items = ApplySortOrder(request, items, user, _libraryManager);
 
+            // This must be the last filter
+            if (!string.IsNullOrEmpty(request.AdjacentTo))
+            {
+                items = FilterForAdjacency(items, request.AdjacentTo);
+            }
+
             var itemsArray = items.ToList();
 
             var pagedItems = ApplyPaging(request, itemsArray);
@@ -664,30 +670,6 @@ namespace MediaBrowser.Api.UserLibrary
 
                     return false;
                 });
-            }
-
-            if (!string.IsNullOrEmpty(request.AdjacentTo))
-            {
-                var item = _dtoService.GetItemByDtoId(request.AdjacentTo);
-
-                var allSiblings = item.Parent.GetChildren(user, true).OrderBy(i => i.SortName).ToList();
-
-                var index = allSiblings.IndexOf(item);
-
-                var previousId = Guid.Empty;
-                var nextId = Guid.Empty;
-
-                if (index > 0)
-                {
-                    previousId = allSiblings[index - 1].Id;
-                }
-
-                if (index < allSiblings.Count - 1)
-                {
-                    nextId = allSiblings[index + 1].Id;
-                }
-
-                items = items.Where(i => i.Id == previousId || i.Id == nextId);
             }
 
             // Min index number
@@ -1142,6 +1124,31 @@ namespace MediaBrowser.Api.UserLibrary
             }
 
             return false;
+        }
+
+        internal static IEnumerable<BaseItem> FilterForAdjacency(IEnumerable<BaseItem> items, string adjacentToId)
+        {
+            var list = items.ToList();
+
+            var adjacentToIdGuid = new Guid(adjacentToId);
+            var adjacentToItem = list.FirstOrDefault(i => i.Id == adjacentToIdGuid);
+
+            var index = list.IndexOf(adjacentToItem);
+
+            var previousId = Guid.Empty;
+            var nextId = Guid.Empty;
+
+            if (index > 0)
+            {
+                previousId = list[index - 1].Id;
+            }
+
+            if (index < list.Count - 1)
+            {
+                nextId = list[index + 1].Id;
+            }
+
+            return list.Where(i => i.Id == previousId || i.Id == nextId);
         }
 
         /// <summary>

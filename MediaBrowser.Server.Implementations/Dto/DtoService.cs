@@ -1029,6 +1029,12 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 dto.IndexNumberEnd = episode.IndexNumberEnd;
                 dto.SpecialSeasonNumber = episode.AirsAfterSeasonNumber ?? episode.AirsBeforeSeasonNumber;
+
+                var seasonId = episode.SeasonId;
+                if (seasonId.HasValue)
+                {
+                    dto.SeasonId = seasonId.Value.ToString("N");
+                }
             }
 
             // Add SeriesInfo

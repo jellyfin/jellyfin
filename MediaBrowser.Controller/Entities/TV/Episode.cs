@@ -235,6 +235,42 @@ namespace MediaBrowser.Controller.Entities.TV
             get { return LocationType == Model.Entities.LocationType.Virtual && IsUnaired; }
         }
 
+        [IgnoreDataMember]
+        public Guid? SeasonId
+        {
+            get
+            {
+                // First see if the parent is a Season
+                var season = Parent as Season;
+
+                if (season != null)
+                {
+                    return season.Id;
+                }
+
+                var seasonNumber = ParentIndexNumber;
+
+                // Parent is a Series
+                if (seasonNumber.HasValue)
+                {
+                    var series = Parent as Series;
+
+                    if (series != null)
+                    {
+                        season = series.Children.OfType<Season>()
+                            .FirstOrDefault(i => i.IndexNumber.HasValue && i.IndexNumber.Value == seasonNumber.Value);
+
+                        if (season != null)
+                        {
+                            return season.Id;
+                        }
+                    }
+                }
+
+                return null;
+            }
+        }
+
         public override IEnumerable<string> GetDeletePaths()
         {
             return new[] { Path };

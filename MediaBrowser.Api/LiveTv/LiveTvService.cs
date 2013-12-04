@@ -1,12 +1,12 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-using MediaBrowser.Controller.LiveTv;
+﻿using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
 using ServiceStack.ServiceHost;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.LiveTv
 {
@@ -56,6 +56,22 @@ namespace MediaBrowser.Api.LiveTv
 
         [ApiMember(Name = "ChannelId", Description = "Optional filter by channel id.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string ChannelId { get; set; }
+    }
+
+    [Route("/LiveTv/Recordings/{Id}", "GET")]
+    [Api(Description = "Gets a live tv recording")]
+    public class GetRecording : IReturn<RecordingInfoDto>
+    {
+        [ApiMember(Name = "Id", Description = "Recording Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Id { get; set; }
+    }
+
+    [Route("/LiveTv/Timers/{Id}", "GET")]
+    [Api(Description = "Gets a live tv timer")]
+    public class GetTimer : IReturn<TimerInfoDto>
+    {
+        [ApiMember(Name = "Id", Description = "Timer Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Id { get; set; }
     }
 
     [Route("/LiveTv/Timers", "GET")]
@@ -178,6 +194,20 @@ namespace MediaBrowser.Api.LiveTv
                 ServiceName = request.ServiceName
 
             }, CancellationToken.None).Result;
+
+            return ToOptimizedResult(result);
+        }
+
+        public object Get(GetRecording request)
+        {
+            var result = _liveTvManager.GetRecording(request.Id, CancellationToken.None).Result;
+
+            return ToOptimizedResult(result);
+        }
+
+        public object Get(GetTimer request)
+        {
+            var result = _liveTvManager.GetTimer(request.Id, CancellationToken.None).Result;
 
             return ToOptimizedResult(result);
         }
