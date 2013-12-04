@@ -15,7 +15,7 @@ We have several client apps released and in production:
 - Windows 7/8 Desktop
 - Windows Media Center
 - [Windows Phone](http://www.windowsphone.com/s?appid=f4971ed9-f651-4bf6-84bb-94fd98613b86 "Windows Phone")
-- Windows RT
+- [Windows 8](http://apps.microsoft.com/windows/en-us/app/media-browser/ad55a2f0-9897-47bd-8944-bed3aefd5d06 "Windows 8.1")
 
 #### [Now with 60+ active contributors!](https://github.com/MediaBrowser/MediaBrowser/blob/master/CONTRIBUTORS.md "Now with 60+ active contributors!")
 
