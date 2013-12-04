@@ -1,7 +1,7 @@
-﻿using System.Runtime.Serialization;
-using MediaBrowser.Model.Dto;
+﻿using MediaBrowser.Model.Dto;
 using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -12,7 +12,7 @@ namespace MediaBrowser.Controller.Entities
     {
         public Genre()
         {
-            UserItemCounts = new Dictionary<Guid, ItemByNameCounts>();
+            UserItemCountList = new List<ItemByNameCounts>();
         }
 
         /// <summary>
@@ -25,6 +25,6 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
-        public Dictionary<Guid, ItemByNameCounts> UserItemCounts { get; set; }
+        public List<ItemByNameCounts> UserItemCountList { get; set; }
     }
 }

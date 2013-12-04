@@ -12,11 +12,11 @@ namespace MediaBrowser.Controller.Entities
     {
         public Year()
         {
-            UserItemCounts = new Dictionary<Guid, ItemByNameCounts>();
+            UserItemCountList = new List<ItemByNameCounts>();
         }
 
         [IgnoreDataMember]
-        public Dictionary<Guid, ItemByNameCounts> UserItemCounts { get; set; }
+        public List<ItemByNameCounts> UserItemCountList { get; set; }
 
         /// <summary>
         /// Gets the user data key.

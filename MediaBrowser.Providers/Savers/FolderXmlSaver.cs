@@ -29,7 +29,7 @@ namespace MediaBrowser.Providers.Savers
         /// <returns><c>true</c> if [is enabled for] [the specified item]; otherwise, <c>false</c>.</returns>
         public bool IsEnabledFor(BaseItem item, ItemUpdateType updateType)
         {
-            if (!(item is Folder))
+            if (!item.IsFolder)
             {
                 return false;
             }

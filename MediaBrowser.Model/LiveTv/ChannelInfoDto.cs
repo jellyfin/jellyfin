@@ -1,4 +1,8 @@
-﻿
+﻿using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
+using System;
+using System.Collections.Generic;
+
 namespace MediaBrowser.Model.LiveTv
 {
     /// <summary>
@@ -19,6 +23,12 @@ namespace MediaBrowser.Model.LiveTv
         public string Id { get; set; }
 
         /// <summary>
+        /// Gets or sets the image tags.
+        /// </summary>
+        /// <value>The image tags.</value>
+        public Dictionary<ImageType, Guid> ImageTags { get; set; }
+        
+        /// <summary>
         /// Gets or sets the number.
         /// </summary>
         /// <value>The number.</value>
@@ -35,5 +45,28 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value>The type of the channel.</value>
         public ChannelType ChannelType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type.
+        /// </summary>
+        /// <value>The type.</value>
+        public string Type { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the media.
+        /// </summary>
+        /// <value>The type of the media.</value>
+        public string MediaType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the user data.
+        /// </summary>
+        /// <value>The user data.</value>
+        public UserItemDataDto UserData { get; set; }
+
+        public ChannelInfoDto()
+        {
+            ImageTags = new Dictionary<ImageType, Guid>();
+        }
     }
 }

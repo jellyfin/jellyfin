@@ -5,7 +5,6 @@ using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Logging;
@@ -13,7 +12,6 @@ using MediaBrowser.Model.Tasks;
 using ServiceStack.ServiceHost;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -151,7 +149,7 @@ namespace MediaBrowser.WebDashboard.Api
                     return _serverConfigurationManager.Configuration.DashboardSourcePath;
                 }
 
-                var runningDirectory = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
+                var runningDirectory = Path.GetDirectoryName(_serverConfigurationManager.ApplicationPaths.ApplicationPath);
 
                 return Path.Combine(runningDirectory, "dashboard-ui");
             }
@@ -430,7 +428,7 @@ namespace MediaBrowser.WebDashboard.Api
                                 "http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js", 
                                 "http://code.jquery.com/mobile/1.3.2/jquery.mobile-1.3.2.min.js",
                                 "scripts/all.js" + versionString,
-                                "thirdparty/jstree1.0fix2/jquery.jstree.js"
+                                "thirdparty/jstree1.0/jquery.jstree.js"
             };
 
             var tags = files.Select(s => string.Format("<script src=\"{0}\"></script>", s)).ToArray();
@@ -479,9 +477,13 @@ namespace MediaBrowser.WebDashboard.Api
                                       "itemgallery.js",
                                       "itemlistpage.js",
                                       "librarysettings.js",
+                                      "livetvchannel.js",
                                       "livetvchannels.js",
                                       "livetvguide.js",
+                                      "livetvrecording.js",
                                       "livetvrecordings.js",
+                                      "livetvtimer.js",
+                                      "livetvtimers.js",
                                       "loginpage.js",
                                       "logpage.js",
                                       "medialibrarypage.js",
@@ -495,6 +497,7 @@ namespace MediaBrowser.WebDashboard.Api
                                       "moviestudios.js",
                                       "movietrailers.js",
                                       "musicalbums.js",
+                                      "musicalbumartists.js",
                                       "musicartists.js",
                                       "musicgenres.js",
                                       "musicrecommended.js",

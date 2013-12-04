@@ -264,16 +264,14 @@ namespace MediaBrowser.Api
         {
             var item = _dtoService.GetItemByDtoId(request.Id);
 
-            var folder = item as Folder;
-
             try
             {
                 await item.RefreshMetadata(CancellationToken.None, forceRefresh: request.Forced).ConfigureAwait(false);
 
-                if (folder != null)
+                if (item.IsFolder)
                 {
                     // Collection folders don't validate their children so we'll have to simulate that here
-                    var collectionFolder = folder as CollectionFolder;
+                    var collectionFolder = item as CollectionFolder;
 
                     if (collectionFolder != null)
                     {
@@ -281,6 +279,8 @@ namespace MediaBrowser.Api
                     }
                     else
                     {
+                        var folder = (Folder)item;
+
                         await folder.ValidateChildren(new Progress<double>(), CancellationToken.None, request.Recursive, request.Forced).ConfigureAwait(false);
                     }
                 }
@@ -303,10 +303,10 @@ namespace MediaBrowser.Api
             {
                 await child.RefreshMetadata(CancellationToken.None, forceRefresh: request.Forced).ConfigureAwait(false);
 
-                var folder = child as Folder;
-
-                if (folder != null)
+                if (child.IsFolder)
                 {
+                    var folder = (Folder)child;
+
                     await folder.ValidateChildren(new Progress<double>(), CancellationToken.None, request.Recursive, request.Forced).ConfigureAwait(false);
                 }
             }

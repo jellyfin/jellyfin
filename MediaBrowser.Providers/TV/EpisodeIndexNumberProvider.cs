@@ -27,6 +27,22 @@ namespace MediaBrowser.Providers.TV
         {
         }
 
+        protected override bool RefreshOnVersionChange
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        protected override string ProviderVersion
+        {
+            get
+            {
+                return "2";
+            }
+        }
+
         /// <summary>
         /// Supportses the specified item.
         /// </summary>
@@ -50,6 +66,16 @@ namespace MediaBrowser.Providers.TV
 
             episode.IndexNumber = TVUtils.GetEpisodeNumberFromFile(item.Path, item.Parent is Season);
             episode.IndexNumberEnd = TVUtils.GetEndingEpisodeNumberFromFile(item.Path);
+
+            if (!episode.ParentIndexNumber.HasValue)
+            {
+                var season = episode.Parent as Season;
+
+                if (season != null)
+                {
+                    episode.ParentIndexNumber = season.IndexNumber;
+                }
+            }
 
             SetLastRefreshed(item, DateTime.UtcNow);
 

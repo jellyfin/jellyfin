@@ -7,7 +7,7 @@ using System;
 
 namespace MediaBrowser.Api.UserLibrary
 {
-    public abstract class BaseItemsRequest
+    public abstract class BaseItemsRequest : IHasItemFields
     {
         /// <summary>
         /// Skips over a given number of items within the results. Use for paging.
@@ -107,32 +107,6 @@ namespace MediaBrowser.Api.UserLibrary
             }
 
             return val.Split(',').Select(v => (ItemFilter)Enum.Parse(typeof(ItemFilter), v, true));
-        }
-
-        /// <summary>
-        /// Gets the item fields.
-        /// </summary>
-        /// <returns>IEnumerable{ItemFields}.</returns>
-        public IEnumerable<ItemFields> GetItemFields()
-        {
-            var val = Fields;
-
-            if (string.IsNullOrEmpty(val))
-            {
-                return new ItemFields[] { };
-            }
-
-            return val.Split(',').Select(v =>
-            {
-                ItemFields value;
-
-                if (Enum.TryParse(v, true, out value))
-                {
-                    return (ItemFields?)value;
-                }
-                return null;
-
-            }).Where(i => i.HasValue).Select(i => i.Value);
         }
 
         /// <summary>

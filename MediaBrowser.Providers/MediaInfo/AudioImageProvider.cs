@@ -123,6 +123,8 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <returns>Task{System.Boolean}.</returns>
         public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
+            item.ValidateImages();
+
             var audio = (Audio)item;
 
             if (string.IsNullOrEmpty(audio.PrimaryImagePath) && audio.MediaStreams.Any(s => s.Type == MediaStreamType.Video))

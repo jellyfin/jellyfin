@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller;
@@ -11,15 +10,15 @@ using MediaBrowser.Controller.MediaInfo;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.IO;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Api.Playback
 {
@@ -696,7 +695,7 @@ namespace MediaBrowser.Api.Playback
             // This is arbitrary, but add a little buffer time when internet streaming
             if (state.Item.LocationType == LocationType.Remote)
             {
-                await Task.Delay(2000).ConfigureAwait(false);
+                await Task.Delay(4000).ConfigureAwait(false);
             }
         }
 

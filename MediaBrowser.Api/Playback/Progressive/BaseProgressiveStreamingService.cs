@@ -127,44 +127,44 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             const string dlnaflags = ";DLNA.ORG_FLAGS=01500000000000000000000000000000";
 
-            if (string.Equals(extension, ".mp3", StringComparison.OrdinalIgnoreCase))
-            {
-                contentFeatures = "DLNA.ORG_PN=MP3";
-            }
-            else if (string.Equals(extension, ".aac", StringComparison.OrdinalIgnoreCase))
-            {
-                contentFeatures = "DLNA.ORG_PN=AAC_ISO";
-            }
-            else if (string.Equals(extension, ".wma", StringComparison.OrdinalIgnoreCase))
-            {
-                contentFeatures = "DLNA.ORG_PN=WMABASE";
-            }
-            else if (string.Equals(extension, ".avi", StringComparison.OrdinalIgnoreCase))
-            {
-                contentFeatures = "DLNA.ORG_PN=AVI";
-            }
-            else if (string.Equals(extension, ".mp4", StringComparison.OrdinalIgnoreCase))
-            {
-                contentFeatures = "DLNA.ORG_PN=MPEG4_P2_SP_AAC";
-            }
-            else if (string.Equals(extension, ".mpeg", StringComparison.OrdinalIgnoreCase))
-            {
-                contentFeatures = "DLNA.ORG_PN=MPEG_PS_PAL";
-            }
-            else if (string.Equals(extension, ".wmv", StringComparison.OrdinalIgnoreCase))
-            {
-                contentFeatures = "DLNA.ORG_PN=WMVHIGH_BASE";
-            }
-            else if (string.Equals(extension, ".asf", StringComparison.OrdinalIgnoreCase))
-            {
-                // ??
-                contentFeatures = "DLNA.ORG_PN=WMVHIGH_BASE";
-            }
-            else if (string.Equals(extension, ".mkv", StringComparison.OrdinalIgnoreCase))
-            {
-                // ??
-                contentFeatures = "";
-            }
+            //if (string.Equals(extension, ".mp3", StringComparison.OrdinalIgnoreCase))
+            //{
+            //    contentFeatures = "DLNA.ORG_PN=MP3";
+            //}
+            //else if (string.Equals(extension, ".aac", StringComparison.OrdinalIgnoreCase))
+            //{
+            //    contentFeatures = "DLNA.ORG_PN=AAC_ISO";
+            //}
+            //else if (string.Equals(extension, ".wma", StringComparison.OrdinalIgnoreCase))
+            //{
+            //    contentFeatures = "DLNA.ORG_PN=WMABASE";
+            //}
+            //else if (string.Equals(extension, ".avi", StringComparison.OrdinalIgnoreCase))
+            //{
+            //    contentFeatures = "DLNA.ORG_PN=AVI";
+            //}
+            //else if (string.Equals(extension, ".mp4", StringComparison.OrdinalIgnoreCase))
+            //{
+            //    contentFeatures = "DLNA.ORG_PN=MPEG4_P2_SP_AAC";
+            //}
+            //else if (string.Equals(extension, ".mpeg", StringComparison.OrdinalIgnoreCase))
+            //{
+            //    contentFeatures = "DLNA.ORG_PN=MPEG_PS_PAL";
+            //}
+            //else if (string.Equals(extension, ".wmv", StringComparison.OrdinalIgnoreCase))
+            //{
+            //    contentFeatures = "DLNA.ORG_PN=WMVHIGH_BASE";
+            //}
+            //else if (string.Equals(extension, ".asf", StringComparison.OrdinalIgnoreCase))
+            //{
+            //    // ??
+            //    contentFeatures = "DLNA.ORG_PN=WMVHIGH_BASE";
+            //}
+            //else if (string.Equals(extension, ".mkv", StringComparison.OrdinalIgnoreCase))
+            //{
+            //    // ??
+            //    contentFeatures = "";
+            //}
 
             if (!string.IsNullOrEmpty(contentFeatures))
             {
@@ -206,10 +206,10 @@ namespace MediaBrowser.Api.Playback.Progressive
             var outputPath = GetOutputFilePath(state);
             var outputPathExists = File.Exists(outputPath);
 
-            //var isStatic = request.Static ||
-            //               (outputPathExists && !ApiEntryPoint.Instance.HasActiveTranscodingJob(outputPath, TranscodingJobType.Progressive));
+            var isStatic = request.Static ||
+                           (outputPathExists && !ApiEntryPoint.Instance.HasActiveTranscodingJob(outputPath, TranscodingJobType.Progressive));
 
-            //AddDlnaHeaders(state, responseHeaders, isStatic);
+            AddDlnaHeaders(state, responseHeaders, isStatic);
 
             if (request.Static)
             {
@@ -307,7 +307,7 @@ namespace MediaBrowser.Api.Playback.Progressive
                 }
             }
 
-            return new ImageService(UserManager, LibraryManager, ApplicationPaths, null, ItemRepository, DtoService, ImageProcessor)
+            return new ImageService(UserManager, LibraryManager, ApplicationPaths, null, ItemRepository, DtoService, ImageProcessor, null)
             {
                 Logger = Logger,
                 RequestContext = RequestContext,

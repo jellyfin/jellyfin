@@ -1,10 +1,13 @@
-﻿using MediaBrowser.Controller.Dto;
+﻿using System.Globalization;
+using System.IO;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using ServiceStack.ServiceHost;
@@ -205,6 +208,27 @@ namespace MediaBrowser.Api.UserLibrary
 
         [ApiMember(Name = "AiredDuringSeason", Description = "Gets all episodes that aired during a season, including specials.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int? AiredDuringSeason { get; set; }
+
+        [ApiMember(Name = "MinPremiereDate", Description = "Optional. The minimum premiere date. Format = yyyyMMddHHmmss", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string MinPremiereDate { get; set; }
+
+        [ApiMember(Name = "MaxPremiereDate", Description = "Optional. The maximum premiere date. Format = yyyyMMddHHmmss", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string MaxPremiereDate { get; set; }
+
+        [ApiMember(Name = "HasOverview", Description = "Optional filter by items that have an overview or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool? HasOverview { get; set; }
+
+        [ApiMember(Name = "HasImdbId", Description = "Optional filter by items that have an imdb id or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool? HasImdbId { get; set; }
+
+        [ApiMember(Name = "HasTmdbId", Description = "Optional filter by items that have a tmdb id or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool? HasTmdbId { get; set; }
+
+        [ApiMember(Name = "HasTvdbId", Description = "Optional filter by items that have a tvdb id or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool? HasTvdbId { get; set; }
+        
+        [ApiMember(Name = "IsYearMismatched", Description = "Optional filter by items that are potentially misidentified.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool? IsYearMismatched { get; set; }
     }
 
     /// <summary>
@@ -285,6 +309,12 @@ namespace MediaBrowser.Api.UserLibrary
             items = ApplySearchTerm(request, items);
 
             items = ApplySortOrder(request, items, user, _libraryManager);
+
+            // This must be the last filter
+            if (!string.IsNullOrEmpty(request.AdjacentTo))
+            {
+                items = FilterForAdjacency(items, request.AdjacentTo);
+            }
 
             var itemsArray = items.ToList();
 
@@ -642,30 +672,6 @@ namespace MediaBrowser.Api.UserLibrary
                 });
             }
 
-            if (!string.IsNullOrEmpty(request.AdjacentTo))
-            {
-                var item = _dtoService.GetItemByDtoId(request.AdjacentTo);
-
-                var allSiblings = item.Parent.GetChildren(user, true).OrderBy(i => i.SortName).ToList();
-
-                var index = allSiblings.IndexOf(item);
-
-                var previousId = Guid.Empty;
-                var nextId = Guid.Empty;
-
-                if (index > 0)
-                {
-                    previousId = allSiblings[index - 1].Id;
-                }
-
-                if (index < allSiblings.Count - 1)
-                {
-                    nextId = allSiblings[index + 1].Id;
-                }
-
-                items = items.Where(i => i.Id == previousId || i.Id == nextId);
-            }
-
             // Min index number
             if (request.MinIndexNumber.HasValue)
             {
@@ -861,7 +867,19 @@ namespace MediaBrowser.Api.UserLibrary
 
             if (request.HasTrailer.HasValue)
             {
-                items = items.Where(i => request.HasTrailer.Value ? i.LocalTrailerIds.Count > 0 : i.LocalTrailerIds.Count == 0);
+                var val = request.HasTrailer.Value;
+                items = items.Where(i =>
+                {
+                    var trailerCount = 0;
+
+                    var hasTrailers = i as IHasTrailers;
+                    if (hasTrailers != null)
+                    {
+                        trailerCount = hasTrailers.LocalTrailerIds.Count;
+                    }
+
+                    return val ? trailerCount > 0 : trailerCount == 0;
+                });
             }
 
             if (request.HasThemeSong.HasValue)
@@ -1005,24 +1023,132 @@ namespace MediaBrowser.Api.UserLibrary
 
             if (request.AiredDuringSeason.HasValue)
             {
-                var val = request.AiredDuringSeason.Value;
+                items = TvShowsService.FilterEpisodesBySeason(items.OfType<Episode>(), request.AiredDuringSeason.Value, true);
+            }
+
+            if (!string.IsNullOrEmpty(request.MinPremiereDate))
+            {
+                var date = DateTime.ParseExact(request.MinPremiereDate, "yyyyMMddHHmmss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
+
+                items = items.Where(i => i.PremiereDate.HasValue && i.PremiereDate.Value >= date);
+            }
+
+            if (!string.IsNullOrEmpty(request.MaxPremiereDate))
+            {
+                var date = DateTime.ParseExact(request.MaxPremiereDate, "yyyyMMddHHmmss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
+
+                items = items.Where(i => i.PremiereDate.HasValue && i.PremiereDate.Value <= date);
+            }
+
+            if (request.HasOverview.HasValue)
+            {
+                var filterValue = request.HasOverview.Value;
 
                 items = items.Where(i =>
                 {
-                    var episode = i as Episode;
+                    var hasValue = !string.IsNullOrEmpty(i.Overview);
 
-                    if (episode != null)
-                    {
-                        var seasonNumber = episode.AirsAfterSeasonNumber ?? episode.AirsBeforeEpisodeNumber ?? episode.ParentIndexNumber;
-
-                        return episode.PremiereDate.HasValue && seasonNumber.HasValue && seasonNumber.Value == val;
-                    }
-
-                    return false;
+                    return hasValue == filterValue;
                 });
             }
 
+            if (request.HasImdbId.HasValue)
+            {
+                var filterValue = request.HasImdbId.Value;
+
+                items = items.Where(i =>
+                {
+                    var hasValue = !string.IsNullOrEmpty(i.GetProviderId(MetadataProviders.Imdb));
+
+                    return hasValue == filterValue;
+                });
+            }
+
+            if (request.HasTmdbId.HasValue)
+            {
+                var filterValue = request.HasTmdbId.Value;
+
+                items = items.Where(i =>
+                {
+                    var hasValue = !string.IsNullOrEmpty(i.GetProviderId(MetadataProviders.Tmdb));
+
+                    return hasValue == filterValue;
+                });
+            }
+
+            if (request.HasTvdbId.HasValue)
+            {
+                var filterValue = request.HasTvdbId.Value;
+
+                items = items.Where(i =>
+                {
+                    var hasValue = !string.IsNullOrEmpty(i.GetProviderId(MetadataProviders.Tvdb));
+
+                    return hasValue == filterValue;
+                });
+            }
+
+            if (request.IsYearMismatched.HasValue)
+            {
+                var filterValue = request.IsYearMismatched.Value;
+
+                items = items.Where(i => IsYearMismatched(i) == filterValue);
+            }
+
             return items;
+        }
+
+        private bool IsYearMismatched(BaseItem item)
+        {
+            if (item.ProductionYear.HasValue)
+            {
+                var path = item.Path;
+
+                if (!string.IsNullOrEmpty(path))
+                {
+                    int? yearInName;
+                    string name;
+                    NameParser.ParseName(Path.GetFileName(path), out name, out yearInName);
+
+                    // Go up a level if we didn't get a year
+                    if (!yearInName.HasValue)
+                    {
+                        NameParser.ParseName(Path.GetFileName(Path.GetDirectoryName(path)), out name, out yearInName);
+                    }
+
+                    if (yearInName.HasValue)
+                    {
+                        return yearInName.Value != item.ProductionYear.Value;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        internal static IEnumerable<BaseItem> FilterForAdjacency(IEnumerable<BaseItem> items, string adjacentToId)
+        {
+            var list = items.ToList();
+
+            var adjacentToIdGuid = new Guid(adjacentToId);
+            var adjacentToItem = list.FirstOrDefault(i => i.Id == adjacentToIdGuid);
+
+            var index = list.IndexOf(adjacentToItem);
+
+            var previousId = Guid.Empty;
+            var nextId = Guid.Empty;
+
+            if (index > 0)
+            {
+                previousId = list[index - 1].Id;
+            }
+
+            if (index < list.Count - 1)
+            {
+                nextId = list[index + 1].Id;
+            }
+
+            return list.Where(i => i.Id == previousId || i.Id == nextId);
         }
 
         /// <summary>

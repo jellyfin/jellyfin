@@ -19,7 +19,12 @@ namespace MediaBrowser.Server.Implementations.Sorting
 
         private double GetValue(BaseItem x)
         {
-            return x.Revenue ?? 0;
+            var hasBudget = x as IHasBudget;
+            if (hasBudget != null)
+            {
+                return hasBudget.Revenue ?? 0;
+            }
+            return 0;
         }
 
         /// <summary>

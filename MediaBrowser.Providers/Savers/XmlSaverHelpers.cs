@@ -63,6 +63,7 @@ namespace MediaBrowser.Providers.Savers
                     "TMDbCollectionId",
                     "TMDbId",
                     "Trailer",
+                    "Trailers",
                     "TVcomId",
                     "TvDbId",
                     "Type",
@@ -177,7 +178,7 @@ namespace MediaBrowser.Providers.Savers
                     }
                 }
             }
-            
+
             return builder.ToString();
         }
 
@@ -267,19 +268,34 @@ namespace MediaBrowser.Providers.Savers
                 }
             }
 
-            if (item.RemoteTrailers.Count > 0)
+            var hasTrailers = item as IHasTrailers;
+            if (hasTrailers != null)
             {
-                builder.Append("<Trailer>" + SecurityElement.Escape(item.RemoteTrailers[0].Url) + "</Trailer>");
+                if (hasTrailers.RemoteTrailers.Count > 0)
+                {
+                    builder.Append("<Trailers>");
+
+                    foreach (var trailer in hasTrailers.RemoteTrailers)
+                    {
+                        builder.Append("<Trailer>" + SecurityElement.Escape(trailer.Url) + "</Trailer>");
+                    }
+
+                    builder.Append("</Trailers>");
+                }
             }
 
-            if (item.Budget.HasValue)
+            var hasBudget = item as IHasBudget;
+            if (hasBudget != null)
             {
-                builder.Append("<Budget>" + SecurityElement.Escape(item.Budget.Value.ToString(UsCulture)) + "</Budget>");
-            }
+                if (hasBudget.Budget.HasValue)
+                {
+                    builder.Append("<Budget>" + SecurityElement.Escape(hasBudget.Budget.Value.ToString(UsCulture)) + "</Budget>");
+                }
 
-            if (item.Revenue.HasValue)
-            {
-                builder.Append("<Revenue>" + SecurityElement.Escape(item.Revenue.Value.ToString(UsCulture)) + "</Revenue>");
+                if (hasBudget.Revenue.HasValue)
+                {
+                    builder.Append("<Revenue>" + SecurityElement.Escape(hasBudget.Revenue.Value.ToString(UsCulture)) + "</Revenue>");
+                }
             }
 
             if (item.CommunityRating.HasValue)
@@ -301,9 +317,13 @@ namespace MediaBrowser.Providers.Savers
                 builder.Append("<Website>" + SecurityElement.Escape(item.HomePageUrl) + "</Website>");
             }
 
-            if (!string.IsNullOrEmpty(item.AspectRatio))
+            var hasAspectRatio = item as IHasAspectRatio;
+            if (hasAspectRatio != null)
             {
-                builder.Append("<AspectRatio>" + SecurityElement.Escape(item.AspectRatio) + "</AspectRatio>");
+                if (!string.IsNullOrEmpty(hasAspectRatio.AspectRatio))
+                {
+                    builder.Append("<AspectRatio>" + SecurityElement.Escape(hasAspectRatio.AspectRatio) + "</AspectRatio>");
+                }
             }
 
             if (!string.IsNullOrEmpty(item.Language))
@@ -459,6 +479,12 @@ namespace MediaBrowser.Providers.Savers
                     builder.Append("<Name>" + SecurityElement.Escape(person.Name) + "</Name>");
                     builder.Append("<Type>" + SecurityElement.Escape(person.Type) + "</Type>");
                     builder.Append("<Role>" + SecurityElement.Escape(person.Role) + "</Role>");
+
+                    if (person.SortOrder.HasValue)
+                    {
+                        builder.Append("<SortOrder>" + SecurityElement.Escape(person.SortOrder.Value.ToString(UsCulture)) + "</SortOrder>");
+                    }
+
                     builder.Append("</Person>");
                 }
 

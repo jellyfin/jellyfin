@@ -69,6 +69,12 @@ namespace MediaBrowser.Controller.Providers
             item.People.Clear();
             item.Tags.Clear();
 
+            var hasTrailers = item as IHasTrailers;
+            if (hasTrailers != null)
+            {
+                hasTrailers.RemoteTrailers.Clear();
+            }
+
             //Fetch(item, metadataFile, settings, Encoding.GetEncoding("ISO-8859-1"), cancellationToken);
             Fetch(item, metadataFile, settings, Encoding.UTF8, cancellationToken);
         }
@@ -161,10 +167,14 @@ namespace MediaBrowser.Controller.Providers
                 case "Budget":
                     {
                         var text = reader.ReadElementContentAsString();
-                        double value;
-                        if (double.TryParse(text, NumberStyles.Any, _usCulture, out value))
+                        var hasBudget = item as IHasBudget;
+                        if (hasBudget != null)
                         {
-                            item.Budget = value;
+                            double value;
+                            if (double.TryParse(text, NumberStyles.Any, _usCulture, out value))
+                            {
+                                hasBudget.Budget = value;
+                            }
                         }
 
                         break;
@@ -173,10 +183,14 @@ namespace MediaBrowser.Controller.Providers
                 case "Revenue":
                     {
                         var text = reader.ReadElementContentAsString();
-                        double value;
-                        if (double.TryParse(text, NumberStyles.Any, _usCulture, out value))
+                        var hasBudget = item as IHasBudget;
+                        if (hasBudget != null)
                         {
-                            item.Revenue = value;
+                            double value;
+                            if (double.TryParse(text, NumberStyles.Any, _usCulture, out value))
+                            {
+                                hasBudget.Revenue = value;
+                            }
                         }
 
                         break;
@@ -375,9 +389,10 @@ namespace MediaBrowser.Controller.Providers
                     {
                         var val = reader.ReadElementContentAsString();
 
-                        if (!string.IsNullOrWhiteSpace(val))
+                        var hasAspectRatio = item as IHasAspectRatio;
+                        if (!string.IsNullOrWhiteSpace(val) && hasAspectRatio != null)
                         {
-                            item.AspectRatio = val;
+                            hasAspectRatio.AspectRatio = val;
                         }
                         break;
                     }
@@ -474,9 +489,26 @@ namespace MediaBrowser.Controller.Providers
                     {
                         var val = reader.ReadElementContentAsString();
 
-                        if (!string.IsNullOrWhiteSpace(val))
+                        var hasTrailers = item as IHasTrailers;
+                        if (hasTrailers != null)
                         {
-                            item.AddTrailerUrl(val, false);
+                            if (!string.IsNullOrWhiteSpace(val))
+                            {
+                                hasTrailers.AddTrailerUrl(val, false);
+                            }
+                        }
+                        break;
+                    }
+
+                case "Trailers":
+                    {
+                        using (var subtree = reader.ReadSubtree())
+                        {
+                            var hasTrailers = item as IHasTrailers;
+                            if (hasTrailers != null)
+                            {
+                                FetchDataFromTrailersNode(subtree, hasTrailers);
+                            }
                         }
                         break;
                     }
@@ -921,6 +953,35 @@ namespace MediaBrowser.Controller.Providers
             }
         }
 
+        private void FetchDataFromTrailersNode(XmlReader reader, IHasTrailers item)
+        {
+            reader.MoveToContent();
+
+            while (reader.Read())
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    switch (reader.Name)
+                    {
+                        case "Trailer":
+                            {
+                                var val = reader.ReadElementContentAsString();
+
+                                if (!string.IsNullOrWhiteSpace(val))
+                                {
+                                    item.AddTrailerUrl(val, false);
+                                }
+                                break;
+                            }
+
+                        default:
+                            reader.Skip();
+                            break;
+                    }
+                }
+            }
+        }
+        
         protected async Task FetchChaptersFromXmlNode(BaseItem item, XmlReader reader, IItemRepository repository, CancellationToken cancellationToken)
         {
             var runtime = item.RunTimeTicks ?? 0;
@@ -1071,9 +1132,10 @@ namespace MediaBrowser.Controller.Providers
         /// <returns>IEnumerable{PersonInfo}.</returns>
         private IEnumerable<PersonInfo> GetPersonsFromXmlNode(XmlReader reader)
         {
-            var names = new List<string>();
+            var name = string.Empty;
             var type = "Actor";  // If type is not specified assume actor
             var role = string.Empty;
+            int? sortOrder = null;
 
             reader.MoveToContent();
 
@@ -1084,7 +1146,7 @@ namespace MediaBrowser.Controller.Providers
                     switch (reader.Name)
                     {
                         case "Name":
-                            names.AddRange(SplitNames(reader.ReadElementContentAsString()));
+                            name = reader.ReadElementContentAsString() ?? string.Empty;
                             break;
 
                         case "Type":
@@ -1108,6 +1170,20 @@ namespace MediaBrowser.Controller.Providers
                                 }
                                 break;
                             }
+                        case "SortOrder":
+                            {
+                                var val = reader.ReadElementContentAsString();
+
+                                if (!string.IsNullOrWhiteSpace(val))
+                                {
+                                    int intVal;
+                                    if (int.TryParse(val, NumberStyles.Integer, _usCulture, out intVal))
+                                    {
+                                        sortOrder = intVal;
+                                    }
+                                }
+                                break;
+                            }
 
                         default:
                             reader.Skip();
@@ -1116,7 +1192,15 @@ namespace MediaBrowser.Controller.Providers
                 }
             }
 
-            return names.Select(n => new PersonInfo { Name = n.Trim(), Role = role, Type = type });
+            var personInfo = new PersonInfo
+            {
+                Name = name.Trim(), 
+                Role = role, 
+                Type = type, 
+                SortOrder = sortOrder
+            };
+
+            return new[] { personInfo };
         }
 
         /// <summary>

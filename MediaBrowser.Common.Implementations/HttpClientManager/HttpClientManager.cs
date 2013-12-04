@@ -9,7 +9,10 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Cache;
 using System.Net.Http;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,6 +25,11 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
     public class HttpClientManager : IHttpClient
     {
         /// <summary>
+        /// When one request to a host times out, we'll ban all other requests for this period of time, to prevent scans from stalling
+        /// </summary>
+        private const int TimeoutSeconds = 30;
+
+        /// <summary>
         /// The _logger
         /// </summary>
         private readonly ILogger _logger;
@@ -31,23 +39,18 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         /// </summary>
         private readonly IApplicationPaths _appPaths;
 
-        public delegate HttpClient GetHttpClientHandler(bool enableHttpCompression);
-
-        private readonly GetHttpClientHandler _getHttpClientHandler;
         private readonly IFileSystem _fileSystem;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="HttpClientManager"/> class.
+        /// Initializes a new instance of the <see cref="HttpClientManager" /> class.
         /// </summary>
         /// <param name="appPaths">The app paths.</param>
         /// <param name="logger">The logger.</param>
-        /// <param name="getHttpClientHandler">The get HTTP client handler.</param>
-        /// <exception cref="System.ArgumentNullException">
-        /// appPaths
+        /// <param name="fileSystem">The file system.</param>
+        /// <exception cref="System.ArgumentNullException">appPaths
         /// or
-        /// logger
-        /// </exception>
-        public HttpClientManager(IApplicationPaths appPaths, ILogger logger, GetHttpClientHandler getHttpClientHandler, IFileSystem fileSystem)
+        /// logger</exception>
+        public HttpClientManager(IApplicationPaths appPaths, ILogger logger, IFileSystem fileSystem)
         {
             if (appPaths == null)
             {
@@ -59,7 +62,6 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             }
 
             _logger = logger;
-            _getHttpClientHandler = getHttpClientHandler;
             _fileSystem = fileSystem;
             _appPaths = appPaths;
         }
@@ -91,17 +93,82 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
             if (!_httpClients.TryGetValue(key, out client))
             {
-                client = new HttpClientInfo
-                {
+                client = new HttpClientInfo();
 
-                    HttpClient = _getHttpClientHandler(enableHttpCompression)
-                };
                 _httpClients.TryAdd(key, client);
             }
 
             return client;
         }
 
+        private WebRequest GetMonoRequest(HttpRequestOptions options, string method, bool enableHttpCompression)
+        {
+            var request = WebRequest.Create(options.Url);
+
+            if (!string.IsNullOrEmpty(options.AcceptHeader))
+            {
+                request.Headers.Add("Accept", options.AcceptHeader);
+            }
+
+            request.CachePolicy = new RequestCachePolicy(RequestCacheLevel.Revalidate);
+            request.ConnectionGroupName = GetHostFromUrl(options.Url);
+            request.Method = method;
+            request.Timeout = 20000;
+
+            if (!string.IsNullOrEmpty(options.UserAgent))
+            {
+                request.Headers.Add("User-Agent", options.UserAgent);
+            }
+
+            return request;
+        }
+
+        private PropertyInfo _httpBehaviorPropertyInfo;
+        private WebRequest GetRequest(HttpRequestOptions options, string method, bool enableHttpCompression)
+        {
+#if __MonoCS__
+            return GetMonoRequest(options, method, enableHttpCompression);
+#endif
+            
+            var request = HttpWebRequest.CreateHttp(options.Url);
+
+            if (!string.IsNullOrEmpty(options.AcceptHeader))
+            {
+                request.Accept = options.AcceptHeader;
+            }
+
+            request.AutomaticDecompression = enableHttpCompression ? DecompressionMethods.Deflate : DecompressionMethods.None;
+            request.CachePolicy = new RequestCachePolicy(RequestCacheLevel.Revalidate);
+            request.ConnectionGroupName = GetHostFromUrl(options.Url);
+            request.KeepAlive = true;
+            request.Method = method;
+            request.Pipelined = true;
+            request.Timeout = 20000;
+
+            if (!string.IsNullOrEmpty(options.UserAgent))
+            {
+                request.UserAgent = options.UserAgent;
+            }
+
+            // This is a hack to prevent KeepAlive from getting disabled internally by the HttpWebRequest
+            // May need to remove this for mono
+            var sp = request.ServicePoint;
+            if (_httpBehaviorPropertyInfo == null)
+            {
+                _httpBehaviorPropertyInfo = sp.GetType().GetProperty("HttpBehaviour", BindingFlags.Instance | BindingFlags.NonPublic);
+            }
+            _httpBehaviorPropertyInfo.SetValue(sp, (byte)0, null);
+
+            return request;
+        }
+
+        /// <summary>
+        /// Gets the response internal.
+        /// </summary>
+        /// <param name="options">The options.</param>
+        /// <returns>Task{HttpResponseInfo}.</returns>
+        /// <exception cref="HttpException">
+        /// </exception>
         public async Task<HttpResponseInfo> GetResponse(HttpRequestOptions options)
         {
             ValidateParams(options.Url, options.CancellationToken);
@@ -110,80 +177,97 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
             var client = GetHttpClient(GetHostFromUrl(options.Url), options.EnableHttpCompression);
 
-            if ((DateTime.UtcNow - client.LastTimeout).TotalSeconds < 30)
+            if ((DateTime.UtcNow - client.LastTimeout).TotalSeconds < TimeoutSeconds)
             {
                 throw new HttpException(string.Format("Cancelling connection to {0} due to a previous timeout.", options.Url)) { IsTimedOut = true };
             }
 
-            using (var message = GetHttpRequestMessage(options))
+            var httpWebRequest = GetRequest(options, "GET", options.EnableHttpCompression);
+
+            if (options.ResourcePool != null)
+            {
+                await options.ResourcePool.WaitAsync(options.CancellationToken).ConfigureAwait(false);
+            }
+
+            if ((DateTime.UtcNow - client.LastTimeout).TotalSeconds < TimeoutSeconds)
             {
                 if (options.ResourcePool != null)
                 {
-                    await options.ResourcePool.WaitAsync(options.CancellationToken).ConfigureAwait(false);
+                    options.ResourcePool.Release();
                 }
 
-                if ((DateTime.UtcNow - client.LastTimeout).TotalSeconds < 30)
+                throw new HttpException(string.Format("Connection to {0} timed out", options.Url)) { IsTimedOut = true };
+            }
+
+            _logger.Info("HttpClientManager.GET url: {0}", options.Url);
+
+            try
+            {
+                options.CancellationToken.ThrowIfCancellationRequested();
+
+                using (var response = await httpWebRequest.GetResponseAsync().ConfigureAwait(false))
                 {
-                    if (options.ResourcePool != null)
-                    {
-                        options.ResourcePool.Release();
-                    }
+                    var httpResponse = (HttpWebResponse)response;
 
-                    throw new HttpException(string.Format("Connection to {0} timed out", options.Url)) { IsTimedOut = true };
-                }
-
-                _logger.Info("HttpClientManager.Get url: {0}", options.Url);
-
-                try
-                {
-                    options.CancellationToken.ThrowIfCancellationRequested();
-
-                    var response = await client.HttpClient.SendAsync(message, HttpCompletionOption.ResponseContentRead, options.CancellationToken).ConfigureAwait(false);
-
-                    EnsureSuccessStatusCode(response);
+                    EnsureSuccessStatusCode(httpResponse);
 
                     options.CancellationToken.ThrowIfCancellationRequested();
 
-                    return new HttpResponseInfo
+                    using (var stream = httpResponse.GetResponseStream())
                     {
-                        Content = await response.Content.ReadAsStreamAsync().ConfigureAwait(false),
+                        var memoryStream = new MemoryStream();
 
-                        StatusCode = response.StatusCode,
+                        await stream.CopyToAsync(memoryStream).ConfigureAwait(false);
 
-                        ContentType = response.Content.Headers.ContentType.MediaType
-                    };
-                }
-                catch (OperationCanceledException ex)
-                {
-                    var exception = GetCancellationException(options.Url, options.CancellationToken, ex);
+                        memoryStream.Position = 0;
 
-                    var httpException = exception as HttpException;
+                        return new HttpResponseInfo
+                        {
+                            Content = memoryStream,
 
-                    if (httpException != null && httpException.IsTimedOut)
-                    {
-                        client.LastTimeout = DateTime.UtcNow;
+                            StatusCode = httpResponse.StatusCode,
+
+                            ContentType = httpResponse.ContentType
+                        };
                     }
-
-                    throw exception;
                 }
-                catch (HttpRequestException ex)
-                {
-                    _logger.ErrorException("Error getting response from " + options.Url, ex);
+            }
+            catch (OperationCanceledException ex)
+            {
+                var exception = GetCancellationException(options.Url, options.CancellationToken, ex);
 
-                    throw new HttpException(ex.Message, ex);
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error getting response from " + options.Url, ex);
+                var httpException = exception as HttpException;
 
-                    throw;
-                }
-                finally
+                if (httpException != null && httpException.IsTimedOut)
                 {
-                    if (options.ResourcePool != null)
-                    {
-                        options.ResourcePool.Release();
-                    }
+                    client.LastTimeout = DateTime.UtcNow;
+                }
+
+                throw exception;
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.ErrorException("Error getting response from " + options.Url, ex);
+
+                throw new HttpException(ex.Message, ex);
+            }
+            catch (WebException ex)
+            {
+                _logger.ErrorException("Error getting response from " + options.Url, ex);
+
+                throw new HttpException(ex.Message, ex);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error getting response from " + options.Url, ex);
+
+                throw;
+            }
+            finally
+            {
+                if (options.ResourcePool != null)
+                {
+                    options.ResourcePool.Release();
                 }
             }
         }
@@ -197,81 +281,9 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         /// <exception cref="MediaBrowser.Model.Net.HttpException"></exception>
         public async Task<Stream> Get(HttpRequestOptions options)
         {
-            ValidateParams(options.Url, options.CancellationToken);
+            var response = await GetResponse(options).ConfigureAwait(false);
 
-            options.CancellationToken.ThrowIfCancellationRequested();
-
-            var client = GetHttpClient(GetHostFromUrl(options.Url), options.EnableHttpCompression);
-
-            if ((DateTime.UtcNow - client.LastTimeout).TotalSeconds < 30)
-            {
-                throw new HttpException(string.Format("Cancelling connection to {0} due to a previous timeout.", options.Url)) { IsTimedOut = true };
-            }
-
-            using (var message = GetHttpRequestMessage(options))
-            {
-                if (options.ResourcePool != null)
-                {
-                    await options.ResourcePool.WaitAsync(options.CancellationToken).ConfigureAwait(false);
-                }
-
-                if ((DateTime.UtcNow - client.LastTimeout).TotalSeconds < 30)
-                {
-                    if (options.ResourcePool != null)
-                    {
-                        options.ResourcePool.Release();
-                    }
-
-                    throw new HttpException(string.Format("Connection to {0} timed out", options.Url)) { IsTimedOut = true };
-                }
-
-                _logger.Info("HttpClientManager.Get url: {0}", options.Url);
-
-                try
-                {
-                    options.CancellationToken.ThrowIfCancellationRequested();
-
-                    var response = await client.HttpClient.SendAsync(message, HttpCompletionOption.ResponseContentRead, options.CancellationToken).ConfigureAwait(false);
-
-                    EnsureSuccessStatusCode(response);
-
-                    options.CancellationToken.ThrowIfCancellationRequested();
-
-                    return await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-                }
-                catch (OperationCanceledException ex)
-                {
-                    var exception = GetCancellationException(options.Url, options.CancellationToken, ex);
-
-                    var httpException = exception as HttpException;
-
-                    if (httpException != null && httpException.IsTimedOut)
-                    {
-                        client.LastTimeout = DateTime.UtcNow;
-                    }
-
-                    throw exception;
-                }
-                catch (HttpRequestException ex)
-                {
-                    _logger.ErrorException("Error getting response from " + options.Url, ex);
-
-                    throw new HttpException(ex.Message, ex);
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error getting response from " + options.Url, ex);
-
-                    throw;
-                }
-                finally
-                {
-                    if (options.ResourcePool != null)
-                    {
-                        options.ResourcePool.Release();
-                    }
-                }
-            }
+            return response.Content;
         }
 
         /// <summary>
@@ -305,62 +317,110 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         /// <summary>
         /// Performs a POST request
         /// </summary>
+        /// <param name="options">The options.</param>
+        /// <param name="postData">Params to add to the POST data.</param>
+        /// <returns>stream on success, null on failure</returns>
+        /// <exception cref="HttpException">
+        /// </exception>
+        /// <exception cref="System.ArgumentNullException">postData</exception>
+        /// <exception cref="MediaBrowser.Model.Net.HttpException"></exception>
+        public async Task<Stream> Post(HttpRequestOptions options, Dictionary<string, string> postData)
+        {
+            ValidateParams(options.Url, options.CancellationToken);
+
+            options.CancellationToken.ThrowIfCancellationRequested();
+
+            var httpWebRequest = GetRequest(options, "POST", options.EnableHttpCompression);
+
+            var strings = postData.Keys.Select(key => string.Format("{0}={1}", key, postData[key]));
+            var postContent = string.Join("&", strings.ToArray());
+            var bytes = Encoding.UTF8.GetBytes(postContent);
+
+            httpWebRequest.ContentType = "application/x-www-form-urlencoded";
+            httpWebRequest.ContentLength = bytes.Length;
+            httpWebRequest.GetRequestStream().Write(bytes, 0, bytes.Length);
+
+            if (options.ResourcePool != null)
+            {
+                await options.ResourcePool.WaitAsync(options.CancellationToken).ConfigureAwait(false);
+            }
+
+            _logger.Info("HttpClientManager.POST url: {0}", options.Url);
+
+            try
+            {
+                options.CancellationToken.ThrowIfCancellationRequested();
+
+                using (var response = await httpWebRequest.GetResponseAsync().ConfigureAwait(false))
+                {
+                    var httpResponse = (HttpWebResponse)response;
+
+                    EnsureSuccessStatusCode(httpResponse);
+
+                    options.CancellationToken.ThrowIfCancellationRequested();
+
+                    using (var stream = httpResponse.GetResponseStream())
+                    {
+                        var memoryStream = new MemoryStream();
+
+                        await stream.CopyToAsync(memoryStream).ConfigureAwait(false);
+
+                        memoryStream.Position = 0;
+
+                        return memoryStream;
+                    }
+                }
+            }
+            catch (OperationCanceledException ex)
+            {
+                var exception = GetCancellationException(options.Url, options.CancellationToken, ex);
+
+                throw exception;
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.ErrorException("Error getting response from " + options.Url, ex);
+
+                throw new HttpException(ex.Message, ex);
+            }
+            catch (WebException ex)
+            {
+                _logger.ErrorException("Error getting response from " + options.Url, ex);
+
+                throw new HttpException(ex.Message, ex);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error getting response from " + options.Url, ex);
+
+                throw;
+            }
+            finally
+            {
+                if (options.ResourcePool != null)
+                {
+                    options.ResourcePool.Release();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Performs a POST request
+        /// </summary>
         /// <param name="url">The URL.</param>
         /// <param name="postData">Params to add to the POST data.</param>
         /// <param name="resourcePool">The resource pool.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>stream on success, null on failure</returns>
-        /// <exception cref="System.ArgumentNullException">postData</exception>
-        /// <exception cref="MediaBrowser.Model.Net.HttpException"></exception>
-        public async Task<Stream> Post(string url, Dictionary<string, string> postData, SemaphoreSlim resourcePool, CancellationToken cancellationToken)
+        public Task<Stream> Post(string url, Dictionary<string, string> postData, SemaphoreSlim resourcePool, CancellationToken cancellationToken)
         {
-            ValidateParams(url, cancellationToken);
-
-            if (postData == null)
+            return Post(new HttpRequestOptions
             {
-                throw new ArgumentNullException("postData");
-            }
+                Url = url,
+                ResourcePool = resourcePool,
+                CancellationToken = cancellationToken
 
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var strings = postData.Keys.Select(key => string.Format("{0}={1}", key, postData[key]));
-            var postContent = string.Join("&", strings.ToArray());
-            var content = new StringContent(postContent, Encoding.UTF8, "application/x-www-form-urlencoded");
-
-            if (resourcePool != null)
-            {
-                await resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
-            }
-
-            _logger.Info("HttpClientManager.Post url: {0}", url);
-
-            try
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var msg = await GetHttpClient(GetHostFromUrl(url), true).HttpClient.PostAsync(url, content, cancellationToken).ConfigureAwait(false);
-
-                EnsureSuccessStatusCode(msg);
-
-                return await msg.Content.ReadAsStreamAsync().ConfigureAwait(false);
-            }
-            catch (OperationCanceledException ex)
-            {
-                throw GetCancellationException(url, cancellationToken, ex);
-            }
-            catch (HttpRequestException ex)
-            {
-                _logger.ErrorException("Error getting response from " + url, ex);
-
-                throw new HttpException(ex.Message, ex);
-            }
-            finally
-            {
-                if (resourcePool != null)
-                {
-                    resourcePool.Release();
-                }
-            }
+            }, postData);
         }
 
         /// <summary>
@@ -391,6 +451,8 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
             options.CancellationToken.ThrowIfCancellationRequested();
 
+            var httpWebRequest = GetRequest(options, "GET", options.EnableHttpCompression);
+
             if (options.ResourcePool != null)
             {
                 await options.ResourcePool.WaitAsync(options.CancellationToken).ConfigureAwait(false);
@@ -398,56 +460,67 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
             options.Progress.Report(0);
 
-            _logger.Info("HttpClientManager.GetTempFile url: {0}, temp file: {1}", options.Url, tempFile);
+            _logger.Info("HttpClientManager.GetTempFileResponse url: {0}", options.Url);
 
             try
             {
                 options.CancellationToken.ThrowIfCancellationRequested();
 
-                using (var message = GetHttpRequestMessage(options))
+                using (var response = await httpWebRequest.GetResponseAsync().ConfigureAwait(false))
                 {
-                    using (var response = await GetHttpClient(GetHostFromUrl(options.Url), options.EnableHttpCompression).HttpClient.SendAsync(message, HttpCompletionOption.ResponseHeadersRead, options.CancellationToken).ConfigureAwait(false))
+                    var httpResponse = (HttpWebResponse)response;
+
+                    EnsureSuccessStatusCode(httpResponse);
+
+                    options.CancellationToken.ThrowIfCancellationRequested();
+
+                    var contentLength = GetContentLength(httpResponse);
+
+                    if (!contentLength.HasValue)
                     {
-                        EnsureSuccessStatusCode(response);
-
-                        options.CancellationToken.ThrowIfCancellationRequested();
-
-                        var contentLength = GetContentLength(response);
-
-                        if (!contentLength.HasValue)
+                        // We're not able to track progress
+                        using (var stream = httpResponse.GetResponseStream())
                         {
-                            // We're not able to track progress
-                            using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
+                            using (var fs = _fileSystem.GetFileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.Read, true))
                             {
-                                using (var fs = _fileSystem.GetFileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.Read, true))
-                                {
-                                    await stream.CopyToAsync(fs, StreamDefaults.DefaultCopyToBufferSize, options.CancellationToken).ConfigureAwait(false);
-                                }
+                                await stream.CopyToAsync(fs, StreamDefaults.DefaultCopyToBufferSize, options.CancellationToken).ConfigureAwait(false);
                             }
                         }
-                        else
-                        {
-                            using (var stream = ProgressStream.CreateReadProgressStream(await response.Content.ReadAsStreamAsync().ConfigureAwait(false), options.Progress.Report, contentLength.Value))
-                            {
-                                using (var fs = _fileSystem.GetFileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.Read, true))
-                                {
-                                    await stream.CopyToAsync(fs, StreamDefaults.DefaultCopyToBufferSize, options.CancellationToken).ConfigureAwait(false);
-                                }
-                            }
-                        }
-
-                        options.Progress.Report(100);
-
-                        return new HttpResponseInfo
-                        {
-                            TempFilePath = tempFile,
-
-                            StatusCode = response.StatusCode,
-
-                            ContentType = response.Content.Headers.ContentType.MediaType
-                        };
                     }
+                    else
+                    {
+                        using (var stream = ProgressStream.CreateReadProgressStream(httpResponse.GetResponseStream(), options.Progress.Report, contentLength.Value))
+                        {
+                            using (var fs = _fileSystem.GetFileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.Read, true))
+                            {
+                                await stream.CopyToAsync(fs, StreamDefaults.DefaultCopyToBufferSize, options.CancellationToken).ConfigureAwait(false);
+                            }
+                        }
+                    }
+
+                    options.Progress.Report(100);
+
+                    return new HttpResponseInfo
+                    {
+                        TempFilePath = tempFile,
+
+                        StatusCode = httpResponse.StatusCode,
+
+                        ContentType = httpResponse.ContentType
+                    };
                 }
+            }
+            catch (OperationCanceledException ex)
+            {
+                throw GetTempFileException(ex, options, tempFile);
+            }
+            catch (HttpRequestException ex)
+            {
+                throw GetTempFileException(ex, options, tempFile);
+            }
+            catch (WebException ex)
+            {
+                throw GetTempFileException(ex, options, tempFile);
             }
             catch (Exception ex)
             {
@@ -462,63 +535,16 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             }
         }
 
-        /// <summary>
-        /// Gets the message.
-        /// </summary>
-        /// <param name="options">The options.</param>
-        /// <returns>HttpResponseMessage.</returns>
-        private HttpRequestMessage GetHttpRequestMessage(HttpRequestOptions options)
+        private long? GetContentLength(HttpWebResponse response)
         {
-            var message = new HttpRequestMessage(HttpMethod.Get, options.Url);
+            var length = response.ContentLength;
 
-            foreach (var pair in options.RequestHeaders.ToList())
-            {
-                if (!message.Headers.TryAddWithoutValidation(pair.Key, pair.Value))
-                {
-                    _logger.Error("Unable to add request header {0} with value {1}", pair.Key, pair.Value);
-                }
-            }
-
-            return message;
-        }
-
-        /// <summary>
-        /// Gets the length of the content.
-        /// </summary>
-        /// <param name="response">The response.</param>
-        /// <returns>System.Nullable{System.Int64}.</returns>
-        private long? GetContentLength(HttpResponseMessage response)
-        {
-            IEnumerable<string> lengthValues = null;
-
-            // Seeing some InvalidOperationException here under mono
-            try
-            {
-                response.Headers.TryGetValues("content-length", out lengthValues);
-            }
-            catch (InvalidOperationException ex)
-            {
-                _logger.ErrorException("Error accessing response.Headers.TryGetValues Content-Length", ex);
-            }
-
-            if (lengthValues == null)
-            {
-                try
-                {
-                    response.Content.Headers.TryGetValues("content-length", out lengthValues);
-                }
-                catch (InvalidOperationException ex)
-                {
-                    _logger.ErrorException("Error accessing response.Content.Headers.TryGetValues Content-Length", ex);
-                }
-            }
-
-            if (lengthValues == null)
+            if (length == 0)
             {
                 return null;
             }
 
-            return long.Parse(string.Join(string.Empty, lengthValues.ToArray()), UsCulture);
+            return length;
         }
 
         protected static readonly CultureInfo UsCulture = new CultureInfo("en-US");
@@ -545,16 +571,23 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
             _logger.ErrorException("Error getting response from " + options.Url, ex);
 
-            var httpRequestException = ex as HttpRequestException;
-
             // Cleanup
             DeleteTempFile(tempFile);
+
+            var httpRequestException = ex as HttpRequestException;
 
             if (httpRequestException != null)
             {
                 return new HttpException(ex.Message, ex);
             }
 
+            var webException = ex as WebException;
+
+            if (webException != null)
+            {
+                return new HttpException(ex.Message, ex);
+            }
+            
             return ex;
         }
 
@@ -613,11 +646,6 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         {
             if (dispose)
             {
-                foreach (var client in _httpClients.Values.ToList())
-                {
-                    client.HttpClient.Dispose();
-                }
-
                 _httpClients.Clear();
             }
         }
@@ -645,16 +673,14 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             return exception;
         }
 
-        /// <summary>
-        /// Ensures the success status code.
-        /// </summary>
-        /// <param name="response">The response.</param>
-        /// <exception cref="MediaBrowser.Model.Net.HttpException"></exception>
-        private void EnsureSuccessStatusCode(HttpResponseMessage response)
+        private void EnsureSuccessStatusCode(HttpWebResponse response)
         {
-            if (!response.IsSuccessStatusCode)
+            var statusCode = response.StatusCode;
+            var isSuccessful = statusCode >= HttpStatusCode.OK && statusCode <= (HttpStatusCode)299;
+
+            if (!isSuccessful)
             {
-                throw new HttpException(response.ReasonPhrase) { StatusCode = response.StatusCode };
+                throw new HttpException(response.StatusDescription) { StatusCode = response.StatusCode };
             }
         }
 

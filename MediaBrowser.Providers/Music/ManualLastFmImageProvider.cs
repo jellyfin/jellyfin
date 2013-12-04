@@ -25,7 +25,7 @@ namespace MediaBrowser.Providers.Music
 
         public bool Supports(BaseItem item)
         {
-            return item is MusicAlbum || item is MusicArtist || item is Artist;
+            return item is MusicAlbum || item is MusicArtist;
         }
 
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, ImageType imageType, CancellationToken cancellationToken)
@@ -40,13 +40,6 @@ namespace MediaBrowser.Providers.Music
             var list = new List<RemoteImageInfo>();
 
             RemoteImageInfo info = null;
-
-            var artist = item as Artist;
-
-            if (artist != null)
-            {
-                info = GetInfo(artist.LastFmImageUrl, artist.LastFmImageSize);
-            }
 
             var album = item as MusicAlbum;
             if (album != null)

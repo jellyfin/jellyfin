@@ -1,6 +1,8 @@
-﻿using System.Threading.Tasks;
-using MediaBrowser.Model.LiveTv;
+﻿using MediaBrowser.Model.LiveTv;
+using MediaBrowser.Model.Querying;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.LiveTv
 {
@@ -16,16 +18,92 @@ namespace MediaBrowser.Controller.LiveTv
         IReadOnlyList<ILiveTvService> Services { get; }
 
         /// <summary>
+        /// Schedules the recording.
+        /// </summary>
+        /// <param name="programId">The program identifier.</param>
+        /// <returns>Task.</returns>
+        Task ScheduleRecording(string programId);
+
+        /// <summary>
+        /// Deletes the recording.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>Task.</returns>
+        Task DeleteRecording(string id);
+
+        /// <summary>
+        /// Cancels the timer.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>Task.</returns>
+        Task CancelTimer(string id);
+        
+        /// <summary>
         /// Adds the parts.
         /// </summary>
         /// <param name="services">The services.</param>
         void AddParts(IEnumerable<ILiveTvService> services);
 
         /// <summary>
-        /// Gets the channel info dto.
+        /// Gets the channels.
         /// </summary>
-        /// <param name="info">The info.</param>
-        /// <returns>ChannelInfoDto.</returns>
-        ChannelInfoDto GetChannelInfoDto(ChannelInfo info);
+        /// <param name="query">The query.</param>
+        /// <returns>IEnumerable{Channel}.</returns>
+        QueryResult<ChannelInfoDto> GetChannels(ChannelQuery query);
+
+        /// <summary>
+        /// Gets the recording.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{RecordingInfoDto}.</returns>
+        Task<RecordingInfoDto> GetRecording(string id, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the timer.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{TimerInfoDto}.</returns>
+        Task<TimerInfoDto> GetTimer(string id, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the recordings.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>QueryResult{RecordingInfoDto}.</returns>
+        Task<QueryResult<RecordingInfoDto>> GetRecordings(RecordingQuery query, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the timers.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{QueryResult{TimerInfoDto}}.</returns>
+        Task<QueryResult<TimerInfoDto>> GetTimers(TimerQuery query, CancellationToken cancellationToken);
+        
+        /// <summary>
+        /// Gets the channel.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>Channel.</returns>
+        Channel GetChannel(string id);
+
+        /// <summary>
+        /// Gets the channel.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="userId">The user identifier.</param>
+        /// <returns>Channel.</returns>
+        ChannelInfoDto GetChannelInfoDto(string id, string userId);
+
+        /// <summary>
+        /// Gets the programs.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>IEnumerable{ProgramInfo}.</returns>
+        Task<QueryResult<ProgramInfoDto>> GetPrograms(ProgramQuery query, CancellationToken cancellationToken);
     }
 }

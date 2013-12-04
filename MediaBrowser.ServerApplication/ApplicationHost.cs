@@ -27,6 +27,7 @@ using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Updates;
 using MediaBrowser.Providers;
@@ -199,8 +200,6 @@ namespace MediaBrowser.ServerApplication
         {
             await base.RunStartupTasks().ConfigureAwait(false);
 
-            DirectoryWatchers.Start();
-
             Logger.Info("Core startup complete");
 
             Parallel.ForEach(GetExports<IServerEntryPoint>(), entryPoint =>
@@ -294,7 +293,7 @@ namespace MediaBrowser.ServerApplication
             DtoService = new DtoService(Logger, LibraryManager, UserManager, UserDataManager, ItemRepository, ImageProcessor);
             RegisterSingleInstance(DtoService);
 
-            LiveTvManager = new LiveTvManager();
+            LiveTvManager = new LiveTvManager(ApplicationPaths, FileSystemManager, Logger, ItemRepository, ImageProcessor, UserManager, LocalizationManager, UserDataManager, DtoService);
             RegisterSingleInstance(LiveTvManager);
 
             var displayPreferencesTask = Task.Run(async () => await ConfigureDisplayPreferencesRepositories().ConfigureAwait(false));
@@ -611,6 +610,8 @@ namespace MediaBrowser.ServerApplication
                 CompletedInstallations = InstallationManager.CompletedInstallations.ToList(),
                 Id = _systemId,
                 ProgramDataPath = ApplicationPaths.ProgramDataPath,
+                LogPath = ApplicationPaths.LogDirectoryPath,
+                ItemsByNamePath = ApplicationPaths.ItemsByNamePath,
                 MacAddress = GetMacAddress(),
                 HttpServerPortNumber = ServerConfigurationManager.Configuration.HttpServerPortNumber,
                 OperatingSystem = Environment.OSVersion.ToString(),
@@ -702,16 +703,6 @@ namespace MediaBrowser.ServerApplication
             await InstallationManager.InstallPackage(package, progress, cancellationToken).ConfigureAwait(false);
 
             OnApplicationUpdated(package.version);
-        }
-
-        /// <summary>
-        /// Creates the HTTP client.
-        /// </summary>
-        /// <param name="enableHttpCompression">if set to <c>true</c> [enable HTTP compression].</param>
-        /// <returns>HttpClient.</returns>
-        protected override HttpClient CreateHttpClient(bool enableHttpCompression)
-        {
-            return HttpClientFactory.GetHttpClient(enableHttpCompression);
         }
 
         protected override void ConfigureAutoRunAtStartup(bool autorun)

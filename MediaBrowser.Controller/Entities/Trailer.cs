@@ -8,7 +8,7 @@ namespace MediaBrowser.Controller.Entities
     /// <summary>
     /// Class Trailer
     /// </summary>
-    public class Trailer : Video, IHasCriticRating, IHasSoundtracks
+    public class Trailer : Video, IHasCriticRating, IHasSoundtracks, IHasBudget, IHasTrailers
     {
         public List<Guid> SoundtrackIds { get; set; }
         
@@ -17,7 +17,24 @@ namespace MediaBrowser.Controller.Entities
             RemoteTrailers = new List<MediaUrl>();
             Taglines = new List<string>();
             SoundtrackIds = new List<Guid>();
+            LocalTrailerIds = new List<Guid>();
         }
+
+        public List<Guid> LocalTrailerIds { get; set; }
+        
+        public List<MediaUrl> RemoteTrailers { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the budget.
+        /// </summary>
+        /// <value>The budget.</value>
+        public double? Budget { get; set; }
+
+        /// <summary>
+        /// Gets or sets the revenue.
+        /// </summary>
+        /// <value>The revenue.</value>
+        public double? Revenue { get; set; }
 
         /// <summary>
         /// Gets or sets the critic rating.

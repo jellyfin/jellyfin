@@ -150,6 +150,12 @@ namespace MediaBrowser.Providers.TV
                 .ConfigureAwait(false);
 
             var hasNewEpisodes = false;
+            var hasNewSeasons = false;
+
+            if (series.ContainsEpisodesWithoutSeasonFolders)
+            {
+                hasNewSeasons = await AddDummySeasonFolders(series, cancellationToken).ConfigureAwait(false);
+            }
 
             if (_config.Configuration.EnableInternetProviders)
             {
@@ -157,7 +163,7 @@ namespace MediaBrowser.Providers.TV
                     .ConfigureAwait(false);
             }
 
-            if (hasNewEpisodes || anySeasonsRemoved || anyEpisodesRemoved)
+            if (hasNewSeasons || hasNewEpisodes || anySeasonsRemoved || anyEpisodesRemoved)
             {
                 await series.RefreshMetadata(cancellationToken, true)
                     .ConfigureAwait(false);
@@ -165,6 +171,40 @@ namespace MediaBrowser.Providers.TV
                 await series.ValidateChildren(new Progress<double>(), cancellationToken, true)
                     .ConfigureAwait(false);
             }
+        }
+
+        /// <summary>
+        /// For series with episodes directly under the series folder, this adds dummy seasons to enable regular browsing and metadata
+        /// </summary>
+        /// <param name="series"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        private async Task<bool> AddDummySeasonFolders(Series series, CancellationToken cancellationToken)
+        {
+            var existingEpisodes = series.RecursiveChildren
+                .OfType<Episode>()
+                .ToList();
+
+            var hasChanges = false;
+
+            // Loop through the unique season numbers
+            foreach (var seasonNumber in existingEpisodes.Select(i => i.ParentIndexNumber ?? -1)
+                .Where(i => i >= 0)
+                .Distinct()
+                .ToList())
+            {
+                var hasSeason = series.Children.OfType<Season>()
+                    .Any(i => i.IndexNumber.HasValue && i.IndexNumber.Value == seasonNumber);
+
+                if (!hasSeason)
+                {
+                    await AddSeason(series, seasonNumber, cancellationToken).ConfigureAwait(false);
+
+                    hasChanges = true;
+                }
+            }
+
+            return hasChanges;
         }
 
         /// <summary>
@@ -355,7 +395,7 @@ namespace MediaBrowser.Providers.TV
 
             return hasChanges;
         }
-        
+
         /// <summary>
         /// Adds the episode.
         /// </summary>

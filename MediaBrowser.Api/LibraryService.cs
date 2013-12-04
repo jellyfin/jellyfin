@@ -37,7 +37,7 @@ namespace MediaBrowser.Api
     /// </summary>
     [Route("/Items/{Id}/CriticReviews", "GET")]
     [Api(Description = "Gets critic reviews for an item")]
-    public class GetCriticReviews : IReturn<ItemReviewsResult>
+    public class GetCriticReviews : IReturn<QueryResult<ItemReview>>
     {
         /// <summary>
         /// Gets or sets the id.
@@ -367,7 +367,7 @@ namespace MediaBrowser.Api
                 BoxSetCount = boxsets.Count,
                 BookCount = books.Count,
 
-                UniqueTypes = items.Select(i => i.GetType().Name).Distinct().ToList()
+                UniqueTypes = items.Select(i => i.GetClientTypeName()).Distinct().ToList()
             };
 
             var people = items.SelectMany(i => i.People)
@@ -390,19 +390,7 @@ namespace MediaBrowser.Api
             people = request.UserId.HasValue ? FilterItems(people, request, request.UserId.Value).ToList() : people;
             counts.PersonCount = people.Count;
 
-            var artists = items.OfType<Audio>().SelectMany(i =>
-            {
-                var list = new List<string>();
-
-                if (!string.IsNullOrEmpty(i.AlbumArtist))
-                {
-                    list.Add(i.AlbumArtist);
-                }
-                list.AddRange(i.Artists);
-
-                return list;
-            })
-                .Distinct(StringComparer.OrdinalIgnoreCase)
+            var artists = _libraryManager.GetAllArtists(items)
                 .Select(i =>
                 {
                     try
@@ -477,13 +465,16 @@ namespace MediaBrowser.Api
 
             if (item.LocationType == LocationType.FileSystem)
             {
-                if (Directory.Exists(item.Path))
+                foreach (var path in item.GetDeletePaths().ToList())
                 {
-                    Directory.Delete(item.Path, true);
-                }
-                else if (File.Exists(item.Path))
-                {
-                    File.Delete(item.Path);
+                    if (Directory.Exists(path))
+                    {
+                        Directory.Delete(path, true);
+                    }
+                    else if (File.Exists(path))
+                    {
+                        File.Delete(path);
+                    }
                 }
 
                 if (parent != null)
@@ -521,16 +512,16 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>Task{ItemReviewsResult}.</returns>
-        private ItemReviewsResult GetCriticReviews(GetCriticReviews request)
+        private QueryResult<ItemReview> GetCriticReviews(GetCriticReviews request)
         {
             var reviews = _itemRepo.GetCriticReviews(new Guid(request.Id));
 
             var reviewsArray = reviews.ToArray();
 
-            var result = new ItemReviewsResult
-                {
-                    TotalRecordCount = reviewsArray.Length
-                };
+            var result = new QueryResult<ItemReview>
+            {
+                TotalRecordCount = reviewsArray.Length
+            };
 
             if (request.StartIndex.HasValue)
             {
@@ -541,7 +532,7 @@ namespace MediaBrowser.Api
                 reviewsArray = reviewsArray.Take(request.Limit.Value).ToArray();
             }
 
-            result.ItemReviews = reviewsArray;
+            result.Items = reviewsArray;
 
             return result;
         }
@@ -681,6 +672,11 @@ namespace MediaBrowser.Api
             {
                 var album = originalItem as MusicAlbum;
 
+                if (album == null)
+                {
+                    album = originalItem.Parents.OfType<MusicAlbum>().FirstOrDefault();
+                }
+
                 if (album != null)
                 {
                     var linkedItemWithThemes = album.SoundtrackIds
@@ -744,17 +740,12 @@ namespace MediaBrowser.Api
                                   : (Folder)_libraryManager.RootFolder)
                            : _dtoService.GetItemByDtoId(id, userId);
 
-            while (GetSoundtrackSongIds(item).Count == 0 && inheritFromParent && item.Parent != null)
-            {
-                item = item.Parent;
-            }
-
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields))
                     .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
                     .ToList();
 
-            var dtos = GetSoundtrackSongIds(item)
+            var dtos = GetSoundtrackSongIds(item, inheritFromParent)
                 .Select(_libraryManager.GetItemById)
                 .OfType<MusicAlbum>()
                 .SelectMany(i => i.RecursiveChildren)
@@ -772,7 +763,7 @@ namespace MediaBrowser.Api
             };
         }
 
-        private List<Guid> GetSoundtrackSongIds(BaseItem item)
+        private IEnumerable<Guid> GetSoundtrackSongIds(BaseItem item, bool inherit)
         {
             var hasSoundtracks = item as IHasSoundtracks;
 
@@ -781,7 +772,14 @@ namespace MediaBrowser.Api
                 return hasSoundtracks.SoundtrackIds;
             }
 
-            return new List<Guid>();
+            if (!inherit)
+            {
+                return null;
+            }
+
+            hasSoundtracks = item.Parents.OfType<IHasSoundtracks>().FirstOrDefault();
+
+            return hasSoundtracks != null ? hasSoundtracks.SoundtrackIds : new List<Guid>();
         }
     }
 }

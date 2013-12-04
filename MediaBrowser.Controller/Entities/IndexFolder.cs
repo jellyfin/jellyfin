@@ -40,7 +40,6 @@ namespace MediaBrowser.Controller.Entities
 
             IndexName = indexName;
             Parent = parent;
-            LoadSavedChildren();
         }
 
         /// <summary>

@@ -7,7 +7,7 @@ It features a REST-based api with built-in documention to facilitate client deve
 
 We have several client apps released and in production:
 
-- Android
+- [Android](https://play.google.com/store/apps/details?id=com.mb.android "Android")
 - Html5
 - [iOS](https://itunes.apple.com/us/app/media-browser-for-ios/id705058087 "iOS")
 - [Media Portal](http://www.team-mediaportal.com/ "Media Portal")
@@ -15,7 +15,7 @@ We have several client apps released and in production:
 - Windows 7/8 Desktop
 - Windows Media Center
 - [Windows Phone](http://www.windowsphone.com/s?appid=f4971ed9-f651-4bf6-84bb-94fd98613b86 "Windows Phone")
-- Windows RT
+- [Windows 8](http://apps.microsoft.com/windows/en-us/app/media-browser/ad55a2f0-9897-47bd-8944-bed3aefd5d06 "Windows 8.1")
 
 #### [Now with 60+ active contributors!](https://github.com/MediaBrowser/MediaBrowser/blob/master/CONTRIBUTORS.md "Now with 60+ active contributors!")
 
@@ -47,7 +47,7 @@ Beta: 3.0.5028.39800<br/>
 ![iOS](https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/apps/ios_1.jpg)
 ![iOS](https://raw.github.com/MediaBrowser/MediaBrowser.Resources/master/apps/ios_2.jpg)
 ![Media Browser Theater](https://raw.github.com/MediaBrowser/MediaBrowser.Resources/master/apps/mbt.png)
-![Media Browser Theater](hhttps://raw.github.com/MediaBrowser/MediaBrowser.Resources/master/apps/mbt1.png)
+![Media Browser Theater](https://raw.github.com/MediaBrowser/MediaBrowser.Resources/master/apps/mbt1.png)
 ![Windows Phone](https://raw.github.com/MediaBrowser/MediaBrowser.Resources/master/apps/winphone.png)
 ![Roku](https://raw.github.com/MediaBrowser/MediaBrowser.Resources/master/apps/roku2.jpg)
 ![iOS](https://raw.github.com/MediaBrowser/MediaBrowser.Resources/master/apps/ios_3.jpg)

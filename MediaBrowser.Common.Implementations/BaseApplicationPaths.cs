@@ -20,20 +20,22 @@ namespace MediaBrowser.Common.Implementations
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseApplicationPaths" /> class.
         /// </summary>
-        /// <param name="useDebugPath">if set to <c>true</c> [use debug paths].</param>
-        protected BaseApplicationPaths(bool useDebugPath)
+        protected BaseApplicationPaths(bool useDebugPath, string applicationPath)
         {
             _useDebugPath = useDebugPath;
+            ApplicationPath = applicationPath;
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseApplicationPaths"/> class.
         /// </summary>
-        /// <param name="programDataPath">The program data path.</param>
-        protected BaseApplicationPaths(string programDataPath)
+        protected BaseApplicationPaths(string programDataPath, string applicationPath)
         {
             _programDataPath = programDataPath;
+            ApplicationPath = applicationPath;
         }
+
+        public string ApplicationPath { get; private set; }
 
         /// <summary>
         /// The _program data path

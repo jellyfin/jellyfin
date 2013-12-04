@@ -88,7 +88,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 }
 
                 var volParam = string.Empty;
-                var AudioSampleRate = string.Empty;
+                var audioSampleRate = string.Empty;
 
                 // Boost volume to 200% when downsampling from 6ch to 2ch
                 if (channels.HasValue && channels.Value <= 2 && state.AudioStream.Channels.HasValue && state.AudioStream.Channels.Value > 5)
@@ -98,10 +98,10 @@ namespace MediaBrowser.Api.Playback.Hls
                 
                 if (state.Request.AudioSampleRate.HasValue)
                 {
-                    AudioSampleRate= state.Request.AudioSampleRate.Value + ":";
+                    audioSampleRate= state.Request.AudioSampleRate.Value + ":";
                 }
 
-                args += string.Format(" -af \"adelay=1,aresample={0}async=1000{1}\"",AudioSampleRate, volParam);
+                args += string.Format(" -af \"adelay=1,aresample={0}async=1000{1}\"",audioSampleRate, volParam);
 
                 return args;
             }
@@ -127,6 +127,10 @@ namespace MediaBrowser.Api.Playback.Hls
 
             const string keyFrameArg = " -force_key_frames expr:if(isnan(prev_forced_t),gte(t,.1),gte(t,prev_forced_t+5))";
 
+            var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsExternal &&
+                                 (state.SubtitleStream.Codec.IndexOf("pgs", StringComparison.OrdinalIgnoreCase) != -1 ||
+                                  state.SubtitleStream.Codec.IndexOf("dvd", StringComparison.OrdinalIgnoreCase) != -1);
+            
             var args = "-codec:v:0 " + codec + " -preset superfast" + keyFrameArg;
 
             var bitrate = GetVideoBitrateParam(state);
@@ -137,9 +141,12 @@ namespace MediaBrowser.Api.Playback.Hls
             }
             
             // Add resolution params, if specified
-            if (state.VideoRequest.Width.HasValue || state.VideoRequest.Height.HasValue || state.VideoRequest.MaxHeight.HasValue || state.VideoRequest.MaxWidth.HasValue)
+            if (!hasGraphicalSubs)
             {
-                args += GetOutputSizeParam(state, codec, performSubtitleConversion);
+                if (state.VideoRequest.Width.HasValue || state.VideoRequest.Height.HasValue || state.VideoRequest.MaxHeight.HasValue || state.VideoRequest.MaxWidth.HasValue)
+                {
+                    args += GetOutputSizeParam(state, codec, performSubtitleConversion);
+                }
             }
 
             if (state.VideoRequest.Framerate.HasValue)
@@ -158,14 +165,11 @@ namespace MediaBrowser.Api.Playback.Hls
             {
                 args += " -level " + state.VideoRequest.Level;
             }
-            
-            if (state.SubtitleStream != null)
+
+            // This is for internal graphical subs
+            if (hasGraphicalSubs)
             {
-                // This is for internal graphical subs
-                if (!state.SubtitleStream.IsExternal && (state.SubtitleStream.Codec.IndexOf("pgs", StringComparison.OrdinalIgnoreCase) != -1 || state.SubtitleStream.Codec.IndexOf("dvd", StringComparison.OrdinalIgnoreCase) != -1))
-                {
-                    args += GetInternalGraphicalSubtitleParam(state, codec);
-                }
+                args += GetInternalGraphicalSubtitleParam(state, codec);
             }
          
             return args;

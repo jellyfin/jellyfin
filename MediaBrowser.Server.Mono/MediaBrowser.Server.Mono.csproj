@@ -44,13 +44,13 @@
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Data" />
+    <Reference Include="Mono.Posix" />
     <Reference Include="ServiceStack.Common">
-      <HintPath>..\packages\ServiceStack.Common.3.9.62\lib\net35\ServiceStack.Common.dll</HintPath>
+      <HintPath>..\packages\ServiceStack.Common.3.9.70\lib\net35\ServiceStack.Common.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.Interfaces">
-      <HintPath>..\packages\ServiceStack.Common.3.9.62\lib\net35\ServiceStack.Interfaces.dll</HintPath>
+      <HintPath>..\packages\ServiceStack.Common.3.9.70\lib\net35\ServiceStack.Interfaces.dll</HintPath>
     </Reference>
-    <Reference Include="Mono.Posix" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="gtk-gui\gui.stetic">
@@ -82,7 +82,6 @@
     </Compile>
     <Compile Include="Native\Assemblies.cs" />
     <Compile Include="Native\NativeApp.cs" />
-    <Compile Include="Native\HttpClientFactory.cs" />
     <Compile Include="Networking\NetworkManager.cs" />
     <Compile Include="..\MediaBrowser.ServerApplication\FFMpeg\FFMpegDownloader.cs">
       <Link>FFMpeg\FFMpegDownloader.cs</Link>
