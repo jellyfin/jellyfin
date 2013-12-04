@@ -6,6 +6,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -13,7 +14,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Server.Implementations.Providers
 {
@@ -89,6 +89,23 @@ namespace MediaBrowser.Server.Implementations.Providers
             if (locationType == LocationType.Remote || locationType == LocationType.Virtual)
             {
                 saveLocally = false;
+
+                var season = item as Season;
+
+                // If season is virtual under a physical series, save locally if using compatible convention
+                if (season != null && _config.Configuration.ImageSavingConvention == ImageSavingConvention.Compatible)
+                {
+                    var series = season.Series;
+
+                    if (series != null)
+                    {
+                        var seriesLocationType = series.LocationType;
+                        if (seriesLocationType == LocationType.FileSystem || seriesLocationType == LocationType.Offline)
+                        {
+                            saveLocally = true;
+                        }
+                    }
+                }
             }
 
             if (type == ImageType.Backdrop && imageIndex == null)
@@ -402,7 +419,7 @@ namespace MediaBrowser.Server.Implementations.Providers
             return path;
         }
 
-        private string GetBackdropSaveFilename(List<string> images, string zeroIndexFilename, string numberedIndexPrefix, int index)
+        private string GetBackdropSaveFilename(IEnumerable<string> images, string zeroIndexFilename, string numberedIndexPrefix, int index)
         {
             if (index == 0)
             {
@@ -431,6 +448,8 @@ namespace MediaBrowser.Server.Implementations.Providers
         /// <exception cref="System.ArgumentNullException">imageIndex</exception>
         private string[] GetCompatibleSavePaths(BaseItem item, ImageType type, int? imageIndex, string mimeType)
         {
+            var season = item as Season;
+
             var extension = mimeType.Split('/').Last();
 
             if (string.Equals(extension, "jpeg", StringComparison.OrdinalIgnoreCase))
@@ -449,9 +468,9 @@ namespace MediaBrowser.Server.Implementations.Providers
 
                 if (imageIndex.Value == 0)
                 {
-                    if (item is Season && item.IndexNumber.HasValue)
+                    if (season != null && item.IndexNumber.HasValue)
                     {
-                        var seriesFolder = Path.GetDirectoryName(item.Path);
+                        var seriesFolder = season.SeriesPath;
 
                         var seasonMarker = item.IndexNumber.Value == 0
                                                ? "-specials"
@@ -481,9 +500,9 @@ namespace MediaBrowser.Server.Implementations.Providers
 
             if (type == ImageType.Primary)
             {
-                if (item is Season && item.IndexNumber.HasValue)
+                if (season != null && item.IndexNumber.HasValue)
                 {
-                    var seriesFolder = Path.GetDirectoryName(item.Path);
+                    var seriesFolder = season.SeriesPath;
 
                     var seasonMarker = item.IndexNumber.Value == 0
                                            ? "-specials"
@@ -518,9 +537,9 @@ namespace MediaBrowser.Server.Implementations.Providers
 
             if (type == ImageType.Banner)
             {
-                if (item is Season && item.IndexNumber.HasValue)
+                if (season != null && item.IndexNumber.HasValue)
                 {
-                    var seriesFolder = Path.GetDirectoryName(item.Path);
+                    var seriesFolder = season.SeriesPath;
 
                     var seasonMarker = item.IndexNumber.Value == 0
                                            ? "-specials"
@@ -534,9 +553,9 @@ namespace MediaBrowser.Server.Implementations.Providers
 
             if (type == ImageType.Thumb)
             {
-                if (item is Season && item.IndexNumber.HasValue)
+                if (season != null && item.IndexNumber.HasValue)
                 {
-                    var seriesFolder = Path.GetDirectoryName(item.Path);
+                    var seriesFolder = season.SeriesPath;
 
                     var seasonMarker = item.IndexNumber.Value == 0
                                            ? "-specials"

@@ -33,7 +33,7 @@ namespace MediaBrowser.Common.Implementations
     /// </summary>
     /// <typeparam name="TApplicationPathsType">The type of the T application paths type.</typeparam>
     public abstract class BaseApplicationHost<TApplicationPathsType> : IApplicationHost
-        where TApplicationPathsType : class, IApplicationPaths, new()
+        where TApplicationPathsType : class, IApplicationPaths
     {
         /// <summary>
         /// Occurs when [has pending restart changed].
@@ -83,7 +83,7 @@ namespace MediaBrowser.Common.Implementations
         /// <summary>
         /// The json serializer
         /// </summary>
-        public readonly IJsonSerializer JsonSerializer = new JsonSerializer();
+        public IJsonSerializer JsonSerializer { get; private set; }
 
         /// <summary>
         /// The _XML serializer
@@ -153,7 +153,7 @@ namespace MediaBrowser.Common.Implementations
         protected IInstallationManager InstallationManager { get; private set; }
 
         protected IFileSystem FileSystemManager { get; private set; }
-        
+
         /// <summary>
         /// Gets or sets the zip client.
         /// </summary>
@@ -181,6 +181,8 @@ namespace MediaBrowser.Common.Implementations
         /// <returns>Task.</returns>
         public virtual async Task Init()
         {
+            JsonSerializer = CreateJsonSerializer();
+
             IsFirstRun = !ConfigurationManager.CommonConfiguration.IsStartupWizardCompleted;
 
             Logger = LogManager.GetLogger("App");
@@ -212,6 +214,11 @@ namespace MediaBrowser.Common.Implementations
 
         }
 
+        protected virtual IJsonSerializer CreateJsonSerializer()
+        {
+            return new JsonSerializer();
+        }
+
         private void SetHttpLimit()
         {
             try
@@ -224,7 +231,7 @@ namespace MediaBrowser.Common.Implementations
                 Logger.ErrorException("Error setting http limit", ex);
             }
         }
-        
+
         /// <summary>
         /// Installs the iso mounters.
         /// </summary>

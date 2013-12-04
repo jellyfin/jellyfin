@@ -99,6 +99,14 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             return result;
         }
 
+        private bool SupportsCompression
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         /// <summary>
         /// Gets the optimized result.
         /// </summary>
@@ -116,7 +124,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 throw new ArgumentNullException("result");
             }
 
-            var optimizedResult = requestContext.ToOptimizedResult(result);
+            var optimizedResult = SupportsCompression ? requestContext.ToOptimizedResult(result) : result;
 
             if (responseHeaders != null)
             {
@@ -456,6 +464,11 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 {
                     content = await reader.ReadToEndAsync().ConfigureAwait(false);
                 }
+            }
+
+            if (!SupportsCompression)
+            {
+                return new HttpResult(content, contentType);
             }
 
             var contents = content.Compress(requestContext.CompressionType);

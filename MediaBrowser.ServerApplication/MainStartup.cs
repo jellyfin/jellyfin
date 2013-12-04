@@ -158,7 +158,9 @@ namespace MediaBrowser.ServerApplication
                 return new ServerApplicationPaths(programDataPath);
             }
 
-            return new ServerApplicationPaths();
+            var applicationPath = Process.GetCurrentProcess().MainModule.FileName;
+
+            return new ServerApplicationPaths(applicationPath);
         }
 
         /// <summary>

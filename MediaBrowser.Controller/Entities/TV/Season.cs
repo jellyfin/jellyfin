@@ -94,6 +94,22 @@ namespace MediaBrowser.Controller.Entities.TV
             get { return _series ?? (_series = FindParent<Series>()); }
         }
 
+        [IgnoreDataMember]
+        public string SeriesPath
+        {
+            get
+            {
+                var series = Series;
+
+                if (series != null)
+                {
+                    return series.Path;
+                }
+
+                return System.IO.Path.GetDirectoryName(Path);
+            }
+        }
+
         /// <summary>
         /// Our rating comes from our series
         /// </summary>

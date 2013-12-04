@@ -5,7 +5,6 @@ using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Logging;
@@ -13,7 +12,6 @@ using MediaBrowser.Model.Tasks;
 using ServiceStack.ServiceHost;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -151,7 +149,7 @@ namespace MediaBrowser.WebDashboard.Api
                     return _serverConfigurationManager.Configuration.DashboardSourcePath;
                 }
 
-                var runningDirectory = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
+                var runningDirectory = Path.GetDirectoryName(_serverConfigurationManager.ApplicationPaths.ApplicationPath);
 
                 return Path.Combine(runningDirectory, "dashboard-ui");
             }
