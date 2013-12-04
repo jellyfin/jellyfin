@@ -64,6 +64,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             get { return _services; }
         }
 
+        public ILiveTvService ActiveService { get; private set; }
+
         /// <summary>
         /// Adds the parts.
         /// </summary>
@@ -71,6 +73,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         public void AddParts(IEnumerable<ILiveTvService> services)
         {
             _services.AddRange(services);
+
+            ActiveService = _services.FirstOrDefault();
         }
 
         /// <summary>
@@ -196,7 +200,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return new ProgramInfoDto
             {
                 ChannelId = channel.Id.ToString("N"),
-                Description = program.Description,
+                Overview = program.Overview,
                 EndDate = program.EndDate,
                 Genres = program.Genres,
                 ExternalId = program.Id,
@@ -205,7 +209,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 ServiceName = channel.ServiceName,
                 StartDate = program.StartDate,
                 OfficialRating = program.OfficialRating,
-                Quality = program.Quality,
+                IsHD = program.IsHD,
                 OriginalAirDate = program.OriginalAirDate,
                 Audio = program.Audio,
                 CommunityRating = program.CommunityRating,
@@ -284,11 +288,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             IEnumerable<ProgramInfoDto> programs = _programs
                 .OrderBy(i => i.StartDate)
                 .ThenBy(i => i.EndDate);
-
-            if (!string.IsNullOrEmpty(query.ServiceName))
-            {
-                programs = programs.Where(i => string.Equals(i.ServiceName, query.ServiceName, StringComparison.OrdinalIgnoreCase));
-            }
 
             if (query.ChannelIdList.Length > 0)
             {
@@ -380,7 +379,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             var dto = new RecordingInfoDto
             {
                 ChannelName = info.ChannelName,
-                Description = info.Description,
+                Overview = info.Overview,
                 EndDate = info.EndDate,
                 Name = info.Name,
                 StartDate = info.StartDate,
@@ -395,7 +394,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 ChannelType = info.ChannelType,
                 MediaType = info.ChannelType == ChannelType.Radio ? MediaType.Audio : MediaType.Video,
                 CommunityRating = info.CommunityRating,
-                OfficialRating = info.OfficialRating
+                OfficialRating = info.OfficialRating,
+                Audio = info.Audio,
+                IsHD = info.IsHD
             };
 
             var duration = info.EndDate - info.StartDate;
@@ -413,9 +414,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         {
             var list = new List<RecordingInfoDto>();
 
-            foreach (var service in GetServices(query.ServiceName, query.ChannelId))
+            if (ActiveService != null)
             {
-                var recordings = await GetRecordings(service, cancellationToken).ConfigureAwait(false);
+                var recordings = await GetRecordings(ActiveService, cancellationToken).ConfigureAwait(false);
 
                 list.AddRange(recordings);
             }
@@ -466,9 +467,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         {
             var list = new List<TimerInfoDto>();
 
-            foreach (var service in GetServices(query.ServiceName, query.ChannelId))
+            if (ActiveService != null)
             {
-                var timers = await GetTimers(service, cancellationToken).ConfigureAwait(false);
+                var timers = await GetTimers(ActiveService, cancellationToken).ConfigureAwait(false);
 
                 list.AddRange(timers);
             }
@@ -513,8 +514,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 ChannelId = GetInternalChannelId(service.Name, info.ChannelId, info.ChannelName).ToString("N"),
                 Status = info.Status,
                 SeriesTimerId = info.SeriesTimerId,
-                PrePaddingSeconds = info.PrePaddingSeconds,
-                PostPaddingSeconds = info.PostPaddingSeconds
+                RequestedPostPaddingSeconds = info.RequestedPostPaddingSeconds,
+                RequestedPrePaddingSeconds = info.RequestedPrePaddingSeconds,
+                RequiredPostPaddingSeconds = info.RequiredPostPaddingSeconds,
+                RequiredPrePaddingSeconds = info.RequiredPrePaddingSeconds
             };
 
             var duration = info.EndDate - info.StartDate;

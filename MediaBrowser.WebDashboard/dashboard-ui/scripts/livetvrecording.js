@@ -24,6 +24,7 @@
     function renderRecording(page, item) {
 
         currentItem = item;
+        var context = 'livetv';
 
         var name = item.Name;
 
@@ -34,8 +35,16 @@
         $('.itemName', page).html(name);
         $('.itemChannelNumber', page).html(item.Number);
 
+        if (item.CommunityRating) {
+            $('.itemCommunityRating', page).html(LibraryBrowser.getRatingHtml(item)).show();
+        } else {
+            $('.itemCommunityRating', page).hide();
+        }
+
         $('.userDataIcons', page).html(LibraryBrowser.getUserDataIconsHtml(item));
 
+        LibraryBrowser.renderGenres($('.itemGenres', page), item, context);
+        LibraryBrowser.renderOverview($('.itemOverview', page), item);
         $('.itemMiscInfo', page).html(LibraryBrowser.getMiscInfoHtml(item));
 
         if (ApiClient.isWebSocketOpen()) {

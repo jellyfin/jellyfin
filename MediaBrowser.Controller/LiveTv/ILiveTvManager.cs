@@ -12,6 +12,12 @@ namespace MediaBrowser.Controller.LiveTv
     public interface ILiveTvManager
     {
         /// <summary>
+        /// Gets the active service.
+        /// </summary>
+        /// <value>The active service.</value>
+        ILiveTvService ActiveService { get; }
+
+        /// <summary>
         /// Gets the services.
         /// </summary>
         /// <value>The services.</value>
@@ -37,7 +43,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="id">The identifier.</param>
         /// <returns>Task.</returns>
         Task CancelTimer(string id);
-        
+
         /// <summary>
         /// Adds the parts.
         /// </summary>
@@ -82,7 +88,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{QueryResult{TimerInfoDto}}.</returns>
         Task<QueryResult<TimerInfoDto>> GetTimers(TimerQuery query, CancellationToken cancellationToken);
-        
+
         /// <summary>
         /// Gets the channel.
         /// </summary>

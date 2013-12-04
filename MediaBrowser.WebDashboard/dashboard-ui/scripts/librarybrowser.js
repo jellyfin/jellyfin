@@ -1944,14 +1944,14 @@
         getMiscInfoHtml: function (item) {
 
             var miscInfo = [];
-            var text;
+            var text, date;
 
             if (item.Type == "Episode") {
 
                 if (item.PremiereDate) {
 
                     try {
-                        var date = parseISO8601Date(item.PremiereDate, { toLocal: true });
+                        date = parseISO8601Date(item.PremiereDate, { toLocal: true });
 
                         text = date.toLocaleDateString();
                         miscInfo.push(text);
@@ -1959,6 +1959,19 @@
                     catch (e) {
                         console.log("Error parsing date: " + item.PremiereDate);
                     }
+                }
+            }
+
+            if (item.StartDate) {
+
+                try {
+                    date = parseISO8601Date(item.StartDate, { toLocal: true });
+
+                    text = date.toLocaleDateString();
+                    miscInfo.push(text);
+                }
+                catch (e) {
+                    console.log("Error parsing date: " + item.PremiereDate);
                 }
             }
 

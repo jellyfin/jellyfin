@@ -52,9 +52,9 @@ namespace MediaBrowser.Model.LiveTv
         public string Name { get; set; }
 
         /// <summary>
-        /// Description of the progam.
+        /// Overview of the recording.
         /// </summary>
-        public string Description { get; set; }
+        public string Overview { get; set; }
 
         /// <summary>
         /// The start date of the program, in UTC.
@@ -72,16 +72,16 @@ namespace MediaBrowser.Model.LiveTv
         public List<string> Genres { get; set; }
 
         /// <summary>
-        /// Gets or sets the quality.
+        /// Gets or sets a value indicating whether this instance is hd.
         /// </summary>
-        /// <value>The quality.</value>
-        public ProgramVideoQuality Quality { get; set; }
+        /// <value><c>true</c> if this instance is hd; otherwise, <c>false</c>.</value>
+        public bool? IsHD { get; set; }
 
         /// <summary>
         /// Gets or sets the audio.
         /// </summary>
         /// <value>The audio.</value>
-        public ProgramAudio Audio { get; set; }
+        public ProgramAudio? Audio { get; set; }
         
         /// <summary>
         /// Gets or sets the original air date.
@@ -105,12 +105,6 @@ namespace MediaBrowser.Model.LiveTv
         {
             Genres = new List<string>();
         }
-    }
-
-    public enum ProgramVideoQuality
-    {
-        StandardDefinition,
-        HighDefinition
     }
 
     public enum ProgramAudio

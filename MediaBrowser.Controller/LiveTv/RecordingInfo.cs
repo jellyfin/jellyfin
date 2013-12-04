@@ -37,11 +37,12 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value>The path.</value>
         public string Path { get; set; }
-        
+
         /// <summary>
-        /// Description of the recording.
+        /// Gets or sets the overview.
         /// </summary>
-        public string Description { get; set; }
+        /// <value>The overview.</value>
+        public string Overview { get; set; }
 
         /// <summary>
         /// The start date of the recording, in UTC.
@@ -81,6 +82,18 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value>The episode title.</value>
         public string EpisodeTitle { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is hd.
+        /// </summary>
+        /// <value><c>true</c> if this instance is hd; otherwise, <c>false</c>.</value>
+        public bool? IsHD { get; set; }
+
+        /// <summary>
+        /// Gets or sets the audio.
+        /// </summary>
+        /// <value>The audio.</value>
+        public ProgramAudio? Audio { get; set; }
 
         /// <summary>
         /// Gets or sets the official rating.
