@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Drawing;
@@ -28,6 +29,18 @@ namespace MediaBrowser.Api.Images
     [Route("/Items/{Id}/Images", "GET")]
     [Api(Description = "Gets information about an item's images")]
     public class GetItemImageInfos : IReturn<List<ImageInfo>>
+    {
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Id { get; set; }
+    }
+
+    [Route("/LiveTv/Channels/{Id}/Images", "GET")]
+    [Api(Description = "Gets information about an item's images")]
+    public class GetChannelImageInfos : IReturn<List<ImageInfo>>
     {
         /// <summary>
         /// Gets or sets the id.
@@ -67,6 +80,19 @@ namespace MediaBrowser.Api.Images
         public string Id { get; set; }
     }
 
+    [Route("/LiveTv/Channels/{Id}/Images/{Type}", "GET")]
+    [Route("/LiveTv/Channels/{Id}/Images/{Type}/{Index}", "GET")]
+    [Api(Description = "Gets an item image")]
+    public class GetChannelImage : ImageRequest
+    {
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Channel Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Id { get; set; }
+    }
+    
     /// <summary>
     /// Class UpdateItemImageIndex
     /// </summary>
@@ -243,6 +269,19 @@ namespace MediaBrowser.Api.Images
         public Guid Id { get; set; }
     }
 
+    [Route("/LiveTv/Channels/{Id}/Images/{Type}", "DELETE")]
+    [Route("/LiveTv/Channels/{Id}/Images/{Type}/{Index}", "DELETE")]
+    [Api(Description = "Deletes an item image")]
+    public class DeleteChannelImage : DeleteImageRequest, IReturnVoid
+    {
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Channel Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
+        public string Id { get; set; }
+    }
+    
     /// <summary>
     /// Class PostUserImage
     /// </summary>
@@ -318,6 +357,25 @@ namespace MediaBrowser.Api.Images
         public Stream RequestStream { get; set; }
     }
 
+    [Route("/LiveTv/Channels/{Id}/Images/{Type}", "POST")]
+    [Route("/LiveTv/Channels/{Id}/Images/{Type}/{Index}", "POST")]
+    [Api(Description = "Posts an item image")]
+    public class PostChannelImage : DeleteImageRequest, IRequiresRequestStream, IReturnVoid
+    {
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public string Id { get; set; }
+
+        /// <summary>
+        /// The raw Http Request Input Stream
+        /// </summary>
+        /// <value>The request stream.</value>
+        public Stream RequestStream { get; set; }
+    }
+    
     /// <summary>
     /// Class ImageService
     /// </summary>
@@ -341,10 +399,12 @@ namespace MediaBrowser.Api.Images
         private readonly IDtoService _dtoService;
         private readonly IImageProcessor _imageProcessor;
 
+        private readonly ILiveTvManager _liveTv;
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="ImageService" /> class.
         /// </summary>
-        public ImageService(IUserManager userManager, ILibraryManager libraryManager, IApplicationPaths appPaths, IProviderManager providerManager, IItemRepository itemRepo, IDtoService dtoService, IImageProcessor imageProcessor)
+        public ImageService(IUserManager userManager, ILibraryManager libraryManager, IApplicationPaths appPaths, IProviderManager providerManager, IItemRepository itemRepo, IDtoService dtoService, IImageProcessor imageProcessor, ILiveTvManager liveTv)
         {
             _userManager = userManager;
             _libraryManager = libraryManager;
@@ -353,6 +413,7 @@ namespace MediaBrowser.Api.Images
             _itemRepo = itemRepo;
             _dtoService = dtoService;
             _imageProcessor = imageProcessor;
+            _liveTv = liveTv;
         }
 
         /// <summary>
@@ -369,6 +430,15 @@ namespace MediaBrowser.Api.Images
             return ToOptimizedResult(result);
         }
 
+        public object Get(GetChannelImageInfos request)
+        {
+            var item = _liveTv.GetChannel(request.Id);
+
+            var result = GetItemImageInfos(item);
+
+            return ToOptimizedResult(result);
+        }
+        
         public object Get(GetItemByNameImageInfos request)
         {
             var result = GetItemByNameImageInfos(request);
@@ -484,12 +554,19 @@ namespace MediaBrowser.Api.Images
                     Height = Convert.ToInt32(size.Height)
                 };
             }
-            catch (IOException ex)
+            catch (Exception ex)
             {
                 Logger.ErrorException("Error getting image information for {0}", ex, path);
 
                 return null;
             }
+        }
+
+        public object Get(GetChannelImage request)
+        {
+            var item = _liveTv.GetChannel(request.Id);
+
+            return GetImage(request, item);
         }
 
         /// <summary>
@@ -577,6 +654,20 @@ namespace MediaBrowser.Api.Images
             Task.WaitAll(task);
         }
 
+        public void Post(PostChannelImage request)
+        {
+            var pathInfo = PathInfo.Parse(RequestContext.PathInfo);
+            var id = pathInfo.GetArgumentValue<string>(2);
+
+            request.Type = (ImageType)Enum.Parse(typeof(ImageType), pathInfo.GetArgumentValue<string>(4), true);
+
+            var item = _liveTv.GetChannel(id);
+
+            var task = PostImage(item, request.RequestStream, request.Type, RequestContext.ContentType);
+
+            Task.WaitAll(task);
+        }
+        
         /// <summary>
         /// Deletes the specified request.
         /// </summary>
@@ -603,6 +694,15 @@ namespace MediaBrowser.Api.Images
             Task.WaitAll(task);
         }
 
+        public void Delete(DeleteChannelImage request)
+        {
+            var item = _liveTv.GetChannel(request.Id);
+
+            var task = item.DeleteImage(request.Type, request.Index);
+
+            Task.WaitAll(task);
+        }
+        
         /// <summary>
         /// Deletes the specified request.
         /// </summary>

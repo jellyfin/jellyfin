@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Dto;
+﻿using MediaBrowser.Api.UserLibrary;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -17,7 +18,7 @@ namespace MediaBrowser.Api
     /// </summary>
     [Route("/Shows/NextUp", "GET")]
     [Api(("Gets a list of currently installed plugins"))]
-    public class GetNextUpEpisodes : IReturn<ItemsResult>
+    public class GetNextUpEpisodes : IReturn<ItemsResult>, IHasItemFields
     {
         /// <summary>
         /// Gets or sets the user id.
@@ -49,38 +50,83 @@ namespace MediaBrowser.Api
 
         [ApiMember(Name = "SeriesId", Description = "Optional. Filter by series id", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string SeriesId { get; set; }
-
-        /// <summary>
-        /// Gets the item fields.
-        /// </summary>
-        /// <returns>IEnumerable{ItemFields}.</returns>
-        public IEnumerable<ItemFields> GetItemFields()
-        {
-            var val = Fields;
-
-            if (string.IsNullOrEmpty(val))
-            {
-                return new ItemFields[] { };
-            }
-
-            return val.Split(',').Select(v =>
-            {
-                ItemFields value;
-
-                if (Enum.TryParse(v, true, out value))
-                {
-                    return (ItemFields?)value;
-                }
-                return null;
-
-            }).Where(i => i.HasValue).Select(i => i.Value);
-        }
     }
 
     [Route("/Shows/{Id}/Similar", "GET")]
     [Api(Description = "Finds tv shows similar to a given one.")]
     public class GetSimilarShows : BaseGetSimilarItemsFromItem
     {
+    }
+
+    [Route("/Shows/{Id}/Episodes", "GET")]
+    [Api(Description = "Gets episodes for a tv season")]
+    public class GetEpisodes : IReturn<ItemsResult>, IHasItemFields
+    {
+        /// <summary>
+        /// Gets or sets the user id.
+        /// </summary>
+        /// <value>The user id.</value>
+        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public Guid UserId { get; set; }
+
+        /// <summary>
+        /// Fields to return within the items, in addition to basic information
+        /// </summary>
+        /// <value>The fields.</value>
+        [ApiMember(Name = "Fields", Description = "Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: Budget, Chapters, CriticRatingSummary, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, OverviewHtml, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines, TrailerUrls", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string Fields { get; set; }
+
+        [ApiMember(Name = "Id", Description = "The series id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public Guid Id { get; set; }
+
+        [ApiMember(Name = "Season", Description = "Optional filter by season number.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public int? Season { get; set; }
+
+        [ApiMember(Name = "SeasonId", Description = "Optional. Filter by season id", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string SeasonId { get; set; }
+        
+        [ApiMember(Name = "IsMissing", Description = "Optional filter by items that are missing episodes or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool? IsMissing { get; set; }
+
+        [ApiMember(Name = "IsVirtualUnaired", Description = "Optional filter by items that are virtual unaired episodes or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool? IsVirtualUnaired { get; set; }
+
+        [ApiMember(Name = "AdjacentTo", Description = "Optional. Return items that are siblings of a supplied item.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string AdjacentTo { get; set; }
+    }
+
+    [Route("/Shows/{Id}/Seasons", "GET")]
+    [Api(Description = "Gets seasons for a tv series")]
+    public class GetSeasons : IReturn<ItemsResult>, IHasItemFields
+    {
+        /// <summary>
+        /// Gets or sets the user id.
+        /// </summary>
+        /// <value>The user id.</value>
+        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public Guid UserId { get; set; }
+
+        /// <summary>
+        /// Fields to return within the items, in addition to basic information
+        /// </summary>
+        /// <value>The fields.</value>
+        [ApiMember(Name = "Fields", Description = "Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: Budget, Chapters, CriticRatingSummary, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, OverviewHtml, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines, TrailerUrls", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string Fields { get; set; }
+
+        [ApiMember(Name = "Id", Description = "The series id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public Guid Id { get; set; }
+
+        [ApiMember(Name = "IsSpecialSeason", Description = "Optional. Filter by special season.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool? IsSpecialSeason { get; set; }
+
+        [ApiMember(Name = "IsMissing", Description = "Optional filter by items that are missing episodes or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool? IsMissing { get; set; }
+
+        [ApiMember(Name = "IsVirtualUnaired", Description = "Optional filter by items that are virtual unaired episodes or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool? IsVirtualUnaired { get; set; }
+
+        [ApiMember(Name = "AdjacentTo", Description = "Optional. Return items that are siblings of a supplied item.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string AdjacentTo { get; set; }
     }
 
     /// <summary>
@@ -310,6 +356,197 @@ namespace MediaBrowser.Api
             }
 
             return items;
+        }
+
+        public object Get(GetSeasons request)
+        {
+            var user = _userManager.GetUserById(request.UserId);
+
+            var series = _libraryManager.GetItemById(request.Id) as Series;
+
+            var fields = request.GetItemFields().ToList();
+
+            var seasons = series.GetChildren(user, true)
+                .OfType<Season>();
+
+            var sortOrder = ItemSortBy.SortName;
+
+            if (request.IsSpecialSeason.HasValue)
+            {
+                var val = request.IsSpecialSeason.Value;
+
+                seasons = seasons.Where(i => i.IsSpecialSeason == val);
+            }
+
+            var config = user.Configuration;
+
+            if (!config.DisplayMissingEpisodes && !config.DisplayUnairedEpisodes)
+            {
+                seasons = seasons.Where(i => !i.IsMissingOrVirtualUnaired);
+            }
+            else
+            {
+                if (!config.DisplayMissingEpisodes)
+                {
+                    seasons = seasons.Where(i => !i.IsMissingSeason);
+                }
+                if (!config.DisplayUnairedEpisodes)
+                {
+                    seasons = seasons.Where(i => !i.IsVirtualUnaired);
+                }
+            }
+
+            seasons = FilterVirtualSeasons(request, seasons);
+
+            seasons = _libraryManager.Sort(seasons, user, new[] { sortOrder }, SortOrder.Ascending)
+                .Cast<Season>();
+
+            // This must be the last filter
+            if (!string.IsNullOrEmpty(request.AdjacentTo))
+            {
+                seasons = ItemsService.FilterForAdjacency(seasons, request.AdjacentTo)
+                    .Cast<Season>();
+            }
+
+            var returnItems = seasons.Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+                .ToArray();
+
+            return new ItemsResult
+            {
+                TotalRecordCount = returnItems.Length,
+                Items = returnItems
+            };
+        }
+
+        private IEnumerable<Season> FilterVirtualSeasons(GetSeasons request, IEnumerable<Season> items)
+        {
+            if (request.IsMissing.HasValue && request.IsVirtualUnaired.HasValue)
+            {
+                var isMissing = request.IsMissing.Value;
+                var isVirtualUnaired = request.IsVirtualUnaired.Value;
+
+                if (!isMissing && !isVirtualUnaired)
+                {
+                    return items.Where(i => !i.IsMissingOrVirtualUnaired);
+                }
+            }
+
+            if (request.IsMissing.HasValue)
+            {
+                var val = request.IsMissing.Value;
+                items = items.Where(i => i.IsMissingSeason == val);
+            }
+
+            if (request.IsVirtualUnaired.HasValue)
+            {
+                var val = request.IsVirtualUnaired.Value;
+                items = items.Where(i => i.IsVirtualUnaired == val);
+            }
+
+            return items;
+        }
+        
+        public object Get(GetEpisodes request)
+        {
+            var user = _userManager.GetUserById(request.UserId);
+
+            var series = _libraryManager.GetItemById(request.Id) as Series;
+
+            var fields = request.GetItemFields().ToList();
+
+            var episodes = series.GetRecursiveChildren(user)
+                .OfType<Episode>();
+
+            var sortOrder = ItemSortBy.SortName;
+
+            if (!string.IsNullOrEmpty(request.SeasonId))
+            {
+                var season = _libraryManager.GetItemById(new Guid(request.SeasonId)) as Season;
+
+                if (season.IndexNumber.HasValue)
+                {
+                    episodes = FilterEpisodesBySeason(episodes, season.IndexNumber.Value, true);
+
+                    sortOrder = ItemSortBy.AiredEpisodeOrder;
+                }
+                else
+                {
+                    episodes = season.RecursiveChildren.OfType<Episode>();
+
+                    sortOrder = ItemSortBy.SortName;
+                }
+            }
+
+            else if (request.Season.HasValue)
+            {
+                episodes = FilterEpisodesBySeason(episodes, request.Season.Value, true);
+
+                sortOrder = ItemSortBy.AiredEpisodeOrder;
+            }
+
+            var config = user.Configuration;
+
+            if (!config.DisplayMissingEpisodes)
+            {
+                episodes = episodes.Where(i => !i.IsMissingEpisode);
+            }
+            if (!config.DisplayUnairedEpisodes)
+            {
+                episodes = episodes.Where(i => !i.IsVirtualUnaired);
+            }
+
+            if (request.IsMissing.HasValue)
+            {
+                var val = request.IsMissing.Value;
+                episodes = episodes.Where(i => i.IsMissingEpisode == val);
+            }
+
+            if (request.IsVirtualUnaired.HasValue)
+            {
+                var val = request.IsVirtualUnaired.Value;
+                episodes = episodes.Where(i => i.IsVirtualUnaired == val);
+            }
+
+            episodes = _libraryManager.Sort(episodes, user, new[] { sortOrder }, SortOrder.Ascending)
+                .Cast<Episode>();
+
+            // This must be the last filter
+            if (!string.IsNullOrEmpty(request.AdjacentTo))
+            {
+                episodes = ItemsService.FilterForAdjacency(episodes, request.AdjacentTo)
+                    .Cast<Episode>();
+            }
+
+            var returnItems = episodes.Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+                .ToArray();
+
+            return new ItemsResult
+            {
+                TotalRecordCount = returnItems.Length,
+                Items = returnItems
+            };
+        }
+
+        internal static IEnumerable<Episode> FilterEpisodesBySeason(IEnumerable<Episode> episodes, int seasonNumber, bool includeSpecials)
+        {
+            if (!includeSpecials || seasonNumber < 1)
+            {
+                return episodes.Where(i => (i.PhysicalSeasonNumber ?? -1) == seasonNumber);
+            }
+
+            return episodes.Where(i =>
+            {
+                var episode = i;
+
+                if (episode != null)
+                {
+                    var currentSeasonNumber = episode.AiredSeasonNumber;
+
+                    return currentSeasonNumber.HasValue && currentSeasonNumber.Value == seasonNumber;
+                }
+
+                return false;
+            });
         }
     }
 }

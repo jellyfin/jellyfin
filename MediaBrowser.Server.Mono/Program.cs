@@ -36,7 +36,9 @@ namespace MediaBrowser.Server.Mono
 		{
 			Application.Init ();
 
-			var appPaths = CreateApplicationPaths();
+			var applicationPath = Assembly.GetEntryAssembly ().Location;
+
+			var appPaths = CreateApplicationPaths(applicationPath);
 
 			var logManager = new NlogManager(appPaths.LogDirectoryPath, "server");
 			logManager.ReloadLogger(LogSeverity.Info);
@@ -65,9 +67,9 @@ namespace MediaBrowser.Server.Mono
 			}
 		}
 
-		private static ServerApplicationPaths CreateApplicationPaths()
+		private static ServerApplicationPaths CreateApplicationPaths(string applicationPath)
 		{
-			return new ServerApplicationPaths();
+			return new ServerApplicationPaths(applicationPath);
 		}
 
 		/// <summary>

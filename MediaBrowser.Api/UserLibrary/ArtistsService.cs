@@ -43,7 +43,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// <summary>
     /// Class ArtistsService
     /// </summary>
-    public class ArtistsService : BaseItemsByNameService<Artist>
+    public class ArtistsService : BaseItemsByNameService<MusicArtist>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ArtistsService" /> class.
@@ -109,24 +109,9 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         /// <param name="items">The items.</param>
         /// <returns>IEnumerable{Tuple{System.StringFunc{System.Int32}}}.</returns>
-        protected override IEnumerable<Artist> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items)
+        protected override IEnumerable<MusicArtist> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items)
         {
-            var itemsList = items.OfType<Audio>().ToList();
-
-            return itemsList
-                .SelectMany(i =>
-                {
-                    var list = new List<string>();
-
-                    if (!string.IsNullOrEmpty(i.AlbumArtist))
-                    {
-                        list.Add(i.AlbumArtist);
-                    }
-                    list.AddRange(i.Artists);
-
-                    return list;
-                })
-                .Distinct(StringComparer.OrdinalIgnoreCase)
+            return LibraryManager.GetAllArtists(items)
                 .Select(name => LibraryManager.GetArtist(name));
         }
     }

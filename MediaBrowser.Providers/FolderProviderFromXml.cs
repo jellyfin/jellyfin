@@ -34,7 +34,7 @@ namespace MediaBrowser.Providers
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         public override bool Supports(BaseItem item)
         {
-            return item is Folder && item.LocationType == LocationType.FileSystem;
+            return item.IsFolder && item.LocationType == LocationType.FileSystem;
         }
 
         /// <summary>

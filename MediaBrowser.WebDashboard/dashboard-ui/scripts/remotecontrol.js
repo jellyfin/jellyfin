@@ -163,7 +163,7 @@
 
                     return false;
                 }
-                if (item.Type == "Artist") {
+                if (item.Type == "MusicArtist") {
 
                     sendPlayArtistCommand(item, sessionIds[0], popup);
 

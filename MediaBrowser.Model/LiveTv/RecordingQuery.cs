@@ -6,9 +6,30 @@
     public class RecordingQuery
     {
         /// <summary>
-        /// Gets or sets a value indicating whether this instance has recorded.
+        /// Gets or sets the channel identifier.
         /// </summary>
-        /// <value><c>null</c> if [has recorded] contains no value, <c>true</c> if [has recorded]; otherwise, <c>false</c>.</value>
-        public bool? HasRecorded { get; set; }
+        /// <value>The channel identifier.</value>
+        public string ChannelId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the service.
+        /// </summary>
+        /// <value>The name of the service.</value>
+        public string ServiceName { get; set; }
+    }
+
+    public class TimerQuery
+    {
+        /// <summary>
+        /// Gets or sets the channel identifier.
+        /// </summary>
+        /// <value>The channel identifier.</value>
+        public string ChannelId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the service.
+        /// </summary>
+        /// <value>The name of the service.</value>
+        public string ServiceName { get; set; }
     }
 }

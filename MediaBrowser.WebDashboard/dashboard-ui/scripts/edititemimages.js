@@ -18,10 +18,10 @@
     function getBaseRemoteOptions() {
         var options = {};
 
-        if (currentItem.Type == "Artist") {
-            options.artist = currentItem.Name;
+        if (currentItem.Type == "Year") {
+            options.year = currentItem.Name;
         }
-        else if (currentItem.Type == "Artist") {
+        else if (currentItem.Type == "MusicArtist") {
             options.artist = currentItem.Name;
         }
         else if (currentItem.Type == "Person") {
@@ -153,11 +153,11 @@
             cssClass += " remoteDiscImage";
         }
         else {
-            
+
             if (currentItem.Type == "Episode") {
                 cssClass += " remoteBackdropImage";
             }
-            else if (currentItem.Type == "MusicAlbum" || currentItem.Type == "MusicArtist" || currentItem.Type == "Artist") {
+            else if (currentItem.Type == "MusicAlbum" || currentItem.Type == "MusicArtist") {
                 cssClass += " remoteDiscImage";
             }
             else {
@@ -270,7 +270,7 @@
 
         return html;
     }
-    
+
     function reload(page) {
 
         Dashboard.showLoadingMsg();
@@ -279,14 +279,24 @@
 
             currentItem = item;
 
-            ApiClient.getRemoteImageProviders(getBaseRemoteOptions()).done(function(providers) {
-                
+            LibraryBrowser.renderName(item, $('.itemName', page), true);
+
+            updateTabs(page, item);
+
+            if (item.Type == "Person" || item.Type == "Studio" || item.Type == "MusicGenre" || item.Type == "Genre" || item.Type == "MusicArtist" || item.Type == "GameGenre" || item.Type == "Channel") {
+                $('#btnEditPeople', page).hide();
+            } else {
+                $('#btnEditPeople', page).show();
+            }
+
+            ApiClient.getRemoteImageProviders(getBaseRemoteOptions()).done(function (providers) {
+
                 if (providers.length) {
                     $('.lnkBrowseAllImages', page).removeClass('hide');
                 } else {
                     $('.lnkBrowseAllImages', page).addClass('hide');
                 }
-                
+
                 ApiClient.getItemImageInfos(currentItem.Id, currentItem.Type, currentItem.Name).done(function (imageInfos) {
 
                     renderStandardImages(page, item, imageInfos, providers);
@@ -295,17 +305,6 @@
                     Dashboard.hideLoadingMsg();
                 });
             });
-
-            LibraryBrowser.renderName(item, $('.itemName', page), true);
-
-            updateTabs(page, item);
-
-            if (item.Type == "Person" || item.Type == "Studio" || item.Type == "MusicGenre" || item.Type == "Genre" || item.Type == "Artist" || item.Type == "GameGenre") {
-                $('#btnEditPeople', page).hide();
-            } else {
-                $('#btnEditPeople', page).show();
-            }
-
         });
     }
 
@@ -317,18 +316,19 @@
 
             var image = images[i];
 
-            html += '<div style="display:inline-block;margin:5px;background:#202020;padding:10px;">';
+            html += '<div class="editorTile imageEditorTile">';
 
-            html += '<div style="float:left;height:100px;width:175px;vertical-align:top;background-repeat:no-repeat;background-size:contain;background-image:url(\'' + LibraryBrowser.getImageUrl(currentItem, image.ImageType, image.ImageIndex, { maxwidth: 300 }) + '\');"></div>';
+            html += '<div style="height:108px;vertical-align:top;background-repeat:no-repeat;background-size:contain;background-image:url(\'' + LibraryBrowser.getImageUrl(currentItem, image.ImageType, image.ImageIndex, { maxheight: 216 }) + '\');"></div>';
 
-            html += '<div style="float:right;vertical-align:top;margin-left:1em;width:125px;">';
-            html += '<p style="margin-top:0;">' + image.ImageType + '</p>';
+            html += '<div>';
 
-            html += '<p>' + image.Width + ' * ' + image.Height + '</p>';
+            if (image.ImageType !== "Backdrop" && image.ImageType !== "Screenshot") {
+                html += '<p>' + image.ImageType + '</p>';
+            }
 
-            html += '<p>' + (parseInt(image.Size / 1024)) + ' KB</p>';
+            html += '<p>' + image.Width + ' X ' + image.Height + '</p>';
 
-            html += '<p style="margin-left:-5px;">';
+            html += '<p>';
 
             if (image.ImageType == "Backdrop" || image.ImageType == "Screenshot") {
 
@@ -456,7 +456,7 @@
             return function (e) {
 
                 // Render thumbnail.
-                var html = ['<img style="max-width:500px;max-height:200px;" src="', e.target.result, '" title="', escape(theFile.name), '"/>'].join('');
+                var html = ['<img style="max-width:300px;max-height:100px;" src="', e.target.result, '" title="', escape(theFile.name), '"/>'].join('');
 
                 $('#imageOutput', page).html(html);
                 $('#fldUpload', page).show();
@@ -590,7 +590,7 @@
             reloadBrowsableImages(page);
         });
 
-    }).on('pageshow', "#editItemImagesPage", function () {
+    }).on('pagebeforeshow', "#editItemImagesPage", function () {
 
         var page = this;
 

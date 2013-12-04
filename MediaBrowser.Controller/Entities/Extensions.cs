@@ -16,7 +16,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="url">The URL.</param>
         /// <param name="isDirectLink">if set to <c>true</c> [is direct link].</param>
         /// <exception cref="System.ArgumentNullException">url</exception>
-        public static void AddTrailerUrl(this BaseItem item, string url, bool isDirectLink)
+        public static void AddTrailerUrl(this IHasTrailers item, string url, bool isDirectLink)
         {
             if (string.IsNullOrWhiteSpace(url))
             {

@@ -1,0 +1,58 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Media Browser</title>
+</head>
+<body>
+    <div id="liveTvChannelPage" data-role="page" class="page libraryPage" data-theme="a" data-view="livetv">
+        <div class="libraryViewNav">
+            <a href="livetvguide.html">Guide</a>
+            <a href="livetvchannels.html" class="ui-btn-active">Channels</a>
+            <a href="livetvrecordings.html">Recordings</a>
+            <a href="livetvtimers.html">Timers</a>
+        </div>
+        <div id="itemBackdrop" class="itemBackdrop noBackdrop">
+            <div class="itemBackdropContent">
+                <table class="detailPageContent primaryDetailPageContent">
+                    <tr>
+                        <td style="vertical-align: top; padding: 10px 1em 10px 0;">
+                            <div id="itemImage" class="itemImageContainer"></div>
+                        </td>
+                        <td style="vertical-align: top; padding: 0;">
+                            <p><span class="itemName inlineItemName"></span><span class="itemMiscInfo" style="display: inline;"></span></p>
+                            <p class="itemChannelNumber"></p>
+                            <p style="margin: 2em 0;">
+                                <span class="userDataIcons"></span>
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div class="ui-body-a" style="text-align: center; padding: .25em 0 .5em;">
+            <span id="playButtonContainer" style="display: none;">
+                <button id="btnPlay" type="button" data-icon="play" data-inline="true" data-mini="true">Play</button>
+            </span>
+            <span>
+                <button id="btnRemote" type="button" data-icon="hand-up" data-inline="true" data-mini="true">Remote</button>
+            </span>
+            <span id="editButtonContainer" style="display: none;">
+                <button id="btnEdit" type="button" data-icon="pencil" data-inline="true" data-mini="true">Edit</button>
+            </span>
+        </div>
+        <div data-role="content">
+            <div class="detailPageContent">
+                <div id="detailSection">
+                    <div class="detailSectionHeader" style="margin-top: 0;">
+                        Programs
+                    </div>
+                    <div class="detailSectionContent" style="padding: 1em;">
+
+                        <div id="programList"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

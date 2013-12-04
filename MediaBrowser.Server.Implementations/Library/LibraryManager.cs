@@ -391,10 +391,23 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="item">The item.</param>
         private void UpdateItemInLibraryCache(BaseItem item)
         {
-            if (!(item is IItemByName))
+            if (item is IItemByName)
             {
-                LibraryItemsCache.AddOrUpdate(item.Id, item, delegate { return item; });
+                var hasDualAccess = item as IHasDualAccess;
+                if (hasDualAccess != null)
+                {
+                    if (hasDualAccess.IsAccessedByName)
+                    {
+                        return;
+                    }
+                }
+                else
+                {
+                    return;
+                }
             }
+
+            LibraryItemsCache.AddOrUpdate(item.Id, item, delegate { return item; });
         }
 
         /// <summary>
@@ -657,16 +670,6 @@ namespace MediaBrowser.Server.Implementations.Library
         }
 
         /// <summary>
-        /// Gets a Genre
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <returns>Task{Genre}.</returns>
-        public Artist GetArtist(string name)
-        {
-            return GetItemByName<Artist>(ConfigurationManager.ApplicationPaths.ArtistsPath, name);
-        }
-
-        /// <summary>
         /// The us culture
         /// </summary>
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
@@ -688,6 +691,16 @@ namespace MediaBrowser.Server.Implementations.Library
         }
 
         /// <summary>
+        /// Gets a Genre
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <returns>Task{Genre}.</returns>
+        public MusicArtist GetArtist(string name)
+        {
+            return GetItemByName<MusicArtist>(ConfigurationManager.ApplicationPaths.ArtistsPath, name);
+        }
+
+        /// <summary>
         /// The images by name item cache
         /// </summary>
         private readonly ConcurrentDictionary<string, BaseItem> _itemsByName = new ConcurrentDictionary<string, BaseItem>(StringComparer.OrdinalIgnoreCase);
@@ -697,12 +710,12 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             if (string.IsNullOrEmpty(path))
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException("path");
             }
 
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException("name");
             }
 
             var validFilename = _fileSystem.GetValidFilename(name).Trim();
@@ -743,6 +756,20 @@ namespace MediaBrowser.Server.Implementations.Library
         private Tuple<bool, T> CreateItemByName<T>(string path, string name)
             where T : BaseItem, new()
         {
+            var isArtist = typeof(T) == typeof(MusicArtist);
+
+            if (isArtist)
+            {
+                var existing = RootFolder.RecursiveChildren
+                    .OfType<T>()
+                    .FirstOrDefault(i => string.Equals(i.Name, name, StringComparison.OrdinalIgnoreCase));
+
+                if (existing != null)
+                {
+                    return new Tuple<bool, T>(false, existing);
+                }
+            }
+
             var fileInfo = new DirectoryInfo(path);
 
             var isNew = false;
@@ -777,6 +804,11 @@ namespace MediaBrowser.Server.Implementations.Library
                     Path = path
                 };
                 isNew = true;
+            }
+
+            if (isArtist)
+            {
+                (item as MusicArtist).IsAccessedByName = true;
             }
 
             // Set this now so we don't cause additional file system access during provider executions
@@ -873,6 +905,20 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         public async Task ValidateMediaLibraryInternal(IProgress<double> progress, CancellationToken cancellationToken)
+        {
+            _directoryWatchersFactory().Stop();
+
+            try
+            {
+                await PerformLibraryValidation(progress, cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                _directoryWatchersFactory().Start();
+            }
+        }
+
+        private async Task PerformLibraryValidation(IProgress<double> progress, CancellationToken cancellationToken)
         {
             _logger.Info("Validating media library");
 
@@ -1361,16 +1407,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>BaseItem.</returns>
         public BaseItem RetrieveItem(Guid id)
         {
-            var item = ItemRepository.RetrieveItem(id);
-
-            var folder = item as Folder;
-
-            if (folder != null)
-            {
-                folder.LoadSavedChildren();
-            }
-
-            return item;
+            return ItemRepository.RetrieveItem(id);
         }
 
         private readonly ConcurrentDictionary<string, SemaphoreSlim> _fileLocks = new ConcurrentDictionary<string, SemaphoreSlim>();
@@ -1469,6 +1506,31 @@ namespace MediaBrowser.Server.Implementations.Library
                 .ToList();
 
             return collectionTypes.Count == 1 ? collectionTypes[0] : null;
+        }
+
+
+        public IEnumerable<string> GetAllArtists()
+        {
+            return GetAllArtists(RootFolder.RecursiveChildren);
+        }
+
+        public IEnumerable<string> GetAllArtists(IEnumerable<BaseItem> items)
+        {
+            return items
+                .OfType<Audio>()
+                .SelectMany(i =>
+                {
+                    var list = new List<string>();
+
+                    if (!string.IsNullOrEmpty(i.AlbumArtist))
+                    {
+                        list.Add(i.AlbumArtist);
+                    }
+                    list.AddRange(i.Artists);
+
+                    return list;
+                })
+                .Distinct(StringComparer.OrdinalIgnoreCase);
         }
     }
 }

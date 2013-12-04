@@ -129,17 +129,13 @@ namespace MediaBrowser.Server.Implementations.Dto
         /// <param name="user">The user.</param>
         private void AttachItemByNameCounts(BaseItemDto dto, IItemByName item, User user)
         {
-            ItemByNameCounts counts;
-
             if (user == null)
             {
                 //counts = item.ItemCounts;
                 return;
             }
-            if (!item.UserItemCounts.TryGetValue(user.Id, out counts))
-            {
-                counts = new ItemByNameCounts();
-            }
+
+            ItemByNameCounts counts = item.GetItemByNameCounts(user.Id) ?? new ItemByNameCounts();
 
             dto.ChildCount = counts.TotalCount;
 
@@ -207,7 +203,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             if (!string.IsNullOrEmpty(image))
             {
-                dto.PrimaryImageTag = _imageProcessor.GetImageCacheTag(user, ImageType.Primary, image);
+                dto.PrimaryImageTag = GetImageCacheTag(user, ImageType.Primary, image);
 
                 try
                 {
@@ -277,7 +273,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 Id = GetDtoId(item),
                 Name = item.Name,
                 MediaType = item.MediaType,
-                Type = item.GetType().Name,
+                Type = item.GetClientTypeName(),
                 RunTimeTicks = item.RunTimeTicks
             };
 
@@ -285,13 +281,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             if (!string.IsNullOrEmpty(imagePath))
             {
-                try
-                {
-                    info.PrimaryImageTag = _imageProcessor.GetImageCacheTag(item, ImageType.Primary, imagePath);
-                }
-                catch (IOException)
-                {
-                }
+                info.PrimaryImageTag = GetImageCacheTag(item, ImageType.Primary, imagePath);
             }
 
             return info;
@@ -433,7 +423,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             // Ordering by person type to ensure actors and artists are at the front.
             // This is taking advantage of the fact that they both begin with A
             // This should be improved in the future
-            var people = item.People.OrderBy(i => i.Type).ToList();
+            var people = item.People.OrderBy(i => i.SortOrder ?? int.MaxValue).ThenBy(i => i.Type).ToList();
 
             // Attach People by transforming them into BaseItemPerson (DTO)
             dto.People = new BaseItemPerson[people.Count];
@@ -733,14 +723,18 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.EnableInternetProviders = !item.DontFetchMeta;
             }
 
-            if (fields.Contains(ItemFields.Budget))
+            var hasBudget = item as IHasBudget;
+            if (hasBudget != null)
             {
-                dto.Budget = item.Budget;
-            }
+                if (fields.Contains(ItemFields.Budget))
+                {
+                    dto.Budget = hasBudget.Budget;
+                }
 
-            if (fields.Contains(ItemFields.Revenue))
-            {
-                dto.Revenue = item.Revenue;
+                if (fields.Contains(ItemFields.Revenue))
+                {
+                    dto.Revenue = hasBudget.Revenue;
+                }
             }
 
             dto.EndDate = item.EndDate;
@@ -760,7 +754,11 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.ProductionLocations = item.ProductionLocations;
             }
 
-            dto.AspectRatio = item.AspectRatio;
+            var hasAspectRatio = item as IHasAspectRatio;
+            if (hasAspectRatio != null)
+            {
+                dto.AspectRatio = hasAspectRatio.AspectRatio;
+            }
 
             dto.BackdropImageTags = GetBackdropImageTags(item);
 
@@ -806,11 +804,17 @@ namespace MediaBrowser.Server.Implementations.Dto
                 }
             }
 
-            var localTrailerCount = item.LocalTrailerIds.Count;
-
-            if (localTrailerCount > 0)
+            var hasTrailers = item as IHasTrailers;
+            if (hasTrailers != null)
             {
-                dto.LocalTrailerCount = localTrailerCount;
+                dto.LocalTrailerCount = hasTrailers.LocalTrailerIds.Count;
+            }
+
+            if (fields.Contains(ItemFields.RemoteTrailers))
+            {
+                dto.RemoteTrailers = hasTrailers != null ?
+                    hasTrailers.RemoteTrailers :
+                    new List<MediaUrl>();
             }
 
             dto.Name = item.Name;
@@ -923,12 +927,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.Taglines = item.Taglines;
             }
 
-            if (fields.Contains(ItemFields.RemoteTrailers))
-            {
-                dto.RemoteTrailers = item.RemoteTrailers;
-            }
-
-            dto.Type = item.GetType().Name;
+            dto.Type = item.GetClientTypeName();
             dto.CommunityRating = item.CommunityRating;
             dto.VoteCount = item.VoteCount;
 
@@ -1030,6 +1029,12 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 dto.IndexNumberEnd = episode.IndexNumberEnd;
                 dto.SpecialSeasonNumber = episode.AirsAfterSeasonNumber ?? episode.AirsBeforeSeasonNumber;
+
+                var seasonId = episode.SeasonId;
+                if (seasonId.HasValue)
+                {
+                    dto.SeasonId = seasonId.Value.ToString("N");
+                }
             }
 
             // Add SeriesInfo

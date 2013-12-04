@@ -93,6 +93,18 @@ namespace MediaBrowser.Model.System
         public string ProgramDataPath { get; set; }
 
         /// <summary>
+        /// Gets or sets the items by name path.
+        /// </summary>
+        /// <value>The items by name path.</value>
+        public string ItemsByNamePath { get; set; }
+
+        /// <summary>
+        /// Gets or sets the log path.
+        /// </summary>
+        /// <value>The log path.</value>
+        public string LogPath { get; set; }
+        
+        /// <summary>
         /// Gets or sets the HTTP server port number.
         /// </summary>
         /// <value>The HTTP server port number.</value>

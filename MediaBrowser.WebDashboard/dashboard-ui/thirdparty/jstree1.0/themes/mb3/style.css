@@ -5,7 +5,7 @@
  */
 
 .jstree-mb3 li, 
-.jstree-mb3 ins { background-image:url("d.png"); background-repeat:no-repeat; background-color:transparent; }
+.jstree-mb3 ins {cursor: pointer; background-image:url("d.png"); background-repeat:no-repeat; background-color:transparent; }
 .jstree-mb3 li { background-position:-90px 0; background-repeat:repeat-y; }
 .jstree-mb3 li.jstree-last { background:transparent; }
 .jstree-mb3 .jstree-open > ins { background-position:-72px 0; }
@@ -13,7 +13,7 @@
 .jstree-mb3 .jstree-leaf > ins { background-position:-36px 0; }
 
 .jstree-mb3 .jstree-hovered { background:#666; border:1px solid transparent; padding:0 2px 0 1px; }
-.jstree-mb3 .jstree-clicked { background:#4d90fe; border:1px solid transparent; padding:0 2px 0 1px; }
+.jstree-mb3 .jstree-clicked { background:#3388CC;border:1px solid transparent; padding:0 2px 0 1px; }
 
 .jstree-mb3 a .jstree-icon { background-position:-56px -19px; }
 .jstree-mb3 a.jstree-loading .jstree-icon { background:url("throbber.gif") center center no-repeat !important; }
@@ -49,7 +49,7 @@
 #vakata-contextmenu.jstree-mb3-context, 
 #vakata-contextmenu.jstree-mb3-context li ul { background:#f0f0f0; border:1px solid #979797; -moz-box-shadow: 1px 1px 2px #999; -webkit-box-shadow: 1px 1px 2px #999; box-shadow: 1px 1px 2px #999; }
 #vakata-contextmenu.jstree-mb3-context li { }
-#vakata-contextmenu.jstree-mb3-context a { color:white; }
+#vakata-contextmenu.jstree-mb3-context a { color:black; }
 #vakata-contextmenu.jstree-mb3-context a:hover, 
 #vakata-contextmenu.jstree-mb3-context .vakata-hover > a { padding:0 5px; background:#e8eff7; border:1px solid #aecff7; color:white; -moz-border-radius:2px; -webkit-border-radius:2px; border-radius:2px; }
 #vakata-contextmenu.jstree-mb3-context li.jstree-contextmenu-disabled a, 
@@ -60,6 +60,9 @@
 .jstree a {
     color: #fff!important;
 }
+.jstree-mb3 .jstree-clicked {
+    color: #fff!important;
+}
 
 .jstree a ins {
     display: none!important;
@@ -68,7 +71,7 @@
 .jstree li {
     margin-left: 10px;
     min-width: 10px;
-    border-bottom: 1px solid #555;
+    border-bottom: 1px solid #505050;
 }
 
 .jstree li:last-child {

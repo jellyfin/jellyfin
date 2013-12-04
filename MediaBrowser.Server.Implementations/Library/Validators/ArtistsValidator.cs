@@ -57,7 +57,6 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         {
             var allItems = _libraryManager.RootFolder.GetRecursiveChildren();
 
-            var allMusicArtists = allItems.OfType<MusicArtist>().ToList();
             var allSongs = allItems.OfType<Audio>().ToList();
 
             var innerProgress = new ActionableProgress<double>();
@@ -80,36 +79,8 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                artist.ValidateImages();
-                artist.ValidateBackdrops();
-
-                var musicArtist = Artist.FindMusicArtist(artist, allMusicArtists);
-
-                if (musicArtist != null)
-                {
-                    MergeImages(musicArtist.Images, artist.Images);
-
-                    // Merge backdrops
-                    var additionalBackdrops = musicArtist
-                        .BackdropImagePaths
-                        .Except(artist.BackdropImagePaths)
-                        .ToList();
-
-                    var sources = additionalBackdrops
-                        .Select(musicArtist.GetImageSourceInfo)
-                        .Where(i => i != null)
-                        .ToList();
-
-                    foreach (var path in additionalBackdrops)
-                    {
-                        artist.RemoveImageSourceForPath(path);
-                    }
-
-                    artist.BackdropImagePaths.AddRange(additionalBackdrops);
-                    artist.ImageSources.AddRange(sources);
-                }
-
-                if (!artist.LockedFields.Contains(MetadataFields.Genres))
+                // Only do this for artists accessed by name. Folder-based artists use ArtistInfoFromSongsProvider
+                if (artist.IsAccessedByName && !artist.LockedFields.Contains(MetadataFields.Genres))
                 {
                     // Avoid implicitly captured closure
                     var artist1 = artist;
@@ -145,7 +116,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         /// <param name="artist">The artist.</param>
         /// <param name="userId">The user id.</param>
         /// <param name="allItems">All items.</param>
-        private void SetItemCounts(Artist artist, Guid? userId, IEnumerable<IHasArtist> allItems)
+        private void SetItemCounts(MusicArtist artist, Guid? userId, IEnumerable<IHasArtist> allItems)
         {
             var name = artist.Name;
 
@@ -166,26 +137,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
 
             if (userId.HasValue)
             {
-                artist.UserItemCounts[userId.Value] = counts;
-            }
-        }
-
-        /// <summary>
-        /// Merges the images.
-        /// </summary>
-        /// <param name="source">The source.</param>
-        /// <param name="target">The target.</param>
-        private void MergeImages(Dictionary<ImageType, string> source, Dictionary<ImageType, string> target)
-        {
-            foreach (var key in source.Keys
-                .Where(k => !target.ContainsKey(k)))
-            {
-                string path;
-
-                if (source.TryGetValue(key, out path))
-                {
-                    target[key] = path;
-                }
+                artist.SetItemByNameCounts(userId.Value, counts);
             }
         }
 
@@ -196,25 +148,12 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
         /// <returns>Task{Artist[]}.</returns>
-        private async Task<List<Artist>> GetAllArtists(IEnumerable<Audio> allSongs, CancellationToken cancellationToken, IProgress<double> progress)
+        private async Task<List<MusicArtist>> GetAllArtists(IEnumerable<Audio> allSongs, CancellationToken cancellationToken, IProgress<double> progress)
         {
-            var allArtists = allSongs
-                .SelectMany(i =>
-                {
-                    var list = new List<string>();
-
-                    if (!string.IsNullOrEmpty(i.AlbumArtist))
-                    {
-                        list.Add(i.AlbumArtist);
-                    }
-                    list.AddRange(i.Artists);
-
-                    return list;
-                })
-                .Distinct(StringComparer.OrdinalIgnoreCase)
+            var allArtists = _libraryManager.GetAllArtists(allSongs)
                 .ToList();
 
-            var returnArtists = new List<Artist>(allArtists.Count);
+            var returnArtists = new List<MusicArtist>(allArtists.Count);
 
             var numComplete = 0;
             var numArtists = allArtists.Count;

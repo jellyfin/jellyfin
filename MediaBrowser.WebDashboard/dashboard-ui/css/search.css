@@ -6,7 +6,7 @@
 
 .txtSearch {
     vertical-align: middle;
-    font: 13px arial,sans-serif;
+    font-size: 14px;
     margin: 0 .15em 0 0;
     width: 80px;
     padding: 0;
@@ -93,11 +93,12 @@
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
+    font-size: 14px;
 }
 
 .searchHintSecondaryText {
-    font-size: 11px;
-    color: #999;
+    font-size: 12px;
+    color: #555;
     margin-top: 3px;
     white-space: nowrap;
     text-overflow: ellipsis;

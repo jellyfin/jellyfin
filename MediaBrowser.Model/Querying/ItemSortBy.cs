@@ -6,6 +6,7 @@ namespace MediaBrowser.Model.Querying
     /// </summary>
     public static class ItemSortBy
     {
+        public const string AiredEpisodeOrder = "AiredEpisodeOrder";
         /// <summary>
         /// The album
         /// </summary>

@@ -255,7 +255,7 @@ var Dashboard = {
     showServerRestartWarning: function (systemInfo) {
 
         var html = '<span style="margin-right: 1em;">Please restart Media Browser Server to finish updating.</span>';
-        
+
         if (systemInfo.CanSelfRestart) {
             html += '<button type="button" data-icon="refresh" onclick="$(this).button(\'disable\');Dashboard.restartServer();" data-theme="b" data-inline="true" data-mini="true">Restart Server</button>';
         }
@@ -279,7 +279,7 @@ var Dashboard = {
     reloadPage: function () {
 
         var currentUrl = window.location.toString().toLowerCase();
-        
+
         // If they're on a plugin config page just go back to the dashboard
         // The plugin may not have been loaded yet, or could have been uninstalled
         if (currentUrl.indexOf('configurationpage') != -1) {
@@ -644,6 +644,8 @@ var Dashboard = {
                 }
             }
 
+            html += '<a href="edititemmetadata.html" style="margin-top: 1em;">Metadata Manager</a>';
+
             // collapsible
             html += '</div>';
 
@@ -802,7 +804,16 @@ var Dashboard = {
                 Ids: msg.Data.ItemIds.join(',')
 
             }).done(function (result) {
-                MediaPlayer.play(result.Items, msg.Data.StartPositionTicks);
+
+                if (msg.Data.PlayCommand == "PlayNext") {
+                    MediaPlayer.queueItemsNext(result.Items);
+                }
+                else if (msg.Data.PlayCommand == "PlayLast") {
+                    MediaPlayer.queueItems(result.Items);
+                }
+                else {
+                    MediaPlayer.play(result.Items, msg.Data.StartPositionTicks);
+                }
 
             });
 
@@ -896,8 +907,8 @@ var Dashboard = {
         else if (type == "person") {
             url = "itembynamedetails.html?person=" + ApiClient.encodeName(cmd.ItemName) + "&context=" + context;
         }
-        else if (type == "artist") {
-            url = "itembynamedetails.html?artist=" + ApiClient.encodeName(cmd.ItemName) + "&context=" + (context || "music");
+        else if (type == "musicartist") {
+            url = "itembynamedetails.html?musicartist=" + ApiClient.encodeName(cmd.ItemName) + "&context=" + (context || "music");
         }
 
         if (url) {
@@ -1089,7 +1100,7 @@ var Dashboard = {
         var parts = [];
 
         var hours = ticks / ticksPerHour;
-        hours = parseInt(hours);
+        hours = hours.toFixed(0);
 
         if (hours) {
             parts.push(hours);
@@ -1100,7 +1111,7 @@ var Dashboard = {
         var ticksPerMinute = 600000000;
 
         var minutes = ticks / ticksPerMinute;
-        minutes = parseInt(minutes);
+        minutes = minutes.toFixed(0);
 
         ticks -= (minutes * ticksPerMinute);
 
@@ -1112,7 +1123,7 @@ var Dashboard = {
         var ticksPerSecond = 10000000;
 
         var seconds = ticks / ticksPerSecond;
-        seconds = parseInt(seconds);
+        seconds = seconds.toFixed(0);
 
         if (seconds < 10) {
             seconds = '0' + seconds;
@@ -1121,8 +1132,8 @@ var Dashboard = {
 
         return parts.join(':');
     },
-    
-    ratePackage: function(link) {
+
+    ratePackage: function (link) {
         var id = link.getAttribute('data-id');
         var name = link.getAttribute('data-name');
         var rating = link.getAttribute('data-rating');
@@ -1132,25 +1143,25 @@ var Dashboard = {
             header: "Rate and review " + name,
             id: id,
             rating: rating,
-            callback: function(review) {
+            callback: function (review) {
                 console.log(review);
                 dialog.close();
 
-                ApiClient.createPackageReview(review).done(function() {
+                ApiClient.createPackageReview(review).done(function () {
                     Dashboard.alert("Thank you for your review");
                 });
             }
         });
     },
-    
-    getStoreRatingHtml: function(rating, id, name, noLinks) {
+
+    getStoreRatingHtml: function (rating, id, name, noLinks) {
 
         var html = "<div style='margin-left: 5px; margin-right: 5px; display: inline-block'>";
         if (!rating) rating = 0;
 
         for (var i = 1; i <= 5; i++) {
             var title = noLinks ? rating + " stars" : "Rate " + i + (i > 1 ? " stars" : " star");
-            
+
             html += noLinks ? "" : "<a href='#' data-id=" + id + " data-name='" + name + "' data-rating=" + i + " onclick='Dashboard.ratePackage(this);' >";
             if (rating <= i - 1) {
                 html += "<div class='storeStarRating emptyStarRating' title='" + title + "'></div>";

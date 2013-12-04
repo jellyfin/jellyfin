@@ -109,19 +109,11 @@ namespace MediaBrowser.Providers.Movies
 
         public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
-            BaseProviderInfo data;
-
-            if (!item.ProviderData.TryGetValue(Id, out data))
-            {
-                data = new BaseProviderInfo();
-                item.ProviderData[Id] = data;
-            }
-
             var imdbId = item.GetProviderId(MetadataProviders.Imdb);
 
             if (string.IsNullOrEmpty(imdbId))
             {
-                data.LastRefreshStatus = ProviderRefreshStatus.Success;
+                SetLastRefreshed(item, DateTime.UtcNow);
                 return true;
             }
 
@@ -182,9 +174,7 @@ namespace MediaBrowser.Providers.Movies
                 ParseAdditionalMetadata(item, result);
             }
 
-            data.LastRefreshStatus = ProviderRefreshStatus.Success;
             SetLastRefreshed(item, DateTime.UtcNow);
-
             return true;
         }
 

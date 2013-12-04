@@ -142,6 +142,11 @@
         $('#chkThemeSong', page).checked(query.HasThemeSong == true).checkboxradio('refresh');
         $('#chkThemeVideo', page).checked(query.HasThemeVideo == true).checkboxradio('refresh');
 
+        $('#chkMissingImdbId', page).checked(query.HasImdbId == false).checkboxradio('refresh');
+        $('#chkMissingTmdbId', page).checked(query.HasTmdbId == false).checkboxradio('refresh');
+        $('#chkMissingOverview', page).checked(query.HasOverview == false).checkboxradio('refresh');
+        $('#chkYearMismatch', page).checked(query.IsYearMismatched == true).checkboxradio('refresh');
+
         $('.alphabetPicker', page).alphaValue(query.NameStartsWithOrGreater);
     }
 
@@ -286,6 +291,58 @@
         }).on('alphaclear', function (e) {
 
             query.NameStartsWithOrGreater = '';
+
+            reloadItems(page);
+        });
+
+        $('#radioBasicFilters', this).on('change', function () {
+
+            if (this.checked) {
+                $('.basicFilters', page).show();
+                $('.advancedFilters', page).hide();
+            } else {
+                $('.basicFilters', page).hide();
+            }
+        });
+
+        $('#radioAdvancedFilters', this).on('change', function () {
+
+            if (this.checked) {
+                $('.advancedFilters', page).show();
+                $('.basicFilters', page).hide();
+            } else {
+                $('.advancedFilters', page).hide();
+            }
+        });
+
+        $('#chkMissingImdbId', this).on('change', function () {
+
+            query.StartIndex = 0;
+            query.HasImdbId = this.checked ? false : null;
+
+            reloadItems(page);
+        });
+
+        $('#chkMissingTmdbId', this).on('change', function () {
+
+            query.StartIndex = 0;
+            query.HasTmdbId = this.checked ? false : null;
+
+            reloadItems(page);
+        });
+
+        $('#chkMissingOverview', this).on('change', function () {
+
+            query.StartIndex = 0;
+            query.HasOverview = this.checked ? false : null;
+
+            reloadItems(page);
+        });
+
+        $('#chkYearMismatch', this).on('change', function () {
+
+            query.StartIndex = 0;
+            query.IsYearMismatched = this.checked ? true : null;
 
             reloadItems(page);
         });

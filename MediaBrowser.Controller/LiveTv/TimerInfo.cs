@@ -1,15 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using MediaBrowser.Model.LiveTv;
+using System;
 
-namespace MediaBrowser.Model.LiveTv
+namespace MediaBrowser.Controller.LiveTv
 {
-    public class RecordingInfo
+    public class TimerInfo
     {
         /// <summary>
         /// Id of the recording.
         /// </summary>
         public string Id { get; set; }
 
+        /// <summary>
+        /// Gets or sets the series timer identifier.
+        /// </summary>
+        /// <value>The series timer identifier.</value>
+        public string SeriesTimerId { get; set; }
+        
         /// <summary>
         /// ChannelId of the recording.
         /// </summary>
@@ -20,6 +26,12 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         public string ChannelName { get; set; }
 
+        /// <summary>
+        /// Gets or sets the program identifier.
+        /// </summary>
+        /// <value>The program identifier.</value>
+        public string ProgramId { get; set; }
+        
         /// <summary>
         /// Name of the recording.
         /// </summary>
@@ -41,38 +53,21 @@ namespace MediaBrowser.Model.LiveTv
         public DateTime EndDate { get; set; }
 
         /// <summary>
-        /// Status of the recording.
+        /// Gets or sets the status.
         /// </summary>
-        public string Status { get; set; } //TODO: Enum for status?? Difference NextPvr,Argus,...
+        /// <value>The status.</value>
+        public RecordingStatus Status { get; set; }
 
         /// <summary>
-        /// Quality of the Recording.
+        /// Gets or sets the pre padding seconds.
         /// </summary>
-        public string Quality { get; set; } // TODO: Enum for quality?? Difference NextPvr,Argus,...
+        /// <value>The pre padding seconds.</value>
+        public int PrePaddingSeconds { get; set; }
 
         /// <summary>
-        /// Recurring recording?
+        /// Gets or sets the post padding seconds.
         /// </summary>
-        public bool Recurring { get; set; }
-
-        /// <summary>
-        /// Parent recurring.
-        /// </summary>
-        public string RecurringParent { get; set; }
-
-        /// <summary>
-        /// Start date for the recurring, in UTC.
-        /// </summary>
-        public DateTime RecurrringStartDate { get; set; }
-
-        /// <summary>
-        /// End date for the recurring, in UTC
-        /// </summary>
-        public DateTime RecurringEndDate { get; set; }
-
-        /// <summary>
-        /// When do we need the recording?
-        /// </summary>
-        public List<string> DayMask { get; set; }
+        /// <value>The post padding seconds.</value>
+        public int PostPaddingSeconds { get; set; }
     }
 }

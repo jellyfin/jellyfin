@@ -83,7 +83,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="startIndex">The start index.</param>
         /// <param name="limit">The limit.</param>
         /// <returns>Task{ItemReviewsResult}.</returns>
-        Task<ItemReviewsResult> GetCriticReviews(string itemId, CancellationToken cancellationToken, int? startIndex = null, int? limit = null);
+        Task<QueryResult<ItemReview>> GetCriticReviews(string itemId, CancellationToken cancellationToken, int? startIndex = null, int? limit = null);
 
         /// <summary>
         /// Gets the theme songs async.
@@ -225,6 +225,20 @@ namespace MediaBrowser.Model.ApiClient
         /// <returns>Task{ItemCounts}.</returns>
         Task<ItemCounts> GetItemCountsAsync(ItemCountsQuery query);
 
+        /// <summary>
+        /// Gets the episodes asynchronous.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>Task{ItemsResult}.</returns>
+        Task<ItemsResult> GetEpisodesAsync(EpisodeQuery query);
+
+        /// <summary>
+        /// Gets the seasons asynchronous.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>Task{ItemsResult}.</returns>
+        Task<ItemsResult> GetSeasonsAsync(SeasonQuery query);
+        
         /// <summary>
         /// Queries for items
         /// </summary>

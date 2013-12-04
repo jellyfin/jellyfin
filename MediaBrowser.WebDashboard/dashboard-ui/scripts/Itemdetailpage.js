@@ -14,14 +14,16 @@
 
             renderHeader(page, item);
 
-            $('#itemImage', page).html(LibraryBrowser.getDetailImageHtml(item));
-
             LibraryBrowser.renderName(item, $('.itemName', page));
             LibraryBrowser.renderParentName(item, $('.parentName', page));
 
             var context = getContext(item);
 
             Dashboard.getCurrentUser().done(function (user) {
+
+                var imageHref = user.Configuration.IsAdministrator ? "edititemimages.html?id=" + item.Id : "";
+
+                $('#itemImage', page).html(LibraryBrowser.getDetailImageHtml(item, imageHref));
 
                 setInitialCollapsibleState(page, item, context, user);
                 renderDetails(page, item, context);
@@ -114,7 +116,7 @@
         if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "BoxSet") {
             return "movies";
         }
-        if (item.Type == "Audio" || item.Type == "MusicAlbum" || item.Type == "MusicArtist" || item.Type == "Artist" || item.Type == "MusicVideo") {
+        if (item.Type == "Audio" || item.Type == "MusicAlbum" || item.Type == "MusicArtist" || item.Type == "MusicVideo") {
             return "music";
         }
         if (item.MediaType == "Game") {
@@ -166,7 +168,7 @@
 
     function setInitialCollapsibleState(page, item, context, user) {
 
-        if (item.ChildCount) {
+        if (item.IsFolder) {
             $('#childrenCollapsible', page).removeClass('hide');
             renderChildren(page, item, user);
         }
@@ -311,7 +313,7 @@
 
             var artist = artists[i];
 
-            html.push('<a class="textlink" href="itembynamedetails.html?context=music&artist=' + ApiClient.encodeName(artist) + '">' + artist + '</a>');
+            html.push('<a class="textlink" href="itembynamedetails.html?context=music&musicartist=' + ApiClient.encodeName(artist) + '">' + artist + '</a>');
 
         }
 
@@ -362,14 +364,34 @@
             return;
         }
 
-        var friendly = item.Type == "Audio" ? "song" : item.Type.toLowerCase();
+        var promise;
 
-        ApiClient.getItems(Dashboard.getCurrentUserId(), {
+        if (item.Type == "Season") {
 
-            AdjacentTo: item.Id,
-            ParentId: item.ParentId
+            promise = ApiClient.getSeasons(item.SeriesId, {
 
-        }).done(function (result) {
+                userId: Dashboard.getCurrentUserId(),
+                AdjacentTo: item.Id
+            });
+        }
+        else if (item.Type == "Episode") {
+
+            // Use dedicated episodes endpoint
+            promise = ApiClient.getEpisodes(item.SeriesId, {
+
+                seasonId: item.SeasonId,
+                userId: Dashboard.getCurrentUserId(),
+                AdjacentTo: item.Id
+            });
+
+        } else {
+            promise = ApiClient.getItems(Dashboard.getCurrentUserId(), {
+                AdjacentTo: item.Id,
+                ParentId: item.ParentId
+            });
+        }
+
+        promise.done(function (result) {
 
             for (var i = 0, length = result.Items.length; i < length; i++) {
 
@@ -379,13 +401,15 @@
                     continue;
                 }
 
+                var friendlyTypeName = item.Type == "Audio" ? "song" : item.Type.toLowerCase();
+
                 if (curr.IndexNumber < item.IndexNumber) {
 
-                    $('.lnkPreviousItem', page).removeClass('hide').attr('href', 'itemdetails.html?id=' + curr.Id).html('← Previous ' + friendly);
+                    $('.lnkPreviousItem', page).removeClass('hide').attr('href', 'itemdetails.html?id=' + curr.Id).html('← Previous ' + friendlyTypeName);
                 }
                 else if (curr.IndexNumber > item.IndexNumber) {
 
-                    $('.lnkNextItem', page).removeClass('hide').attr('href', 'itemdetails.html?id=' + curr.Id).html('Next ' + friendly + ' →');
+                    $('.lnkNextItem', page).removeClass('hide').attr('href', 'itemdetails.html?id=' + curr.Id).html('Next ' + friendlyTypeName + ' →');
                 }
             }
         });
@@ -397,7 +421,7 @@
 
         var options = {
             userId: Dashboard.getCurrentUserId(),
-            limit: item.Type == "MusicAlbum" ? 6 : 8,
+            limit: item.Type == "MusicAlbum" ? 6 : 6,
             fields: "PrimaryImageAspectRatio,DateCreated,UserData"
         };
 
@@ -505,25 +529,28 @@
             Fields: "ItemCounts,DateCreated,AudioInfo"
         };
 
-        if (item.Type == "Season" && item.IndexNumber) {
+        var promise;
 
-            query.ParentId = item.SeriesId;
-            query.Recursive = true;
-            query.IncludeItemTypes = "Episode";
-            query.AiredDuringSeason = item.IndexNumber;
-            query.SortBy = "PremiereDate,SortName";
+        if (item.Type == "Series") {
+
+            promise = ApiClient.getSeasons(item.Id, {
+
+                userId: user.Id
+            });
+        }
+        else if (item.Type == "Season") {
+
+            // Use dedicated episodes endpoint
+            promise = ApiClient.getEpisodes(item.SeriesId, {
+
+                seasonId: item.Id,
+                userId: user.Id
+            });
         }
 
-        if (item.Type == "Series" || item.Type == "Season") {
-            if (!user.Configuration.DisplayMissingEpisodes) {
-                query.IsMissing = false;
-            }
-            if (!user.Configuration.DisplayUnairedEpisodes) {
-                query.IsVirtualUnaired = false;
-            }
-        }
+        promise = promise || ApiClient.getItems(Dashboard.getCurrentUserId(), query);
 
-        ApiClient.getItems(Dashboard.getCurrentUserId(), query).done(function (result) {
+        promise.done(function (result) {
 
             if (item.Type == "MusicAlbum") {
 
@@ -601,7 +628,7 @@
 
         var html = '';
 
-        var reviews = result.ItemReviews;
+        var reviews = result.Items;
 
         for (var i = 0, length = reviews.length; i < length; i++) {
 

@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
@@ -38,10 +37,8 @@ namespace MediaBrowser.Controller.Entities
             Tags = new List<string>();
             ThemeSongIds = new List<Guid>();
             ThemeVideoIds = new List<Guid>();
-            LocalTrailerIds = new List<Guid>();
             LockedFields = new List<MetadataFields>();
             Taglines = new List<string>();
-            RemoteTrailers = new List<MediaUrl>();
             ImageSources = new List<ImageSourceInfo>();
         }
 
@@ -88,28 +85,10 @@ namespace MediaBrowser.Controller.Entities
         public Guid Id { get; set; }
 
         /// <summary>
-        /// Gets or sets the budget.
-        /// </summary>
-        /// <value>The budget.</value>
-        public double? Budget { get; set; }
-
-        /// <summary>
         /// Gets or sets the taglines.
         /// </summary>
         /// <value>The taglines.</value>
         public List<string> Taglines { get; set; }
-
-        /// <summary>
-        /// Gets or sets the revenue.
-        /// </summary>
-        /// <value>The revenue.</value>
-        public double? Revenue { get; set; }
-
-        /// <summary>
-        /// Gets or sets the trailer URL.
-        /// </summary>
-        /// <value>The trailer URL.</value>
-        public List<MediaUrl> RemoteTrailers { get; set; }
 
         /// <summary>
         /// Return the id that should be used to key display prefs for this item.
@@ -139,6 +118,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the type of the location.
         /// </summary>
         /// <value>The type of the location.</value>
+        [IgnoreDataMember]
         public virtual LocationType LocationType
         {
             get
@@ -483,6 +463,22 @@ namespace MediaBrowser.Controller.Entities
         [IgnoreDataMember]
         public Folder Parent { get; set; }
 
+        [IgnoreDataMember]
+        public IEnumerable<Folder> Parents
+        {
+            get
+            {
+                var parent = Parent;
+
+                while (parent != null)
+                {
+                    yield return parent;
+
+                    parent = parent.Parent;
+                }
+            }
+        }
+
         /// <summary>
         /// When the item first debuted. For movies this could be premiere date, episodes would be first aired
         /// </summary>
@@ -630,11 +626,6 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The original run time ticks.</value>
         public long? OriginalRunTimeTicks { get; set; }
         /// <summary>
-        /// Gets or sets the aspect ratio.
-        /// </summary>
-        /// <value>The aspect ratio.</value>
-        public string AspectRatio { get; set; }
-        /// <summary>
         /// Gets or sets the production year.
         /// </summary>
         /// <value>The production year.</value>
@@ -655,7 +646,6 @@ namespace MediaBrowser.Controller.Entities
 
         public List<Guid> ThemeSongIds { get; set; }
         public List<Guid> ThemeVideoIds { get; set; }
-        public List<Guid> LocalTrailerIds { get; set; }
 
         [IgnoreDataMember]
         public virtual string OfficialRatingForComparison
@@ -898,7 +888,11 @@ namespace MediaBrowser.Controller.Entities
 
                 themeVideosChanged = await RefreshThemeVideos(cancellationToken, forceSave, forceRefresh, allowSlowProviders).ConfigureAwait(false);
 
-                localTrailersChanged = await RefreshLocalTrailers(cancellationToken, forceSave, forceRefresh, allowSlowProviders).ConfigureAwait(false);
+                var hasTrailers = this as IHasTrailers;
+                if (hasTrailers != null)
+                {
+                    localTrailersChanged = await RefreshLocalTrailers(hasTrailers, cancellationToken, forceSave, forceRefresh, allowSlowProviders).ConfigureAwait(false);
+                }
             }
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -918,18 +912,18 @@ namespace MediaBrowser.Controller.Entities
             return changed;
         }
 
-        private async Task<bool> RefreshLocalTrailers(CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false, bool allowSlowProviders = true)
+        private async Task<bool> RefreshLocalTrailers(IHasTrailers item, CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false, bool allowSlowProviders = true)
         {
             var newItems = LoadLocalTrailers().ToList();
             var newItemIds = newItems.Select(i => i.Id).ToList();
 
-            var itemsChanged = !LocalTrailerIds.SequenceEqual(newItemIds);
+            var itemsChanged = !item.LocalTrailerIds.SequenceEqual(newItemIds);
 
             var tasks = newItems.Select(i => i.RefreshMetadata(cancellationToken, forceSave, forceRefresh, allowSlowProviders, resetResolveArgs: false));
 
             var results = await Task.WhenAll(tasks).ConfigureAwait(false);
 
-            LocalTrailerIds = newItemIds;
+            item.LocalTrailerIds = newItemIds;
 
             return itemsChanged || results.Contains(true);
         }
@@ -1134,6 +1128,11 @@ namespace MediaBrowser.Controller.Entities
             return changed;
         }
 
+        public virtual string GetClientTypeName()
+        {
+            return GetType().Name;
+        }
+
         /// <summary>
         /// Determines if the item is considered new based on user settings
         /// </summary>
@@ -1187,6 +1186,7 @@ namespace MediaBrowser.Controller.Entities
                 if (existing != null)
                 {
                     existing.Type = PersonType.GuestStar;
+                    existing.SortOrder = person.SortOrder ?? existing.SortOrder;
                     return;
                 }
             }
@@ -1203,15 +1203,28 @@ namespace MediaBrowser.Controller.Entities
                 else
                 {
                     // Was there, if no role and we have one - fill it in
-                    if (string.IsNullOrWhiteSpace(existing.Role) && !string.IsNullOrWhiteSpace(person.Role)) existing.Role = person.Role;
+                    if (string.IsNullOrWhiteSpace(existing.Role) && !string.IsNullOrWhiteSpace(person.Role))
+                    {
+                        existing.Role = person.Role;
+                    }
+
+                    existing.SortOrder = person.SortOrder ?? existing.SortOrder;
                 }
             }
             else
             {
+                var existing = People.FirstOrDefault(p =>
+                            string.Equals(p.Name, person.Name, StringComparison.OrdinalIgnoreCase) &&
+                            string.Equals(p.Type, person.Type, StringComparison.OrdinalIgnoreCase));
+
                 // Check for dupes based on the combination of Name and Type
-                if (!People.Any(p => string.Equals(p.Name, person.Name, StringComparison.OrdinalIgnoreCase) && string.Equals(p.Type, person.Type, StringComparison.OrdinalIgnoreCase)))
+                if (existing == null)
                 {
                     People.Add(person);
+                }
+                else
+                {
+                    existing.SortOrder = person.SortOrder ?? existing.SortOrder;
                 }
             }
         }
@@ -1219,7 +1232,6 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Adds the tagline.
         /// </summary>
-        /// <param name="item">The item.</param>
         /// <param name="tagline">The tagline.</param>
         /// <exception cref="System.ArgumentNullException">tagline</exception>
         public void AddTagline(string tagline)
@@ -1736,6 +1748,15 @@ namespace MediaBrowser.Controller.Entities
 
             // See if we can avoid a file system lookup by looking for the file in ResolveArgs
             return metaFileEntry == null ? FileSystem.GetLastWriteTimeUtc(imagePath) : FileSystem.GetLastWriteTimeUtc(metaFileEntry);
+        }
+
+        /// <summary>
+        /// Gets the file system path to delete when the item is to be deleted
+        /// </summary>
+        /// <returns></returns>
+        public virtual IEnumerable<string> GetDeletePaths()
+        {
+            return new[] { Path };
         }
     }
 }

@@ -42,7 +42,7 @@ namespace MediaBrowser.Providers.Music
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         public override bool Supports(BaseItem item)
         {
-            return item is Artist || item is MusicArtist || item is MusicAlbum;
+            return item is MusicArtist || item is MusicAlbum;
         }
 
         /// <summary>

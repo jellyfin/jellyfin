@@ -72,6 +72,11 @@
     height: 180px;
 }
 
+/* Fixes button running outside of list */
+.btnRemoveFromEditorList .ui-btn-inner {
+    padding-right: 0!important;
+}
+
 @media all and (min-width: 500px) {
 
     .availableImagesList {
@@ -95,6 +100,7 @@
         overflow-y: scroll;
         overflow-x: auto!important;
         display: block;
+        border-right: 1px solid #555;
     }
 
     .editPageInnerContent {
@@ -108,6 +114,35 @@
     }
 }
 
+.editorTile {
+    display: inline-block;
+    margin: 5px;
+    padding: 10px;
+    border: 1px solid #505050;
+    background-image: -webkit-gradient(linear,left top,left bottom,from(#444),to(#2d2d2d));
+    background-image: -webkit-linear-gradient(#444,#2d2d2d);
+    background-image: -moz-linear-gradient(#444,#2d2d2d);
+    background-image: -ms-linear-gradient(#444,#2d2d2d);
+    background-image: -o-linear-gradient(#444,#2d2d2d);
+    background-image: linear-gradient(#444,#2d2d2d);
+}
+
+.imageEditorTile {
+    width: 192px;
+    padding-bottom: 0;
+}
+
+.editorTile p {
+    margin: .5em 0;
+}
+
+.editorTile .ui-field-contain {
+    margin: 0 0 .5em;
+}
+
+.imageEditorCollapsible .ui-collapsible-content {
+    padding: 0 0 1em 0;
+}
 
 @media all and (min-width: 700px) {
 
@@ -169,6 +204,17 @@
 
     .availableImagesList {
         width: 1400px;
+    }
+}
+
+@media all and (min-width: 1800px) {
+
+    .editPageSidebar {
+        width: 22.5%;
+    }
+
+    .editPageInnerContent {
+        width: 75%;
     }
 }
 

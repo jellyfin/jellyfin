@@ -12,7 +12,7 @@ namespace MediaBrowser.Controller.Entities.Audio
     {
         public MusicGenre()
         {
-            UserItemCounts = new Dictionary<Guid, ItemByNameCounts>();
+            UserItemCountList = new List<ItemByNameCounts>();
         }
 
         /// <summary>
@@ -25,6 +25,6 @@ namespace MediaBrowser.Controller.Entities.Audio
         }
 
         [IgnoreDataMember]
-        public Dictionary<Guid, ItemByNameCounts> UserItemCounts { get; set; }
+        public List<ItemByNameCounts> UserItemCountList { get; set; }
     }
 }

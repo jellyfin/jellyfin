@@ -1,29 +1,29 @@
 ﻿@font-face {
-    font-family: "Open Sans";
-    font-style: normal;
-    font-weight: 700;
-    src: local("Open Sans Bold"), local("OpenSans-Bold"), url(http://themes.googleusercontent.com/static/fonts/opensans/v6/k3k702ZOKiLJc3WVjuplzJ1r3JsPcQLi8jytr04NNhU.woff) format('woff');
-}
-
-@font-face {
-    font-family: "Open Sans";
+    font-family: 'Open Sans';
     font-style: normal;
     font-weight: 300;
-    src: local("Open Sans Light"), local("OpenSans-Light"), url(http://themes.googleusercontent.com/static/fonts/opensans/v6/DXI1ORHCpsQm3Vp6mXoaTZ1r3JsPcQLi8jytr04NNhU.woff) format('woff');
+    src: local('Open Sans Light'), local('OpenSans-Light'), url(http://themes.googleusercontent.com/static/fonts/opensans/v6/DXI1ORHCpsQm3Vp6mXoaTXhCUOGz7vYGh680lGh-uXM.woff) format('woff');
 }
 
 @font-face {
-    font-family: "Open Sans";
-    font-style: normal;
-    font-weight: 800;
-    src: local("Open Sans Extrabold"), local("OpenSans-Extrabold"), url(http://themes.googleusercontent.com/static/fonts/opensans/v6/EInbV5DfGHOiMmvb1Xr-hp1r3JsPcQLi8jytr04NNhU.woff) format('woff');
-}
-
-@font-face {
-    font-family: "Open Sans";
+    font-family: 'Open Sans';
     font-style: normal;
     font-weight: 400;
-    src: local("Open Sans"), local("OpenSans"), url(http://themes.googleusercontent.com/static/fonts/opensans/v6/K88pR3goAWT7BTt32Z01mz8E0i7KZn-EPnyo3HZu7kw.woff) format('woff');
+    src: local('Open Sans'), local('OpenSans'), url(http://themes.googleusercontent.com/static/fonts/opensans/v6/cJZKeOuBrn4kERxqtaUH3T8E0i7KZn-EPnyo3HZu7kw.woff) format('woff');
+}
+
+@font-face {
+    font-family: 'Open Sans';
+    font-style: normal;
+    font-weight: 700;
+    src: local('Open Sans Bold'), local('OpenSans-Bold'), url(http://themes.googleusercontent.com/static/fonts/opensans/v6/k3k702ZOKiLJc3WVjuplzHhCUOGz7vYGh680lGh-uXM.woff) format('woff');
+}
+
+@font-face {
+    font-family: 'Open Sans';
+    font-style: normal;
+    font-weight: 800;
+    src: local('Open Sans Extrabold'), local('OpenSans-Extrabold'), url(http://themes.googleusercontent.com/static/fonts/opensans/v6/EInbV5DfGHOiMmvb1Xr-hnhCUOGz7vYGh680lGh-uXM.woff) format('woff');
 }
 
 * {
@@ -32,7 +32,7 @@
 
 body {
     overflow-y: scroll!important;
-    font-size: 14px;
+    font-size: 13px;
 }
 
 .textlink {
@@ -43,10 +43,22 @@ body {
         text-decoration: underline;
     }
 
+* {
+    font-family: 'Open Sans', Arial, Helvetica, sans-serif;
+    text-shadow: none;
+}
+
+.ui-header .ui-btn-inner, .ui-footer .ui-btn-inner, .ui-mini .ui-btn-inner {
+    font-size: 13px;
+}
+
+.ui-li-desc {
+    font-size: 13px;
+}
+
 h1 {
-    font-family: 'Segoe UI Light', 'Open Sans', Arial, Helvetica, sans-serif;
-    font-weight: 200;
-    font-size: 22pt;
+    font-weight: 300;
+    font-size: 2.22em;
 }
 
 .toolsSidebar h1 {
@@ -59,29 +71,21 @@ h1 {
 }
 
 h2 {
-    font-family: 'Segoe UI Semiight', 'Open Sans', Arial, Helvetica, sans-serif;
     font-weight: 400;
-    font-size: 20pt;
+    font-size: 1.68em;
 }
 
 h1 a {
-    font-weight: 200!important;
+    font-weight: 300!important;
     text-decoration: none;
+}
+
+.libraryPage h1 a {
     color: #fff!important;
 }
 
-    h1 a:hover {
-        text-decoration: underline;
-    }
-
-@media all and (min-width: 750px) {
-    h1 {
-        font-size: 28pt;
-    }
-
-    h2 {
-        font-size: 22pt;
-    }
+h1 a:hover {
+    text-decoration: underline;
 }
 
 pre, textarea.pre {
@@ -217,8 +221,9 @@ form, .readOnlyContent {
 }
 
 .fieldDescription {
-    font-size: 11px;
+    font-size: 12px;
     padding-left: 5px;
+    font-weight: normal;
 }
 
 .warningFieldDescription {
@@ -441,7 +446,6 @@ form, .readOnlyContent {
 .directoryPickerHeadline {
     border: 1px solid #f7c942;
     color: #222;
-    text-shadow: 0 1px 0 #fff;
     background: #fff9df;
     background-image: -webkit-gradient(linear,left top,left bottom,from(#fffadf),to(#fff3a5));
     background-image: -webkit-linear-gradient(#fffadf,#fff3a5);
@@ -710,8 +714,8 @@ progress {
 /* Detail Page*/
 
 .imgUserItemRating {
-    height: 17px;
-    width: 17px;
+    height: 16px;
+    width: 16px;
     margin-right: 1em;
     cursor: pointer;
     vertical-align: top;
@@ -720,10 +724,6 @@ progress {
     .imgUserItemRating:hover {
         opacity: .5;
     }
-
-.imgPlayed, .imgPlayedOff {
-    border-radius: 4px;
-}
 
 /* Now playing bar */
 #nowPlayingBar {
@@ -1000,7 +1000,7 @@ input[type="range"]::-ms-fill-upper {
 }
 
 .mediaFlyoutOptionSecondaryText {
-    font-size: 11px;
+    font-size: 12px;
     color: #999;
     margin-top: 3px;
     white-space: nowrap;
@@ -1032,6 +1032,34 @@ input[type="range"]::-ms-fill-upper {
 
     .itemVideo {
         left: -560px;
+    }
+}
+
+@media (min-width: 1700px) {
+    .itemVideo:not(.fullscreenVideo) {
+        width: 500px;
+    }
+
+    .positionSlider {
+        width: 500px;
+    }
+
+    .itemVideo {
+        left: -660px;
+    }
+}
+
+@media (min-width: 2400px) {
+    .itemVideo:not(.fullscreenVideo) {
+        width: 550px;
+    }
+
+    .positionSlider {
+        width: 550px;
+    }
+
+    .itemVideo {
+        left: -710px;
     }
 }
 

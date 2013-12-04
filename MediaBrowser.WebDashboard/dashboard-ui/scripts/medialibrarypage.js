@@ -56,7 +56,7 @@
     },
 
     shouldRefreshLibraryAfterChanges: function () {
-        
+
         return $($.mobile.activePage).is('#mediaLibraryPage');
     },
 
@@ -84,10 +84,16 @@
         Dashboard.hideLoadingMsg();
     },
 
+    changeCollectionType: function () {
+
+        Dashboard.alert("To change the collection type, please remove and rebuild the collection with the new type.");
+
+    },
+
     getVirtualFolderHtml: function (virtualFolder, isCollapsed, index) {
 
         isCollapsed = isCollapsed ? "true" : "false";
-        var html = '<div class="collapsibleVirtualFolder" data-role="collapsible" data-collapsed="' + isCollapsed + '" data-content-theme="c">';
+        var html = '<div class="collapsibleVirtualFolder" data-mini="true" data-role="collapsible" data-collapsed="' + isCollapsed + '" data-content-theme="c">';
 
         html += '<h3>' + virtualFolder.Name + '</h3>';
 
@@ -118,8 +124,9 @@
         html += '</ul>';
 
         html += '<p>';
-        html += '<button type="button" data-inline="true" data-icon="minus" data-folderindex="' + index + '" onclick="MediaLibraryPage.deleteVirtualFolder(this);" data-mini="true">Remove collection</button>';
-        html += '<button type="button" data-inline="true" data-icon="pencil" data-folderindex="' + index + '" onclick="MediaLibraryPage.renameVirtualFolder(this);" data-mini="true">Rename collection</button>';
+        html += '<button type="button" data-inline="true" data-icon="minus" data-folderindex="' + index + '" onclick="MediaLibraryPage.deleteVirtualFolder(this);" data-mini="true">Remove</button>';
+        html += '<button type="button" data-inline="true" data-icon="pencil" data-folderindex="' + index + '" onclick="MediaLibraryPage.renameVirtualFolder(this);" data-mini="true">Rename</button>';
+        html += '<button type="button" data-inline="true" data-icon="pencil" data-folderindex="' + index + '" onclick="MediaLibraryPage.changeCollectionType(this);" data-mini="true">Change type</button>';
         html += '</p>';
 
         html += '</div>';
@@ -226,7 +233,7 @@
                 if (showCollectionType) {
 
                     var collectionType = $('#selectCollectionType', popup).val();
-                    
+
                     // The server expects an empty value for mixed
                     if (collectionType == 'mixed') {
                         collectionType = '';
@@ -245,7 +252,7 @@
 
     getCollectionTypeOptionsHtml: function () {
 
-        return MediaLibraryPage.getCollectionTypeOptions().filter(function(i) {
+        return MediaLibraryPage.getCollectionTypeOptions().filter(function (i) {
 
             return i.isSelectable !== false;
 

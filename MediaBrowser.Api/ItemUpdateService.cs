@@ -3,6 +3,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using ServiceStack.ServiceHost;
@@ -13,6 +14,14 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Api
 {
+    [Route("/LiveTv/Channels/{ChannelId}", "POST")]
+    [Api(("Updates an item"))]
+    public class UpdateChannel : BaseItemDto, IReturnVoid
+    {
+        [ApiMember(Name = "ChannelId", Description = "The id of the channel", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public string ChannelId { get; set; }
+    }
+
     [Route("/Items/{ItemId}", "POST")]
     [Api(("Updates an item"))]
     public class UpdateItem : BaseItemDto, IReturnVoid
@@ -73,11 +82,13 @@ namespace MediaBrowser.Api
     {
         private readonly ILibraryManager _libraryManager;
         private readonly IDtoService _dtoService;
+        private readonly ILiveTvManager _liveTv;
 
-        public ItemUpdateService(ILibraryManager libraryManager, IDtoService dtoService)
+        public ItemUpdateService(ILibraryManager libraryManager, IDtoService dtoService, ILiveTvManager liveTv)
         {
             _libraryManager = libraryManager;
             _dtoService = dtoService;
+            _liveTv = liveTv;
         }
 
         public void Post(UpdateItem request)
@@ -87,13 +98,34 @@ namespace MediaBrowser.Api
             Task.WaitAll(task);
         }
 
-        private Task UpdateItem(UpdateItem request)
+        public void Post(UpdateChannel request)
+        {
+            var task = UpdateItem(request);
+
+            Task.WaitAll(task);
+        }
+
+        private async Task UpdateItem(UpdateItem request)
         {
             var item = _dtoService.GetItemByDtoId(request.ItemId);
 
+            var newEnableInternetProviders = request.EnableInternetProviders ?? true;
+            var dontFetchMetaChanged = item.DontFetchMeta != !newEnableInternetProviders;
+
             UpdateItem(request, item);
 
-            return _libraryManager.UpdateItem(item, ItemUpdateType.MetadataEdit, CancellationToken.None);
+            await _libraryManager.UpdateItem(item, ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+
+            if (dontFetchMetaChanged && item.IsFolder)
+            {
+                var folder = (Folder)item;
+
+                foreach (var child in folder.RecursiveChildren.ToList())
+                {
+                    child.DontFetchMeta = !newEnableInternetProviders;
+                    await _libraryManager.UpdateItem(child, ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+                }
+            }
         }
 
         public void Post(UpdatePerson request)
@@ -106,6 +138,15 @@ namespace MediaBrowser.Api
         private async Task UpdateItem(UpdatePerson request)
         {
             var item = GetPerson(request.PersonName, _libraryManager);
+
+            UpdateItem(request, item);
+
+            await _libraryManager.UpdateItem(item, ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+        }
+
+        private async Task UpdateItem(UpdateChannel request)
+        {
+            var item = _liveTv.GetChannel(request.Id);
 
             UpdateItem(request, item);
 
@@ -126,15 +167,6 @@ namespace MediaBrowser.Api
             UpdateItem(request, item);
 
             await _libraryManager.UpdateItem(item, ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
-
-            var musicArtist = Artist.FindMusicArtist(item, _libraryManager);
-
-            if (musicArtist != null)
-            {
-                UpdateItem(request, musicArtist);
-
-                await _libraryManager.UpdateItem(musicArtist, ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
-            }
         }
 
         public void Post(UpdateStudio request)
@@ -216,8 +248,12 @@ namespace MediaBrowser.Api
                 item.ForcedSortName = request.SortName;
             }
 
-            item.Budget = request.Budget;
-            item.Revenue = request.Revenue;
+            var hasBudget = item as IHasBudget;
+            if (hasBudget != null)
+            {
+                hasBudget.Budget = request.Budget;
+                hasBudget.Revenue = request.Revenue;
+            }
 
             var hasCriticRating = item as IHasCriticRating;
             if (hasCriticRating != null)
@@ -235,8 +271,16 @@ namespace MediaBrowser.Api
             item.Overview = request.Overview;
             item.Genres = request.Genres;
             item.Tags = request.Tags;
-            item.Studios = request.Studios.Select(x => x.Name).ToList();
-            item.People = request.People.Select(x => new PersonInfo { Name = x.Name, Role = x.Role, Type = x.Type }).ToList();
+
+            if (request.Studios != null)
+            {
+                item.Studios = request.Studios.Select(x => x.Name).ToList();
+            }
+
+            if (request.People != null)
+            {
+                item.People = request.People.Select(x => new PersonInfo { Name = x.Name, Role = x.Role, Type = x.Type }).ToList();
+            }
 
             if (request.DateCreated.HasValue)
             {
@@ -247,11 +291,16 @@ namespace MediaBrowser.Api
             item.PremiereDate = request.PremiereDate.HasValue ? request.PremiereDate.Value.ToUniversalTime() : (DateTime?)null;
             item.ProductionYear = request.ProductionYear;
             item.ProductionLocations = request.ProductionLocations;
-            item.AspectRatio = request.AspectRatio;
             item.Language = request.Language;
             item.OfficialRating = request.OfficialRating;
             item.CustomRating = request.CustomRating;
 
+            var hasAspectRatio = item as IHasAspectRatio;
+            if (hasAspectRatio != null)
+            {
+                hasAspectRatio.AspectRatio = request.AspectRatio;
+            }
+            
             item.DontFetchMeta = !(request.EnableInternetProviders ?? true);
             if (request.EnableInternetProviders ?? true)
             {

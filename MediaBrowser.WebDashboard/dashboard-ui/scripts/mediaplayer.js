@@ -108,6 +108,10 @@
             var position = Math.floor(10000000 * endTime) + startTimeTicksOffset;
 
             ApiClient.reportPlaybackStopped(Dashboard.getCurrentUserId(), currentItem.Id, position);
+
+            if (currentItem.MediaType == "Video") {
+                ApiClient.stopActiveEncodings();
+            }
         }
 
         function playNextAfterEnded() {
@@ -184,9 +188,13 @@
                     sendProgressUpdate(currentItem.Id);
 
                 });
-                startTimeTicksOffset = ticks;
 
-                element.src = currentSrc;
+                ApiClient.stopActiveEncodings().done(function () {
+
+                    startTimeTicksOffset = ticks;
+
+                    element.src = currentSrc;
+                });
             }
         }
 
@@ -479,7 +487,8 @@
                 maxWidth: Math.min(screenWidth, 1280),
                 StartTimeTicks: 0,
                 SubtitleStreamIndex: getInitialSubtitleStreamIndex(item.MediaStreams, user),
-                AudioStreamIndex: getInitialAudioStreamIndex(item.MediaStreams, user)
+                AudioStreamIndex: getInitialAudioStreamIndex(item.MediaStreams, user),
+                deviceId: ApiClient.deviceId()
             };
 
             var videoStream = item.MediaStreams.filter(function (i) {
@@ -502,20 +511,6 @@
 
             var h264Codec = 'h264';
             var h264AudioCodec = 'aac';
-
-            if (videoStream && videoStream.Width && videoStream.Width <= baseParams.maxWidth) {
-
-                var videoCodec = (videoStream.Codec || '').toLowerCase();
-
-                if (videoCodec.indexOf('h264') != -1 &&
-                    videoStream.Width &&
-                    videoStream.Width <= 1280 &&
-                    videoStream.BitRate &&
-                    videoStream.BitRate <= 2000000) {
-
-                    //h264Codec = 'copy';
-                }
-            }
 
             if (startPosition) {
                 baseParams.StartTimeTicks = startPosition;
@@ -541,12 +536,6 @@
                 timeStampOffsetMs: 0
             }));
 
-            var ogvVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.ogv', $.extend({}, baseParams, {
-                videoCodec: 'theora',
-                audioCodec: 'Vorbis'
-            }));
-
-
             var html = '';
 
             var requiresControls = $.browser.msie || $.browser.android || ($.browser.webkit && !$.browser.chrome);
@@ -570,7 +559,6 @@
                 html += '<source type="video/webm" src="' + webmVideoUrl + '" />';
             }
 
-            html += '<source type="video/ogg" src="' + ogvVideoUrl + '" />';
             html += '</video';
 
             var nowPlayingBar = $('#nowPlayingBar').show();
@@ -660,6 +648,12 @@
                     setCurrentTime(getCurrentTicks(this), item, true);
                 }
 
+            }).on("error", function () {
+
+
+                var errorCode = this.error ? this.error.code : '';
+                console.log('Html5 Video error code: ' + errorCode);
+
             }).on("ended.playbackstopped", onPlaybackStopped).on('ended.playnext', playNextAfterEnded);
 
             currentItem = item;
@@ -747,7 +741,7 @@
 
         self.canPlay = function (item) {
 
-            if (item.Type == "MusicAlbum" || item.Type == "MusicArtist" || item.Type == "Artist" || item.Type == "MusicGenre") {
+            if (item.Type == "MusicAlbum" || item.Type == "MusicArtist" || item.Type == "MusicGenre") {
                 return true;
             }
 
@@ -762,7 +756,7 @@
             return self.canPlayMediaType(item.MediaType);
         };
 
-        self.getPlayUrl = function(item) {
+        self.getPlayUrl = function (item) {
 
 
             if (item.GameSystem == "Nintendo" && item.MediaType == "Game" && item.ProviderIds.NesBox && item.ProviderIds.NesBoxRom) {
@@ -810,7 +804,7 @@
             Dashboard.getCurrentUser().done(function (user) {
 
                 var item = items[0];
-                
+
                 var videoType = (item.VideoType || "").toLowerCase();
 
                 var expirementalText = "This feature is experimental. It may not work at all with some titles. Do you wish to continue?";
@@ -1202,10 +1196,24 @@
             }
         };
 
-        self.queueItem = function (item) {
+        self.queueItemsNext = function (items) {
 
-            self.playlist.push(item);
+            var insertIndex = 1;
 
+            for (var i = 0, length = items.length; i < length; i++) {
+
+                self.playlist.splice(insertIndex, 0, items[i]);
+
+                insertIndex++;
+            }
+        };
+
+        self.queueItems = function (items) {
+
+            for (var i = 0, length = items.length; i < length; i++) {
+
+                self.playlist.push(items[i]);
+            }
         };
 
         self.queue = function (id) {
@@ -1222,16 +1230,12 @@
 
                     }).done(function (result) {
 
-                        for (var i = 0, length = result.Items.length; i < length; i++) {
-
-                            self.queueItem(result.Items[i]);
-
-                        }
+                        self.queueItems(result.Items);
 
                     });
 
                 } else {
-                    self.queueItem(item);
+                    self.queueItems([item]);
                 }
 
             });
@@ -1248,11 +1252,7 @@
 
             }).done(function (result) {
 
-                for (var i = 0, length = result.Items.length; i < length; i++) {
-
-                    self.queueItem(result.Items[i]);
-
-                }
+                self.queueItems(result.Items);
 
             });
 

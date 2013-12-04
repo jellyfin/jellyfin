@@ -37,7 +37,6 @@
 }
 
 .posterItemStoreText {
-    font-family: 'Open Sans', sans-serif;
     font-weight: normal;
     text-overflow: ellipsis;
     overflow: hidden;
@@ -65,6 +64,10 @@
 .posterItemText + .posterItemText {
     padding-top: 2px;
     border-top: 0;
+}
+
+.posterItemText + .posterItemProgress {
+    padding-top: 0;
 }
 
 .posterItemDefaultText {

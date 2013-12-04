@@ -50,6 +50,33 @@ namespace MediaBrowser.Controller.Entities.TV
             get { return true; }
         }
 
+        [IgnoreDataMember]
+        public int? AiredSeasonNumber
+        {
+            get
+            {
+                return AirsAfterSeasonNumber ?? AirsBeforeSeasonNumber ?? PhysicalSeasonNumber;
+            }
+        }
+
+        [IgnoreDataMember]
+        public int? PhysicalSeasonNumber
+        {
+            get
+            {
+                var value = ParentIndexNumber;
+
+                if (value.HasValue)
+                {
+                    return value;
+                }
+
+                var season = Parent as Season;
+
+                return season != null ? season.IndexNumber : null;
+            }
+        }
+
         /// <summary>
         /// We roll up into series
         /// </summary>
@@ -59,7 +86,7 @@ namespace MediaBrowser.Controller.Entities.TV
         {
             get
             {
-                return Season;
+                return FindParent<Season>();
             }
         }
 
@@ -152,20 +179,6 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         /// <summary>
-        /// The _season
-        /// </summary>
-        private Season _season;
-        /// <summary>
-        /// This Episode's Season Instance
-        /// </summary>
-        /// <value>The season.</value>
-        [IgnoreDataMember]
-        public Season Season
-        {
-            get { return _season ?? (_season = FindParent<Season>()); }
-        }
-
-        /// <summary>
         /// This is the ending episode number for double episodes.
         /// </summary>
         /// <value>The index number.</value>
@@ -220,6 +233,47 @@ namespace MediaBrowser.Controller.Entities.TV
         public bool IsVirtualUnaired
         {
             get { return LocationType == Model.Entities.LocationType.Virtual && IsUnaired; }
+        }
+
+        [IgnoreDataMember]
+        public Guid? SeasonId
+        {
+            get
+            {
+                // First see if the parent is a Season
+                var season = Parent as Season;
+
+                if (season != null)
+                {
+                    return season.Id;
+                }
+
+                var seasonNumber = ParentIndexNumber;
+
+                // Parent is a Series
+                if (seasonNumber.HasValue)
+                {
+                    var series = Parent as Series;
+
+                    if (series != null)
+                    {
+                        season = series.Children.OfType<Season>()
+                            .FirstOrDefault(i => i.IndexNumber.HasValue && i.IndexNumber.Value == seasonNumber.Value);
+
+                        if (season != null)
+                        {
+                            return season.Id;
+                        }
+                    }
+                }
+
+                return null;
+            }
+        }
+
+        public override IEnumerable<string> GetDeletePaths()
+        {
+            return new[] { Path };
         }
     }
 }

@@ -6,7 +6,7 @@
             stopInterval();
         }
 
-        ApiClient.getScheduledTasks().done(function (tasks) {
+        ApiClient.getScheduledTasks({isHidden: false}).done(function (tasks) {
 
             if (updateInterval) {
                 populateList(page, tasks);

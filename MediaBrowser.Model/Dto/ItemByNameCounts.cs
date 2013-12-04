@@ -1,4 +1,5 @@
-﻿
+﻿using System;
+
 namespace MediaBrowser.Model.Dto
 {
     /// <summary>
@@ -6,6 +7,8 @@ namespace MediaBrowser.Model.Dto
     /// </summary>
     public class ItemByNameCounts
     {
+        public Guid UserId { get; set; }
+
         /// <summary>
         /// Gets or sets the total count.
         /// </summary>

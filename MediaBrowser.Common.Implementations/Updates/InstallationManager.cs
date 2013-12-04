@@ -168,7 +168,7 @@ namespace MediaBrowser.Common.Implementations.Updates
             {
                 // Let dev users get results more often for testing purposes
                 var cacheLength = _config.CommonConfiguration.SystemUpdateLevel == PackageVersionClass.Dev
-                                      ? TimeSpan.FromMinutes(15)
+                                      ? TimeSpan.FromMinutes(5)
                                       : TimeSpan.FromHours(12);
 
                 if ((DateTime.UtcNow - _lastPackageListResult.Item2) < cacheLength)

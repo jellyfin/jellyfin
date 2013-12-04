@@ -42,4 +42,9 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
         IEnumerable<ITaskTrigger> GetDefaultTriggers();
     }
+
+    public interface IConfigurableScheduledTask
+    {
+        bool IsHidden { get; }
+    }
 }

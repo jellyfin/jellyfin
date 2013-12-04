@@ -119,7 +119,8 @@ namespace MediaBrowser.Providers.Savers
                     "IMDBrating",
                     "Description",
                     "Artist",
-                    "Album"
+                    "Album",
+                    "TmdbCollectionName"
                 });
 
             // Set last refreshed so that the provider doesn't trigger after the file save

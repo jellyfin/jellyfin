@@ -153,7 +153,7 @@
                     imgUrl = "css/images/items/list/person.png";
                     isDefault = true;
                 }
-                else if (item.Type == "Artist") {
+                else if (item.Type == "MusicArtist") {
 
                     imgUrl = "css/images/items/list/audiocollection.png";
                     isDefault = true;
@@ -229,7 +229,7 @@
 
                     //html += '<p class="itemMiscInfo">' + childText + '</p>';
                 }
-                else if (item.Type == "Genre" || item.Type == "Studio" || item.Type == "Person" || item.Type == "Artist" || item.Type == "MusicGenre" || item.Type == "GameGenre") {
+                else if (item.Type == "Genre" || item.Type == "Studio" || item.Type == "Person" || item.Type == "MusicArtist" || item.Type == "MusicGenre" || item.Type == "GameGenre") {
 
                     html += LibraryBrowser.getItemCountsHtml(options, item);
                 }
@@ -392,8 +392,8 @@
             }
 
             html += LibraryBrowser.getSongHeaderCellHtml('Runtime', 'tabletColumn', options.enableColumnSorting, 'Runtime,AlbumArtist,Album,SortName', options.sortBy, options.sortOrder);
-            html += LibraryBrowser.getSongHeaderCellHtml('Play Count', 'tabletColumn', options.enableColumnSorting, 'PlayCount,AlbumArtist,Album,SortName', options.sortBy, options.sortOrder);
-            html += LibraryBrowser.getSongHeaderCellHtml('', 'tabletColumn userDataCell', options.enableColumnSorting);
+            html += LibraryBrowser.getSongHeaderCellHtml('Plays', 'desktopColumn', options.enableColumnSorting, 'PlayCount,AlbumArtist,Album,SortName', options.sortBy, options.sortOrder);
+            html += LibraryBrowser.getSongHeaderCellHtml('', 'desktopColumn userDataCell', options.enableColumnSorting);
 
             html += '</tr>';
 
@@ -426,10 +426,10 @@
 
                     if (item.AlbumArtist) {
 
-                        html += '<td><a href="itembynamedetails.html?context=music&artist=' + ApiClient.encodeName(item.AlbumArtist) + '">' + item.AlbumArtist + '</a></td>';
+                        html += '<td class="tabletColumn"><a href="itembynamedetails.html?context=music&musicartist=' + ApiClient.encodeName(item.AlbumArtist) + '">' + item.AlbumArtist + '</a></td>';
 
                     } else {
-                        html += '<td></td>';
+                        html += '<td class="tabletColumn"></td>';
                     }
                 }
 
@@ -450,9 +450,9 @@
 
                 html += '<td class="tabletColumn">' + time + '</td>';
 
-                html += '<td class="tabletColumn">' + (item.UserData ? item.UserData.PlayCount : 0) + '</td>';
+                html += '<td class="desktopColumn">' + (item.UserData ? item.UserData.PlayCount : 0) + '</td>';
 
-                html += '<td class="tabletColumn userDataCell">' + LibraryBrowser.getUserDataIconsHtml(item) + '</td>';
+                html += '<td class="desktopColumn userDataCell">' + LibraryBrowser.getUserDataIconsHtml(item) + '</td>';
 
                 html += '</tr>';
             }
@@ -470,7 +470,7 @@
 
                 var artist = artists[i];
 
-                html.push('<a href="itembynamedetails.html?context=music&artist=' + ApiClient.encodeName(artist) + '">' + artist + '</a>');
+                html.push('<a href="itembynamedetails.html?context=music&musicartist=' + ApiClient.encodeName(artist) + '">' + artist + '</a>');
 
             }
 
@@ -495,7 +495,7 @@
             html += '<ul data-role="listview" style="min-width: 150px;" data-theme="c">';
             html += '<li data-role="list-divider" data-theme="a">Play Menu</li>';
 
-            if (itemType == "Artist") {
+            if (itemType == "MusicArtist") {
                 html += '<li><a href="#" onclick="MediaPlayer.playArtist(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Play</a></li>';
             } else if (itemType != "MusicGenre") {
                 html += '<li><a href="#" onclick="MediaPlayer.playById(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Play</a></li>';
@@ -508,7 +508,7 @@
                 html += '<li><a href="#" onclick="MediaPlayer.playInstantMixFromAlbum(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Instant Mix</a></li>';
                 html += '<li><a href="#" onclick="MediaPlayer.shuffleFolder(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Shuffle</a></li>';
             }
-            else if (itemType == "Artist") {
+            else if (itemType == "MusicArtist") {
                 html += '<li><a href="#" onclick="MediaPlayer.playInstantMixFromArtist(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Instant Mix</a></li>';
                 html += '<li><a href="#" onclick="MediaPlayer.shuffleArtist(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Shuffle</a></li>';
             }
@@ -522,7 +522,7 @@
             }
 
             if (isPlaying) {
-                if (itemType == "Artist") {
+                if (itemType == "MusicArtist") {
                     html += '<li><a href="#" onclick="MediaPlayer.queueArtist(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Queue</a></li>';
                 } else if (itemType != "MusicGenre") {
                     html += '<li><a href="#" onclick="MediaPlayer.queue(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Queue</a></li>';
@@ -557,6 +557,9 @@
             // Handle search hints
             var id = item.Id || item.ItemId;
 
+            if (item.Type == "Channel") {
+                return "livetvchannel.html?id=" + id;
+            }
             if (item.Type == "Series") {
                 return "itemdetails.html?id=" + id;
             }
@@ -587,8 +590,11 @@
             if (item.Type == "Person") {
                 return "itembynamedetails.html?person=" + ApiClient.encodeName(item.Name) + "&context=" + itemByNameContext;
             }
-            if (item.Type == "Artist") {
-                return "itembynamedetails.html?artist=" + ApiClient.encodeName(item.Name) + "&context=" + (itemByNameContext || "music");
+
+            if (item.Type == "MusicArtist") {
+                if (itemByNameContext == "music") {
+                    return "itembynamedetails.html?musicartist=" + ApiClient.encodeName(item.Name) + "&context=" + (itemByNameContext || "music");
+                }
             }
 
             return item.IsFolder ? (id ? "itemList.html?parentId=" + id : "#") : "itemdetails.html?id=" + id;
@@ -634,7 +640,7 @@
 
                 return ApiClient.getGameGenreImageUrl(item.Name, options);
             }
-            if (item.Type == "Artist") {
+            if (item.Type == "MusicArtist") {
 
                 return ApiClient.getArtistImageUrl(item.Name, options);
             }
@@ -729,7 +735,7 @@
                 else if (item.ImageTags && item.ImageTags.Primary) {
 
                     height = 300;
-                    width = primaryImageAspectRatio ? parseInt(height * primaryImageAspectRatio) : null;
+                    width = primaryImageAspectRatio ? (height * primaryImageAspectRatio).toFixed(0) : null;
 
                     imgUrl = ApiClient.getImageUrl(item.Id, {
                         type: "Primary",
@@ -742,7 +748,7 @@
                 else if (item.AlbumId && item.AlbumPrimaryImageTag) {
 
                     height = 300;
-                    width = primaryImageAspectRatio ? parseInt(height * primaryImageAspectRatio) : null;
+                    width = primaryImageAspectRatio ? (height * primaryImageAspectRatio).toFixed(0) : null;
 
                     imgUrl = ApiClient.getImageUrl(item.AlbumId, {
                         type: "Primary",
@@ -911,6 +917,15 @@
             return html;
         },
 
+        isYesterday: function (date1) {
+
+            var today = new Date();
+            today.setDate(today.getDate() - 1);
+
+            return date1.getFullYear() == today.getFullYear() && date1.getDate() == today.getDate();
+
+        },
+
         isSameDay: function (date1, date2) {
 
             return date1.getFullYear() == date2.getFullYear() && date1.getDate() == date2.getDate();
@@ -932,6 +947,10 @@
 
             if (LibraryBrowser.isSameDay(date, currentDate)) {
                 return "Today";
+            }
+
+            if (LibraryBrowser.isYesterday(date)) {
+                return "Yesterday";
             }
 
             return weekday[date.getDay()] + " " + date.toLocaleDateString();
@@ -1042,7 +1061,7 @@
                 }
             }
 
-            if (!item.IsFolder && item.Type !== "Genre" && item.Type !== "Studio" && item.Type !== "Person" && item.Type !== "Artist" && item.Type !== "MusicGenre" && item.Type !== "GameGenre") {
+            if (!item.IsFolder && item.Type !== "Genre" && item.Type !== "Studio" && item.Type !== "Person" && item.Type !== "MusicArtist" && item.Type !== "MusicGenre" && item.Type !== "GameGenre") {
 
                 var date = item.DateCreated;
                 var isPlayed = item.UserData && item.UserData.Played;
@@ -1162,13 +1181,13 @@
             var html = [];
 
             if (item.AlbumArtist && item.Type == "Audio") {
-                html.push('<a class="detailPageParentLink" href="itembynamedetails.html?context=music&artist=' + ApiClient.encodeName(item.AlbumArtist) + '">' + item.AlbumArtist + '</a>');
+                html.push('<a class="detailPageParentLink" href="itembynamedetails.html?context=music&musicartist=' + ApiClient.encodeName(item.AlbumArtist) + '">' + item.AlbumArtist + '</a>');
             }
             else if (item.AlbumArtist && item.Type == "MusicAlbum") {
-                html.push('<a class="detailPageParentLink" href="itembynamedetails.html?context=music&artist=' + ApiClient.encodeName(item.AlbumArtist) + '">' + item.AlbumArtist + '</a>');
+                html.push('<a class="detailPageParentLink" href="itembynamedetails.html?context=music&musicartist=' + ApiClient.encodeName(item.AlbumArtist) + '">' + item.AlbumArtist + '</a>');
             }
             else if (item.Artists && item.Artists.length && item.Type == "MusicVideo") {
-                html.push('<a class="detailPageParentLink" href="itembynamedetails.html?context=music&artist=' + ApiClient.encodeName(item.Artists[0]) + '">' + item.Artists[0] + '</a>');
+                html.push('<a class="detailPageParentLink" href="itembynamedetails.html?context=music&musicartist=' + ApiClient.encodeName(item.Artists[0]) + '">' + item.Artists[0] + '</a>');
             }
             else if (item.SeriesName && item.Type == "Episode") {
 
@@ -1181,7 +1200,7 @@
             }
             else if (item.ParentIndexNumber && item.Type == "Episode") {
 
-                html.push('<a class="detailPageParentLink" href="itemdetails.html?id=' + item.ParentId + '">Season ' + item.ParentIndexNumber + '</a>');
+                html.push('<a class="detailPageParentLink" href="itemdetails.html?id=' + item.SeasonId + '">Season ' + item.ParentIndexNumber + '</a>');
             }
             else if (item.Album && item.Type == "Audio" && (item.AlbumId || item.ParentId)) {
                 html.push('<a class="detailPageParentLink" href="itemdetails.html?id=' + (item.AlbumId || item.ParentId) + '">' + item.Album + '</a>');
@@ -1246,7 +1265,7 @@
             }
             if (providerIds.Musicbrainz) {
 
-                if (item.Type == "MusicArtist" || item.Type == "Artist") {
+                if (item.Type == "MusicArtist") {
                     links.push('<a class="textlink" href="http://musicbrainz.org/artist/' + providerIds.Musicbrainz + '" target="_blank">MusicBrainz</a>');
                 } else {
                     links.push('<a class="textlink" href="http://musicbrainz.org/release/' + providerIds.Musicbrainz + '" target="_blank">MusicBrainz Release</a>');
@@ -1457,7 +1476,7 @@
 
             var html = '';
 
-            if (item.Type != "Audio") {
+            if (item.Type != "Audio" && item.Type != "Season" && item.Type != "Series") {
                 html += LibraryBrowser.getItemProgressBarHtml(item);
             }
 
@@ -1481,15 +1500,15 @@
             else if (type == "GameGenre") {
                 itemId = item.Name;
             }
-            else if (type == "Artist") {
+            else if (type == "MusicArtist") {
                 itemId = item.Name;
             }
 
-            if (item.MediaType || item.IsFolder) {
+            if ((item.MediaType || item.IsFolder) && item.Type != "Channel" && item.Type != "MusicArtist") {
                 if (userData.Played) {
-                    html += '<img data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgPlayed" src="css/images/userdata/playedon.png" alt="Played" title="Played" onclick="LibraryBrowser.markPlayed(this);return false;" />';
+                    html += '<img data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgPlayed" src="css/images/userdata/checkedon.png" alt="Played" title="Played" onclick="LibraryBrowser.markPlayed(this);return false;" />';
                 } else {
-                    html += '<img data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgPlayedOff" src="css/images/userdata/playedoff.png" alt="Played" title="Played" onclick="LibraryBrowser.markPlayed(this);return false;" />';
+                    html += '<img data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgPlayedOff" src="css/images/userdata/checkedoff.png" alt="Played" title="Played" onclick="LibraryBrowser.markPlayed(this);return false;" />';
                 }
             }
 
@@ -1530,10 +1549,10 @@
             }
 
             if (markAsPlayed) {
-                link.src = "css/images/userdata/playedon.png";
+                link.src = "css/images/userdata/checkedon.png";
                 $link.addClass('imgPlayed').removeClass('imgPlayedOff');
             } else {
-                link.src = "css/images/userdata/playedoff.png";
+                link.src = "css/images/userdata/checkedoff.png";
                 $link.addClass('imgPlayedOff').removeClass('imgPlayed');
             }
         },
@@ -1553,7 +1572,7 @@
             else if (type == "Studio") {
                 ApiClient.updateFavoriteStudioStatus(Dashboard.getCurrentUserId(), id, markAsFavorite);
             }
-            else if (type == "Artist") {
+            else if (type == "MusicArtist") {
                 ApiClient.updateFavoriteArtistStatus(Dashboard.getCurrentUserId(), id, markAsFavorite);
             }
             else if (type == "Genre") {
@@ -1640,7 +1659,7 @@
             else if (type == "Studio") {
                 ApiClient.updateStudioRating(Dashboard.getCurrentUserId(), id, likes);
             }
-            else if (type == "Artist") {
+            else if (type == "MusicArtist") {
                 ApiClient.updateArtistRating(Dashboard.getCurrentUserId(), id, likes);
             }
             else if (type == "Genre") {
@@ -1665,7 +1684,7 @@
             else if (type == "Studio") {
                 ApiClient.clearStudioRating(Dashboard.getCurrentUserId(), id);
             }
-            else if (type == "Artist") {
+            else if (type == "MusicArtist") {
                 ApiClient.clearArtistRating(Dashboard.getCurrentUserId(), id);
             }
             else if (type == "Genre") {
@@ -1682,54 +1701,67 @@
             }
         },
 
-        getDetailImageHtml: function (item) {
+        getDetailImageHtml: function (item, href) {
 
             var imageTags = item.ImageTags || {};
+
+            if (item.PrimaryImageTag) {
+                imageTags.Primary = item.PrimaryImageTag;
+            }
 
             var html = '';
 
             var url;
 
+            var imageHeight = 510;
+
             if (imageTags.Primary) {
 
-                if (item.Type == "Person") {
+                if (item.Type == "Channel") {
+                    url = ApiClient.getUrl("LiveTV/Channels/" + item.Id + "/Images/Primary", {
+                        maxheight: imageHeight,
+                        tag: imageTags.Primary,
+                        type: "Primary"
+                    });
+                }
+                else if (item.Type == "Person") {
                     url = ApiClient.getPersonImageUrl(item.Name, {
-                        maxheight: 480,
+                        maxheight: imageHeight,
                         tag: imageTags.Primary,
                         type: "Primary"
                     });
                 }
                 else if (item.Type == "Genre") {
                     url = ApiClient.getGenreImageUrl(item.Name, {
-                        maxheight: 480,
+                        maxheight: imageHeight,
                         tag: imageTags.Primary,
                         type: "Primary"
                     });
                 }
                 else if (item.Type == "MusicGenre") {
                     url = ApiClient.getMusicGenreImageUrl(item.Name, {
-                        maxheight: 480,
+                        maxheight: imageHeight,
                         tag: imageTags.Primary,
                         type: "Primary"
                     });
                 }
                 else if (item.Type == "GameGenre") {
                     url = ApiClient.getGameGenreImageUrl(item.Name, {
-                        maxheight: 480,
+                        maxheight: imageHeight,
                         tag: imageTags.Primary,
                         type: "Primary"
                     });
                 }
                 else if (item.Type == "Studio") {
                     url = ApiClient.getStudioImageUrl(item.Name, {
-                        maxheight: 480,
+                        maxheight: imageHeight,
                         tag: imageTags.Primary,
                         type: "Primary"
                     });
                 }
-                else if (item.Type == "Artist") {
+                else if (item.Type == "MusicArtist") {
                     url = ApiClient.getArtistImageUrl(item.Name, {
-                        maxheight: 480,
+                        maxheight: imageHeight,
                         tag: imageTags.Primary,
                         type: "Primary"
                     });
@@ -1737,7 +1769,7 @@
                 else {
                     url = ApiClient.getImageUrl(item.Id, {
                         type: "Primary",
-                        maxheight: 480,
+                        maxheight: imageHeight,
                         tag: item.ImageTags.Primary
                     });
                 }
@@ -1746,42 +1778,42 @@
 
                 if (item.Type == "Person") {
                     url = ApiClient.getPersonImageUrl(item.Name, {
-                        maxheight: 480,
+                        maxheight: imageHeight,
                         tag: item.BackdropImageTags[0],
                         type: "Backdrop"
                     });
                 }
                 else if (item.Type == "Genre") {
                     url = ApiClient.getGenreImageUrl(item.Name, {
-                        maxheight: 480,
+                        maxheight: imageHeight,
                         tag: item.BackdropImageTags[0],
                         type: "Backdrop"
                     });
                 }
                 else if (item.Type == "MusicGenre") {
                     url = ApiClient.getMusicGenreImageUrl(item.Name, {
-                        maxheight: 480,
+                        maxheight: imageHeight,
                         tag: item.BackdropImageTags[0],
                         type: "Backdrop"
                     });
                 }
                 else if (item.Type == "GameGenre") {
                     url = ApiClient.getGameGenreImageUrl(item.Name, {
-                        maxheight: 480,
+                        maxheight: imageHeight,
                         tag: item.BackdropImageTags[0],
                         type: "Backdrop"
                     });
                 }
                 else if (item.Type == "Studio") {
                     url = ApiClient.getStudioImageUrl(item.Name, {
-                        maxheight: 480,
+                        maxheight: imageHeight,
                         tag: item.BackdropImageTags[0],
                         type: "Backdrop"
                     });
                 }
-                else if (item.Type == "Artist") {
+                else if (item.Type == "MusicArtist") {
                     url = ApiClient.getArtistImageUrl(item.Name, {
-                        maxheight: 480,
+                        maxheight: imageHeight,
                         tag: item.BackdropImageTags[0],
                         type: "Backdrop"
                     });
@@ -1789,7 +1821,7 @@
                 else {
                     url = ApiClient.getImageUrl(item.Id, {
                         type: "Backdrop",
-                        maxheight: 480,
+                        maxheight: imageHeight,
                         tag: item.BackdropImageTags[0]
                     });
                 }
@@ -1798,42 +1830,42 @@
 
                 if (item.Type == "Person") {
                     url = ApiClient.getPersonImageUrl(item.Name, {
-                        maxheight: 480,
+                        maxheight: imageHeight,
                         tag: imageTags.Thumb,
                         type: "Thumb"
                     });
                 }
                 else if (item.Type == "Genre") {
                     url = ApiClient.getGenreImageUrl(item.Name, {
-                        maxheight: 480,
+                        maxheight: imageHeight,
                         tag: imageTags.Thumb,
                         type: "Thumb"
                     });
                 }
                 else if (item.Type == "MusicGenre") {
                     url = ApiClient.getMusicGenreImageUrl(item.Name, {
-                        maxheight: 480,
+                        maxheight: imageHeight,
                         tag: imageTags.Thumb,
                         type: "Thumb"
                     });
                 }
                 else if (item.Type == "GameGenre") {
                     url = ApiClient.getGameGenreImageUrl(item.Name, {
-                        maxheight: 480,
+                        maxheight: imageHeight,
                         tag: imageTags.Thumb,
                         type: "Thumb"
                     });
                 }
                 else if (item.Type == "Studio") {
                     url = ApiClient.getStudioImageUrl(item.Name, {
-                        maxheight: 480,
+                        maxheight: imageHeight,
                         tag: imageTags.Thumb,
                         type: "Thumb"
                     });
                 }
-                else if (item.Type == "Artist") {
+                else if (item.Type == "MusicArtist") {
                     url = ApiClient.getArtistImageUrl(item.Name, {
-                        maxheight: 480,
+                        maxheight: imageHeight,
                         tag: imageTags.Thumb,
                         type: "Thumb"
                     });
@@ -1841,7 +1873,7 @@
                 else {
                     url = ApiClient.getImageUrl(item.Id, {
                         type: "Thumb",
-                        maxheight: 480,
+                        maxheight: imageHeight,
                         tag: item.ImageTags.Thumb
                     });
                 }
@@ -1850,7 +1882,7 @@
 
                 url = ApiClient.getImageUrl(item.Id, {
                     type: "Disc",
-                    maxheight: 480,
+                    maxheight: imageHeight,
                     tag: item.ImageTags.Disc
                 });
             }
@@ -1858,7 +1890,7 @@
 
                 url = ApiClient.getImageUrl(item.AlbumId, {
                     type: "Primary",
-                    maxheight: 480,
+                    maxheight: imageHeight,
                     tag: item.AlbumPrimaryImageTag
                 });
 
@@ -1875,6 +1907,9 @@
             else if (item.Type == "Genre" || item.Type == "Studio") {
                 url = "css/images/items/detail/video.png";
             }
+            else if (item.Type == "Channel") {
+                url = "css/images/items/detail/tv.png";
+            }
             else {
                 url = "css/images/items/detail/video.png";
             }
@@ -1882,12 +1917,14 @@
             var identifierName = "id";
             var identifierValue = item.Id;
 
-            if (item.Type == "Person" || item.Type == "Genre" || item.Type == "Studio" || item.Type == "Artist" || item.Type == "MusicGenre" || item.Type == "GameGenre") {
+            if (item.Type == "Person" || item.Type == "Genre" || item.Type == "Studio" || item.Type == "MusicArtist" || item.Type == "MusicGenre" || item.Type == "GameGenre") {
                 identifierName = item.Type;
                 identifierValue = ApiClient.encodeName(item.Name);
             }
 
-            var href = "itemgallery.html?" + identifierName + "=" + identifierValue;
+            if (!href) {
+                href = "itemgallery.html?" + identifierName + "=" + identifierValue;
+            }
 
             var linkToGallery = LibraryBrowser.shouldDisplayGallery(item);
 
@@ -1972,18 +2009,29 @@
                 }
             }
 
-            if (item.RunTimeTicks) {
+            var minutes;
+
+            if (item.RunTimeTicks && item.Type != "Series") {
 
                 if (item.Type == "Audio") {
 
                     miscInfo.push(Dashboard.getDisplayTime(item.RunTimeTicks));
                 } else {
-                    var minutes = item.RunTimeTicks / 600000000;
+                    minutes = item.RunTimeTicks / 600000000;
 
                     minutes = minutes || 1;
 
-                    miscInfo.push(parseInt(minutes) + "min");
+                    miscInfo.push(minutes.toFixed(0) + "min");
                 }
+            }
+
+            if (item.DurationMs) {
+
+                minutes = item.DurationMs / 60000;
+
+                minutes = minutes || 1;
+
+                miscInfo.push(minutes.toFixed(0) + "min");
             }
 
             if (item.OfficialRating && item.Type !== "Season" && item.Type !== "Episode") {
@@ -2049,7 +2097,7 @@
                         html += '&nbsp;&nbsp;/&nbsp;&nbsp;';
                     }
 
-                    var param = item.Type == "Audio" || item.Type == "Artist" || item.Type == "MusicArtist" || item.Type == "MusicAlbum" ? "musicgenre" : "genre";
+                    var param = item.Type == "Audio" || item.Type == "MusicArtist" || item.Type == "MusicAlbum" ? "musicgenre" : "genre";
 
                     if (item.MediaType == "Game") {
                         param = "gamegenre";
@@ -2303,6 +2351,10 @@
 
         html += '<a class="viewMenuLink viewMenuImageLink remoteControlMenuLink" href="#" onclick="RemoteControl.showMenu();" title="Remote Control"><img src="css/images/remote.png" alt="Remote Control" /></a>';
 
+        if (user.Configuration.IsAdministrator) {
+            html += '<a class="viewMenuLink viewMenuImageLink editorMenuLink" href="edititemmetadata.html" title="Metadata Manager"><img src="css/images/editor.png" alt=""Metadata Manager" /></a>';
+        }
+
         html += '<div class="viewMenuSecondary">';
 
         html += Search.getSearchHtml();
@@ -2312,7 +2364,7 @@
         if (user.PrimaryImageTag) {
 
             var url = ApiClient.getUserImageUrl(user.Id, {
-                width: 225,
+                height: 40,
                 tag: user.PrimaryImageTag,
                 type: "Primary"
             });
@@ -2396,7 +2448,7 @@
 
                     var counts = response1[0];
                     var liveTvServices = response2[0];
-                    
+
                     insertViews(page, user, counts, liveTvServices);
 
 

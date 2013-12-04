@@ -31,7 +31,8 @@ namespace MediaBrowser.Api.ScheduledTasks
     [Api(Description = "Gets scheduled tasks")]
     public class GetScheduledTasks : IReturn<List<TaskInfo>>
     {
-
+        [ApiMember(Name = "IsHidden", Description = "Optional filter tasks that are hidden, or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool? IsHidden { get; set; }
     }
 
     /// <summary>
@@ -112,10 +113,33 @@ namespace MediaBrowser.Api.ScheduledTasks
         /// <returns>IEnumerable{TaskInfo}.</returns>
         public object Get(GetScheduledTasks request)
         {
-            var result = TaskManager.ScheduledTasks.OrderBy(i => i.Name)
-                         .Select(ScheduledTaskHelpers.GetTaskInfo).ToList();
+            IEnumerable<IScheduledTaskWorker> result = TaskManager.ScheduledTasks
+                .OrderBy(i => i.Name);
 
-            return ToOptimizedResult(result);
+            if (request.IsHidden.HasValue)
+            {
+                var val = request.IsHidden.Value;
+
+                result = result.Where(i =>
+                {
+                    var isHidden = false;
+
+                    var configurableTask = i.ScheduledTask as IConfigurableScheduledTask;
+
+                    if (configurableTask != null)
+                    {
+                        isHidden = configurableTask.IsHidden;
+                    }
+
+                    return isHidden == val;
+                });
+            }
+
+            var infos = result
+                .Select(ScheduledTaskHelpers.GetTaskInfo)
+                .ToList();
+
+            return ToOptimizedResult(infos);
         }
 
         /// <summary>

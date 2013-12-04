@@ -73,6 +73,11 @@ namespace MediaBrowser.Common.Net
         /// <exception cref="MediaBrowser.Model.Net.HttpException"></exception>
         Task<string> GetTempFile(HttpRequestOptions options);
 
+        /// <summary>
+        /// Gets the temporary file response.
+        /// </summary>
+        /// <param name="options">The options.</param>
+        /// <returns>Task{HttpResponseInfo}.</returns>
         Task<HttpResponseInfo> GetTempFileResponse(HttpRequestOptions options);
     }
 }

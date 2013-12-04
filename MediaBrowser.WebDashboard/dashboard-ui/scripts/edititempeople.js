@@ -47,7 +47,7 @@
     }
 
     function constructPerson(item, person) {
-        var html = '<div class="tileItem posterTileItem">';
+        var html = '<div class="tileItem posterTileItem editorTile">';
         var imgUrl;
         var name = person.Name || "";
         var role = person.Role || "";
@@ -94,7 +94,7 @@
         
         if (item.LocationType !== "Offline") {
             html += '<span class="read">';
-            html += '<button type="button" class="edit" data-mini="true" data-inline="true"  onclick="EditItemPeoplePage.displayEdit(this)">Edit</button>';
+            html += '<button type="button" class="edit" data-mini="true" data-inline="true" data-icon="pencil" onclick="EditItemPeoplePage.displayEdit(this)">Edit</button>';
             html += '</span>';
         }
         
@@ -265,7 +265,7 @@
             }
         });
 
-    }).on('pageshow', "#editItemPeoplePage", function () {
+    }).on('pagebeforeshow', "#editItemPeoplePage", function () {
 
         var page = this;
 

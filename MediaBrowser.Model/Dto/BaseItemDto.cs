@@ -313,6 +313,12 @@ namespace MediaBrowser.Model.Dto
         public string SeriesId { get; set; }
 
         /// <summary>
+        /// Gets or sets the season identifier.
+        /// </summary>
+        /// <value>The season identifier.</value>
+        public string SeasonId { get; set; }
+        
+        /// <summary>
         /// Gets or sets the special feature count.
         /// </summary>
         /// <value>The special feature count.</value>

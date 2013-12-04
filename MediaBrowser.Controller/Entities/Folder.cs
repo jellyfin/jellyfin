@@ -90,7 +90,7 @@ namespace MediaBrowser.Controller.Entities
                 item.Id = item.Path.GetMBId(item.GetType());
             }
 
-            if (_children.Any(i => i.Id == item.Id))
+            if (ActualChildren.Any(i => i.Id == item.Id))
             {
                 throw new ArgumentException(string.Format("A child with the Id {0} already exists.", item.Id));
             }
@@ -108,14 +108,14 @@ namespace MediaBrowser.Controller.Entities
 
             await LibraryManager.CreateItem(item, cancellationToken).ConfigureAwait(false);
 
-            await ItemRepository.SaveChildren(Id, _children.Select(i => i.Id).ToList(), cancellationToken).ConfigureAwait(false);
+            await ItemRepository.SaveChildren(Id, ActualChildren.Select(i => i.Id).ToList(), cancellationToken).ConfigureAwait(false);
         }
 
         protected void AddChildrenInternal(IEnumerable<BaseItem> children)
         {
             lock (_childrenSyncLock)
             {
-                var newChildren = _children.ToList();
+                var newChildren = ActualChildren.ToList();
                 newChildren.AddRange(children);
                 _children = newChildren;
             }
@@ -124,7 +124,7 @@ namespace MediaBrowser.Controller.Entities
         {
             lock (_childrenSyncLock)
             {
-                var newChildren = _children.ToList();
+                var newChildren = ActualChildren.ToList();
                 newChildren.Add(child);
                 _children = newChildren;
             }
@@ -134,7 +134,7 @@ namespace MediaBrowser.Controller.Entities
         {
             lock (_childrenSyncLock)
             {
-                _children = _children.Except(children).ToList();
+                _children = ActualChildren.Except(children).ToList();
             }
         }
 
@@ -519,7 +519,7 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// The children
         /// </summary>
-        private IReadOnlyList<BaseItem> _children = new List<BaseItem>();
+        private IReadOnlyList<BaseItem> _children;
         /// <summary>
         /// The _children sync lock
         /// </summary>
@@ -532,13 +532,8 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                return _children;
+                return _children ?? (_children = LoadChildrenInternal());
             }
-        }
-
-        public void LoadSavedChildren()
-        {
-            _children = LoadChildrenInternal();
         }
 
         /// <summary>
@@ -758,7 +753,7 @@ namespace MediaBrowser.Controller.Entities
 
                 AddChildrenInternal(newItems);
 
-                await ItemRepository.SaveChildren(Id, _children.Select(i => i.Id).ToList(), cancellationToken).ConfigureAwait(false);
+                await ItemRepository.SaveChildren(Id, ActualChildren.Select(i => i.Id).ToList(), cancellationToken).ConfigureAwait(false);
 
                 //force the indexes to rebuild next time
                 if (IndexCache != null)
@@ -1007,8 +1002,7 @@ namespace MediaBrowser.Controller.Entities
                 return result;
             }
 
-            var initialCount = _children.Count;
-            var list = new List<BaseItem>(initialCount);
+            var list = new List<BaseItem>();
 
             AddChildrenToList(user, includeLinkedChildren, list, false, null);
 
@@ -1038,16 +1032,13 @@ namespace MediaBrowser.Controller.Entities
                     }
                 }
 
-                if (recursive)
+                if (recursive && child.IsFolder)
                 {
-                    var folder = child as Folder;
+                    var folder = (Folder)child;
 
-                    if (folder != null)
+                    if (folder.AddChildrenToList(user, includeLinkedChildren, list, true, filter))
                     {
-                        if (folder.AddChildrenToList(user, includeLinkedChildren, list, true, filter))
-                        {
-                            hasLinkedChildren = true;
-                        }
+                        hasLinkedChildren = true;
                     }
                 }
             }
@@ -1073,7 +1064,6 @@ namespace MediaBrowser.Controller.Entities
             return hasLinkedChildren;
         }
 
-        private int _lastRecursiveCount;
         /// <summary>
         /// Gets allowed recursive children of an item
         /// </summary>
@@ -1101,12 +1091,9 @@ namespace MediaBrowser.Controller.Entities
                 throw new ArgumentNullException("user");
             }
 
-            var initialCount = _lastRecursiveCount == 0 ? _children.Count : _lastRecursiveCount;
-            var list = new List<BaseItem>(initialCount);
+            var list = new List<BaseItem>();
 
             var hasLinkedChildren = AddChildrenToList(user, includeLinkedChildren, list, true, filter);
-
-            _lastRecursiveCount = list.Count;
 
             return hasLinkedChildren ? list.DistinctBy(i => i.Id).ToList() : list;
         }
@@ -1127,8 +1114,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>IEnumerable{BaseItem}.</returns>
         public IList<BaseItem> GetRecursiveChildren(Func<BaseItem, bool> filter)
         {
-            var initialCount = _lastRecursiveCount == 0 ? _children.Count : _lastRecursiveCount;
-            var list = new List<BaseItem>(initialCount);
+            var list = new List<BaseItem>();
 
             AddChildrenToList(list, true, filter);
 
@@ -1150,14 +1136,11 @@ namespace MediaBrowser.Controller.Entities
                     list.Add(child);
                 }
 
-                if (recursive)
+                if (recursive && child.IsFolder)
                 {
-                    var folder = child as Folder;
+                    var folder = (Folder)child;
 
-                    if (folder != null)
-                    {
-                        folder.AddChildrenToList(list, true, filter);
-                    }
+                    folder.AddChildrenToList(list, true, filter);
                 }
             }
         }

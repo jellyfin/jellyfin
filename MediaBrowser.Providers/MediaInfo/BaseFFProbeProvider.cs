@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using MediaBrowser.Common.MediaInfo;
+﻿using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.MediaInfo;
@@ -11,6 +10,7 @@ using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -228,14 +228,21 @@ namespace MediaBrowser.Providers.MediaInfo
             // Get stream bitrate
             if (stream.Type != MediaStreamType.Subtitle)
             {
+                var bitrate = 0;
+
                 if (!string.IsNullOrEmpty(streamInfo.bit_rate))
                 {
-                    stream.BitRate = int.Parse(streamInfo.bit_rate, UsCulture);
+                    bitrate = int.Parse(streamInfo.bit_rate, UsCulture);
                 }
                 else if (formatInfo != null && !string.IsNullOrEmpty(formatInfo.bit_rate))
                 {
                     // If the stream info doesn't have a bitrate get the value from the media format info
-                    stream.BitRate = int.Parse(formatInfo.bit_rate, UsCulture);
+                    bitrate = int.Parse(formatInfo.bit_rate, UsCulture);
+                }
+
+                if (bitrate > 0)
+                {
+                    stream.BitRate = bitrate;
                 }
             }
 

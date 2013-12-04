@@ -4,7 +4,7 @@
     <title>Media Browser</title>
 </head>
 <body>
-    <div id="editItemMetadataPage" data-role="page" class="page libraryPage metadataEditorPage" data-theme="a">
+    <div id="editItemMetadataPage" data-role="page" data-theme="a" class="page libraryPage metadataEditorPage">
         <div data-role="content editPageContent">
             <div class="editPageSidebar">
                 <div class="libraryTree">
@@ -30,20 +30,26 @@
                                 <div class="circle1"></div>
                                 <div style="margin-top: -15px;"></div>
                             </div>
-
-                            <button id="btnRefresh" type="button" data-icon="refresh" data-mini="true" data-theme="b" data-inline="true">Refresh</button>
-
-                            <div id="fldRecursive" style="display: none; vertical-align: bottom;">
-                                <label for="chkRecursive">Refresh child items</label>
-                                <input type="checkbox" id="chkRecursive" name="chkRecursive" data-mini="true" checked="checked" data-inline="true" />
+                            <div style="vertical-align: bottom; display: inline-block;">
+                                <button class="saveButtonContainer btnSave" type="submit" data-theme="b" data-icon="ok" data-mini="true" data-inline="true">
+                                    Save
+                                </button>
                             </div>
-                            <div style="display: inline-block;">
-                                <div id="fldDelete" style="vertical-align: bottom; display: none;">
-                                    <button id="btnDelete" type="button" data-icon="delete" data-mini="true" data-theme="a" data-inline="true">Delete</button>
+                            <div style="display: inline-block; vertical-align: bottom;">
+                                <div class="fldRefresh" style="display: none;">
+                                    <button id="btnRefresh" type="button" data-icon="refresh" data-mini="true" data-inline="true">Full Metadata Refresh</button>
                                 </div>
                             </div>
-                            <div style="margin: .5em 0 1em;">
-                                <div class="fieldDescription">A refresh will cause internet metadata to be re-downloaded (if enabled, and dependent on metadata settings).</div>
+                            <div style="display: inline-block; vertical-align: bottom;">
+                                <div id="fldRecursive" style="display: none;">
+                                    <label for="chkRecursive">Refresh child items</label>
+                                    <input type="checkbox" id="chkRecursive" name="chkRecursive" data-mini="true" checked="checked" data-inline="true" />
+                                </div>
+                            </div>
+                            <div style="vertical-align: bottom; display: inline-block;">
+                                <div id="fldDelete" style="display: none;">
+                                    <button id="btnDelete" type="button" data-icon="delete" data-mini="true" data-inline="true">Delete Item</button>
+                                </div>
                             </div>
                         </div>
 
@@ -56,15 +62,15 @@
                                 <label for="txtName">Name:</label>
                                 <input type="text" id="txtName" name="txtName" required="required" data-mini="true" />
                             </div>
-                            <div data-role="fieldcontain">
+                            <div data-role="fieldcontain" id="fldSortName" style="display: none;">
                                 <label for="txtSortName">Sort name:</label>
                                 <input type="text" id="txtSortName" name="txtSortName" data-mini="true" />
                             </div>
-                            <div data-role="fieldcontain">
+                            <div data-role="fieldcontain" id="fldSourceType" style="display: none;">
                                 <label for="txtDisplayMediaType">Source type:</label>
                                 <input type="text" id="txtDisplayMediaType" name="txtDisplayMediaType" data-mini="true" />
                             </div>
-                            <div data-role="fieldcontain">
+                            <div data-role="fieldcontain" id="fldDateAdded" style="display: none;">
                                 <label for="txtDateAdded">Date added:</label>
                                 <input type="date" id="txtDateAdded" name="txtDateAdded" data-mini="true" />
                             </div>
@@ -97,7 +103,7 @@
                                 <input type="number" id="txtCommunityRating" name="txtCommunityRating" step=".1" data-mini="true" />
                             </div>
                             <div id="fldCommunityVoteCount" style="display: none;" data-role="fieldcontain">
-                                <label for="txtCommunityVoteCount">Community vote count:</label>
+                                <label for="txtCommunityVoteCount">Vote count:</label>
                                 <input type="number" id="txtCommunityVoteCount" name="txtCommunityVoteCount" data-mini="true" />
                             </div>
                             <div data-role="fieldcontain" id="fldCriticRating" style="display: none;">
@@ -116,11 +122,11 @@
                                 <label for="txtOverview">Overview:</label>
                                 <textarea name="txtOverview" id="txtOverview" data-mini="true" data-role="fieldcontain"></textarea>
                             </div>
-                            <div data-role="fieldcontain">
+                            <div data-role="fieldcontain" id="fldPremiereDate" style="display: none;">
                                 <label id="lblPremiereDate" for="txtPremiereDate">Release date:</label>
                                 <input type="date" id="txtPremiereDate" name="txtPremiereDate" data-mini="true" />
                             </div>
-                            <div data-role="fieldcontain">
+                            <div data-role="fieldcontain" id="fldYear" style="display: none;">
                                 <label id="lblYear" for="txtProductionYear">Year:</label>
                                 <input type="number" id="txtProductionYear" name="txtProductionYear" data-mini="true" />
                             </div>
@@ -146,7 +152,7 @@
                                             <option value='Saturday'>Saturday</option>
                                             <option value='Sunday'>Sunday</option>
                                         </select>
-                                        <a data-role="button" data-theme="b" data-inline="true" data-mini="true" data-icon="plus" onclick="EditItemMetadataPage.addElementToEditableListview(this,EditItemMetadataPage.sortDaysOfTheWeek)">Add</a>
+                                        <a data-role="button" data-theme="b" data-inline="true" data-mini="true" data-icon="plus" data-iconpos="notext" onclick="EditItemMetadataPage.addElementToEditableListview(this,EditItemMetadataPage.sortDaysOfTheWeek)" style="vertical-align: top;">Add</a>
                                     </div>
                                     <ul data-role="listview" data-inset="true" data-split-icon="delete" id="listAirDays"></ul>
                                 </div>
@@ -199,7 +205,7 @@
                                 </select>
                             </div>
                         </div>
-                        <div data-role="collapsible" data-collapsed="false">
+                        <div data-role="collapsible" data-mini="true" data-collapsed="false">
                             <h3>External Id's</h3>
                             <div>
                                 <p id="albumAssociationMessage" style="display: none;">Associate this album with a movie, tv series and/or game, and we'll be able to link it to other items in your library.</p>
@@ -208,28 +214,28 @@
                                     <div style="display: inline-block; width: 250px;">
                                         <input class="txtProviderId" id="txtGamesDb" name="txtGamesDb" data-mini="true" />
                                     </div>
-                                    <a id="btnOpenGamesDb" href="#" target="_blank" data-icon="arrow-right" data-inline="true" data-iconpos="notext" data-role="button"></a>
+                                    <a id="btnOpenGamesDb" href="#" target="_blank" data-icon="arrow-right" data-inline="true" data-iconpos="notext" data-role="button" style="vertical-align: top;"></a>
                                 </div>
                                 <div data-role="fieldcontain" id="fldImdb" style="display: none;">
                                     <label for="txtImdb">Imdb:</label>
                                     <div style="display: inline-block; width: 250px;">
                                         <input class="txtProviderId" id="txtImdb" name="txtImdb" data-mini="true" />
                                     </div>
-                                    <a id="btnOpenImdb" href="#" target="_blank" data-icon="arrow-right" data-inline="true" data-iconpos="notext" data-role="button"></a>
+                                    <a id="btnOpenImdb" href="#" target="_blank" data-icon="arrow-right" data-inline="true" data-iconpos="notext" data-role="button" style="vertical-align: top;"></a>
                                 </div>
                                 <div data-role="fieldcontain" id="fldMusicBrainz" style="display: none;">
                                     <label for="txtMusicBrainz">MusicBrainz:</label>
                                     <div style="display: inline-block; width: 250px;">
                                         <input class="txtProviderId" id="txtMusicBrainz" name="txtMusicBrainz" data-mini="true" />
                                     </div>
-                                    <a id="btnOpenMusicbrainz" href="#" target="_blank" data-icon="arrow-right" data-inline="true" data-iconpos="notext" data-role="button"></a>
+                                    <a id="btnOpenMusicbrainz" href="#" target="_blank" data-icon="arrow-right" data-inline="true" data-iconpos="notext" data-role="button" style="vertical-align: top;"></a>
                                 </div>
                                 <div data-role="fieldcontain" id="fldMusicBrainzReleaseGroupId" style="display: none;">
                                     <label for="txtMusicBrainzReleaseGroupId">MusicBrainz Release Group Id:</label>
                                     <div style="display: inline-block; width: 250px;">
                                         <input class="txtProviderId" id="txtMusicBrainzReleaseGroupId" name="txtMusicBrainzReleaseGroupId" data-mini="true" />
                                     </div>
-                                    <a id="btnOpenMusicbrainzReleaseGroup" href="#" target="_blank" data-icon="arrow-right" data-inline="true" data-iconpos="notext" data-role="button"></a>
+                                    <a id="btnOpenMusicbrainzReleaseGroup" href="#" target="_blank" data-icon="arrow-right" data-inline="true" data-iconpos="notext" data-role="button" style="vertical-align: top;"></a>
                                 </div>
                                 <div data-role="fieldcontain" id="fldRottenTomatoes" style="display: none;">
                                     <label for="txtRottenTomatoes">Rotten Tomatoes:</label>
@@ -242,14 +248,14 @@
                                     <div style="display: inline-block; width: 250px;">
                                         <input class="txtProviderId" id="txtTmdb" name="txtTmdb" data-mini="true" />
                                     </div>
-                                    <a id="btnOpenTmdb" href="#" target="_blank" data-icon="arrow-right" data-inline="true" data-iconpos="notext" data-role="button"></a>
+                                    <a id="btnOpenTmdb" href="#" target="_blank" data-icon="arrow-right" data-inline="true" data-iconpos="notext" data-role="button" style="vertical-align: top;"></a>
                                 </div>
                                 <div data-role="fieldcontain" id="fldTvdb" style="display: none;">
                                     <label for="txtTvdb">TheTVDB:</label>
                                     <div style="display: inline-block; width: 250px;">
                                         <input class="txtProviderId" id="txtTvdb" name="txtTvdb" data-mini="true" />
                                     </div>
-                                    <a id="btnOpenTvdb" href="#" target="_blank" data-icon="arrow-right" data-inline="true" data-iconpos="notext" data-role="button"></a>
+                                    <a id="btnOpenTvdb" href="#" target="_blank" data-icon="arrow-right" data-inline="true" data-iconpos="notext" data-role="button" style="vertical-align: top;"></a>
                                 </div>
                                 <div data-role="fieldcontain" id="fldTvCom" style="display: none;">
                                     <label for="txtTvCom">TV.com:</label>
@@ -262,60 +268,60 @@
                                     <div style="display: inline-block; width: 250px;">
                                         <input class="txtProviderId" id="txtZap2It" name="txtZap2It" data-mini="true" />
                                     </div>
-                                    <a id="btnOpenZap2It" href="#" target="_blank" data-icon="arrow-right" data-inline="true" data-iconpos="notext" data-role="button"></a>
+                                    <a id="btnOpenZap2It" href="#" target="_blank" data-icon="arrow-right" data-inline="true" data-iconpos="notext" data-role="button" style="vertical-align: top;"></a>
                                 </div>
                                 <div data-role="fieldcontain" id="fldNesBoxName" style="display: none;">
                                     <label for="txtNesBoxName">NES/SNESbox Name:</label>
                                     <div style="display: inline-block; width: 250px;">
                                         <input class="txtProviderId" id="txtNesBoxName" name="txtNesBoxName" data-mini="true" />
                                     </div>
-                                    <a id="btnOpenNesBox" href="#" target="_blank" data-icon="arrow-right" data-inline="true" data-iconpos="notext" data-role="button"></a>
+                                    <a id="btnOpenNesBox" href="#" target="_blank" data-icon="arrow-right" data-inline="true" data-iconpos="notext" data-role="button" style="vertical-align: top;"></a>
                                 </div>
                                 <div data-role="fieldcontain" id="fldNesBoxRom" style="display: none;">
                                     <label for="txtNesBoxRom">NES/SNESbox Game Id:</label>
                                     <div style="display: inline-block; width: 250px;">
                                         <input class="txtProviderId" id="txtNesBoxRom" name="txtNesBoxRom" data-mini="true" />
                                     </div>
-                                    <a id="btnOpenNesBoxRom" href="#" target="_blank" data-icon="arrow-right" data-inline="true" data-iconpos="notext" data-role="button"></a>
+                                    <a id="btnOpenNesBoxRom" href="#" target="_blank" data-icon="arrow-right" data-inline="true" data-iconpos="notext" data-role="button" style="vertical-align: top;"></a>
                                 </div>
                             </div>
                         </div>
-                        <div data-role="collapsible" id="genresCollapsible" style="display: none;">
+                        <div data-role="collapsible" data-mini="true" id="genresCollapsible" style="display: none;">
                             <h3>Genres</h3>
                             <div data-role="editableListviewContainer">
                                 <div data-role="fieldcontain">
                                     <input type="text" data-mini="true" />
-                                    <a data-role="button" data-theme="b" data-inline="true" data-mini="true" data-icon="plus" onclick="EditItemMetadataPage.addElementToEditableListview(this)">Add</a>
+                                    <a data-role="button" data-theme="b" data-inline="true" data-mini="true" data-icon="plus" data-iconpos="notext" onclick="EditItemMetadataPage.addElementToEditableListview(this)" style="vertical-align: top;">Add</a>
                                 </div>
                                 <ul data-role="listview" data-inset="true" data-split-icon="delete" id="listGenres"></ul>
                             </div>
                         </div>
-                        <div data-role="collapsible" id="studiosCollapsible" style="display: none;">
+                        <div data-role="collapsible" data-mini="true" id="studiosCollapsible" style="display: none;">
                             <h3>Studios</h3>
                             <div data-role="editableListviewContainer">
                                 <div data-role="fieldcontain">
                                     <input type="text" data-mini="true" />
-                                    <a data-role="button" data-theme="b" data-inline="true" data-mini="true" data-icon="plus" onclick="EditItemMetadataPage.addElementToEditableListview(this)">Add</a>
+                                    <a data-role="button" data-theme="b" data-inline="true" data-mini="true" data-icon="plus" data-iconpos="notext" onclick="EditItemMetadataPage.addElementToEditableListview(this)" style="vertical-align: top;">Add</a>
                                 </div>
                                 <ul data-role="listview" data-inset="true" data-split-icon="delete" id="listStudios"></ul>
                             </div>
                         </div>
-                        <div data-role="collapsible">
+                        <div data-mini="true" data-role="collapsible" id="tagsCollapsible" style="display: none;">
                             <h3>Tags</h3>
                             <div data-role="editableListviewContainer">
                                 <div data-role="fieldcontain">
                                     <input type="text" data-mini="true" />
-                                    <a data-role="button" data-theme="b" data-inline="true" data-mini="true" data-icon="plus" onclick="EditItemMetadataPage.addElementToEditableListview(this)">Add</a>
+                                    <a data-role="button" data-theme="b" data-inline="true" data-mini="true" data-icon="plus" data-iconpos="notext" onclick="EditItemMetadataPage.addElementToEditableListview(this)" style="vertical-align: top;">Add</a>
                                 </div>
                                 <ul data-role="listview" data-inset="true" data-split-icon="delete" id="listTags"></ul>
                             </div>
                         </div>
-                        <div data-role="collapsible">
+                        <div data-role="collapsible" data-mini="true" id="metadataSettingsCollapsible" style="display: none;" data-collapsed="false">
                             <h3>Metadata Settings</h3>
                             <div>
                                 <p>
                                     <label for="enableInternetProviders">Enable internet metadata providers for this item.</label>
-                                    <input type="checkbox" name="enableInternetProviders" id="enableInternetProviders" onchange="EditItemMetadataPage.setProviderSettingsContainerVisibility(this)" />
+                                    <input data-mini="true" type="checkbox" name="enableInternetProviders" id="enableInternetProviders" onchange="EditItemMetadataPage.setProviderSettingsContainerVisibility(this)" />
                                 </p>
                                 <p>
                                     Slide a field to 'off' to lock it and prevent it's data from being changed.
@@ -324,9 +330,9 @@
                                 </div>
                             </div>
                         </div>
-                        <ul id="ulSave" data-role="listview" class="ulForm" style="display: none;">
+                        <ul data-role="listview" class="saveButtonContainer ulForm" style="display: none;">
                             <li>
-                                <button id="btnSave" type="submit" data-theme="b" data-icon="ok">
+                                <button class="btnSave" type="submit" data-theme="b" data-icon="ok" data-mini="true">
                                     Save
                                 </button>
                             </li>

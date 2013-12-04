@@ -105,7 +105,22 @@
 
         var html = '';
 
-        html += '<a class="searchHint" href="' + LibraryBrowser.getHref(hint) + '">';
+        var context;
+        
+        if (hint.Type == "Episode" || hint.Type == "Season" || hint.Type == "Series") {
+            context = "tv";
+        }
+        else if (hint.Type == "Game" || hint.Type == "GameSystem") {
+            context = "games";
+        }
+        else if (hint.Type == "MusicArtist" || hint.Type == "MusicAlbum") {
+            context = "music";
+        }
+        else if (hint.Type == "Movie" || hint.Type == "BoxSet" || hint.Type == "Trailer") {
+            context = "movie";
+        }
+
+        html += '<a class="searchHint" href="' + LibraryBrowser.getHref(hint, context) + '">';
 
         var imgUrl;
 
@@ -125,7 +140,7 @@
             imgUrl = "css/images/items/searchhints/tv.png";
 
         }
-        else if (hint.Type == "Audio" || hint.Type == "MusicAlbum" || hint.Type == "Artist") {
+        else if (hint.Type == "Audio" || hint.Type == "MusicAlbum" || hint.Type == "MusicArtist") {
 
             imgUrl = "css/images/items/searchhints/music.png";
 

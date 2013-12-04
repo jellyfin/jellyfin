@@ -68,7 +68,8 @@
             for (var i = 0, length = result.Items.length; i < length; i++) {
 
                 urls.push(LibraryBrowser.getImageUrl(result.Items[i], 'Primary', 0, {
-                    width: 160
+                    width: 160,
+                    EnableImageEnhancers: false
                 }));
 
             }
@@ -96,7 +97,8 @@
             for (var i = 0, length = result.Items.length; i < length; i++) {
 
                 urls.push(LibraryBrowser.getImageUrl(result.Items[i], 'Primary', 0, {
-                    width: 160
+                    width: 160,
+                    EnableImageEnhancers: false
                 }));
 
             }
@@ -124,7 +126,8 @@
             for (var i = 0, length = result.Items.length; i < length; i++) {
 
                 urls.push(LibraryBrowser.getImageUrl(result.Items[i], 'Primary', 0, {
-                    width: 160
+                    width: 160,
+                    EnableImageEnhancers: false
                 }));
 
             }
@@ -152,7 +155,8 @@
             for (var i = 0, length = result.Items.length; i < length; i++) {
 
                 urls.push(LibraryBrowser.getImageUrl(result.Items[i], 'Primary', 0, {
-                    width: 160
+                    width: 160,
+                    EnableImageEnhancers: false
                 }));
 
             }
@@ -190,7 +194,7 @@
                 showViewsHeader = true;
                 views.push({ id: "gamesView", name: "Games", url: "gamesrecommended.html", img: "css/images/items/list/gamecollection.png", background: "#E12026" });
             }
-            
+
             if (showViewsHeader) {
                 $('#viewsHeader', page).show();
             } else {
@@ -249,11 +253,6 @@
             }));
 
         });
-    });
-
-    $(document).on('pagebeforeshow', "#indexPage", function () {
-
-        var page = this;
 
         reloadTips(page);
 

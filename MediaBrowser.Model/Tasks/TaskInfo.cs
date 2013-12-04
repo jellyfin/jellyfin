@@ -57,6 +57,12 @@ namespace MediaBrowser.Model.Tasks
         public string Category { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance is hidden.
+        /// </summary>
+        /// <value><c>true</c> if this instance is hidden; otherwise, <c>false</c>.</value>
+        public bool IsHidden { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="TaskInfo"/> class.
         /// </summary>
         public TaskInfo()

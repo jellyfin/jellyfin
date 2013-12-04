@@ -97,73 +97,105 @@
         </div>
         <div data-role="panel" id="filterPanel" data-position="right" data-display="overlay" data-theme="b" data-position-fixed="true">
             <form>
-                <fieldset data-role="controlgroup">
-                    <legend>
-                        <strong>Filters:</strong>
-                    </legend>
-                    <input class="chkStandardFilter" type="checkbox" data-theme="c" name="chkPlayed" id="chkPlayed" data-filter="IsPlayed" data-mini="true">
-                    <label for="chkPlayed">Watched</label>
 
-                    <input class="chkStandardFilter" type="checkbox" data-theme="c" name="chkUnplayed" id="chkUnplayed" data-filter="IsUnPlayed" data-mini="true">
-                    <label for="chkUnplayed">Unwatched</label>
-
-                    <input class="chkStandardFilter" type="checkbox" data-theme="c" name="chkResumable" id="chkResumable" data-filter="IsResumable" data-mini="true">
-                    <label for="chkResumable">Resumable</label>
-
-                    <input class="chkStandardFilter" type="checkbox" data-theme="c" name="chkIsFavorite" id="chkIsFavorite" data-filter="IsFavorite" data-mini="true">
-                    <label for="chkIsFavorite">Favorite</label>
-
-                    <input class="chkStandardFilter" type="checkbox" data-theme="c" name="chkLikes" id="chkLikes" data-filter="Likes" data-mini="true">
-                    <label for="chkLikes">Likes</label>
-
-                    <input class="chkStandardFilter" type="checkbox" data-theme="c" name="chkDislikes" id="chkDislikes" data-filter="Dislikes" data-mini="true">
-                    <label for="chkDislikes">Dislikes</label>
+                <fieldset data-role="controlgroup" data-type="horizontal" style="margin-bottom: 1em;">
+                    <legend>Filters:</legend>
+                    <input type="radio" name="radioFilterTypes" id="radioBasicFilters" value="on" checked="checked" data-mini="true" data-theme="c">
+                    <label for="radioBasicFilters">Basic</label>
+                    <input type="radio" name="radioFilterTypes" id="radioAdvancedFilters" value="off" data-mini="true" data-theme="c">
+                    <label for="radioAdvancedFilters">Advanced</label>
                 </fieldset>
-                <fieldset data-role="controlgroup">
-                    <legend>
-                        <strong>Type:</strong>
-                    </legend>
+                <div class="basicFilters">
+                    <fieldset data-role="controlgroup">
+                        <legend>
+                            <strong>User Data:</strong>
+                        </legend>
+                        <input class="chkStandardFilter" type="checkbox" data-theme="c" name="chkPlayed" id="chkPlayed" data-filter="IsPlayed" data-mini="true">
+                        <label for="chkPlayed">Watched</label>
 
-                    <input class="chkVideoTypeFilter" type="checkbox" data-theme="c" name="chkBluray" id="chkBluray" data-filter="Bluray" data-mini="true">
-                    <label for="chkBluray">Bluray</label>
+                        <input class="chkStandardFilter" type="checkbox" data-theme="c" name="chkUnplayed" id="chkUnplayed" data-filter="IsUnPlayed" data-mini="true">
+                        <label for="chkUnplayed">Unwatched</label>
 
-                    <input class="chkVideoTypeFilter" type="checkbox" data-theme="c" name="chkDvd" id="chkDvd" data-filter="Dvd" data-mini="true">
-                    <label for="chkDvd">Dvd</label>
+                        <input class="chkStandardFilter" type="checkbox" data-theme="c" name="chkResumable" id="chkResumable" data-filter="IsResumable" data-mini="true">
+                        <label for="chkResumable">Resumable</label>
 
-                    <input class="chkVideoTypeFilter" type="checkbox" data-theme="c" name="chkIso" id="chkIso" data-filter="Iso" data-mini="true">
-                    <label for="chkIso">Iso</label>
+                        <input class="chkStandardFilter" type="checkbox" data-theme="c" name="chkIsFavorite" id="chkIsFavorite" data-filter="IsFavorite" data-mini="true">
+                        <label for="chkIsFavorite">Favorite</label>
 
-                    <input class="chkHDFilter" type="checkbox" data-theme="c" name="chkHD" id="chkHD" data-filter="IsHD" data-mini="true">
-                    <label for="chkHD">HD</label>
+                        <input class="chkStandardFilter" type="checkbox" data-theme="c" name="chkLikes" id="chkLikes" data-filter="Likes" data-mini="true">
+                        <label for="chkLikes">Likes</label>
 
-                    <input class="chkSDFilter" type="checkbox" data-theme="c" name="chkSD" id="chkSD" data-filter="IsHD" data-mini="true">
-                    <label for="chkSD">SD</label>
+                        <input class="chkStandardFilter" type="checkbox" data-theme="c" name="chkDislikes" id="chkDislikes" data-filter="Dislikes" data-mini="true">
+                        <label for="chkDislikes">Dislikes</label>
+                    </fieldset>
+                    <fieldset data-role="controlgroup">
+                        <legend>
+                            <strong>Type:</strong>
+                        </legend>
 
-                    <input class="chk3DFilter" type="checkbox" data-theme="c" name="chk3D" id="chk3D" data-filter="Digital3D,Sbs3D" data-mini="true">
-                    <label for="chk3D">3D</label>
-                </fieldset>
+                        <input class="chkVideoTypeFilter" type="checkbox" data-theme="c" name="chkBluray" id="chkBluray" data-filter="Bluray" data-mini="true">
+                        <label for="chkBluray">Bluray</label>
 
-                <fieldset data-role="controlgroup">
-                    <legend>
-                        <strong>Features:</strong>
-                    </legend>
+                        <input class="chkVideoTypeFilter" type="checkbox" data-theme="c" name="chkDvd" id="chkDvd" data-filter="Dvd" data-mini="true">
+                        <label for="chkDvd">Dvd</label>
 
-                    <input class="chkFeatureFilter" type="checkbox" data-theme="c" name="chkSubtitle" id="chkSubtitle" data-mini="true">
-                    <label for="chkSubtitle">Subtitles</label>
+                        <input class="chkVideoTypeFilter" type="checkbox" data-theme="c" name="chkIso" id="chkIso" data-filter="Iso" data-mini="true">
+                        <label for="chkIso">Iso</label>
 
-                    <input class="chkFeatureFilter" type="checkbox" data-theme="c" name="chkTrailer" id="chkTrailer" data-mini="true">
-                    <label for="chkTrailer">Trailer</label>
+                        <input class="chkHDFilter" type="checkbox" data-theme="c" name="chkHD" id="chkHD" data-filter="IsHD" data-mini="true">
+                        <label for="chkHD">HD</label>
 
-                    <input class="chkFeatureFilter" type="checkbox" data-theme="c" name="chkSpecialFeature" id="chkSpecialFeature" data-mini="true">
-                    <label for="chkSpecialFeature">Special features</label>
+                        <input class="chkSDFilter" type="checkbox" data-theme="c" name="chkSD" id="chkSD" data-filter="IsHD" data-mini="true">
+                        <label for="chkSD">SD</label>
 
-                    <input class="chkFeatureFilter" type="checkbox" data-theme="c" name="chkThemeSong" id="chkThemeSong" data-mini="true">
-                    <label for="chkThemeSong">Theme song</label>
+                        <input class="chk3DFilter" type="checkbox" data-theme="c" name="chk3D" id="chk3D" data-filter="Digital3D,Sbs3D" data-mini="true">
+                        <label for="chk3D">3D</label>
+                    </fieldset>
+                </div>
 
-                    <input class="chkFeatureFilter" type="checkbox" data-theme="c" name="chkThemeVideo" id="chkThemeVideo" data-mini="true">
-                    <label for="chkThemeVideo">Theme video</label>
+                <div class="advancedFilters" style="display: none;">
 
-                </fieldset>
+                    <fieldset data-role="controlgroup">
+                        <legend>
+                            <strong>Management:</strong>
+                        </legend>
+
+                        <input class="chkMissingImdbId" type="checkbox" data-theme="c" name="chkMissingImdbId" id="chkMissingImdbId" data-mini="true">
+                        <label for="chkMissingImdbId">Missing IMDb Id</label>
+
+                        <input class="chkMissingTmdbId" type="checkbox" data-theme="c" name="chkMissingTmdbId" id="chkMissingTmdbId" data-mini="true">
+                        <label for="chkMissingTmdbId">Missing Tmdb Id</label>
+
+                        <input class="chkMissingOverview" type="checkbox" data-theme="c" name="chkMissingOverview" id="chkMissingOverview" data-mini="true">
+                        <label for="chkMissingOverview">Missing Overview</label>
+
+                        <input class="chkYearMismatch" type="checkbox" data-theme="c" name="chkYearMismatch" id="chkYearMismatch" data-mini="true">
+                        <label for="chkYearMismatch">File/Metadata Years Mismatched</label>
+
+                    </fieldset>
+
+                    <fieldset data-role="controlgroup">
+                        <legend>
+                            <strong>Features:</strong>
+                        </legend>
+
+                        <input class="chkFeatureFilter" type="checkbox" data-theme="c" name="chkSubtitle" id="chkSubtitle" data-mini="true">
+                        <label for="chkSubtitle">Subtitles</label>
+
+                        <input class="chkFeatureFilter" type="checkbox" data-theme="c" name="chkTrailer" id="chkTrailer" data-mini="true">
+                        <label for="chkTrailer">Trailer</label>
+
+                        <input class="chkFeatureFilter" type="checkbox" data-theme="c" name="chkSpecialFeature" id="chkSpecialFeature" data-mini="true">
+                        <label for="chkSpecialFeature">Special features</label>
+
+                        <input class="chkFeatureFilter" type="checkbox" data-theme="c" name="chkThemeSong" id="chkThemeSong" data-mini="true">
+                        <label for="chkThemeSong">Theme song</label>
+
+                        <input class="chkFeatureFilter" type="checkbox" data-theme="c" name="chkThemeVideo" id="chkThemeVideo" data-mini="true">
+                        <label for="chkThemeVideo">Theme video</label>
+
+                    </fieldset>
+                </div>
 
             </form>
         </div>

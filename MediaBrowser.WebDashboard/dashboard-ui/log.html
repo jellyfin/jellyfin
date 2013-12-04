@@ -16,10 +16,13 @@
                     <a href="about.html" data-role="button">About</a>
                 </div>
                 <p>
+                    Log path: <span id="logPath"></span>
+                </p>
+                <p>
                     <label for="chkAutoScroll">Auto-scroll</label>
                     <input type="checkbox" id="chkAutoScroll" onchange="LogPage.updateAutoScroll(this.checked);" name="chkAutoScroll" data-inline="true" />
                 </p>
-                <textarea id="logContents" class="pre" style="overflow-y:hidden;"></textarea>
+                <textarea id="logContents" class="pre" style="overflow-y: hidden;"></textarea>
                 <p>
                     <label for="chkAutoScrollBottom">Auto-scroll</label>
                     <input type="checkbox" id="chkAutoScrollBottom" name="chkAutoScrollBottom" onchange="LogPage.updateAutoScroll(this.checked);" data-inline="true" />

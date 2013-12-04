@@ -173,6 +173,8 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <returns>Task{System.Boolean}.</returns>
         public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
         {
+            item.ValidateImages();
+
             var video = (Video)item;
 
             // Double check this here in case force was used

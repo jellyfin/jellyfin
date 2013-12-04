@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.LiveTv;
+﻿using MediaBrowser.Common.Net;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,19 +24,88 @@ namespace MediaBrowser.Controller.LiveTv
         Task<IEnumerable<ChannelInfo>> GetChannelsAsync(CancellationToken cancellationToken);
 
         /// <summary>
-        /// Gets the recordings asynchronous.
+        /// Cancels the timer asynchronous.
         /// </summary>
-        /// <param name="query">The query.</param>
+        /// <param name="timerId">The timer identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{IEnumerable{RecordingInfo}}.</returns>
-        Task<IEnumerable<RecordingInfo>> GetRecordingsAsync(RecordingQuery query, CancellationToken cancellationToken);
+        /// <returns>Task.</returns>
+        Task CancelTimerAsync(string timerId, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Gets the channel guides.
+        /// Deletes the recording asynchronous.
         /// </summary>
-        /// <param name="channelIdList">The channel identifier list.</param>
+        /// <param name="recordingId">The recording identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{IEnumerable{ChannelGuide}}.</returns>
-        Task<IEnumerable<ChannelGuide>> GetChannelGuidesAsync(IEnumerable<string> channelIdList, CancellationToken cancellationToken);
+        /// <returns>Task.</returns>
+        Task DeleteRecordingAsync(string recordingId, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Creates the timer asynchronous.
+        /// </summary>
+        /// <param name="info">The information.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task CreateTimerAsync(TimerInfo info, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Creates the series timer asynchronous.
+        /// </summary>
+        /// <param name="info">The information.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task CreateSeriesTimerAsync(SeriesTimerInfo info, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Updates the series timer asynchronous.
+        /// </summary>
+        /// <param name="info">The information.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task UpdateSeriesTimerAsync(SeriesTimerInfo info, CancellationToken cancellationToken);
+        
+        /// <summary>
+        /// Gets the channel image asynchronous.
+        /// </summary>
+        /// <param name="channelId">The channel identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{Stream}.</returns>
+        Task<ImageResponseInfo> GetChannelImageAsync(string channelId, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the program image asynchronous.
+        /// </summary>
+        /// <param name="programId">The program identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{ImageResponseInfo}.</returns>
+        Task<ImageResponseInfo> GetProgramImageAsync(string programId, CancellationToken cancellationToken);
+        
+        /// <summary>
+        /// Gets the recordings asynchronous.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{IEnumerable{RecordingInfo}}.</returns>
+        Task<IEnumerable<RecordingInfo>> GetRecordingsAsync(CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the recordings asynchronous.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{IEnumerable{RecordingInfo}}.</returns>
+        Task<IEnumerable<TimerInfo>> GetTimersAsync(CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the series timers asynchronous.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{IEnumerable{SeriesTimerInfo}}.</returns>
+        Task<IEnumerable<SeriesTimerInfo>> GetSeriesTimersAsync(CancellationToken cancellationToken);
+        
+        /// <summary>
+        /// Gets the programs asynchronous.
+        /// </summary>
+        /// <param name="channelId">The channel identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{IEnumerable{ProgramInfo}}.</returns>
+        Task<IEnumerable<ProgramInfo>> GetProgramsAsync(string channelId, CancellationToken cancellationToken);
     }
 }
