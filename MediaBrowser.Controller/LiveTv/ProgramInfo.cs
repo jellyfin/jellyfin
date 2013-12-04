@@ -27,11 +27,12 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value>The official rating.</value>
         public string OfficialRating { get; set; }
-        
+
         /// <summary>
-        /// Description of the progam.
+        /// Gets or sets the overview.
         /// </summary>
-        public string Description { get; set; }
+        /// <value>The overview.</value>
+        public string Overview { get; set; }
 
         /// <summary>
         /// The start date of the program, in UTC.
@@ -55,22 +56,22 @@ namespace MediaBrowser.Controller.LiveTv
         public List<string> Genres { get; set; }
 
         /// <summary>
-        /// Gets or sets the quality.
-        /// </summary>
-        /// <value>The quality.</value>
-        public ProgramVideoQuality Quality { get; set; }
-
-        /// <summary>
         /// Gets or sets the original air date.
         /// </summary>
         /// <value>The original air date.</value>
         public DateTime? OriginalAirDate { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance is hd.
+        /// </summary>
+        /// <value><c>true</c> if this instance is hd; otherwise, <c>false</c>.</value>
+        public bool? IsHD { get; set; }
+
+        /// <summary>
         /// Gets or sets the audio.
         /// </summary>
         /// <value>The audio.</value>
-        public ProgramAudio Audio { get; set; }
+        public ProgramAudio? Audio { get; set; }
 
         /// <summary>
         /// Gets or sets the community rating.

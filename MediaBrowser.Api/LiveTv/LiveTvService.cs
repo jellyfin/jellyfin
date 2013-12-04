@@ -14,17 +14,12 @@ namespace MediaBrowser.Api.LiveTv
     [Api(Description = "Gets available live tv services.")]
     public class GetServices : IReturn<List<LiveTvServiceInfo>>
     {
-        [ApiMember(Name = "ServiceName", Description = "Optional filter by service.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string ServiceName { get; set; }
     }
 
     [Route("/LiveTv/Channels", "GET")]
     [Api(Description = "Gets available live tv channels.")]
     public class GetChannels : IReturn<QueryResult<ChannelInfoDto>>
     {
-        [ApiMember(Name = "ServiceName", Description = "Optional filter by service.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string ServiceName { get; set; }
-
         [ApiMember(Name = "Type", Description = "Optional filter by channel type.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public ChannelType? Type { get; set; }
 
@@ -51,9 +46,6 @@ namespace MediaBrowser.Api.LiveTv
     [Api(Description = "Gets live tv recordings")]
     public class GetRecordings : IReturn<QueryResult<RecordingInfoDto>>
     {
-        [ApiMember(Name = "ServiceName", Description = "Optional filter by service.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string ServiceName { get; set; }
-
         [ApiMember(Name = "ChannelId", Description = "Optional filter by channel id.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string ChannelId { get; set; }
     }
@@ -78,9 +70,6 @@ namespace MediaBrowser.Api.LiveTv
     [Api(Description = "Gets live tv timers")]
     public class GetTimers : IReturn<QueryResult<TimerInfoDto>>
     {
-        [ApiMember(Name = "ServiceName", Description = "Optional filter by service.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string ServiceName { get; set; }
-
         [ApiMember(Name = "ChannelId", Description = "Optional filter by channel id.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string ChannelId { get; set; }
     }
@@ -89,9 +78,6 @@ namespace MediaBrowser.Api.LiveTv
     [Api(Description = "Gets available live tv epgs..")]
     public class GetPrograms : IReturn<QueryResult<ProgramInfoDto>>
     {
-        [ApiMember(Name = "ServiceName", Description = "Live tv service name", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string ServiceName { get; set; }
-
         [ApiMember(Name = "ChannelIds", Description = "The channels to return guide information for.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string ChannelIds { get; set; }
 
@@ -124,21 +110,9 @@ namespace MediaBrowser.Api.LiveTv
             _liveTvManager = liveTvManager;
         }
 
-        private IEnumerable<ILiveTvService> GetServices(string serviceName)
-        {
-            IEnumerable<ILiveTvService> services = _liveTvManager.Services;
-
-            if (!string.IsNullOrEmpty(serviceName))
-            {
-                services = services.Where(i => string.Equals(i.Name, serviceName, StringComparison.OrdinalIgnoreCase));
-            }
-
-            return services;
-        }
-
         public object Get(GetServices request)
         {
-            var services = GetServices(request.ServiceName)
+            var services = _liveTvManager.Services
                 .Select(GetServiceInfo)
                 .ToList();
 
@@ -158,7 +132,6 @@ namespace MediaBrowser.Api.LiveTv
             var result = _liveTvManager.GetChannels(new ChannelQuery
             {
                 ChannelType = request.Type,
-                ServiceName = request.ServiceName,
                 UserId = request.UserId
 
             });
@@ -177,7 +150,6 @@ namespace MediaBrowser.Api.LiveTv
         {
             var result = _liveTvManager.GetPrograms(new ProgramQuery
             {
-                ServiceName = request.ServiceName,
                 ChannelIdList = (request.ChannelIds ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToArray(),
                 UserId = request.UserId
 
@@ -190,8 +162,7 @@ namespace MediaBrowser.Api.LiveTv
         {
             var result = _liveTvManager.GetRecordings(new RecordingQuery
             {
-                ChannelId = request.ChannelId,
-                ServiceName = request.ServiceName
+                ChannelId = request.ChannelId
 
             }, CancellationToken.None).Result;
 
@@ -216,8 +187,7 @@ namespace MediaBrowser.Api.LiveTv
         {
             var result = _liveTvManager.GetTimers(new TimerQuery
             {
-                ChannelId = request.ChannelId,
-                ServiceName = request.ServiceName
+                ChannelId = request.ChannelId
 
             }, CancellationToken.None).Result;
 

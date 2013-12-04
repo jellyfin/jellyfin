@@ -64,16 +64,28 @@ namespace MediaBrowser.Model.LiveTv
         public string SeriesTimerId { get; set; }
 
         /// <summary>
-        /// Gets or sets the pre padding seconds.
+        /// Gets or sets the requested pre padding seconds.
         /// </summary>
-        /// <value>The pre padding seconds.</value>
-        public int PrePaddingSeconds { get; set; }
+        /// <value>The requested pre padding seconds.</value>
+        public int RequestedPrePaddingSeconds { get; set; }
 
         /// <summary>
-        /// Gets or sets the post padding seconds.
+        /// Gets or sets the requested post padding seconds.
         /// </summary>
-        /// <value>The post padding seconds.</value>
-        public int PostPaddingSeconds { get; set; }
+        /// <value>The requested post padding seconds.</value>
+        public int RequestedPostPaddingSeconds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the required pre padding seconds.
+        /// </summary>
+        /// <value>The required pre padding seconds.</value>
+        public int RequiredPrePaddingSeconds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the required post padding seconds.
+        /// </summary>
+        /// <value>The required post padding seconds.</value>
+        public int RequiredPostPaddingSeconds { get; set; }
 
         /// <summary>
         /// Gets or sets the duration ms.

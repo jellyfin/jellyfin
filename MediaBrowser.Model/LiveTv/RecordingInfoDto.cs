@@ -44,9 +44,9 @@ namespace MediaBrowser.Model.LiveTv
         public string Path { get; set; }
 
         /// <summary>
-        /// Description of the recording.
+        /// Overview of the recording.
         /// </summary>
-        public string Description { get; set; }
+        public string Overview { get; set; }
 
         /// <summary>
         /// The start date of the recording, in UTC.
@@ -110,6 +110,18 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value>The community rating.</value>
         public float? CommunityRating { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is hd.
+        /// </summary>
+        /// <value><c>true</c> if this instance is hd; otherwise, <c>false</c>.</value>
+        public bool? IsHD { get; set; }
+
+        /// <summary>
+        /// Gets or sets the audio.
+        /// </summary>
+        /// <value>The audio.</value>
+        public ProgramAudio? Audio { get; set; }
 
         public RecordingInfoDto()
         {
