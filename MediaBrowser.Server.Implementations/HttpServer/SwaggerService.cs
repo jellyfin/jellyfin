@@ -1,6 +1,6 @@
-﻿using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Net;
 using ServiceStack.ServiceHost;
-using System.Diagnostics;
 using System.IO;
 
 namespace MediaBrowser.Server.Implementations.HttpServer
@@ -20,6 +20,13 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
     public class SwaggerService : IHasResultFactory, IRestfulService
     {
+        private readonly IApplicationPaths _appPaths;
+
+        public SwaggerService(IApplicationPaths appPaths)
+        {
+            _appPaths = appPaths;
+        }
+
         /// <summary>
         /// Gets the specified request.
         /// </summary>
@@ -27,7 +34,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <returns>System.Object.</returns>
         public object Get(GetSwaggerResource request)
         {
-            var runningDirectory = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
+            var runningDirectory = Path.GetDirectoryName(_appPaths.ApplicationPath);
 
             var swaggerDirectory = Path.Combine(runningDirectory, "swagger-ui");
 

@@ -80,7 +80,7 @@ namespace MediaBrowser.Common.Implementations.Serialization
 
             using (Stream stream = File.OpenRead(file))
             {
-                return ServiceStack.Text.JsonSerializer.DeserializeFromStream(type, stream);
+                return DeserializeFromStream(stream, type);
             }
         }
 
@@ -101,7 +101,7 @@ namespace MediaBrowser.Common.Implementations.Serialization
 
             using (Stream stream = File.OpenRead(file))
             {
-                return ServiceStack.Text.JsonSerializer.DeserializeFromStream<T>(stream);
+                return DeserializeFromStream<T>(stream);
             }
         }
 

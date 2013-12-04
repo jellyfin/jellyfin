@@ -13,16 +13,16 @@ namespace MediaBrowser.Server.Implementations
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerApplicationPaths" /> class.
         /// </summary>
-        public ServerApplicationPaths()
-            : base(true)
+        public ServerApplicationPaths(string applicationPath)
+            : base(true, applicationPath)
         {
         }
 #else
 /// <summary>
 /// Initializes a new instance of the <see cref="ServerApplicationPaths"/> class.
 /// </summary>
-        public ServerApplicationPaths()
-            : base(false)
+        public ServerApplicationPaths(string applicationPath)
+            : base(false, applicationPath)
         {
         }
 #endif
@@ -30,9 +30,8 @@ namespace MediaBrowser.Server.Implementations
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseApplicationPaths" /> class.
         /// </summary>
-        /// <param name="programDataPath">The program data path.</param>
-        public ServerApplicationPaths(string programDataPath)
-            : base(programDataPath)
+        public ServerApplicationPaths(string programDataPath, string applicationPath)
+            : base(programDataPath, applicationPath)
         {
 
         }
