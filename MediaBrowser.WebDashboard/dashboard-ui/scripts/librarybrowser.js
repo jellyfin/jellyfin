@@ -597,7 +597,7 @@
                 }
             }
 
-            return item.IsFolder ? (id ? "itemList.html?parentId=" + id : "#") : "itemdetails.html?id=" + id;
+            return item.IsFolder ? (id ? "itemlist.html?parentId=" + id : "#") : "itemdetails.html?id=" + id;
 
         },
 

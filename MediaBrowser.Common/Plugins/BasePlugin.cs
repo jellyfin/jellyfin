@@ -57,7 +57,7 @@ namespace MediaBrowser.Common.Plugins
         {
             get { return typeof(TConfigurationType); }
         }
-        
+
         /// <summary>
         /// The _assembly name
         /// </summary>
@@ -90,7 +90,8 @@ namespace MediaBrowser.Common.Plugins
 
                 if (!_uniqueId.HasValue)
                 {
-                    _uniqueId = Marshal.GetTypeLibGuidForAssembly(GetType().Assembly);
+                    var attribute = (GuidAttribute)GetType().Assembly.GetCustomAttributes(typeof(GuidAttribute), true)[0];
+                    _uniqueId = new Guid(attribute.Value);
                 }
 
                 return _uniqueId.Value;
@@ -282,7 +283,7 @@ namespace MediaBrowser.Common.Plugins
             {
                 throw new ArgumentNullException("configuration");
             }
-            
+
             Configuration = (TConfigurationType)configuration;
 
             SaveConfiguration();
@@ -315,7 +316,7 @@ namespace MediaBrowser.Common.Plugins
         /// </summary>
         public virtual void OnUninstalling()
         {
-            
+
         }
 
         /// <summary>

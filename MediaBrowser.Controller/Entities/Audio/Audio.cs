@@ -9,7 +9,7 @@ namespace MediaBrowser.Controller.Entities.Audio
     /// <summary>
     /// Class Audio
     /// </summary>
-    public class Audio : BaseItem, IHasMediaStreams, IHasAlbumArtist, IHasArtist, IHasMusicGenres
+    public class Audio : BaseItem, IHasMediaStreams, IHasAlbumArtist, IHasArtist, IHasMusicGenres, IHasLanguage
     {
         public Audio()
         {
@@ -17,6 +17,12 @@ namespace MediaBrowser.Controller.Entities.Audio
             Artists = new List<string>();
         }
 
+        /// <summary>
+        /// Gets or sets the language.
+        /// </summary>
+        /// <value>The language.</value>
+        public string Language { get; set; }
+        
         /// <summary>
         /// Gets or sets the media streams.
         /// </summary>

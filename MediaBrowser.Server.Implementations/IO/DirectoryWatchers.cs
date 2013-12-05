@@ -150,7 +150,6 @@ namespace MediaBrowser.Server.Implementations.IO
                         }
 
                     })
-                .Where(Path.IsPathRooted)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .OrderBy(i => i)
                 .ToList();

@@ -710,8 +710,12 @@ namespace MediaBrowser.Providers.Movies
 
             if (!string.IsNullOrEmpty(movieData.tagline))
             {
-                movie.Taglines.Clear();
-                movie.AddTagline(movieData.tagline);
+                var hasTagline = movie as IHasTaglines;
+                if (hasTagline != null)
+                {
+                    hasTagline.Taglines.Clear();
+                    hasTagline.AddTagline(movieData.tagline);
+                }
             }
 
             movie.SetProviderId(MetadataProviders.Tmdb, movieData.id.ToString(_usCulture));
@@ -868,7 +872,11 @@ namespace MediaBrowser.Providers.Movies
 
             if (movieData.keywords != null && movieData.keywords.keywords != null && !movie.LockedFields.Contains(MetadataFields.Tags))
             {
-                movie.Tags = movieData.keywords.keywords.Select(i => i.name).ToList();
+                var hasTags = movie as IHasTags;
+                if (hasTags != null)
+                {
+                    hasTags.Tags = movieData.keywords.keywords.Select(i => i.name).ToList();
+                }
             }
 
             if (movieData.trailers != null && movieData.trailers.youtube != null &&

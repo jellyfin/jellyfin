@@ -11,23 +11,42 @@ namespace MediaBrowser.Controller.Entities.Movies
     /// <summary>
     /// Class Movie
     /// </summary>
-    public class Movie : Video, IHasCriticRating, IHasSoundtracks, IHasBudget, IHasTrailers
+    public class Movie : Video, IHasCriticRating, IHasSoundtracks, IHasBudget, IHasTrailers, IHasThemeMedia, IHasTaglines, IHasTags
     {
         public List<Guid> SpecialFeatureIds { get; set; }
 
         public List<Guid> SoundtrackIds { get; set; }
 
+        public List<Guid> ThemeSongIds { get; set; }
+        public List<Guid> ThemeVideoIds { get; set; }
+        
         public Movie()
         {
             SpecialFeatureIds = new List<Guid>();
             SoundtrackIds = new List<Guid>();
             RemoteTrailers = new List<MediaUrl>();
             LocalTrailerIds = new List<Guid>();
+            ThemeSongIds = new List<Guid>();
+            ThemeVideoIds = new List<Guid>();
+            Taglines = new List<string>();
+            Tags = new List<string>();
         }
 
         public List<Guid> LocalTrailerIds { get; set; }
         
         public List<MediaUrl> RemoteTrailers { get; set; }
+
+        /// <summary>
+        /// Gets or sets the tags.
+        /// </summary>
+        /// <value>The tags.</value>
+        public List<string> Tags { get; set; }
+
+        /// <summary>
+        /// Gets or sets the taglines.
+        /// </summary>
+        /// <value>The taglines.</value>
+        public List<string> Taglines { get; set; }
 
         /// <summary>
         /// Gets or sets the budget.

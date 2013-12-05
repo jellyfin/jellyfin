@@ -280,8 +280,7 @@ namespace MediaBrowser.Common.Implementations
             // If it's a relative path, e.g. "..\"
             if (!Path.IsPathRooted(programDataPath))
             {
-                var path = Assembly.GetExecutingAssembly().Location;
-                path = Path.GetDirectoryName(path);
+                var path = Path.GetDirectoryName(ApplicationPath);
 
                 if (string.IsNullOrEmpty(path))
                 {

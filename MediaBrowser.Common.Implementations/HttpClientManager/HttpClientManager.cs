@@ -103,21 +103,24 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
         private WebRequest GetMonoRequest(HttpRequestOptions options, string method, bool enableHttpCompression)
         {
-            var request = WebRequest.Create(options.Url);
+            var request = (HttpWebRequest)WebRequest.Create(options.Url);
 
             if (!string.IsNullOrEmpty(options.AcceptHeader))
             {
-                request.Headers.Add("Accept", options.AcceptHeader);
+                request.Accept = options.AcceptHeader;
             }
 
+            request.AutomaticDecompression = enableHttpCompression ? DecompressionMethods.Deflate : DecompressionMethods.None;
             request.CachePolicy = new RequestCachePolicy(RequestCacheLevel.Revalidate);
             request.ConnectionGroupName = GetHostFromUrl(options.Url);
+            request.KeepAlive = true;
             request.Method = method;
+            request.Pipelined = true;
             request.Timeout = 20000;
 
             if (!string.IsNullOrEmpty(options.UserAgent))
             {
-                request.Headers.Add("User-Agent", options.UserAgent);
+                request.UserAgent = options.UserAgent;
             }
 
             return request;

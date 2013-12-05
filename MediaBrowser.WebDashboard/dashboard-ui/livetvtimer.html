@@ -12,6 +12,24 @@
             <a href="livetvtimers.html" class="ui-btn-active">Timers</a>
         </div>
         <div data-role="content">
+            <form style="margin: 0 auto;">
+                <h1 class="timerName"></h1>
+
+                <ul data-role="listview" class="ulForm">
+                    <li>
+                        <input type="checkbox" id="chkEnableInternetProviders" name="chkEnableInternetProviders" />
+                        <label for="chkEnableInternetProviders">Download metadata from the internet </label>
+                    </li>
+                    <li>
+                        <button type="submit" data-theme="b" data-icon="ok" data-mini="true">
+                            Save
+                        </button>
+                        <button type="button" onclick="Dashboard.navigate('livetvtimers.html');" data-icon="delete" data-mini="true">
+                            Cancel
+                        </button>
+                    </li>
+                </ul>
+            </form>
         </div>
     </div>
 </body>

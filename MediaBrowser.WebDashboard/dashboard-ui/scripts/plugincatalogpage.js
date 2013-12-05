@@ -76,7 +76,7 @@
                 currentCategory = category;
             }
 
-            var href = plugin.externalUrl ? plugin.externalUrl : "addPlugin.html?name=" + encodeURIComponent(plugin.name) + "&guid=" + plugin.guid;
+            var href = plugin.externalUrl ? plugin.externalUrl : "addplugin.html?name=" + encodeURIComponent(plugin.name) + "&guid=" + plugin.guid;
             var target = plugin.externalUrl ? ' target="_blank"' : '';
 
             html += "<div class='storeItem'><a class='posterItem storePosterItem transparentPosterItem borderlessPosterItem' style='background: #D4D4D4!important' href='" + href + "' " + target + ">";

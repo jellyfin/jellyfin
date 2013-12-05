@@ -471,16 +471,6 @@ namespace MediaBrowser.Providers.TV
                                         break;
                                     }
 
-                                case "Language":
-                                    {
-                                        var val = reader.ReadElementContentAsString();
-                                        if (!string.IsNullOrWhiteSpace(val))
-                                        {
-                                            item.Language = val;
-                                        }
-                                        break;
-                                    }
-
                                 case "filename":
                                     {
                                         if (string.IsNullOrEmpty(item.PrimaryImagePath))

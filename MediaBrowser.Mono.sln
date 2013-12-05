@@ -17,7 +17,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.WebDashboard",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Api", "MediaBrowser.Api\MediaBrowser.Api.csproj", "{4FD51AC5-2C16-4308-A993-C3A84F3B4582}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Server.Mono", "MediaBrowser.Server.Mono\MediaBrowser.Server.Mono.csproj", "{A7FE75CD-3CB4-4E71-A5BF-5347721EC8E0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Server.Mono", "MediaBrowser.Server.Mono\MediaBrowser.Server.Mono.csproj", "{175A9388-F352-4586-A6B4-070DED62B644}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,6 +25,10 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{175A9388-F352-4586-A6B4-070DED62B644}.Debug|x86.ActiveCfg = Debug|x86
+		{175A9388-F352-4586-A6B4-070DED62B644}.Debug|x86.Build.0 = Debug|x86
+		{175A9388-F352-4586-A6B4-070DED62B644}.Release|x86.ActiveCfg = Release|x86
+		{175A9388-F352-4586-A6B4-070DED62B644}.Release|x86.Build.0 = Release|x86
 		{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}.Debug|x86.ActiveCfg = Debug|x86
 		{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}.Debug|x86.Build.0 = Debug|x86
 		{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}.Release|x86.ActiveCfg = Release|x86
@@ -53,16 +57,12 @@ Global
 		{9142EEFA-7570-41E1-BFCC-468BB571AF2F}.Debug|x86.Build.0 = Debug|Any CPU
 		{9142EEFA-7570-41E1-BFCC-468BB571AF2F}.Release|x86.ActiveCfg = Release|Any CPU
 		{9142EEFA-7570-41E1-BFCC-468BB571AF2F}.Release|x86.Build.0 = Release|Any CPU
-		{A7FE75CD-3CB4-4E71-A5BF-5347721EC8E0}.Debug|x86.ActiveCfg = Debug|x86
-		{A7FE75CD-3CB4-4E71-A5BF-5347721EC8E0}.Debug|x86.Build.0 = Debug|x86
-		{A7FE75CD-3CB4-4E71-A5BF-5347721EC8E0}.Release|x86.ActiveCfg = Release|x86
-		{A7FE75CD-3CB4-4E71-A5BF-5347721EC8E0}.Release|x86.Build.0 = Release|x86
 		{C4D2573A-3FD3-441F-81AF-174AC4CD4E1D}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{C4D2573A-3FD3-441F-81AF-174AC4CD4E1D}.Debug|x86.Build.0 = Debug|Any CPU
 		{C4D2573A-3FD3-441F-81AF-174AC4CD4E1D}.Release|x86.ActiveCfg = Release|Any CPU
 		{C4D2573A-3FD3-441F-81AF-174AC4CD4E1D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
-		StartupItem = MediaBrowser.Server.Mono\MediaBrowser.Server.Mono.csproj
+		StartupItem = MediaBrowser.Model\MediaBrowser.Model.csproj
 	EndGlobalSection
 EndGlobal

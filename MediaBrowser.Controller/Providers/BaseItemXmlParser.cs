@@ -63,11 +63,22 @@ namespace MediaBrowser.Controller.Providers
                 ValidationType = ValidationType.None
             };
 
-            item.Taglines.Clear();
+            var hasTaglines = item as IHasTaglines;
+            if (hasTaglines != null)
+            {
+                hasTaglines.Taglines.Clear();
+            }
+
             item.Studios.Clear();
             item.Genres.Clear();
             item.People.Clear();
-            item.Tags.Clear();
+
+            var hasTags = item as IHasTags;
+            if (hasTags != null)
+            {
+                hasTags.Tags.Clear();
+            }
+
 
             var hasTrailers = item as IHasTrailers;
             if (hasTrailers != null)
@@ -242,9 +253,26 @@ namespace MediaBrowser.Controller.Providers
                     {
                         var tagline = reader.ReadElementContentAsString();
 
-                        if (!string.IsNullOrWhiteSpace(tagline))
+                        var hasTaglines = item as IHasTaglines;
+                        if (hasTaglines != null)
                         {
-                            item.AddTagline(tagline);
+                            if (!string.IsNullOrWhiteSpace(tagline))
+                            {
+                                hasTaglines.AddTagline(tagline);
+                            }
+                        }
+
+                        break;
+                    }
+
+                case "Language":
+                    {
+                        var val = reader.ReadElementContentAsString();
+
+                        var hasLanguage = item as IHasLanguage;
+                        if (hasLanguage != null)
+                        {
+                            hasLanguage.Language = val;
                         }
 
                         break;
@@ -256,7 +284,11 @@ namespace MediaBrowser.Controller.Providers
 
                         if (!string.IsNullOrWhiteSpace(val))
                         {
-                            item.ProductionLocations = new List<string> { val };
+                            var person = item as Person;
+                            if (person != null)
+                            {
+                                person.PlaceOfBirth = val;
+                            }
                         }
 
                         break;
@@ -690,7 +722,11 @@ namespace MediaBrowser.Controller.Providers
                     {
                         using (var subtree = reader.ReadSubtree())
                         {
-                            FetchFromTagsNode(subtree, item);
+                            var hasTags = item as IHasTags;
+                            if (hasTags != null)
+                            {
+                                FetchFromTagsNode(subtree, hasTags);
+                            }
                         }
                         break;
                     }
@@ -841,7 +877,14 @@ namespace MediaBrowser.Controller.Providers
 
                                 if (!string.IsNullOrWhiteSpace(val))
                                 {
-                                    item.AddTagline(val);
+                                    var hasTaglines = item as IHasTaglines;
+                                    if (hasTaglines != null)
+                                    {
+                                        if (!string.IsNullOrWhiteSpace(val))
+                                        {
+                                            hasTaglines.AddTagline(val);
+                                        }
+                                    }
                                 }
                                 break;
                             }
@@ -888,7 +931,7 @@ namespace MediaBrowser.Controller.Providers
             }
         }
 
-        private void FetchFromTagsNode(XmlReader reader, T item)
+        private void FetchFromTagsNode(XmlReader reader, IHasTags item)
         {
             reader.MoveToContent();
 
@@ -981,7 +1024,7 @@ namespace MediaBrowser.Controller.Providers
                 }
             }
         }
-        
+
         protected async Task FetchChaptersFromXmlNode(BaseItem item, XmlReader reader, IItemRepository repository, CancellationToken cancellationToken)
         {
             var runtime = item.RunTimeTicks ?? 0;
@@ -1194,9 +1237,9 @@ namespace MediaBrowser.Controller.Providers
 
             var personInfo = new PersonInfo
             {
-                Name = name.Trim(), 
-                Role = role, 
-                Type = type, 
+                Name = name.Trim(),
+                Role = role,
+                Type = type,
                 SortOrder = sortOrder
             };
 

@@ -29,16 +29,10 @@ namespace MediaBrowser.Controller.Entities
             Genres = new List<string>();
             Studios = new List<string>();
             People = new List<PersonInfo>();
-            ScreenshotImagePaths = new List<string>();
             BackdropImagePaths = new List<string>();
-            ProductionLocations = new List<string>();
             Images = new Dictionary<ImageType, string>();
             ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            Tags = new List<string>();
-            ThemeSongIds = new List<Guid>();
-            ThemeVideoIds = new List<Guid>();
             LockedFields = new List<MetadataFields>();
-            Taglines = new List<string>();
             ImageSources = new List<ImageSourceInfo>();
         }
 
@@ -83,12 +77,6 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The id.</value>
         public Guid Id { get; set; }
-
-        /// <summary>
-        /// Gets or sets the taglines.
-        /// </summary>
-        /// <value>The taglines.</value>
-        public List<string> Taglines { get; set; }
 
         /// <summary>
         /// Return the id that should be used to key display prefs for this item.
@@ -510,12 +498,6 @@ namespace MediaBrowser.Controller.Entities
         public List<ImageSourceInfo> ImageSources { get; set; }
 
         /// <summary>
-        /// Gets or sets the screenshot image paths.
-        /// </summary>
-        /// <value>The screenshot image paths.</value>
-        public List<string> ScreenshotImagePaths { get; set; }
-
-        /// <summary>
         /// Gets or sets the official rating.
         /// </summary>
         /// <value>The official rating.</value>
@@ -534,11 +516,6 @@ namespace MediaBrowser.Controller.Entities
         public string CustomRating { get; set; }
 
         /// <summary>
-        /// Gets or sets the language.
-        /// </summary>
-        /// <value>The language.</value>
-        public string Language { get; set; }
-        /// <summary>
         /// Gets or sets the overview.
         /// </summary>
         /// <value>The overview.</value>
@@ -549,12 +526,6 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The people.</value>
         public List<PersonInfo> People { get; set; }
-
-        /// <summary>
-        /// Gets or sets the tags.
-        /// </summary>
-        /// <value>The tags.</value>
-        public List<string> Tags { get; set; }
 
         /// <summary>
         /// Override this if you need to combine/collapse person information
@@ -597,12 +568,6 @@ namespace MediaBrowser.Controller.Entities
         public string HomePageUrl { get; set; }
 
         /// <summary>
-        /// Gets or sets the production locations.
-        /// </summary>
-        /// <value>The production locations.</value>
-        public List<string> ProductionLocations { get; set; }
-
-        /// <summary>
         /// Gets or sets the community rating.
         /// </summary>
         /// <value>The community rating.</value>
@@ -643,9 +608,6 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The parent index number.</value>
         public int? ParentIndexNumber { get; set; }
-
-        public List<Guid> ThemeSongIds { get; set; }
-        public List<Guid> ThemeVideoIds { get; set; }
 
         [IgnoreDataMember]
         public virtual string OfficialRatingForComparison
@@ -884,9 +846,13 @@ namespace MediaBrowser.Controller.Entities
 
             if (LocationType == LocationType.FileSystem && Parent != null)
             {
-                themeSongsChanged = await RefreshThemeSongs(cancellationToken, forceSave, forceRefresh, allowSlowProviders).ConfigureAwait(false);
+                var hasThemeMedia = this as IHasThemeMedia;
+                if (hasThemeMedia != null)
+                {
+                    themeSongsChanged = await RefreshThemeSongs(hasThemeMedia, cancellationToken, forceSave, forceRefresh, allowSlowProviders).ConfigureAwait(false);
 
-                themeVideosChanged = await RefreshThemeVideos(cancellationToken, forceSave, forceRefresh, allowSlowProviders).ConfigureAwait(false);
+                    themeVideosChanged = await RefreshThemeVideos(hasThemeMedia, cancellationToken, forceSave, forceRefresh, allowSlowProviders).ConfigureAwait(false);
+                }
 
                 var hasTrailers = this as IHasTrailers;
                 if (hasTrailers != null)
@@ -928,18 +894,18 @@ namespace MediaBrowser.Controller.Entities
             return itemsChanged || results.Contains(true);
         }
 
-        private async Task<bool> RefreshThemeVideos(CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false, bool allowSlowProviders = true)
+        private async Task<bool> RefreshThemeVideos(IHasThemeMedia item, CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false, bool allowSlowProviders = true)
         {
             var newThemeVideos = LoadThemeVideos().ToList();
             var newThemeVideoIds = newThemeVideos.Select(i => i.Id).ToList();
 
-            var themeVideosChanged = !ThemeVideoIds.SequenceEqual(newThemeVideoIds);
+            var themeVideosChanged = !item.ThemeVideoIds.SequenceEqual(newThemeVideoIds);
 
             var tasks = newThemeVideos.Select(i => i.RefreshMetadata(cancellationToken, forceSave, forceRefresh, allowSlowProviders, resetResolveArgs: false));
 
             var results = await Task.WhenAll(tasks).ConfigureAwait(false);
 
-            ThemeVideoIds = newThemeVideoIds;
+            item.ThemeVideoIds = newThemeVideoIds;
 
             return themeVideosChanged || results.Contains(true);
         }
@@ -947,18 +913,18 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Refreshes the theme songs.
         /// </summary>
-        private async Task<bool> RefreshThemeSongs(CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false, bool allowSlowProviders = true)
+        private async Task<bool> RefreshThemeSongs(IHasThemeMedia item, CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false, bool allowSlowProviders = true)
         {
             var newThemeSongs = LoadThemeSongs().ToList();
             var newThemeSongIds = newThemeSongs.Select(i => i.Id).ToList();
 
-            var themeSongsChanged = !ThemeSongIds.SequenceEqual(newThemeSongIds);
+            var themeSongsChanged = !item.ThemeSongIds.SequenceEqual(newThemeSongIds);
 
             var tasks = newThemeSongs.Select(i => i.RefreshMetadata(cancellationToken, forceSave, forceRefresh, allowSlowProviders, resetResolveArgs: false));
 
             var results = await Task.WhenAll(tasks).ConfigureAwait(false);
 
-            ThemeSongIds = newThemeSongIds;
+            item.ThemeSongIds = newThemeSongIds;
 
             return themeSongsChanged || results.Contains(true);
         }
@@ -1230,24 +1196,6 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Adds the tagline.
-        /// </summary>
-        /// <param name="tagline">The tagline.</param>
-        /// <exception cref="System.ArgumentNullException">tagline</exception>
-        public void AddTagline(string tagline)
-        {
-            if (string.IsNullOrWhiteSpace(tagline))
-            {
-                throw new ArgumentNullException("tagline");
-            }
-
-            if (!Taglines.Contains(tagline, StringComparer.OrdinalIgnoreCase))
-            {
-                Taglines.Add(tagline);
-            }
-        }
-
-        /// <summary>
         /// Adds a studio to the item
         /// </summary>
         /// <param name="name">The name.</param>
@@ -1262,19 +1210,6 @@ namespace MediaBrowser.Controller.Entities
             if (!Studios.Contains(name, StringComparer.OrdinalIgnoreCase))
             {
                 Studios.Add(name);
-            }
-        }
-
-        public void AddTag(string name)
-        {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                throw new ArgumentNullException("name");
-            }
-
-            if (!Tags.Contains(name, StringComparer.OrdinalIgnoreCase))
-            {
-                Tags.Add(name);
             }
         }
 
@@ -1293,24 +1228,6 @@ namespace MediaBrowser.Controller.Entities
             if (!Genres.Contains(name, StringComparer.OrdinalIgnoreCase))
             {
                 Genres.Add(name);
-            }
-        }
-
-        /// <summary>
-        /// Adds the production location.
-        /// </summary>
-        /// <param name="location">The location.</param>
-        /// <exception cref="System.ArgumentNullException">location</exception>
-        public void AddProductionLocation(string location)
-        {
-            if (string.IsNullOrWhiteSpace(location))
-            {
-                throw new ArgumentNullException("location");
-            }
-
-            if (!ProductionLocations.Contains(location, StringComparer.OrdinalIgnoreCase))
-            {
-                ProductionLocations.Add(location);
             }
         }
 
@@ -1516,9 +1433,10 @@ namespace MediaBrowser.Controller.Entities
                     throw new ArgumentException("Please specify a screenshot image index to delete.");
                 }
 
-                var file = ScreenshotImagePaths[index.Value];
+                var hasScreenshots = (IHasScreenshots)this;
+                var file = hasScreenshots.ScreenshotImagePaths[index.Value];
 
-                ScreenshotImagePaths.Remove(file);
+                hasScreenshots.ScreenshotImagePaths.Remove(file);
 
                 // Delete the source file
                 DeleteImagePath(file);
@@ -1673,15 +1591,17 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         public void ValidateScreenshots()
         {
+            var hasScreenshots = (IHasScreenshots)this;
+
             // Only validate paths from the same directory - need to copy to a list because we are going to potentially modify the collection below
-            var deletedImages = ScreenshotImagePaths
+            var deletedImages = hasScreenshots.ScreenshotImagePaths
                 .Where(path => !File.Exists(path))
                 .ToList();
 
             // Now remove them from the dictionary
             foreach (var path in deletedImages)
             {
-                ScreenshotImagePaths.Remove(path);
+                hasScreenshots.ScreenshotImagePaths.Remove(path);
             }
         }
 
@@ -1703,7 +1623,8 @@ namespace MediaBrowser.Controller.Entities
 
             if (imageType == ImageType.Screenshot)
             {
-                return ScreenshotImagePaths[imageIndex];
+                var hasScreenshots = (IHasScreenshots)this;
+                return hasScreenshots.ScreenshotImagePaths[imageIndex];
             }
 
             if (imageType == ImageType.Chapter)

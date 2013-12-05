@@ -326,9 +326,13 @@ namespace MediaBrowser.Providers.Savers
                 }
             }
 
-            if (!string.IsNullOrEmpty(item.Language))
+            var hasLanguage = item as IHasLanguage;
+            if (hasLanguage != null)
             {
-                builder.Append("<Language>" + SecurityElement.Escape(item.Language) + "</Language>");
+                if (!string.IsNullOrEmpty(hasLanguage.Language))
+                {
+                    builder.Append("<Language>" + SecurityElement.Escape(hasLanguage.Language) + "</Language>");
+                }
             }
 
             // Use original runtime here, actual file runtime later in MediaInfo
@@ -417,18 +421,22 @@ namespace MediaBrowser.Providers.Savers
                 builder.Append("<TMDbCollectionId>" + SecurityElement.Escape(tmdbCollection) + "</TMDbCollectionId>");
             }
 
-            if (item.Taglines.Count > 0)
+            var hasTagline = item as IHasTaglines;
+            if (hasTagline != null)
             {
-                builder.Append("<TagLine>" + SecurityElement.Escape(item.Taglines[0]) + "</TagLine>");
-
-                builder.Append("<Taglines>");
-
-                foreach (var tagline in item.Taglines)
+                if (hasTagline.Taglines.Count > 0)
                 {
-                    builder.Append("<Tagline>" + SecurityElement.Escape(tagline) + "</Tagline>");
-                }
+                    builder.Append("<TagLine>" + SecurityElement.Escape(hasTagline.Taglines[0]) + "</TagLine>");
 
-                builder.Append("</Taglines>");
+                    builder.Append("<Taglines>");
+
+                    foreach (var tagline in hasTagline.Taglines)
+                    {
+                        builder.Append("<Tagline>" + SecurityElement.Escape(tagline) + "</Tagline>");
+                    }
+
+                    builder.Append("</Taglines>");
+                }
             }
 
             if (item.Genres.Count > 0)
@@ -457,16 +465,20 @@ namespace MediaBrowser.Providers.Savers
                 builder.Append("</Studios>");
             }
 
-            if (item.Tags.Count > 0)
+            var hasTags = item as IHasTags;
+            if (hasTags != null)
             {
-                builder.Append("<Tags>");
-
-                foreach (var tag in item.Tags)
+                if (hasTags.Tags.Count > 0)
                 {
-                    builder.Append("<Tag>" + SecurityElement.Escape(tag) + "</Tag>");
-                }
+                    builder.Append("<Tags>");
 
-                builder.Append("</Tags>");
+                    foreach (var tag in hasTags.Tags)
+                    {
+                        builder.Append("<Tag>" + SecurityElement.Escape(tag) + "</Tag>");
+                    }
+
+                    builder.Append("</Tags>");
+                }
             }
 
             if (item.People.Count > 0)

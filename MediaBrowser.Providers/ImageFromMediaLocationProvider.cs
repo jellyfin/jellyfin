@@ -560,7 +560,11 @@ namespace MediaBrowser.Providers
 
             if (screenshotFiles.Count > 0)
             {
-                item.ScreenshotImagePaths = screenshotFiles;
+                var hasScreenshots = item as IHasScreenshots;
+                if (hasScreenshots != null)
+                {
+                    hasScreenshots.ScreenshotImagePaths = screenshotFiles;
+                }
             }
         }
 

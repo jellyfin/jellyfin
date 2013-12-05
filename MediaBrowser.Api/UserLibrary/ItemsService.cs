@@ -884,12 +884,36 @@ namespace MediaBrowser.Api.UserLibrary
 
             if (request.HasThemeSong.HasValue)
             {
-                items = items.Where(i => request.HasThemeSong.Value ? i.ThemeSongIds.Count > 0 : i.ThemeSongIds.Count == 0);
+                var filterValue = request.HasThemeSong.Value;
+
+                items = items.Where(i =>
+                {
+                    var themeCount = 0;
+                    var iHasThemeMedia = i as IHasThemeMedia;
+
+                    if (iHasThemeMedia != null)
+                    {
+                        themeCount = iHasThemeMedia.ThemeSongIds.Count;
+                    }
+                    return filterValue ? themeCount > 0 : themeCount == 0;
+                });
             }
 
             if (request.HasThemeVideo.HasValue)
             {
-                items = items.Where(i => request.HasThemeVideo.Value ? i.ThemeVideoIds.Count > 0 : i.ThemeVideoIds.Count == 0);
+                var filterValue = request.HasThemeVideo.Value;
+
+                items = items.Where(i =>
+                {
+                    var themeCount = 0;
+                    var iHasThemeMedia = i as IHasThemeMedia;
+
+                    if (iHasThemeMedia != null)
+                    {
+                        themeCount = iHasThemeMedia.ThemeVideoIds.Count;
+                    }
+                    return filterValue ? themeCount > 0 : themeCount == 0;
+                });
             }
 
             if (request.MinPlayers.HasValue)
@@ -1166,7 +1190,12 @@ namespace MediaBrowser.Api.UserLibrary
 
             if (imageType == ImageType.Screenshot)
             {
-                return item.ScreenshotImagePaths.Count > 0;
+                var hasScreenshots = item as IHasScreenshots;
+                if (hasScreenshots == null)
+                {
+                    return false;
+                }
+                return hasScreenshots.ScreenshotImagePaths.Count > 0;
             }
 
             return item.HasImage(imageType);

@@ -310,7 +310,7 @@ namespace MediaBrowser.Providers.Movies
             {
                 if (!string.IsNullOrEmpty(searchResult.place_of_birth))
                 {
-                    person.ProductionLocations = new List<string> { searchResult.place_of_birth };
+                    person.PlaceOfBirth = searchResult.place_of_birth;
                 }
             }
 

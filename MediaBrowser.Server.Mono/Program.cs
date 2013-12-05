@@ -14,8 +14,6 @@ using System.Windows;
 using System.Net;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
-using Gtk;
-using Gdk;
 using System.Threading.Tasks;
 using System.Reflection;
 
@@ -27,15 +25,8 @@ namespace MediaBrowser.Server.Mono
 
 		private static ILogger _logger;
 
-		private static MainWindow _mainWindow;
-
-		// The tray Icon
-		private static StatusIcon trayIcon;
-
 		public static void Main (string[] args)
 		{
-			Application.Init ();
-
 			var applicationPath = Assembly.GetEntryAssembly ().Location;
 
 			var appPaths = CreateApplicationPaths(applicationPath);
@@ -98,10 +89,10 @@ namespace MediaBrowser.Server.Mono
 
 		private static RemoteCertificateValidationCallback _ignoreCertificates = new RemoteCertificateValidationCallback(delegate { return true; });
 
+		private static TaskCompletionSource<bool> _applicationTaskCompletionSource = new TaskCompletionSource<bool>();
+
 		private static void RunApplication(ServerApplicationPaths appPaths, ILogManager logManager)
 		{
-			// TODO: Show splash here
-
 			SystemEvents.SessionEnding += SystemEvents_SessionEnding;
 
 			// Allow all https requests
@@ -109,77 +100,19 @@ namespace MediaBrowser.Server.Mono
 
 			_appHost = new ApplicationHost(appPaths, logManager);
 
+			Console.WriteLine ("appHost.Init");
+
 			var task = _appHost.Init();
 			Task.WaitAll (task);
+
+			Console.WriteLine ("Running startup tasks");
 
 			task = _appHost.RunStartupTasks();
 			Task.WaitAll (task);
 
-			// TODO: Hide splash here
-			_mainWindow = new MainWindow ();
+			task = _applicationTaskCompletionSource.Task;
 
-			// Creation of the Icon
-			// Creation of the Icon
-			trayIcon = new StatusIcon(new Pixbuf ("tray.png"));
-			trayIcon.Visible = true;
-
-			// When the TrayIcon has been clicked.
-			trayIcon.Activate += delegate { };
-			// Show a pop up menu when the icon has been right clicked.
-			trayIcon.PopupMenu += OnTrayIconPopup;
-
-			// A Tooltip for the Icon
-			trayIcon.Tooltip = "Media Browser Server";
-
-			_mainWindow.ShowAll ();
-			_mainWindow.Visible = false;
-
-			Application.Run ();
-		}
-
-		// Create the popup menu, on right click.
-		static void OnTrayIconPopup (object o, EventArgs args) {
-
-			Menu popupMenu = new Menu();
-
-			var menuItemBrowse = new ImageMenuItem ("Browse Library");
-			menuItemBrowse.Image = new Gtk.Image(Stock.MediaPlay, IconSize.Menu);
-			popupMenu.Add(menuItemBrowse);
-			menuItemBrowse.Activated += delegate { 
-				BrowserLauncher.OpenWebClient(_appHost.UserManager, _appHost.ServerConfigurationManager, _appHost, _logger);
-			};
-
-			var menuItemConfigure = new ImageMenuItem ("Configure Media Browser");
-			menuItemConfigure.Image = new Gtk.Image(Stock.Edit, IconSize.Menu);
-			popupMenu.Add(menuItemConfigure);
-			menuItemConfigure.Activated += delegate { 
-				BrowserLauncher.OpenDashboard(_appHost.UserManager, _appHost.ServerConfigurationManager, _appHost, _logger);
-			};
-
-			var menuItemApi = new ImageMenuItem ("View Api Docs");
-			menuItemApi.Image = new Gtk.Image(Stock.Network, IconSize.Menu);
-			popupMenu.Add(menuItemApi);
-			menuItemApi.Activated += delegate { 
-				BrowserLauncher.OpenSwagger(_appHost.ServerConfigurationManager, _appHost, _logger);
-			};
-
-			var menuItemCommunity = new ImageMenuItem ("Visit Community");
-			menuItemCommunity.Image = new Gtk.Image(Stock.Help, IconSize.Menu);
-			popupMenu.Add(menuItemCommunity);
-			menuItemCommunity.Activated += delegate { BrowserLauncher.OpenCommunity(_logger); };
-
-			var menuItemGithub = new ImageMenuItem ("Visit Github");
-			menuItemGithub.Image = new Gtk.Image(Stock.Network, IconSize.Menu);
-			popupMenu.Add(menuItemGithub);
-			menuItemGithub.Activated += delegate { BrowserLauncher.OpenGithub(_logger); };
-
-			var menuItemQuit = new ImageMenuItem ("Exit");
-			menuItemQuit.Image = new Gtk.Image(Stock.Quit, IconSize.Menu);
-			popupMenu.Add(menuItemQuit);
-			menuItemQuit.Activated += delegate { Shutdown(); };
-
-			popupMenu.ShowAll();
-			popupMenu.Popup();
+			Task.WaitAll (task);
 		}
 
 		/// <summary>
@@ -206,8 +139,6 @@ namespace MediaBrowser.Server.Mono
 
 			logger.Info("Server: {0}", Environment.MachineName);
 			logger.Info("Operating system: {0}", Environment.OSVersion.ToString());
-
-			MonoBug11817WorkAround.Apply ();
 		}
 
 		/// <summary>
@@ -237,6 +168,9 @@ namespace MediaBrowser.Server.Mono
 
 			var builder = LogHelper.GetLogMessage(ex);
 
+			Console.WriteLine ("UnhandledException");
+			Console.WriteLine (builder.ToString());
+
 			File.WriteAllText(path, builder.ToString());
 		}
 
@@ -253,19 +187,7 @@ namespace MediaBrowser.Server.Mono
 
 		public static void Shutdown()
 		{
-			if (trayIcon != null) {
-				trayIcon.Visible = false;
-				trayIcon.Dispose ();
-				trayIcon = null;
-			}
-
-			if (_mainWindow != null) {
-				_mainWindow.HideAll ();
-				_mainWindow.Dispose ();
-				_mainWindow = null;
-			}
-
-			Application.Quit ();
+			_applicationTaskCompletionSource.SetResult (true);
 		}
 
 		public static void Restart()
@@ -283,36 +205,6 @@ namespace MediaBrowser.Server.Mono
 		public bool CheckValidationResult (ServicePoint srvPoint, X509Certificate certificate, WebRequest request, int certificateProblem)
 		{
 			return true;
-		}
-	}
-
-	public class MonoBug11817WorkAround
-	{
-		public static void Apply()
-		{
-			var property = typeof(TimeZoneInfo).GetProperty("TimeZoneDirectory", BindingFlags.Static | BindingFlags.NonPublic);
-
-			if (property == null) return;
-
-			var zoneInfo = FindZoneInfoFolder();
-			property.SetValue(null, zoneInfo, new object[0]);
-		}
-
-		public static string FindZoneInfoFolder()
-		{
-			var current = new DirectoryInfo(Directory.GetCurrentDirectory());
-
-			while(current != null)
-			{
-				var zoneinfoTestPath = Path.Combine(current.FullName, "zoneinfo");
-
-				if (Directory.Exists(zoneinfoTestPath))
-					return zoneinfoTestPath;
-
-				current = current.Parent;
-			}
-
-			return null;
 		}
 	}
 }
