@@ -133,11 +133,6 @@ namespace MediaBrowser.Controller.Resolvers
         /// <param name="includeCreationTime">if set to <c>true</c> [include creation time].</param>
         public static void EnsureDates(IFileSystem fileSystem, BaseItem item, ItemResolveArgs args, bool includeCreationTime)
         {
-            if (!Path.IsPathRooted(item.Path))
-            {
-                return;
-            }
-
             // See if a different path came out of the resolver than what went in
             if (!string.Equals(args.Path, item.Path, StringComparison.OrdinalIgnoreCase))
             {

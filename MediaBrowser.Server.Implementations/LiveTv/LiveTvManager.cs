@@ -308,28 +308,29 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         internal async Task RefreshChannels(IProgress<double> progress, CancellationToken cancellationToken)
         {
             // Avoid implicitly captured closure
-            var currentCancellationToken = cancellationToken;
+            var service = ActiveService;
 
-            var channelTasks = _services.Select(i => GetChannels(i, currentCancellationToken));
+            if (service == null)
+            {
+                progress.Report(100);
+                return;
+            }
 
             progress.Report(10);
 
-            var results = await Task.WhenAll(channelTasks).ConfigureAwait(false);
-
-            var allChannels = results.SelectMany(i => i).ToList();
+            var allChannels = await GetChannels(service, cancellationToken).ConfigureAwait(false);
+            var allChannelsList = allChannels.ToList();
 
             var list = new List<Channel>();
             var programs = new List<ProgramInfoDto>();
 
             var numComplete = 0;
 
-            foreach (var channelInfo in allChannels)
+            foreach (var channelInfo in allChannelsList)
             {
                 try
                 {
                     var item = await GetChannel(channelInfo.Item2, channelInfo.Item1, cancellationToken).ConfigureAwait(false);
-
-                    var service = _services.First(i => string.Equals(channelInfo.Item1, i.Name, StringComparison.OrdinalIgnoreCase));
 
                     var channelPrograms = await service.GetProgramsAsync(channelInfo.Item2.Id, cancellationToken).ConfigureAwait(false);
 
@@ -348,7 +349,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
                 numComplete++;
                 double percent = numComplete;
-                percent /= allChannels.Count;
+                percent /= allChannelsList.Count;
 
                 progress.Report(90 * percent + 10);
             }

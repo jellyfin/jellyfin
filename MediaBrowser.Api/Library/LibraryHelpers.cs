@@ -60,11 +60,6 @@ namespace MediaBrowser.Api.Library
         /// <exception cref="System.IO.DirectoryNotFoundException">The path does not exist.</exception>
         public static void AddMediaPath(IFileSystem fileSystem, string virtualFolderName, string path, User user, IServerApplicationPaths appPaths)
         {
-            if (!Path.IsPathRooted(path))
-            {
-                throw new ArgumentException("The path is not valid.");
-            }
-
             if (!Directory.Exists(path))
             {
                 throw new DirectoryNotFoundException("The path does not exist.");

@@ -6,7 +6,6 @@ using MediaBrowser.Model.Logging;
 using System;
 using System.Diagnostics;
 using System.Linq;
-using System.Windows.Forms;
 
 namespace MediaBrowser.ServerApplication.Native
 {
@@ -107,14 +106,14 @@ namespace MediaBrowser.ServerApplication.Native
         private static void OpenUrl(string url, ILogger logger)
         {
             var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
                 {
-                    StartInfo = new ProcessStartInfo
-                        {
-                            FileName = url
-                        },
+                    FileName = url
+                },
 
-                    EnableRaisingEvents = true
-                };
+                EnableRaisingEvents = true,
+            };
 
             process.Exited += ProcessExited;
 
@@ -126,7 +125,12 @@ namespace MediaBrowser.ServerApplication.Native
             {
                 logger.ErrorException("Error launching url: {0}", ex, url);
 
-                MessageBox.Show("There was an error launching your web browser. Please check your default browser settings.");
+                Console.WriteLine("Error launching browser");
+                Console.WriteLine(ex.Message);
+
+#if !__MonoCS__
+                System.Windows.Forms.MessageBox.Show("There was an error launching your web browser. Please check your default browser settings.");
+#endif
             }
         }
 

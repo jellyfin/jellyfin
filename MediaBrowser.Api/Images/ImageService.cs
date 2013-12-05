@@ -92,7 +92,7 @@ namespace MediaBrowser.Api.Images
         [ApiMember(Name = "Id", Description = "Channel Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Id { get; set; }
     }
-    
+
     /// <summary>
     /// Class UpdateItemImageIndex
     /// </summary>
@@ -281,7 +281,7 @@ namespace MediaBrowser.Api.Images
         [ApiMember(Name = "Id", Description = "Channel Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
         public string Id { get; set; }
     }
-    
+
     /// <summary>
     /// Class PostUserImage
     /// </summary>
@@ -375,7 +375,7 @@ namespace MediaBrowser.Api.Images
         /// <value>The request stream.</value>
         public Stream RequestStream { get; set; }
     }
-    
+
     /// <summary>
     /// Class ImageService
     /// </summary>
@@ -400,7 +400,7 @@ namespace MediaBrowser.Api.Images
         private readonly IImageProcessor _imageProcessor;
 
         private readonly ILiveTvManager _liveTv;
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ImageService" /> class.
         /// </summary>
@@ -438,7 +438,7 @@ namespace MediaBrowser.Api.Images
 
             return ToOptimizedResult(result);
         }
-        
+
         public object Get(GetItemByNameImageInfos request)
         {
             var result = GetItemByNameImageInfos(request);
@@ -496,16 +496,20 @@ namespace MediaBrowser.Api.Images
 
             index = 0;
 
-            foreach (var image in item.ScreenshotImagePaths)
+            var hasScreenshots = item as IHasScreenshots;
+            if (hasScreenshots != null)
             {
-                var info = GetImageInfo(image, item, index, ImageType.Screenshot);
-
-                if (info != null)
+                foreach (var image in hasScreenshots.ScreenshotImagePaths)
                 {
-                    list.Add(info);
-                }
+                    var info = GetImageInfo(image, item, index, ImageType.Screenshot);
 
-                index++;
+                    if (info != null)
+                    {
+                        list.Add(info);
+                    }
+
+                    index++;
+                }
             }
 
             var video = item as Video;
@@ -667,7 +671,7 @@ namespace MediaBrowser.Api.Images
 
             Task.WaitAll(task);
         }
-        
+
         /// <summary>
         /// Deletes the specified request.
         /// </summary>
@@ -702,7 +706,7 @@ namespace MediaBrowser.Api.Images
 
             Task.WaitAll(task);
         }
-        
+
         /// <summary>
         /// Deletes the specified request.
         /// </summary>
@@ -764,8 +768,9 @@ namespace MediaBrowser.Api.Images
 
             if (type == ImageType.Screenshot)
             {
-                file1 = item.ScreenshotImagePaths[currentIndex];
-                file2 = item.ScreenshotImagePaths[newIndex];
+                var hasScreenshots = (IHasScreenshots)item;
+                file1 = hasScreenshots.ScreenshotImagePaths[currentIndex];
+                file2 = hasScreenshots.ScreenshotImagePaths[newIndex];
             }
             else if (type == ImageType.Backdrop)
             {

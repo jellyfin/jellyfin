@@ -116,12 +116,6 @@ namespace MediaBrowser.Api
                 return ToOptimizedResult(GetNetworkShares(path).OrderBy(i => i.Path).ToList());
             }
 
-            // Reject invalid input
-            if (!Path.IsPathRooted(path))
-            {
-                throw new ArgumentException(string.Format("Invalid path: {0}", path));
-            }
-
             return ToOptimizedResult(GetFileSystemEntries(request).OrderBy(i => i.Path).ToList());
         }
 

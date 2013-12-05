@@ -21,13 +21,19 @@ namespace MediaBrowser.Controller.Entities
     /// <summary>
     /// Class Folder
     /// </summary>
-    public class Folder : BaseItem
+    public class Folder : BaseItem, IHasThemeMedia
     {
         public static IUserManager UserManager { get; set; }
 
+        public List<Guid> ThemeSongIds { get; set; }
+        public List<Guid> ThemeVideoIds { get; set; }
+        
         public Folder()
         {
             LinkedChildren = new List<LinkedChild>();
+
+            ThemeSongIds = new List<Guid>();
+            ThemeVideoIds = new List<Guid>();
         }
 
         /// <summary>
@@ -687,7 +693,12 @@ namespace MediaBrowser.Controller.Entities
                     //existing item - check if it has changed
                     if (currentChild.HasChanged(child))
                     {
-                        EntityResolutionHelper.EnsureDates(FileSystem, currentChild, child.ResolveArgs, false);
+                        var currentChildLocationType = currentChild.LocationType;
+                        if (currentChildLocationType != LocationType.Remote &&
+                            currentChildLocationType != LocationType.Virtual)
+                        {
+                            EntityResolutionHelper.EnsureDates(FileSystem, currentChild, child.ResolveArgs, false);
+                        }
 
                         validChildren.Add(new Tuple<BaseItem, bool>(currentChild, true));
                     }

@@ -270,7 +270,12 @@ namespace MediaBrowser.Api
             item.ParentIndexNumber = request.ParentIndexNumber;
             item.Overview = request.Overview;
             item.Genres = request.Genres;
-            item.Tags = request.Tags;
+
+            var hasTags = item as IHasTags;
+            if (hasTags != null)
+            {
+                hasTags.Tags = request.Tags;
+            }
 
             if (request.Studios != null)
             {
@@ -290,11 +295,17 @@ namespace MediaBrowser.Api
             item.EndDate = request.EndDate.HasValue ? request.EndDate.Value.ToUniversalTime() : (DateTime?)null;
             item.PremiereDate = request.PremiereDate.HasValue ? request.PremiereDate.Value.ToUniversalTime() : (DateTime?)null;
             item.ProductionYear = request.ProductionYear;
-            item.ProductionLocations = request.ProductionLocations;
-            item.Language = request.Language;
             item.OfficialRating = request.OfficialRating;
             item.CustomRating = request.CustomRating;
 
+            SetProductionLocations(item, request);
+
+            var hasLanguage = item as IHasLanguage;
+            if (hasLanguage != null)
+            {
+                hasLanguage.Language = request.Language;
+            }
+            
             var hasAspectRatio = item as IHasAspectRatio;
             if (hasAspectRatio != null)
             {
@@ -366,5 +377,22 @@ namespace MediaBrowser.Api
             }
         }
 
+        private void SetProductionLocations(BaseItem item, BaseItemDto request)
+        {
+            var hasProductionLocations = item as IHasProductionLocations;
+
+            if (hasProductionLocations != null)
+            {
+                hasProductionLocations.ProductionLocations = request.ProductionLocations;
+            }
+
+            var person = item as Person;
+            if (person != null)
+            {
+                person.PlaceOfBirth = request.ProductionLocations == null
+                    ? null
+                    : request.ProductionLocations.FirstOrDefault();
+            }
+        }
     }
 }

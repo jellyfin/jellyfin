@@ -38,7 +38,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             var swaggerDirectory = Path.Combine(runningDirectory, "swagger-ui");
 
-            var requestedFile = Path.Combine(swaggerDirectory, request.ResourceName.Replace('/', '\\'));
+            var requestedFile = Path.Combine(swaggerDirectory, request.ResourceName.Replace('/', Path.DirectorySeparatorChar));
 
             return ResultFactory.GetStaticFileResult(RequestContext, requestedFile);
         }

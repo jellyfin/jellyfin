@@ -128,19 +128,6 @@ namespace MediaBrowser.Providers.Music
         }
 
         /// <summary>
-        /// Finds the id from music artist entity.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns>System.String.</returns>
-        private string FindIdFromMusicArtistEntity(BaseItem item)
-        {
-            var artist = LibraryManager.RootFolder.RecursiveChildren.OfType<MusicArtist>()
-                .FirstOrDefault(i => string.Compare(i.Name, item.Name, CultureInfo.CurrentCulture, CompareOptions.IgnoreNonSpace | CompareOptions.IgnoreCase | CompareOptions.IgnoreSymbols) == 0);
-
-            return artist != null ? artist.GetProviderId(MetadataProviders.Musicbrainz) : null;
-        }
-
-        /// <summary>
         /// Finds the id from music brainz.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -244,7 +231,7 @@ namespace MediaBrowser.Providers.Music
 
             if (result != null && result.artist != null)
             {
-                LastfmHelper.ProcessArtistData(item, result.artist);
+                LastfmHelper.ProcessArtistData((MusicArtist)item, result.artist);
             }
         }
 

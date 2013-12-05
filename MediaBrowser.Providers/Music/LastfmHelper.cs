@@ -8,7 +8,7 @@ namespace MediaBrowser.Providers.Music
 {
     public static class LastfmHelper
     {
-        public static void ProcessArtistData(BaseItem artist, LastfmArtist data)
+        public static void ProcessArtistData(MusicArtist artist, LastfmArtist data)
         {
             var yearFormed = 0;
 
@@ -37,14 +37,9 @@ namespace MediaBrowser.Providers.Music
                 AddTags(artist, data.tags);
             }
 
-            var musicArtist = artist as MusicArtist;
-
-            if (musicArtist != null)
-            {
-                string imageSize;
-                musicArtist.LastFmImageUrl = GetImageUrl(data, out imageSize);
-                musicArtist.LastFmImageSize = imageSize;
-            }
+            string imageSize;
+            artist.LastFmImageUrl = GetImageUrl(data, out imageSize);
+            artist.LastFmImageSize = imageSize;
         }
 
         private static string GetImageUrl(IHasLastFmImages data, out string size)
@@ -118,7 +113,11 @@ namespace MediaBrowser.Providers.Music
         {
             var itemTags = (from tag in tags.tag where !string.IsNullOrEmpty(tag.name) select tag.name).ToList();
 
-            item.Tags = itemTags;
+            var hasTags = item as IHasTags;
+            if (hasTags != null)
+            {
+                hasTags.Tags = itemTags;
+            }
         }
     }
 }

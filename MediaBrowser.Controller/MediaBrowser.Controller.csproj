@@ -92,7 +92,13 @@
     <Compile Include="Entities\IHasAspectRatio.cs" />
     <Compile Include="Entities\IHasBudget.cs" />
     <Compile Include="Entities\IHasCriticRating.cs" />
+    <Compile Include="Entities\IHasLanguage.cs" />
+    <Compile Include="Entities\IHasProductionLocations.cs" />
+    <Compile Include="Entities\IHasScreenshots.cs" />
     <Compile Include="Entities\IHasSoundtracks.cs" />
+    <Compile Include="Entities\IHasTaglines.cs" />
+    <Compile Include="Entities\IHasTags.cs" />
+    <Compile Include="Entities\IHasThemeMedia.cs" />
     <Compile Include="Entities\IHasTrailers.cs" />
     <Compile Include="Entities\IItemByName.cs" />
     <Compile Include="Entities\ILibraryItem.cs" />

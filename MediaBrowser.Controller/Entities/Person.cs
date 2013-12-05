@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Model.Dto;
-using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 
@@ -14,6 +13,12 @@ namespace MediaBrowser.Controller.Entities
         {
             UserItemCountList = new List<ItemByNameCounts>();
         }
+
+        /// <summary>
+        /// Gets or sets the place of birth.
+        /// </summary>
+        /// <value>The place of birth.</value>
+        public string PlaceOfBirth { get; set; }
 
         [IgnoreDataMember]
         public List<ItemByNameCounts> UserItemCountList { get; set; }

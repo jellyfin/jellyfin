@@ -1,32 +1,16 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="MediaBrowser.Server.Implementations\Persistence\SqliteExtensions.cs">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Release|x86" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="MediaBrowser.ServerApplication\EntryPoints\StartupWizard.cs">
     <Files>
-      <File FileName="MediaBrowser.Server.Mono\Program.cs" Line="1" Column="1" />
-      <File FileName="MediaBrowser.Server.Mono\IO\FileSystemFactory.cs" Line="1" Column="1" />
-      <File FileName="MediaBrowser.Server.Implementations\Persistence\SqliteExtensions.cs" Line="22" Column="29" />
-      <File FileName="MediaBrowser.Server.Mono\Native\ServerAuthorization.cs" Line="1" Column="1" />
-      <File FileName="MediaBrowser.Server.Mono\Native\NativeApp.cs" Line="1" Column="1" />
-      <File FileName="MediaBrowser.Server.Mono\Native\Assemblies.cs" Line="1" Column="1" />
-      <File FileName="MediaBrowser.Server.Mono\Native\Autorun.cs" Line="1" Column="1" />
+      <File FileName="MediaBrowser.Server.Mono\Program.cs" Line="13" Column="1" />
+      <File FileName="MediaBrowser.ServerApplication\EntryPoints\StartupWizard.cs" Line="32" Column="23" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
         <State expanded="True">
-          <Node name="MediaBrowser.Common" expanded="True" />
-          <Node name="MediaBrowser.Common.Implementations" expanded="True" />
-          <Node name="MediaBrowser.Controller" expanded="True" />
-          <Node name="MediaBrowser.Model" expanded="True">
+          <Node name="MediaBrowser.Server.Mono" expanded="True" selected="True">
             <Node name="References" expanded="True" />
-            <Node name="Web" expanded="True" />
-          </Node>
-          <Node name="MediaBrowser.Server.Implementations" expanded="True">
-            <Node name="Persistence" expanded="True">
-              <Node name="SqliteExtensions.cs" selected="True" />
-            </Node>
-          </Node>
-          <Node name="MediaBrowser.Server.Mono" expanded="True">
-            <Node name="References" expanded="True" />
+            <Node name="EntryPoints" expanded="True" />
           </Node>
         </State>
       </Pad>

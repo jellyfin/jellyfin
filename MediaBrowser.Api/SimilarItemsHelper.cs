@@ -119,6 +119,17 @@ namespace MediaBrowser.Api
                 .Select(i => i.Item1);
         }
 
+        private static IEnumerable<string> GetTags(BaseItem item)
+        {
+            var hasTags = item as IHasTags;
+            if (hasTags != null)
+            {
+                return hasTags.Tags;
+            }
+
+            return new List<string>();
+        }
+
         /// <summary>
         /// Gets the similiarity score.
         /// </summary>
@@ -138,7 +149,7 @@ namespace MediaBrowser.Api
             points += item1.Genres.Where(i => item2.Genres.Contains(i, StringComparer.OrdinalIgnoreCase)).Sum(i => 10);
 
             // Find common tags
-            points += item1.Tags.Where(i => item2.Tags.Contains(i, StringComparer.OrdinalIgnoreCase)).Sum(i => 10);
+            points += GetTags(item1).Where(i => GetTags(item2).Contains(i, StringComparer.OrdinalIgnoreCase)).Sum(i => 10);
 
             // Find common studios
             points += item1.Studios.Where(i => item2.Studios.Contains(i, StringComparer.OrdinalIgnoreCase)).Sum(i => 3);

@@ -588,7 +588,7 @@ namespace MediaBrowser.Api
 
             var originalItem = item;
 
-            while (item.ThemeSongIds.Count == 0 && request.InheritFromParent && item.Parent != null)
+            while (GetThemeSongIds(item).Count == 0 && request.InheritFromParent && item.Parent != null)
             {
                 item = item.Parent;
             }
@@ -598,7 +598,7 @@ namespace MediaBrowser.Api
                     .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
                     .ToList();
 
-            var themeSongIds = item.ThemeSongIds;
+            var themeSongIds = GetThemeSongIds(item);
 
             if (themeSongIds.Count == 0 && request.InheritFromParent)
             {
@@ -608,11 +608,11 @@ namespace MediaBrowser.Api
                 {
                     var linkedItemWithThemes = album.SoundtrackIds
                         .Select(i => _libraryManager.GetItemById(i))
-                        .FirstOrDefault(i => i.ThemeSongIds.Count > 0);
+                        .FirstOrDefault(i => GetThemeSongIds(i).Count > 0);
 
                     if (linkedItemWithThemes != null)
                     {
-                        themeSongIds = linkedItemWithThemes.ThemeSongIds;
+                        themeSongIds = GetThemeSongIds(linkedItemWithThemes);
                         item = linkedItemWithThemes;
                     }
                 }
@@ -656,7 +656,7 @@ namespace MediaBrowser.Api
 
             var originalItem = item;
 
-            while (item.ThemeVideoIds.Count == 0 && request.InheritFromParent && item.Parent != null)
+            while (GetThemeVideoIds(item).Count == 0 && request.InheritFromParent && item.Parent != null)
             {
                 item = item.Parent;
             }
@@ -666,7 +666,7 @@ namespace MediaBrowser.Api
                     .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
                     .ToList();
 
-            var themeVideoIds = item.ThemeVideoIds;
+            var themeVideoIds = GetThemeVideoIds(item);
 
             if (themeVideoIds.Count == 0 && request.InheritFromParent)
             {
@@ -681,11 +681,11 @@ namespace MediaBrowser.Api
                 {
                     var linkedItemWithThemes = album.SoundtrackIds
                         .Select(i => _libraryManager.GetItemById(i))
-                        .FirstOrDefault(i => i.ThemeVideoIds.Count > 0);
+                        .FirstOrDefault(i => GetThemeVideoIds(i).Count > 0);
 
                     if (linkedItemWithThemes != null)
                     {
-                        themeVideoIds = linkedItemWithThemes.ThemeVideoIds;
+                        themeVideoIds = GetThemeVideoIds(linkedItemWithThemes);
                         item = linkedItemWithThemes;
                     }
                 }
@@ -703,6 +703,30 @@ namespace MediaBrowser.Api
                 TotalRecordCount = items.Length,
                 OwnerId = _dtoService.GetDtoId(item)
             };
+        }
+
+        private List<Guid> GetThemeVideoIds(BaseItem item)
+        {
+            var i = item as IHasThemeMedia;
+
+            if (i != null)
+            {
+                return i.ThemeVideoIds;
+            }
+
+            return new List<Guid>();
+        }
+
+        private List<Guid> GetThemeSongIds(BaseItem item)
+        {
+            var i = item as IHasThemeMedia;
+
+            if (i != null)
+            {
+                return i.ThemeSongIds;
+            }
+
+            return new List<Guid>();
         }
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");

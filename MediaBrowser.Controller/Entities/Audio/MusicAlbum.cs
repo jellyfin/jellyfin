@@ -9,7 +9,7 @@ namespace MediaBrowser.Controller.Entities.Audio
     /// <summary>
     /// Class MusicAlbum
     /// </summary>
-    public class MusicAlbum : Folder, IHasAlbumArtist, IHasArtist, IHasMusicGenres
+    public class MusicAlbum : Folder, IHasAlbumArtist, IHasArtist, IHasMusicGenres, IHasTags
     {
         public List<Guid> SoundtrackIds { get; set; }
         
@@ -17,10 +17,17 @@ namespace MediaBrowser.Controller.Entities.Audio
         {
             Artists = new List<string>();
             SoundtrackIds = new List<Guid>();
+            Tags = new List<string>();
         }
 
         public string LastFmImageUrl { get; set; }
         public string LastFmImageSize { get; set; }
+
+        /// <summary>
+        /// Gets or sets the tags.
+        /// </summary>
+        /// <value>The tags.</value>
+        public List<string> Tags { get; set; }
 
         /// <summary>
         /// Songs will group into us so don't also include us in the index

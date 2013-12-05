@@ -114,7 +114,8 @@ namespace MediaBrowser.Server.Implementations.Providers
             }
             else if (type == ImageType.Screenshot && imageIndex == null)
             {
-                imageIndex = item.ScreenshotImagePaths.Count;
+                var hasScreenshots = (IHasScreenshots)item;
+                imageIndex = hasScreenshots.ScreenshotImagePaths.Count;
             }
 
             var paths = GetSavePaths(item, type, imageIndex, mimeType, saveLocally);
@@ -262,11 +263,12 @@ namespace MediaBrowser.Server.Implementations.Providers
             {
                 case ImageType.Screenshot:
 
+                    var hasScreenshots = (IHasScreenshots)item;
                     if (!imageIndex.HasValue)
                     {
                         throw new ArgumentNullException("imageIndex");
                     }
-                    return item.ScreenshotImagePaths.Count > imageIndex.Value ? item.ScreenshotImagePaths[imageIndex.Value] : null;
+                    return hasScreenshots.ScreenshotImagePaths.Count > imageIndex.Value ? hasScreenshots.ScreenshotImagePaths[imageIndex.Value] : null;
                 case ImageType.Backdrop:
                     if (!imageIndex.HasValue)
                     {
@@ -300,13 +302,14 @@ namespace MediaBrowser.Server.Implementations.Providers
                         throw new ArgumentNullException("imageIndex");
                     }
 
-                    if (item.ScreenshotImagePaths.Count > imageIndex.Value)
+                    var hasScreenshots = (IHasScreenshots)item;
+                    if (hasScreenshots.ScreenshotImagePaths.Count > imageIndex.Value)
                     {
-                        item.ScreenshotImagePaths[imageIndex.Value] = path;
+                        hasScreenshots.ScreenshotImagePaths[imageIndex.Value] = path;
                     }
-                    else if (!item.ScreenshotImagePaths.Contains(path, StringComparer.OrdinalIgnoreCase))
+                    else if (!hasScreenshots.ScreenshotImagePaths.Contains(path, StringComparer.OrdinalIgnoreCase))
                     {
-                        item.ScreenshotImagePaths.Add(path);
+                        hasScreenshots.ScreenshotImagePaths.Add(path);
                     }
                     break;
                 case ImageType.Backdrop:
@@ -379,7 +382,8 @@ namespace MediaBrowser.Server.Implementations.Providers
                     {
                         throw new ArgumentNullException("imageIndex");
                     }
-                    filename = GetBackdropSaveFilename(item.ScreenshotImagePaths, "screenshot", "screenshot", imageIndex.Value);
+                    var hasScreenshots = (IHasScreenshots)item;
+                    filename = GetBackdropSaveFilename(hasScreenshots.ScreenshotImagePaths, "screenshot", "screenshot", imageIndex.Value);
                     break;
                 default:
                     filename = type.ToString().ToLower();

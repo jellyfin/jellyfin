@@ -392,7 +392,13 @@ namespace MediaBrowser.Server.Implementations.Dto
         /// <returns>List{Guid}.</returns>
         private List<Guid> GetScreenshotImageTags(BaseItem item)
         {
-            return item.ScreenshotImagePaths
+            var hasScreenshots = item as IHasScreenshots;
+            if (hasScreenshots == null)
+            {
+                return new List<Guid>();
+            }
+
+            return hasScreenshots.ScreenshotImagePaths
                 .Select(p => GetImageCacheTag(item, ImageType.Screenshot, p))
                 .Where(i => i.HasValue)
                 .Select(i => i.Value)
@@ -746,12 +752,21 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             if (fields.Contains(ItemFields.Tags))
             {
-                dto.Tags = item.Tags;
+                var hasTags = item as IHasTags;
+                if (hasTags != null)
+                {
+                    dto.Tags = hasTags.Tags;
+                }
+
+                if (dto.Tags == null)
+                {
+                    dto.Tags = new List<string>();
+                }
             }
 
             if (fields.Contains(ItemFields.ProductionLocations))
             {
-                dto.ProductionLocations = item.ProductionLocations;
+                SetProductionLocations(item, dto);
             }
 
             var hasAspectRatio = item as IHasAspectRatio;
@@ -789,9 +804,14 @@ namespace MediaBrowser.Server.Implementations.Dto
             dto.Id = GetDtoId(item);
             dto.IndexNumber = item.IndexNumber;
             dto.IsFolder = item.IsFolder;
-            dto.Language = item.Language;
             dto.MediaType = item.MediaType;
             dto.LocationType = item.LocationType;
+
+            var hasLanguage = item as IHasLanguage;
+            if (hasLanguage != null)
+            {
+                dto.Language = hasLanguage.Language;
+            }
 
             var hasCriticRating = item as IHasCriticRating;
             if (hasCriticRating != null)
@@ -924,7 +944,16 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             if (fields.Contains(ItemFields.Taglines))
             {
-                dto.Taglines = item.Taglines;
+                var hasTagline = item as IHasTaglines;
+                if (hasTagline != null)
+                {
+                    dto.Taglines = hasTagline.Taglines;
+                }
+
+                if (dto.Taglines == null)
+                {
+                    dto.Taglines = new List<string>();
+                }
             }
 
             dto.Type = item.GetClientTypeName();
@@ -1119,6 +1148,31 @@ namespace MediaBrowser.Server.Implementations.Dto
             if (book != null)
             {
                 SetBookProperties(dto, book);
+            }
+        }
+
+        private void SetProductionLocations(BaseItem item, BaseItemDto dto)
+        {
+            var hasProductionLocations = item as IHasProductionLocations;
+
+            if (hasProductionLocations != null)
+            {
+                dto.ProductionLocations = hasProductionLocations.ProductionLocations;
+            }
+
+            var person = item as Person;
+            if (person != null)
+            {
+                dto.ProductionLocations = new List<string>();
+                if (!string.IsNullOrEmpty(person.PlaceOfBirth))
+                {
+                    dto.ProductionLocations.Add(person.PlaceOfBirth);
+                }
+            }
+
+            if (dto.ProductionLocations == null)
+            {
+                dto.ProductionLocations = new List<string>();
             }
         }
 
