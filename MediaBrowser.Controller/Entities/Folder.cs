@@ -1212,7 +1212,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var changed = await base.RefreshMetadata(cancellationToken, forceSave, forceRefresh, allowSlowProviders, resetResolveArgs).ConfigureAwait(false);
 
-            return changed || (SupportsShortcutChildren && LocationType == LocationType.FileSystem && RefreshLinkedChildren());
+            return (SupportsShortcutChildren && LocationType == LocationType.FileSystem && RefreshLinkedChildren()) || changed;
         }
 
         /// <summary>
