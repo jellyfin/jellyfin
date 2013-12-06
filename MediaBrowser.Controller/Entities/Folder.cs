@@ -1212,7 +1212,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var changed = await base.RefreshMetadata(cancellationToken, forceSave, forceRefresh, allowSlowProviders, resetResolveArgs).ConfigureAwait(false);
 
-            return changed || (SupportsShortcutChildren && LocationType == LocationType.FileSystem && RefreshLinkedChildren());
+            return (SupportsShortcutChildren && LocationType == LocationType.FileSystem && RefreshLinkedChildren()) || changed;
         }
 
         /// <summary>
@@ -1362,14 +1362,10 @@ namespace MediaBrowser.Controller.Entities
             //this should be functionally equivilent to what was here since it is IEnum and works on a thread-safe copy
             return RecursiveChildren.Where(i => i.LocationType != LocationType.Virtual).FirstOrDefault(i =>
             {
-                if (i.LocationType == LocationType.Remote)
-                {
-                    return string.Equals(i.Path, path, StringComparison.OrdinalIgnoreCase);
-                }
-
                 try
                 {
-                    return i.ResolveArgs.PhysicalLocations.Contains(path, StringComparer.OrdinalIgnoreCase);
+                    return string.Equals(i.Path, path, StringComparison.OrdinalIgnoreCase) 
+                        || i.ResolveArgs.PhysicalLocations.Contains(path, StringComparer.OrdinalIgnoreCase);
                 }
                 catch (IOException ex)
                 {
