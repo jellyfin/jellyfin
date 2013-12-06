@@ -169,11 +169,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 foreach (var stream in infos)
                 {
-                    if (stream.LastRefreshed == DateTime.MinValue)
-                    {
-                        throw new Exception("LastRefreshed still has DateTime.MinValue");
-
-                    }
                     cancellationToken.ThrowIfCancellationRequested();
 
                     _saveInfoCommand.GetParameter(0).Value = id;
