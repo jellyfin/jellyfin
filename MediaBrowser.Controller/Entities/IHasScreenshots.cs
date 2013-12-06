@@ -12,5 +12,10 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The screenshot image paths.</value>
         List<string> ScreenshotImagePaths { get; set; }
+
+        /// <summary>
+        /// Validates the screenshots.
+        /// </summary>
+        void ValidateScreenshots();
     }
 }

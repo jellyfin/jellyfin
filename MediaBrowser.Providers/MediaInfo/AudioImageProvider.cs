@@ -127,7 +127,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             var audio = (Audio)item;
 
-            if (string.IsNullOrEmpty(audio.PrimaryImagePath) && audio.MediaStreams.Any(s => s.Type == MediaStreamType.Video))
+            if (string.IsNullOrEmpty(audio.PrimaryImagePath) && audio.HasEmbeddedImage)
             {
                 try
                 {

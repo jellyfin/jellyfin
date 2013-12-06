@@ -3,7 +3,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
 {
     public static class FFMpegDownloadInfo
     {
-        public static string Version = "ffmpeg20131110";
+        public static string Version = "ffmpeg20131110.1";
 
         public static string[] FfMpegUrls = new[]
                 {

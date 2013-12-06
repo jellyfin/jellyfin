@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using System;
 using System.Collections.Generic;
@@ -46,6 +45,7 @@ namespace MediaBrowser.Controller.Resolvers
                 ".3gp",
                 ".webm",
                 ".mts",
+                ".m2v",
                 ".rec"
         };
 

@@ -128,7 +128,7 @@ namespace MediaBrowser.Providers.MediaInfo
             }
 
             // Can't extract if we didn't find a video stream in the file
-            if (item.MediaStreams.All(m => m.Type != MediaStreamType.Video))
+            if (!item.DefaultVideoStreamIndex.HasValue)
             {
                 return false;
             }

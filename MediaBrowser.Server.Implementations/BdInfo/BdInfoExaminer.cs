@@ -102,7 +102,7 @@ namespace MediaBrowser.Server.Implementations.BdInfo
                 Width = videoStream.Width,
                 Height = videoStream.Height,
                 Codec = videoStream.CodecShortName,
-                ScanType = videoStream.IsInterlaced ? "interlaced" : "progressive",
+                IsInterlaced = videoStream.IsInterlaced,
                 Type = MediaStreamType.Video,
                 Index = streams.Count
             };
@@ -146,7 +146,7 @@ namespace MediaBrowser.Server.Implementations.BdInfo
             {
                 stream.Channels = audioStream.ChannelCount + 1;
             }
-          
+
             streams.Add(stream);
         }
 

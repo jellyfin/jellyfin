@@ -108,7 +108,12 @@ namespace MediaBrowser.Providers
 
             // Make sure current backdrop paths still exist
             item.ValidateBackdrops();
-            item.ValidateScreenshots();
+
+            var hasScreenshots = item as IHasScreenshots;
+            if (hasScreenshots != null)
+            {
+                hasScreenshots.ValidateScreenshots();
+            }
 
             cancellationToken.ThrowIfCancellationRequested();
 

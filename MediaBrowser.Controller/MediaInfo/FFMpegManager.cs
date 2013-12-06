@@ -93,7 +93,7 @@ namespace MediaBrowser.Controller.MediaInfo
                 return Path.Combine(_appPaths.CachePath, "subtitles");
             }
         }
-        
+
         /// <summary>
         /// The first chapter ticks
         /// </summary>
@@ -112,7 +112,7 @@ namespace MediaBrowser.Controller.MediaInfo
         public async Task<bool> PopulateChapterImages(Video video, List<ChapterInfo> chapters, bool extractImages, bool saveChapters, CancellationToken cancellationToken)
         {
             // Can't extract images if there are no video streams
-            if (video.MediaStreams == null || video.MediaStreams.All(m => m.Type != MediaStreamType.Video))
+            if (!video.DefaultVideoStreamIndex.HasValue)
             {
                 return true;
             }
@@ -164,7 +164,7 @@ namespace MediaBrowser.Controller.MediaInfo
                             var parentPath = Path.GetDirectoryName(path);
 
                             Directory.CreateDirectory(parentPath);
-                            
+
                             await _encoder.ExtractImage(inputPath, type, video.Video3DFormat, time, path, cancellationToken).ConfigureAwait(false);
                             chapter.ImagePath = path;
                             changesMade = true;
@@ -203,7 +203,17 @@ namespace MediaBrowser.Controller.MediaInfo
         {
             var ticksParam = offset.HasValue ? "_" + offset.Value.Ticks : "";
 
-            var stream = input.MediaStreams[subtitleStreamIndex];
+            var stream = _itemRepo.GetMediaStreams(new MediaStreamQuery
+            {
+                ItemId = input.Id,
+                Index = subtitleStreamIndex
+
+            }).FirstOrDefault();
+
+            if (stream == null)
+            {
+                return null;
+            }
 
             if (stream.IsExternal)
             {

@@ -304,11 +304,17 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
+            List<MediaStream> mediaStreams;
+
             if (data.streams != null)
             {
-                video.MediaStreams = data.streams.Select(s => GetMediaStream(s, data.format))
-                .Where(i => i != null)
-                .ToList();
+                mediaStreams = data.streams.Select(s => GetMediaStream(s, data.format))
+                    .Where(i => i != null)
+                    .ToList();
+            }
+            else
+            {
+                mediaStreams = new List<MediaStream>();
             }
 
             var chapters = data.Chapters ?? new List<ChapterInfo>();
@@ -316,22 +322,28 @@ namespace MediaBrowser.Providers.MediaInfo
             if (video.VideoType == VideoType.BluRay || (video.IsoType.HasValue && video.IsoType.Value == IsoType.BluRay))
             {
                 var inputPath = isoMount != null ? isoMount.MountedPath : video.Path;
-                FetchBdInfo(video, chapters, inputPath, cancellationToken);
+                FetchBdInfo(video, chapters, mediaStreams, inputPath, cancellationToken);
             }
 
-            AddExternalSubtitles(video);
+            AddExternalSubtitles(video, mediaStreams);
 
             FetchWtvInfo(video, force, data);
 
-            video.IsHD = video.MediaStreams.Any(i => i.Type == MediaStreamType.Video && i.Width.HasValue && i.Width.Value >= 1270);
+            video.IsHD = mediaStreams.Any(i => i.Type == MediaStreamType.Video && i.Width.HasValue && i.Width.Value >= 1270);
 
-            if (chapters.Count == 0 && video.MediaStreams.Any(i => i.Type == MediaStreamType.Video))
+            if (chapters.Count == 0 && mediaStreams.Any(i => i.Type == MediaStreamType.Video))
             {
                 AddDummyChapters(video, chapters);
             }
 
-            await Kernel.Instance.FFMpegManager.PopulateChapterImages(video, chapters, false, false, cancellationToken).ConfigureAwait(false);
+            var videoStream = mediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Video);
 
+            video.VideoBitRate = videoStream == null ? null : videoStream.BitRate;
+            video.DefaultVideoStreamIndex = videoStream == null ? (int?)null : videoStream.Index;
+
+            video.HasSubtitles = mediaStreams.Any(i => i.Type == MediaStreamType.Subtitle);
+
+            await Kernel.Instance.FFMpegManager.PopulateChapterImages(video, chapters, false, false, cancellationToken).ConfigureAwait(false);
 
             BaseProviderInfo providerInfo;
             var videoFileChanged = false;
@@ -340,6 +352,8 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 videoFileChanged = CompareDate(video) > providerInfo.LastRefreshed;
             }
+
+            await _itemRepo.SaveMediaStreams(video.Id, mediaStreams, cancellationToken).ConfigureAwait(false);
 
             // Only save chapters if forcing, if the video changed, or if there are not already any saved ones
             if (force || videoFileChanged || _itemRepo.GetChapter(video.Id, 0) == null)
@@ -439,7 +453,8 @@ namespace MediaBrowser.Providers.MediaInfo
         /// Adds the external subtitles.
         /// </summary>
         /// <param name="video">The video.</param>
-        private void AddExternalSubtitles(Video video)
+        /// <param name="currentStreams">The current streams.</param>
+        private void AddExternalSubtitles(Video video, List<MediaStream> currentStreams)
         {
             var useParent = !video.ResolveArgs.IsDirectory;
 
@@ -452,7 +467,7 @@ namespace MediaBrowser.Providers.MediaInfo
                                          ? video.Parent.ResolveArgs.FileSystemChildren
                                          : video.ResolveArgs.FileSystemChildren;
 
-            var startIndex = video.MediaStreams == null ? 0 : video.MediaStreams.Count;
+            var startIndex = currentStreams.Count;
             var streams = new List<MediaStream>();
 
             var videoFileNameWithoutExtension = Path.GetFileNameWithoutExtension(video.Path);
@@ -503,11 +518,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
-            if (video.MediaStreams == null)
-            {
-                video.MediaStreams = new List<MediaStream>();
-            }
-            video.MediaStreams.AddRange(streams);
+            currentStreams.AddRange(streams);
         }
 
         /// <summary>
@@ -556,9 +567,10 @@ namespace MediaBrowser.Providers.MediaInfo
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="chapters">The chapters.</param>
+        /// <param name="mediaStreams">The media streams.</param>
         /// <param name="inputPath">The input path.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        private void FetchBdInfo(BaseItem item, List<ChapterInfo> chapters, string inputPath, CancellationToken cancellationToken)
+        private void FetchBdInfo(BaseItem item, List<ChapterInfo> chapters, List<MediaStream> mediaStreams, string inputPath, CancellationToken cancellationToken)
         {
             var video = (Video)item;
 
@@ -570,7 +582,7 @@ namespace MediaBrowser.Providers.MediaInfo
             int? currentWidth = null;
             int? currentBitRate = null;
 
-            var videoStream = video.MediaStreams.FirstOrDefault(s => s.Type == MediaStreamType.Video);
+            var videoStream = mediaStreams.FirstOrDefault(s => s.Type == MediaStreamType.Video);
 
             // Grab the values that ffprobe recorded
             if (videoStream != null)
@@ -581,9 +593,9 @@ namespace MediaBrowser.Providers.MediaInfo
             }
 
             // Fill video properties from the BDInfo result
-            Fetch(video, result, chapters);
+            Fetch(video, mediaStreams, result, chapters);
 
-            videoStream = video.MediaStreams.FirstOrDefault(s => s.Type == MediaStreamType.Video);
+            videoStream = mediaStreams.FirstOrDefault(s => s.Type == MediaStreamType.Video);
 
             // Use the ffprobe values if these are empty
             if (videoStream != null)
@@ -608,13 +620,15 @@ namespace MediaBrowser.Providers.MediaInfo
         /// Fills video properties from the VideoStream of the largest playlist
         /// </summary>
         /// <param name="video">The video.</param>
+        /// <param name="mediaStreams">The media streams.</param>
         /// <param name="stream">The stream.</param>
         /// <param name="chapters">The chapters.</param>
-        private void Fetch(Video video, BlurayDiscInfo stream, List<ChapterInfo> chapters)
+        private void Fetch(Video video, List<MediaStream> mediaStreams, BlurayDiscInfo stream, List<ChapterInfo> chapters)
         {
             // Check all input for null/empty/zero
 
-            video.MediaStreams = stream.MediaStreams;
+            mediaStreams.Clear();
+            mediaStreams.AddRange(stream.MediaStreams);
 
             video.MainFeaturePlaylistName = stream.PlaylistName;
 

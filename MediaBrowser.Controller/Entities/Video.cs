@@ -22,10 +22,27 @@ namespace MediaBrowser.Controller.Entities
 
         public Video()
         {
-            MediaStreams = new List<MediaStream>();
             PlayableStreamFileNames = new List<string>();
             AdditionalPartIds = new List<Guid>();
         }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance has subtitles.
+        /// </summary>
+        /// <value><c>true</c> if this instance has subtitles; otherwise, <c>false</c>.</value>
+        public bool HasSubtitles { get; set; }
+
+        /// <summary>
+        /// Gets or sets the video bit rate.
+        /// </summary>
+        /// <value>The video bit rate.</value>
+        public int? VideoBitRate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default index of the video stream.
+        /// </summary>
+        /// <value>The default index of the video stream.</value>
+        public int? DefaultVideoStreamIndex { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the video.
@@ -46,12 +63,6 @@ namespace MediaBrowser.Controller.Entities
         public Video3DFormat? Video3DFormat { get; set; }
 
         /// <summary>
-        /// Gets or sets the media streams.
-        /// </summary>
-        /// <value>The media streams.</value>
-        public List<MediaStream> MediaStreams { get; set; }
-
-        /// <summary>
         /// If the video is a folder-rip, this will hold the file list for the largest playlist
         /// </summary>
         public List<string> PlayableStreamFileNames { get; set; }
@@ -70,7 +81,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The aspect ratio.</value>
         public string AspectRatio { get; set; }
-        
+
         /// <summary>
         /// Should be overridden to return the proper folder where metadata lives
         /// </summary>
@@ -120,16 +131,6 @@ namespace MediaBrowser.Controller.Entities
             return PlayableStreamFileNames.Select(name => allFiles.FirstOrDefault(f => string.Equals(System.IO.Path.GetFileName(f), name, StringComparison.OrdinalIgnoreCase)))
                 .Where(f => !string.IsNullOrEmpty(f))
                 .ToList();
-        }
-
-        /// <summary>
-        /// The default video stream for this video.  Use this to determine media info for this item.
-        /// </summary>
-        /// <value>The default video stream.</value>
-        [IgnoreDataMember]
-        public MediaStream DefaultVideoStream
-        {
-            get { return MediaStreams != null ? MediaStreams.FirstOrDefault(s => s.Type == MediaStreamType.Video) : null; }
         }
 
         /// <summary>

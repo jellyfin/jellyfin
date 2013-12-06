@@ -1100,7 +1100,7 @@ var Dashboard = {
         var parts = [];
 
         var hours = ticks / ticksPerHour;
-        hours = hours.toFixed(0);
+        hours = Math.floor(hours);
 
         if (hours) {
             parts.push(hours);
@@ -1111,7 +1111,7 @@ var Dashboard = {
         var ticksPerMinute = 600000000;
 
         var minutes = ticks / ticksPerMinute;
-        minutes = minutes.toFixed(0);
+        minutes = Math.floor(minutes);
 
         ticks -= (minutes * ticksPerMinute);
 
@@ -1123,7 +1123,7 @@ var Dashboard = {
         var ticksPerSecond = 10000000;
 
         var seconds = ticks / ticksPerSecond;
-        seconds = seconds.toFixed(0);
+        seconds = Math.round(seconds);
 
         if (seconds < 10) {
             seconds = '0' + seconds;

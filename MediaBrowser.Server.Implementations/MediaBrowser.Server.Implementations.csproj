@@ -168,6 +168,7 @@
     <Compile Include="MediaEncoder\MediaEncoder.cs" />
     <Compile Include="Persistence\SqliteChapterRepository.cs" />
     <Compile Include="Persistence\SqliteExtensions.cs" />
+    <Compile Include="Persistence\SqliteMediaStreamsRepository.cs" />
     <Compile Include="Persistence\SqliteNotificationsRepository.cs" />
     <Compile Include="Persistence\TypeMapper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

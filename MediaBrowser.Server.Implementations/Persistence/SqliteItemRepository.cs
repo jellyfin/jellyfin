@@ -56,6 +56,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private readonly string _criticReviewsPath;
 
         private SqliteChapterRepository _chapterRepository;
+        private SqliteMediaStreamsRepository _mediaStreamsRepository;
 
         private IDbCommand _deleteChildrenCommand;
         private IDbCommand _saveChildrenCommand;
@@ -94,6 +95,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
             var chapterConnection = SqliteExtensions.ConnectToDb(chapterDbFile, _logger).Result;
 
             _chapterRepository = new SqliteChapterRepository(chapterConnection, logManager);
+
+            var mediaStreamsDbFile = Path.Combine(_appPaths.DataPath, "mediainfo.db");
+
+            var mediaStreamsConnection = SqliteExtensions.ConnectToDb(mediaStreamsDbFile, _logger).Result;
+
+            _mediaStreamsRepository = new SqliteMediaStreamsRepository(mediaStreamsConnection, logManager);
         }
 
         /// <summary>
@@ -122,6 +129,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             PrepareStatements();
 
+            _mediaStreamsRepository.Initialize();
             _chapterRepository.Initialize();
         }
 
@@ -413,6 +421,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     _chapterRepository.Dispose();
                     _chapterRepository = null;
                 }
+
+                if (_mediaStreamsRepository != null)
+                {
+                    _mediaStreamsRepository.Dispose();
+                    _mediaStreamsRepository = null;
+                }
             }
         }
 
@@ -510,6 +524,16 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 _writeLock.Release();
             }
+        }
+
+        public IEnumerable<MediaStream> GetMediaStreams(MediaStreamQuery query)
+        {
+            return _mediaStreamsRepository.GetMediaStreams(query);
+        }
+
+        public Task SaveMediaStreams(Guid id, IEnumerable<MediaStream> streams, CancellationToken cancellationToken)
+        {
+            return _mediaStreamsRepository.SaveMediaStreams(id, streams, cancellationToken);
         }
     }
 }

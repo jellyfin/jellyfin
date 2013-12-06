@@ -95,6 +95,22 @@ namespace MediaBrowser.Controller.Persistence
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task SaveChildren(Guid parentId, IEnumerable<Guid> children, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the media streams.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>IEnumerable{MediaStream}.</returns>
+        IEnumerable<MediaStream> GetMediaStreams(MediaStreamQuery query);
+
+        /// <summary>
+        /// Saves the media streams.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="streams">The streams.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task SaveMediaStreams(Guid id, IEnumerable<MediaStream> streams, CancellationToken cancellationToken);
     }
 }
 

@@ -130,9 +130,6 @@
     <Compile Include="..\MediaBrowser.Model\Entities\DisplayPreferences.cs">
       <Link>Entities\DisplayPreferences.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\Entities\IHasMediaStreams.cs">
-      <Link>Entities\IHasMediaStreams.cs</Link>
-    </Compile>
     <Compile Include="..\MediaBrowser.Model\Entities\IHasProviderIds.cs">
       <Link>Entities\IHasProviderIds.cs</Link>
     </Compile>

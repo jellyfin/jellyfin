@@ -3,6 +3,7 @@ using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.IO;
 using ServiceStack.ServiceHost;
 using System;
@@ -31,17 +32,8 @@ namespace MediaBrowser.Api.Playback.Hls
     /// </summary>
     public class VideoHlsService : BaseHlsService
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BaseStreamingService" /> class.
-        /// </summary>
-        /// <param name="appPaths">The app paths.</param>
-        /// <param name="userManager">The user manager.</param>
-        /// <param name="libraryManager">The library manager.</param>
-        /// <param name="isoManager">The iso manager.</param>
-        /// <param name="mediaEncoder">The media encoder.</param>
-        /// <param name="dtoService">The dto service.</param>
-        public VideoHlsService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService, IFileSystem fileSystem)
-            : base(appPaths, userManager, libraryManager, isoManager, mediaEncoder, dtoService, fileSystem)
+        public VideoHlsService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService, IFileSystem fileSystem, IItemRepository itemRepository)
+            : base(appPaths, userManager, libraryManager, isoManager, mediaEncoder, dtoService, fileSystem, itemRepository)
         {
         }
 
@@ -95,13 +87,13 @@ namespace MediaBrowser.Api.Playback.Hls
                 {
                     volParam = ",volume=2.000000";
                 }
-                
+
                 if (state.Request.AudioSampleRate.HasValue)
                 {
-                    audioSampleRate= state.Request.AudioSampleRate.Value + ":";
+                    audioSampleRate = state.Request.AudioSampleRate.Value + ":";
                 }
 
-                args += string.Format(" -af \"adelay=1,aresample={0}async=1000{1}\"",audioSampleRate, volParam);
+                args += string.Format(" -af \"adelay=1,aresample={0}async=1000{1}\"", audioSampleRate, volParam);
 
                 return args;
             }
@@ -130,7 +122,7 @@ namespace MediaBrowser.Api.Playback.Hls
             var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsExternal &&
                                  (state.SubtitleStream.Codec.IndexOf("pgs", StringComparison.OrdinalIgnoreCase) != -1 ||
                                   state.SubtitleStream.Codec.IndexOf("dvd", StringComparison.OrdinalIgnoreCase) != -1);
-            
+
             var args = "-codec:v:0 " + codec + " -preset superfast" + keyFrameArg;
 
             var bitrate = GetVideoBitrateParam(state);
@@ -139,7 +131,7 @@ namespace MediaBrowser.Api.Playback.Hls
             {
                 args += string.Format(" -b:v {0} -maxrate ({0}*.85) -bufsize {0}", bitrate.Value.ToString(UsCulture));
             }
-            
+
             // Add resolution params, if specified
             if (!hasGraphicalSubs)
             {
@@ -171,7 +163,7 @@ namespace MediaBrowser.Api.Playback.Hls
             {
                 args += GetInternalGraphicalSubtitleParam(state, codec);
             }
-         
+
             return args;
         }
 

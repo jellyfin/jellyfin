@@ -12,7 +12,6 @@ using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
@@ -25,13 +24,11 @@ namespace MediaBrowser.Api.Playback.Progressive
     /// </summary>
     public abstract class BaseProgressiveStreamingService : BaseStreamingService
     {
-        protected readonly IItemRepository ItemRepository;
         protected readonly IImageProcessor ImageProcessor;
 
         protected BaseProgressiveStreamingService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IItemRepository itemRepository, IDtoService dtoService, IImageProcessor imageProcessor, IFileSystem fileSystem) :
-            base(appPaths, userManager, libraryManager, isoManager, mediaEncoder, dtoService, fileSystem)
+            base(appPaths, userManager, libraryManager, isoManager, mediaEncoder, dtoService, fileSystem, itemRepository)
         {
-            ItemRepository = itemRepository;
             ImageProcessor = imageProcessor;
         }
 
