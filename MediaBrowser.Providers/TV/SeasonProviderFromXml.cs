@@ -18,14 +18,12 @@ namespace MediaBrowser.Providers.TV
     /// </summary>
     public class SeasonProviderFromXml : BaseMetadataProvider
     {
-        public static SeasonProviderFromXml Current;
         private readonly IFileSystem _fileSystem;
 
         public SeasonProviderFromXml(ILogManager logManager, IServerConfigurationManager configurationManager, IFileSystem fileSystem)
             : base(logManager, configurationManager)
         {
             _fileSystem = fileSystem;
-            Current = this;
         }
 
         /// <summary>
@@ -57,7 +55,7 @@ namespace MediaBrowser.Providers.TV
                 return false;
             }
 
-            return _fileSystem.GetLastWriteTimeUtc(xml) > providerInfo.LastRefreshed;
+            return _fileSystem.GetLastWriteTimeUtc(xml) > item.DateLastSaved;
         }
 
         /// <summary>

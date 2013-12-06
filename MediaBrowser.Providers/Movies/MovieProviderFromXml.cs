@@ -19,7 +19,6 @@ namespace MediaBrowser.Providers.Movies
     /// </summary>
     public class MovieProviderFromXml : BaseMetadataProvider
     {
-        internal static MovieProviderFromXml Current { get; private set; }
         private readonly IItemRepository _itemRepo;
         private readonly IFileSystem _fileSystem;
 
@@ -28,7 +27,6 @@ namespace MediaBrowser.Providers.Movies
         {
             _itemRepo = itemRepo;
             _fileSystem = fileSystem;
-            Current = this;
         }
 
         /// <summary>
@@ -73,7 +71,7 @@ namespace MediaBrowser.Providers.Movies
                 return false;
             }
 
-            return _fileSystem.GetLastWriteTimeUtc(xml) > providerInfo.LastRefreshed;
+            return _fileSystem.GetLastWriteTimeUtc(xml) > item.DateLastSaved;
         }
 
         /// <summary>

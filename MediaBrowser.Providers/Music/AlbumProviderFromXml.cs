@@ -14,14 +14,12 @@ namespace MediaBrowser.Providers.Music
 {
     class AlbumProviderFromXml : BaseMetadataProvider
     {
-        public static AlbumProviderFromXml Current;
         private readonly IFileSystem _fileSystem;
 
         public AlbumProviderFromXml(ILogManager logManager, IServerConfigurationManager configurationManager, IFileSystem fileSystem)
             : base(logManager, configurationManager)
         {
             _fileSystem = fileSystem;
-            Current = this;
         }
 
         /// <summary>
@@ -53,7 +51,7 @@ namespace MediaBrowser.Providers.Music
                 return false;
             }
 
-            return _fileSystem.GetLastWriteTimeUtc(xml) > providerInfo.LastRefreshed;
+            return _fileSystem.GetLastWriteTimeUtc(xml) > item.DateLastSaved;
         }
 
         /// <summary>

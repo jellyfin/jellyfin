@@ -58,8 +58,6 @@ namespace MediaBrowser.Providers.Savers
             var xmlFilePath = GetSavePath(item);
 
             XmlSaverHelpers.Save(builder, xmlFilePath, new List<string> { });
-
-            GameSystemProviderFromXml.Current.SetLastRefreshed(item, DateTime.UtcNow);
         }
 
         /// <summary>

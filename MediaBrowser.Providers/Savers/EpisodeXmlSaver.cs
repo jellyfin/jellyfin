@@ -3,8 +3,6 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
-using MediaBrowser.Providers.TV;
-using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -117,9 +115,6 @@ namespace MediaBrowser.Providers.Savers
                     "airsbefore_episode",
                     "airsbefore_season"
                 });
-
-            // Set last refreshed so that the provider doesn't trigger after the file save
-            EpisodeProviderFromXml.Current.SetLastRefreshed(item, DateTime.UtcNow);
         }
 
         /// <summary>

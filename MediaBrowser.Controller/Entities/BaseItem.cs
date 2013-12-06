@@ -154,6 +154,8 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The date modified.</value>
         public DateTime DateModified { get; set; }
 
+        public DateTime DateLastSaved { get; set; }
+        
         /// <summary>
         /// The logger
         /// </summary>
@@ -827,7 +829,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>true if a provider reports we changed</returns>
         public virtual async Task<bool> RefreshMetadata(CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false, bool allowSlowProviders = true, bool resetResolveArgs = true)
         {
-            if (resetResolveArgs || ResolveArgs == null)
+            if (resetResolveArgs)
             {
                 // Reload this
                 ResetResolveArgs();

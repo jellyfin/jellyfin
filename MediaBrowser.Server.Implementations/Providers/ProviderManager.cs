@@ -202,7 +202,7 @@ namespace MediaBrowser.Server.Implementations.Providers
         {
             if (item == null)
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException("item");
             }
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -213,12 +213,9 @@ namespace MediaBrowser.Server.Implementations.Providers
                 _logger.Debug("Running {0} for {1}", provider.GetType().Name, item.Path ?? item.Name ?? "--Unknown--");
             }
 
-            // This provides the ability to cancel just this one provider
-            var innerCancellationTokenSource = new CancellationTokenSource();
-
             try
             {
-                var changed = await provider.FetchAsync(item, force, CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, innerCancellationTokenSource.Token).Token).ConfigureAwait(false);
+                var changed = await provider.FetchAsync(item, force, cancellationToken).ConfigureAwait(false);
 
                 if (changed)
                 {
@@ -246,10 +243,6 @@ namespace MediaBrowser.Server.Implementations.Providers
                 provider.SetLastRefreshed(item, DateTime.UtcNow, ProviderRefreshStatus.Failure);
 
                 return ItemUpdateType.Unspecified;
-            }
-            finally
-            {
-                innerCancellationTokenSource.Dispose();
             }
         }
 
