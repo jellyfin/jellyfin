@@ -125,7 +125,6 @@
     <Compile Include="Entities\ParentalRating.cs" />
     <Compile Include="Dto\StreamOptions.cs" />
     <Compile Include="Entities\VirtualFolderInfo.cs" />
-    <Compile Include="Entities\IHasMediaStreams.cs" />
     <Compile Include="Extensions\ModelExtensions.cs" />
     <Compile Include="IO\IZipClient.cs" />
     <Compile Include="Logging\ILogger.cs" />

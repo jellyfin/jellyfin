@@ -31,36 +31,26 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
         }
 
-        private readonly IJsonSerializer _jsonSerializer;
-
         /// <summary>
         /// The _app paths
         /// </summary>
         private readonly IApplicationPaths _appPaths;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SqliteUserDataRepository"/> class.
+        /// Initializes a new instance of the <see cref="SqliteUserDataRepository" /> class.
         /// </summary>
         /// <param name="appPaths">The app paths.</param>
-        /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="logManager">The log manager.</param>
-        /// <exception cref="System.ArgumentNullException">
-        /// jsonSerializer
+        /// <exception cref="System.ArgumentNullException">jsonSerializer
         /// or
-        /// appPaths
-        /// </exception>
-        public SqliteUserDataRepository(IApplicationPaths appPaths, IJsonSerializer jsonSerializer, ILogManager logManager)
+        /// appPaths</exception>
+        public SqliteUserDataRepository(IApplicationPaths appPaths, ILogManager logManager)
         {
-            if (jsonSerializer == null)
-            {
-                throw new ArgumentNullException("jsonSerializer");
-            }
             if (appPaths == null)
             {
                 throw new ArgumentNullException("appPaths");
             }
 
-            _jsonSerializer = jsonSerializer;
             _appPaths = appPaths;
             _logger = logManager.GetLogger(GetType().Name);
         }

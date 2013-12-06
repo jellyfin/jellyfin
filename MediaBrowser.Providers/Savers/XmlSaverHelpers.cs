@@ -529,8 +529,6 @@ namespace MediaBrowser.Providers.Savers
         /// Appends the media info.
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="item">The item.</param>
-        /// <param name="builder">The builder.</param>
         public static void AddMediaInfo<T>(T item, StringBuilder builder, IItemRepository itemRepository)
             where T : BaseItem, IHasMediaStreams
         {
@@ -538,105 +536,38 @@ namespace MediaBrowser.Providers.Savers
 
             builder.Append("<MediaInfo>");
 
-            foreach (var stream in item.MediaStreams)
+            builder.Append("<Video>");
+
+            if (item.RunTimeTicks.HasValue)
             {
-                builder.Append("<" + stream.Type + ">");
+                var timespan = TimeSpan.FromTicks(item.RunTimeTicks.Value);
 
-                if (!string.IsNullOrEmpty(stream.Codec))
-                {
-                    builder.Append("<Codec>" + SecurityElement.Escape(stream.Codec) + "</Codec>");
-                    builder.Append("<FFCodec>" + SecurityElement.Escape(stream.Codec) + "</FFCodec>");
-                }
-
-                if (stream.BitRate.HasValue)
-                {
-                    builder.Append("<BitRate>" + stream.BitRate.Value.ToString(UsCulture) + "</BitRate>");
-                }
-
-                if (stream.Width.HasValue)
-                {
-                    builder.Append("<Width>" + stream.Width.Value.ToString(UsCulture) + "</Width>");
-                }
-
-                if (stream.Height.HasValue)
-                {
-                    builder.Append("<Height>" + stream.Height.Value.ToString(UsCulture) + "</Height>");
-                }
-
-                if (!string.IsNullOrEmpty(stream.AspectRatio))
-                {
-                    builder.Append("<AspectRatio>" + SecurityElement.Escape(stream.AspectRatio) + "</AspectRatio>");
-                }
-
-                var framerate = stream.AverageFrameRate ?? stream.RealFrameRate;
-
-                if (framerate.HasValue)
-                {
-                    builder.Append("<FrameRate>" + framerate.Value.ToString(UsCulture) + "</FrameRate>");
-                }
-
-                if (!string.IsNullOrEmpty(stream.Language))
-                {
-                    builder.Append("<Language>" + SecurityElement.Escape(stream.Language) + "</Language>");
-                }
-
-                if (!string.IsNullOrEmpty(stream.ScanType))
-                {
-                    builder.Append("<ScanType>" + SecurityElement.Escape(stream.ScanType) + "</ScanType>");
-                }
-
-                if (stream.Channels.HasValue)
-                {
-                    builder.Append("<Channels>" + stream.Channels.Value.ToString(UsCulture) + "</Channels>");
-                }
-
-                if (stream.SampleRate.HasValue)
-                {
-                    builder.Append("<SamplingRate>" + stream.SampleRate.Value.ToString(UsCulture) + "</SamplingRate>");
-                }
-
-                builder.Append("<Default>" + SecurityElement.Escape(stream.IsDefault.ToString()) + "</Default>");
-                builder.Append("<Forced>" + SecurityElement.Escape(stream.IsForced.ToString()) + "</Forced>");
-
-                if (stream.Type == MediaStreamType.Video)
-                {
-                    if (item.RunTimeTicks.HasValue)
-                    {
-                        var timespan = TimeSpan.FromTicks(item.RunTimeTicks.Value);
-
-                        builder.Append("<Duration>" + Convert.ToInt64(timespan.TotalMinutes).ToString(UsCulture) + "</Duration>");
-                        builder.Append("<DurationSeconds>" + Convert.ToInt64(timespan.TotalSeconds).ToString(UsCulture) + "</DurationSeconds>");
-                    }
-
-                    if (video != null && video.Video3DFormat.HasValue)
-                    {
-                        switch (video.Video3DFormat.Value)
-                        {
-                            case Video3DFormat.FullSideBySide:
-                                builder.Append("<Format3D>FSBS</Format3D>");
-                                break;
-                            case Video3DFormat.FullTopAndBottom:
-                                builder.Append("<Format3D>FTAB</Format3D>");
-                                break;
-                            case Video3DFormat.HalfSideBySide:
-                                builder.Append("<Format3D>HSBS</Format3D>");
-                                break;
-                            case Video3DFormat.HalfTopAndBottom:
-                                builder.Append("<Format3D>HTAB</Format3D>");
-                                break;
-                        }
-                    }
-                }
-
-                builder.Append("</" + stream.Type + ">");
+                builder.Append("<Duration>" + Convert.ToInt64(timespan.TotalMinutes).ToString(UsCulture) + "</Duration>");
+                builder.Append("<DurationSeconds>" + Convert.ToInt64(timespan.TotalSeconds).ToString(UsCulture) + "</DurationSeconds>");
             }
+
+            if (video != null && video.Video3DFormat.HasValue)
+            {
+                switch (video.Video3DFormat.Value)
+                {
+                    case Video3DFormat.FullSideBySide:
+                        builder.Append("<Format3D>FSBS</Format3D>");
+                        break;
+                    case Video3DFormat.FullTopAndBottom:
+                        builder.Append("<Format3D>FTAB</Format3D>");
+                        break;
+                    case Video3DFormat.HalfSideBySide:
+                        builder.Append("<Format3D>HSBS</Format3D>");
+                        break;
+                    case Video3DFormat.HalfTopAndBottom:
+                        builder.Append("<Format3D>HTAB</Format3D>");
+                        break;
+                }
+            }
+
+            builder.Append("</Video>");
 
             builder.Append("</MediaInfo>");
-
-            if (video != null)
-            {
-                //AddChapters(video, builder, itemRepository);
-            }
         }
     }
 }

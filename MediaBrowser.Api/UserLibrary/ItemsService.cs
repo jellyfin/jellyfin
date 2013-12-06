@@ -226,7 +226,7 @@ namespace MediaBrowser.Api.UserLibrary
 
         [ApiMember(Name = "HasTvdbId", Description = "Optional filter by items that have a tvdb id or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool? HasTvdbId { get; set; }
-        
+
         [ApiMember(Name = "IsYearMismatched", Description = "Optional filter by items that are potentially misidentified.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool? IsYearMismatched { get; set; }
     }
@@ -984,15 +984,9 @@ namespace MediaBrowser.Api.UserLibrary
 
             if (request.HasSubtitles.HasValue)
             {
-                items = items.OfType<Video>().Where(i =>
-                {
-                    if (request.HasSubtitles.Value)
-                    {
-                        return i.MediaStreams != null && i.MediaStreams.Any(m => m.Type == MediaStreamType.Subtitle);
-                    }
+                var val = request.HasSubtitles.Value;
 
-                    return i.MediaStreams == null || i.MediaStreams.All(m => m.Type != MediaStreamType.Subtitle);
-                });
+                items = items.OfType<Video>().Where(i => val == i.HasSubtitles);
             }
 
             if (request.HasParentalRating.HasValue)

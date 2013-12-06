@@ -7,6 +7,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaInfo;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -59,7 +60,9 @@ namespace MediaBrowser.Api.Playback
         protected IDtoService DtoService { get; private set; }
 
         protected IFileSystem FileSystem { get; private set; }
-        
+
+        protected IItemRepository ItemRepository { get; private set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseStreamingService" /> class.
         /// </summary>
@@ -68,8 +71,9 @@ namespace MediaBrowser.Api.Playback
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="isoManager">The iso manager.</param>
         /// <param name="mediaEncoder">The media encoder.</param>
-        protected BaseStreamingService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService, IFileSystem fileSystem)
+        protected BaseStreamingService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService, IFileSystem fileSystem, IItemRepository itemRepository)
         {
+            ItemRepository = itemRepository;
             FileSystem = fileSystem;
             DtoService = dtoService;
             ApplicationPaths = appPaths;
@@ -803,6 +807,12 @@ namespace MediaBrowser.Api.Playback
 
             var videoRequest = request as VideoStreamRequest;
 
+            var mediaStreams = ItemRepository.GetMediaStreams(new MediaStreamQuery
+            {
+                ItemId = item.Id
+
+            }).ToList();
+
             if (videoRequest != null)
             {
                 if (!videoRequest.VideoCodec.HasValue)
@@ -810,13 +820,13 @@ namespace MediaBrowser.Api.Playback
                     videoRequest.VideoCodec = InferVideoCodec(url);
                 }
 
-                state.VideoStream = GetMediaStream(media.MediaStreams, videoRequest.VideoStreamIndex, MediaStreamType.Video);
-                state.SubtitleStream = GetMediaStream(media.MediaStreams, videoRequest.SubtitleStreamIndex, MediaStreamType.Subtitle, false);
-                state.AudioStream = GetMediaStream(media.MediaStreams, videoRequest.AudioStreamIndex, MediaStreamType.Audio);
+                state.VideoStream = GetMediaStream(mediaStreams, videoRequest.VideoStreamIndex, MediaStreamType.Video);
+                state.SubtitleStream = GetMediaStream(mediaStreams, videoRequest.SubtitleStreamIndex, MediaStreamType.Subtitle, false);
+                state.AudioStream = GetMediaStream(mediaStreams, videoRequest.AudioStreamIndex, MediaStreamType.Audio);
             }
             else
             {
-                state.AudioStream = GetMediaStream(media.MediaStreams, null, MediaStreamType.Audio, true);
+                state.AudioStream = GetMediaStream(mediaStreams, null, MediaStreamType.Audio, true);
             }
 
             return state;

@@ -101,7 +101,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
 
             // Limit to video files to reduce changes of ffmpeg crash dialog
             foreach (var item in newItems
-                .Where(i => i.LocationType == LocationType.FileSystem && i.VideoType == VideoType.VideoFile && string.IsNullOrEmpty(i.PrimaryImagePath) && i.MediaStreams.Any(m => m.Type == MediaStreamType.Video))
+                .Where(i => i.LocationType == LocationType.FileSystem && i.VideoType == VideoType.VideoFile && string.IsNullOrEmpty(i.PrimaryImagePath) && i.DefaultVideoStreamIndex.HasValue)
                 .Take(2))
             {
                 try

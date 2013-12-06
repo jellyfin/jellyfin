@@ -370,44 +370,6 @@ namespace MediaBrowser.Api
                 UniqueTypes = items.Select(i => i.GetClientTypeName()).Distinct().ToList()
             };
 
-            var people = items.SelectMany(i => i.People)
-             .Select(i => i.Name)
-             .Distinct(StringComparer.OrdinalIgnoreCase)
-             .Select(i =>
-             {
-                 try
-                 {
-                     return _libraryManager.GetPerson(i);
-                 }
-                 catch
-                 {
-                     return null;
-                 }
-             })
-             .Where(i => i != null)
-             .ToList();
-
-            people = request.UserId.HasValue ? FilterItems(people, request, request.UserId.Value).ToList() : people;
-            counts.PersonCount = people.Count;
-
-            var artists = _libraryManager.GetAllArtists(items)
-                .Select(i =>
-                {
-                    try
-                    {
-                        return _libraryManager.GetArtist(i);
-                    }
-                    catch
-                    {
-                        return null;
-                    }
-                })
-                .Where(i => i != null)
-                .ToList();
-
-            artists = request.UserId.HasValue ? FilterItems(artists, request, request.UserId.Value).ToList() : artists;
-            counts.ArtistCount = artists.Count;
-
             return ToOptimizedResult(counts);
         }
 

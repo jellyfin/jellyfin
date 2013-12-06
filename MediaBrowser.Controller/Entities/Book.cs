@@ -1,7 +1,8 @@
-﻿
+﻿using System.Collections.Generic;
+
 namespace MediaBrowser.Controller.Entities
 {
-    public class Book : BaseItem
+    public class Book : BaseItem, IHasTags
     {
         public override string MediaType
         {
@@ -10,6 +11,11 @@ namespace MediaBrowser.Controller.Entities
                 return Model.Entities.MediaType.Book;
             }
         }
+        /// <summary>
+        /// Gets or sets the tags.
+        /// </summary>
+        /// <value>The tags.</value>
+        public List<string> Tags { get; set; }
 
         public string SeriesName { get; set; }
 
@@ -30,6 +36,11 @@ namespace MediaBrowser.Controller.Entities
             {
                 return !IsInMixedFolder;
             }
+        }
+
+        public Book()
+        {
+            Tags = new List<string>();
         }
     }
 }

@@ -19,10 +19,10 @@ namespace MediaBrowser.Model.Entities
         public string Language { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the scan.
+        /// Gets or sets a value indicating whether this instance is interlaced.
         /// </summary>
-        /// <value>The type of the scan.</value>
-        public string ScanType { get; set; }
+        /// <value><c>true</c> if this instance is interlaced; otherwise, <c>false</c>.</value>
+        public bool IsInterlaced { get; set; }
 
         /// <summary>
         /// Gets or sets the channel layout.

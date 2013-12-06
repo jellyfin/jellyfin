@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Model.Entities;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -13,7 +12,6 @@ namespace MediaBrowser.Controller.Entities.Audio
     {
         public Audio()
         {
-            MediaStreams = new List<MediaStream>();
             Artists = new List<string>();
         }
 
@@ -22,13 +20,13 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// </summary>
         /// <value>The language.</value>
         public string Language { get; set; }
-        
-        /// <summary>
-        /// Gets or sets the media streams.
-        /// </summary>
-        /// <value>The media streams.</value>
-        public List<MediaStream> MediaStreams { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance has embedded image.
+        /// </summary>
+        /// <value><c>true</c> if this instance has embedded image; otherwise, <c>false</c>.</value>
+        public bool HasEmbeddedImage { get; set; }
+        
         /// <summary>
         /// Override this to true if class should be grouped under a container in indicies
         /// The container class should be defined via IndexContainer

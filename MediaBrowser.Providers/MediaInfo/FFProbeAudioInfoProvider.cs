@@ -3,6 +3,7 @@ using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
@@ -19,9 +20,12 @@ namespace MediaBrowser.Providers.MediaInfo
     /// </summary>
     public class FFProbeAudioInfoProvider : BaseFFProbeProvider<Audio>
     {
-        public FFProbeAudioInfoProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IMediaEncoder mediaEncoder, IJsonSerializer jsonSerializer)
+        private readonly IItemRepository _itemRepo;
+
+        public FFProbeAudioInfoProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IMediaEncoder mediaEncoder, IJsonSerializer jsonSerializer, IItemRepository itemRepo)
             : base(logManager, configurationManager, mediaEncoder, jsonSerializer)
         {
+            _itemRepo = itemRepo;
         }
 
         public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
@@ -38,7 +42,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            Fetch(myItem, cancellationToken, result);
+            await Fetch(myItem, cancellationToken, result).ConfigureAwait(false);
 
             SetLastRefreshed(item, DateTime.UtcNow);
 
@@ -51,22 +55,19 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="audio">The audio.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="data">The data.</param>
-        /// <param name="isoMount">The iso mount.</param>
         /// <returns>Task.</returns>
-        protected void Fetch(Audio audio, CancellationToken cancellationToken, MediaInfoResult data)
+        protected Task Fetch(Audio audio, CancellationToken cancellationToken, MediaInfoResult data)
         {
-            if (data.streams == null)
-            {
-                Logger.Error("Audio item has no streams: " + audio.Path);
-                return;
-            }
+            var internalStreams = data.streams ?? new MediaStreamInfo[] { };
 
-            audio.MediaStreams = data.streams.Select(s => GetMediaStream(s, data.format))
+            var mediaStreams = internalStreams.Select(s => GetMediaStream(s, data.format))
                 .Where(i => i != null)
                 .ToList();
 
+            audio.HasEmbeddedImage = mediaStreams.Any(i => i.Type == MediaStreamType.Video);
+
             // Get the first audio stream
-            var stream = data.streams.FirstOrDefault(s => s.codec_type.Equals("audio", StringComparison.OrdinalIgnoreCase));
+            var stream = internalStreams.FirstOrDefault(s => s.codec_type.Equals("audio", StringComparison.OrdinalIgnoreCase));
 
             if (stream != null)
             {
@@ -90,6 +91,8 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 FetchDataFromTags(audio, data.format.tags);
             }
+
+            return _itemRepo.SaveMediaStreams(audio.Id, mediaStreams, cancellationToken);
         }
 
         /// <summary>

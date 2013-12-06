@@ -6,6 +6,7 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
 using System;
@@ -21,6 +22,11 @@ namespace MediaBrowser.Api.Playback.Hls
     /// </summary>
     public abstract class BaseHlsService : BaseStreamingService
     {
+        protected BaseHlsService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService, IFileSystem fileSystem, IItemRepository itemRepository)
+            : base(appPaths, userManager, libraryManager, isoManager, mediaEncoder, dtoService, fileSystem, itemRepository)
+        {
+        }
+
         protected override string GetOutputFilePath(StreamState state)
         {
             var folder = ApplicationPaths.EncodedMediaCachePath;
@@ -28,19 +34,6 @@ namespace MediaBrowser.Api.Playback.Hls
             var outputFileExtension = GetOutputFileExtension(state);
 
             return Path.Combine(folder, GetCommandLineArguments("dummy\\dummy", state, false).GetMD5() + (outputFileExtension ?? string.Empty).ToLower());
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BaseStreamingService" /> class.
-        /// </summary>
-        /// <param name="appPaths">The app paths.</param>
-        /// <param name="userManager">The user manager.</param>
-        /// <param name="libraryManager">The library manager.</param>
-        /// <param name="isoManager">The iso manager.</param>
-        /// <param name="mediaEncoder">The media encoder.</param>
-        protected BaseHlsService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService, IFileSystem fileSystem)
-            : base(appPaths, userManager, libraryManager, isoManager, mediaEncoder, dtoService, fileSystem)
-        {
         }
 
         /// <summary>
@@ -260,7 +253,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var itsOffsetMs = hlsVideoRequest == null
                                        ? 0
-                                       : ((GetHlsVideoStream) state.VideoRequest).TimeStampOffsetMs;
+                                       : ((GetHlsVideoStream)state.VideoRequest).TimeStampOffsetMs;
 
             var itsOffset = itsOffsetMs == 0 ? string.Empty : string.Format("-itsoffset {0} ", TimeSpan.FromMilliseconds(itsOffsetMs).TotalSeconds);
 

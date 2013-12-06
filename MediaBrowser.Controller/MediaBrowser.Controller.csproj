@@ -93,6 +93,7 @@
     <Compile Include="Entities\IHasBudget.cs" />
     <Compile Include="Entities\IHasCriticRating.cs" />
     <Compile Include="Entities\IHasLanguage.cs" />
+    <Compile Include="Entities\IHasMediaStreams.cs" />
     <Compile Include="Entities\IHasProductionLocations.cs" />
     <Compile Include="Entities\IHasScreenshots.cs" />
     <Compile Include="Entities\IHasSoundtracks.cs" />
@@ -124,6 +125,7 @@
     <Compile Include="Localization\ILocalizationManager.cs" />
     <Compile Include="Notifications\INotificationsRepository.cs" />
     <Compile Include="Notifications\NotificationUpdateEventArgs.cs" />
+    <Compile Include="Persistence\MediaStreamQuery.cs" />
     <Compile Include="Providers\IDynamicInfoProvider.cs" />
     <Compile Include="Providers\IImageProvider.cs" />
     <Compile Include="Providers\NameParser.cs" />

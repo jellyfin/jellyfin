@@ -1034,7 +1034,11 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                 if (iHasMediaStreams != null)
                 {
-                    dto.MediaStreams = iHasMediaStreams.MediaStreams;
+                    dto.MediaStreams = _itemRepo.GetMediaStreams(new MediaStreamQuery
+                    {
+                        ItemId = item.Id
+
+                    }).ToList();
                 }
             }
 

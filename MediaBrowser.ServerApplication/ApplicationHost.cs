@@ -394,7 +394,7 @@ namespace MediaBrowser.ServerApplication
         /// <returns>Task.</returns>
         private async Task ConfigureUserDataRepositories()
         {
-            var repo = new SqliteUserDataRepository(ApplicationPaths, JsonSerializer, LogManager);
+            var repo = new SqliteUserDataRepository(ApplicationPaths, LogManager);
 
             await repo.Initialize().ConfigureAwait(false);
 

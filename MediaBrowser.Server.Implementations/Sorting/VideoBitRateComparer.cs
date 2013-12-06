@@ -1,8 +1,6 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Sorting;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
-using System.Linq;
 
 namespace MediaBrowser.Server.Implementations.Sorting
 {
@@ -21,17 +19,11 @@ namespace MediaBrowser.Server.Implementations.Sorting
 
         private int GetValue(BaseItem item)
         {
-            var video = item as IHasMediaStreams;
+            var video = item as Video;
 
             if (video != null)
             {
-                var videoStream = video.MediaStreams
-                    .FirstOrDefault(i => i.Type == MediaStreamType.Video);
-
-                if (videoStream != null)
-                {
-                    return videoStream.BitRate ?? 0;
-                }
+                return video.VideoBitRate ?? 0;
             }
 
             return 0;
