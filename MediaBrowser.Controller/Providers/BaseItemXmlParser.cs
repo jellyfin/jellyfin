@@ -982,6 +982,10 @@ namespace MediaBrowser.Controller.Providers
                                 {
                                     foreach (var person in GetPersonsFromXmlNode(subtree))
                                     {
+                                        if (string.IsNullOrWhiteSpace(person.Name))
+                                        {
+                                            continue;
+                                        }
                                         item.AddPerson(person);
                                     }
                                 }
