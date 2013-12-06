@@ -36,11 +36,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return !item.HasImage(ImageType.Primary);
         }
 
-        public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
+        public override async Task<bool> FetchAsync(BaseItem item, bool force, BaseProviderInfo providerInfo, CancellationToken cancellationToken)
         {
             if (item.HasImage(ImageType.Primary))
             {
-                SetLastRefreshed(item, DateTime.UtcNow);
+                SetLastRefreshed(item, DateTime.UtcNow, providerInfo);
                 return true;
             }
 
@@ -58,7 +58,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
 
 
-            SetLastRefreshed(item, DateTime.UtcNow);
+            SetLastRefreshed(item, DateTime.UtcNow, providerInfo);
             return true;
         }
 

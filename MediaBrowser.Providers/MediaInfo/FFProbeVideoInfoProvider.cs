@@ -138,7 +138,7 @@ namespace MediaBrowser.Providers.MediaInfo
             base.OnPreFetch(item, mount);
         }
 
-        public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
+        public override async Task<bool> FetchAsync(BaseItem item, bool force, BaseProviderInfo providerInfo, CancellationToken cancellationToken)
         {
             var video = (Video)item;
 
@@ -154,7 +154,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     if (video.PlayableStreamFileNames.Count == 0)
                     {
                         Logger.Error("No playable vobs found in dvd structure, skipping ffprobe.");
-                        SetLastRefreshed(item, DateTime.UtcNow);
+                        SetLastRefreshed(item, DateTime.UtcNow, providerInfo);
                         return true;
                     }
                 }
@@ -167,7 +167,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await Fetch(video, force, cancellationToken, result, isoMount).ConfigureAwait(false);
+                await Fetch(video, force, providerInfo, cancellationToken, result, isoMount).ConfigureAwait(false);
 
             }
             finally
@@ -178,7 +178,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
-            SetLastRefreshed(item, DateTime.UtcNow);
+            SetLastRefreshed(item, DateTime.UtcNow, providerInfo);
             return true;
         }
 
@@ -291,7 +291,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="data">The data.</param>
         /// <param name="isoMount">The iso mount.</param>
         /// <returns>Task.</returns>
-        protected async Task Fetch(Video video, bool force, CancellationToken cancellationToken, MediaInfoResult data, IIsoMount isoMount)
+        protected async Task Fetch(Video video, bool force, BaseProviderInfo providerInfo, CancellationToken cancellationToken, MediaInfoResult data, IIsoMount isoMount)
         {
             if (data.format != null)
             {
@@ -345,13 +345,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             await Kernel.Instance.FFMpegManager.PopulateChapterImages(video, chapters, false, false, cancellationToken).ConfigureAwait(false);
 
-            BaseProviderInfo providerInfo;
-            var videoFileChanged = false;
-
-            if (video.ProviderData.TryGetValue(Id, out providerInfo))
-            {
-                videoFileChanged = CompareDate(video) > providerInfo.LastRefreshed;
-            }
+            var videoFileChanged = CompareDate(video) > providerInfo.LastRefreshed;
 
             await _itemRepo.SaveMediaStreams(video.Id, mediaStreams, cancellationToken).ConfigureAwait(false);
 

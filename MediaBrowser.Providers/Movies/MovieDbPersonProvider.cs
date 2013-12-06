@@ -91,7 +91,7 @@ namespace MediaBrowser.Providers.Movies
 
             return base.NeedsRefreshInternal(item, providerInfo);
         }
-        
+
         protected override bool NeedsRefreshBasedOnCompareDate(BaseItem item, BaseProviderInfo providerInfo)
         {
             var provderId = item.GetProviderId(MetadataProviders.Tmdb);
@@ -152,7 +152,7 @@ namespace MediaBrowser.Providers.Movies
         /// <param name="force">if set to <c>true</c> [force].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.Boolean}.</returns>
-        public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
+        public override async Task<bool> FetchAsync(BaseItem item, bool force, BaseProviderInfo providerInfo, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -173,7 +173,7 @@ namespace MediaBrowser.Providers.Movies
                 await FetchInfo(person, id, force, cancellationToken).ConfigureAwait(false);
             }
 
-            SetLastRefreshed(item, DateTime.UtcNow);
+            SetLastRefreshed(item, DateTime.UtcNow, providerInfo);
             return true;
         }
 

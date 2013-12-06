@@ -202,29 +202,6 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// The _provider data
-        /// </summary>
-        private Dictionary<Guid, BaseProviderInfo> _providerData;
-        /// <summary>
-        /// Holds persistent data for providers like last refresh date.
-        /// Providers can use this to determine if they need to refresh.
-        /// The BaseProviderInfo class can be extended to hold anything a provider may need.
-        /// Keyed by a unique provider ID.
-        /// </summary>
-        /// <value>The provider data.</value>
-        public Dictionary<Guid, BaseProviderInfo> ProviderData
-        {
-            get
-            {
-                return _providerData ?? (_providerData = new Dictionary<Guid, BaseProviderInfo>());
-            }
-            set
-            {
-                _providerData = value;
-            }
-        }
-
-        /// <summary>
         /// Gets the type of the media.
         /// </summary>
         /// <value>The type of the media.</value>

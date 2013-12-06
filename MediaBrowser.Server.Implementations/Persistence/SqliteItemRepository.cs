@@ -1,6 +1,7 @@
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
@@ -57,6 +58,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         private SqliteChapterRepository _chapterRepository;
         private SqliteMediaStreamsRepository _mediaStreamsRepository;
+        private SqliteProviderInfoRepository _providerInfoRepository;
 
         private IDbCommand _deleteChildrenCommand;
         private IDbCommand _saveChildrenCommand;
@@ -91,16 +93,16 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _logger = logManager.GetLogger(GetType().Name);
 
             var chapterDbFile = Path.Combine(_appPaths.DataPath, "chapters.db");
-
             var chapterConnection = SqliteExtensions.ConnectToDb(chapterDbFile, _logger).Result;
-
             _chapterRepository = new SqliteChapterRepository(chapterConnection, logManager);
 
             var mediaStreamsDbFile = Path.Combine(_appPaths.DataPath, "mediainfo.db");
-
             var mediaStreamsConnection = SqliteExtensions.ConnectToDb(mediaStreamsDbFile, _logger).Result;
-
             _mediaStreamsRepository = new SqliteMediaStreamsRepository(mediaStreamsConnection, logManager);
+
+            var providerInfosDbFile = Path.Combine(_appPaths.DataPath, "providerinfo.db");
+            var providerInfoConnection = SqliteExtensions.ConnectToDb(providerInfosDbFile, _logger).Result;
+            _providerInfoRepository = new SqliteProviderInfoRepository(providerInfoConnection, logManager);
         }
 
         /// <summary>
@@ -128,8 +130,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.RunQueries(queries, _logger);
 
             PrepareStatements();
-
+            
             _mediaStreamsRepository.Initialize();
+            _providerInfoRepository.Initialize();
             _chapterRepository.Initialize();
         }
 
@@ -427,6 +430,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     _mediaStreamsRepository.Dispose();
                     _mediaStreamsRepository = null;
                 }
+
+                if (_providerInfoRepository != null)
+                {
+                    _providerInfoRepository.Dispose();
+                    _providerInfoRepository = null;
+                }
             }
         }
 
@@ -534,6 +543,16 @@ namespace MediaBrowser.Server.Implementations.Persistence
         public Task SaveMediaStreams(Guid id, IEnumerable<MediaStream> streams, CancellationToken cancellationToken)
         {
             return _mediaStreamsRepository.SaveMediaStreams(id, streams, cancellationToken);
+        }
+
+        public IEnumerable<BaseProviderInfo> GetProviderHistory(Guid itemId)
+        {
+            return _providerInfoRepository.GetBaseProviderInfos(itemId);
+        }
+
+        public Task SaveProviderHistory(Guid id, IEnumerable<BaseProviderInfo> history, CancellationToken cancellationToken)
+        {
+            return _providerInfoRepository.SaveProviderInfos(id, history, cancellationToken);
         }
     }
 }

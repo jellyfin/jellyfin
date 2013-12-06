@@ -80,7 +80,7 @@ namespace MediaBrowser.Providers.Music
         /// <param name="force">if set to <c>true</c> [force].</param>
         /// <param name="cancellationToken">The cancellation token</param>
         /// <returns>Task{System.Boolean}.</returns>
-        public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
+        public override async Task<bool> FetchAsync(BaseItem item, bool force, BaseProviderInfo providerInfo, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -92,17 +92,10 @@ namespace MediaBrowser.Providers.Music
             {
                 LastfmHelper.ProcessAlbumData(item, result.album);
             }
-            
-            BaseProviderInfo data;
-            if (!item.ProviderData.TryGetValue(Id, out data))
-            {
-                data = new BaseProviderInfo();
-                item.ProviderData[Id] = data;
-            }
 
-            data.FileStamp = GetComparisonData(album);
+            providerInfo.FileStamp = GetComparisonData(album);
 
-            SetLastRefreshed(item, DateTime.UtcNow);
+            SetLastRefreshed(item, DateTime.UtcNow, providerInfo);
             return true;
         }
 

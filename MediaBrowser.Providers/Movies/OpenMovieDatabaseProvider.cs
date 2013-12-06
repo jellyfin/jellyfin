@@ -107,13 +107,13 @@ namespace MediaBrowser.Providers.Movies
 
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
-        public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
+        public override async Task<bool> FetchAsync(BaseItem item, bool force, BaseProviderInfo providerInfo, CancellationToken cancellationToken)
         {
             var imdbId = item.GetProviderId(MetadataProviders.Imdb);
 
             if (string.IsNullOrEmpty(imdbId))
             {
-                SetLastRefreshed(item, DateTime.UtcNow);
+                SetLastRefreshed(item, DateTime.UtcNow, providerInfo);
                 return true;
             }
 
@@ -174,7 +174,7 @@ namespace MediaBrowser.Providers.Movies
                 ParseAdditionalMetadata(item, result);
             }
 
-            SetLastRefreshed(item, DateTime.UtcNow);
+            SetLastRefreshed(item, DateTime.UtcNow, providerInfo);
             return true;
         }
 

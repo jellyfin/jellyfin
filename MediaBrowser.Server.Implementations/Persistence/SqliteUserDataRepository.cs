@@ -233,7 +233,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                         if (!reader.IsDBNull(5))
                         {
-                            userData.LastPlayedDate = reader.GetDateTime(5);
+                            userData.LastPlayedDate = reader.GetDateTime(5).ToUniversalTime();
                         }
                     }
                 }

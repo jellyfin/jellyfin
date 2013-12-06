@@ -57,19 +57,9 @@ namespace MediaBrowser.Providers.Games
         /// <param name="force"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public override Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
+        public override async Task<bool> FetchAsync(BaseItem item, bool force, BaseProviderInfo providerInfo, CancellationToken cancellationToken)
         {
-            return Fetch((Game)item, cancellationToken);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="game"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        private async Task<bool> Fetch(Game game, CancellationToken cancellationToken)
-        {
+            var game = (Game)item;
             cancellationToken.ThrowIfCancellationRequested();
 
             var metaFile = GameXmlSaver.GetGameSavePath(game);
@@ -88,7 +78,7 @@ namespace MediaBrowser.Providers.Games
                 }
             }
 
-            SetLastRefreshed(game, DateTime.UtcNow);
+            SetLastRefreshed(game, DateTime.UtcNow, providerInfo);
             return true;
         }
 

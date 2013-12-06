@@ -4,6 +4,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -52,6 +53,8 @@ namespace MediaBrowser.Server.Implementations.Providers
         private IImageProvider[] ImageProviders { get; set; }
         private readonly IFileSystem _fileSystem;
 
+        private readonly IItemRepository _itemRepo;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ProviderManager" /> class.
         /// </summary>
@@ -59,13 +62,14 @@ namespace MediaBrowser.Server.Implementations.Providers
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="directoryWatchers">The directory watchers.</param>
         /// <param name="logManager">The log manager.</param>
-        public ProviderManager(IHttpClient httpClient, IServerConfigurationManager configurationManager, IDirectoryWatchers directoryWatchers, ILogManager logManager, IFileSystem fileSystem)
+        public ProviderManager(IHttpClient httpClient, IServerConfigurationManager configurationManager, IDirectoryWatchers directoryWatchers, ILogManager logManager, IFileSystem fileSystem, IItemRepository itemRepo)
         {
             _logger = logManager.GetLogger("ProviderManager");
             _httpClient = httpClient;
             ConfigurationManager = configurationManager;
             _directoryWatchers = directoryWatchers;
             _fileSystem = fileSystem;
+            _itemRepo = itemRepo;
         }
 
         /// <summary>
@@ -101,6 +105,10 @@ namespace MediaBrowser.Server.Implementations.Providers
 
             var enableInternetProviders = ConfigurationManager.Configuration.EnableInternetProviders;
             var excludeTypes = ConfigurationManager.Configuration.InternetProviderExcludeTypes;
+
+            var providerHistories = item.DateLastSaved == DateTime.MinValue ?
+                new List<BaseProviderInfo>() :
+                _itemRepo.GetProviderHistory(item.Id).ToList();
 
             // Run the normal providers sequentially in order of priority
             foreach (var provider in MetadataProviders)
@@ -140,9 +148,20 @@ namespace MediaBrowser.Server.Implementations.Providers
                     continue;
                 }
 
+                var providerInfo = providerHistories.FirstOrDefault(i => i.ProviderId == provider.Id);
+
+                if (providerInfo == null)
+                {
+                    providerInfo = new BaseProviderInfo
+                    {
+                        ProviderId = provider.Id
+                    };
+                    providerHistories.Add(providerInfo);
+                }
+
                 try
                 {
-                    if (!force && !provider.NeedsRefresh(item))
+                    if (!force && !provider.NeedsRefresh(item, providerInfo))
                     {
                         continue;
                     }
@@ -152,7 +171,7 @@ namespace MediaBrowser.Server.Implementations.Providers
                     _logger.Error("Error determining NeedsRefresh for {0}", ex, item.Path);
                 }
 
-                var updateType = await FetchAsync(provider, item, force, cancellationToken).ConfigureAwait(false);
+                var updateType = await FetchAsync(provider, item, providerInfo, force, cancellationToken).ConfigureAwait(false);
 
                 if (updateType.HasValue)
                 {
@@ -165,6 +184,11 @@ namespace MediaBrowser.Server.Implementations.Providers
                         result = updateType;
                     }
                 }
+            }
+
+            if (result.HasValue || force)
+            {
+                await _itemRepo.SaveProviderHistory(item.Id, providerHistories, cancellationToken);
             }
 
             return result;
@@ -194,11 +218,12 @@ namespace MediaBrowser.Server.Implementations.Providers
         /// </summary>
         /// <param name="provider">The provider.</param>
         /// <param name="item">The item.</param>
+        /// <param name="providerInfo">The provider information.</param>
         /// <param name="force">if set to <c>true</c> [force].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.Boolean}.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
-        private async Task<ItemUpdateType?> FetchAsync(BaseMetadataProvider provider, BaseItem item, bool force, CancellationToken cancellationToken)
+        /// <exception cref="System.ArgumentNullException">item</exception>
+        private async Task<ItemUpdateType?> FetchAsync(BaseMetadataProvider provider, BaseItem item, BaseProviderInfo providerInfo, bool force, CancellationToken cancellationToken)
         {
             if (item == null)
             {
@@ -215,7 +240,7 @@ namespace MediaBrowser.Server.Implementations.Providers
 
             try
             {
-                var changed = await provider.FetchAsync(item, force, cancellationToken).ConfigureAwait(false);
+                var changed = await provider.FetchAsync(item, force, providerInfo, cancellationToken).ConfigureAwait(false);
 
                 if (changed)
                 {
@@ -240,7 +265,7 @@ namespace MediaBrowser.Server.Implementations.Providers
             {
                 _logger.ErrorException("{0} failed refreshing {1} {2}", ex, provider.GetType().Name, item.Name, item.Path ?? string.Empty);
 
-                provider.SetLastRefreshed(item, DateTime.UtcNow, ProviderRefreshStatus.Failure);
+                provider.SetLastRefreshed(item, DateTime.UtcNow, providerInfo, ProviderRefreshStatus.Failure);
 
                 return ItemUpdateType.Unspecified;
             }

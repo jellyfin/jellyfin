@@ -242,7 +242,7 @@ namespace MediaBrowser.Providers.TV
         /// <param name="force">if set to <c>true</c> [force].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.Boolean}.</returns>
-        public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
+        public override async Task<bool> FetchAsync(BaseItem item, bool force, BaseProviderInfo providerInfo, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -266,7 +266,7 @@ namespace MediaBrowser.Providers.TV
                 }
             }
 
-            SetLastRefreshed(item, DateTime.UtcNow, status);
+            SetLastRefreshed(item, DateTime.UtcNow, providerInfo, status);
             return true;
         }
 

@@ -34,7 +34,7 @@ namespace MediaBrowser.Providers.Music
             return item is MusicAlbum;
         }
 
-        public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
+        public override async Task<bool> FetchAsync(BaseItem item, bool force, BaseProviderInfo providerInfo, CancellationToken cancellationToken)
         {
             var releaseId = item.GetProviderId(MetadataProviders.Musicbrainz);
             var releaseGroupId = item.GetProviderId(MetadataProviders.MusicBrainzReleaseGroup);
@@ -64,7 +64,7 @@ namespace MediaBrowser.Providers.Music
                 item.SetProviderId(MetadataProviders.MusicBrainzReleaseGroup, releaseGroupId);
             }
 
-            SetLastRefreshed(item, DateTime.UtcNow);
+            SetLastRefreshed(item, DateTime.UtcNow, providerInfo);
             return true;
         }
 

@@ -84,16 +84,9 @@ namespace MediaBrowser.Providers.Music
             return string.Join(string.Empty, albumArtistNames.OrderBy(i => i).ToArray()).GetMD5();
         }
 
-        public override Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
+        public override Task<bool> FetchAsync(BaseItem item, bool force, BaseProviderInfo providerInfo, CancellationToken cancellationToken)
         {
             var album = (MusicAlbum)item;
-
-            BaseProviderInfo data;
-            if (!item.ProviderData.TryGetValue(Id, out data))
-            {
-                data = new BaseProviderInfo();
-                item.ProviderData[Id] = data;
-            }
 
             var songs = album.RecursiveChildren.OfType<Audio>().ToList();
 
@@ -148,9 +141,9 @@ namespace MediaBrowser.Providers.Music
             }
 
 
-            data.FileStamp = GetComparisonData(songs);
+            providerInfo.FileStamp = GetComparisonData(songs);
 
-            SetLastRefreshed(item, DateTime.UtcNow);
+            SetLastRefreshed(item, DateTime.UtcNow, providerInfo);
             return TrueTaskResult;
         }
 

@@ -152,13 +152,13 @@ namespace MediaBrowser.Providers.Music
         /// <param name="force">if set to <c>true</c> [force].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.Boolean}.</returns>
-        public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
+        public override async Task<bool> FetchAsync(BaseItem item, bool force, BaseProviderInfo providerInfo, CancellationToken cancellationToken)
         {
             var images = await _providerManager.GetAvailableRemoteImages(item, cancellationToken, ManualFanartAlbumProvider.ProviderName).ConfigureAwait(false);
 
             await FetchFromXml(item, images.ToList(), cancellationToken).ConfigureAwait(false);
-            
-            SetLastRefreshed(item, DateTime.UtcNow);
+
+            SetLastRefreshed(item, DateTime.UtcNow, providerInfo);
 
             return true;
         }

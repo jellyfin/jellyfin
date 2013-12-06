@@ -65,21 +65,10 @@ namespace MediaBrowser.Providers.TV
         /// <param name="force">if set to <c>true</c> [force].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.Boolean}.</returns>
-        public override Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
-        {
-            return Fetch(item, cancellationToken);
-        }
-
-        /// <summary>
-        /// Fetches the specified item.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        private async Task<bool> Fetch(BaseItem item, CancellationToken cancellationToken)
+        public override async Task<bool> FetchAsync(BaseItem item, bool force, BaseProviderInfo providerInfo, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            
+
             var metadataFile = item.ResolveArgs.GetMetaFileByPath(Path.Combine(item.MetaLocation, XmlFileName));
 
             if (metadataFile != null)
@@ -97,12 +86,10 @@ namespace MediaBrowser.Providers.TV
                     XmlParsingResourcePool.Release();
                 }
 
-                SetLastRefreshed(item, DateTime.UtcNow);
-
-                return true;
             }
 
-            return false;
+            SetLastRefreshed(item, DateTime.UtcNow, providerInfo);
+            return true;
         }
     }
 }

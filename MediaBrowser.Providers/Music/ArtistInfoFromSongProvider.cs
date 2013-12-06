@@ -61,19 +61,12 @@ namespace MediaBrowser.Providers.Music
             return string.Join(string.Empty, genres.OrderBy(i => i).ToArray()).GetMD5();
         }
 
-        public override Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
+        public override Task<bool> FetchAsync(BaseItem item, bool force, BaseProviderInfo providerInfo, CancellationToken cancellationToken)
         {
             var artist = (MusicArtist)item;
 
             if (!artist.IsAccessedByName)
             {
-                BaseProviderInfo data;
-                if (!item.ProviderData.TryGetValue(Id, out data))
-                {
-                    data = new BaseProviderInfo();
-                    item.ProviderData[Id] = data;
-                }
-
                 var songs = artist.RecursiveChildren.OfType<Audio>().ToList();
 
                 if (!item.LockedFields.Contains(MetadataFields.Genres))
@@ -83,10 +76,10 @@ namespace MediaBrowser.Providers.Music
                         .ToList();
                 }
 
-                data.FileStamp = GetComparisonData(songs);
+                providerInfo.FileStamp = GetComparisonData(songs);
             }
 
-            SetLastRefreshed(item, DateTime.UtcNow);
+            SetLastRefreshed(item, DateTime.UtcNow, providerInfo);
             return TrueTaskResult;
         }
 
