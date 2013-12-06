@@ -61,18 +61,7 @@ namespace MediaBrowser.Providers.Music
         /// <param name="force">if set to <c>true</c> [force].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.Boolean}.</returns>
-        public override Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
-        {
-            return Fetch(item, cancellationToken);
-        }
-
-        /// <summary>
-        /// Fetches the specified item.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        private async Task<bool> Fetch(BaseItem item, CancellationToken cancellationToken)
+        public override async Task<bool> FetchAsync(BaseItem item, bool force, BaseProviderInfo providerInfo, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -93,7 +82,7 @@ namespace MediaBrowser.Providers.Music
                     XmlParsingResourcePool.Release();
                 }
 
-                SetLastRefreshed(item, DateTime.UtcNow);
+                SetLastRefreshed(item, DateTime.UtcNow, providerInfo);
                 return true;
             }
 

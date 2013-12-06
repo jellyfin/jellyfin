@@ -196,6 +196,8 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 var user = InstantiateNewUser(name);
 
+                user.DateLastSaved = DateTime.UtcNow;
+
                 var task = UserRepository.SaveUser(user, CancellationToken.None);
 
                 // Hate having to block threads
@@ -274,6 +276,7 @@ namespace MediaBrowser.Server.Implementations.Library
             }
 
             user.DateModified = DateTime.UtcNow;
+            user.DateLastSaved = DateTime.UtcNow;
 
             await UserRepository.SaveUser(user, CancellationToken.None).ConfigureAwait(false);
 
@@ -307,6 +310,8 @@ namespace MediaBrowser.Server.Implementations.Library
             list.Add(user);
             Users = list;
 
+            user.DateLastSaved = DateTime.UtcNow;
+            
             await UserRepository.SaveUser(user, CancellationToken.None).ConfigureAwait(false);
 
             EventHelper.QueueEventIfNotNull(UserCreated, this, new GenericEventArgs<User> { Argument = user }, _logger);

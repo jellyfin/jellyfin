@@ -21,7 +21,7 @@ namespace MediaBrowser.Providers.TV
             return item is Series;
         }
 
-        public override Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
+        public override Task<bool> FetchAsync(BaseItem item, bool force, BaseProviderInfo providerInfo, CancellationToken cancellationToken)
         {
             var series = (Series)item;
 

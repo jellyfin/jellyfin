@@ -7,6 +7,7 @@ namespace MediaBrowser.Controller.Providers
     /// </summary>
     public class BaseProviderInfo
     {
+        public Guid ProviderId { get; set; }
         /// <summary>
         /// Gets or sets the last refreshed.
         /// </summary>

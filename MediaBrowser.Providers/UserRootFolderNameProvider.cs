@@ -21,7 +21,7 @@ namespace MediaBrowser.Providers
             return item is UserRootFolder;
         }
 
-        public override Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
+        public override Task<bool> FetchAsync(BaseItem item, bool force, BaseProviderInfo providerInfo, CancellationToken cancellationToken)
         {
             var parentName = Path.GetFileNameWithoutExtension(item.Path);
 
@@ -30,7 +30,7 @@ namespace MediaBrowser.Providers
                 item.Name = "Media Library";
             }
 
-            SetLastRefreshed(item, DateTime.UtcNow);
+            SetLastRefreshed(item, DateTime.UtcNow, providerInfo);
             return TrueTaskResult;
         }
 

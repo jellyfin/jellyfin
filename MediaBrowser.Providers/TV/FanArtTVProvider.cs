@@ -160,8 +160,8 @@ namespace MediaBrowser.Providers.TV
         }
         
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
-        
-        public override async Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken)
+
+        public override async Task<bool> FetchAsync(BaseItem item, bool force, BaseProviderInfo providerInfo, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -182,7 +182,7 @@ namespace MediaBrowser.Providers.TV
                 await FetchFromXml(item, images.ToList(), cancellationToken).ConfigureAwait(false);
             }
 
-            SetLastRefreshed(item, DateTime.UtcNow);
+            SetLastRefreshed(item, DateTime.UtcNow, providerInfo);
 
             return true;
         }

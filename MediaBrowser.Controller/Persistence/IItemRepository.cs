@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
@@ -111,6 +112,22 @@ namespace MediaBrowser.Controller.Persistence
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task SaveMediaStreams(Guid id, IEnumerable<MediaStream> streams, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the provider history.
+        /// </summary>
+        /// <param name="itemId">The item identifier.</param>
+        /// <returns>IEnumerable{BaseProviderInfo}.</returns>
+        IEnumerable<BaseProviderInfo> GetProviderHistory(Guid itemId);
+
+        /// <summary>
+        /// Saves the provider history.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="history">The history.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task SaveProviderHistory(Guid id, IEnumerable<BaseProviderInfo> history, CancellationToken cancellationToken);
     }
 }
 

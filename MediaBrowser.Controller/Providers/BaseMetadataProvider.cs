@@ -36,7 +36,7 @@ namespace MediaBrowser.Controller.Providers
         /// <summary>
         /// The _id
         /// </summary>
-        protected readonly Guid Id;
+        public readonly Guid Id;
 
         /// <summary>
         /// The true task result
@@ -132,41 +132,33 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="item">The item.</param>
         /// <param name="value">The value.</param>
         /// <param name="providerVersion">The provider version.</param>
+        /// <param name="providerInfo">The provider information.</param>
         /// <param name="status">The status.</param>
         /// <exception cref="System.ArgumentNullException">item</exception>
         public virtual void SetLastRefreshed(BaseItem item, DateTime value, string providerVersion,
-            ProviderRefreshStatus status = ProviderRefreshStatus.Success)
+            BaseProviderInfo providerInfo, ProviderRefreshStatus status = ProviderRefreshStatus.Success)
         {
             if (item == null)
             {
                 throw new ArgumentNullException("item");
             }
 
-            BaseProviderInfo data;
-
-            if (!item.ProviderData.TryGetValue(Id, out data))
-            {
-                data = new BaseProviderInfo();
-            }
-
-            data.LastRefreshed = value;
-            data.LastRefreshStatus = status;
-            data.ProviderVersion = providerVersion;
+            providerInfo.LastRefreshed = value;
+            providerInfo.LastRefreshStatus = status;
+            providerInfo.ProviderVersion = providerVersion;
 
             // Save the file system stamp for future comparisons
             if (RefreshOnFileSystemStampChange && item.LocationType == LocationType.FileSystem)
             {
                 try
                 {
-                    data.FileStamp = GetCurrentFileSystemStamp(item);
+                    providerInfo.FileStamp = GetCurrentFileSystemStamp(item);
                 }
                 catch (IOException ex)
                 {
                     Logger.ErrorException("Error getting file stamp for {0}", ex, item.Path);
                 }
             }
-
-            item.ProviderData[Id] = data;
         }
 
         /// <summary>
@@ -174,11 +166,12 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="value">The value.</param>
+        /// <param name="providerInfo">The provider information.</param>
         /// <param name="status">The status.</param>
         public void SetLastRefreshed(BaseItem item, DateTime value,
-            ProviderRefreshStatus status = ProviderRefreshStatus.Success)
+            BaseProviderInfo providerInfo, ProviderRefreshStatus status = ProviderRefreshStatus.Success)
         {
-            SetLastRefreshed(item, value, ProviderVersion, status);
+            SetLastRefreshed(item, value, ProviderVersion, providerInfo, status);
         }
 
         /// <summary>
@@ -189,18 +182,11 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="item">The item.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public bool NeedsRefresh(BaseItem item)
+        public bool NeedsRefresh(BaseItem item, BaseProviderInfo data)
         {
             if (item == null)
             {
                 throw new ArgumentNullException();
-            }
-
-            BaseProviderInfo data;
-
-            if (!item.ProviderData.TryGetValue(Id, out data))
-            {
-                data = new BaseProviderInfo();
             }
 
             return NeedsRefreshInternal(item, data);
@@ -299,10 +285,11 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="force">if set to <c>true</c> [force].</param>
+        /// <param name="providerInfo">The provider information.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.Boolean}.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public abstract Task<bool> FetchAsync(BaseItem item, bool force, CancellationToken cancellationToken);
+        public abstract Task<bool> FetchAsync(BaseItem item, bool force, BaseProviderInfo providerInfo, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the priority.
