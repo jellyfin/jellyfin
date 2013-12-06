@@ -56,9 +56,6 @@ namespace MediaBrowser.Providers.Savers
             XmlSaverHelpers.Save(builder, xmlFilePath, new List<string>
             {
             });
-
-            // Set last refreshed so that the provider doesn't trigger after the file save
-            ChannelProviderFromXml.Current.SetLastRefreshed(item, DateTime.UtcNow);
         }
 
         /// <summary>

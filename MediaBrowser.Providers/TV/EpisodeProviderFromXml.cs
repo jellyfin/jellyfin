@@ -18,7 +18,6 @@ namespace MediaBrowser.Providers.TV
     /// </summary>
     public class EpisodeProviderFromXml : BaseMetadataProvider
     {
-        internal static EpisodeProviderFromXml Current { get; private set; }
         private readonly IItemRepository _itemRepo;
         private readonly IFileSystem _fileSystem;
 
@@ -27,7 +26,6 @@ namespace MediaBrowser.Providers.TV
         {
             _itemRepo = itemRepo;
             _fileSystem = fileSystem;
-            Current = this;
         }
 
         /// <summary>
@@ -78,7 +76,7 @@ namespace MediaBrowser.Providers.TV
                 return false;
             }
 
-            return _fileSystem.GetLastWriteTimeUtc(file) > providerInfo.LastRefreshed;
+            return _fileSystem.GetLastWriteTimeUtc(file) > item.DateLastSaved;
         }
 
         /// <summary>

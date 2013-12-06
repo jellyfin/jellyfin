@@ -3,8 +3,6 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Providers.TV;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Security;
@@ -119,9 +117,6 @@ namespace MediaBrowser.Providers.Savers
                     // Don't preserve old series node
                     "Series"
                 });
-
-            // Set last refreshed so that the provider doesn't trigger after the file save
-            SeriesProviderFromXml.Current.SetLastRefreshed(item, DateTime.UtcNow);
         }
 
         /// <summary>

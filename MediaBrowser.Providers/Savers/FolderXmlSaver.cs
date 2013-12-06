@@ -4,7 +4,6 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -78,8 +77,6 @@ namespace MediaBrowser.Providers.Savers
             var xmlFilePath = GetSavePath(item);
 
             XmlSaverHelpers.Save(builder, xmlFilePath, new List<string> { });
-
-            FolderProviderFromXml.Current.SetLastRefreshed(item, DateTime.UtcNow);
         }
 
         /// <summary>

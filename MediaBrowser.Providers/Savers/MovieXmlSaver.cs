@@ -122,9 +122,6 @@ namespace MediaBrowser.Providers.Savers
                     "Album",
                     "TmdbCollectionName"
                 });
-
-            // Set last refreshed so that the provider doesn't trigger after the file save
-            MovieProviderFromXml.Current.SetLastRefreshed(item, DateTime.UtcNow);
         }
 
         public string GetSavePath(BaseItem item)

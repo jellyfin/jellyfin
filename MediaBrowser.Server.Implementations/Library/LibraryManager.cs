@@ -1311,6 +1311,11 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             var list = items.ToList();
 
+            foreach (var item in list)
+            {
+                item.DateLastSaved = DateTime.UtcNow;
+            }
+
             await ItemRepository.SaveItems(list, cancellationToken).ConfigureAwait(false);
 
             foreach (var item in list)
@@ -1349,6 +1354,8 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 await SaveMetadata(item, updateReason).ConfigureAwait(false);
             }
+
+            item.DateLastSaved = DateTime.UtcNow;
 
             await ItemRepository.SaveItem(item, cancellationToken).ConfigureAwait(false);
 

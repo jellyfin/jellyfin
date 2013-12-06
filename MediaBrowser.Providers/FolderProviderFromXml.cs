@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -17,14 +16,12 @@ namespace MediaBrowser.Providers
     /// </summary>
     public class FolderProviderFromXml : BaseMetadataProvider
     {
-        public static FolderProviderFromXml Current;
         private readonly IFileSystem _fileSystem;
 
         public FolderProviderFromXml(ILogManager logManager, IServerConfigurationManager configurationManager, IFileSystem fileSystem)
             : base(logManager, configurationManager)
         {
             _fileSystem = fileSystem;
-            Current = this;
         }
 
         /// <summary>
@@ -56,7 +53,7 @@ namespace MediaBrowser.Providers
                 return false;
             }
 
-            return _fileSystem.GetLastWriteTimeUtc(xml) > providerInfo.LastRefreshed;
+            return _fileSystem.GetLastWriteTimeUtc(xml) > item.DateLastSaved;
         }
 
         /// <summary>

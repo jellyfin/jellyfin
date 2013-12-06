@@ -1,17 +1,13 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Release|x86" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="MediaBrowser.ServerApplication\EntryPoints\StartupWizard.cs">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Release" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="MediaBrowser.Server.Mono\app.config">
     <Files>
-      <File FileName="MediaBrowser.Server.Mono\Program.cs" Line="13" Column="1" />
-      <File FileName="MediaBrowser.ServerApplication\EntryPoints\StartupWizard.cs" Line="32" Column="23" />
+      <File FileName="MediaBrowser.Server.Mono\app.config" Line="3" Column="19" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
-        <State expanded="True">
-          <Node name="MediaBrowser.Server.Mono" expanded="True" selected="True">
-            <Node name="References" expanded="True" />
-            <Node name="EntryPoints" expanded="True" />
-          </Node>
+        <State expanded="True" selected="True">
+          <Node name="MediaBrowser.Server.Implementations" expanded="True" />
         </State>
       </Pad>
       <Pad Id="ClassPad">
@@ -24,8 +20,6 @@
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore>
-      <Breakpoint file="D:\Development\MediaBrowser\MediaBrowser.Server.Mono\Native\NativeApp.cs" line="23" column="1" />
-      <Breakpoint file="D:\Development\MediaBrowser\MediaBrowser.Server.Mono\Native\NativeApp.cs" line="15" column="1" />
       <Breakpoint file="D:\Development\MediaBrowser\MediaBrowser.Common.Implementations\HttpClientManager\HttpClientManager.cs" line="477" column="17" />
     </BreakpointStore>
   </MonoDevelop.Ide.DebuggingService.Breakpoints>

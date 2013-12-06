@@ -13,14 +13,12 @@ namespace MediaBrowser.Providers.LiveTv
 {
     class ChannelProviderFromXml : BaseMetadataProvider
     {
-        internal static ChannelProviderFromXml Current { get; private set; }
         private readonly IFileSystem _fileSystem;
 
         public ChannelProviderFromXml(ILogManager logManager, IServerConfigurationManager configurationManager, IFileSystem fileSystem)
             : base(logManager, configurationManager)
         {
             _fileSystem = fileSystem;
-            Current = this;
         }
 
         /// <summary>
@@ -52,7 +50,7 @@ namespace MediaBrowser.Providers.LiveTv
                 return false;
             }
 
-            return _fileSystem.GetLastWriteTimeUtc(xml) > providerInfo.LastRefreshed;
+            return _fileSystem.GetLastWriteTimeUtc(xml) > item.DateLastSaved;
         }
 
         /// <summary>

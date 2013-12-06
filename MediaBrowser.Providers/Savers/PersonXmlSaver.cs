@@ -64,9 +64,6 @@ namespace MediaBrowser.Providers.Savers
                 {
                     "PlaceOfBirth"
                 });
-
-            // Set last refreshed so that the provider doesn't trigger after the file save
-            PersonProviderFromXml.Current.SetLastRefreshed(item, DateTime.UtcNow);
         }
 
         /// <summary>
