@@ -1,5 +1,5 @@
 ﻿using MediaBrowser.Controller;
-using ServiceStack.ServiceHost;
+using ServiceStack;
 using System;
 using System.IO;
 using System.Linq;
@@ -87,11 +87,11 @@ namespace MediaBrowser.Api.Playback.Hls
         {
             OnBeginRequest(request.PlaylistId);
 
-            var file = request.PlaylistId + Path.GetExtension(RequestContext.PathInfo);
+            var file = request.PlaylistId + Path.GetExtension(Request.PathInfo);
 
             file = Path.Combine(_appPaths.EncodedMediaCachePath, file);
 
-            return ResultFactory.GetStaticFileResult(RequestContext, file, FileShare.ReadWrite);
+            return ResultFactory.GetStaticFileResult(Request, file, FileShare.ReadWrite);
         }
 
         public void Delete(StopEncodingProcess request)
@@ -106,13 +106,13 @@ namespace MediaBrowser.Api.Playback.Hls
         /// <returns>System.Object.</returns>
         public object Get(GetHlsVideoSegment request)
         {
-            var file = request.SegmentId + Path.GetExtension(RequestContext.PathInfo);
+            var file = request.SegmentId + Path.GetExtension(Request.PathInfo);
 
             file = Path.Combine(_appPaths.EncodedMediaCachePath, file);
 
             OnBeginRequest(request.PlaylistId);
 
-            return ResultFactory.GetStaticFileResult(RequestContext, file);
+            return ResultFactory.GetStaticFileResult(Request, file);
         }
 
         /// <summary>
@@ -122,11 +122,11 @@ namespace MediaBrowser.Api.Playback.Hls
         /// <returns>System.Object.</returns>
         public object Get(GetHlsAudioSegment request)
         {
-            var file = request.SegmentId + Path.GetExtension(RequestContext.PathInfo);
+            var file = request.SegmentId + Path.GetExtension(Request.PathInfo);
 
             file = Path.Combine(_appPaths.EncodedMediaCachePath, file);
 
-            return ResultFactory.GetStaticFileResult(RequestContext, file, FileShare.ReadWrite);
+            return ResultFactory.GetStaticFileResult(Request, file, FileShare.ReadWrite);
         }
 
         /// <summary>

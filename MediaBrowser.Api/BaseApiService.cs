@@ -1,12 +1,12 @@
-﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Logging;
-using ServiceStack.ServiceHost;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ServiceStack.Web;
 
 namespace MediaBrowser.Api
 {
@@ -32,7 +32,12 @@ namespace MediaBrowser.Api
         /// Gets or sets the request context.
         /// </summary>
         /// <value>The request context.</value>
-        public IRequestContext RequestContext { get; set; }
+        public IRequest Request { get; set; }
+
+        public string GetHeader(string name)
+        {
+            return Request.Headers[name];
+        }
 
         /// <summary>
         /// To the optimized result.
@@ -43,7 +48,7 @@ namespace MediaBrowser.Api
         protected object ToOptimizedResult<T>(T result)
             where T : class
         {
-            return ResultFactory.GetOptimizedResult(RequestContext, result);
+            return ResultFactory.GetOptimizedResult(Request, result);
         }
 
         /// <summary>
@@ -59,7 +64,7 @@ namespace MediaBrowser.Api
         protected object ToOptimizedResultUsingCache<T>(Guid cacheKey, DateTime lastDateModified, TimeSpan? cacheDuration, Func<T> factoryFn)
                where T : class
         {
-            return ResultFactory.GetOptimizedResultUsingCache(RequestContext, cacheKey, lastDateModified, cacheDuration, factoryFn);
+            return ResultFactory.GetOptimizedResultUsingCache(Request, cacheKey, lastDateModified, cacheDuration, factoryFn);
         }
 
         /// <summary>
@@ -76,7 +81,7 @@ namespace MediaBrowser.Api
         protected object ToCachedResult<T>(Guid cacheKey, DateTime lastDateModified, TimeSpan? cacheDuration, Func<T> factoryFn, string contentType)
           where T : class
         {
-            return ResultFactory.GetCachedResult(RequestContext, cacheKey, lastDateModified, cacheDuration, factoryFn, contentType);
+            return ResultFactory.GetCachedResult(Request, cacheKey, lastDateModified, cacheDuration, factoryFn, contentType);
         }
 
         /// <summary>
@@ -86,7 +91,7 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         protected object ToStaticFileResult(string path)
         {
-            return ResultFactory.GetStaticFileResult(RequestContext, path);
+            return ResultFactory.GetStaticFileResult(Request, path);
         }
 
         private readonly char[] _dashReplaceChars = new[] { '?', '/' };

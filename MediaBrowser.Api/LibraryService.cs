@@ -8,7 +8,7 @@ using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
-using ServiceStack.ServiceHost;
+using ServiceStack;
 using System;
 using System.Collections;
 using System.Collections.Generic;

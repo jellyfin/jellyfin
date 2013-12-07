@@ -6,7 +6,7 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.IO;
-using ServiceStack.ServiceHost;
+using ServiceStack;
 using System.Collections.Generic;
 
 namespace MediaBrowser.Api.Playback.Progressive

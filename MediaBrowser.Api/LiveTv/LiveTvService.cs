@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
-using ServiceStack.ServiceHost;
+using ServiceStack;
 using System;
 using System.Collections.Generic;
 using System.Linq;

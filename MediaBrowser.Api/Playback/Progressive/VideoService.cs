@@ -7,7 +7,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.IO;
-using ServiceStack.ServiceHost;
+using ServiceStack;
 using System;
 using System.IO;
 

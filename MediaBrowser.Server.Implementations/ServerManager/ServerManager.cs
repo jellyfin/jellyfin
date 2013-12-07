@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
@@ -168,7 +169,7 @@ namespace MediaBrowser.Server.Implementations.ServerManager
             {
                 HttpServer = _applicationHost.Resolve<IHttpServer>();
                 HttpServer.EnableHttpRequestLogging = enableHttpLogging;
-                HttpServer.Start(urlPrefix);
+                HttpServer.StartServer(urlPrefix);
             }
             catch (SocketException ex)
             {

@@ -1,12 +1,13 @@
-﻿using ServiceStack.ServiceHost;
+﻿using MediaBrowser.Common.Net;
+using ServiceStack.Web;
 
-namespace MediaBrowser.Common.Net
+namespace MediaBrowser.Controller.Net
 {
     /// <summary>
     /// Interface IHasResultFactory
     /// Services that require a ResultFactory should implement this
     /// </summary>
-    public interface IHasResultFactory : IRequiresRequestContext
+    public interface IHasResultFactory : IRequiresRequest
     {
         /// <summary>
         /// Gets or sets the result factory.

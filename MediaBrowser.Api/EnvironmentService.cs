@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
-using ServiceStack.ServiceHost;
+using ServiceStack;
 using System;
 using System.Collections.Generic;
 using System.Globalization;

@@ -2,7 +2,7 @@
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Querying;
-using ServiceStack.ServiceHost;
+using ServiceStack;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -2,10 +2,8 @@
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.IO;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Logging;
-using ServiceStack.Common;
-using ServiceStack.Common.Web;
-using ServiceStack.ServiceHost;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -13,6 +11,8 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using ServiceStack;
+using ServiceStack.Web;
 using MimeTypes = MediaBrowser.Common.Net.MimeTypes;
 
 namespace MediaBrowser.Server.Implementations.HttpServer
@@ -116,7 +116,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <param name="responseHeaders">The response headers.</param>
         /// <returns>System.Object.</returns>
         /// <exception cref="System.ArgumentNullException">result</exception>
-        public object GetOptimizedResult<T>(IRequestContext requestContext, T result, IDictionary<string, string> responseHeaders = null)
+        public object GetOptimizedResult<T>(IRequest requestContext, T result, IDictionary<string, string> responseHeaders = null)
             where T : class
         {
             if (result == null)
@@ -156,7 +156,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// or
         /// factoryFn
         /// </exception>
-        public object GetOptimizedResultUsingCache<T>(IRequestContext requestContext, Guid cacheKey, DateTime lastDateModified, TimeSpan? cacheDuration, Func<T> factoryFn, IDictionary<string, string> responseHeaders = null)
+        public object GetOptimizedResultUsingCache<T>(IRequest requestContext, Guid cacheKey, DateTime lastDateModified, TimeSpan? cacheDuration, Func<T> factoryFn, IDictionary<string, string> responseHeaders = null)
                where T : class
         {
             if (cacheKey == Guid.Empty)
@@ -199,7 +199,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <param name="responseHeaders">The response headers.</param>
         /// <returns>System.Object.</returns>
         /// <exception cref="System.ArgumentNullException">cacheKey</exception>
-        public object GetCachedResult<T>(IRequestContext requestContext, Guid cacheKey, DateTime lastDateModified, TimeSpan? cacheDuration, Func<T> factoryFn, string contentType, IDictionary<string, string> responseHeaders = null)
+        public object GetCachedResult<T>(IRequest requestContext, Guid cacheKey, DateTime lastDateModified, TimeSpan? cacheDuration, Func<T> factoryFn, string contentType, IDictionary<string, string> responseHeaders = null)
           where T : class
         {
             if (cacheKey == Guid.Empty)
@@ -256,7 +256,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <param name="cacheDuration">Duration of the cache.</param>
         /// <param name="contentType">Type of the content.</param>
         /// <returns>System.Object.</returns>
-        private object GetCachedResult(IRequestContext requestContext, IDictionary<string, string> responseHeaders, Guid cacheKey, string cacheKeyString, DateTime? lastDateModified, TimeSpan? cacheDuration, string contentType)
+        private object GetCachedResult(IRequest requestContext, IDictionary<string, string> responseHeaders, Guid cacheKey, string cacheKeyString, DateTime? lastDateModified, TimeSpan? cacheDuration, string contentType)
         {
             responseHeaders["ETag"] = cacheKeyString;
 
@@ -287,7 +287,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <param name="isHeadRequest">if set to <c>true</c> [is head request].</param>
         /// <returns>System.Object.</returns>
         /// <exception cref="System.ArgumentNullException">path</exception>
-        public object GetStaticFileResult(IRequestContext requestContext, string path, FileShare fileShare = FileShare.Read, IDictionary<string, string> responseHeaders = null, bool isHeadRequest = false)
+        public object GetStaticFileResult(IRequest requestContext, string path, FileShare fileShare = FileShare.Read, IDictionary<string, string> responseHeaders = null, bool isHeadRequest = false)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -332,7 +332,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <exception cref="System.ArgumentNullException">cacheKey
         /// or
         /// factoryFn</exception>
-        public object GetStaticResult(IRequestContext requestContext, Guid cacheKey, DateTime? lastDateModified, TimeSpan? cacheDuration, string contentType, Func<Task<Stream>> factoryFn, IDictionary<string, string> responseHeaders = null, bool isHeadRequest = false)
+        public object GetStaticResult(IRequest requestContext, Guid cacheKey, DateTime? lastDateModified, TimeSpan? cacheDuration, string contentType, Func<Task<Stream>> factoryFn, IDictionary<string, string> responseHeaders = null, bool isHeadRequest = false)
         {
             if (cacheKey == Guid.Empty)
             {
@@ -373,7 +373,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <param name="requestContext">The request context.</param>
         /// <param name="contentType">Type of the content.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        private bool ShouldCompressResponse(IRequestContext requestContext, string contentType)
+        private bool ShouldCompressResponse(IRequest requestContext, string contentType)
         {
             // It will take some work to support compression with byte range requests
             if (!string.IsNullOrEmpty(requestContext.GetHeader("Range")))
@@ -428,9 +428,11 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <param name="compress">if set to <c>true</c> [compress].</param>
         /// <param name="isHeadRequest">if set to <c>true</c> [is head request].</param>
         /// <returns>Task{IHasOptions}.</returns>
-        private async Task<IHasOptions> GetStaticResult(IRequestContext requestContext, IDictionary<string, string> responseHeaders, string contentType, Func<Task<Stream>> factoryFn, bool compress, bool isHeadRequest)
+        private async Task<IHasOptions> GetStaticResult(IRequest requestContext, IDictionary<string, string> responseHeaders, string contentType, Func<Task<Stream>> factoryFn, bool compress, bool isHeadRequest)
         {
-            if (!compress || string.IsNullOrEmpty(requestContext.CompressionType))
+            var requestedCompressionType = requestContext.GetCompressionType();
+
+            if (!compress || string.IsNullOrEmpty(requestedCompressionType))
             {
                 var stream = await factoryFn().ConfigureAwait(false);
 
@@ -471,9 +473,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 return new HttpResult(content, contentType);
             }
 
-            var contents = content.Compress(requestContext.CompressionType);
+            var contents = content.Compress(requestedCompressionType);
 
-            return new CompressedResult(contents, requestContext.CompressionType, contentType);
+            return new CompressedResult(contents, requestedCompressionType, contentType);
         }
 
         /// <summary>
@@ -548,7 +550,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <param name="lastDateModified">The last date modified.</param>
         /// <param name="cacheDuration">Duration of the cache.</param>
         /// <returns><c>true</c> if [is not modified] [the specified cache key]; otherwise, <c>false</c>.</returns>
-        private bool IsNotModified(IRequestContext requestContext, Guid? cacheKey, DateTime? lastDateModified, TimeSpan? cacheDuration)
+        private bool IsNotModified(IRequest requestContext, Guid? cacheKey, DateTime? lastDateModified, TimeSpan? cacheDuration)
         {
             var isNotModified = true;
 

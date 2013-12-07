@@ -8,14 +8,14 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
-using ServiceStack.ServiceHost;
-using ServiceStack.Text.Controller;
+using ServiceStack;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using ServiceStack.Text.Controller;
 
 namespace MediaBrowser.Api.Images
 {
@@ -181,7 +181,7 @@ namespace MediaBrowser.Api.Images
 
         public object Get(GetItemByNameRemoteImageProviders request)
         {
-            var pathInfo = PathInfo.Parse(RequestContext.PathInfo);
+            var pathInfo = PathInfo.Parse(Request.PathInfo);
             var type = pathInfo.GetArgumentValue<string>(0);
 
             var item = GetItemByName(request.Name, type, _libraryManager);
@@ -212,7 +212,7 @@ namespace MediaBrowser.Api.Images
 
         public object Get(GetItemByNameRemoteImages request)
         {
-            var pathInfo = PathInfo.Parse(RequestContext.PathInfo);
+            var pathInfo = PathInfo.Parse(Request.PathInfo);
             var type = pathInfo.GetArgumentValue<string>(0);
 
             var item = GetItemByName(request.Name, type, _libraryManager);
@@ -264,7 +264,7 @@ namespace MediaBrowser.Api.Images
 
         public void Post(DownloadItemByNameRemoteImage request)
         {
-            var pathInfo = PathInfo.Parse(RequestContext.PathInfo);
+            var pathInfo = PathInfo.Parse(Request.PathInfo);
             var type = pathInfo.GetArgumentValue<string>(0);
 
             var item = GetItemByName(request.Name, type, _libraryManager);

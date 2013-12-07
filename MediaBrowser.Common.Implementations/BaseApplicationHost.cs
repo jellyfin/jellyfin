@@ -444,11 +444,6 @@ namespace MediaBrowser.Common.Implementations
             catch (Exception ex)
             {
                 Logger.Error("Error creating {0}", ex, type.Name);
-
-#if DEBUG
-                throw;
-#endif
-
                 // Don't blow up in release mode
                 return null;
             }

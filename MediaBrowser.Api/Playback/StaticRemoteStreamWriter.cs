@@ -1,5 +1,4 @@
-﻿using ServiceStack.Service;
-using ServiceStack.ServiceHost;
+﻿using ServiceStack.Web;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;

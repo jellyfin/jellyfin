@@ -791,7 +791,7 @@ namespace MediaBrowser.Api.Playback
 
             var media = (IHasMediaStreams)item;
 
-            var url = RequestContext.PathInfo;
+            var url = Request.PathInfo;
 
             if (!request.AudioCodec.HasValue)
             {

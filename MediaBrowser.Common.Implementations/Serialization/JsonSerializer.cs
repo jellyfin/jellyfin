@@ -166,7 +166,7 @@ namespace MediaBrowser.Common.Implementations.Serialization
         /// </summary>
         private void Configure()
         {
-            ServiceStack.Text.JsConfig.DateHandler = ServiceStack.Text.JsonDateHandler.ISO8601;
+            ServiceStack.Text.JsConfig.DateHandler = ServiceStack.Text.DateHandler.ISO8601;
             ServiceStack.Text.JsConfig.ExcludeTypeInfo = true;
             ServiceStack.Text.JsConfig.IncludeNullValues = false;
             ServiceStack.Text.JsConfig.AlwaysUseUtc = true;

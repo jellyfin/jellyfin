@@ -7,7 +7,7 @@ using MediaBrowser.Common.Constants;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Serialization;
-using ServiceStack.ServiceHost;
+using ServiceStack;
 
 namespace MediaBrowser.Api
 {

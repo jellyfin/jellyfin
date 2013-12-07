@@ -2,12 +2,12 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using ServiceStack.Service;
-using ServiceStack.ServiceHost;
+using ServiceStack;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using ServiceStack.Web;
 
 namespace MediaBrowser.Api.Images
 {

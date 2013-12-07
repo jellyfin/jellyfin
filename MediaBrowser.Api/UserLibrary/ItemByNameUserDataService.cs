@@ -2,11 +2,11 @@
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using ServiceStack.ServiceHost;
-using ServiceStack.Text.Controller;
+using ServiceStack;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using ServiceStack.Text.Controller;
 
 namespace MediaBrowser.Api.UserLibrary
 {
@@ -158,7 +158,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         public object Post(MarkItemByNameFavorite request)
         {
-            var pathInfo = PathInfo.Parse(RequestContext.PathInfo);
+            var pathInfo = PathInfo.Parse(Request.PathInfo);
             var type = pathInfo.GetArgumentValue<string>(3);
 
             var task = MarkFavorite(request.UserId, type, request.Name, true);
@@ -172,7 +172,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         public object Post(UpdateItemByNameRating request)
         {
-            var pathInfo = PathInfo.Parse(RequestContext.PathInfo);
+            var pathInfo = PathInfo.Parse(Request.PathInfo);
             var type = pathInfo.GetArgumentValue<string>(3);
 
             var task = MarkLike(request.UserId, type, request.Name, request.Likes);
@@ -186,7 +186,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         public object Delete(UnmarkItemByNameFavorite request)
         {
-            var pathInfo = PathInfo.Parse(RequestContext.PathInfo);
+            var pathInfo = PathInfo.Parse(Request.PathInfo);
             var type = pathInfo.GetArgumentValue<string>(3);
 
             var task = MarkFavorite(request.UserId, type, request.Name, false);
@@ -200,7 +200,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         public object Delete(DeleteItemByNameRating request)
         {
-            var pathInfo = PathInfo.Parse(RequestContext.PathInfo);
+            var pathInfo = PathInfo.Parse(Request.PathInfo);
             var type = pathInfo.GetArgumentValue<string>(3);
 
             var task = MarkLike(request.UserId, type, request.Name, null);

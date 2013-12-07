@@ -58,6 +58,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ServiceStack.Interfaces, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\ThirdParty\ServiceStack\ServiceStack.Interfaces.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
@@ -123,6 +127,10 @@
     <Compile Include="LiveTv\SeriesTimerInfo.cs" />
     <Compile Include="LiveTv\TimerInfo.cs" />
     <Compile Include="Localization\ILocalizationManager.cs" />
+    <Compile Include="Net\IHasResultFactory.cs" />
+    <Compile Include="Net\IHttpResultFactory.cs" />
+    <Compile Include="Net\IHttpServer.cs" />
+    <Compile Include="Net\IRestfulService.cs" />
     <Compile Include="Notifications\INotificationsRepository.cs" />
     <Compile Include="Notifications\NotificationUpdateEventArgs.cs" />
     <Compile Include="Persistence\MediaStreamQuery.cs" />

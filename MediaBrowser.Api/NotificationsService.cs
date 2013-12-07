@@ -1,10 +1,10 @@
 ﻿using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Model.Notifications;
-using ServiceStack.ServiceHost;
 using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using ServiceStack;
 
 namespace MediaBrowser.Api
 {

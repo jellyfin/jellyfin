@@ -1,7 +1,8 @@
+using MediaBrowser.Common.Net;
 using System;
 using System.Collections.Generic;
 
-namespace MediaBrowser.Common.Net
+namespace MediaBrowser.Controller.Net
 {
     /// <summary>
     /// Interface IHttpServer
@@ -18,7 +19,7 @@ namespace MediaBrowser.Common.Net
         /// Starts the specified server name.
         /// </summary>
         /// <param name="urlPrefix">The URL.</param>
-        void Start(string urlPrefix);
+        void StartServer(string urlPrefix);
 
         /// <summary>
         /// Gets a value indicating whether [supports web sockets].

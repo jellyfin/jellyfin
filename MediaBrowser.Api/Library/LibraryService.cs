@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Common;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using ServiceStack.ServiceHost;
+using ServiceStack;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -6,7 +6,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
-using ServiceStack.ServiceHost;
+using ServiceStack;
 using System;
 
 namespace MediaBrowser.Api.Playback.Hls

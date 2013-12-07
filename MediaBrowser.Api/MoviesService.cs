@@ -3,7 +3,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
-using ServiceStack.ServiceHost;
+using ServiceStack;
 
 namespace MediaBrowser.Api
 {

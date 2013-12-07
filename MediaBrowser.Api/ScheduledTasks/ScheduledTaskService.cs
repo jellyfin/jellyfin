@@ -1,11 +1,11 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Model.Tasks;
-using ServiceStack.ServiceHost;
-using ServiceStack.Text.Controller;
+using ServiceStack;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ServiceStack.Text.Controller;
 
 namespace MediaBrowser.Api.ScheduledTasks
 {
@@ -205,7 +205,7 @@ namespace MediaBrowser.Api.ScheduledTasks
         {
             // We need to parse this manually because we told service stack not to with IRequiresRequestStream
             // https://code.google.com/p/servicestack/source/browse/trunk/Common/ServiceStack.Text/ServiceStack.Text/Controller/PathInfo.cs
-            var pathInfo = PathInfo.Parse(RequestContext.PathInfo);
+            var pathInfo = PathInfo.Parse(Request.PathInfo);
             var id = new Guid(pathInfo.GetArgumentValue<string>(1));
 
             var task = TaskManager.ScheduledTasks.FirstOrDefault(i => i.Id == id);

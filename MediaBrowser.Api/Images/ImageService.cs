@@ -11,8 +11,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using ServiceStack.ServiceHost;
-using ServiceStack.Text.Controller;
+using ServiceStack;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -20,6 +19,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using ServiceStack.Text.Controller;
+using ServiceStack.Web;
 
 namespace MediaBrowser.Api.Images
 {
@@ -453,7 +454,7 @@ namespace MediaBrowser.Api.Images
         /// <returns>Task{List{ImageInfo}}.</returns>
         private List<ImageInfo> GetItemByNameImageInfos(GetItemByNameImageInfos request)
         {
-            var pathInfo = PathInfo.Parse(RequestContext.PathInfo);
+            var pathInfo = PathInfo.Parse(Request.PathInfo);
             var type = pathInfo.GetArgumentValue<string>(0);
 
             var item = GetItemByName(request.Name, type, _libraryManager);
@@ -599,7 +600,7 @@ namespace MediaBrowser.Api.Images
 
         public object Get(GetItemByNameImage request)
         {
-            var pathInfo = PathInfo.Parse(RequestContext.PathInfo);
+            var pathInfo = PathInfo.Parse(Request.PathInfo);
             var type = pathInfo.GetArgumentValue<string>(0);
 
             var item = GetItemByName(request.Name, type, _libraryManager);
@@ -613,21 +614,21 @@ namespace MediaBrowser.Api.Images
         /// <param name="request">The request.</param>
         public void Post(PostUserImage request)
         {
-            var pathInfo = PathInfo.Parse(RequestContext.PathInfo);
+            var pathInfo = PathInfo.Parse(Request.PathInfo);
             var id = new Guid(pathInfo.GetArgumentValue<string>(1));
 
             request.Type = (ImageType)Enum.Parse(typeof(ImageType), pathInfo.GetArgumentValue<string>(3), true);
 
             var item = _userManager.Users.First(i => i.Id == id);
 
-            var task = PostImage(item, request.RequestStream, request.Type, RequestContext.ContentType);
+            var task = PostImage(item, request.RequestStream, request.Type, Request.ContentType);
 
             Task.WaitAll(task);
         }
 
         public void Post(PostItemByNameImage request)
         {
-            var pathInfo = PathInfo.Parse(RequestContext.PathInfo);
+            var pathInfo = PathInfo.Parse(Request.PathInfo);
             var type = pathInfo.GetArgumentValue<string>(0);
             var name = pathInfo.GetArgumentValue<string>(1);
 
@@ -635,7 +636,7 @@ namespace MediaBrowser.Api.Images
 
             var item = GetItemByName(name, type, _libraryManager);
 
-            var task = PostImage(item, request.RequestStream, request.Type, RequestContext.ContentType);
+            var task = PostImage(item, request.RequestStream, request.Type, Request.ContentType);
 
             Task.WaitAll(task);
         }
@@ -646,28 +647,28 @@ namespace MediaBrowser.Api.Images
         /// <param name="request">The request.</param>
         public void Post(PostItemImage request)
         {
-            var pathInfo = PathInfo.Parse(RequestContext.PathInfo);
+            var pathInfo = PathInfo.Parse(Request.PathInfo);
             var id = new Guid(pathInfo.GetArgumentValue<string>(1));
 
             request.Type = (ImageType)Enum.Parse(typeof(ImageType), pathInfo.GetArgumentValue<string>(3), true);
 
             var item = _libraryManager.GetItemById(id);
 
-            var task = PostImage(item, request.RequestStream, request.Type, RequestContext.ContentType);
+            var task = PostImage(item, request.RequestStream, request.Type, Request.ContentType);
 
             Task.WaitAll(task);
         }
 
         public void Post(PostChannelImage request)
         {
-            var pathInfo = PathInfo.Parse(RequestContext.PathInfo);
+            var pathInfo = PathInfo.Parse(Request.PathInfo);
             var id = pathInfo.GetArgumentValue<string>(2);
 
             request.Type = (ImageType)Enum.Parse(typeof(ImageType), pathInfo.GetArgumentValue<string>(4), true);
 
             var item = _liveTv.GetChannel(id);
 
-            var task = PostImage(item, request.RequestStream, request.Type, RequestContext.ContentType);
+            var task = PostImage(item, request.RequestStream, request.Type, Request.ContentType);
 
             Task.WaitAll(task);
         }
@@ -713,7 +714,7 @@ namespace MediaBrowser.Api.Images
         /// <param name="request">The request.</param>
         public void Delete(DeleteItemByNameImage request)
         {
-            var pathInfo = PathInfo.Parse(RequestContext.PathInfo);
+            var pathInfo = PathInfo.Parse(Request.PathInfo);
             var type = pathInfo.GetArgumentValue<string>(0);
 
             var item = GetItemByName(request.Name, type, _libraryManager);
@@ -742,7 +743,7 @@ namespace MediaBrowser.Api.Images
         /// <param name="request">The request.</param>
         public void Post(UpdateItemByNameImageIndex request)
         {
-            var pathInfo = PathInfo.Parse(RequestContext.PathInfo);
+            var pathInfo = PathInfo.Parse(Request.PathInfo);
             var type = pathInfo.GetArgumentValue<string>(0);
 
             var item = GetItemByName(request.Name, type, _libraryManager);
@@ -899,22 +900,22 @@ namespace MediaBrowser.Api.Images
         {
             if (format == ImageOutputFormat.Bmp)
             {
-                return MimeTypes.GetMimeType("i.bmp");
+                return Common.Net.MimeTypes.GetMimeType("i.bmp");
             }
             if (format == ImageOutputFormat.Gif)
             {
-                return MimeTypes.GetMimeType("i.gif");
+                return Common.Net.MimeTypes.GetMimeType("i.gif");
             }
             if (format == ImageOutputFormat.Jpg)
             {
-                return MimeTypes.GetMimeType("i.jpg");
+                return Common.Net.MimeTypes.GetMimeType("i.jpg");
             }
             if (format == ImageOutputFormat.Png)
             {
-                return MimeTypes.GetMimeType("i.png");
+                return Common.Net.MimeTypes.GetMimeType("i.png");
             }
 
-            return MimeTypes.GetMimeType(path);
+            return Common.Net.MimeTypes.GetMimeType(path);
         }
 
         /// <summary>
