@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Resolvers;
+﻿using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections;
@@ -270,6 +271,29 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return base.GetDeletePaths();
+        }
+
+        public IEnumerable<MediaStream> GetMediaStreams()
+        {
+            return ItemRepository.GetMediaStreams(new MediaStreamQuery
+            {
+                ItemId = Id
+            });
+        }
+
+        public MediaStream GetDefaultVideoStream()
+        {
+            if (!DefaultVideoStreamIndex.HasValue)
+            {
+                return null;
+            }
+
+            return ItemRepository.GetMediaStreams(new MediaStreamQuery
+            {
+                ItemId = Id,
+                Index = DefaultVideoStreamIndex.Value
+
+            }).FirstOrDefault();
         }
     }
 }
