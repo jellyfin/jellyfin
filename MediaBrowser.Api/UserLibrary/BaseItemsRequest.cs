@@ -2,7 +2,7 @@
 using System.Linq;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
-using ServiceStack.ServiceHost;
+using ServiceStack;
 using System;
 
 namespace MediaBrowser.Api.UserLibrary

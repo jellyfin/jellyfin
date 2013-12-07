@@ -2,10 +2,10 @@
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Logging;
-using ServiceStack.Common.Web;
-using ServiceStack.ServiceHost;
+using ServiceStack.Web;
 using System;
 using System.Collections.Generic;
+using System.Net.Http.Headers;
 
 namespace MediaBrowser.Api
 {
@@ -32,11 +32,10 @@ namespace MediaBrowser.Api
         /// <param name="request">The http request wrapper</param>
         /// <param name="response">The http response wrapper</param>
         /// <param name="requestDto">The request DTO</param>
-        public void RequestFilter(IHttpRequest request, IHttpResponse response, object requestDto)
+        public void RequestFilter(IRequest request, IResponse response, object requestDto)
         {
             //This code is executed before the service
-
-            var auth = GetAuthorization(request);
+            var auth = GetAuthorizationDictionary(request);
 
             if (auth != null)
             {
@@ -74,9 +73,9 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="httpReq">The HTTP req.</param>
         /// <returns>Dictionary{System.StringSystem.String}.</returns>
-        public static Dictionary<string, string> GetAuthorization(IHttpRequest httpReq)
+        private static Dictionary<string, string> GetAuthorizationDictionary(IRequest httpReq)
         {
-            var auth = httpReq.Headers[HttpHeaders.Authorization];
+            var auth = httpReq.Headers["Authorization"];
 
             return GetAuthorization(auth);
         }
@@ -86,11 +85,9 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="httpReq">The HTTP req.</param>
         /// <returns>Dictionary{System.StringSystem.String}.</returns>
-        public static AuthorizationInfo GetAuthorization(IRequestContext httpReq)
+        public static AuthorizationInfo GetAuthorization(IRequest httpReq)
         {
-            var header = httpReq.GetHeader("Authorization");
-
-            var auth = GetAuthorization(header);
+            var auth = GetAuthorizationDictionary(httpReq);
 
             string userId;
             string deviceId;

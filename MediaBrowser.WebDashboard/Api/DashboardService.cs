@@ -5,11 +5,12 @@ using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
-using ServiceStack.ServiceHost;
+using ServiceStack;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -17,6 +18,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using ServiceStack.Web;
 
 namespace MediaBrowser.WebDashboard.Api
 {
@@ -24,7 +26,6 @@ namespace MediaBrowser.WebDashboard.Api
     /// Class GetDashboardConfigurationPages
     /// </summary>
     [Route("/dashboard/ConfigurationPages", "GET")]
-    [Restrict(VisibilityTo = EndpointAttributes.None)]
     public class GetDashboardConfigurationPages : IReturn<List<ConfigurationPageInfo>>
     {
         /// <summary>
@@ -38,7 +39,6 @@ namespace MediaBrowser.WebDashboard.Api
     /// Class GetDashboardConfigurationPage
     /// </summary>
     [Route("/dashboard/ConfigurationPage", "GET")]
-    [Restrict(VisibilityTo = EndpointAttributes.None)]
     public class GetDashboardConfigurationPage
     {
         /// <summary>
@@ -52,7 +52,6 @@ namespace MediaBrowser.WebDashboard.Api
     /// Class GetDashboardResource
     /// </summary>
     [Route("/dashboard/{ResourceName*}", "GET")]
-    [Restrict(VisibilityTo = EndpointAttributes.None)]
     public class GetDashboardResource
     {
         /// <summary>
@@ -71,7 +70,6 @@ namespace MediaBrowser.WebDashboard.Api
     /// Class GetDashboardInfo
     /// </summary>
     [Route("/dashboard/dashboardInfo", "GET")]
-    [Restrict(VisibilityTo = EndpointAttributes.None)]
     public class GetDashboardInfo : IReturn<DashboardInfo>
     {
     }
@@ -97,7 +95,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// Gets or sets the request context.
         /// </summary>
         /// <value>The request context.</value>
-        public IRequestContext RequestContext { get; set; }
+        public IRequest Request { get; set; }
 
         /// <summary>
         /// Gets or sets the task manager.
@@ -174,7 +172,7 @@ namespace MediaBrowser.WebDashboard.Api
         {
             var result = GetDashboardInfo(_appHost, _taskManager, _sessionManager, _dtoService);
 
-            return ResultFactory.GetOptimizedResult(RequestContext, result);
+            return ResultFactory.GetOptimizedResult(Request, result);
         }
 
         /// <summary>
@@ -213,7 +211,7 @@ namespace MediaBrowser.WebDashboard.Api
         {
             var page = ServerEntryPoint.Instance.PluginConfigurationPages.First(p => p.Name.Equals(request.Name, StringComparison.OrdinalIgnoreCase));
 
-            return ResultFactory.GetStaticResult(RequestContext, page.Plugin.Version.ToString().GetMD5(), page.Plugin.AssemblyDateLastModified, null, MimeTypes.GetMimeType("page.html"), () => ModifyHtml(page.GetHtmlStream()));
+            return ResultFactory.GetStaticResult(Request, page.Plugin.Version.ToString().GetMD5(), page.Plugin.AssemblyDateLastModified, null, MimeTypes.GetMimeType("page.html"), () => ModifyHtml(page.GetHtmlStream()));
         }
 
         /// <summary>
@@ -244,7 +242,7 @@ namespace MediaBrowser.WebDashboard.Api
                 pages = pages.Where(p => p.ConfigurationPageType == request.PageType.Value);
             }
 
-            return ResultFactory.GetOptimizedResult(RequestContext, pages.Select(p => new ConfigurationPageInfo(p)).ToList());
+            return ResultFactory.GetOptimizedResult(Request, pages.Select(p => new ConfigurationPageInfo(p)).ToList());
         }
 
         /// <summary>
@@ -278,7 +276,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             var cacheKey = (assembly.Version + path).GetMD5();
 
-            return ResultFactory.GetStaticResult(RequestContext, cacheKey, null, cacheDuration, contentType, () => GetResourceStream(path));
+            return ResultFactory.GetStaticResult(Request, cacheKey, null, cacheDuration, contentType, () => GetResourceStream(path));
         }
 
         /// <summary>

@@ -1,10 +1,10 @@
-﻿using ServiceStack.ServiceHost;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using ServiceStack.Web;
 
-namespace MediaBrowser.Common.Net
+namespace MediaBrowser.Controller.Net
 {
     /// <summary>
     /// Interface IHttpResultFactory
@@ -36,7 +36,7 @@ namespace MediaBrowser.Common.Net
         /// <param name="result">The result.</param>
         /// <param name="responseHeaders">The response headers.</param>
         /// <returns>System.Object.</returns>
-        object GetOptimizedResult<T>(IRequestContext requestContext, T result, IDictionary<string, string> responseHeaders = null)
+        object GetOptimizedResult<T>(IRequest requestContext, T result, IDictionary<string, string> responseHeaders = null)
             where T : class;
 
         /// <summary>
@@ -50,7 +50,7 @@ namespace MediaBrowser.Common.Net
         /// <param name="factoryFn">The factory function that creates the response object.</param>
         /// <param name="responseHeaders">The response headers.</param>
         /// <returns>System.Object.</returns>
-        object GetOptimizedResultUsingCache<T>(IRequestContext requestContext, Guid cacheKey, DateTime lastDateModified, TimeSpan? cacheDuration, Func<T> factoryFn, IDictionary<string, string> responseHeaders = null)
+        object GetOptimizedResultUsingCache<T>(IRequest requestContext, Guid cacheKey, DateTime lastDateModified, TimeSpan? cacheDuration, Func<T> factoryFn, IDictionary<string, string> responseHeaders = null)
             where T : class;
 
         /// <summary>
@@ -65,7 +65,7 @@ namespace MediaBrowser.Common.Net
         /// <param name="contentType">Type of the content.</param>
         /// <param name="responseHeaders">The response headers.</param>
         /// <returns>System.Object.</returns>
-        object GetCachedResult<T>(IRequestContext requestContext, Guid cacheKey, DateTime lastDateModified, TimeSpan? cacheDuration, Func<T> factoryFn, string contentType, IDictionary<string, string> responseHeaders = null)
+        object GetCachedResult<T>(IRequest requestContext, Guid cacheKey, DateTime lastDateModified, TimeSpan? cacheDuration, Func<T> factoryFn, string contentType, IDictionary<string, string> responseHeaders = null)
             where T : class;
 
         /// <summary>
@@ -80,7 +80,7 @@ namespace MediaBrowser.Common.Net
         /// <param name="responseHeaders">The response headers.</param>
         /// <param name="isHeadRequest">if set to <c>true</c> [is head request].</param>
         /// <returns>System.Object.</returns>
-        object GetStaticResult(IRequestContext requestContext, Guid cacheKey, DateTime? lastDateModified,
+        object GetStaticResult(IRequest requestContext, Guid cacheKey, DateTime? lastDateModified,
                                TimeSpan? cacheDuration, string contentType, Func<Task<Stream>> factoryFn,
                                IDictionary<string, string> responseHeaders = null, bool isHeadRequest = false);
 
@@ -93,6 +93,6 @@ namespace MediaBrowser.Common.Net
         /// <param name="responseHeaders">The response headers.</param>
         /// <param name="isHeadRequest">if set to <c>true</c> [is head request].</param>
         /// <returns>System.Object.</returns>
-        object GetStaticFileResult(IRequestContext requestContext, string path, FileShare fileShare = FileShare.Read, IDictionary<string, string> responseHeaders = null, bool isHeadRequest = false);
+        object GetStaticFileResult(IRequest requestContext, string path, FileShare fileShare = FileShare.Read, IDictionary<string, string> responseHeaders = null, bool isHeadRequest = false);
     }
 }

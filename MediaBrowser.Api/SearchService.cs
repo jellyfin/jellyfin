@@ -7,7 +7,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Search;
-using ServiceStack.ServiceHost;
+using ServiceStack;
 using System;
 using System.Collections;
 using System.Collections.Generic;

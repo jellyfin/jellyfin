@@ -171,6 +171,11 @@
             html += '<div class="searchHintSecondaryText">' + hint.AlbumArtist + '</div>';
 
         }
+        else if (hint.Type == "MusicArtist") {
+
+            html += '<div class="searchHintSecondaryText">Artist</div>';
+
+        }
         else if (hint.Type == "Movie") {
 
             html += '<div class="searchHintSecondaryText">Movie</div>';

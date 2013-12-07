@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Net;
-using ServiceStack.ServiceHost;
+using MediaBrowser.Controller.Net;
+using ServiceStack;
+using ServiceStack.Web;
 using System.IO;
 
 namespace MediaBrowser.Server.Implementations.HttpServer
@@ -40,7 +41,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             var requestedFile = Path.Combine(swaggerDirectory, request.ResourceName.Replace('/', Path.DirectorySeparatorChar));
 
-            return ResultFactory.GetStaticFileResult(RequestContext, requestedFile);
+            return ResultFactory.GetStaticFileResult(Request, requestedFile);
         }
 
         /// <summary>
@@ -53,6 +54,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// Gets or sets the request context.
         /// </summary>
         /// <value>The request context.</value>
-        public IRequestContext RequestContext { get; set; }
+        public IRequest Request { get; set; }
     }
 }

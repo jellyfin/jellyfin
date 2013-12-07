@@ -6,7 +6,7 @@ using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.System;
-using ServiceStack.ServiceHost;
+using ServiceStack;
 using System;
 using System.IO;
 using System.Threading.Tasks;

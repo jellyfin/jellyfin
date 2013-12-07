@@ -18,6 +18,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.MediaInfo;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Plugins;
@@ -221,7 +222,7 @@ namespace MediaBrowser.ServerApplication
         {
             base.OnLoggerLoaded();
 
-            _httpServerCreationTask = Task.Run(() => ServerFactory.CreateServer(this, LogManager, "Media Browser", "dashboard/index.html"));
+            _httpServerCreationTask = Task.Run(() => ServerFactory.CreateServer(this, LogManager, "Media Browser", "mediabrowser", "dashboard/index.html"));
         }
 
         /// <summary>

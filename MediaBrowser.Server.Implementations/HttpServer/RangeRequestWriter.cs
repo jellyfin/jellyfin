@@ -1,5 +1,4 @@
-﻿using ServiceStack.Service;
-using ServiceStack.ServiceHost;
+﻿using ServiceStack.Web;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -197,7 +196,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
         public string ContentType { get; set; }
 
-        public IRequestContext RequestContext { get; set; }
+        public IRequest RequestContext { get; set; }
 
         public object Response { get; set; }
 

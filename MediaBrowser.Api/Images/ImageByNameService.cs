@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
-using ServiceStack.ServiceHost;
+using ServiceStack;
 using System;
 using System.IO;
 using System.Linq;

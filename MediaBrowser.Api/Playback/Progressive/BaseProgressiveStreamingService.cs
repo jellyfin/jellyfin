@@ -102,7 +102,7 @@ namespace MediaBrowser.Api.Playback.Progressive
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         private void AddDlnaHeaders(StreamState state, IDictionary<string, string> responseHeaders, bool isStaticallyStreamed)
         {
-            var timeSeek = RequestContext.GetHeader("TimeSeekRange.dlna.org");
+            var timeSeek = GetHeader("TimeSeekRange.dlna.org");
 
             if (!string.IsNullOrEmpty(timeSeek))
             {
@@ -110,7 +110,7 @@ namespace MediaBrowser.Api.Playback.Progressive
                 return;
             }
 
-            var transferMode = RequestContext.GetHeader("transferMode.dlna.org");
+            var transferMode = GetHeader("transferMode.dlna.org");
             responseHeaders["transferMode.dlna.org"] = string.IsNullOrEmpty(transferMode) ? "Streaming" : transferMode;
 
             var contentFeatures = string.Empty;
@@ -210,12 +210,12 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             if (request.Static)
             {
-                return ResultFactory.GetStaticFileResult(RequestContext, state.Item.Path, FileShare.Read, responseHeaders, isHeadRequest);
+                return ResultFactory.GetStaticFileResult(Request, state.Item.Path, FileShare.Read, responseHeaders, isHeadRequest);
             }
 
             if (outputPathExists && !ApiEntryPoint.Instance.HasActiveTranscodingJob(outputPath, TranscodingJobType.Progressive))
             {
-                return ResultFactory.GetStaticFileResult(RequestContext, outputPath, FileShare.Read, responseHeaders, isHeadRequest);
+                return ResultFactory.GetStaticFileResult(Request, outputPath, FileShare.Read, responseHeaders, isHeadRequest);
             }
 
             return GetStreamResult(state, responseHeaders, isHeadRequest).Result;
@@ -307,7 +307,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             return new ImageService(UserManager, LibraryManager, ApplicationPaths, null, ItemRepository, DtoService, ImageProcessor, null)
             {
                 Logger = Logger,
-                RequestContext = RequestContext,
+                Request = Request,
                 ResultFactory = ResultFactory
 
             }.Get(request);

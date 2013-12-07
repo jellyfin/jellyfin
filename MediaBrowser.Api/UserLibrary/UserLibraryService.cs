@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using MediaBrowser.Controller.Dto;
+﻿using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
@@ -8,9 +7,10 @@ using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
-using ServiceStack.ServiceHost;
+using ServiceStack;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -694,7 +694,7 @@ namespace MediaBrowser.Api.UserLibrary
 
         private SessionInfo GetSession()
         {
-            var auth = AuthorizationRequestFilterAttribute.GetAuthorization(RequestContext);
+            var auth = AuthorizationRequestFilterAttribute.GetAuthorization(Request);
 
             return _sessionManager.Sessions.First(i => string.Equals(i.DeviceId, auth.DeviceId) &&
                 string.Equals(i.Client, auth.Client) &&

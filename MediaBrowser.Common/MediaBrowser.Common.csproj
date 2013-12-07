@@ -38,15 +38,6 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="ServiceStack.Common">
-      <HintPath>..\packages\ServiceStack.Common.3.9.70\lib\net35\ServiceStack.Common.dll</HintPath>
-    </Reference>
-    <Reference Include="ServiceStack.Interfaces">
-      <HintPath>..\packages\ServiceStack.Common.3.9.70\lib\net35\ServiceStack.Interfaces.dll</HintPath>
-    </Reference>
-    <Reference Include="ServiceStack.Text">
-      <HintPath>..\packages\ServiceStack.Text.3.9.70\lib\net35\ServiceStack.Text.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\SharedVersion.cs">
@@ -69,15 +60,11 @@
     <Compile Include="Configuration\IApplicationPaths.cs" />
     <Compile Include="Net\HttpRequestOptions.cs" />
     <Compile Include="Net\HttpResponseInfo.cs" />
-    <Compile Include="Net\IHasResultFactory.cs" />
-    <Compile Include="Net\IHttpResultFactory.cs" />
     <Compile Include="Net\IServerManager.cs" />
     <Compile Include="Net\IWebSocketListener.cs" />
     <Compile Include="IApplicationHost.cs" />
     <Compile Include="Net\IHttpClient.cs" />
-    <Compile Include="Net\IHttpServer.cs" />
     <Compile Include="Net\INetworkManager.cs" />
-    <Compile Include="Net\IRestfulService.cs" />
     <Compile Include="Net\IWebSocket.cs" />
     <Compile Include="Net\IWebSocketConnection.cs" />
     <Compile Include="Net\IWebSocketServer.cs" />
@@ -105,7 +92,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj">

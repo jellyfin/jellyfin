@@ -4,12 +4,12 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Users;
-using ServiceStack.ServiceHost;
-using ServiceStack.Text.Controller;
+using ServiceStack;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ServiceStack.Text.Controller;
 
 namespace MediaBrowser.Api
 {
@@ -269,13 +269,13 @@ namespace MediaBrowser.Api
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public void Post(AuthenticateUser request)
+        public async Task Post(AuthenticateUser request)
         {
             // No response needed. Will throw an exception on failure.
-            var result = AuthenticateUser(request).Result;
+            await AuthenticateUser(request).ConfigureAwait(false);
         }
 
-        public object Post(AuthenticateUserByName request)
+        public async Task<object> Post(AuthenticateUserByName request)
         {
             var user = _userManager.Users.FirstOrDefault(i => string.Equals(request.Username, i.Name, StringComparison.OrdinalIgnoreCase));
 
@@ -284,7 +284,7 @@ namespace MediaBrowser.Api
                 throw new ArgumentException(string.Format("User {0} not found.", request.Username));
             }
 
-            var result = AuthenticateUser(new AuthenticateUser { Id = user.Id, Password = request.Password }).Result;
+            var result = await AuthenticateUser(new AuthenticateUser { Id = user.Id, Password = request.Password }).ConfigureAwait(false);
 
             return ToOptimizedResult(result);
         }
@@ -356,7 +356,7 @@ namespace MediaBrowser.Api
         {
             // We need to parse this manually because we told service stack not to with IRequiresRequestStream
             // https://code.google.com/p/servicestack/source/browse/trunk/Common/ServiceStack.Text/ServiceStack.Text/Controller/PathInfo.cs
-            var pathInfo = PathInfo.Parse(RequestContext.PathInfo);
+            var pathInfo = PathInfo.Parse(Request.PathInfo);
             var id = new Guid(pathInfo.GetArgumentValue<string>(1));
 
             var dtoUser = request;

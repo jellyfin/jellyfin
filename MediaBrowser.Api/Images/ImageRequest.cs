@@ -1,6 +1,6 @@
 ﻿using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
-using ServiceStack.ServiceHost;
+using ServiceStack;
 
 namespace MediaBrowser.Api.Images
 {

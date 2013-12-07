@@ -5,12 +5,13 @@ using MediaBrowser.Common.Updates;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
-using ServiceStack.ServiceHost;
-using ServiceStack.Text.Controller;
+using ServiceStack;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using ServiceStack.Text.Controller;
+using ServiceStack.Web;
 
 namespace MediaBrowser.Api
 {
@@ -79,7 +80,6 @@ namespace MediaBrowser.Api
     /// </summary>
     [Route("/Plugins/SecurityInfo", "GET")]
     [Api(("Gets plugin registration information"))]
-    [Restrict(VisibilityTo = EndpointAttributes.None)]
     public class GetPluginSecurityInfo : IReturn<PluginSecurityInfo>
     {
     }
@@ -89,14 +89,12 @@ namespace MediaBrowser.Api
     /// </summary>
     [Route("/Plugins/SecurityInfo", "POST")]
     [Api("Updates plugin registration information")]
-    [Restrict(VisibilityTo = EndpointAttributes.None)]
     public class UpdatePluginSecurityInfo : PluginSecurityInfo, IReturnVoid
     {
     }
 
     [Route("/Plugins/RegistrationRecords/{Name}", "GET")]
     [Api("Gets registration status for a feature")]
-    [Restrict(VisibilityTo = EndpointAttributes.None)]
     public class GetRegistrationStatus
     {
         [ApiMember(Name = "Name", Description = "Feature Name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
@@ -224,7 +222,7 @@ namespace MediaBrowser.Api
         {
             // We need to parse this manually because we told service stack not to with IRequiresRequestStream
             // https://code.google.com/p/servicestack/source/browse/trunk/Common/ServiceStack.Text/ServiceStack.Text/Controller/PathInfo.cs
-            var pathInfo = PathInfo.Parse(RequestContext.PathInfo);
+            var pathInfo = PathInfo.Parse(Request.PathInfo);
             var id = new Guid(pathInfo.GetArgumentValue<string>(1));
 
             var plugin = _appHost.Plugins.First(p => p.Id == id);

@@ -2,13 +2,11 @@
 using MediaBrowser.Common.Constants;
 using MediaBrowser.Common.Implementations.Logging;
 using MediaBrowser.Common.Implementations.Updates;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Implementations;
 using MediaBrowser.ServerApplication.Native;
 using Microsoft.Win32;
 using System;
-using System.ComponentModel;
 using System.Configuration.Install;
 using System.Diagnostics;
 using System.IO;
@@ -41,7 +39,7 @@ namespace MediaBrowser.ServerApplication
             var appPaths = CreateApplicationPaths(_isRunningAsService);
 
             var logManager = new NlogManager(appPaths.LogDirectoryPath, "server");
-            logManager.ReloadLogger(LogSeverity.Info);
+            logManager.ReloadLogger(LogSeverity.Debug);
 
             var logger = _logger = logManager.GetLogger("Main");
 

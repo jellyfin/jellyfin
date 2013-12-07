@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Controller;
 using MediaBrowser.Model.Logging;
-using ServiceStack.ServiceHost;
 using ServiceStack.Text.Controller;
+using ServiceStack.Web;
 using System;
 using System.IO;
 using System.Linq;
@@ -13,7 +13,7 @@ namespace MediaBrowser.Api.Playback.Hls
         public ILogger Logger { get; set; }
         public IServerApplicationPaths ApplicationPaths { get; set; }
 
-        public void ResponseFilter(IHttpRequest req, IHttpResponse res, object response)
+        public void ResponseFilter(IRequest req, IResponse res, object response)
         {
             var pathInfo = PathInfo.Parse(req.PathInfo);
             var itemId = pathInfo.GetArgumentValue<string>(1);

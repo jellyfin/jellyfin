@@ -1,6 +1,6 @@
-﻿using ServiceStack.ServiceHost;
+﻿using ServiceStack;
 
-namespace MediaBrowser.Common.Net
+namespace MediaBrowser.Controller.Net
 {
     /// <summary>
     /// Interface IRestfulService

@@ -184,5 +184,41 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// </summary>
         /// <value>The on receive.</value>
         public Action<string> OnReceive { get; set; }
+
+        /// <summary>
+        /// The _supports native web socket
+        /// </summary>
+        private static bool? _supportsNativeWebSocket;
+
+        /// <summary>
+        /// Gets a value indicating whether [supports web sockets].
+        /// </summary>
+        /// <value><c>true</c> if [supports web sockets]; otherwise, <c>false</c>.</value>
+        public static bool IsSupported
+        {
+            get
+            {
+#if __MonoCS__
+				return false;
+#else
+#endif
+
+                if (!_supportsNativeWebSocket.HasValue)
+                {
+                    try
+                    {
+                        new ClientWebSocket();
+
+                        _supportsNativeWebSocket = true;
+                    }
+                    catch (PlatformNotSupportedException)
+                    {
+                        _supportsNativeWebSocket = false;
+                    }
+                }
+
+                return _supportsNativeWebSocket.Value;
+            }
+        }
     }
 }
