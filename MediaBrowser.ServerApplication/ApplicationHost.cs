@@ -28,7 +28,6 @@ using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Updates;
 using MediaBrowser.Providers;
@@ -49,6 +48,7 @@ using MediaBrowser.Server.Implementations.Providers;
 using MediaBrowser.Server.Implementations.ServerManager;
 using MediaBrowser.Server.Implementations.Session;
 using MediaBrowser.Server.Implementations.WebSocket;
+using MediaBrowser.ServerApplication.EntryPoints;
 using MediaBrowser.ServerApplication.FFMpeg;
 using MediaBrowser.ServerApplication.IO;
 using MediaBrowser.ServerApplication.Native;
@@ -616,7 +616,8 @@ namespace MediaBrowser.ServerApplication
                 HttpServerPortNumber = ServerConfigurationManager.Configuration.HttpServerPortNumber,
                 OperatingSystem = Environment.OSVersion.ToString(),
                 CanSelfRestart = CanSelfRestart,
-                CanSelfUpdate = CanSelfUpdate
+                CanSelfUpdate = CanSelfUpdate,
+                WanAddress = WanAddressEntryPoint.WanAddress
             };
         }
 
