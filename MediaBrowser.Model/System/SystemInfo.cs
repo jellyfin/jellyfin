@@ -111,6 +111,12 @@ namespace MediaBrowser.Model.System
         public int HttpServerPortNumber { get; set; }
 
         /// <summary>
+        /// Gets or sets the wan address.
+        /// </summary>
+        /// <value>The wan address.</value>
+        public string WanAddress { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="SystemInfo" /> class.
         /// </summary>
         public SystemInfo()

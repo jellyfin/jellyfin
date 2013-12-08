@@ -32,6 +32,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _logger = logManager.GetLogger(GetType().Name);
         }
 
+        private SqliteShrinkMemoryTimer _shrinkMemoryTimer;
+        
         /// <summary>
         /// Opens the connection to the database
         /// </summary>
@@ -52,6 +54,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.RunQueries(queries, _logger);
 
             PrepareStatements();
+
+            _shrinkMemoryTimer = new SqliteShrinkMemoryTimer(_connection, _writeLock, _logger);
         }
 
         /// <summary>
@@ -282,6 +286,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     lock (_disposeLock)
                     {
+                        if (_shrinkMemoryTimer != null)
+                        {
+                            _shrinkMemoryTimer.Dispose();
+                            _shrinkMemoryTimer = null;
+                        }
+
                         if (_connection != null)
                         {
                             if (_connection.IsOpen())
