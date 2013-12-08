@@ -142,6 +142,38 @@ namespace MediaBrowser.Providers.TV
                         break;
                     }
 
+                case "DVD_episodenumber":
+                    {
+                        var number = reader.ReadElementContentAsString();
+
+                        if (!string.IsNullOrWhiteSpace(number))
+                        {
+                            int num;
+
+                            if (int.TryParse(number, out num))
+                            {
+                                item.DvdEpisodeNumber = num;
+                            }
+                        }
+                        break;
+                    }
+
+                case "DVD_season":
+                    {
+                        var number = reader.ReadElementContentAsString();
+
+                        if (!string.IsNullOrWhiteSpace(number))
+                        {
+                            int num;
+
+                            if (int.TryParse(number, out num))
+                            {
+                                item.DvdSeasonNumber = num;
+                            }
+                        }
+                        break;
+                    }
+
                 case "airsbefore_episode":
                     {
                         var val = reader.ReadElementContentAsString();

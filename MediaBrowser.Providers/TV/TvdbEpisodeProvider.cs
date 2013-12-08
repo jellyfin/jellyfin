@@ -404,6 +404,42 @@ namespace MediaBrowser.Providers.TV
                                         break;
                                     }
 
+                                case "DVD_episodenumber":
+                                    {
+                                        var val = reader.ReadElementContentAsString();
+
+                                        if (!string.IsNullOrWhiteSpace(val))
+                                        {
+                                            int rval;
+
+                                            // int.TryParse is local aware, so it can be probamatic, force us culture
+                                            if (int.TryParse(val, NumberStyles.Integer, _usCulture, out rval))
+                                            {
+                                                item.DvdEpisodeNumber = rval;
+                                            }
+                                        }
+
+                                        break;
+                                    }
+
+                                case "DVD_season":
+                                    {
+                                        var val = reader.ReadElementContentAsString();
+
+                                        if (!string.IsNullOrWhiteSpace(val))
+                                        {
+                                            int rval;
+
+                                            // int.TryParse is local aware, so it can be probamatic, force us culture
+                                            if (int.TryParse(val, NumberStyles.Integer, _usCulture, out rval))
+                                            {
+                                                item.DvdSeasonNumber = rval;
+                                            }
+                                        }
+
+                                        break;
+                                    }
+
                                 case "airsbefore_episode":
                                     {
                                         var val = reader.ReadElementContentAsString();
