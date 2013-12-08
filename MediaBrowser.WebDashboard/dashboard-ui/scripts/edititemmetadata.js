@@ -1072,6 +1072,7 @@
                 SortName: $('#txtSortName', form).val(),
                 DisplayMediaType: $('#txtDisplayMediaType', form).val(),
                 CommunityRating: $('#txtCommunityRating', form).val(),
+                VoteCount: $('#txtCommunityVoteCount', form).val(),
                 HomePageUrl: $('#txtHomePageUrl', form).val(),
                 Budget: $('#txtBudget', form).val(),
                 Revenue: $('#txtRevenue', form).val(),
