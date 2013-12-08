@@ -86,8 +86,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                                 "create table if not exists userdisplaypreferences (id GUID, userId GUID, client text, data BLOB)",
                                 "create unique index if not exists userdisplaypreferencesindex on userdisplaypreferences (id, userId, client)",
+
                                 //pragmas
-                                "pragma temp_store = memory"
+                                "pragma temp_store = memory",
+
+                                "pragma shrink_memory"
                                };
 
             _connection.RunQueries(queries, _logger);

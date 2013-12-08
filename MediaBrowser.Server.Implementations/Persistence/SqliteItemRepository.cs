@@ -124,17 +124,23 @@ namespace MediaBrowser.Server.Implementations.Persistence
                                 "create index if not exists idx_ChildrenIds on ChildrenIds(ParentId,ItemId)",
 
                                 //pragmas
-                                "pragma temp_store = memory"
+                                "pragma temp_store = memory",
+
+                                "pragma shrink_memory"
                                };
 
             _connection.RunQueries(queries, _logger);
 
             PrepareStatements();
-            
+
             _mediaStreamsRepository.Initialize();
             _providerInfoRepository.Initialize();
             _chapterRepository.Initialize();
+
+            _shrinkMemoryTimer = new SqliteShrinkMemoryTimer(_connection, _writeLock, _logger);
         }
+
+        private SqliteShrinkMemoryTimer _shrinkMemoryTimer;
 
         /// <summary>
         /// The _write lock
@@ -402,6 +408,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     lock (_disposeLock)
                     {
+                        if (_shrinkMemoryTimer != null)
+                        {
+                            _shrinkMemoryTimer.Dispose();
+                            _shrinkMemoryTimer = null;
+                        }
+                        
                         if (_connection != null)
                         {
                             if (_connection.IsOpen())
@@ -412,29 +424,29 @@ namespace MediaBrowser.Server.Implementations.Persistence
                             _connection.Dispose();
                             _connection = null;
                         }
+
+                        if (_chapterRepository != null)
+                        {
+                            _chapterRepository.Dispose();
+                            _chapterRepository = null;
+                        }
+
+                        if (_mediaStreamsRepository != null)
+                        {
+                            _mediaStreamsRepository.Dispose();
+                            _mediaStreamsRepository = null;
+                        }
+
+                        if (_providerInfoRepository != null)
+                        {
+                            _providerInfoRepository.Dispose();
+                            _providerInfoRepository = null;
+                        }
                     }
                 }
                 catch (Exception ex)
                 {
                     _logger.ErrorException("Error disposing database", ex);
-                }
-
-                if (_chapterRepository != null)
-                {
-                    _chapterRepository.Dispose();
-                    _chapterRepository = null;
-                }
-
-                if (_mediaStreamsRepository != null)
-                {
-                    _mediaStreamsRepository.Dispose();
-                    _mediaStreamsRepository = null;
-                }
-
-                if (_providerInfoRepository != null)
-                {
-                    _providerInfoRepository.Dispose();
-                    _providerInfoRepository = null;
                 }
             }
         }

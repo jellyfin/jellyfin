@@ -273,7 +273,7 @@ namespace MediaBrowser.Controller.Entities
             return base.GetDeletePaths();
         }
 
-        public IEnumerable<MediaStream> GetMediaStreams()
+        public virtual IEnumerable<MediaStream> GetMediaStreams()
         {
             return ItemRepository.GetMediaStreams(new MediaStreamQuery
             {
@@ -281,7 +281,7 @@ namespace MediaBrowser.Controller.Entities
             });
         }
 
-        public MediaStream GetDefaultVideoStream()
+        public virtual MediaStream GetDefaultVideoStream()
         {
             if (!DefaultVideoStreamIndex.HasValue)
             {

@@ -72,7 +72,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
                                 "create unique index if not exists userdataindex on userdata (key, userId)",
 
                                 //pragmas
-                                "pragma temp_store = memory"
+                                "pragma temp_store = memory",
+
+                                "pragma shrink_memory"
                                };
 
             _connection.RunQueries(queries, _logger);

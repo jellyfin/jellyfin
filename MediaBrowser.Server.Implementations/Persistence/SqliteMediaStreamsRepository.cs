@@ -43,7 +43,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
                                 "create index if not exists idx_mediastreams on mediastreams(ItemId, StreamIndex)",
 
                                 //pragmas
-                                "pragma temp_store = memory"
+                                "pragma temp_store = memory",
+
+                                "pragma shrink_memory"
                                };
 
             _connection.RunQueries(queries, _logger);
