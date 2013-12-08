@@ -167,6 +167,7 @@
     <Compile Include="Sorting\AlbumArtistComparer.cs" />
     <Compile Include="Sorting\AlbumComparer.cs" />
     <Compile Include="Sorting\AlbumCountComparer.cs" />
+    <Compile Include="Sorting\AlphanumComparator.cs" />
     <Compile Include="Sorting\ArtistComparer.cs" />
     <Compile Include="Sorting\BudgetComparer.cs" />
     <Compile Include="Sorting\CommunityRatingComparer.cs" />
