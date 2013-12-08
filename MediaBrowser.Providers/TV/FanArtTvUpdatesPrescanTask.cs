@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.TV
 {
-    class FanArtTvUpdatesPrescanTask : ILibraryPrescanTask
+    class FanArtTvUpdatesPrescanTask : ILibraryPostScanTask
     {
         private const string UpdatesUrl = "http://api.fanart.tv/webservice/newtv/{0}/{1}/";
 

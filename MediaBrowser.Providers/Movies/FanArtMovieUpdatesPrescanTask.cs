@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.Movies
 {
-    class FanArtMovieUpdatesPrescanTask : ILibraryPrescanTask
+    class FanArtMovieUpdatesPrescanTask : ILibraryPostScanTask
     {
         private const string UpdatesUrl = "http://api.fanart.tv/webservice/newmovies/{0}/{1}/";
 
