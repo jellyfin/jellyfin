@@ -92,6 +92,16 @@ namespace MediaBrowser.Providers.Savers
                 builder.Append("<SeasonNumber>" + SecurityElement.Escape(episode.ParentIndexNumber.Value.ToString(_usCulture)) + "</SeasonNumber>");
             }
 
+            if (episode.DvdEpisodeNumber.HasValue)
+            {
+                builder.Append("<DVD_episodenumber>" + SecurityElement.Escape(episode.DvdEpisodeNumber.Value.ToString(_usCulture)) + "</DVD_episodenumber>");
+            }
+
+            if (episode.DvdSeasonNumber.HasValue)
+            {
+                builder.Append("<DVD_season>" + SecurityElement.Escape(episode.DvdSeasonNumber.Value.ToString(_usCulture)) + "</DVD_season>");
+            } 
+            
             if (episode.PremiereDate.HasValue)
             {
                 builder.Append("<FirstAired>" + SecurityElement.Escape(episode.PremiereDate.Value.ToString("yyyy-MM-dd")) + "</FirstAired>");
@@ -113,7 +123,9 @@ namespace MediaBrowser.Providers.Savers
                     "EpisodeNumberEnd",
                     "airsafter_season",
                     "airsbefore_episode",
-                    "airsbefore_season"
+                    "airsbefore_season",
+                    "DVD_episodenumber",
+                    "DVD_season"
                 });
         }
 
