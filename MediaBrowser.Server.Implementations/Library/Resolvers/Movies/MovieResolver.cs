@@ -116,6 +116,13 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                 return null;
             }
 
+            var filename = Path.GetFileName(args.Path);
+            // Don't misidentify xbmc trailers as a movie
+            if (filename.IndexOf(BaseItem.XbmcTrailerFileSuffix, StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                return null;
+            }
+
             // Find movies that are mixed in the same folder
             if (args.Path.IndexOf("[trailers]", StringComparison.OrdinalIgnoreCase) != -1 ||
                 string.Equals(collectionType, CollectionType.Trailers, StringComparison.OrdinalIgnoreCase))
