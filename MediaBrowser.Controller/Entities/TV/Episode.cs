@@ -49,7 +49,7 @@ namespace MediaBrowser.Controller.Entities.TV
         /// Gets or sets the DVD episode number.
         /// </summary>
         /// <value>The DVD episode number.</value>
-        public int? DvdEpisodeNumber { get; set; }
+        public float? DvdEpisodeNumber { get; set; }
 
         /// <summary>
         /// We want to group into series not show individually in an index

@@ -43,7 +43,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the DVD episode number.
         /// </summary>
         /// <value>The DVD episode number.</value>
-        public int? DvdEpisodeNumber { get; set; }
+        public float? DvdEpisodeNumber { get; set; }
         
         /// <summary>
         /// Gets or sets the name of the sort.
