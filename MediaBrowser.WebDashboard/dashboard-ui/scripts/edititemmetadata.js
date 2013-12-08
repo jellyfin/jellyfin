@@ -574,6 +574,12 @@
             $('#fldTmdb', page).hide();
         }
 
+        if (item.Type == "Movie") {
+            $('#fldTmdbCollection', page).show();
+        } else {
+            $('#fldTmdbCollection', page).hide();
+        }
+
         if (item.Type == "Series" || item.Type == "Season" || item.Type == "Episode" || item.Type == "MusicAlbum") {
             $('#fldTvdb', page).show();
             $('#fldTvCom', page).show();
@@ -866,6 +872,7 @@
         $('#txtGamesDb', page).val(providerIds.Gamesdb || "");
         $('#txtImdb', page).val(providerIds.Imdb || "");
         $('#txtTmdb', page).val(providerIds.Tmdb || "");
+        $('#txtTmdbCollection', page).val(providerIds.TmdbCollection || "");
         $('#txtTvdb', page).val(providerIds.Tvdb || "");
         $('#txtTvCom', page).val(providerIds.Tvcom || "");
         $('#txtMusicBrainz', page).val(providerIds.Musicbrainz || "");
@@ -1310,6 +1317,20 @@
 
             } else {
                 $('#btnOpenTmdb', page).attr('href', '#');
+            }
+
+        });
+
+        $('#txtTmdbCollection', this).on('change', function () {
+
+            var val = this.value;
+
+            if (val) {
+
+                $('#btnOpenTmdbCollection', page).attr('href', 'http://www.themoviedb.org/collection/' + val);
+
+            } else {
+                $('#btnOpenTmdbCollection', page).attr('href', '#');
             }
 
         });

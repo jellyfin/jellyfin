@@ -44,7 +44,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
                                 "create index if not exists idx_chapters on chapters(ItemId, ChapterIndex)",
 
                                 //pragmas
-                                "pragma temp_store = memory"
+                                "pragma temp_store = memory",
+
+                                "pragma shrink_memory"
                                };
 
             _connection.RunQueries(queries, _logger);

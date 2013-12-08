@@ -45,7 +45,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
                                 "create index if not exists idx_Notifications on Notifications(Id, UserId)",
 
                                 //pragmas
-                                "pragma temp_store = memory"
+                                "pragma temp_store = memory",
+
+                                "pragma shrink_memory"
                                };
 
             _connection.RunQueries(queries, _logger);

@@ -42,7 +42,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
                                 "create index if not exists idx_providerinfos on providerinfos(ItemId, ProviderId)",
 
                                 //pragmas
-                                "pragma temp_store = memory"
+                                "pragma temp_store = memory",
+
+                                "pragma shrink_memory"
                                };
 
             _connection.RunQueries(queries, _logger);

@@ -23,7 +23,7 @@ namespace MediaBrowser.Providers
     public class ImageFromMediaLocationProvider : BaseMetadataProvider
     {
         protected readonly IFileSystem FileSystem;
-        
+
         public ImageFromMediaLocationProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IFileSystem fileSystem)
             : base(logManager, configurationManager)
         {
@@ -54,6 +54,7 @@ namespace MediaBrowser.Providers
 
                 return item.IsInMixedFolder && item.Parent != null && !(item is Episode);
             }
+
             return false;
         }
 
@@ -150,6 +151,13 @@ namespace MediaBrowser.Providers
         {
             return BaseItem.SupportedImageExtensions
                 .Select(i => args.GetMetaFileByPath(GetFullImagePath(item, args, filenameWithoutExtension, i)))
+                .FirstOrDefault(i => i != null);
+        }
+
+        protected virtual FileSystemInfo GetImage(List<FileSystemInfo> files, string filenameWithoutExtension)
+        {
+            return BaseItem.SupportedImageExtensions
+                .Select(i => files.FirstOrDefault(f => string.Equals(f.Extension, i, StringComparison.OrdinalIgnoreCase) && string.Equals(filenameWithoutExtension, Path.GetFileNameWithoutExtension(f.Name), StringComparison.OrdinalIgnoreCase)))
                 .FirstOrDefault(i => i != null);
         }
 
@@ -258,24 +266,13 @@ namespace MediaBrowser.Providers
             var isFileSystemItem = item.LocationType == LocationType.FileSystem;
 
             // Support plex/xbmc convention
-            if (image == null && item is Season && item.IndexNumber.HasValue && isFileSystemItem)
+            if (image == null)
             {
-                var seasonMarker = item.IndexNumber.Value == 0
-                                       ? "-specials"
-                                       : item.IndexNumber.Value.ToString("00", _usCulture);
-
-                // Get this one directly from the file system since we have to go up a level
-                var filename = "season" + seasonMarker + "-poster";
-
-                var path = Path.GetDirectoryName(item.Path);
-
-                path = Path.Combine(path, filename);
-
-                image = new FileInfo(path);
-
-                if (!image.Exists)
+                // Supprt xbmc conventions
+                var season = item as Season;
+                if (season != null && item.IndexNumber.HasValue && isFileSystemItem)
                 {
-                    image = null;
+                    image = GetSeasonImageFromSeriesFolder(season, "-poster");
                 }
             }
 
@@ -315,26 +312,13 @@ namespace MediaBrowser.Providers
 
             if (image == null)
             {
+                var isFileSystemItem = item.LocationType == LocationType.FileSystem;
+
                 // Supprt xbmc conventions
-                if (item is Season && item.IndexNumber.HasValue && item.LocationType == LocationType.FileSystem)
+                var season = item as Season;
+                if (season != null && item.IndexNumber.HasValue && isFileSystemItem)
                 {
-                    var seasonMarker = item.IndexNumber.Value == 0
-                                           ? "-specials"
-                                           : item.IndexNumber.Value.ToString("00", _usCulture);
-
-                    // Get this one directly from the file system since we have to go up a level
-                    var filename = "season" + seasonMarker + "-banner";
-
-                    var path = Path.GetDirectoryName(item.Path);
-
-                    path = Path.Combine(path, filename);
-
-                    image = new FileInfo(path);
-
-                    if (!image.Exists)
-                    {
-                        image = null;
-                    }
+                    image = GetSeasonImageFromSeriesFolder(season, "-banner");
                 }
             }
 
@@ -356,26 +340,13 @@ namespace MediaBrowser.Providers
 
             if (image == null)
             {
+                var isFileSystemItem = item.LocationType == LocationType.FileSystem;
+
                 // Supprt xbmc conventions
-                if (item is Season && item.IndexNumber.HasValue && item.LocationType == LocationType.FileSystem)
+                var season = item as Season;
+                if (season != null && item.IndexNumber.HasValue && isFileSystemItem)
                 {
-                    var seasonMarker = item.IndexNumber.Value == 0
-                                           ? "-specials"
-                                           : item.IndexNumber.Value.ToString("00", _usCulture);
-
-                    // Get this one directly from the file system since we have to go up a level
-                    var filename = "season" + seasonMarker + "-landscape";
-
-                    var path = Path.GetDirectoryName(item.Path);
-
-                    path = Path.Combine(path, filename);
-
-                    image = new FileInfo(path);
-
-                    if (!image.Exists)
-                    {
-                        image = null;
-                    }
+                    image = GetSeasonImageFromSeriesFolder(season, "-landscape");
                 }
             }
 
@@ -420,22 +391,12 @@ namespace MediaBrowser.Providers
             PopulateBackdrops(item, args, backdropFiles, "background", "background-");
             PopulateBackdrops(item, args, backdropFiles, "art", "art-");
 
-            if (item is Season && item.IndexNumber.HasValue && isFileSystemItem)
+            var season = item as Season;
+            if (season != null && item.IndexNumber.HasValue && isFileSystemItem)
             {
-                var seasonMarker = item.IndexNumber.Value == 0
-                                       ? "-specials"
-                                       : item.IndexNumber.Value.ToString("00", _usCulture);
+                var image = GetSeasonImageFromSeriesFolder(season, "-fanart");
 
-                // Get this one directly from the file system since we have to go up a level
-                var filename = "season" + seasonMarker + "-fanart";
-
-                var path = Path.GetDirectoryName(item.Path);
-
-                path = Path.Combine(path, filename);
-
-                var image = new FileInfo(path);
-
-                if (image.Exists)
+                if (image != null)
                 {
                     backdropFiles.Add(image.FullName);
                 }
@@ -450,6 +411,51 @@ namespace MediaBrowser.Providers
             {
                 item.BackdropImagePaths = backdropFiles;
             }
+        }
+
+        private FileSystemInfo GetSeasonImageFromSeriesFolder(Season season, string imageSuffix)
+        {
+            var series = season.Series;
+            var seriesFolderArgs = series.ResolveArgs;
+
+            var seasonNumber = season.IndexNumber;
+
+            string filename = null;
+            FileSystemInfo image;
+
+            if (seasonNumber.HasValue)
+            {
+                var seasonMarker = seasonNumber.Value == 0
+                                       ? "-specials"
+                                       : seasonNumber.Value.ToString("00", _usCulture);
+
+                // Get this one directly from the file system since we have to go up a level
+                filename = "season" + seasonMarker + imageSuffix;
+
+                image = GetImage(series, seriesFolderArgs, filename);
+
+                if (image != null && image.Exists)
+                {
+                    return image;
+                }
+            }
+
+            var previousFilename = filename;
+
+            // Try using the season name
+            filename = season.Name.ToLower().Replace(" ", string.Empty) + imageSuffix;
+
+            if (!string.Equals(previousFilename, filename))
+            {
+                image = GetImage(series, seriesFolderArgs, filename);
+
+                if (image != null && image.Exists)
+                {
+                    return image;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>

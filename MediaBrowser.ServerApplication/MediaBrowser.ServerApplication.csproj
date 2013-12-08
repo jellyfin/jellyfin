@@ -131,8 +131,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\MediaBrowser.IsoMounting.3.0.65\lib\net45\pfmclrapi.dll</HintPath>
     </Reference>
-    <Reference Include="ServiceStack.Interfaces, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="ServiceStack.Interfaces">
       <HintPath>..\ThirdParty\ServiceStack\ServiceStack.Interfaces.dll</HintPath>
     </Reference>
     <Reference Include="SimpleInjector, Version=2.3.6.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
@@ -161,6 +160,7 @@
     <Compile Include="BackgroundService.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="EntryPoints\ResourceEntryPoint.cs" />
     <Compile Include="EntryPoints\StartupWizard.cs" />
     <Compile Include="FFMpeg\FFMpegDownloadInfo.cs" />
     <Compile Include="FFMpeg\FFMpegInfo.cs" />

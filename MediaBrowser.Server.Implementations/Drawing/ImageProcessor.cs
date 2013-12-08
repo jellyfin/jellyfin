@@ -74,7 +74,8 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
             try
             {
-                sizeDictionary = jsonSerializer.DeserializeFromFile<Dictionary<Guid, ImageSize>>(ImageSizeFile);
+                sizeDictionary = jsonSerializer.DeserializeFromFile<Dictionary<Guid, ImageSize>>(ImageSizeFile) ?? 
+                    new Dictionary<Guid, ImageSize>();
             }
             catch (FileNotFoundException)
             {
