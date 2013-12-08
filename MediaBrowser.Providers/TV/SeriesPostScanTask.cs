@@ -225,7 +225,7 @@ namespace MediaBrowser.Providers.TV
 
             foreach (var tuple in episodeLookup)
             {
-                if (tuple.Item1 <= 0)
+                if (tuple.Item1 < 0)
                 {
                     // Ignore season zeros
                     continue;

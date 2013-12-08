@@ -410,12 +410,11 @@ namespace MediaBrowser.Providers.TV
 
                                         if (!string.IsNullOrWhiteSpace(val))
                                         {
-                                            int rval;
+                                            float num;
 
-                                            // int.TryParse is local aware, so it can be probamatic, force us culture
-                                            if (int.TryParse(val, NumberStyles.Integer, _usCulture, out rval))
+                                            if (float.TryParse(val, NumberStyles.Any, _usCulture, out num))
                                             {
-                                                item.DvdEpisodeNumber = rval;
+                                                item.DvdEpisodeNumber = Convert.ToInt32(num);
                                             }
                                         }
 
@@ -428,12 +427,11 @@ namespace MediaBrowser.Providers.TV
 
                                         if (!string.IsNullOrWhiteSpace(val))
                                         {
-                                            int rval;
+                                            float num;
 
-                                            // int.TryParse is local aware, so it can be probamatic, force us culture
-                                            if (int.TryParse(val, NumberStyles.Integer, _usCulture, out rval))
+                                            if (float.TryParse(val, NumberStyles.Any, _usCulture, out num))
                                             {
-                                                item.DvdSeasonNumber = rval;
+                                                item.DvdSeasonNumber = Convert.ToInt32(num);
                                             }
                                         }
 
