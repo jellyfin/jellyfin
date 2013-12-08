@@ -414,7 +414,7 @@ namespace MediaBrowser.Providers.TV
 
                                             if (float.TryParse(val, NumberStyles.Any, _usCulture, out num))
                                             {
-                                                item.DvdEpisodeNumber = Convert.ToInt32(num);
+                                                item.DvdEpisodeNumber = num;
                                             }
                                         }
 

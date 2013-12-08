@@ -153,7 +153,7 @@ namespace MediaBrowser.Providers.TV
 
                             if (float.TryParse(number, NumberStyles.Any, UsCulture, out num))
                             {
-                                item.DvdEpisodeNumber = Convert.ToInt32(num);
+                                item.DvdEpisodeNumber = num;
                             }
                         }
                         break;
