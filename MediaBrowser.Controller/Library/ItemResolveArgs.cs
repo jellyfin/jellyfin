@@ -130,7 +130,7 @@ namespace MediaBrowser.Controller.Library
         {
             get
             {
-                return IsDirectory && Path.Equals(_appPaths.RootFolderPath, StringComparison.OrdinalIgnoreCase);
+                return IsDirectory && string.Equals(Path, _appPaths.RootFolderPath, StringComparison.OrdinalIgnoreCase);
             }
         }
 
