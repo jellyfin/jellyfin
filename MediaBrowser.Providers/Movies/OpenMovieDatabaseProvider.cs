@@ -10,6 +10,7 @@ using MediaBrowser.Model.Serialization;
 using System;
 using System.Globalization;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -149,7 +150,7 @@ namespace MediaBrowser.Providers.Movies
                         && !string.Equals(result.tomatoConsensus, "n/a", StringComparison.OrdinalIgnoreCase)
                         && !string.Equals(result.tomatoConsensus, "No consensus yet.", StringComparison.OrdinalIgnoreCase))
                     {
-                        hasCriticRating.CriticRatingSummary = result.tomatoConsensus;
+                        hasCriticRating.CriticRatingSummary = WebUtility.HtmlDecode(result.tomatoConsensus);
                     }
                 }
 
