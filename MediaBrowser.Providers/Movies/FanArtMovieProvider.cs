@@ -325,6 +325,7 @@ namespace MediaBrowser.Providers.Movies
                     {
                         continue;
                     }
+                    break;
                 }
             }
         }

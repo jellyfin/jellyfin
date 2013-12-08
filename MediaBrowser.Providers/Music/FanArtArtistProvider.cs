@@ -328,6 +328,7 @@ namespace MediaBrowser.Providers.Music
                     {
                         continue;
                     }
+                    break;
                 }
             }
         }

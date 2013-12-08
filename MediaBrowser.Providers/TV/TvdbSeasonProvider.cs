@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.IO;
+﻿using System.Net;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
@@ -6,6 +7,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Providers;
 using System;
 using System.Collections.Generic;
@@ -159,24 +161,12 @@ namespace MediaBrowser.Providers.TV
         {
             if (!item.HasImage(ImageType.Primary))
             {
-                var image = images.FirstOrDefault(i => i.Type == ImageType.Primary);
-
-                if (image != null)
-                {
-                    await _providerManager.SaveImage(item, image.Url, TvdbSeriesProvider.Current.TvDbResourcePool, ImageType.Primary, null, cancellationToken)
-                      .ConfigureAwait(false);
-                }
+                await SaveImage(item, images, ImageType.Primary, cancellationToken).ConfigureAwait(false);
             }
 
             if (ConfigurationManager.Configuration.DownloadSeasonImages.Banner && !item.HasImage(ImageType.Banner))
             {
-                var image = images.FirstOrDefault(i => i.Type == ImageType.Banner);
-
-                if (image != null)
-                {
-                    await _providerManager.SaveImage(item, image.Url, TvdbSeriesProvider.Current.TvDbResourcePool, ImageType.Banner, null, cancellationToken)
-                      .ConfigureAwait(false);
-                }
+                await SaveImage(item, images, ImageType.Banner, cancellationToken).ConfigureAwait(false);
             }
 
             if (ConfigurationManager.Configuration.DownloadSeasonImages.Backdrops && item.BackdropImagePaths.Count < backdropLimit)
@@ -193,6 +183,27 @@ namespace MediaBrowser.Providers.TV
                     await _providerManager.SaveImage(item, url, TvdbSeriesProvider.Current.TvDbResourcePool, ImageType.Backdrop, null, cancellationToken).ConfigureAwait(false);
 
                     if (item.BackdropImagePaths.Count >= backdropLimit) break;
+                }
+            }
+        }
+
+        private async Task SaveImage(BaseItem item, List<RemoteImageInfo> images, ImageType type, CancellationToken cancellationToken)
+        {
+            foreach (var image in images.Where(i => i.Type == type))
+            {
+                try
+                {
+                    await _providerManager.SaveImage(item, image.Url, TvdbSeriesProvider.Current.TvDbResourcePool, type, null, cancellationToken).ConfigureAwait(false);
+                    break;
+                }
+                catch (HttpException ex)
+                {
+                    // Sometimes fanart has bad url's in their xml
+                    if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.NotFound)
+                    {
+                        continue;
+                    }
+                    break;
                 }
             }
         }
