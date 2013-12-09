@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities.TV;
+﻿using System;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Logging;
@@ -40,7 +41,7 @@ namespace MediaBrowser.Providers.TV
         }
 
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
-        
+
         /// <summary>
         /// Fetches the data from XML node.
         /// </summary>
@@ -137,6 +138,38 @@ namespace MediaBrowser.Providers.TV
                             if (int.TryParse(number, out num))
                             {
                                 item.IndexNumberEnd = num;
+                            }
+                        }
+                        break;
+                    }
+
+                case "DVD_episodenumber":
+                    {
+                        var number = reader.ReadElementContentAsString();
+
+                        if (!string.IsNullOrWhiteSpace(number))
+                        {
+                            float num;
+
+                            if (float.TryParse(number, NumberStyles.Any, UsCulture, out num))
+                            {
+                                item.DvdEpisodeNumber = num;
+                            }
+                        }
+                        break;
+                    }
+
+                case "DVD_season":
+                    {
+                        var number = reader.ReadElementContentAsString();
+
+                        if (!string.IsNullOrWhiteSpace(number))
+                        {
+                            float num;
+
+                            if (float.TryParse(number, NumberStyles.Any, UsCulture, out num))
+                            {
+                                item.DvdSeasonNumber = Convert.ToInt32(num);
                             }
                         }
                         break;

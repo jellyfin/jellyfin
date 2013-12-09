@@ -39,11 +39,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="ServiceStack.Common">
-      <HintPath>..\packages\ServiceStack.Common.3.9.70\lib\net35\ServiceStack.Common.dll</HintPath>
-    </Reference>
     <Reference Include="ServiceStack.Interfaces">
-      <HintPath>..\packages\ServiceStack.Common.3.9.70\lib\net35\ServiceStack.Interfaces.dll</HintPath>
+      <HintPath>..\ThirdParty\ServiceStack\ServiceStack.Interfaces.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -74,6 +71,9 @@
     </Compile>
     <Compile Include="FFMpeg\FFMpegDownloadInfo.cs" />
     <Compile Include="IO\FileSystemFactory.cs" />
+    <Compile Include="..\MediaBrowser.ServerApplication\EntryPoints\WanAddressEntryPoint.cs">
+      <Link>EntryPoints\WanAddressEntryPoint.cs</Link>
+    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

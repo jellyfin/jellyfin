@@ -36,8 +36,8 @@ Global
 		{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}.Debug|x86.Build.0 = Debug|x86
 		{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}.Release|x86.ActiveCfg = Release|Any CPU
-		{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}.Release|x86.Build.0 = Release|Any CPU
+		{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}.Release|x86.ActiveCfg = Release|x86
+		{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}.Release|x86.Build.0 = Release|x86
 		{2E781478-814D-4A48-9D80-BFF206441A65}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{2E781478-814D-4A48-9D80-BFF206441A65}.Debug|x86.Build.0 = Debug|Any CPU
 		{2E781478-814D-4A48-9D80-BFF206441A65}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -82,6 +82,6 @@ Global
 		{C4D2573A-3FD3-441F-81AF-174AC4CD4E1D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
-		StartupItem = MediaBrowser.Model\MediaBrowser.Model.csproj
+		StartupItem = MediaBrowser.Server.Mono\MediaBrowser.Server.Mono.csproj
 	EndGlobalSection
 EndGlobal

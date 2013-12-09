@@ -62,7 +62,7 @@ namespace MediaBrowser.Server.Implementations.Sorting
                 return CompareEpisodes(x, y);
             }
 
-            if (!isXSpecial && isYSpecial)
+            if (!isXSpecial)
             {
                 return CompareEpisodeToSpecial(x, y);
             }
@@ -87,7 +87,16 @@ namespace MediaBrowser.Server.Implementations.Sorting
             // Add 1 to to non-specials to account for AirsBeforeEpisodeNumber
             var xEpisode = x.IndexNumber ?? -1;
             xEpisode++;
+
             var yEpisode = y.AirsBeforeEpisodeNumber ?? 10000;
+
+            // Sometimes they'll both have a value.
+            // For example AirsAfterSeasonNumber=1, AirsBeforeSeasonNumber=2, AirsBeforeEpisodeNumber=1
+            // The episode should be displayed at the end of season 1
+            if (y.AirsAfterSeasonNumber.HasValue && y.AirsBeforeSeasonNumber.HasValue && y.AirsBeforeSeasonNumber.Value > y.AirsAfterSeasonNumber.Value)
+            {
+                yEpisode = 10000;
+            }
 
             return xEpisode.CompareTo(yEpisode);
         }

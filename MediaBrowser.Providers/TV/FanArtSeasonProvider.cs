@@ -143,6 +143,7 @@ namespace MediaBrowser.Providers.TV
                     {
                         continue;
                     }
+                    break;
                 }
             }
         }
