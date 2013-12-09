@@ -63,8 +63,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             _logger = logManager.GetLogger("HttpServer");
 
-            LogManager.LogFactory = new ServerLogFactory(logManager);
-
             _containerAdapter = new ContainerAdapter(applicationHost);
 
             for (var i = 0; i < 2; i++)
@@ -477,7 +475,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             ServiceController = CreateServiceController();
 
             _logger.Info("Calling ServiceStack AppHost.Init");
-            Init();
+
+            base.Init();
         }
 
         /// <summary>

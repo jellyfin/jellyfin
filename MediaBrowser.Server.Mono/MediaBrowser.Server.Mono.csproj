@@ -71,6 +71,9 @@
     </Compile>
     <Compile Include="FFMpeg\FFMpegDownloadInfo.cs" />
     <Compile Include="IO\FileSystemFactory.cs" />
+    <Compile Include="..\MediaBrowser.ServerApplication\EntryPoints\WanAddressEntryPoint.cs">
+      <Link>EntryPoints\WanAddressEntryPoint.cs</Link>
+    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
