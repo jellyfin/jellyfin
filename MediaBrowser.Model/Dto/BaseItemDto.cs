@@ -30,11 +30,20 @@ namespace MediaBrowser.Model.Dto
         /// <value>The date created.</value>
         public DateTime? DateCreated { get; set; }
 
+        public int? AirsBeforeSeasonNumber { get; set; }
+        public int? AirsAfterSeasonNumber { get; set; }
+        public int? AirsBeforeEpisodeNumber { get; set; }
+
         /// <summary>
-        /// Gets or sets the special season number.
+        /// Gets or sets the DVD season number.
         /// </summary>
-        /// <value>The special season number.</value>
-        public int? SpecialSeasonNumber { get; set; }
+        /// <value>The DVD season number.</value>
+        public int? DvdSeasonNumber { get; set; }
+        /// <summary>
+        /// Gets or sets the DVD episode number.
+        /// </summary>
+        /// <value>The DVD episode number.</value>
+        public float? DvdEpisodeNumber { get; set; }
         
         /// <summary>
         /// Gets or sets the name of the sort.

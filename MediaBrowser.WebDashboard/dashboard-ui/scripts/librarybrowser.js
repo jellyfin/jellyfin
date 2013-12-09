@@ -995,7 +995,7 @@
 
             var name = item.Name;
 
-            if (displayAsSpecial && item.Type == "Episode" && item.SpecialSeasonNumber) {
+            if (displayAsSpecial && item.Type == "Episode" && item.ParentIndexNumber == 0) {
 
                 name = "Special - " + name;
 

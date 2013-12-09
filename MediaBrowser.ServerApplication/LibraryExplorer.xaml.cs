@@ -88,7 +88,7 @@ namespace MediaBrowser.ServerApplication
             Cursor = Cursors.Wait;
             await Task.Run(() =>
                 {
-                    IEnumerable<BaseItem> children = CurrentUser.Name == "Physical" ? _libraryManager.RootFolder.Children : _libraryManager.RootFolder.GetChildren(CurrentUser, true);
+                    IEnumerable<BaseItem> children = CurrentUser.Name == "Physical" ? new[] { _libraryManager.RootFolder } : _libraryManager.RootFolder.GetChildren(CurrentUser, true);
                     children = OrderByName(children, CurrentUser);
 
                     foreach (Folder folder in children)
@@ -237,9 +237,9 @@ namespace MediaBrowser.ServerApplication
                                        {
                                            previews.Add(new PreviewItem(item.GetImage(ImageType.Thumb), "Thumb"));
                                        }
-                                           previews.AddRange(
-                                               item.BackdropImagePaths.Select(
-                                                   image => new PreviewItem(image, "Backdrop")));
+                                       previews.AddRange(
+                                           item.BackdropImagePaths.Select(
+                                               image => new PreviewItem(image, "Backdrop")));
                                    });
                 lstPreviews.ItemsSource = previews;
                 lstPreviews.Items.Refresh();

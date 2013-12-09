@@ -192,7 +192,7 @@
                             </div>
                             <div data-role="fieldcontain" id="fldPlayers" style="display: none;">
                                 <label for="txtPlayers">Players:</label>
-                                <input type="number" id="txtPlayers" name="txtPlayers" data-mini="true" />
+                                <input type="number" id="txtPlayers" name="txtPlayers" data-mini="true" pattern="[0-9]*" />
                             </div>
                             <div data-role="fieldcontain" id="fld3dFormat" style="display: none;">
                                 <label for="select3dFormat">3D Format:</label>
@@ -203,6 +203,36 @@
                                     <option value="FullSideBySide">FSBS</option>
                                     <option value="FullTopAndBottom">FTAB</option>
                                 </select>
+                            </div>
+                        </div>
+                        <div data-role="collapsible" data-mini="true" data-collapsed="false" id="collapsibleDvdEpisodeInfo" style="display: none;">
+                            <h3>Dvd Episode Info</h3>
+                            <div>
+                                <div data-role="fieldcontain">
+                                    <label for="txtDvdSeasonNumber">Dvd season number:</label>
+                                    <input type="number" id="txtDvdSeasonNumber" name="txtDvdSeasonNumber" data-mini="true" pattern="[0-9]*" />
+                                </div>
+                                <div data-role="fieldcontain">
+                                    <label for="txtDvdEpisodeNumber">Dvd episode number:</label>
+                                    <input type="number" id="txtDvdEpisodeNumber" name="txtDvdEpisodeNumber" data-mini="true" pattern="[0-9]*" />
+                                </div>
+                            </div>
+                        </div>
+                        <div data-role="collapsible" data-mini="true" data-collapsed="false" id="collapsibleSpecialEpisodeInfo" style="display: none;">
+                            <h3>Special Episode Info</h3>
+                            <div>
+                                <div data-role="fieldcontain">
+                                    <label for="txtAirsBeforeSeason">Airs before season:</label>
+                                    <input type="number" id="txtAirsBeforeSeason" name="txtAirsBeforeSeason" data-mini="true" pattern="[0-9]*" />
+                                </div>
+                                <div data-role="fieldcontain">
+                                    <label for="txtAirsAfterSeason">Airs after season:</label>
+                                    <input type="number" id="txtAirsAfterSeason" name="txtAirsAfterSeason" data-mini="true" pattern="[0-9]*" />
+                                </div>
+                                <div data-role="fieldcontain">
+                                    <label for="txtAirsBeforeEpisode">Airs before episode:</label>
+                                    <input type="number" id="txtAirsBeforeEpisode" name="txtAirsBeforeEpisode" data-mini="true" pattern="[0-9]*" />
+                                </div>
                             </div>
                         </div>
                         <div data-role="collapsible" data-mini="true" data-collapsed="false">

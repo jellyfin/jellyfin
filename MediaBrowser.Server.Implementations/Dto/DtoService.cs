@@ -1061,7 +1061,12 @@ namespace MediaBrowser.Server.Implementations.Dto
             if (episode != null)
             {
                 dto.IndexNumberEnd = episode.IndexNumberEnd;
-                dto.SpecialSeasonNumber = episode.AirsAfterSeasonNumber ?? episode.AirsBeforeSeasonNumber;
+
+                dto.DvdSeasonNumber = episode.DvdSeasonNumber;
+                dto.DvdEpisodeNumber = episode.DvdEpisodeNumber;
+                dto.AirsAfterSeasonNumber = episode.AirsAfterSeasonNumber;
+                dto.AirsBeforeEpisodeNumber = episode.AirsBeforeEpisodeNumber;
+                dto.AirsBeforeSeasonNumber = episode.AirsBeforeSeasonNumber;
 
                 var seasonId = episode.SeasonId;
                 if (seasonId.HasValue)

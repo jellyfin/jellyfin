@@ -1359,13 +1359,24 @@ namespace MediaBrowser.Controller.Entities
                 Logger.ErrorException("Error getting ResolveArgs for {0}", ex, Path);
             }
 
-            //this should be functionally equivilent to what was here since it is IEnum and works on a thread-safe copy
             return RecursiveChildren.Where(i => i.LocationType != LocationType.Virtual).FirstOrDefault(i =>
             {
                 try
                 {
-                    return string.Equals(i.Path, path, StringComparison.OrdinalIgnoreCase) 
-                        || i.ResolveArgs.PhysicalLocations.Contains(path, StringComparer.OrdinalIgnoreCase);
+                    if (string.Equals(i.Path, path, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+
+                    if (i.LocationType != LocationType.Remote)
+                    {
+                        if (i.ResolveArgs.PhysicalLocations.Contains(path, StringComparer.OrdinalIgnoreCase))
+                        {
+                            return true;
+                        }
+                    }
+
+                    return false;
                 }
                 catch (IOException ex)
                 {

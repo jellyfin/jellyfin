@@ -41,6 +41,17 @@ namespace MediaBrowser.Controller.Entities.TV
         public int? AirsBeforeEpisodeNumber { get; set; }
 
         /// <summary>
+        /// Gets or sets the DVD season number.
+        /// </summary>
+        /// <value>The DVD season number.</value>
+        public int? DvdSeasonNumber { get; set; }
+        /// <summary>
+        /// Gets or sets the DVD episode number.
+        /// </summary>
+        /// <value>The DVD episode number.</value>
+        public float? DvdEpisodeNumber { get; set; }
+
+        /// <summary>
         /// We want to group into series not show individually in an index
         /// </summary>
         /// <value><c>true</c> if [group in index]; otherwise, <c>false</c>.</value>

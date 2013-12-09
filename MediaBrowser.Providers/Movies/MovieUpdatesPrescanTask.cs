@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.Movies
 {
-    public class MovieUpdatesPreScanTask : ILibraryPrescanTask
+    public class MovieUpdatesPreScanTask : ILibraryPostScanTask
     {
         /// <summary>
         /// The updates URL

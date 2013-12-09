@@ -648,6 +648,14 @@
             $('#fldMusicBrainzReleaseGroupId', page).hide();
         }
 
+        if (item.Type == "Episode") {
+            $('#collapsibleDvdEpisodeInfo', page).show();
+            $('#collapsibleSpecialEpisodeInfo', page).show();
+        } else {
+            $('#collapsibleDvdEpisodeInfo', page).hide();
+            $('#collapsibleSpecialEpisodeInfo', page).hide();
+        }
+
         if (item.Type == "Person" || item.Type == "Genre" || item.Type == "Studio" || item.Type == "GameGenre" || item.Type == "MusicGenre" || item.Type == "Channel") {
             $('#fldCommunityRating', page).hide();
             $('#fldCommunityVoteCount', page).hide();
@@ -811,6 +819,12 @@
         $('#txtIndexNumber', page).val(('IndexNumber' in item) ? item.IndexNumber : "");
         $('#txtParentIndexNumber', page).val(('ParentIndexNumber' in item) ? item.ParentIndexNumber : "");
         $('#txtPlayers', page).val(item.Players || "");
+
+        $('#txtDvdEpisodeNumber', page).val(('DvdEpisodeNumber' in item) ? item.DvdEpisodeNumber : "");
+        $('#txtDvdSeasonNumber', page).val(('DvdSeasonNumber' in item) ? item.DvdSeasonNumber : "");
+        $('#txtAirsBeforeSeason', page).val(('AirsBeforeSeasonNumber' in item) ? item.AirsBeforeSeasonNumber : "");
+        $('#txtAirsAfterSeason', page).val(('AirsAfterSeasonNumber' in item) ? item.AirsAfterSeasonNumber : "");
+        $('#txtAirsEpisodeSeason', page).val(('AirsBeforeEpisodeNumber' in item) ? item.AirsBeforeEpisodeNumber : "");
 
         $('#txtAlbum', page).val(item.Album || "");
         $('#txtAlbumArtist', page).val(item.AlbumArtist || "");
@@ -1072,6 +1086,7 @@
                 SortName: $('#txtSortName', form).val(),
                 DisplayMediaType: $('#txtDisplayMediaType', form).val(),
                 CommunityRating: $('#txtCommunityRating', form).val(),
+                VoteCount: $('#txtCommunityVoteCount', form).val(),
                 HomePageUrl: $('#txtHomePageUrl', form).val(),
                 Budget: $('#txtBudget', form).val(),
                 Revenue: $('#txtRevenue', form).val(),

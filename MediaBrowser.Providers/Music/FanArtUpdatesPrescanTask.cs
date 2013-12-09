@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.Music
 {
-    class FanArtUpdatesPrescanTask : ILibraryPrescanTask
+    class FanArtUpdatesPrescanTask : ILibraryPostScanTask
     {
         private const string UpdatesUrl = "http://api.fanart.tv/webservice/newmusic/{0}/{1}/";
 
