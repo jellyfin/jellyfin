@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Logging;
+using ServiceStack.Logging;
 
 namespace MediaBrowser.Server.Implementations.HttpServer
 {
@@ -20,6 +21,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <returns>IHttpServer.</returns>
         public static IHttpServer CreateServer(IApplicationHost applicationHost, ILogManager logManager, string serverName, string handlerPath, string defaultRedirectpath)
         {
+            LogManager.LogFactory = new ServerLogFactory(logManager);
+            
             return new HttpListenerHost(applicationHost, logManager, serverName, handlerPath, defaultRedirectpath);
         }
     }
