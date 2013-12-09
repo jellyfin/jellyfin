@@ -33,8 +33,8 @@ namespace MediaBrowser.Server.Implementations.Sorting
                 return 0;
             }
 
-            var thisMarker = 0;
-            var thatMarker = 0;
+            int thisMarker = 0, thisNumericChunk = 0;
+            int thatMarker = 0, thatNumericChunk = 0;
 
             while ((thisMarker < s1.Length) || (thatMarker < s2.Length))
             {
@@ -42,15 +42,15 @@ namespace MediaBrowser.Server.Implementations.Sorting
                 {
                     return -1;
                 }
-                if (thatMarker >= s2.Length)
+                else if (thatMarker >= s2.Length)
                 {
                     return 1;
                 }
-                var thisCh = s1[thisMarker];
-                var thatCh = s2[thatMarker];
+                char thisCh = s1[thisMarker];
+                char thatCh = s2[thatMarker];
 
-                var thisChunk = new StringBuilder();
-                var thatChunk = new StringBuilder();
+                StringBuilder thisChunk = new StringBuilder();
+                StringBuilder thatChunk = new StringBuilder();
 
                 while ((thisMarker < s1.Length) && (thisChunk.Length == 0 || InChunk(thisCh, thisChunk[0])))
                 {
@@ -78,8 +78,8 @@ namespace MediaBrowser.Server.Implementations.Sorting
                 // If both chunks contain numeric characters, sort them numerically
                 if (char.IsDigit(thisChunk[0]) && char.IsDigit(thatChunk[0]))
                 {
-                    var thisNumericChunk = Convert.ToInt32(thisChunk.ToString());
-                    var thatNumericChunk = Convert.ToInt32(thatChunk.ToString());
+                    thisNumericChunk = Convert.ToInt32(thisChunk.ToString());
+                    thatNumericChunk = Convert.ToInt32(thatChunk.ToString());
 
                     if (thisNumericChunk < thatNumericChunk)
                     {
@@ -93,7 +93,7 @@ namespace MediaBrowser.Server.Implementations.Sorting
                 }
                 else
                 {
-                    return string.Compare(thisChunk.ToString(), thatChunk.ToString(), StringComparison.CurrentCultureIgnoreCase);
+                    result = thisChunk.ToString().CompareTo(thatChunk.ToString());
                 }
 
                 if (result != 0)
