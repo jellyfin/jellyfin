@@ -386,12 +386,14 @@ namespace MediaBrowser.Controller.Providers
                 }
             }
 
-            if (sb.Length == 0)
+            var stamp = sb.ToString();
+
+            if (string.IsNullOrEmpty(stamp))
             {
                 return Guid.Empty;
             }
 
-            return sb.ToString().GetMD5();
+            return stamp.GetMD5();
         }
 
         private static readonly Dictionary<string, string> FoldersToMonitor = new[] { "extrafanart", "extrathumbs" }
