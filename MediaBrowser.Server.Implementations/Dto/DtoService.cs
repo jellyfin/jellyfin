@@ -163,8 +163,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 var folder = (Folder)item;
 
-                dto.ChildCount = folder.GetChildren(user, true)
-                    .Count();
+                dto.ChildCount = GetChildCount(folder, user);
 
                 if (!(folder is UserRootFolder))
                 {
@@ -180,6 +179,12 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 dto.UserData.Played = dto.PlayedPercentage.HasValue && dto.PlayedPercentage.Value >= 100;
             }
+        }
+
+        private int GetChildCount(Folder folder, User user)
+        {
+            return folder.GetChildren(user, true)
+                .Count();
         }
 
         public UserDto GetUserDto(User user)
@@ -1067,6 +1072,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.AirsAfterSeasonNumber = episode.AirsAfterSeasonNumber;
                 dto.AirsBeforeEpisodeNumber = episode.AirsBeforeEpisodeNumber;
                 dto.AirsBeforeSeasonNumber = episode.AirsBeforeSeasonNumber;
+                dto.AbsoluteEpisodeNumber = episode.AbsoluteEpisodeNumber;
 
                 var seasonId = episode.SeasonId;
                 if (seasonId.HasValue)
@@ -1202,8 +1208,21 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             double totalPercentPlayed = 0;
 
+            IEnumerable<BaseItem> children;
+
+            var season = folder as Season;
+
+            if (season != null)
+            {
+                children = season.GetEpisodes(user).Where(i => i.LocationType != LocationType.Virtual);
+            }
+            else
+            {
+                children = folder.GetRecursiveChildren(user, i => !i.IsFolder && i.LocationType != LocationType.Virtual);
+            }
+
             // Loop through each recursive child
-            foreach (var child in folder.GetRecursiveChildren(user, i => !i.IsFolder && i.LocationType != LocationType.Virtual))
+            foreach (var child in children)
             {
                 var userdata = _userDataRepository.GetUserData(user.Id, child.GetUserDataKey());
 

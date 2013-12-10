@@ -534,20 +534,12 @@ namespace MediaBrowser.Providers.Savers
         {
             var video = item as Video;
 
-            builder.Append("<MediaInfo>");
-
-            builder.Append("<Video>");
-
-            if (item.RunTimeTicks.HasValue)
-            {
-                var timespan = TimeSpan.FromTicks(item.RunTimeTicks.Value);
-
-                builder.Append("<Duration>" + Convert.ToInt64(timespan.TotalMinutes).ToString(UsCulture) + "</Duration>");
-                builder.Append("<DurationSeconds>" + Convert.ToInt64(timespan.TotalSeconds).ToString(UsCulture) + "</DurationSeconds>");
-            }
-
             if (video != null && video.Video3DFormat.HasValue)
             {
+                builder.Append("<MediaInfo>");
+
+                builder.Append("<Video>");
+
                 switch (video.Video3DFormat.Value)
                 {
                     case Video3DFormat.FullSideBySide:
@@ -563,11 +555,11 @@ namespace MediaBrowser.Providers.Savers
                         builder.Append("<Format3D>HTAB</Format3D>");
                         break;
                 }
+
+                builder.Append("</Video>");
+
+                builder.Append("</MediaInfo>");
             }
-
-            builder.Append("</Video>");
-
-            builder.Append("</MediaInfo>");
         }
     }
 }

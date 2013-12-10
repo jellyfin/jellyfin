@@ -1041,7 +1041,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             if (request.AiredDuringSeason.HasValue)
             {
-                items = TvShowsService.FilterEpisodesBySeason(items.OfType<Episode>(), request.AiredDuringSeason.Value, true);
+                items = Series.FilterEpisodesBySeason(items.OfType<Episode>(), request.AiredDuringSeason.Value, true);
             }
 
             if (!string.IsNullOrEmpty(request.MinPremiereDate))

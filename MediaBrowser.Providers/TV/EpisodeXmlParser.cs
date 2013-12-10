@@ -143,6 +143,23 @@ namespace MediaBrowser.Providers.TV
                         break;
                     }
 
+                case "absolute_number":
+                    {
+                        var val = reader.ReadElementContentAsString();
+
+                        if (!string.IsNullOrWhiteSpace(val))
+                        {
+                            int rval;
+
+                            // int.TryParse is local aware, so it can be probamatic, force us culture
+                            if (int.TryParse(val, NumberStyles.Integer, UsCulture, out rval))
+                            {
+                                item.AbsoluteEpisodeNumber = rval;
+                            }
+                        }
+
+                        break;
+                    }
                 case "DVD_episodenumber":
                     {
                         var number = reader.ReadElementContentAsString();

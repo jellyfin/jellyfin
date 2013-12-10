@@ -52,6 +52,12 @@ namespace MediaBrowser.Controller.Entities.TV
         public float? DvdEpisodeNumber { get; set; }
 
         /// <summary>
+        /// Gets or sets the absolute episode number.
+        /// </summary>
+        /// <value>The absolute episode number.</value>
+        public int? AbsoluteEpisodeNumber { get; set; }
+        
+        /// <summary>
         /// We want to group into series not show individually in an index
         /// </summary>
         /// <value><c>true</c> if [group in index]; otherwise, <c>false</c>.</value>

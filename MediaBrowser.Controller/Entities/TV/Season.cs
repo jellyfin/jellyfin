@@ -1,5 +1,7 @@
 ﻿using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Querying;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -186,7 +188,7 @@ namespace MediaBrowser.Controller.Entities.TV
         [IgnoreDataMember]
         public bool IsMissingSeason
         {
-            get { return LocationType == Model.Entities.LocationType.Virtual && GetEpisodes().All(i => i.IsMissingEpisode); }
+            get { return LocationType == LocationType.Virtual && GetEpisodes().All(i => i.IsMissingEpisode); }
         }
 
         [IgnoreDataMember]
@@ -198,19 +200,49 @@ namespace MediaBrowser.Controller.Entities.TV
         [IgnoreDataMember]
         public bool IsVirtualUnaired
         {
-            get { return LocationType == Model.Entities.LocationType.Virtual && IsUnaired; }
+            get { return LocationType == LocationType.Virtual && IsUnaired; }
         }
 
         [IgnoreDataMember]
         public bool IsMissingOrVirtualUnaired
         {
-            get { return LocationType == Model.Entities.LocationType.Virtual && GetEpisodes().All(i => i.IsVirtualUnaired || i.IsMissingEpisode); }
+            get { return LocationType == LocationType.Virtual && GetEpisodes().All(i => i.IsVirtualUnaired || i.IsMissingEpisode); }
         }
 
         [IgnoreDataMember]
         public bool IsSpecialSeason
         {
             get { return (IndexNumber ?? -1) == 0; }
+        }
+
+        /// <summary>
+        /// Gets the episodes.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <returns>IEnumerable{Episode}.</returns>
+        public IEnumerable<Episode> GetEpisodes(User user)
+        {
+            if (IndexNumber.HasValue)
+            {
+                var series = Series;
+
+                if (series != null)
+                {
+                    return series.GetEpisodes(user, IndexNumber.Value);
+                }
+            }
+
+            var episodes = GetRecursiveChildren(user)
+                .OfType<Episode>();
+
+            return LibraryManager
+                .Sort(episodes, user, new[] { ItemSortBy.SortName }, SortOrder.Ascending)
+                .Cast<Episode>();
+        }
+
+        public override IEnumerable<BaseItem> GetChildren(User user, bool includeLinkedChildren, string indexBy = null)
+        {
+            return GetEpisodes(user);
         }
     }
 }
