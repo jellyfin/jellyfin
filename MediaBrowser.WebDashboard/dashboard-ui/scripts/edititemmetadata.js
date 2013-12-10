@@ -173,15 +173,11 @@
 
         var query = {
             ParentId: id,
-            SortBy: 'SortName',
-            Fields: 'MetadataSettings'
+            Fields: 'Settings'
         };
-
-        if (!currentUser.Configuration.DisplayMissingEpisodes) {
-            query.IsMissing = false;
-        }
-        if (!currentUser.Configuration.DisplayUnairedEpisodes) {
-            query.IsVirtualUnaired = false;
+        
+        if (itemtype != "Season" && itemtype != "Series") {
+            query.SortBy = "SortName";
         }
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), query).done(function (result) {
@@ -648,6 +644,12 @@
             $('#fldMusicBrainzReleaseGroupId', page).hide();
         }
 
+        if (item.Type == "Series") {
+            $('#collapsibleSeriesDIsplaySettings', page).show();
+        } else {
+            $('#collapsibleSeriesDIsplaySettings', page).hide();
+        }
+
         if (item.Type == "Episode") {
             $('#collapsibleDvdEpisodeInfo', page).show();
         } else {
@@ -804,6 +806,8 @@
             $('#providerSettingsContainer', page).hide();
         }
         populateInternetProviderSettings(page, item, item.LockedFields);
+        
+        $("#chkDisplaySpecialsInline", page).checked(item.DisplaySpecialsWithSeasons || false).checkboxradio('refresh');
 
         $('#txtPath', page).val(item.Path || '');
         $('#txtName', page).val(item.Name || "");
@@ -1098,6 +1102,7 @@
                 CriticRating: $('#txtCriticRating', form).val(),
                 CriticRatingSummary: $('#txtCriticRatingSummary', form).val(),
                 IndexNumber: $('#txtIndexNumber', form).val(),
+                DisplaySpecialsWithSeasons: $('#chkDisplaySpecialsInline', form).checked(),
                 AbsoluteEpisodeNumber: $('#txtAbsoluteEpisodeNumber', form).val(),
                 DvdEpisodeNumber: $('#txtDvdEpisodeNumber', form).val(),
                 DvdSeasonNumber: $('#txtDvdSeasonNumber', form).val(),
