@@ -325,6 +325,16 @@ namespace MediaBrowser.Controller.Providers
             return !item.ResolveArgs.IsDirectory;
         }
 
+        protected virtual IEnumerable<BaseItem> GetItemsForFileStampComparison(BaseItem item)
+        {
+            if (UseParentFileSystemStamp(item) && item.Parent != null)
+            {
+                return new[] { item.Parent };
+            }
+
+            return new[] { item };
+        }
+
         /// <summary>
         /// Gets the item's current file system stamp
         /// </summary>
@@ -332,12 +342,7 @@ namespace MediaBrowser.Controller.Providers
         /// <returns>Guid.</returns>
         private Guid GetCurrentFileSystemStamp(BaseItem item)
         {
-            if (UseParentFileSystemStamp(item) && item.Parent != null)
-            {
-                return GetFileSystemStamp(item.Parent);
-            }
-
-            return GetFileSystemStamp(item);
+            return GetFileSystemStamp(GetItemsForFileStampComparison(item));
         }
 
         private Dictionary<string, string> _fileStampExtensionsDictionary;
@@ -355,42 +360,36 @@ namespace MediaBrowser.Controller.Providers
         /// <summary>
         /// Gets the file system stamp.
         /// </summary>
-        /// <param name="item">The item.</param>
+        /// <param name="items">The items.</param>
         /// <returns>Guid.</returns>
-        protected virtual Guid GetFileSystemStamp(BaseItem item)
+        protected virtual Guid GetFileSystemStamp(IEnumerable<BaseItem> items)
         {
-            // If there's no path or the item is a file, there's nothing to do
-            if (item.LocationType != LocationType.FileSystem)
-            {
-                return Guid.Empty;
-            }
-
-            ItemResolveArgs resolveArgs;
-
-            try
-            {
-                resolveArgs = item.ResolveArgs;
-            }
-            catch (IOException ex)
-            {
-                Logger.ErrorException("Error determining if path is directory: {0}", ex, item.Path);
-                throw;
-            }
-
-            if (!resolveArgs.IsDirectory)
-            {
-                return Guid.Empty;
-            }
-
             var sb = new StringBuilder();
 
             var extensions = FileStampExtensionsDictionary;
             var numExtensions = FilestampExtensions.Length;
 
-            // Record the name of each file 
-            // Need to sort these because accoring to msdn docs, our i/o methods are not guaranteed in any order
-            AddFiles(sb, resolveArgs.FileSystemChildren, extensions, numExtensions);
-            AddFiles(sb, resolveArgs.MetadataFiles, extensions, numExtensions);
+            foreach (var item in items)
+            {
+                // If there's no path or the item is a file, there's nothing to do
+                if (item.LocationType == LocationType.FileSystem)
+                {
+                    var resolveArgs = item.ResolveArgs;
+
+                    if (resolveArgs.IsDirectory)
+                    {
+                        // Record the name of each file 
+                        // Need to sort these because accoring to msdn docs, our i/o methods are not guaranteed in any order
+                        AddFiles(sb, resolveArgs.FileSystemChildren, extensions, numExtensions);
+                        AddFiles(sb, resolveArgs.MetadataFiles, extensions, numExtensions);
+                    }
+                }
+            }
+
+            if (sb.Length == 0)
+            {
+                return Guid.Empty;
+            }
 
             return sb.ToString().GetMD5();
         }

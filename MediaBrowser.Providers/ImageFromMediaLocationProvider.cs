@@ -58,6 +58,21 @@ namespace MediaBrowser.Providers
             return false;
         }
 
+        protected override IEnumerable<BaseItem> GetItemsForFileStampComparison(BaseItem item)
+        {
+            var season = item as Season;
+            if (season != null)
+            {
+                var series = season.Series;
+                if (series != null)
+                {
+                    return new[] { item, series };
+                }
+            }
+
+            return base.GetItemsForFileStampComparison(item);
+        }
+
         /// <summary>
         /// Gets the priority.
         /// </summary>
