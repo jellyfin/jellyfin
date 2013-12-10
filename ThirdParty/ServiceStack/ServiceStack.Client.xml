@@ -1,0 +1,376 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ServiceStack.Client</name>
+    </assembly>
+    <members>
+        <member name="T:ServiceStack.AsyncServiceClient">
+            Need to provide async request options
+            http://msdn.microsoft.com/en-us/library/86wf6409(VS.71).aspx
+        </member>
+        <member name="P:ServiceStack.AsyncServiceClient.GlobalRequestFilter">
+            <summary>
+            The request filter is called before any request.
+            This request filter is executed globally.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.AsyncServiceClient.GlobalResponseFilter">
+            <summary>
+            The response action is called once the server response is available.
+            It will allow you to access raw response information. 
+            This response action is executed globally.
+            Note that you should NOT consume the response stream as this is handled by ServiceStack
+            </summary>
+        </member>
+        <member name="P:ServiceStack.AsyncServiceClient.OnAuthenticationRequired">
+            <summary>
+            Called before request resend, when the initial request required authentication
+            </summary>
+        </member>
+        <member name="P:ServiceStack.AsyncServiceClient.RequestFilter">
+            <summary>
+            The request filter is called before any request.
+            This request filter only works with the instance where it was set (not global).
+            </summary>
+        </member>
+        <member name="P:ServiceStack.AsyncServiceClient.ResponseFilter">
+            <summary>
+            The response action is called once the server response is available.
+            It will allow you to access raw response information. 
+            Note that you should NOT consume the response stream as this is handled by ServiceStack
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Messaging.MessageQueueClientFactory.GetMessageAsync(System.String)">
+            <summary>
+            Returns the next message from queueName or null if no message
+            </summary>
+            <param name="queueName"></param>
+            <returns></returns>
+        </member>
+        <member name="T:ServiceStack.GenericProxy`1">
+            <summary>
+            Generic Proxy for service calls.
+            </summary>
+            <typeparam name="T">The service Contract</typeparam>
+        </member>
+        <member name="P:ServiceStack.GenericProxy`1.Proxy">
+            <summary>
+            Returns the transparent proxy for the service call
+            </summary>
+        </member>
+        <member name="T:ServiceStack.ServiceClientBase">
+            Need to provide async request options
+            http://msdn.microsoft.com/en-us/library/86wf6409(VS.71).aspx
+        </member>
+        <member name="F:ServiceStack.ServiceClientBase.globalRequestFilter">
+            <summary>
+            The request filter is called before any request.
+            This request filter is executed globally.
+            </summary>
+        </member>
+        <member name="F:ServiceStack.ServiceClientBase.globalResponseFilter">
+            <summary>
+            The response action is called once the server response is available.
+            It will allow you to access raw response information. 
+            This response action is executed globally.
+            Note that you should NOT consume the response stream as this is handled by ServiceStack
+            </summary>
+        </member>
+        <member name="M:ServiceStack.ServiceClientBase.SetBaseUri(System.String)">
+            <summary>
+            Sets all baseUri properties, using the Format property for the SyncReplyBaseUri and AsyncOneWayBaseUri
+            </summary>
+            <param name="baseUri">Base URI of the service</param>
+        </member>
+        <member name="F:ServiceStack.ServiceClientBase.disableAutoCompression">
+            <summary>
+            Whether to Accept Gzip,Deflate Content-Encoding and to auto decompress responses
+            </summary>
+        </member>
+        <member name="F:ServiceStack.ServiceClientBase.username">
+            <summary>
+            The user name for basic authentication
+            </summary>
+        </member>
+        <member name="F:ServiceStack.ServiceClientBase.password">
+            <summary>
+            The password for basic authentication
+            </summary>
+        </member>
+        <member name="M:ServiceStack.ServiceClientBase.SetCredentials(System.String,System.String)">
+            <summary>
+            Sets the username and the password for basic authentication.
+            </summary>
+        </member>
+        <member name="F:ServiceStack.ServiceClientBase.alwaysSendBasicAuthHeader">
+            <summary>
+            Determines if the basic auth header should be sent with every request.
+            By default, the basic auth header is only sent when "401 Unauthorized" is returned.
+            </summary>
+        </member>
+        <member name="F:ServiceStack.ServiceClientBase.storeCookies">
+            <summary>
+            Specifies if cookies should be stored
+            </summary>
+        </member>
+        <member name="M:ServiceStack.ServiceClientBase.HandleResponseException``1(System.Exception,System.Object,System.String,System.Func{System.Net.WebRequest},System.Func{System.Net.WebRequest,System.Net.WebResponse},``0@)">
+            <summary>
+            Called by Send method if an exception occurs, for instance a System.Net.WebException because the server
+            returned an HTTP error code. Override if you want to handle specific exceptions or always want to parse the
+            response to a custom ErrorResponse DTO type instead of ServiceStack's ErrorResponse class. In case ex is a
+            <c>System.Net.WebException</c>, do not use
+            <c>createWebRequest</c>/<c>getResponse</c>/<c>HandleResponse&lt;TResponse&gt;</c> to parse the response
+            because that will result in the same exception again. Use
+            <c>ThrowWebServiceException&lt;YourErrorResponseType&gt;</c> to parse the response and to throw a
+            <c>WebServiceException</c> containing the parsed DTO. Then override Send to handle that exception.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ServiceClientBase.Headers">
+            <summary>
+            Gets the collection of headers to be added to outgoing requests.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ServiceClientBase.Credentials">
+            <summary>
+            Gets or sets authentication information for the request.
+            Warning: It's recommened to use <see cref="P:ServiceStack.ServiceClientBase.UserName"/> and <see cref="P:ServiceStack.ServiceClientBase.Password"/> for basic auth.
+            This property is only used for IIS level authentication.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ServiceClientBase.onAuthenticationRequired">
+            <summary>
+            Called before request resend, when the initial request required authentication
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ServiceClientBase.requestFilter">
+            <summary>
+            The request filter is called before any request.
+            This request filter only works with the instance where it was set (not global).
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ServiceClientBase.responseFilter">
+            <summary>
+            The response action is called once the server response is available.
+            It will allow you to access raw response information. 
+            Note that you should NOT consume the response stream as this is handled by ServiceStack
+            </summary>
+        </member>
+        <member name="M:ServiceStack.RequestContext.TrackDisposable(System.IDisposable)">
+            <summary>
+            Track any IDisposable's to dispose of at the end of the request in IAppHost.OnEndRequest()
+            </summary>
+            <param name="instance"></param>
+        </member>
+        <member name="P:ServiceStack.RequestContext.Items">
+            <summary>
+            Gets a list of items for this request. 
+            </summary>
+            <remarks>This list will be cleared on every request and is specific to the original thread that is handling the request.
+            If a handler uses additional threads, this data will not be available on those threads.
+            </remarks>
+        </member>
+        <member name="M:ServiceStack.ResponseStatusUtils.CreateResponseStatus(System.String,System.String,System.Collections.Generic.IEnumerable{ServiceStack.Validation.ValidationErrorField})">
+            <summary>
+            Creates the error response from the values provided.
+            
+            If the errorCode is empty it will use the first validation error code, 
+            if there is none it will throw an error.
+            </summary>
+            <param name="errorCode">The error code.</param>
+            <param name="errorMessage">The error message.</param>
+            <param name="validationErrors">The validation errors.</param>
+            <returns></returns>
+        </member>
+        <member name="F:ServiceStack.Serialization.DataContractSerializer.quotas">
+            <summary>
+            Default MaxStringContentLength is 8k, and throws an exception when reached
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Serialization.StringMapTypeDeserializer">
+            <summary>
+            Serializer cache of delegates required to create a type from a string map (e.g. for REST urls)
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Serialization.XmlSerializerWrapper.GetNamespace(System.Type)">
+            <summary>
+            Gets the namespace from an attribute marked on the type's definition
+            </summary>
+            <param name="type"></param>
+            <returns>Namespace of type</returns>
+        </member>
+        <member name="P:ServiceStack.WcfServiceClient.StoreCookies">
+            <summary>
+            Specifies if cookies should be stored
+            </summary>
+        </member>
+        <member name="M:ServiceStack.StreamExtensions.Compress(System.String,System.String)">
+            <summary>
+            Compresses the specified text using the default compression method: Deflate
+            </summary>
+            <param name="text">The text.</param>
+            <param name="compressionType">Type of the compression.</param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.StreamExtensions.Decompress(System.Byte[],System.String)">
+            <summary>
+            Decompresses the specified gz buffer using the default compression method: Inflate
+            </summary>
+            <param name="gzBuffer">The gz buffer.</param>
+            <param name="compressionType">Type of the compression.</param>
+            <returns></returns>
+        </member>
+        <member name="T:ServiceStack.UrlExtensions">
+            <summary>
+            Donated by Ivan Korneliuk from his post:
+            http://korneliuk.blogspot.com/2012/08/servicestack-reusing-dtos.html
+            
+            Modified to only allow using routes matching the supplied HTTP Verb
+            </summary>
+        </member>
+        <member name="M:ServiceStack.UrlExtensions.ToUrl(ServiceStack.IReturn,System.String,System.String)">
+            <summary>
+            Generate a url from a Request DTO. Pretty URL generation require Routes to be defined using `[Route]` on the Request DTO
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Validation.ValidationError">
+            <summary>
+            The exception which is thrown when a validation error occurred.
+            This validation is serialized in a extra clean and human-readable way by ServiceStack.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Validation.ValidationError.ToXml">
+            <summary>
+            Used if we need to serialize this exception to XML
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:ServiceStack.Validation.ValidationError.ErrorCode">
+            <summary>
+            Returns the first error code
+            </summary>
+            <value>The error code.</value>
+        </member>
+        <member name="T:ServiceStack.Validation.ValidationErrorResult">
+            <summary>
+            Encapsulates a validation result.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Validation.ValidationErrorResult.#ctor">
+            <summary>
+            Constructs a new ValidationResult
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Validation.ValidationErrorResult.#ctor(System.Collections.Generic.IList{ServiceStack.Validation.ValidationErrorField})">
+            <summary>
+            Constructs a new ValidationResult
+            </summary>
+            <param name="errors">A list of validation results</param>
+        </member>
+        <member name="M:ServiceStack.Validation.ValidationErrorResult.#ctor(System.Collections.Generic.IList{ServiceStack.Validation.ValidationErrorField},System.String,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:ServiceStack.Validation.ValidationErrorResult"/> class.
+            </summary>
+            <param name="errors">The errors.</param>
+            <param name="successCode">The success code.</param>
+            <param name="errorCode">The error code.</param>
+        </member>
+        <member name="M:ServiceStack.Validation.ValidationErrorResult.Merge(ServiceStack.Validation.ValidationErrorResult)">
+            <summary>
+            Merge errors from another <see cref="T:ServiceStack.Validation.ValidationErrorResult"/>
+            </summary>
+            <param name="result"></param>
+        </member>
+        <member name="P:ServiceStack.Validation.ValidationErrorResult.SuccessCode">
+            <summary>
+            Gets or sets the success code.
+            </summary>
+            <value>The success code.</value>
+        </member>
+        <member name="P:ServiceStack.Validation.ValidationErrorResult.ErrorCode">
+            <summary>
+            Gets or sets the error code.
+            </summary>
+            <value>The error code.</value>
+        </member>
+        <member name="P:ServiceStack.Validation.ValidationErrorResult.SuccessMessage">
+            <summary>
+            Gets or sets the success message.
+            </summary>
+            <value>The success message.</value>
+        </member>
+        <member name="P:ServiceStack.Validation.ValidationErrorResult.ErrorMessage">
+            <summary>
+            Gets or sets the error message.
+            </summary>
+            <value>The error message.</value>
+        </member>
+        <member name="P:ServiceStack.Validation.ValidationErrorResult.Errors">
+            <summary>
+            The errors generated by the validation.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Validation.ValidationErrorResult.IsValid">
+            <summary>
+            Returns True if the validation was successful (errors list is empty).
+            </summary>
+        </member>
+        <member name="T:ServiceStack.CookieManagerEndpointBehavior">
+            <summary>
+            Adds the singleton instance of <see cref="T:ServiceStack.CookieManagerMessageInspector"/> to an endpoint on the client.
+            </summary>
+            <remarks>
+            Based on http://megakemp.wordpress.com/2009/02/06/managing-shared-cookies-in-wcf/
+            </remarks>
+        </member>
+        <member name="M:ServiceStack.CookieManagerEndpointBehavior.ApplyClientBehavior(System.ServiceModel.Description.ServiceEndpoint,System.ServiceModel.Dispatcher.ClientRuntime)">
+            <summary>
+            Adds the singleton of the <see cref="!:ClientIdentityMessageInspector"/> class to the client endpoint's message inspectors.
+            </summary>
+            <param name="endpoint">The endpoint that is to be customized.</param>
+            <param name="clientRuntime">The client runtime to be customized.</param>
+        </member>
+        <member name="T:ServiceStack.CookieManagerMessageInspector">
+            <summary>
+            Maintains a copy of the cookies contained in the incoming HTTP response received from any service
+            and appends it to all outgoing HTTP requests.
+            </summary>
+            <remarks>
+            This class effectively allows to send any received HTTP cookies to different services,
+            reproducing the same functionality available in ASMX Web Services proxies with the <see cref="T:System.Net.CookieContainer"/> class.
+            Based on http://megakemp.wordpress.com/2009/02/06/managing-shared-cookies-in-wcf/
+            </remarks>
+        </member>
+        <member name="M:ServiceStack.CookieManagerMessageInspector.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="!:ClientIdentityMessageInspector"/> class.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.CookieManagerMessageInspector.AfterReceiveReply(System.ServiceModel.Channels.Message@,System.Object)">
+            <summary>
+            Inspects a message after a reply message is received but prior to passing it back to the client application.
+            </summary>
+            <param name="reply">The message to be transformed into types and handed back to the client application.</param>
+            <param name="correlationState">Correlation state data.</param>
+        </member>
+        <member name="M:ServiceStack.CookieManagerMessageInspector.BeforeSendRequest(System.ServiceModel.Channels.Message@,System.ServiceModel.IClientChannel)">
+            <summary>
+            Inspects a message before a request message is sent to a service.
+            </summary>
+            <param name="request">The message to be sent to the service.</param>
+            <param name="channel">The client object channel.</param>
+            <returns>
+            <strong>Null</strong> since no message correlation is used.
+            </returns>
+        </member>
+        <member name="P:ServiceStack.CookieManagerMessageInspector.Instance">
+            <summary>
+            Gets the singleton <see cref="!:ClientIdentityMessageInspector"/> instance.
+            </summary>
+        </member>
+        <member name="F:ServiceStack.WebRequestUtils.ResponseDtoSuffix">
+            <summary>
+            Naming convention for the request's Response DTO
+            </summary>
+        </member>
+    </members>
+</doc>

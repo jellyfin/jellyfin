@@ -20,5 +20,6 @@
     </metadata>
     <files>
         <file src="dlls\MediaBrowser.Common.Implementations.dll" target="lib\net45\MediaBrowser.Common.Implementations.dll" />
+        <file src="..\ThirdParty\ServiceStack.Text\ServiceStack.Text.dll" target="lib\net45\ServiceStack.Text.dll" />
     </files>
 </package>

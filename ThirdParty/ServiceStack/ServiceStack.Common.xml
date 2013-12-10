@@ -1,0 +1,167 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ServiceStack.Common</name>
+    </assembly>
+    <members>
+        <member name="T:ServiceStack.CryptUtils">
+            <summary>
+            Useful .NET Encryption Utils from:
+            http://andrewlocatelliwoodcock.com/2011/08/01/implementing-rsa-asymmetric-public-private-key-encryption-in-c-encrypting-under-the-public-key/
+            </summary>
+        </member>
+        <member name="M:ServiceStack.CryptUtils.Encrypt(System.String,System.String,ServiceStack.RsaKeyLengths)">
+            <summary>
+            Encrypt an arbitrary string of data under the supplied public key
+            </summary>
+            <param name="publicKey">The public key to encrypt under</param>
+            <param name="data">The data to encrypt</param>
+            <param name="length">The bit length or strength of the public key: 1024, 2048 or 4096 bits. This must match the 
+            value actually used to create the publicKey</param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.CryptUtils.CreatePublicAndPrivateKeyPair">
+            <summary>
+            Create Public and Private Key Pair based on settings already in static class.
+            </summary>        
+            <returns>RsaKeyPair</returns>
+        </member>
+        <member name="M:ServiceStack.EnumExtensions.ToDescription(System.Enum)">
+            <summary>
+            Gets the textual description of the enum if it has one. e.g.
+            
+            <code>
+            enum UserColors
+            {
+                [Description("Bright Red")]
+                BrightRed
+            }
+            UserColors.BrightRed.ToDescription();
+            </code>
+            </summary>
+            <param name="enum"></param>
+            <returns></returns>
+        </member>
+        <member name="T:ServiceStack.IPAddressExtensions">
+            <summary>
+            Useful IPAddressExtensions from: 
+            http://blogs.msdn.com/knom/archive/2008/12/31/ip-address-calculations-with-c-subnetmasks-networks.aspx
+            
+            </summary>
+        </member>
+        <member name="M:ServiceStack.IPAddressExtensions.GetAllNetworkInterfaceIpv4Addresses">
+            <summary>
+            Gets the ipv4 addresses from all Network Interfaces that have Subnet masks.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.IPAddressExtensions.GetAllNetworkInterfaceIpv6Addresses">
+            <summary>
+            Gets the ipv6 addresses from all Network Interfaces.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Reflection.PropertyAccessor`1.TypedGetPropertyFn``1">
+            <summary>
+            Func to get the Strongly-typed field
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Reflection.PropertyAccessor`1.ValueTypedGetPropertyFn``1">
+            <summary>
+            Required to cast the return ValueType to an object for caching
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Reflection.PropertyAccessor`1.TypedSetPropertyFn``1">
+            <summary>
+            Func to set the Strongly-typed field
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Reflection.PropertyAccessor`1.ValueTypesSetPropertyFn``1">
+            <summary>
+            Required to cast the ValueType to an object for caching
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Reflection.PropertyAccessor`1.UnTypedSetPropertyFn``1">
+            <summary>
+            Required to cast the ValueType to an object for caching
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Reflection.StaticAccessors`1.TypedGetPropertyFn``1(System.Reflection.PropertyInfo)">
+            <summary>
+            Func to get the Strongly-typed field
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Reflection.StaticAccessors`1.ValueUnTypedGetPropertyFn``1(System.Reflection.PropertyInfo)">
+            <summary>
+            Required to cast the return ValueType to an object for caching
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Reflection.StaticAccessors`1.TypedSetPropertyFn``1(System.Reflection.PropertyInfo)">
+            <summary>
+            Func to set the Strongly-typed field
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Reflection.StaticAccessors`1.ValueUnTypedSetPropertyFn``1(System.Reflection.PropertyInfo)">
+            <summary>
+            Required to cast the ValueType to an object for caching
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Reflection.StaticAccessors`1.UnTypedSetPropertyFn``1(System.Reflection.PropertyInfo)">
+            <summary>
+            Required to cast the ValueType to an object for caching
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Support.AdapterBase">
+            <summary>
+            Common functionality when creating adapters
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Support.AdapterBase.Execute``1(System.Func{``0})">
+            <summary>
+            Executes the specified expression. 
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="action">The action.</param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Support.AdapterBase.Execute(System.Action)">
+            <summary>
+            Executes the specified action (for void methods).
+            </summary>
+            <param name="action">The action.</param>
+        </member>
+        <member name="T:ServiceStack.Support.InMemoryLogFactory">
+            <summary>
+            Note: InMemoryLog keeps all logs in memory, so don't use it long running exceptions
+            
+            Returns a thread-safe InMemoryLog which you can use while *TESTING*
+            to provide a detailed analysis of your logs.
+            </summary>
+        </member>
+        <member name="T:ServiceStack.UrnId">
+            <summary>
+            Creates a Unified Resource Name (URN) with the following formats:
+            
+            	- urn:{TypeName}:{IdFieldValue}						e.g. urn:UserSession:1
+            	- urn:{TypeName}:{IdFieldName}:{IdFieldValue}		e.g. urn:UserSession:UserId:1			
+            
+            </summary>
+        </member>
+        <!-- Badly formed XML comment ignored for member "M:ServiceStack.AssertUtils.AreNotNull(System.Collections.Generic.IDictionary{System.String,System.Object})" -->
+        <member name="M:ServiceStack.CommandsUtils.ExecuteAsyncCommandExec(System.Collections.Generic.IEnumerable{ServiceStack.Commands.ICommandExec})">
+            <summary>
+            Provide the an option for the callee to block until all commands are executed
+            </summary>
+            <param name="commands"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.FuncUtils.TryExec(System.Action)">
+            <summary>
+            Invokes the action provided and returns true if no excpetion was thrown.
+            Otherwise logs the exception and returns false if an exception was thrown.
+            </summary>
+            <param name="action">The action.</param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>
