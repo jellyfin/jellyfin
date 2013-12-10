@@ -1,0 +1,1070 @@
+/* http://meyerweb.com/eric/tools/css/reset/ v2.0 | 20110126 */
+html,
+body,
+div,
+span,
+applet,
+object,
+iframe,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+blockquote,
+pre,
+a,
+abbr,
+acronym,
+address,
+big,
+cite,
+code,
+del,
+dfn,
+em,
+img,
+ins,
+kbd,
+q,
+s,
+samp,
+small,
+strike,
+strong,
+sub,
+sup,
+tt,
+var,
+b,
+u,
+i,
+center,
+dl,
+dt,
+dd,
+ol,
+ul,
+li,
+fieldset,
+form,
+label,
+legend,
+table,
+caption,
+tbody,
+tfoot,
+thead,
+tr,
+th,
+td,
+article,
+aside,
+canvas,
+details,
+embed,
+figure,
+figcaption,
+footer,
+header,
+hgroup,
+menu,
+nav,
+output,
+ruby,
+section,
+summary,
+time,
+mark,
+audio,
+video {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 100%;
+  font: inherit;
+  vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article,
+aside,
+details,
+figcaption,
+figure,
+footer,
+header,
+hgroup,
+menu,
+nav,
+section {
+  display: block;
+}
+body {
+  line-height: 1;
+}
+ol,
+ul {
+  list-style: none;
+}
+blockquote,
+q {
+  quotes: none;
+}
+blockquote:before,
+blockquote:after,
+q:before,
+q:after {
+  content: '';
+  content: none;
+}
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+.swagger-ui-wrap {
+  line-height: 1;
+  font-family: "Droid Sans", sans-serif;
+  max-width: 960px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.swagger-ui-wrap b,
+.swagger-ui-wrap strong {
+  font-family: "Droid Sans", sans-serif;
+  font-weight: bold;
+}
+.swagger-ui-wrap q,
+.swagger-ui-wrap blockquote {
+  quotes: none;
+}
+.swagger-ui-wrap p {
+  line-height: 1.4em;
+  padding: 0 0 10px;
+  color: #333333;
+}
+.swagger-ui-wrap q:before,
+.swagger-ui-wrap q:after,
+.swagger-ui-wrap blockquote:before,
+.swagger-ui-wrap blockquote:after {
+  content: none;
+}
+.swagger-ui-wrap .heading_with_menu h1,
+.swagger-ui-wrap .heading_with_menu h2,
+.swagger-ui-wrap .heading_with_menu h3,
+.swagger-ui-wrap .heading_with_menu h4,
+.swagger-ui-wrap .heading_with_menu h5,
+.swagger-ui-wrap .heading_with_menu h6 {
+  display: block;
+  clear: none;
+  float: left;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -ms-box-sizing: border-box;
+  box-sizing: border-box;
+  width: 60%;
+}
+.swagger-ui-wrap table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+.swagger-ui-wrap table thead tr th {
+  padding: 5px;
+  font-size: 0.9em;
+  color: #666666;
+  border-bottom: 1px solid #999999;
+}
+.swagger-ui-wrap table tbody tr:last-child td {
+  border-bottom: none;
+}
+.swagger-ui-wrap table tbody tr.offset {
+  background-color: #f0f0f0;
+}
+.swagger-ui-wrap table tbody tr td {
+  padding: 6px;
+  font-size: 0.9em;
+  border-bottom: 1px solid #cccccc;
+  vertical-align: top;
+  line-height: 1.3em;
+}
+.swagger-ui-wrap ol {
+  margin: 0px 0 10px;
+  padding: 0 0 0 18px;
+  list-style-type: decimal;
+}
+.swagger-ui-wrap ol li {
+  padding: 5px 0px;
+  font-size: 0.9em;
+  color: #333333;
+}
+.swagger-ui-wrap ol,
+.swagger-ui-wrap ul {
+  list-style: none;
+}
+.swagger-ui-wrap h1 a,
+.swagger-ui-wrap h2 a,
+.swagger-ui-wrap h3 a,
+.swagger-ui-wrap h4 a,
+.swagger-ui-wrap h5 a,
+.swagger-ui-wrap h6 a {
+  text-decoration: none;
+}
+.swagger-ui-wrap h1 a:hover,
+.swagger-ui-wrap h2 a:hover,
+.swagger-ui-wrap h3 a:hover,
+.swagger-ui-wrap h4 a:hover,
+.swagger-ui-wrap h5 a:hover,
+.swagger-ui-wrap h6 a:hover {
+  text-decoration: underline;
+}
+.swagger-ui-wrap h1 span.divider,
+.swagger-ui-wrap h2 span.divider,
+.swagger-ui-wrap h3 span.divider,
+.swagger-ui-wrap h4 span.divider,
+.swagger-ui-wrap h5 span.divider,
+.swagger-ui-wrap h6 span.divider {
+  color: #aaaaaa;
+}
+.swagger-ui-wrap a {
+  color: #547f00;
+}
+.swagger-ui-wrap a img {
+  border: none;
+}
+.swagger-ui-wrap article,
+.swagger-ui-wrap aside,
+.swagger-ui-wrap details,
+.swagger-ui-wrap figcaption,
+.swagger-ui-wrap figure,
+.swagger-ui-wrap footer,
+.swagger-ui-wrap header,
+.swagger-ui-wrap hgroup,
+.swagger-ui-wrap menu,
+.swagger-ui-wrap nav,
+.swagger-ui-wrap section,
+.swagger-ui-wrap summary {
+  display: block;
+}
+.swagger-ui-wrap pre {
+  font-family: "Anonymous Pro", "Menlo", "Consolas", "Bitstream Vera Sans Mono", "Courier New", monospace;
+  background-color: #fcf6db;
+  border: 1px solid #e5e0c6;
+  padding: 10px;
+}
+.swagger-ui-wrap pre code {
+  line-height: 1.6em;
+  background: none;
+}
+.swagger-ui-wrap .content > .content-type > div > label {
+  clear: both;
+  display: block;
+  color: #0F6AB4;
+  font-size: 1.1em;
+  margin: 0;
+  padding: 15px 0 5px;
+}
+.swagger-ui-wrap .content pre {
+  font-size: 12px;
+  margin-top: 5px;
+  padding: 5px;
+}
+.swagger-ui-wrap .icon-btn {
+  cursor: pointer;
+}
+.swagger-ui-wrap .info_title {
+  padding-bottom: 10px;
+  font-weight: bold;
+  font-size: 25px;
+}
+.swagger-ui-wrap p.big,
+.swagger-ui-wrap div.big p {
+  font-size: 1em;
+  margin-bottom: 10px;
+}
+.swagger-ui-wrap form.fullwidth ol li.string input,
+.swagger-ui-wrap form.fullwidth ol li.url input,
+.swagger-ui-wrap form.fullwidth ol li.text textarea,
+.swagger-ui-wrap form.fullwidth ol li.numeric input {
+  width: 500px !important;
+}
+.swagger-ui-wrap .info_license {
+  padding-bottom: 5px;
+}
+.swagger-ui-wrap .info_tos {
+  padding-bottom: 5px;
+}
+.swagger-ui-wrap .message-fail {
+  color: #cc0000;
+}
+.swagger-ui-wrap .info_contact {
+  padding-bottom: 5px;
+}
+.swagger-ui-wrap .info_description {
+  padding-bottom: 10px;
+  font-size: 15px;
+}
+.swagger-ui-wrap .markdown ol li,
+.swagger-ui-wrap .markdown ul li {
+  padding: 3px 0px;
+  line-height: 1.4em;
+  color: #333333;
+}
+.swagger-ui-wrap form.formtastic fieldset.inputs ol li.string input,
+.swagger-ui-wrap form.formtastic fieldset.inputs ol li.url input,
+.swagger-ui-wrap form.formtastic fieldset.inputs ol li.numeric input {
+  display: block;
+  padding: 4px;
+  width: auto;
+  clear: both;
+}
+.swagger-ui-wrap form.formtastic fieldset.inputs ol li.string input.title,
+.swagger-ui-wrap form.formtastic fieldset.inputs ol li.url input.title,
+.swagger-ui-wrap form.formtastic fieldset.inputs ol li.numeric input.title {
+  font-size: 1.3em;
+}
+.swagger-ui-wrap table.fullwidth {
+  width: 100%;
+}
+.swagger-ui-wrap .model-signature {
+  font-family: "Droid Sans", sans-serif;
+  font-size: 1em;
+  line-height: 1.5em;
+}
+.swagger-ui-wrap .model-signature .signature-nav a {
+  text-decoration: none;
+  color: #AAA;
+}
+.swagger-ui-wrap .model-signature .signature-nav a:hover {
+  text-decoration: underline;
+  color: black;
+}
+.swagger-ui-wrap .model-signature .signature-nav .selected {
+  color: black;
+  text-decoration: none;
+}
+.swagger-ui-wrap .model-signature .propType {
+  color: #5555aa;
+}
+.swagger-ui-wrap .model-signature pre:hover {
+  background-color: #ffffdd;
+}
+.swagger-ui-wrap .model-signature pre {
+  font-size: .85em;
+  line-height: 1.2em;
+  overflow: auto;
+  max-height: 200px;
+  cursor: pointer;
+}
+.swagger-ui-wrap .model-signature ul.signature-nav {
+  display: block;
+  margin: 0;
+  padding: 0;
+}
+.swagger-ui-wrap .model-signature ul.signature-nav li:last-child {
+  padding-right: 0;
+  border-right: none;
+}
+.swagger-ui-wrap .model-signature ul.signature-nav li {
+  float: left;
+  margin: 0 5px 5px 0;
+  padding: 2px 5px 2px 0;
+  border-right: 1px solid #ddd;
+}
+.swagger-ui-wrap .model-signature .propOpt {
+  color: #555;
+}
+.swagger-ui-wrap .model-signature .snippet small {
+  font-size: 0.75em;
+}
+.swagger-ui-wrap .model-signature .propOptKey {
+  font-style: italic;
+}
+.swagger-ui-wrap .model-signature .description .strong {
+  font-weight: bold;
+  color: #000;
+  font-size: .9em;
+}
+.swagger-ui-wrap .model-signature .description div {
+  font-size: 0.9em;
+  line-height: 1.5em;
+  margin-left: 1em;
+}
+.swagger-ui-wrap .model-signature .description .stronger {
+  font-weight: bold;
+  color: #000;
+}
+.swagger-ui-wrap .model-signature .propName {
+  font-weight: bold;
+}
+.swagger-ui-wrap .model-signature .signature-container {
+  clear: both;
+}
+.swagger-ui-wrap .body-textarea {
+  width: 300px;
+  height: 100px;
+  border: 1px solid #aaa;
+}
+.swagger-ui-wrap .markdown p code,
+.swagger-ui-wrap .markdown li code {
+  font-family: "Anonymous Pro", "Menlo", "Consolas", "Bitstream Vera Sans Mono", "Courier New", monospace;
+  background-color: #f0f0f0;
+  color: black;
+  padding: 1px 3px;
+}
+.swagger-ui-wrap .required {
+  font-weight: bold;
+}
+.swagger-ui-wrap input.parameter {
+  width: 300px;
+  border: 1px solid #aaa;
+}
+.swagger-ui-wrap h1 {
+  color: black;
+  font-size: 1.5em;
+  line-height: 1.3em;
+  padding: 10px 0 10px 0;
+  font-family: "Droid Sans", sans-serif;
+  font-weight: bold;
+}
+.swagger-ui-wrap .heading_with_menu {
+  float: none;
+  clear: both;
+  overflow: hidden;
+  display: block;
+}
+.swagger-ui-wrap .heading_with_menu ul {
+  display: block;
+  clear: none;
+  float: right;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -ms-box-sizing: border-box;
+  box-sizing: border-box;
+  margin-top: 10px;
+}
+.swagger-ui-wrap h2 {
+  color: black;
+  font-size: 1.3em;
+  padding: 10px 0 10px 0;
+}
+.swagger-ui-wrap h2 a {
+  color: black;
+}
+.swagger-ui-wrap h2 span.sub {
+  font-size: 0.7em;
+  color: #999999;
+  font-style: italic;
+}
+.swagger-ui-wrap h2 span.sub a {
+  color: #777777;
+}
+.swagger-ui-wrap span.weak {
+  color: #666666;
+}
+.swagger-ui-wrap .message-success {
+  color: #89BF04;
+}
+.swagger-ui-wrap caption,
+.swagger-ui-wrap th,
+.swagger-ui-wrap td {
+  text-align: left;
+  font-weight: normal;
+  vertical-align: middle;
+}
+.swagger-ui-wrap .code {
+  font-family: "Anonymous Pro", "Menlo", "Consolas", "Bitstream Vera Sans Mono", "Courier New", monospace;
+}
+.swagger-ui-wrap form.formtastic fieldset.inputs ol li.text textarea {
+  font-family: "Droid Sans", sans-serif;
+  height: 250px;
+  padding: 4px;
+  display: block;
+  clear: both;
+}
+.swagger-ui-wrap form.formtastic fieldset.inputs ol li.select select {
+  display: block;
+  clear: both;
+}
+.swagger-ui-wrap form.formtastic fieldset.inputs ol li.boolean {
+  float: none;
+  clear: both;
+  overflow: hidden;
+  display: block;
+}
+.swagger-ui-wrap form.formtastic fieldset.inputs ol li.boolean label {
+  display: block;
+  float: left;
+  clear: none;
+  margin: 0;
+  padding: 0;
+}
+.swagger-ui-wrap form.formtastic fieldset.inputs ol li.boolean input {
+  display: block;
+  float: left;
+  clear: none;
+  margin: 0 5px 0 0;
+}
+.swagger-ui-wrap form.formtastic fieldset.inputs ol li.required label {
+  color: black;
+}
+.swagger-ui-wrap form.formtastic fieldset.inputs ol li label {
+  display: block;
+  clear: both;
+  width: auto;
+  padding: 0 0 3px;
+  color: #666666;
+}
+.swagger-ui-wrap form.formtastic fieldset.inputs ol li label abbr {
+  padding-left: 3px;
+  color: #888888;
+}
+.swagger-ui-wrap form.formtastic fieldset.inputs ol li p.inline-hints {
+  margin-left: 0;
+  font-style: italic;
+  font-size: 0.9em;
+  margin: 0;
+}
+.swagger-ui-wrap form.formtastic fieldset.buttons {
+  margin: 0;
+  padding: 0;
+}
+.swagger-ui-wrap span.blank,
+.swagger-ui-wrap span.empty {
+  color: #888888;
+  font-style: italic;
+}
+.swagger-ui-wrap .markdown h3 {
+  color: #547f00;
+}
+.swagger-ui-wrap .markdown h4 {
+  color: #666666;
+}
+.swagger-ui-wrap .markdown pre {
+  font-family: "Anonymous Pro", "Menlo", "Consolas", "Bitstream Vera Sans Mono", "Courier New", monospace;
+  background-color: #fcf6db;
+  border: 1px solid #e5e0c6;
+  padding: 10px;
+  margin: 0 0 10px 0;
+}
+.swagger-ui-wrap .markdown pre code {
+  line-height: 1.6em;
+}
+.swagger-ui-wrap div.gist {
+  margin: 20px 0 25px 0 !important;
+}
+.swagger-ui-wrap ul#resources {
+  font-family: "Droid Sans", sans-serif;
+  font-size: 0.9em;
+}
+.swagger-ui-wrap ul#resources li.resource {
+  border-bottom: 1px solid #dddddd;
+}
+.swagger-ui-wrap ul#resources li.resource:hover div.heading h2 a,
+.swagger-ui-wrap ul#resources li.resource.active div.heading h2 a {
+  color: black;
+}
+.swagger-ui-wrap ul#resources li.resource:hover div.heading ul.options li a,
+.swagger-ui-wrap ul#resources li.resource.active div.heading ul.options li a {
+  color: #555555;
+}
+.swagger-ui-wrap ul#resources li.resource:last-child {
+  border-bottom: none;
+}
+.swagger-ui-wrap ul#resources li.resource div.heading {
+  border: 1px solid transparent;
+  float: none;
+  clear: both;
+  overflow: hidden;
+  display: block;
+}
+.swagger-ui-wrap ul#resources li.resource div.heading ul.options {
+  overflow: hidden;
+  padding: 0;
+  display: block;
+  clear: none;
+  float: right;
+  margin: 14px 10px 0 0;
+}
+.swagger-ui-wrap ul#resources li.resource div.heading ul.options li {
+  float: left;
+  clear: none;
+  margin: 0;
+  padding: 2px 10px;
+  border-right: 1px solid #dddddd;
+  color: #666666;
+  font-size: 0.9em;
+}
+.swagger-ui-wrap ul#resources li.resource div.heading ul.options li a {
+  color: #aaaaaa;
+  text-decoration: none;
+}
+.swagger-ui-wrap ul#resources li.resource div.heading ul.options li a:hover {
+  text-decoration: underline;
+  color: black;
+}
+.swagger-ui-wrap ul#resources li.resource div.heading ul.options li a:hover,
+.swagger-ui-wrap ul#resources li.resource div.heading ul.options li a:active,
+.swagger-ui-wrap ul#resources li.resource div.heading ul.options li a.active {
+  text-decoration: underline;
+}
+.swagger-ui-wrap ul#resources li.resource div.heading ul.options li:first-child,
+.swagger-ui-wrap ul#resources li.resource div.heading ul.options li.first {
+  padding-left: 0;
+}
+.swagger-ui-wrap ul#resources li.resource div.heading ul.options li:last-child,
+.swagger-ui-wrap ul#resources li.resource div.heading ul.options li.last {
+  padding-right: 0;
+  border-right: none;
+}
+.swagger-ui-wrap ul#resources li.resource div.heading ul.options:first-child,
+.swagger-ui-wrap ul#resources li.resource div.heading ul.options.first {
+  padding-left: 0;
+}
+.swagger-ui-wrap ul#resources li.resource div.heading h2 {
+  color: #999999;
+  padding-left: 0;
+  display: block;
+  clear: none;
+  float: left;
+  font-family: "Droid Sans", sans-serif;
+  font-weight: bold;
+}
+.swagger-ui-wrap ul#resources li.resource div.heading h2 a {
+  color: #999999;
+}
+.swagger-ui-wrap ul#resources li.resource div.heading h2 a:hover {
+  color: black;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation {
+  float: none;
+  clear: both;
+  overflow: hidden;
+  display: block;
+  margin: 0 0 10px;
+  padding: 0;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation div.heading {
+  float: none;
+  clear: both;
+  overflow: hidden;
+  display: block;
+  margin: 0;
+  padding: 0;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation div.heading h3 {
+  display: block;
+  clear: none;
+  float: left;
+  width: auto;
+  margin: 0;
+  padding: 0;
+  line-height: 1.1em;
+  color: black;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation div.heading h3 span.path {
+  padding-left: 10px;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation div.heading h3 span.path a {
+  color: black;
+  text-decoration: none;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation div.heading h3 span.path a:hover {
+  text-decoration: underline;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation div.heading h3 span.http_method a {
+  text-transform: uppercase;
+  text-decoration: none;
+  color: white;
+  display: inline-block;
+  width: 50px;
+  font-size: 0.7em;
+  text-align: center;
+  padding: 7px 0 4px;
+  -moz-border-radius: 2px;
+  -webkit-border-radius: 2px;
+  -o-border-radius: 2px;
+  -ms-border-radius: 2px;
+  -khtml-border-radius: 2px;
+  border-radius: 2px;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation div.heading h3 span {
+  margin: 0;
+  padding: 0;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation div.heading ul.options {
+  overflow: hidden;
+  padding: 0;
+  display: block;
+  clear: none;
+  float: right;
+  margin: 6px 10px 0 0;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation div.heading ul.options li {
+  float: left;
+  clear: none;
+  margin: 0;
+  padding: 2px 10px;
+  font-size: 0.9em;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation div.heading ul.options li a {
+  text-decoration: none;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation div.content {
+  border-top: none;
+  padding: 10px;
+  -moz-border-radius-bottomleft: 6px;
+  -webkit-border-bottom-left-radius: 6px;
+  -o-border-bottom-left-radius: 6px;
+  -ms-border-bottom-left-radius: 6px;
+  -khtml-border-bottom-left-radius: 6px;
+  border-bottom-left-radius: 6px;
+  -moz-border-radius-bottomright: 6px;
+  -webkit-border-bottom-right-radius: 6px;
+  -o-border-bottom-right-radius: 6px;
+  -ms-border-bottom-right-radius: 6px;
+  -khtml-border-bottom-right-radius: 6px;
+  border-bottom-right-radius: 6px;
+  margin: 0 0 20px;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation div.content h4 {
+  font-size: 1.1em;
+  margin: 0;
+  padding: 15px 0 5px;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation div.content div.sandbox_header {
+  float: none;
+  clear: both;
+  overflow: hidden;
+  display: block;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation div.content div.sandbox_header a {
+  padding: 4px 0 0 10px;
+  display: inline-block;
+  font-size: 0.9em;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation div.content div.sandbox_header img {
+  display: block;
+  clear: none;
+  float: right;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation div.content div.sandbox_header input.submit {
+  display: block;
+  clear: none;
+  float: left;
+  padding: 6px 8px;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation div.content form input[type='text'].error {
+  outline: 2px solid black;
+  outline-color: #cc0000;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation div.content div.response div.block pre {
+  font-family: "Anonymous Pro", "Menlo", "Consolas", "Bitstream Vera Sans Mono", "Courier New", monospace;
+  padding: 10px;
+  font-size: 0.9em;
+  max-height: 400px;
+  overflow-y: auto;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.put div.heading {
+  background-color: #f9f2e9;
+  border: 1px solid #f0e0ca;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.put div.heading h3 span.http_method a {
+  background-color: #c5862b;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.put div.heading ul.options li {
+  border-right: 1px solid #dddddd;
+  border-right-color: #f0e0ca;
+  color: #c5862b;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.put div.heading ul.options li a {
+  color: #c5862b;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.put div.content {
+  background-color: #faf5ee;
+  border: 1px solid #f0e0ca;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.put div.content h4 {
+  color: #c5862b;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.put div.content div.sandbox_header a {
+  color: #dcb67f;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.head div.heading {
+  background-color: #fcffcd;
+  border: 1px solid black;
+  border-color: #ffd20f;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.head div.heading h3 span.http_method a {
+  text-transform: uppercase;
+  background-color: #ffd20f;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.head div.heading ul.options li {
+  border-right: 1px solid #dddddd;
+  border-right-color: #ffd20f;
+  color: #ffd20f;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.head div.heading ul.options li a {
+  color: #ffd20f;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.head div.content {
+  background-color: #fcffcd;
+  border: 1px solid black;
+  border-color: #ffd20f;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.head div.content h4 {
+  color: #ffd20f;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.head div.content div.sandbox_header a {
+  color: #6fc992;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.delete div.heading {
+  background-color: #f5e8e8;
+  border: 1px solid #e8c6c7;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.delete div.heading h3 span.http_method a {
+  text-transform: uppercase;
+  background-color: #a41e22;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.delete div.heading ul.options li {
+  border-right: 1px solid #dddddd;
+  border-right-color: #e8c6c7;
+  color: #a41e22;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.delete div.heading ul.options li a {
+  color: #a41e22;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.delete div.content {
+  background-color: #f7eded;
+  border: 1px solid #e8c6c7;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.delete div.content h4 {
+  color: #a41e22;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.delete div.content div.sandbox_header a {
+  color: #c8787a;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.post div.heading {
+  background-color: #e7f6ec;
+  border: 1px solid #c3e8d1;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.post div.heading h3 span.http_method a {
+  background-color: #10a54a;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.post div.heading ul.options li {
+  border-right: 1px solid #dddddd;
+  border-right-color: #c3e8d1;
+  color: #10a54a;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.post div.heading ul.options li a {
+  color: #10a54a;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.post div.content {
+  background-color: #ebf7f0;
+  border: 1px solid #c3e8d1;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.post div.content h4 {
+  color: #10a54a;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.post div.content div.sandbox_header a {
+  color: #6fc992;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.patch div.heading {
+  background-color: #FCE9E3;
+  border: 1px solid #F5D5C3;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.patch div.heading h3 span.http_method a {
+  background-color: #D38042;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.patch div.heading ul.options li {
+  border-right: 1px solid #dddddd;
+  border-right-color: #f0cecb;
+  color: #D38042;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.patch div.heading ul.options li a {
+  color: #D38042;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.patch div.content {
+  background-color: #faf0ef;
+  border: 1px solid #f0cecb;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.patch div.content h4 {
+  color: #D38042;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.patch div.content div.sandbox_header a {
+  color: #dcb67f;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.get div.heading {
+  background-color: #e7f0f7;
+  border: 1px solid #c3d9ec;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.get div.heading h3 span.http_method a {
+  background-color: #0f6ab4;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.get div.heading ul.options li {
+  border-right: 1px solid #dddddd;
+  border-right-color: #c3d9ec;
+  color: #0f6ab4;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.get div.heading ul.options li a {
+  color: #0f6ab4;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.get div.content {
+  background-color: #ebf3f9;
+  border: 1px solid #c3d9ec;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.get div.content h4 {
+  color: #0f6ab4;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.get div.content div.sandbox_header a {
+  color: #6fa5d2;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.get div.content,
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.post div.content,
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.head div.content,
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.put div.content,
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.patch div.content,
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.delete div.content {
+  border-top: none;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.get div.heading ul.options li:last-child,
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.post div.heading ul.options li:last-child,
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.head div.heading ul.options li:last-child,
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.put div.heading ul.options li:last-child,
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.patch div.heading ul.options li:last-child,
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.delete div.heading ul.options li:last-child,
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.get div.heading ul.options li.last,
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.post div.heading ul.options li.last,
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.head div.heading ul.options li.last,
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.put div.heading ul.options li.last,
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.patch div.heading ul.options li.last,
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.delete div.heading ul.options li.last {
+  padding-right: 0;
+  border-right: none;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations ul.options li a:hover,
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations ul.options li a:active,
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations ul.options li a.active {
+  text-decoration: underline;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations ul.options li:first-child,
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations ul.options li.first {
+  padding-left: 0;
+}
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations:first-child,
+.swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations.first {
+  padding-left: 0;
+}
+.swagger-ui-wrap p#colophon {
+  margin: 0 15px 40px 15px;
+  padding: 10px 0;
+  font-size: 0.8em;
+  border-top: 1px solid #dddddd;
+  font-family: "Droid Sans", sans-serif;
+  color: #999999;
+  font-style: italic;
+}
+.swagger-ui-wrap p#colophon a {
+  text-decoration: none;
+  color: #547f00;
+}
+.swagger-ui-wrap h3 {
+  color: black;
+  font-size: 1.1em;
+  padding: 10px 0 10px 0;
+}
+.swagger-ui-wrap .markdown ol,
+.swagger-ui-wrap .markdown ul {
+  font-family: "Droid Sans", sans-serif;
+  margin: 5px 0 10px;
+  padding: 0 0 0 18px;
+  list-style-type: disc;
+}
+.swagger-ui-wrap form.form_box {
+  background-color: #ebf3f9;
+  border: 1px solid #c3d9ec;
+  padding: 10px;
+}
+.swagger-ui-wrap form.form_box label {
+  color: #0f6ab4 !important;
+}
+.swagger-ui-wrap form.form_box input[type=submit] {
+  display: block;
+  padding: 10px;
+}
+.swagger-ui-wrap form.form_box p.weak {
+  font-size: 0.8em;
+}
+.swagger-ui-wrap form.form_box p {
+  font-size: 0.9em;
+  padding: 0 0 15px;
+  color: #7e7b6d;
+}
+.swagger-ui-wrap form.form_box p a {
+  color: #646257;
+}
+.swagger-ui-wrap form.form_box p strong {
+  color: black;
+}
+#header {
+  background-color: #89bf04;
+  padding: 14px;
+}
+#header a#logo {
+  font-size: 1.5em;
+  font-weight: bold;
+  text-decoration: none;
+  background: transparent url(../images/logo_small.png) no-repeat left center;
+  padding: 20px 0 20px 40px;
+  color: white;
+}
+#header form#api_selector {
+  display: block;
+  clear: none;
+  float: right;
+}
+#header form#api_selector .input {
+  display: block;
+  clear: none;
+  float: left;
+  margin: 0 10px 0 0;
+}
+#header form#api_selector .input input#input_apiKey {
+  width: 200px;
+}
+#header form#api_selector .input input#input_baseUrl {
+  width: 400px;
+}
+#header form#api_selector .input a#explore {
+  display: block;
+  text-decoration: none;
+  font-weight: bold;
+  padding: 6px 8px;
+  font-size: 0.9em;
+  color: white;
+  background-color: #547f00;
+  -moz-border-radius: 4px;
+  -webkit-border-radius: 4px;
+  -o-border-radius: 4px;
+  -ms-border-radius: 4px;
+  -khtml-border-radius: 4px;
+  border-radius: 4px;
+}
+#header form#api_selector .input a#explore:hover {
+  background-color: #547f00;
+}
+#header form#api_selector .input input {
+  font-size: 0.9em;
+  padding: 3px;
+  margin: 0;
+}
+#content_message {
+  margin: 10px 15px;
+  font-style: italic;
+  color: #999999;
+}
+#message-bar {
+  min-height: 30px;
+  text-align: center;
+  padding-top: 10px;
+}
