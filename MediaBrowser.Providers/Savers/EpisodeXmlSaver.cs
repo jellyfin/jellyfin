@@ -92,6 +92,11 @@ namespace MediaBrowser.Providers.Savers
                 builder.Append("<SeasonNumber>" + SecurityElement.Escape(episode.ParentIndexNumber.Value.ToString(_usCulture)) + "</SeasonNumber>");
             }
 
+            if (episode.AbsoluteEpisodeNumber.HasValue)
+            {
+                builder.Append("<absolute_number>" + SecurityElement.Escape(episode.AbsoluteEpisodeNumber.Value.ToString(_usCulture)) + "</absolute_number>");
+            }
+            
             if (episode.DvdEpisodeNumber.HasValue)
             {
                 builder.Append("<DVD_episodenumber>" + SecurityElement.Escape(episode.DvdEpisodeNumber.Value.ToString(_usCulture)) + "</DVD_episodenumber>");
@@ -125,7 +130,8 @@ namespace MediaBrowser.Providers.Savers
                     "airsbefore_episode",
                     "airsbefore_season",
                     "DVD_episodenumber",
-                    "DVD_season"
+                    "DVD_season",
+                    "absolute_number"
                 });
         }
 

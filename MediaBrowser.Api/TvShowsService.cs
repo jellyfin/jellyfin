@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Api.UserLibrary;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
@@ -364,12 +365,11 @@ namespace MediaBrowser.Api
 
             var series = _libraryManager.GetItemById(request.Id) as Series;
 
-            var fields = request.GetItemFields().ToList();
-
-            var seasons = series.GetChildren(user, true)
-                .OfType<Season>();
-
-            var sortOrder = ItemSortBy.SortName;
+            if (series == null)
+            {
+                throw new ResourceNotFoundException("No series exists with Id " + request.Id);
+            }
+            var seasons = series.GetSeasons(user);
 
             if (request.IsSpecialSeason.HasValue)
             {
@@ -378,28 +378,7 @@ namespace MediaBrowser.Api
                 seasons = seasons.Where(i => i.IsSpecialSeason == val);
             }
 
-            var config = user.Configuration;
-
-            if (!config.DisplayMissingEpisodes && !config.DisplayUnairedEpisodes)
-            {
-                seasons = seasons.Where(i => !i.IsMissingOrVirtualUnaired);
-            }
-            else
-            {
-                if (!config.DisplayMissingEpisodes)
-                {
-                    seasons = seasons.Where(i => !i.IsMissingSeason);
-                }
-                if (!config.DisplayUnairedEpisodes)
-                {
-                    seasons = seasons.Where(i => !i.IsVirtualUnaired);
-                }
-            }
-
             seasons = FilterVirtualSeasons(request, seasons);
-
-            seasons = _libraryManager.Sort(seasons, user, new[] { sortOrder }, SortOrder.Ascending)
-                .Cast<Season>();
 
             // This must be the last filter
             if (!string.IsNullOrEmpty(request.AdjacentTo))
@@ -407,6 +386,8 @@ namespace MediaBrowser.Api
                 seasons = ItemsService.FilterForAdjacency(seasons, request.AdjacentTo)
                     .Cast<Season>();
             }
+
+            var fields = request.GetItemFields().ToList();
 
             var returnItems = seasons.Select(i => _dtoService.GetBaseItemDto(i, fields, user))
                 .ToArray();
@@ -450,65 +431,44 @@ namespace MediaBrowser.Api
         {
             var user = _userManager.GetUserById(request.UserId);
 
-            var series = _libraryManager.GetItemById(request.Id) as Series;
+            IEnumerable<Episode> episodes;
 
-            var fields = request.GetItemFields().ToList();
+            if (string.IsNullOrEmpty(request.SeasonId))
+            {
+                var series = _libraryManager.GetItemById(request.Id) as Series;
 
-            var episodes = series.GetRecursiveChildren(user)
-                .OfType<Episode>();
+                if (series == null)
+                {
+                    throw new ResourceNotFoundException("No series exists with Id " + request.Id);
+                }
 
-            var sortOrder = ItemSortBy.SortName;
-
-            if (!string.IsNullOrEmpty(request.SeasonId))
+                episodes = series.GetEpisodes(user, request.Season.Value);
+            }
+            else
             {
                 var season = _libraryManager.GetItemById(new Guid(request.SeasonId)) as Season;
 
-                if (season.IndexNumber.HasValue)
+                if (season == null)
                 {
-                    episodes = FilterEpisodesBySeason(episodes, season.IndexNumber.Value, true);
-
-                    sortOrder = ItemSortBy.AiredEpisodeOrder;
+                    throw new ResourceNotFoundException("No season exists with Id " + request.SeasonId);
                 }
-                else
-                {
-                    episodes = season.RecursiveChildren.OfType<Episode>();
-
-                    sortOrder = ItemSortBy.SortName;
-                }
+                
+                episodes = season.GetEpisodes(user);
             }
 
-            else if (request.Season.HasValue)
-            {
-                episodes = FilterEpisodesBySeason(episodes, request.Season.Value, true);
-
-                sortOrder = ItemSortBy.AiredEpisodeOrder;
-            }
-
-            var config = user.Configuration;
-
-            if (!config.DisplayMissingEpisodes)
-            {
-                episodes = episodes.Where(i => !i.IsMissingEpisode);
-            }
-            if (!config.DisplayUnairedEpisodes)
-            {
-                episodes = episodes.Where(i => !i.IsVirtualUnaired);
-            }
-
+            // Filter after the fact in case the ui doesn't want them
             if (request.IsMissing.HasValue)
             {
                 var val = request.IsMissing.Value;
                 episodes = episodes.Where(i => i.IsMissingEpisode == val);
             }
 
+            // Filter after the fact in case the ui doesn't want them
             if (request.IsVirtualUnaired.HasValue)
             {
                 var val = request.IsVirtualUnaired.Value;
                 episodes = episodes.Where(i => i.IsVirtualUnaired == val);
             }
-
-            episodes = _libraryManager.Sort(episodes, user, new[] { sortOrder }, SortOrder.Ascending)
-                .Cast<Episode>();
 
             // This must be the last filter
             if (!string.IsNullOrEmpty(request.AdjacentTo))
@@ -516,6 +476,8 @@ namespace MediaBrowser.Api
                 episodes = ItemsService.FilterForAdjacency(episodes, request.AdjacentTo)
                     .Cast<Episode>();
             }
+
+            var fields = request.GetItemFields().ToList();
 
             var returnItems = episodes.Select(i => _dtoService.GetBaseItemDto(i, fields, user))
                 .ToArray();
@@ -525,28 +487,6 @@ namespace MediaBrowser.Api
                 TotalRecordCount = returnItems.Length,
                 Items = returnItems
             };
-        }
-
-        internal static IEnumerable<Episode> FilterEpisodesBySeason(IEnumerable<Episode> episodes, int seasonNumber, bool includeSpecials)
-        {
-            if (!includeSpecials || seasonNumber < 1)
-            {
-                return episodes.Where(i => (i.PhysicalSeasonNumber ?? -1) == seasonNumber);
-            }
-
-            return episodes.Where(i =>
-            {
-                var episode = i;
-
-                if (episode != null)
-                {
-                    var currentSeasonNumber = episode.AiredSeasonNumber;
-
-                    return currentSeasonNumber.HasValue && currentSeasonNumber.Value == seasonNumber;
-                }
-
-                return false;
-            });
         }
     }
 }

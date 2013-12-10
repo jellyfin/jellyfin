@@ -650,9 +650,13 @@
 
         if (item.Type == "Episode") {
             $('#collapsibleDvdEpisodeInfo', page).show();
-            $('#collapsibleSpecialEpisodeInfo', page).show();
         } else {
             $('#collapsibleDvdEpisodeInfo', page).hide();
+        }
+
+        if (item.Type == "Episode" && item.ParentIndexNumber == 0) {
+            $('#collapsibleSpecialEpisodeInfo', page).show();
+        } else {
             $('#collapsibleSpecialEpisodeInfo', page).hide();
         }
 
@@ -820,6 +824,7 @@
         $('#txtParentIndexNumber', page).val(('ParentIndexNumber' in item) ? item.ParentIndexNumber : "");
         $('#txtPlayers', page).val(item.Players || "");
 
+        $('#txtAbsoluteEpisodeNumber', page).val(('AbsoluteEpisodeNumber' in item) ? item.AbsoluteEpisodeNumber : "");
         $('#txtDvdEpisodeNumber', page).val(('DvdEpisodeNumber' in item) ? item.DvdEpisodeNumber : "");
         $('#txtDvdSeasonNumber', page).val(('DvdSeasonNumber' in item) ? item.DvdSeasonNumber : "");
         $('#txtAirsBeforeSeason', page).val(('AirsBeforeSeasonNumber' in item) ? item.AirsBeforeSeasonNumber : "");
@@ -1093,6 +1098,12 @@
                 CriticRating: $('#txtCriticRating', form).val(),
                 CriticRatingSummary: $('#txtCriticRatingSummary', form).val(),
                 IndexNumber: $('#txtIndexNumber', form).val(),
+                AbsoluteEpisodeNumber: $('#txtAbsoluteEpisodeNumber', form).val(),
+                DvdEpisodeNumber: $('#txtDvdEpisodeNumber', form).val(),
+                DvdSeasonNumber: $('#txtDvdSeasonNumber', form).val(),
+                AirsBeforeSeasonNumber: $('#txtAirsBeforeSeason', form).val(),
+                AirsAfterSeasonNumber: $('#txtAirsAfterSeason', form).val(),
+                AirsBeforeEpisodeNumber: $('#txtAirsEpisodeSeason', form).val(),
                 ParentIndexNumber: $('#txtParentIndexNumber', form).val(),
                 Players: $('#txtPlayers', form).val(),
                 Album: $('#txtAlbum', form).val(),

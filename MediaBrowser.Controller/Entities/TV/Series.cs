@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Querying;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -116,6 +117,90 @@ namespace MediaBrowser.Controller.Entities.TV
             {
                 return Children.OfType<Video>().Any();
             }
+        }
+
+        public override IEnumerable<BaseItem> GetChildren(User user, bool includeLinkedChildren, string indexBy = null)
+        {
+            return GetSeasons(user);
+        }
+
+        public IEnumerable<Season> GetSeasons(User user)
+        {
+            var seasons = base.GetChildren(user, true)
+                .OfType<Season>();
+
+            var config = user.Configuration;
+
+            if (!config.DisplayMissingEpisodes && !config.DisplayUnairedEpisodes)
+            {
+                seasons = seasons.Where(i => !i.IsMissingOrVirtualUnaired);
+            }
+            else
+            {
+                if (!config.DisplayMissingEpisodes)
+                {
+                    seasons = seasons.Where(i => !i.IsMissingSeason);
+                }
+                if (!config.DisplayUnairedEpisodes)
+                {
+                    seasons = seasons.Where(i => !i.IsVirtualUnaired);
+                }
+            }
+
+            return LibraryManager
+                .Sort(seasons, user, new[] { ItemSortBy.SortName }, SortOrder.Ascending)
+                .Cast<Season>(); 
+        }
+
+        public IEnumerable<Episode> GetEpisodes(User user, int seasonNumber)
+        {
+            var episodes = GetRecursiveChildren(user)
+                .OfType<Episode>();
+
+            episodes = FilterEpisodesBySeason(episodes, seasonNumber, true);
+
+            var config = user.Configuration;
+
+            if (!config.DisplayMissingEpisodes)
+            {
+                episodes = episodes.Where(i => !i.IsMissingEpisode);
+            }
+            if (!config.DisplayUnairedEpisodes)
+            {
+                episodes = episodes.Where(i => !i.IsVirtualUnaired);
+            }
+
+            return LibraryManager.Sort(episodes, user, new[] { ItemSortBy.AiredEpisodeOrder }, SortOrder.Ascending)
+                .Cast<Episode>();
+        }
+
+        /// <summary>
+        /// Filters the episodes by season.
+        /// </summary>
+        /// <param name="episodes">The episodes.</param>
+        /// <param name="seasonNumber">The season number.</param>
+        /// <param name="includeSpecials">if set to <c>true</c> [include specials].</param>
+        /// <returns>IEnumerable{Episode}.</returns>
+        public static IEnumerable<Episode> FilterEpisodesBySeason(IEnumerable<Episode> episodes, int seasonNumber, bool includeSpecials)
+        {
+            if (!includeSpecials || seasonNumber < 1)
+            {
+                return episodes.Where(i => (i.PhysicalSeasonNumber ?? -1) == seasonNumber);
+            }
+
+            return episodes.Where(i =>
+            {
+                var episode = i;
+
+                if (episode != null)
+                {
+                    var currentSeasonNumber = episode.AiredSeasonNumber;
+
+                    return currentSeasonNumber.HasValue && currentSeasonNumber.Value == seasonNumber;
+                }
+
+                return false;
+            });
         }
     }
 }

@@ -279,6 +279,7 @@ namespace MediaBrowser.Api
                 episode.AirsAfterSeasonNumber = request.AirsAfterSeasonNumber;
                 episode.AirsBeforeEpisodeNumber = request.AirsBeforeEpisodeNumber;
                 episode.AirsBeforeSeasonNumber = request.AirsBeforeSeasonNumber;
+                episode.AbsoluteEpisodeNumber = request.AbsoluteEpisodeNumber;
             }
             
             var hasTags = item as IHasTags;
