@@ -5,6 +5,7 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Logging;
 using ServiceStack;
+using ServiceStack.Api.Swagger;
 using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Host.HttpListener;
@@ -93,7 +94,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             container.Adapter = _containerAdapter;
 
-            //Plugins.Add(new SwaggerFeature());
+            Plugins.Add(new SwaggerFeature());
             Plugins.Add(new CorsFeature());
             HostContext.GlobalResponseFilters.Add(new ResponseFilter(_logger).FilterResponse);
         }

@@ -40,6 +40,9 @@
     <Reference Include="Mono.Data.Sqlite">
       <HintPath>..\ThirdParty\Mono.Data.Sqlite\Mono.Data.Sqlite.dll</HintPath>
     </Reference>
+    <Reference Include="ServiceStack.Api.Swagger">
+      <HintPath>..\ThirdParty\ServiceStack\ServiceStack.Api.Swagger.dll</HintPath>
+    </Reference>
     <Reference Include="ServiceStack.Text, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\ThirdParty\ServiceStack.Text\ServiceStack.Text.dll</HintPath>
@@ -243,6 +246,88 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Localization\Ratings\ca.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\css\highlight.default.css">
+      <Link>swagger-ui\css\highlight.default.css</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\css\screen.css">
+      <Link>swagger-ui\css\screen.css</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\images\logo_small.png">
+      <Link>swagger-ui\images\logo_small.png</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\images\pet_store_api.png">
+      <Link>swagger-ui\images\pet_store_api.png</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\images\throbber.gif">
+      <Link>swagger-ui\images\throbber.gif</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\images\wordnik_api.png">
+      <Link>swagger-ui\images\wordnik_api.png</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\index.html">
+      <Link>swagger-ui\index.html</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\lib\backbone-min.js">
+      <Link>swagger-ui\lib\backbone-min.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\lib\handlebars-1.0.0.js">
+      <Link>swagger-ui\lib\handlebars-1.0.0.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\lib\highlight.7.3.pack.js">
+      <Link>swagger-ui\lib\highlight.7.3.pack.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\lib\jquery-1.8.0.min.js">
+      <Link>swagger-ui\lib\jquery-1.8.0.min.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\lib\jquery.ba-bbq.min.js">
+      <Link>swagger-ui\lib\jquery.ba-bbq.min.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\lib\jquery.slideto.min.js">
+      <Link>swagger-ui\lib\jquery.slideto.min.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\lib\jquery.wiggle.min.js">
+      <Link>swagger-ui\lib\jquery.wiggle.min.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\lib\shred.bundle.js">
+      <Link>swagger-ui\lib\shred.bundle.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\lib\shred\content.js">
+      <Link>swagger-ui\lib\shred\content.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\lib\swagger.js">
+      <Link>swagger-ui\lib\swagger.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\lib\underscore-min.js">
+      <Link>swagger-ui\lib\underscore-min.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\swagger-ui.js">
+      <Link>swagger-ui\swagger-ui.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\swagger-ui.min.js">
+      <Link>swagger-ui\swagger-ui.min.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
