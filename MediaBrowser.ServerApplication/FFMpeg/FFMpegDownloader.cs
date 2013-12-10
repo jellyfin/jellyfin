@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
@@ -75,7 +74,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                     ExtractFFMpeg(tempFile, Path.GetDirectoryName(info.Path));
                     return;
                 }
-                catch (HttpException ex)
+                catch (HttpException)
                 {
 
                 }
