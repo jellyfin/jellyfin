@@ -385,6 +385,11 @@ namespace MediaBrowser.Api
                 series.Status = request.Status;
                 series.AirDays = request.AirDays;
                 series.AirTime = request.AirTime;
+
+                if (request.DisplaySpecialsWithSeasons.HasValue)
+                {
+                    series.DisplaySpecialsWithSeasons = request.DisplaySpecialsWithSeasons.Value;
+                }
             }
         }
 

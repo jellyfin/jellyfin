@@ -728,7 +728,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             dto.DisplayMediaType = item.DisplayMediaType;
 
-            if (fields.Contains(ItemFields.MetadataSettings))
+            if (fields.Contains(ItemFields.Settings))
             {
                 dto.LockedFields = item.LockedFields;
                 dto.EnableInternetProviders = !item.DontFetchMeta;
@@ -1093,6 +1093,11 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.SpecialFeatureCount = series.SpecialFeatureIds.Count;
 
                 dto.SeasonCount = series.SeasonCount;
+
+                if (fields.Contains(ItemFields.Settings))
+                {
+                    dto.DisplaySpecialsWithSeasons = series.DisplaySpecialsWithSeasons;
+                }
             }
 
             if (episode != null)

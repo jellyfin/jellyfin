@@ -34,6 +34,7 @@ namespace MediaBrowser.Model.Dto
         public int? AirsAfterSeasonNumber { get; set; }
         public int? AirsBeforeEpisodeNumber { get; set; }
         public int? AbsoluteEpisodeNumber { get; set; }
+        public bool? DisplaySpecialsWithSeasons { get; set; }
 
         /// <summary>
         /// Gets or sets the DVD season number.

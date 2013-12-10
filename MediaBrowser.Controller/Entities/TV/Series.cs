@@ -29,7 +29,10 @@ namespace MediaBrowser.Controller.Entities.TV
             RemoteTrailers = new List<MediaUrl>();
             LocalTrailerIds = new List<Guid>();
             Tags = new List<string>();
+            DisplaySpecialsWithSeasons = true;
         }
+
+        public bool DisplaySpecialsWithSeasons { get; set; }
 
         public List<Guid> LocalTrailerIds { get; set; }
         
@@ -157,7 +160,7 @@ namespace MediaBrowser.Controller.Entities.TV
             var episodes = GetRecursiveChildren(user)
                 .OfType<Episode>();
 
-            episodes = FilterEpisodesBySeason(episodes, seasonNumber, true);
+            episodes = FilterEpisodesBySeason(episodes, seasonNumber, DisplaySpecialsWithSeasons);
 
             var config = user.Configuration;
 
