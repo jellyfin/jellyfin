@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.IO;
+﻿using System.Collections.Generic;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -69,9 +70,9 @@ namespace MediaBrowser.Providers
             return GetImageFromLocation(location, filenameWithoutExtension);
         }
 
-        protected override Guid GetFileSystemStamp(BaseItem item)
+        protected override Guid GetFileSystemStamp(IEnumerable<BaseItem> items)
         {
-            var location = GetLocation(item);
+            var location = GetLocation(items.First());
 
             try
             {

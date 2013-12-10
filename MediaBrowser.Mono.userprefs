@@ -1,43 +1,17 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="MediaBrowser.Server.Implementations\Library\UserManager.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="C:\Program Files (x86)\Mono-3.2.3\lib\mono\4.0\Microsoft.Common.targets">
     <Files>
-      <File FileName="MediaBrowser.Server.Mono\app.config" Line="9" Column="10" />
+      <File FileName="MediaBrowser.Server.Mono\app.config" Line="1" Column="1" />
       <File FileName="MediaBrowser.Server.Mono\FFMpeg\FFMpegDownloadInfo.cs" Line="1" Column="1" />
-      <File FileName="MediaBrowser.Server.Mono\Program.cs" Line="84" Column="7" />
-      <File FileName="MediaBrowser.Server.Implementations\Library\UserManager.cs" Line="235" Column="10" />
+      <File FileName="MediaBrowser.Server.Mono\Program.cs" Line="1" Column="1" />
+      <File FileName="MediaBrowser.Server.Implementations\Library\UserManager.cs" Line="407" Column="4" />
+      <File FileName="C:\Program Files (x86)\Mono-3.2.3\lib\mono\4.0\Microsoft.Common.targets" Line="8" Column="15" />
     </Files>
-    <Pads>
-      <Pad Id="ProjectPad">
-        <State expanded="True">
-          <Node name="MediaBrowser.Api" expanded="True" />
-          <Node name="MediaBrowser.Common" expanded="True" />
-          <Node name="MediaBrowser.Common.Implementations" expanded="True" />
-          <Node name="MediaBrowser.Controller" expanded="True" />
-          <Node name="MediaBrowser.Server.Implementations" expanded="True">
-            <Node name="Library" expanded="True">
-              <Node name="UserManager.cs" selected="True" />
-            </Node>
-          </Node>
-          <Node name="MediaBrowser.Server.Mono" expanded="True">
-            <Node name="References" expanded="True" />
-            <Node name="FFMpeg" expanded="True" />
-          </Node>
-          <Node name="MediaBrowser.WebDashboard" expanded="True" />
-        </State>
-      </Pad>
-      <Pad Id="ClassPad">
-        <State expanded="True" selected="True" />
-      </Pad>
-      <Pad Id="MonoDevelop.Debugger.WatchPad">
-        <State />
-      </Pad>
-    </Pads>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore>
       <Breakpoint file="D:\Development\MediaBrowser\MediaBrowser.Common.Implementations\HttpClientManager\HttpClientManager.cs" line="477" column="17" />
-      <Breakpoint file="D:\Development\MediaBrowser\MediaBrowser.Server.Implementations\Library\UserManager.cs" line="222" column="1" />
     </BreakpointStore>
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />

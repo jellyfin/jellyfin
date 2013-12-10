@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.IO;
+﻿using System.Collections.Generic;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -35,9 +36,9 @@ namespace MediaBrowser.Providers
                 .FirstOrDefault(i => i != null);
         }
 
-        protected override Guid GetFileSystemStamp(BaseItem item)
+        protected override Guid GetFileSystemStamp(IEnumerable<BaseItem> items)
         {
-            var files = item.ResolveArgs.PhysicalLocations
+            var files = items.SelectMany(i => i.ResolveArgs.PhysicalLocations)
                 .Select(i => new DirectoryInfo(i))
                 .SelectMany(i => i.EnumerateFiles("*", SearchOption.TopDirectoryOnly))
                 .Where(i =>
