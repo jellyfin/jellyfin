@@ -106,7 +106,7 @@ namespace MediaBrowser.Server.Implementations.Providers
             var enableInternetProviders = ConfigurationManager.Configuration.EnableInternetProviders;
             var excludeTypes = ConfigurationManager.Configuration.InternetProviderExcludeTypes;
 
-            var providerHistories = item.DateLastSaved == DateTime.MinValue ?
+            var providerHistories = item.DateLastSaved == default(DateTime) ?
                 new List<BaseProviderInfo>() :
                 _itemRepo.GetProviderHistory(item.Id).ToList();
 
