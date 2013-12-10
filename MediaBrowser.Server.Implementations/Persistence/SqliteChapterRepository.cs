@@ -33,7 +33,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         }
 
         private SqliteShrinkMemoryTimer _shrinkMemoryTimer;
-        
+
         /// <summary>
         /// Opens the connection to the database
         /// </summary>
