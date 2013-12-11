@@ -1311,11 +1311,6 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             var list = items.ToList();
 
-            foreach (var item in list)
-            {
-                item.DateLastSaved = DateTime.UtcNow;
-            }
-
             await ItemRepository.SaveItems(list, cancellationToken).ConfigureAwait(false);
 
             foreach (var item in list)

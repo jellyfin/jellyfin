@@ -38,9 +38,8 @@ namespace MediaBrowser.ServerApplication.EntryPoints
                     }
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                var b = true;
             }
         }
 

@@ -223,6 +223,11 @@ namespace MediaBrowser.Controller.Providers
                 throw new ArgumentNullException("providerInfo");
             }
 
+            if (providerInfo.LastRefreshed == default(DateTime))
+            {
+                return true;
+            }
+            
             if (NeedsRefreshBasedOnCompareDate(item, providerInfo))
             {
                 return true;
