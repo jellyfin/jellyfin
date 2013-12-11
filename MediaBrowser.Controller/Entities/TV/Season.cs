@@ -222,19 +222,35 @@ namespace MediaBrowser.Controller.Entities.TV
         /// <returns>IEnumerable{Episode}.</returns>
         public IEnumerable<Episode> GetEpisodes(User user)
         {
+            var config = user.Configuration;
+
+            return GetEpisodes(user, config.DisplayMissingEpisodes, config.DisplayUnairedEpisodes);
+        }
+
+        public IEnumerable<Episode> GetEpisodes(User user, bool includeMissingEpisodes, bool includeVirtualUnairedEpisodes)
+        {
             if (IndexNumber.HasValue)
             {
                 var series = Series;
 
                 if (series != null)
                 {
-                    return series.GetEpisodes(user, IndexNumber.Value);
+                    return series.GetEpisodes(user, IndexNumber.Value, includeMissingEpisodes, includeVirtualUnairedEpisodes);
                 }
             }
 
             var episodes = GetRecursiveChildren(user)
                 .OfType<Episode>();
 
+            if (!includeMissingEpisodes)
+            {
+                episodes = episodes.Where(i => !i.IsMissingEpisode);
+            }
+            if (!includeVirtualUnairedEpisodes)
+            {
+                episodes = episodes.Where(i => !i.IsVirtualUnaired);
+            }
+            
             return LibraryManager
                 .Sort(episodes, user, new[] { ItemSortBy.SortName }, SortOrder.Ascending)
                 .Cast<Episode>();
