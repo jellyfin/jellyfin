@@ -89,13 +89,13 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         // Studio, Genre and Rating will all be the same so makes no sense to index by these
-        protected override Dictionary<string, Func<User, IEnumerable<BaseItem>>> GetIndexByOptions()
+        protected override IEnumerable<string> GetIndexByOptions()
         {
-            return new Dictionary<string, Func<User, IEnumerable<BaseItem>>> {            
-                {LocalizedStrings.Instance.GetString("NoneDispPref"), null}, 
-                {LocalizedStrings.Instance.GetString("PerformerDispPref"), GetIndexByPerformer},
-                {LocalizedStrings.Instance.GetString("DirectorDispPref"), GetIndexByDirector},
-                {LocalizedStrings.Instance.GetString("YearDispPref"), GetIndexByYear},
+            return new List<string> {            
+                {LocalizedStrings.Instance.GetString("NoneDispPref")}, 
+                {LocalizedStrings.Instance.GetString("PerformerDispPref")},
+                {LocalizedStrings.Instance.GetString("DirectorDispPref")},
+                {LocalizedStrings.Instance.GetString("YearDispPref")},
             };
         }
 
@@ -122,7 +122,7 @@ namespace MediaBrowser.Controller.Entities.TV
             }
         }
 
-        public override IEnumerable<BaseItem> GetChildren(User user, bool includeLinkedChildren, string indexBy = null)
+        public override IEnumerable<BaseItem> GetChildren(User user, bool includeLinkedChildren)
         {
             return GetSeasons(user);
         }

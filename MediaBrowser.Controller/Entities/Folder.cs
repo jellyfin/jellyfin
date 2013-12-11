@@ -209,281 +209,22 @@ namespace MediaBrowser.Controller.Entities
         #region Indexing
 
         /// <summary>
-        /// The _index by options
-        /// </summary>
-        private Dictionary<string, Func<User, IEnumerable<BaseItem>>> _indexByOptions;
-        /// <summary>
-        /// Dictionary of index options - consists of a display value and an indexing function
-        /// which takes User as a parameter and returns an IEnum of BaseItem
-        /// </summary>
-        /// <value>The index by options.</value>
-        [IgnoreDataMember]
-        public Dictionary<string, Func<User, IEnumerable<BaseItem>>> IndexByOptions
-        {
-            get { return _indexByOptions ?? (_indexByOptions = GetIndexByOptions()); }
-        }
-
-        /// <summary>
         /// Returns the valid set of index by options for this folder type.
         /// Override or extend to modify.
         /// </summary>
         /// <returns>Dictionary{System.StringFunc{UserIEnumerable{BaseItem}}}.</returns>
-        protected virtual Dictionary<string, Func<User, IEnumerable<BaseItem>>> GetIndexByOptions()
+        protected virtual IEnumerable<string> GetIndexByOptions()
         {
-            return new Dictionary<string, Func<User, IEnumerable<BaseItem>>> {            
-                {LocalizedStrings.Instance.GetString("NoneDispPref"), null}, 
-                {LocalizedStrings.Instance.GetString("PerformerDispPref"), GetIndexByPerformer},
-                {LocalizedStrings.Instance.GetString("GenreDispPref"), GetIndexByGenre},
-                {LocalizedStrings.Instance.GetString("DirectorDispPref"), GetIndexByDirector},
-                {LocalizedStrings.Instance.GetString("YearDispPref"), GetIndexByYear},
+            return new List<string> {            
+                {LocalizedStrings.Instance.GetString("NoneDispPref")}, 
+                {LocalizedStrings.Instance.GetString("PerformerDispPref")},
+                {LocalizedStrings.Instance.GetString("GenreDispPref")},
+                {LocalizedStrings.Instance.GetString("DirectorDispPref")},
+                {LocalizedStrings.Instance.GetString("YearDispPref")},
                 //{LocalizedStrings.Instance.GetString("OfficialRatingDispPref"), null},
-                {LocalizedStrings.Instance.GetString("StudioDispPref"), GetIndexByStudio}
+                {LocalizedStrings.Instance.GetString("StudioDispPref")}
             };
 
-        }
-
-        /// <summary>
-        /// Gets the index by actor.
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <returns>IEnumerable{BaseItem}.</returns>
-        protected IEnumerable<BaseItem> GetIndexByPerformer(User user)
-        {
-            return GetIndexByPerson(user, new List<string> { PersonType.Actor, PersonType.GuestStar }, true, LocalizedStrings.Instance.GetString("PerformerDispPref"));
-        }
-
-        /// <summary>
-        /// Gets the index by director.
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <returns>IEnumerable{BaseItem}.</returns>
-        protected IEnumerable<BaseItem> GetIndexByDirector(User user)
-        {
-            return GetIndexByPerson(user, new List<string> { PersonType.Director }, false, LocalizedStrings.Instance.GetString("DirectorDispPref"));
-        }
-
-        /// <summary>
-        /// Gets the index by person.
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <param name="personTypes">The person types we should match on</param>
-        /// <param name="includeAudio">if set to <c>true</c> [include audio].</param>
-        /// <param name="indexName">Name of the index.</param>
-        /// <returns>IEnumerable{BaseItem}.</returns>
-        private IEnumerable<BaseItem> GetIndexByPerson(User user, List<string> personTypes, bool includeAudio, string indexName)
-        {
-            // Even though this implementation means multiple iterations over the target list - it allows us to defer
-            // the retrieval of the individual children for each index value until they are requested.
-            using (new Profiler(indexName + " Index Build for " + Name, Logger))
-            {
-                // Put this in a local variable to avoid an implicitly captured closure
-                var currentIndexName = indexName;
-
-                var us = this;
-                var recursiveChildren = GetRecursiveChildren(user).Where(i => i.IncludeInIndex).ToList();
-
-                // Get the candidates, but handle audio separately
-                var candidates = recursiveChildren.Where(i => i.AllPeople != null && !(i is Audio.Audio)).ToList();
-
-                var indexFolders = candidates.AsParallel().SelectMany(i => i.AllPeople.Where(p => personTypes.Contains(p.Type))
-                    .Select(a => a.Name))
-                    .Distinct()
-                    .Select(i =>
-                    {
-                        try
-                        {
-                            return LibraryManager.GetPerson(i);
-                        }
-                        catch (IOException ex)
-                        {
-                            Logger.ErrorException("Error getting person {0}", ex, i);
-                            return null;
-                        }
-                        catch (AggregateException ex)
-                        {
-                            Logger.ErrorException("Error getting person {0}", ex, i);
-                            return null;
-                        }
-                    })
-                    .Where(i => i != null)
-                    .Select(a => new IndexFolder(us, a,
-                                        candidates.Where(i => i.AllPeople.Any(p => personTypes.Contains(p.Type) && p.Name.Equals(a.Name, StringComparison.OrdinalIgnoreCase))
-                                        ), currentIndexName)).AsEnumerable();
-
-                if (includeAudio)
-                {
-                    var songs = recursiveChildren.OfType<Audio.Audio>().ToList();
-
-                    indexFolders = songs.SelectMany(i => i.Artists)
-                        .Distinct(StringComparer.OrdinalIgnoreCase)
-                    .Select(i =>
-                    {
-                        try
-                        {
-                            return LibraryManager.GetArtist(i);
-                        }
-                        catch (IOException ex)
-                        {
-                            Logger.ErrorException("Error getting artist {0}", ex, i);
-                            return null;
-                        }
-                        catch (AggregateException ex)
-                        {
-                            Logger.ErrorException("Error getting artist {0}", ex, i);
-                            return null;
-                        }
-                    })
-                    .Where(i => i != null)
-                    .Select(a => new IndexFolder(us, a,
-                                        songs.Where(i => i.Artists.Contains(a.Name, StringComparer.OrdinalIgnoreCase)
-                                        ), currentIndexName)).Concat(indexFolders);
-                }
-
-                return indexFolders;
-            }
-        }
-
-        /// <summary>
-        /// Gets the index by studio.
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <returns>IEnumerable{BaseItem}.</returns>
-        protected IEnumerable<BaseItem> GetIndexByStudio(User user)
-        {
-            // Even though this implementation means multiple iterations over the target list - it allows us to defer
-            // the retrieval of the individual children for each index value until they are requested.
-            using (new Profiler("Studio Index Build for " + Name, Logger))
-            {
-                var indexName = LocalizedStrings.Instance.GetString("StudioDispPref");
-
-                var candidates = GetRecursiveChildren(user).Where(i => i.IncludeInIndex).ToList();
-
-                return candidates.AsParallel().SelectMany(i => i.AllStudios)
-                    .Distinct()
-                    .Select(i =>
-                    {
-                        try
-                        {
-                            return LibraryManager.GetStudio(i);
-                        }
-                        catch (IOException ex)
-                        {
-                            Logger.ErrorException("Error getting studio {0}", ex, i);
-                            return null;
-                        }
-                        catch (AggregateException ex)
-                        {
-                            Logger.ErrorException("Error getting studio {0}", ex, i);
-                            return null;
-                        }
-                    })
-                    .Where(i => i != null)
-                    .Select(ndx => new IndexFolder(this, ndx, candidates.Where(i => i.AllStudios.Any(s => s.Equals(ndx.Name, StringComparison.OrdinalIgnoreCase))), indexName));
-            }
-        }
-
-        /// <summary>
-        /// Gets the index by genre.
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <returns>IEnumerable{BaseItem}.</returns>
-        protected IEnumerable<BaseItem> GetIndexByGenre(User user)
-        {
-            // Even though this implementation means multiple iterations over the target list - it allows us to defer
-            // the retrieval of the individual children for each index value until they are requested.
-            using (new Profiler("Genre Index Build for " + Name, Logger))
-            {
-                var indexName = LocalizedStrings.Instance.GetString("GenreDispPref");
-
-                //we need a copy of this so we don't double-recurse
-                var candidates = GetRecursiveChildren(user).Where(i => i.IncludeInIndex).ToList();
-
-                return candidates.AsParallel().SelectMany(i => i.AllGenres)
-                    .Distinct(StringComparer.OrdinalIgnoreCase)
-                    .Select(i =>
-                        {
-                            try
-                            {
-                                return LibraryManager.GetGenre(i);
-                            }
-                            catch (Exception ex)
-                            {
-                                Logger.ErrorException("Error getting genre {0}", ex, i);
-                                return null;
-                            }
-                        })
-                    .Where(i => i != null)
-                    .Select(genre => new IndexFolder(this, genre, candidates.Where(i => i.AllGenres.Any(g => g.Equals(genre.Name, StringComparison.OrdinalIgnoreCase))), indexName)
-                );
-            }
-        }
-
-        /// <summary>
-        /// Gets the index by year.
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <returns>IEnumerable{BaseItem}.</returns>
-        protected IEnumerable<BaseItem> GetIndexByYear(User user)
-        {
-            // Even though this implementation means multiple iterations over the target list - it allows us to defer
-            // the retrieval of the individual children for each index value until they are requested.
-            using (new Profiler("Production Year Index Build for " + Name, Logger))
-            {
-                var indexName = LocalizedStrings.Instance.GetString("YearDispPref");
-
-                //we need a copy of this so we don't double-recurse
-                var candidates = GetRecursiveChildren(user).Where(i => i.IncludeInIndex && i.ProductionYear.HasValue).ToList();
-
-                return candidates.AsParallel().Select(i => i.ProductionYear.Value)
-                    .Distinct()
-                    .Select(i =>
-                    {
-                        try
-                        {
-                            return LibraryManager.GetYear(i);
-                        }
-                        catch (IOException ex)
-                        {
-                            Logger.ErrorException("Error getting year {0}", ex, i);
-                            return null;
-                        }
-                        catch (AggregateException ex)
-                        {
-                            Logger.ErrorException("Error getting year {0}", ex, i);
-                            return null;
-                        }
-                    })
-                    .Where(i => i != null)
-
-                    .Select(ndx => new IndexFolder(this, ndx, candidates.Where(i => i.ProductionYear == int.Parse(ndx.Name)), indexName));
-
-            }
-        }
-
-        /// <summary>
-        /// Returns the indexed children for this user from the cache. Caches them if not already there.
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <param name="indexBy">The index by.</param>
-        /// <returns>IEnumerable{BaseItem}.</returns>
-        private IEnumerable<BaseItem> GetIndexedChildren(User user, string indexBy)
-        {
-            List<BaseItem> result = null;
-            var cacheKey = user.Name + indexBy;
-
-            if (IndexCache != null)
-            {
-                IndexCache.TryGetValue(cacheKey, out result);
-            }
-
-            if (result == null)
-            {
-                //not cached - cache it
-                Func<User, IEnumerable<BaseItem>> indexing;
-                IndexByOptions.TryGetValue(indexBy, out indexing);
-                result = BuildIndex(indexBy, indexing, user);
-            }
-            return result;
         }
 
         /// <summary>
@@ -493,31 +234,7 @@ namespace MediaBrowser.Controller.Entities
         [IgnoreDataMember]
         public IEnumerable<string> IndexByOptionStrings
         {
-            get { return IndexByOptions.Keys; }
-        }
-
-        /// <summary>
-        /// The index cache
-        /// </summary>
-        protected ConcurrentDictionary<string, List<BaseItem>> IndexCache;
-
-        /// <summary>
-        /// Builds the index.
-        /// </summary>
-        /// <param name="indexKey">The index key.</param>
-        /// <param name="indexFunction">The index function.</param>
-        /// <param name="user">The user.</param>
-        /// <returns>List{BaseItem}.</returns>
-        protected virtual List<BaseItem> BuildIndex(string indexKey, Func<User, IEnumerable<BaseItem>> indexFunction, User user)
-        {
-            if (IndexCache == null)
-            {
-                IndexCache = new ConcurrentDictionary<string, List<BaseItem>>();
-            }
-
-            return indexFunction != null
-                       ? IndexCache[user.Name + indexKey] = indexFunction(user).ToList()
-                       : null;
+            get { return GetIndexByOptions(); }
         }
 
         #endregion
@@ -765,12 +482,6 @@ namespace MediaBrowser.Controller.Entities
                 AddChildrenInternal(newItems);
 
                 await ItemRepository.SaveChildren(Id, ActualChildren.Select(i => i.Id).ToList(), cancellationToken).ConfigureAwait(false);
-
-                //force the indexes to rebuild next time
-                if (IndexCache != null)
-                {
-                    IndexCache.Clear();
-                }
             }
 
             progress.Report(10);
@@ -988,10 +699,9 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <param name="user">The user.</param>
         /// <param name="includeLinkedChildren">if set to <c>true</c> [include linked children].</param>
-        /// <param name="indexBy">The index by.</param>
         /// <returns>IEnumerable{BaseItem}.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public virtual IEnumerable<BaseItem> GetChildren(User user, bool includeLinkedChildren, string indexBy = null)
+        public virtual IEnumerable<BaseItem> GetChildren(User user, bool includeLinkedChildren)
         {
             if (user == null)
             {
@@ -999,19 +709,7 @@ namespace MediaBrowser.Controller.Entities
             }
 
             //the true root should return our users root folder children
-            if (IsPhysicalRoot) return user.RootFolder.GetChildren(user, includeLinkedChildren, indexBy);
-
-            IEnumerable<BaseItem> result = null;
-
-            if (!string.IsNullOrEmpty(indexBy))
-            {
-                result = GetIndexedChildren(user, indexBy);
-            }
-
-            if (result != null)
-            {
-                return result;
-            }
+            if (IsPhysicalRoot) return user.RootFolder.GetChildren(user, includeLinkedChildren);
 
             var list = new List<BaseItem>();
 

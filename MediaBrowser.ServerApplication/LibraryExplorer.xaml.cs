@@ -100,7 +100,7 @@ namespace MediaBrowser.ServerApplication
                              var prefs = ddlProfile.SelectedItem != null ? _displayPreferencesManager.GetDisplayPreferences(currentFolder.DisplayPreferencesId, (ddlProfile.SelectedItem as User).Id, "LibraryExplorer") ?? new DisplayPreferences { SortBy = ItemSortBy.SortName } : new DisplayPreferences { SortBy = ItemSortBy.SortName };
                              var node = new TreeViewItem { Tag = currentFolder };
 
-                             var subChildren = currentFolder.GetChildren(CurrentUser, true, prefs.IndexBy);
+                             var subChildren = currentFolder.GetChildren(CurrentUser, true);
                              subChildren = OrderByName(subChildren, CurrentUser);
                              AddChildren(node, subChildren, CurrentUser);
                              node.Header = currentFolder.Name + " (" +
@@ -371,7 +371,7 @@ namespace MediaBrowser.ServerApplication
                                                             //re-build the current item's children as an index
                                                             prefs.IndexBy = ddlIndexBy.SelectedItem as string;
                                                             treeItem.Items.Clear();
-                                                            AddChildren(treeItem, OrderBy(folder.GetChildren(CurrentUser, true, prefs.IndexBy), CurrentUser, prefs.SortBy), CurrentUser);
+                                                            AddChildren(treeItem, OrderBy(folder.GetChildren(CurrentUser, true), CurrentUser, prefs.SortBy), CurrentUser);
                                                             treeItem.Header = folder.Name + "(" +
                                                                               treeItem.Items.Count + ")";
                                                             Cursor = Cursors.Arrow;
@@ -412,7 +412,7 @@ namespace MediaBrowser.ServerApplication
                                                             //re-sort
                                                             prefs.SortBy = ddlSortBy.SelectedItem as string;
                                                             treeItem.Items.Clear();
-                                                            AddChildren(treeItem, OrderBy(folder.GetChildren(CurrentUser, true, prefs.IndexBy), CurrentUser, prefs.SortBy ?? ItemSortBy.SortName), CurrentUser);
+                                                            AddChildren(treeItem, OrderBy(folder.GetChildren(CurrentUser, true), CurrentUser, prefs.SortBy ?? ItemSortBy.SortName), CurrentUser);
                                                             treeItem.Header = folder.Name + "(" +
                                                                               treeItem.Items.Count + ")";
                                                             Cursor = Cursors.Arrow;

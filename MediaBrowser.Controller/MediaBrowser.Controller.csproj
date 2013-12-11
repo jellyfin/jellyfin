@@ -147,7 +147,6 @@
     <Compile Include="Entities\Folder.cs" />
     <Compile Include="Entities\Genre.cs" />
     <Compile Include="Entities\ICollectionFolder.cs" />
-    <Compile Include="Entities\IndexFolder.cs" />
     <Compile Include="Entities\IVirtualFolderCreator.cs" />
     <Compile Include="Entities\Movies\BoxSet.cs" />
     <Compile Include="Entities\Movies\Movie.cs" />
