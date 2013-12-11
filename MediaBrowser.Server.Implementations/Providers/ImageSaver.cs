@@ -472,6 +472,11 @@ namespace MediaBrowser.Server.Implementations.Providers
 
                 if (imageIndex.Value == 0)
                 {
+                    if (item.IsInMixedFolder)
+                    {
+                        return new[] { GetSavePathForItemInMixedFolder(item, type, "fanart", extension) };
+                    }
+
                     if (season != null && item.IndexNumber.HasValue)
                     {
                         var seriesFolder = season.SeriesPath;
@@ -493,6 +498,11 @@ namespace MediaBrowser.Server.Implementations.Providers
 
                 var outputIndex = imageIndex.Value;
 
+                if (item.IsInMixedFolder)
+                {
+                    return new[] { GetSavePathForItemInMixedFolder(item, type, "fanart" + outputIndex.ToString(UsCulture), extension) };
+                }
+                
                 var extraFanartFilename = GetBackdropSaveFilename(item.BackdropImagePaths, "fanart", "fanart", outputIndex);
 
                 return new[]
@@ -526,7 +536,7 @@ namespace MediaBrowser.Server.Implementations.Providers
                     return new[] { Path.Combine(seasonFolder, imageFilename) };
                 }
 
-                if (item.IsInMixedFolder)
+                if (item.IsInMixedFolder || item is MusicVideo)
                 {
                     return new[] { GetSavePathForItemInMixedFolder(item, type, string.Empty, extension) };
                 }
