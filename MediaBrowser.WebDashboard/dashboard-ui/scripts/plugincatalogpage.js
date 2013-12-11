@@ -43,8 +43,6 @@
         $.when(promise1, promise2).done(function (response1, response2) {
             populateList(page, response1[0], response2[0]);
         });
-
-        Dashboard.hideLoadingMsg();
     }
 
     function populateList(page, availablePlugins, installedPlugins) {
