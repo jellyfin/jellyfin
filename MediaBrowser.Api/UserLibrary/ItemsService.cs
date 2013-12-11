@@ -53,12 +53,6 @@ namespace MediaBrowser.Api.UserLibrary
         public string SearchTerm { get; set; }
 
         /// <summary>
-        /// The dynamic, localized index function name
-        /// </summary>
-        /// <value>The index by.</value>
-        public string IndexBy { get; set; }
-
-        /// <summary>
         /// Limit results to items containing specific genres
         /// </summary>
         /// <value>The genres.</value>
@@ -358,7 +352,7 @@ namespace MediaBrowser.Api.UserLibrary
             }
             else
             {
-                items = ((Folder)item).GetChildren(user, true, request.IndexBy);
+                items = ((Folder)item).GetChildren(user, true);
             }
 
             if (request.IncludeIndexContainers)

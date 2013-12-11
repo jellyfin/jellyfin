@@ -141,12 +141,6 @@ namespace MediaBrowser.Model.Querying
         public string SearchTerm { get; set; }
 
         /// <summary>
-        /// The dynamic, localized index function name
-        /// </summary>
-        /// <value>The index by.</value>
-        public string IndexBy { get; set; }
-
-        /// <summary>
         /// Gets or sets the image types.
         /// </summary>
         /// <value>The image types.</value>

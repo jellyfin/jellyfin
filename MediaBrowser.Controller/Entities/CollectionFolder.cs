@@ -58,13 +58,6 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>Task.</returns>
         protected override Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool? recursive = null, bool forceRefreshMetadata = false)
         {
-            //we don't directly validate our children
-            //but we do need to clear out the index cache...
-            if (IndexCache != null)
-            {
-                IndexCache.Clear();
-            }
-
             ResetDynamicChildren();
 
             return NullTaskResult;

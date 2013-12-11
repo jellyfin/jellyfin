@@ -85,7 +85,7 @@ namespace MediaBrowser.Api.Library
             {
                 allTypes = allTypes.Where(t =>
                 {
-                    if (t == typeof(UserRootFolder) || t == typeof(AggregateFolder) || t == typeof(Folder) || t == typeof(IndexFolder) || t == typeof(CollectionFolder) || t == typeof(Year))
+                    if (t == typeof(UserRootFolder) || t == typeof(AggregateFolder) || t == typeof(Folder) || t == typeof(CollectionFolder) || t == typeof(Year))
                     {
                         return false;
                     }

@@ -292,8 +292,6 @@ namespace MediaBrowser.Server.Implementations.Dto
             return info;
         }
 
-        const string IndexFolderDelimeter = "-index-";
-
         /// <summary>
         /// Gets client-side Id of a server-side BaseItem
         /// </summary>
@@ -305,13 +303,6 @@ namespace MediaBrowser.Server.Implementations.Dto
             if (item == null)
             {
                 throw new ArgumentNullException("item");
-            }
-
-            var indexFolder = item as IndexFolder;
-
-            if (indexFolder != null)
-            {
-                return GetDtoId(indexFolder.Parent) + IndexFolderDelimeter + (indexFolder.IndexName ?? string.Empty) + IndexFolderDelimeter + indexFolder.Id;
             }
 
             return item.Id.ToString("N");
@@ -618,26 +609,15 @@ namespace MediaBrowser.Server.Implementations.Dto
                 throw new ArgumentNullException("id");
             }
 
-            // If the item is an indexed folder we have to do a special routine to get it
-            var isIndexFolder = id.IndexOf(IndexFolderDelimeter, StringComparison.OrdinalIgnoreCase) != -1;
-
-            if (isIndexFolder)
-            {
-                if (userId.HasValue)
-                {
-                    return GetIndexFolder(id, userId.Value);
-                }
-            }
-
             BaseItem item = null;
 
-            if (userId.HasValue || !isIndexFolder)
+            if (userId.HasValue)
             {
                 item = _libraryManager.GetItemById(new Guid(id));
             }
 
             // If we still don't find it, look within individual user views
-            if (item == null && !userId.HasValue && isIndexFolder)
+            if (item == null && !userId.HasValue)
             {
                 foreach (var user in _userManager.Users)
                 {
@@ -651,60 +631,6 @@ namespace MediaBrowser.Server.Implementations.Dto
             }
 
             return item;
-        }
-
-        /// <summary>
-        /// Finds an index folder based on an Id and userId
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <param name="userId">The user id.</param>
-        /// <returns>BaseItem.</returns>
-        private BaseItem GetIndexFolder(string id, Guid userId)
-        {
-            var user = _userManager.GetUserById(userId);
-
-            var stringSeparators = new[] { IndexFolderDelimeter };
-
-            // Split using the delimeter
-            var values = id.Split(stringSeparators, StringSplitOptions.None).ToList();
-
-            // Get the top folder normally using the first id
-            var folder = GetItemByDtoId(values[0], userId) as Folder;
-
-            values.RemoveAt(0);
-
-            // Get indexed folders using the remaining values in the id string
-            return GetIndexFolder(values, folder, user);
-        }
-
-        /// <summary>
-        /// Gets indexed folders based on a list of index names and folder id's
-        /// </summary>
-        /// <param name="values">The values.</param>
-        /// <param name="parentFolder">The parent folder.</param>
-        /// <param name="user">The user.</param>
-        /// <returns>BaseItem.</returns>
-        private BaseItem GetIndexFolder(List<string> values, Folder parentFolder, User user)
-        {
-            // The index name is first
-            var indexBy = values[0];
-
-            // The index folder id is next
-            var indexFolderId = new Guid(values[1]);
-
-            // Remove them from the lst
-            values.RemoveRange(0, 2);
-
-            // Get the IndexFolder
-            var indexFolder = parentFolder.GetChildren(user, false, indexBy).FirstOrDefault(i => i.Id == indexFolderId) as Folder;
-
-            // Nested index folder
-            if (values.Count > 0)
-            {
-                return GetIndexFolder(values, indexFolder, user);
-            }
-
-            return indexFolder;
         }
 
         /// <summary>
