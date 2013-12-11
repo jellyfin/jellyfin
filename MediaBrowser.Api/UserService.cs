@@ -5,11 +5,11 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Users;
 using ServiceStack;
+using ServiceStack.Text.Controller;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using ServiceStack.Text.Controller;
 
 namespace MediaBrowser.Api
 {
@@ -269,13 +269,13 @@ namespace MediaBrowser.Api
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public async Task Post(AuthenticateUser request)
+        public void Post(AuthenticateUser request)
         {
             // No response needed. Will throw an exception on failure.
-            await AuthenticateUser(request).ConfigureAwait(false);
+            var result = AuthenticateUser(request).Result;
         }
 
-        public async Task<object> Post(AuthenticateUserByName request)
+        public object Post(AuthenticateUserByName request)
         {
             var user = _userManager.Users.FirstOrDefault(i => string.Equals(request.Username, i.Name, StringComparison.OrdinalIgnoreCase));
 
@@ -284,7 +284,7 @@ namespace MediaBrowser.Api
                 throw new ArgumentException(string.Format("User {0} not found.", request.Username));
             }
 
-            var result = await AuthenticateUser(new AuthenticateUser { Id = user.Id, Password = request.Password }).ConfigureAwait(false);
+            var result = AuthenticateUser(new AuthenticateUser { Id = user.Id, Password = request.Password }).Result;
 
             return ToOptimizedResult(result);
         }
