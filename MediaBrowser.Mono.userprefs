@@ -1,12 +1,11 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="C:\Program Files (x86)\Mono-3.2.3\lib\mono\4.0\Microsoft.Common.targets">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Release Mono" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="MediaBrowser.Server.Mono\app.config">
     <Files>
-      <File FileName="MediaBrowser.Server.Mono\app.config" Line="1" Column="1" />
+      <File FileName="MediaBrowser.Server.Mono\app.config" Line="6" Column="28" />
       <File FileName="MediaBrowser.Server.Mono\FFMpeg\FFMpegDownloadInfo.cs" Line="1" Column="1" />
       <File FileName="MediaBrowser.Server.Mono\Program.cs" Line="1" Column="1" />
-      <File FileName="MediaBrowser.Server.Implementations\Library\UserManager.cs" Line="407" Column="4" />
-      <File FileName="C:\Program Files (x86)\Mono-3.2.3\lib\mono\4.0\Microsoft.Common.targets" Line="8" Column="15" />
+      <File FileName="MediaBrowser.Server.Implementations\Library\UserManager.cs" Line="1" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
