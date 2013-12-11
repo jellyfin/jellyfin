@@ -193,18 +193,6 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetNextUpEpisodes request)
         {
-            var result = GetNextUpEpisodeItemsResult(request);
-
-            return ToOptimizedResult(result);
-        }
-
-        /// <summary>
-        /// Gets the next up episodes.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>Task{ItemsResult}.</returns>
-        private ItemsResult GetNextUpEpisodeItemsResult(GetNextUpEpisodes request)
-        {
             var user = _userManager.GetUserById(request.UserId);
 
             var itemsList = GetNextUpEpisodes(request)
@@ -216,11 +204,13 @@ namespace MediaBrowser.Api
 
             var returnItems = pagedItems.Select(i => _dtoService.GetBaseItemDto(i, fields, user)).ToArray();
 
-            return new ItemsResult
+            var result = new ItemsResult
             {
                 TotalRecordCount = itemsList.Count,
                 Items = returnItems
             };
+
+            return ToOptimizedResult(result);
         }
 
         public IEnumerable<Episode> GetNextUpEpisodes(GetNextUpEpisodes request)
@@ -274,13 +264,11 @@ namespace MediaBrowser.Api
         /// <returns>Task{Episode}.</returns>
         private Tuple<Episode, DateTime> GetNextUp(Series series, User user, GetNextUpEpisodes request)
         {
-            var allEpisodes = series.GetRecursiveChildren(user)
-                .OfType<Episode>()
-                .OrderByDescending(i => i.PremiereDate ?? DateTime.MinValue)
-                .ThenByDescending(i => i.IndexNumber ?? 0)
+            // Get them in display order, then reverse
+            var allEpisodes = series.GetSeasons(user, true, true)
+                .SelectMany(i => i.GetEpisodes(user, true, true))
+                .Reverse()
                 .ToList();
-
-            allEpisodes = FilterItems(request, allEpisodes).ToList();
 
             Episode lastWatched = null;
             var lastWatchedDate = DateTime.MinValue;
@@ -303,7 +291,10 @@ namespace MediaBrowser.Api
                 }
                 else
                 {
-                    nextUp = episode;
+                    if (episode.LocationType != LocationType.Virtual)
+                    {
+                        nextUp = episode;
+                    }
                 }
             }
 
@@ -313,15 +304,6 @@ namespace MediaBrowser.Api
             }
 
             return new Tuple<Episode, DateTime>(null, lastWatchedDate);
-        }
-
-
-        private IEnumerable<Episode> FilterItems(GetNextUpEpisodes request, IEnumerable<Episode> items)
-        {
-            // Make this configurable when needed
-            items = items.Where(i => i.LocationType != LocationType.Virtual);
-
-            return items;
         }
 
         private IEnumerable<Series> FilterSeries(GetNextUpEpisodes request, IEnumerable<Series> items)
@@ -369,6 +351,7 @@ namespace MediaBrowser.Api
             {
                 throw new ResourceNotFoundException("No series exists with Id " + request.Id);
             }
+
             var seasons = series.GetSeasons(user);
 
             if (request.IsSpecialSeason.HasValue)

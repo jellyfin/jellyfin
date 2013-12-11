@@ -129,22 +129,27 @@ namespace MediaBrowser.Controller.Entities.TV
 
         public IEnumerable<Season> GetSeasons(User user)
         {
+            var config = user.Configuration;
+
+            return GetSeasons(user, config.DisplayMissingEpisodes, config.DisplayUnairedEpisodes);
+        }
+
+        public IEnumerable<Season> GetSeasons(User user, bool includeMissingSeasons, bool includeVirtualUnaired)
+        {
             var seasons = base.GetChildren(user, true)
                 .OfType<Season>();
 
-            var config = user.Configuration;
-
-            if (!config.DisplayMissingEpisodes && !config.DisplayUnairedEpisodes)
+            if (!includeMissingSeasons && !includeVirtualUnaired)
             {
                 seasons = seasons.Where(i => !i.IsMissingOrVirtualUnaired);
             }
             else
             {
-                if (!config.DisplayMissingEpisodes)
+                if (!includeMissingSeasons)
                 {
                     seasons = seasons.Where(i => !i.IsMissingSeason);
                 }
-                if (!config.DisplayUnairedEpisodes)
+                if (!includeVirtualUnaired)
                 {
                     seasons = seasons.Where(i => !i.IsVirtualUnaired);
                 }
@@ -152,23 +157,28 @@ namespace MediaBrowser.Controller.Entities.TV
 
             return LibraryManager
                 .Sort(seasons, user, new[] { ItemSortBy.SortName }, SortOrder.Ascending)
-                .Cast<Season>(); 
+                .Cast<Season>();
         }
 
         public IEnumerable<Episode> GetEpisodes(User user, int seasonNumber)
+        {
+            var config = user.Configuration;
+
+            return GetEpisodes(user, seasonNumber, config.DisplayMissingEpisodes, config.DisplayUnairedEpisodes);
+        }
+
+        public IEnumerable<Episode> GetEpisodes(User user, int seasonNumber, bool includeMissingEpisodes, bool includeVirtualUnairedEpisodes)
         {
             var episodes = GetRecursiveChildren(user)
                 .OfType<Episode>();
 
             episodes = FilterEpisodesBySeason(episodes, seasonNumber, DisplaySpecialsWithSeasons);
 
-            var config = user.Configuration;
-
-            if (!config.DisplayMissingEpisodes)
+            if (!includeMissingEpisodes)
             {
                 episodes = episodes.Where(i => !i.IsMissingEpisode);
             }
-            if (!config.DisplayUnairedEpisodes)
+            if (!includeVirtualUnairedEpisodes)
             {
                 episodes = episodes.Where(i => !i.IsVirtualUnaired);
             }
