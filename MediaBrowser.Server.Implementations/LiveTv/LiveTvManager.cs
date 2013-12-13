@@ -506,7 +506,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             var dto = new TimerInfoDto
             {
                 ChannelName = info.ChannelName,
-                Description = info.Description,
+                Overview = info.Overview,
                 EndDate = info.EndDate,
                 Name = info.Name,
                 StartDate = info.StartDate,

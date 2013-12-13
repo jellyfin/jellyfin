@@ -40,7 +40,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <summary>
         /// Description of the recording.
         /// </summary>
-        public string Description { get; set; }
+        public string Overview { get; set; }
 
         /// <summary>
         /// The start date of the recording, in UTC.

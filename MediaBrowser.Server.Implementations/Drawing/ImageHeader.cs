@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
@@ -68,6 +67,8 @@ namespace MediaBrowser.Server.Implementations.Drawing
                 using (var memoryStream = new MemoryStream())
                 {
                     fs.CopyTo(memoryStream);
+
+                    memoryStream.Position = 0;
 
                     // Co it the old fashioned way
                     using (var b = Image.FromStream(memoryStream, true, false))
