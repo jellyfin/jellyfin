@@ -30,5 +30,11 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value>The type of the channel.</value>
         public ChannelType ChannelType { get; set; }
+
+        /// <summary>
+        /// Set this value to true or false if it is known via channel info whether there is an image or not.
+        /// Leave it null if the only way to determine is by requesting the image and handling the failure.
+        /// </summary>
+        public bool? HasImage { get; set; }
     }
 }

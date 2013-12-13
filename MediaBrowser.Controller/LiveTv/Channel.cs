@@ -50,6 +50,8 @@ namespace MediaBrowser.Controller.LiveTv
         /// <value>The type of the channel.</value>
         public ChannelType ChannelType { get; set; }
 
+        public bool? HasProviderImage { get; set; }
+        
         protected override string CreateSortName()
         {
             double number = 0;

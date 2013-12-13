@@ -269,7 +269,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     Path = path,
                     ChannelId = channelInfo.Id,
                     ChannelNumber = channelInfo.Number,
-                    ServiceName = serviceName
+                    ServiceName = serviceName,
+                    HasProviderImage = channelInfo.HasImage
                 };
 
                 isNew = true;
