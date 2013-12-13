@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Common.Progress;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
@@ -36,7 +37,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
             _fileSystem = fileSystem;
         }
 
-        public async Task<FFMpegInfo> GetFFMpegInfo()
+        public async Task<FFMpegInfo> GetFFMpegInfo(IProgress<double> progress)
         {
             var versionedDirectoryPath = Path.Combine(GetMediaToolsPath(true), FFMpegDownloadInfo.Version);
 
@@ -51,25 +52,64 @@ namespace MediaBrowser.ServerApplication.FFMpeg
 
             var tasks = new List<Task>();
 
+            double ffmpegPercent = 0;
+            double fontPercent = 0;
+            var syncLock = new object();
+
             if (!File.Exists(info.ProbePath) || !File.Exists(info.Path))
             {
-                tasks.Add(DownloadFFMpeg(info));
+                var ffmpegProgress = new ActionableProgress<double>();
+                ffmpegProgress.RegisterAction(p =>
+                {
+                    ffmpegPercent = p;
+
+                    lock (syncLock)
+                    {
+                        progress.Report((ffmpegPercent / 2) + (fontPercent / 2));
+                    }
+                });
+
+                tasks.Add(DownloadFFMpeg(info, ffmpegProgress));
+            }
+            else
+            {
+                ffmpegPercent = 100;
+                progress.Report(50);
             }
 
-            tasks.Add(DownloadFonts(versionedDirectoryPath));
+            var fontProgress = new ActionableProgress<double>();
+            fontProgress.RegisterAction(p =>
+            {
+                fontPercent = p;
+
+                lock (syncLock)
+                {
+                    progress.Report((ffmpegPercent / 2) + (fontPercent / 2));
+                }
+            });
+
+            tasks.Add(DownloadFonts(versionedDirectoryPath, fontProgress));
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
 
             return info;
         }
 
-        private async Task DownloadFFMpeg(FFMpegInfo info)
+        private async Task DownloadFFMpeg(FFMpegInfo info, IProgress<double> progress)
         {
             foreach (var url in FFMpegDownloadInfo.FfMpegUrls)
             {
+                progress.Report(0);
+
                 try
                 {
-                    var tempFile = await DownloadFFMpeg(info, url).ConfigureAwait(false);
+                    var tempFile = await _httpClient.GetTempFile(new HttpRequestOptions
+                    {
+                        Url = url,
+                        CancellationToken = CancellationToken.None,
+                        Progress = progress
+
+                    }).ConfigureAwait(false);
 
                     ExtractFFMpeg(tempFile, Path.GetDirectoryName(info.Path));
                     return;
@@ -81,16 +121,6 @@ namespace MediaBrowser.ServerApplication.FFMpeg
             }
 
             throw new ApplicationException("Unable to download required components. Please try again later.");
-        }
-
-        private Task<string> DownloadFFMpeg(FFMpegInfo info, string url)
-        {
-            return _httpClient.GetTempFile(new HttpRequestOptions
-            {
-                Url = url,
-                CancellationToken = CancellationToken.None,
-                Progress = new Progress<double>()
-            });
         }
 
         private void ExtractFFMpeg(string tempFile, string targetFolder)
@@ -157,7 +187,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
         /// Extracts the fonts.
         /// </summary>
         /// <param name="targetPath">The target path.</param>
-        private async Task DownloadFonts(string targetPath)
+        private async Task DownloadFonts(string targetPath, IProgress<double> progress)
         {
             try
             {
@@ -171,7 +201,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
 
                 if (!File.Exists(fontFile))
                 {
-                    await DownloadFontFile(fontsDirectory, fontFilename).ConfigureAwait(false);
+                    await DownloadFontFile(fontsDirectory, fontFilename, progress).ConfigureAwait(false);
                 }
 
                 await WriteFontConfigFile(fontsDirectory).ConfigureAwait(false);
@@ -186,6 +216,8 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                 // Don't let the server crash because of this
                 _logger.ErrorException("Error writing ffmpeg font files", ex);
             }
+
+            progress.Report(100);
         }
 
         /// <summary>
@@ -194,7 +226,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
         /// <param name="fontsDirectory">The fonts directory.</param>
         /// <param name="fontFilename">The font filename.</param>
         /// <returns>Task.</returns>
-        private async Task DownloadFontFile(string fontsDirectory, string fontFilename)
+        private async Task DownloadFontFile(string fontsDirectory, string fontFilename, IProgress<double> progress)
         {
             var existingFile = Directory
                 .EnumerateFiles(_appPaths.ProgramDataPath, fontFilename, SearchOption.AllDirectories)
@@ -218,12 +250,14 @@ namespace MediaBrowser.ServerApplication.FFMpeg
 
             foreach (var url in _fontUrls)
             {
+                progress.Report(0);
+
                 try
                 {
                     tempFile = await _httpClient.GetTempFile(new HttpRequestOptions
                     {
                         Url = url,
-                        Progress = new Progress<double>()
+                        Progress = progress
 
                     }).ConfigureAwait(false);
 

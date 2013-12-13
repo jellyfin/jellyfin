@@ -72,12 +72,14 @@ namespace MediaBrowser.ServerApplication
         {
             try
             {
+                var initProgress = new Progress<double>();
+
                 if (!IsRunningAsService)
                 {
-                    ShowSplashWindow();
+                    ShowSplashWindow(initProgress);
                 }
 
-                await _appHost.Init();
+                await _appHost.Init(initProgress);
 
                 var task = _appHost.RunStartupTasks();
 
@@ -131,9 +133,9 @@ namespace MediaBrowser.ServerApplication
         }
 
         private SplashWindow _splashWindow;
-        private void ShowSplashWindow()
+        private void ShowSplashWindow(Progress<double> progress)
         {
-            var win = new SplashWindow(_appHost.ApplicationVersion);
+            var win = new SplashWindow(_appHost.ApplicationVersion, progress);
             win.Show();
 
             _splashWindow = win;

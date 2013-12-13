@@ -9,6 +9,7 @@ using MediaBrowser.Common.Implementations.Updates;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
+using MediaBrowser.Common.Progress;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Common.Security;
 using MediaBrowser.Common.Updates;
@@ -180,7 +181,7 @@ namespace MediaBrowser.Common.Implementations
         /// Inits this instance.
         /// </summary>
         /// <returns>Task.</returns>
-        public virtual async Task Init()
+        public virtual async Task Init(IProgress<double> progress)
         {
             try
             {
@@ -191,38 +192,39 @@ namespace MediaBrowser.Common.Implementations
             {
                 // Failing under mono
             }
+            progress.Report(1);
 
             JsonSerializer = CreateJsonSerializer();
 
             IsFirstRun = !ConfigurationManager.CommonConfiguration.IsStartupWizardCompleted;
+            progress.Report(2);
 
             Logger = LogManager.GetLogger("App");
 
             LogManager.LogSeverity = ConfigurationManager.CommonConfiguration.EnableDebugLevelLogging
                                          ? LogSeverity.Debug
                                          : LogSeverity.Info;
-
-            OnLoggerLoaded();
+            progress.Report(3);
 
             DiscoverTypes();
+            progress.Report(14);
 
             Logger.Info("Version {0} initializing", ApplicationVersion);
 
             SetHttpLimit();
+            progress.Report(15);
 
-            await RegisterResources().ConfigureAwait(false);
+            var innerProgress = new ActionableProgress<double>();
+            innerProgress.RegisterAction(p => progress.Report((.8 * p) + 15));
+
+            await RegisterResources(innerProgress).ConfigureAwait(false);
 
             FindParts();
+            progress.Report(95);
 
             await InstallIsoMounters(CancellationToken.None).ConfigureAwait(false);
-        }
 
-        /// <summary>
-        /// Called when [logger loaded].
-        /// </summary>
-        protected virtual void OnLoggerLoaded()
-        {
-
+            progress.Report(100);
         }
 
         protected virtual IJsonSerializer CreateJsonSerializer()
@@ -348,7 +350,7 @@ namespace MediaBrowser.Common.Implementations
         /// Registers resources that classes will depend on
         /// </summary>
         /// <returns>Task.</returns>
-        protected virtual Task RegisterResources()
+        protected virtual Task RegisterResources(IProgress<double> progress)
         {
             return Task.Run(() =>
             {

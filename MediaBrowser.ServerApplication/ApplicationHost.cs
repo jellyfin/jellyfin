@@ -8,6 +8,7 @@ using MediaBrowser.Common.Implementations.ScheduledTasks;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
@@ -170,8 +171,6 @@ namespace MediaBrowser.ServerApplication
         private IItemRepository ItemRepository { get; set; }
         private INotificationsRepository NotificationsRepository { get; set; }
 
-        private Task<IHttpServer> _httpServerCreationTask;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="ApplicationHost"/> class.
         /// </summary>
@@ -216,24 +215,14 @@ namespace MediaBrowser.ServerApplication
         }
 
         /// <summary>
-        /// Called when [logger loaded].
-        /// </summary>
-        protected override void OnLoggerLoaded()
-        {
-            base.OnLoggerLoaded();
-
-            _httpServerCreationTask = Task.Run(() => ServerFactory.CreateServer(this, LogManager, "Media Browser", "mediabrowser", "dashboard/index.html"));
-        }
-
-        /// <summary>
         /// Registers resources that classes will depend on
         /// </summary>
         /// <returns>Task.</returns>
-        protected override async Task RegisterResources()
+        protected override async Task RegisterResources(IProgress<double> progress)
         {
             ServerKernel = new Kernel();
 
-            await base.RegisterResources().ConfigureAwait(false);
+            await base.RegisterResources(progress).ConfigureAwait(false);
 
             RegisterSingleInstance<IHttpResultFactory>(new HttpResultFactory(LogManager, FileSystemManager));
 
@@ -246,8 +235,6 @@ namespace MediaBrowser.ServerApplication
             RegisterSingleInstance<IWebSocketServer>(() => new AlchemyServer(Logger));
 
             RegisterSingleInstance<IBlurayExaminer>(() => new BdInfoExaminer());
-
-            var mediaEncoderTask = RegisterMediaEncoder();
 
             UserDataManager = new UserDataManager(LogManager);
             RegisterSingleInstance(UserDataManager);
@@ -278,8 +265,9 @@ namespace MediaBrowser.ServerApplication
             SessionManager = new SessionManager(UserDataManager, ServerConfigurationManager, Logger, UserRepository, LibraryManager);
             RegisterSingleInstance(SessionManager);
 
-            HttpServer = await _httpServerCreationTask.ConfigureAwait(false);
+            HttpServer = ServerFactory.CreateServer(this, LogManager, "Media Browser", "mediabrowser", "dashboard/index.html");
             RegisterSingleInstance(HttpServer, false);
+            progress.Report(10);
 
             ServerManager = new ServerManager(this, JsonSerializer, Logger, ServerConfigurationManager);
             RegisterSingleInstance(ServerManager);
@@ -295,14 +283,23 @@ namespace MediaBrowser.ServerApplication
 
             LiveTvManager = new LiveTvManager(ApplicationPaths, FileSystemManager, Logger, ItemRepository, ImageProcessor, UserManager, LocalizationManager, UserDataManager, DtoService);
             RegisterSingleInstance(LiveTvManager);
+            progress.Report(15);
+
+            var innerProgress = new ActionableProgress<double>();
+            innerProgress.RegisterAction(p => progress.Report((.75 * p) + 15));
+
+            await RegisterMediaEncoder(innerProgress).ConfigureAwait(false);
+            progress.Report(90);
 
             var displayPreferencesTask = Task.Run(async () => await ConfigureDisplayPreferencesRepositories().ConfigureAwait(false));
             var itemsTask = Task.Run(async () => await ConfigureItemRepositories().ConfigureAwait(false));
             var userdataTask = Task.Run(async () => await ConfigureUserDataRepositories().ConfigureAwait(false));
 
             await ConfigureNotificationsRepository().ConfigureAwait(false);
+            progress.Report(92);
 
-            await Task.WhenAll(itemsTask, displayPreferencesTask, userdataTask, mediaEncoderTask).ConfigureAwait(false);
+            await Task.WhenAll(itemsTask, displayPreferencesTask, userdataTask).ConfigureAwait(false);
+            progress.Report(100);
 
             SetKernelProperties();
         }
@@ -321,9 +318,9 @@ namespace MediaBrowser.ServerApplication
         /// Registers the media encoder.
         /// </summary>
         /// <returns>Task.</returns>
-        private async Task RegisterMediaEncoder()
+        private async Task RegisterMediaEncoder(IProgress<double> progress)
         {
-            var info = await new FFMpegDownloader(Logger, ApplicationPaths, HttpClient, ZipClient, FileSystemManager).GetFFMpegInfo().ConfigureAwait(false);
+            var info = await new FFMpegDownloader(Logger, ApplicationPaths, HttpClient, ZipClient, FileSystemManager).GetFFMpegInfo(progress).ConfigureAwait(false);
 
             MediaEncoder = new MediaEncoder(LogManager.GetLogger("MediaEncoder"), ApplicationPaths, JsonSerializer, info.Path, info.ProbePath, info.Version, FileSystemManager);
             RegisterSingleInstance(MediaEncoder);
