@@ -33,7 +33,9 @@
         Dashboard.setPageTitle(name);
 
         $('.itemName', page).html(name);
-        $('.itemChannelNumber', page).html(item.Number);
+        $('.itemChannelNumber', page).html(item.ChannelName);
+
+        $('.itemEpisodeName', page).html(item.EpisodeTitle);
 
         if (item.CommunityRating) {
             $('.itemCommunityRating', page).html(LibraryBrowser.getRatingHtml(item)).show();
@@ -60,6 +62,14 @@
             $('#playButtonContainer', page).show();
         } else {
             $('#playButtonContainer', page).hide();
+        }
+
+        $('.status', page).html('Status:&nbsp;&nbsp;&nbsp;' + item.Status);
+        
+        if (item.Audio) {
+            $('.audio', page).html('Audio:&nbsp;&nbsp;&nbsp;' + item.Audio).show();
+        } else {
+            $('.audio', page).hide();
         }
 
         Dashboard.getCurrentUser().done(function (user) {

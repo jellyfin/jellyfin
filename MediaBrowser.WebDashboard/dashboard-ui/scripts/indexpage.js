@@ -173,32 +173,20 @@
 
             var views = [];
 
-            var showViewsHeader;
-
             if (counts.MovieCount || counts.TrailerCount) {
-                showViewsHeader = true;
                 views.push({ id: "moviesView", name: "Movies", url: "moviesrecommended.html", img: "css/images/items/list/chapter.png", background: "#0094FF" });
             }
 
             if (counts.EpisodeCount || counts.SeriesCount) {
-                showViewsHeader = true;
                 views.push({ id: "tvView", name: "TV Shows", url: "tvrecommended.html", img: "css/images/items/list/collection.png", background: "#FF870F" });
             }
 
             if (counts.SongCount || counts.MusicVideoCount) {
-                showViewsHeader = true;
                 views.push({ id: "musicView", name: "Music", url: "musicrecommended.html", img: "css/images/items/list/audiocollection.png", background: "#6FBD45" });
             }
 
             if (counts.GameCount) {
-                showViewsHeader = true;
                 views.push({ id: "gamesView", name: "Games", url: "gamesrecommended.html", img: "css/images/items/list/gamecollection.png", background: "#E12026" });
-            }
-
-            if (showViewsHeader) {
-                $('#viewsHeader', page).show();
-            } else {
-                $('#viewsHeader', page).hide();
             }
 
             var html = '';

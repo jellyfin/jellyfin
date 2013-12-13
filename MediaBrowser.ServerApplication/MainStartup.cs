@@ -36,7 +36,9 @@ namespace MediaBrowser.ServerApplication
             var startFlag = Environment.GetCommandLineArgs().ElementAtOrDefault(1);
             _isRunningAsService = string.Equals(startFlag, "-service", StringComparison.OrdinalIgnoreCase);
 
-            var appPaths = CreateApplicationPaths(_isRunningAsService);
+            var applicationPath = Process.GetCurrentProcess().MainModule.FileName;
+
+            var appPaths = CreateApplicationPaths(applicationPath, _isRunningAsService);
 
             var logManager = new NlogManager(appPaths.LogDirectoryPath, "server");
             logManager.ReloadLogger(LogSeverity.Debug);
@@ -49,7 +51,7 @@ namespace MediaBrowser.ServerApplication
             if (string.Equals(startFlag, "-installservice", StringComparison.OrdinalIgnoreCase))
             {
                 logger.Info("Performing service installation");
-                InstallService(logger);
+                InstallService(applicationPath, logger);
                 return;
             }
 
@@ -57,7 +59,7 @@ namespace MediaBrowser.ServerApplication
             if (string.Equals(startFlag, "-installserviceasadmin", StringComparison.OrdinalIgnoreCase))
             {
                 logger.Info("Performing service installation");
-                RunServiceInstallation();
+                RunServiceInstallation(applicationPath);
                 return;
             }
 
@@ -65,7 +67,7 @@ namespace MediaBrowser.ServerApplication
             if (string.Equals(startFlag, "-uninstallservice", StringComparison.OrdinalIgnoreCase))
             {
                 logger.Info("Performing service uninstallation");
-                UninstallService(logger);
+                UninstallService(applicationPath, logger);
                 return;
             }
 
@@ -73,17 +75,17 @@ namespace MediaBrowser.ServerApplication
             if (string.Equals(startFlag, "-uninstallserviceasadmin", StringComparison.OrdinalIgnoreCase))
             {
                 logger.Info("Performing service uninstallation");
-                RunServiceUninstallation();
+                RunServiceUninstallation(applicationPath);
                 return;
             }
 
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
-            RunServiceInstallationIfNeeded();
+            RunServiceInstallationIfNeeded(applicationPath);
 
             var currentProcess = Process.GetCurrentProcess();
 
-            if (IsAlreadyRunning(currentProcess))
+            if (IsAlreadyRunning(applicationPath, currentProcess))
             {
                 logger.Info("Shutting down because another instance of Media Browser Server is already running.");
                 return;
@@ -110,21 +112,19 @@ namespace MediaBrowser.ServerApplication
         /// </summary>
         /// <param name="currentProcess">The current process.</param>
         /// <returns><c>true</c> if [is already running] [the specified current process]; otherwise, <c>false</c>.</returns>
-        private static bool IsAlreadyRunning(Process currentProcess)
+        private static bool IsAlreadyRunning(string applicationPath, Process currentProcess)
         {
-            var runningPath = currentProcess.MainModule.FileName;
-
             var duplicate = Process.GetProcesses().FirstOrDefault(i =>
+            {
+                try
                 {
-                    try
-                    {
-                        return string.Equals(runningPath, i.MainModule.FileName) && currentProcess.Id != i.Id;
-                    }
-                    catch (Exception)
-                    {
-                        return false;
-                    }
-                });
+                    return string.Equals(applicationPath, i.MainModule.FileName) && currentProcess.Id != i.Id;
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
+            });
 
             if (duplicate != null)
             {
@@ -145,18 +145,16 @@ namespace MediaBrowser.ServerApplication
         /// </summary>
         /// <param name="runAsService">if set to <c>true</c> [run as service].</param>
         /// <returns>ServerApplicationPaths.</returns>
-        private static ServerApplicationPaths CreateApplicationPaths(bool runAsService)
+        private static ServerApplicationPaths CreateApplicationPaths(string applicationPath, bool runAsService)
         {
             if (runAsService)
             {
-                var systemPath = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
+                var systemPath = Path.GetDirectoryName(applicationPath);
 
                 var programDataPath = Path.GetDirectoryName(systemPath);
 
-                return new ServerApplicationPaths(programDataPath);
+                return new ServerApplicationPaths(programDataPath, applicationPath);
             }
-
-            var applicationPath = Process.GetCurrentProcess().MainModule.FileName;
 
             return new ServerApplicationPaths(applicationPath);
         }
@@ -199,8 +197,7 @@ namespace MediaBrowser.ServerApplication
             logger.Info("Operating system: {0}", Environment.OSVersion.ToString());
             logger.Info("Program data path: {0}", appPaths.ProgramDataPath);
 
-            var runningPath = Process.GetCurrentProcess().MainModule.FileName;
-            logger.Info("Executable: {0}", runningPath);
+            logger.Info("Application Path: {0}", appPaths.ApplicationPath);
         }
 
         /// <summary>
@@ -279,13 +276,11 @@ namespace MediaBrowser.ServerApplication
         /// <summary>
         /// Installs the service.
         /// </summary>
-        private static void InstallService(ILogger logger)
+        private static void InstallService(string applicationPath, ILogger logger)
         {
-            var runningPath = Process.GetCurrentProcess().MainModule.FileName;
-
             try
             {
-                ManagedInstallerClass.InstallHelper(new[] { runningPath });
+                ManagedInstallerClass.InstallHelper(new[] { applicationPath });
 
                 logger.Info("Service installation succeeded");
             }
@@ -298,13 +293,11 @@ namespace MediaBrowser.ServerApplication
         /// <summary>
         /// Uninstalls the service.
         /// </summary>
-        private static void UninstallService(ILogger logger)
+        private static void UninstallService(string applicationPath, ILogger logger)
         {
-            var runningPath = Process.GetCurrentProcess().MainModule.FileName;
-
             try
             {
-                ManagedInstallerClass.InstallHelper(new[] { "/u", runningPath });
+                ManagedInstallerClass.InstallHelper(new[] { "/u", applicationPath });
 
                 logger.Info("Service uninstallation succeeded");
             }
@@ -314,26 +307,24 @@ namespace MediaBrowser.ServerApplication
             }
         }
 
-        private static void RunServiceInstallationIfNeeded()
+        private static void RunServiceInstallationIfNeeded(string applicationPath)
         {
             var ctl = ServiceController.GetServices().FirstOrDefault(s => s.ServiceName == BackgroundService.Name);
 
             if (ctl == null)
             {
-                RunServiceInstallation();
+                RunServiceInstallation(applicationPath);
             }
         }
 
         /// <summary>
         /// Runs the service installation.
         /// </summary>
-        private static void RunServiceInstallation()
+        private static void RunServiceInstallation(string applicationPath)
         {
-            var runningPath = Process.GetCurrentProcess().MainModule.FileName;
-
             var startInfo = new ProcessStartInfo
             {
-                FileName = runningPath,
+                FileName = applicationPath,
 
                 Arguments = "-installservice",
 
@@ -352,13 +343,11 @@ namespace MediaBrowser.ServerApplication
         /// <summary>
         /// Runs the service uninstallation.
         /// </summary>
-        private static void RunServiceUninstallation()
+        private static void RunServiceUninstallation(string applicationPath)
         {
-            var runningPath = Process.GetCurrentProcess().MainModule.FileName;
-
             var startInfo = new ProcessStartInfo
             {
-                FileName = runningPath,
+                FileName = applicationPath,
 
                 Arguments = "-uninstallservice",
 

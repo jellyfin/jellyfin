@@ -2051,6 +2051,18 @@
                 miscInfo.push(item.OfficialRating);
             }
 
+            if (item.Type == "Recording") {
+
+                if (item.IsHD) {
+                    miscInfo.push("HD");
+                }
+
+                if (item.IsRepeat) {
+                    miscInfo.push("Repeat");
+                }
+
+            }
+
             if (item.Video3DFormat) {
                 miscInfo.push("3D");
             }

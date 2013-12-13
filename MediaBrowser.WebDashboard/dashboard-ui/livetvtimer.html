@@ -13,12 +13,19 @@
         </div>
         <div data-role="content">
             <form style="margin: 0 auto;">
-                <h1 class="timerName"></h1>
+                <h1>Timer Info</h1>
+
+                <p class="program"></p>
+                <p class="channel"></p>
+                <p class="overview"></p>
+
+                <br />
+                <br />
 
                 <ul data-role="listview" class="ulForm">
                     <li>
-                        <input type="checkbox" id="chkEnableInternetProviders" name="chkEnableInternetProviders" />
-                        <label for="chkEnableInternetProviders">Download metadata from the internet </label>
+                        <label for="txtPortNumber">Http server port number: </label>
+                        <input type="number" name="txtPortNumber" pattern="[0-9]*" required="required" min="1" readonly disabled />
                     </li>
                     <li>
                         <button type="submit" data-theme="b" data-icon="ok" data-mini="true">

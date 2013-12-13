@@ -365,7 +365,7 @@ a.itemTag:hover {
     }
 
 .itemBackdropContent {
-    height: 245px;
+    height: 230px;
 }
 
 .lnkSibling {
@@ -399,7 +399,7 @@ a.itemTag:hover {
 }
 
 .itemDetailImage {
-    height: 255px;
+    height: 240px;
     -moz-box-shadow: 0px 0 20px #000;
     -webkit-box-shadow: 0px 0 20px #000;
     box-shadow: 0px 0 20px #000;
@@ -433,7 +433,7 @@ a.itemTag:hover {
 }
 
 .itemOverview {
-    max-height: 80px;
+    max-height: 60px;
     overflow-y: auto;
     text-overflow: ellipsis;
 }

@@ -6,7 +6,9 @@
 
         currentItem = item;
 
-        $('.timerName', page).html(item.Name);
+        $('.program', page).html(item.Name);
+        $('.channel', page).html(item.ChannelName);
+        $('.overview', page).html(item.Overview || '');
 
         Dashboard.hideLoadingMsg();
     }

@@ -870,16 +870,6 @@
                 attributes.push('<span class="mediaInfoAttribute">' + (parseInt(stream.BitRate / 1000)) + ' kbps</span>');
             }
 
-            if (stream.SampleRate) {
-                attributes.push('<span class="mediaInfoAttribute">' + stream.SampleRate + ' khz</span>');
-            }
-
-            var framerate = stream.AverageFrameRate || stream.RealFrameRate;
-
-            if (framerate && item.MediaType != "Audio") {
-                attributes.push('<span class="mediaInfoAttribute">' + framerate + '</span>');
-            }
-
             if (stream.IsDefault) {
                 attributes.push('<span class="mediaInfoAttribute">Default</span>');
             }
