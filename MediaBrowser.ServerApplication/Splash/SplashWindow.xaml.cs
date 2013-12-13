@@ -1,16 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.ComponentModel;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace MediaBrowser.ServerApplication.Splash
 {
@@ -19,10 +9,33 @@ namespace MediaBrowser.ServerApplication.Splash
     /// </summary>
     public partial class SplashWindow : Window
     {
-        public SplashWindow(Version version)
+        private readonly Progress<double> _progress;
+
+        public SplashWindow(Version version, Progress<double> progress)
         {
             InitializeComponent();
             lblStatus.Text = string.Format("Loading Media Browser Server\nVersion {0}...", version);
+
+            _progress = progress;
+
+            progress.ProgressChanged += progress_ProgressChanged;
+        }
+
+        void progress_ProgressChanged(object sender, double e)
+        {
+            Dispatcher.InvokeAsync(() =>
+            {
+                var width = e * 6.62;
+
+                RectProgress.Width = width;
+            });
+        }
+
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            _progress.ProgressChanged += progress_ProgressChanged;
+
+            base.OnClosing(e);
         }
     }
 }
