@@ -44,19 +44,23 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 return true;
             }
 
-            try
+            var channel = (Channel)item;
+
+            if (channel.HasProviderImage ?? true)
             {
-                await DownloadImage(item, cancellationToken).ConfigureAwait(false);
-            }
-            catch (HttpException ex)
-            {
-                // Don't fail the provider on a 404
-                if (!ex.StatusCode.HasValue || ex.StatusCode.Value != HttpStatusCode.NotFound)
+                try
                 {
-                    throw;
+                    await DownloadImage(item, cancellationToken).ConfigureAwait(false);
+                }
+                catch (HttpException ex)
+                {
+                    // Don't fail the provider on a 404
+                    if (!ex.StatusCode.HasValue || ex.StatusCode.Value != HttpStatusCode.NotFound)
+                    {
+                        throw;
+                    }
                 }
             }
-
 
             SetLastRefreshed(item, DateTime.UtcNow, providerInfo);
             return true;

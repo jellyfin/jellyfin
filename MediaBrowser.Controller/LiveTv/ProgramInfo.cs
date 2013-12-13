@@ -90,6 +90,12 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value>The episode title.</value>
         public string EpisodeTitle { get; set; }
+
+        /// <summary>
+        /// Set this value to true or false if it is known via program info whether there is an image or not.
+        /// Leave it null if the only way to determine is by requesting the image and handling the failure.
+        /// </summary>
+        public bool? HasImage { get; set; }
         
         public ProgramInfo()
         {
