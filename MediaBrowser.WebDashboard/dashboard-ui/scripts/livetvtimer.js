@@ -10,6 +10,11 @@
         $('.channel', page).html(item.ChannelName);
         $('.overview', page).html(item.Overview || '');
 
+        $('#txtRequestedPrePaddingSeconds', page).val(item.RequestedPrePaddingSeconds);
+        $('#txtRequestedPostPaddingSeconds', page).val(item.RequestedPostPaddingSeconds);
+        $('#txtRequiredPrePaddingSeconds', page).val(item.RequiredPrePaddingSeconds);
+        $('#txtRequiredPostPaddingSeconds', page).val(item.RequiredPostPaddingSeconds);
+
         Dashboard.hideLoadingMsg();
     }
 

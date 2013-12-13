@@ -6,7 +6,7 @@
 
     function deleteTimer(page, id) {
 
-        Dashboard.confirm("Are you sure you wish to cancel this timer?", "Confirm Timer Deletion", function (result) {
+        Dashboard.confirm("Are you sure you wish to cancel this timer?", "Confirm Timer Cancellation", function (result) {
 
             if (result) {
 

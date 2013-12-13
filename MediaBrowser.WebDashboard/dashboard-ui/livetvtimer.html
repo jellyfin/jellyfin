@@ -24,8 +24,20 @@
 
                 <ul data-role="listview" class="ulForm">
                     <li>
-                        <label for="txtPortNumber">Http server port number: </label>
-                        <input type="number" name="txtPortNumber" pattern="[0-9]*" required="required" min="1" readonly disabled />
+                        <label for="txtRequestedPrePaddingSeconds">Requested pre-padding seconds: </label>
+                        <input type="number" id="txtRequestedPrePaddingSeconds" pattern="[0-9]*" required="required" min="0" />
+                    </li>
+                    <li>
+                        <label for="txtRequestedPostPaddingSeconds">Requested post-padding seconds: </label>
+                        <input type="number" id="txtRequestedPostPaddingSeconds" pattern="[0-9]*" required="required" min="0" />
+                    </li>
+                    <li>
+                        <label for="txtRequiredPrePaddingSeconds">Required pre-padding seconds: </label>
+                        <input type="number" id="txtRequiredPrePaddingSeconds" pattern="[0-9]*" required="required" min="0" />
+                    </li>
+                    <li>
+                        <label for="txtRequiredPostPaddingSeconds">Required post-padding seconds: </label>
+                        <input type="number" id="txtRequiredPostPaddingSeconds" pattern="[0-9]*" required="required" min="0" />
                     </li>
                     <li>
                         <button type="submit" data-theme="b" data-icon="ok" data-mini="true">
