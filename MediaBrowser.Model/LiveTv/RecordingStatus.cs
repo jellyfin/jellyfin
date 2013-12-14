@@ -3,12 +3,15 @@ namespace MediaBrowser.Model.LiveTv
 {
     public enum RecordingStatus
     {
-        Pending,
+        New,
+        Scheduled,
         InProgress,
         Completed,
-        CompletedWithError,
-        Conflicted,
-        Deleted
+        Abored,
+        Cancelled,
+        ConflictedOk,
+        ConflictedNotOk,
+        Error
     }
 
     public enum RecurrenceType
