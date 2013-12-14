@@ -72,12 +72,20 @@ namespace MediaBrowser.Controller.LiveTv
         Task<ImageResponseInfo> GetChannelImageAsync(string channelId, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Gets the program image asynchronous.
+        /// Gets the recording image asynchronous.
         /// </summary>
-        /// <param name="programId">The program identifier.</param>
+        /// <param name="channelId">The channel identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{ImageResponseInfo}.</returns>
-        Task<ImageResponseInfo> GetProgramImageAsync(string programId, CancellationToken cancellationToken);
+        Task<ImageResponseInfo> GetRecordingImageAsync(string channelId, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the program image asynchronous.
+        /// </summary>
+        /// <param name="channelId">The channel identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{ImageResponseInfo}.</returns>
+        Task<ImageResponseInfo> GetProgramImageAsync(string channelId, CancellationToken cancellationToken);
         
         /// <summary>
         /// Gets the recordings asynchronous.

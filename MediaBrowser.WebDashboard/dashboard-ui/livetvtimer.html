@@ -9,15 +9,21 @@
             <a href="livetvguide.html">Guide</a>
             <a href="livetvchannels.html">Channels</a>
             <a href="livetvrecordings.html">Recordings</a>
-            <a href="livetvtimers.html" class="ui-btn-active">Timers</a>
+            <a href="livetvtimers.html" class="ui-btn-active">Upcoming Timers</a>
+            <a href="livetvseriestimers.html">Series Timers</a>
         </div>
         <div data-role="content">
             <form style="margin: 0 auto;">
-                <h1>Timer Info</h1>
+                <p><span class="itemName inlineItemName program"></span><span class="itemMiscInfo" style="display: inline;"></span></p>
 
-                <p class="program"></p>
                 <p class="channel"></p>
                 <p class="overview"></p>
+
+                <p style="margin-top: 2em;">
+                    <span class="status"></span>
+                    <a id="btnCancelTimer" href="#" style="margin-left: 2em;">Cancel Timer</a>
+                    <span class="seriesTimerLink" style="margin-left: 2em;"></span>
+                </p>
 
                 <br />
                 <br />

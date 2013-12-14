@@ -1,9 +1,5 @@
 ﻿(function ($, document, apiClient) {
 
-    function editTimer(page, id) {
-
-    }
-
     function deleteTimer(page, id) {
 
         Dashboard.confirm("Are you sure you wish to cancel this timer?", "Confirm Timer Cancellation", function (result) {
@@ -40,7 +36,7 @@
         html += '<th>Start</th>';
         html += '<th class="tabletColumn">Length</th>';
         html += '<th class="tabletColumn">Status</th>';
-        html += '<th class="desktopColumn">Recurring</th>';
+        html += '<th class="desktopColumn">Series</th>';
 
         html += '</tr>';
 
@@ -86,9 +82,10 @@
 
             html += '<td class="desktopColumn">';
 
-            if (timer.IsRecurring) {
-                html += '&nbsp;';
-                html += '&#10003;';
+            if (timer.SeriesTimerId) {
+                html += '<a href="livetvseriestimer.html?id=' + timer.SeriesTimerId + '">';
+                html += 'View';
+                html += '</a>';
             }
 
             html += '</td>';
@@ -99,13 +96,6 @@
         html += '</table></div>';
 
         var elem = $('#items', page).html(html).trigger('create');
-
-        $('.btnEditTimer', elem).on('click', function () {
-
-            var id = this.getAttribute('data-timerid');
-
-            editTimer(page, id);
-        });
 
         $('.btnDeleteTimer', elem).on('click', function () {
 
@@ -120,7 +110,7 @@
     function reload(page) {
 
         Dashboard.showLoadingMsg();
-        
+
         apiClient.getLiveTvTimers().done(function (result) {
 
             renderTimers(page, result.Items);
