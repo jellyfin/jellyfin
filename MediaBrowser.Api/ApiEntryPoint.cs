@@ -1,4 +1,6 @@
-﻿using MediaBrowser.Controller.Plugins;
+﻿using MediaBrowser.Controller;
+using MediaBrowser.Controller.Plugins;
+using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
@@ -27,13 +29,16 @@ namespace MediaBrowser.Api
         /// <value>The logger.</value>
         private ILogger Logger { get; set; }
 
+        private readonly IServerApplicationPaths AppPaths;
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="ApiEntryPoint" /> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
-        public ApiEntryPoint(ILogger logger)
+        public ApiEntryPoint(ILogger logger, IServerApplicationPaths appPaths)
         {
             Logger = logger;
+            AppPaths = appPaths;
 
             Instance = this;
         }
@@ -43,6 +48,27 @@ namespace MediaBrowser.Api
         /// </summary>
         public void Run()
         {
+            try
+            {
+                DeleteEncodedMediaCache();
+            }
+            catch (IOException ex)
+            {
+                Logger.ErrorException("Error deleting encoded media cache", ex);
+            }
+        }
+
+        /// <summary>
+        /// Deletes the encoded media cache.
+        /// </summary>
+        private void DeleteEncodedMediaCache()
+        {
+            foreach (var file in Directory.EnumerateFiles(AppPaths.EncodedMediaCachePath)
+                .Where(i => EntityResolutionHelper.VideoFileExtensions.Contains(Path.GetExtension(i)))
+                .ToList())
+            {
+                File.Delete(file);
+            }
         }
 
         /// <summary>
@@ -317,7 +343,7 @@ namespace MediaBrowser.Api
             {
                 Logger.Info("Deleting partial stream file(s) {0}", job.Path);
 
-                await Task.Delay(1000).ConfigureAwait(false);
+                await Task.Delay(1500).ConfigureAwait(false);
 
                 try
                 {
