@@ -1,8 +1,8 @@
 ﻿using MediaBrowser.Common.MediaInfo;
-using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Localization;
+using MediaBrowser.Controller.MediaInfo;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -343,7 +343,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             video.HasSubtitles = mediaStreams.Any(i => i.Type == MediaStreamType.Subtitle);
 
-            await Kernel.Instance.FFMpegManager.PopulateChapterImages(video, chapters, false, false, cancellationToken).ConfigureAwait(false);
+            await FFMpegManager.Instance.PopulateChapterImages(video, chapters, false, false, cancellationToken).ConfigureAwait(false);
 
             var videoFileChanged = CompareDate(video) > providerInfo.LastRefreshed;
 

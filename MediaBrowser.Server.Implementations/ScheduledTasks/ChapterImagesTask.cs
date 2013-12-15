@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Common.ScheduledTasks;
-using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.MediaInfo;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -20,10 +20,6 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
     /// </summary>
     class ChapterImagesTask : IScheduledTask
     {
-        /// <summary>
-        /// The _kernel
-        /// </summary>
-        private readonly Kernel _kernel;
         /// <summary>
         /// The _logger
         /// </summary>
@@ -48,13 +44,11 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         /// <summary>
         /// Initializes a new instance of the <see cref="ChapterImagesTask" /> class.
         /// </summary>
-        /// <param name="kernel">The kernel.</param>
         /// <param name="logManager">The log manager.</param>
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="itemRepo">The item repo.</param>
-        public ChapterImagesTask(Kernel kernel, ILogManager logManager, ILibraryManager libraryManager, IItemRepository itemRepo)
+        public ChapterImagesTask(ILogManager logManager, ILibraryManager libraryManager, IItemRepository itemRepo)
         {
-            _kernel = kernel;
             _logger = logManager.GetLogger(GetType().Name);
             _libraryManager = libraryManager;
             _itemRepo = itemRepo;
@@ -108,7 +102,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
                 {
                     var chapters = _itemRepo.GetChapters(item.Id).ToList();
 
-                    await _kernel.FFMpegManager.PopulateChapterImages(item, chapters, true, true, CancellationToken.None);
+                    await FFMpegManager.Instance.PopulateChapterImages(item, chapters, true, true, CancellationToken.None);
                 }
                 catch (Exception ex)
                 {
@@ -145,7 +139,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
 
             var numComplete = 0;
 
-            var failHistoryPath = Path.Combine(_kernel.FFMpegManager.ChapterImagesPath, "failures.txt");
+            var failHistoryPath = Path.Combine(FFMpegManager.Instance.ChapterImagesPath, "failures.txt");
 
             List<string> previouslyFailedImages;
 
@@ -174,7 +168,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
 
                 var chapters = _itemRepo.GetChapters(video.Id).ToList();
 
-                var success = await _kernel.FFMpegManager.PopulateChapterImages(video, chapters, extract, true, cancellationToken);
+                var success = await FFMpegManager.Instance.PopulateChapterImages(video, chapters, extract, true, cancellationToken);
 
                 if (!success)
                 {

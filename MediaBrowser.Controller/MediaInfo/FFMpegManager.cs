@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller.Entities;
@@ -8,6 +7,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -27,6 +27,8 @@ namespace MediaBrowser.Controller.MediaInfo
 
         private readonly IFileSystem _fileSystem;
 
+        public static FFMpegManager Instance { get; private set; }
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="FFMpegManager" /> class.
         /// </summary>
@@ -42,6 +44,9 @@ namespace MediaBrowser.Controller.MediaInfo
             _logger = logger;
             _itemRepo = itemRepo;
             _fileSystem = fileSystem;
+
+            // TODO: Remove this static instance
+            Instance = this;
         }
 
         /// <summary>
