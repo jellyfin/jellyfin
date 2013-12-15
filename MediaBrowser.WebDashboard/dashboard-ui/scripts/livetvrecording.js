@@ -33,7 +33,7 @@
         Dashboard.setPageTitle(name);
 
         $('.itemName', page).html(name);
-        $('.itemChannelNumber', page).html(item.ChannelName);
+        $('.itemChannelNumber', page).html('<a href="livetvchannel.html?id=' + item.ChannelId + '">' + item.ChannelName + '</a>').trigger('create');
 
         $('.itemEpisodeName', page).html(item.EpisodeTitle);
 

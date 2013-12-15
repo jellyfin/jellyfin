@@ -13,9 +13,63 @@
             <a href="livetvseriestimers.html" class="ui-btn-active">Series Timers</a>
         </div>
         <div data-role="content">
-            <br />
-            <div id="items" class="itemsContainer"></div>
+            <form id="liveTvSeriesTimerForm" style="margin: 0 auto;">
+                <p><span class="itemName inlineItemName"></span><span class="itemMiscInfo" style="display: inline;"></span></p>
+
+                <p class="channel"></p>
+                <p class="overview"></p>
+
+                <p style="margin-top: 2em;">
+                    <a id="btnCancelTimer" href="#">Cancel Series</a>
+                </p>
+
+                <br />
+                <br />
+
+                <ul data-role="listview" class="ulForm">
+                    <li>
+                        <label for="selectPriority">Priority: </label>
+                        <select id="selectPriority" required="required" data-mini="true">
+                            <option value="0">Highest</option>
+                            <option value="1">Higher</option>
+                            <option value="2">High</option>
+                            <option value="3">Medium</option>
+                            <option value="4">Low</option>
+                            <option value="5">Lower</option>
+                            <option value="6">Lowest</option>
+                        </select>
+                    </li>
+                    <li>
+                        <label for="txtRequestedPrePaddingSeconds">Requested pre-padding seconds: </label>
+                        <input type="number" id="txtRequestedPrePaddingSeconds" pattern="[0-9]*" required="required" min="0" data-mini="true" />
+                    </li>
+                    <li>
+                        <label for="txtRequestedPostPaddingSeconds">Requested post-padding seconds: </label>
+                        <input type="number" id="txtRequestedPostPaddingSeconds" pattern="[0-9]*" required="required" min="0" data-mini="true" />
+                    </li>
+                    <li>
+                        <label for="txtRequiredPrePaddingSeconds">Required pre-padding seconds: </label>
+                        <input type="number" id="txtRequiredPrePaddingSeconds" pattern="[0-9]*" required="required" min="0" data-mini="true" />
+                    </li>
+                    <li>
+                        <label for="txtRequiredPostPaddingSeconds">Required post-padding seconds: </label>
+                        <input type="number" id="txtRequiredPostPaddingSeconds" pattern="[0-9]*" required="required" min="0" data-mini="true" />
+                    </li>
+                    <li>
+                        <button type="submit" data-theme="b" data-icon="ok" data-mini="true">
+                            Save
+                        </button>
+                        <button type="button" onclick="Dashboard.navigate('livetvtimers.html');" data-icon="delete" data-mini="true">
+                            Cancel
+                        </button>
+                    </li>
+                </ul>
+            </form>
         </div>
+        <script type="text/javascript">
+            $('#liveTvSeriesTimerForm').on('submit', LiveTvSeriesTimerPage.onSubmit);
+        </script>
+
     </div>
 </body>
 </html>

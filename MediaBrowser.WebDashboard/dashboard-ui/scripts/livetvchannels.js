@@ -37,6 +37,8 @@
 
         html += '<p class="itemMiscInfo">' + channel.Number + '</p>';
 
+        html += '<p class="userDataIcons">' + LibraryBrowser.getUserDataIconsHtml(channel) + '</p>';
+
         html += '</div>';
 
         html += "</a>";

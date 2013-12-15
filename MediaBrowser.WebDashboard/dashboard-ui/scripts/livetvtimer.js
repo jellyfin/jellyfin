@@ -1,4 +1,4 @@
-﻿(function ($, document, apiClient) {
+﻿(function (window, $, document, apiClient) {
 
     var currentItem;
 
@@ -12,7 +12,7 @@
 
                 ApiClient.cancelLiveTvTimer(id).done(function () {
 
-                    Dashboard.alert('Timer deleted');
+                    Dashboard.alert('Timer cancelled.');
 
                     reload(page);
                 });
@@ -26,7 +26,7 @@
         currentItem = item;
 
         $('.program', page).html(item.Name);
-        $('.channel', page).html(item.ChannelName);
+        $('.channel', page).html('<a href="livetvchannel.html?id=' + item.ChannelId + '">' + item.ChannelName + '</a>').trigger('create');
         $('.overview', page).html(item.Overview || '');
 
         $('#txtRequestedPrePaddingSeconds', page).val(item.RequestedPrePaddingSeconds);
@@ -46,6 +46,29 @@
         }
 
         Dashboard.hideLoadingMsg();
+    }
+    
+    function onSubmit() {
+        
+        Dashboard.showLoadingMsg();
+
+        var form = this;
+
+        apiClient.getLiveTvTimer(currentItem.Id).done(function (item) {
+
+            item.RequestedPrePaddingSeconds = $('#txtRequestedPrePaddingSeconds', form).val();
+            item.RequestedPostPaddingSeconds = $('#txtRequestedPostPaddingSeconds', form).val();
+            item.RequiredPrePaddingSeconds = $('#txtRequiredPrePaddingSeconds', form).val();
+            item.RequiredPostPaddingSeconds = $('#txtRequiredPostPaddingSeconds', form).val();
+
+            ApiClient.updateLiveTvTimer(item).done(function() {
+                Dashboard.alert('Timer Saved');
+            });
+        });
+
+        // Disable default form submission
+        return false;
+
     }
 
     function reload(page) {
@@ -81,5 +104,14 @@
 
         currentItem = null;
     });
+    
+    function liveTvTimerPage() {
 
-})(jQuery, document, ApiClient);
+        var self = this;
+        
+        self.onSubmit = onSubmit;
+    }
+
+    window.LiveTvTimerPage = new liveTvTimerPage();
+
+})(window, jQuery, document, ApiClient);

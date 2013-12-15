@@ -796,6 +796,8 @@ namespace MediaBrowser.Api.Images
         /// <param name="file2">The file2.</param>
         private void SwapFiles(string file1, string file2)
         {
+            Directory.CreateDirectory(_appPaths.TempDirectory);
+
             var temp1 = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid() + ".tmp");
             var temp2 = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid() + ".tmp");
 

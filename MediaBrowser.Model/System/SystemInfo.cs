@@ -99,6 +99,12 @@ namespace MediaBrowser.Model.System
         public string ItemsByNamePath { get; set; }
 
         /// <summary>
+        /// Gets or sets the cache path.
+        /// </summary>
+        /// <value>The cache path.</value>
+        public string CachePath { get; set; }
+        
+        /// <summary>
         /// Gets or sets the log path.
         /// </summary>
         /// <value>The log path.</value>

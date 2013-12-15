@@ -26,7 +26,7 @@ namespace MediaBrowser.Controller
         /// Gets the path to the Images By Name directory
         /// </summary>
         /// <value>The images by name path.</value>
-        string ItemsByNamePath { get; set; }
+        string ItemsByNamePath { get; }
 
         /// <summary>
         /// Gets the path to the People directory
@@ -51,13 +51,13 @@ namespace MediaBrowser.Controller
         /// </summary>
         /// <value>The game genre path.</value>
         string GameGenrePath { get; }
-        
+
         /// <summary>
         /// Gets the artists path.
         /// </summary>
         /// <value>The artists path.</value>
         string ArtistsPath { get; }
-        
+
         /// <summary>
         /// Gets the path to the Studio directory
         /// </summary>
@@ -87,7 +87,7 @@ namespace MediaBrowser.Controller
         /// </summary>
         /// <value>The media info images path.</value>
         string MediaInfoImagesPath { get; }
-        
+
         /// <summary>
         /// Gets the path to the user configuration directory
         /// </summary>

@@ -2,7 +2,7 @@
 
     function loadPage(page, config) {
 
-        $('#txtItemsByNamePath', page).val(config.ItemsByNamePath);
+        $('#txtItemsByNamePath', page).val(config.ItemsByNamePath || '');
 
         var customIbn = config.ItemsByNamePath ? true : false;
         $('#chkEnableCustomIBNPath', page).checked(customIbn).checkboxradio("refresh");
@@ -65,8 +65,6 @@
         });
 
     }).on('pagehide', "#librarySettingsPage", function () {
-
-        Dashboard.showLoadingMsg();
 
         var page = this;
 

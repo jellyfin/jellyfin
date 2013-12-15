@@ -90,6 +90,7 @@
     function loadPrograms(page) {
 
         ApiClient.getLiveTvPrograms({
+            
             ChannelIds: currentItem.Id,
             UserId: Dashboard.getCurrentUserId()
 

@@ -43,7 +43,13 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value><c>true</c> if this instance is first run; otherwise, <c>false</c>.</value>
         public bool IsStartupWizardCompleted { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the cache path.
+        /// </summary>
+        /// <value>The cache path.</value>
+        public string CachePath { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseApplicationConfiguration" /> class.
         /// </summary>

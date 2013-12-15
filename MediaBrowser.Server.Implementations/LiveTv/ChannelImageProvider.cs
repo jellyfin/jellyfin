@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
@@ -7,6 +8,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using System;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -18,12 +20,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv
     {
         private readonly ILiveTvManager _liveTvManager;
         private readonly IProviderManager _providerManager;
+        private readonly IFileSystem _fileSystem;
 
-        public ChannelImageProvider(ILogManager logManager, IServerConfigurationManager configurationManager, ILiveTvManager liveTvManager, IProviderManager providerManager)
+        public ChannelImageProvider(ILogManager logManager, IServerConfigurationManager configurationManager, ILiveTvManager liveTvManager, IProviderManager providerManager, IFileSystem fileSystem)
             : base(logManager, configurationManager)
         {
             _liveTvManager = liveTvManager;
             _providerManager = providerManager;
+            _fileSystem = fileSystem;
         }
 
         public override bool Supports(BaseItem item)

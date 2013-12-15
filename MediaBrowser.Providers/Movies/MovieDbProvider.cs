@@ -263,7 +263,8 @@ namespace MediaBrowser.Providers.Movies
                 id = item.GetProviderId(MetadataProviders.Imdb);
             }
 
-            if (string.IsNullOrEmpty(id))
+            // Don't search for music video id's because it is very easy to misidentify. 
+            if (string.IsNullOrEmpty(id) && !(item is MusicVideo))
             {
                 id = await FindId(item, cancellationToken).ConfigureAwait(false);
             }

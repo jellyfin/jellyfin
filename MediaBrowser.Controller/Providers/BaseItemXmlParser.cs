@@ -759,11 +759,30 @@ namespace MediaBrowser.Controller.Providers
                         break;
                     }
 
-                case "MediaInfo":
+                case "Format3D":
                     {
-                        using (var subtree = reader.ReadSubtree())
+                        var video = item as Video;
+
+                        if (video != null)
                         {
-                            FetchFromMediaInfoNode(subtree, item);
+                            var val = reader.ReadElementContentAsString();
+
+                            if (string.Equals("HSBS", val))
+                            {
+                                video.Video3DFormat = Video3DFormat.HalfSideBySide;
+                            }
+                            else if (string.Equals("HTAB", val))
+                            {
+                                video.Video3DFormat = Video3DFormat.HalfTopAndBottom;
+                            }
+                            else if (string.Equals("FTAB", val))
+                            {
+                                video.Video3DFormat = Video3DFormat.FullTopAndBottom;
+                            }
+                            else if (string.Equals("FSBS", val))
+                            {
+                                video.Video3DFormat = Video3DFormat.FullSideBySide;
+                            }
                         }
                         break;
                     }
@@ -771,89 +790,6 @@ namespace MediaBrowser.Controller.Providers
                 default:
                     reader.Skip();
                     break;
-            }
-        }
-
-        /// <summary>
-        /// Fetches from media info node.
-        /// </summary>
-        /// <param name="reader">The reader.</param>
-        /// <param name="item">The item.</param>
-        private void FetchFromMediaInfoNode(XmlReader reader, T item)
-        {
-            reader.MoveToContent();
-
-            while (reader.Read())
-            {
-                if (reader.NodeType == XmlNodeType.Element)
-                {
-                    switch (reader.Name)
-                    {
-                        case "Video":
-                            {
-                                using (var subtree = reader.ReadSubtree())
-                                {
-                                    FetchFromMediaInfoVideoNode(subtree, item);
-                                }
-                                break;
-                            }
-
-                        default:
-                            reader.Skip();
-                            break;
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Fetches from media info video node.
-        /// </summary>
-        /// <param name="reader">The reader.</param>
-        /// <param name="item">The item.</param>
-        private void FetchFromMediaInfoVideoNode(XmlReader reader, T item)
-        {
-            reader.MoveToContent();
-
-            while (reader.Read())
-            {
-                if (reader.NodeType == XmlNodeType.Element)
-                {
-                    switch (reader.Name)
-                    {
-                        case "Format3D":
-                            {
-                                var video = item as Video;
-
-                                if (video != null)
-                                {
-                                    var val = reader.ReadElementContentAsString();
-
-                                    if (string.Equals("HSBS", val))
-                                    {
-                                        video.Video3DFormat = Video3DFormat.HalfSideBySide;
-                                    }
-                                    else if (string.Equals("HTAB", val))
-                                    {
-                                        video.Video3DFormat = Video3DFormat.HalfTopAndBottom;
-                                    }
-                                    else if (string.Equals("FTAB", val))
-                                    {
-                                        video.Video3DFormat = Video3DFormat.FullTopAndBottom;
-                                    }
-                                    else if (string.Equals("FSBS", val))
-                                    {
-                                        video.Video3DFormat = Video3DFormat.FullSideBySide;
-                                    }
-                                }
-                                break;
-                            }
-
-                        default:
-                            reader.Skip();
-                            break;
-                    }
-                }
             }
         }
 

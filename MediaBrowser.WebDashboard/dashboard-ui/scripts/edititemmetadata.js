@@ -833,7 +833,7 @@
         $('#txtDvdSeasonNumber', page).val(('DvdSeasonNumber' in item) ? item.DvdSeasonNumber : "");
         $('#txtAirsBeforeSeason', page).val(('AirsBeforeSeasonNumber' in item) ? item.AirsBeforeSeasonNumber : "");
         $('#txtAirsAfterSeason', page).val(('AirsAfterSeasonNumber' in item) ? item.AirsAfterSeasonNumber : "");
-        $('#txtAirsEpisodeSeason', page).val(('AirsBeforeEpisodeNumber' in item) ? item.AirsBeforeEpisodeNumber : "");
+        $('#txtAirsBeforeEpisode', page).val(('AirsBeforeEpisodeNumber' in item) ? item.AirsBeforeEpisodeNumber : "");
 
         $('#txtAlbum', page).val(item.Album || "");
         $('#txtAlbumArtist', page).val(item.AlbumArtist || "");
@@ -1108,7 +1108,7 @@
                 DvdSeasonNumber: $('#txtDvdSeasonNumber', form).val(),
                 AirsBeforeSeasonNumber: $('#txtAirsBeforeSeason', form).val(),
                 AirsAfterSeasonNumber: $('#txtAirsAfterSeason', form).val(),
-                AirsBeforeEpisodeNumber: $('#txtAirsEpisodeSeason', form).val(),
+                AirsBeforeEpisodeNumber: $('#txtAirsBeforeEpisode', form).val(),
                 ParentIndexNumber: $('#txtParentIndexNumber', form).val(),
                 Players: $('#txtPlayers', form).val(),
                 Album: $('#txtAlbum', form).val(),

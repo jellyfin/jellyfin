@@ -15,11 +15,5 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value>The type of the MIME.</value>
         public string MimeType { get; set; }
-
-        /// <summary>
-        /// Gets or sets the image path.
-        /// </summary>
-        /// <value>The image path.</value>
-        public string ImagePath { get; set; }
     }
 }

@@ -20,6 +20,8 @@ namespace MediaBrowser.ServerApplication.Native
         /// <param name="tempDirectory">The temp directory.</param>
         public static void AuthorizeServer(int httpServerPort, string httpServerUrlPrefix, int webSocketPort, int udpPort, string tempDirectory)
         {
+            Directory.CreateDirectory(tempDirectory);
+
             // Create a temp file path to extract the bat file to
             var tmpFile = Path.Combine(tempDirectory, Guid.NewGuid() + ".bat");
 

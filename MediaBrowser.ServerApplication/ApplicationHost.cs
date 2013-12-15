@@ -281,7 +281,7 @@ namespace MediaBrowser.ServerApplication
             DtoService = new DtoService(Logger, LibraryManager, UserManager, UserDataManager, ItemRepository, ImageProcessor);
             RegisterSingleInstance(DtoService);
 
-            LiveTvManager = new LiveTvManager(ApplicationPaths, FileSystemManager, Logger, ItemRepository, ImageProcessor, UserManager, LocalizationManager, UserDataManager, DtoService);
+            LiveTvManager = new LiveTvManager(ApplicationPaths, FileSystemManager, Logger, ItemRepository, ImageProcessor, LocalizationManager, UserDataManager, DtoService, UserManager);
             RegisterSingleInstance(LiveTvManager);
             progress.Report(15);
 
@@ -609,6 +609,7 @@ namespace MediaBrowser.ServerApplication
                 ProgramDataPath = ApplicationPaths.ProgramDataPath,
                 LogPath = ApplicationPaths.LogDirectoryPath,
                 ItemsByNamePath = ApplicationPaths.ItemsByNamePath,
+                CachePath = ApplicationPaths.CachePath,
                 MacAddress = GetMacAddress(),
                 HttpServerPortNumber = ServerConfigurationManager.Configuration.HttpServerPortNumber,
                 OperatingSystem = Environment.OSVersion.ToString(),

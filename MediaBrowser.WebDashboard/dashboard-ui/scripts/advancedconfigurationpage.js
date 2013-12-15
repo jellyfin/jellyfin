@@ -3,13 +3,13 @@
     function loadPage(page, config, systemInfo) {
 
         var os = systemInfo.OperatingSystem.toLowerCase();
-        
+
         if (os.indexOf('windows') != -1) {
             $('#windowsStartupDescription', page).show();
         } else {
             $('#windowsStartupDescription', page).hide();
         }
-        
+
         if (systemInfo.SupportsNativeWebSocket) {
 
             $('#fldWebSocketPortNumber', page).hide();
@@ -25,6 +25,20 @@
 
         $('#chkEnableDeveloperTools', page).checked(config.EnableDeveloperTools).checkboxradio("refresh");
         $('#chkRunAtStartup', page).checked(config.RunAtStartup).checkboxradio("refresh");
+
+
+        $('#txtCachePath', page).val(config.CachePath || '');
+
+        var customCachePath = config.CachePath ? true : false;
+        $('#chkEnableCustomCachePath', page).checked(customCachePath).checkboxradio("refresh");
+
+        if (customCachePath) {
+            $('#fldEnterCachePath', page).show();
+            $('#txtCachePath', page).attr("required", "required");
+        } else {
+            $('#fldEnterCachePath', page).hide();
+            $('#txtCachePath', page).removeAttr("required");
+        }
 
         Dashboard.hideLoadingMsg();
     }
@@ -44,7 +58,46 @@
             loadPage(page, response1[0], response2[0]);
 
         });
-        
+
+        $('#btnSelectCachePath', page).on("click.selectDirectory", function () {
+
+            var picker = new DirectoryBrowser(page);
+
+            picker.show({
+
+                callback: function (path) {
+
+                    if (path) {
+                        $('#txtCachePath', page).val(path);
+                    }
+                    picker.close();
+                },
+
+                header: "Select Server Cache Path",
+
+                instruction: "Browse or enter the path to use for Media Browser Server cache. The folder must be writeable."
+            });
+        });
+
+        $('#chkEnableCustomCachePath', page).on("change.showCachePathText", function () {
+
+            if (this.checked) {
+                $('#fldEnterCachePath', page).show();
+                $('#txtCachePath', page).attr("required", "required");
+            } else {
+                $('#fldEnterCachePath', page).hide();
+                $('#txtCachePath', page).removeAttr("required");
+            }
+
+        });
+
+    }).on('pagehide', "#advancedConfigurationPage", function () {
+
+        var page = this;
+
+        $('#chkEnableCustomCachePath', page).off("change.showCachePathText");
+        $('#btnSelectCachePath', page).off("click.selectDirectory");
+
     }).on('pageinit', "#advancedConfigurationPage", function () {
 
         var page = this;
@@ -58,7 +111,7 @@
             }
 
         });
-        
+
     });
 
     function advancedConfigurationPage() {
@@ -71,6 +124,12 @@
             var form = this;
 
             ApiClient.getServerConfiguration().done(function (config) {
+
+                if ($('#chkEnableCustomCachePath', form).checked()) {
+                    config.CachePath = $('#txtCachePath', form).val();
+                } else {
+                    config.CachePath = '';
+                }
 
                 config.LegacyWebSocketPortNumber = $('#txtWebSocketPortNumber', form).val();
 

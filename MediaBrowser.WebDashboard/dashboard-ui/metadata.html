@@ -18,36 +18,36 @@
                 <form id="metadataConfigurationForm">
                     <ul data-role="listview" class="ulForm">
                         <li>
-                            <input type="checkbox" id="chkEnableInternetProviders" name="chkEnableInternetProviders" />
+                            <input type="checkbox" id="chkEnableInternetProviders" name="chkEnableInternetProviders" data-mini="true" />
                             <label for="chkEnableInternetProviders">Download metadata from the internet </label>
                         </li>
                         <li>
-                            <input type="checkbox" id="chkSaveLocal" name="chkSaveLocal" />
+                            <input type="checkbox" id="chkSaveLocal" name="chkSaveLocal" data-mini="true" />
                             <label for="chkSaveLocal">Save metadata within media folders </label>
                         </li>
                         <li>
                             <label for="selectLanguage">Preferred language: </label>
-                            <select name="selectLanguage" id="selectLanguage"></select>
+                            <select name="selectLanguage" id="selectLanguage" data-mini="true"></select>
                         </li>
                         <li>
                             <label for="selectCountry">Country: </label>
-                            <select name="selectCountry" id="selectCountry"></select>
+                            <select name="selectCountry" id="selectCountry" data-mini="true"></select>
                         </li>
                         <li>
-                            <input type="checkbox" id="chkEnableTmdbPersonUpdates" name="chkEnableTmdbPersonUpdates" />
-                            <label for="chkEnableTmdbPersonUpdates">Enable automatic tmdb updates</label>
-                            <div class="fieldDescription">If enabled, movies and people will be updated automatically as they are updated on the themoviedb.org.</div>
+                            <input type="checkbox" id="chkEnableTmdbPersonUpdates" name="chkEnableTmdbPersonUpdates" data-mini="true" />
+                            <label for="chkEnableTmdbPersonUpdates">Enable automatic updates from TheMovieDB.org</label>
+                            <div class="fieldDescription">If enabled, movies and people will be updated automatically as they are updated on the TheMovieDB.org.</div>
                         </li>
                         <li>
-                            <input type="checkbox" id="chkEnableTvdbUpdates" name="chkEnableTvdbUpdates" />
-                            <label for="chkEnableTvdbUpdates">Enable automatic tvdb updates</label>
-                            <div class="fieldDescription">If enabled, tv series and episodes will be updated automatically as they are updated on the tvdb.com.</div>
+                            <input type="checkbox" id="chkEnableTvdbUpdates" name="chkEnableTvdbUpdates" data-mini="true" />
+                            <label for="chkEnableTvdbUpdates">Enable automatic updates from TheTVDB.com</label>
+                            <div class="fieldDescription">If enabled, tv series and episodes will be updated automatically as they are updated on the TheTVDB.com.</div>
                         </li>
                         <li>
-                            <button type="submit" data-theme="b" data-icon="ok">
+                            <button type="submit" data-theme="b" data-icon="ok" data-mini="true">
                                 Save
                             </button>
-                            <button type="button" onclick="Dashboard.navigate('dashboard.html');" data-icon="delete">
+                            <button type="button" onclick="Dashboard.navigate('dashboard.html');" data-icon="delete" data-mini="true">
                                 Cancel
                             </button>
                         </li>
