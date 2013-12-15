@@ -46,7 +46,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 RequiredPostPaddingSeconds = info.RequiredPostPaddingSeconds,
                 RequiredPrePaddingSeconds = info.RequiredPrePaddingSeconds,
                 ExternalChannelId = info.ChannelId,
-                ExternalSeriesTimerId = info.SeriesTimerId
+                ExternalSeriesTimerId = info.SeriesTimerId,
+                ServiceName = service.Name
             };
 
             var duration = info.EndDate - info.StartDate;
@@ -71,7 +72,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 Name = info.Name,
                 StartDate = info.StartDate,
                 ExternalId = info.Id,
-                ChannelId = GetInternalChannelId(service.Name, info.ChannelId, info.ChannelName).ToString("N"),
                 RequestedPostPaddingSeconds = info.RequestedPostPaddingSeconds,
                 RequestedPrePaddingSeconds = info.RequestedPrePaddingSeconds,
                 RequiredPostPaddingSeconds = info.RequiredPostPaddingSeconds,
@@ -80,8 +80,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 Priority = info.Priority,
                 RecurrenceType = info.RecurrenceType,
                 ExternalChannelId = info.ChannelId,
-                ExternalProgramId = info.ProgramId
+                ExternalProgramId = info.ProgramId,
+                ServiceName = service.Name
             };
+
+            if (!string.IsNullOrEmpty(info.ChannelId))
+            {
+                dto.ChannelId = GetInternalChannelId(service.Name, info.ChannelId, info.ChannelName).ToString("N");
+            }
 
             if (!string.IsNullOrEmpty(info.ProgramId))
             {
@@ -139,7 +145,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 CommunityRating = info.CommunityRating,
                 OfficialRating = info.OfficialRating,
                 Audio = info.Audio,
-                IsHD = info.IsHD
+                IsHD = info.IsHD,
+                ServiceName = service.Name
             };
 
             if (user != null)

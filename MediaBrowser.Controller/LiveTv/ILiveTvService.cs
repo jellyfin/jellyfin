@@ -31,6 +31,14 @@ namespace MediaBrowser.Controller.LiveTv
         Task CancelTimerAsync(string timerId, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Cancels the series timer asynchronous.
+        /// </summary>
+        /// <param name="timerId">The timer identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task CancelSeriesTimerAsync(string timerId, CancellationToken cancellationToken);
+        
+        /// <summary>
         /// Deletes the recording asynchronous.
         /// </summary>
         /// <param name="recordingId">The recording identifier.</param>
