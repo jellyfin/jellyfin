@@ -71,12 +71,6 @@ namespace MediaBrowser.ServerApplication
     public class ApplicationHost : BaseApplicationHost<ServerApplicationPaths>, IServerApplicationHost
     {
         /// <summary>
-        /// Gets the server kernel.
-        /// </summary>
-        /// <value>The server kernel.</value>
-        protected Kernel ServerKernel { get; set; }
-
-        /// <summary>
         /// Gets the server configuration manager.
         /// </summary>
         /// <value>The server configuration manager.</value>
@@ -220,8 +214,6 @@ namespace MediaBrowser.ServerApplication
         /// <returns>Task.</returns>
         protected override async Task RegisterResources(IProgress<double> progress)
         {
-            ServerKernel = new Kernel();
-
             await base.RegisterResources(progress).ConfigureAwait(false);
 
             RegisterSingleInstance<IHttpResultFactory>(new HttpResultFactory(LogManager, FileSystemManager));
@@ -229,7 +221,6 @@ namespace MediaBrowser.ServerApplication
             RegisterSingleInstance<IServerApplicationHost>(this);
             RegisterSingleInstance<IServerApplicationPaths>(ApplicationPaths);
 
-            RegisterSingleInstance(ServerKernel);
             RegisterSingleInstance(ServerConfigurationManager);
 
             RegisterSingleInstance<IWebSocketServer>(() => new AlchemyServer(Logger));
@@ -331,11 +322,11 @@ namespace MediaBrowser.ServerApplication
         /// </summary>
         private void SetKernelProperties()
         {
-            Parallel.Invoke(
-                 () => ServerKernel.FFMpegManager = new FFMpegManager(ApplicationPaths, MediaEncoder, Logger, ItemRepository, FileSystemManager),
-                 () => LocalizedStrings.StringFiles = GetExports<LocalizedStringData>(),
-                 SetStaticProperties
-                 );
+            new FFMpegManager(ApplicationPaths, MediaEncoder, Logger, ItemRepository, FileSystemManager);
+
+            LocalizedStrings.StringFiles = GetExports<LocalizedStringData>();
+
+            SetStaticProperties();
         }
 
         /// <summary>
@@ -568,7 +559,7 @@ namespace MediaBrowser.ServerApplication
             list.Add(typeof(IApplicationHost).Assembly);
 
             // Include composable parts in the Controller assembly 
-            list.Add(typeof(Kernel).Assembly);
+            list.Add(typeof(IServerApplicationHost).Assembly);
 
             // Include composable parts in the Providers assembly 
             list.Add(typeof(ImagesByNameProvider).Assembly);

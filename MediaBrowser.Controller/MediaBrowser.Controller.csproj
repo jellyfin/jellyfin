@@ -188,7 +188,6 @@
     <Compile Include="Library\TVUtils.cs" />
     <Compile Include="Library\ItemResolveArgs.cs" />
     <Compile Include="IO\FileData.cs" />
-    <Compile Include="Kernel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Providers\BaseMetadataProvider.cs" />
     <Compile Include="Session\ISessionController.cs" />

@@ -368,7 +368,7 @@ namespace MediaBrowser.Api.Playback
         {
             var offset = TimeSpan.FromTicks(startTimeTicks ?? 0);
 
-            var path = Kernel.Instance.FFMpegManager.GetSubtitleCachePath(video, subtitleStream.Index, offset, ".ass");
+            var path = FFMpegManager.Instance.GetSubtitleCachePath(video, subtitleStream.Index, offset, ".ass");
 
             if (performConversion)
             {
@@ -413,7 +413,7 @@ namespace MediaBrowser.Api.Playback
 
             var offset = TimeSpan.FromTicks(startTimeTicks ?? 0);
 
-            var path = Kernel.Instance.FFMpegManager.GetSubtitleCachePath(video, subtitleStream.Index, offset, ".ass");
+            var path = FFMpegManager.Instance.GetSubtitleCachePath(video, subtitleStream.Index, offset, ".ass");
 
             if (performConversion)
             {
