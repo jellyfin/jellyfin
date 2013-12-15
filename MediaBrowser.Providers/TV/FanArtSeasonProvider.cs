@@ -101,14 +101,11 @@ namespace MediaBrowser.Providers.TV
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var season = (Season)item;
+            var season = (Season) item;
 
-            if (!item.LockedFields.Contains(MetadataFields.Images))
-            {
-                // Process images
-                var images = await _providerManager.GetAvailableRemoteImages(item, cancellationToken, ManualFanartSeasonImageProvider.ProviderName).ConfigureAwait(false);
-                await FetchImages(season, images.ToList(), cancellationToken).ConfigureAwait(false);
-            }
+            // Process images
+            var images = await _providerManager.GetAvailableRemoteImages(item, cancellationToken, ManualFanartSeasonImageProvider.ProviderName).ConfigureAwait(false);
+            await FetchImages(season, images.ToList(), cancellationToken).ConfigureAwait(false);
 
             SetLastRefreshed(item, DateTime.UtcNow, providerInfo);
             return true;
@@ -123,7 +120,7 @@ namespace MediaBrowser.Providers.TV
         /// <returns>Task.</returns>
         private async Task FetchImages(Season season, List<RemoteImageInfo> images, CancellationToken cancellationToken)
         {
-            if (ConfigurationManager.Configuration.DownloadSeasonImages.Thumb && !season.HasImage(ImageType.Thumb))
+            if (ConfigurationManager.Configuration.DownloadSeasonImages.Thumb && !season.HasImage(ImageType.Thumb) && !season.LockedFields.Contains(MetadataFields.Images))
             {
                 await SaveImage(season, images, ImageType.Thumb, cancellationToken).ConfigureAwait(false);
             }

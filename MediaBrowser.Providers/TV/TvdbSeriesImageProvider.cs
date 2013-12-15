@@ -143,7 +143,7 @@ namespace MediaBrowser.Providers.TV
             }
             return base.NeedsRefreshInternal(item, providerInfo);
         }
-        
+
         /// <summary>
         /// Fetches metadata and returns true or false indicating if any work that requires persistence was done
         /// </summary>
@@ -155,14 +155,11 @@ namespace MediaBrowser.Providers.TV
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (!item.LockedFields.Contains(MetadataFields.Images))
-            {
-                var images = await _providerManager.GetAvailableRemoteImages(item, cancellationToken, ManualTvdbSeriesImageProvider.ProviderName).ConfigureAwait(false);
+            var images = await _providerManager.GetAvailableRemoteImages(item, cancellationToken, ManualTvdbSeriesImageProvider.ProviderName).ConfigureAwait(false);
 
-                const int backdropLimit = 1;
+            const int backdropLimit = 1;
 
-                await DownloadImages(item, images.ToList(), backdropLimit, cancellationToken).ConfigureAwait(false);
-            }
+            await DownloadImages(item, images.ToList(), backdropLimit, cancellationToken).ConfigureAwait(false);
 
             SetLastRefreshed(item, DateTime.UtcNow, providerInfo);
             return true;
@@ -170,29 +167,32 @@ namespace MediaBrowser.Providers.TV
 
         private async Task DownloadImages(BaseItem item, List<RemoteImageInfo> images, int backdropLimit, CancellationToken cancellationToken)
         {
-            if (!item.HasImage(ImageType.Primary))
+            if (!item.LockedFields.Contains(MetadataFields.Images))
             {
-                var image = images.FirstOrDefault(i => i.Type == ImageType.Primary);
-
-                if (image != null)
+                if (!item.HasImage(ImageType.Primary))
                 {
-                    await _providerManager.SaveImage(item, image.Url, TvdbSeriesProvider.Current.TvDbResourcePool, ImageType.Primary, null, cancellationToken)
-                      .ConfigureAwait(false);
+                    var image = images.FirstOrDefault(i => i.Type == ImageType.Primary);
+
+                    if (image != null)
+                    {
+                        await _providerManager.SaveImage(item, image.Url, TvdbSeriesProvider.Current.TvDbResourcePool, ImageType.Primary, null, cancellationToken)
+                            .ConfigureAwait(false);
+                    }
+                }
+
+                if (ConfigurationManager.Configuration.DownloadSeriesImages.Banner && !item.HasImage(ImageType.Banner))
+                {
+                    var image = images.FirstOrDefault(i => i.Type == ImageType.Banner);
+
+                    if (image != null)
+                    {
+                        await _providerManager.SaveImage(item, image.Url, TvdbSeriesProvider.Current.TvDbResourcePool, ImageType.Banner, null, cancellationToken)
+                            .ConfigureAwait(false);
+                    }
                 }
             }
 
-            if (ConfigurationManager.Configuration.DownloadSeriesImages.Banner && !item.HasImage(ImageType.Banner))
-            {
-                var image = images.FirstOrDefault(i => i.Type == ImageType.Banner);
-
-                if (image != null)
-                {
-                    await _providerManager.SaveImage(item, image.Url, TvdbSeriesProvider.Current.TvDbResourcePool, ImageType.Banner, null, cancellationToken)
-                      .ConfigureAwait(false);
-                }
-            }
-
-            if (ConfigurationManager.Configuration.DownloadSeriesImages.Backdrops && item.BackdropImagePaths.Count < backdropLimit)
+            if (ConfigurationManager.Configuration.DownloadSeriesImages.Backdrops && item.BackdropImagePaths.Count < backdropLimit && !item.LockedFields.Contains(MetadataFields.Backdrops))
             {
                 foreach (var backdrop in images.Where(i => i.Type == ImageType.Backdrop && 
                     (!i.Width.HasValue || 

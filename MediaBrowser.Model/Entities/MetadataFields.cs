@@ -45,6 +45,14 @@ namespace MediaBrowser.Model.Entities
         /// <summary>
         /// The images
         /// </summary>
-        Images
+        Images,
+        /// <summary>
+        /// The backdrops
+        /// </summary>
+        Backdrops,
+        /// <summary>
+        /// The screenshots
+        /// </summary>
+        Screenshots
     }
 }
