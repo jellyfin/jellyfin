@@ -443,7 +443,7 @@ namespace MediaBrowser.WebDashboard.Api
                                 "thirdparty/jquery.min.js", 
                                 "http://code.jquery.com/mobile/1.3.2/jquery.mobile-1.3.2.min.js",
                                 "scripts/all.js" + versionString,
-                                "thirdparty/jstree1.0/jquery.jstree.js"
+                                "thirdparty/jstree1.0/jquery.jstree.min.js"
             };
 
             var tags = files.Select(s => string.Format("<script src=\"{0}\"></script>", s)).ToArray();
@@ -560,7 +560,7 @@ namespace MediaBrowser.WebDashboard.Api
             await memoryStream.WriteAsync(versionBytes, 0, versionBytes.Length).ConfigureAwait(false);
             await memoryStream.WriteAsync(newLineBytes, 0, newLineBytes.Length).ConfigureAwait(false);
 
-            await AppendResource(memoryStream, "thirdparty/autoNumeric.js", newLineBytes).ConfigureAwait(false);
+            await AppendResource(memoryStream, "thirdparty/autonumeric/autoNumeric.min.js", newLineBytes).ConfigureAwait(false);
 
             await AppendResource(assembly, memoryStream, "MediaBrowser.WebDashboard.ApiClient.js", newLineBytes).ConfigureAwait(false);
 
