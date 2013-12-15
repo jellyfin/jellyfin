@@ -2,7 +2,7 @@
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -22,14 +22,14 @@ namespace MediaBrowser.Api.Playback.Hls
     /// </summary>
     public abstract class BaseHlsService : BaseStreamingService
     {
-        protected BaseHlsService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService, IFileSystem fileSystem, IItemRepository itemRepository)
-            : base(appPaths, userManager, libraryManager, isoManager, mediaEncoder, dtoService, fileSystem, itemRepository)
+        protected BaseHlsService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService, IFileSystem fileSystem, IItemRepository itemRepository)
+            : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, dtoService, fileSystem, itemRepository)
         {
         }
 
         protected override string GetOutputFilePath(StreamState state)
         {
-            var folder = ApplicationPaths.EncodedMediaCachePath;
+            var folder = ServerConfigurationManager.ApplicationPaths.EncodedMediaCachePath;
 
             var outputFileExtension = GetOutputFileExtension(state);
 
@@ -257,13 +257,16 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var itsOffset = itsOffsetMs == 0 ? string.Empty : string.Format("-itsoffset {0} ", TimeSpan.FromMilliseconds(itsOffsetMs).TotalSeconds);
 
-            var args = string.Format("{0}{1} {2} {3} -i {4}{5} -threads 0 {6} {7} -sc_threshold 0 {8} -hls_time 10 -start_number 0 -hls_list_size 1440 \"{9}\"",
+            var threads = GetNumberOfThreads();
+
+            var args = string.Format("{0}{1} {2} {3} -i {4}{5} -threads {6} {7} {8} -sc_threshold 0 {9} -hls_time 10 -start_number 0 -hls_list_size 1440 \"{10}\"",
                 itsOffset,
                 probeSize,
                 GetUserAgentParam(state.Item),
                 GetFastSeekCommandLineParameter(state.Request),
                 GetInputArgument(state.Item, state.IsoMount),
                 GetSlowSeekCommandLineParameter(state.Request),
+                threads,
                 GetMapArgs(state),
                 GetVideoArguments(state, performSubtitleConversions),
                 GetAudioArguments(state),
@@ -278,7 +281,8 @@ namespace MediaBrowser.Api.Playback.Hls
 
                     var bitrate = hlsVideoRequest.BaselineStreamAudioBitRate ?? 64000;
 
-                    var lowBitrateParams = string.Format(" -threads 0 -vn -codec:a:0 libmp3lame -ac 2 -ab {1} -hls_time 10 -start_number 0 -hls_list_size 1440 \"{0}\"",
+                    var lowBitrateParams = string.Format(" -threads {0} -vn -codec:a:0 libmp3lame -ac 2 -ab {2} -hls_time 10 -start_number 0 -hls_list_size 1440 \"{1}\"",
+                        threads,
                         lowBitratePath,
                         bitrate / 2);
 

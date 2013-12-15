@@ -1,6 +1,6 @@
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.MediaInfo;
-using MediaBrowser.Controller;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -55,8 +55,8 @@ namespace MediaBrowser.Api.Playback.Progressive
     /// </summary>
     public class VideoService : BaseProgressiveStreamingService
     {
-        public VideoService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IItemRepository itemRepo, IDtoService dtoService, IImageProcessor imageProcessor, IFileSystem fileSystem)
-            : base(appPaths, userManager, libraryManager, isoManager, mediaEncoder, itemRepo, dtoService, imageProcessor, fileSystem)
+        public VideoService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService, IFileSystem fileSystem, IItemRepository itemRepository, IImageProcessor imageProcessor)
+            : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, dtoService, fileSystem, itemRepository, imageProcessor)
         {
         }
 
@@ -104,7 +104,7 @@ namespace MediaBrowser.Api.Playback.Progressive
                 format = " -f mp4 -movflags frag_keyframe+empty_moov";
             }
 
-            var threads = string.Equals(videoCodec, "libvpx", StringComparison.OrdinalIgnoreCase) ? 2 : 0;
+            var threads = string.Equals(videoCodec, "libvpx", StringComparison.OrdinalIgnoreCase) ? 2 : GetNumberOfThreads();
 
             return string.Format("{0} {1} {2} -i {3}{4}{5} {6} {7} -threads {8} {9}{10} \"{11}\"",
                 probeSize,
@@ -165,9 +165,16 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             var qualityParam = GetVideoQualityParam(state, codec);
 
+            var bitrate = GetVideoBitrateParam(state);
+
+            if (bitrate.HasValue)
+            {
+                qualityParam += string.Format(" -b:v {0}", bitrate.Value.ToString(UsCulture));
+            }
+
             if (!string.IsNullOrEmpty(qualityParam))
             {
-                args += " " + qualityParam;
+                args += " " + qualityParam.Trim();
             }
 
             args += " -vsync vfr";
@@ -213,9 +220,9 @@ namespace MediaBrowser.Api.Playback.Progressive
             {
                 return "-acodec copy";
             }
-            
+
             var args = "-acodec " + codec;
-            
+
             // Add the number of audio channels
             var channels = GetNumAudioChannelsParam(request, state.AudioStream);
 
@@ -231,64 +238,23 @@ namespace MediaBrowser.Api.Playback.Progressive
                 args += " -ab " + bitrate.Value.ToString(UsCulture);
             }
 
-                var volParam = string.Empty;
-                var AudioSampleRate = string.Empty;
+            var volParam = string.Empty;
+            var AudioSampleRate = string.Empty;
 
-                // Boost volume to 200% when downsampling from 6ch to 2ch
-                if (channels.HasValue && channels.Value <= 2 && state.AudioStream.Channels.HasValue && state.AudioStream.Channels.Value > 5)
-                {
-                    volParam = ",volume=2.000000";
-                }
-                
-                if (state.Request.AudioSampleRate.HasValue)
-                {
-                    AudioSampleRate= state.Request.AudioSampleRate.Value + ":";
-                }
-
-                args += string.Format(" -af \"aresample={0}async=1000{1}\"",AudioSampleRate, volParam);
-
-                return args;
-            }
-
-        /// <summary>
-        /// Gets the video bitrate to specify on the command line
-        /// </summary>
-        /// <param name="state">The state.</param>
-        /// <param name="videoCodec">The video codec.</param>
-        /// <returns>System.String.</returns>
-        private string GetVideoQualityParam(StreamState state, string videoCodec)
-        {
-            var args = string.Empty;
-
-            // webm
-            if (videoCodec.Equals("libvpx", StringComparison.OrdinalIgnoreCase))
+            // Boost volume to 200% when downsampling from 6ch to 2ch
+            if (channels.HasValue && channels.Value <= 2 && state.AudioStream.Channels.HasValue && state.AudioStream.Channels.Value > 5)
             {
-                args = "-speed 16 -quality good -profile:v 0 -slices 8";
+                volParam = ",volume=2.000000";
             }
 
-            // asf/wmv
-            else if (videoCodec.Equals("wmv2", StringComparison.OrdinalIgnoreCase))
+            if (state.Request.AudioSampleRate.HasValue)
             {
-                args = "-g 100 -qmax 15";
+                AudioSampleRate = state.Request.AudioSampleRate.Value + ":";
             }
 
-            else if (videoCodec.Equals("libx264", StringComparison.OrdinalIgnoreCase))
-            {
-                args = "-preset superfast";
-            }
-            else if (videoCodec.Equals("mpeg4", StringComparison.OrdinalIgnoreCase))
-            {
-                args = "-mbd rd -flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -bf 2";
-            }
+            args += string.Format(" -af \"aresample={0}async=1000{1}\"", AudioSampleRate, volParam);
 
-            var bitrate = GetVideoBitrateParam(state);
-
-            if (bitrate.HasValue)
-            {
-                args += string.Format(" -b:v {0}", bitrate.Value.ToString(UsCulture));
-            }
-
-            return args.Trim();
+            return args;
         }
     }
 }

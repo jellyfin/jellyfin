@@ -235,6 +235,12 @@ namespace MediaBrowser.Model.Configuration
         public bool EnablePeoplePrefixSubFolders { get; set; }
 
         /// <summary>
+        /// Gets or sets the encoding quality.
+        /// </summary>
+        /// <value>The encoding quality.</value>
+        public EncodingQuality EncodingQuality { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>
         public ServerConfiguration()
@@ -292,5 +298,13 @@ namespace MediaBrowser.Model.Configuration
     {
         Legacy,
         Compatible
+    }
+
+    public enum EncodingQuality
+    {
+        Auto,
+        HighSpeed,
+        HighQuality,
+        MaxQuality
     }
 }

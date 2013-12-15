@@ -2,12 +2,14 @@
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaInfo;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -32,7 +34,7 @@ namespace MediaBrowser.Api.Playback
         /// Gets or sets the application paths.
         /// </summary>
         /// <value>The application paths.</value>
-        protected IServerApplicationPaths ApplicationPaths { get; private set; }
+        protected IServerConfigurationManager ServerConfigurationManager { get; private set; }
 
         /// <summary>
         /// Gets or sets the user manager.
@@ -66,17 +68,20 @@ namespace MediaBrowser.Api.Playback
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseStreamingService" /> class.
         /// </summary>
-        /// <param name="appPaths">The app paths.</param>
+        /// <param name="serverConfig">The server configuration.</param>
         /// <param name="userManager">The user manager.</param>
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="isoManager">The iso manager.</param>
         /// <param name="mediaEncoder">The media encoder.</param>
-        protected BaseStreamingService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService, IFileSystem fileSystem, IItemRepository itemRepository)
+        /// <param name="dtoService">The dto service.</param>
+        /// <param name="fileSystem">The file system.</param>
+        /// <param name="itemRepository">The item repository.</param>
+        protected BaseStreamingService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService, IFileSystem fileSystem, IItemRepository itemRepository)
         {
             ItemRepository = itemRepository;
             FileSystem = fileSystem;
             DtoService = dtoService;
-            ApplicationPaths = appPaths;
+            ServerConfigurationManager = serverConfig;
             UserManager = userManager;
             LibraryManager = libraryManager;
             IsoManager = isoManager;
@@ -115,7 +120,7 @@ namespace MediaBrowser.Api.Playback
         /// <returns>System.String.</returns>
         protected virtual string GetOutputFilePath(StreamState state)
         {
-            var folder = ApplicationPaths.EncodedMediaCachePath;
+            var folder = ServerConfigurationManager.ApplicationPaths.EncodedMediaCachePath;
 
             var outputFileExtension = GetOutputFileExtension(state);
 
@@ -246,6 +251,74 @@ namespace MediaBrowser.Api.Playback
             return returnFirstIfNoIndex ? streams.FirstOrDefault() : null;
         }
 
+        /// <summary>
+        /// Gets the number of threads.
+        /// </summary>
+        /// <returns>System.Int32.</returns>
+        /// <exception cref="System.Exception">Unrecognized EncodingQuality value.</exception>
+        protected int GetNumberOfThreads()
+        {
+            var quality = ServerConfigurationManager.Configuration.EncodingQuality;
+
+            if (quality == EncodingQuality.Auto)
+            {
+                var cpuCount = Environment.ProcessorCount;
+
+                if (cpuCount >= 4)
+                {
+                    return 0;
+                }
+
+                return cpuCount;
+            }
+
+            switch (quality)
+            {
+                case EncodingQuality.HighSpeed:
+                    return 2;
+                case EncodingQuality.HighQuality:
+                    return 2;
+                case EncodingQuality.MaxQuality:
+                    return 0;
+                default:
+                    throw new Exception("Unrecognized EncodingQuality value.");
+            }
+        }
+
+        /// <summary>
+        /// Gets the video bitrate to specify on the command line
+        /// </summary>
+        /// <param name="state">The state.</param>
+        /// <param name="videoCodec">The video codec.</param>
+        /// <returns>System.String.</returns>
+        protected string GetVideoQualityParam(StreamState state, string videoCodec)
+        {
+            var args = string.Empty;
+
+            // webm
+            if (videoCodec.Equals("libvpx", StringComparison.OrdinalIgnoreCase))
+            {
+                args = "-speed 16 -quality good -profile:v 0 -slices 8";
+            }
+
+            // asf/wmv
+            else if (videoCodec.Equals("wmv2", StringComparison.OrdinalIgnoreCase))
+            {
+                args = "-g 100 -qmax 15";
+            }
+
+            else if (videoCodec.Equals("libx264", StringComparison.OrdinalIgnoreCase))
+            {
+                args = "-preset superfast";
+            }
+            else if (videoCodec.Equals("mpeg4", StringComparison.OrdinalIgnoreCase))
+            {
+                args = "-mbd rd -flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -bf 2";
+            }
+
+            return args.Trim();
+        }
+        
         /// <summary>
         /// If we're going to put a fixed size on the command line, this will calculate it
         /// </summary>
@@ -656,7 +729,7 @@ namespace MediaBrowser.Api.Playback
 
             Logger.Info(process.StartInfo.FileName + " " + process.StartInfo.Arguments);
 
-            var logFilePath = Path.Combine(ApplicationPaths.LogDirectoryPath, "ffmpeg-" + Guid.NewGuid() + ".txt");
+            var logFilePath = Path.Combine(ServerConfigurationManager.ApplicationPaths.LogDirectoryPath, "ffmpeg-" + Guid.NewGuid() + ".txt");
 
             // FFMpeg writes debug/error info to stderr. This is useful when debugging so let's put it in the log directory.
             state.LogFileStream = FileSystem.GetFileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, true);
