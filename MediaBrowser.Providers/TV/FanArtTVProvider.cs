@@ -167,7 +167,7 @@ namespace MediaBrowser.Providers.TV
 
             var seriesId = item.GetProviderId(MetadataProviders.Tvdb);
 
-            if (!string.IsNullOrEmpty(seriesId) && !item.LockedFields.Contains(MetadataFields.Images))
+            if (!string.IsNullOrEmpty(seriesId))
             {
                 var xmlPath = GetFanartXmlPath(seriesId);
 
@@ -196,56 +196,61 @@ namespace MediaBrowser.Providers.TV
         /// <returns>Task.</returns>
         private async Task FetchFromXml(BaseItem item, List<RemoteImageInfo> images, CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            if (ConfigurationManager.Configuration.DownloadSeriesImages.Primary && !item.HasImage(ImageType.Primary))
+            if (!item.LockedFields.Contains(MetadataFields.Images))
             {
-                await SaveImage(item, images, ImageType.Primary, cancellationToken).ConfigureAwait(false);
-            }
+                cancellationToken.ThrowIfCancellationRequested();
 
-            cancellationToken.ThrowIfCancellationRequested();
-
-            if (ConfigurationManager.Configuration.DownloadSeriesImages.Logo && !item.HasImage(ImageType.Logo))
-            {
-                await SaveImage(item, images, ImageType.Logo, cancellationToken).ConfigureAwait(false);
-            }
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            if (ConfigurationManager.Configuration.DownloadSeriesImages.Art && !item.HasImage(ImageType.Art))
-            {
-                await SaveImage(item, images, ImageType.Art, cancellationToken).ConfigureAwait(false);
-            }
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            if (ConfigurationManager.Configuration.DownloadSeriesImages.Thumb && !item.HasImage(ImageType.Thumb))
-            {
-                await SaveImage(item, images, ImageType.Thumb, cancellationToken).ConfigureAwait(false);
-            }
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            if (ConfigurationManager.Configuration.DownloadSeriesImages.Banner && !item.HasImage(ImageType.Banner))
-            {
-                await SaveImage(item, images, ImageType.Banner, cancellationToken).ConfigureAwait(false);
-            }
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var backdropLimit = ConfigurationManager.Configuration.MaxBackdrops;
-            if (ConfigurationManager.Configuration.DownloadSeriesImages.Backdrops &&
-                item.BackdropImagePaths.Count < backdropLimit)
-            {
-                foreach (var image in images.Where(i => i.Type == ImageType.Backdrop))
+                if (ConfigurationManager.Configuration.DownloadSeriesImages.Primary && !item.HasImage(ImageType.Primary))
                 {
-                    await _providerManager.SaveImage(item, image.Url, FanArtResourcePool, ImageType.Backdrop, null, cancellationToken)
-                                        .ConfigureAwait(false);
+                    await SaveImage(item, images, ImageType.Primary, cancellationToken).ConfigureAwait(false);
+                }
 
-                    if (item.BackdropImagePaths.Count >= backdropLimit) break;
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (ConfigurationManager.Configuration.DownloadSeriesImages.Logo && !item.HasImage(ImageType.Logo))
+                {
+                    await SaveImage(item, images, ImageType.Logo, cancellationToken).ConfigureAwait(false);
+                }
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (ConfigurationManager.Configuration.DownloadSeriesImages.Art && !item.HasImage(ImageType.Art))
+                {
+                    await SaveImage(item, images, ImageType.Art, cancellationToken).ConfigureAwait(false);
+                }
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (ConfigurationManager.Configuration.DownloadSeriesImages.Thumb && !item.HasImage(ImageType.Thumb))
+                {
+                    await SaveImage(item, images, ImageType.Thumb, cancellationToken).ConfigureAwait(false);
+                }
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (ConfigurationManager.Configuration.DownloadSeriesImages.Banner && !item.HasImage(ImageType.Banner))
+                {
+                    await SaveImage(item, images, ImageType.Banner, cancellationToken).ConfigureAwait(false);
                 }
             }
 
+            if (!item.LockedFields.Contains(MetadataFields.Backdrops))
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var backdropLimit = ConfigurationManager.Configuration.MaxBackdrops;
+                if (ConfigurationManager.Configuration.DownloadSeriesImages.Backdrops &&
+                    item.BackdropImagePaths.Count < backdropLimit)
+                {
+                    foreach (var image in images.Where(i => i.Type == ImageType.Backdrop))
+                    {
+                        await _providerManager.SaveImage(item, image.Url, FanArtResourcePool, ImageType.Backdrop, null, cancellationToken)
+                            .ConfigureAwait(false);
+
+                        if (item.BackdropImagePaths.Count >= backdropLimit) break;
+                    }
+                }
+            }
         }
 
         private async Task SaveImage(BaseItem item, List<RemoteImageInfo> images, ImageType type, CancellationToken cancellationToken)

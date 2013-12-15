@@ -147,14 +147,11 @@ namespace MediaBrowser.Providers.TV
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (!item.LockedFields.Contains(MetadataFields.Images))
-            {
-                var images = await _providerManager.GetAvailableRemoteImages(item, cancellationToken, ManualTvdbSeasonImageProvider.ProviderName).ConfigureAwait(false);
+            var images = await _providerManager.GetAvailableRemoteImages(item, cancellationToken, ManualTvdbSeasonImageProvider.ProviderName).ConfigureAwait(false);
 
-                const int backdropLimit = 1;
+            const int backdropLimit = 1;
 
-                await DownloadImages(item, images.ToList(), backdropLimit, cancellationToken).ConfigureAwait(false);
-            }
+            await DownloadImages(item, images.ToList(), backdropLimit, cancellationToken).ConfigureAwait(false);
 
             SetLastRefreshed(item, DateTime.UtcNow, providerInfo);
             return true;
@@ -162,17 +159,20 @@ namespace MediaBrowser.Providers.TV
 
         private async Task DownloadImages(BaseItem item, List<RemoteImageInfo> images, int backdropLimit, CancellationToken cancellationToken)
         {
-            if (!item.HasImage(ImageType.Primary))
+            if (!item.LockedFields.Contains(MetadataFields.Images))
             {
-                await SaveImage(item, images, ImageType.Primary, cancellationToken).ConfigureAwait(false);
+                if (!item.HasImage(ImageType.Primary))
+                {
+                    await SaveImage(item, images, ImageType.Primary, cancellationToken).ConfigureAwait(false);
+                }
+
+                if (ConfigurationManager.Configuration.DownloadSeasonImages.Banner && !item.HasImage(ImageType.Banner))
+                {
+                    await SaveImage(item, images, ImageType.Banner, cancellationToken).ConfigureAwait(false);
+                }
             }
 
-            if (ConfigurationManager.Configuration.DownloadSeasonImages.Banner && !item.HasImage(ImageType.Banner))
-            {
-                await SaveImage(item, images, ImageType.Banner, cancellationToken).ConfigureAwait(false);
-            }
-
-            if (ConfigurationManager.Configuration.DownloadSeasonImages.Backdrops && item.BackdropImagePaths.Count < backdropLimit)
+            if (ConfigurationManager.Configuration.DownloadSeasonImages.Backdrops && item.BackdropImagePaths.Count < backdropLimit && !item.LockedFields.Contains(MetadataFields.Backdrops))
             {
                 foreach (var backdrop in images.Where(i => i.Type == ImageType.Backdrop))
                 {

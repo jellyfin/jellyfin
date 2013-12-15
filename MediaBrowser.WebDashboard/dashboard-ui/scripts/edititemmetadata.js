@@ -1070,7 +1070,12 @@
         metadatafields.push({ name: "Studios" });
         metadatafields.push({ name: "Tags" });
         metadatafields.push({ name: "Images" });
-
+        metadatafields.push({ name: "Backdrops" });
+        
+        if (item.Type == "Game") {
+            metadatafields.push({ name: "Screenshots" });
+        }
+        
         var html = '';
 
         html += "<h3>Fields</h3>";
