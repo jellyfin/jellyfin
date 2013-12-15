@@ -851,7 +851,7 @@
                          * value must be enclosed in quotes and use the period for the decimal point
                          * value must be larger than vMin
                          */
-                        vMax: '999999999.99',
+                        vMax: '9999999999999.99',
                         /** minimum possible value
                          * value must be enclosed in quotes and use the period for the decimal point
                          * value must be smaller than vMax
