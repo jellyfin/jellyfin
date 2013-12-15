@@ -427,8 +427,8 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                 throw new ArgumentNullException("outputPath");
             }
 
-            var slowSeekParam = GetSlowSeekCommandLineParameter(offset);
-            var fastSeekParam = GetFastSeekCommandLineParameter(offset);
+            
+            var slowSeekParam = offset.TotalSeconds > 0 ? " -ss " + offset.TotalSeconds.ToString(UsCulture) : string.Empty;
 
             var encodingParam = string.IsNullOrEmpty(language) ? string.Empty :
                 GetSubtitleLanguageEncodingParam(language) + " ";
@@ -444,12 +444,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                             UseShellExecute = false,
                             FileName = FFMpegPath,
                             Arguments =
-                                string.Format("{0}{1}-i \"{2}\"{3} \"{4}\"", 
-                                fastSeekParam, 
-                                encodingParam, 
-                                inputPath, 
-                                slowSeekParam,
-                                outputPath),
+                                string.Format("{0} -i \"{1}\" {2} -c:s ass \"{3}\"", encodingParam,  inputPath,  slowSeekParam, outputPath),
 
                             WindowStyle = ProcessWindowStyle.Hidden,
                             ErrorDialog = false
@@ -665,7 +660,9 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                 throw new ArgumentNullException("outputPath");
             }
 
-            var slowSeekParam = offset.TotalSeconds > 0 ? " -ss " + offset.TotalSeconds.ToString(UsCulture) : string.Empty;
+                        
+            var slowSeekParam = GetSlowSeekCommandLineParameter(offset);
+            var fastSeekParam = GetFastSeekCommandLineParameter(offset);
 
             var process = new Process
             {
@@ -678,7 +675,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                     RedirectStandardError = true,
 
                     FileName = FFMpegPath,
-                    Arguments = string.Format("-i {0}{1} -map 0:{2} -an -vn -c:s ass \"{3}\"", inputPath, slowSeekParam, subtitleStreamIndex, outputPath),
+                    Arguments = string.Format(" {0} -i {1} {2} -map 0:{3} -an -vn -c:s ass \"{4}\"", fastSeekParam, inputPath, slowSeekParam, subtitleStreamIndex, outputPath),
                     WindowStyle = ProcessWindowStyle.Hidden,
                     ErrorDialog = false
                 }
