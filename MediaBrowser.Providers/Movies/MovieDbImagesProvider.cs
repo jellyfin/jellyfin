@@ -132,7 +132,9 @@ namespace MediaBrowser.Providers.Movies
             }
 
             // Don't refresh if we already have both poster and backdrop and we're not refreshing images
-            if (item.HasImage(ImageType.Primary) && item.BackdropImagePaths.Count >= ConfigurationManager.Configuration.MaxBackdrops)
+            if (item.HasImage(ImageType.Primary) && 
+                item.BackdropImagePaths.Count >= ConfigurationManager.Configuration.MaxBackdrops &&
+                !item.LockedFields.Contains(MetadataFields.Images))
             {
                 return false;
             }
@@ -166,9 +168,11 @@ namespace MediaBrowser.Providers.Movies
         /// <returns>Task{System.Boolean}.</returns>
         public override async Task<bool> FetchAsync(BaseItem item, bool force, BaseProviderInfo providerInfo, CancellationToken cancellationToken)
         {
-            var images = await _providerManager.GetAvailableRemoteImages(item, cancellationToken, ManualMovieDbImageProvider.ProviderName).ConfigureAwait(false);
-
-            await ProcessImages(item, images.ToList(), cancellationToken).ConfigureAwait(false);
+            if (!item.LockedFields.Contains(MetadataFields.Images))
+            {
+                var images = await _providerManager.GetAvailableRemoteImages(item, cancellationToken, ManualMovieDbImageProvider.ProviderName).ConfigureAwait(false);
+                await ProcessImages(item, images.ToList(), cancellationToken).ConfigureAwait(false);
+            }
 
             SetLastRefreshed(item, DateTime.UtcNow, providerInfo);
             return true;
