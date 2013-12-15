@@ -116,6 +116,11 @@ namespace MediaBrowser.Controller.Library
         Task ValidateMediaLibrary(IProgress<double> progress, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Queues the library scan.
+        /// </summary>
+        void QueueLibraryScan();
+
+        /// <summary>
         /// Gets the default view.
         /// </summary>
         /// <returns>IEnumerable{VirtualFolderInfo}.</returns>

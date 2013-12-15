@@ -899,6 +899,15 @@ namespace MediaBrowser.Server.Implementations.Library
         }
 
         /// <summary>
+        /// Queues the library scan.
+        /// </summary>
+        public void QueueLibraryScan()
+        {
+            // Just run the scheduled task so that the user can see it
+            _taskManager.QueueScheduledTask<RefreshMediaLibraryTask>();
+        }
+        
+        /// <summary>
         /// Validates the media library internal.
         /// </summary>
         /// <param name="progress">The progress.</param>

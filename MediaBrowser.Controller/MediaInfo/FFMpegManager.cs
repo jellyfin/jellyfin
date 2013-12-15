@@ -1,7 +1,8 @@
-﻿using MediaBrowser.Common.IO;
+﻿using System.Globalization;
+using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -19,18 +20,6 @@ namespace MediaBrowser.Controller.MediaInfo
     /// </summary>
     public class FFMpegManager
     {
-        /// <summary>
-        /// Gets or sets the video image cache.
-        /// </summary>
-        /// <value>The video image cache.</value>
-        internal FileSystemRepository VideoImageCache { get; set; }
-
-        /// <summary>
-        /// Gets or sets the subtitle cache.
-        /// </summary>
-        /// <value>The subtitle cache.</value>
-        internal FileSystemRepository SubtitleCache { get; set; }
-
         private readonly IServerApplicationPaths _appPaths;
         private readonly IMediaEncoder _encoder;
         private readonly ILogger _logger;
@@ -53,32 +42,17 @@ namespace MediaBrowser.Controller.MediaInfo
             _logger = logger;
             _itemRepo = itemRepo;
             _fileSystem = fileSystem;
-
-            VideoImageCache = new FileSystemRepository(VideoImagesDataPath);
-            SubtitleCache = new FileSystemRepository(SubtitleCachePath);
         }
 
         /// <summary>
-        /// Gets the video images data path.
+        /// Gets the chapter images data path.
         /// </summary>
-        /// <value>The video images data path.</value>
-        public string VideoImagesDataPath
+        /// <value>The chapter images data path.</value>
+        public string ChapterImagesPath
         {
             get
             {
-                return Path.Combine(_appPaths.DataPath, "extracted-video-images");
-            }
-        }
-
-        /// <summary>
-        /// Gets the audio images data path.
-        /// </summary>
-        /// <value>The audio images data path.</value>
-        public string AudioImagesDataPath
-        {
-            get
-            {
-                return Path.Combine(_appPaths.DataPath, "extracted-audio-images");
+                return Path.Combine(_appPaths.DataPath, "chapter-images");
             }
         }
 
@@ -86,7 +60,7 @@ namespace MediaBrowser.Controller.MediaInfo
         /// Gets the subtitle cache path.
         /// </summary>
         /// <value>The subtitle cache path.</value>
-        public string SubtitleCachePath
+        private string SubtitleCachePath
         {
             get
             {
@@ -122,6 +96,8 @@ namespace MediaBrowser.Controller.MediaInfo
 
             var runtimeTicks = video.RunTimeTicks ?? 0;
 
+            var currentImages = GetSavedChapterImages(video);
+
             foreach (var chapter in chapters)
             {
                 if (chapter.StartPositionTicks >= runtimeTicks)
@@ -130,11 +106,9 @@ namespace MediaBrowser.Controller.MediaInfo
                     break;
                 }
 
-                var filename = video.Path + "_" + video.DateModified.Ticks + "_" + chapter.StartPositionTicks;
+                var path = GetChapterImagePath(video, chapter.StartPositionTicks);
 
-                var path = VideoImageCache.GetResourcePath(filename, ".jpg");
-
-                if (!File.Exists(path))
+                if (!currentImages.Contains(path, StringComparer.OrdinalIgnoreCase))
                 {
                     if (extractImages)
                     {
@@ -188,8 +162,34 @@ namespace MediaBrowser.Controller.MediaInfo
                 await _itemRepo.SaveChapters(video.Id, chapters, cancellationToken).ConfigureAwait(false);
             }
 
+            DeleteDeadImages(currentImages, chapters);
+
             return success;
         }
+
+        private void DeleteDeadImages(IEnumerable<string> images, IEnumerable<ChapterInfo> chapters)
+        {
+            var deadImages = images
+                .Except(chapters.Select(i => i.ImagePath), StringComparer.OrdinalIgnoreCase)
+                .Where(i => BaseItem.SupportedImageExtensions.Contains(Path.GetExtension(i), StringComparer.OrdinalIgnoreCase))
+                .ToList();
+
+            foreach (var image in deadImages)
+            {
+                _logger.Debug("Deleting dead chapter image {0}", image);
+
+                try
+                {
+                    File.Delete(image);
+                }
+                catch (IOException ex)
+                {
+                    _logger.ErrorException("Error deleting {0}.", ex, image);
+                }
+            }
+        }
+
+        private readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
         /// <summary>
         /// Gets the subtitle cache path.
@@ -220,7 +220,39 @@ namespace MediaBrowser.Controller.MediaInfo
                 ticksParam += _fileSystem.GetLastWriteTimeUtc(stream.Path).Ticks;
             }
 
-            return SubtitleCache.GetResourcePath(input.Id + "_" + subtitleStreamIndex + "_" + input.DateModified.Ticks + ticksParam, outputExtension);
+            var filename = (input.Id + "_" + subtitleStreamIndex.ToString(UsCulture) + "_" + input.DateModified.Ticks.ToString(UsCulture) + ticksParam).GetMD5() + outputExtension;
+
+            var prefix = filename.Substring(0, 1);
+
+            return Path.Combine(SubtitleCachePath, prefix, filename);
+        }
+
+        public string GetChapterImagePath(Video video, long chapterPositionTicks)
+        {
+            var filename = video.DateModified.Ticks.ToString(UsCulture) + "_" + chapterPositionTicks.ToString(UsCulture) + ".jpg";
+
+            var videoId = video.Id.ToString();
+            var prefix = videoId.Substring(0, 1);
+
+            return Path.Combine(ChapterImagesPath, prefix, videoId, filename);
+        }
+
+        public List<string> GetSavedChapterImages(Video video)
+        {
+            var videoId = video.Id.ToString();
+            var prefix = videoId.Substring(0, 1);
+
+            var path = Path.Combine(ChapterImagesPath, prefix, videoId);
+
+            try
+            {
+                return Directory.EnumerateFiles(path)
+                    .ToList();
+            }
+            catch (DirectoryNotFoundException)
+            {
+                return new List<string>();
+            }
         }
     }
 }

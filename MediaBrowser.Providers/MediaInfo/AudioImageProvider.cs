@@ -1,6 +1,5 @@
-﻿using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.MediaInfo;
-using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -23,12 +22,6 @@ namespace MediaBrowser.Providers.MediaInfo
     public class AudioImageProvider : BaseMetadataProvider
     {
         /// <summary>
-        /// Gets or sets the image cache.
-        /// </summary>
-        /// <value>The image cache.</value>
-        public FileSystemRepository ImageCache { get; set; }
-
-        /// <summary>
         /// The _locks
         /// </summary>
         private readonly ConcurrentDictionary<string, SemaphoreSlim> _locks = new ConcurrentDictionary<string, SemaphoreSlim>();
@@ -48,8 +41,6 @@ namespace MediaBrowser.Providers.MediaInfo
             : base(logManager, configurationManager)
         {
             _mediaEncoder = mediaEncoder;
-
-            ImageCache = new FileSystemRepository(Kernel.Instance.FFMpegManager.AudioImagesDataPath);
         }
 
         /// <summary>
@@ -113,7 +104,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 return ItemUpdateType.ImageUpdate;
             }
         }
-        
+
         /// <summary>
         /// Fetches metadata and returns true or false indicating if any work that requires persistence was done
         /// </summary>
@@ -154,13 +145,7 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var album = item.Parent as MusicAlbum;
-
-            var filename = item.Album ?? string.Empty;
-            filename += item.Artists.FirstOrDefault() ?? string.Empty;
-            filename += album == null ? item.Id.ToString("N") + item.DateModified.Ticks : album.Id.ToString("N") + album.DateModified.Ticks;
-
-            var path = ImageCache.GetResourcePath(filename + "_primary", ".jpg");
+            var path = GetAudioImagePath(item);
 
             if (!File.Exists(path))
             {
@@ -193,6 +178,38 @@ namespace MediaBrowser.Providers.MediaInfo
 
             // Image is already in the cache
             item.PrimaryImagePath = path;
+        }
+
+        /// <summary>
+        /// Gets the audio image path.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns>System.String.</returns>
+        private string GetAudioImagePath(Audio item)
+        {
+            var album = item.Parent as MusicAlbum;
+
+            var filename = item.Album ?? string.Empty;
+            filename += item.Artists.FirstOrDefault() ?? string.Empty;
+            filename += album == null ? item.Id.ToString("N") + item.DateModified.Ticks : album.Id.ToString("N") + album.DateModified.Ticks + "_primary";
+
+            filename = filename.GetMD5() + ".jpg";
+
+            var prefix = filename.Substring(0, 1);
+
+            return Path.Combine(AudioImagesPath, prefix, filename);
+        }
+
+        /// <summary>
+        /// Gets the audio images data path.
+        /// </summary>
+        /// <value>The audio images data path.</value>
+        public string AudioImagesPath
+        {
+            get
+            {
+                return Path.Combine(ConfigurationManager.ApplicationPaths.DataPath, "extracted-audio-images");
+            }
         }
 
         /// <summary>
