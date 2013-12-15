@@ -151,6 +151,7 @@
     <Compile Include="Library\Validators\StudiosValidator.cs" />
     <Compile Include="Library\Validators\YearsPostScanTask.cs" />
     <Compile Include="LiveTv\ChannelImageProvider.cs" />
+    <Compile Include="LiveTv\LiveTvDtoService.cs" />
     <Compile Include="LiveTv\LiveTvManager.cs" />
     <Compile Include="LiveTv\RefreshChannelsScheduledTask.cs" />
     <Compile Include="Localization\LocalizationManager.cs" />
@@ -338,7 +339,7 @@
       <Link>swagger-ui\swagger-ui.min.js</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Localization\Ratings\be.txt" />
+    <EmbeddedResource Include="Localization\Ratings\be.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" Condition=" '$(ConfigurationName)' != 'Release Mono' " />

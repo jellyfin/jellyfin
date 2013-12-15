@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Net;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -54,6 +53,14 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task CreateSeriesTimerAsync(SeriesTimerInfo info, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Updates the timer asynchronous.
+        /// </summary>
+        /// <param name="info">The information.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task UpdateTimerAsync(TimerInfo info, CancellationToken cancellationToken);
 
         /// <summary>
         /// Updates the series timer asynchronous.

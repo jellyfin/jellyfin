@@ -53,20 +53,12 @@ namespace MediaBrowser.Server.Implementations.Drawing
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IServerApplicationPaths _appPaths;
 
-        private readonly string _croppedWhitespaceImageCachePath;
-        private readonly string _enhancedImageCachePath;
-        private readonly string _resizedImageCachePath;
-
         public ImageProcessor(ILogger logger, IServerApplicationPaths appPaths, IFileSystem fileSystem, IJsonSerializer jsonSerializer)
         {
             _logger = logger;
             _fileSystem = fileSystem;
             _jsonSerializer = jsonSerializer;
             _appPaths = appPaths;
-
-            _croppedWhitespaceImageCachePath = Path.Combine(appPaths.ImageCachePath, "cropped-images");
-            _enhancedImageCachePath = Path.Combine(appPaths.ImageCachePath, "enhanced-images");
-            _resizedImageCachePath = Path.Combine(appPaths.ImageCachePath, "resized-images");
 
             _saveImageSizeTimer = new Timer(SaveImageSizeCallback, null, Timeout.Infinite, Timeout.Infinite);
 
@@ -90,6 +82,30 @@ namespace MediaBrowser.Server.Implementations.Drawing
             }
 
             _cachedImagedSizes = new ConcurrentDictionary<Guid, ImageSize>(sizeDictionary);
+        }
+
+        private string ResizedImageCachePath
+        {
+            get
+            {
+                return Path.Combine(_appPaths.ImageCachePath, "resized-images");
+            }
+        }
+
+        private string EnhancedImageCachePath
+        {
+            get
+            {
+                return Path.Combine(_appPaths.ImageCachePath, "enhanced-images");
+            }
+        }
+
+        private string CroppedWhitespaceImageCachePath
+        {
+            get
+            {
+                return Path.Combine(_appPaths.ImageCachePath, "cropped-images");
+            }
         }
 
         public void AddParts(IEnumerable<IImageEnhancer> enhancers)
@@ -391,7 +407,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
             var name = originalImagePath;
             name += "datemodified=" + dateModified.Ticks;
 
-            var croppedImagePath = GetCachePath(_croppedWhitespaceImageCachePath, name, Path.GetExtension(originalImagePath));
+            var croppedImagePath = GetCachePath(CroppedWhitespaceImageCachePath, name, Path.GetExtension(originalImagePath));
 
             var semaphore = GetLock(croppedImagePath);
 
@@ -480,7 +496,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
                 filename += "b=" + backgroundColor;
             }
 
-            return GetCachePath(_resizedImageCachePath, filename, Path.GetExtension(originalPath));
+            return GetCachePath(ResizedImageCachePath, filename, Path.GetExtension(originalPath));
         }
 
         /// <summary>
@@ -708,7 +724,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
             var cacheGuid = GetImageCacheTag(item, imageType, originalImagePath, dateModified, supportedEnhancers);
 
             // All enhanced images are saved as png to allow transparency
-            var enhancedImagePath = GetCachePath(_enhancedImageCachePath, cacheGuid + ".png");
+            var enhancedImagePath = GetCachePath(EnhancedImageCachePath, cacheGuid + ".png");
 
             var semaphore = GetLock(enhancedImagePath);
 

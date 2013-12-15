@@ -1,10 +1,9 @@
-﻿using MediaBrowser.Model.LiveTv;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
-namespace MediaBrowser.Controller.LiveTv
+namespace MediaBrowser.Model.LiveTv
 {
-    public class SeriesTimerInfo
+    public class SeriesTimerInfoDto
     {
         /// <summary>
         /// Id of the recording.
@@ -12,9 +11,21 @@ namespace MediaBrowser.Controller.LiveTv
         public string Id { get; set; }
 
         /// <summary>
+        /// Gets or sets the external identifier.
+        /// </summary>
+        /// <value>The external identifier.</value>
+        public string ExternalId { get; set; }
+        
+        /// <summary>
         /// ChannelId of the recording.
         /// </summary>
         public string ChannelId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the external channel identifier.
+        /// </summary>
+        /// <value>The external channel identifier.</value>
+        public string ExternalChannelId { get; set; }
         
         /// <summary>
         /// ChannelName of the recording.
@@ -26,6 +37,12 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value>The program identifier.</value>
         public string ProgramId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the external program identifier.
+        /// </summary>
+        /// <value>The external program identifier.</value>
+        public string ExternalProgramId { get; set; }
         
         /// <summary>
         /// Name of the recording.
@@ -60,6 +77,12 @@ namespace MediaBrowser.Controller.LiveTv
         public List<DayOfWeek> Days { get; set; }
 
         /// <summary>
+        /// Gets or sets the day pattern.
+        /// </summary>
+        /// <value>The day pattern.</value>
+        public DayPattern? DayPattern { get; set; }
+
+        /// <summary>
         /// Gets or sets the priority.
         /// </summary>
         /// <value>The priority.</value>
@@ -88,8 +111,8 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value>The required post padding seconds.</value>
         public int RequiredPostPaddingSeconds { get; set; }
-        
-        public SeriesTimerInfo()
+
+        public SeriesTimerInfoDto()
         {
             Days = new List<DayOfWeek>();
         }

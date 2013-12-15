@@ -10,6 +10,12 @@
         /// </summary>
         /// <value>The channel identifier.</value>
         public string ChannelId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the user identifier.
+        /// </summary>
+        /// <value>The user identifier.</value>
+        public string UserId { get; set; }
     }
 
     public class TimerQuery
@@ -19,5 +25,9 @@
         /// </summary>
         /// <value>The channel identifier.</value>
         public string ChannelId { get; set; }
+    }
+
+    public class SeriesTimerQuery
+    {
     }
 }

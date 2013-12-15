@@ -69,10 +69,9 @@ namespace MediaBrowser.Server.Implementations.Configuration
         /// </summary>
         private void UpdateItemsByNamePath()
         {
-            if (!string.IsNullOrEmpty(Configuration.ItemsByNamePath))
-            {
-                ApplicationPaths.ItemsByNamePath = Configuration.ItemsByNamePath;
-            }
+            ((ServerApplicationPaths) ApplicationPaths).ItemsByNamePath = string.IsNullOrEmpty(Configuration.ItemsByNamePath) ? 
+                null : 
+                Configuration.ItemsByNamePath;
         }
 
         /// <summary>
@@ -84,19 +83,29 @@ namespace MediaBrowser.Server.Implementations.Configuration
         {
             var newConfig = (ServerConfiguration) newConfiguration;
 
-            var newIbnPath = newConfig.ItemsByNamePath;
-
-            if (!string.IsNullOrWhiteSpace(newIbnPath)
-                && !string.Equals(Configuration.ItemsByNamePath ?? string.Empty, newIbnPath))
-            {
-                // Validate
-                if (!Directory.Exists(newIbnPath))
-                {
-                    throw new DirectoryNotFoundException(string.Format("{0} does not exist.", newConfig.ItemsByNamePath));
-                }
-            }
+            ValidateItemByNamePath(newConfig);
 
             base.ReplaceConfiguration(newConfiguration);
+        }
+
+        /// <summary>
+        /// Replaces the item by name path.
+        /// </summary>
+        /// <param name="newConfig">The new configuration.</param>
+        /// <exception cref="System.IO.DirectoryNotFoundException"></exception>
+        private void ValidateItemByNamePath(ServerConfiguration newConfig)
+        {
+            var newPath = newConfig.ItemsByNamePath;
+
+            if (!string.IsNullOrWhiteSpace(newPath)
+                && !string.Equals(Configuration.ItemsByNamePath ?? string.Empty, newPath))
+            {
+                // Validate
+                if (!Directory.Exists(newPath))
+                {
+                    throw new DirectoryNotFoundException(string.Format("{0} does not exist.", newPath));
+                }
+            }
         }
     }
 }

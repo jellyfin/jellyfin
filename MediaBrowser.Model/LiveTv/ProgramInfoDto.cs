@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using MediaBrowser.Model.Dto;
 
 namespace MediaBrowser.Model.LiveTv
 {
@@ -100,6 +101,12 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value>The episode title.</value>
         public string EpisodeTitle { get; set; }
+
+        /// <summary>
+        /// Gets or sets the user data.
+        /// </summary>
+        /// <value>The user data.</value>
+        public UserItemDataDto UserData { get; set; }
 
         public ProgramInfoDto()
         {

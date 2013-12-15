@@ -42,7 +42,7 @@ namespace MediaBrowser.Providers.Savers
                     "LocalTitle",
                     "LockData",
                     "LockedFields",
-                    "MediaInfo",
+                    "Format3D",
                     "MPAARating",
                     "MusicbrainzId",
                     "MusicBrainzReleaseGroupId",
@@ -536,10 +536,6 @@ namespace MediaBrowser.Providers.Savers
 
             if (video != null && video.Video3DFormat.HasValue)
             {
-                builder.Append("<MediaInfo>");
-
-                builder.Append("<Video>");
-
                 switch (video.Video3DFormat.Value)
                 {
                     case Video3DFormat.FullSideBySide:
@@ -555,10 +551,6 @@ namespace MediaBrowser.Providers.Savers
                         builder.Append("<Format3D>HTAB</Format3D>");
                         break;
                 }
-
-                builder.Append("</Video>");
-
-                builder.Append("</MediaInfo>");
             }
         }
     }

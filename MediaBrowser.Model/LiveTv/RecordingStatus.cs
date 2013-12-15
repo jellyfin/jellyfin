@@ -7,7 +7,7 @@ namespace MediaBrowser.Model.LiveTv
         Scheduled,
         InProgress,
         Completed,
-        Abored,
+        Aborted,
         Cancelled,
         ConflictedOk,
         ConflictedNotOk,
@@ -21,5 +21,12 @@ namespace MediaBrowser.Model.LiveTv
         AllProgramEventsOneChannel,
         NewProgramEventsAllChannels,
         AllProgramEventsAllChannels
+    }
+
+    public enum DayPattern
+    {
+        Daily,
+        Weekdays,
+        Weekends
     }
 }

@@ -445,6 +445,8 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         {
             ValidateParams(options.Url, options.CancellationToken);
 
+            Directory.CreateDirectory(_appPaths.TempDirectory);
+
             var tempFile = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid() + ".tmp");
 
             if (options.Progress == null)

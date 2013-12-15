@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.LiveTv;
+﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
 using System.Collections.Generic;
 using System.Threading;
@@ -54,17 +55,28 @@ namespace MediaBrowser.Controller.LiveTv
         /// Gets the channels.
         /// </summary>
         /// <param name="query">The query.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>IEnumerable{Channel}.</returns>
-        QueryResult<ChannelInfoDto> GetChannels(ChannelQuery query);
+        Task<QueryResult<ChannelInfoDto>> GetChannels(ChannelQuery query, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the recording.
         /// </summary>
         /// <param name="id">The identifier.</param>
+        /// <param name="user">The user.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{RecordingInfoDto}.</returns>
-        Task<RecordingInfoDto> GetRecording(string id, CancellationToken cancellationToken);
+        Task<RecordingInfoDto> GetRecording(string id, CancellationToken cancellationToken, User user = null);
 
+        /// <summary>
+        /// Gets the channel.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="user">The user.</param>
+        /// <returns>Task{RecordingInfoDto}.</returns>
+        Task<ChannelInfoDto> GetChannel(string id, CancellationToken cancellationToken, User user = null);
+        
         /// <summary>
         /// Gets the timer.
         /// </summary>
@@ -73,6 +85,14 @@ namespace MediaBrowser.Controller.LiveTv
         /// <returns>Task{TimerInfoDto}.</returns>
         Task<TimerInfoDto> GetTimer(string id, CancellationToken cancellationToken);
 
+        /// <summary>
+        /// Gets the series timer.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{TimerInfoDto}.</returns>
+        Task<SeriesTimerInfoDto> GetSeriesTimer(string id, CancellationToken cancellationToken);
+        
         /// <summary>
         /// Gets the recordings.
         /// </summary>
@@ -90,19 +110,19 @@ namespace MediaBrowser.Controller.LiveTv
         Task<QueryResult<TimerInfoDto>> GetTimers(TimerQuery query, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Gets the series timers.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{QueryResult{SeriesTimerInfoDto}}.</returns>
+        Task<QueryResult<SeriesTimerInfoDto>> GetSeriesTimers(SeriesTimerQuery query, CancellationToken cancellationToken);
+        
+        /// <summary>
         /// Gets the channel.
         /// </summary>
         /// <param name="id">The identifier.</param>
         /// <returns>Channel.</returns>
         Channel GetChannel(string id);
-
-        /// <summary>
-        /// Gets the channel.
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <param name="userId">The user identifier.</param>
-        /// <returns>Channel.</returns>
-        ChannelInfoDto GetChannelInfoDto(string id, string userId);
 
         /// <summary>
         /// Gets the programs.
@@ -111,5 +131,21 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>IEnumerable{ProgramInfo}.</returns>
         Task<QueryResult<ProgramInfoDto>> GetPrograms(ProgramQuery query, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Updates the timer.
+        /// </summary>
+        /// <param name="timer">The timer.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task UpdateTimer(TimerInfoDto timer, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Updates the timer.
+        /// </summary>
+        /// <param name="timer">The timer.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task UpdateSeriesTimer(SeriesTimerInfoDto timer, CancellationToken cancellationToken);
     }
 }

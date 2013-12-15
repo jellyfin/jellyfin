@@ -248,6 +248,9 @@
     <Compile Include="..\MediaBrowser.Model\LiveTv\RecordingStatus.cs">
       <Link>LiveTv\RecordingStatus.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\LiveTv\SeriesTimerInfoDto.cs">
+      <Link>LiveTv\SeriesTimerInfoDto.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\LiveTv\TimerInfoDto.cs">
       <Link>LiveTv\TimerInfoDto.cs</Link>
     </Compile>

@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System.IO;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Logging;
@@ -84,6 +85,8 @@ namespace MediaBrowser.Common.Implementations.Configuration
             CommonApplicationPaths = applicationPaths;
             XmlSerializer = xmlSerializer;
             Logger = logManager.GetLogger(GetType().Name);
+
+            UpdateCachePath();
         }
 
         /// <summary>
@@ -109,6 +112,8 @@ namespace MediaBrowser.Common.Implementations.Configuration
         /// </summary>
         protected virtual void OnConfigurationUpdated()
         {
+            UpdateCachePath();
+
             EventHelper.QueueEventIfNotNull(ConfigurationUpdated, this, EventArgs.Empty, Logger);
         }
 
@@ -124,8 +129,40 @@ namespace MediaBrowser.Common.Implementations.Configuration
                 throw new ArgumentNullException("newConfiguration");
             }
 
+            ValidateCachePath(newConfiguration);
+
             CommonConfiguration = newConfiguration;
             SaveConfiguration();
+        }
+
+        /// <summary>
+        /// Updates the items by name path.
+        /// </summary>
+        private void UpdateCachePath()
+        {
+            ((BaseApplicationPaths)CommonApplicationPaths).CachePath = string.IsNullOrEmpty(CommonConfiguration.CachePath) ? 
+                null : 
+                CommonConfiguration.CachePath;
+        }
+
+        /// <summary>
+        /// Replaces the cache path.
+        /// </summary>
+        /// <param name="newConfig">The new configuration.</param>
+        /// <exception cref="System.IO.DirectoryNotFoundException"></exception>
+        private void ValidateCachePath(BaseApplicationConfiguration newConfig)
+        {
+            var newPath = newConfig.CachePath;
+
+            if (!string.IsNullOrWhiteSpace(newPath)
+                && !string.Equals(CommonConfiguration.CachePath ?? string.Empty, newPath))
+            {
+                // Validate
+                if (!Directory.Exists(newPath))
+                {
+                    throw new DirectoryNotFoundException(string.Format("{0} does not exist.", newPath));
+                }
+            }
         }
     }
 }

@@ -2,7 +2,6 @@
 using System;
 using System.Configuration;
 using System.IO;
-using System.Reflection;
 
 namespace MediaBrowser.Common.Implementations
 {
@@ -82,10 +81,6 @@ namespace MediaBrowser.Common.Implementations
         }
 
         /// <summary>
-        /// The _image cache path
-        /// </summary>
-        private string _imageCachePath;
-        /// <summary>
         /// Gets the image cache path.
         /// </summary>
         /// <value>The image cache path.</value>
@@ -93,14 +88,7 @@ namespace MediaBrowser.Common.Implementations
         {
             get
             {
-                if (_imageCachePath == null)
-                {
-                    _imageCachePath = Path.Combine(CachePath, "images");
-
-                    Directory.CreateDirectory(_imageCachePath);
-                }
-
-                return _imageCachePath;
+                return Path.Combine(CachePath, "images");
             }
         }
 
@@ -233,7 +221,7 @@ namespace MediaBrowser.Common.Implementations
         {
             get
             {
-                if (_cachePath == null)
+                if (string.IsNullOrEmpty(_cachePath))
                 {
                     _cachePath = Path.Combine(ProgramDataPath, "cache");
 
@@ -242,12 +230,12 @@ namespace MediaBrowser.Common.Implementations
 
                 return _cachePath;
             }
+            set
+            {
+                _cachePath = value;
+            }
         }
 
-        /// <summary>
-        /// The _temp directory
-        /// </summary>
-        private string _tempDirectory;
         /// <summary>
         /// Gets the folder path to the temp directory within the cache folder
         /// </summary>
@@ -256,14 +244,7 @@ namespace MediaBrowser.Common.Implementations
         {
             get
             {
-                if (_tempDirectory == null)
-                {
-                    _tempDirectory = Path.Combine(CachePath, "temp");
-
-                    Directory.CreateDirectory(_tempDirectory);
-                }
-
-                return _tempDirectory;
+                return Path.Combine(CachePath, "temp");
             }
         }
 

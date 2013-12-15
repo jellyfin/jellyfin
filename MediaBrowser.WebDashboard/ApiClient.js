@@ -506,17 +506,107 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.createLiveTvTimer = function (options) {
+        self.createLiveTvTimer = function (item) {
 
-            if (!options) {
-                throw new Error("null options");
+            if (!item) {
+                throw new Error("null item");
             }
 
-            var url = self.getUrl("LiveTv/Timers", options);
+            var url = self.getUrl("LiveTv/Timers");
 
             return self.ajax({
                 type: "POST",
+                url: url,
+                data: JSON.stringify(item),
+                contentType: "application/json"
+            });
+        };
+
+        self.updateLiveTvTimer = function (item) {
+
+            if (!item) {
+                throw new Error("null item");
+            }
+
+            var url = self.getUrl("LiveTv/Timers/" + item.Id);
+
+            return self.ajax({
+                type: "POST",
+                url: url,
+                data: JSON.stringify(item),
+                contentType: "application/json"
+            });
+        };
+
+        self.getLiveTvSeriesTimers = function (options) {
+
+            var url = self.getUrl("LiveTv/SeriesTimers", options || {});
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        self.getLiveTvSeriesTimer = function (id) {
+
+            if (!id) {
+                throw new Error("null id");
+            }
+
+            var url = self.getUrl("LiveTv/SeriesTimers/" + id);
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        self.cancelLiveTvSeriesTimer = function (id) {
+
+            if (!id) {
+                throw new Error("null id");
+            }
+
+            var url = self.getUrl("LiveTv/SeriesTimers/" + id);
+
+            return self.ajax({
+                type: "DELETE",
                 url: url
+            });
+        };
+
+        self.createLiveTvSeriesTimer = function (item) {
+
+            if (!item) {
+                throw new Error("null item");
+            }
+
+            var url = self.getUrl("LiveTv/SeriesTimers");
+
+            return self.ajax({
+                type: "POST",
+                url: url,
+                data: JSON.stringify(item),
+                contentType: "application/json"
+            });
+        };
+
+        self.updateLiveTvSeriesTimer = function (item) {
+
+            if (!item) {
+                throw new Error("null item");
+            }
+
+            var url = self.getUrl("LiveTv/SeriesTimers/" + item.Id);
+
+            return self.ajax({
+                type: "POST",
+                url: url,
+                data: JSON.stringify(item),
+                contentType: "application/json"
             });
         };
 

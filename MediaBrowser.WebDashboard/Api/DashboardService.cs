@@ -242,7 +242,24 @@ namespace MediaBrowser.WebDashboard.Api
                 pages = pages.Where(p => p.ConfigurationPageType == request.PageType.Value);
             }
 
-            return ResultFactory.GetOptimizedResult(Request, pages.Select(p => new ConfigurationPageInfo(p)).ToList());
+            // Don't allow a failing plugin to fail them all
+            var configPages = pages.Select(p =>
+            {
+
+                try
+                {
+                    return new ConfigurationPageInfo(p);
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException("Error getting plugin information from {0}", ex, p.GetType().Name);
+                    return null;
+                }
+            })
+                .Where(i => i != null)
+                .ToList();
+
+            return ResultFactory.GetOptimizedResult(Request, configPages);
         }
 
         /// <summary>

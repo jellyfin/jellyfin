@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using MediaBrowser.Model.Dto;
 
 namespace MediaBrowser.Model.LiveTv
 {
@@ -122,6 +123,12 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value>The audio.</value>
         public ProgramAudio? Audio { get; set; }
+
+        /// <summary>
+        /// Gets or sets the user data.
+        /// </summary>
+        /// <value>The user data.</value>
+        public UserItemDataDto UserData { get; set; }
 
         public RecordingInfoDto()
         {

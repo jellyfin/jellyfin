@@ -21,6 +21,12 @@ namespace MediaBrowser.Model.LiveTv
         public string ChannelId { get; set; }
 
         /// <summary>
+        /// Gets or sets the external channel identifier.
+        /// </summary>
+        /// <value>The external channel identifier.</value>
+        public string ExternalChannelId { get; set; }
+        
+        /// <summary>
         /// ChannelName of the recording.
         /// </summary>
         public string ChannelName { get; set; }
@@ -63,6 +69,12 @@ namespace MediaBrowser.Model.LiveTv
         /// <value>The series timer identifier.</value>
         public string SeriesTimerId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the external series timer identifier.
+        /// </summary>
+        /// <value>The external series timer identifier.</value>
+        public string ExternalSeriesTimerId { get; set; }
+        
         /// <summary>
         /// Gets or sets the requested pre padding seconds.
         /// </summary>
