@@ -1,6 +1,6 @@
 ﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Common.MediaInfo;
-using MediaBrowser.Controller;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
@@ -26,8 +26,8 @@ namespace MediaBrowser.Api.Playback.Hls
     /// </summary>
     public class AudioHlsService : BaseHlsService
     {
-        public AudioHlsService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService, IFileSystem fileSystem, IItemRepository itemRepository)
-            : base(appPaths, userManager, libraryManager, isoManager, mediaEncoder, dtoService, fileSystem, itemRepository)
+        public AudioHlsService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService, IFileSystem fileSystem, IItemRepository itemRepository)
+            : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, dtoService, fileSystem, itemRepository)
         {
         }
 

@@ -1,6 +1,6 @@
 ﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Common.MediaInfo;
-using MediaBrowser.Controller;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
@@ -41,8 +41,8 @@ namespace MediaBrowser.Api.Playback.Progressive
     /// </summary>
     public class AudioService : BaseProgressiveStreamingService
     {
-        public AudioService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IItemRepository itemRepo, IDtoService dtoService, IImageProcessor imageProcessor, IFileSystem fileSystem)
-            : base(appPaths, userManager, libraryManager, isoManager, mediaEncoder, itemRepo, dtoService, imageProcessor, fileSystem)
+        public AudioService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService, IFileSystem fileSystem, IItemRepository itemRepository, IImageProcessor imageProcessor)
+            : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, dtoService, fileSystem, itemRepository, imageProcessor)
         {
         }
 
@@ -101,13 +101,16 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             const string vn = " -vn";
 
-            return string.Format("{0} -i {1}{2} -threads 0{5} {3} -id3v2_version 3 -write_id3v1 1 \"{4}\"",
+            var threads = GetNumberOfThreads();
+
+            return string.Format("{0} -i {1}{2} -threads {3}{4} {5} -id3v2_version 3 -write_id3v1 1 \"{6}\"",
                 GetFastSeekCommandLineParameter(request),
                 GetInputArgument(state.Item, state.IsoMount),
                 GetSlowSeekCommandLineParameter(request),
+                threads,
+                vn,
                 string.Join(" ", audioTranscodeParams.ToArray()),
-                outputPath,
-                vn).Trim();
+                outputPath).Trim();
         }
     }
 }

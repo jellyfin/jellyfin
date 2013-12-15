@@ -1,6 +1,6 @@
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.MediaInfo;
-using MediaBrowser.Controller;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
@@ -32,8 +32,8 @@ namespace MediaBrowser.Api.Playback.Hls
     /// </summary>
     public class VideoHlsService : BaseHlsService
     {
-        public VideoHlsService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService, IFileSystem fileSystem, IItemRepository itemRepository)
-            : base(appPaths, userManager, libraryManager, isoManager, mediaEncoder, dtoService, fileSystem, itemRepository)
+        public VideoHlsService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService, IFileSystem fileSystem, IItemRepository itemRepository)
+            : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, dtoService, fileSystem, itemRepository)
         {
         }
 
@@ -123,7 +123,7 @@ namespace MediaBrowser.Api.Playback.Hls
                                  (state.SubtitleStream.Codec.IndexOf("pgs", StringComparison.OrdinalIgnoreCase) != -1 ||
                                   state.SubtitleStream.Codec.IndexOf("dvd", StringComparison.OrdinalIgnoreCase) != -1);
 
-            var args = "-codec:v:0 " + codec + " -preset superfast" + keyFrameArg;
+            var args = "-codec:v:0 " + codec + " " + GetVideoQualityParam(state, "libx264") + keyFrameArg;
 
             var bitrate = GetVideoBitrateParam(state);
 
