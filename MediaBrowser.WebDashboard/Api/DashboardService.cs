@@ -561,7 +561,6 @@ namespace MediaBrowser.WebDashboard.Api
             await memoryStream.WriteAsync(newLineBytes, 0, newLineBytes.Length).ConfigureAwait(false);
 
             await AppendResource(memoryStream, "thirdparty/autoNumeric.js", newLineBytes).ConfigureAwait(false);
-            await AppendResource(memoryStream, "thirdparty/html5slider.js", newLineBytes).ConfigureAwait(false);
 
             await AppendResource(assembly, memoryStream, "MediaBrowser.WebDashboard.ApiClient.js", newLineBytes).ConfigureAwait(false);
 

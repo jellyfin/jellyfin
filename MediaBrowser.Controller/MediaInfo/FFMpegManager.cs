@@ -170,7 +170,7 @@ namespace MediaBrowser.Controller.MediaInfo
         private void DeleteDeadImages(IEnumerable<string> images, IEnumerable<ChapterInfo> chapters)
         {
             var deadImages = images
-                .Except(chapters.Select(i => i.ImagePath), StringComparer.OrdinalIgnoreCase)
+                .Except(chapters.Select(i => i.ImagePath).Where(i => !string.IsNullOrEmpty(i)), StringComparer.OrdinalIgnoreCase)
                 .Where(i => BaseItem.SupportedImageExtensions.Contains(Path.GetExtension(i), StringComparer.OrdinalIgnoreCase))
                 .ToList();
 
@@ -189,7 +189,7 @@ namespace MediaBrowser.Controller.MediaInfo
             }
         }
 
-        private readonly CultureInfo UsCulture = new CultureInfo("en-US");
+        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
         /// <summary>
         /// Gets the subtitle cache path.
@@ -220,7 +220,7 @@ namespace MediaBrowser.Controller.MediaInfo
                 ticksParam += _fileSystem.GetLastWriteTimeUtc(stream.Path).Ticks;
             }
 
-            var filename = (input.Id + "_" + subtitleStreamIndex.ToString(UsCulture) + "_" + input.DateModified.Ticks.ToString(UsCulture) + ticksParam).GetMD5() + outputExtension;
+            var filename = (input.Id + "_" + subtitleStreamIndex.ToString(_usCulture) + "_" + input.DateModified.Ticks.ToString(_usCulture) + ticksParam).GetMD5() + outputExtension;
 
             var prefix = filename.Substring(0, 1);
 
@@ -229,7 +229,7 @@ namespace MediaBrowser.Controller.MediaInfo
 
         public string GetChapterImagePath(Video video, long chapterPositionTicks)
         {
-            var filename = video.DateModified.Ticks.ToString(UsCulture) + "_" + chapterPositionTicks.ToString(UsCulture) + ".jpg";
+            var filename = video.DateModified.Ticks.ToString(_usCulture) + "_" + chapterPositionTicks.ToString(_usCulture) + ".jpg";
 
             var videoId = video.Id.ToString();
             var prefix = videoId.Substring(0, 1);
