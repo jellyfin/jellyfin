@@ -147,11 +147,14 @@ namespace MediaBrowser.Providers.TV
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var images = await _providerManager.GetAvailableRemoteImages(item, cancellationToken, ManualTvdbSeasonImageProvider.ProviderName).ConfigureAwait(false);
+            if (!item.LockedFields.Contains(MetadataFields.Images))
+            {
+                var images = await _providerManager.GetAvailableRemoteImages(item, cancellationToken, ManualTvdbSeasonImageProvider.ProviderName).ConfigureAwait(false);
 
-            const int backdropLimit = 1;
+                const int backdropLimit = 1;
 
-            await DownloadImages(item, images.ToList(), backdropLimit, cancellationToken).ConfigureAwait(false);
+                await DownloadImages(item, images.ToList(), backdropLimit, cancellationToken).ConfigureAwait(false);
+            }
 
             SetLastRefreshed(item, DateTime.UtcNow, providerInfo);
             return true;

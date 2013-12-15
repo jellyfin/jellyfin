@@ -75,9 +75,10 @@ namespace MediaBrowser.Providers.TV
             SetLastRefreshed(item, DateTime.UtcNow, providerInfo);
             return true;
         }
+
         private async Task DownloadImages(BaseItem item, List<RemoteImageInfo> images, CancellationToken cancellationToken)
         {
-            if (!item.HasImage(ImageType.Primary))
+            if (!item.HasImage(ImageType.Primary) && !item.LockedFields.Contains(MetadataFields.Images))
             {
                 var image = images.FirstOrDefault(i => i.Type == ImageType.Primary);
 

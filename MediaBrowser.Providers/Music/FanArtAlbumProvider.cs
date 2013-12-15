@@ -154,9 +154,11 @@ namespace MediaBrowser.Providers.Music
         /// <returns>Task{System.Boolean}.</returns>
         public override async Task<bool> FetchAsync(BaseItem item, bool force, BaseProviderInfo providerInfo, CancellationToken cancellationToken)
         {
-            var images = await _providerManager.GetAvailableRemoteImages(item, cancellationToken, ManualFanartAlbumProvider.ProviderName).ConfigureAwait(false);
-
-            await FetchFromXml(item, images.ToList(), cancellationToken).ConfigureAwait(false);
+            if (!item.LockedFields.Contains(MetadataFields.Images))
+            {
+                var images = await _providerManager.GetAvailableRemoteImages(item, cancellationToken, ManualFanartAlbumProvider.ProviderName).ConfigureAwait(false);
+                await FetchFromXml(item, images.ToList(), cancellationToken).ConfigureAwait(false);
+            }
 
             SetLastRefreshed(item, DateTime.UtcNow, providerInfo);
 

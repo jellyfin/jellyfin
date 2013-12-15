@@ -167,7 +167,7 @@ namespace MediaBrowser.Providers.TV
 
             var seriesId = item.GetProviderId(MetadataProviders.Tvdb);
 
-            if (!string.IsNullOrEmpty(seriesId))
+            if (!string.IsNullOrEmpty(seriesId) && !item.LockedFields.Contains(MetadataFields.Images))
             {
                 var xmlPath = GetFanartXmlPath(seriesId);
 

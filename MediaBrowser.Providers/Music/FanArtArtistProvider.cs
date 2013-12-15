@@ -212,14 +212,14 @@ namespace MediaBrowser.Providers.Music
                 await DownloadArtistXml(artistDataPath, musicBrainzId, cancellationToken).ConfigureAwait(false);
             }
 
-            if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Art ||
-              ConfigurationManager.Configuration.DownloadMusicArtistImages.Backdrops ||
-              ConfigurationManager.Configuration.DownloadMusicArtistImages.Banner ||
-              ConfigurationManager.Configuration.DownloadMusicArtistImages.Logo ||
-              ConfigurationManager.Configuration.DownloadMusicArtistImages.Primary)
+            if (!item.LockedFields.Contains(MetadataFields.Images) &&
+                (ConfigurationManager.Configuration.DownloadMusicArtistImages.Art ||
+                 ConfigurationManager.Configuration.DownloadMusicArtistImages.Backdrops ||
+                 ConfigurationManager.Configuration.DownloadMusicArtistImages.Banner ||
+                 ConfigurationManager.Configuration.DownloadMusicArtistImages.Logo ||
+                 ConfigurationManager.Configuration.DownloadMusicArtistImages.Primary))
             {
                 var images = await _providerManager.GetAvailableRemoteImages(item, cancellationToken, ManualFanartArtistProvider.ProviderName).ConfigureAwait(false);
-
                 await FetchFromXml(item, images.ToList(), cancellationToken).ConfigureAwait(false);
             }
 

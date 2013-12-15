@@ -1069,6 +1069,7 @@
 
         metadatafields.push({ name: "Studios" });
         metadatafields.push({ name: "Tags" });
+        metadatafields.push({ name: "Images" });
 
         var html = '';
 
