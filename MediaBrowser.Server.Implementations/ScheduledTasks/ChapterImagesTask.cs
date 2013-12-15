@@ -145,7 +145,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
 
             var numComplete = 0;
 
-            var failHistoryPath = Path.Combine(_kernel.FFMpegManager.VideoImagesDataPath, "failures.txt");
+            var failHistoryPath = Path.Combine(_kernel.FFMpegManager.ChapterImagesPath, "failures.txt");
 
             List<string> previouslyFailedImages;
 

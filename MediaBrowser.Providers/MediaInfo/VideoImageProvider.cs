@@ -1,6 +1,5 @@
-﻿using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.MediaInfo;
-using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -12,7 +11,6 @@ using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -20,12 +18,6 @@ namespace MediaBrowser.Providers.MediaInfo
 {
     class VideoImageProvider : BaseMetadataProvider
     {
-        /// <summary>
-        /// Gets or sets the image cache.
-        /// </summary>
-        /// <value>The image cache.</value>
-        public FileSystemRepository ImageCache { get; set; }
-
         /// <summary>
         /// The _locks
         /// </summary>
@@ -42,8 +34,6 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             _mediaEncoder = mediaEncoder;
             _isoManager = isoManager;
-
-            ImageCache = new FileSystemRepository(Kernel.Instance.FFMpegManager.VideoImagesDataPath);
         }
 
         /// <summary>
@@ -206,9 +196,7 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var filename = item.Path + "_" + item.DateModified.Ticks + "_primary";
-
-            var path = ImageCache.GetResourcePath(filename, ".jpg");
+            var path = GetVideoImagePath(item);
 
             if (!File.Exists(path))
             {
@@ -309,6 +297,34 @@ namespace MediaBrowser.Providers.MediaInfo
         private SemaphoreSlim GetLock(string filename)
         {
             return _locks.GetOrAdd(filename, key => new SemaphoreSlim(1, 1));
+        }
+
+        /// <summary>
+        /// Gets the video images data path.
+        /// </summary>
+        /// <value>The video images data path.</value>
+        public string VideoImagesPath
+        {
+            get
+            {
+                return Path.Combine(ConfigurationManager.ApplicationPaths.DataPath, "extracted-video-images");
+            }
+        }
+
+        /// <summary>
+        /// Gets the audio image path.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns>System.String.</returns>
+        private string GetVideoImagePath(Video item)
+        {
+            var filename = item.Path + "_" + item.DateModified.Ticks + "_primary";
+
+            filename = filename.GetMD5() + ".jpg";
+
+            var prefix = filename.Substring(0, 1);
+
+            return Path.Combine(VideoImagesPath, prefix, filename);
         }
     }
 }

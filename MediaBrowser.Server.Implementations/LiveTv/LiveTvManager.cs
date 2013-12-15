@@ -420,14 +420,20 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         {
             var info = _tvDtoService.GetTimerInfo(timer);
 
-            return ActiveService.UpdateTimerAsync(info, cancellationToken);
+            var service = GetServices(timer.ServiceName, null)
+              .First();
+
+            return service.UpdateTimerAsync(info, cancellationToken);
         }
 
         public Task UpdateSeriesTimer(SeriesTimerInfoDto timer, CancellationToken cancellationToken)
         {
             var info = _tvDtoService.GetSeriesTimerInfo(timer);
 
-            return ActiveService.UpdateSeriesTimerAsync(info, cancellationToken);
+            var service = GetServices(timer.ServiceName, null)
+                .First();
+
+            return service.UpdateSeriesTimerAsync(info, cancellationToken);
         }
 
         public async Task<QueryResult<SeriesTimerInfoDto>> GetSeriesTimers(SeriesTimerQuery query, CancellationToken cancellationToken)
