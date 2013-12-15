@@ -440,7 +440,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             var files = new[]
                             {
-                                "http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js", 
+                                "thirdparty/jquery.min.js", 
                                 "http://code.jquery.com/mobile/1.3.2/jquery.mobile-1.3.2.min.js",
                                 "scripts/all.js" + versionString,
                                 "thirdparty/jstree1.0/jquery.jstree.js"
