@@ -75,7 +75,7 @@
 
                 header: "Select Server Cache Path",
 
-                instruction: "Browse or enter the path to use for Media Browser Server cache. The folder must be writeable."
+                instruction: "Browse or enter the path to use for Media Browser Server cache. The folder must be writeable. The location of this folder will directly impact server performance and should ideally be placed on a solid state drive."
             });
         });
 

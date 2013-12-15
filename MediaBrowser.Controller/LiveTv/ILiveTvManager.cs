@@ -46,6 +46,13 @@ namespace MediaBrowser.Controller.LiveTv
         Task CancelTimer(string id);
 
         /// <summary>
+        /// Cancels the series timer.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>Task.</returns>
+        Task CancelSeriesTimer(string id);
+        
+        /// <summary>
         /// Adds the parts.
         /// </summary>
         /// <param name="services">The services.</param>

@@ -14,30 +14,54 @@
         </div>
         <div data-role="content">
             <form id="liveTvSeriesTimerForm" style="margin: 0 auto;">
-                <p><span class="itemName inlineItemName"></span><span class="itemMiscInfo" style="display: inline;"></span></p>
+                <p><span class="itemName inlineItemName"></span></p>
 
-                <p class="channel"></p>
-                <p class="overview"></p>
-
-                <p style="margin-top: 2em;">
+                <p>
                     <a id="btnCancelTimer" href="#">Cancel Series</a>
                 </p>
 
-                <br />
+                <p class="channel" style="margin-top: 2em;"></p>
+                <p class="time"></p>
+                <p class="overview"></p>
+
                 <br />
 
                 <ul data-role="listview" class="ulForm">
                     <li>
-                        <label for="selectPriority">Priority: </label>
-                        <select id="selectPriority" required="required" data-mini="true">
-                            <option value="0">Highest</option>
-                            <option value="1">Higher</option>
-                            <option value="2">High</option>
-                            <option value="3">Medium</option>
-                            <option value="4">Low</option>
-                            <option value="5">Lower</option>
-                            <option value="6">Lowest</option>
+                        <label for="selectSeriesType">Series type: </label>
+                        <select id="selectSeriesType" required="required" data-mini="true" disabled="disabled">
+                            <option value="Manual">Manual</option>
+                            <option value="NewProgramEventsOneChannel">New episodes, one channel</option>
+                            <option value="NewProgramEventsAllChannels">New episodes, all channels</option>
+                            <option value="AllProgramEventsOneChannel">All episodes, one channel</option>
+                            <option value="AllProgramEventsAllChannels">All episodes, all channels</option>
                         </select>
+                    </li>
+                    <li id="fldDays" style="display: none;">
+                        <h3>Days</h3>
+                        <div data-role="controlgroup">
+
+                            <input type="checkbox" data-mini="true" id="chkSunday" />
+                            <label for="chkSunday">Sunday</label>
+
+                            <input type="checkbox" data-mini="true" id="chkMonday" />
+                            <label for="chkMonday">Monday</label>
+
+                            <input type="checkbox" data-mini="true" id="chkTuesday" />
+                            <label for="chkTuesday">Tuesday</label>
+
+                            <input type="checkbox" data-mini="true" id="chkWednesday" />
+                            <label for="chkWednesday">Wednesday</label>
+
+                            <input type="checkbox" data-mini="true" id="chkThursday" />
+                            <label for="chkThursday">Thursday</label>
+
+                            <input type="checkbox" data-mini="true" id="chkFriday" />
+                            <label for="chkFriday">Friday</label>
+
+                            <input type="checkbox" data-mini="true" id="chkSaturday" />
+                            <label for="chkSaturday">Saturday</label>
+                        </div>
                     </li>
                     <li>
                         <label for="txtRequestedPrePaddingSeconds">Requested pre-padding seconds: </label>

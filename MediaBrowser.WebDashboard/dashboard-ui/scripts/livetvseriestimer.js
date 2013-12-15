@@ -26,18 +26,65 @@
         currentItem = item;
 
         $('.itemName', page).html(item.Name);
-        $('.channel', page).html('<a href="livetvchannel.html?id=' + item.ChannelId + '">' + item.ChannelName + '</a>').trigger('create');
         $('.overview', page).html(item.Overview || '');
 
         $('#txtRequestedPrePaddingSeconds', page).val(item.RequestedPrePaddingSeconds);
         $('#txtRequestedPostPaddingSeconds', page).val(item.RequestedPostPaddingSeconds);
         $('#txtRequiredPrePaddingSeconds', page).val(item.RequiredPrePaddingSeconds);
         $('#txtRequiredPostPaddingSeconds', page).val(item.RequiredPostPaddingSeconds);
-        $('#selectPriority', page).val(item.Priority);
 
-        $('.itemMiscInfo', page).html(LibraryBrowser.getMiscInfoHtml(item));
+        var channelHtml = '';
+
+        if (item.RecurrenceType == 'NewProgramEventsAllChannels' || item.RecurrenceType == 'AllProgramEventsAllChannels') {
+            channelHtml += 'All Channels';
+        }
+        else if (item.ChannelId) {
+            channelHtml += '<a href="livetvchannel.html?id=' + item.ChannelId + '">' + item.ChannelName + '</a>';
+        }
+
+        $('.channel', page).html('Channel:&nbsp;&nbsp;&nbsp;' + channelHtml).trigger('create');
+
+        $('#selectSeriesType', page).val(item.RecurrenceType).selectmenu('refresh').trigger('change');
+
+        selectDays(page, item.Days);
+
+
+        $('.time', page).html('Time:&nbsp;&nbsp;&nbsp;' + LiveTvHelpers.getDisplayTime(item.StartDate));
 
         Dashboard.hideLoadingMsg();
+    }
+
+    function selectDays(page, days) {
+
+        var daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+        for (var i = 0, length = daysOfWeek.length; i < length; i++) {
+
+            var day = daysOfWeek[i];
+
+            $('#chk' + day, page).checked(days.indexOf(day) != -1).checkboxradio('refresh');
+
+        }
+
+    }
+
+    function getDays(page) {
+
+        var daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+        var days = [];
+
+        for (var i = 0, length = daysOfWeek.length; i < length; i++) {
+
+            var day = daysOfWeek[i];
+
+            if ($('#chk' + day, page).checked()) {
+                days.push(day);
+            }
+
+        }
+
+        return days;
     }
 
     function onSubmit() {
@@ -52,7 +99,9 @@
             item.RequestedPostPaddingSeconds = $('#txtRequestedPostPaddingSeconds', form).val();
             item.RequiredPrePaddingSeconds = $('#txtRequiredPrePaddingSeconds', form).val();
             item.RequiredPostPaddingSeconds = $('#txtRequiredPostPaddingSeconds', form).val();
-            item.Priority = $('#selectPriority', form).val();
+            item.RecurrenceType = $('#selectSeriesType', form).val();
+
+            item.Days = getDays(form);
 
             ApiClient.updateLiveTvSeriesTimer(item).done(function () {
                 Dashboard.alert('Timer Saved');
@@ -70,7 +119,7 @@
 
         var id = getParameterByName('id');
 
-        apiClient.getLiveTvTimer(id).done(function (result) {
+        apiClient.getLiveTvSeriesTimer(id).done(function (result) {
 
             renderTimer(page, result);
 
@@ -84,6 +133,16 @@
         $('#btnCancelTimer', page).on('click', function () {
 
             deleteTimer(page, currentItem.Id);
+
+        });
+
+        $('#selectSeriesType', page).on('change', function () {
+
+            if (this.value == 'Manual') {
+                $('#fldDays', page).show();
+            } else {
+                $('#fldDays', page).hide();
+            }
 
         });
 

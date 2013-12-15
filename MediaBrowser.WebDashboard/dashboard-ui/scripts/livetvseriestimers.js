@@ -32,9 +32,8 @@
         html += '<th class="tabletColumn">&nbsp;</th>';
         html += '<th>Name</th>';
         html += '<th class="desktopColumn">Channel</th>';
-        html += '<th>Start</th>';
-        html += '<th>End</th>';
         html += '<th class="tabletColumn">Days</th>';
+        html += '<th class="tabletColumn">Time</th>';
 
         html += '</tr>';
 
@@ -53,32 +52,14 @@
             html += '</td>';
 
             html += '<td class="desktopColumn">';
-            if (timer.ChannelId) {
+            
+            if (timer.RecurrenceType == 'NewProgramEventsAllChannels' || timer.RecurrenceType == 'AllProgramEventsAllChannels') {
+                html += 'All Channels';
+            }
+            else if (timer.ChannelId) {
                 html += '<a href="livetvchannel.html?id=' + timer.ChannelId + '">' + timer.ChannelName + '</a>';
             }
             html += '</td>';
-
-            var startDate = timer.StartDate;
-            var endDate = timer.StartDate;
-
-            try {
-
-                startDate = parseISO8601Date(startDate, { toLocal: true });
-
-            } catch (err) {
-
-            }
-
-            try {
-
-                endDate = parseISO8601Date(endDate, { toLocal: true });
-
-            } catch (err) {
-
-            }
-
-            html += '<td>' + startDate.toLocaleDateString() + '</td>';
-            html += '<td>' + endDate.toLocaleDateString() + '</td>';
 
             html += '<td class="tabletColumn">';
 
@@ -92,6 +73,8 @@
             }
 
             html += '</td>';
+
+            html += '<td class="tabletColumn">' + LiveTvHelpers.getDisplayTime(timer.StartDate) + '</td>';
 
             html += '</tr>';
         }
