@@ -162,7 +162,7 @@ namespace MediaBrowser.ServerApplication
         private IUserDataManager UserDataManager { get; set; }
         private IUserRepository UserRepository { get; set; }
         internal IDisplayPreferencesRepository DisplayPreferencesRepository { get; set; }
-        private IItemRepository ItemRepository { get; set; }
+        internal IItemRepository ItemRepository { get; set; }
         private INotificationsRepository NotificationsRepository { get; set; }
 
         /// <summary>
