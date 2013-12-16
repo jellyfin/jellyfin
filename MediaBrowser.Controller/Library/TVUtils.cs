@@ -32,7 +32,9 @@ namespace MediaBrowser.Controller.Library
                                                                      "sæson",
                                                                      "temporada",
                                                                      "saison",
-                                                                     "staffel"
+                                                                     "staffel",
+                                                                     "series",
+                                                                     "сезон"
                                                                  };
 
         /// <summary>
