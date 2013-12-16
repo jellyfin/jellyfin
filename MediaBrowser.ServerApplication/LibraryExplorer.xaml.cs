@@ -35,6 +35,8 @@ namespace MediaBrowser.ServerApplication
         private readonly ILibraryManager _libraryManager;
         private readonly IDisplayPreferencesRepository _displayPreferencesManager;
 
+        private readonly IItemRepository _itemRepository;
+
         /// <summary>
         /// The current user
         /// </summary>
@@ -48,7 +50,7 @@ namespace MediaBrowser.ServerApplication
         /// <param name="userManager">The user manager.</param>
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="displayPreferencesManager">The display preferences manager.</param>
-        public LibraryExplorer(IJsonSerializer jsonSerializer, ILogger logger, IApplicationHost appHost, IUserManager userManager, ILibraryManager libraryManager, IDisplayPreferencesRepository displayPreferencesManager)
+        public LibraryExplorer(IJsonSerializer jsonSerializer, ILogger logger, IApplicationHost appHost, IUserManager userManager, ILibraryManager libraryManager, IDisplayPreferencesRepository displayPreferencesManager, IItemRepository itemRepo)
         {
             _logger = logger;
             _jsonSerializer = jsonSerializer;
@@ -62,7 +64,7 @@ namespace MediaBrowser.ServerApplication
             ddlProfile.Items.Insert(0, new User { Name = "Physical" });
             ddlProfile.SelectedIndex = 0;
             ddlIndexBy.Visibility = ddlSortBy.Visibility = lblIndexBy.Visibility = lblSortBy.Visibility = Visibility.Hidden;
-
+            _itemRepository = itemRepo;
         }
 
         /// <summary>
@@ -212,7 +214,24 @@ namespace MediaBrowser.ServerApplication
                     lblIndexBy.Visibility = ddlIndexBy.Visibility = ddlSortBy.Visibility = lblSortBy.Visibility = Visibility.Hidden;
 
                 }
-                txtData.Text = FormatJson(_jsonSerializer.SerializeToString(item));
+
+                var json = FormatJson(_jsonSerializer.SerializeToString(item));
+
+                if (item is IHasMediaStreams)
+                {
+                    var mediaStreams = _itemRepository.GetMediaStreams(new MediaStreamQuery
+                    { 
+                        ItemId = item.Id
+
+                    }).ToList();
+
+                    if (mediaStreams.Count > 0)
+                    {
+                        json += "\n\nMedia Streams:\n\n"+FormatJson(_jsonSerializer.SerializeToString(mediaStreams));
+                    }
+                }
+
+                txtData.Text = json;
 
                 var previews = new List<PreviewItem>();
                 await Task.Run(() =>

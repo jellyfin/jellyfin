@@ -45,6 +45,7 @@ namespace MediaBrowser.ServerApplication
         private readonly ILibraryManager _libraryManager;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IDisplayPreferencesRepository _displayPreferencesManager;
+        private readonly IItemRepository _itemRepository;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MainWindow" /> class.
@@ -57,7 +58,7 @@ namespace MediaBrowser.ServerApplication
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="displayPreferencesManager">The display preferences manager.</param>
         /// <exception cref="System.ArgumentNullException">logger</exception>
-        public MainWindow(ILogManager logManager, IServerApplicationHost appHost, IServerConfigurationManager configurationManager, IUserManager userManager, ILibraryManager libraryManager, IJsonSerializer jsonSerializer, IDisplayPreferencesRepository displayPreferencesManager)
+        public MainWindow(ILogManager logManager, IServerApplicationHost appHost, IServerConfigurationManager configurationManager, IUserManager userManager, ILibraryManager libraryManager, IJsonSerializer jsonSerializer, IDisplayPreferencesRepository displayPreferencesManager, IItemRepository itemRepo)
         {
             if (logManager == null)
             {
@@ -73,6 +74,7 @@ namespace MediaBrowser.ServerApplication
             }
 
             _logger = logManager.GetLogger("MainWindow");
+            _itemRepository = itemRepo;
             _appHost = appHost;
             _logManager = logManager;
             _configurationManager = configurationManager;
@@ -234,7 +236,7 @@ namespace MediaBrowser.ServerApplication
         /// <param name="e">The <see cref="RoutedEventArgs" /> instance containing the event data.</param>
         private void cmOpenExplorer_click(object sender, RoutedEventArgs e)
         {
-            new LibraryExplorer(_jsonSerializer, _logger, _appHost, _userManager, _libraryManager, _displayPreferencesManager).Show();
+            new LibraryExplorer(_jsonSerializer, _logger, _appHost, _userManager, _libraryManager, _displayPreferencesManager, _itemRepository).Show();
         }
 
         /// <summary>

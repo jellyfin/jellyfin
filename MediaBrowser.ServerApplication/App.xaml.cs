@@ -116,7 +116,8 @@ namespace MediaBrowser.ServerApplication
             var win = new MainWindow(host.LogManager, host,
                                      host.ServerConfigurationManager, host.UserManager,
                                      host.LibraryManager, host.JsonSerializer,
-                                     host.DisplayPreferencesRepository);
+                                     host.DisplayPreferencesRepository,
+                                     host.ItemRepository);
 
             win.Show();
 
