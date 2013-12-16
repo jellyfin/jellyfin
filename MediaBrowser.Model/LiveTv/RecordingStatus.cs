@@ -14,15 +14,6 @@ namespace MediaBrowser.Model.LiveTv
         Error
     }
 
-    public enum RecurrenceType
-    {
-        Manual,
-        NewProgramEventsOneChannel,
-        AllProgramEventsOneChannel,
-        NewProgramEventsAllChannels,
-        AllProgramEventsAllChannels
-    }
-
     public enum DayPattern
     {
         Daily,

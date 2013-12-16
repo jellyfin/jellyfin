@@ -44,6 +44,12 @@ namespace MediaBrowser.Model.LiveTv
         public string ProgramId { get; set; }
 
         /// <summary>
+        /// Gets or sets the external program identifier.
+        /// </summary>
+        /// <value>The external program identifier.</value>
+        public string ExternalProgramId { get; set; }
+        
+        /// <summary>
         /// Name of the recording.
         /// </summary>
         public string Name { get; set; }

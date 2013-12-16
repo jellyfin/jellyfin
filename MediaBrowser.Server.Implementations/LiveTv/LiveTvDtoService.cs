@@ -47,7 +47,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 RequiredPrePaddingSeconds = info.RequiredPrePaddingSeconds,
                 ExternalChannelId = info.ChannelId,
                 ExternalSeriesTimerId = info.SeriesTimerId,
-                ServiceName = service.Name
+                ServiceName = service.Name,
+                ExternalProgramId = info.ProgramId
             };
 
             var duration = info.EndDate - info.StartDate;
@@ -78,7 +79,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 RequiredPrePaddingSeconds = info.RequiredPrePaddingSeconds,
                 Days = info.Days,
                 Priority = info.Priority,
-                RecurrenceType = info.RecurrenceType,
+                RecordAnyChannel = info.RecordAnyChannel,
+                RecordAnyTime = info.RecordAnyTime,
+                RecordNewOnly = info.RecordNewOnly,
                 ExternalChannelId = info.ChannelId,
                 ExternalProgramId = info.ProgramId,
                 ServiceName = service.Name
@@ -146,7 +149,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 OfficialRating = info.OfficialRating,
                 Audio = info.Audio,
                 IsHD = info.IsHD,
-                ServiceName = service.Name
+                ServiceName = service.Name,
+                Url = info.Url
             };
 
             if (user != null)
@@ -219,7 +223,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 CommunityRating = program.CommunityRating,
                 AspectRatio = program.AspectRatio,
                 IsRepeat = program.IsRepeat,
-                EpisodeTitle = program.EpisodeTitle
+                EpisodeTitle = program.EpisodeTitle,
+                ChannelName = program.ChannelName
             };
 
             if (user != null)
@@ -302,7 +307,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 RequestedPostPaddingSeconds = dto.RequestedPostPaddingSeconds,
                 RequestedPrePaddingSeconds = dto.RequestedPrePaddingSeconds,
                 RequiredPostPaddingSeconds = dto.RequiredPostPaddingSeconds,
-                RequiredPrePaddingSeconds = dto.RequiredPrePaddingSeconds
+                RequiredPrePaddingSeconds = dto.RequiredPrePaddingSeconds,
+                ProgramId = dto.ExternalProgramId
             };
         }
 
@@ -323,8 +329,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 RequiredPrePaddingSeconds = dto.RequiredPrePaddingSeconds,
                 Days = dto.Days,
                 Priority = dto.Priority,
-                RecurrenceType = dto.RecurrenceType,
-                ProgramId = dto.ExternalProgramId
+                ProgramId = dto.ExternalProgramId,
+                RecordAnyChannel = dto.RecordAnyChannel,
+                RecordAnyTime = dto.RecordAnyTime,
+                RecordNewOnly = dto.RecordNewOnly
             };
         }
     }

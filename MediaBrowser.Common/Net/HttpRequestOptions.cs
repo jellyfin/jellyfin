@@ -66,6 +66,10 @@ namespace MediaBrowser.Common.Net
 
         public Dictionary<string, string> RequestHeaders { get; private set; }
 
+        public string RequestContentType { get; set; }
+
+        public string RequestContent { get; set; }
+
         private string GetHeaderValue(string name)
         {
             string value;

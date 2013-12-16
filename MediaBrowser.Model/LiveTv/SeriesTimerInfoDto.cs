@@ -71,10 +71,22 @@ namespace MediaBrowser.Model.LiveTv
         public DateTime EndDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the recurrence.
+        /// Gets or sets a value indicating whether [record any time].
         /// </summary>
-        /// <value>The type of the recurrence.</value>
-        public RecurrenceType RecurrenceType { get; set; }
+        /// <value><c>true</c> if [record any time]; otherwise, <c>false</c>.</value>
+        public bool RecordAnyTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [record any channel].
+        /// </summary>
+        /// <value><c>true</c> if [record any channel]; otherwise, <c>false</c>.</value>
+        public bool RecordAnyChannel { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [record new only].
+        /// </summary>
+        /// <value><c>true</c> if [record new only]; otherwise, <c>false</c>.</value>
+        public bool RecordNewOnly { get; set; }
 
         /// <summary>
         /// Gets or sets the days.

@@ -260,20 +260,10 @@ namespace MediaBrowser.Api.Playback
         {
             var quality = ServerConfigurationManager.Configuration.EncodingQuality;
 
-            if (quality == EncodingQuality.Auto)
-            {
-                var cpuCount = Environment.ProcessorCount;
-
-                if (cpuCount >= 4)
-                {
-                    return 0;
-                }
-
-                return cpuCount;
-            }
-
             switch (quality)
             {
+                case EncodingQuality.Auto:
+                    return 0;
                 case EncodingQuality.HighSpeed:
                     return 2;
                 case EncodingQuality.HighQuality:

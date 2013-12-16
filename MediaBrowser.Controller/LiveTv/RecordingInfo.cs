@@ -39,6 +39,12 @@ namespace MediaBrowser.Controller.LiveTv
         public string Path { get; set; }
 
         /// <summary>
+        /// Gets or sets the URL.
+        /// </summary>
+        /// <value>The URL.</value>
+        public string Url { get; set; }
+        
+        /// <summary>
         /// Gets or sets the overview.
         /// </summary>
         /// <value>The overview.</value>
