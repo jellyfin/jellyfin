@@ -336,7 +336,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     .ToList();
             }
 
-            var returnArray = list.OrderByDescending(i => i.StartDate)
+            var returnArray = list.OrderBy(i => i.StartDate)
                 .ToArray();
 
             return new QueryResult<TimerInfoDto>

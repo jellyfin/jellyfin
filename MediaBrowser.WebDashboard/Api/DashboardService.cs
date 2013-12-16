@@ -275,7 +275,9 @@ namespace MediaBrowser.WebDashboard.Api
 
             // Don't cache if not configured to do so
             // But always cache images to simulate production
-            if (!_serverConfigurationManager.Configuration.EnableDashboardResponseCaching && !contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+            if (!_serverConfigurationManager.Configuration.EnableDashboardResponseCaching && 
+                !contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase) && 
+                !contentType.StartsWith("font/", StringComparison.OrdinalIgnoreCase))
             {
                 return ResultFactory.GetResult(GetResourceStream(path).Result, contentType);
             }
@@ -284,7 +286,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             // Cache images unconditionally - updates to image files will require new filename
             // If there's a version number in the query string we can cache this unconditionally
-            if (contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase) || !string.IsNullOrEmpty(request.V))
+            if (contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase) || contentType.StartsWith("font/", StringComparison.OrdinalIgnoreCase) || !string.IsNullOrEmpty(request.V))
             {
                 cacheDuration = TimeSpan.FromDays(365);
             }

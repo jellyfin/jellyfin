@@ -132,7 +132,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 #if __MonoCS__
             return GetMonoRequest(options, method, enableHttpCompression);
 #endif
-            
+
             var request = HttpWebRequest.CreateHttp(options.Url);
 
             if (!string.IsNullOrEmpty(options.AcceptHeader))
@@ -172,9 +172,64 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         /// <returns>Task{HttpResponseInfo}.</returns>
         /// <exception cref="HttpException">
         /// </exception>
-        public async Task<HttpResponseInfo> GetResponse(HttpRequestOptions options)
+        public Task<HttpResponseInfo> GetResponse(HttpRequestOptions options)
         {
-            ValidateParams(options.Url, options.CancellationToken);
+            return SendAsync(options, "GET");
+        }
+
+        /// <summary>
+        /// Performs a GET request and returns the resulting stream
+        /// </summary>
+        /// <param name="options">The options.</param>
+        /// <returns>Task{Stream}.</returns>
+        /// <exception cref="HttpException"></exception>
+        /// <exception cref="MediaBrowser.Model.Net.HttpException"></exception>
+        public async Task<Stream> Get(HttpRequestOptions options)
+        {
+            var response = await GetResponse(options).ConfigureAwait(false);
+
+            return response.Content;
+        }
+
+        /// <summary>
+        /// Performs a GET request and returns the resulting stream
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <param name="resourcePool">The resource pool.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{Stream}.</returns>
+        public Task<Stream> Get(string url, SemaphoreSlim resourcePool, CancellationToken cancellationToken)
+        {
+            return Get(new HttpRequestOptions
+            {
+                Url = url,
+                ResourcePool = resourcePool,
+                CancellationToken = cancellationToken,
+            });
+        }
+
+        /// <summary>
+        /// Gets the specified URL.
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{Stream}.</returns>
+        public Task<Stream> Get(string url, CancellationToken cancellationToken)
+        {
+            return Get(url, null, cancellationToken);
+        }
+
+        /// <summary>
+        /// send as an asynchronous operation.
+        /// </summary>
+        /// <param name="options">The options.</param>
+        /// <param name="httpMethod">The HTTP method.</param>
+        /// <returns>Task{HttpResponseInfo}.</returns>
+        /// <exception cref="HttpException">
+        /// </exception>
+        private async Task<HttpResponseInfo> SendAsync(HttpRequestOptions options, string httpMethod)
+        {
+            ValidateParams(options);
 
             options.CancellationToken.ThrowIfCancellationRequested();
 
@@ -185,7 +240,17 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                 throw new HttpException(string.Format("Cancelling connection to {0} due to a previous timeout.", options.Url)) { IsTimedOut = true };
             }
 
-            var httpWebRequest = GetRequest(options, "GET", options.EnableHttpCompression);
+            var httpWebRequest = GetRequest(options, httpMethod, options.EnableHttpCompression);
+
+            if (!string.IsNullOrEmpty(options.RequestContent) || string.Equals(httpMethod, "post", StringComparison.OrdinalIgnoreCase))
+            {
+                var content = options.RequestContent ?? string.Empty;
+                var bytes = Encoding.UTF8.GetBytes(content);
+
+                httpWebRequest.ContentType = options.RequestContentType ?? "application/x-www-form-urlencoded";
+                httpWebRequest.ContentLength = bytes.Length;
+                httpWebRequest.GetRequestStream().Write(bytes, 0, bytes.Length);
+            }
 
             if (options.ResourcePool != null)
             {
@@ -202,7 +267,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                 throw new HttpException(string.Format("Connection to {0} timed out", options.Url)) { IsTimedOut = true };
             }
 
-            _logger.Info("HttpClientManager.GET url: {0}", options.Url);
+            _logger.Info("HttpClientManager {0}: {1}", httpMethod.ToUpper(), options.Url);
 
             try
             {
@@ -275,46 +340,9 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             }
         }
 
-        /// <summary>
-        /// Performs a GET request and returns the resulting stream
-        /// </summary>
-        /// <param name="options">The options.</param>
-        /// <returns>Task{Stream}.</returns>
-        /// <exception cref="HttpException"></exception>
-        /// <exception cref="MediaBrowser.Model.Net.HttpException"></exception>
-        public async Task<Stream> Get(HttpRequestOptions options)
+        public Task<HttpResponseInfo> Post(HttpRequestOptions options)
         {
-            var response = await GetResponse(options).ConfigureAwait(false);
-
-            return response.Content;
-        }
-
-        /// <summary>
-        /// Performs a GET request and returns the resulting stream
-        /// </summary>
-        /// <param name="url">The URL.</param>
-        /// <param name="resourcePool">The resource pool.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{Stream}.</returns>
-        public Task<Stream> Get(string url, SemaphoreSlim resourcePool, CancellationToken cancellationToken)
-        {
-            return Get(new HttpRequestOptions
-            {
-                Url = url,
-                ResourcePool = resourcePool,
-                CancellationToken = cancellationToken,
-            });
-        }
-
-        /// <summary>
-        /// Gets the specified URL.
-        /// </summary>
-        /// <param name="url">The URL.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{Stream}.</returns>
-        public Task<Stream> Get(string url, CancellationToken cancellationToken)
-        {
-            return Get(url, null, cancellationToken);
+            return SendAsync(options, "POST");
         }
 
         /// <summary>
@@ -329,82 +357,15 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         /// <exception cref="MediaBrowser.Model.Net.HttpException"></exception>
         public async Task<Stream> Post(HttpRequestOptions options, Dictionary<string, string> postData)
         {
-            ValidateParams(options.Url, options.CancellationToken);
-
-            options.CancellationToken.ThrowIfCancellationRequested();
-
-            var httpWebRequest = GetRequest(options, "POST", options.EnableHttpCompression);
-
             var strings = postData.Keys.Select(key => string.Format("{0}={1}", key, postData[key]));
             var postContent = string.Join("&", strings.ToArray());
-            var bytes = Encoding.UTF8.GetBytes(postContent);
 
-            httpWebRequest.ContentType = "application/x-www-form-urlencoded";
-            httpWebRequest.ContentLength = bytes.Length;
-            httpWebRequest.GetRequestStream().Write(bytes, 0, bytes.Length);
+            options.RequestContent = postContent;
+            options.RequestContentType = "application/x-www-form-urlencoded";
 
-            if (options.ResourcePool != null)
-            {
-                await options.ResourcePool.WaitAsync(options.CancellationToken).ConfigureAwait(false);
-            }
+            var response = await Post(options).ConfigureAwait(false);
 
-            _logger.Info("HttpClientManager.POST url: {0}", options.Url);
-
-            try
-            {
-                options.CancellationToken.ThrowIfCancellationRequested();
-
-                using (var response = await httpWebRequest.GetResponseAsync().ConfigureAwait(false))
-                {
-                    var httpResponse = (HttpWebResponse)response;
-
-                    EnsureSuccessStatusCode(httpResponse);
-
-                    options.CancellationToken.ThrowIfCancellationRequested();
-
-                    using (var stream = httpResponse.GetResponseStream())
-                    {
-                        var memoryStream = new MemoryStream();
-
-                        await stream.CopyToAsync(memoryStream).ConfigureAwait(false);
-
-                        memoryStream.Position = 0;
-
-                        return memoryStream;
-                    }
-                }
-            }
-            catch (OperationCanceledException ex)
-            {
-                var exception = GetCancellationException(options.Url, options.CancellationToken, ex);
-
-                throw exception;
-            }
-            catch (HttpRequestException ex)
-            {
-                _logger.ErrorException("Error getting response from " + options.Url, ex);
-
-                throw new HttpException(ex.Message, ex);
-            }
-            catch (WebException ex)
-            {
-                _logger.ErrorException("Error getting response from " + options.Url, ex);
-
-                throw new HttpException(ex.Message, ex);
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error getting response from " + options.Url, ex);
-
-                throw;
-            }
-            finally
-            {
-                if (options.ResourcePool != null)
-                {
-                    options.ResourcePool.Release();
-                }
-            }
+            return response.Content;
         }
 
         /// <summary>
@@ -443,7 +404,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
         public async Task<HttpResponseInfo> GetTempFileResponse(HttpRequestOptions options)
         {
-            ValidateParams(options.Url, options.CancellationToken);
+            ValidateParams(options);
 
             Directory.CreateDirectory(_appPaths.TempDirectory);
 
@@ -592,7 +553,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             {
                 return new HttpException(ex.Message, ex);
             }
-            
+
             return ex;
         }
 
@@ -608,17 +569,11 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             }
         }
 
-        /// <summary>
-        /// Validates the params.
-        /// </summary>
-        /// <param name="url">The URL.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <exception cref="System.ArgumentNullException">url</exception>
-        private void ValidateParams(string url, CancellationToken cancellationToken)
+        private void ValidateParams(HttpRequestOptions options)
         {
-            if (string.IsNullOrEmpty(url))
+            if (string.IsNullOrEmpty(options.Url))
             {
-                throw new ArgumentNullException("url");
+                throw new ArgumentNullException("options");
             }
         }
 

@@ -53,7 +53,7 @@
 
             html += '<td class="desktopColumn">';
             
-            if (timer.RecurrenceType == 'NewProgramEventsAllChannels' || timer.RecurrenceType == 'AllProgramEventsAllChannels') {
+            if (timer.RecordAnyChannel) {
                 html += 'All Channels';
             }
             else if (timer.ChannelId) {
