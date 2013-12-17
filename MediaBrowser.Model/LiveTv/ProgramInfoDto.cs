@@ -122,7 +122,6 @@ namespace MediaBrowser.Model.LiveTv
 
     public enum ProgramAudio
     {
-        Unspecified,
         Mono,
         Stereo,
         Dolby,

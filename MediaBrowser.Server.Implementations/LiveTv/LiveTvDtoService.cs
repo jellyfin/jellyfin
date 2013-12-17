@@ -48,7 +48,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 ExternalChannelId = info.ChannelId,
                 ExternalSeriesTimerId = info.SeriesTimerId,
                 ServiceName = service.Name,
-                ExternalProgramId = info.ProgramId
+                ExternalProgramId = info.ProgramId,
+                Priority = info.Priority
             };
 
             var duration = info.EndDate - info.StartDate;
@@ -308,7 +309,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 RequestedPrePaddingSeconds = dto.RequestedPrePaddingSeconds,
                 RequiredPostPaddingSeconds = dto.RequiredPostPaddingSeconds,
                 RequiredPrePaddingSeconds = dto.RequiredPrePaddingSeconds,
-                ProgramId = dto.ExternalProgramId
+                ProgramId = dto.ExternalProgramId,
+                Priority = dto.Priority
             };
         }
 
