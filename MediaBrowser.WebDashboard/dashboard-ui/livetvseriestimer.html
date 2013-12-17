@@ -28,16 +28,6 @@
 
                 <ul data-role="listview" class="ulForm">
                     <li>
-                        <label for="selectSeriesType">Series type: </label>
-                        <select id="selectSeriesType" required="required" data-mini="true" disabled="disabled">
-                            <option value="Manual">Manual</option>
-                            <option value="NewProgramEventsOneChannel">New episodes, one channel</option>
-                            <option value="NewProgramEventsAllChannels">New episodes, all channels</option>
-                            <option value="AllProgramEventsOneChannel">All episodes, one channel</option>
-                            <option value="AllProgramEventsAllChannels">All episodes, all channels</option>
-                        </select>
-                    </li>
-                    <li id="fldDays" style="display: none;">
                         <h3>Days</h3>
                         <div data-role="controlgroup">
 
@@ -62,6 +52,21 @@
                             <input type="checkbox" data-mini="true" id="chkSaturday" />
                             <label for="chkSaturday">Saturday</label>
                         </div>
+                    </li>
+                    <li>
+                        <h3>Advanced</h3>
+                    </li>
+                    <li>
+                        <label for="chkNewOnly">Record only new episodes</label>
+                        <input type="checkbox" id="chkNewOnly" data-mini="true" />
+                    </li>
+                    <li>
+                        <label for="chkAnyTime">Record program at any time</label>
+                        <input type="checkbox" id="chkAnyTime" data-mini="true" />
+                    </li>
+                    <li>
+                        <label for="chkAllChannels">Record program on all channels</label>
+                        <input type="checkbox" id="chkAllChannels" data-mini="true" />
                     </li>
                     <li>
                         <label for="txtRequestedPrePaddingSeconds">Requested pre-padding seconds: </label>

@@ -32,8 +32,8 @@
         html += '<th class="tabletColumn">&nbsp;</th>';
         html += '<th>Name</th>';
         html += '<th class="desktopColumn">Channel</th>';
-        html += '<th class="tabletColumn">Days</th>';
-        html += '<th class="tabletColumn">Time</th>';
+        html += '<th>Days</th>';
+        html += '<th>Time</th>';
 
         html += '</tr>';
 
@@ -61,7 +61,7 @@
             }
             html += '</td>';
 
-            html += '<td class="tabletColumn">';
+            html += '<td>';
 
             if (timer.DayPattern) {
                 html += timer.DayPattern;
@@ -74,7 +74,7 @@
 
             html += '</td>';
 
-            html += '<td class="tabletColumn">' + LiveTvHelpers.getDisplayTime(timer.StartDate) + '</td>';
+            html += '<td>' + LiveTvHelpers.getDisplayTime(timer.StartDate) + '</td>';
 
             html += '</tr>';
         }

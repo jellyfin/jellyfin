@@ -116,5 +116,11 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value>The duration ms.</value>
         public int DurationMs { get; set; }
+
+        /// <summary>
+        /// Gets or sets the priority.
+        /// </summary>
+        /// <value>The priority.</value>
+        public int Priority { get; set; }
     }
 }

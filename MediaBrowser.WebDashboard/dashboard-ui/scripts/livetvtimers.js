@@ -78,7 +78,19 @@
 
             html += '<td class="tabletColumn">' + minutes.toFixed(0) + ' mins</td>';
 
-            html += '<td class="tabletColumn">' + (timer.Status || '') + '</td>';
+            html += '<td class="tabletColumn">';
+
+            if (timer.Status == 'ConflictedNotOk' || timer.Status == 'Error') {
+
+                html += '<span style="color:red;">';
+                html += timer.Status;
+                html += '</span>';
+
+            } else {
+                html += timer.Status;
+            }
+
+            html += '</td>';
 
             html += '<td class="desktopColumn">';
 

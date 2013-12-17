@@ -36,10 +36,6 @@
             html += '<td>';
             html += '<a href="livetvrecording.html?id=' + recording.Id + '">';
             html += recording.Name;
-            
-            if (recording.EpisodeTitle) {
-                html += "<br/>" + recording.EpisodeTitle;
-            }
             html += '</a>';
             html += '</td>';
 

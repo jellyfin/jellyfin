@@ -21,12 +21,12 @@
 
         html += '<tr>';
 
-        html += '<th>&nbsp;</th>';
+        html += '<th class="tabletColumn">&nbsp;</th>';
         html += '<th>Date</th>';
         html += '<th>Start</th>';
-        html += '<th>End</th>';
+        html += '<th class="tabletColumn">End</th>';
         html += '<th>Name</th>';
-        html += '<th>Genre</th>';
+        html += '<th class="desktopColumn">Genre</th>';
 
         html += '</tr>';
 
@@ -36,7 +36,7 @@
 
             html += '<tr>';
 
-            html += '<td>';
+            html += '<td class="tabletColumn">';
 
             if (program.RecordingId) {
                 html += '<button data-recordingid="' + program.RecordingId + '" class="btnCancelRecording" type="button" data-icon="delete" data-inline="true" data-mini="true" data-iconpos="notext">Cancel</button>';
@@ -60,10 +60,19 @@
 
             html += '<td>' + LiveTvHelpers.getDisplayTime(program.StartDate) + '</td>';
 
-            html += '<td>' + LiveTvHelpers.getDisplayTime(program.EndDate) + '</td>';
+            html += '<td class="tabletColumn">' + LiveTvHelpers.getDisplayTime(program.EndDate) + '</td>';
 
-            html += '<td>' + (program.Name || '') + '</td>';
-            html += '<td>' + program.Genres.join(' / ') + '</td>';
+            html += '<td>';
+
+            if (program.Name) {
+                //html += '<a href="livetvprogram.html?id=' + program.Id + '">';
+                html += program.Name;
+                //html += '</a>';
+            }
+
+            html += '</td>';
+
+            html += '<td class="desktopColumn">' + program.Genres.join(' / ') + '</td>';
 
             html += '</tr>';
         }
@@ -90,7 +99,7 @@
     function loadPrograms(page) {
 
         ApiClient.getLiveTvPrograms({
-            
+
             ChannelIds: currentItem.Id,
             UserId: Dashboard.getCurrentUserId()
 
@@ -155,7 +164,7 @@
     window.LiveTvHelpers = {
 
         getDisplayTime: function (date) {
-            
+
             try {
 
                 date = parseISO8601Date(date, { toLocal: true });

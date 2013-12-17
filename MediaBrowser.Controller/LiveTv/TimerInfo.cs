@@ -81,5 +81,11 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value>The required post padding seconds.</value>
         public int RequiredPostPaddingSeconds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the priority.
+        /// </summary>
+        /// <value>The priority.</value>
+        public int Priority { get; set; }
     }
 }

@@ -33,6 +33,10 @@
         $('#txtRequiredPrePaddingSeconds', page).val(item.RequiredPrePaddingSeconds);
         $('#txtRequiredPostPaddingSeconds', page).val(item.RequiredPostPaddingSeconds);
 
+        $('#chkNewOnly', page).checked(item.RecordNewOnly).checkboxradio('refresh');
+        $('#chkAllChannels', page).checked(item.RecordAnyChannel).checkboxradio('refresh');
+        $('#chkAnyTime', page).checked(item.RecordAnyTime).checkboxradio('refresh');
+
         var channelHtml = '';
 
         if (item.RecurrenceType == 'NewProgramEventsAllChannels' || item.RecurrenceType == 'AllProgramEventsAllChannels') {
@@ -43,8 +47,6 @@
         }
 
         $('.channel', page).html('Channel:&nbsp;&nbsp;&nbsp;' + channelHtml).trigger('create');
-
-        $('#selectSeriesType', page).val(item.RecurrenceType).selectmenu('refresh').trigger('change');
 
         selectDays(page, item.Days);
 
@@ -99,7 +101,10 @@
             item.RequestedPostPaddingSeconds = $('#txtRequestedPostPaddingSeconds', form).val();
             item.RequiredPrePaddingSeconds = $('#txtRequiredPrePaddingSeconds', form).val();
             item.RequiredPostPaddingSeconds = $('#txtRequiredPostPaddingSeconds', form).val();
-            item.RecurrenceType = $('#selectSeriesType', form).val();
+
+            item.RecordNewOnly = $('#chkNewOnly', form).checked();
+            item.RecordAnyChannel = $('#chkAllChannels', form).checked();
+            item.RecordAnyTime = $('#chkAnyTime', form).checked();
 
             item.Days = getDays(form);
 
@@ -133,16 +138,6 @@
         $('#btnCancelTimer', page).on('click', function () {
 
             deleteTimer(page, currentItem.Id);
-
-        });
-
-        $('#selectSeriesType', page).on('change', function () {
-
-            if (this.value == 'Manual') {
-                $('#fldDays', page).show();
-            } else {
-                $('#fldDays', page).hide();
-            }
 
         });
 
