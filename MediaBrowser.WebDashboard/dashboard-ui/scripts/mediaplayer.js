@@ -1,4 +1,4 @@
-﻿(function (document, setTimeout, clearTimeout, screen, localStorage, $, setInterval, window) {
+(function (document, setTimeout, clearTimeout, screen, localStorage, $, setInterval, window) {
 
     function mediaPlayer() {
 
@@ -502,7 +502,7 @@
                 }
 
                 else if (videoStream.Width >= 720) {
-                    baseParams.videoBitrate = 420000;
+                    baseParams.videoBitrate = 700000;
                 }
             }
 
@@ -1598,6 +1598,7 @@
             }
 
             if (maxAllowedWidth >= 480) {
+            	 options.push({ name: '480p+', maxWidth: 720, videoBitrate: 700000 });
                 options.push({ name: '480p', maxWidth: 720, videoBitrate: 420000 });
             }
             if (maxAllowedWidth >= 360) {
