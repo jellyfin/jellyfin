@@ -35,7 +35,11 @@
         $('.itemName', page).html(name);
         $('.itemChannelNumber', page).html('Channel:&nbsp;&nbsp;&nbsp;<a href="livetvchannel.html?id=' + item.ChannelId + '">' + item.ChannelName + '</a>').trigger('create');
 
-        $('.itemEpisodeName', page).html(item.EpisodeTitle);
+        if (item.EpisodeTitle) {
+            $('.itemEpisodeName', page).html('Episode:&nbsp;&nbsp;&nbsp;' + item.EpisodeTitle);
+        } else {
+            $('.itemEpisodeName', page).html('');
+        }
 
         if (item.CommunityRating) {
             $('.itemCommunityRating', page).html(LibraryBrowser.getRatingHtml(item)).show();
@@ -91,7 +95,7 @@
 
         var id = getParameterByName('id');
 
-        apiClient.getLiveTvRecording(id).done(function (result) {
+        apiClient.getLiveTvRecording(id, Dashboard.getCurrentUserId()).done(function (result) {
 
             renderRecording(page, result);
 

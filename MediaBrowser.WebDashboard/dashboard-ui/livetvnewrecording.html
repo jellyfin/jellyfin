@@ -4,29 +4,34 @@
     <title>Media Browser</title>
 </head>
 <body>
-    <div id="liveTvSeriesTimerPage" data-role="page" class="page libraryPage" data-theme="a" data-view="livetv">
+    <div id="liveTvNewRecordingPage" data-role="page" class="page libraryPage" data-theme="a" data-view="livetv">
         <div class="libraryViewNav">
             <a href="livetvguide.html">Guide</a>
             <a href="livetvchannels.html">Channels</a>
-            <a href="livetvrecordings.html">Recordings</a>
+            <a href="livetvrecordings.html" class="ui-btn-active">Recordings</a>
             <a href="livetvtimers.html">Upcoming Recordings</a>
-            <a href="livetvseriestimers.html" class="ui-btn-active">Series Recordings</a>
+            <a href="livetvseriestimers.html">Series Recordings</a>
         </div>
         <div data-role="content">
-            <form id="liveTvSeriesTimerForm" style="margin: 0 auto;">
-                <p><span class="itemName inlineItemName"></span></p>
-
+            <form id="liveTvNewRecordingForm" style="margin: 0 auto;">
+                <p><span class="itemName inlineItemName"></span><span class="itemMiscInfo" style="display: inline;"></span></p>
+                <p class="itemEpisodeName"></p>
                 <p>
-                    <a id="btnCancelTimer" href="#">Cancel Series</a>
+                    <span class="itemCommunityRating"></span>
                 </p>
-
-                <p class="channel" style="margin-top: 2em;"></p>
-                <p class="time"></p>
-                <p class="overview"></p>
+                <p class="itemChannelNumber"></p>
+                <p class="itemGenres"></p>
+                <p class="itemOverview"></p>
 
                 <br />
 
-                <ul data-role="listview" class="ulForm">
+                <p>
+                    <input type="checkbox" data-mini="true" id="chkRecordSeries" />
+                    <label for="chkRecordSeries">Record Series</label>
+                </p>
+                <br />
+
+                <ul data-role="listview" class="ulForm" id="seriesFields" style="display: none;">
                     <li>
                         <h3>Days</h3>
                         <div data-role="controlgroup">
@@ -55,7 +60,7 @@
                     </li>
                     <li>
                         <label for="chkNewOnly">Record only new episodes</label>
-                        <input type="checkbox" id="chkNewOnly" data-mini="true" />
+                        <input type="checkbox" id="chkNewOnly" data-mini="true" checked="checked" />
                     </li>
                     <li>
                         <label for="chkAnyTime">Record program at any time</label>
@@ -65,6 +70,10 @@
                         <label for="chkAllChannels">Record program on all channels</label>
                         <input type="checkbox" id="chkAllChannels" data-mini="true" />
                     </li>
+                </ul>
+
+                <br />
+                <ul data-role="listview" class="ulForm">
                     <li>
                         <label for="txtRequestedPrePaddingSeconds">Requested pre-padding seconds: </label>
                         <input type="number" id="txtRequestedPrePaddingSeconds" pattern="[0-9]*" required="required" min="0" data-mini="true" />
@@ -93,9 +102,8 @@
             </form>
         </div>
         <script type="text/javascript">
-            $('#liveTvSeriesTimerForm').on('submit', LiveTvSeriesTimerPage.onSubmit);
+            $('#liveTvNewRecordingForm').on('submit', LiveTvNewRecordingPage.onSubmit);
         </script>
-
     </div>
 </body>
 </html>

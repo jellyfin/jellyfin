@@ -32,6 +32,13 @@ namespace MediaBrowser.Controller.LiveTv
         Task ScheduleRecording(string programId);
 
         /// <summary>
+        /// Gets the new timer defaults asynchronous.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{TimerInfo}.</returns>
+        Task<TimerInfoDto> GetNewTimerDefaults(CancellationToken cancellationToken);
+        
+        /// <summary>
         /// Deletes the recording.
         /// </summary>
         /// <param name="id">The identifier.</param>
@@ -132,6 +139,15 @@ namespace MediaBrowser.Controller.LiveTv
         Channel GetChannel(string id);
 
         /// <summary>
+        /// Gets the program.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="user">The user.</param>
+        /// <returns>Task{ProgramInfoDto}.</returns>
+        Task<ProgramInfoDto> GetProgram(string id, CancellationToken cancellationToken, User user = null);
+        
+        /// <summary>
         /// Gets the programs.
         /// </summary>
         /// <param name="query">The query.</param>
@@ -154,5 +170,21 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task UpdateSeriesTimer(SeriesTimerInfoDto timer, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Creates the timer.
+        /// </summary>
+        /// <param name="timer">The timer.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task CreateTimer(TimerInfoDto timer, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Creates the series timer.
+        /// </summary>
+        /// <param name="timer">The timer.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task CreateSeriesTimer(SeriesTimerInfoDto timer, CancellationToken cancellationToken);
     }
 }

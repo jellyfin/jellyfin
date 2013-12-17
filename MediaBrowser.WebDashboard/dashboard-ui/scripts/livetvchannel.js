@@ -21,7 +21,7 @@
 
         html += '<tr>';
 
-        html += '<th class="tabletColumn">&nbsp;</th>';
+        html += '<th>&nbsp;</th>';
         html += '<th>Date</th>';
         html += '<th>Start</th>';
         html += '<th class="tabletColumn">End</th>';
@@ -36,12 +36,12 @@
 
             html += '<tr>';
 
-            html += '<td class="tabletColumn">';
+            html += '<td>';
 
             if (program.RecordingId) {
                 html += '<button data-recordingid="' + program.RecordingId + '" class="btnCancelRecording" type="button" data-icon="delete" data-inline="true" data-mini="true" data-iconpos="notext">Cancel</button>';
             } else {
-                html += '<button data-recordingid="' + program.RecordingId + '" class="btnScheduleRecording" type="button" data-icon="facetime-video" data-inline="true" data-mini="true" data-theme="b" data-iconpos="notext">Record</button>';
+                html += '<a href="livetvnewrecording.html?programid=' + program.Id + '" data-role="button" type="button" data-icon="facetime-video" data-inline="true" data-mini="true" data-theme="b" data-iconpos="notext">Record</a>';
             }
 
             html += '</td>';
@@ -116,7 +116,7 @@
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.getLiveTvChannel(getParameterByName('id')).done(function (item) {
+        ApiClient.getLiveTvChannel(getParameterByName('id'), Dashboard.getCurrentUserId()).done(function (item) {
 
             currentItem = item;
 

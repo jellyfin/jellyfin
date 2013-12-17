@@ -389,13 +389,21 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.getLiveTvChannel = function (id) {
+        self.getLiveTvChannel = function (id, userId) {
 
             if (!id) {
                 throw new Error("null id");
             }
 
-            var url = self.getUrl("LiveTv/Channels/" + id);
+            var options = {                
+                
+            };
+            
+            if (userId) {
+                options.userId = userId;
+            }
+
+            var url = self.getUrl("LiveTv/Channels/" + id, options);
 
             return self.ajax({
                 type: "GET",
@@ -437,13 +445,44 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.getLiveTvRecording = function (id) {
+        self.getLiveTvRecording = function (id, userId) {
 
             if (!id) {
                 throw new Error("null id");
             }
 
-            var url = self.getUrl("LiveTv/Recordings/" + id);
+            var options = {
+
+            };
+
+            if (userId) {
+                options.userId = userId;
+            }
+
+            var url = self.getUrl("LiveTv/Recordings/" + id, options);
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        self.getLiveTvProgram = function (id, userId) {
+
+            if (!id) {
+                throw new Error("null id");
+            }
+
+            var options = {
+
+            };
+
+            if (userId) {
+                options.userId = userId;
+            }
+
+            var url = self.getUrl("LiveTv/Programs/" + id, options);
 
             return self.ajax({
                 type: "GET",
@@ -498,6 +537,17 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             }
 
             var url = self.getUrl("LiveTv/Timers/" + id);
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        self.getNewLiveTvTimerDefaults = function () {
+
+            var url = self.getUrl("LiveTv/Timers/Defaults");
 
             return self.ajax({
                 type: "GET",

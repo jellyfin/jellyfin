@@ -178,7 +178,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return item;
         }
 
-        public async Task<QueryResult<ProgramInfoDto>> GetPrograms(ProgramQuery query, CancellationToken cancellationToken)
+        public Task<ProgramInfoDto> GetProgram(string id, CancellationToken cancellationToken, User user = null)
+        {
+            var program = _programs.FirstOrDefault(i => string.Equals(i.Id, id, StringComparison.OrdinalIgnoreCase));
+
+            return Task.FromResult(program);
+        }
+
+        public Task<QueryResult<ProgramInfoDto>> GetPrograms(ProgramQuery query, CancellationToken cancellationToken)
         {
             IEnumerable<ProgramInfoDto> programs = _programs
                 .OrderBy(i => i.StartDate)
@@ -193,11 +200,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var returnArray = programs.ToArray();
 
-            return new QueryResult<ProgramInfoDto>
+            var result = new QueryResult<ProgramInfoDto>
             {
                 Items = returnArray,
                 TotalRecordCount = returnArray.Length
             };
+
+            return Task.FromResult(result);
         }
 
         internal async Task RefreshChannels(IProgress<double> progress, CancellationToken cancellationToken)
@@ -416,26 +425,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return results.Items.FirstOrDefault(i => string.Equals(i.Id, id, StringComparison.CurrentCulture));
         }
 
-        public Task UpdateTimer(TimerInfoDto timer, CancellationToken cancellationToken)
-        {
-            var info = _tvDtoService.GetTimerInfo(timer);
-
-            var service = GetServices(timer.ServiceName, null)
-              .First();
-
-            return service.UpdateTimerAsync(info, cancellationToken);
-        }
-
-        public Task UpdateSeriesTimer(SeriesTimerInfoDto timer, CancellationToken cancellationToken)
-        {
-            var info = _tvDtoService.GetSeriesTimerInfo(timer);
-
-            var service = GetServices(timer.ServiceName, null)
-                .First();
-
-            return service.UpdateSeriesTimerAsync(info, cancellationToken);
-        }
-
         public async Task<QueryResult<SeriesTimerInfoDto>> GetSeriesTimers(SeriesTimerQuery query, CancellationToken cancellationToken)
         {
             var list = new List<SeriesTimerInfoDto>();
@@ -468,6 +457,49 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }, cancellationToken).ConfigureAwait(false);
 
             return results.Items.FirstOrDefault(i => string.Equals(i.Id, id, StringComparison.CurrentCulture));
+        }
+
+        public async Task<TimerInfoDto> GetNewTimerDefaults(CancellationToken cancellationToken)
+        {
+            var info = await ActiveService.GetNewTimerDefaultsAsync(cancellationToken).ConfigureAwait(false);
+
+            return _tvDtoService.GetTimerInfoDto(info, ActiveService);
+        }
+
+        public async Task CreateTimer(TimerInfoDto timer, CancellationToken cancellationToken)
+        {
+            var service = string.IsNullOrEmpty(timer.ServiceName) ? ActiveService : GetServices(timer.ServiceName, null).First();
+
+            var info = await _tvDtoService.GetTimerInfo(timer, true, this, cancellationToken).ConfigureAwait(false);
+
+            await service.CreateTimerAsync(info, cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task CreateSeriesTimer(SeriesTimerInfoDto timer, CancellationToken cancellationToken)
+        {
+            var service = string.IsNullOrEmpty(timer.ServiceName) ? ActiveService : GetServices(timer.ServiceName, null).First();
+
+            var info = await _tvDtoService.GetSeriesTimerInfo(timer, true, this, cancellationToken).ConfigureAwait(false);
+
+            await service.CreateSeriesTimerAsync(info, cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task UpdateTimer(TimerInfoDto timer, CancellationToken cancellationToken)
+        {
+            var info = await _tvDtoService.GetTimerInfo(timer, false, this, cancellationToken).ConfigureAwait(false);
+
+            var service = string.IsNullOrEmpty(timer.ServiceName) ? ActiveService : GetServices(timer.ServiceName, null).First();
+
+            await service.UpdateTimerAsync(info, cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task UpdateSeriesTimer(SeriesTimerInfoDto timer, CancellationToken cancellationToken)
+        {
+            var info = await _tvDtoService.GetSeriesTimerInfo(timer, false, this, cancellationToken).ConfigureAwait(false);
+
+            var service = string.IsNullOrEmpty(timer.ServiceName) ? ActiveService : GetServices(timer.ServiceName, null).First();
+
+            await service.UpdateSeriesTimerAsync(info, cancellationToken).ConfigureAwait(false);
         }
     }
 }

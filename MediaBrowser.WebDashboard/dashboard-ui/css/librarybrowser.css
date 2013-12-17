@@ -106,6 +106,12 @@
     padding: 10px;
 }
 
+@media all and (max-width: 400px) {
+    .libraryPage .ui-content {
+        padding: 10px 0;
+    }
+}
+
 .libraryPage, .libraryPage .itemListContent {
     background: #494949 url(images/bgflip.png) repeat-x!important;
     background-attachment: fixed!important;
