@@ -495,6 +495,7 @@ namespace MediaBrowser.WebDashboard.Api
                                       "livetvchannel.js",
                                       "livetvchannels.js",
                                       "livetvguide.js",
+                                      "livetvnewrecording.js",
                                       "livetvrecording.js",
                                       "livetvrecordings.js",
                                       "livetvtimer.js",

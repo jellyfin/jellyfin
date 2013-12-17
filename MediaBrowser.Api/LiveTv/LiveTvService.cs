@@ -73,6 +73,12 @@ namespace MediaBrowser.Api.LiveTv
         public string Id { get; set; }
     }
 
+    [Route("/LiveTv/Timers/Defaults", "GET")]
+    [Api(Description = "Gets default values for a new timer")]
+    public class GetDefaultTimer : IReturn<TimerInfoDto>
+    {
+    }
+
     [Route("/LiveTv/Timers", "GET")]
     [Api(Description = "Gets live tv timers")]
     public class GetTimers : IReturn<QueryResult<TimerInfoDto>>
@@ -91,6 +97,18 @@ namespace MediaBrowser.Api.LiveTv
         [ApiMember(Name = "UserId", Description = "Optional filter by user id.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string UserId { get; set; }
     }
+
+    [Route("/LiveTv/Programs/{Id}", "GET")]
+    [Api(Description = "Gets a live tv program")]
+    public class GetProgram : IReturn<ProgramInfoDto>
+    {
+        [ApiMember(Name = "Id", Description = "Program Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Id { get; set; }
+
+        [ApiMember(Name = "UserId", Description = "Optional attach user data.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string UserId { get; set; }
+    }
+
 
     [Route("/LiveTv/Recordings/{Id}", "DELETE")]
     [Api(Description = "Deletes a live tv recording")]
@@ -111,6 +129,12 @@ namespace MediaBrowser.Api.LiveTv
     [Route("/LiveTv/Timers/{Id}", "POST")]
     [Api(Description = "Updates a live tv timer")]
     public class UpdateTimer : TimerInfoDto, IReturnVoid
+    {
+    }
+
+    [Route("/LiveTv/Timers", "POST")]
+    [Api(Description = "Creates a live tv timer")]
+    public class CreateTimer : TimerInfoDto, IReturnVoid
     {
     }
 
@@ -139,6 +163,12 @@ namespace MediaBrowser.Api.LiveTv
     [Route("/LiveTv/SeriesTimers/{Id}", "POST")]
     [Api(Description = "Updates a live tv series timer")]
     public class UpdateSeriesTimer : SeriesTimerInfoDto, IReturnVoid
+    {
+    }
+
+    [Route("/LiveTv/SeriesTimers", "POST")]
+    [Api(Description = "Creates a live tv series timer")]
+    public class CreateSeriesTimer : SeriesTimerInfoDto, IReturnVoid
     {
     }
 
@@ -266,7 +296,7 @@ namespace MediaBrowser.Api.LiveTv
         public object Get(GetSeriesTimers request)
         {
             var result = _liveTvManager.GetSeriesTimers(new SeriesTimerQuery
-            { 
+            {
 
             }, CancellationToken.None).Result;
 
@@ -290,6 +320,36 @@ namespace MediaBrowser.Api.LiveTv
         public void Post(UpdateSeriesTimer request)
         {
             var task = _liveTvManager.UpdateSeriesTimer(request, CancellationToken.None);
+
+            Task.WaitAll(task);
+        }
+
+        public object Get(GetDefaultTimer request)
+        {
+            var result = _liveTvManager.GetNewTimerDefaults(CancellationToken.None).Result;
+
+            return ToOptimizedResult(result);
+        }
+
+        public object Get(GetProgram request)
+        {
+            var user = string.IsNullOrEmpty(request.UserId) ? null : _userManager.GetUserById(new Guid(request.UserId));
+
+            var result = _liveTvManager.GetProgram(request.Id, CancellationToken.None, user).Result;
+
+            return ToOptimizedResult(result);
+        }
+
+        public void Post(CreateSeriesTimer request)
+        {
+            var task = _liveTvManager.CreateSeriesTimer(request, CancellationToken.None);
+
+            Task.WaitAll(task);
+        }
+
+        public void Post(CreateTimer request)
+        {
+            var task = _liveTvManager.CreateTimer(request, CancellationToken.None);
 
             Task.WaitAll(task);
         }

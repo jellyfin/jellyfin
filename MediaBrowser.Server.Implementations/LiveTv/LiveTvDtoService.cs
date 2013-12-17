@@ -1,4 +1,6 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using System.Threading;
+using System.Threading.Tasks;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -186,7 +188,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 Number = info.ChannelNumber,
                 Type = info.GetType().Name,
                 Id = info.Id.ToString("N"),
-                MediaType = info.MediaType
+                MediaType = info.MediaType,
+                ExternalId = info.ChannelId
             };
 
             if (user != null)
@@ -292,50 +295,99 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return name.ToLower().GetMD5();
         }
 
-        public TimerInfo GetTimerInfo(TimerInfoDto dto)
+        public async Task<TimerInfo> GetTimerInfo(TimerInfoDto dto, bool isNew, ILiveTvManager liveTv, CancellationToken cancellationToken)
         {
-            return new TimerInfo
+            var info = new TimerInfo
             {
-                Id = dto.ExternalId,
                 ChannelName = dto.ChannelName,
                 Overview = dto.Overview,
                 EndDate = dto.EndDate,
                 Name = dto.Name,
                 StartDate = dto.StartDate,
-                ChannelId = dto.ExternalChannelId,
                 Status = dto.Status,
                 SeriesTimerId = dto.ExternalSeriesTimerId,
                 RequestedPostPaddingSeconds = dto.RequestedPostPaddingSeconds,
                 RequestedPrePaddingSeconds = dto.RequestedPrePaddingSeconds,
                 RequiredPostPaddingSeconds = dto.RequiredPostPaddingSeconds,
                 RequiredPrePaddingSeconds = dto.RequiredPrePaddingSeconds,
-                ProgramId = dto.ExternalProgramId,
                 Priority = dto.Priority
             };
+
+            // Convert internal server id's to external tv provider id's
+            if (!isNew && !string.IsNullOrEmpty(dto.Id))
+            {
+                var timer = await liveTv.GetTimer(dto.Id, cancellationToken).ConfigureAwait(false);
+
+                info.Id = timer.ExternalId;
+            }
+
+            if (!string.IsNullOrEmpty(dto.SeriesTimerId))
+            {
+                var timer = await liveTv.GetSeriesTimer(dto.SeriesTimerId, cancellationToken).ConfigureAwait(false);
+
+                info.SeriesTimerId = timer.ExternalId;
+            }
+
+            if (!string.IsNullOrEmpty(dto.ChannelId))
+            {
+                var channel = await liveTv.GetChannel(dto.ChannelId, cancellationToken).ConfigureAwait(false);
+
+                info.ChannelId = channel.ExternalId;
+            }
+
+            if (!string.IsNullOrEmpty(dto.ProgramId))
+            {
+                var program = await liveTv.GetProgram(dto.ProgramId, cancellationToken).ConfigureAwait(false);
+
+                info.ProgramId = program.ExternalId;
+            }
+
+            return info;
         }
 
-        public SeriesTimerInfo GetSeriesTimerInfo(SeriesTimerInfoDto dto)
+        public async Task<SeriesTimerInfo> GetSeriesTimerInfo(SeriesTimerInfoDto dto, bool isNew, ILiveTvManager liveTv, CancellationToken cancellationToken)
         {
-            return new SeriesTimerInfo
+            var info = new SeriesTimerInfo
             {
-                Id = dto.ExternalId,
                 ChannelName = dto.ChannelName,
                 Overview = dto.Overview,
                 EndDate = dto.EndDate,
                 Name = dto.Name,
                 StartDate = dto.StartDate,
-                ChannelId = dto.ExternalChannelId,
                 RequestedPostPaddingSeconds = dto.RequestedPostPaddingSeconds,
                 RequestedPrePaddingSeconds = dto.RequestedPrePaddingSeconds,
                 RequiredPostPaddingSeconds = dto.RequiredPostPaddingSeconds,
                 RequiredPrePaddingSeconds = dto.RequiredPrePaddingSeconds,
                 Days = dto.Days,
                 Priority = dto.Priority,
-                ProgramId = dto.ExternalProgramId,
                 RecordAnyChannel = dto.RecordAnyChannel,
                 RecordAnyTime = dto.RecordAnyTime,
                 RecordNewOnly = dto.RecordNewOnly
             };
+
+            // Convert internal server id's to external tv provider id's
+            if (!isNew && !string.IsNullOrEmpty(dto.Id))
+            {
+                var timer = await liveTv.GetSeriesTimer(dto.Id, cancellationToken).ConfigureAwait(false);
+
+                info.Id = timer.ExternalId;
+            }
+
+            if (!string.IsNullOrEmpty(dto.ChannelId))
+            {
+                var channel = await liveTv.GetChannel(dto.ChannelId, cancellationToken).ConfigureAwait(false);
+
+                info.ChannelId = channel.ExternalId;
+            }
+
+            if (!string.IsNullOrEmpty(dto.ProgramId))
+            {
+                var program = await liveTv.GetProgram(dto.ProgramId, cancellationToken).ConfigureAwait(false);
+
+                info.ProgramId = program.ExternalId;
+            }
+
+            return info;
         }
     }
 }
