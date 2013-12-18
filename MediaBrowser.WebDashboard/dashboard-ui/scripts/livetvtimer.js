@@ -29,10 +29,10 @@
         $('.channel', page).html('<a href="livetvchannel.html?id=' + item.ChannelId + '">' + item.ChannelName + '</a>').trigger('create');
         $('.overview', page).html(item.Overview || '');
 
-        $('#txtRequestedPrePaddingSeconds', page).val(item.RequestedPrePaddingSeconds);
-        $('#txtRequestedPostPaddingSeconds', page).val(item.RequestedPostPaddingSeconds);
-        $('#txtRequiredPrePaddingSeconds', page).val(item.RequiredPrePaddingSeconds);
-        $('#txtRequiredPostPaddingSeconds', page).val(item.RequiredPostPaddingSeconds);
+        $('#txtPrePaddingSeconds', page).val(item.PrePaddingSeconds);
+        $('#txtPostPaddingSeconds', page).val(item.PostPaddingSeconds);
+        $('#chkPrePaddingRequired', page).checked(item.IsPrePaddingRequired).checkboxradio('refresh');
+        $('#chkPostPaddingRequired', page).checked(item.IsPostPaddingRequired).checkboxradio('refresh');
 
         $('.itemMiscInfo', page).html(LibraryBrowser.getMiscInfoHtml(item));
         $('.status', page).html('Status:&nbsp;&nbsp;&nbsp;' + item.Status);
@@ -47,21 +47,21 @@
 
         Dashboard.hideLoadingMsg();
     }
-    
+
     function onSubmit() {
-        
+
         Dashboard.showLoadingMsg();
 
         var form = this;
 
         apiClient.getLiveTvTimer(currentItem.Id).done(function (item) {
 
-            item.RequestedPrePaddingSeconds = $('#txtRequestedPrePaddingSeconds', form).val();
-            item.RequestedPostPaddingSeconds = $('#txtRequestedPostPaddingSeconds', form).val();
-            item.RequiredPrePaddingSeconds = $('#txtRequiredPrePaddingSeconds', form).val();
-            item.RequiredPostPaddingSeconds = $('#txtRequiredPostPaddingSeconds', form).val();
+            item.PrePaddingSeconds = $('#txtPrePaddingSeconds', form).val();
+            item.PostPaddingSeconds = $('#txtPostPaddingSeconds', form).val();
+            item.IsPrePaddingRequired = $('#chkPrePaddingRequired', form).checked();
+            item.IsPostPaddingRequired = $('#chkPostPaddingRequired', form).checked();
 
-            ApiClient.updateLiveTvTimer(item).done(function() {
+            ApiClient.updateLiveTvTimer(item).done(function () {
                 Dashboard.alert('Timer Saved');
             });
         });
@@ -104,11 +104,11 @@
 
         currentItem = null;
     });
-    
+
     function liveTvTimerPage() {
 
         var self = this;
-        
+
         self.onSubmit = onSubmit;
     }
 

@@ -26,25 +26,38 @@
                 </p>
 
                 <br />
+
+                <div data-role="collapsible" data-mini="true">
+                    <h3>Pre/Post Padding</h3>
+                    <div>
+                        <br />
+                        <ul data-role="listview" class="ulForm">
+                            <li>
+                                <label for="txtPrePaddingSeconds">Pre-padding seconds: </label>
+                                <input type="number" id="txtPrePaddingSeconds" pattern="[0-9]*" required="required" min="0" />
+                            </li>
+                            <li>
+                                <input type="checkbox" data-mini="true" id="chkPrePaddingRequired" />
+                                <label for="chkPrePaddingRequired">Pre-padding is required in order to record.</label>
+                            </li>
+                            <li>
+                                <div style="height: .5em;"></div>
+                            </li>
+                            <li>
+                                <label for="txtPostPaddingSeconds">Post-padding seconds: </label>
+                                <input type="number" id="txtPostPaddingSeconds" pattern="[0-9]*" required="required" min="0" />
+                            </li>
+                            <li>
+                                <input type="checkbox" data-mini="true" id="chkPostPaddingRequired" />
+                                <label for="chkPostPaddingRequired">Post-padding is required in order to record.</label>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <br />
                 <br />
 
                 <ul data-role="listview" class="ulForm">
-                    <li>
-                        <label for="txtRequestedPrePaddingSeconds">Requested pre-padding seconds: </label>
-                        <input type="number" id="txtRequestedPrePaddingSeconds" pattern="[0-9]*" required="required" min="0" />
-                    </li>
-                    <li>
-                        <label for="txtRequestedPostPaddingSeconds">Requested post-padding seconds: </label>
-                        <input type="number" id="txtRequestedPostPaddingSeconds" pattern="[0-9]*" required="required" min="0" />
-                    </li>
-                    <li>
-                        <label for="txtRequiredPrePaddingSeconds">Required pre-padding seconds: </label>
-                        <input type="number" id="txtRequiredPrePaddingSeconds" pattern="[0-9]*" required="required" min="0" />
-                    </li>
-                    <li>
-                        <label for="txtRequiredPostPaddingSeconds">Required post-padding seconds: </label>
-                        <input type="number" id="txtRequiredPostPaddingSeconds" pattern="[0-9]*" required="required" min="0" />
-                    </li>
                     <li>
                         <button type="submit" data-theme="b" data-icon="ok" data-mini="true">
                             Save

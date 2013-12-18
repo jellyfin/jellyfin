@@ -140,7 +140,6 @@ namespace MediaBrowser.Providers.Music
                 }
             }
 
-
             providerInfo.FileStamp = GetComparisonData(songs);
 
             SetLastRefreshed(item, DateTime.UtcNow, providerInfo);

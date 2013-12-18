@@ -86,30 +86,30 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value>The external series timer identifier.</value>
         public string ExternalSeriesTimerId { get; set; }
-        
-        /// <summary>
-        /// Gets or sets the requested pre padding seconds.
-        /// </summary>
-        /// <value>The requested pre padding seconds.</value>
-        public int RequestedPrePaddingSeconds { get; set; }
 
         /// <summary>
-        /// Gets or sets the requested post padding seconds.
+        /// Gets or sets the pre padding seconds.
         /// </summary>
-        /// <value>The requested post padding seconds.</value>
-        public int RequestedPostPaddingSeconds { get; set; }
+        /// <value>The pre padding seconds.</value>
+        public int PrePaddingSeconds { get; set; }
 
         /// <summary>
-        /// Gets or sets the required pre padding seconds.
+        /// Gets or sets the post padding seconds.
         /// </summary>
-        /// <value>The required pre padding seconds.</value>
-        public int RequiredPrePaddingSeconds { get; set; }
+        /// <value>The post padding seconds.</value>
+        public int PostPaddingSeconds { get; set; }
 
         /// <summary>
-        /// Gets or sets the required post padding seconds.
+        /// Gets or sets a value indicating whether this instance is pre padding required.
         /// </summary>
-        /// <value>The required post padding seconds.</value>
-        public int RequiredPostPaddingSeconds { get; set; }
+        /// <value><c>true</c> if this instance is pre padding required; otherwise, <c>false</c>.</value>
+        public bool IsPrePaddingRequired { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is post padding required.
+        /// </summary>
+        /// <value><c>true</c> if this instance is post padding required; otherwise, <c>false</c>.</value>
+        public bool IsPostPaddingRequired { get; set; }
 
         /// <summary>
         /// Gets or sets the duration ms.

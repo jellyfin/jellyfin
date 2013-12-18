@@ -81,16 +81,20 @@ namespace MediaBrowser.Providers.Music
             }
 
             // Only grab the date here if the album doesn't already have one, since id3 tags are preferred
-            if (!item.PremiereDate.HasValue)
-            {
-                DateTime release;
+            DateTime release;
 
-                if (DateTime.TryParse(data.releasedate, out release))
+            if (DateTime.TryParse(data.releasedate, out release))
+            {
+                // Lastfm sends back null as sometimes 1901, other times 0
+                if (release.Year > 1901)
                 {
-                    // Lastfm sends back null as sometimes 1901, other times 0
-                    if (release.Year > 1901)
+                    if (!item.PremiereDate.HasValue)
                     {
                         item.PremiereDate = release;
+                    }
+
+                    if (!item.ProductionYear.HasValue)
+                    {
                         item.ProductionYear = release.Year;
                     }
                 }

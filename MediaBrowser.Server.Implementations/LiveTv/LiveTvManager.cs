@@ -459,11 +459,41 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return results.Items.FirstOrDefault(i => string.Equals(i.Id, id, StringComparison.CurrentCulture));
         }
 
-        public async Task<TimerInfoDto> GetNewTimerDefaults(CancellationToken cancellationToken)
+        public async Task<SeriesTimerInfoDto> GetNewTimerDefaults(CancellationToken cancellationToken)
         {
             var info = await ActiveService.GetNewTimerDefaultsAsync(cancellationToken).ConfigureAwait(false);
 
-            return _tvDtoService.GetTimerInfoDto(info, ActiveService);
+            var obj = _tvDtoService.GetSeriesTimerInfoDto(info, ActiveService);
+
+            obj.Id = obj.ExternalId = string.Empty;
+
+            return obj;
+        }
+
+        public async Task<SeriesTimerInfoDto> GetNewTimerDefaults(string programId, CancellationToken cancellationToken)
+        {
+            var info = await GetNewTimerDefaults(cancellationToken).ConfigureAwait(false);
+
+            var program = await GetProgram(programId, cancellationToken).ConfigureAwait(false);
+
+            info.Days = new List<DayOfWeek>
+            {
+                program.StartDate.ToLocalTime().DayOfWeek
+            };
+
+            info.DayPattern = _tvDtoService.GetDayPattern(info.Days);
+
+            info.Name = program.Name;
+            info.ChannelId = program.ChannelId;
+            info.ChannelName = program.ChannelName;
+            info.EndDate = program.EndDate;
+            info.StartDate = program.StartDate;
+            info.Name = program.Name;
+            info.Overview = program.Overview;
+            info.ProgramId = program.Id;
+            info.ExternalProgramId = program.ExternalId;
+
+            return info;
         }
 
         public async Task CreateTimer(TimerInfoDto timer, CancellationToken cancellationToken)
@@ -471,6 +501,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             var service = string.IsNullOrEmpty(timer.ServiceName) ? ActiveService : GetServices(timer.ServiceName, null).First();
 
             var info = await _tvDtoService.GetTimerInfo(timer, true, this, cancellationToken).ConfigureAwait(false);
+
+            // Set priority from default values
+            var defaultValues = await service.GetNewTimerDefaultsAsync(cancellationToken).ConfigureAwait(false);
+            info.Priority = defaultValues.Priority;
 
             await service.CreateTimerAsync(info, cancellationToken).ConfigureAwait(false);
         }
@@ -480,6 +514,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             var service = string.IsNullOrEmpty(timer.ServiceName) ? ActiveService : GetServices(timer.ServiceName, null).First();
 
             var info = await _tvDtoService.GetSeriesTimerInfo(timer, true, this, cancellationToken).ConfigureAwait(false);
+
+            // Set priority from default values
+            var defaultValues = await service.GetNewTimerDefaultsAsync(cancellationToken).ConfigureAwait(false);
+            info.Priority = defaultValues.Priority;
 
             await service.CreateSeriesTimerAsync(info, cancellationToken).ConfigureAwait(false);
         }

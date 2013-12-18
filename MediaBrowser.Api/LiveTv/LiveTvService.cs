@@ -75,8 +75,10 @@ namespace MediaBrowser.Api.LiveTv
 
     [Route("/LiveTv/Timers/Defaults", "GET")]
     [Api(Description = "Gets default values for a new timer")]
-    public class GetDefaultTimer : IReturn<TimerInfoDto>
+    public class GetDefaultTimer : IReturn<SeriesTimerInfoDto>
     {
+        [ApiMember(Name = "ProgramId", Description = "Optional, to attach default values based on a program.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string ProgramId { get; set; }
     }
 
     [Route("/LiveTv/Timers", "GET")]
@@ -326,9 +328,18 @@ namespace MediaBrowser.Api.LiveTv
 
         public object Get(GetDefaultTimer request)
         {
-            var result = _liveTvManager.GetNewTimerDefaults(CancellationToken.None).Result;
+            if (string.IsNullOrEmpty(request.ProgramId))
+            {
+                var result = _liveTvManager.GetNewTimerDefaults(CancellationToken.None).Result;
 
-            return ToOptimizedResult(result);
+                return ToOptimizedResult(result);
+            }
+            else
+            {
+                var result = _liveTvManager.GetNewTimerDefaults(request.ProgramId, CancellationToken.None).Result;
+
+                return ToOptimizedResult(result);
+            }
         }
 
         public object Get(GetProgram request)

@@ -89,18 +89,19 @@ namespace MediaBrowser.Controller.LiveTv
         /// <summary>
         /// Gets the recording image asynchronous.
         /// </summary>
-        /// <param name="channelId">The channel identifier.</param>
+        /// <param name="recordingId">The recording identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{ImageResponseInfo}.</returns>
-        Task<ImageResponseInfo> GetRecordingImageAsync(string channelId, CancellationToken cancellationToken);
+        Task<ImageResponseInfo> GetRecordingImageAsync(string recordingId, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the program image asynchronous.
         /// </summary>
+        /// <param name="programId">The program identifier.</param>
         /// <param name="channelId">The channel identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{ImageResponseInfo}.</returns>
-        Task<ImageResponseInfo> GetProgramImageAsync(string channelId, CancellationToken cancellationToken);
+        Task<ImageResponseInfo> GetProgramImageAsync(string programId, string channelId, CancellationToken cancellationToken);
         
         /// <summary>
         /// Gets the recordings asynchronous.
@@ -121,7 +122,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{TimerInfo}.</returns>
-        Task<TimerInfo> GetNewTimerDefaultsAsync(CancellationToken cancellationToken);
+        Task<SeriesTimerInfo> GetNewTimerDefaultsAsync(CancellationToken cancellationToken);
         
         /// <summary>
         /// Gets the series timers asynchronous.

@@ -28,10 +28,10 @@
         $('.itemName', page).html(item.Name);
         $('.overview', page).html(item.Overview || '');
 
-        $('#txtRequestedPrePaddingSeconds', page).val(item.RequestedPrePaddingSeconds);
-        $('#txtRequestedPostPaddingSeconds', page).val(item.RequestedPostPaddingSeconds);
-        $('#txtRequiredPrePaddingSeconds', page).val(item.RequiredPrePaddingSeconds);
-        $('#txtRequiredPostPaddingSeconds', page).val(item.RequiredPostPaddingSeconds);
+        $('#txtPrePaddingSeconds', page).val(item.PrePaddingSeconds);
+        $('#txtPostPaddingSeconds', page).val(item.PostPaddingSeconds);
+        $('#chkPrePaddingRequired', page).checked(item.IsPrePaddingRequired).checkboxradio('refresh');
+        $('#chkPostPaddingRequired', page).checked(item.IsPostPaddingRequired).checkboxradio('refresh');
 
         $('#chkNewOnly', page).checked(item.RecordNewOnly).checkboxradio('refresh');
         $('#chkAllChannels', page).checked(item.RecordAnyChannel).checkboxradio('refresh');
@@ -97,10 +97,10 @@
 
         apiClient.getLiveTvSeriesTimer(currentItem.Id).done(function (item) {
 
-            item.RequestedPrePaddingSeconds = $('#txtRequestedPrePaddingSeconds', form).val();
-            item.RequestedPostPaddingSeconds = $('#txtRequestedPostPaddingSeconds', form).val();
-            item.RequiredPrePaddingSeconds = $('#txtRequiredPrePaddingSeconds', form).val();
-            item.RequiredPostPaddingSeconds = $('#txtRequiredPostPaddingSeconds', form).val();
+            item.PrePaddingSeconds = $('#txtPrePaddingSeconds', form).val();
+            item.PostPaddingSeconds = $('#txtPostPaddingSeconds', form).val();
+            item.IsPrePaddingRequired = $('#chkPrePaddingRequired', form).checked();
+            item.IsPostPaddingRequired = $('#chkPostPaddingRequired', form).checked();
 
             item.RecordNewOnly = $('#chkNewOnly', form).checked();
             item.RecordAnyChannel = $('#chkAllChannels', form).checked();

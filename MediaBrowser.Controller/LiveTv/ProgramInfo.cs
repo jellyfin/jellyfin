@@ -102,6 +102,24 @@ namespace MediaBrowser.Controller.LiveTv
         /// Leave it null if the only way to determine is by requesting the image and handling the failure.
         /// </summary>
         public bool? HasImage { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is movie.
+        /// </summary>
+        /// <value><c>true</c> if this instance is movie; otherwise, <c>false</c>.</value>
+        public bool IsMovie { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is sports.
+        /// </summary>
+        /// <value><c>true</c> if this instance is sports; otherwise, <c>false</c>.</value>
+        public bool IsSports { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is series.
+        /// </summary>
+        /// <value><c>true</c> if this instance is series; otherwise, <c>false</c>.</value>
+        public bool IsSeries { get; set; }
         
         public ProgramInfo()
         {

@@ -1,7 +1,6 @@
 ﻿(function ($, document, apiClient) {
 
     var currentProgram;
-    var daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
     function renderRecording(page, defaultTimer, program) {
 
@@ -29,21 +28,22 @@
 
         $('.itemMiscInfo', page).html(LibraryBrowser.getMiscInfoHtml(program));
 
-        $('#txtRequestedPrePaddingSeconds', page).val(defaultTimer.RequestedPrePaddingSeconds);
-        $('#txtRequestedPostPaddingSeconds', page).val(defaultTimer.RequestedPostPaddingSeconds);
-        $('#txtRequiredPrePaddingSeconds', page).val(defaultTimer.RequiredPrePaddingSeconds);
-        $('#txtRequiredPostPaddingSeconds', page).val(defaultTimer.RequiredPostPaddingSeconds);
+        $('#chkNewOnly', page).checked(defaultTimer.RecordNewOnly).checkboxradio('refresh');
+        $('#chkAllChannels', page).checked(defaultTimer.RecordAnyChannel).checkboxradio('refresh');
+        $('#chkAnyTime', page).checked(defaultTimer.RecordAnyTime).checkboxradio('refresh');
 
-        try {
+        $('#txtPrePaddingSeconds', page).val(defaultTimer.PrePaddingSeconds);
+        $('#txtPostPaddingSeconds', page).val(defaultTimer.PostPaddingSeconds);
+        $('#chkPrePaddingRequired', page).checked(defaultTimer.IsPrePaddingRequired).checkboxradio('refresh');
+        $('#chkPostPaddingRequired', page).checked(defaultTimer.IsPostPaddingRequired).checkboxradio('refresh');
 
-            var startDate = parseISO8601Date(program.StartDate, { toLocal: true });
-
-            $('#chk' + daysOfWeek[startDate.getDay()], page).checked(true).checkboxradio('refresh');
-
+        if (program.IsSeries) {
+            $('#eligibleForSeriesFields', page).show();
+        } else {
+            $('#eligibleForSeriesFields', page).hide();
         }
-        catch (e) {
-            console.log("Error parsing date: " + program.StartDate);
-        }
+
+        selectDays(page, defaultTimer.Days);
 
         Dashboard.hideLoadingMsg();
     }
@@ -52,10 +52,10 @@
 
         Dashboard.showLoadingMsg();
 
-        var programid = getParameterByName('programid');
+        var programId = getParameterByName('programid');
 
-        var promise1 = apiClient.getNewLiveTvTimerDefaults();
-        var promise2 = apiClient.getLiveTvProgram(programid, Dashboard.getCurrentUserId());
+        var promise1 = apiClient.getNewLiveTvTimerDefaults({ programId: programId });
+        var promise2 = apiClient.getLiveTvProgram(programId, Dashboard.getCurrentUserId());
 
         $.when(promise1, promise2).done(function (response1, response2) {
 
@@ -66,7 +66,23 @@
         });
     }
 
+    function selectDays(page, days) {
+
+        var daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+        for (var i = 0, length = daysOfWeek.length; i < length; i++) {
+
+            var day = daysOfWeek[i];
+
+            $('#chk' + day, page).checked(days.indexOf(day) != -1).checkboxradio('refresh');
+
+        }
+
+    }
+
     function getDays(page) {
+
+        var daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
         var days = [];
 
@@ -89,26 +105,18 @@
 
         var form = this;
 
-        apiClient.getNewLiveTvTimerDefaults().done(function (item) {
+        apiClient.getNewLiveTvTimerDefaults({ programId: currentProgram.Id }).done(function (item) {
 
-            item.RequestedPrePaddingSeconds = $('#txtRequestedPrePaddingSeconds', form).val();
-            item.RequestedPostPaddingSeconds = $('#txtRequestedPostPaddingSeconds', form).val();
-            item.RequiredPrePaddingSeconds = $('#txtRequiredPrePaddingSeconds', form).val();
-            item.RequiredPostPaddingSeconds = $('#txtRequiredPostPaddingSeconds', form).val();
+            item.PrePaddingSeconds = $('#txtPrePaddingSeconds', form).val();
+            item.PostPaddingSeconds = $('#txtPostPaddingSeconds', form).val();
+            item.IsPrePaddingRequired = $('#chkPrePaddingRequired', form).checked();
+            item.IsPostPaddingRequired = $('#chkPostPaddingRequired', form).checked();
 
             item.RecordNewOnly = $('#chkNewOnly', form).checked();
             item.RecordAnyChannel = $('#chkAllChannels', form).checked();
             item.RecordAnyTime = $('#chkAnyTime', form).checked();
 
             item.Days = getDays(form);
-
-            item.Name = currentProgram.Name;
-            item.ProgramId = currentProgram.Id;
-            item.ChannelName = currentProgram.ChannelName;
-            item.ChannelId = currentProgram.ChannelId;
-            item.Overview = currentProgram.Overview;
-            item.StartDate = currentProgram.StartDate;
-            item.EndDate = currentProgram.EndDate;
 
             if ($('#chkRecordSeries', form).checked()) {
 
@@ -155,6 +163,12 @@
             } else {
                 $('#seriesFields', page).hide();
             }
+
+        });
+        
+        $('#btnCancel', page).on('click', function () {
+
+            Dashboard.navigate('livetvchannel.html?id=' + currentProgram.ChannelId);
 
         });
 

@@ -545,9 +545,11 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.getNewLiveTvTimerDefaults = function () {
+        self.getNewLiveTvTimerDefaults = function (options) {
 
-            var url = self.getUrl("LiveTv/Timers/Defaults");
+            options = options || {};
+            
+            var url = self.getUrl("LiveTv/Timers/Defaults", options);
 
             return self.ajax({
                 type: "GET",
