@@ -43,8 +43,6 @@
         $('#chkDownloadAlbumBackdrops', page).checked(config.DownloadMusicAlbumImages.Backdrops).checkboxradio("refresh");
         $('#chkMusicAlbumDisc', page).checked(config.DownloadMusicAlbumImages.Disc).checkboxradio("refresh");
 
-        $('#chkVIdeoImages', page).checked(config.EnableVideoImageExtraction).checkboxradio("refresh");
-
         $('#selectImageSavingConvention', page).val(config.ImageSavingConvention).selectmenu("refresh");
 
         Dashboard.hideLoadingMsg();
@@ -88,8 +86,6 @@
             config.DownloadMusicAlbumImages.Primary = $('#chkDownloadAlbumPrimary', form).checked();
             config.DownloadMusicAlbumImages.Backdrops = $('#chkDownloadAlbumBackdrops', form).checked();
             config.DownloadMusicAlbumImages.Disc = $('#chkMusicAlbumDisc', form).checked();
-
-            config.EnableVideoImageExtraction = $('#chkVIdeoImages', form).checked();
 
             ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
         });

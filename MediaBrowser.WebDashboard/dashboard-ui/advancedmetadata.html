@@ -11,21 +11,28 @@
             <div class="content-primary">
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
                     <a href="metadata.html" data-role="button">Basics</a>
-                    <a href="metadataimages.html" data-role="button">Images</a>
+                    <a href="metadataimages.html" data-role="button">Image Downloading</a>
+                    <a href="metadataimageextraction.html" data-role="button">Image Extraction</a>
                     <a href="advancedmetadata.html" data-role="button" class="ui-btn-active">Advanced</a>
                 </div>
 
                 <form id="advancedMetadataConfigurationForm">
                     <ul data-role="listview" class="ulForm">
                         <li>
-                            <label>Disable internet providers for:</label>
-                            <div id="divItemTypes"></div>
+                            <input type="checkbox" id="chkEnableTmdbPersonUpdates" name="chkEnableTmdbPersonUpdates" data-mini="true" />
+                            <label for="chkEnableTmdbPersonUpdates">Enable automatic updates from TheMovieDB.org</label>
+                            <div class="fieldDescription">If enabled, movies and people will be updated automatically as they are updated on the TheMovieDB.org.</div>
                         </li>
                         <li>
-                            <button type="submit" data-theme="b" data-icon="ok">
+                            <input type="checkbox" id="chkEnableTvdbUpdates" name="chkEnableTvdbUpdates" data-mini="true" />
+                            <label for="chkEnableTvdbUpdates">Enable automatic updates from TheTVDB.com</label>
+                            <div class="fieldDescription">If enabled, tv series and episodes will be updated automatically as they are updated on the TheTVDB.com.</div>
+                        </li>
+                        <li>
+                            <button type="submit" data-theme="b" data-icon="ok" data-mini="true">
                                 Save
                             </button>
-                            <button type="button" onclick="Dashboard.navigate('dashboard.html');" data-icon="delete">
+                            <button type="button" onclick="Dashboard.navigate('dashboard.html');" data-icon="delete" data-mini="true">
                                 Cancel
                             </button>
                         </li>

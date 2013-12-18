@@ -1,0 +1,45 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Metadata</title>
+</head>
+<body>
+    <div id="metadataImageExtractionPage" data-role="page" class="page type-interior">
+
+        <div data-role="content">
+
+            <div class="content-primary">
+                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                    <a href="metadata.html" data-role="button">Basics</a>
+                    <a href="metadataimages.html" data-role="button" class="ui-btn-active">Image Downloading</a>
+                    <a href="metadataimageextraction.html" data-role="button">Image Extraction</a>
+                    <a href="advancedmetadata.html" data-role="button">Advanced</a>
+                </div>
+
+                <form id="metadataImageExtractionForm">
+                    <ul data-role="listview" class="ulForm">
+                        <li>
+                            <label for="chkVIdeoImages">Enable video image extraction</label>
+                            <input id="chkVIdeoImages" name="chkVIdeoImages" type="checkbox" checked="checked" data-mini="true" />
+                            <div class="fieldDescription">For videos that don't already have images, and that we're uanble to find internet images for. This will add some additional time to the initial library scan but will result in a more pleasing presentation.</div>
+                        </li>
+                        <li>
+                            <button type="submit" data-theme="b" data-icon="ok">
+                                Save
+                            </button>
+                            <button type="button" onclick="Dashboard.navigate('dashboard.html');" data-icon="delete">
+                                Cancel
+                            </button>
+                        </li>
+                    </ul>
+                </form>
+            </div>
+
+        </div>
+
+        <script type="text/javascript">
+            $('#metadataImageExtractionForm').on('submit', MetadataImageExtractionPage.onSubmit);
+        </script>
+    </div>
+</body>
+</html>

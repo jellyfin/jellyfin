@@ -6,19 +6,18 @@
 
         var page = this;
 
-        var promise1 = ApiClient.getServerConfiguration();
-        var promise2 = ApiClient.getItemTypes({ HasInternetProvider: true });
+        ApiClient.getServerConfiguration().done(function (configuration) {
 
-        $.when(promise1, promise2).done(function (response1, response2) {
-
-            AdvancedMetadataConfigurationPage.load(page, response1[0], response2[0]);
+            AdvancedMetadataConfigurationPage.load(page, configuration);
 
         });
     },
 
-    load: function (page, config, itemTypes) {
+    load: function (page, config) {
 
-        AdvancedMetadataConfigurationPage.loadItemTypes(page, config, itemTypes);
+        $('#chkEnableTmdbPersonUpdates', page).checked(config.EnableTmdbUpdates).checkboxradio("refresh");
+        $('#chkEnableTvdbUpdates', page).checked(config.EnableTvDbUpdates).checkboxradio("refresh");
+
         Dashboard.hideLoadingMsg();
     },
 
@@ -49,10 +48,8 @@
 
         ApiClient.getServerConfiguration().done(function (config) {
 
-            config.InternetProviderExcludeTypes = $.map($('.chkItemType:checked', form), function (currentCheckbox) {
-
-                return currentCheckbox.getAttribute('data-itemtype');
-            });
+            config.EnableTvDbUpdates = $('#chkEnableTvdbUpdates', form).checked();
+            config.EnableTmdbUpdates = $('#chkEnableTmdbPersonUpdates', form).checked();
 
             ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
         });

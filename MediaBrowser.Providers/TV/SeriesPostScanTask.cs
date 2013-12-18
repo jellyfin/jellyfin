@@ -39,8 +39,7 @@ namespace MediaBrowser.Providers.TV
 
         private async Task RunInternal(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            if (!_config.Configuration.EnableInternetProviders ||
-                _config.Configuration.InternetProviderExcludeTypes.Contains(typeof(Series).Name, StringComparer.OrdinalIgnoreCase))
+            if (!_config.Configuration.EnableInternetProviders)
             {
                 progress.Report(100);
                 return;

@@ -143,12 +143,6 @@ namespace MediaBrowser.Model.Configuration
         public bool ShowLogWindow { get; set; }
 
         /// <summary>
-        /// The list of types that will NOT be allowed to have internet providers run against them even if they are turned on.
-        /// </summary>
-        /// <value>The internet provider exclude types.</value>
-        public string[] InternetProviderExcludeTypes { get; set; }
-
-        /// <summary>
         /// Gets or sets the recent item days.
         /// </summary>
         /// <value>The recent item days.</value>
@@ -266,7 +260,6 @@ namespace MediaBrowser.Model.Configuration
             RecentItemDays = 10;
 
             EnableInternetProviders = true; //initial installs will need these
-            InternetProviderExcludeTypes = new string[] { };
 
             ManualLoginClients = new ManualLoginCategory[] { };
 

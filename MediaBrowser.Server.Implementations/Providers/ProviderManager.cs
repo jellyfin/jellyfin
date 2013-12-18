@@ -105,7 +105,6 @@ namespace MediaBrowser.Server.Implementations.Providers
             cancellationToken.ThrowIfCancellationRequested();
 
             var enableInternetProviders = ConfigurationManager.Configuration.EnableInternetProviders;
-            var excludeTypes = ConfigurationManager.Configuration.InternetProviderExcludeTypes;
 
             var providerHistories = item.DateLastSaved == default(DateTime) ?
                 new List<BaseProviderInfo>() :
@@ -129,15 +128,6 @@ namespace MediaBrowser.Server.Implementations.Providers
 
                 // Skip if is slow and we aren't allowing slow ones
                 if (provider.IsSlow && !allowSlowProviders)
-                {
-                    continue;
-                }
-
-                // Skip if internet provider and this type is not allowed
-                if (provider.RequiresInternet &&
-                    enableInternetProviders &&
-                    excludeTypes.Length > 0 &&
-                    excludeTypes.Contains(item.GetType().Name, StringComparer.OrdinalIgnoreCase))
                 {
                     continue;
                 }

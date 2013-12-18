@@ -11,7 +11,8 @@
             <div class="content-primary">
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
                     <a href="metadata.html" data-role="button">Basics</a>
-                    <a href="metadataimages.html" data-role="button" class="ui-btn-active">Images</a>
+                    <a href="metadataimages.html" data-role="button" class="ui-btn-active">Image Downloading</a>
+                    <a href="metadataimageextraction.html" data-role="button">Image Extraction</a>
                     <a href="advancedmetadata.html" data-role="button">Advanced</a>
                 </div>
 
@@ -19,7 +20,7 @@
                     <ul data-role="listview" class="ulForm">
                         <li>
                             <label for="selectImageSavingConvention">Image saving convention: </label>
-                            <select name="selectImageSavingConvention" id="selectImageSavingConvention">
+                            <select name="selectImageSavingConvention" id="selectImageSavingConvention" data-mini="true">
                                 <option value="Compatible">Compatible - MB3/Plex/Xbmc</option>
                                 <option value="Legacy">Standard - MB3/MB2</option>
                             </select>
@@ -27,15 +28,15 @@
                         </li>
                         <li>
                             <label for="txtNumbackdrops">Max number of backdrops per item: </label>
-                            <input type="number" id="txtNumbackdrops" name="txtNumbackdrops" pattern="[0-9]*" required="required" min="1" />
+                            <input type="number" id="txtNumbackdrops" name="txtNumbackdrops" pattern="[0-9]*" required="required" min="1" data-mini="true" />
                         </li>
                         <li>
                             <label for="txtMinMovieBackdropDownloadWidth">Minimum movie backdrop download width: </label>
-                            <input type="number" id="txtMinMovieBackdropDownloadWidth" name="txtMinMovieBackdropDownloadWidth" pattern="[0-9]*" required="required" min="1" />
+                            <input type="number" id="txtMinMovieBackdropDownloadWidth" name="txtMinMovieBackdropDownloadWidth" pattern="[0-9]*" required="required" min="1" data-mini="true" />
                         </li>
                         <li>
                             <label for="txtMinSeriesBackdropDownloadWidth">Minimum tv series backdrop download width: </label>
-                            <input type="number" id="txtMinSeriesBackdropDownloadWidth" name="txtMinSeriesBackdropDownloadWidth" pattern="[0-9]*" required="required" min="1" />
+                            <input type="number" id="txtMinSeriesBackdropDownloadWidth" name="txtMinSeriesBackdropDownloadWidth" pattern="[0-9]*" required="required" min="1" data-mini="true" />
                         </li>
                     </ul>
                     <p>Enable additional image downloading:</p>
@@ -133,11 +134,6 @@
                     </div>
                     <br />
                     <ul data-role="listview" class="ulForm">
-                        <li>
-                            <label for="chkVIdeoImages">Enable video image extraction</label>
-                            <input id="chkVIdeoImages" name="chkVIdeoImages" type="checkbox" checked="checked" />
-                            <div class="fieldDescription">For videos that don't already have images, and that we're uanble to find internet images for. This will add some additional time to the initial library scan but will result in a more pleasing presentation.</div>
-                        </li>
                         <li>
                             <button type="submit" data-theme="b" data-icon="ok">
                                 Save
