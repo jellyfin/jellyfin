@@ -322,7 +322,7 @@ namespace MediaBrowser.ServerApplication
         /// </summary>
         private void SetKernelProperties()
         {
-            new FFMpegManager(ApplicationPaths, MediaEncoder, Logger, ItemRepository, FileSystemManager);
+            new FFMpegManager(MediaEncoder, Logger, ItemRepository, FileSystemManager, ServerConfigurationManager);
 
             LocalizedStrings.StringFiles = GetExports<LocalizedStringData>();
 
