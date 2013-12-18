@@ -11,8 +11,8 @@
             <div class="content-primary">
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
                     <a href="metadata.html" data-role="button">Basics</a>
-                    <a href="metadataimages.html" data-role="button" class="ui-btn-active">Image Downloading</a>
-                    <a href="metadataimageextraction.html" data-role="button">Image Extraction</a>
+                    <a href="metadataimages.html" data-role="button">Image Downloading</a>
+                    <a href="metadataimageextraction.html" data-role="button" class="ui-btn-active">Image Extraction</a>
                     <a href="advancedmetadata.html" data-role="button">Advanced</a>
                 </div>
 
@@ -21,7 +21,24 @@
                         <li>
                             <label for="chkVIdeoImages">Enable video image extraction</label>
                             <input id="chkVIdeoImages" name="chkVIdeoImages" type="checkbox" checked="checked" data-mini="true" />
-                            <div class="fieldDescription">For videos that don't already have images, and that we're uanble to find internet images for. This will add some additional time to the initial library scan but will result in a more pleasing presentation.</div>
+                            <div class="fieldDescription">This is for videos that don't already have images, and that we're uanble to find internet images for. This will add some additional time to the initial library scan but will result in a more pleasing presentation.</div>
+                        </li>
+                    </ul>
+                    <h2>Chapter Images</h2>
+                    <ul data-role="listview" class="ulForm">
+                        <li>
+                            <label>Enable chapter image extraction for:</label>
+                            <div data-role="controlgroup">
+                                <input type="checkbox" data-mini="true" id="chkMovies" name="chkMovies" />
+                                <label for="chkMovies">Movies</label>
+
+                                <input type="checkbox" data-mini="true" id="chkEpisodes" name="chkEpisodes" />
+                                <label for="chkEpisodes">TV Episodes</label>
+
+                                <input type="checkbox" data-mini="true" id="chkOtherVideos" name="chkOtherVideos" />
+                                <label for="chkOtherVideos">Other Videos</label>
+                                <div class="fieldDescription">Extracting chapter images will allow clients to display graphical scene selection menus. The process can be slow, cpu-intensive and may require several gigabytes of space. It runs as a nightly scheduled task at 4am, although this is configurable in the scheduled tasks area. It is not recommended to run this task during usage hours.</div>
+                            </div>
                         </li>
                         <li>
                             <button type="submit" data-theme="b" data-icon="ok">
