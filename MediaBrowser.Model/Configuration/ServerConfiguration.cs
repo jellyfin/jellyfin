@@ -234,6 +234,10 @@ namespace MediaBrowser.Model.Configuration
         /// <value>The encoding quality.</value>
         public EncodingQuality EncodingQuality { get; set; }
 
+        public bool EnableMovieChapterImageExtraction { get; set; }
+        public bool EnableEpisodeChapterImageExtraction { get; set; }
+        public bool EnableOtherVideoChapterImageExtraction { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>
@@ -246,6 +250,10 @@ namespace MediaBrowser.Model.Configuration
             EnableHttpLevelLogging = true;
             EnableDashboardResponseCaching = true;
             EnableVideoImageExtraction = true;
+
+            EnableMovieChapterImageExtraction = true;
+            EnableEpisodeChapterImageExtraction = true;
+            EnableOtherVideoChapterImageExtraction = true;
 
 #if (DEBUG)
             EnableDeveloperTools = true;

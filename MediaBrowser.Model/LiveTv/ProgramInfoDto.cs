@@ -114,6 +114,24 @@ namespace MediaBrowser.Model.LiveTv
         /// <value>The user data.</value>
         public UserItemDataDto UserData { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is movie.
+        /// </summary>
+        /// <value><c>true</c> if this instance is movie; otherwise, <c>false</c>.</value>
+        public bool IsMovie { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is sports.
+        /// </summary>
+        /// <value><c>true</c> if this instance is sports; otherwise, <c>false</c>.</value>
+        public bool IsSports { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is series.
+        /// </summary>
+        /// <value><c>true</c> if this instance is series; otherwise, <c>false</c>.</value>
+        public bool IsSeries { get; set; }
+
         public ProgramInfoDto()
         {
             Genres = new List<string>();

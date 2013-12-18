@@ -1,6 +1,4 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -10,6 +8,9 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Logging;
 using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.LiveTv
 {
@@ -43,10 +44,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 ChannelId = GetInternalChannelId(service.Name, info.ChannelId, info.ChannelName).ToString("N"),
                 Status = info.Status,
                 SeriesTimerId = string.IsNullOrEmpty(info.SeriesTimerId) ? null : GetInternalSeriesTimerId(service.Name, info.SeriesTimerId).ToString("N"),
-                RequestedPostPaddingSeconds = info.RequestedPostPaddingSeconds,
-                RequestedPrePaddingSeconds = info.RequestedPrePaddingSeconds,
-                RequiredPostPaddingSeconds = info.RequiredPostPaddingSeconds,
-                RequiredPrePaddingSeconds = info.RequiredPrePaddingSeconds,
+                PrePaddingSeconds = info.PrePaddingSeconds,
+                PostPaddingSeconds = info.PostPaddingSeconds,
+                IsPostPaddingRequired = info.IsPostPaddingRequired,
+                IsPrePaddingRequired = info.IsPrePaddingRequired,
                 ExternalChannelId = info.ChannelId,
                 ExternalSeriesTimerId = info.SeriesTimerId,
                 ServiceName = service.Name,
@@ -76,10 +77,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 Name = info.Name,
                 StartDate = info.StartDate,
                 ExternalId = info.Id,
-                RequestedPostPaddingSeconds = info.RequestedPostPaddingSeconds,
-                RequestedPrePaddingSeconds = info.RequestedPrePaddingSeconds,
-                RequiredPostPaddingSeconds = info.RequiredPostPaddingSeconds,
-                RequiredPrePaddingSeconds = info.RequiredPrePaddingSeconds,
+                PrePaddingSeconds = info.PrePaddingSeconds,
+                PostPaddingSeconds = info.PostPaddingSeconds,
+                IsPostPaddingRequired = info.IsPostPaddingRequired,
+                IsPrePaddingRequired = info.IsPrePaddingRequired,
                 Days = info.Days,
                 Priority = info.Priority,
                 RecordAnyChannel = info.RecordAnyChannel,
@@ -100,33 +101,38 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 dto.ProgramId = GetInternalProgramId(service.Name, info.ProgramId).ToString("N");
             }
 
+            dto.DayPattern = info.Days == null ? null : GetDayPattern(info.Days);
+
+            return dto;
+        }
+
+        public DayPattern? GetDayPattern(List<DayOfWeek> days)
+        {
             DayPattern? pattern = null;
 
-            if (info.Days != null && info.Days.Count > 0)
+            if (days.Count > 0)
             {
-                if (info.Days.Count == 7)
+                if (days.Count == 7)
                 {
                     pattern = DayPattern.Daily;
                 }
-                else if (info.Days.Count == 2)
+                else if (days.Count == 2)
                 {
-                    if (info.Days.Contains(DayOfWeek.Saturday) && info.Days.Contains(DayOfWeek.Sunday))
+                    if (days.Contains(DayOfWeek.Saturday) && days.Contains(DayOfWeek.Sunday))
                     {
                         pattern = DayPattern.Weekends;
                     }
                 }
-                else if (info.Days.Count == 5)
+                else if (days.Count == 5)
                 {
-                    if (info.Days.Contains(DayOfWeek.Monday) && info.Days.Contains(DayOfWeek.Tuesday) && info.Days.Contains(DayOfWeek.Wednesday) && info.Days.Contains(DayOfWeek.Thursday) && info.Days.Contains(DayOfWeek.Friday))
+                    if (days.Contains(DayOfWeek.Monday) && days.Contains(DayOfWeek.Tuesday) && days.Contains(DayOfWeek.Wednesday) && days.Contains(DayOfWeek.Thursday) && days.Contains(DayOfWeek.Friday))
                     {
                         pattern = DayPattern.Weekdays;
                     }
                 }
             }
 
-            dto.DayPattern = pattern;
-
-            return dto;
+            return pattern;
         }
 
         public RecordingInfoDto GetRecordingInfoDto(RecordingInfo info, ILiveTvService service, User user = null)
@@ -228,7 +234,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 AspectRatio = program.AspectRatio,
                 IsRepeat = program.IsRepeat,
                 EpisodeTitle = program.EpisodeTitle,
-                ChannelName = program.ChannelName
+                ChannelName = program.ChannelName,
+                IsMovie = program.IsMovie,
+                IsSeries = program.IsSeries,
+                IsSports = program.IsSports
             };
 
             if (user != null)
@@ -306,10 +315,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 StartDate = dto.StartDate,
                 Status = dto.Status,
                 SeriesTimerId = dto.ExternalSeriesTimerId,
-                RequestedPostPaddingSeconds = dto.RequestedPostPaddingSeconds,
-                RequestedPrePaddingSeconds = dto.RequestedPrePaddingSeconds,
-                RequiredPostPaddingSeconds = dto.RequiredPostPaddingSeconds,
-                RequiredPrePaddingSeconds = dto.RequiredPrePaddingSeconds,
+                PrePaddingSeconds = dto.PrePaddingSeconds,
+                PostPaddingSeconds = dto.PostPaddingSeconds,
+                IsPostPaddingRequired = dto.IsPostPaddingRequired,
+                IsPrePaddingRequired = dto.IsPrePaddingRequired,
                 Priority = dto.Priority
             };
 
@@ -354,10 +363,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 EndDate = dto.EndDate,
                 Name = dto.Name,
                 StartDate = dto.StartDate,
-                RequestedPostPaddingSeconds = dto.RequestedPostPaddingSeconds,
-                RequestedPrePaddingSeconds = dto.RequestedPrePaddingSeconds,
-                RequiredPostPaddingSeconds = dto.RequiredPostPaddingSeconds,
-                RequiredPrePaddingSeconds = dto.RequiredPrePaddingSeconds,
+                PrePaddingSeconds = dto.PrePaddingSeconds,
+                PostPaddingSeconds = dto.PostPaddingSeconds,
+                IsPostPaddingRequired = dto.IsPostPaddingRequired,
+                IsPrePaddingRequired = dto.IsPrePaddingRequired,
                 Days = dto.Days,
                 Priority = dto.Priority,
                 RecordAnyChannel = dto.RecordAnyChannel,

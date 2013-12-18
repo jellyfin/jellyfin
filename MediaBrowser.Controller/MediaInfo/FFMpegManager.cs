@@ -1,7 +1,10 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.MediaInfo;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -20,7 +23,7 @@ namespace MediaBrowser.Controller.MediaInfo
     /// </summary>
     public class FFMpegManager
     {
-        private readonly IServerApplicationPaths _appPaths;
+        private readonly IServerConfigurationManager _config;
         private readonly IMediaEncoder _encoder;
         private readonly ILogger _logger;
         private readonly IItemRepository _itemRepo;
@@ -32,18 +35,17 @@ namespace MediaBrowser.Controller.MediaInfo
         /// <summary>
         /// Initializes a new instance of the <see cref="FFMpegManager" /> class.
         /// </summary>
-        /// <param name="appPaths">The app paths.</param>
         /// <param name="encoder">The encoder.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="itemRepo">The item repo.</param>
         /// <exception cref="System.ArgumentNullException">zipClient</exception>
-        public FFMpegManager(IServerApplicationPaths appPaths, IMediaEncoder encoder, ILogger logger, IItemRepository itemRepo, IFileSystem fileSystem)
+        public FFMpegManager(IMediaEncoder encoder, ILogger logger, IItemRepository itemRepo, IFileSystem fileSystem, IServerConfigurationManager config)
         {
-            _appPaths = appPaths;
             _encoder = encoder;
             _logger = logger;
             _itemRepo = itemRepo;
             _fileSystem = fileSystem;
+            _config = config;
 
             // TODO: Remove this static instance
             Instance = this;
@@ -57,7 +59,7 @@ namespace MediaBrowser.Controller.MediaInfo
         {
             get
             {
-                return Path.Combine(_appPaths.DataPath, "chapter-images");
+                return Path.Combine(_config.ApplicationPaths.DataPath, "chapter-images");
             }
         }
 
@@ -69,8 +71,41 @@ namespace MediaBrowser.Controller.MediaInfo
         {
             get
             {
-                return Path.Combine(_appPaths.CachePath, "subtitles");
+                return Path.Combine(_config.ApplicationPaths.CachePath, "subtitles");
             }
+        }
+
+        /// <summary>
+        /// Determines whether [is eligible for chapter image extraction] [the specified video].
+        /// </summary>
+        /// <param name="video">The video.</param>
+        /// <returns><c>true</c> if [is eligible for chapter image extraction] [the specified video]; otherwise, <c>false</c>.</returns>
+        private bool IsEligibleForChapterImageExtraction(Video video)
+        {
+            if (video is Movie)
+            {
+                if (!_config.Configuration.EnableMovieChapterImageExtraction)
+                {
+                    return false;
+                }
+            }
+            else if (video is Episode)
+            {
+                if (!_config.Configuration.EnableEpisodeChapterImageExtraction)
+                {
+                    return false;
+                }
+            }
+            else 
+            {
+                if (!_config.Configuration.EnableOtherVideoChapterImageExtraction)
+                {
+                    return false;
+                }
+            }
+
+            // Can't extract images if there are no video streams
+            return video.DefaultVideoStreamIndex.HasValue;
         }
 
         /// <summary>
@@ -90,8 +125,7 @@ namespace MediaBrowser.Controller.MediaInfo
         /// <exception cref="System.ArgumentNullException"></exception>
         public async Task<bool> PopulateChapterImages(Video video, List<ChapterInfo> chapters, bool extractImages, bool saveChapters, CancellationToken cancellationToken)
         {
-            // Can't extract images if there are no video streams
-            if (!video.DefaultVideoStreamIndex.HasValue)
+            if (!IsEligibleForChapterImageExtraction(video))
             {
                 return true;
             }

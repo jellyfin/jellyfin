@@ -36,7 +36,15 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{TimerInfo}.</returns>
-        Task<TimerInfoDto> GetNewTimerDefaults(CancellationToken cancellationToken);
+        Task<SeriesTimerInfoDto> GetNewTimerDefaults(CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the new timer defaults.
+        /// </summary>
+        /// <param name="programId">The program identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{SeriesTimerInfoDto}.</returns>
+        Task<SeriesTimerInfoDto> GetNewTimerDefaults(string programId, CancellationToken cancellationToken);
         
         /// <summary>
         /// Deletes the recording.
