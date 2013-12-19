@@ -818,7 +818,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 {
                     dto.ParentLogoItemId = GetDtoId(parentWithLogo);
 
-                    dto.ParentLogoImageTag = GetImageCacheTag(parentWithLogo, ImageType.Logo, parentWithLogo.GetImage(ImageType.Logo));
+                    dto.ParentLogoImageTag = GetImageCacheTag(parentWithLogo, ImageType.Logo, parentWithLogo.GetImagePath(ImageType.Logo));
                 }
             }
 
@@ -831,7 +831,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 {
                     dto.ParentArtItemId = GetDtoId(parentWithImage);
 
-                    dto.ParentArtImageTag = GetImageCacheTag(parentWithImage, ImageType.Art, parentWithImage.GetImage(ImageType.Art));
+                    dto.ParentArtImageTag = GetImageCacheTag(parentWithImage, ImageType.Art, parentWithImage.GetImagePath(ImageType.Art));
                 }
             }
 
@@ -844,7 +844,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 {
                     dto.ParentThumbItemId = GetDtoId(parentWithImage);
 
-                    dto.ParentThumbImageTag = GetImageCacheTag(parentWithImage, ImageType.Thumb, parentWithImage.GetImage(ImageType.Thumb));
+                    dto.ParentThumbImageTag = GetImageCacheTag(parentWithImage, ImageType.Thumb, parentWithImage.GetImagePath(ImageType.Thumb));
                 }
             }
 
@@ -1037,7 +1037,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                 if (series.HasImage(ImageType.Thumb))
                 {
-                    dto.SeriesThumbImageTag = GetImageCacheTag(series, ImageType.Thumb, series.GetImage(ImageType.Thumb));
+                    dto.SeriesThumbImageTag = GetImageCacheTag(series, ImageType.Thumb, series.GetImagePath(ImageType.Thumb));
                 }
 
                 var imagePath = series.PrimaryImagePath;

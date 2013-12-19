@@ -1,14 +1,13 @@
-﻿using System.IO;
-using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Model.Entities;
+﻿using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
+using System.Collections.Generic;
+using System.IO;
 
 namespace MediaBrowser.Api.Playback
 {
     public class StreamState
     {
-        public string Url { get; set; }
+        public string RequestedUrl { get; set; }
 
         public StreamRequest Request { get; set; }
 
@@ -29,12 +28,22 @@ namespace MediaBrowser.Api.Playback
 
         public MediaStream SubtitleStream { get; set; }
 
-        public BaseItem Item { get; set; }
-
         /// <summary>
         /// Gets or sets the iso mount.
         /// </summary>
         /// <value>The iso mount.</value>
         public IIsoMount IsoMount { get; set; }
+
+        public string MediaPath { get; set; }
+
+        public bool IsRemote { get; set; }
+
+        public bool IsInputVideo { get; set; }
+
+        public VideoType VideoType { get; set; }
+
+        public IsoType? IsoType { get; set; }
+
+        public List<string> PlayableStreamFileNames { get; set; }
     }
 }

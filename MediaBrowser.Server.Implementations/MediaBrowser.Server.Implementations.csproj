@@ -153,6 +153,8 @@
     <Compile Include="LiveTv\ChannelImageProvider.cs" />
     <Compile Include="LiveTv\LiveTvDtoService.cs" />
     <Compile Include="LiveTv\LiveTvManager.cs" />
+    <Compile Include="LiveTv\ProgramImageProvider.cs" />
+    <Compile Include="LiveTv\RecordingImageProvider.cs" />
     <Compile Include="LiveTv\RefreshChannelsScheduledTask.cs" />
     <Compile Include="Localization\LocalizationManager.cs" />
     <Compile Include="MediaEncoder\MediaEncoder.cs" />

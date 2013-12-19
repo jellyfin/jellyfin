@@ -9,7 +9,7 @@ namespace MediaBrowser.Controller.Drawing
 {
     public class ImageProcessingOptions
     {
-        public BaseItem Item { get; set; }
+        public IHasImages Item { get; set; }
 
         public ImageType ImageType { get; set; }
 

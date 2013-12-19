@@ -115,7 +115,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (video != null)
             {
-                inputPath = MediaEncoderHelpers.GetInputArgument(video, isoMount, out type);
+                inputPath = MediaEncoderHelpers.GetInputArgument(video.Path, video.LocationType == LocationType.Remote, video.VideoType, video.IsoType, isoMount, video.PlayableStreamFileNames, out type);
             }
 
             return await MediaEncoder.GetMediaInfo(inputPath, type, cancellationToken).ConfigureAwait(false);

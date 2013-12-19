@@ -144,8 +144,16 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <param name="id">The identifier.</param>
         /// <returns>Channel.</returns>
-        Channel GetChannel(string id);
+        LiveTvChannel GetInternalChannel(string id);
 
+        /// <summary>
+        /// Gets the recording.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>LiveTvRecording.</returns>
+        Task<LiveTvRecording> GetInternalRecording(string id, CancellationToken cancellationToken);
+        
         /// <summary>
         /// Gets the program.
         /// </summary>

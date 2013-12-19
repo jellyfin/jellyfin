@@ -146,7 +146,7 @@ namespace MediaBrowser.Api
 
         private async Task UpdateItem(UpdateChannel request)
         {
-            var item = _liveTv.GetChannel(request.Id);
+            var item = _liveTv.GetInternalChannel(request.Id);
 
             UpdateItem(request, item);
 

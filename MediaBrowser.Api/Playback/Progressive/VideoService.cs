@@ -3,7 +3,6 @@ using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.IO;
@@ -89,9 +88,7 @@ namespace MediaBrowser.Api.Playback.Progressive
         /// <returns>System.String.</returns>
         protected override string GetCommandLineArguments(string outputPath, StreamState state, bool performSubtitleConversions)
         {
-            var video = (Video)state.Item;
-
-            var probeSize = GetProbeSizeArgument(state.Item);
+            var probeSize = GetProbeSizeArgument(state.MediaPath, state.IsInputVideo, state.VideoType, state.IsoType);
 
             // Get the output codec name
             var videoCodec = GetVideoCodec(state.VideoRequest);
@@ -108,9 +105,9 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             return string.Format("{0} {1} {2} -i {3}{4}{5} {6} {7} -threads {8} {9}{10} \"{11}\"",
                 probeSize,
-                GetUserAgentParam(state.Item),
+                GetUserAgentParam(state.MediaPath),
                 GetFastSeekCommandLineParameter(state.Request),
-                GetInputArgument(video, state.IsoMount),
+                GetInputArgument(state),
                 GetSlowSeekCommandLineParameter(state.Request),
                 keyFrame,
                 GetMapArgs(state),

@@ -47,7 +47,7 @@ namespace MediaBrowser.Controller.Drawing
         /// <param name="item">The item.</param>
         /// <param name="imageType">Type of the image.</param>
         /// <returns>IEnumerable{IImageEnhancer}.</returns>
-        IEnumerable<IImageEnhancer> GetSupportedEnhancers(BaseItem item, ImageType imageType);
+        IEnumerable<IImageEnhancer> GetSupportedEnhancers(IHasImages item, ImageType imageType);
 
         /// <summary>
         /// Gets the image cache tag.
@@ -56,7 +56,7 @@ namespace MediaBrowser.Controller.Drawing
         /// <param name="imageType">Type of the image.</param>
         /// <param name="imagePath">The image path.</param>
         /// <returns>Guid.</returns>
-        Guid GetImageCacheTag(BaseItem item, ImageType imageType, string imagePath);
+        Guid GetImageCacheTag(IHasImages item, ImageType imageType, string imagePath);
 
         /// <summary>
         /// Gets the image cache tag.
@@ -67,7 +67,7 @@ namespace MediaBrowser.Controller.Drawing
         /// <param name="dateModified">The date modified.</param>
         /// <param name="imageEnhancers">The image enhancers.</param>
         /// <returns>Guid.</returns>
-        Guid GetImageCacheTag(BaseItem item, ImageType imageType, string originalImagePath, DateTime dateModified,
+        Guid GetImageCacheTag(IHasImages item, ImageType imageType, string originalImagePath, DateTime dateModified,
                               List<IImageEnhancer> imageEnhancers);
 
         /// <summary>
@@ -85,6 +85,6 @@ namespace MediaBrowser.Controller.Drawing
         /// <param name="imageType">Type of the image.</param>
         /// <param name="imageIndex">Index of the image.</param>
         /// <returns>Task{System.String}.</returns>
-        Task<string> GetEnhancedImage(BaseItem item, ImageType imageType, int imageIndex);
+        Task<string> GetEnhancedImage(IHasImages item, ImageType imageType, int imageIndex);
     }
 }

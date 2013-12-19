@@ -85,6 +85,7 @@
     <Compile Include="Entities\IHasAspectRatio.cs" />
     <Compile Include="Entities\IHasBudget.cs" />
     <Compile Include="Entities\IHasCriticRating.cs" />
+    <Compile Include="Entities\IHasImages.cs" />
     <Compile Include="Entities\IHasLanguage.cs" />
     <Compile Include="Entities\IHasMediaStreams.cs" />
     <Compile Include="Entities\IHasProductionLocations.cs" />
@@ -94,6 +95,7 @@
     <Compile Include="Entities\IHasTags.cs" />
     <Compile Include="Entities\IHasThemeMedia.cs" />
     <Compile Include="Entities\IHasTrailers.cs" />
+    <Compile Include="Entities\IHasUserData.cs" />
     <Compile Include="Entities\IItemByName.cs" />
     <Compile Include="Entities\ILibraryItem.cs" />
     <Compile Include="Entities\ImageSourceInfo.cs" />
@@ -106,11 +108,13 @@
     <Compile Include="Library\ItemUpdateType.cs" />
     <Compile Include="Library\IUserDataManager.cs" />
     <Compile Include="Library\UserDataSaveEventArgs.cs" />
-    <Compile Include="LiveTv\Channel.cs" />
+    <Compile Include="LiveTv\LiveTvChannel.cs" />
     <Compile Include="LiveTv\ChannelInfo.cs" />
     <Compile Include="LiveTv\ILiveTvManager.cs" />
     <Compile Include="LiveTv\ILiveTvService.cs" />
     <Compile Include="LiveTv\ImageResponseInfo.cs" />
+    <Compile Include="LiveTv\LiveTvProgram.cs" />
+    <Compile Include="LiveTv\LiveTvRecording.cs" />
     <Compile Include="LiveTv\ProgramInfo.cs" />
     <Compile Include="LiveTv\RecordingInfo.cs" />
     <Compile Include="LiveTv\SeriesTimerInfo.cs" />

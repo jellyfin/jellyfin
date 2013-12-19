@@ -216,6 +216,48 @@ namespace MediaBrowser.Common.Implementations.IO
 
             return new FileStream(path, mode, access, share);
         }
+
+        /// <summary>
+        /// Swaps the files.
+        /// </summary>
+        /// <param name="file1">The file1.</param>
+        /// <param name="file2">The file2.</param>
+        public void SwapFiles(string file1, string file2)
+        {
+            var temp1 = Path.GetTempFileName();
+            var temp2 = Path.GetTempFileName();
+
+            // Copying over will fail against hidden files
+            RemoveHiddenAttribute(file1);
+            RemoveHiddenAttribute(file2);
+
+            File.Copy(file1, temp1, true);
+            File.Copy(file2, temp2, true);
+
+            File.Copy(temp1, file2, true);
+            File.Copy(temp2, file1, true);
+
+            File.Delete(temp1);
+            File.Delete(temp2);
+        }
+
+        /// <summary>
+        /// Removes the hidden attribute.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        private void RemoveHiddenAttribute(string path)
+        {
+            var currentFile = new FileInfo(path);
+
+            // This will fail if the file is hidden
+            if (currentFile.Exists)
+            {
+                if ((currentFile.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
+                {
+                    currentFile.Attributes &= ~FileAttributes.Hidden;
+                }
+            }
+        }
     }
 
     /// <summary>

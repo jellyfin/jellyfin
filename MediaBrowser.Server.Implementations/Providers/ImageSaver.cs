@@ -118,6 +118,8 @@ namespace MediaBrowser.Server.Implementations.Providers
                 imageIndex = hasScreenshots.ScreenshotImagePaths.Count;
             }
 
+            var index = imageIndex ?? 0;
+
             var paths = GetSavePaths(item, type, imageIndex, mimeType, saveLocally);
 
             // If there are more than one output paths, the stream will need to be seekable
@@ -132,7 +134,7 @@ namespace MediaBrowser.Server.Implementations.Providers
                 source = memoryStream;
             }
 
-            var currentPath = GetCurrentImagePath(item, type, imageIndex);
+            var currentPath = GetCurrentImagePath(item, type, index);
 
             using (source)
             {
@@ -152,7 +154,7 @@ namespace MediaBrowser.Server.Implementations.Providers
                 }
             }
 
-            // Set the path into the BaseItem
+            // Set the path into the item
             SetImagePath(item, type, imageIndex, paths[0], sourceUrl);
 
             // Delete the current path
@@ -257,27 +259,9 @@ namespace MediaBrowser.Server.Implementations.Providers
         /// or
         /// imageIndex
         /// </exception>
-        private string GetCurrentImagePath(BaseItem item, ImageType type, int? imageIndex)
+        private string GetCurrentImagePath(IHasImages item, ImageType type, int imageIndex)
         {
-            switch (type)
-            {
-                case ImageType.Screenshot:
-
-                    var hasScreenshots = (IHasScreenshots)item;
-                    if (!imageIndex.HasValue)
-                    {
-                        throw new ArgumentNullException("imageIndex");
-                    }
-                    return hasScreenshots.ScreenshotImagePaths.Count > imageIndex.Value ? hasScreenshots.ScreenshotImagePaths[imageIndex.Value] : null;
-                case ImageType.Backdrop:
-                    if (!imageIndex.HasValue)
-                    {
-                        throw new ArgumentNullException("imageIndex");
-                    }
-                    return item.BackdropImagePaths.Count > imageIndex.Value ? item.BackdropImagePaths[imageIndex.Value] : null;
-                default:
-                    return item.GetImage(type);
-            }
+            return item.GetImagePath(type, imageIndex);
         }
 
         /// <summary>
@@ -336,7 +320,7 @@ namespace MediaBrowser.Server.Implementations.Providers
                     }
                     break;
                 default:
-                    item.SetImage(type, path);
+                    item.SetImagePath(type, path);
                     break;
             }
         }
@@ -593,7 +577,7 @@ namespace MediaBrowser.Server.Implementations.Providers
         /// <param name="imageFilename">The image filename.</param>
         /// <param name="extension">The extension.</param>
         /// <returns>System.String.</returns>
-        private string GetSavePathForItemInMixedFolder(BaseItem item, ImageType type, string imageFilename, string extension)
+        private string GetSavePathForItemInMixedFolder(IHasImages item, ImageType type, string imageFilename, string extension)
         {
             if (type == ImageType.Primary)
             {

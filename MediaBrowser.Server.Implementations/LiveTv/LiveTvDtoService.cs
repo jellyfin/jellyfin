@@ -135,11 +135,29 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return pattern;
         }
 
-        public RecordingInfoDto GetRecordingInfoDto(RecordingInfo info, ILiveTvService service, User user = null)
+        /// <summary>
+        /// Convert the provider 0-5 scale to our 0-10 scale
+        /// </summary>
+        /// <param name="val"></param>
+        /// <returns></returns>
+        private float? GetClientCommunityRating(float? val)
         {
+            if (!val.HasValue)
+            {
+                return null;
+            }
+
+            return val.Value * 2;
+        }
+
+        public RecordingInfoDto GetRecordingInfoDto(LiveTvRecording recording, ILiveTvService service, User user = null)
+        {
+            var info = recording.RecordingInfo;
+
             var dto = new RecordingInfoDto
             {
                 Id = GetInternalRecordingId(service.Name, info.Id).ToString("N"),
+                Type = recording.GetClientTypeName(),
                 ChannelName = info.ChannelName,
                 Overview = info.Overview,
                 EndDate = info.EndDate,
@@ -154,7 +172,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 EpisodeTitle = info.EpisodeTitle,
                 ChannelType = info.ChannelType,
                 MediaType = info.ChannelType == ChannelType.Radio ? MediaType.Audio : MediaType.Video,
-                CommunityRating = info.CommunityRating,
+                CommunityRating = GetClientCommunityRating(info.CommunityRating),
                 OfficialRating = info.OfficialRating,
                 Audio = info.Audio,
                 IsHD = info.IsHD,
@@ -162,9 +180,16 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 Url = info.Url
             };
 
+            var imageTag = GetImageTag(recording);
+
+            if (imageTag.HasValue)
+            {
+                dto.ImageTags[ImageType.Primary] = imageTag.Value;
+            }
+
             if (user != null)
             {
-                //dto.UserData = _dtoService.GetUserItemDataDto(_userDataManager.GetUserData(user.Id, info.GetUserDataKey()));
+                dto.UserData = _dtoService.GetUserItemDataDto(_userDataManager.GetUserData(user.Id, recording.GetUserDataKey()));
             }
 
             var duration = info.EndDate - info.StartDate;
@@ -184,18 +209,20 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         /// <param name="info">The info.</param>
         /// <param name="user">The user.</param>
         /// <returns>ChannelInfoDto.</returns>
-        public ChannelInfoDto GetChannelInfoDto(Channel info, User user = null)
+        public ChannelInfoDto GetChannelInfoDto(LiveTvChannel info, User user = null)
         {
+            var channelInfo = info.ChannelInfo;
+
             var dto = new ChannelInfoDto
             {
                 Name = info.Name,
                 ServiceName = info.ServiceName,
-                ChannelType = info.ChannelType,
-                Number = info.ChannelNumber,
-                Type = info.GetType().Name,
+                ChannelType = channelInfo.ChannelType,
+                Number = channelInfo.Number,
+                Type = info.GetClientTypeName(),
                 Id = info.Id.ToString("N"),
                 MediaType = info.MediaType,
-                ExternalId = info.ChannelId
+                ExternalId = channelInfo.Id
             };
 
             if (user != null)
@@ -203,7 +230,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 dto.UserData = _dtoService.GetUserItemDataDto(_userDataManager.GetUserData(user.Id, info.GetUserDataKey()));
             }
 
-            var imageTag = GetLogoImageTag(info);
+            var imageTag = GetImageTag(info);
 
             if (imageTag.HasValue)
             {
@@ -213,7 +240,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return dto;
         }
 
-        public ProgramInfoDto GetProgramInfoDto(ProgramInfo program, Channel channel, User user = null)
+        public ProgramInfoDto GetProgramInfoDto(ProgramInfo program, LiveTvChannel channel, User user = null)
         {
             var dto = new ProgramInfoDto
             {
@@ -230,7 +257,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 IsHD = program.IsHD,
                 OriginalAirDate = program.OriginalAirDate,
                 Audio = program.Audio,
-                CommunityRating = program.CommunityRating,
+                CommunityRating = GetClientCommunityRating(program.CommunityRating),
                 AspectRatio = program.AspectRatio,
                 IsRepeat = program.IsRepeat,
                 EpisodeTitle = program.EpisodeTitle,
@@ -248,7 +275,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return dto;
         }
 
-        private Guid? GetLogoImageTag(Channel info)
+        private Guid? GetImageTag(BaseItem info)
         {
             var path = info.PrimaryImagePath;
 
@@ -263,7 +290,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error getting channel image info for {0}", ex, info.Name);
+                _logger.ErrorException("Error getting image info for {0}", ex, info.Name);
             }
 
             return null;
@@ -273,7 +300,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         {
             var name = serviceName + externalId + channelName;
 
-            return name.ToLower().GetMBId(typeof(Channel));
+            return name.ToLower().GetMBId(typeof(LiveTvChannel));
         }
 
         public Guid GetInternalTimerId(string serviceName, string externalId)
@@ -314,41 +341,53 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 Name = dto.Name,
                 StartDate = dto.StartDate,
                 Status = dto.Status,
-                SeriesTimerId = dto.ExternalSeriesTimerId,
                 PrePaddingSeconds = dto.PrePaddingSeconds,
                 PostPaddingSeconds = dto.PostPaddingSeconds,
                 IsPostPaddingRequired = dto.IsPostPaddingRequired,
                 IsPrePaddingRequired = dto.IsPrePaddingRequired,
-                Priority = dto.Priority
+                Priority = dto.Priority,
+                SeriesTimerId = dto.ExternalSeriesTimerId,
+                ProgramId = dto.ExternalProgramId,
+                ChannelId = dto.ExternalChannelId,
+                Id = dto.ExternalId
             };
 
             // Convert internal server id's to external tv provider id's
-            if (!isNew && !string.IsNullOrEmpty(dto.Id))
+            if (!isNew && !string.IsNullOrEmpty(dto.Id) && string.IsNullOrEmpty(info.Id))
             {
-                var timer = await liveTv.GetTimer(dto.Id, cancellationToken).ConfigureAwait(false);
+                var timer = await liveTv.GetSeriesTimer(dto.Id, cancellationToken).ConfigureAwait(false);
 
                 info.Id = timer.ExternalId;
             }
 
-            if (!string.IsNullOrEmpty(dto.SeriesTimerId))
-            {
-                var timer = await liveTv.GetSeriesTimer(dto.SeriesTimerId, cancellationToken).ConfigureAwait(false);
-
-                info.SeriesTimerId = timer.ExternalId;
-            }
-
-            if (!string.IsNullOrEmpty(dto.ChannelId))
+            if (!string.IsNullOrEmpty(dto.ChannelId) && string.IsNullOrEmpty(info.ChannelId))
             {
                 var channel = await liveTv.GetChannel(dto.ChannelId, cancellationToken).ConfigureAwait(false);
 
-                info.ChannelId = channel.ExternalId;
+                if (channel != null)
+                {
+                    info.ChannelId = channel.ExternalId;
+                }
             }
 
-            if (!string.IsNullOrEmpty(dto.ProgramId))
+            if (!string.IsNullOrEmpty(dto.ProgramId) && string.IsNullOrEmpty(info.ProgramId))
             {
                 var program = await liveTv.GetProgram(dto.ProgramId, cancellationToken).ConfigureAwait(false);
 
-                info.ProgramId = program.ExternalId;
+                if (program != null)
+                {
+                    info.ProgramId = program.ExternalId;
+                }
+            }
+
+            if (!string.IsNullOrEmpty(dto.SeriesTimerId) && string.IsNullOrEmpty(info.SeriesTimerId))
+            {
+                var timer = await liveTv.GetSeriesTimer(dto.SeriesTimerId, cancellationToken).ConfigureAwait(false);
+
+                if (timer != null)
+                {
+                    info.SeriesTimerId = timer.ExternalId;
+                }
             }
 
             return info;
@@ -371,29 +410,38 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 Priority = dto.Priority,
                 RecordAnyChannel = dto.RecordAnyChannel,
                 RecordAnyTime = dto.RecordAnyTime,
-                RecordNewOnly = dto.RecordNewOnly
+                RecordNewOnly = dto.RecordNewOnly,
+                ProgramId = dto.ExternalProgramId,
+                ChannelId = dto.ExternalChannelId,
+                Id = dto.ExternalId
             };
 
             // Convert internal server id's to external tv provider id's
-            if (!isNew && !string.IsNullOrEmpty(dto.Id))
+            if (!isNew && !string.IsNullOrEmpty(dto.Id) && string.IsNullOrEmpty(info.Id))
             {
                 var timer = await liveTv.GetSeriesTimer(dto.Id, cancellationToken).ConfigureAwait(false);
 
                 info.Id = timer.ExternalId;
             }
 
-            if (!string.IsNullOrEmpty(dto.ChannelId))
+            if (!string.IsNullOrEmpty(dto.ChannelId) && string.IsNullOrEmpty(info.ChannelId))
             {
                 var channel = await liveTv.GetChannel(dto.ChannelId, cancellationToken).ConfigureAwait(false);
 
-                info.ChannelId = channel.ExternalId;
+                if (channel != null)
+                {
+                    info.ChannelId = channel.ExternalId;
+                }
             }
 
-            if (!string.IsNullOrEmpty(dto.ProgramId))
+            if (!string.IsNullOrEmpty(dto.ProgramId) && string.IsNullOrEmpty(info.ProgramId))
             {
                 var program = await liveTv.GetProgram(dto.ProgramId, cancellationToken).ConfigureAwait(false);
 
-                info.ProgramId = program.ExternalId;
+                if (program != null)
+                {
+                    info.ProgramId = program.ExternalId;
+                }
             }
 
             return info;

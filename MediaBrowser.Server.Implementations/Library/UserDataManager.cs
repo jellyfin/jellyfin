@@ -49,7 +49,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// userId
         /// or
         /// key</exception>
-        public async Task SaveUserData(Guid userId, BaseItem item, UserItemData userData, UserDataSaveReason reason, CancellationToken cancellationToken)
+        public async Task SaveUserData(Guid userId, IHasUserData item, UserItemData userData, UserDataSaveReason reason, CancellationToken cancellationToken)
         {
             if (userData == null)
             {

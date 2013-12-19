@@ -28,7 +28,7 @@ namespace MediaBrowser.Providers.LiveTv
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         public override bool Supports(BaseItem item)
         {
-            return item is Channel;
+            return item is LiveTvChannel;
         }
 
         /// <summary>
@@ -74,7 +74,7 @@ namespace MediaBrowser.Providers.LiveTv
 
                 try
                 {
-                    new BaseItemXmlParser<Channel>(Logger).Fetch((Channel)item, path, cancellationToken);
+                    new BaseItemXmlParser<LiveTvChannel>(Logger).Fetch((LiveTvChannel)item, path, cancellationToken);
                 }
                 finally
                 {

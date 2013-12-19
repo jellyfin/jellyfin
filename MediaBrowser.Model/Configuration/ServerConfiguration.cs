@@ -252,8 +252,8 @@ namespace MediaBrowser.Model.Configuration
             EnableVideoImageExtraction = true;
 
             EnableMovieChapterImageExtraction = true;
-            EnableEpisodeChapterImageExtraction = true;
-            EnableOtherVideoChapterImageExtraction = true;
+            EnableEpisodeChapterImageExtraction = false;
+            EnableOtherVideoChapterImageExtraction = false;
 
 #if (DEBUG)
             EnableDeveloperTools = true;

@@ -1,16 +1,12 @@
-﻿using MediaBrowser.Api.Images;
-using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using System.Collections.Generic;
 using System.IO;
@@ -51,9 +47,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             // Try to infer based on the desired video codec
             if (videoRequest != null && videoRequest.VideoCodec.HasValue)
             {
-                var video = state.Item as Video;
-
-                if (video != null)
+                if (state.IsInputVideo)
                 {
                     switch (videoRequest.VideoCodec.Value)
                     {
@@ -72,9 +66,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             // Try to infer based on the desired audio codec
             if (state.Request.AudioCodec.HasValue)
             {
-                var audio = state.Item as Audio;
-
-                if (audio != null)
+                if (!state.IsInputVideo)
                 {
                     switch (state.Request.AudioCodec.Value)
                     {
@@ -188,16 +180,11 @@ namespace MediaBrowser.Api.Playback.Progressive
         {
             var state = GetState(request);
 
-            if (request.AlbumArt)
-            {
-                return GetAlbumArtResponse(state);
-            }
-
             var responseHeaders = new Dictionary<string, string>();
 
-            if (request.Static && state.Item.LocationType == LocationType.Remote)
+            if (request.Static && state.IsRemote)
             {
-                return GetStaticRemoteStreamResult(state.Item, responseHeaders, isHeadRequest).Result;
+                return GetStaticRemoteStreamResult(state.MediaPath, responseHeaders, isHeadRequest).Result;
             }
 
             var outputPath = GetOutputFilePath(state);
@@ -210,7 +197,7 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             if (request.Static)
             {
-                return ResultFactory.GetStaticFileResult(Request, state.Item.Path, FileShare.Read, responseHeaders, isHeadRequest);
+                return ResultFactory.GetStaticFileResult(Request, state.MediaPath, FileShare.Read, responseHeaders, isHeadRequest);
             }
 
             if (outputPathExists && !ApiEntryPoint.Instance.HasActiveTranscodingJob(outputPath, TranscodingJobType.Progressive))
@@ -224,19 +211,19 @@ namespace MediaBrowser.Api.Playback.Progressive
         /// <summary>
         /// Gets the static remote stream result.
         /// </summary>
-        /// <param name="item">The item.</param>
+        /// <param name="mediaPath">The media path.</param>
         /// <param name="responseHeaders">The response headers.</param>
         /// <param name="isHeadRequest">if set to <c>true</c> [is head request].</param>
         /// <returns>Task{System.Object}.</returns>
-        private async Task<object> GetStaticRemoteStreamResult(BaseItem item, Dictionary<string, string> responseHeaders, bool isHeadRequest)
+        private async Task<object> GetStaticRemoteStreamResult(string mediaPath, Dictionary<string, string> responseHeaders, bool isHeadRequest)
         {
             responseHeaders["Accept-Ranges"] = "none";
 
             var httpClient = new HttpClient();
 
-            using (var message = new HttpRequestMessage(HttpMethod.Get, item.Path))
+            using (var message = new HttpRequestMessage(HttpMethod.Get, mediaPath))
             {
-                var useragent = GetUserAgent(item);
+                var useragent = GetUserAgent(mediaPath);
 
                 if (!string.IsNullOrEmpty(useragent))
                 {
@@ -270,47 +257,6 @@ namespace MediaBrowser.Api.Playback.Progressive
 
                 return result;
             }
-        }
-
-        /// <summary>
-        /// Gets the album art response.
-        /// </summary>
-        /// <param name="state">The state.</param>
-        /// <returns>System.Object.</returns>
-        private object GetAlbumArtResponse(StreamState state)
-        {
-            var request = new GetItemImage
-            {
-                MaxWidth = 800,
-                MaxHeight = 800,
-                Type = ImageType.Primary,
-                Id = state.Item.Id.ToString()
-            };
-
-            // Try and find some image to return
-            if (!state.Item.HasImage(ImageType.Primary))
-            {
-                if (state.Item.HasImage(ImageType.Backdrop))
-                {
-                    request.Type = ImageType.Backdrop;
-                }
-                else if (state.Item.HasImage(ImageType.Thumb))
-                {
-                    request.Type = ImageType.Thumb;
-                }
-                else if (state.Item.HasImage(ImageType.Logo))
-                {
-                    request.Type = ImageType.Logo;
-                }
-            }
-
-            return new ImageService(UserManager, LibraryManager, ServerConfigurationManager.ApplicationPaths, null, ItemRepository, DtoService, ImageProcessor, null)
-            {
-                Logger = Logger,
-                Request = Request,
-                ResultFactory = ResultFactory
-
-            }.Get(request);
         }
 
         /// <summary>

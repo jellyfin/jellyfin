@@ -4,7 +4,6 @@ using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
@@ -247,7 +246,7 @@ namespace MediaBrowser.Api.Playback.Hls
         /// <returns>System.String.</returns>
         protected override string GetCommandLineArguments(string outputPath, StreamState state, bool performSubtitleConversions)
         {
-            var probeSize = GetProbeSizeArgument(state.Item);
+            var probeSize = GetProbeSizeArgument(state.MediaPath, state.IsInputVideo, state.VideoType, state.IsoType);
 
             var hlsVideoRequest = state.VideoRequest as GetHlsVideoStream;
 
@@ -262,9 +261,9 @@ namespace MediaBrowser.Api.Playback.Hls
             var args = string.Format("{0}{1} {2} {3} -i {4}{5} -threads {6} {7} {8} -sc_threshold 0 {9} -hls_time 10 -start_number 0 -hls_list_size 1440 \"{10}\"",
                 itsOffset,
                 probeSize,
-                GetUserAgentParam(state.Item),
+                GetUserAgentParam(state.MediaPath),
                 GetFastSeekCommandLineParameter(state.Request),
-                GetInputArgument(state.Item, state.IsoMount),
+                GetInputArgument(state),
                 GetSlowSeekCommandLineParameter(state.Request),
                 threads,
                 GetMapArgs(state),
@@ -275,7 +274,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             if (hlsVideoRequest != null)
             {
-                if (hlsVideoRequest.AppendBaselineStream && state.Item is Video)
+                if (hlsVideoRequest.AppendBaselineStream && state.IsInputVideo)
                 {
                     var lowBitratePath = Path.Combine(Path.GetDirectoryName(outputPath), Path.GetFileNameWithoutExtension(outputPath) + "-low.m3u8");
 

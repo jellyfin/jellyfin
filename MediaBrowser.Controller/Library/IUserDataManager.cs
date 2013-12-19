@@ -25,7 +25,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="reason">The reason.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SaveUserData(Guid userId, BaseItem item, UserItemData userData, UserDataSaveReason reason, CancellationToken cancellationToken);
+        Task SaveUserData(Guid userId, IHasUserData item, UserItemData userData, UserDataSaveReason reason, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the user data.

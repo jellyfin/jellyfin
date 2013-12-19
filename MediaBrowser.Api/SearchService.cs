@@ -153,7 +153,7 @@ namespace MediaBrowser.Api
 
             if (item.HasImage(ImageType.Primary))
             {
-                result.PrimaryImageTag = _imageProcessor.GetImageCacheTag(item, ImageType.Primary, item.GetImage(ImageType.Primary));
+                result.PrimaryImageTag = _imageProcessor.GetImageCacheTag(item, ImageType.Primary, item.GetImagePath(ImageType.Primary));
             }
 
             var episode = item as Episode;

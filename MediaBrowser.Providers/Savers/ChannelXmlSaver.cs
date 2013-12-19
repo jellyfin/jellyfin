@@ -29,7 +29,7 @@ namespace MediaBrowser.Providers.Savers
             // If new metadata has been downloaded or metadata was manually edited, proceed
             if ((wasMetadataEdited || wasMetadataDownloaded))
             {
-                return item is Channel;
+                return item is LiveTvChannel;
             }
 
             return false;

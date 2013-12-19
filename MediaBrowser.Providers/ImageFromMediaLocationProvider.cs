@@ -212,7 +212,7 @@ namespace MediaBrowser.Providers
 
             if (image != null)
             {
-                item.SetImage(ImageType.Logo, image.FullName);
+                item.SetImagePath(ImageType.Logo, image.FullName);
             }
 
             // Clearart
@@ -220,7 +220,7 @@ namespace MediaBrowser.Providers
 
             if (image != null)
             {
-                item.SetImage(ImageType.Art, image.FullName);
+                item.SetImagePath(ImageType.Art, image.FullName);
             }
 
             // Disc
@@ -229,7 +229,7 @@ namespace MediaBrowser.Providers
 
             if (image != null)
             {
-                item.SetImage(ImageType.Disc, image.FullName);
+                item.SetImagePath(ImageType.Disc, image.FullName);
             }
 
             // Box Image
@@ -237,7 +237,7 @@ namespace MediaBrowser.Providers
 
             if (image != null)
             {
-                item.SetImage(ImageType.Box, image.FullName);
+                item.SetImagePath(ImageType.Box, image.FullName);
             }
 
             // BoxRear Image
@@ -245,7 +245,7 @@ namespace MediaBrowser.Providers
 
             if (image != null)
             {
-                item.SetImage(ImageType.BoxRear, image.FullName);
+                item.SetImagePath(ImageType.BoxRear, image.FullName);
             }
 
             // Thumbnail Image
@@ -253,7 +253,7 @@ namespace MediaBrowser.Providers
 
             if (image != null)
             {
-                item.SetImage(ImageType.Menu, image.FullName);
+                item.SetImagePath(ImageType.Menu, image.FullName);
             }
 
             PopulateBanner(item, args);
@@ -311,7 +311,7 @@ namespace MediaBrowser.Providers
 
             if (image != null)
             {
-                item.SetImage(ImageType.Primary, image.FullName);
+                item.SetImagePath(ImageType.Primary, image.FullName);
             }
         }
 
@@ -339,7 +339,7 @@ namespace MediaBrowser.Providers
 
             if (image != null)
             {
-                item.SetImage(ImageType.Banner, image.FullName);
+                item.SetImagePath(ImageType.Banner, image.FullName);
             }
         }
 
@@ -367,7 +367,7 @@ namespace MediaBrowser.Providers
 
             if (image != null)
             {
-                item.SetImage(ImageType.Thumb, image.FullName);
+                item.SetImagePath(ImageType.Thumb, image.FullName);
             }
 
         }

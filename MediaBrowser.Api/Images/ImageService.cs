@@ -1,17 +1,17 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using ServiceStack;
+using ServiceStack.Text.Controller;
+using ServiceStack.Web;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -19,8 +19,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using ServiceStack.Text.Controller;
-using ServiceStack.Web;
 
 namespace MediaBrowser.Api.Images
 {
@@ -30,18 +28,6 @@ namespace MediaBrowser.Api.Images
     [Route("/Items/{Id}/Images", "GET")]
     [Api(Description = "Gets information about an item's images")]
     public class GetItemImageInfos : IReturn<List<ImageInfo>>
-    {
-        /// <summary>
-        /// Gets or sets the id.
-        /// </summary>
-        /// <value>The id.</value>
-        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string Id { get; set; }
-    }
-
-    [Route("/LiveTv/Channels/{Id}/Images", "GET")]
-    [Api(Description = "Gets information about an item's images")]
-    public class GetChannelImageInfos : IReturn<List<ImageInfo>>
     {
         /// <summary>
         /// Gets or sets the id.
@@ -80,20 +66,7 @@ namespace MediaBrowser.Api.Images
         [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Id { get; set; }
     }
-
-    [Route("/LiveTv/Channels/{Id}/Images/{Type}", "GET")]
-    [Route("/LiveTv/Channels/{Id}/Images/{Type}/{Index}", "GET")]
-    [Api(Description = "Gets an item image")]
-    public class GetChannelImage : ImageRequest
-    {
-        /// <summary>
-        /// Gets or sets the id.
-        /// </summary>
-        /// <value>The id.</value>
-        [ApiMember(Name = "Id", Description = "Channel Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string Id { get; set; }
-    }
-
+    
     /// <summary>
     /// Class UpdateItemImageIndex
     /// </summary>
@@ -270,19 +243,6 @@ namespace MediaBrowser.Api.Images
         public Guid Id { get; set; }
     }
 
-    [Route("/LiveTv/Channels/{Id}/Images/{Type}", "DELETE")]
-    [Route("/LiveTv/Channels/{Id}/Images/{Type}/{Index}", "DELETE")]
-    [Api(Description = "Deletes an item image")]
-    public class DeleteChannelImage : DeleteImageRequest, IReturnVoid
-    {
-        /// <summary>
-        /// Gets or sets the id.
-        /// </summary>
-        /// <value>The id.</value>
-        [ApiMember(Name = "Id", Description = "Channel Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
-        public string Id { get; set; }
-    }
-
     /// <summary>
     /// Class PostUserImage
     /// </summary>
@@ -358,38 +318,13 @@ namespace MediaBrowser.Api.Images
         public Stream RequestStream { get; set; }
     }
 
-    [Route("/LiveTv/Channels/{Id}/Images/{Type}", "POST")]
-    [Route("/LiveTv/Channels/{Id}/Images/{Type}/{Index}", "POST")]
-    [Api(Description = "Posts an item image")]
-    public class PostChannelImage : DeleteImageRequest, IRequiresRequestStream, IReturnVoid
-    {
-        /// <summary>
-        /// Gets or sets the id.
-        /// </summary>
-        /// <value>The id.</value>
-        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public string Id { get; set; }
-
-        /// <summary>
-        /// The raw Http Request Input Stream
-        /// </summary>
-        /// <value>The request stream.</value>
-        public Stream RequestStream { get; set; }
-    }
-
     /// <summary>
     /// Class ImageService
     /// </summary>
     public class ImageService : BaseApiService
     {
-        /// <summary>
-        /// The _user manager
-        /// </summary>
         private readonly IUserManager _userManager;
 
-        /// <summary>
-        /// The _library manager
-        /// </summary>
         private readonly ILibraryManager _libraryManager;
 
         private readonly IApplicationPaths _appPaths;
@@ -400,12 +335,11 @@ namespace MediaBrowser.Api.Images
         private readonly IDtoService _dtoService;
         private readonly IImageProcessor _imageProcessor;
 
-        private readonly ILiveTvManager _liveTv;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ImageService" /> class.
         /// </summary>
-        public ImageService(IUserManager userManager, ILibraryManager libraryManager, IApplicationPaths appPaths, IProviderManager providerManager, IItemRepository itemRepo, IDtoService dtoService, IImageProcessor imageProcessor, ILiveTvManager liveTv)
+        public ImageService(IUserManager userManager, ILibraryManager libraryManager, IApplicationPaths appPaths, IProviderManager providerManager, IItemRepository itemRepo, IDtoService dtoService, IImageProcessor imageProcessor)
         {
             _userManager = userManager;
             _libraryManager = libraryManager;
@@ -414,7 +348,6 @@ namespace MediaBrowser.Api.Images
             _itemRepo = itemRepo;
             _dtoService = dtoService;
             _imageProcessor = imageProcessor;
-            _liveTv = liveTv;
         }
 
         /// <summary>
@@ -425,15 +358,6 @@ namespace MediaBrowser.Api.Images
         public object Get(GetItemImageInfos request)
         {
             var item = _dtoService.GetItemByDtoId(request.Id);
-
-            var result = GetItemImageInfos(item);
-
-            return ToOptimizedResult(result);
-        }
-
-        public object Get(GetChannelImageInfos request)
-        {
-            var item = _liveTv.GetChannel(request.Id);
 
             var result = GetItemImageInfos(item);
 
@@ -540,7 +464,7 @@ namespace MediaBrowser.Api.Images
             return list;
         }
 
-        private ImageInfo GetImageInfo(string path, BaseItem item, int? imageIndex, ImageType type)
+        private ImageInfo GetImageInfo(string path, IHasImages item, int? imageIndex, ImageType type)
         {
             try
             {
@@ -565,13 +489,6 @@ namespace MediaBrowser.Api.Images
 
                 return null;
             }
-        }
-
-        public object Get(GetChannelImage request)
-        {
-            var item = _liveTv.GetChannel(request.Id);
-
-            return GetImage(request, item);
         }
 
         /// <summary>
@@ -659,20 +576,6 @@ namespace MediaBrowser.Api.Images
             Task.WaitAll(task);
         }
 
-        public void Post(PostChannelImage request)
-        {
-            var pathInfo = PathInfo.Parse(Request.PathInfo);
-            var id = pathInfo.GetArgumentValue<string>(2);
-
-            request.Type = (ImageType)Enum.Parse(typeof(ImageType), pathInfo.GetArgumentValue<string>(4), true);
-
-            var item = _liveTv.GetChannel(id);
-
-            var task = PostImage(item, request.RequestStream, request.Type, Request.ContentType);
-
-            Task.WaitAll(task);
-        }
-
         /// <summary>
         /// Deletes the specified request.
         /// </summary>
@@ -693,15 +596,6 @@ namespace MediaBrowser.Api.Images
         public void Delete(DeleteItemImage request)
         {
             var item = _libraryManager.GetItemById(request.Id);
-
-            var task = item.DeleteImage(request.Type, request.Index);
-
-            Task.WaitAll(task);
-        }
-
-        public void Delete(DeleteChannelImage request)
-        {
-            var item = _liveTv.GetChannel(request.Id);
 
             var task = item.DeleteImage(request.Type, request.Index);
 
@@ -762,71 +656,9 @@ namespace MediaBrowser.Api.Images
         /// <param name="newIndex">The new index.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentException">The change index operation is only applicable to backdrops and screenshots</exception>
-        private Task UpdateItemIndex(BaseItem item, ImageType type, int currentIndex, int newIndex)
+        private Task UpdateItemIndex(IHasImages item, ImageType type, int currentIndex, int newIndex)
         {
-            string file1;
-            string file2;
-
-            if (type == ImageType.Screenshot)
-            {
-                var hasScreenshots = (IHasScreenshots)item;
-                file1 = hasScreenshots.ScreenshotImagePaths[currentIndex];
-                file2 = hasScreenshots.ScreenshotImagePaths[newIndex];
-            }
-            else if (type == ImageType.Backdrop)
-            {
-                file1 = item.BackdropImagePaths[currentIndex];
-                file2 = item.BackdropImagePaths[newIndex];
-            }
-            else
-            {
-                throw new ArgumentException("The change index operation is only applicable to backdrops and screenshots");
-            }
-
-            SwapFiles(file1, file2);
-
-            // Directory watchers should repeat this, but do a quick refresh first
-            return item.RefreshMetadata(CancellationToken.None, forceSave: true, allowSlowProviders: false);
-        }
-
-        /// <summary>
-        /// Swaps the files.
-        /// </summary>
-        /// <param name="file1">The file1.</param>
-        /// <param name="file2">The file2.</param>
-        private void SwapFiles(string file1, string file2)
-        {
-            Directory.CreateDirectory(_appPaths.TempDirectory);
-
-            var temp1 = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid() + ".tmp");
-            var temp2 = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid() + ".tmp");
-
-            // Copying over will fail against hidden files
-            RemoveHiddenAttribute(file1);
-            RemoveHiddenAttribute(file2);
-
-            File.Copy(file1, temp1);
-            File.Copy(file2, temp2);
-
-            File.Copy(temp1, file2, true);
-            File.Copy(temp2, file1, true);
-
-            File.Delete(temp1);
-            File.Delete(temp2);
-        }
-
-        private void RemoveHiddenAttribute(string path)
-        {
-            var currentFile = new FileInfo(path);
-
-            // This will fail if the file is hidden
-            if (currentFile.Exists)
-            {
-                if ((currentFile.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
-                {
-                    currentFile.Attributes &= ~FileAttributes.Hidden;
-                }
-            }
+            return item.SwapImages(type, currentIndex, newIndex);
         }
 
         /// <summary>
@@ -837,7 +669,7 @@ namespace MediaBrowser.Api.Images
         /// <returns>System.Object.</returns>
         /// <exception cref="ResourceNotFoundException">
         /// </exception>
-        private object GetImage(ImageRequest request, BaseItem item)
+        public object GetImage(ImageRequest request, IHasImages item)
         {
             var imagePath = GetImagePath(request, item);
 
@@ -926,7 +758,7 @@ namespace MediaBrowser.Api.Images
         /// <param name="request">The request.</param>
         /// <param name="item">The item.</param>
         /// <returns>System.String.</returns>
-        private string GetImagePath(ImageRequest request, BaseItem item)
+        private string GetImagePath(ImageRequest request, IHasImages item)
         {
             var index = request.Index ?? 0;
 
@@ -941,7 +773,7 @@ namespace MediaBrowser.Api.Images
         /// <param name="imageType">Type of the image.</param>
         /// <param name="mimeType">Type of the MIME.</param>
         /// <returns>Task.</returns>
-        private async Task PostImage(BaseItem entity, Stream inputStream, ImageType imageType, string mimeType)
+        public async Task PostImage(BaseItem entity, Stream inputStream, ImageType imageType, string mimeType)
         {
             using (var reader = new StreamReader(inputStream))
             {

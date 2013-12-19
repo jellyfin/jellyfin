@@ -114,10 +114,16 @@ namespace MediaBrowser.Controller.LiveTv
         public float? CommunityRating { get; set; }
 
         /// <summary>
-        /// Set this value to true or false if it is known via recording info whether there is an image or not.
-        /// Leave it null if the only way to determine is by requesting the image and handling the failure.
+        /// Supply the image path if it can be accessed directly from the file system
         /// </summary>
-        public bool? HasImage { get; set; }
+        /// <value>The image path.</value>
+        public string ImagePath { get; set; }
+
+        /// <summary>
+        /// Supply the image url if it can be downloaded
+        /// </summary>
+        /// <value>The image URL.</value>
+        public string ImageUrl { get; set; }
 
         public RecordingInfo()
         {

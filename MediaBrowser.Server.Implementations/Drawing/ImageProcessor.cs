@@ -594,7 +594,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
         /// <param name="imagePath">The image path.</param>
         /// <returns>Guid.</returns>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        public Guid GetImageCacheTag(BaseItem item, ImageType imageType, string imagePath)
+        public Guid GetImageCacheTag(IHasImages item, ImageType imageType, string imagePath)
         {
             if (item == null)
             {
@@ -623,7 +623,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
         /// <param name="imageEnhancers">The image enhancers.</param>
         /// <returns>Guid.</returns>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        public Guid GetImageCacheTag(BaseItem item, ImageType imageType, string originalImagePath, DateTime dateModified, List<IImageEnhancer> imageEnhancers)
+        public Guid GetImageCacheTag(IHasImages item, ImageType imageType, string originalImagePath, DateTime dateModified, List<IImageEnhancer> imageEnhancers)
         {
             if (item == null)
             {
@@ -660,7 +660,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
         /// <param name="imageType">Type of the image.</param>
         /// <param name="imageIndex">Index of the image.</param>
         /// <returns>Task{System.String}.</returns>
-        public async Task<string> GetEnhancedImage(BaseItem item, ImageType imageType, int imageIndex)
+        public async Task<string> GetEnhancedImage(IHasImages item, ImageType imageType, int imageIndex)
         {
             var enhancers = GetSupportedEnhancers(item, imageType).ToList();
 
@@ -673,7 +673,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
             return result.Item1;
         }
 
-        private async Task<Tuple<string, DateTime>> GetEnhancedImage(string originalImagePath, DateTime dateModified, BaseItem item,
+        private async Task<Tuple<string, DateTime>> GetEnhancedImage(string originalImagePath, DateTime dateModified, IHasImages item,
                                                     ImageType imageType, int imageIndex,
                                                     List<IImageEnhancer> enhancers)
         {
@@ -709,7 +709,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
         /// <param name="supportedEnhancers">The supported enhancers.</param>
         /// <returns>System.String.</returns>
         /// <exception cref="System.ArgumentNullException">originalImagePath</exception>
-        private async Task<string> GetEnhancedImageInternal(string originalImagePath, DateTime dateModified, BaseItem item, ImageType imageType, int imageIndex, List<IImageEnhancer> supportedEnhancers)
+        private async Task<string> GetEnhancedImageInternal(string originalImagePath, DateTime dateModified, IHasImages item, ImageType imageType, int imageIndex, List<IImageEnhancer> supportedEnhancers)
         {
             if (string.IsNullOrEmpty(originalImagePath))
             {
@@ -782,7 +782,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
         /// <param name="imageType">Type of the image.</param>
         /// <param name="imageIndex">Index of the image.</param>
         /// <returns>Task{EnhancedImage}.</returns>
-        private async Task<Image> ExecuteImageEnhancers(IEnumerable<IImageEnhancer> imageEnhancers, Image originalImage, BaseItem item, ImageType imageType, int imageIndex)
+        private async Task<Image> ExecuteImageEnhancers(IEnumerable<IImageEnhancer> imageEnhancers, Image originalImage, IHasImages item, ImageType imageType, int imageIndex)
         {
             var result = originalImage;
 
@@ -900,7 +900,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
             return Path.Combine(path, filename);
         }
 
-        public IEnumerable<IImageEnhancer> GetSupportedEnhancers(BaseItem item, ImageType imageType)
+        public IEnumerable<IImageEnhancer> GetSupportedEnhancers(IHasImages item, ImageType imageType)
         {
             return ImageEnhancers.Where(i =>
             {

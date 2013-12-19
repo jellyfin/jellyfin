@@ -22,7 +22,7 @@ namespace MediaBrowser.Controller.Entities
     /// <summary>
     /// Class BaseItem
     /// </summary>
-    public abstract class BaseItem : IHasProviderIds, ILibraryItem
+    public abstract class BaseItem : IHasProviderIds, ILibraryItem, IHasImages, IHasUserData
     {
         protected BaseItem()
         {
@@ -132,8 +132,8 @@ namespace MediaBrowser.Controller.Entities
         [IgnoreDataMember]
         public string PrimaryImagePath
         {
-            get { return GetImage(ImageType.Primary); }
-            set { SetImage(ImageType.Primary, value); }
+            get { return this.GetImagePath(ImageType.Primary); }
+            set { this.SetImagePath(ImageType.Primary, value); }
         }
 
         /// <summary>
@@ -1310,31 +1310,10 @@ namespace MediaBrowser.Controller.Entities
         /// Gets an image
         /// </summary>
         /// <param name="type">The type.</param>
-        /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentException">Backdrops should be accessed using Item.Backdrops</exception>
-        public string GetImage(ImageType type)
-        {
-            if (type == ImageType.Backdrop)
-            {
-                throw new ArgumentException("Backdrops should be accessed using Item.Backdrops");
-            }
-            if (type == ImageType.Screenshot)
-            {
-                throw new ArgumentException("Screenshots should be accessed using Item.Screenshots");
-            }
-
-            string val;
-            Images.TryGetValue(type, out val);
-            return val;
-        }
-
-        /// <summary>
-        /// Gets an image
-        /// </summary>
-        /// <param name="type">The type.</param>
+        /// <param name="imageIndex">Index of the image.</param>
         /// <returns><c>true</c> if the specified type has image; otherwise, <c>false</c>.</returns>
         /// <exception cref="System.ArgumentException">Backdrops should be accessed using Item.Backdrops</exception>
-        public bool HasImage(ImageType type)
+        public bool HasImage(ImageType type, int imageIndex)
         {
             if (type == ImageType.Backdrop)
             {
@@ -1345,16 +1324,10 @@ namespace MediaBrowser.Controller.Entities
                 throw new ArgumentException("Screenshots should be accessed using Item.Screenshots");
             }
 
-            return !string.IsNullOrEmpty(GetImage(type));
+            return !string.IsNullOrEmpty(this.GetImagePath(type));
         }
 
-        /// <summary>
-        /// Sets an image
-        /// </summary>
-        /// <param name="type">The type.</param>
-        /// <param name="path">The path.</param>
-        /// <exception cref="System.ArgumentException">Backdrops should be accessed using Item.Backdrops</exception>
-        public void SetImage(ImageType type, string path)
+        public void SetImagePath(ImageType type, int index, string path)
         {
             if (type == ImageType.Backdrop)
             {
@@ -1423,10 +1396,10 @@ namespace MediaBrowser.Controller.Entities
             else
             {
                 // Delete the source file
-                DeleteImagePath(GetImage(type));
+                DeleteImagePath(this.GetImagePath(type));
 
                 // Remove it from the item
-                SetImage(type, null);
+                this.SetImagePath(type, null);
             }
 
             // Refresh metadata
@@ -1597,13 +1570,13 @@ namespace MediaBrowser.Controller.Entities
         {
             if (imageType == ImageType.Backdrop)
             {
-                return BackdropImagePaths[imageIndex];
+                return BackdropImagePaths.Count > imageIndex ? BackdropImagePaths[imageIndex] : null;
             }
 
             if (imageType == ImageType.Screenshot)
             {
                 var hasScreenshots = (IHasScreenshots)this;
-                return hasScreenshots.ScreenshotImagePaths[imageIndex];
+                return hasScreenshots.ScreenshotImagePaths.Count > imageIndex ? hasScreenshots.ScreenshotImagePaths[imageIndex] : null;
             }
 
             if (imageType == ImageType.Chapter)
@@ -1611,7 +1584,9 @@ namespace MediaBrowser.Controller.Entities
                 return ItemRepository.GetChapter(Id, imageIndex).ImagePath;
             }
 
-            return GetImage(imageType);
+            string val;
+            Images.TryGetValue(imageType, out val);
+            return val;
         }
 
         /// <summary>
@@ -1657,6 +1632,22 @@ namespace MediaBrowser.Controller.Entities
         public virtual IEnumerable<string> GetDeletePaths()
         {
             return new[] { Path };
+        }
+
+        public Task SwapImages(ImageType type, int index1, int index2)
+        {
+            if (type != ImageType.Screenshot && type != ImageType.Backdrop)
+            {
+                throw new ArgumentException("The change index operation is only applicable to backdrops and screenshots");
+            }
+
+            var file1 = GetImagePath(type, index1);
+            var file2 = GetImagePath(type, index2);
+
+            FileSystem.SwapFiles(file1, file2);
+
+            // Directory watchers should repeat this, but do a quick refresh first
+            return RefreshMetadata(CancellationToken.None, forceSave: true, allowSlowProviders: false);
         }
     }
 }
