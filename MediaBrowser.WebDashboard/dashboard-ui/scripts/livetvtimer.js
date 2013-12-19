@@ -4,7 +4,7 @@
 
     function deleteTimer(page, id) {
 
-        Dashboard.confirm("Are you sure you wish to cancel this timer?", "Confirm Timer Cancellation", function (result) {
+        Dashboard.confirm("Are you sure you wish to cancel this recording?", "Confirm Recording Cancellation", function (result) {
 
             if (result) {
 
@@ -12,7 +12,7 @@
 
                 ApiClient.cancelLiveTvTimer(id).done(function () {
 
-                    Dashboard.alert('Timer cancelled.');
+                    Dashboard.alert('Recording cancelled.');
 
                     reload(page);
                 });
@@ -23,18 +23,34 @@
 
     function renderTimer(page, item) {
 
+        var context = 'livetv';
         currentItem = item;
 
-        $('.program', page).html(item.Name);
-        $('.channel', page).html('<a href="livetvchannel.html?id=' + item.ChannelId + '">' + item.ChannelName + '</a>').trigger('create');
-        $('.overview', page).html(item.Overview || '');
+        $('.itemName', page).html(item.Name);
+        $('.itemChannelNumber', page).html('Channel:&nbsp;&nbsp;&nbsp;<a href="livetvchannel.html?id=' + item.ChannelId + '">' + item.ChannelName + '</a>').trigger('create');
 
-        $('#txtPrePaddingSeconds', page).val(item.PrePaddingSeconds);
-        $('#txtPostPaddingSeconds', page).val(item.PostPaddingSeconds);
+        if (item.EpisodeTitle) {
+            $('.itemEpisodeName', page).html('Episode:&nbsp;&nbsp;&nbsp;' + item.EpisodeTitle);
+        } else {
+            $('.itemEpisodeName', page).html('');
+        }
+
+        if (item.CommunityRating) {
+            $('.itemCommunityRating', page).html(LibraryBrowser.getRatingHtml(item)).show();
+        } else {
+            $('.itemCommunityRating', page).hide();
+        }
+
+        LibraryBrowser.renderGenres($('.itemGenres', page), item, context);
+        LibraryBrowser.renderOverview($('.itemOverview', page), item);
+
+        $('.itemMiscInfo', page).html(LibraryBrowser.getMiscInfoHtml(item));
+
+        $('#txtPrePaddingSeconds', page).val(item.PrePaddingSeconds / 60);
+        $('#txtPostPaddingSeconds', page).val(item.PostPaddingSeconds / 60);
         $('#chkPrePaddingRequired', page).checked(item.IsPrePaddingRequired).checkboxradio('refresh');
         $('#chkPostPaddingRequired', page).checked(item.IsPostPaddingRequired).checkboxradio('refresh');
 
-        $('.itemMiscInfo', page).html(LibraryBrowser.getMiscInfoHtml(item));
         $('.status', page).html('Status:&nbsp;&nbsp;&nbsp;' + item.Status);
 
         if (item.SeriesTimerId) {
@@ -56,8 +72,8 @@
 
         apiClient.getLiveTvTimer(currentItem.Id).done(function (item) {
 
-            item.PrePaddingSeconds = $('#txtPrePaddingSeconds', form).val();
-            item.PostPaddingSeconds = $('#txtPostPaddingSeconds', form).val();
+            item.PrePaddingSeconds = $('#txtPrePaddingSeconds', form).val() * 60;
+            item.PostPaddingSeconds = $('#txtPostPaddingSeconds', form).val() * 60;
             item.IsPrePaddingRequired = $('#chkPrePaddingRequired', form).checked();
             item.IsPostPaddingRequired = $('#chkPostPaddingRequired', form).checked();
 

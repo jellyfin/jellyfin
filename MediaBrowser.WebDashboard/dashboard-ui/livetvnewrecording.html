@@ -9,11 +9,11 @@
             <a href="livetvguide.html">Guide</a>
             <a href="livetvchannels.html">Channels</a>
             <a href="livetvrecordings.html" class="ui-btn-active">Recordings</a>
-            <a href="livetvtimers.html">Upcoming Recordings</a>
-            <a href="livetvseriestimers.html">Series Recordings</a>
+            <a href="livetvtimers.html">Schedule</a>
+            <a href="livetvseriestimers.html">Series</a>
         </div>
         <div data-role="content">
-            <form id="liveTvNewRecordingForm" style="margin: 0 auto;">
+            <form class="liveTvNewRecordingForm" style="margin: 0 auto;">
                 <p><span class="itemName inlineItemName"></span><span class="itemMiscInfo" style="display: inline;"></span></p>
                 <p class="itemEpisodeName"></p>
                 <p>
@@ -80,8 +80,8 @@
                         <br />
                         <ul data-role="listview" class="ulForm">
                             <li>
-                                <label for="txtPrePaddingSeconds">Pre-padding seconds: </label>
-                                <input type="number" id="txtPrePaddingSeconds" pattern="[0-9]*" required="required" min="0" />
+                                <label for="txtPrePaddingSeconds">Pre-padding minutes: </label>
+                                <input type="number" id="txtPrePaddingSeconds" pattern="[0-9]*" required="required" min="0" max="5" step=".5" />
                             </li>
                             <li>
                                 <input type="checkbox" data-mini="true" id="chkPrePaddingRequired" />
@@ -91,8 +91,8 @@
                                 <div style="height: .5em;"></div>
                             </li>
                             <li>
-                                <label for="txtPostPaddingSeconds">Post-padding seconds: </label>
-                                <input type="number" id="txtPostPaddingSeconds" pattern="[0-9]*" required="required" min="0" />
+                                <label for="txtPostPaddingSeconds">Post-padding minutes: </label>
+                                <input type="number" id="txtPostPaddingSeconds" pattern="[0-9]*" required="required" min="0" max="5" step=".5" />
                             </li>
                             <li>
                                 <input type="checkbox" data-mini="true" id="chkPostPaddingRequired" />
@@ -116,7 +116,7 @@
             </form>
         </div>
         <script type="text/javascript">
-            $('#liveTvNewRecordingForm').on('submit', LiveTvNewRecordingPage.onSubmit);
+            $('.liveTvNewRecordingForm').off('submit', LiveTvNewRecordingPage.onSubmit).on('submit', LiveTvNewRecordingPage.onSubmit);
         </script>
     </div>
 </body>

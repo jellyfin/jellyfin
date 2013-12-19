@@ -1,11 +1,9 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.MediaInfo;
-using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaInfo;
 using MediaBrowser.Controller.Persistence;
@@ -110,7 +108,7 @@ namespace MediaBrowser.Api.Playback
         /// <returns>System.String.</returns>
         protected virtual string GetOutputFileExtension(StreamState state)
         {
-            return Path.GetExtension(state.Url);
+            return Path.GetExtension(state.RequestedUrl);
         }
 
         /// <summary>
@@ -187,7 +185,7 @@ namespace MediaBrowser.Api.Playback
         {
             var args = string.Empty;
 
-            if (state.Item.LocationType == LocationType.Remote)
+            if (state.IsRemote)
             {
                 return string.Empty;
             }
@@ -308,7 +306,7 @@ namespace MediaBrowser.Api.Playback
 
             return args.Trim();
         }
-        
+
         /// <summary>
         /// If we're going to put a fixed size on the command line, this will calculate it
         /// </summary>
@@ -331,7 +329,7 @@ namespace MediaBrowser.Api.Playback
                     string.Equals(state.SubtitleStream.Codec, "ass", StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(state.SubtitleStream.Codec, "ssa", StringComparison.OrdinalIgnoreCase))
                 {
-                    assSubtitleParam = GetTextSubtitleParam((Video)state.Item, state.SubtitleStream, request.StartTimeTicks, performTextSubtitleConversion);
+                    assSubtitleParam = GetTextSubtitleParam(state, request.StartTimeTicks, performTextSubtitleConversion);
                 }
             }
 
@@ -402,14 +400,14 @@ namespace MediaBrowser.Api.Playback
         /// <summary>
         /// Gets the text subtitle param.
         /// </summary>
-        /// <param name="video">The video.</param>
-        /// <param name="subtitleStream">The subtitle stream.</param>
+        /// <param name="state">The state.</param>
         /// <param name="startTimeTicks">The start time ticks.</param>
         /// <param name="performConversion">if set to <c>true</c> [perform conversion].</param>
         /// <returns>System.String.</returns>
-        protected string GetTextSubtitleParam(Video video, MediaStream subtitleStream, long? startTimeTicks, bool performConversion)
+        protected string GetTextSubtitleParam(StreamState state, long? startTimeTicks, bool performConversion)
         {
-            var path = subtitleStream.IsExternal ? GetConvertedAssPath(video, subtitleStream, startTimeTicks, performConversion) : GetExtractedAssPath(video, subtitleStream, startTimeTicks, performConversion);
+            var path = state.SubtitleStream.IsExternal ? GetConvertedAssPath(state.MediaPath, state.SubtitleStream, startTimeTicks, performConversion) :
+                GetExtractedAssPath(state, startTimeTicks, performConversion);
 
             if (string.IsNullOrEmpty(path))
             {
@@ -422,22 +420,21 @@ namespace MediaBrowser.Api.Playback
         /// <summary>
         /// Gets the extracted ass path.
         /// </summary>
-        /// <param name="video">The video.</param>
-        /// <param name="subtitleStream">The subtitle stream.</param>
+        /// <param name="state">The state.</param>
         /// <param name="startTimeTicks">The start time ticks.</param>
         /// <param name="performConversion">if set to <c>true</c> [perform conversion].</param>
         /// <returns>System.String.</returns>
-        private string GetExtractedAssPath(Video video, MediaStream subtitleStream, long? startTimeTicks, bool performConversion)
+        private string GetExtractedAssPath(StreamState state, long? startTimeTicks, bool performConversion)
         {
             var offset = TimeSpan.FromTicks(startTimeTicks ?? 0);
 
-            var path = FFMpegManager.Instance.GetSubtitleCachePath(video, subtitleStream.Index, offset, ".ass");
+            var path = FFMpegManager.Instance.GetSubtitleCachePath(state.MediaPath, state.SubtitleStream, offset, ".ass");
 
             if (performConversion)
             {
                 InputType type;
 
-                var inputPath = MediaEncoderHelpers.GetInputArgument(video, null, out type);
+                var inputPath = MediaEncoderHelpers.GetInputArgument(state.MediaPath, state.IsRemote, state.VideoType, state.IsoType, null, state.PlayableStreamFileNames, out type);
 
                 try
                 {
@@ -445,7 +442,7 @@ namespace MediaBrowser.Api.Playback
 
                     Directory.CreateDirectory(parentPath);
 
-                    var task = MediaEncoder.ExtractTextSubtitle(inputPath, type, subtitleStream.Index, offset, path, CancellationToken.None);
+                    var task = MediaEncoder.ExtractTextSubtitle(inputPath, type, state.SubtitleStream.Index, offset, path, CancellationToken.None);
 
                     Task.WaitAll(task);
                 }
@@ -461,22 +458,16 @@ namespace MediaBrowser.Api.Playback
         /// <summary>
         /// Gets the converted ass path.
         /// </summary>
-        /// <param name="video">The video.</param>
+        /// <param name="mediaPath">The media path.</param>
         /// <param name="subtitleStream">The subtitle stream.</param>
         /// <param name="startTimeTicks">The start time ticks.</param>
         /// <param name="performConversion">if set to <c>true</c> [perform conversion].</param>
         /// <returns>System.String.</returns>
-        private string GetConvertedAssPath(Video video, MediaStream subtitleStream, long? startTimeTicks, bool performConversion)
+        private string GetConvertedAssPath(string mediaPath, MediaStream subtitleStream, long? startTimeTicks, bool performConversion)
         {
-            // If it's already ass, no conversion neccessary
-            //if (string.Equals(Path.GetExtension(subtitleStream.Path), ".ass", StringComparison.OrdinalIgnoreCase))
-            //{
-            //    return subtitleStream.Path;
-            //}
-
             var offset = TimeSpan.FromTicks(startTimeTicks ?? 0);
 
-            var path = FFMpegManager.Instance.GetSubtitleCachePath(video, subtitleStream.Index, offset, ".ass");
+            var path = FFMpegManager.Instance.GetSubtitleCachePath(mediaPath, subtitleStream, offset, ".ass");
 
             if (performConversion)
             {
@@ -524,25 +515,15 @@ namespace MediaBrowser.Api.Playback
         /// <summary>
         /// Gets the probe size argument.
         /// </summary>
-        /// <param name="item">The item.</param>
+        /// <param name="mediaPath">The media path.</param>
+        /// <param name="isVideo">if set to <c>true</c> [is video].</param>
+        /// <param name="videoType">Type of the video.</param>
+        /// <param name="isoType">Type of the iso.</param>
         /// <returns>System.String.</returns>
-        protected string GetProbeSizeArgument(BaseItem item)
+        protected string GetProbeSizeArgument(string mediaPath, bool isVideo, VideoType? videoType, IsoType? isoType)
         {
-            var type = InputType.AudioFile;
-
-            if (item is Audio)
-            {
-                type = MediaEncoderHelpers.GetInputType(item.Path, null, null);
-            }
-            else
-            {
-                var video = item as Video;
-
-                if (video != null)
-                {
-                    type = MediaEncoderHelpers.GetInputType(item.Path, video.VideoType, video.IsoType);
-                }
-            }
+            var type = !isVideo ? MediaEncoderHelpers.GetInputType(mediaPath, null, null) :
+                MediaEncoderHelpers.GetInputType(mediaPath, videoType, isoType);
 
             return MediaEncoder.GetProbeSizeArgument(type);
         }
@@ -652,22 +633,19 @@ namespace MediaBrowser.Api.Playback
         /// <summary>
         /// Gets the input argument.
         /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="isoMount">The iso mount.</param>
+        /// <param name="state">The state.</param>
         /// <returns>System.String.</returns>
-        protected string GetInputArgument(BaseItem item, IIsoMount isoMount)
+        protected string GetInputArgument(StreamState state)
         {
             var type = InputType.AudioFile;
 
-            var inputPath = new[] { item.Path };
+            var inputPath = new[] { state.MediaPath };
 
-            var video = item as Video;
-
-            if (video != null)
+            if (state.IsInputVideo)
             {
-                if (!(video.VideoType == VideoType.Iso && isoMount == null))
+                if (!(state.VideoType == VideoType.Iso && state.IsoMount == null))
                 {
-                    inputPath = MediaEncoderHelpers.GetInputArgument(video, isoMount, out type);
+                    inputPath = MediaEncoderHelpers.GetInputArgument(state.MediaPath, state.IsRemote, state.VideoType, state.IsoType, state.IsoMount, state.PlayableStreamFileNames, out type);
                 }
             }
 
@@ -686,11 +664,9 @@ namespace MediaBrowser.Api.Playback
 
             Directory.CreateDirectory(parentPath);
 
-            var video = state.Item as Video;
-
-            if (video != null && video.VideoType == VideoType.Iso && video.IsoType.HasValue && IsoManager.CanMount(video.Path))
+            if (state.IsInputVideo && state.VideoType == VideoType.Iso && state.IsoType.HasValue && IsoManager.CanMount(state.MediaPath))
             {
-                state.IsoMount = await IsoManager.Mount(video.Path, CancellationToken.None).ConfigureAwait(false);
+                state.IsoMount = await IsoManager.Mount(state.MediaPath, CancellationToken.None).ConfigureAwait(false);
             }
 
             var process = new Process
@@ -715,7 +691,7 @@ namespace MediaBrowser.Api.Playback
                 EnableRaisingEvents = true
             };
 
-            ApiEntryPoint.Instance.OnTranscodeBeginning(outputPath, TranscodingJobType, process, video != null, state.Request.StartTimeTicks, state.Item.Path, state.Request.DeviceId);
+            ApiEntryPoint.Instance.OnTranscodeBeginning(outputPath, TranscodingJobType, process, state.IsInputVideo, state.Request.StartTimeTicks, state.MediaPath, state.Request.DeviceId);
 
             Logger.Info(process.StartInfo.FileName + " " + process.StartInfo.Arguments);
 
@@ -754,13 +730,13 @@ namespace MediaBrowser.Api.Playback
             }
 
             // Allow a small amount of time to buffer a little
-            if (state.Item is Video)
+            if (state.IsInputVideo)
             {
                 await Task.Delay(500).ConfigureAwait(false);
             }
 
             // This is arbitrary, but add a little buffer time when internet streaming
-            if (state.Item.LocationType == LocationType.Remote)
+            if (state.IsRemote)
             {
                 await Task.Delay(4000).ConfigureAwait(false);
             }
@@ -787,11 +763,11 @@ namespace MediaBrowser.Api.Playback
         /// <summary>
         /// Gets the user agent param.
         /// </summary>
-        /// <param name="item">The item.</param>
+        /// <param name="path">The path.</param>
         /// <returns>System.String.</returns>
-        protected string GetUserAgentParam(BaseItem item)
+        protected string GetUserAgentParam(string path)
         {
-            var useragent = GetUserAgent(item);
+            var useragent = GetUserAgent(path);
 
             if (!string.IsNullOrEmpty(useragent))
             {
@@ -804,11 +780,11 @@ namespace MediaBrowser.Api.Playback
         /// <summary>
         /// Gets the user agent.
         /// </summary>
-        /// <param name="item">The item.</param>
+        /// <param name="path">The path.</param>
         /// <returns>System.String.</returns>
-        protected string GetUserAgent(BaseItem item)
+        protected string GetUserAgent(string path)
         {
-            if (item.Path.IndexOf("apple.com", StringComparison.OrdinalIgnoreCase) != -1)
+            if (path.IndexOf("apple.com", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 return "QuickTime/7.7.4";
             }
@@ -852,8 +828,6 @@ namespace MediaBrowser.Api.Playback
         {
             var item = DtoService.GetItemByDtoId(request.Id);
 
-            var media = (IHasMediaStreams)item;
-
             var url = Request.PathInfo;
 
             if (!request.AudioCodec.HasValue)
@@ -863,10 +837,24 @@ namespace MediaBrowser.Api.Playback
 
             var state = new StreamState
             {
-                Item = item,
                 Request = request,
-                Url = url
+                RequestedUrl = url,
+                MediaPath = item.Path,
+                IsRemote = item.LocationType == LocationType.Remote
             };
+
+            var video = item as Video;
+
+            if (video != null)
+            {
+                state.IsInputVideo = true;
+                state.VideoType = video.VideoType;
+                state.IsoType = video.IsoType;
+
+                state.PlayableStreamFileNames = video.PlayableStreamFileNames == null
+                    ? new List<string>()
+                    : video.PlayableStreamFileNames.ToList();
+            }
 
             var videoRequest = request as VideoStreamRequest;
 

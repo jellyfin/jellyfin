@@ -17,7 +17,7 @@
 
                     <ul data-role="listview" class="ulForm">
                         <li>
-                            <input type="checkbox" id="chkEnableCustomIBNPath" name="chkEnableCustomIBNPath" />
+                            <input type="checkbox" id="chkEnableCustomIBNPath" name="chkEnableCustomIBNPath" data-mini="true" />
                             <label for="chkEnableCustomIBNPath">Use custom images by name path</label>
                             <div class="fieldDescription">
                                 This folder contains actor, artist, genre and studio images.
@@ -26,7 +26,7 @@
                         <li id="fieldEnterIBNPath" style="display: none;">
                             <label for="txtItemsByNamePath">Images by name path: </label>
                             <div style="display: inline-block; width: 92%;">
-                                <input type="text" id="txtItemsByNamePath" name="txtItemsByNamePath" />
+                                <input type="text" id="txtItemsByNamePath" name="txtItemsByNamePath" data-mini="true" />
                             </div>
                             <button id="btnSelectIBNPath" type="button" data-icon="folder-close" data-iconpos="notext" data-inline="true">Select Directory</button>
                             <div class="fieldDescription">
@@ -35,13 +35,13 @@
                         </li>
                         <li>
                             <label for="txtSeasonZeroName">Season 0 display name: </label>
-                            <input type="text" id="txtSeasonZeroName" name="txtSeasonZeroName" required="required" />
+                            <input type="text" id="txtSeasonZeroName" name="txtSeasonZeroName" required="required" data-mini="true" />
                         </li>
                         <li>
-                            <button type="submit" data-theme="b" data-icon="ok">
+                            <button type="submit" data-theme="b" data-icon="ok" data-mini="true">
                                 Save
                             </button>
-                            <button type="button" onclick="Dashboard.navigate('dashboard.html');" data-icon="delete">
+                            <button type="button" onclick="Dashboard.navigate('dashboard.html');" data-icon="delete" data-mini="true">
                                 Cancel
                             </button>
                         </li>

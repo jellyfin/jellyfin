@@ -9,8 +9,8 @@
             <a href="livetvguide.html">Guide</a>
             <a href="livetvchannels.html">Channels</a>
             <a href="livetvrecordings.html">Recordings</a>
-            <a href="livetvtimers.html">Upcoming Recordings</a>
-            <a href="livetvseriestimers.html" class="ui-btn-active">Series Recordings</a>
+            <a href="livetvtimers.html">Schedule</a>
+            <a href="livetvseriestimers.html" class="ui-btn-active">Series</a>
         </div>
         <div data-role="content">
             <form id="liveTvSeriesTimerForm" style="margin: 0 auto;">
@@ -73,7 +73,7 @@
                         <ul data-role="listview" class="ulForm">
                             <li>
                                 <label for="txtPrePaddingSeconds">Pre-padding seconds: </label>
-                                <input type="number" id="txtPrePaddingSeconds" pattern="[0-9]*" required="required" min="0" />
+                                <input type="number" id="txtPrePaddingSeconds" pattern="[0-9]*" required="required" min="0" max="5" step=".5" />
                             </li>
                             <li>
                                 <input type="checkbox" data-mini="true" id="chkPrePaddingRequired" />
@@ -83,8 +83,8 @@
                                 <div style="height: .5em;"></div>
                             </li>
                             <li>
-                                <label for="txtPostPaddingSeconds">Post-padding seconds: </label>
-                                <input type="number" id="txtPostPaddingSeconds" pattern="[0-9]*" required="required" min="0" />
+                                <label for="txtPostPaddingSeconds">Post-padding minutes: </label>
+                                <input type="number" id="txtPostPaddingSeconds" pattern="[0-9]*" required="required" min="0" max="5" step=".5" />
                             </li>
                             <li>
                                 <input type="checkbox" data-mini="true" id="chkPostPaddingRequired" />

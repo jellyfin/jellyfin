@@ -74,5 +74,12 @@ namespace MediaBrowser.Common.IO
         /// <param name="isAsync">if set to <c>true</c> [is asynchronous].</param>
         /// <returns>FileStream.</returns>
         FileStream GetFileStream(string path, FileMode mode, FileAccess access, FileShare share, bool isAsync = false);
+
+        /// <summary>
+        /// Swaps the files.
+        /// </summary>
+        /// <param name="file1">The file1.</param>
+        /// <param name="file2">The file2.</param>
+        void SwapFiles(string file1, string file2);
     }
 }

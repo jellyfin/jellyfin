@@ -2,7 +2,7 @@
 
     function deleteTimer(page, id) {
 
-        Dashboard.confirm("Are you sure you wish to cancel this series?", "Confirm Series Timer Cancellation", function (result) {
+        Dashboard.confirm("Are you sure you wish to cancel this series?", "Confirm Series Cancellation", function (result) {
 
             if (result) {
 
@@ -10,7 +10,7 @@
 
                 ApiClient.cancelLiveTvSeriesTimer(id).done(function () {
 
-                    Dashboard.alert('Series Timer deleted');
+                    Dashboard.alert('Series cancelled.');
 
                     reload(page);
                 });

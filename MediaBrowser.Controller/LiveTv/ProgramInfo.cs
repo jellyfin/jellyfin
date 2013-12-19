@@ -98,10 +98,16 @@ namespace MediaBrowser.Controller.LiveTv
         public string EpisodeTitle { get; set; }
 
         /// <summary>
-        /// Set this value to true or false if it is known via program info whether there is an image or not.
-        /// Leave it null if the only way to determine is by requesting the image and handling the failure.
+        /// Supply the image path if it can be accessed directly from the file system
         /// </summary>
-        public bool? HasImage { get; set; }
+        /// <value>The image path.</value>
+        public string ImagePath { get; set; }
+
+        /// <summary>
+        /// Supply the image url if it can be downloaded
+        /// </summary>
+        /// <value>The image URL.</value>
+        public string ImageUrl { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is movie.
@@ -120,7 +126,13 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value><c>true</c> if this instance is series; otherwise, <c>false</c>.</value>
         public bool IsSeries { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is video.
+        /// </summary>
+        /// <value><c>true</c> if this instance is video; otherwise, <c>false</c>.</value>
+        public bool IsVideo { get; set; }
+
         public ProgramInfo()
         {
             Genres = new List<string>();

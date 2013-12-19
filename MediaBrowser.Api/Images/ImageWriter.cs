@@ -2,12 +2,11 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using ServiceStack;
+using ServiceStack.Web;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using ServiceStack.Web;
 
 namespace MediaBrowser.Api.Images
 {
@@ -27,7 +26,7 @@ namespace MediaBrowser.Api.Images
         /// Gets or sets the item.
         /// </summary>
         /// <value>The item.</value>
-        public BaseItem Item { get; set; }
+        public IHasImages Item { get; set; }
         /// <summary>
         /// The original image date modified
         /// </summary>

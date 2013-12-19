@@ -170,7 +170,7 @@ namespace MediaBrowser.Controller.MediaInfo
 
                         InputType type;
 
-                        var inputPath = MediaEncoderHelpers.GetInputArgument(video, null, out type);
+                        var inputPath = MediaEncoderHelpers.GetInputArgument(video.Path, false, video.VideoType, video.IsoType, null, video.PlayableStreamFileNames, out type);
 
                         try
                         {
@@ -233,33 +233,23 @@ namespace MediaBrowser.Controller.MediaInfo
         /// <summary>
         /// Gets the subtitle cache path.
         /// </summary>
-        /// <param name="input">The input.</param>
-        /// <param name="subtitleStreamIndex">Index of the subtitle stream.</param>
+        /// <param name="mediaPath">The media path.</param>
+        /// <param name="subtitleStream">The subtitle stream.</param>
         /// <param name="offset">The offset.</param>
         /// <param name="outputExtension">The output extension.</param>
         /// <returns>System.String.</returns>
-        public string GetSubtitleCachePath(Video input, int subtitleStreamIndex, TimeSpan? offset, string outputExtension)
+        public string GetSubtitleCachePath(string mediaPath, MediaStream subtitleStream, TimeSpan? offset, string outputExtension)
         {
             var ticksParam = offset.HasValue ? "_" + offset.Value.Ticks : "";
 
-            var stream = _itemRepo.GetMediaStreams(new MediaStreamQuery
+            if (subtitleStream.IsExternal)
             {
-                ItemId = input.Id,
-                Index = subtitleStreamIndex
-
-            }).FirstOrDefault();
-
-            if (stream == null)
-            {
-                return null;
+                ticksParam += _fileSystem.GetLastWriteTimeUtc(subtitleStream.Path).Ticks;
             }
 
-            if (stream.IsExternal)
-            {
-                ticksParam += _fileSystem.GetLastWriteTimeUtc(stream.Path).Ticks;
-            }
+            var date = _fileSystem.GetLastWriteTimeUtc(mediaPath);
 
-            var filename = (input.Id + "_" + subtitleStreamIndex.ToString(_usCulture) + "_" + input.DateModified.Ticks.ToString(_usCulture) + ticksParam).GetMD5() + outputExtension;
+            var filename = (mediaPath + "_" + subtitleStream.Index.ToString(_usCulture) + "_" + date.Ticks.ToString(_usCulture) + ticksParam).GetMD5() + outputExtension;
 
             var prefix = filename.Substring(0, 1);
 

@@ -32,8 +32,8 @@
         $('#chkAllChannels', page).checked(defaultTimer.RecordAnyChannel).checkboxradio('refresh');
         $('#chkAnyTime', page).checked(defaultTimer.RecordAnyTime).checkboxradio('refresh');
 
-        $('#txtPrePaddingSeconds', page).val(defaultTimer.PrePaddingSeconds);
-        $('#txtPostPaddingSeconds', page).val(defaultTimer.PostPaddingSeconds);
+        $('#txtPrePaddingSeconds', page).val(defaultTimer.PrePaddingSeconds / 60);
+        $('#txtPostPaddingSeconds', page).val(defaultTimer.PostPaddingSeconds / 60);
         $('#chkPrePaddingRequired', page).checked(defaultTimer.IsPrePaddingRequired).checkboxradio('refresh');
         $('#chkPostPaddingRequired', page).checked(defaultTimer.IsPostPaddingRequired).checkboxradio('refresh');
 
@@ -105,10 +105,12 @@
 
         var form = this;
 
-        apiClient.getNewLiveTvTimerDefaults({ programId: currentProgram.Id }).done(function (item) {
+        var programId = getParameterByName('programid');
 
-            item.PrePaddingSeconds = $('#txtPrePaddingSeconds', form).val();
-            item.PostPaddingSeconds = $('#txtPostPaddingSeconds', form).val();
+        apiClient.getNewLiveTvTimerDefaults({ programId: programId }).done(function (item) {
+
+            item.PrePaddingSeconds = $('#txtPrePaddingSeconds', form).val() * 60;
+            item.PostPaddingSeconds = $('#txtPostPaddingSeconds', form).val() * 60;
             item.IsPrePaddingRequired = $('#chkPrePaddingRequired', form).checked();
             item.IsPostPaddingRequired = $('#chkPostPaddingRequired', form).checked();
 
@@ -142,15 +144,11 @@
         return false;
     }
 
-    function liveTvNewRecordingPage() {
+    window.LiveTvNewRecordingPage = {
+        
+        onSubmit: onSubmit
 
-        var self = this;
-
-        self.onSubmit = onSubmit;
-
-    }
-
-    window.LiveTvNewRecordingPage = new liveTvNewRecordingPage();
+    };
 
     $(document).on('pageinit', "#liveTvNewRecordingPage", function () {
 
@@ -165,7 +163,7 @@
             }
 
         });
-        
+
         $('#btnCancel', page).on('click', function () {
 
             Dashboard.navigate('livetvchannel.html?id=' + currentProgram.ChannelId);

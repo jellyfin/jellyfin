@@ -4,7 +4,7 @@
 
     function deleteTimer(page, id) {
 
-        Dashboard.confirm("Are you sure you wish to cancel this series?", "Confirm Series Timer Cancellation", function (result) {
+        Dashboard.confirm("Are you sure you wish to cancel this series?", "Confirm Series Cancellation", function (result) {
 
             if (result) {
 
@@ -12,7 +12,7 @@
 
                 ApiClient.cancelLiveTvSeriesTimer(id).done(function () {
 
-                    Dashboard.alert('Timer cancelled.');
+                    Dashboard.alert('Series cancelled.');
 
                     reload(page);
                 });
@@ -28,8 +28,8 @@
         $('.itemName', page).html(item.Name);
         $('.overview', page).html(item.Overview || '');
 
-        $('#txtPrePaddingSeconds', page).val(item.PrePaddingSeconds);
-        $('#txtPostPaddingSeconds', page).val(item.PostPaddingSeconds);
+        $('#txtPrePaddingSeconds', page).val(item.PrePaddingSeconds / 60);
+        $('#txtPostPaddingSeconds', page).val(item.PostPaddingSeconds / 60);
         $('#chkPrePaddingRequired', page).checked(item.IsPrePaddingRequired).checkboxradio('refresh');
         $('#chkPostPaddingRequired', page).checked(item.IsPostPaddingRequired).checkboxradio('refresh');
 
@@ -97,8 +97,8 @@
 
         apiClient.getLiveTvSeriesTimer(currentItem.Id).done(function (item) {
 
-            item.PrePaddingSeconds = $('#txtPrePaddingSeconds', form).val();
-            item.PostPaddingSeconds = $('#txtPostPaddingSeconds', form).val();
+            item.PrePaddingSeconds = $('#txtPrePaddingSeconds', form).val() * 60;
+            item.PostPaddingSeconds = $('#txtPostPaddingSeconds', form).val() * 60;
             item.IsPrePaddingRequired = $('#chkPrePaddingRequired', form).checked();
             item.IsPostPaddingRequired = $('#chkPostPaddingRequired', form).checked();
 

@@ -253,7 +253,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 InputType type;
 
-                var inputPath = MediaEncoderHelpers.GetInputArgument(video, isoMount, out type);
+                var inputPath = MediaEncoderHelpers.GetInputArgument(video.Path, video.LocationType == LocationType.Remote, video.VideoType, video.IsoType, isoMount, video.PlayableStreamFileNames, out type);
 
                 await _mediaEncoder.ExtractImage(inputPath, type, video.Video3DFormat, imageOffset, path, cancellationToken).ConfigureAwait(false);
 

@@ -242,19 +242,19 @@ namespace MediaBrowser.ServerApplication
                                        }
                                        if (item.HasImage(ImageType.Banner))
                                        {
-                                           previews.Add(new PreviewItem(item.GetImage(ImageType.Banner), "Banner"));
+                                           previews.Add(new PreviewItem(item.GetImagePath(ImageType.Banner), "Banner"));
                                        }
                                        if (item.HasImage(ImageType.Logo))
                                        {
-                                           previews.Add(new PreviewItem(item.GetImage(ImageType.Logo), "Logo"));
+                                           previews.Add(new PreviewItem(item.GetImagePath(ImageType.Logo), "Logo"));
                                        }
                                        if (item.HasImage(ImageType.Art))
                                        {
-                                           previews.Add(new PreviewItem(item.GetImage(ImageType.Art), "Art"));
+                                           previews.Add(new PreviewItem(item.GetImagePath(ImageType.Art), "Art"));
                                        }
                                        if (item.HasImage(ImageType.Thumb))
                                        {
-                                           previews.Add(new PreviewItem(item.GetImage(ImageType.Thumb), "Thumb"));
+                                           previews.Add(new PreviewItem(item.GetImagePath(ImageType.Thumb), "Thumb"));
                                        }
                                        previews.AddRange(
                                            item.BackdropImagePaths.Select(

@@ -1,4 +1,10 @@
-﻿using MediaBrowser.Common.IO;
+﻿using System;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -8,23 +14,17 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
-using System;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.LiveTv
 {
-    public class ChannelImageProvider : BaseMetadataProvider
+    public class RecordingImageProvider : BaseMetadataProvider
     {
         private readonly ILiveTvManager _liveTvManager;
         private readonly IProviderManager _providerManager;
         private readonly IFileSystem _fileSystem;
         private readonly IHttpClient _httpClient;
 
-        public ChannelImageProvider(ILogManager logManager, IServerConfigurationManager configurationManager, ILiveTvManager liveTvManager, IProviderManager providerManager, IFileSystem fileSystem, IHttpClient httpClient)
+        public RecordingImageProvider(ILogManager logManager, IServerConfigurationManager configurationManager, ILiveTvManager liveTvManager, IProviderManager providerManager, IFileSystem fileSystem, IHttpClient httpClient)
             : base(logManager, configurationManager)
         {
             _liveTvManager = liveTvManager;
@@ -35,7 +35,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         public override bool Supports(BaseItem item)
         {
-            return item is LiveTvChannel;
+            return item is LiveTvRecording;
         }
 
         protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
@@ -53,7 +53,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             try
             {
-                await DownloadImage((LiveTvChannel)item, cancellationToken).ConfigureAwait(false);
+                await DownloadImage((LiveTvRecording)item, cancellationToken).ConfigureAwait(false);
             }
             catch (HttpException ex)
             {
@@ -68,24 +68,24 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return true;
         }
 
-        private async Task DownloadImage(LiveTvChannel item, CancellationToken cancellationToken)
+        private async Task DownloadImage(LiveTvRecording item, CancellationToken cancellationToken)
         {
-            var channelInfo = item.ChannelInfo;
+            var recordingInfo = item.RecordingInfo;
 
             Stream imageStream = null;
             string contentType = null;
 
-            if (!string.IsNullOrEmpty(channelInfo.ImagePath))
+            if (!string.IsNullOrEmpty(recordingInfo.ImagePath))
             {
-                contentType = "image/" + Path.GetExtension(channelInfo.ImagePath).ToLower();
-                imageStream = _fileSystem.GetFileStream(channelInfo.ImagePath, FileMode.Open, FileAccess.Read, FileShare.Read, true);
+                contentType = "image/" + Path.GetExtension(recordingInfo.ImagePath).ToLower();
+                imageStream = _fileSystem.GetFileStream(recordingInfo.ImagePath, FileMode.Open, FileAccess.Read, FileShare.Read, true);
             }
-            else if (!string.IsNullOrEmpty(channelInfo.ImageUrl))
+            else if (!string.IsNullOrEmpty(recordingInfo.ImageUrl))
             {
                 var options = new HttpRequestOptions
                 {
                     CancellationToken = cancellationToken,
-                    Url = channelInfo.ImageUrl
+                    Url = recordingInfo.ImageUrl
                 };
 
                 var response = await _httpClient.GetResponse(options).ConfigureAwait(false);
@@ -104,7 +104,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
                 if (service != null)
                 {
-                    var response = await service.GetChannelImageAsync(channelInfo.Id, cancellationToken).ConfigureAwait(false);
+                    var response = await service.GetRecordingImageAsync(recordingInfo.Id, cancellationToken).ConfigureAwait(false);
 
                     imageStream = response.Stream;
                     contentType = response.MimeType;
@@ -114,7 +114,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             if (imageStream != null)
             {
                 // Dummy up the original url
-                var url = item.ServiceName + channelInfo.Id;
+                var url = item.ServiceName + recordingInfo.Id;
 
                 await _providerManager.SaveImage(item, imageStream, contentType, ImageType.Primary, null, url, cancellationToken).ConfigureAwait(false);
             }

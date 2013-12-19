@@ -1724,6 +1724,20 @@
                         type: "Primary"
                     });
                 }
+                else if (item.Type == "Recording") {
+                    url = ApiClient.getUrl("LiveTV/Recordings/" + item.Id + "/Images/Primary", {
+                        maxheight: imageHeight,
+                        tag: imageTags.Primary,
+                        type: "Primary"
+                    });
+                }
+                else if (item.Type == "Program") {
+                    url = ApiClient.getUrl("LiveTV/Programs/" + item.Id + "/Images/Primary", {
+                        maxheight: imageHeight,
+                        tag: imageTags.Primary,
+                        type: "Primary"
+                    });
+                }
                 else if (item.Type == "Person") {
                     url = ApiClient.getPersonImageUrl(item.Name, {
                         maxheight: imageHeight,

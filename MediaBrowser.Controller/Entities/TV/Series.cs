@@ -183,7 +183,9 @@ namespace MediaBrowser.Controller.Entities.TV
                 episodes = episodes.Where(i => !i.IsVirtualUnaired);
             }
 
-            return LibraryManager.Sort(episodes, user, new[] { ItemSortBy.AiredEpisodeOrder }, SortOrder.Ascending)
+            var sortBy = seasonNumber == 0 ? ItemSortBy.SortName : ItemSortBy.AiredEpisodeOrder;
+
+            return LibraryManager.Sort(episodes, user, new[] { sortBy }, SortOrder.Ascending)
                 .Cast<Episode>();
         }
 

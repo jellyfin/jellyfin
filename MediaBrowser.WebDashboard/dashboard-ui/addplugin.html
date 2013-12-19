@@ -11,7 +11,7 @@
                 <p>
                     <a data-role="button" data-icon="arrow-left" data-inline="true" data-mini="true" data-theme="b" href="plugincatalog.html">Plugin Catalog</a>
                 </p>
-                <form id="addPluginForm">
+                <form class="addPluginForm">
                     <p id="tagline" style="font-style: italic;"></p>
                     <p id="pPreviewImage" style="text-align: center; margin: 2em 0;"></p>
 
@@ -105,7 +105,7 @@
             </div>
         </div>
         <script type="text/javascript">
-            $('#addPluginForm').on('submit', AddPluginPage.onSubmit);
+            $('.addPluginForm').off('submit', AddPluginPage.onSubmit).on('submit', AddPluginPage.onSubmit);
         </script>
     </div>
 </body>

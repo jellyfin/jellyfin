@@ -35,7 +35,7 @@
 
             html += '<td>';
             html += '<a href="livetvrecording.html?id=' + recording.Id + '">';
-            html += recording.Name;
+            html += recording.Name || '(blank)';
             html += '</a>';
             html += '</td>';
 

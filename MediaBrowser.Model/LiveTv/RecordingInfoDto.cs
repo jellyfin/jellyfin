@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Model.LiveTv
 {
@@ -137,14 +138,27 @@ namespace MediaBrowser.Model.LiveTv
         public ProgramAudio? Audio { get; set; }
 
         /// <summary>
+        /// Gets or sets the image tags.
+        /// </summary>
+        /// <value>The image tags.</value>
+        public Dictionary<ImageType, Guid> ImageTags { get; set; }
+        
+        /// <summary>
         /// Gets or sets the user data.
         /// </summary>
         /// <value>The user data.</value>
         public UserItemDataDto UserData { get; set; }
 
+        /// <summary>
+        /// Gets or sets the type.
+        /// </summary>
+        /// <value>The type.</value>
+        public string Type { get; set; }
+
         public RecordingInfoDto()
         {
             Genres = new List<string>();
+            ImageTags = new Dictionary<ImageType, Guid>();
         }
     }
 }
