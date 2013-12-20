@@ -268,7 +268,9 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
 
             if (multiDiscFolders.Count > 0)
             {
-                return GetMultiDiscMovie<T>(multiDiscFolders);
+                var folders = fileSystemEntries.Where(child => (child.Attributes & FileAttributes.Directory) == FileAttributes.Directory);
+
+                return GetMultiDiscMovie<T>(multiDiscFolders, folders);
             }
 
             return null;
@@ -278,25 +280,26 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
         /// Gets the multi disc movie.
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="folders">The folders.</param>
+        /// <param name="multiDiscFolders">The folders.</param>
+        /// <param name="allFolders">All folders.</param>
         /// <returns>``0.</returns>
-        private T GetMultiDiscMovie<T>(List<FileSystemInfo> folders)
+        private T GetMultiDiscMovie<T>(List<FileSystemInfo> multiDiscFolders, IEnumerable<FileSystemInfo> allFolders)
                where T : Video, new()
         {
-            var videoType = VideoType.BluRay;
+            var videoTypes = new List<VideoType>();
 
-            var folderPaths = folders.Select(i => i.FullName).Where(i =>
+            var folderPaths = multiDiscFolders.Select(i => i.FullName).Where(i =>
             {
                 var subfolders = Directory.GetDirectories(i).Select(Path.GetFileName).ToList();
 
                 if (subfolders.Any(IsDvdDirectory))
                 {
-                    videoType = VideoType.Dvd;
+                    videoTypes.Add(VideoType.Dvd);
                     return true;
                 }
                 if (subfolders.Any(IsBluRayDirectory))
                 {
-                    videoType = VideoType.BluRay;
+                    videoTypes.Add(VideoType.BluRay);
                     return true;
                 }
 
@@ -304,7 +307,35 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
 
             }).OrderBy(i => i).ToList();
 
+            // If different video types were found, don't allow this
+            if (videoTypes.Count > 0 && videoTypes.Any(i => i != videoTypes[0]))
+            {
+                return null;
+            }
+
             if (folderPaths.Count == 0)
+            {
+                return null;
+            }
+
+            // If there are other folders side by side that are folder rips, don't allow it
+            // TODO: Improve this to return null if any folder is present aside from our regularly ignored folders
+            if (allFolders.Except(multiDiscFolders).Any(i =>
+            {
+                var subfolders = Directory.GetDirectories(i.FullName).Select(Path.GetFileName).ToList();
+
+                if (subfolders.Any(IsDvdDirectory))
+                {
+                    return true;
+                }
+                if (subfolders.Any(IsBluRayDirectory))
+                {
+                    return true;
+                }
+
+                return false;
+
+            }))
             {
                 return null;
             }
@@ -315,7 +346,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
 
                 IsMultiPart = true,
 
-                VideoType = videoType
+                VideoType = videoTypes[0]
             };
         }
 
