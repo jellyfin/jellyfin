@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Entities;
 using ServiceStack;
 using System;
 using System.Collections.Generic;
@@ -67,7 +68,27 @@ namespace MediaBrowser.Api.Library
         /// <returns>System.Object.</returns>
         public object Get(GetPhyscialPaths request)
         {
-            var result = _libraryManager.RootFolder.Children.SelectMany(c => c.ResolveArgs.PhysicalLocations).ToList();
+            var result = _libraryManager.RootFolder.Children
+                .SelectMany(c =>
+                {
+                    var locationType = c.LocationType;
+
+                    if (locationType != LocationType.Remote && locationType != LocationType.Virtual)
+                    {
+                        try
+                        {
+                            return c.ResolveArgs.PhysicalLocations;
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.ErrorException("Error getting ResolveArgs for {0}", ex, c.Path);
+                        }
+
+                    }
+
+                    return new List<string>();
+                })
+                .ToList();
 
             return ToOptimizedResult(result);
         }
