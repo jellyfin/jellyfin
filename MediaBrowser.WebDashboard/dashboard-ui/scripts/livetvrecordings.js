@@ -59,9 +59,11 @@
 
             html += '<td>' + LiveTvHelpers.getDisplayTime(recording.StartDate) + '</td>';
 
-            var minutes = recording.DurationMs / 60000;
+            var minutes = recording.RunTimeTicks / 600000000;
 
-            html += '<td class="tabletColumn">' + minutes.toFixed(0) + ' mins</td>';
+            minutes = minutes || 1;
+
+            html += '<td class="tabletColumn">' + Math.round(minutes) + 'min</td>';
 
             html += '<td class="tabletColumn">' + (recording.Status || '') + '</td>';
 

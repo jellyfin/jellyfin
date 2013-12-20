@@ -13,7 +13,7 @@
             <a href="livetvseriestimers.html">Series</a>
         </div>
         <div data-role="content">
-            <form id="liveTvTimerForm" style="margin: 0 auto;">
+            <form class="liveTvTimerForm" style="margin: 0 auto;">
                 <p><span class="itemName inlineItemName"></span><span class="itemMiscInfo" style="display: inline;"></span></p>
                 <p class="itemEpisodeName"></p>
                 <p>
@@ -74,7 +74,7 @@
             </form>
         </div>
         <script type="text/javascript">
-            $('#liveTvTimerForm').on('submit', LiveTvTimerPage.onSubmit);
+            $('.liveTvTimerForm').off('submit', LiveTvTimerPage.onSubmit).on('submit', LiveTvTimerPage.onSubmit);
         </script>
 
     </div>

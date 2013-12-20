@@ -1,0 +1,83 @@
+﻿
+.tvProgramSectionHeader {
+    margin: 0;
+}
+
+.tvProgram {
+    display: block;
+    text-decoration: none;
+    font-weight: normal!important;
+    white-space: nowrap;
+    position: relative;
+}
+
+.detailSectionHeader + .tvProgram {
+    border-top: 1px solid #555;
+    margin-top: 1px;
+}
+
+.tvProgramTimeSlot {
+    width: 80px;
+    vertical-align: middle;
+    font-weight: bold;
+    color: #fff;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    border-bottom: 1px solid #555;
+}
+
+.tvProgramTimeSlotInner {
+    padding: .5em;
+}
+
+.tvProgramInfo {
+    vertical-align: middle;
+    border-left: 1px solid #555;
+    padding: .5em .5em;
+    margin-left: 80px;
+    border-bottom: 1px solid #555;
+}
+
+.tvProgramName {
+    color: #fff;
+    font-weight: bold;
+    margin-bottom: .5em;
+}
+
+.tvProgramTime {
+    color: #fff;
+}
+
+.newTvProgram {
+    color: #E88606;
+}
+
+.liveTvProgram {
+    color: #64A239;
+}
+
+.sportsProgramInfo {
+    background-color: #0F2624;
+    border-bottom: 2px solid #0A7C33;
+}
+
+.newsProgramInfo {
+    background-color: #211A32;
+    border-bottom: 2px solid #523378;
+}
+
+.movieProgramInfo {
+    background-color: #271A21;
+    border-bottom: 2px solid #A43913;
+}
+
+.childProgramInfo {
+    background-color: #092345;
+    border-bottom: 2px solid #0B487D;
+}
+
+.tvProgram:hover, .tvProgram:hover .tvProgramInfo {
+    background-color: #4d90fe;
+}

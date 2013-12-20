@@ -178,7 +178,11 @@ namespace MediaBrowser.Api.LiveTv
         private ImageService GetImageService()
         {
             return new ImageService(_userManager, _libraryManager, _appPaths, _providerManager, _itemRepo, _dtoService,
-                _imageProcessor);
+                _imageProcessor)
+            {
+                ResultFactory = ResultFactory,
+                Request = Request
+            };
         }
     }
 }

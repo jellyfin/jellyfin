@@ -133,6 +133,30 @@ namespace MediaBrowser.Controller.LiveTv
         /// <value><c>true</c> if this instance is video; otherwise, <c>false</c>.</value>
         public bool IsVideo { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is live.
+        /// </summary>
+        /// <value><c>true</c> if this instance is live; otherwise, <c>false</c>.</value>
+        public bool IsLive { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is news.
+        /// </summary>
+        /// <value><c>true</c> if this instance is news; otherwise, <c>false</c>.</value>
+        public bool IsNews { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is kids.
+        /// </summary>
+        /// <value><c>true</c> if this instance is kids; otherwise, <c>false</c>.</value>
+        public bool IsKids { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is premiere.
+        /// </summary>
+        /// <value><c>true</c> if this instance is premiere; otherwise, <c>false</c>.</value>
+        public bool IsPremiere { get; set;  }
+
         public ProgramInfo()
         {
             Genres = new List<string>();

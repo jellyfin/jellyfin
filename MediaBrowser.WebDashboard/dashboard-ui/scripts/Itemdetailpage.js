@@ -288,7 +288,7 @@
             $('#players', page).hide();
         }
 
-        if (item.Artists && item.Artists.length) {
+        if (item.Artists && item.Artists.length && item.Type != "MusicAlbum") {
             $('#artist', page).show().html(getArtistLinksHtml(item.Artists)).trigger('create');
         } else {
             $('#artist', page).hide();

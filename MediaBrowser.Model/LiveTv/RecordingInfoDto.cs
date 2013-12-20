@@ -96,10 +96,10 @@ namespace MediaBrowser.Model.LiveTv
         public string EpisodeTitle { get; set; }
 
         /// <summary>
-        /// Gets or sets the duration ms.
+        /// Gets or sets the run time ticks.
         /// </summary>
-        /// <value>The duration ms.</value>
-        public int DurationMs { get; set; }
+        /// <value>The run time ticks.</value>
+        public long? RunTimeTicks { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the media.
@@ -136,6 +136,48 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value>The audio.</value>
         public ProgramAudio? Audio { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is movie.
+        /// </summary>
+        /// <value><c>true</c> if this instance is movie; otherwise, <c>false</c>.</value>
+        public bool IsMovie { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is sports.
+        /// </summary>
+        /// <value><c>true</c> if this instance is sports; otherwise, <c>false</c>.</value>
+        public bool IsSports { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is series.
+        /// </summary>
+        /// <value><c>true</c> if this instance is series; otherwise, <c>false</c>.</value>
+        public bool IsSeries { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is live.
+        /// </summary>
+        /// <value><c>true</c> if this instance is live; otherwise, <c>false</c>.</value>
+        public bool IsLive { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is news.
+        /// </summary>
+        /// <value><c>true</c> if this instance is news; otherwise, <c>false</c>.</value>
+        public bool IsNews { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is kids.
+        /// </summary>
+        /// <value><c>true</c> if this instance is kids; otherwise, <c>false</c>.</value>
+        public bool IsKids { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is premiere.
+        /// </summary>
+        /// <value><c>true</c> if this instance is premiere; otherwise, <c>false</c>.</value>
+        public bool IsPremiere { get; set; }
 
         /// <summary>
         /// Gets or sets the image tags.

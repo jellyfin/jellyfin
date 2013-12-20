@@ -108,7 +108,7 @@
 
 @media all and (max-width: 400px) {
     .libraryPage .ui-content {
-        padding: 10px 0;
+        padding: 10px 1px;
     }
 }
 
@@ -370,10 +370,6 @@ a.itemTag:hover {
         background-color: transparent;
     }
 
-.itemBackdropContent {
-    height: 230px;
-}
-
 .lnkSibling {
     position: absolute;
     bottom: 240px;
@@ -405,12 +401,13 @@ a.itemTag:hover {
 }
 
 .itemDetailImage {
-    height: 240px;
+    max-height: 240px;
+    max-width: 320px;
     -moz-box-shadow: 0px 0 20px #000;
     -webkit-box-shadow: 0px 0 20px #000;
     box-shadow: 0px 0 20px #000;
     border: solid 1px #222;
-    margin-top: -30px;
+    margin-top: -20px;
 }
 
 .itemDetailGalleryLink img:hover {
@@ -424,10 +421,16 @@ a.itemTag:hover {
     text-align: center;
     font-size: 16px;
     border: 0;
+    background-color: rgba(0,0,0,0.7);
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
 }
 
     .parentName a {
-        color: #000!important;
+        color: #fff!important;
+        font-weight: normal!important;
     }
 
 .inlineItemName {
@@ -439,7 +442,7 @@ a.itemTag:hover {
 }
 
 .itemOverview {
-    max-height: 60px;
+    max-height: 70px;
     overflow-y: auto;
     text-overflow: ellipsis;
 }
@@ -470,9 +473,9 @@ a.itemTag:hover {
 }
 
 .detailSectionHeader {
-    padding: .5em 1em;
+    padding: .5em .75em;
     font-size: 16px;
-    font-weight: bold;
+    font-weight: normal;
     border: 1px solid #181818;
     background: #222;
     white-space: nowrap;
@@ -588,6 +591,10 @@ a.itemTag:hover {
     .detailPageContent {
         max-width: 900px;
     }
+
+    .primaryDetailPageContent {
+        max-width: 800px;
+    }
 }
 
 @media all and (min-width: 1200px) {
@@ -598,6 +605,10 @@ a.itemTag:hover {
 
     .detailPageContent {
         max-width: 1000px;
+    }
+
+    .primaryDetailPageContent {
+        max-width: 800px;
     }
 }
 
@@ -613,14 +624,6 @@ a.itemTag:hover {
 
     .ehsContent {
         max-width: 1070px;
-    }
-
-    .detailPageContent {
-        max-width: 1170px;
-    }
-
-    .primaryDetailPageContent {
-        max-width: 1100px;
     }
 }
 

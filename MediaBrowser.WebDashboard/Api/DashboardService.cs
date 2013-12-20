@@ -496,6 +496,7 @@ namespace MediaBrowser.WebDashboard.Api
                                       "livetvchannels.js",
                                       "livetvguide.js",
                                       "livetvnewrecording.js",
+                                      "livetvprogram.js",
                                       "livetvrecording.js",
                                       "livetvrecordings.js",
                                       "livetvtimer.js",
@@ -595,7 +596,8 @@ namespace MediaBrowser.WebDashboard.Api
                                       "search.css",
                                       "pluginupdates.css",
                                       "remotecontrol.css",
-                                      "userimage.css"
+                                      "userimage.css",
+                                      "livetv.css"
                                   };
 
             var memoryStream = new MemoryStream();

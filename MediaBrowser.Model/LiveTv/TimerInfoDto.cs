@@ -112,10 +112,10 @@ namespace MediaBrowser.Model.LiveTv
         public bool IsPostPaddingRequired { get; set; }
 
         /// <summary>
-        /// Gets or sets the duration ms.
+        /// Gets or sets the run time ticks.
         /// </summary>
-        /// <value>The duration ms.</value>
-        public int DurationMs { get; set; }
+        /// <value>The run time ticks.</value>
+        public long? RunTimeTicks { get; set; }
 
         /// <summary>
         /// Gets or sets the priority.

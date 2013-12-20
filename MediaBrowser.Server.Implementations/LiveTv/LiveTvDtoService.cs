@@ -52,11 +52,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 ExternalSeriesTimerId = info.SeriesTimerId,
                 ServiceName = service.Name,
                 ExternalProgramId = info.ProgramId,
-                Priority = info.Priority
+                Priority = info.Priority,
+                RunTimeTicks = (info.EndDate - info.StartDate).Ticks
             };
-
-            var duration = info.EndDate - info.StartDate;
-            dto.DurationMs = Convert.ToInt32(duration.TotalMilliseconds);
 
             if (!string.IsNullOrEmpty(info.ProgramId))
             {
@@ -177,7 +175,15 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 Audio = info.Audio,
                 IsHD = info.IsHD,
                 ServiceName = service.Name,
-                Url = info.Url
+                Url = info.Url,
+                IsMovie = info.IsMovie,
+                IsSeries = info.IsSeries,
+                IsSports = info.IsSports,
+                IsLive = info.IsLive,
+                IsNews = info.IsNews,
+                IsKids = info.IsKids,
+                IsPremiere = info.IsPremiere,
+                RunTimeTicks = (info.EndDate - info.StartDate).Ticks
             };
 
             var imageTag = GetImageTag(recording);
@@ -191,9 +197,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             {
                 dto.UserData = _dtoService.GetUserItemDataDto(_userDataManager.GetUserData(user.Id, recording.GetUserDataKey()));
             }
-
-            var duration = info.EndDate - info.StartDate;
-            dto.DurationMs = Convert.ToInt32(duration.TotalMilliseconds);
 
             if (!string.IsNullOrEmpty(info.ProgramId))
             {
@@ -264,7 +267,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 ChannelName = program.ChannelName,
                 IsMovie = program.IsMovie,
                 IsSeries = program.IsSeries,
-                IsSports = program.IsSports
+                IsSports = program.IsSports,
+                IsLive = program.IsLive,
+                IsNews = program.IsNews,
+                IsKids = program.IsKids,
+                IsPremiere = program.IsPremiere,
+                RunTimeTicks = (program.EndDate - program.StartDate).Ticks
             };
 
             if (user != null)

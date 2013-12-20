@@ -15,85 +15,139 @@
 
         var html = '';
 
-        var cssClass = "detailTable";
+        //var cssClass = "detailTable";
 
-        html += '<div class="detailTableContainer"><table class="' + cssClass + '">';
+        //html += '<div class="detailTableContainer"><table class="' + cssClass + '">';
 
-        html += '<tr>';
+        //html += '<tr>';
 
-        html += '<th>&nbsp;</th>';
-        html += '<th>Date</th>';
-        html += '<th>Start</th>';
-        html += '<th class="tabletColumn">End</th>';
-        html += '<th>Name</th>';
-        html += '<th class="desktopColumn">Genre</th>';
+        //html += '<th>&nbsp;</th>';
+        //html += '<th>Date</th>';
+        //html += '<th>Start</th>';
+        //html += '<th class="tabletColumn">End</th>';
+        //html += '<th>Name</th>';
 
-        html += '</tr>';
+        //html += '</tr>';
+
+        var currentIndexValue;
 
         for (var i = 0, length = result.Items.length; i < length; i++) {
 
             var program = result.Items[i];
 
-            html += '<tr>';
-
-            html += '<td>';
-
-            if (program.RecordingId) {
-                html += '<button data-recordingid="' + program.RecordingId + '" class="btnCancelRecording" type="button" data-icon="delete" data-inline="true" data-mini="true" data-iconpos="notext">Cancel</button>';
-            } else {
-                html += '<a href="livetvnewrecording.html?programid=' + program.Id + '" data-role="button" type="button" data-icon="facetime-video" data-inline="true" data-mini="true" data-theme="b" data-iconpos="notext">Record</a>';
-            }
-
-            html += '</td>';
-
             var startDate = program.StartDate;
+            var startDateText = '';
 
             try {
 
                 startDate = parseISO8601Date(startDate, { toLocal: true });
+                startDateText = LibraryBrowser.getFutureDateText(startDate);
 
             } catch (err) {
 
             }
 
-            html += '<td>' + startDate.toLocaleDateString() + '</td>';
+            if (startDateText != currentIndexValue) {
 
-            html += '<td>' + LiveTvHelpers.getDisplayTime(program.StartDate) + '</td>';
-
-            html += '<td class="tabletColumn">' + LiveTvHelpers.getDisplayTime(program.EndDate) + '</td>';
-
-            html += '<td>';
-
-            if (program.Name) {
-                //html += '<a href="livetvprogram.html?id=' + program.Id + '">';
-                html += program.Name;
-                //html += '</a>';
+                html += '<h2 class="detailSectionHeader tvProgramSectionHeader">' + startDateText + '</h2>';
+                currentIndexValue = startDateText;
             }
 
-            html += '</td>';
+            html += '<a href="livetvprogram.html?id=' + program.Id + '" class="tvProgram">';
 
-            html += '<td class="desktopColumn">' + program.Genres.join(' / ') + '</td>';
+            html += '<div class="tvProgramTimeSlot">';
+            html += '<div class="tvProgramTimeSlotInner">' + LiveTvHelpers.getDisplayTime(startDate) + '</div>';
+            html += '</div>';
 
-            html += '</tr>';
+            var cssClass = "tvProgramInfo";
+
+            if (program.IsKids) {
+                cssClass += " childProgramInfo";
+            }
+            else if (program.IsSports) {
+                cssClass += " sportsProgramInfo";
+            }
+            else if (program.IsNews) {
+                cssClass += " newsProgramInfo";
+            }
+            else if (program.IsMovie) {
+                cssClass += " movieProgramInfo";
+            }
+
+            html += '<div class="' + cssClass + '">';
+
+            html += '<div class="tvProgramName">' + program.Name + '</div>';
+
+            html += '<div class="tvProgramTime">';
+
+            if (program.IsLive) {
+                html += '<span class="liveTvProgram">LIVE&nbsp;&nbsp;</span>';
+            }
+            else if (program.IsPremiere) {
+                html += '<span class="liveTvProgram">PREMIERE&nbsp;&nbsp;</span>';
+            }
+            else if (program.IsSeries && !program.IsRepeat) {
+                html += '<span class="newTvProgram">NEW&nbsp;&nbsp;</span>';
+            }
+
+            var minutes = program.RunTimeTicks / 600000000;
+
+            minutes = Math.round(minutes || 1) + ' min';
+
+            if (program.EpisodeTitle) {
+
+                html += program.EpisodeTitle + '&nbsp;&nbsp;(' + minutes + ')';
+            } else {
+                html += minutes;
+            }
+
+            html += '</div>';
+            html += '</div>';
+
+            //html += '<tr>';
+
+            //html += '<td>';
+
+            //if (program.RecordingId) {
+            //    html += '<button data-recordingid="' + program.RecordingId + '" class="btnCancelRecording" type="button" data-icon="delete" data-inline="true" data-mini="true" data-iconpos="notext">Cancel</button>';
+            //} else {
+            //    html += '<a href="livetvnewrecording.html?programid=' + program.Id + '" data-role="button" type="button" data-icon="facetime-video" data-inline="true" data-mini="true" data-theme="b" data-iconpos="notext">Record</a>';
+            //}
+
+            //html += '</td>';
+
+            //var startDate = program.StartDate;
+
+            //try {
+
+            //    startDate = parseISO8601Date(startDate, { toLocal: true });
+
+            //} catch (err) {
+
+            //}
+
+            //html += '<td>' + startDate.toLocaleDateString() + '</td>';
+
+            //html += '<td>' + LiveTvHelpers.getDisplayTime(program.StartDate) + '</td>';
+
+            //html += '<td class="tabletColumn">' + LiveTvHelpers.getDisplayTime(program.EndDate) + '</td>';
+
+            //html += '<td>';
+
+            //if (program.Name) {
+            //    //html += '<a href="livetvprogram.html?id=' + program.Id + '">';
+            //    html += program.Name;
+            //    //html += '</a>';
+            //}
+
+            //html += '</td>';
+
+            html += '</a>';
         }
 
-        html += '</table></div>';
+        //html += '</table></div>';
 
-        var elem = $('#programList', page).html(html).trigger('create');
-
-        $('.btnCancelRecording', elem).on('click', function () {
-
-            var recordingId = this.getAttribute('data-recordingid');
-
-            cancelRecording(page, recordingId);
-        });
-
-        $('.btnScheduleRecording', elem).on('click', function () {
-
-            var recordingId = this.getAttribute('data-recordingid');
-
-            scheduleRecording(page, recordingId);
-        });
+        $('#programList', page).html(html).trigger('create');
     }
 
     function loadPrograms(page) {
@@ -165,17 +219,19 @@
 
         getDisplayTime: function (date) {
 
-            try {
+            if ((typeof date).toString().toLowerCase() === 'string') {
+                try {
 
-                date = parseISO8601Date(date, { toLocal: true });
+                    date = parseISO8601Date(date, { toLocal: true });
 
-            } catch (err) {
-                return date;
+                } catch (err) {
+                    return date;
+                }
             }
 
             date = date.toLocaleTimeString();
 
-            date = date.replace('0:00', '0');
+            date = date.replace('0:00', '0').replace(':00 ', '').replace(' ', '');
 
             return date;
         }

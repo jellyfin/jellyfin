@@ -21,7 +21,7 @@
                     <a href="#" data-role="button" id="btnEditImages">Images</a>
                 </div>
 
-                <form id="editItemMetadataForm" class="editMetadataForm" style="margin-top: -20px;">
+                <form class="editItemMetadataForm editMetadataForm" style="margin-top: -20px;">
                     <div class="metadataFormFields">
 
                         <div>
@@ -393,7 +393,7 @@
             </div>
         </div>
         <script type="text/javascript">
-            $('#editItemMetadataForm').on('submit', EditItemMetadataPage.onSubmit);
+            $('.editItemMetadataForm').off('submit', EditItemMetadataPage.onSubmit).on('submit', EditItemMetadataPage.onSubmit);
         </script>
 
     </div>

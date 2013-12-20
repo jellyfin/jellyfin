@@ -2043,22 +2043,14 @@
                 if (item.Type == "Audio") {
 
                     miscInfo.push(Dashboard.getDisplayTime(item.RunTimeTicks));
+                    
                 } else {
                     minutes = item.RunTimeTicks / 600000000;
 
                     minutes = minutes || 1;
 
-                    miscInfo.push(minutes.toFixed(0) + "min");
+                    miscInfo.push(Math.round(minutes) + "min");
                 }
-            }
-
-            if (item.DurationMs) {
-
-                minutes = item.DurationMs / 60000;
-
-                minutes = minutes || 1;
-
-                miscInfo.push(minutes.toFixed(0) + "min");
             }
 
             if (item.OfficialRating && item.Type !== "Season" && item.Type !== "Episode") {
@@ -2086,17 +2078,13 @@
 
         renderOverview: function (elem, item) {
 
-            if (item.Overview || item.OverviewHtml) {
-                var overview = item.OverviewHtml || item.Overview;
+            var overview = item.OverviewHtml || item.Overview || '';
 
-                elem.html(overview).show().trigger('create');
+            elem.html(overview).show().trigger('create');
 
-                $('a', elem).each(function () {
-                    $(this).attr("target", "_blank");
-                });
-            } else {
-                elem.hide();
-            }
+            $('a', elem).each(function () {
+                $(this).attr("target", "_blank");
+            });
 
         },
 
