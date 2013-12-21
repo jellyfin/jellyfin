@@ -34,26 +34,27 @@ namespace MediaBrowser.Providers.Movies
             get { return "TheMovieDb"; }
         }
 
-        public bool Supports(BaseItem item)
+        public bool Supports(IHasImages item)
         {
             return item is Person;
         }
 
-        public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, ImageType imageType, CancellationToken cancellationToken)
+        public async Task<IEnumerable<RemoteImageInfo>> GetImages(IHasImages item, ImageType imageType, CancellationToken cancellationToken)
         {
             var images = await GetAllImages(item, cancellationToken).ConfigureAwait(false);
 
             return images.Where(i => i.Type == imageType);
         }
 
-        public Task<IEnumerable<RemoteImageInfo>> GetAllImages(BaseItem item, CancellationToken cancellationToken)
+        public Task<IEnumerable<RemoteImageInfo>> GetAllImages(IHasImages item, CancellationToken cancellationToken)
         {
             return GetAllImagesInternal(item, true, cancellationToken);
         }
 
-        public async Task<IEnumerable<RemoteImageInfo>> GetAllImagesInternal(BaseItem item, bool retryOnMissingData, CancellationToken cancellationToken)
+        public async Task<IEnumerable<RemoteImageInfo>> GetAllImagesInternal(IHasImages item, bool retryOnMissingData, CancellationToken cancellationToken)
         {
-            var id = item.GetProviderId(MetadataProviders.Tmdb);
+            var person = (Person)item;
+            var id = person.GetProviderId(MetadataProviders.Tmdb);
 
             if (!string.IsNullOrEmpty(id))
             {
@@ -86,7 +87,7 @@ namespace MediaBrowser.Providers.Movies
 
             return new List<RemoteImageInfo>();
         }
-        
+
         private IEnumerable<RemoteImageInfo> GetImages(MovieDbPersonProvider.Images images, string baseImageUrl)
         {
             var list = new List<RemoteImageInfo>();

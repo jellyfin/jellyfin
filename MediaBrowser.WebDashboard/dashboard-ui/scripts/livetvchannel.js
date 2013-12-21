@@ -100,6 +100,16 @@
             } else {
                 html += minutes;
             }
+            
+            if (program.SeriesTimerId) {
+                html += '<div class="timerCircle seriesTimerCircle"></div>';
+                html += '<div class="timerCircle seriesTimerCircle"></div>';
+                html += '<div class="timerCircle seriesTimerCircle"></div>';
+            }
+            else if (program.TimerId) {
+
+                html += '<div class="timerCircle"></div>';
+            }
 
             html += '</div>';
             html += '</div>';
@@ -234,6 +244,61 @@
             date = date.replace('0:00', '0').replace(':00 ', '').replace(' ', '');
 
             return date;
+        },
+        
+        renderMiscProgramInfo: function(elem, obj) {
+
+            var html = [];
+
+            if (obj.IsSeries && !obj.IsRepeat) {
+
+                html.push('<span class="newTvProgram">NEW</span>');
+
+            }
+
+            if (obj.IsLive) {
+
+                html.push('<span class="liveTvProgram">LIVE</span>');
+
+            }
+            
+            if (obj.ChannelId) {
+                html.push('<a class="textlink" href="livetvchannel.html?id=' + obj.ChannelId + '">' + obj.ChannelName + '</a>');
+            }
+
+            if (obj.IsHD) {
+
+                html.push('HD');
+
+            }
+
+            if (obj.Audio) {
+
+                html.push(obj.Audio);
+
+            }
+
+            elem.html(html.join('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;')).trigger('create');
+        },
+        
+        renderOriginalAirDate: function(elem, item) {
+            
+            var airDate = item.OriginalAirDate;
+
+            if (airDate) {
+
+                try {
+                    airDate = parseISO8601Date(airDate, { toLocal: true }).toLocaleDateString();
+                }
+                catch (e) {
+                    console.log("Error parsing date: " + airDate);
+                }
+
+
+                elem.html('Original air date:&nbsp;&nbsp;' + airDate).show();
+            } else {
+                elem.hide();
+            }
         }
 
     };

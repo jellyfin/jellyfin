@@ -71,7 +71,7 @@
 .jstree li {
     margin-left: 10px;
     min-width: 10px;
-    border-bottom: 1px solid #505050;
+    border-bottom: 1px solid #404040;
 }
 
 .jstree li:last-child {

@@ -33,14 +33,15 @@
             var checkSortOption = $('.radioSortBy:checked', page);
             $('.viewSummary', page).html(LibraryBrowser.getViewSummaryHtml(query, checkSortOption)).trigger('create');
 
-            if (view == "Poster") {
-                html += LibraryBrowser.getPosterDetailViewHtml({
-                    items: result.Items,
-                    context: "tv",
-                    shape: "backdrop"
-                });
-                $('.itemsContainer', page).removeClass('timelineItemsContainer');
-            }
+            html += LibraryBrowser.getPosterViewHtml({
+                items: result.Items,
+                useAverageAspectRatio: true,
+                shape: "backdrop",
+                showTitle: true,
+                showParentTitle: true
+            });
+
+            $('.itemsContainer', page).removeClass('timelineItemsContainer');
 
             html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
 

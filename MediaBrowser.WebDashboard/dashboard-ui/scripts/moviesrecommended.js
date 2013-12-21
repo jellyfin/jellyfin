@@ -9,7 +9,7 @@
             SortBy: "DateCreated",
             SortOrder: "Descending",
             IncludeItemTypes: "Movie",
-            Limit: 7,
+            Limit: 6,
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,DateCreated,UserData",
             Filters: "IsUnplayed"
@@ -32,7 +32,7 @@
             SortOrder: "Descending",
             IncludeItemTypes: "Movie",
             Filters: "IsResumable",
-            Limit: 7,
+            Limit: 6,
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,DateCreated,UserData"
         };
@@ -59,7 +59,7 @@
             SortBy: "DateCreated",
             SortOrder: "Descending",
             IncludeItemTypes: "Trailer",
-            Limit: 7,
+            Limit: 6,
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,DateCreated,UserData",
             Filters: "IsUnplayed"

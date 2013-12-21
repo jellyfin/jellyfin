@@ -65,6 +65,12 @@ namespace MediaBrowser.Api.Playback
         /// No need to put this in api docs since it's dlna only
         /// </summary>
         public bool AlbumArt { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type.
+        /// </summary>
+        /// <value>The type.</value>
+        public string Type { get; set; }
     }
 
     public class VideoStreamRequest : StreamRequest

@@ -183,7 +183,7 @@
             $('#scenesCollapsible', page).hide();
         } else {
             $('#scenesCollapsible', page).show();
-            renderScenes(page, item, 6);
+            renderScenes(page, item, 5);
         }
         if (!item.LocalTrailerCount && !item.RemoteTrailers.length) {
             $('#trailersCollapsible', page).addClass('hide');

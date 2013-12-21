@@ -96,7 +96,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>System.String.</returns>
-        public static string GetUserDataKey(BaseItem item)
+        private static string GetUserDataKey(MusicArtist item)
         {
             var id = item.GetProviderId(MetadataProviders.Musicbrainz);
 

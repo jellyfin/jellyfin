@@ -37,32 +37,34 @@ namespace MediaBrowser.Providers.Music
             get { return "FanArt"; }
         }
 
-        public bool Supports(BaseItem item)
+        public bool Supports(IHasImages item)
         {
             return item is MusicAlbum;
         }
 
-        public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, ImageType imageType, CancellationToken cancellationToken)
+        public async Task<IEnumerable<RemoteImageInfo>> GetImages(IHasImages item, ImageType imageType, CancellationToken cancellationToken)
         {
             var images = await GetAllImages(item, cancellationToken).ConfigureAwait(false);
 
             return images.Where(i => i.Type == imageType);
         }
 
-        public Task<IEnumerable<RemoteImageInfo>> GetAllImages(BaseItem item, CancellationToken cancellationToken)
+        public Task<IEnumerable<RemoteImageInfo>> GetAllImages(IHasImages item, CancellationToken cancellationToken)
         {
+            var album = (MusicAlbum)item;
+
             var list = new List<RemoteImageInfo>();
 
-            var artistMusicBrainzId = item.Parent.GetProviderId(MetadataProviders.Musicbrainz);
+            var artistMusicBrainzId = album.Parent.GetProviderId(MetadataProviders.Musicbrainz);
 
             if (!string.IsNullOrEmpty(artistMusicBrainzId))
             {
                 var artistXmlPath = FanArtArtistProvider.GetArtistDataPath(_config.CommonApplicationPaths, artistMusicBrainzId);
                 artistXmlPath = Path.Combine(artistXmlPath, "fanart.xml");
 
-                var musicBrainzReleaseGroupId = item.GetProviderId(MetadataProviders.MusicBrainzReleaseGroup);
+                var musicBrainzReleaseGroupId = album.GetProviderId(MetadataProviders.MusicBrainzReleaseGroup);
 
-                var musicBrainzId = item.GetProviderId(MetadataProviders.Musicbrainz);
+                var musicBrainzId = album.GetProviderId(MetadataProviders.Musicbrainz);
 
                 try
                 {

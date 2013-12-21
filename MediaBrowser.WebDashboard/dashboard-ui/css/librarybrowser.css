@@ -113,7 +113,7 @@
 }
 
 .libraryPage, .libraryPage .itemListContent {
-    background: #494949 url(images/bgflip.png) repeat-x!important;
+    background: #252525 repeat-x!important;
     background-attachment: fixed!important;
 }
 
@@ -123,7 +123,8 @@
 
 .listHeader {
     margin-top: .5em;
-    margin-bottom: 5px;
+    margin-bottom: 0;
+    padding-left: 4px;
 }
 
 .libraryViewNav {
@@ -149,7 +150,7 @@
         }
 
 .ehsContent {
-    max-width: 600px;
+    max-width: 620px;
     margin: 0 auto;
     padding: 0;
     border-spacing: 0;
@@ -344,6 +345,10 @@ a.itemTag:hover {
     left: .8em;
 }
 
+.itemCommunityRating + .userDataIcons {
+    margin-left: 1.5em;
+}
+
 .itemBackdrop {
     background-size: cover;
     background-position: center 15%;
@@ -408,6 +413,11 @@ a.itemTag:hover {
     box-shadow: 0px 0 20px #000;
     border: solid 1px #222;
     margin-top: -20px;
+    margin-bottom: 5px;
+}
+
+.noBackdrop .itemDetailImage {
+    margin-top: 0;
 }
 
 .itemDetailGalleryLink img:hover {
@@ -447,6 +457,17 @@ a.itemTag:hover {
     text-overflow: ellipsis;
 }
 
+.mobileOverview {
+    display: none;
+    padding: 0 .5em;
+    max-height: initial;
+}
+
+.mobileGenres {
+    display: none;
+    padding: 0 .5em;
+}
+
 .libraryPage ::-webkit-scrollbar {
     width: 12px;
     height: 12px;
@@ -476,8 +497,8 @@ a.itemTag:hover {
     padding: .5em .75em;
     font-size: 16px;
     font-weight: normal;
-    border: 1px solid #181818;
-    background: #222;
+    border: 1px solid #000;
+    background: #111;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
@@ -509,20 +530,55 @@ a.itemTag:hover {
 
     .itemBackdrop {
         background-image: none!important;
-        height: 510px;
-    }
-
-    .itemImageContainer {
-        position: absolute;
-        top: -230px;
-        margin: 0 auto 0 -20px;
-        text-align: center;
-        left: 0;
-        width: 100%;
+        height: auto;
     }
 
     .noBackdrop {
-        height: 510px;
+        height: auto;
+    }
+
+    .itemBackdropContent {
+        position: static;
+        padding: 1em 1em 0;
+        background-color: transparent;
+    }
+
+    .parentName {
+        position: static;
+    }
+
+    .itemDetailImage {
+        max-height: 240px;
+        max-width: 100px;
+        margin-top: 0;
+    }
+
+    .mobileOverview, .mobileGenres {
+        display: block;
+    }
+
+    .desktopOverview, .desktopGenres {
+        display: none;
+    }
+
+    .inlineItemName {
+        font-size: 18px;
+    }
+
+        .inlineItemName + .itemMiscInfo {
+            margin-left: 0!important;
+            margin-top: 1em;
+            display: block!important;
+        }
+
+    .primaryDetailPageContent p:first-child {
+        margin-top: 0;
+    }
+
+    .primaryDetailPageContent .userDataIcons {
+        margin-left: 0!important;
+        margin-top: 1.5em;
+        display: block;
     }
 }
 
@@ -585,7 +641,7 @@ a.itemTag:hover {
 @media all and (min-width: 1000px) {
 
     .ehsContent {
-        max-width: 800px;
+        max-width: 820px;
     }
 
     .detailPageContent {
@@ -593,14 +649,14 @@ a.itemTag:hover {
     }
 
     .primaryDetailPageContent {
-        max-width: 800px;
+        max-width: 850px;
     }
 }
 
 @media all and (min-width: 1200px) {
 
     .ehsContent {
-        max-width: 940px;
+        max-width: 950px;
     }
 
     .detailPageContent {
@@ -608,7 +664,7 @@ a.itemTag:hover {
     }
 
     .primaryDetailPageContent {
-        max-width: 800px;
+        max-width: 900px;
     }
 }
 
@@ -623,7 +679,7 @@ a.itemTag:hover {
     }
 
     .ehsContent {
-        max-width: 1070px;
+        max-width: 1080px;
     }
 }
 
@@ -649,7 +705,6 @@ a.itemTag:hover {
 
 .itemMiscInfo {
     color: #ddd;
-    white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
 }
@@ -818,10 +873,10 @@ a.itemTag:hover {
 
 .alphabetPicker {
     position: fixed;
-    right: 2px;
+    right: 1px;
     bottom: 0;
     top: 100px;
-    width: 27px;
+    width: 20px;
     z-index: 1000;
     text-align: center;
     font-size: 14px;
@@ -853,7 +908,7 @@ a.itemTag:hover {
     }
 
     .itemsContainerWithAlphaPicker {
-        margin-right: 27px;
+        margin-right: 10px;
     }
 }
 

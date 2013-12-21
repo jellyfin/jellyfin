@@ -480,18 +480,21 @@
             // Account for screen rotation. Use the larger dimension as the width.
             var screenWidth = Math.max(screen.height, screen.width);
 
+            var mediaStreams = item.MediaStreams || [];
+            
             var baseParams = {
                 audioChannels: 2,
                 audioBitrate: 128000,
                 videoBitrate: 2000000,
                 maxWidth: Math.min(screenWidth, 1280),
                 StartTimeTicks: 0,
-                SubtitleStreamIndex: getInitialSubtitleStreamIndex(item.MediaStreams, user),
-                AudioStreamIndex: getInitialAudioStreamIndex(item.MediaStreams, user),
-                deviceId: ApiClient.deviceId()
+                SubtitleStreamIndex: getInitialSubtitleStreamIndex(mediaStreams, user),
+                AudioStreamIndex: getInitialAudioStreamIndex(mediaStreams, user),
+                deviceId: ApiClient.deviceId(),
+                Type: item.Type
             };
 
-            var videoStream = item.MediaStreams.filter(function (i) {
+            var videoStream = mediaStreams.filter(function (i) {
                 return i.Type == "Video";
             })[0];
 
@@ -573,7 +576,7 @@
 
             $('#qualityButton', nowPlayingBar).show();
 
-            if (item.MediaStreams.filter(function (i) {
+            if (mediaStreams.filter(function (i) {
                 return i.Type == "Audio";
             }).length) {
                 $('#audioTracksButton', nowPlayingBar).show();
@@ -581,7 +584,7 @@
                 $('#audioTracksButton', nowPlayingBar).hide();
             }
 
-            if (item.MediaStreams.filter(function (i) {
+            if (mediaStreams.filter(function (i) {
                 return i.Type == "Subtitle";
             }).length) {
                 $('#subtitleButton', nowPlayingBar).show();
@@ -589,7 +592,7 @@
                 $('#subtitleButton', nowPlayingBar).hide();
             }
 
-            if (item.Chapters.length) {
+            if (item.Chapters && item.Chapters.length) {
                 $('#chaptersButton', nowPlayingBar).show();
             } else {
                 $('#chaptersButton', nowPlayingBar).hide();
@@ -1361,15 +1364,17 @@
 
             var currentTicks = getCurrentTicks();
 
-            for (var i = 0, length = item.Chapters.length; i < length; i++) {
+            var chapters = item.Chapters || [];
 
-                var chapter = item.Chapters[i];
+            for (var i = 0, length = chapters.length; i < length; i++) {
+
+                var chapter = chapters[i];
 
                 var isSelected = false;
 
                 if (currentTicks >= chapter.StartPositionTicks) {
 
-                    var nextChapter = item.Chapters[i + 1];
+                    var nextChapter = chapters[i + 1];
 
                     isSelected = !nextChapter || currentTicks < nextChapter.StartPositionTicks;
                 }

@@ -11,11 +11,7 @@
         $('.itemName', page).html(program.Name);
         $('.itemChannelNumber', page).html('Channel:&nbsp;&nbsp;&nbsp;<a href="livetvchannel.html?id=' + program.ChannelId + '">' + program.ChannelName + '</a>').trigger('create');
 
-        if (program.EpisodeTitle) {
-            $('.itemEpisodeName', page).html('Episode:&nbsp;&nbsp;&nbsp;' + program.EpisodeTitle);
-        } else {
-            $('.itemEpisodeName', page).html('');
-        }
+        $('.itemEpisodeName', page).html(program.EpisodeTitle || '');
 
         if (program.CommunityRating) {
             $('.itemCommunityRating', page).html(LibraryBrowser.getRatingHtml(program)).show();
@@ -166,7 +162,9 @@
 
         $('#btnCancel', page).on('click', function () {
 
-            Dashboard.navigate('livetvchannel.html?id=' + currentProgram.ChannelId);
+            var programId = getParameterByName('programid');
+
+            Dashboard.navigate('livetvprogram.html?id=' + programId);
 
         });
 

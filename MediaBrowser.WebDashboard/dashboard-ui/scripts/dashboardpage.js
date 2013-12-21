@@ -213,6 +213,10 @@
 
             return "<img src='css/images/clients/mbkinect.png' alt='MB Kinect' />";
         }
+        if (clientLowered == "xbmc") {
+
+            return "<img src='css/images/clients/xbmc.png' alt='Xbmc' />";
+        }
 
         return connection.Client;
     },

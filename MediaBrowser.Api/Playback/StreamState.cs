@@ -45,5 +45,7 @@ namespace MediaBrowser.Api.Playback
         public IsoType? IsoType { get; set; }
 
         public List<string> PlayableStreamFileNames { get; set; }
+
+        public bool HasMediaStreams { get; set; }
     }
 }

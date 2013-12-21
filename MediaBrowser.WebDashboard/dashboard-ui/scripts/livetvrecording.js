@@ -20,6 +20,15 @@
 
         });
     }
+    
+    function play() {
+        
+        var userdata = currentItem.UserData || {};
+
+        var mediaType = currentItem.MediaType;
+
+        LibraryBrowser.showPlayMenu(this, currentItem.Id, currentItem.Type, mediaType, userdata.PlaybackPositionTicks);
+    }
 
     function renderRecording(page, item) {
 
@@ -33,13 +42,8 @@
         Dashboard.setPageTitle(name);
 
         $('.itemName', page).html(name);
-        $('.itemChannelNumber', page).html('Channel:&nbsp;&nbsp;&nbsp;<a href="livetvchannel.html?id=' + item.ChannelId + '">' + item.ChannelName + '</a>').trigger('create');
 
-        if (item.EpisodeTitle) {
-            $('.itemEpisodeName', page).html('Episode:&nbsp;&nbsp;&nbsp;' + item.EpisodeTitle);
-        } else {
-            $('.itemEpisodeName', page).html('');
-        }
+        $('.itemEpisodeName', page).html(item.EpisodeTitle || '');
 
         if (item.CommunityRating) {
             $('.itemCommunityRating', page).html(LibraryBrowser.getRatingHtml(item)).show();
@@ -52,6 +56,8 @@
         LibraryBrowser.renderGenres($('.itemGenres', page), item, context);
         LibraryBrowser.renderOverview($('.itemOverview', page), item);
         $('.itemMiscInfo', page).html(LibraryBrowser.getMiscInfoHtml(item));
+
+        LiveTvHelpers.renderMiscProgramInfo($('.miscTvProgramInfo', page), item);
 
         if (ApiClient.isWebSocketOpen()) {
 
@@ -69,12 +75,6 @@
         }
 
         $('.status', page).html('Status:&nbsp;&nbsp;&nbsp;' + item.Status);
-        
-        if (item.Audio) {
-            $('.audio', page).html('Audio:&nbsp;&nbsp;&nbsp;' + item.Audio).show();
-        } else {
-            $('.audio', page).hide();
-        }
 
         Dashboard.getCurrentUser().done(function (user) {
 
@@ -85,6 +85,8 @@
             }
 
         });
+
+        LiveTvHelpers.renderOriginalAirDate($('.airDate', page), item);
 
         Dashboard.hideLoadingMsg();
     }
@@ -107,6 +109,7 @@
         var page = this;
 
         $('#btnDelete', page).on('click', deleteRecording);
+        $('#btnPlay', page).on('click', play);
 
     }).on('pagebeforeshow', "#liveTvRecordingPage", function () {
 

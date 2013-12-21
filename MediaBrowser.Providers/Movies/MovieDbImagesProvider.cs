@@ -61,7 +61,7 @@ namespace MediaBrowser.Providers.Movies
             return SupportsItem(item);
         }
 
-        public static bool SupportsItem(BaseItem item)
+        internal static bool SupportsItem(IHasImages item)
         {
             var trailer = item as Trailer;
 

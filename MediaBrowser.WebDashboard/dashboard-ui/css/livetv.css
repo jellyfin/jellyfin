@@ -81,3 +81,41 @@
 .tvProgram:hover, .tvProgram:hover .tvProgramInfo {
     background-color: #4d90fe;
 }
+
+.timerCircle {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #cc0000;
+    vertical-align: top;
+    border: 1px solid #cc3333;
+    margin-left: 1em;
+}
+
+.seriesTimerCircle {
+    position: relative;
+    margin-left: 0;
+    left: 30px;
+    opacity: .3;
+    margin-left: 1em;
+}
+
+    .seriesTimerCircle + .seriesTimerCircle {
+        opacity: .65;
+        left: 0;
+        margin-left: 0;
+    }
+
+        .seriesTimerCircle + .seriesTimerCircle + .seriesTimerCircle {
+            opacity: 1;
+            left: -30px;
+            margin-left: 0;
+        }
+
+.channelImageContainer .itemDetailImage {
+    max-width: 160px;
+    max-height: 100px;
+    margin-top: 1em;
+    margin-bottom: 1em;
+}

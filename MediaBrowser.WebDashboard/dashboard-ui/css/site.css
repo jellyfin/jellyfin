@@ -716,7 +716,7 @@ progress {
 .imgUserItemRating {
     height: 16px;
     width: 16px;
-    margin-right: 1em;
+    margin-right: .75em;
     cursor: pointer;
     vertical-align: top;
 }

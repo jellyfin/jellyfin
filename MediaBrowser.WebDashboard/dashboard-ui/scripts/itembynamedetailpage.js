@@ -327,7 +327,7 @@
             try {
                 var birthday = parseISO8601Date(item.PremiereDate, { toLocal: true }).toDateString();
 
-                $('#itemBirthday', page).show().html("Birthday:&nbsp;&nbsp;" + birthday);
+                $('#itemBirthday', page).show().html("Born:&nbsp;&nbsp;" + birthday);
             }
             catch (err) {
                 $('#itemBirthday', page).hide();
@@ -341,7 +341,7 @@
             try {
                 var deathday = parseISO8601Date(item.EndDate, { toLocal: true }).toDateString();
 
-                $('#itemDeathDate', page).show().html("Death day:&nbsp;&nbsp;" + deathday);
+                $('#itemDeathDate', page).show().html("Died:&nbsp;&nbsp;" + deathday);
             }
             catch (err) {
                 $('#itemBirthday', page).hide();

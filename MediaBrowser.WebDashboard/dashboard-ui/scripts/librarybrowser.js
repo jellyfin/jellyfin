@@ -1,6 +1,6 @@
 ﻿var LibraryBrowser = (function (window, document, $, screen, localStorage) {
 
-    var defaultBackground = "#999;";
+    var defaultBackground = "#555;";
 
     return {
 
@@ -867,9 +867,9 @@
 
                 if (options.showParentTitle) {
 
-                    html += "<div class='" + cssclass + "'>";
+                    html += "<div class='" + cssclass + "'><b>";
                     html += item.SeriesName || item.Album || "&nbsp;";
-                    html += "</div>";
+                    html += "</b></div>";
                 }
 
                 if (options.showTitle) {
@@ -1983,6 +1983,11 @@
 
                     text = date.toLocaleDateString();
                     miscInfo.push(text);
+
+                    if (item.Type != "Recording") {
+                        text = LiveTvHelpers.getDisplayTime(date);
+                        miscInfo.push(text);
+                    }
                 }
                 catch (e) {
                     console.log("Error parsing date: " + item.PremiereDate);
@@ -2057,18 +2062,6 @@
                 miscInfo.push(item.OfficialRating);
             }
 
-            if (item.Type == "Recording") {
-
-                if (item.IsHD) {
-                    miscInfo.push("HD");
-                }
-
-                if (item.IsRepeat) {
-                    miscInfo.push("Repeat");
-                }
-
-            }
-
             if (item.Video3DFormat) {
                 miscInfo.push("3D");
             }
@@ -2080,7 +2073,7 @@
 
             var overview = item.OverviewHtml || item.Overview || '';
 
-            elem.html(overview).show().trigger('create');
+            elem.html(overview).trigger('create');
 
             $('a', elem).each(function () {
                 $(this).attr("target", "_blank");
@@ -2114,31 +2107,26 @@
 
         renderGenres: function (elem, item, context) {
 
-            if (item.Genres && item.Genres.length) {
+            var html = '';
 
-                var html = '';
+            var genres = item.Genres || [];
 
-                for (var i = 0, length = item.Genres.length; i < length; i++) {
+            for (var i = 0, length = genres.length; i < length; i++) {
 
-                    if (i > 0) {
-                        html += '&nbsp;&nbsp;/&nbsp;&nbsp;';
-                    }
-
-                    var param = item.Type == "Audio" || item.Type == "MusicArtist" || item.Type == "MusicAlbum" ? "musicgenre" : "genre";
-
-                    if (item.MediaType == "Game") {
-                        param = "gamegenre";
-                    }
-
-                    html += '<a class="textlink" href="itembynamedetails.html?context=' + context + '&' + param + '=' + ApiClient.encodeName(item.Genres[i]) + '">' + item.Genres[i] + '</a>';
+                if (i > 0) {
+                    html += '&nbsp;&nbsp;/&nbsp;&nbsp;';
                 }
 
-                elem.show().html(html).trigger('create');
+                var param = item.Type == "Audio" || item.Type == "MusicArtist" || item.Type == "MusicAlbum" ? "musicgenre" : "genre";
 
+                if (item.MediaType == "Game") {
+                    param = "gamegenre";
+                }
 
-            } else {
-                elem.hide();
+                html += '<a class="textlink" href="itembynamedetails.html?context=' + context + '&' + param + '=' + ApiClient.encodeName(genres[i]) + '">' + genres[i] + '</a>';
             }
+
+            elem.html(html).trigger('create');
         },
 
         renderPremiereDate: function (elem, item) {

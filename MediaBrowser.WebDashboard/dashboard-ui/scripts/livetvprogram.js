@@ -18,13 +18,8 @@
             Dashboard.setPageTitle(name);
 
             $('.itemName', page).html(name);
-            $('.itemChannelNumber', page).html('Channel:&nbsp;&nbsp;&nbsp;<a href="livetvchannel.html?id=' + item.ChannelId + '">' + item.ChannelName + '</a>').trigger('create');
 
-            if (item.EpisodeTitle) {
-                $('.itemEpisodeName', page).html('Episode:&nbsp;&nbsp;&nbsp;' + item.EpisodeTitle);
-            } else {
-                $('.itemEpisodeName', page).html('');
-            }
+            $('.itemEpisodeName', page).html(item.EpisodeTitle || '');
 
             if (item.CommunityRating) {
                 $('.itemCommunityRating', page).html(LibraryBrowser.getRatingHtml(item)).show();
@@ -38,6 +33,8 @@
             LibraryBrowser.renderOverview($('.itemOverview', page), item);
             $('.itemMiscInfo', page).html(LibraryBrowser.getMiscInfoHtml(item));
 
+            LiveTvHelpers.renderMiscProgramInfo($('.miscTvProgramInfo', page), item);
+
             if (ApiClient.isWebSocketOpen()) {
 
                 var vals = [item.Type, item.Id, item.Name];
@@ -46,6 +43,8 @@
 
                 ApiClient.sendWebSocketMessage("Context", vals.join('|'));
             }
+
+            $('#recordButtonContainer', page).show();
 
             if (MediaPlayer.canPlay(item)) {
                 $('#playButtonContainer', page).show();
@@ -63,6 +62,8 @@
 
             });
 
+            LiveTvHelpers.renderOriginalAirDate($('.airDate', page), item);
+
             Dashboard.hideLoadingMsg();
         });
     }
@@ -70,6 +71,14 @@
     $(document).on('pageinit', "#liveTvProgramPage", function () {
 
         var page = this;
+
+        $('#btnRecord', page).on('click', function() {
+
+            var id = getParameterByName('id');
+            
+            Dashboard.navigate('livetvnewrecording.html?programid=' + id);
+
+        });
 
     }).on('pageshow', "#liveTvProgramPage", function () {
 

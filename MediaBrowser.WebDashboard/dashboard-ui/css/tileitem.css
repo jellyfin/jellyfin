@@ -1,5 +1,5 @@
 ﻿.tileItem {
-    background: #333;
+    background: #1e1e1e;
     padding: 10px 7px 5px;
     margin: 3px 0;
     font-weight: normal!important;
@@ -38,7 +38,7 @@
 }
 
 .defaultTileImage {
-    background-color: #999;
+    background-color: #555;
 }
 
 .tileItem p {

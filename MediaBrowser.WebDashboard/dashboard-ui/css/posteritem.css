@@ -1,5 +1,5 @@
 ﻿.posterItem {
-    margin: 3px;
+    margin: 6px;
     text-shadow: none;
     font-weight: normal!important;
     display: inline-block;
@@ -8,7 +8,6 @@
     text-decoration: none;
     text-align: left;
     overflow: hidden;
-    border: 1px solid #555;
 }
 
     .posterItem:hover {
@@ -46,14 +45,17 @@
     padding-left: 2px;
 }
 
+.posterItemTextContainer {
+    
+}
 
 .posterItemText {
     text-overflow: ellipsis;
     overflow: hidden;
     text-wrap: none;
     white-space: nowrap;
-    padding: 5px 4px 4px;
-    background: #181818;
+    padding: 6px 5px 5px;
+    background: #111;
     text-shadow: none;
 }
 
@@ -63,7 +65,6 @@
 
 .posterItemText + .posterItemText {
     padding-top: 2px;
-    border-top: 0;
 }
 
 .posterItemText + .posterItemProgress {
@@ -122,11 +123,6 @@
 
 .portraitPosterItem {
     width: 100px;
-    border-color: #555;
-}
-
-.smallBackdropPosterItem {
-    border-color: #555;
 }
 
 .portraitPosterItem .posterItemImage {
