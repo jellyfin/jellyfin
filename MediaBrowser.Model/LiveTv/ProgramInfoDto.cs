@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using MediaBrowser.Model.Dto;
+﻿using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using System;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Model.LiveTv
 {
@@ -12,6 +12,18 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         public string Id { get; set; }
 
+        /// <summary>
+        /// Gets or sets the timer identifier.
+        /// </summary>
+        /// <value>The timer identifier.</value>
+        public string TimerId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the series timer identifier.
+        /// </summary>
+        /// <value>The series timer identifier.</value>
+        public string SeriesTimerId { get; set; }
+        
         /// <summary>
         /// Gets or sets the external identifier.
         /// </summary>

@@ -23,19 +23,19 @@ namespace MediaBrowser.Providers.Music
             get { return "last.fm"; }
         }
 
-        public bool Supports(BaseItem item)
+        public bool Supports(IHasImages item)
         {
             return item is MusicAlbum || item is MusicArtist;
         }
 
-        public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, ImageType imageType, CancellationToken cancellationToken)
+        public async Task<IEnumerable<RemoteImageInfo>> GetImages(IHasImages item, ImageType imageType, CancellationToken cancellationToken)
         {
             var images = await GetAllImages(item, cancellationToken).ConfigureAwait(false);
 
             return images.Where(i => i.Type == imageType);
         }
 
-        public Task<IEnumerable<RemoteImageInfo>> GetAllImages(BaseItem item, CancellationToken cancellationToken)
+        public Task<IEnumerable<RemoteImageInfo>> GetAllImages(IHasImages item, CancellationToken cancellationToken)
         {
             var list = new List<RemoteImageInfo>();
 

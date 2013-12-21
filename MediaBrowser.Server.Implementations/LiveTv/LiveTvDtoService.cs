@@ -243,18 +243,20 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return dto;
         }
 
-        public ProgramInfoDto GetProgramInfoDto(ProgramInfo program, LiveTvChannel channel, User user = null)
+        public ProgramInfoDto GetProgramInfoDto(LiveTvProgram item, User user = null)
         {
+            var program = item.ProgramInfo;
+            
             var dto = new ProgramInfoDto
             {
-                Id = GetInternalProgramId(channel.ServiceName, program.Id).ToString("N"),
-                ChannelId = channel.Id.ToString("N"),
+                Id = GetInternalProgramId(item.ServiceName, program.Id).ToString("N"),
+                ChannelId = GetInternalChannelId(item.ServiceName, program.ChannelId, program.ChannelName).ToString("N"),
                 Overview = program.Overview,
                 EndDate = program.EndDate,
                 Genres = program.Genres,
                 ExternalId = program.Id,
                 Name = program.Name,
-                ServiceName = channel.ServiceName,
+                ServiceName = item.ServiceName,
                 StartDate = program.StartDate,
                 OfficialRating = program.OfficialRating,
                 IsHD = program.IsHD,
@@ -277,7 +279,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             if (user != null)
             {
-                //dto.UserData = _dtoService.GetUserItemDataDto(_userDataManager.GetUserData(user.Id, info.GetUserDataKey()));
+                dto.UserData = _dtoService.GetUserItemDataDto(_userDataManager.GetUserData(user.Id, item.GetUserDataKey()));
             }
 
             return dto;

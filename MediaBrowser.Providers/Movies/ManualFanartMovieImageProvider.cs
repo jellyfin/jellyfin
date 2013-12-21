@@ -36,23 +36,24 @@ namespace MediaBrowser.Providers.Movies
             get { return "FanArt"; }
         }
 
-        public bool Supports(BaseItem item)
+        public bool Supports(IHasImages item)
         {
-            return FanArtMovieProvider.Current.Supports(item);
+            return FanArtMovieProvider.SupportsItem(item);
         }
 
-        public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, ImageType imageType, CancellationToken cancellationToken)
+        public async Task<IEnumerable<RemoteImageInfo>> GetImages(IHasImages item, ImageType imageType, CancellationToken cancellationToken)
         {
             var images = await GetAllImages(item, cancellationToken).ConfigureAwait(false);
 
             return images.Where(i => i.Type == imageType);
         }
 
-        public Task<IEnumerable<RemoteImageInfo>> GetAllImages(BaseItem item, CancellationToken cancellationToken)
+        public Task<IEnumerable<RemoteImageInfo>> GetAllImages(IHasImages item, CancellationToken cancellationToken)
         {
+            var baseItem = (BaseItem)item;
             var list = new List<RemoteImageInfo>();
 
-            var movieId = item.GetProviderId(MetadataProviders.Tmdb);
+            var movieId = baseItem.GetProviderId(MetadataProviders.Tmdb);
 
             if (!string.IsNullOrEmpty(movieId))
             {
@@ -71,7 +72,7 @@ namespace MediaBrowser.Providers.Movies
             var language = _config.Configuration.PreferredMetadataLanguage;
 
             var isLanguageEn = string.Equals(language, "en", StringComparison.OrdinalIgnoreCase);
-            
+
             // Sort first by width to prioritize HD versions
             list = list.OrderByDescending(i => i.Width ?? 0)
                 .ThenByDescending(i =>

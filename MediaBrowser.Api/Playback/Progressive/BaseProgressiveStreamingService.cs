@@ -5,12 +5,14 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.Playback.Progressive
@@ -22,8 +24,8 @@ namespace MediaBrowser.Api.Playback.Progressive
     {
         protected readonly IImageProcessor ImageProcessor;
 
-        protected BaseProgressiveStreamingService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService, IFileSystem fileSystem, IItemRepository itemRepository, IImageProcessor imageProcessor)
-            : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, dtoService, fileSystem, itemRepository)
+        protected BaseProgressiveStreamingService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService, IFileSystem fileSystem, IItemRepository itemRepository, ILiveTvManager liveTvManager, IImageProcessor imageProcessor)
+            : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, dtoService, fileSystem, itemRepository, liveTvManager)
         {
             ImageProcessor = imageProcessor;
         }
@@ -178,7 +180,7 @@ namespace MediaBrowser.Api.Playback.Progressive
         /// <returns>Task.</returns>
         protected object ProcessRequest(StreamRequest request, bool isHeadRequest)
         {
-            var state = GetState(request);
+            var state = GetState(request, CancellationToken.None).Result;
 
             var responseHeaders = new Dictionary<string, string>();
 

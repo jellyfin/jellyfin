@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaInfo;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Configuration;
@@ -62,6 +63,7 @@ namespace MediaBrowser.Api.Playback
         protected IFileSystem FileSystem { get; private set; }
 
         protected IItemRepository ItemRepository { get; private set; }
+        protected ILiveTvManager LiveTvManager { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseStreamingService" /> class.
@@ -74,8 +76,9 @@ namespace MediaBrowser.Api.Playback
         /// <param name="dtoService">The dto service.</param>
         /// <param name="fileSystem">The file system.</param>
         /// <param name="itemRepository">The item repository.</param>
-        protected BaseStreamingService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService, IFileSystem fileSystem, IItemRepository itemRepository)
+        protected BaseStreamingService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IDtoService dtoService, IFileSystem fileSystem, IItemRepository itemRepository, ILiveTvManager liveTvManager)
         {
+            LiveTvManager = liveTvManager;
             ItemRepository = itemRepository;
             FileSystem = fileSystem;
             DtoService = dtoService;
@@ -194,6 +197,10 @@ namespace MediaBrowser.Api.Playback
             {
                 args += string.Format("-map 0:{0}", state.VideoStream.Index);
             }
+            else if (!state.HasMediaStreams)
+            {
+                args += string.Format("-map 0:{0}", 0);
+            }
             else
             {
                 args += "-map -0:v";
@@ -202,6 +209,10 @@ namespace MediaBrowser.Api.Playback
             if (state.AudioStream != null)
             {
                 args += string.Format(" -map 0:{0}", state.AudioStream.Index);
+            }
+            else if (!state.HasMediaStreams)
+            {
+                args += string.Format(" -map 0:{0}", 1);
             }
 
             else
@@ -336,7 +347,10 @@ namespace MediaBrowser.Api.Playback
             // If fixed dimensions were supplied
             if (request.Width.HasValue && request.Height.HasValue)
             {
-                return string.Format(" -vf \"scale=trunc({0}/2)*2:trunc({1}/2)*2{2}\"", request.Width.Value, request.Height.Value, assSubtitleParam);
+                var widthParam = request.Width.Value.ToString(UsCulture);
+                var heightParam = request.Height.Value.ToString(UsCulture);
+
+                return string.Format(" -vf \"scale=trunc({0}/2)*2:trunc({1}/2)*2{2}\"", widthParam, heightParam, assSubtitleParam);
             }
 
             var isH264Output = outputVideoCodec.Equals("libx264", StringComparison.OrdinalIgnoreCase);
@@ -344,33 +358,41 @@ namespace MediaBrowser.Api.Playback
             // If a fixed width was requested
             if (request.Width.HasValue)
             {
+                var widthParam = request.Width.Value.ToString(UsCulture);
+                
                 return isH264Output ?
-                    string.Format(" -vf \"scale={0}:trunc(ow/a/2)*2{1}\"", request.Width.Value, assSubtitleParam) :
-                    string.Format(" -vf \"scale={0}:-1{1}\"", request.Width.Value, assSubtitleParam);
+                    string.Format(" -vf \"scale={0}:trunc(ow/a/2)*2{1}\"", widthParam, assSubtitleParam) :
+                    string.Format(" -vf \"scale={0}:-1{1}\"", widthParam, assSubtitleParam);
             }
 
             // If a fixed height was requested
             if (request.Height.HasValue)
             {
+                var heightParam = request.Height.Value.ToString(UsCulture);
+                
                 return isH264Output ?
-                    string.Format(" -vf \"scale=trunc(oh*a*2)/2:{0}{1}\"", request.Height.Value, assSubtitleParam) :
-                    string.Format(" -vf \"scale=-1:{0}{1}\"", request.Height.Value, assSubtitleParam);
+                    string.Format(" -vf \"scale=trunc(oh*a*2)/2:{0}{1}\"", heightParam, assSubtitleParam) :
+                    string.Format(" -vf \"scale=-1:{0}{1}\"", heightParam, assSubtitleParam);
             }
 
             // If a max width was requested
             if (request.MaxWidth.HasValue && (!request.MaxHeight.HasValue || state.VideoStream == null))
             {
+                var maxWidthParam = request.MaxWidth.Value.ToString(UsCulture);
+                
                 return isH264Output ?
-                    string.Format(" -vf \"scale=min(iw\\,{0}):trunc(ow/a/2)*2{1}\"", request.MaxWidth.Value, assSubtitleParam) :
-                    string.Format(" -vf \"scale=min(iw\\,{0}):-1{1}\"", request.MaxWidth.Value, assSubtitleParam);
+                    string.Format(" -vf \"scale=min(iw\\,{0}):trunc(ow/a/2)*2{1}\"", maxWidthParam, assSubtitleParam) :
+                    string.Format(" -vf \"scale=min(iw\\,{0}):-1{1}\"", maxWidthParam, assSubtitleParam);
             }
 
             // If a max height was requested
             if (request.MaxHeight.HasValue && (!request.MaxWidth.HasValue || state.VideoStream == null))
             {
+                var maxHeightParam = request.MaxHeight.Value.ToString(UsCulture);
+                
                 return isH264Output ?
-                    string.Format(" -vf \"scale=trunc(oh*a*2)/2:min(ih\\,{0}){1}\"", request.MaxHeight.Value, assSubtitleParam) :
-                    string.Format(" -vf \"scale=-1:min(ih\\,{0}){1}\"", request.MaxHeight.Value, assSubtitleParam);
+                    string.Format(" -vf \"scale=trunc(oh*a*2)/2:min(ih\\,{0}){1}\"", maxHeightParam, assSubtitleParam) :
+                    string.Format(" -vf \"scale=-1:min(ih\\,{0}){1}\"", maxHeightParam, assSubtitleParam);
             }
 
             if (state.VideoStream == null)
@@ -390,7 +412,10 @@ namespace MediaBrowser.Api.Playback
             // If we're encoding with libx264, it can't handle odd numbered widths or heights, so we'll have to fix that
             if (isH264Output)
             {
-                return string.Format(" -vf \"scale=trunc({0}/2)*2:trunc({1}/2)*2{2}\"", outputSize.Width, outputSize.Height, assSubtitleParam);
+                var widthParam = outputSize.Width.ToString(UsCulture);
+                var heightParam = outputSize.Height.ToString(UsCulture);
+
+                return string.Format(" -vf \"scale=trunc({0}/2)*2:trunc({1}/2)*2{2}\"", widthParam, heightParam, assSubtitleParam);
             }
 
             // Otherwise use -vf scale since ffmpeg will ensure internally that the aspect ratio is preserved
@@ -823,11 +848,10 @@ namespace MediaBrowser.Api.Playback
         /// Gets the state.
         /// </summary>
         /// <param name="request">The request.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>StreamState.</returns>
-        protected StreamState GetState(StreamRequest request)
+        protected async Task<StreamState> GetState(StreamRequest request, CancellationToken cancellationToken)
         {
-            var item = DtoService.GetItemByDtoId(request.Id);
-
             var url = Request.PathInfo;
 
             if (!request.AudioCodec.HasValue)
@@ -838,22 +862,48 @@ namespace MediaBrowser.Api.Playback
             var state = new StreamState
             {
                 Request = request,
-                RequestedUrl = url,
-                MediaPath = item.Path,
-                IsRemote = item.LocationType == LocationType.Remote
+                RequestedUrl = url
             };
 
-            var video = item as Video;
+            BaseItem item;
 
-            if (video != null)
+            if (string.Equals(request.Type, "Recording", StringComparison.OrdinalIgnoreCase))
             {
-                state.IsInputVideo = true;
-                state.VideoType = video.VideoType;
-                state.IsoType = video.IsoType;
+                var recording = await LiveTvManager.GetInternalRecording(request.Id, cancellationToken).ConfigureAwait(false);
 
-                state.PlayableStreamFileNames = video.PlayableStreamFileNames == null
-                    ? new List<string>()
-                    : video.PlayableStreamFileNames.ToList();
+                state.VideoType = VideoType.VideoFile;
+                state.IsInputVideo = string.Equals(recording.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase);
+                state.PlayableStreamFileNames = new List<string>();
+
+                if (!string.IsNullOrEmpty(recording.RecordingInfo.Path) && File.Exists(recording.RecordingInfo.Path))
+                {
+                    state.MediaPath = recording.RecordingInfo.Path;
+                    state.IsRemote = false;
+                }
+                else if (!string.IsNullOrEmpty(recording.RecordingInfo.Url))
+                {
+                    state.MediaPath = recording.RecordingInfo.Url;
+                    state.IsRemote = true;
+                }
+
+                item = recording;
+            }
+            else
+            {
+                item = DtoService.GetItemByDtoId(request.Id);
+
+                var video = item as Video;
+
+                if (video != null)
+                {
+                    state.IsInputVideo = true;
+                    state.VideoType = video.VideoType;
+                    state.IsoType = video.IsoType;
+
+                    state.PlayableStreamFileNames = video.PlayableStreamFileNames == null
+                        ? new List<string>()
+                        : video.PlayableStreamFileNames.ToList();
+                }
             }
 
             var videoRequest = request as VideoStreamRequest;
@@ -879,6 +929,8 @@ namespace MediaBrowser.Api.Playback
             {
                 state.AudioStream = GetMediaStream(mediaStreams, null, MediaStreamType.Audio, true);
             }
+
+            state.HasMediaStreams = mediaStreams.Count > 0;
 
             return state;
         }
