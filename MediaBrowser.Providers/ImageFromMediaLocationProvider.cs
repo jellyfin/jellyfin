@@ -351,7 +351,8 @@ namespace MediaBrowser.Providers
         private void PopulateThumb(BaseItem item, ItemResolveArgs args)
         {
             // Thumbnail Image
-            var image = GetImage(item, args, "thumb");
+            var image = GetImage(item, args, "thumb") ??
+                GetImage(item, args, "landscape");
 
             if (image == null)
             {
