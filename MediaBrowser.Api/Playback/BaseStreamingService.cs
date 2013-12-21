@@ -809,6 +809,11 @@ namespace MediaBrowser.Api.Playback
         /// <returns>System.String.</returns>
         protected string GetUserAgent(string path)
         {
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentNullException("path");
+
+            }
             if (path.IndexOf("apple.com", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 return "QuickTime/7.7.4";
@@ -892,6 +897,9 @@ namespace MediaBrowser.Api.Playback
             {
                 item = DtoService.GetItemByDtoId(request.Id);
 
+                state.MediaPath = item.Path;
+                state.IsRemote = item.LocationType == LocationType.Remote;
+                
                 var video = item as Video;
 
                 if (video != null)
