@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using System.IO;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
@@ -49,6 +50,11 @@ namespace MediaBrowser.Api
             where T : class
         {
             return ResultFactory.GetOptimizedResult(Request, result);
+        }
+
+        protected object ToStreamResult(Stream stream, string contentType)
+        {
+            return ResultFactory.GetResult(stream, contentType);
         }
 
         /// <summary>

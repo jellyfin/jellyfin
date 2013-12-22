@@ -2,7 +2,7 @@
 
 namespace MediaBrowser.Controller.LiveTv
 {
-    public class ImageResponseInfo
+    public class StreamResponseInfo
     {
         /// <summary>
         /// Gets or sets the stream.

@@ -124,6 +124,11 @@ namespace MediaBrowser.Controller.Library
         {
             var filename = Path.GetFileName(path);
 
+            if (string.Equals(path, "specials", StringComparison.OrdinalIgnoreCase))
+            {
+                return 0;
+            }
+
             // Look for one of the season folder names
             foreach (var name in SeasonFolderNames)
             {

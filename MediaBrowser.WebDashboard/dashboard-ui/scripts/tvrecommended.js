@@ -36,7 +36,7 @@
             SortOrder: "Descending",
             IncludeItemTypes: "Episode",
             Filters: "IsResumable",
-            Limit: 4,
+            Limit: 3,
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,SeriesInfo,UserData",
             ExcludeLocationTypes: "Virtual"

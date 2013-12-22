@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -85,7 +84,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="channelId">The channel identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{Stream}.</returns>
-        Task<ImageResponseInfo> GetChannelImageAsync(string channelId, CancellationToken cancellationToken);
+        Task<StreamResponseInfo> GetChannelImageAsync(string channelId, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the recording image asynchronous. This only needs to be implemented if an image path or url cannot be supplied to RecordingInfo
@@ -93,7 +92,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="recordingId">The recording identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{ImageResponseInfo}.</returns>
-        Task<ImageResponseInfo> GetRecordingImageAsync(string recordingId, CancellationToken cancellationToken);
+        Task<StreamResponseInfo> GetRecordingImageAsync(string recordingId, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the program image asynchronous. This only needs to be implemented if an image path or url cannot be supplied to ProgramInfo
@@ -102,7 +101,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="channelId">The channel identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{ImageResponseInfo}.</returns>
-        Task<ImageResponseInfo> GetProgramImageAsync(string programId, string channelId, CancellationToken cancellationToken);
+        Task<StreamResponseInfo> GetProgramImageAsync(string programId, string channelId, CancellationToken cancellationToken);
         
         /// <summary>
         /// Gets the recordings asynchronous.
@@ -146,7 +145,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="recordingId">The recording identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{Stream}.</returns>
-        Task<Stream> GetRecordingStream(string recordingId, CancellationToken cancellationToken);
+        Task<StreamResponseInfo> GetRecordingStream(string recordingId, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the channel stream.
@@ -154,6 +153,6 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="recordingId">The recording identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{Stream}.</returns>
-        Task<Stream> GetChannelStream(string recordingId, CancellationToken cancellationToken);
+        Task<StreamResponseInfo> GetChannelStream(string recordingId, CancellationToken cancellationToken);
     }
 }

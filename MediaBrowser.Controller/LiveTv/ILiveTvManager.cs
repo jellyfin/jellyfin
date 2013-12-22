@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using System.IO;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
 using System.Collections.Generic;
@@ -153,6 +154,14 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>LiveTvRecording.</returns>
         Task<LiveTvRecording> GetInternalRecording(string id, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the recording stream.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{Stream}.</returns>
+        Task<StreamResponseInfo> GetRecordingStream(string id, CancellationToken cancellationToken);
         
         /// <summary>
         /// Gets the program.

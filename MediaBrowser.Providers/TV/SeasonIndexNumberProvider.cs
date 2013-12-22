@@ -11,18 +11,14 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.TV
 {
-    /// <summary>
-    /// Making this a provider because of how slow it is
-    /// It only ever needs to run once
-    /// </summary>
-    public class EpisodeIndexNumberProvider : BaseMetadataProvider
+    class SeasonIndexNumberProvider : BaseMetadataProvider
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseMetadataProvider" /> class.
         /// </summary>
         /// <param name="logManager">The log manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
-        public EpisodeIndexNumberProvider(ILogManager logManager, IServerConfigurationManager configurationManager)
+        public SeasonIndexNumberProvider(ILogManager logManager, IServerConfigurationManager configurationManager)
             : base(logManager, configurationManager)
         {
         }
@@ -50,7 +46,7 @@ namespace MediaBrowser.Providers.TV
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         public override bool Supports(BaseItem item)
         {
-            if (item is Episode)
+            if (item is Season)
             {
                 var locationType = item.LocationType;
                 return locationType != LocationType.Virtual && locationType != LocationType.Remote;
@@ -63,24 +59,12 @@ namespace MediaBrowser.Providers.TV
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="force">if set to <c>true</c> [force].</param>
+        /// <param name="providerInfo">The provider information.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.Boolean}.</returns>
         public override Task<bool> FetchAsync(BaseItem item, bool force, BaseProviderInfo providerInfo, CancellationToken cancellationToken)
         {
-            var episode = (Episode)item;
-
-            episode.IndexNumber = TVUtils.GetEpisodeNumberFromFile(item.Path, item.Parent is Season);
-            episode.IndexNumberEnd = TVUtils.GetEndingEpisodeNumberFromFile(item.Path);
-
-            if (!episode.ParentIndexNumber.HasValue)
-            {
-                var season = episode.Parent as Season;
-
-                if (season != null)
-                {
-                    episode.ParentIndexNumber = season.IndexNumber;
-                }
-            }
+            item.IndexNumber = TVUtils.GetSeasonNumberFromPath(item.Path);
 
             SetLastRefreshed(item, DateTime.UtcNow, providerInfo);
 

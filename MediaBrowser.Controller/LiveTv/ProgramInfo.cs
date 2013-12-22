@@ -128,12 +128,6 @@ namespace MediaBrowser.Controller.LiveTv
         public bool IsSeries { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is video.
-        /// </summary>
-        /// <value><c>true</c> if this instance is video; otherwise, <c>false</c>.</value>
-        public bool IsVideo { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether this instance is live.
         /// </summary>
         /// <value><c>true</c> if this instance is live; otherwise, <c>false</c>.</value>

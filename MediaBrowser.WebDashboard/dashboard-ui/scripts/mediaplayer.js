@@ -661,7 +661,7 @@
 
             currentItem = item;
             curentDurationTicks = item.RunTimeTicks;
-            alert(JSON.stringify(item));
+
             return videoElement[0];
         };
 
