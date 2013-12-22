@@ -41,6 +41,18 @@ namespace MediaBrowser.Model.Entities
         /// <summary>
         /// The official rating
         /// </summary>
-        OfficialRating
+        OfficialRating,
+        /// <summary>
+        /// The images
+        /// </summary>
+        Images,
+        /// <summary>
+        /// The backdrops
+        /// </summary>
+        Backdrops,
+        /// <summary>
+        /// The screenshots
+        /// </summary>
+        Screenshots
     }
 }

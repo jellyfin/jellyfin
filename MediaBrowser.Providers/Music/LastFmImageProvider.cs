@@ -90,7 +90,7 @@ namespace MediaBrowser.Providers.Music
                 ? ConfigurationManager.Configuration.DownloadMusicAlbumImages
                 : ConfigurationManager.Configuration.DownloadMusicArtistImages;
 
-            if (configSetting.Primary && !item.HasImage(ImageType.Primary))
+            if (configSetting.Primary && !item.HasImage(ImageType.Primary) && !item.LockedFields.Contains(MetadataFields.Images))
             {
                 var image = images.FirstOrDefault(i => i.Type == ImageType.Primary);
 
