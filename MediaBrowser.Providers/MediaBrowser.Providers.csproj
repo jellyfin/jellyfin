@@ -134,6 +134,7 @@
     <Compile Include="TV\ManualTvdbPersonImageProvider.cs" />
     <Compile Include="TV\ManualTvdbSeasonImageProvider.cs" />
     <Compile Include="TV\ManualTvdbSeriesImageProvider.cs" />
+    <Compile Include="TV\SeasonIndexNumberProvider.cs" />
     <Compile Include="TV\TvdbEpisodeProvider.cs" />
     <Compile Include="TV\TvdbSeasonProvider.cs" />
     <Compile Include="TV\TvdbSeriesProvider.cs" />

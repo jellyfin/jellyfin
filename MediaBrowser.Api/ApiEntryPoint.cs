@@ -29,12 +29,16 @@ namespace MediaBrowser.Api
         /// <value>The logger.</value>
         private ILogger Logger { get; set; }
 
+        /// <summary>
+        /// The application paths
+        /// </summary>
         private readonly IServerApplicationPaths AppPaths;
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ApiEntryPoint" /> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
+        /// <param name="appPaths">The application paths.</param>
         public ApiEntryPoint(ILogger logger, IServerApplicationPaths appPaths)
         {
             Logger = logger;
@@ -51,6 +55,10 @@ namespace MediaBrowser.Api
             try
             {
                 DeleteEncodedMediaCache();
+            }
+            catch (DirectoryNotFoundException)
+            {
+                // Don't clutter the log
             }
             catch (IOException ex)
             {

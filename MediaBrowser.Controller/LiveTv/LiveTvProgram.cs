@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.LiveTv;
 
 namespace MediaBrowser.Controller.LiveTv
 {
@@ -15,13 +16,15 @@ namespace MediaBrowser.Controller.LiveTv
 
         public ProgramInfo ProgramInfo { get; set; }
 
+        public ChannelType ChannelType { get; set; }
+
         public string ServiceName { get; set; }
 
         public override string MediaType
         {
             get
             {
-                return ProgramInfo.IsVideo ? Model.Entities.MediaType.Video : Model.Entities.MediaType.Audio;
+                return ChannelType == ChannelType.TV ? Model.Entities.MediaType.Video : Model.Entities.MediaType.Audio;
             }
         }
 

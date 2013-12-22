@@ -359,7 +359,7 @@ namespace MediaBrowser.Api.Playback
             if (request.Width.HasValue)
             {
                 var widthParam = request.Width.Value.ToString(UsCulture);
-                
+
                 return isH264Output ?
                     string.Format(" -vf \"scale={0}:trunc(ow/a/2)*2{1}\"", widthParam, assSubtitleParam) :
                     string.Format(" -vf \"scale={0}:-1{1}\"", widthParam, assSubtitleParam);
@@ -369,7 +369,7 @@ namespace MediaBrowser.Api.Playback
             if (request.Height.HasValue)
             {
                 var heightParam = request.Height.Value.ToString(UsCulture);
-                
+
                 return isH264Output ?
                     string.Format(" -vf \"scale=trunc(oh*a*2)/2:{0}{1}\"", heightParam, assSubtitleParam) :
                     string.Format(" -vf \"scale=-1:{0}{1}\"", heightParam, assSubtitleParam);
@@ -379,7 +379,7 @@ namespace MediaBrowser.Api.Playback
             if (request.MaxWidth.HasValue && (!request.MaxHeight.HasValue || state.VideoStream == null))
             {
                 var maxWidthParam = request.MaxWidth.Value.ToString(UsCulture);
-                
+
                 return isH264Output ?
                     string.Format(" -vf \"scale=min(iw\\,{0}):trunc(ow/a/2)*2{1}\"", maxWidthParam, assSubtitleParam) :
                     string.Format(" -vf \"scale=min(iw\\,{0}):-1{1}\"", maxWidthParam, assSubtitleParam);
@@ -389,7 +389,7 @@ namespace MediaBrowser.Api.Playback
             if (request.MaxHeight.HasValue && (!request.MaxWidth.HasValue || state.VideoStream == null))
             {
                 var maxHeightParam = request.MaxHeight.Value.ToString(UsCulture);
-                
+
                 return isH264Output ?
                     string.Format(" -vf \"scale=trunc(oh*a*2)/2:min(ih\\,{0}){1}\"", maxHeightParam, assSubtitleParam) :
                     string.Format(" -vf \"scale=-1:min(ih\\,{0}){1}\"", maxHeightParam, assSubtitleParam);
@@ -890,6 +890,14 @@ namespace MediaBrowser.Api.Playback
                     state.MediaPath = recording.RecordingInfo.Url;
                     state.IsRemote = true;
                 }
+                else
+                {
+                    state.MediaPath = string.Format("http://localhost:{0}/mediabrowser/LiveTv/Recordings/{1}/Stream",
+                        ServerConfigurationManager.Configuration.HttpServerPortNumber,
+                        request.Id);
+
+                    state.IsRemote = true;
+                }
 
                 item = recording;
             }
@@ -899,7 +907,7 @@ namespace MediaBrowser.Api.Playback
 
                 state.MediaPath = item.Path;
                 state.IsRemote = item.LocationType == LocationType.Remote;
-                
+
                 var video = item as Video;
 
                 if (video != null)
