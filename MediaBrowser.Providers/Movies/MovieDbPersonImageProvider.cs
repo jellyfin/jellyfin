@@ -164,7 +164,6 @@ namespace MediaBrowser.Providers.Movies
         public override async Task<bool> FetchAsync(BaseItem item, bool force, BaseProviderInfo providerInfo, CancellationToken cancellationToken)
         {
             var images = await _providerManager.GetAvailableRemoteImages(item, cancellationToken, ManualMovieDbPersonImageProvider.ProviderName).ConfigureAwait(false);
-
             await ProcessImages(item, images.ToList(), cancellationToken).ConfigureAwait(false);
 
             SetLastRefreshed(item, DateTime.UtcNow, providerInfo);
@@ -187,7 +186,7 @@ namespace MediaBrowser.Providers.Movies
                 .ToList();
 
             //        poster
-            if (eligiblePosters.Count > 0 && !item.HasImage(ImageType.Primary))
+            if (eligiblePosters.Count > 0 && !item.HasImage(ImageType.Primary) && !item.LockedFields.Contains(MetadataFields.Images))
             {
                 var poster = eligiblePosters[0];
 
