@@ -484,7 +484,7 @@
             var isPlaying = MediaPlayer.isPlaying();
 
             if (!isPlaying && !resumePositionTicks && mediaType != "Audio") {
-                MediaPlayer.playById(itemId);
+                MediaPlayer.playById(itemId, itemType);
                 return;
             }
 
@@ -498,7 +498,7 @@
             if (itemType == "MusicArtist") {
                 html += '<li><a href="#" onclick="MediaPlayer.playArtist(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Play</a></li>';
             } else if (itemType != "MusicGenre") {
-                html += '<li><a href="#" onclick="MediaPlayer.playById(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Play</a></li>';
+                html += '<li><a href="#" onclick="MediaPlayer.playById(\'' + itemId + '\', \'' + itemType + '\');LibraryBrowser.closePlayMenu();">Play</a></li>';
             }
 
             if (itemType == "Audio") {
@@ -518,7 +518,7 @@
             }
 
             if (resumePositionTicks) {
-                html += '<li><a href="#" onclick="MediaPlayer.playById(\'' + itemId + '\', ' + resumePositionTicks + ');LibraryBrowser.closePlayMenu();">Resume</a></li>';
+                html += '<li><a href="#" onclick="MediaPlayer.playById(\'' + itemId + '\', \'' + itemType + '\', ' + resumePositionTicks + ');LibraryBrowser.closePlayMenu();">Resume</a></li>';
             }
 
             if (isPlaying) {
@@ -693,22 +693,22 @@
                 var width = null;
                 var height = null;
 
+                var forceName = false;
+
                 if (options.preferBackdrop && item.BackdropImageTags && item.BackdropImageTags.length) {
 
                     imgUrl = ApiClient.getImageUrl(item.Id, {
                         type: "Backdrop",
-                        height: 198,
-                        width: 352,
+                        maxwidth: 576,
                         tag: item.BackdropImageTags[0]
                     });
 
                 }
                 else if (options.preferThumb && item.ImageTags && item.ImageTags.Thumb) {
 
-                    imgUrl = ApiClient.getImageUrl(item, {
+                    imgUrl = ApiClient.getImageUrl(item.Id, {
                         type: "Thumb",
-                        height: 198,
-                        width: 352,
+                        maxwidth: 576,
                         tag: item.ImageTags.Thumb
                     });
 
@@ -717,8 +717,7 @@
 
                     imgUrl = ApiClient.getImageUrl(item.SeriesId, {
                         type: "Thumb",
-                        height: 198,
-                        width: 352,
+                        maxwidth: 576,
                         tag: item.SeriesThumbImageTag
                     });
 
@@ -727,15 +726,24 @@
 
                     imgUrl = ApiClient.getThumbImageUrl(item, {
                         type: "Thumb",
-                        height: 198,
-                        width: 352
+                        maxwidth: 576
                     });
 
                 }
+                else if (options.preferThumb && item.BackdropImageTags && item.BackdropImageTags.length) {
+
+                    imgUrl = ApiClient.getImageUrl(item.Id, {
+                        type: "Backdrop",
+                        maxwidth: 576,
+                        tag: item.BackdropImageTags[0]
+                    });
+
+                    forceName = true;
+                }
                 else if (item.ImageTags && item.ImageTags.Primary) {
 
-                    height = 300;
-                    width = primaryImageAspectRatio ? (height * primaryImageAspectRatio).toFixed(0) : null;
+                    height = 400;
+                    width = primaryImageAspectRatio ? Math.round(height * primaryImageAspectRatio) : null;
 
                     imgUrl = ApiClient.getImageUrl(item.Id, {
                         type: "Primary",
@@ -747,8 +755,8 @@
                 }
                 else if (item.AlbumId && item.AlbumPrimaryImageTag) {
 
-                    height = 300;
-                    width = primaryImageAspectRatio ? (height * primaryImageAspectRatio).toFixed(0) : null;
+                    height = 400;
+                    width = primaryImageAspectRatio ? Math.round(height * primaryImageAspectRatio) : null;
 
                     imgUrl = ApiClient.getImageUrl(item.AlbumId, {
                         type: "Primary",
@@ -762,8 +770,7 @@
 
                     imgUrl = ApiClient.getImageUrl(item.Id, {
                         type: "Backdrop",
-                        height: 198,
-                        width: 352,
+                        maxwidth: 576,
                         tag: item.BackdropImageTags[0]
                     });
 
@@ -772,8 +779,7 @@
 
                     imgUrl = ApiClient.getImageUrl(item, {
                         type: "Thumb",
-                        height: 198,
-                        width: 352,
+                        maxwidth: 576,
                         tag: item.ImageTags.Thumb
                     });
 
@@ -782,8 +788,7 @@
 
                     imgUrl = ApiClient.getImageUrl(item.SeriesId, {
                         type: "Thumb",
-                        height: 198,
-                        width: 352,
+                        maxwidth: 576,
                         tag: item.SeriesThumbImageTag
                     });
 
@@ -792,8 +797,7 @@
 
                     imgUrl = ApiClient.getThumbImageUrl(item, {
                         type: "Thumb",
-                        height: 198,
-                        width: 352
+                        maxwidth: 576
                     });
 
                 }
@@ -863,16 +867,22 @@
                     html += "</div>";
                 }
 
+                var overlayText = forceName || options.overlayText;
+
+                if (overlayText) {
+                    html += '<div class="posterItemTextOverlay">';
+                }
+
                 var cssclass = options.centerText ? "posterItemText posterItemTextCentered" : "posterItemText";
 
                 if (options.showParentTitle) {
 
-                    html += "<div class='" + cssclass + "'><b>";
+                    html += "<div class='" + cssclass + "'>";
                     html += item.SeriesName || item.Album || "&nbsp;";
-                    html += "</b></div>";
+                    html += "</div>";
                 }
 
-                if (options.showTitle) {
+                if (options.showTitle || forceName) {
 
                     html += "<div class='" + cssclass + "'>";
                     html += name;
@@ -899,6 +909,10 @@
 
                     html += "<div class='posterItemText posterItemProgress'>";
                     html += LibraryBrowser.getItemProgressBarHtml(item) || "&nbsp;";
+                    html += "</div>";
+                }
+
+                if (overlayText) {
                     html += "</div>";
                 }
 
@@ -1002,14 +1016,14 @@
             }
             else if (item.Type == "Episode" && item.IndexNumber != null && item.ParentIndexNumber != null) {
 
-                var displayIndexNumber = item.IndexNumber < 10 ? "0" + item.IndexNumber : item.IndexNumber;
+                var displayIndexNumber = item.IndexNumber;
 
-                var number = item.ParentIndexNumber + "x" + displayIndexNumber;
+                var number = "S" + item.ParentIndexNumber + ", E" + displayIndexNumber;
 
                 if (item.IndexNumberEnd) {
 
-                    displayIndexNumber = item.IndexNumberEnd < 10 ? "0" + item.IndexNumberEnd : item.IndexNumberEnd;
-                    number += "-x" + displayIndexNumber;
+                    displayIndexNumber = item.IndexNumberEnd;
+                    number += "-" + displayIndexNumber;
                 }
 
                 name = number + " - " + name;
@@ -1325,9 +1339,9 @@
             return html;
         },
 
-        getPagingHtml: function (query, totalRecordCount) {
+        getPagingHtml: function (query, totalRecordCount, updatePageSizeSetting) {
 
-            if (query.Limit) {
+            if (query.Limit && updatePageSizeSetting !== false) {
                 localStorage.setItem('pagesize', query.Limit);
             }
 
@@ -1435,7 +1449,7 @@
             return html;
         },
 
-        getItemProgressBarHtml: function (item) {
+        getItemProgressBarHtml: function (item, includeText) {
 
             var html = '';
 
@@ -1466,7 +1480,9 @@
                 html += '<progress title="' + tooltip + '" class="itemProgressBar" min="0" max="100" value="' + pct + '">';
                 html += '</progress>';
 
-                html += '<span class="itemProgressText">' + tooltip + '</span>';
+                if (includeText) {
+                    html += '<span class="itemProgressText">' + tooltip + '</span>';
+                }
             }
 
             return html;
@@ -1477,7 +1493,7 @@
             var html = '';
 
             if (item.Type != "Audio" && item.Type != "Season" && item.Type != "Series") {
-                html += LibraryBrowser.getItemProgressBarHtml(item);
+                html += LibraryBrowser.getItemProgressBarHtml(item, true);
             }
 
             var userData = item.UserData || {};
@@ -2048,7 +2064,7 @@
                 if (item.Type == "Audio") {
 
                     miscInfo.push(Dashboard.getDisplayTime(item.RunTimeTicks));
-                    
+
                 } else {
                     minutes = item.RunTimeTicks / 600000000;
 

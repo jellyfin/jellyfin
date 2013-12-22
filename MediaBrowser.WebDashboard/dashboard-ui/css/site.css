@@ -46,6 +46,7 @@ body {
 * {
     font-family: 'Open Sans', Arial, Helvetica, sans-serif;
     text-shadow: none;
+    -webkit-font-smoothing: antialiased;
 }
 
 .ui-header .ui-btn-inner, .ui-footer .ui-btn-inner, .ui-mini .ui-btn-inner {
@@ -224,6 +225,7 @@ form, .readOnlyContent {
     font-size: 12px;
     padding-left: 5px;
     font-weight: normal;
+    white-space: normal !important;
 }
 
 .warningFieldDescription {
@@ -629,7 +631,7 @@ form, .readOnlyContent {
 
 /* Footer */
 #footer {
-    background: #4C4C4C;
+    background: #3c3c3c;
     position: fixed;
     bottom: -2px;
     left: -2px;
@@ -728,7 +730,7 @@ progress {
 /* Now playing bar */
 #nowPlayingBar {
     padding: 6px .5em;
-    border-top: 2px solid #D7742B;
+    border-top: 2px solid green;
 }
 
     #nowPlayingBar .highPosition {
@@ -742,8 +744,8 @@ progress {
         }
 
     #nowPlayingBar .barBackground {
-        border-top: 2px solid #D7742B;
-        background: #4C4C4C;
+        border-top: 2px solid green;
+        background: #3c3c3c;
         position: absolute;
         margin: -8px -0.5em !important;
         width: 100%;

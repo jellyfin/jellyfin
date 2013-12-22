@@ -157,6 +157,12 @@ namespace MediaBrowser.Controller.LiveTv
         /// <value><c>true</c> if this instance is premiere; otherwise, <c>false</c>.</value>
         public bool IsPremiere { get; set;  }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance has image.
+        /// </summary>
+        /// <value><c>null</c> if [has image] contains no value, <c>true</c> if [has image]; otherwise, <c>false</c>.</value>
+        public bool? HasImage { get; set; }
+
         public ProgramInfo()
         {
             Genres = new List<string>();

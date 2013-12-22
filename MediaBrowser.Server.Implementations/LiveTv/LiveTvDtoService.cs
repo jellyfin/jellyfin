@@ -30,7 +30,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             _logger = logger;
         }
 
-        public TimerInfoDto GetTimerInfoDto(TimerInfo info, ILiveTvService service)
+        public TimerInfoDto GetTimerInfoDto(TimerInfo info, ILiveTvService service, LiveTvProgram program)
         {
             var dto = new TimerInfoDto
             {
@@ -59,6 +59,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             if (!string.IsNullOrEmpty(info.ProgramId))
             {
                 dto.ProgramId = GetInternalProgramId(service.Name, info.ProgramId).ToString("N");
+            }
+
+            if (program != null)
+            {
+                dto.ProgramInfo = GetProgramInfoDto(program);
+
+                dto.ProgramInfo.TimerId = dto.Id;
+                dto.ProgramInfo.SeriesTimerId = dto.SeriesTimerId;
             }
 
             return dto;
@@ -155,6 +163,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             var dto = new RecordingInfoDto
             {
                 Id = GetInternalRecordingId(service.Name, info.Id).ToString("N"),
+                SeriesTimerId = string.IsNullOrEmpty(info.SeriesTimerId) ? null : GetInternalSeriesTimerId(service.Name, info.SeriesTimerId).ToString("N"),
                 Type = recording.GetClientTypeName(),
                 ChannelName = info.ChannelName,
                 Overview = info.Overview,

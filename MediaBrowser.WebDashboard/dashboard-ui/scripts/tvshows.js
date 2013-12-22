@@ -1,6 +1,6 @@
 ﻿(function ($, document) {
 
-    var view = "Poster";
+    var view = "Thumb";
 
     // The base query options
     var query = {
@@ -9,7 +9,7 @@
         SortOrder: "Ascending",
         IncludeItemTypes: "Series",
         Recursive: true,
-        Fields: "SeriesInfo,DateCreated",
+        Fields: "SeriesInfo,DateCreated,PrimaryImageAspectRatio",
         StartIndex: 0
     };
 
@@ -31,27 +31,35 @@
             var checkSortOption = $('.radioSortBy:checked', page);
             $('.viewSummary', page).html(LibraryBrowser.getViewSummaryHtml(query, checkSortOption)).trigger('create');
 
-            if (view == "Backdrop") {
-                html += LibraryBrowser.getPosterDetailViewHtml({
+            if (view == "Thumb") {
+                
+                html = LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
-                    preferBackdrop: true,
-                    context: "tv"
+                    shape: "backdrop",
+                    preferThumb: true,
+                    context: 'tv'
                 });
+                
                 $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
             else if (view == "Poster") {
-                html += LibraryBrowser.getPosterDetailViewHtml({
+
+                html = LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
-                    context: "tv"
+                    shape: "portrait",
+                    context: 'tv',
+                    useAverageAspectRatio: true
                 });
                 $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
             else if (view == "Timeline") {
+                
                 html += LibraryBrowser.getPosterDetailViewHtml({
                     items: result.Items,
                     context: "tv",
                     timeline: true
                 });
+                
                 $('.itemsContainer', page).addClass('timelineItemsContainer');
             }
 

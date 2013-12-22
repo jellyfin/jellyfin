@@ -27,7 +27,8 @@
                     useAverageAspectRatio: true,
                     shape: "backdrop",
                     showTitle: true,
-                    showParentTitle: true
+                    showParentTitle: true,
+                    overlayText: true
 
                 }));
 

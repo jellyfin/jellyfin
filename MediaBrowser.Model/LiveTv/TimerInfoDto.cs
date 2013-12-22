@@ -122,5 +122,11 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value>The priority.</value>
         public int Priority { get; set; }
+
+        /// <summary>
+        /// Gets or sets the program information.
+        /// </summary>
+        /// <value>The program information.</value>
+        public ProgramInfoDto ProgramInfo { get; set; }
     }
 }

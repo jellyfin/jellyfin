@@ -661,7 +661,7 @@
 
             currentItem = item;
             curentDurationTicks = item.RunTimeTicks;
-
+            alert(JSON.stringify(item));
             return videoElement[0];
         };
 
@@ -980,7 +980,29 @@
             return ApiClient.getItems(userId, query);
         };
 
-        self.playById = function (id, startPositionTicks) {
+        self.playById = function (id, itemType, startPositionTicks) {
+
+            if (itemType == "Recording") {
+                
+                ApiClient.getLiveTvRecording(id, Dashboard.getCurrentUserId()).done(function (item) {
+
+                    self.play([item], startPositionTicks);
+
+                });
+                
+                return;
+            }
+            
+            if (itemType == "Channel") {
+
+                ApiClient.getLiveTvChannel(id, Dashboard.getCurrentUserId()).done(function (item) {
+
+                    self.play([item], startPositionTicks);
+
+                });
+
+                return;
+            }
 
             ApiClient.getItem(Dashboard.getCurrentUserId(), id).done(function (item) {
 

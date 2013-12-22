@@ -33,7 +33,7 @@
         html += '<th>Name</th>';
         html += '<th class="desktopColumn">Channel</th>';
         html += '<th>Date</th>';
-        html += '<th>Start</th>';
+        html += '<th>Time</th>';
         html += '<th class="tabletColumn">Length</th>';
         html += '<th class="tabletColumn">Status</th>';
         html += '<th class="desktopColumn">Series</th>';
@@ -97,8 +97,10 @@
             html += '<td class="desktopColumn">';
 
             if (timer.SeriesTimerId) {
-                html += '<a href="livetvseriestimer.html?id=' + timer.SeriesTimerId + '">';
-                html += 'View';
+                html += '<a href="livetvseriestimer.html?id=' + timer.SeriesTimerId + '" title="View Series Recording">';
+                html += '<div class="timerCircle seriesTimerCircle"></div>';
+                html += '<div class="timerCircle seriesTimerCircle"></div>';
+                html += '<div class="timerCircle seriesTimerCircle"></div>';
                 html += '</a>';
             }
 

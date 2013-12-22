@@ -12,7 +12,7 @@
 }
 
 .detailSectionHeader + .tvProgram {
-    border-top: 1px solid #555;
+    border-top: 1px solid #444;
     margin-top: 1px;
 }
 
@@ -34,10 +34,10 @@
 
 .tvProgramInfo {
     vertical-align: middle;
-    border-left: 1px solid #555;
+    border-left: 1px solid #444;
     padding: .5em .5em;
     margin-left: 80px;
-    border-bottom: 1px solid #555;
+    border-bottom: 1px solid #444;
 }
 
 .tvProgramName {
@@ -98,20 +98,21 @@
     margin-left: 0;
     left: 30px;
     opacity: .3;
+}
+
+.itemMiscInfo .seriesTimerCircle:first-child {
     margin-left: 1em;
 }
 
-    .seriesTimerCircle + .seriesTimerCircle {
-        opacity: .65;
-        left: 0;
-        margin-left: 0;
-    }
+.seriesTimerCircle + .seriesTimerCircle {
+    opacity: .65;
+    left: 0;
+}
 
-        .seriesTimerCircle + .seriesTimerCircle + .seriesTimerCircle {
-            opacity: 1;
-            left: -30px;
-            margin-left: 0;
-        }
+    .seriesTimerCircle + .seriesTimerCircle + .seriesTimerCircle {
+        opacity: 1;
+        left: -30px;
+    }
 
 .channelImageContainer .itemDetailImage {
     max-width: 160px;

@@ -9,7 +9,7 @@
         SortOrder: "Ascending",
         IncludeItemTypes: "Episode",
         Recursive: true,
-        Fields: "DateCreated,SeriesInfo",
+        Fields: "DateCreated,SeriesInfo,PrimaryImageAspectRatio",
         StartIndex: 0,
         IsMissing: false,
         IsVirtualUnaired: false
@@ -38,7 +38,8 @@
                 useAverageAspectRatio: true,
                 shape: "backdrop",
                 showTitle: true,
-                showParentTitle: true
+                showParentTitle: true,
+                overlayText: true
             });
 
             $('.itemsContainer', page).removeClass('timelineItemsContainer');

@@ -26,25 +26,24 @@
         var context = 'livetv';
         currentItem = item;
 
-        $('.itemName', page).html(item.Name);
-        $('.itemChannelNumber', page).html('Channel:&nbsp;&nbsp;&nbsp;<a href="livetvchannel.html?id=' + item.ChannelId + '">' + item.ChannelName + '</a>').trigger('create');
+        var programInfo = item.ProgramInfo || {};
 
-        if (item.EpisodeTitle) {
-            $('.itemEpisodeName', page).html('Episode:&nbsp;&nbsp;&nbsp;' + item.EpisodeTitle);
-        } else {
-            $('.itemEpisodeName', page).html('');
-        }
+        $('.itemName', page).html(programInfo.Name);
+        
+        $('.itemEpisodeName', page).html(programInfo.EpisodeTitle || '');
 
-        if (item.CommunityRating) {
-            $('.itemCommunityRating', page).html(LibraryBrowser.getRatingHtml(item)).show();
+        if (programInfo.CommunityRating) {
+            $('.itemCommunityRating', page).html(LibraryBrowser.getRatingHtml(programInfo)).show();
         } else {
             $('.itemCommunityRating', page).hide();
         }
 
-        LibraryBrowser.renderGenres($('.itemGenres', page), item, context);
-        LibraryBrowser.renderOverview($('.itemOverview', page), item);
+        LibraryBrowser.renderGenres($('.itemGenres', page), programInfo, context);
+        LibraryBrowser.renderOverview($('.itemOverview', page), programInfo);
 
         $('.itemMiscInfo', page).html(LibraryBrowser.getMiscInfoHtml(item));
+
+        LiveTvHelpers.renderMiscProgramInfo($('.miscTvProgramInfo', page), programInfo);
 
         $('#txtPrePaddingSeconds', page).val(item.PrePaddingSeconds / 60);
         $('#txtPostPaddingSeconds', page).val(item.PostPaddingSeconds / 60);
@@ -52,14 +51,6 @@
         $('#chkPostPaddingRequired', page).checked(item.IsPostPaddingRequired).checkboxradio('refresh');
 
         $('.status', page).html('Status:&nbsp;&nbsp;&nbsp;' + item.Status);
-
-        if (item.SeriesTimerId) {
-
-            $('.seriesTimerLink', page).html('<a href="livetvseriestimer.html?id=' + item.SeriesTimerId + '">View Series</a>').show().trigger('create');
-
-        } else {
-            $('.seriesTimerLink', page).hide();
-        }
 
         Dashboard.hideLoadingMsg();
     }

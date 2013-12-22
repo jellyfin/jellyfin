@@ -108,8 +108,6 @@
 
         }).checkboxradio('refresh');
 
-        $('#selectView', page).val(view).selectmenu('refresh');
-
         $('.alphabetPicker', page).alphaValue(query.NameStartsWith);
     }
 
@@ -142,13 +140,6 @@
 
             query.StartIndex = 0;
             query.Filters = filters;
-
-            reloadItems(page);
-        });
-
-        $('#selectView', this).on('change', function () {
-
-            view = this.value;
 
             reloadItems(page);
         });

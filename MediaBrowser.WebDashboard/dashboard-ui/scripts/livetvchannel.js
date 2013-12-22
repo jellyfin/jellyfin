@@ -100,7 +100,7 @@
             } else {
                 html += minutes;
             }
-            
+
             if (program.SeriesTimerId) {
                 html += '<div class="timerCircle seriesTimerCircle"></div>';
                 html += '<div class="timerCircle seriesTimerCircle"></div>';
@@ -245,8 +245,8 @@
 
             return date;
         },
-        
-        renderMiscProgramInfo: function(elem, obj) {
+
+        renderMiscProgramInfo: function (elem, obj) {
 
             var html = [];
 
@@ -261,7 +261,7 @@
                 html.push('<span class="liveTvProgram">LIVE</span>');
 
             }
-            
+
             if (obj.ChannelId) {
                 html.push('<a class="textlink" href="livetvchannel.html?id=' + obj.ChannelId + '">' + obj.ChannelName + '</a>');
             }
@@ -278,11 +278,27 @@
 
             }
 
-            elem.html(html.join('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;')).trigger('create');
+            html = html.join('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
+
+            if (obj.SeriesTimerId) {
+                html += '<a href="livetvseriestimer.html?id=' + obj.SeriesTimerId + '" title="View Series Recording">';
+                html += '<div class="timerCircle seriesTimerCircle"></div>';
+                html += '<div class="timerCircle seriesTimerCircle"></div>';
+                html += '<div class="timerCircle seriesTimerCircle"></div>';
+                html += '</a>';
+            }
+            else if (obj.TimerId) {
+
+                html += '<a href="livetvtimer.html?id=' + obj.TimerId + '">';
+                html += '<div class="timerCircle"></div>';
+                html += '</a>';
+            }
+
+            elem.html(html).trigger('create');
         },
-        
-        renderOriginalAirDate: function(elem, item) {
-            
+
+        renderOriginalAirDate: function (elem, item) {
+
             var airDate = item.OriginalAirDate;
 
             if (airDate) {

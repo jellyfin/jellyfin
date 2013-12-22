@@ -43,7 +43,7 @@
 
             var html = '';
 
-            $('.listTopPaging', page).html(LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, true)).trigger('create');
+            $('.listTopPaging', page).html(LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, false)).trigger('create');
 
             updateFilterControls(page);
             
@@ -58,7 +58,7 @@
                 sortOrder: query.SortOrder
             });
 
-            html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
+            html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, false);
 
             $('#items', page).html(html).trigger('create');
 

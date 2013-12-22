@@ -32,9 +32,9 @@
             SortOrder: "Descending",
             IncludeItemTypes: "Movie",
             Filters: "IsResumable",
-            Limit: 6,
+            Limit: 3,
             Recursive: true,
-            Fields: "PrimaryImageAspectRatio,DateCreated,UserData"
+            Fields: "DateCreated,UserData"
         };
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
@@ -47,8 +47,11 @@
             
             $('#resumableItems', page).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                useAverageAspectRatio: true,
-                showProgressBar: true
+                showProgressBar: true,
+                preferBackdrop: true,
+                shape: 'backdrop',
+                overlayText: true,
+                showTitle: true
             }));
 
         });

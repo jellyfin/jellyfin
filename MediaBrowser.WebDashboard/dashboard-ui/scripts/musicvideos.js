@@ -130,8 +130,6 @@
 
         }).checkboxradio('refresh');
 
-        $('#selectView', page).val(view).selectmenu('refresh');
-
         $('#chk3D', page).checked(query.Is3D == true).checkboxradio('refresh');
 
         $('#chkSubtitle', page).checked(query.HasSubtitles == true).checkboxradio('refresh');
@@ -191,22 +189,6 @@
             query.VideoTypes = filters;
 
             reloadItems(page);
-        });
-
-        $('#selectView', this).on('change', function () {
-
-            view = this.value;
-
-            if (view == "Timeline") {
-
-                query.SortBy = "PremiereDate";
-                query.StartIndex = 0;
-                $('#radioPremiereDate', page)[0].click();
-
-            } else {
-                reloadItems(page);
-            }
-
         });
 
         $('#chk3D', this).on('change', function () {

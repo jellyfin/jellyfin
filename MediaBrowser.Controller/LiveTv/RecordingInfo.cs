@@ -12,6 +12,12 @@ namespace MediaBrowser.Controller.LiveTv
         public string Id { get; set; }
 
         /// <summary>
+        /// Gets or sets the series timer identifier.
+        /// </summary>
+        /// <value>The series timer identifier.</value>
+        public string SeriesTimerId { get; set; }
+        
+        /// <summary>
         /// ChannelId of the recording.
         /// </summary>
         public string ChannelId { get; set; }
@@ -166,6 +172,13 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value>The image URL.</value>
         public string ImageUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance has image.
+        /// </summary>
+        /// <value><c>null</c> if [has image] contains no value, <c>true</c> if [has image]; otherwise, <c>false</c>.</value>
+        public bool? HasImage { get; set; }
+
 
         public RecordingInfo()
         {

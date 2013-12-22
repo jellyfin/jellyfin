@@ -24,7 +24,8 @@
                 showNewIndicator: false,
                 shape: "backdrop",
                 showTitle: true,
-                showParentTitle: true
+                showParentTitle: true,
+                overlayText: true
             }));
 
         });
@@ -55,7 +56,8 @@
                 shape: "backdrop",
                 showTitle: true,
                 showParentTitle: true,
-                showProgressBar: true
+                showProgressBar: true,
+                overlayText: true
             }));
 
         });

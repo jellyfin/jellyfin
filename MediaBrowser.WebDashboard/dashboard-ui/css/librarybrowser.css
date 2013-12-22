@@ -108,7 +108,7 @@
 
 @media all and (max-width: 400px) {
     .libraryPage .ui-content {
-        padding: 10px 1px;
+        padding: 10px 0;
     }
 }
 
@@ -124,7 +124,8 @@
 .listHeader {
     margin-top: .5em;
     margin-bottom: 0;
-    padding-left: 4px;
+    padding-left: 7px;
+    text-transform: uppercase;
 }
 
 .libraryViewNav {
@@ -167,6 +168,13 @@
     padding: 0;
     border-spacing: 0;
     border-collapse: collapse;
+}
+
+.detailButtonsContainer {
+    padding: .75em 0 .75em;
+    text-align: center;
+    border-top: 1px solid #444;
+    border-bottom: 1px solid #333;
 }
 
 .viewSettings {
@@ -432,16 +440,19 @@ a.itemTag:hover {
     font-size: 16px;
     border: 0;
     background-color: rgba(0,0,0,0.7);
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
 }
 
     .parentName a {
         color: #fff!important;
         font-weight: normal!important;
     }
+
+.itemBackdrop .parentName {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+}
 
 .inlineItemName {
     font-size: 22px;
@@ -459,13 +470,13 @@ a.itemTag:hover {
 
 .mobileOverview {
     display: none;
-    padding: 0 .5em;
+    padding: 0 1em;
     max-height: initial;
 }
 
 .mobileGenres {
     display: none;
-    padding: 0 .5em;
+    padding: 0 1em;
 }
 
 .libraryPage ::-webkit-scrollbar {
@@ -544,7 +555,7 @@ a.itemTag:hover {
     }
 
     .parentName {
-        position: static;
+        position: static!important;
     }
 
     .itemDetailImage {
@@ -571,15 +582,15 @@ a.itemTag:hover {
             display: block!important;
         }
 
-    .primaryDetailPageContent p:first-child {
-        margin-top: 0;
+    .primaryDetailPageContent {
+        margin: 0 1em;
     }
 
-    .primaryDetailPageContent .userDataIcons {
-        margin-left: 0!important;
-        margin-top: 1.5em;
-        display: block;
-    }
+        .primaryDetailPageContent .userDataIcons {
+            margin-left: 0!important;
+            margin-top: 1.5em;
+            display: block;
+        }
 }
 
 @media all and (min-width: 750px) {
@@ -641,7 +652,7 @@ a.itemTag:hover {
 @media all and (min-width: 1000px) {
 
     .ehsContent {
-        max-width: 820px;
+        max-width: 880px;
     }
 
     .detailPageContent {
@@ -679,19 +690,19 @@ a.itemTag:hover {
     }
 
     .ehsContent {
-        max-width: 1080px;
+        max-width: 980px;
     }
 }
 
 @media all and (min-width: 1920px) {
     .ehsContent {
-        max-width: 1200px;
+        max-width: 1240px;
     }
 }
 
 @media all and (min-width: 2300px) {
     .ehsContent {
-        max-width: 1500px;
+        max-width: 1540px;
     }
 }
 
@@ -791,7 +802,7 @@ a.itemTag:hover {
     border: 0;
     margin: 0;
     height: 14px;
-    border: 1px solid #666;
+    border: 1px solid #222;
     border-radius: 0;
     width: 50px;
     margin-right: 5px;
@@ -808,38 +819,38 @@ a.itemTag:hover {
 
 /* Firefox and Polyfill */
 .itemProgressBar {
-    background: #050505 !important; /* !important only needed in polyfill */
+    background: #000 !important; /* !important only needed in polyfill */
 }
 
     /* Chrome */
     .itemProgressBar::-webkit-progress-bar {
-        background: #050505;
+        background: #000;
     }
 
-    /*
+.pare
+/*
  * Background of the progress bar value
  */
+/* Firefox */
+.itemProgressBar::-moz-progress-bar {
+    border-radius: 0;
+    background-image: none;
+    background-color: #A92D2D;
+}
 
-    /* Firefox */
-    .itemProgressBar::-moz-progress-bar {
-        border-radius: 0;
-        background-image: none;
-        background-color: #A92D2D;
-    }
+/* Chrome */
+.itemProgressBar::-webkit-progress-value {
+    border-radius: 0;
+    background-image: none;
+    background-color: #A92D2D;
+}
 
-    /* Chrome */
-    .itemProgressBar::-webkit-progress-value {
-        border-radius: 0;
-        background-image: none;
-        background-color: #A92D2D;
-    }
-
-    /* Polyfill */
-    .itemProgressBar[aria-valuenow]:before {
-        border-radius: 0;
-        background-image: none;
-        background-color: #A92D2D;
-    }
+/* Polyfill */
+.itemProgressBar[aria-valuenow]:before {
+    border-radius: 0;
+    background-image: none;
+    background-color: #A92D2D;
+}
 
 .userDataIcons .itemProgressBar {
     vertical-align: top;
@@ -873,10 +884,10 @@ a.itemTag:hover {
 
 .alphabetPicker {
     position: fixed;
-    right: 1px;
+    right: 2px;
     bottom: 0;
     top: 100px;
-    width: 20px;
+    width: 27px;
     z-index: 1000;
     text-align: center;
     font-size: 14px;
@@ -908,7 +919,7 @@ a.itemTag:hover {
     }
 
     .itemsContainerWithAlphaPicker {
-        margin-right: 10px;
+        margin-right: 15px;
     }
 }
 

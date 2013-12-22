@@ -13,6 +13,12 @@ namespace MediaBrowser.Model.LiveTv
         public string Id { get; set; }
 
         /// <summary>
+        /// Gets or sets the series timer identifier.
+        /// </summary>
+        /// <value>The series timer identifier.</value>
+        public string SeriesTimerId { get; set; }
+        
+        /// <summary>
         /// Gets or sets the external identifier.
         /// </summary>
         /// <value>The external identifier.</value>

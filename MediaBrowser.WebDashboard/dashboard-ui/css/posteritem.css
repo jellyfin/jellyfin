@@ -1,5 +1,5 @@
 ﻿.posterItem {
-    margin: 6px;
+    margin: 8px 8px 8px 8px;
     text-shadow: none;
     font-weight: normal!important;
     display: inline-block;
@@ -8,6 +8,12 @@
     text-decoration: none;
     text-align: left;
     overflow: hidden;
+    border: 2px solid #1b1b1b;
+    -webkit-transition: all 500ms ease;
+    -moz-transition: all 500ms ease;
+    -o-transition: all 500ms ease;
+    -ms-transition: all 500ms ease;
+    transition: all 500ms ease;
 }
 
     .posterItem:hover {
@@ -45,26 +51,46 @@
     padding-left: 2px;
 }
 
-.posterItemTextContainer {
-    
-}
-
 .posterItemText {
     text-overflow: ellipsis;
     overflow: hidden;
     text-wrap: none;
     white-space: nowrap;
-    padding: 6px 5px 5px;
-    background: #111;
+    padding: 5px 6px 4px;
+    background-color: #111;
     text-shadow: none;
 }
 
-.posterItemTextCentered {
-    text-align: center;
+.posterItemTextOverlay {
+    position: absolute;
+    bottom: 0;
+    background: -moz-linear-gradient(top, rgba(0,0,0,0) 0%, rgba(0,0,0,0.7) 100%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(0,0,0,0)), color-stop(100%,rgba(0,0,0,0.7))); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top, rgba(0,0,0,0) 0%,rgba(0,0,0,0.7) 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top, rgba(0,0,0,0) 0%,rgba(0,0,0,0.7) 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(top, rgba(0,0,0,0) 0%,rgba(0,0,0,0.7) 100%); /* IE10+ */
+    background: linear-gradient(to bottom, rgba(0,0,0,0) 0%,rgba(0,0,0,0.7) 100%); /* W3C */
+    left: 0;
+    right: 0;
 }
+
 
 .posterItemText + .posterItemText {
     padding-top: 2px;
+}
+
+.posterItemTextOverlay .posterItemText {
+    background-color: transparent;
+    padding-top: 1px !important;
+}
+
+    .posterItemTextOverlay .posterItemText:first-child {
+        font-size: 14px;
+        font-weight: bold;
+    }
+
+.posterItemTextCentered {
+    text-align: center;
 }
 
 .posterItemText + .posterItemProgress {
@@ -106,11 +132,11 @@
 
 
 .backdropPosterItem {
-    width: 160px;
+    width: 288px;
 }
 
     .backdropPosterItem .posterItemImage {
-        height: 90px;
+        height: 162px;
     }
 
 .smallBackdropPosterItem {
@@ -125,31 +151,35 @@
     width: 100px;
 }
 
-.portraitPosterItem .posterItemImage {
-    height: 150px;
-}
+    .portraitPosterItem .posterItemImage {
+        height: 150px;
+    }
 
 .posterItemProgress .itemProgressBar {
-    height: 12px;
-    width: 35%;
-}
-
-.portraitPosterItem .itemProgressText {
-    display: none;
-}
-
-.portraitPosterItem .itemProgressBar {
+    height: 11px;
     width: 100%;
+    opacity: .8;
+}
+
+@media all and (min-width: 540px) {
+
+    .backdropPosterItem {
+        width: 256px;
+    }
+
+        .backdropPosterItem .posterItemImage {
+            height: 144px;
+        }
 }
 
 @media all and (min-width: 650px) {
 
     .backdropPosterItem {
-        width: 192px;
+        width: 272px;
     }
 
         .backdropPosterItem .posterItemImage {
-            height: 108px;
+            height: 153px;
         }
 
     .storeItem, .storePosterItem {
@@ -175,15 +205,11 @@
 @media all and (min-width: 1200px) {
 
     .backdropPosterItem {
-        width: 224px;
+        width: 272px;
     }
 
         .backdropPosterItem .posterItemImage {
-            height: 126px;
-        }
-
-        .backdropPosterItem .itemProgressBar {
-            width: 55%;
+            height: 153px;
         }
 
     .portraitPosterItem {
@@ -237,21 +263,18 @@
             height: 201px;
         }
 
+
+        .portraitPosterItem .itemProgressText {
+            display: inline;
+        }
+
     .backdropPosterItem {
-        width: 256px;
+        width: 288px;
     }
 
         .backdropPosterItem .posterItemImage {
-            height: 144px;
+            height: 162px;
         }
-
-    .portraitPosterItem .itemProgressText {
-        display: inline;
-    }
-
-    .portraitPosterItem .itemProgressBar {
-        width: 20%;
-    }
 }
 
 @media all and (min-width: 1920px) {
@@ -271,16 +294,4 @@
         .portraitPosterItem .posterItemImage {
             height: 240px;
         }
-
-    .backdropPosterItem {
-        width: 288px;
-    }
-
-        .backdropPosterItem .posterItemImage {
-            height: 162px;
-        }
-
-    .portraitPosterItem .itemProgressBar {
-        width: 30%;
-    }
 }

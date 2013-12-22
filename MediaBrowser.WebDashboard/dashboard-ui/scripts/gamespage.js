@@ -135,8 +135,6 @@
 
         }).checkboxradio('refresh');
 
-        $('#selectView', page).val(view).selectmenu('refresh');
-
         $('#chkTrailer', page).checked(query.HasTrailer == true).checkboxradio('refresh');
         $('#chkThemeSong', page).checked(query.HasThemeSong == true).checkboxradio('refresh');
         $('#chkThemeVideo', page).checked(query.HasThemeVideo == true).checkboxradio('refresh');
@@ -186,21 +184,6 @@
             query.Filters = filters;
 
             reloadItems(page);
-        });
-
-        $('#selectView', this).on('change', function () {
-
-            view = this.value;
-
-            if (view == "Timeline") {
-
-                query.SortBy = "PremiereDate";
-                query.StartIndex = 0;
-                $('#radioPremiereDate', page)[0].click();
-
-            } else {
-                reloadItems(page);
-            }
         });
 
         $('#chkTrailer', this).on('change', function () {

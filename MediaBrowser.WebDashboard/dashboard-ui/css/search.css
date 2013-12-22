@@ -134,26 +134,6 @@
     }
 }
 
-@media all and (min-width: 950px) {
-    .txtSearch {
-        width: 250px;
-    }
-
-    .searchHints {
-        width: 248px;
-    }
-}
-
-@media all and (min-width: 1200px) {
-    .txtSearch {
-        width: 300px;
-    }
-
-    .searchHints {
-        width: 298px;
-    }
-}
-
 .circle {
     background-color: rgba(0,0,0,0);
     border: 5px solid rgba(0,183,229,0.9);
