@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -138,5 +139,21 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{IEnumerable{ProgramInfo}}.</returns>
         Task<IEnumerable<ProgramInfo>> GetProgramsAsync(string channelId, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the recording stream.
+        /// </summary>
+        /// <param name="recordingId">The recording identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{Stream}.</returns>
+        Task<Stream> GetRecordingStream(string recordingId, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the channel stream.
+        /// </summary>
+        /// <param name="recordingId">The recording identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{Stream}.</returns>
+        Task<Stream> GetChannelStream(string recordingId, CancellationToken cancellationToken);
     }
 }

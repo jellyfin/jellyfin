@@ -25,13 +25,6 @@ namespace MediaBrowser.Controller.LiveTv
         IReadOnlyList<ILiveTvService> Services { get; }
 
         /// <summary>
-        /// Schedules the recording.
-        /// </summary>
-        /// <param name="programId">The program identifier.</param>
-        /// <returns>Task.</returns>
-        Task ScheduleRecording(string programId);
-
-        /// <summary>
         /// Gets the new timer defaults asynchronous.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
@@ -146,6 +139,13 @@ namespace MediaBrowser.Controller.LiveTv
         /// <returns>Channel.</returns>
         LiveTvChannel GetInternalChannel(string id);
 
+        /// <summary>
+        /// Gets the internal program.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>LiveTvProgram.</returns>
+        LiveTvProgram GetInternalProgram(string id);
+        
         /// <summary>
         /// Gets the recording.
         /// </summary>

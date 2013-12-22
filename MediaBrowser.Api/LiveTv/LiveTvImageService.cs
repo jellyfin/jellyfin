@@ -152,6 +152,13 @@ namespace MediaBrowser.Api.LiveTv
             return GetImageService().GetImage(request, item);
         }
 
+        public object Get(GetProgramImage request)
+        {
+            var item = _liveTv.GetInternalProgram(request.Id);
+
+            return GetImageService().GetImage(request, item);
+        }
+
         public void Post(PostChannelImage request)
         {
             var pathInfo = PathInfo.Parse(Request.PathInfo);

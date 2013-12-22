@@ -42,5 +42,12 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value>The image URL.</value>
         public string ImageUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance has image.
+        /// </summary>
+        /// <value><c>null</c> if [has image] contains no value, <c>true</c> if [has image]; otherwise, <c>false</c>.</value>
+        public bool? HasImage { get; set; }
+
     }
 }

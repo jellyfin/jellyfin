@@ -51,9 +51,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 return true;
             }
 
+            var changed = true;
+
             try
             {
-                await DownloadImage((LiveTvProgram)item, cancellationToken).ConfigureAwait(false);
+                changed = await DownloadImage((LiveTvProgram)item, cancellationToken).ConfigureAwait(false);
             }
             catch (HttpException ex)
             {
@@ -64,11 +66,15 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 }
             }
 
-            SetLastRefreshed(item, DateTime.UtcNow, providerInfo);
-            return true;
+            if (changed)
+            {
+                SetLastRefreshed(item, DateTime.UtcNow, providerInfo);
+            }
+
+            return changed;
         }
 
-        private async Task DownloadImage(LiveTvProgram item, CancellationToken cancellationToken)
+        private async Task<bool> DownloadImage(LiveTvProgram item, CancellationToken cancellationToken)
         {
             var programInfo = item.ProgramInfo;
 
@@ -92,22 +98,33 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
                 if (!response.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
                 {
-                    throw new InvalidOperationException("Provider did not return an image content type.");
+                    Logger.Error("Provider did not return an image content type.");
+                    return false;
                 }
 
                 imageStream = response.Content;
                 contentType = response.ContentType;
             }
-            else
+            else if (programInfo.HasImage ?? true)
             {
                 var service = _liveTvManager.Services.FirstOrDefault(i => string.Equals(i.Name, item.ServiceName, StringComparison.OrdinalIgnoreCase));
 
                 if (service != null)
                 {
-                    var response = await service.GetProgramImageAsync(programInfo.Id, programInfo.ChannelId, cancellationToken).ConfigureAwait(false);
+                    try
+                    {
+                        var response = await service.GetProgramImageAsync(programInfo.Id, programInfo.ChannelId, cancellationToken).ConfigureAwait(false);
 
-                    imageStream = response.Stream;
-                    contentType = response.MimeType;
+                        if (response != null)
+                        {
+                            imageStream = response.Stream;
+                            contentType = response.MimeType;
+                        }
+                    }
+                    catch (NotImplementedException)
+                    {
+                        return false;
+                    }
                 }
             }
 
@@ -117,7 +134,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 var url = item.ServiceName + programInfo.Id;
 
                 await _providerManager.SaveImage(item, imageStream, contentType, ImageType.Primary, null, url, cancellationToken).ConfigureAwait(false);
+                return true;
             }
+
+            return false;
         }
 
         public override MetadataProviderPriority Priority
