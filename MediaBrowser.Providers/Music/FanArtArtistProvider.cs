@@ -213,13 +213,12 @@ namespace MediaBrowser.Providers.Music
             }
 
             if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Art ||
-              ConfigurationManager.Configuration.DownloadMusicArtistImages.Backdrops ||
-              ConfigurationManager.Configuration.DownloadMusicArtistImages.Banner ||
-              ConfigurationManager.Configuration.DownloadMusicArtistImages.Logo ||
-              ConfigurationManager.Configuration.DownloadMusicArtistImages.Primary)
+                ConfigurationManager.Configuration.DownloadMusicArtistImages.Backdrops ||
+                ConfigurationManager.Configuration.DownloadMusicArtistImages.Banner ||
+                ConfigurationManager.Configuration.DownloadMusicArtistImages.Logo ||
+                ConfigurationManager.Configuration.DownloadMusicArtistImages.Primary)
             {
                 var images = await _providerManager.GetAvailableRemoteImages(item, cancellationToken, ManualFanartArtistProvider.ProviderName).ConfigureAwait(false);
-
                 await FetchFromXml(item, images.ToList(), cancellationToken).ConfigureAwait(false);
             }
 
@@ -268,46 +267,52 @@ namespace MediaBrowser.Providers.Music
         /// <returns>Task.</returns>
         private async Task FetchFromXml(BaseItem item, List<RemoteImageInfo> images , CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Primary && !item.HasImage(ImageType.Primary))
+            if (!item.LockedFields.Contains(MetadataFields.Images))
             {
-                await SaveImage(item, images, ImageType.Primary, cancellationToken).ConfigureAwait(false);
-            }
+                cancellationToken.ThrowIfCancellationRequested();
 
-            cancellationToken.ThrowIfCancellationRequested();
-
-            if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Logo && !item.HasImage(ImageType.Logo))
-            {
-                await SaveImage(item, images, ImageType.Logo, cancellationToken).ConfigureAwait(false);
-            }
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Art && !item.HasImage(ImageType.Art))
-            {
-                await SaveImage(item, images, ImageType.Art, cancellationToken).ConfigureAwait(false);
-            }
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Banner && !item.HasImage(ImageType.Banner))
-            {
-                await SaveImage(item, images, ImageType.Banner, cancellationToken).ConfigureAwait(false);
-            }
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var backdropLimit = ConfigurationManager.Configuration.MaxBackdrops;
-            if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Backdrops &&
-                item.BackdropImagePaths.Count < backdropLimit)
-            {
-                foreach (var image in images.Where(i => i.Type == ImageType.Backdrop))
+                if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Primary && !item.HasImage(ImageType.Primary))
                 {
-                    await _providerManager.SaveImage(item, image.Url, FanArtResourcePool, ImageType.Backdrop, null, cancellationToken)
-                                        .ConfigureAwait(false);
+                    await SaveImage(item, images, ImageType.Primary, cancellationToken).ConfigureAwait(false);
+                }
 
-                    if (item.BackdropImagePaths.Count >= backdropLimit) break;
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Logo && !item.HasImage(ImageType.Logo))
+                {
+                    await SaveImage(item, images, ImageType.Logo, cancellationToken).ConfigureAwait(false);
+                }
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Art && !item.HasImage(ImageType.Art))
+                {
+                    await SaveImage(item, images, ImageType.Art, cancellationToken).ConfigureAwait(false);
+                }
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Banner && !item.HasImage(ImageType.Banner))
+                {
+                    await SaveImage(item, images, ImageType.Banner, cancellationToken).ConfigureAwait(false);
+                }
+            }
+
+            if (!item.LockedFields.Contains(MetadataFields.Backdrops))
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var backdropLimit = ConfigurationManager.Configuration.MaxBackdrops;
+                if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Backdrops &&
+                    item.BackdropImagePaths.Count < backdropLimit)
+                {
+                    foreach (var image in images.Where(i => i.Type == ImageType.Backdrop))
+                    {
+                        await _providerManager.SaveImage(item, image.Url, FanArtResourcePool, ImageType.Backdrop, null, cancellationToken)
+                            .ConfigureAwait(false);
+
+                        if (item.BackdropImagePaths.Count >= backdropLimit) break;
+                    }
                 }
             }
         }

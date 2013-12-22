@@ -132,7 +132,9 @@ namespace MediaBrowser.Providers.Movies
             }
 
             // Don't refresh if we already have both poster and backdrop and we're not refreshing images
-            if (item.HasImage(ImageType.Primary) && item.BackdropImagePaths.Count >= ConfigurationManager.Configuration.MaxBackdrops)
+            if (item.HasImage(ImageType.Primary) && 
+                item.BackdropImagePaths.Count >= ConfigurationManager.Configuration.MaxBackdrops &&
+                !item.LockedFields.Contains(MetadataFields.Images))
             {
                 return false;
             }
@@ -167,7 +169,6 @@ namespace MediaBrowser.Providers.Movies
         public override async Task<bool> FetchAsync(BaseItem item, bool force, BaseProviderInfo providerInfo, CancellationToken cancellationToken)
         {
             var images = await _providerManager.GetAvailableRemoteImages(item, cancellationToken, ManualMovieDbImageProvider.ProviderName).ConfigureAwait(false);
-
             await ProcessImages(item, images.ToList(), cancellationToken).ConfigureAwait(false);
 
             SetLastRefreshed(item, DateTime.UtcNow, providerInfo);
@@ -190,7 +191,7 @@ namespace MediaBrowser.Providers.Movies
                 .ToList();
 
             //        poster
-            if (eligiblePosters.Count > 0 && !item.HasImage(ImageType.Primary))
+            if (eligiblePosters.Count > 0 && !item.HasImage(ImageType.Primary) && !item.LockedFields.Contains(MetadataFields.Images))
             {
                 var poster = eligiblePosters[0];
 
@@ -216,7 +217,10 @@ namespace MediaBrowser.Providers.Movies
             var backdropLimit = ConfigurationManager.Configuration.MaxBackdrops;
 
             // backdrops - only download if earlier providers didn't find any (fanart)
-            if (eligibleBackdrops.Count > 0 && ConfigurationManager.Configuration.DownloadMovieImages.Backdrops && item.BackdropImagePaths.Count < backdropLimit)
+            if (eligibleBackdrops.Count > 0 &&
+                ConfigurationManager.Configuration.DownloadMovieImages.Backdrops &&
+                item.BackdropImagePaths.Count < backdropLimit &&
+                !item.LockedFields.Contains(MetadataFields.Backdrops))
             {
                 for (var i = 0; i < eligibleBackdrops.Count; i++)
                 {
