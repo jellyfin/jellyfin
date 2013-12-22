@@ -183,7 +183,7 @@
             $('#scenesCollapsible', page).hide();
         } else {
             $('#scenesCollapsible', page).show();
-            renderScenes(page, item, 5);
+            renderScenes(page, item, 4);
         }
         if (!item.LocalTrailerCount && !item.RemoteTrailers.length) {
             $('#trailersCollapsible', page).addClass('hide');
@@ -421,7 +421,7 @@
 
         var options = {
             userId: Dashboard.getCurrentUserId(),
-            limit: item.Type == "MusicAlbum" ? 6 : 6,
+            limit: item.Type == "MusicAlbum" ? 5 : 5,
             fields: "PrimaryImageAspectRatio,DateCreated,UserData"
         };
 
@@ -690,7 +690,7 @@
         }
 
         if (limit && result.TotalRecordCount > limit) {
-            html += '<p style="margin: .5em 0 0;padding-left: .5em;"><button class="moreCriticReviews" data-inline="true" data-mini="true">More ...</button></p>';
+            html += '<p style="margin: 0;padding-left: .5em;"><button class="moreCriticReviews" data-inline="true" data-mini="true">More ...</button></p>';
         }
 
         $('#criticReviewsContent', page).html(html).trigger('create');
@@ -797,18 +797,20 @@
 
             html += '<div class="posterItemImage" style="background-image:url(\'' + imgUrl + '\');"></div>';
 
+            html += '<div class="posterItemTextOverlay">';
             html += '<div class="posterItemText">' + chapterName + '</div>';
             html += '<div class="posterItemText">';
 
             html += Dashboard.getDisplayTime(chapter.StartPositionTicks);
 
             html += '</div>';
+            html += '</div>';
 
             html += '</a>';
         }
 
         if (limit && chapters.length > limit) {
-            html += '<p style="margin: .5em 0 0;padding-left: .5em;"><button class="moreScenes" data-inline="true" data-mini="true">More ...</button></p>';
+            html += '<p style="margin: 0;padding-left: .5em;"><button class="moreScenes" data-inline="true" data-mini="true">More ...</button></p>';
         }
 
         $('#scenesContent', page).html(html).trigger('create');
@@ -924,6 +926,7 @@
 
             html += '<div class="posterItemImage" style="background-image:url(\'' + imgUrl + '\');"></div>';
 
+            html += '<div class="posterItemTextOverlay">';
             html += '<div class="posterItemText">' + item.Name + '</div>';
             html += '<div class="posterItemText">';
 
@@ -934,13 +937,14 @@
                 html += "&nbsp;";
             }
             html += '</div>';
+            html += '</div>';
 
             html += '</a>';
 
         }
 
         if (limit && items.length > limit) {
-            html += '<p style="margin: .5em 0 0;padding-left: .5em;"><button class="' + moreButtonClass + '" data-inline="true" data-mini="true">More ...</button></p>';
+            html += '<p style="margin: 0;padding-left: .5em;"><button class="' + moreButtonClass + '" data-inline="true" data-mini="true">More ...</button></p>';
         }
 
         return html;

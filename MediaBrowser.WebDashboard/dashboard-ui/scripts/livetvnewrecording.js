@@ -9,7 +9,6 @@
         var context = 'livetv';
 
         $('.itemName', page).html(program.Name);
-        $('.itemChannelNumber', page).html('Channel:&nbsp;&nbsp;&nbsp;<a href="livetvchannel.html?id=' + program.ChannelId + '">' + program.ChannelName + '</a>').trigger('create');
 
         $('.itemEpisodeName', page).html(program.EpisodeTitle || '');
 
@@ -23,6 +22,8 @@
         LibraryBrowser.renderOverview($('.itemOverview', page), program);
 
         $('.itemMiscInfo', page).html(LibraryBrowser.getMiscInfoHtml(program));
+
+        LiveTvHelpers.renderMiscProgramInfo($('.miscTvProgramInfo', page), program);
 
         $('#chkNewOnly', page).checked(defaultTimer.RecordNewOnly).checkboxradio('refresh');
         $('#chkAllChannels', page).checked(defaultTimer.RecordAnyChannel).checkboxradio('refresh');
