@@ -269,10 +269,12 @@ namespace MediaBrowser.Api
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public void Post(AuthenticateUser request)
+        public object Post(AuthenticateUser request)
         {
             // No response needed. Will throw an exception on failure.
             var result = AuthenticateUser(request).Result;
+
+            return result;
         }
 
         public object Post(AuthenticateUserByName request)
