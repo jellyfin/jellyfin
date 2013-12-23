@@ -50,7 +50,7 @@
 
         var html = "";
 
-        html += "<option value=''>None</option>";
+        html += "<option value=''></option>";
 
         for (var i = 0, length = allCountries.length; i < length; i++) {
 
@@ -66,7 +66,7 @@
         
         var html = "";
 
-        html += "<option value=''>None</option>";
+        html += "<option value=''></option>";
 
         for (var i = 0, length = allCultures.length; i < length; i++) {
 

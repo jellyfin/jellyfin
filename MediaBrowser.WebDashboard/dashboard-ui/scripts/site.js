@@ -42,6 +42,8 @@ var Dashboard = {
         $.mobile.listview.prototype.options.dividerTheme = "b";
 
         $.mobile.popup.prototype.options.theme = "c";
+        $.mobile.popup.prototype.options.transition = "none";
+        //$.mobile.defaultPageTransition = "none";
         //$.mobile.collapsible.prototype.options.contentTheme = "a";
     },
 

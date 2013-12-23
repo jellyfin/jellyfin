@@ -96,7 +96,7 @@
 .seriesTimerCircle {
     position: relative;
     margin-left: 0;
-    left: 30px;
+    left: 29px;
     opacity: .3;
 }
 
@@ -111,7 +111,7 @@
 
     .seriesTimerCircle + .seriesTimerCircle + .seriesTimerCircle {
         opacity: 1;
-        left: -30px;
+        left: -29px;
     }
 
 .channelImageContainer .itemDetailImage {

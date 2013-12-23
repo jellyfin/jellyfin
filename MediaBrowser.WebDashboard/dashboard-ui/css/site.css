@@ -49,11 +49,7 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
-.ui-header .ui-btn-inner, .ui-footer .ui-btn-inner, .ui-mini .ui-btn-inner {
-    font-size: 13px;
-}
-
-.ui-li-desc {
+.ui-header .ui-btn-inner, .ui-footer .ui-btn-inner, .ui-mini .ui-btn-inner, .ui-li-desc {
     font-size: 13px;
 }
 
@@ -68,7 +64,6 @@ h1 {
 
 .ui-loader h1 {
     font-weight: bold;
-    font-family: Arial;
 }
 
 h2 {
@@ -253,10 +248,6 @@ form, .readOnlyContent {
 
 .popup .ulForm {
     margin-bottom: 0!important;
-}
-
-.popup .ui-content {
-    padding: 20px;
 }
 
 .content-secondary {
@@ -1067,8 +1058,4 @@ input[type="range"]::-ms-fill-upper {
 
 #editItemMetadataPage #txtOverview {
     height: 70px;
-}
-
-#editItemMetadataPage #providerSettingsContainer .ui-slider-switch {
-    width: 8em;
 }
