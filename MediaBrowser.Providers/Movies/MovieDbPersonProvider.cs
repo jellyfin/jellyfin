@@ -86,7 +86,7 @@ namespace MediaBrowser.Providers.Movies
 
         protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
         {
-            if (HasAltMeta(item) && !ConfigurationManager.Configuration.EnableTmdbUpdates)
+            if (HasAltMeta(item))
                 return false;
 
             return base.NeedsRefreshInternal(item, providerInfo);
@@ -235,17 +235,12 @@ namespace MediaBrowser.Providers.Movies
         /// <returns>Task.</returns>
         private async Task FetchInfo(Person person, string id, bool isForcedRefresh, CancellationToken cancellationToken)
         {
-            var dataFilePath = GetPersonDataFilePath(ConfigurationManager.ApplicationPaths, id);
+            await DownloadPersonInfoIfNeeded(id, cancellationToken).ConfigureAwait(false);
 
-            // Only download if not already there
-            // The prescan task will take care of updates so we don't need to re-download here
-            if (!File.Exists(dataFilePath))
+            if (isForcedRefresh || !HasAltMeta(person))
             {
-                await DownloadPersonInfo(id, cancellationToken).ConfigureAwait(false);
-            }
+                var dataFilePath = GetPersonDataFilePath(ConfigurationManager.ApplicationPaths, id);
 
-            if (isForcedRefresh || ConfigurationManager.Configuration.EnableTmdbUpdates || !HasAltMeta(person))
-            {
                 var info = JsonSerializer.DeserializeFromFile<PersonResult>(dataFilePath);
 
                 cancellationToken.ThrowIfCancellationRequested();
@@ -254,9 +249,16 @@ namespace MediaBrowser.Providers.Movies
             }
         }
 
-        internal async Task DownloadPersonInfo(string id, CancellationToken cancellationToken)
+        internal async Task DownloadPersonInfoIfNeeded(string id, CancellationToken cancellationToken)
         {
             var personDataPath = GetPersonDataPath(ConfigurationManager.ApplicationPaths, id);
+
+            var fileInfo = _fileSystem.GetFileSystemInfo(personDataPath);
+
+            if (fileInfo.Exists && (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 7)
+            {
+                return;
+            }
 
             var url = string.Format(@"http://api.themoviedb.org/3/person/{1}?api_key={0}&append_to_response=credits,images", MovieDbProvider.ApiKey, id);
 
