@@ -1212,7 +1212,7 @@
 
                 html.push('<a class="detailPageParentLink" href="itemdetails.html?id=' + item.SeriesId + '">' + item.SeriesName + '</a>');
             }
-            else if (item.ParentIndexNumber && item.Type == "Episode") {
+            else if (item.ParentIndexNumber != null && item.Type == "Episode") {
 
                 html.push('<a class="detailPageParentLink" href="itemdetails.html?id=' + item.SeasonId + '">Season ' + item.ParentIndexNumber + '</a>');
             }

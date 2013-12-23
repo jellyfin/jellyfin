@@ -15,20 +15,6 @@
 
         var html = '';
 
-        //var cssClass = "detailTable";
-
-        //html += '<div class="detailTableContainer"><table class="' + cssClass + '">';
-
-        //html += '<tr>';
-
-        //html += '<th>&nbsp;</th>';
-        //html += '<th>Date</th>';
-        //html += '<th>Start</th>';
-        //html += '<th class="tabletColumn">End</th>';
-        //html += '<th>Name</th>';
-
-        //html += '</tr>';
-
         var currentIndexValue;
 
         for (var i = 0, length = result.Items.length; i < length; i++) {
@@ -114,48 +100,8 @@
             html += '</div>';
             html += '</div>';
 
-            //html += '<tr>';
-
-            //html += '<td>';
-
-            //if (program.RecordingId) {
-            //    html += '<button data-recordingid="' + program.RecordingId + '" class="btnCancelRecording" type="button" data-icon="delete" data-inline="true" data-mini="true" data-iconpos="notext">Cancel</button>';
-            //} else {
-            //    html += '<a href="livetvnewrecording.html?programid=' + program.Id + '" data-role="button" type="button" data-icon="facetime-video" data-inline="true" data-mini="true" data-theme="b" data-iconpos="notext">Record</a>';
-            //}
-
-            //html += '</td>';
-
-            //var startDate = program.StartDate;
-
-            //try {
-
-            //    startDate = parseISO8601Date(startDate, { toLocal: true });
-
-            //} catch (err) {
-
-            //}
-
-            //html += '<td>' + startDate.toLocaleDateString() + '</td>';
-
-            //html += '<td>' + LiveTvHelpers.getDisplayTime(program.StartDate) + '</td>';
-
-            //html += '<td class="tabletColumn">' + LiveTvHelpers.getDisplayTime(program.EndDate) + '</td>';
-
-            //html += '<td>';
-
-            //if (program.Name) {
-            //    //html += '<a href="livetvprogram.html?id=' + program.Id + '">';
-            //    html += program.Name;
-            //    //html += '</a>';
-            //}
-
-            //html += '</td>';
-
             html += '</a>';
         }
-
-        //html += '</table></div>';
 
         $('#programList', page).html(html).trigger('create');
     }
