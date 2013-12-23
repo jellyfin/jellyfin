@@ -86,7 +86,6 @@
     <Compile Include="Movies\MovieProviderFromXml.cs" />
     <Compile Include="Movies\OpenMovieDatabaseProvider.cs" />
     <Compile Include="Movies\PersonProviderFromXml.cs" />
-    <Compile Include="Movies\PersonUpdatesPreScanTask.cs" />
     <Compile Include="Movies\MovieDbPersonProvider.cs" />
     <Compile Include="Music\AlbumInfoFromSongProvider.cs" />
     <Compile Include="Music\AlbumProviderFromXml.cs" />

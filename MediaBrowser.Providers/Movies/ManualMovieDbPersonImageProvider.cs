@@ -46,43 +46,26 @@ namespace MediaBrowser.Providers.Movies
             return images.Where(i => i.Type == imageType);
         }
 
-        public Task<IEnumerable<RemoteImageInfo>> GetAllImages(IHasImages item, CancellationToken cancellationToken)
-        {
-            return GetAllImagesInternal(item, true, cancellationToken);
-        }
-
-        public async Task<IEnumerable<RemoteImageInfo>> GetAllImagesInternal(IHasImages item, bool retryOnMissingData, CancellationToken cancellationToken)
+        public async Task<IEnumerable<RemoteImageInfo>> GetAllImages(IHasImages item, CancellationToken cancellationToken)
         {
             var person = (Person)item;
             var id = person.GetProviderId(MetadataProviders.Tmdb);
 
             if (!string.IsNullOrEmpty(id))
             {
+                await MovieDbPersonProvider.Current.DownloadPersonInfoIfNeeded(id, cancellationToken).ConfigureAwait(false);
+
                 var dataFilePath = MovieDbPersonProvider.GetPersonDataFilePath(_config.ApplicationPaths, id);
 
-                try
-                {
-                    var result = _jsonSerializer.DeserializeFromFile<MovieDbPersonProvider.PersonResult>(dataFilePath);
+                var result = _jsonSerializer.DeserializeFromFile<MovieDbPersonProvider.PersonResult>(dataFilePath);
 
-                    var images = result.images ?? new MovieDbPersonProvider.Images();
+                var images = result.images ?? new MovieDbPersonProvider.Images();
 
-                    var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
+                var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
 
-                    var tmdbImageUrl = tmdbSettings.images.base_url + "original";
+                var tmdbImageUrl = tmdbSettings.images.base_url + "original";
 
-                    return GetImages(images, tmdbImageUrl);
-                }
-                catch (FileNotFoundException)
-                {
-
-                }
-
-                if (retryOnMissingData)
-                {
-                    await MovieDbPersonProvider.Current.DownloadPersonInfo(id, cancellationToken).ConfigureAwait(false);
-
-                    return await GetAllImagesInternal(item, false, cancellationToken).ConfigureAwait(false);
-                }
+                return GetImages(images, tmdbImageUrl);
             }
 
             return new List<RemoteImageInfo>();

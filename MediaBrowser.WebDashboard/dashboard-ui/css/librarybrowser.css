@@ -102,14 +102,8 @@
     padding-bottom: 0;
 }
 
-.libraryPage .ui-content {
-    padding: 10px;
-}
-
-@media all and (max-width: 400px) {
-    .libraryPage .ui-content {
-        padding: 10px 0;
-    }
+.libraryPage > .ui-content {
+    padding: 10px 0;
 }
 
 .libraryPage, .libraryPage .itemListContent {
@@ -625,10 +619,6 @@ a.itemTag:hover {
 }
 
 @media all and (min-width: 650px) {
-    .libraryPage .ui-content {
-        padding: 15px 20px 100px;
-    }
-
     .viewControls, .listTopPaging {
         display: inline-block;
     }
