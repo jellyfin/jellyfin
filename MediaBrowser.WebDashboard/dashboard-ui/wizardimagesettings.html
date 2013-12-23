@@ -1,0 +1,55 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Media Browser</title>
+</head>
+<body>
+    <div id="wizardImageSettingsPage" data-role="page" class="page standalonePage wizardPage mediaLibraryPage">
+
+        <div data-role="content">
+
+            <div class="ui-corner-all ui-shadow wizardContent">
+                <h2>
+                    <img src="css/images/mblogoicon.png" />Configure settings</h2>
+
+                <br />
+                <div style="margin: 1em 0;">
+                    <label for="selectImageSavingConvention"><b>Image saving convention:</b></label>
+                    <select name="selectImageSavingConvention" id="selectImageSavingConvention">
+                        <option value="Compatible" selected="selected">Compatible - MB3/Plex/Xbmc</option>
+                        <option value="Legacy">Standard - MB3/MB2</option>
+                    </select>
+                    <div class="fieldDescription">Media Browser recognizes images from most major media applications. Choosing your downloading convention is useful if you also use other products.</div>
+                </div>
+
+                <div style="margin: 2em 0;">
+                    <label for="chkVIdeoImages">Enable video image extraction</label>
+                    <input id="chkVIdeoImages" name="chkVIdeoImages" type="checkbox" checked="checked" />
+                    <div class="fieldDescription">For videos that don't already have images, and that we're unable to find internet images for. This will add some additional time to the initial library scan but will result in a more pleasing presentation.</div>
+                </div>
+
+                <div style="margin: 2em 0;">
+                    <label>Extract chapter images for:</label>
+                    <div data-role="controlgroup">
+                        <input type="checkbox" data-mini="true" id="chkMovies" name="chkMovies" checked="checked" />
+                        <label for="chkMovies">Movies</label>
+
+                        <input type="checkbox" data-mini="true" id="chkEpisodes" name="chkEpisodes" />
+                        <label for="chkEpisodes">Episodes</label>
+
+                        <input type="checkbox" data-mini="true" id="chkOtherVideos" name="chkOtherVideos" />
+                        <label for="chkOtherVideos">Other Videos</label>
+                        <div class="fieldDescription">Extracting chapter images will allow clients to display graphical scene selection menus. The process can be slow, cpu-intensive and may require several gigabytes of space. It runs as a nightly scheduled task at 4am, although this is configurable in the scheduled tasks area. It is not recommended to run this task during peak usage hours.</div>
+                    </div>
+                </div>
+
+                <div class="wizardNavigation">
+                    <button type="button" data-iconpos="left" data-icon="arrow-left" data-inline="true" onclick="history.back();">Previous</button>
+                    <button id="btnNextPage" type="button" data-iconpos="right" data-icon="arrow-right" data-inline="true">Next</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>
