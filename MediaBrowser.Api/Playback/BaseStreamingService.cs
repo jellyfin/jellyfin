@@ -188,7 +188,7 @@ namespace MediaBrowser.Api.Playback
         {
             var args = string.Empty;
 
-            if (state.IsRemote)
+            if (state.IsRemote || !state.HasMediaStreams)
             {
                 return string.Empty;
             }
