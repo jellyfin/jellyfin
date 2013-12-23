@@ -30,18 +30,17 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             _logger = logger;
         }
 
-        public TimerInfoDto GetTimerInfoDto(TimerInfo info, ILiveTvService service, LiveTvProgram program)
+        public TimerInfoDto GetTimerInfoDto(TimerInfo info, ILiveTvService service, LiveTvProgram program, LiveTvChannel channel)
         {
             var dto = new TimerInfoDto
             {
                 Id = GetInternalTimerId(service.Name, info.Id).ToString("N"),
-                ChannelName = info.ChannelName,
                 Overview = info.Overview,
                 EndDate = info.EndDate,
                 Name = info.Name,
                 StartDate = info.StartDate,
                 ExternalId = info.Id,
-                ChannelId = GetInternalChannelId(service.Name, info.ChannelId, info.ChannelName).ToString("N"),
+                ChannelId = GetInternalChannelId(service.Name, info.ChannelId).ToString("N"),
                 Status = info.Status,
                 SeriesTimerId = string.IsNullOrEmpty(info.SeriesTimerId) ? null : GetInternalSeriesTimerId(service.Name, info.SeriesTimerId).ToString("N"),
                 PrePaddingSeconds = info.PrePaddingSeconds,
@@ -69,15 +68,19 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 dto.ProgramInfo.SeriesTimerId = dto.SeriesTimerId;
             }
 
+            if (channel != null)
+            {
+                dto.ChannelName = channel.ChannelInfo.Name;
+            }
+
             return dto;
         }
 
-        public SeriesTimerInfoDto GetSeriesTimerInfoDto(SeriesTimerInfo info, ILiveTvService service)
+        public SeriesTimerInfoDto GetSeriesTimerInfoDto(SeriesTimerInfo info, ILiveTvService service, string channelName)
         {
             var dto = new SeriesTimerInfoDto
             {
                 Id = GetInternalSeriesTimerId(service.Name, info.Id).ToString("N"),
-                ChannelName = info.ChannelName,
                 Overview = info.Overview,
                 EndDate = info.EndDate,
                 Name = info.Name,
@@ -94,12 +97,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 RecordNewOnly = info.RecordNewOnly,
                 ExternalChannelId = info.ChannelId,
                 ExternalProgramId = info.ProgramId,
-                ServiceName = service.Name
+                ServiceName = service.Name,
+                ChannelName = channelName
             };
 
             if (!string.IsNullOrEmpty(info.ChannelId))
             {
-                dto.ChannelId = GetInternalChannelId(service.Name, info.ChannelId, info.ChannelName).ToString("N");
+                dto.ChannelId = GetInternalChannelId(service.Name, info.ChannelId).ToString("N");
             }
 
             if (!string.IsNullOrEmpty(info.ProgramId))
@@ -156,22 +160,21 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return val.Value * 2;
         }
 
-        public RecordingInfoDto GetRecordingInfoDto(LiveTvRecording recording, ILiveTvService service, User user = null)
+        public RecordingInfoDto GetRecordingInfoDto(LiveTvRecording recording, LiveTvChannel channel, ILiveTvService service, User user = null)
         {
             var info = recording.RecordingInfo;
-
+            
             var dto = new RecordingInfoDto
             {
                 Id = GetInternalRecordingId(service.Name, info.Id).ToString("N"),
                 SeriesTimerId = string.IsNullOrEmpty(info.SeriesTimerId) ? null : GetInternalSeriesTimerId(service.Name, info.SeriesTimerId).ToString("N"),
                 Type = recording.GetClientTypeName(),
-                ChannelName = info.ChannelName,
                 Overview = info.Overview,
                 EndDate = info.EndDate,
                 Name = info.Name,
                 StartDate = info.StartDate,
                 ExternalId = info.Id,
-                ChannelId = GetInternalChannelId(service.Name, info.ChannelId, info.ChannelName).ToString("N"),
+                ChannelId = GetInternalChannelId(service.Name, info.ChannelId).ToString("N"),
                 Status = info.Status,
                 Path = info.Path,
                 Genres = info.Genres,
@@ -212,6 +215,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 dto.ProgramId = GetInternalProgramId(service.Name, info.ProgramId).ToString("N");
             }
 
+            if (channel != null)
+            {
+                dto.ChannelName = channel.ChannelInfo.Name;
+            }
+            
             return dto;
         }
 
@@ -259,7 +267,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             var dto = new ProgramInfoDto
             {
                 Id = GetInternalProgramId(item.ServiceName, program.Id).ToString("N"),
-                ChannelId = GetInternalChannelId(item.ServiceName, program.ChannelId, program.ChannelName).ToString("N"),
+                ChannelId = GetInternalChannelId(item.ServiceName, program.ChannelId).ToString("N"),
                 Overview = program.Overview,
                 EndDate = program.EndDate,
                 Genres = program.Genres,
@@ -315,9 +323,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return null;
         }
 
-        public Guid GetInternalChannelId(string serviceName, string externalId, string channelName)
+        public Guid GetInternalChannelId(string serviceName, string externalId)
         {
-            var name = serviceName + externalId + channelName;
+            var name = serviceName + externalId;
 
             return name.ToLower().GetMBId(typeof(LiveTvChannel));
         }
@@ -354,7 +362,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         {
             var info = new TimerInfo
             {
-                ChannelName = dto.ChannelName,
                 Overview = dto.Overview,
                 EndDate = dto.EndDate,
                 Name = dto.Name,
@@ -416,7 +423,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         {
             var info = new SeriesTimerInfo
             {
-                ChannelName = dto.ChannelName,
                 Overview = dto.Overview,
                 EndDate = dto.EndDate,
                 Name = dto.Name,

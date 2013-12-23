@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Model.LiveTv;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.LiveTv
@@ -16,11 +15,6 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         public string ChannelId { get; set; }
         
-        /// <summary>
-        /// ChannelName of the recording.
-        /// </summary>
-        public string ChannelName { get; set; }
-
         /// <summary>
         /// Gets or sets the program identifier.
         /// </summary>

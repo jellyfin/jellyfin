@@ -22,11 +22,6 @@ namespace MediaBrowser.Controller.LiveTv
         public string ChannelId { get; set; }
 
         /// <summary>
-        /// ChannelName of the recording.
-        /// </summary>
-        public string ChannelName { get; set; }
-
-        /// <summary>
         /// Gets or sets the program identifier.
         /// </summary>
         /// <value>The program identifier.</value>
