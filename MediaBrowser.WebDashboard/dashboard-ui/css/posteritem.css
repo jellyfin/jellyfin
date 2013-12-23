@@ -1,5 +1,5 @@
 ﻿.posterItem {
-    margin: 7px;
+    margin: 6px;
     text-shadow: none;
     font-weight: normal!important;
     display: inline-block;
@@ -21,6 +21,12 @@
         -webkit-box-shadow: 0 0 20px 3px #2572EB;
         box-shadow: 0 0 20px 3px #2572EB;
     }
+
+
+
+.smallBackdropPosterItem, .smallPosterItem {
+    margin: 3px;
+}
 
 .posterItemImage {
     background-size: contain;
@@ -139,13 +145,13 @@
         height: 162px;
     }
 
-    .smallBackdropPosterItem {
-        width: 192px;
-    }
+.smallBackdropPosterItem {
+    width: 168px;
+}
 
-        .smallBackdropPosterItem .posterItemImage {
-            height: 108px;
-        }
+    .smallBackdropPosterItem .posterItemImage {
+        height: 94.5px;
+    }
 
 .portraitPosterItem {
     width: 100px;
@@ -161,6 +167,13 @@
     opacity: .8;
 }
 
+@media all and (max-width: 400px) {
+
+    .backdropPosterItem {
+        display: block;
+    }
+}
+
 @media all and (min-width: 540px) {
 
     .backdropPosterItem {
@@ -169,6 +182,17 @@
 
         .backdropPosterItem .posterItemImage {
             height: 144px;
+        }
+}
+
+@media all and (min-width: 540px) {
+
+    .smallBackdropPosterItem {
+        width: 184px;
+    }
+
+        .smallBackdropPosterItem .posterItemImage {
+            height: 103.5px;
         }
 }
 
@@ -188,6 +212,14 @@
 
         .storePosterItem .posterItemImage {
             height: 110px;
+        }
+
+    .smallBackdropPosterItem {
+        width: 192px;
+    }
+
+        .smallBackdropPosterItem .posterItemImage {
+            height: 108px;
         }
 }
 

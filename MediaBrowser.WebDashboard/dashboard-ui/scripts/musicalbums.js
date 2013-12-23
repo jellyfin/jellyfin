@@ -9,7 +9,7 @@
         SortOrder: "Ascending",
         IncludeItemTypes: "MusicAlbum",
         Recursive: true,
-        Fields: "DateCreated",
+        Fields: "DateCreated,PrimaryImageAspectRatio",
         StartIndex: 0
     };
 
@@ -32,10 +32,13 @@
             $('.viewSummary', page).html(LibraryBrowser.getViewSummaryHtml(query, checkSortOption)).trigger('create');
 
             if (view == "Poster") {
-                html += LibraryBrowser.getPosterDetailViewHtml({
+                html = LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
-                    context: "music",
-                    shape: "square"
+                    shape: "square",
+                    context: 'music',
+                    useAverageAspectRatio: true,
+                    showTitle: true,
+                    showParentTitle: true
                 });
                 $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }

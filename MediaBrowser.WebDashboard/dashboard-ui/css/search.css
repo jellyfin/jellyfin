@@ -30,7 +30,7 @@
     border-radius: 2px;
     font-weight: bold;
     min-width: 54px;
-    padding: 0 8px;
+    padding: 0 4px;
     text-align: center;
     text-decoration: none !important;
     -moz-user-select: none;
@@ -113,13 +113,6 @@
 
     .headerSearch {
         display: inline-block;
-    }
-}
-
-@media all and (min-width: 340px) {
-
-    .txtSearch {
-        width: 150px;
     }
 }
 

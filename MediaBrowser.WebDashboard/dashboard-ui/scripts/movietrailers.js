@@ -9,7 +9,7 @@
         SortOrder: "Ascending",
         IncludeItemTypes: "Trailer",
         Recursive: true,
-        Fields: "DateCreated",
+        Fields: "DateCreated,PrimaryImageAspectRatio",
         StartIndex: 0
     };
 
@@ -31,17 +31,12 @@
             var checkSortOption = $('.radioSortBy:checked', page);
             $('.viewSummary', page).html(LibraryBrowser.getViewSummaryHtml(query, checkSortOption)).trigger('create');
 
-            if (view == "Backdrop") {
-                html += LibraryBrowser.getPosterDetailViewHtml({
+            if (view == "Poster") {
+                html = LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
-                    preferBackdrop: true,
-                    context: "movies"
-                });
-            }
-            else if (view == "Poster") {
-                html += LibraryBrowser.getPosterDetailViewHtml({
-                    items: result.Items,
-                    context: "movies"
+                    shape: "portrait",
+                    context: 'movies',
+                    useAverageAspectRatio: true
                 });
             }
 

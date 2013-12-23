@@ -878,7 +878,7 @@
                 if (options.showParentTitle) {
 
                     html += "<div class='" + cssclass + "'>";
-                    html += item.SeriesName || item.Album || "&nbsp;";
+                    html += item.SeriesName || item.Album || item.AlbumArtist || "&nbsp;";
                     html += "</div>";
                 }
 

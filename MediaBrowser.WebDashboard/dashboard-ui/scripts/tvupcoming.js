@@ -70,7 +70,6 @@
                 showNewIndicator: false,
                 shape: "backdrop",
                 showTitle: true,
-                showParentTitle: true,
                 showPremiereDate: true,
                 showPremiereDateIndex: true,
                 preferThumb: true

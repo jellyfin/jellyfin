@@ -103,7 +103,7 @@
 }
 
 .libraryPage > .ui-content {
-    padding: 10px 0;
+    padding: 10px 0px;
 }
 
 .libraryPage, .libraryPage .itemListContent {
@@ -379,14 +379,14 @@ a.itemTag:hover {
 
 .lnkSibling {
     position: absolute;
-    bottom: 240px;
+    top: 10px;
     text-decoration: none;
-    color: #fff!important;
     font-weight: normal!important;
     display: none;
     background-color: rgba(0,0,0,0.6);
-    border-radius: 3px;
-    padding: 3px 5px;
+    color: #ddd!important;
+    background-color: transparent;
+    padding: 0;
 }
 
     .lnkSibling:hover {
@@ -597,24 +597,12 @@ a.itemTag:hover {
     .lnkSibling:not(.hide) {
         display: block;
     }
-
-    .lnkSibling {
-        bottom: 270px;
-    }
-
-    .noBackdrop .lnkSibling {
-        bottom: 260px;
-    }
 }
 
 @media all and (min-width: 1000px) {
 
     .itemBackdrop {
         background-size: 100% auto;
-    }
-
-    .noBackdrop .lnkSibling {
-        bottom: 205px;
     }
 }
 
@@ -636,6 +624,20 @@ a.itemTag:hover {
     .detailPageContent {
         max-width: 900px;
         width: auto;
+    }
+}
+
+@media all and (min-width: 800px) {
+
+    .ehsContent {
+        max-width: 700px;
+    }
+}
+
+@media all and (min-width: 900px) {
+
+    .ehsContent {
+        max-width: 880px;
     }
 }
 
@@ -670,14 +672,6 @@ a.itemTag:hover {
 }
 
 @media all and (min-width: 1440px) {
-
-    .lnkSibling {
-        bottom: 205px;
-        color: #ddd!important;
-        background-color: transparent;
-        border-radius: 0;
-        padding: 0;
-    }
 
     .ehsContent {
         max-width: 980px;
