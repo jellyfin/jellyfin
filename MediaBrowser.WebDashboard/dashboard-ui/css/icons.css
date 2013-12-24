@@ -65,3 +65,17 @@
 .ui-nosvg .ui-icon-next-track:after {
     background-image: url("images/icons/nexttrack.png");
 }
+.ui-icon-sort:after {
+    background-image: url("images/icons/sort.png");
+}
+/* Fallback */
+.ui-nosvg .ui-icon-sort:after {
+    background-image: url("images/icons/sort.png");
+}
+.ui-icon-filter:after {
+    background-image: url("images/icons/filter.png");
+}
+/* Fallback */
+.ui-nosvg .ui-icon-filter:after {
+    background-image: url("images/icons/filter.png");
+}
