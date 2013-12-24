@@ -39,10 +39,10 @@ var Dashboard = {
         //$.mobile.page.prototype.options.footerTheme = "a";
 
         //$.mobile.button.prototype.options.theme = "c";
-        $.mobile.listview.prototype.options.dividerTheme = "b";
+        //$.mobile.listview.prototype.options.dividerTheme = "b";
 
-        $.mobile.popup.prototype.options.theme = "c";
-        $.mobile.popup.prototype.options.transition = "none";
+        //$.mobile.popup.prototype.options.theme = "c";
+        //$.mobile.popup.prototype.options.transition = "none";
         //$.mobile.defaultPageTransition = "none";
         //$.mobile.collapsible.prototype.options.contentTheme = "a";
     },
@@ -131,7 +131,7 @@ var Dashboard = {
     alert: function (message) {
 
         $.mobile.loading('show', {
-            theme: "e",
+            theme: "b",
             text: message,
             textonly: true,
             textVisible: true
@@ -139,7 +139,7 @@ var Dashboard = {
 
         setTimeout(function () {
             $.mobile.loading('hide');
-        }, 2000);
+        }, 4000);
     },
 
     updateSystemInfo: function (info) {
@@ -259,7 +259,7 @@ var Dashboard = {
         var html = '<span style="margin-right: 1em;">Please restart Media Browser Server to finish updating.</span>';
 
         if (systemInfo.CanSelfRestart) {
-            html += '<button type="button" data-icon="refresh" onclick="$(this).button(\'disable\');Dashboard.restartServer();" data-theme="b" data-inline="true" data-mini="true">Restart Server</button>';
+            html += '<button type="button" data-icon="refresh" onclick="$(this).buttonEnabled(false);Dashboard.restartServer();" data-theme="b" data-inline="true" data-mini="true">Restart Server</button>';
         }
 
         Dashboard.showFooterNotification({ id: "serverRestartWarning", html: html, forceShow: true, allowHide: false });
@@ -273,7 +273,6 @@ var Dashboard = {
     showDashboardVersionWarning: function () {
 
         var html = '<span style="margin-right: 1em;">Please refresh this page to receive new updates from the server.</span>';
-        html += '<button type="button" data-icon="refresh" onclick="Dashboard.reloadPage();" data-theme="b" data-inline="true" data-mini="true">Refresh Page</button>';
 
         Dashboard.showFooterNotification({ id: "dashboardVersionWarning", html: html, forceShow: true, allowHide: false });
     },
@@ -377,19 +376,19 @@ var Dashboard = {
 
         $('#confirmFlyout').popup("close").remove();
 
-        var html = '<div data-role="popup" id="confirmFlyout" style="max-width:500px;" class="ui-corner-all">';
+        var html = '<div data-role="popup" id="confirmFlyout" style="max-width:500px;" data-theme="a">';
 
-        html += '<div class="ui-corner-top ui-bar-a" style="text-align:center;">';
+        html += '<div class="ui-bar-a" style="text-align:center;">';
         html += '<h3>' + title + '</h3>';
         html += '</div>';
 
-        html += '<div data-role="content" class="ui-corner-bottom ui-content">';
+        html += '<div style="padding: 1em;">';
 
         html += '<div style="padding: 1em .25em;margin: 0;">';
         html += message;
         html += '</div>';
 
-        html += '<p><button type="button" data-icon="ok" onclick="$(\'#confirmFlyout\')[0].confirm=true;$(\'#confirmFlyout\').popup(\'close\');" data-theme="b">Ok</button></p>';
+        html += '<p><button type="button" data-icon="check" onclick="$(\'#confirmFlyout\')[0].confirm=true;$(\'#confirmFlyout\').popup(\'close\');" data-theme="b">Ok</button></p>';
         html += '<p><button type="button" data-icon="delete" onclick="$(\'#confirmFlyout\').popup(\'close\');" data-theme="a">Cancel</button></p>';
         html += '</div>';
 
@@ -465,15 +464,15 @@ var Dashboard = {
 
         Dashboard.getCurrentUser().done(function (user) {
 
-            var html = '<div data-role="popup" id="userFlyout" style="max-width:400px;margin-top:30px;margin-right:20px;" class="ui-corner-all">';
+            var html = '<div data-role="popup" id="userFlyout" style="max-width:400px;margin-top:30px;margin-right:20px;" data-theme="a">';
 
-            html += '<a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>';
+            html += '<a href="#" data-rel="back" data-role="button" data-icon="delete" data-iconpos="notext" class="ui-btn-right" data-theme="b">Close</a>';
 
-            html += '<div class="ui-corner-top ui-bar-a" style="text-align:center;">';
+            html += '<div class="ui-bar-b" style="text-align:center;">';
             html += '<h3 style="margin: .5em 0;">' + user.Name + '</h3>';
             html += '</div>';
 
-            html += '<div data-role="content" class="ui-corner-bottom ui-content">';
+            html += '<div style="padding: 1em;">';
 
             html += '<p style="text-align:center;">';
 
@@ -572,7 +571,7 @@ var Dashboard = {
 
         if (user && !page.hasClass('wizardPage')) {
 
-            headerHtml += '<a class="imageLink btnCurrentUser" href="#" onclick="Dashboard.showUserFlyout(this);"><span class="currentUsername">' + user.Name + '</span>';
+            headerHtml += '<a class="imageLink btnCurrentUser" href="#" onclick="Dashboard.showUserFlyout(this);"><span class="currentUsername" style="font-weight:normal;">' + user.Name + '</span>';
 
             if (user.PrimaryImageTag) {
 
@@ -999,7 +998,7 @@ var Dashboard = {
 
             if (percentComplete < 100) {
                 var btnId = "btnCancel" + installation.Id;
-                html += '<button id="' + btnId + '" type="button" data-icon="delete" onclick="$(\'' + btnId + '\').button(\'disable\');Dashboard.cancelInstallation(\'' + installation.Id + '\');" data-theme="b" data-inline="true" data-mini="true">Cancel</button>';
+                html += '<button id="' + btnId + '" type="button" data-icon="delete" onclick="$(\'' + btnId + '\').buttonEnabled(false);Dashboard.cancelInstallation(\'' + installation.Id + '\');" data-theme="b" data-inline="true" data-mini="true">Cancel</button>';
             }
         }
 

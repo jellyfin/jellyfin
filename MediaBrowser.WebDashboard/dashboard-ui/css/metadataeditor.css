@@ -35,8 +35,7 @@
 
 .remoteImageContainer {
     display: inline-block;
-    border: 1px solid #ccc;
-    margin: 5px;
+    margin: 8px;
     vertical-align: top;
 }
 

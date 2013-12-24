@@ -4,7 +4,7 @@
     <title>Media Browser</title>
 </head>
 <body>
-    <div id="editItemImagesPage" data-role="page" data-theme="a" class="page libraryPage metadataEditorPage">
+    <div id="editItemImagesPage" data-role="page" data-theme="b" class="page libraryPage metadataEditorPage">
         <div data-role="content editPageContent">
             <div class="editPageSidebar">
                 <div class="libraryTree">
@@ -33,7 +33,7 @@
                 </div>
 
                 <div id="imagesContainer" style="display: none;">
-                    <div data-role="collapsible" data-mini="true" data-collapsed="false" data-corners="false" class="imageEditorCollapsible">
+                    <div data-role="collapsible" data-mini="true" data-collapsed="false" class="imageEditorCollapsible" data-content-theme="false">
                         <h3>Images</h3>
                         <div id="images">
                         </div>
@@ -41,7 +41,7 @@
                 </div>
 
                 <div id="backdropsContainer" style="display: none;">
-                    <div data-role="collapsible" data-mini="true" data-collapsed="false" data-corners="false" class="imageEditorCollapsible">
+                    <div data-role="collapsible" data-mini="true" data-collapsed="false" class="imageEditorCollapsible" data-content-theme="false">
                         <h3>Backdrops</h3>
                         <div id="backdrops">
                         </div>
@@ -49,7 +49,7 @@
                 </div>
 
                 <div id="screenshotsContainer" style="display: none;">
-                    <div data-role="collapsible" data-mini="true" data-collapsed="false" data-corners="false" class="imageEditorCollapsible">
+                    <div data-role="collapsible" data-mini="true" data-collapsed="false" class="imageEditorCollapsible" data-content-theme="false">
                         <h3>Screenshots</h3>
                         <div id="screenshots">
                         </div>
@@ -59,12 +59,12 @@
             </div>
         </div>
 
-        <div data-role="popup" id="popupUpload" data-theme="c" data-corners="false">
+        <div data-role="popup" id="popupUpload" data-theme="a" data-corners="false">
             <form id="uploadItemImageForm" style="max-width: 100%; margin: 0 1.5em 1.5em;">
                 <h2>Add/Update Image</h2>
                 <div>
                     <p>JPG/PNG only.</p>
-                    <input type="file" accept="image/*" id="uploadImage" name="uploadImage" data-theme="c" />
+                    <input type="file" accept="image/*" id="uploadImage" name="uploadImage" />
 
                     <div id="imageDropZone" class="imageDropZone">
                         <h3>Drop Image Here</h3>
@@ -73,7 +73,7 @@
                     <div id="fldUpload" style="display: none;">
                         <p data-role="fieldcontain">
                             <label for="selectImageType">Image Type:</label>
-                            <select id="selectImageType" name="selectImageType" data-theme="c">
+                            <select id="selectImageType" name="selectImageType">
                                 <option value="Primary">Primary</option>
                                 <option value="Art">Art</option>
                                 <option value="Backdrop">Backdrop</option>
@@ -89,15 +89,15 @@
                         </p>
                         <button type="submit" data-icon="picture" data-theme="b">Upload</button>
                     </div>
-                    <a data-role="button" data-rel="back" data-icon="delete" data-theme="c" onclick="$('#uploadImage').val('').trigger('change');">Cancel</a>
+                    <a data-role="button" data-rel="back" data-icon="delete" onclick="$('#uploadImage').val('').trigger('change');">Cancel</a>
                 </div>
             </form>
         </div>
 
-        <div data-role="popup" id="popupDownload" class="popup" data-corners="false">
+        <div data-role="popup" id="popupDownload" class="popup" data-theme="a">
 
-            <a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>
-            <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
+            <a href="#" data-rel="back" data-role="button" data-icon="delete" data-iconpos="notext" class="ui-btn-right" data-theme="b">Close</a>
+            <div class="ui-bar-b" style="text-align: center; padding: 0 20px;">
                 <h3 style="margin: .5em 0;">Browse Online Images</h3>
             </div>
 

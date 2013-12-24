@@ -10,13 +10,13 @@
 
             options.header = options.header || "Rate and Review";
             
-            var html = '<div data-role="popup" id="popupRatingDialog" class="ui-corner-all popup" style="min-width:400px;" data-dismissible="false">';
+            var html = '<div data-role="popup" id="popupRatingDialog" class="popup" style="min-width:400px;">';
 
-            html += '<div class="ui-corner-top ui-bar-a" style="text-align: center; padding: 0 20px;">';
+            html += '<div class="ui-bar-a" style="text-align: center; padding: 0 20px;">';
             html += '<h3>' + options.header + '</h3>';
             html += '</div>';
 
-            html += '<div data-role="content" class="ui-corner-bottom ui-content">';
+            html += '<div style="padding: 1em;">';
             html += '<form>';
 
             html += '<div style="margin:0;">';
@@ -32,7 +32,7 @@
 
 
             html += '<p>';
-            html += '<button type="submit" data-theme="b" data-icon="ok">OK</button>';
+            html += '<button type="submit" data-theme="b" data-icon="check">OK</button>';
             html += '<button type="button" data-icon="delete" onclick="$(this).parents(\'.popup\').popup(\'close\');">Cancel</button>';
             html += '</p>';
             html += '<p id="errorMsg" style="display:none; color:red; font-weight:bold">';

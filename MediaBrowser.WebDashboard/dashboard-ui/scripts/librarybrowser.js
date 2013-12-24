@@ -490,10 +490,10 @@
 
             $('.playFlyout').popup("close").remove();
 
-            var html = '<div data-role="popup" class="playFlyout" style="max-width:300px;" data-corners="false" data-theme="c" data-history="false">';
+            var html = '<div data-role="popup" class="playFlyout" style="max-width:300px;" data-theme="a" data-history="false">';
 
-            html += '<ul data-role="listview" style="min-width: 150px;" data-theme="c">';
-            html += '<li data-role="list-divider" data-theme="a">Play Menu</li>';
+            html += '<ul data-role="listview" style="min-width: 150px;">';
+            html += '<li data-role="list-divider" data-theme="b">Play Menu</li>';
 
             if (itemType == "MusicArtist") {
                 html += '<li><a href="#" onclick="MediaPlayer.playArtist(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Play</a></li>';
@@ -1380,9 +1380,9 @@
             html += '</span>';
 
             if (showControls) {
-                html += '<button data-icon="arrow-left" data-iconpos="notext" data-inline="true" data-mini="true" class="btnPreviousPage" ' + (query.StartIndex ? '' : 'disabled') + '>Previous Page</button>';
+                html += '<button data-icon="arrow-l" data-iconpos="notext" data-inline="true" data-mini="true" class="btnPreviousPage" ' + (query.StartIndex ? '' : 'disabled') + '>Previous Page</button>';
 
-                html += '<button data-icon="arrow-right" data-iconpos="notext" data-inline="true" data-mini="true" class="btnNextPage" ' + (query.StartIndex + query.Limit > totalRecordCount ? 'disabled' : '') + '>Next Page</button>';
+                html += '<button data-icon="arrow-r" data-iconpos="notext" data-inline="true" data-mini="true" class="btnNextPage" ' + (query.StartIndex + query.Limit > totalRecordCount ? 'disabled' : '') + '>Next Page</button>';
 
                 var id = "selectPageSize" + new Date().getTime();
 
@@ -1407,7 +1407,8 @@
                 options += getOption(400);
                 options += getOption(500);
 
-                html += '<label class="labelPageSize" for="' + id + '">Limit: </label><select class="selectPageSize" id="' + id + '" data-enhance="false" data-role="none">' + options + '</select>';
+                // Add styles to defeat jquery mobile
+                html += '<label style="display:inline;font-size:inherit;" class="labelPageSize" for="' + id + '">Limit: </label><select class="selectPageSize" id="' + id + '" data-enhance="false" data-role="none">' + options + '</select>';
             }
 
             html += '</div>';
@@ -2351,8 +2352,8 @@
             }) + '" />';
             html += '</div>';
 
-            html += '<div class="galleryPopup" id="pop_' + index + '_' + tag + '" data-role="popup" data-theme="d" data-corners="false" data-overlay-theme="a">';
-            html += '<a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>';
+            html += '<div class="galleryPopup" id="pop_' + index + '_' + tag + '" data-role="popup">';
+            html += '<a href="#" data-rel="back" data-role="button" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>';
             html += '<img class="" src="' + LibraryBrowser.getImageUrl(item, type, index, {
 
                 maxwidth: screenWidth,

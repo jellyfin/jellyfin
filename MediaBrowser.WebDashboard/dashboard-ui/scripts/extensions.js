@@ -32,6 +32,11 @@ $.fn.checked = function (value) {
     }
 };
 
+$.fn.buttonEnabled = function(enabled) {
+
+    return this;
+};
+
 if (!Array.prototype.filter) {
     Array.prototype.filter = function (fun /*, thisp*/) {
         "use strict";

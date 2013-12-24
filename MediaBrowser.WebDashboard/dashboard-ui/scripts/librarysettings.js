@@ -40,7 +40,7 @@
                     picker.close();
                 },
 
-                header: "Select Items By Name Path",
+                header: "Select Images By Name Path",
 
                 instruction: "Browse or enter the path to your items by name folder. The folder must be writeable."
             });

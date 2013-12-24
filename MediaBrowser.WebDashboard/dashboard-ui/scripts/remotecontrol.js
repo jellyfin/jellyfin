@@ -64,13 +64,13 @@
 
         var item = options.item;
 
-        var html = '<div data-role="popup" id="remoteControlFlyout">';
+        var html = '<div data-role="popup" id="remoteControlFlyout" data-theme="a">';
 
-        html += '<div class="ui-corner-top ui-bar-a" style="text-align:center;">';
+        html += '<div class="ui-bar-b" style="text-align:center;">';
         html += '<div style="margin:.5em 0;">Remote Control</div>';
         html += '</div>';
 
-        html += '<div data-role="content" class="ui-corner-bottom ui-content">';
+        html += '<div style="padding: 1em;">';
 
         html += '<form id="sendToForm">';
         html += '<input type="hidden" value="PlayNow" id="fldPlayCommand" />';
@@ -82,15 +82,15 @@
 
         html += '<p style="text-align:center;margin:.75em 0 0;">';
 
-        html += '<span id="playButtonContainer" style="display:none;"><button onclick="$(\'#fldPlayCommand\').val(\'PlayNow\');" type="submit" data-icon="play" data-theme="b" data-mini="true" data-inline="true">Play</button></span>';
+        html += '<span id="playButtonContainer" style="display:none;"><button onclick="$(\'#fldPlayCommand\').val(\'PlayNow\');" type="submit" data-icon="play" data-mini="true" data-inline="true">Play</button></span>';
 
-        html += '<span id="resumeButtonContainer" style="display:none;"><button onclick="$(\'#fldPlayCommand\').val(\'Resume\');" type="submit" data-icon="play" data-theme="b" data-mini="true" data-inline="true">Resume</button></span>';
+        html += '<span id="resumeButtonContainer" style="display:none;"><button onclick="$(\'#fldPlayCommand\').val(\'Resume\');" type="submit" data-icon="play" data-mini="true" data-inline="true">Resume</button></span>';
 
-        html += '<span id="queueButtonContainer" style="display:none;"><button onclick="$(\'#fldPlayCommand\').val(\'PlayLast\');" type="submit" data-icon="plus" data-theme="b" data-mini="true" data-inline="true">Queue</button></span>';
+        html += '<span id="queueButtonContainer" style="display:none;"><button onclick="$(\'#fldPlayCommand\').val(\'PlayLast\');" type="submit" data-icon="plus" data-mini="true" data-inline="true">Queue</button></span>';
 
-        html += '<span id="browseButtonContainer" style="display:none;"><button onclick="$(\'#fldPlayCommand\').val(\'Browse\');" type="submit" data-icon="arrow-right" data-theme="b" data-mini="true" data-inline="true">Browse</button></span>';
+        html += '<span id="browseButtonContainer" style="display:none;"><button onclick="$(\'#fldPlayCommand\').val(\'Browse\');" type="submit" data-icon="eye" data-mini="true" data-inline="true">Browse</button></span>';
 
-        html += '<button type="button" data-icon="delete" onclick="$(\'#remoteControlFlyout\').popup(\'close\');" data-theme="a" data-mini="true" data-inline="true">Cancel</button>';
+        html += '<button type="button" data-icon="delete" onclick="$(\'#remoteControlFlyout\').popup(\'close\');" data-mini="true" data-inline="true">Cancel</button>';
 
         html += '</p>';
 
@@ -655,13 +655,15 @@
 
     function showMenu(sessions) {
 
-        var html = '<div data-role="popup" id="remoteControlFlyout">';
+        var html = '<div data-role="popup" id="remoteControlFlyout" data-theme="a">';
 
-        html += '<div class="ui-corner-top ui-bar-a" style="text-align:center;">';
+        html += '<a href="#" data-rel="back" data-role="button" data-icon="delete" data-iconpos="notext" class="ui-btn-right" data-theme="b">Close</a>';
+
+        html += '<div class="ui-bar-b" style="text-align:center;">';
         html += '<div style="margin:.5em 0;">Remote Control</div>';
         html += '</div>';
 
-        html += '<div data-role="content" class="ui-corner-bottom ui-content">';
+        html += '<div style="padding: 1em;">';
 
         html += '<div class="sessionsPopupContent">';
 
@@ -686,11 +688,11 @@
         html += '<p class="sessionButtons" style="text-align:center;">';
 
         html += '<button class="btnGoHome" type="button" data-icon="home" data-mini="true" data-inline="true">Home</button>';
-        html += '<button class="btnGoToSettings" type="button" data-icon="wrench" data-mini="true" data-inline="true">Settings</button>';
+        html += '<button class="btnGoToSettings" type="button" data-icon="gear" data-mini="true" data-inline="true">Settings</button>';
 
         html += '</p>';
 
-        html += '<div class="commandsCollapsible" data-role="collapsible" data-content-theme="c" data-collapsed="true" data-mini="true" style="margin-top: 1em;display:none;">';
+        html += '<div class="commandsCollapsible" data-role="collapsible" data-collapsed="true" data-mini="true" style="margin-top: 1em;display:none;">';
         html += '<h4>Send Message</h4>';
         html += '<div>';
 
@@ -700,19 +702,12 @@
 
         html += '<div style="display:inline-block;width:80%;"><input id="txtMessage" name="txtMessage" type="text" /></div>';
 
-        html += '<button type="button" data-icon="envelope" class="btnSendMessage" data-theme="a" data-mini="true" data-inline="true">Send</button>';
+        html += '<button type="button" data-icon="mail" class="btnSendMessage" data-mini="true" data-inline="true">Send</button>';
 
         html += '</p>';
 
         html += '</div>';
         html += '</div>';
-
-
-        html += '<p style="text-align:center;margin:1em 0 0;">';
-
-        html += '<button type="button" data-icon="delete" onclick="$(\'#remoteControlFlyout\').popup(\'close\');" data-theme="a" data-mini="true" data-inline="true">Close</button>';
-
-        html += '</p>';
 
         html += '</div>';
 
@@ -880,11 +875,11 @@
         html += '</div>';
 
         html += '<div style="text-align:center; margin: 0 0 2em;">';
-        html += '<button class="btnPreviousTrack" type="button" data-icon="step-backward" data-inline="true" data-iconpos="notext">Previous track</button>';
+        html += '<button class="btnPreviousTrack" type="button" data-icon="previous-track" data-inline="true" data-iconpos="notext">Previous track</button>';
         html += '<span class="btnPauseParent"><button class="btnPause" type="button" data-icon="pause" data-inline="true" data-iconpos="notext">Pause</button></span>';
         html += '<span class="btnPlayParent"><button class="btnPlay" type="button" data-icon="play" data-inline="true" data-iconpos="notext">Play</button></span>';
         html += '<button class="btnStop" type="button" data-icon="stop" data-inline="true" data-iconpos="notext">Stop</button>';
-        html += '<button class="btnNextTrack" type="button" data-icon="step-forward" data-inline="true" data-iconpos="notext">Next track</button>';
+        html += '<button class="btnNextTrack" type="button" data-icon="next-track" data-inline="true" data-iconpos="notext">Next track</button>';
         html += '<button class="btnVolumeDown" type="button" data-icon="volume-down" data-inline="true" data-iconpos="notext">Decrease volume</button>';
         html += '<button class="btnVolumeUp" type="button" data-icon="volume-up" data-inline="true" data-iconpos="notext">Increase volume</button>';
         html += '<button class="btnToggleMute" type="button" data-icon="volume-off" data-inline="true" data-iconpos="notext">Toggle mute</button>';

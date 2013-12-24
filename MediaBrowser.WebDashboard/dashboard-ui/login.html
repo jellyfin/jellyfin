@@ -18,7 +18,7 @@
                 <input type="password" name="txtManualPassword" id="txtManualPassword" placeholder="password" />
 
                 <p>
-                    <button type="submit" data-theme="b" data-icon="ok">
+                    <button type="submit" data-theme="b" data-icon="check">
                         Sign in
                     </button>
                 </p>
@@ -31,17 +31,17 @@
             </div>
         </div>
 
-        <div data-role="popup" id="popupLogin" class="ui-corner-all popup">
+        <div data-role="popup" id="popupLogin" class="popup">
             <form class="loginForm">
-                <div class="ui-corner-top ui-bar-a" style="text-align: center;">
+                <div class="ui-bar-a" style="text-align: center;">
                     <h3>Please sign in</h3>
                 </div>
-                <div data-role="content" class="ui-corner-bottom ui-content">
+                <div data-role="content">
                     <label for="pw" class="ui-hidden-accessible">Password:</label>
                     <input type="password" name="pw" id="pw" value="" placeholder="password" />
 
                     <p>
-                        <button type="submit" data-theme="b" data-icon="ok">
+                        <button type="submit" data-theme="b" data-icon="check">
                             Sign in
                         </button>
                         <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');">

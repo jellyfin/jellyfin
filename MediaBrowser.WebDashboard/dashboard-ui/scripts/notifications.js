@@ -28,19 +28,19 @@
 
         var html = '<div data-role="popup" class="notificationsFlyout" style="min-width:250px;margin-top:30px;margin-right:20px;background: #f8f8f8;">';
 
-        html += '<a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>';
+        html += '<a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>';
 
-        html += '<div class="ui-corner-top ui-bar-a" style="text-align:center;">';
+        html += '<div class="ui-bar-a" style="text-align:center;">';
         html += '<h3 style="margin: .5em 0;">Notifications</h3>';
         html += '</div>';
 
-        html += '<div data-role="content" class="ui-corner-bottom ui-content" style="padding: 0;">';
+        html += '<div data-role="content" style="padding: 0;">';
 
         html += '<p class="notificationsFlyoutlist">Loading...';
 
         html += '</p>';
 
-        html += '<p style="display:none;" class="btnMarkReadContainer"><button class="btnMarkRead" type="button" data-icon="ok" data-mini="true">Mark these read</button></p>';
+        html += '<p style="display:none;" class="btnMarkReadContainer"><button class="btnMarkRead" type="button" data-icon="check" data-mini="true">Mark these read</button></p>';
         html += '</div>';
 
         html += '</div>';

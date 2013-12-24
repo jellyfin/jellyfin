@@ -114,7 +114,7 @@ pre, textarea.pre {
 /*
     Page / Base styles
     */
-.page {
+.page:not(.libraryPage) {
     background: #f2f2f2;
     background-attachment: fixed;
 }
@@ -420,7 +420,7 @@ form, .readOnlyContent {
 
     .mediaLocationsHeader .ui-btn {
         position: absolute;
-        right: 3px;
+        right: -6px;
         margin-top: 0!important;
         margin-bottom: 0!important;
         top: 6px;
@@ -628,14 +628,16 @@ form, .readOnlyContent {
     left: -2px;
     right: -2px;
     z-index: 99997;
+    color: #fff;
+    border: 0 !important;
 }
 
 .footerNotification {
     text-shadow: none;
-    padding: .5em 1em;
+    padding: .75em 1em;
     margin: 0;
     font-weight: normal;
-    border-top: 1px solid #999;
+    border-top: 1px solid #555;
 }
 
 .notificationIcon {

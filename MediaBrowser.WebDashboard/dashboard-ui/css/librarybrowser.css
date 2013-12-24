@@ -19,6 +19,10 @@
     }
 }
 
+.ui-panel fieldset + fieldset {
+    margin-top: 2em;
+}
+
 .headerArrowImage {
     height: 24px;
     margin-left: .5em;
@@ -75,6 +79,7 @@
     height: 20px;
     padding-top: 9px;
     text-transform: uppercase;
+    color: #fff!important;
 }
 
 
@@ -104,11 +109,6 @@
 
 .libraryPage > .ui-content {
     padding: 10px 0px;
-}
-
-.libraryPage, .libraryPage .itemListContent {
-    background: #252525 repeat-x!important;
-    background-attachment: fixed!important;
 }
 
     .libraryPage .currentUsername {

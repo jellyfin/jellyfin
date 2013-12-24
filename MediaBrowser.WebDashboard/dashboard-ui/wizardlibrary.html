@@ -25,13 +25,13 @@
                 </div>
                 <p>Refer to <a href="https://github.com/MediaBrowser/MediaBrowser/wiki/Library-Structure" target="_blank">media library wiki.</a></p>
 
-                <div data-role="popup" id="popupEnterText" class="ui-corner-all popup">
+                <div data-role="popup" id="popupEnterText" class="popup">
 
                     <div class="ui-corner-top ui-bar-a" style="text-align: center; padding: 0 20px;">
                         <h3>Rename</h3>
                     </div>
 
-                    <div data-role="content" class="ui-corner-bottom ui-content">
+                    <div data-role="content">
                         <form id="textEntryForm">
                             <p>
                                 <label id="lblValue" for="txtValue">New name:</label>
@@ -48,7 +48,7 @@
                             </p>
 
                             <p>
-                                <button type="submit" data-theme="b" data-icon="ok">
+                                <button type="submit" data-theme="b" data-icon="check">
                                     Ok
                                 </button>
                                 <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');">
@@ -61,8 +61,8 @@
                 </div>
 
                 <div class="wizardNavigation">
-                    <button type="button" data-iconpos="left" data-icon="arrow-left" data-inline="true" onclick="history.back();">Previous</button>
-                    <button type="button" data-iconpos="right" data-icon="arrow-right" data-inline="true" onclick="Dashboard.navigate('wizardsettings.html');">Next</button>
+                    <button type="button" data-iconpos="left" data-icon="arrow-l" data-inline="true" onclick="history.back();">Previous</button>
+                    <button type="button" data-iconpos="right" data-icon="arrow-r" data-inline="true" onclick="Dashboard.navigate('wizardsettings.html');">Next</button>
                 </div>
             </div>
 

@@ -463,9 +463,9 @@
                 $('.saveButtonContainer', page).show();
             }
 
-            $('#btnRefresh', page).button('enable');
-            $('#btnDelete', page).button('enable');
-            $('.btnSave', page).button('enable');
+            $('#btnRefresh', page).buttonEnabled(true);
+            $('#btnDelete', page).buttonEnabled(true);
+            $('.btnSave', page).buttonEnabled(true);
 
             $('#refreshLoading', page).hide();
 
@@ -1402,9 +1402,9 @@
 
         $('#btnRefresh', this).on('click', function () {
 
-            $('#btnDelete', page).button('disable');
-            $('#btnRefresh', page).button('disable');
-            $('.btnSave', page).button('disable');
+            $('#btnDelete', page).buttonEnabled(false);
+            $('#btnRefresh', page).buttonEnabled(false);
+            $('.btnSave', page).buttonEnabled(false);
 
             $('#refreshLoading', page).show();
 
@@ -1447,9 +1447,9 @@
 
                 if (result) {
 
-                    $('#btnDelete', page).button('disable');
-                    $('#btnRefresh', page).button('disable');
-                    $('.btnSave', page).button('disable');
+                    $('#btnDelete', page).buttonEnabled(false);
+                    $('#btnRefresh', page).buttonEnabled(false);
+                    $('.btnSave', page).buttonEnabled(false);
 
                     $('#refreshLoading', page).show();
 
@@ -1477,7 +1477,7 @@
                 MetadataEditor.currentItemType = data.itemType;
                 //Dashboard.navigate('edititemmetadata.html?id=' + data.id);
 
-                $.mobile.urlHistory.ignoreNextHashChange = true;
+                //$.mobile.urlHistory.ignoreNextHashChange = true;
                 window.location.hash = 'editItemMetadataPage?id=' + data.id;
 
                 reload(page);

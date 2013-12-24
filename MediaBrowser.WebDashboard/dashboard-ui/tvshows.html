@@ -4,7 +4,7 @@
     <title>Media Browser</title>
 </head>
 <body>
-    <div id="tvShowsPage" data-role="page" class="page libraryPage" data-theme="a" data-view="tv">
+    <div id="tvShowsPage" data-role="page" class="page libraryPage" data-theme="b" data-view="tv">
         <div class="libraryViewNav">
             <a href="tvrecommended.html">Suggested</a>
             <a href="tvnextup.html">Next up</a>
@@ -36,7 +36,7 @@
             </div>
             <div id="items" class="itemsContainer"></div>
         </div>
-        <div data-role="panel" id="sortPanel" data-position="right" data-display="overlay" data-theme="b" data-position-fixed="true">
+        <div data-role="panel" id="sortPanel" data-position="right" data-display="overlay" data-theme="a" data-position-fixed="true">
 
             <form>
                 <fieldset data-role="controlgroup">
@@ -44,22 +44,22 @@
                         <strong>Sort By:</strong>
                     </legend>
 
-                    <input class="radioSortBy defaultSort" data-theme="c" type="radio" name="radioSortBy" id="radioSortName" value="on" checked="checked" data-sortby="SortName" data-mini="true">
+                    <input class="radioSortBy defaultSort" type="radio" name="radioSortBy" id="radioSortName" value="on" checked="checked" data-sortby="SortName" data-mini="true">
                     <label for="radioSortName">Name</label>
 
-                    <input class="radioSortBy" data-theme="c" type="radio" name="radioSortBy" id="radioCommunityRating" value="off" data-sortby="CommunityRating" data-mini="true">
+                    <input class="radioSortBy" type="radio" name="radioSortBy" id="radioCommunityRating" value="off" data-sortby="CommunityRating" data-mini="true">
                     <label for="radioCommunityRating">IMDb Rating</label>
 
-                    <input class="radioSortBy" data-theme="c" type="radio" name="radioSortBy" id="radioDateCreated" value="off" data-sortby="DateCreated" data-mini="true">
+                    <input class="radioSortBy" type="radio" name="radioSortBy" id="radioDateCreated" value="off" data-sortby="DateCreated" data-mini="true">
                     <label for="radioDateCreated">Date Added</label>
 
-                    <input class="radioSortBy" type="radio" name="radioSortBy" data-theme="c" id="radioContentRating" value="off" data-sortby="OfficialRating" data-mini="true">
+                    <input class="radioSortBy" type="radio" name="radioSortBy" id="radioContentRating" value="off" data-sortby="OfficialRating" data-mini="true">
                     <label for="radioContentRating">Parental Rating</label>
 
-                    <input class="radioSortBy" data-theme="c" type="radio" name="radioSortBy" id="radioPremiereDate" value="off" data-sortby="PremiereDate" data-mini="true">
+                    <input class="radioSortBy" type="radio" name="radioSortBy" id="radioPremiereDate" value="off" data-sortby="PremiereDate" data-mini="true">
                     <label for="radioPremiereDate">Premiere Date</label>
 
-                    <input class="radioSortBy" data-theme="c" type="radio" name="radioSortBy" id="radioRuntime" value="off" data-sortby="Runtime" data-mini="true">
+                    <input class="radioSortBy" type="radio" name="radioSortBy" id="radioRuntime" value="off" data-sortby="Runtime" data-mini="true">
                     <label for="radioRuntime">Runtime</label>
                 </fieldset>
 
@@ -68,21 +68,21 @@
                         <strong>Sort Order:</strong>
                     </legend>
 
-                    <input class="radioSortOrder" data-theme="c" type="radio" name="radioSortOrder" id="radioAscending" value="on" checked="checked" data-sortorder="Ascending" data-mini="true">
+                    <input class="radioSortOrder" type="radio" name="radioSortOrder" id="radioAscending" value="on" checked="checked" data-sortorder="Ascending" data-mini="true">
                     <label for="radioAscending">Ascending</label>
 
-                    <input class="radioSortOrder" data-theme="c" type="radio" name="radioSortOrder" id="radioDescending" value="off" data-sortorder="Descending" data-mini="true">
+                    <input class="radioSortOrder" type="radio" name="radioSortOrder" id="radioDescending" value="off" data-sortorder="Descending" data-mini="true">
                     <label for="radioDescending">Descending</label>
                 </fieldset>
             </form>
         </div>
-        <div data-role="panel" id="filterPanel" data-position="right" data-display="overlay" data-theme="b" data-position-fixed="true">
+        <div data-role="panel" id="filterPanel" data-position="right" data-display="overlay" data-theme="a" data-position-fixed="true">
             <form>
                 <fieldset data-role="controlgroup" data-type="horizontal" style="margin-bottom: 1em;">
                     <legend>Filters:</legend>
-                    <input type="radio" name="radioFilterTypes" id="radioBasicFilters" value="on" checked="checked" data-mini="true" data-theme="c">
+                    <input type="radio" name="radioFilterTypes" id="radioBasicFilters" value="on" checked="checked" data-mini="true">
                     <label for="radioBasicFilters">Basic</label>
-                    <input type="radio" name="radioFilterTypes" id="radioAdvancedFilters" value="off" data-mini="true" data-theme="c">
+                    <input type="radio" name="radioFilterTypes" id="radioAdvancedFilters" value="off" data-mini="true">
                     <label for="radioAdvancedFilters">Advanced</label>
                 </fieldset>
 
@@ -91,13 +91,13 @@
                         <legend>
                             <strong>Filters:</strong>
                         </legend>
-                        <input class="chkStandardFilter" type="checkbox" name="chkIsFavorite" id="chkIsFavorite" data-theme="c" data-filter="IsFavorite" data-mini="true">
+                        <input class="chkStandardFilter" type="checkbox" name="chkIsFavorite" id="chkIsFavorite" data-filter="IsFavorite" data-mini="true">
                         <label for="chkIsFavorite">Favorite</label>
 
-                        <input class="chkStandardFilter" type="checkbox" name="chkLikes" id="chkLikes" data-theme="c" data-filter="Likes" data-mini="true">
+                        <input class="chkStandardFilter" type="checkbox" name="chkLikes" id="chkLikes" data-filter="Likes" data-mini="true">
                         <label for="chkLikes">Likes</label>
 
-                        <input class="chkStandardFilter" type="checkbox" name="chkDislikes" id="chkDislikes" data-theme="c" data-filter="Dislikes" data-mini="true">
+                        <input class="chkStandardFilter" type="checkbox" name="chkDislikes" id="chkDislikes" data-filter="Dislikes" data-mini="true">
                         <label for="chkDislikes">Dislikes</label>
                     </fieldset>
 
@@ -105,9 +105,9 @@
                         <legend>
                             <strong>Status:</strong>
                         </legend>
-                        <input class="chkStatus" type="checkbox" name="chkStatusContinuing" id="chkStatusContinuing" data-theme="c" data-filter="Continuing" data-mini="true">
+                        <input class="chkStatus" type="checkbox" name="chkStatusContinuing" id="chkStatusContinuing" data-filter="Continuing" data-mini="true">
                         <label for="chkStatusContinuing">Continuing</label>
-                        <input class="chkStatus" type="checkbox" name="chkStatusEnded" id="chkStatusEnded" data-theme="c" data-filter="Ended" data-mini="true">
+                        <input class="chkStatus" type="checkbox" name="chkStatusEnded" id="chkStatusEnded" data-filter="Ended" data-mini="true">
                         <label for="chkStatusEnded">Ended</label>
                     </fieldset>
 
@@ -115,19 +115,19 @@
                         <legend>
                             <strong>Air Days:</strong>
                         </legend>
-                        <input class="chkAirDays" type="checkbox" name="chkSunday" id="chkSunday" data-theme="c" data-filter="Sunday" data-mini="true">
+                        <input class="chkAirDays" type="checkbox" name="chkSunday" id="chkSunday" data-filter="Sunday" data-mini="true">
                         <label for="chkSunday">Sunday</label>
-                        <input class="chkAirDays" type="checkbox" name="chkMonday" id="chkMonday" data-theme="c" data-filter="Monday" data-mini="true">
+                        <input class="chkAirDays" type="checkbox" name="chkMonday" id="chkMonday" data-filter="Monday" data-mini="true">
                         <label for="chkMonday">Monday</label>
-                        <input class="chkAirDays" type="checkbox" name="chkTuesday" id="chkTuesday" data-theme="c" data-filter="Tuesday" data-mini="true">
+                        <input class="chkAirDays" type="checkbox" name="chkTuesday" id="chkTuesday" data-filter="Tuesday" data-mini="true">
                         <label for="chkTuesday">Tuesday</label>
-                        <input class="chkAirDays" type="checkbox" name="chkWednesday" id="chkWednesday" data-theme="c" data-filter="Wednesday" data-mini="true">
+                        <input class="chkAirDays" type="checkbox" name="chkWednesday" id="chkWednesday" data-filter="Wednesday" data-mini="true">
                         <label for="chkWednesday">Wednesday</label>
-                        <input class="chkAirDays" type="checkbox" name="chkThursday" id="chkThursday" data-theme="c" data-filter="Thursday" data-mini="true">
+                        <input class="chkAirDays" type="checkbox" name="chkThursday" id="chkThursday" data-filter="Thursday" data-mini="true">
                         <label for="chkThursday">Thursday</label>
-                        <input class="chkAirDays" type="checkbox" name="chkFriday" id="chkFriday" data-theme="c" data-filter="Friday" data-mini="true">
+                        <input class="chkAirDays" type="checkbox" name="chkFriday" id="chkFriday" data-filter="Friday" data-mini="true">
                         <label for="chkFriday">Friday</label>
-                        <input class="chkAirDays" type="checkbox" name="chkSaturday" id="chkSaturday" data-theme="c" data-filter="Saturday" data-mini="true">
+                        <input class="chkAirDays" type="checkbox" name="chkSaturday" id="chkSaturday" data-filter="Saturday" data-mini="true">
                         <label for="chkSaturday">Saturday</label>
                     </fieldset>
                 </div>
@@ -138,16 +138,16 @@
                             <strong>Management:</strong>
                         </legend>
 
-                        <input class="chkMissingImdbId" type="checkbox" data-theme="c" name="chkMissingImdbId" id="chkMissingImdbId" data-mini="true">
+                        <input class="chkMissingImdbId" type="checkbox" name="chkMissingImdbId" id="chkMissingImdbId" data-mini="true">
                         <label for="chkMissingImdbId">Missing IMDb Id</label>
 
-                        <input class="chkMissingTvdbId" type="checkbox" data-theme="c" name="chkMissingTvdbId" id="chkMissingTvdbId" data-mini="true">
+                        <input class="chkMissingTvdbId" type="checkbox" name="chkMissingTvdbId" id="chkMissingTvdbId" data-mini="true">
                         <label for="chkMissingTvdbId">Missing TheTVDB Id</label>
 
-                        <input class="chkMissingOverview" type="checkbox" data-theme="c" name="chkMissingOverview" id="chkMissingOverview" data-mini="true">
+                        <input class="chkMissingOverview" type="checkbox" name="chkMissingOverview" id="chkMissingOverview" data-mini="true">
                         <label for="chkMissingOverview">Missing Overview</label>
 
-                        <input class="chkYearMismatch" type="checkbox" data-theme="c" name="chkYearMismatch" id="chkYearMismatch" data-mini="true">
+                        <input class="chkYearMismatch" type="checkbox" name="chkYearMismatch" id="chkYearMismatch" data-mini="true">
                         <label for="chkYearMismatch">File/Metadata Years Mismatched</label>
 
                     </fieldset>
@@ -157,16 +157,16 @@
                             <strong>Features:</strong>
                         </legend>
 
-                        <input class="chkFeatureFilter" type="checkbox" data-theme="c" name="chkTrailer" id="chkTrailer" data-mini="true">
+                        <input class="chkFeatureFilter" type="checkbox" name="chkTrailer" id="chkTrailer" data-mini="true">
                         <label for="chkTrailer">Trailer</label>
 
-                        <input class="chkFeatureFilter" type="checkbox" data-theme="c" name="chkSpecialFeature" id="chkSpecialFeature" data-mini="true">
+                        <input class="chkFeatureFilter" type="checkbox" name="chkSpecialFeature" id="chkSpecialFeature" data-mini="true">
                         <label for="chkSpecialFeature">Special features</label>
 
-                        <input class="chkFeatureFilter" type="checkbox" data-theme="c" name="chkThemeSong" id="chkThemeSong" data-mini="true">
+                        <input class="chkFeatureFilter" type="checkbox" name="chkThemeSong" id="chkThemeSong" data-mini="true">
                         <label for="chkThemeSong">Theme song</label>
 
-                        <input class="chkFeatureFilter" type="checkbox" data-theme="c" name="chkThemeVideo" id="chkThemeVideo" data-mini="true">
+                        <input class="chkFeatureFilter" type="checkbox" name="chkThemeVideo" id="chkThemeVideo" data-mini="true">
                         <label for="chkThemeVideo">Theme video</label>
 
                     </fieldset>

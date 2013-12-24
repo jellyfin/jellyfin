@@ -18,12 +18,12 @@
                 </div>
             </div>
         </div>
-        <div data-role="popup" id="popupAddTrigger" class="ui-corner-all popup" style="min-width: 300px;">
+        <div data-role="popup" id="popupAddTrigger" class="popup" style="min-width: 300px;">
             <form id="addTriggerForm">
-                <div class="ui-corner-top ui-bar-a" style="text-align: center; padding: 0 20px;">
+                <div class="ui-bar-b" style="text-align: center; padding: 0 20px;">
                     <h3>Add Task Trigger</h3>
                 </div>
-                <div data-role="content" class="ui-corner-bottom ui-content">
+                <div data-role="content">
 
                     <ul data-role="listview" class="ulForm">
                         <li>
@@ -74,7 +74,7 @@
                             </select>
                         </li>
                         <li>
-                            <button type="submit" data-theme="b" data-icon="ok">
+                            <button type="submit" data-theme="b" data-icon="check">
                                 Add
                             </button>
                             <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');">

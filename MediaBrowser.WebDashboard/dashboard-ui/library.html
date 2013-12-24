@@ -36,13 +36,13 @@
                 <p>Configure <b>images</b> and <b>sort orders</b> by <a href="itemlist.html">browsing and editing.</a></p>
             </div>
         </div>
-        <div data-role="popup" id="popupEnterText" class="ui-corner-all popup">
+        <div data-role="popup" id="popupEnterText" class="popup">
 
-            <div class="ui-corner-top ui-bar-a" style="text-align: center; padding: 0 20px;">
+            <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
                 <h3>Rename</h3>
             </div>
 
-            <div data-role="content" class="ui-corner-bottom ui-content">
+            <div data-role="content">
                 <form id="textEntryForm">
                     <p>
                         <label id="lblValue" for="txtValue">New name:</label>
@@ -59,7 +59,7 @@
                     </p>
 
                     <p>
-                        <button type="submit" data-theme="b" data-icon="ok">
+                        <button type="submit" data-theme="b" data-icon="check">
                             Ok
                         </button>
                         <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');">

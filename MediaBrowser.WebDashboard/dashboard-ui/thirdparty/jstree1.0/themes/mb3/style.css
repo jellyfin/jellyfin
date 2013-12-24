@@ -59,6 +59,7 @@
 
 .jstree a {
     color: #fff!important;
+    font-weight: normal;
 }
 .jstree-mb3 .jstree-clicked {
     color: #fff!important;

@@ -4,7 +4,7 @@
     <title>Media Browser</title>
 </head>
 <body>
-    <div id="musicAlbumsPage" data-role="page" class="page libraryPage" data-theme="a" data-view="music">
+    <div id="musicAlbumsPage" data-role="page" class="page libraryPage" data-theme="b" data-view="music">
         <div class="libraryViewNav">
             <a href="musicrecommended.html">Suggested</a>
             <a href="songs.html">Songs</a>
@@ -34,7 +34,7 @@
             </div>
             <div id="items" class="itemsContainer"></div>
         </div>
-        <div data-role="panel" id="sortPanel" data-position="right" data-display="overlay" data-theme="b" data-position-fixed="true">
+        <div data-role="panel" id="sortPanel" data-position="right" data-display="overlay" data-theme="a" data-position-fixed="true">
 
             <form>
                 <fieldset data-role="controlgroup">
@@ -42,19 +42,19 @@
                         <strong>Sort By:</strong>
                     </legend>
 
-                    <input class="radioSortBy" data-theme="c" type="radio" name="radioSortBy" id="radioSortName" value="on" checked="checked" data-sortby="SortName" data-mini="true">
+                    <input class="radioSortBy" type="radio" name="radioSortBy" id="radioSortName" value="on" checked="checked" data-sortby="SortName" data-mini="true">
                     <label for="radioSortName">Name</label>
 
-                    <input class="radioSortBy defaultSort" type="radio" name="radioSortBy" data-theme="c" id="radioAlbumArtist" value="off" data-sortby="AlbumArtist,SortName" data-mini="true">
+                    <input class="radioSortBy defaultSort" type="radio" name="radioSortBy" id="radioAlbumArtist" value="off" data-sortby="AlbumArtist,SortName" data-mini="true">
                     <label for="radioAlbumArtist">Album Artist</label>
 
-                    <input class="radioSortBy" type="radio" name="radioSortBy" data-theme="c" id="radioCommunityRating" value="off" data-sortby="CommunityRating,SortName" data-mini="true">
+                    <input class="radioSortBy" type="radio" name="radioSortBy" id="radioCommunityRating" value="off" data-sortby="CommunityRating,SortName" data-mini="true">
                     <label for="radioCommunityRating">Community Rating</label>
 
-                    <input class="radioSortBy" type="radio" name="radioSortBy" data-theme="c" id="radioDateCreated" value="off" data-sortby="DateCreated" data-mini="true">
+                    <input class="radioSortBy" type="radio" name="radioSortBy" id="radioDateCreated" value="off" data-sortby="DateCreated" data-mini="true">
                     <label for="radioDateCreated">Date Added</label>
 
-                    <input class="radioSortBy" type="radio" name="radioSortBy" data-theme="c" id="radioPremiereDate" value="off" data-sortby="ProductionYear,PremiereDate" data-mini="true">
+                    <input class="radioSortBy" type="radio" name="radioSortBy" id="radioPremiereDate" value="off" data-sortby="ProductionYear,PremiereDate" data-mini="true">
                     <label for="radioPremiereDate">Release Date</label>
 
                 </fieldset>
@@ -64,27 +64,27 @@
                         <strong>Sort Order:</strong>
                     </legend>
 
-                    <input class="radioSortOrder" data-theme="c" type="radio" name="radioSortOrder" id="radioAscending" value="on" checked="checked" data-sortorder="Ascending" data-mini="true">
+                    <input class="radioSortOrder" type="radio" name="radioSortOrder" id="radioAscending" value="on" checked="checked" data-sortorder="Ascending" data-mini="true">
                     <label for="radioAscending">Ascending</label>
 
-                    <input class="radioSortOrder" data-theme="c" type="radio" name="radioSortOrder" id="radioDescending" value="off" data-sortorder="Descending" data-mini="true">
+                    <input class="radioSortOrder" type="radio" name="radioSortOrder" id="radioDescending" value="off" data-sortorder="Descending" data-mini="true">
                     <label for="radioDescending">Descending</label>
                 </fieldset>
             </form>
         </div>
-        <div data-role="panel" id="filterPanel" data-position="right" data-display="overlay" data-theme="b" data-position-fixed="true">
+        <div data-role="panel" id="filterPanel" data-position="right" data-display="overlay" data-theme="a" data-position-fixed="true">
             <form>
                 <fieldset data-role="controlgroup">
                     <legend>
                         <strong>Filters:</strong>
                     </legend>
-                    <input class="chkStandardFilter" type="checkbox" name="chkIsFavorite" id="chkIsFavorite" data-theme="c" data-filter="IsFavorite" data-mini="true">
+                    <input class="chkStandardFilter" type="checkbox" name="chkIsFavorite" id="chkIsFavorite" data-filter="IsFavorite" data-mini="true">
                     <label for="chkIsFavorite">Favorite</label>
 
-                    <input class="chkStandardFilter" type="checkbox" name="chkLikes" id="chkLikes" data-theme="c" data-filter="Likes" data-mini="true">
+                    <input class="chkStandardFilter" type="checkbox" name="chkLikes" id="chkLikes" data-filter="Likes" data-mini="true">
                     <label for="chkLikes">Likes</label>
 
-                    <input class="chkStandardFilter" type="checkbox" name="chkDislikes" id="chkDislikes" data-theme="c" data-filter="Dislikes" data-mini="true">
+                    <input class="chkStandardFilter" type="checkbox" name="chkDislikes" id="chkDislikes" data-filter="Dislikes" data-mini="true">
                     <label for="chkDislikes">Dislikes</label>
                 </fieldset>
             </form>

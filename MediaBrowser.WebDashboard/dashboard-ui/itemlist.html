@@ -4,14 +4,14 @@
     <title></title>
 </head>
 <body>
-    <div id="itemListPage" data-role="page" class="page libraryPage folderListPage" data-theme="a">
+    <div id="itemListPage" data-role="page" class="page libraryPage folderListPage" data-theme="b">
         <div class="alphabetPicker">
         </div>
         <div data-role="content" class="itemListContent">
 
             <h1 class="listHeader" style="margin: 0; text-align: center;"><span id="itemName"></span>
                 <span id="editButtonContainer" style="display: none; margin-left: .5em;">
-                    <button id="btnEdit" type="button" data-icon="pencil" data-inline="true" data-mini="true" data-theme="a">Edit</button>
+                    <button id="btnEdit" type="button" data-icon="edit" data-inline="true" data-mini="true">Edit</button>
                 </span>
             </h1>
             <div class="viewSettings">
@@ -31,7 +31,7 @@
             </div>
             <div id="items" class="itemsContainer"></div>
         </div>
-        <div data-role="panel" id="sortPanel" data-position="right" data-display="overlay" data-theme="b" data-position-fixed="true">
+        <div data-role="panel" id="sortPanel" data-position="right" data-display="overlay" data-theme="a" data-position-fixed="true">
 
             <form>
                 <fieldset data-role="controlgroup">
@@ -39,28 +39,28 @@
                         <strong>Sort By:</strong>
                     </legend>
 
-                    <input class="radioSortBy defaultSort" data-theme="c" type="radio" name="radioSortBy" id="radioSortName" value="on" checked="checked" data-sortby="SortName" data-mini="true">
+                    <input class="radioSortBy defaultSort" type="radio" name="radioSortBy" id="radioSortName" value="on" checked="checked" data-sortby="SortName" data-mini="true">
                     <label for="radioSortName">Name</label>
 
-                    <input class="radioSortBy" data-theme="c" type="radio" name="radioSortBy" id="radioCommunityRating" value="off" data-sortby="CommunityRating" data-mini="true">
+                    <input class="radioSortBy" type="radio" name="radioSortBy" id="radioCommunityRating" value="off" data-sortby="CommunityRating" data-mini="true">
                     <label for="radioCommunityRating">Community Rating</label>
 
-                    <input class="radioSortBy" data-theme="c" type="radio" name="radioSortBy" id="radioDateCreated" value="off" data-sortby="DateCreated" data-mini="true">
+                    <input class="radioSortBy" type="radio" name="radioSortBy" id="radioDateCreated" value="off" data-sortby="DateCreated" data-mini="true">
                     <label for="radioDateCreated">Date Added</label>
 
-                    <input class="radioSortBy" data-theme="c" type="radio" name="radioSortBy" id="radioDatePlayed" value="off" data-sortby="DatePlayed" data-mini="true">
+                    <input class="radioSortBy" type="radio" name="radioSortBy" id="radioDatePlayed" value="off" data-sortby="DatePlayed" data-mini="true">
                     <label for="radioDatePlayed">Date Played</label>
 
-                    <input class="radioSortBy" type="radio" name="radioSortBy" data-theme="c" id="radioContentRating" value="off" data-sortby="OfficialRating" data-mini="true">
+                    <input class="radioSortBy" type="radio" name="radioSortBy" id="radioContentRating" value="off" data-sortby="OfficialRating" data-mini="true">
                     <label for="radioContentRating">Parental Rating</label>
 
-                    <input class="radioSortBy" data-theme="c" type="radio" name="radioSortBy" id="radioPremiereDate" value="off" data-sortby="PremiereDate" data-mini="true">
+                    <input class="radioSortBy" type="radio" name="radioSortBy" id="radioPremiereDate" value="off" data-sortby="PremiereDate" data-mini="true">
                     <label for="radioPremiereDate">Release Date</label>
 
-                    <input class="radioSortBy" data-theme="c" type="radio" name="radioSortBy" id="radioRuntime" value="off" data-sortby="Runtime" data-mini="true">
+                    <input class="radioSortBy" type="radio" name="radioSortBy" id="radioRuntime" value="off" data-sortby="Runtime" data-mini="true">
                     <label for="radioRuntime">Runtime</label>
 
-                    <input class="radioSortBy" data-theme="c" type="radio" name="radioSortBy" id="radioIsFolder" value="off" data-sortby="IsFolder,SortName" data-mini="true">
+                    <input class="radioSortBy" type="radio" name="radioSortBy" id="radioIsFolder" value="off" data-sortby="IsFolder,SortName" data-mini="true">
                     <label for="radioIsFolder">Folders</label>
                 </fieldset>
 
@@ -69,36 +69,36 @@
                         <strong>Sort Order:</strong>
                     </legend>
 
-                    <input class="radioSortOrder" data-theme="c" type="radio" name="radioSortOrder" id="radioAscending" value="on" checked="checked" data-sortorder="Ascending" data-mini="true">
+                    <input class="radioSortOrder" type="radio" name="radioSortOrder" id="radioAscending" value="on" checked="checked" data-sortorder="Ascending" data-mini="true">
                     <label for="radioAscending">Ascending</label>
 
-                    <input class="radioSortOrder" data-theme="c" type="radio" name="radioSortOrder" id="radioDescending" value="off" data-sortorder="Descending" data-mini="true">
+                    <input class="radioSortOrder" type="radio" name="radioSortOrder" id="radioDescending" value="off" data-sortorder="Descending" data-mini="true">
                     <label for="radioDescending">Descending</label>
                 </fieldset>
             </form>
         </div>
-        <div data-role="panel" id="filterPanel" data-position="right" data-display="overlay" data-theme="b" data-position-fixed="true">
+        <div data-role="panel" id="filterPanel" data-position="right" data-display="overlay" data-theme="a" data-position-fixed="true">
             <form>
                 <fieldset data-role="controlgroup">
                     <legend>
                         <strong>Filters:</strong>
                     </legend>
-                    <input class="chkStandardFilter" type="checkbox" name="chkPlayed" id="chkPlayed" data-theme="c" data-filter="IsPlayed" data-mini="true">
+                    <input class="chkStandardFilter" type="checkbox" name="chkPlayed" id="chkPlayed" data-filter="IsPlayed" data-mini="true">
                     <label for="chkPlayed">Played</label>
 
-                    <input class="chkStandardFilter" type="checkbox" name="chkUnplayed" id="chkUnplayed" data-theme="c" data-filter="IsUnPlayed" data-mini="true">
+                    <input class="chkStandardFilter" type="checkbox" name="chkUnplayed" id="chkUnplayed" data-filter="IsUnPlayed" data-mini="true">
                     <label for="chkUnplayed">Unplayed</label>
 
-                    <input class="chkStandardFilter" type="checkbox" name="chkResumable" id="chkResumable" data-theme="c" data-filter="IsResumable" data-mini="true">
+                    <input class="chkStandardFilter" type="checkbox" name="chkResumable" id="chkResumable" data-filter="IsResumable" data-mini="true">
                     <label for="chkResumable">Resumable</label>
 
-                    <input class="chkStandardFilter" type="checkbox" name="chkIsFavorite" id="chkIsFavorite" data-theme="c" data-filter="IsFavorite" data-mini="true">
+                    <input class="chkStandardFilter" type="checkbox" name="chkIsFavorite" id="chkIsFavorite" data-filter="IsFavorite" data-mini="true">
                     <label for="chkIsFavorite">Favorite</label>
 
-                    <input class="chkStandardFilter" type="checkbox" name="chkLikes" id="chkLikes" data-theme="c" data-filter="Likes" data-mini="true">
+                    <input class="chkStandardFilter" type="checkbox" name="chkLikes" id="chkLikes" data-filter="Likes" data-mini="true">
                     <label for="chkLikes">Likes</label>
 
-                    <input class="chkStandardFilter" type="checkbox" name="chkDislikes" id="chkDislikes" data-theme="c" data-filter="Dislikes" data-mini="true">
+                    <input class="chkStandardFilter" type="checkbox" name="chkDislikes" id="chkDislikes" data-filter="Dislikes" data-mini="true">
                     <label for="chkDislikes">Dislikes</label>
                 </fieldset>
             </form>

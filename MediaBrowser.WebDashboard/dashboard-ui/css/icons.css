@@ -1,0 +1,67 @@
+﻿.ui-icon-remote:after {
+    background-image: url("images/icons/remote.png");
+}
+/* Fallback */
+.ui-nosvg .ui-icon-remote:after {
+    background-image: url("images/icons/remote.png");
+}
+
+.ui-icon-play:after {
+    background-image: url("images/icons/play.png");
+}
+/* Fallback */
+.ui-nosvg .ui-icon-play:after {
+    background-image: url("images/icons/play.png");
+}
+
+.ui-icon-stop:after {
+    background-image: url("images/icons/stop.png");
+}
+/* Fallback */
+.ui-nosvg .ui-icon-stop:after {
+    background-image: url("images/icons/stop.png");
+}
+
+.ui-icon-pause:after {
+    background-image: url("images/icons/pause.png");
+}
+/* Fallback */
+.ui-nosvg .ui-icon-pause:after {
+    background-image: url("images/icons/pause.png");
+}
+.ui-icon-volume-off:after {
+    background-image: url("images/icons/mute.png");
+}
+/* Fallback */
+.ui-nosvg .ui-icon-volume-off:after {
+    background-image: url("images/icons/mute.png");
+}
+
+.ui-icon-volume-up:after {
+    background-image: url("images/icons/volumeup.png");
+}
+/* Fallback */
+.ui-nosvg .ui-icon-volume-up:after {
+    background-image: url("images/icons/volumeup.png");
+}
+.ui-icon-volume-down:after {
+    background-image: url("images/icons/volumedown.png");
+}
+/* Fallback */
+.ui-nosvg .ui-icon-volume-down:after {
+    background-image: url("images/icons/volumedown.png");
+}
+.ui-icon-previous-track:after {
+    background-image: url("images/icons/previoustrack.png");
+}
+/* Fallback */
+.ui-nosvg .ui-icon-previous-track:after {
+    background-image: url("images/icons/previoustrack.png");
+}
+.ui-icon-next-track:after {
+    background-image: url("images/icons/nexttrack.png");
+}
+/* Fallback */
+.ui-nosvg .ui-icon-next-track:after {
+    background-image: url("images/icons/nexttrack.png");
+}

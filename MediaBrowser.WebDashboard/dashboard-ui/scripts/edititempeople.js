@@ -16,7 +16,7 @@
 
         MetadataEditor.getItemPromise().done(function (item) {
 
-            $('#btnRefresh', page).button('enable');
+            $('#btnRefresh', page).buttonEnabled(true);
             
             if (item.LocationType == "Offline") {
                 $('#divAddPerson', page).hide();
@@ -71,19 +71,21 @@
         html += '<input type="hidden" name="originalName" value="' + name + '">';
         html += '<input type="hidden" name="originalRole" value="' + role + '">';
         html += '<input type="hidden" name="originalType" value="' + type + '">';
-        html += '<label for="txtName">Name:</label>';
+        
+        // The floats are to prevent jquery mobile from floating it
+        html += '<label for="txtName" style="float:none;">Name:</label>';
         html += '<span class="read"> ' + (name) + '</span><span style="display:none;" class="edit">';
         html += '<input type="text" name="txtName" required="required" data-mini="true" value="' + (name) + '"/>';
         html += '</span>';
         html += '</div>';
         html += '<div data-role="fieldcontain">';
-        html += '<label for="txtRole">Role:</label>';
+        html += '<label for="txtRole" style="float:none;">Role:</label>';
         html += '<span class="read"> ' + (role) + '</span><span style="display:none;" class="edit">';
         html += '<input type="text" name="txtRole" required="required" data-mini="true" value="' + (role) + '"/>';
         html += '</span>';
         html += '</div>';
         html += '<div data-role="fieldcontain">';
-        html += '<label for="selectType">Type:</label>';
+        html += '<label for="selectType" style="float:none;">Type:</label>';
         html += '<span class="read"> ' + (type) + '</span><span style="display:none;" class="edit">';
         html += '<select name="selectType" data-inline="true" data-mini="true">';
         html += generateTypes(type);
@@ -94,7 +96,7 @@
         
         if (item.LocationType !== "Offline") {
             html += '<span class="read">';
-            html += '<button type="button" class="edit" data-mini="true" data-inline="true" data-icon="pencil" onclick="EditItemPeoplePage.displayEdit(this)">Edit</button>';
+            html += '<button type="button" class="edit" data-mini="true" data-inline="true" data-icon="edit" onclick="EditItemPeoplePage.displayEdit(this)">Edit</button>';
             html += '</span>';
         }
         
@@ -187,13 +189,13 @@
         self.addPerson = function () {
             var page = $.mobile.activePage;
 
-            var html = '<div data-role="popup" id="popupCreatePerson" class="ui-corner-all popup" style=" width: 270px;" >';
+            var html = '<div data-role="popup" id="popupCreatePerson" class="popup" data-theme="a" style=" width: 270px;" >';
 
-            html += '<div class="ui-corner-top ui-bar-a" style="text-align: center; padding: 0 20px;">';
+            html += '<div class="ui-bar-b" style="text-align: center; padding: 0 20px;">';
             html += '<h3>Add Person</h3>';
             html += '</div>';
 
-            html += '<div data-role="content" class="ui-corner-bottom ui-content" style="padding:10px;">';
+            html += '<div style="padding:1em;">';
             html += '<form>';
             html += '<label for="txtPersonName">Name:</label>';
             html += '<input type="text" id="txtPersonName" name="txtPersonName" required="required"/>';
@@ -258,7 +260,7 @@
                 MetadataEditor.currentItemType = data.itemType;
                 //Dashboard.navigate('edititemmetadata.html?id=' + data.id);
 
-                $.mobile.urlHistory.ignoreNextHashChange = true;
+                //$.mobile.urlHistory.ignoreNextHashChange = true;
                 window.location.hash = 'editItemPeoplePage?id=' + data.id;
 
                 reload(page);

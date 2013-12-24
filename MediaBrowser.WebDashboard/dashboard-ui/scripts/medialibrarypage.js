@@ -93,7 +93,7 @@
     getVirtualFolderHtml: function (virtualFolder, isCollapsed, index) {
 
         isCollapsed = isCollapsed ? "true" : "false";
-        var html = '<div class="collapsibleVirtualFolder" data-mini="true" data-role="collapsible" data-collapsed="' + isCollapsed + '" data-content-theme="c">';
+        var html = '<div class="collapsibleVirtualFolder" data-mini="true" data-role="collapsible" data-collapsed="' + isCollapsed + '">';
 
         html += '<h3>' + virtualFolder.Name + '</h3>';
 
@@ -110,7 +110,7 @@
         html += '<ul class="mediaFolderLocations" data-inset="true" data-role="listview" data-split-icon="minus">';
 
         html += '<li data-role="list-divider" class="mediaLocationsHeader">Media Locations';
-        html += '<button type="button" data-icon="plus" data-mini="true" data-theme="c" data-inline="true" data-iconpos="notext" onclick="MediaLibraryPage.addMediaLocation(' + index + ');"></button>';
+        html += '<button type="button" data-icon="plus" data-mini="true" data-inline="true" data-iconpos="notext" onclick="MediaLibraryPage.addMediaLocation(' + index + ');"></button>';
         html += '</li>';
 
         for (var i = 0, length = virtualFolder.Locations.length; i < length; i++) {
@@ -125,8 +125,8 @@
 
         html += '<p>';
         html += '<button type="button" data-inline="true" data-icon="minus" data-folderindex="' + index + '" onclick="MediaLibraryPage.deleteVirtualFolder(this);" data-mini="true">Remove</button>';
-        html += '<button type="button" data-inline="true" data-icon="pencil" data-folderindex="' + index + '" onclick="MediaLibraryPage.renameVirtualFolder(this);" data-mini="true">Rename</button>';
-        html += '<button type="button" data-inline="true" data-icon="pencil" data-folderindex="' + index + '" onclick="MediaLibraryPage.changeCollectionType(this);" data-mini="true">Change type</button>';
+        html += '<button type="button" data-inline="true" data-icon="edit" data-folderindex="' + index + '" onclick="MediaLibraryPage.renameVirtualFolder(this);" data-mini="true">Rename</button>';
+        html += '<button type="button" data-inline="true" data-icon="edit" data-folderindex="' + index + '" onclick="MediaLibraryPage.changeCollectionType(this);" data-mini="true">Change type</button>';
         html += '</p>';
 
         html += '</div>';

@@ -70,7 +70,7 @@
 
         $.when(promise1, promise2).done(function (response1, response2) {
             //positive
-            var html = '<div data-role="collapsible" data-content-theme="c" data-collapsed="true" style="margin-top: 2em;" >';
+            var html = '<div data-role="collapsible" data-collapsed="true" style="margin-top: 2em;" >';
             html += '<h3>Latest Outstanding Reviews</h3>';
             var positive = response1[0];
             var hasReviews = false;
@@ -103,7 +103,7 @@
             html += "</div>";
 
             //negative
-            html += '<div data-role="collapsible" data-content-theme="c" data-collapsed="true" style="margin-top: 2em;" >';
+            html += '<div data-role="collapsible" data-collapsed="true" style="margin-top: 2em;" >';
             html += '<h3>Latest Negative Reviews</h3>';
             var negative = response2[0];
             hasReviews = false;
@@ -313,7 +313,7 @@
 
             var page = $(this).parents('#addPluginPage');
 
-            $('#btnInstall', page).button('disable');
+            $('#btnInstall', page).buttonEnabled(false);
 
             var name = getParameterByName('name');
             var guid = getParameterByName('guid');
@@ -339,7 +339,7 @@
                             Dashboard.showLoadingMsg();
                             performInstallation(name, guid, vals[1], version);
                         } else {
-                            $('#btnInstall', page).button('enable');
+                            $('#btnInstall', page).buttonEnabled(true);
                         }
 
                     });

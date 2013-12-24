@@ -98,23 +98,21 @@
             options.header = options.header || "Select Media Path";
             options.instruction = options.instruction || "Any path will do, but for optimal playback of bluray, dvd folders, and games, <b>network paths (UNC)</b> are recommended.";
 
-            var html = '<div data-role="popup" id="popupDirectoryPicker" class="ui-corner-all popup" style="min-width:65%;">';
+            var html = '<div data-role="popup" id="popupDirectoryPicker" class="popup" style="min-width:65%;">';
 
-            html += '<div class="ui-corner-top ui-bar-a" style="text-align: center; padding: 0 20px;">';
+            html += '<div class="ui-bar-a" style="text-align: center; padding: 0 20px;">';
             html += '<h3>' + options.header + '</h3>';
             html += '</div>';
 
-            html += '<div data-role="content" class="ui-corner-bottom ui-content">';
+            html += '<div data-role="content" class="ui-content">';
             html += '<form>';
-            html += '<p class="directoryPickerHeadline">' + options.instruction + '</p>';
+            html += '<p class="directoryPickerHeadline">' + options.instruction + ' Network paths can be entered manually in the event the Network button fails to locate your devices. For example, <b>\\\\my-server</b> or <b>\\\\192.168.1.101</b>.</p>';
 
             html += '<div style="margin:0;">';
             html += '<label for="txtDirectoryPickerPath" class="lblDirectoryPickerPath">Current Path:</label>';
             html += '<div style="width:92%;display:inline-block;"><input id="txtDirectoryPickerPath" name="txtDirectoryPickerPath" type="text" required="required" style="font-weight:bold;" /></div>';
             html += '<button class="btnRefreshDirectories" type="button" data-icon="refresh" data-inline="true" data-mini="true" data-iconpos="notext">Refresh</button>';
             html += '</div>';
-
-            html += '<div class="directoryPickerHeadline networkHeadline" style="margin:5px 0 1em;padding:.5em;max-width:95%;">Network paths <b>can be entered manually</b> in the event the Network button fails to locate your devices. For example, <b>\\\\my-server</b> or <b>\\\\192.168.1.101</b>.</div>';
 
             html += '<div style="height: 320px; overflow-y: auto;">';
             html += '<ul id="ulDirectoryPickerList" data-role="listview" data-inset="true" data-auto-enhanced="false"></ul>';
@@ -124,8 +122,8 @@
 
 
             html += '<p>';
-            html += '<button type="submit" data-theme="b" data-icon="ok">OK</button>';
-            html += '<button type="button" data-icon="delete" onclick="$(this).parents(\'.popup\').popup(\'close\');">Cancel</button>';
+            html += '<button type="submit" data-theme="b" data-icon="check" data-mini="true">OK</button>';
+            html += '<button type="button" data-icon="delete" onclick="$(this).parents(\'.popup\').popup(\'close\');" data-mini="true">Cancel</button>';
             html += '</p>';
             html += '</form>';
             html += '</div>';

@@ -217,7 +217,7 @@
             html += '</div>';
         }
 
-        html += '<div><button class="btnDownloadRemoteImage" data-imageprovider="' + image.ProviderName + '" data-imageurl="' + image.Url + '" data-imagetype="' + image.Type + '" type="button" data-icon="save" data-mini="true">Download</button></div>';
+        html += '<div><button class="btnDownloadRemoteImage" data-imageprovider="' + image.ProviderName + '" data-imageurl="' + image.Url + '" data-imagetype="' + image.Type + '" type="button" data-icon="arrow-d" data-mini="true">Download</button></div>';
 
         html += '</div>';
 
@@ -261,9 +261,9 @@
         html += '</span>';
 
         if (showControls) {
-            html += '<button data-icon="arrow-left" data-iconpos="notext" data-inline="true" data-mini="true" class="btnPreviousPage" ' + (startIndex ? '' : 'disabled') + '>Previous Page</button>';
+            html += '<button data-icon="arrow-l" data-iconpos="notext" data-inline="true" data-mini="true" class="btnPreviousPage" ' + (startIndex ? '' : 'disabled') + '>Previous Page</button>';
 
-            html += '<button data-icon="arrow-right" data-iconpos="notext" data-inline="true" data-mini="true" class="btnNextPage" ' + (startIndex + limit > totalRecordCount ? 'disabled' : '') + '>Next Page</button>';
+            html += '<button data-icon="arrow-r" data-iconpos="notext" data-inline="true" data-mini="true" class="btnNextPage" ' + (startIndex + limit > totalRecordCount ? 'disabled' : '') + '>Next Page</button>';
         }
 
         html += '</div>';
@@ -333,15 +333,15 @@
             if (image.ImageType == "Backdrop" || image.ImageType == "Screenshot") {
 
                 if (i > 0) {
-                    html += '<button type="button" data-icon="arrow-left" data-mini="true" data-inline="true" data-iconpos="notext" onclick="EditItemImagesPage.moveImage(\'' + image.ImageType + '\', ' + image.ImageIndex + ', ' + (i - 1) + ');">Move left</button>';
+                    html += '<button type="button" data-icon="arrow-l" data-mini="true" data-inline="true" data-iconpos="notext" onclick="EditItemImagesPage.moveImage(\'' + image.ImageType + '\', ' + image.ImageIndex + ', ' + (i - 1) + ');">Move left</button>';
                 } else {
-                    html += '<button type="button" data-icon="arrow-left" data-mini="true" data-inline="true" data-iconpos="notext" disabled>Move left</button>';
+                    html += '<button type="button" data-icon="arrow-l" data-mini="true" data-inline="true" data-iconpos="notext" disabled>Move left</button>';
                 }
 
                 if (i < length - 1) {
-                    html += '<button type="button" data-icon="arrow-right" data-mini="true" data-inline="true" data-iconpos="notext" onclick="EditItemImagesPage.moveImage(\'' + image.ImageType + '\', ' + image.ImageIndex + ', ' + (i + 1) + ');">Move right</button>';
+                    html += '<button type="button" data-icon="arrow-r" data-mini="true" data-inline="true" data-iconpos="notext" onclick="EditItemImagesPage.moveImage(\'' + image.ImageType + '\', ' + image.ImageIndex + ', ' + (i + 1) + ');">Move right</button>';
                 } else {
-                    html += '<button type="button" data-icon="arrow-right" data-mini="true" data-inline="true" data-iconpos="notext" disabled>Move right</button>';
+                    html += '<button type="button" data-icon="arrow-r" data-mini="true" data-inline="true" data-iconpos="notext" disabled>Move right</button>';
                 }
             }
 
@@ -560,7 +560,7 @@
                 MetadataEditor.currentItemType = data.itemType;
                 //Dashboard.navigate('edititemmetadata.html?id=' + data.id);
 
-                $.mobile.urlHistory.ignoreNextHashChange = true;
+                //$.mobile.urlHistory.ignoreNextHashChange = true;
                 window.location.hash = 'editItemImagesPage?id=' + data.id;
 
                 browsableImageStartIndex = 0;

@@ -2,8 +2,10 @@
 
     onPageShow: function () {
 
+        var page = this;
+
         Dashboard.showLoadingMsg();
-        DashboardPage.pollForInfo();
+        DashboardPage.pollForInfo(page);
         DashboardPage.startInterval();
         $(ApiClient).on("websocketmessage", DashboardPage.onWebSocketMessage).on("websocketopen", DashboardPage.onWebSocketConnectionChange).on("websocketerror", DashboardPage.onWebSocketConnectionChange).on("websocketclose", DashboardPage.onWebSocketConnectionChange);
 
@@ -13,9 +15,9 @@
         Dashboard.getPluginSecurityInfo().done(function (pluginSecurityInfo) {
 
             if (pluginSecurityInfo.IsMBSupporter) {
-                $('#contribute').hide();
+                $('#contribute', page).hide();
             } else {
-                $('#contribute').show();
+                $('#contribute', page).show();
             }
 
         });
@@ -43,8 +45,10 @@
 
     onWebSocketMessage: function (e, msg) {
 
+        var page = $.mobile.activePage;
+
         if (msg.MessageType == "DashboardInfo") {
-            DashboardPage.renderInfo(msg.Data);
+            DashboardPage.renderInfo(page, msg.Data);
         }
     },
 
@@ -54,24 +58,27 @@
         DashboardPage.startInterval();
     },
 
-    pollForInfo: function () {
-        $.getJSON("dashboardInfo").done(DashboardPage.renderInfo);
+    pollForInfo: function (page) {
+
+        $.getJSON("dashboardInfo").done(function (result) {
+
+            DashboardPage.renderInfo(page, result);
+
+        });
     },
 
-    renderInfo: function (dashboardInfo) {
+    renderInfo: function (page, dashboardInfo) {
 
         DashboardPage.lastDashboardInfo = dashboardInfo;
 
         DashboardPage.renderRunningTasks(dashboardInfo);
-        DashboardPage.renderSystemInfo(dashboardInfo);
-        DashboardPage.renderActiveConnections(dashboardInfo);
+        DashboardPage.renderSystemInfo(page, dashboardInfo);
+        DashboardPage.renderActiveConnections(page, dashboardInfo);
 
         Dashboard.hideLoadingMsg();
     },
 
-    renderActiveConnections: function (dashboardInfo) {
-
-        var page = $.mobile.activePage;
+    renderActiveConnections: function (page, dashboardInfo) {
 
         var html = '';
 
@@ -314,11 +321,9 @@
         return true;
     },
 
-    renderSystemInfo: function (dashboardInfo) {
+    renderSystemInfo: function (page, dashboardInfo) {
 
         Dashboard.updateSystemInfo(dashboardInfo.SystemInfo);
-
-        var page = $.mobile.activePage;
 
         $('#appVersionNumber', page).html(dashboardInfo.SystemInfo.Version);
 
@@ -345,11 +350,11 @@
 
         }).length) {
 
-            $('#btnUpdateApplication', page).button('disable');
+            $('#btnUpdateApplication', page).buttonEnabled(false);
         } else {
-            $('#btnUpdateApplication', page).button('enable');
+            $('#btnUpdateApplication', page).buttonEnabled(true);
         }
-        
+
         if (dashboardInfo.SystemInfo.CanSelfRestart) {
             $('.btnRestartContainer', page).removeClass('hide');
         } else {
@@ -387,7 +392,7 @@
                     $('#pUpToDate', page).hide();
 
                     $('#pUpdateNow', page).show();
-                    
+
                     if (dashboardInfo.SystemInfo.CanSelfUpdate) {
                         $('#btnUpdateApplicationContainer', page).show();
                         $('#btnManualUpdateContainer', page).hide();
@@ -489,7 +494,7 @@
 
     installPluginUpdate: function (button) {
 
-        $(button).button('disable');
+        $(button).buttonEnabled(false);
 
         var name = button.getAttribute('data-name');
         var guid = button.getAttribute('data-guid');
@@ -507,13 +512,13 @@
     updateApplication: function () {
 
         var page = $.mobile.activePage;
-        $('#btnUpdateApplication', page).button('disable');
+        $('#btnUpdateApplication', page).buttonEnabled(false);
 
         Dashboard.showLoadingMsg();
 
         ApiClient.startScheduledTask(DashboardPage.lastDashboardInfo.ApplicationUpdateTaskId).done(function () {
 
-            DashboardPage.pollForInfo();
+            DashboardPage.pollForInfo(page);
 
             Dashboard.hideLoadingMsg();
         });
@@ -521,9 +526,11 @@
 
     stopTask: function (id) {
 
+        var page = $.mobile.activePage;
+
         ApiClient.stopScheduledTask(id).done(function () {
 
-            DashboardPage.pollForInfo();
+            DashboardPage.pollForInfo(page);
         });
 
     },
@@ -533,8 +540,8 @@
         Dashboard.confirm("Are you sure you wish to restart Media Browser Server?", "Restart", function (result) {
 
             if (result) {
-                $('#btnRestartServer').button('disable');
-                $('#btnShutdown').button('disable');
+                $('#btnRestartServer').buttonEnabled(false);
+                $('#btnShutdown').buttonEnabled(false);
                 Dashboard.restartServer();
             }
 
@@ -546,8 +553,8 @@
         Dashboard.confirm("Are you sure you wish to shutdown Media Browser Server?", "Shutdown", function (result) {
 
             if (result) {
-                $('#btnRestartServer').button('disable');
-                $('#btnShutdown').button('disable');
+                $('#btnRestartServer').buttonEnabled(false);
+                $('#btnShutdown').buttonEnabled(false);
                 ApiClient.shutdownServer();
             }
 
