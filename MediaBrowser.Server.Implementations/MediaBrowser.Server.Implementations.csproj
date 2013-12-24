@@ -174,6 +174,7 @@
     <Compile Include="ServerApplicationPaths.cs" />
     <Compile Include="ServerManager\ServerManager.cs" />
     <Compile Include="ServerManager\WebSocketConnection.cs" />
+    <Compile Include="Session\RokuController.cs" />
     <Compile Include="Session\SessionManager.cs">
       <SubType>Code</SubType>
     </Compile>
