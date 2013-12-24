@@ -155,21 +155,21 @@
 
         if (state == "Idle") {
 
-            elem = btnTask.addClass('btnStartTask').removeClass('btnStopTask').show().data("icon", "play").attr("title", "Start").buttonMarkup("refresh");
+            elem = btnTask.addClass('btnStartTask').removeClass('btnStopTask').show().data("icon", "play").attr("title", "Start");
 
-            $('.ui-icon-stop', elem).removeClass('ui-icon-stop').addClass('ui-icon-play');
+            elem.removeClass('ui-icon-stop').addClass('ui-icon-play');
         }
         else if (state == "Running") {
 
-            elem = btnTask.addClass('btnStopTask').removeClass('btnStartTask').show().data("icon", "stop").attr("title", "Stop").buttonMarkup("refresh");
+            elem = btnTask.addClass('btnStopTask').removeClass('btnStartTask').show().data("icon", "stop").attr("title", "Stop");
 
-            $('.ui-icon-play', elem).removeClass('ui-icon-play').addClass('ui-icon-stop');
+            elem.removeClass('ui-icon-play').addClass('ui-icon-stop');
 
         } else {
 
-            elem = btnTask.addClass('btnStartTask').removeClass('btnStopTask').hide().data("icon", "play").attr("title", "Start").buttonMarkup("refresh");
+            elem = btnTask.addClass('btnStartTask').removeClass('btnStopTask').hide().data("icon", "play").attr("title", "Start");
 
-            $('.ui-icon-stop', elem).removeClass('ui-icon-stop').addClass('ui-icon-play');
+            elem.removeClass('ui-icon-stop').addClass('ui-icon-play');
         }
     }
 
