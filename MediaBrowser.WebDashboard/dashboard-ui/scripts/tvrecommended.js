@@ -9,7 +9,7 @@
             SortBy: "DateCreated",
             SortOrder: "Descending",
             IncludeItemTypes: "Episode",
-            Limit: 12,
+            Limit: 15,
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,SeriesInfo,UserData",
             Filters: "IsUnplayed",
