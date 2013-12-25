@@ -4,6 +4,9 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Net;
+#if __MonoCS__
+using Mono.Unix.Native;
+#endif
 
 namespace MediaBrowser.Server.Implementations.WebSocket
 {
@@ -66,6 +69,20 @@ namespace MediaBrowser.Server.Implementations.WebSocket
                     TimeOut = TimeSpan.FromHours(24)
                 };
 
+                #if __MonoCS__
+                //Linux: port below 1024 require root or cap_net_bind_service
+                if (Environment.OSVersion.Platform == PlatformID.Unix || Environment.OSVersion.Platform == PlatformID.MacOSX)
+                {
+                    if (Syscall.getuid() == 0)
+                    {
+                        WebSocketServer.FlashAccessPolicyEnabled = true;
+                    }
+                    else
+                    {
+                        WebSocketServer.FlashAccessPolicyEnabled = false;
+                    }
+                }
+                #endif
                 WebSocketServer.Start();
             }
             catch (Exception ex)

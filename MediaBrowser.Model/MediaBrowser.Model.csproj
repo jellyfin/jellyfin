@@ -209,8 +209,9 @@
     <PostBuildEvent Condition=" '$(ConfigurationName)' != 'Release Mono' ">if '$(ConfigurationName)' == 'Release' (
 xcopy "$(TargetPath)" "$(SolutionDir)\Nuget\dlls\net45\" /y /d /r /i
 )</PostBuildEvent>
+    <PostBuildEvent Condition=" '$(ConfigurationName)' == 'Release Mono' ">cp -fu "$(MSBuildProjectDirectory)\..\packages\PropertyChanged.Fody.1.41.0.0\PropertyChanged.Fody.dll" "$(MSBuildProjectDirectory)\..\Tools\Fody\"</PostBuildEvent>
   </PropertyGroup>
-  <Import Project="$(SolutionDir)\.nuget\nuget.targets" Condition=" '$(ConfigurationName)' != 'Release Mono' " />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition=" '$(ConfigurationName)' != 'Release Mono' " />
   <Import Project="Fody.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

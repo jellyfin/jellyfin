@@ -228,8 +228,17 @@ namespace MediaBrowser.Server.Implementations.Drawing
                             // Graphics.FromImage will throw an exception if the PixelFormat is Indexed, so we need to handle that here
                             using (var thumbnail = new Bitmap(newWidth, newHeight, PixelFormat.Format32bppPArgb))
                             {
+                                #if __MonoCS__
+                                // Mono throw an exeception if assign 0 to SetResolution
+                                if (originalImage.HorizontalResolution != 0 && originalImage.VerticalResolution != 0)
+                                {
+                                    // Preserve the original resolution
+                                    thumbnail.SetResolution(originalImage.HorizontalResolution, originalImage.VerticalResolution);
+                                }
+                                #else
                                 // Preserve the original resolution
                                 thumbnail.SetResolution(originalImage.HorizontalResolution, originalImage.VerticalResolution);
+                                #endif
 
                                 using (var thumbnailGraph = Graphics.FromImage(thumbnail))
                                 {
