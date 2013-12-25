@@ -14,6 +14,12 @@ namespace MediaBrowser.Model.Session
         public bool CanSeek { get; set; }
 
         /// <summary>
+        /// Gets or sets the remote end point.
+        /// </summary>
+        /// <value>The remote end point.</value>
+        public string RemoteEndPoint { get; set; }
+
+        /// <summary>
         /// Gets or sets the queueable media types.
         /// </summary>
         /// <value>The queueable media types.</value>

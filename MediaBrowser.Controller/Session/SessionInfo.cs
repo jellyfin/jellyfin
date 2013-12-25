@@ -15,6 +15,12 @@ namespace MediaBrowser.Controller.Session
         }
 
         /// <summary>
+        /// Gets or sets the remote end point.
+        /// </summary>
+        /// <value>The remote end point.</value>
+        public string RemoteEndPoint { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this instance can seek.
         /// </summary>
         /// <value><c>true</c> if this instance can seek; otherwise, <c>false</c>.</value>

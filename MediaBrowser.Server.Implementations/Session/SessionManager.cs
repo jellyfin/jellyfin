@@ -39,7 +39,7 @@ namespace MediaBrowser.Server.Implementations.Session
         private readonly ILogger _logger;
 
         private readonly ILibraryManager _libraryManager;
-        
+
         /// <summary>
         /// Gets or sets the configuration manager.
         /// </summary>
@@ -65,6 +65,8 @@ namespace MediaBrowser.Server.Implementations.Session
         /// </summary>
         public event EventHandler<PlaybackProgressEventArgs> PlaybackStopped;
 
+        private IEnumerable<ISessionControllerFactory> _sessionFactories = new List<ISessionControllerFactory>();
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SessionManager" /> class.
         /// </summary>
@@ -83,6 +85,15 @@ namespace MediaBrowser.Server.Implementations.Session
         }
 
         /// <summary>
+        /// Adds the parts.
+        /// </summary>
+        /// <param name="sessionFactories">The session factories.</param>
+        public void AddParts(IEnumerable<ISessionControllerFactory> sessionFactories)
+        {
+            _sessionFactories = sessionFactories.ToList();
+        }
+
+        /// <summary>
         /// Gets all connections.
         /// </summary>
         /// <value>All connections.</value>
@@ -98,11 +109,12 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <param name="appVersion">The app version.</param>
         /// <param name="deviceId">The device id.</param>
         /// <param name="deviceName">Name of the device.</param>
+        /// <param name="remoteEndPoint">The remote end point.</param>
         /// <param name="user">The user.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.UnauthorizedAccessException"></exception>
         /// <exception cref="System.ArgumentNullException">user</exception>
-        public async Task<SessionInfo> LogSessionActivity(string clientType, string appVersion, string deviceId, string deviceName, User user)
+        /// <exception cref="System.UnauthorizedAccessException"></exception>
+        public async Task<SessionInfo> LogSessionActivity(string clientType, string appVersion, string deviceId, string deviceName, string remoteEndPoint, User user)
         {
             if (string.IsNullOrEmpty(clientType))
             {
@@ -128,7 +140,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
             var activityDate = DateTime.UtcNow;
 
-            var session = GetSessionInfo(clientType, appVersion, deviceId, deviceName, user);
+            var session = GetSessionInfo(clientType, appVersion, deviceId, deviceName, remoteEndPoint, user);
 
             session.LastActivityDate = activityDate;
 
@@ -196,9 +208,10 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <param name="appVersion">The app version.</param>
         /// <param name="deviceId">The device id.</param>
         /// <param name="deviceName">Name of the device.</param>
+        /// <param name="remoteEndPoint">The remote end point.</param>
         /// <param name="user">The user.</param>
         /// <returns>SessionInfo.</returns>
-        private SessionInfo GetSessionInfo(string clientType, string appVersion, string deviceId, string deviceName, User user)
+        private SessionInfo GetSessionInfo(string clientType, string appVersion, string deviceId, string deviceName, string remoteEndPoint, User user)
         {
             var key = clientType + deviceId + appVersion;
 
@@ -212,6 +225,14 @@ namespace MediaBrowser.Server.Implementations.Session
 
             connection.DeviceName = deviceName;
             connection.User = user;
+            connection.RemoteEndPoint = remoteEndPoint;
+
+            if (connection.SessionController == null)
+            {
+                connection.SessionController = _sessionFactories
+                    .Select(i => i.GetSessionController(connection))
+                    .FirstOrDefault(i => i != null);
+            }
 
             return connection;
         }
@@ -335,7 +356,7 @@ namespace MediaBrowser.Server.Implementations.Session
             {
                 throw new ArgumentException("PlaybackStopInfo.SessionId cannot be Guid.Empty");
             }
-            
+
             if (info.PositionTicks.HasValue && info.PositionTicks.Value < 0)
             {
                 throw new ArgumentOutOfRangeException("positionTicks");
@@ -497,7 +518,7 @@ namespace MediaBrowser.Server.Implementations.Session
             {
                 throw new ArgumentException("Virtual items are not playable.");
             }
-            
+
             if (command.PlayCommand != PlayCommand.PlayNow)
             {
                 if (items.Any(i => !session.QueueableMediaTypes.Contains(i.MediaType, StringComparer.OrdinalIgnoreCase)))
@@ -505,7 +526,7 @@ namespace MediaBrowser.Server.Implementations.Session
                     throw new ArgumentException(string.Format("Session {0} is unable to queue the requested media type.", session.Id));
                 }
             }
-            
+
             return session.SessionController.SendPlayCommand(command, cancellationToken);
         }
 

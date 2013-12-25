@@ -426,8 +426,6 @@ namespace MediaBrowser.Providers.Savers
             {
                 if (hasTagline.Taglines.Count > 0)
                 {
-                    builder.Append("<TagLine>" + SecurityElement.Escape(hasTagline.Taglines[0]) + "</TagLine>");
-
                     builder.Append("<Taglines>");
 
                     foreach (var tagline in hasTagline.Taglines)
@@ -449,8 +447,6 @@ namespace MediaBrowser.Providers.Savers
                 }
 
                 builder.Append("</Genres>");
-
-                builder.Append("<Genre>" + SecurityElement.Escape(string.Join("|", item.Genres.ToArray())) + "</Genre>");
             }
 
             if (item.Studios.Count > 0)

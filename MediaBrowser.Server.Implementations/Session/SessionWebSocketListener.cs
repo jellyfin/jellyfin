@@ -104,7 +104,7 @@ namespace MediaBrowser.Server.Implementations.Session
             {
                 _logger.Debug("Logging session activity");
 
-                await _sessionManager.LogSessionActivity(client, version, deviceId, deviceName, null).ConfigureAwait(false);
+                await _sessionManager.LogSessionActivity(client, version, deviceId, deviceName, message.Connection.RemoteEndPoint, null).ConfigureAwait(false);
 
                 session = _sessionManager.Sessions
                     .FirstOrDefault(i => string.Equals(i.DeviceId, deviceId) &&
