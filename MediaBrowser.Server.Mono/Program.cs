@@ -102,7 +102,9 @@ namespace MediaBrowser.Server.Mono
 
 			Console.WriteLine ("appHost.Init");
 
-			var task = _appHost.Init();
+			var initProgress = new Progress<double>();
+
+			var task = _appHost.Init(initProgress);
 			Task.WaitAll (task);
 
 			Console.WriteLine ("Running startup tasks");

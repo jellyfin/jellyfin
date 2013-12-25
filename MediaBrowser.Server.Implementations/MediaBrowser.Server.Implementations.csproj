@@ -85,6 +85,7 @@
     <Reference Include="ServiceStack.Text">
       <HintPath>..\ThirdParty\ServiceStack.Text\ServiceStack.Text.dll</HintPath>
     </Reference>
+    <Reference Include="Mono.Posix" Condition=" '$(ConfigurationName)' == 'Release Mono' " />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\SharedVersion.cs">

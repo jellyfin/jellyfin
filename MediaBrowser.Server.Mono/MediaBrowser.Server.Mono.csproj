@@ -50,6 +50,7 @@
     <Reference Include="ServiceStack.Interfaces">
       <HintPath>..\ThirdParty\ServiceStack\ServiceStack.Interfaces.dll</HintPath>
     </Reference>
+    <Reference Include="Mono.Posix" Condition=" '$(ConfigurationName)' == 'Release Mono' "/>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\SharedVersion.cs">
