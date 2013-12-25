@@ -442,6 +442,8 @@ namespace MediaBrowser.ServerApplication
             ImageProcessor.AddParts(GetExports<IImageEnhancer>());
 
             LiveTvManager.AddParts(GetExports<ILiveTvService>());
+
+            SessionManager.AddParts(GetExports<ISessionControllerFactory>());
         }
 
         /// <summary>

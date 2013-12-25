@@ -243,7 +243,8 @@ namespace MediaBrowser.Server.Implementations.Dto
                 NowViewingItemType = session.NowViewingItemType,
                 ApplicationVersion = session.ApplicationVersion,
                 CanSeek = session.CanSeek,
-                QueueableMediaTypes = session.QueueableMediaTypes
+                QueueableMediaTypes = session.QueueableMediaTypes,
+                RemoteEndPoint = session.RemoteEndPoint
             };
 
             if (session.NowPlayingItem != null)

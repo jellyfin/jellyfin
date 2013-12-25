@@ -10,9 +10,9 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Server.Implementations.Session
+namespace MediaBrowser.Server.Implementations.Roku
 {
-    public class RokuController : ISessionController
+    public class RokuSessionController : ISessionController
     {
         private readonly IHttpClient _httpClient;
         private readonly IJsonSerializer _json;
@@ -20,7 +20,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
         public SessionInfo Session { get; private set; }
 
-        public RokuController(IHttpClient httpClient, IJsonSerializer json, IServerApplicationHost appHost, SessionInfo session)
+        public RokuSessionController(IHttpClient httpClient, IJsonSerializer json, IServerApplicationHost appHost, SessionInfo session)
         {
             _httpClient = httpClient;
             _json = json;

@@ -128,6 +128,7 @@
 
     .libraryViewNav .ui-btn-active {
         border: 0;
+        background-color: #38c;
     }
 
     .libraryViewNav a {
@@ -499,8 +500,8 @@ a.itemTag:hover {
     padding: .5em .75em;
     font-size: 16px;
     font-weight: normal;
-    border: 1px solid #000;
-    background: #111;
+    border: 1px solid #1b1b1b;
+    background: #1d1d1d;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;

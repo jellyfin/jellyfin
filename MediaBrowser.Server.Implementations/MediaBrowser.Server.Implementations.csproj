@@ -168,13 +168,14 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Providers\ImageSaver.cs" />
     <Compile Include="Providers\ProviderManager.cs" />
+    <Compile Include="Roku\RokuControllerFactory.cs" />
     <Compile Include="ScheduledTasks\PeopleValidationTask.cs" />
     <Compile Include="ScheduledTasks\ChapterImagesTask.cs" />
     <Compile Include="ScheduledTasks\RefreshMediaLibraryTask.cs" />
     <Compile Include="ServerApplicationPaths.cs" />
     <Compile Include="ServerManager\ServerManager.cs" />
     <Compile Include="ServerManager\WebSocketConnection.cs" />
-    <Compile Include="Session\RokuController.cs" />
+    <Compile Include="Roku\RokuSessionController.cs" />
     <Compile Include="Session\SessionManager.cs">
       <SubType>Code</SubType>
     </Compile>

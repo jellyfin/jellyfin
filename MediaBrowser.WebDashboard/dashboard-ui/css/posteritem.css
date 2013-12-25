@@ -62,8 +62,8 @@
     overflow: hidden;
     text-wrap: none;
     white-space: nowrap;
-    padding: 5px 6px 4px;
-    background-color: #111;
+    padding: 5px 5px 4px;
+    background-color: #222;
     text-shadow: none;
 }
 
@@ -153,16 +153,16 @@
         height: 94.5px;
     }
 
-.portraitPosterItem {
-    width: 100px;
-}
-
-    .portraitPosterItem .posterItemImage {
-        height: 150px;
+    .portraitPosterItem {
+        width: 102px;
     }
 
+        .portraitPosterItem .posterItemImage {
+            height: 153px;
+        }
+
 .posterItemProgress .itemProgressBar {
-    height: 11px;
+    height: 10px;
     width: 100%;
     opacity: .8;
 }
@@ -226,11 +226,11 @@
 @media all and (min-width: 750px) {
 
     .portraitPosterItem {
-        width: 100px;
+        width: 108px;
     }
 
         .portraitPosterItem .posterItemImage {
-            height: 150px;
+            height: 162px;
         }
 }
 
@@ -245,11 +245,11 @@
         }
 
     .portraitPosterItem {
-        width: 108px;
+        width: 134px;
     }
 
         .portraitPosterItem .posterItemImage {
-            height: 162px;
+            height: 201px;
         }
 
     .smallBackdropPosterItem {

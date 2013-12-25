@@ -35,16 +35,23 @@ namespace MediaBrowser.Controller.Session
         IEnumerable<SessionInfo> Sessions { get; }
 
         /// <summary>
+        /// Adds the parts.
+        /// </summary>
+        /// <param name="sessionFactories">The session factories.</param>
+        void AddParts(IEnumerable<ISessionControllerFactory> sessionFactories);
+
+        /// <summary>
         /// Logs the user activity.
         /// </summary>
         /// <param name="clientType">Type of the client.</param>
         /// <param name="appVersion">The app version.</param>
         /// <param name="deviceId">The device id.</param>
         /// <param name="deviceName">Name of the device.</param>
+        /// <param name="remoteEndPoint">The remote end point.</param>
         /// <param name="user">The user.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">user</exception>
-        Task<SessionInfo> LogSessionActivity(string clientType, string appVersion, string deviceId, string deviceName, User user);
+        Task<SessionInfo> LogSessionActivity(string clientType, string appVersion, string deviceId, string deviceName, string remoteEndPoint, User user);
 
         /// <summary>
         /// Used to report that playback has started for an item

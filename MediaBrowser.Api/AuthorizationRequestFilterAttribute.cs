@@ -63,7 +63,9 @@ namespace MediaBrowser.Api
 
                 if (!string.IsNullOrEmpty(client) && !string.IsNullOrEmpty(deviceId) && !string.IsNullOrEmpty(device) && !string.IsNullOrEmpty(version))
                 {
-                    SessionManager.LogSessionActivity(client, version, deviceId, device, user);
+                    var remoteEndPoint = request.RemoteIp;
+
+                    SessionManager.LogSessionActivity(client, version, deviceId, device, remoteEndPoint, user);
                 }
             }
         }

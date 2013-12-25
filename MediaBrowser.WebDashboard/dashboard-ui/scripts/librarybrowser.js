@@ -853,10 +853,6 @@
                     style += "background-color:" + background + ";";
                 }
 
-                if (options.imagePosition) {
-                    style += "background-position:" + options.imagePosition + ";";
-                }
-
                 html += '<div class="posterItemImage" style="' + style + '"></div>';
 
                 var name = LibraryBrowser.getPosterViewDisplayName(item);

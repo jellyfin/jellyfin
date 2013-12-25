@@ -96,7 +96,7 @@ namespace MediaBrowser.Api
         {
             var jobCount = _activeTranscodingJobs.Count;
 
-            Parallel.ForEach(_activeTranscodingJobs, KillTranscodingJob);
+            Parallel.ForEach(_activeTranscodingJobs.ToList(), KillTranscodingJob);
 
             // Try to allow for some time to kill the ffmpeg processes and delete the partial stream files
             if (jobCount > 0)

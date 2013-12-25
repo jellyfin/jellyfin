@@ -45,7 +45,8 @@
                     items: result.Items,
                     shape: "portrait",
                     context: 'movies',
-                    useAverageAspectRatio: true
+                    useAverageAspectRatio: true,
+                    showTitle: true
                 });
                 $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
