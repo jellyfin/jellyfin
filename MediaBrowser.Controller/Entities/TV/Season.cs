@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using System;
@@ -259,6 +260,12 @@ namespace MediaBrowser.Controller.Entities.TV
         public override IEnumerable<BaseItem> GetChildren(User user, bool includeLinkedChildren)
         {
             return GetEpisodes(user);
+        }
+
+        protected override bool GetBlockUnratedValue(UserConfiguration config)
+        {
+            // Don't block. Let either the entire series rating or episode rating determine it
+            return false;
         }
     }
 }

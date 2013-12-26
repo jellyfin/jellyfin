@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediaBrowser.Model.Configuration;
+using System;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -37,6 +38,12 @@ namespace MediaBrowser.Controller.Entities
                 return "GameSystem-" + GameSystemName;
             }
             return base.GetUserDataKey();
+        }
+
+        protected override bool GetBlockUnratedValue(UserConfiguration config)
+        {
+            // Don't block. Determine by game
+            return false;
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using MediaBrowser.Model.Configuration;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -41,6 +42,11 @@ namespace MediaBrowser.Controller.Entities
         public Book()
         {
             Tags = new List<string>();
+        }
+
+        protected override bool GetBlockUnratedValue(UserConfiguration config)
+        {
+            return config.BlockUnratedBooks;
         }
     }
 }

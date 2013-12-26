@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Entities;
+﻿using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
 
@@ -128,6 +129,11 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return base.GetDeletePaths();
+        }
+
+        protected override bool GetBlockUnratedValue(UserConfiguration config)
+        {
+            return config.BlockUnratedGames;
         }
     }
 }

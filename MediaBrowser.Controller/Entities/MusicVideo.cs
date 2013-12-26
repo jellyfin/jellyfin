@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using System;
 
@@ -47,6 +48,11 @@ namespace MediaBrowser.Controller.Entities
         public override string GetUserDataKey()
         {
             return this.GetProviderId(MetadataProviders.Tmdb) ?? this.GetProviderId(MetadataProviders.Imdb) ?? base.GetUserDataKey();
+        }
+
+        protected override bool GetBlockUnratedValue(UserConfiguration config)
+        {
+            return config.BlockUnratedMusic;
         }
     }
 }

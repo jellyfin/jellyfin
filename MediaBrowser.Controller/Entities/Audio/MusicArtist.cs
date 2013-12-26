@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Dto;
+﻿using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
@@ -106,6 +107,11 @@ namespace MediaBrowser.Controller.Entities.Audio
             }
 
             return "Artist-" + item.Name;
+        }
+
+        protected override bool GetBlockUnratedValue(UserConfiguration config)
+        {
+            return config.BlockUnratedMusic;
         }
     }
 }
