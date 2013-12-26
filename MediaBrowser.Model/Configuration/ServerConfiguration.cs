@@ -175,12 +175,6 @@ namespace MediaBrowser.Model.Configuration
         public int FileWatcherDelay { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [enable developer tools].
-        /// </summary>
-        /// <value><c>true</c> if [enable developer tools]; otherwise, <c>false</c>.</value>
-        public bool EnableDeveloperTools { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether [enable dashboard response caching].
         /// Allows potential contributors without visual studio to modify production dashboard code and test changes.
         /// </summary>
@@ -254,10 +248,6 @@ namespace MediaBrowser.Model.Configuration
             EnableMovieChapterImageExtraction = true;
             EnableEpisodeChapterImageExtraction = false;
             EnableOtherVideoChapterImageExtraction = false;
-
-#if (DEBUG)
-            EnableDeveloperTools = true;
-#endif
 
             MinResumePct = 5;
             MaxResumePct = 90;
