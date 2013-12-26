@@ -673,7 +673,7 @@ var Dashboard = {
             name: "Media Library",
             divider: true,
             href: "library.html",
-            selected: pageElem.id == "mediaLibraryPage" && !getParameterByName('userId')
+            selected: page.hasClass("mediaLibraryPage")
         }, {
             name: "Metadata",
             href: "metadata.html",
@@ -1248,6 +1248,8 @@ $(function () {
 
         // Close the connection gracefully when possible
         if (ApiClient.isWebSocketOpen() && !MediaPlayer.isPlaying()) {
+
+            console.log('Sending close web socket command');
             ApiClient.closeWebSocket();
         }
     });

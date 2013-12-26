@@ -112,7 +112,9 @@
             html += '</td>';
 
             html += '<td class="username">';
-            html += connection.UserName || '';
+            if (connection.UserId) {
+                html += '<a href="useredit.html?userid=' + connection.UserId + '">' + connection.UserName + '</a>';
+            }
             html += '</td>';
 
             var nowPlayingItem = connection.NowPlayingItem;
@@ -138,7 +140,11 @@
 
         row.removeClass('deadSession');
 
-        $('.username', row).html(session.UserName || '');
+        if (session.UserId) {
+            $('.username', row).html('<a href="useredit.html?userid=' + session.UserId + '">' + session.UserName + '</a>').trigger('create');
+        } else {
+            $('.username', row).html('');
+        }
 
         var nowPlayingItem = session.NowPlayingItem;
 
