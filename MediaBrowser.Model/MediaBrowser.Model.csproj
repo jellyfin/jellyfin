@@ -118,7 +118,7 @@
     <Compile Include="Session\MessageCommand.cs" />
     <Compile Include="Session\PlayRequest.cs" />
     <Compile Include="Session\PlaystateCommand.cs" />
-    <Compile Include="Entities\ImageDownloadOptions.cs" />
+    <Compile Include="Configuration\ImageDownloadOptions.cs" />
     <Compile Include="Logging\ILogManager.cs" />
     <Compile Include="MediaInfo\BlurayDiscInfo.cs" />
     <Compile Include="Entities\ChapterInfo.cs" />

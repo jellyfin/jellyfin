@@ -137,7 +137,7 @@ namespace MediaBrowser.Providers.TV
 
         protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
         {
-            if (item.HasImage(ImageType.Primary) && item.HasImage(ImageType.Banner) && item.BackdropImagePaths.Count >= ConfigurationManager.Configuration.MaxBackdrops)
+            if (item.HasImage(ImageType.Primary) && item.HasImage(ImageType.Banner) && item.BackdropImagePaths.Count >= ConfigurationManager.Configuration.TvOptions.MaxBackdrops)
             {
                 return false;
             }
@@ -196,7 +196,7 @@ namespace MediaBrowser.Providers.TV
             {
                 foreach (var backdrop in images.Where(i => i.Type == ImageType.Backdrop && 
                     (!i.Width.HasValue || 
-                    i.Width.Value >= ConfigurationManager.Configuration.MinSeriesBackdropDownloadWidth)))
+                    i.Width.Value >= ConfigurationManager.Configuration.TvOptions.MinBackdropWidth)))
                 {
                     var url = backdrop.Url;
 

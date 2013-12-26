@@ -302,7 +302,7 @@ namespace MediaBrowser.Providers.Music
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var backdropLimit = ConfigurationManager.Configuration.MaxBackdrops;
+                var backdropLimit = ConfigurationManager.Configuration.MusicOptions.MaxBackdrops;
                 if (ConfigurationManager.Configuration.DownloadMusicArtistImages.Backdrops &&
                     item.BackdropImagePaths.Count < backdropLimit)
                 {

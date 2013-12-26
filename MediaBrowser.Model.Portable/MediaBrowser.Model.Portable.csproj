@@ -77,6 +77,9 @@
     <Compile Include="..\MediaBrowser.Model\Configuration\BaseApplicationConfiguration.cs">
       <Link>Configuration\BaseApplicationConfiguration.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Configuration\ImageDownloadOptions.cs">
+      <Link>Configuration\ImageDownloadOptions.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\ManualLoginCategory.cs">
       <Link>Configuration\ManualLoginCategory.cs</Link>
     </Compile>
@@ -145,9 +148,6 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Entities\IHasProviderIds.cs">
       <Link>Entities\IHasProviderIds.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Model\Entities\ImageDownloadOptions.cs">
-      <Link>Entities\ImageDownloadOptions.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Entities\ImageType.cs">
       <Link>Entities\ImageType.cs</Link>

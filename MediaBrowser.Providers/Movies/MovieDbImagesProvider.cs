@@ -132,8 +132,8 @@ namespace MediaBrowser.Providers.Movies
             }
 
             // Don't refresh if we already have both poster and backdrop and we're not refreshing images
-            if (item.HasImage(ImageType.Primary) && 
-                item.BackdropImagePaths.Count >= ConfigurationManager.Configuration.MaxBackdrops &&
+            if (item.HasImage(ImageType.Primary) &&
+                item.BackdropImagePaths.Count >= ConfigurationManager.Configuration.MovieOptions.MaxBackdrops &&
                 !item.LockedFields.Contains(MetadataFields.Images))
             {
                 return false;
@@ -211,10 +211,10 @@ namespace MediaBrowser.Providers.Movies
             cancellationToken.ThrowIfCancellationRequested();
 
             var eligibleBackdrops = images
-                .Where(i => i.Type == ImageType.Backdrop && i.Width.HasValue && i.Width.Value >= ConfigurationManager.Configuration.MinMovieBackdropDownloadWidth)
+                .Where(i => i.Type == ImageType.Backdrop && i.Width.HasValue && i.Width.Value >= ConfigurationManager.Configuration.MovieOptions.MinBackdropWidth)
                 .ToList();
 
-            var backdropLimit = ConfigurationManager.Configuration.MaxBackdrops;
+            var backdropLimit = ConfigurationManager.Configuration.MovieOptions.MaxBackdrops;
 
             // backdrops - only download if earlier providers didn't find any (fanart)
             if (eligibleBackdrops.Count > 0 &&
