@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Dto;
+﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
@@ -30,6 +31,21 @@ namespace MediaBrowser.Api
         /// <value>The id.</value>
         [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Id { get; set; }
+    }
+
+    [Route("/Videos/{Id}/Subtitle/{Index}", "GET")]
+    [Api(Description = "Gets an external subtitle file")]
+    public class GetSubtitle
+    {
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Id { get; set; }
+
+        [ApiMember(Name = "Index", Description = "The subtitle stream index", IsRequired = true, DataType = "int", ParameterType = "path", Verb = "GET")]
+        public int Index { get; set; }
     }
 
     /// <summary>
@@ -238,6 +254,25 @@ namespace MediaBrowser.Api
             }
 
             return ToStaticFileResult(item.Path);
+        }
+
+        public object Get(GetSubtitle request)
+        {
+            var subtitleStream = _itemRepo.GetMediaStreams(new MediaStreamQuery
+            {
+
+                Index = request.Index,
+                ItemId = new Guid(request.Id),
+                Type = MediaStreamType.Subtitle
+
+            }).FirstOrDefault();
+
+            if (subtitleStream == null)
+            {
+                throw new ResourceNotFoundException();
+            }
+
+            return ToStaticFileResult(subtitleStream.Path);
         }
 
         /// <summary>

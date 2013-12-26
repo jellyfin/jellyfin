@@ -293,7 +293,7 @@
                 var progress = (task.CurrentProgressPercentage || 0).toFixed(1);
                 html += '<span style="color:#267F00;margin-right:5px;font-weight:bold;"> - ' + progress + '%</span>';
 
-                html += '<button type="button" data-icon="stop" data-iconpos="notext" data-inline="true" data-theme="b" data-mini="true" onclick="DashboardPage.stopTask(\'' + task.Id + '\');">Stop</button>';
+                html += '<button type="button" data-icon="stop" data-iconpos="notext" data-inline="true" data-mini="true" onclick="DashboardPage.stopTask(\'' + task.Id + '\');">Stop</button>';
             }
             else if (task.State == "Cancelling") {
                 html += '<span style="color:#cc0000;"> - Stopping</span>';

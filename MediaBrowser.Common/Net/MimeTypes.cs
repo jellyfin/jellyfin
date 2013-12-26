@@ -218,6 +218,11 @@ namespace MediaBrowser.Common.Net
                 return "image/svg+xml";
             }
 
+            if (ext.Equals(".srt", StringComparison.OrdinalIgnoreCase))
+            {
+                return "text/plain";
+            }
+
             throw new ArgumentException("Argument not supported: " + path);
         }
     }

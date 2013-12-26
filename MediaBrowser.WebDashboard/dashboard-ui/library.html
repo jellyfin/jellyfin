@@ -8,32 +8,27 @@
 
         <div data-role="content">
             <div class="content-primary">
-                <div data-role="controlgroup" data-type="horizontal" class="localnav" id="userProfileNavigation" style="display: none;" data-mini="true">
-                    <a href="#" data-role="button" onclick="Dashboard.navigate('edituser.html', true);">Profile</a>
-                    <a href="#" data-role="button" onclick="Dashboard.navigate('usersettings.html', true);">Settings</a>
-                    <a href="#" data-role="button" onclick="Dashboard.navigate('userimage.html', true);">Image</a>
-                    <a href="#" data-role="button" onclick="Dashboard.navigate('updatepassword.html', true);">Password</a>
-                    <a href="#" data-role="button" class="ui-btn-active">Media Library</a>
-                </div>
-                <div data-role="controlgroup" data-type="horizontal" class="localnav" id="defaultNavigation" style="display: none;" data-mini="true">
-                    <a href="#" data-role="button" class="ui-btn-active">Media Collections</a>
+                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                    <a href="#" data-role="button" class="ui-btn-active">Media</a>
                     <a href="librarysettings.html" data-role="button">Settings</a>
                 </div>
                 <div class="readOnlyContent">
+                    <p>
+                        <label for="selectUser">Manage user library: </label>
+                        <select id="selectUser" class="selectUser" data-mini="true"></select>
+                    </p>
                     <p id="fldUseDefaultLibrary" style="display: none;">
                         <input type="checkbox" id="chkUseDefaultLibrary" name="chkUseDefaultLibrary" onchange="MediaLibraryPage.setUseDefaultMediaLibrary(this.checked);" />
                         <label for="chkUseDefaultLibrary">Use default media library</label>
                     </p>
+                    <p style="margin: 2em 0;">Refer to the <a href="https://github.com/MediaBrowser/MediaBrowser/wiki/Library-Structure" target="_blank">media library wiki.</a> for suggested folder structures.</p>
                     <div id="divMediaLibrary">
-                        <p class="editing_default">This is the <strong>default media library</strong> that will be shared with all users unless individual libraries are created.</p>
                         <p>
                             <button type="button" data-mini="true" data-icon="plus" onclick="MediaLibraryPage.addVirtualFolder();">Add media collection</button>
                         </p>
                         <div id="divVirtualFolders"></div>
                     </div>
                 </div>
-                <p>Refer to <a href="https://github.com/MediaBrowser/MediaBrowser/wiki/Library-Structure" target="_blank">media library wiki.</a></p>
-                <p>Configure <b>images</b> and <b>sort orders</b> by <a href="itemlist.html">browsing and editing.</a></p>
             </div>
         </div>
         <div data-role="popup" id="popupEnterText" class="popup">

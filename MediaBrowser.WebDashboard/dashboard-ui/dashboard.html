@@ -33,6 +33,11 @@
                             <div id="updateFail" style="color: #cc0000; display: none;">There was an error connecting to the remote Media Browser repository.</div>
                             <p id="ports"></p>
                             <div id="pPluginUpdates"></div>
+
+                            <div style="margin-top: 1em;">
+                                <button class="btnRestartContainer hide" id="btnRestartServer" type="button" data-icon="refresh" data-mini="true" data-inline="true" onclick="DashboardPage.restart();">Restart</button>
+                                <button id="btnShutdown" type="button" data-icon="delete" data-mini="true" data-inline="true" onclick="DashboardPage.shutdown();">Shutdown</button>
+                            </div>
                         </div>
                     </div>
 
@@ -62,18 +67,7 @@
                         <p><a href="scheduledtasks.html">Manage Scheduled Tasks</a></p>
                     </div>
 
-                    <div style="margin-top: 2em;">
-                        <div style="display: inline-block;">
-                            <div class="btnRestartContainer hide">
-                                <button id="btnRestartServer" type="button" data-icon="refresh" data-mini="true" data-inline="true" onclick="DashboardPage.restart();">Restart MB Server</button>
-                            </div>
-                        </div>
-                        <div style="display: inline-block;">
-                            <button id="btnShutdown" type="button" data-icon="delete" data-mini="true" data-inline="true" onclick="DashboardPage.shutdown();">Shutdown MB Server</button>
-                        </div>
-                    </div>
-
-                    <div data-role="collapsible" data-collapsed="false" style="margin-top: 1em;">
+                    <div data-role="collapsible" data-collapsed="true" style="margin-top: 1em;">
                         <h3>Links</h3>
                         <div>
                             <p><a href="http://mediabrowser3.com/community" target="_blank">Community</a></p>
@@ -83,7 +77,7 @@
                         </div>
                     </div>
 
-                    <div data-role="collapsible" data-collapsed="false" style="margin-top: 1em;">
+                    <div data-role="collapsible" data-collapsed="true" style="margin-top: 1em;">
                         <h3>System Paths</h3>
                         <div>
                             <p><b>Logs:</b> <span id="logPath"></span></p>

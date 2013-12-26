@@ -1,0 +1,51 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>App Settings</title>
+</head>
+<body>
+    <div id="appsWeatherPage" data-role="page" class="page appsPage type-interior">
+
+        <div data-role="content">
+            <div class="content-primary">
+                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                    <a href="appsplayback.html" data-role="button">Playback</a>
+                    <a href="appsweather.html" data-role="button" class="ui-btn-active">Weather</a>
+                </div>
+                <form class="appsWeatherForm">
+
+                    <ul data-role="listview" class="ulForm">
+                        <li>
+                            <label for="txtWeatherLocation">Weather display location: </label>
+                            <input id="txtWeatherLocation" name="txtWeatherLocation" type="text" />
+                            <div class="fieldDescription">
+                                US zip code / City, State, Country / City, Country
+                            </div>
+                        </li>
+                        <li>
+                            <label for="selectWeatherUnit">Weather display unit: </label>
+                            <select id="selectWeatherUnit" name="selectWeatherUnit">
+                                <option value="Celsius">Celsius</option>
+                                <option value="Fahrenheit">Fahrenheit</option>
+                            </select>
+                        </li>
+                        <li>
+                            <button type="submit" data-theme="b" data-icon="check">
+                                Save
+                            </button>
+                            <button type="button" onclick="Dashboard.navigate('dashboard.html');" data-icon="delete">
+                                Cancel
+                            </button>
+                        </li>
+                    </ul>
+
+                </form>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            $('.appsWeatherForm').off('submit', AppsWeatherPage.onSubmit).on('submit', AppsWeatherPage.onSubmit);
+        </script>
+    </div>
+</body>
+</html>

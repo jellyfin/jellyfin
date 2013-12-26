@@ -4,7 +4,7 @@
 
         var html = "";
 
-        html += "<option value=''>None</option>";
+        html += "<option value=''></option>";
 
         var ratings = [];
         var i, length, rating;

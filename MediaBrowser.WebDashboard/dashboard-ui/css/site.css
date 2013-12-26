@@ -59,7 +59,7 @@ h1 {
 }
 
 .toolsSidebar h1 {
-    font-size: 42pt;
+    font-size: 36pt;
 }
 
 .ui-loader h1 {
@@ -157,7 +157,7 @@ pre, textarea.pre {
 }
 
 .header .imageLink img {
-    height: 32px;
+    height: 28px;
     vertical-align: middle;
 }
 
@@ -265,7 +265,7 @@ form, .readOnlyContent {
 
 .sidebarLinks a {
     display: block;
-    padding: 12px 15px 12px 30px;
+    padding: 12px 20px 12px 30px;
     text-decoration: none;
     color: #fff!important;
     text-shadow: none!important;
@@ -282,6 +282,12 @@ form, .readOnlyContent {
         background: #2572EB!important;
         color: #fff!important;
     }
+
+.sidebarDivider {
+    height: 1px;
+    background: #444;
+    margin: .25em 0;
+}
 
 .invalidEntry {
     background-color: lightpink!important;
@@ -579,7 +585,7 @@ form, .readOnlyContent {
     max-width: 800px;
     padding: .5em 2em 1em;
     margin: 0 auto;
-    background: #f2f2f2;
+    background: #e8e8e8;
 }
 
 .wizardNavigation {

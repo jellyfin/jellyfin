@@ -13,7 +13,6 @@
                     <a href="#" data-role="button" onclick="Dashboard.navigate('usersettings.html', true);">Settings</a>
                     <a href="#" data-role="button" onclick="Dashboard.navigate('userimage.html', true);">Image</a>
                     <a href="#" data-role="button" onclick="Dashboard.navigate('updatepassword.html', true);">Password</a>
-                    <a href="#" data-role="button" onclick="Dashboard.navigate('library.html', true);" class="lnkMediaLibrary" style="display: none;">Media Library</a>
                 </div>
                 <form id="editUserProfileForm">
                     <ul data-role="listview" class="ulForm">
@@ -27,7 +26,7 @@
                         </li>
                         <li id="fldEnableRemoteControlOtherUsers" style="display: none;">
                             <input type="checkbox" id="chkEnableRemoteControlOtherUsers" name="chkEnableRemoteControlOtherUsers" />
-                            <label for="chkEnableRemoteControlOtherUsers">Allow this user to remote control sessions from other users</label>
+                            <label for="chkEnableRemoteControlOtherUsers">Allow this user to remote control other users</label>
                         </li>
                     </ul>
                     <div id="accessControlDiv" style="display: none">
@@ -48,12 +47,12 @@
                         <h2>Parental Control</h2>
                         <ul data-role="listview" class="ulForm">
                             <li id="fldMaxParentalRating">
-                                <label for="selectMaxParentalRating">Max parental rating:</label>
+                                <label for="selectMaxParentalRating">Maximum allowed parental rating:</label>
                                 <select name="selectMaxParentalRating" id="selectMaxParentalRating"></select>
                             </li>
                             <li id="fldBlockNotRated">
                                 <input type="checkbox" id="chkBlockNotRated" name="chkBlockNotRated" />
-                                <label for="chkBlockNotRated">Block items with no rating information</label>
+                                <label for="chkBlockNotRated">Hide content with no rating information</label>
                             </li>
                         </ul>
                     </div>

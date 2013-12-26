@@ -1,42 +1,32 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <title>Client Settings</title>
+    <title>App Settings</title>
 </head>
 <body>
-    <div id="clientSettingsPage" data-role="page" class="page type-interior">
+    <div id="appsPlaybackPage" data-role="page" class="page appsPage type-interior">
 
         <div data-role="content">
             <div class="content-primary">
-                <form id="clientSettingsForm">
+                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                    <a href="appsplayback.html" data-role="button" class="ui-btn-active">Playback</a>
+                    <a href="appsweather.html" data-role="button">Weather</a>
+                </div>
+                <form class="appsPlaybackForm">
 
                     <ul data-role="listview" class="ulForm">
-                        <li>
-                            <label for="txtWeatherLocation">Weather location: </label>
-                            <input id="txtWeatherLocation" name="txtWeatherLocation" type="text" />
-                            <div class="fieldDescription">
-                                US zip code / City, State, Country / City, Country
-                            </div>
-                        </li>
-                        <li>
-                            <label for="selectWeatherUnit">Weather display unit: </label>
-                            <select id="selectWeatherUnit" name="selectWeatherUnit">
-                                <option value="Celsius">Celsius</option>
-                                <option value="Fahrenheit">Fahrenheit</option>
-                            </select>
-                        </li>
                         <li>
                             <label for="txtMinResumePct">Min resume percentage: </label>
                             <input type="number" id="txtMinResumePct" name="txtMinResumePct" pattern="[0-9]*" required="required" min="0" max="100" />
                             <div class="fieldDescription">
-                                Titles are assumed unplayed before this time
+                                Titles are assumed unplayed if stopped before this time
                             </div>
                         </li>
                         <li>
                             <label for="txtMaxResumePct">Max resume percentage: </label>
                             <input type="number" id="txtMaxResumePct" name="txtMaxResumePct" pattern="[0-9]*" required="required" min="1" max="100" />
                             <div class="fieldDescription">
-                                Titles are assumed fully played after this time
+                                Titles are assumed fully played if stopped after this time
                             </div>
                         </li>
                         <li>
@@ -61,9 +51,7 @@
         </div>
 
         <script type="text/javascript">
-            $(function () {
-                $('#clientSettingsForm').on('submit', ClientSettingsPage.onSubmit);
-            });
+            $('.appsPlaybackForm').off('submit', AppsPlaybackPage.onSubmit).on('submit', AppsPlaybackPage.onSubmit);
         </script>
     </div>
 </body>

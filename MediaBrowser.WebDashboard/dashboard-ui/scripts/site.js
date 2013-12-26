@@ -487,8 +487,8 @@ var Dashboard = {
             html += '<img style="max-height:125px;max-width:200px;" src="' + imageUrl + '" />';
             html += '</p>';
 
-            html += '<p><button type="button" onclick="Dashboard.navigate(\'edituser.html?userId=' + user.Id + '\');" data-icon="user">View Profile</button></p>';
-            html += '<p><button type="button" onclick="Dashboard.logout();" data-icon="lock">Sign Out</button></p>';
+            html += '<p><a data-mini="true" data-role="button" href="edituser.html?userId=' + user.Id + '" data-icon="user">View Profile</button></a>';
+            html += '<p><button data-mini="true" type="button" onclick="Dashboard.logout();" data-icon="lock">Sign Out</button></p>';
             html += '</div>';
 
             html += '</div>';
@@ -624,7 +624,7 @@ var Dashboard = {
 
             var html = '<div class="content-secondary ui-bar-a toolsSidebar">';
 
-            html += '<h1><a href="index.html" class="imageLink" style="margin-left: 0;margin-right: 20px;"> <img src="css/images/mblogoicon.png" /></a>Tools</h1>';
+            html += '<h1><a href="index.html" class="imageLink" style="margin-left: 0;margin-right: 15px;"> <img src="css/images/mblogoicon.png" style="height:28px;" /></a>Tools</h1>';
 
             html += '<div class="sidebarLinks">';
 
@@ -633,6 +633,10 @@ var Dashboard = {
             for (var i = 0, length = links.length; i < length; i++) {
 
                 var link = links[i];
+                
+                if (link.divider) {
+                    html += "<div class='sidebarDivider'></div>";
+                }
 
                 if (link.href) {
 
@@ -645,7 +649,7 @@ var Dashboard = {
                 }
             }
 
-            html += '<a href="edititemmetadata.html" style="margin-top: 1em;">Metadata Manager</a>';
+            //html += '<a href="edititemmetadata.html">Metadata Manager</a>';
 
             // collapsible
             html += '</div>';
@@ -666,7 +670,8 @@ var Dashboard = {
             href: "dashboard.html",
             selected: pageElem.id == "dashboardPage"
         }, {
-            name: "Default Media Library",
+            name: "Media Library",
+            divider: true,
             href: "library.html",
             selected: pageElem.id == "mediaLibraryPage" && !getParameterByName('userId')
         }, {
@@ -678,15 +683,17 @@ var Dashboard = {
             href: "plugins.html",
             selected: page.hasClass("pluginConfigurationPage")
         }, {
-            name: "User Profiles",
+            name: "Users",
+            divider: true,
             href: "userprofiles.html",
             selected: page.hasClass("userProfilesConfigurationPage") || (pageElem.id == "mediaLibraryPage" && getParameterByName('userId'))
         }, {
-            name: "Client Settings",
-            href: "clientsettings.html",
-            selected: pageElem.id == "clientSettingsPage"
+            name: "App Settings",
+            href: "appsplayback.html",
+            selected: page.hasClass("appsPage")
         }, {
             name: "Advanced",
+            divider: true,
             href: "advanced.html",
             selected: pageElem.id == "advancedConfigurationPage"
         }, {
@@ -695,6 +702,7 @@ var Dashboard = {
             selected: pageElem.id == "scheduledTasksPage" || pageElem.id == "scheduledTaskPage"
         }, {
             name: "Help",
+            divider: true,
             href: "support.html",
             selected: pageElem.id == "supportPage" || pageElem.id == "logPage" || pageElem.id == "supporterPage" || pageElem.id == "supporterKeyPage" || pageElem.id == "aboutPage"
         }];

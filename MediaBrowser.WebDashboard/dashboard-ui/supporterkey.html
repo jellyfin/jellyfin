@@ -16,101 +16,91 @@
                         <a href="supporterkey.html" data-role="button" class="ui-btn-active">Supporter Key</a>
                         <a href="about.html" data-role="button">About</a>
                     </div>
-                    <h2>Supporter Key</h2>
                 </div>
                 <form id="supporterKeyForm">
-                    <div style="margin-top: 40px; margin-bottom: 40px">
+                    <div style="margin: 1em 0;">
                         <label for="txtSupporterKey">MB3 Supporter Key (paste from email)</label>
                         <input type="password" id="txtSupporterKey" name="txtSupporterKey" data-inline="true" />
                         <div class="fieldDescription">
-                            <strong>After becoming a supporter, you will be emailed a Supporter Key.  Simply copy and paste that key into this field and start
-                                enjoying everything the community has developed for Media Browser. <em>Only MB 3 Supporter Keys are valid here</em></strong>
+                            Enter your supporter key to start enjoying additional benefits the community has developed for Media Browser. <strong>MB3 keys only.</strong>
                         </div>
-                    <p style="display: none; padding: 1em; border-radius: 5px; font-weight: normal;" class="ui-bar-a notSupporter">
-                        <strong>MB3 Key Missing or Invalid</strong> - in order for any premium content to be registered, you must also be a MB3 Supporter.
-                        Please <a href="supporter.html">donate</a> and support the continued development of the core product.  Thank you.  
+
+                        <p style="display: none; padding: 1em; border-radius: 5px; font-weight: normal;" class="ui-bar-a notSupporter">
+                            <strong>MB3 Key Missing or Invalid</strong> - in order for any premium content to be registered, you must also be an MB3 Supporter.
+                            Please <a href="supporter.html">donate</a> and support the continued development of the core product.  Thank you.  
                         
-                    </p>
+                        </p>
 
                     </div>
-                    <div style="margin-top: 40px; margin-bottom: 40px">
-                        <label for="txtLegacyKey">Legacy Supporter Key (from MB 2.x)</label>
+                    <div style="margin: 2em 0;">
+                        <label for="txtLegacyKey">MB2 Supporter Key</label>
                         <input type="password" id="txtLegacyKey" name="txtLegacyKey" data-inline="true" />
                         <div class="fieldDescription">
-                            <strong>Some premium plug-ins may give credit for registrations with previous versions in MB 2.x. Enter your MB 2.x 
-                                Supporter Key here to allow that credit.
-                            </strong>
+                            Some premium plugins may give credit for registrations with previous versions in MB2.
                         </div>
 
                     </div>
                     <p>
-                        <button type="submit" id="mbLegacyKeyBtn" data-theme="b">Save</button>
+                        <button type="submit" id="mbLegacyKeyBtn" data-theme="b" data-icon="check">Save</button>
 
                     </p>
-
-                    <hr />
                 </form>
-                <h2>Lost Key</h2>
-                <form id="lostKeyForm">
-                    <div style="margin-top: 40px; margin-bottom: 40px">
-                        <label for="txtEmail">Email Address</label>
-                        <input type="email" required id="txtEmail" name="txtEmail" data-inline="true" />
-                        <div class="fieldDescription">
-                            <strong>If you have lost your key, enter the email address associated with your PayPal account here and hit "Retrieve Key".  The key
-                        will be emailed to you and you can come back here and paste it above.</strong>
-                        </div>
+                <br />
+                <div data-role="collapsible">
+                    <h3>Lost Key</h3>
+                    <div>
+                        <form id="lostKeyForm">
+                            <div style="margin: 1em 0;">
+                                <label for="txtEmail">Email Address</label>
+                                <input type="email" required id="txtEmail" name="txtEmail" data-inline="true" />
+                                <div class="fieldDescription">The email address that was used to purchase the key.</div>
+                            </div>
+                            <p>
+                                <button type="submit" id="mbRetrieveKeyBtn" data-icon="action" data-theme="b">Retrieve Key</button>
 
+                            </p>
+                        </form>
                     </div>
-                    <p>
-                        <button type="submit" id="mbRetrieveKeyBtn" data-theme="b">Retrieve Key</button>
+                </div>
 
-                    </p>
+                <div data-role="collapsible">
+                    <h3>Multiple Key Linking</h3>
+                    <div>
 
-                <hr/>
-                </form>
-                <form id="linkKeysForm">
-                <h2>Multiple Key Linking</h2>
-                <p>
-                    If your PayPal email address has changed causing you to have more than one MB3 supporter key, use this form to link the old key's
-                    registrations with your new one.
-                </p>
-                    <div style="margin-top: 40px; margin-bottom: 40px">
-                        <label for="txtEmail">Current Email Address</label>
-                        <input type="email" required id="txtNewEmail" name="txtNewEmail" data-inline="true" />
-                        <div class="fieldDescription">
-                            <strong>The current email address to which your new key was sent.</strong>
-                        </div>
+                        <form id="linkKeysForm">
+                            <p>
+                                If you have more than one supporter key, use this form to link the old key's registrations with your new one.
+                            </p>
+                            <div style="margin: 1em 0;">
+                                <label for="txtEmail">Current Email Address</label>
+                                <input type="email" required id="txtNewEmail" name="txtNewEmail" data-inline="true" />
+                                <div class="fieldDescription">
+                                    The current email address to which your new key was sent.
+                                </div>
+                            </div>
+                            <p>
+                                <label for="txtNewKey">New Supporter Key</label>
+                                <input type="password" required="required" id="txtNewKey" name="txtNewKey" data-inline="true" />
+                            </p>
+                            <p>
+
+                                <label for="txtOldKey">Old Supporter Key</label>
+                                <input type="password" required="required" id="txtOldKey" name="txtOldKey" data-inline="true" />
+                            </p>
+                            <p>
+                                <button type="submit" id="mbLinkKeysBtn" data-icon="check" data-theme="b">Link Keys</button>
+                            </p>
+                        </form>
                     </div>
-                    <div style="margin-top: 40px; margin-bottom: 40px">
-
-                        <label for="txtNewKey">New Supporter Key</label>
-                        <input type="password" required="" id="txtNewKey" name="txtNewKey" data-inline="true" />
-                        <div class="fieldDescription">
-                            <strong>The supporter key that was sent to the above email address.</strong>
-                        </div>
-                    </div>
-                    <div style="margin-top: 40px; margin-bottom: 40px">
-
-                        <label for="txtOldKey">Old Supporter Key</label>
-                        <input type="password" required id="txtOldKey" name="txtOldKey" data-inline="true" />
-                        <div class="fieldDescription">
-                            <strong>The supporter key attached to your previous email address.</strong>
-                        </div>
-                    </div>
-
-                    <p>
-                        <button type="submit" id="mbLinkKeysBtn" data-theme="b">Link Keys</button>
-
-                    </p>
-
-                </form>
+                </div>
             </div>
         </div>
-        <script type="text/javascript">
-            $('#supporterKeyForm').on('submit', SupporterKeyPage.updateSupporterKey);
-            $('#lostKeyForm').on('submit', SupporterKeyPage.retrieveSupporterKey);
-            $('#linkKeysForm').on('submit', SupporterKeyPage.linkSupporterKeys);
-        </script>
+    </div>
+    <script type="text/javascript">
+        $('#supporterKeyForm').on('submit', SupporterKeyPage.updateSupporterKey);
+        $('#lostKeyForm').on('submit', SupporterKeyPage.retrieveSupporterKey);
+        $('#linkKeysForm').on('submit', SupporterKeyPage.linkSupporterKeys);
+    </script>
     </div>
 </body>
 </html>
