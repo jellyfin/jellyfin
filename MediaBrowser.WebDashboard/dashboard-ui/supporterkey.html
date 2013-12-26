@@ -16,81 +16,82 @@
                         <a href="supporterkey.html" data-role="button" class="ui-btn-active">Supporter Key</a>
                         <a href="about.html" data-role="button">About</a>
                     </div>
-                </div>
-                <form id="supporterKeyForm">
-                    <div style="margin: 1em 0;">
-                        <label for="txtSupporterKey">MB3 Supporter Key (paste from email)</label>
-                        <input type="password" id="txtSupporterKey" name="txtSupporterKey" data-inline="true" />
-                        <div class="fieldDescription">
-                            Enter your supporter key to start enjoying additional benefits the community has developed for Media Browser. <strong>MB3 keys only.</strong>
-                        </div>
 
-                        <p style="display: none; padding: 1em; border-radius: 5px; font-weight: normal;" class="ui-bar-a notSupporter">
-                            <strong>MB3 Key Missing or Invalid</strong> - in order for any premium content to be registered, you must also be an MB3 Supporter.
+                    <form id="supporterKeyForm">
+                        <div style="margin: 1em 0;">
+                            <label for="txtSupporterKey">MB3 Supporter Key (paste from email)</label>
+                            <input type="password" id="txtSupporterKey" name="txtSupporterKey" data-inline="true" />
+                            <div class="fieldDescription">
+                                Enter your supporter key to start enjoying additional benefits the community has developed for Media Browser. <strong>MB3 keys only.</strong>
+                            </div>
+
+                            <p style="display: none; padding: 1em; border-radius: 5px; font-weight: normal;" class="ui-bar-a notSupporter">
+                                <strong>MB3 Key Missing or Invalid</strong> - in order for any premium content to be registered, you must also be an MB3 Supporter.
                             Please <a href="supporter.html">donate</a> and support the continued development of the core product.  Thank you.  
                         
-                        </p>
+                            </p>
 
-                    </div>
-                    <div style="margin: 2em 0;">
-                        <label for="txtLegacyKey">MB2 Supporter Key</label>
-                        <input type="password" id="txtLegacyKey" name="txtLegacyKey" data-inline="true" />
-                        <div class="fieldDescription">
-                            Some premium plugins may give credit for registrations with previous versions in MB2.
                         </div>
-
-                    </div>
-                    <p>
-                        <button type="submit" id="mbLegacyKeyBtn" data-theme="b" data-icon="check">Save</button>
-
-                    </p>
-                </form>
-                <br />
-                <div data-role="collapsible">
-                    <h3>Lost Key</h3>
-                    <div>
-                        <form id="lostKeyForm">
-                            <div style="margin: 1em 0;">
-                                <label for="txtEmail">Email Address</label>
-                                <input type="email" required id="txtEmail" name="txtEmail" data-inline="true" />
-                                <div class="fieldDescription">The email address that was used to purchase the key.</div>
+                        <div style="margin: 2em 0;">
+                            <label for="txtLegacyKey">MB2 Supporter Key</label>
+                            <input type="password" id="txtLegacyKey" name="txtLegacyKey" data-inline="true" />
+                            <div class="fieldDescription">
+                                Some premium plugins may give credit for registrations with previous versions in MB2.
                             </div>
-                            <p>
-                                <button type="submit" id="mbRetrieveKeyBtn" data-icon="action" data-theme="b">Retrieve Key</button>
 
-                            </p>
-                        </form>
-                    </div>
-                </div>
+                        </div>
+                        <p>
+                            <button type="submit" id="mbLegacyKeyBtn" data-theme="b" data-icon="check">Save</button>
 
-                <div data-role="collapsible">
-                    <h3>Multiple Key Linking</h3>
-                    <div>
-
-                        <form id="linkKeysForm">
-                            <p>
-                                If you have more than one supporter key, use this form to link the old key's registrations with your new one.
-                            </p>
-                            <div style="margin: 1em 0;">
-                                <label for="txtEmail">Current Email Address</label>
-                                <input type="email" required id="txtNewEmail" name="txtNewEmail" data-inline="true" />
-                                <div class="fieldDescription">
-                                    The current email address to which your new key was sent.
+                        </p>
+                    </form>
+                    <br />
+                    <div data-role="collapsible">
+                        <h3>Lost Key</h3>
+                        <div>
+                            <form id="lostKeyForm">
+                                <div style="margin: 1em 0;">
+                                    <label for="txtEmail">Email Address</label>
+                                    <input type="email" required id="txtEmail" name="txtEmail" data-inline="true" />
+                                    <div class="fieldDescription">The email address that was used to purchase the key.</div>
                                 </div>
-                            </div>
-                            <p>
-                                <label for="txtNewKey">New Supporter Key</label>
-                                <input type="password" required="required" id="txtNewKey" name="txtNewKey" data-inline="true" />
-                            </p>
-                            <p>
+                                <p>
+                                    <button type="submit" id="mbRetrieveKeyBtn" data-icon="action" data-theme="b">Retrieve Key</button>
 
-                                <label for="txtOldKey">Old Supporter Key</label>
-                                <input type="password" required="required" id="txtOldKey" name="txtOldKey" data-inline="true" />
-                            </p>
-                            <p>
-                                <button type="submit" id="mbLinkKeysBtn" data-icon="check" data-theme="b">Link Keys</button>
-                            </p>
-                        </form>
+                                </p>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div data-role="collapsible">
+                        <h3>Multiple Key Linking</h3>
+                        <div>
+
+                            <form id="linkKeysForm">
+                                <p>
+                                    If you have more than one supporter key, use this form to link the old key's registrations with your new one.
+                                </p>
+                                <div style="margin: 1em 0;">
+                                    <label for="txtEmail">Current Email Address</label>
+                                    <input type="email" required id="txtNewEmail" name="txtNewEmail" data-inline="true" />
+                                    <div class="fieldDescription">
+                                        The current email address to which your new key was sent.
+                                    </div>
+                                </div>
+                                <p>
+                                    <label for="txtNewKey">New Supporter Key</label>
+                                    <input type="password" required="required" id="txtNewKey" name="txtNewKey" data-inline="true" />
+                                </p>
+                                <p>
+
+                                    <label for="txtOldKey">Old Supporter Key</label>
+                                    <input type="password" required="required" id="txtOldKey" name="txtOldKey" data-inline="true" />
+                                </p>
+                                <p>
+                                    <button type="submit" id="mbLinkKeysBtn" data-icon="check" data-theme="b">Link Keys</button>
+                                </p>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>

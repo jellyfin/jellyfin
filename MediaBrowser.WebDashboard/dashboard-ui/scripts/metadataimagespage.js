@@ -29,10 +29,6 @@
         $('#txtMaxGameBackdrops', page).val(config.GameOptions.MaxBackdrops);
         $('#txtMinGameBackdropDownloadWidth', page).val(config.GameOptions.MinBackdropWidth);
 
-        // Book options
-        $('#txtMaxBookBackdrops', page).val(config.BookOptions.MaxBackdrops);
-        $('#txtMinBookBackdropDownloadWidth', page).val(config.BookOptions.MinBackdropWidth);
-
         $('#chkDownloadMovieArt', page).checked(config.DownloadMovieImages.Art).checkboxradio("refresh");
         $('#chkDownloadMovieBackdrops', page).checked(config.DownloadMovieImages.Backdrops).checkboxradio("refresh");
         $('#chkDownloadMovieBanner', page).checked(config.DownloadMovieImages.Banner).checkboxradio("refresh");
@@ -109,11 +105,6 @@
             // Game options
             config.GameOptions.MaxBackdrops = $('#txtMaxGameBackdrops', form).val();
             config.GameOptions.MinBackdropWidth = $('#txtMinGameBackdropDownloadWidth', form).val();
-
-            // Book options
-            config.BookOptions.MaxBackdrops = $('#txtMaxBookBackdrops', form).val();
-            config.BookOptions.MinBackdropWidth = $('#txtMinBookBackdropDownloadWidth', form).val();
-
 
             ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
         });
