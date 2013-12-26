@@ -78,8 +78,14 @@ namespace MediaBrowser.Server.Implementations.Sorting
                 // If both chunks contain numeric characters, sort them numerically
                 if (char.IsDigit(thisChunk[0]) && char.IsDigit(thatChunk[0]))
                 {
-                    thisNumericChunk = Convert.ToInt32(thisChunk.ToString());
-                    thatNumericChunk = Convert.ToInt32(thatChunk.ToString());
+                    if (!int.TryParse(thisChunk.ToString(), out thisNumericChunk))
+                    {
+                        return 0;
+                    }
+                    if (!int.TryParse(thatChunk.ToString(), out thatNumericChunk))
+                    {
+                        return 0;
+                    }
 
                     if (thisNumericChunk < thatNumericChunk)
                     {
