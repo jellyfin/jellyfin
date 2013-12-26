@@ -745,13 +745,13 @@ namespace MediaBrowser.Providers.Movies
             // tmdb appears to have unified their numbers to always report "7.3" regardless of country
             // so I removed the culture-specific processing here because it was not working for other countries -ebr
             // Movies get this from imdb
-            if (movie is BoxSet && float.TryParse(voteAvg, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out rating))
+            if (!(movie is Movie) && float.TryParse(voteAvg, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out rating))
             {
                 movie.CommunityRating = rating;
             }
 
             // Movies get this from imdb
-            if (movie is BoxSet)
+            if (!(movie is Movie))
             {
                 movie.VoteCount = movieData.vote_count;
             }
@@ -811,7 +811,7 @@ namespace MediaBrowser.Providers.Movies
                 }
             }
 
-            //if that didn't find a rating and we are a boxset, use the one from our first child
+            // If that didn't find a rating and we are a boxset, use the one from our first child
             if (movie.OfficialRating == null && movie is BoxSet && !movie.LockedFields.Contains(MetadataFields.OfficialRating))
             {
                 var boxset = movie as BoxSet;
@@ -842,7 +842,7 @@ namespace MediaBrowser.Providers.Movies
             {
                 // Only grab them if a boxset or there are no genres.
                 // For movies and trailers we'll use imdb via omdb
-                if (movie is BoxSet || movie.Genres.Count == 0)
+                if (!(movie is Movie) || movie.Genres.Count == 0)
                 {
                     movie.Genres.Clear();
 
