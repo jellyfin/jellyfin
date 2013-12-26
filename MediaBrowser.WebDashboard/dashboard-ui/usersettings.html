@@ -8,11 +8,12 @@
 
         <div data-role="content">
             <div class="content-primary">
-                <div data-role="controlgroup" data-type="horizontal" class="localnav" id="userProfileNavigation" style="display: none;" data-mini="true">
-                    <a href="#" data-role="button" onclick="Dashboard.navigate('edituser.html', true);">Profile</a>
-                    <a href="#" data-role="button" class="ui-btn-active">Settings</a>
+                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                    <a href="#" data-role="button" onclick="Dashboard.navigate('useredit.html', true);">Profile</a>
                     <a href="#" data-role="button" onclick="Dashboard.navigate('userimage.html', true);">Image</a>
-                    <a href="#" data-role="button" onclick="Dashboard.navigate('updatepassword.html', true);">Password</a>
+                    <a href="#" data-role="button" onclick="Dashboard.navigate('userparentalcontrol.html', true);" id="lnkParentalControl" style="display: none;">Parental Control</a>
+                    <a href="#" data-role="button" onclick="Dashboard.navigate('userpassword.html', true);">Password</a>
+                    <a href="#" data-role="button" class="ui-btn-active">Preferences</a>
                 </div>
                 <form id="userSettingsForm">
                     <ul data-role="listview" class="ulForm">

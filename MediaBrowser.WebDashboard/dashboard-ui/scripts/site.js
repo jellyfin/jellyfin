@@ -487,7 +487,7 @@ var Dashboard = {
             html += '<img style="max-height:125px;max-width:200px;" src="' + imageUrl + '" />';
             html += '</p>';
 
-            html += '<p><a data-mini="true" data-role="button" href="edituser.html?userId=' + user.Id + '" data-icon="user">View Profile</button></a>';
+            html += '<p><a data-mini="true" data-role="button" href="useredit.html?userId=' + user.Id + '" data-icon="user">View Profile</button></a>';
             html += '<p><button data-mini="true" type="button" onclick="Dashboard.logout();" data-icon="lock">Sign Out</button></p>';
             html += '</div>';
 

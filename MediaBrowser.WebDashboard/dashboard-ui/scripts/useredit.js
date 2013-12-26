@@ -1,52 +1,12 @@
 ﻿(function ($, window, document) {
 
-    function populateRatings(allParentalRatings, page) {
-
-        var html = "";
-
-        html += "<option value=''></option>";
-
-        var ratings = [];
-        var i, length, rating;
-
-        for (i = 0, length = allParentalRatings.length; i < length; i++) {
-
-            rating = allParentalRatings[i];
-
-            if (ratings.length) {
-
-                var lastRating = ratings[ratings.length - 1];
-
-                if (lastRating.Value === rating.Value) {
-
-                    lastRating.Name += "/" + rating.Name;
-                    continue;
-                }
-
-            }
-
-            ratings.push({ Name: rating.Name, Value: rating.Value });
-        }
-
-        for (i = 0, length = ratings.length; i < length; i++) {
-
-            rating = ratings[i];
-
-            html += "<option value='" + rating.Value + "'>" + rating.Name + "</option>";
-        }
-
-        $('#selectMaxParentalRating', page).html(html).selectmenu("refresh");
-    }
-
-    function loadUser(page, user, loggedInUser, parentalRatingsPromise) {
+    function loadUser(page, user, loggedInUser) {
 
         if (!loggedInUser.Configuration.IsAdministrator) {
-            $('#parentalControlDiv', page).hide();
             $('#fldIsAdmin', page).hide();
             $('#fldEnableRemoteControlOtherUsers', page).hide();
             $('#accessControlDiv', page).hide();
         } else {
-            $('#parentalControlDiv', page).show();
             $('#accessControlDiv', page).show();
             $('#fldIsAdmin', page).show();
             $('#fldEnableRemoteControlOtherUsers', page).show();
@@ -55,27 +15,6 @@
         Dashboard.setPageTitle(user.Name || "Add User");
 
         $('#txtUserName', page).val(user.Name);
-
-        parentalRatingsPromise.done(function (allParentalRatings) {
-
-            populateRatings(allParentalRatings, page);
-
-            var ratingValue = "";
-
-            if (user.Configuration.MaxParentalRating) {
-
-                for (var i = 0, length = allParentalRatings.length; i < length; i++) {
-
-                    var rating = allParentalRatings[i];
-
-                    if (user.Configuration.MaxParentalRating >= rating.Value) {
-                        ratingValue = rating.Value;
-                    }
-                }
-            }
-
-            $('#selectMaxParentalRating', page).val(ratingValue).selectmenu("refresh");
-        });
 
         $('#chkIsAdmin', page).checked(user.Configuration.IsAdministrator || false).checkboxradio("refresh");
         $('#chkBlockNotRated', page).checked(user.Configuration.BlockNotRated || false).checkboxradio("refresh");
@@ -105,7 +44,6 @@
     function saveUser(user, page) {
 
         user.Name = $('#txtUserName', page).val();
-        user.Configuration.MaxParentalRating = $('#selectMaxParentalRating', page).val() || null;
 
         user.Configuration.IsAdministrator = $('#chkIsAdmin', page).checked();
 
@@ -172,9 +110,9 @@
         Dashboard.getCurrentUser().done(function (loggedInUser) {
 
             if (loggedInUser.Configuration.IsAdministrator) {
-                $('.lnkMediaLibrary', page).show().prev().removeClass('ui-last-child');
+                $('#lnkParentalControl', page).show();
             } else {
-                $('.lnkMediaLibrary', page).hide().prev().addClass('ui-last-child');
+                $('#lnkParentalControl', page).hide();
             }
         });
 
@@ -204,15 +142,13 @@
 
         var promise2 = Dashboard.getCurrentUser();
 
-        var parentalRatingsPromise = ApiClient.getParentalRatings();
-
         $.when(promise1, promise2).done(function (response1, response2) {
 
-            loadUser(page, response1[0] || response1, response2[0], parentalRatingsPromise);
+            loadUser(page, response1[0] || response1, response2[0]);
 
         });
 
-        $("#editUserProfileForm input:first").focus();
+        $("form input:first", page).focus();
     });
 
 })(jQuery, window, document);

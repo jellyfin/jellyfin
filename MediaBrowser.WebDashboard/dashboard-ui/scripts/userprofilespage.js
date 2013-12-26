@@ -22,7 +22,7 @@
 
             html += "<li>";
 
-            html += "<a href='edituser.html?userId=" + user.Id + "'>";
+            html += "<a href='useredit.html?userId=" + user.Id + "'>";
 
             if (user.PrimaryImageTag) {
 

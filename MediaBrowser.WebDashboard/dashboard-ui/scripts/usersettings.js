@@ -91,20 +91,12 @@
 
         var page = this;
 
-        var userId = getParameterByName("userId");
-
-        if (userId) {
-            $('#userProfileNavigation', page).show();
-        } else {
-            $('#userProfileNavigation', page).hide();
-        }
-
         Dashboard.getCurrentUser().done(function (loggedInUser) {
 
             if (loggedInUser.Configuration.IsAdministrator) {
-                $('.lnkMediaLibrary', page).show().prev().removeClass('ui-last-child');
+                $('#lnkParentalControl', page).show();
             } else {
-                $('.lnkMediaLibrary', page).hide().prev().addClass('ui-last-child');
+                $('#lnkParentalControl', page).hide();
             }
         });
 

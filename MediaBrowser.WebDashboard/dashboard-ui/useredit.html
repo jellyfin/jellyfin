@@ -10,9 +10,10 @@
             <div class="content-primary">
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" id="userProfileNavigation" style="display: none;" data-mini="true">
                     <a href="#" data-role="button" class="ui-btn-active">Profile</a>
-                    <a href="#" data-role="button" onclick="Dashboard.navigate('usersettings.html', true);">Settings</a>
                     <a href="#" data-role="button" onclick="Dashboard.navigate('userimage.html', true);">Image</a>
-                    <a href="#" data-role="button" onclick="Dashboard.navigate('updatepassword.html', true);">Password</a>
+                    <a href="#" data-role="button" onclick="Dashboard.navigate('userparentalcontrol.html', true);" id="lnkParentalControl" style="display: none;">Parental Control</a>
+                    <a href="#" data-role="button" onclick="Dashboard.navigate('userpassword.html', true);">Password</a>
+                    <a href="#" data-role="button" onclick="Dashboard.navigate('usersettings.html', true);">Preferences</a>
                 </div>
                 <form id="editUserProfileForm">
                     <ul data-role="listview" class="ulForm">
@@ -29,33 +30,20 @@
                             <label for="chkEnableRemoteControlOtherUsers">Allow this user to remote control other users</label>
                         </li>
                     </ul>
-                    <div id="accessControlDiv" style="display: none">
-                        <h2>Access Control</h2>
-                        <ul data-role="listview" class="ulForm">
-                            <li id="fldIsEnabled">
-                                <input type="checkbox" id="chkDisabled" name="chkDisabled" />
-                                <label for="chkDisabled">Disable this user</label>
-                                <div class="fieldDescription">If disabled the server will not allow any connections from this user. Existing connections will be abruptly terminated.</div>
-                            </li>
-                            <li id="fldIsHidden">
-                                <input type="checkbox" id="chkIsHidden" name="chkIsHidden" />
-                                <label for="chkIsHidden">Hide this user from login screens</label>
-                            </li>
-                        </ul>
+                    <div id="accessControlDiv" style="display: none" data-role="collapsible">
+                        <h2>Advanced Control</h2>
+                        <div id="fldIsEnabled" style="margin: 1em 0 2em;">
+                            <input type="checkbox" id="chkDisabled" name="chkDisabled" />
+                            <label for="chkDisabled">Disable this user</label>
+                            <div class="fieldDescription">If disabled the server will not allow any connections from this user. Existing connections will be abruptly terminated.</div>
+                        </div>
+                        <p id="fldIsHidden">
+                            <input type="checkbox" id="chkIsHidden" name="chkIsHidden" />
+                            <label for="chkIsHidden">Hide this user from login screens</label>
+
+                        </p>
                     </div>
-                    <div id="parentalControlDiv" style="display: none">
-                        <h2>Parental Control</h2>
-                        <ul data-role="listview" class="ulForm">
-                            <li id="fldMaxParentalRating">
-                                <label for="selectMaxParentalRating">Maximum allowed parental rating:</label>
-                                <select name="selectMaxParentalRating" id="selectMaxParentalRating"></select>
-                            </li>
-                            <li id="fldBlockNotRated">
-                                <input type="checkbox" id="chkBlockNotRated" name="chkBlockNotRated" />
-                                <label for="chkBlockNotRated">Hide content with no rating information</label>
-                            </li>
-                        </ul>
-                    </div>
+                    <br />
                     <ul data-role="listview" class="ulForm">
                         <li>
                             <button type="submit" data-theme="b" data-icon="check">

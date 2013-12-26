@@ -1,0 +1,48 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+</head>
+<body>
+    <div id="userParentalControlPage" data-role="page" class="page type-interior userProfilesConfigurationPage">
+
+        <div data-role="content">
+            <div class="content-primary">
+                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                    <a href="#" data-role="button" onclick="Dashboard.navigate('useredit.html', true);">Profile</a>
+                    <a href="#" data-role="button" onclick="Dashboard.navigate('userimage.html', true);">Image</a>
+                    <a href="#" data-role="button" onclick="Dashboard.navigate('userparentalcontrol.html', true);" class="ui-btn-active">Parental Control</a>
+                    <a href="#" data-role="button" onclick="Dashboard.navigate('userpassword.html', true);">Password</a>
+                    <a href="#" data-role="button" onclick="Dashboard.navigate('usersettings.html', true);">Preferences</a>
+                </div>
+                <form class="userParentalControlForm">
+                    
+                    <ul data-role="listview" class="ulForm">
+                        <li>
+                            <label for="selectMaxParentalRating">Maximum allowed parental rating:</label>
+                            <select name="selectMaxParentalRating" id="selectMaxParentalRating"></select>
+                        </li>
+                        <li>
+                            <input type="checkbox" id="chkBlockNotRated" name="chkBlockNotRated" />
+                            <label for="chkBlockNotRated">Hide content with no rating information</label>
+                        </li>
+                    </ul>
+                    <ul data-role="listview" class="ulForm">
+                        <li>
+                            <button type="submit" data-theme="b" data-icon="check">
+                                Save
+                            </button>
+                            <button type="button" onclick="history.back();" data-icon="delete">
+                                Cancel
+                            </button>
+                        </li>
+                    </ul>
+                </form>
+            </div>
+        </div>
+        <script type="text/javascript">
+            $('.userParentalControlForm').off('submit', UserParentalControlPage.onSubmit).on('submit', UserParentalControlPage.onSubmit);
+        </script>
+    </div>
+</body>
+</html>
