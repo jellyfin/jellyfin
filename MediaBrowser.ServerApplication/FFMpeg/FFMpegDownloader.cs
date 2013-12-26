@@ -12,6 +12,9 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+#if __MonoCS__
+using Mono.Unix.Native;
+#endif
 
 namespace MediaBrowser.ServerApplication.FFMpeg
 {
@@ -147,6 +150,13 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                     }))
                 {
                     File.Copy(file, Path.Combine(targetFolder, Path.GetFileName(file)), true);
+                    #if __MonoCS__
+                    //Linux: File permission to 666, and user's execute bit
+                    if (Environment.OSVersion.Platform == PlatformID.Unix || Environment.OSVersion.Platform == PlatformID.MacOSX)
+                    {
+                        Syscall.chmod(Path.Combine(targetFolder, Path.GetFileName(file)), FilePermissions.DEFFILEMODE | FilePermissions.S_IXUSR);
+                    }
+                    #endif
                 }
             }
             finally
