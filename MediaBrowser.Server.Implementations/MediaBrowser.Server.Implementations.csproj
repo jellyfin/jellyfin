@@ -349,11 +349,11 @@
     <EmbeddedResource Include="Localization\Ratings\be.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\ThirdParty\System.Data.SQLite.ManagedOnly\x86\1.0.90.0\net40\System.Data.SQLite.dll">
+    <Content Include="..\ThirdParty\System.Data.SQLite.ManagedOnly\x86\1.0.90.0\net40\System.Data.SQLite.dll" Condition=" '$(ConfigurationName)' == 'Release Mono'">
       <Link>System.Data.SQLite.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\ThirdParty\System.Data.SQLite.ManagedOnly\x86\1.0.90.0\net40\System.Data.SQLite.Linq.dll">
+    <Content Include="..\ThirdParty\System.Data.SQLite.ManagedOnly\x86\1.0.90.0\net40\System.Data.SQLite.Linq.dll" Condition=" '$(ConfigurationName)' == 'Release Mono'">
       <Link>System.Data.SQLite.Linq.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
