@@ -80,25 +80,36 @@ namespace MediaBrowser.Server.Implementations.Sorting
                 return xSeason.CompareTo(ySeason);
             }
 
-            // Now we know they have the same season
-
-            // Compare episode number
-
-            // Add 1 to to non-specials to account for AirsBeforeEpisodeNumber
-            var xEpisode = x.IndexNumber ?? -1;
-            xEpisode++;
-
-            var yEpisode = y.AirsBeforeEpisodeNumber ?? 10000;
-
-            // Sometimes they'll both have a value.
-            // For example AirsAfterSeasonNumber=1, AirsBeforeSeasonNumber=2, AirsBeforeEpisodeNumber=1
-            // The episode should be displayed at the end of season 1
-            if (y.AirsAfterSeasonNumber.HasValue && y.AirsBeforeSeasonNumber.HasValue && y.AirsBeforeSeasonNumber.Value > y.AirsAfterSeasonNumber.Value)
+            // Special comes after episode
+            if (y.AirsAfterSeasonNumber.HasValue)
             {
-                yEpisode = 10000;
+                return -1;
             }
 
-            return xEpisode.CompareTo(yEpisode);
+            var yEpisode = y.AirsBeforeEpisodeNumber;
+
+            // Special comes before the season
+            if (!yEpisode.HasValue)
+            {
+                return 1;
+            }
+
+            // Compare episode number
+            var xEpisode = x.IndexNumber;
+
+            if (!xEpisode.HasValue)
+            {
+                // Can't really compare if this happens
+                return 0;
+            }
+
+            // Special comes before episode
+            if (xEpisode.Value == yEpisode.Value)
+            {
+                return 1;
+            }
+
+            return xEpisode.Value.CompareTo(yEpisode.Value);
         }
 
         private int CompareSpecials(Episode x, Episode y)
