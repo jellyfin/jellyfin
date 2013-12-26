@@ -208,7 +208,7 @@ namespace MediaBrowser.Providers.Movies
                 return item.Genres.Count == 0;
             }
 
-            return item is Series;
+            return item is Series || item is Movie;
         }
 
         protected class RootObject
