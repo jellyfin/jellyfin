@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using System;
@@ -216,6 +217,11 @@ namespace MediaBrowser.Controller.Entities.TV
 
                 return false;
             });
+        }
+
+        protected override bool GetBlockUnratedValue(UserConfiguration config)
+        {
+            return config.BlockUnratedSeries;
         }
     }
 }

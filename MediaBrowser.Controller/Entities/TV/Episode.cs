@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using MediaBrowser.Model.Configuration;
 
 namespace MediaBrowser.Controller.Entities.TV
 {
@@ -291,6 +292,11 @@ namespace MediaBrowser.Controller.Entities.TV
         public override IEnumerable<string> GetDeletePaths()
         {
             return new[] { Path };
+        }
+
+        protected override bool GetBlockUnratedValue(UserConfiguration config)
+        {
+            return config.BlockUnratedSeries;
         }
     }
 }

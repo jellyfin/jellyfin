@@ -1,5 +1,6 @@
-﻿using System;
+﻿using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
+using System;
 using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Entities.Movies
@@ -29,5 +30,10 @@ namespace MediaBrowser.Controller.Entities.Movies
         /// </summary>
         /// <value>The tags.</value>
         public List<string> Tags { get; set; }
+
+        protected override bool GetBlockUnratedValue(UserConfiguration config)
+        {
+            return config.BlockUnratedMovies;
+        }
     }
 }

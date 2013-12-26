@@ -61,6 +61,13 @@
         $('#selectMaxParentalRating', page).val(ratingValue).selectmenu("refresh");
 
         $('#chkBlockNotRated', page).checked(user.Configuration.BlockNotRated || false).checkboxradio("refresh");
+        
+        $('#chkHideUnratedMovies', page).checked(user.Configuration.BlockUnratedMovies || false).checkboxradio("refresh");
+        $('#chkHideUnratedTrailers', page).checked(user.Configuration.BlockUnratedTrailers || false).checkboxradio("refresh");
+        $('#chkHideUnratedSeries', page).checked(user.Configuration.BlockUnratedSeries || false).checkboxradio("refresh");
+        $('#chkHideUnratedMusic', page).checked(user.Configuration.BlockUnratedMusic || false).checkboxradio("refresh");
+        $('#chkHideUnratedGames', page).checked(user.Configuration.BlockUnratedGames || false).checkboxradio("refresh");
+        $('#chkHideUnratedBooks', page).checked(user.Configuration.BlockUnratedBooks || false).checkboxradio("refresh");
 
         Dashboard.hideLoadingMsg();
     }
@@ -79,6 +86,13 @@
         user.Configuration.MaxParentalRating = $('#selectMaxParentalRating', page).val() || null;
 
         user.Configuration.BlockNotRated = $('#chkBlockNotRated', page).checked();
+
+        user.Configuration.BlockUnratedMovies = $('#chkHideUnratedMovies', page).checked();
+        user.Configuration.BlockUnratedTrailers = $('#chkHideUnratedTrailers', page).checked();
+        user.Configuration.BlockUnratedSeries = $('#chkHideUnratedSeries', page).checked();
+        user.Configuration.BlockUnratedMusic = $('#chkHideUnratedMusic', page).checked();
+        user.Configuration.BlockUnratedGames = $('#chkHideUnratedGames', page).checked();
+        user.Configuration.BlockUnratedBooks = $('#chkHideUnratedBooks', page).checked();
 
         ApiClient.updateUser(user).done(function () {
             onSaveComplete(page);
@@ -137,8 +151,6 @@
             loadUser(page, response1[0] || response1, response2[0], response3[0]);
 
         });
-
-        $("form input:first", page).focus();
     });
 
 })(jQuery, window, document);

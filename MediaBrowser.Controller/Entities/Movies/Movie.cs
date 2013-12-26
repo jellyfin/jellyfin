@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Entities;
+﻿using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -180,5 +181,9 @@ namespace MediaBrowser.Controller.Entities.Movies
             });
         }
 
+        protected override bool GetBlockUnratedValue(UserConfiguration config)
+        {
+            return config.BlockUnratedMovies;
+        }
     }
 }

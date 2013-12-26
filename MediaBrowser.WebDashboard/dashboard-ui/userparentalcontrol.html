@@ -16,17 +16,45 @@
                     <a href="#" data-role="button" onclick="Dashboard.navigate('usersettings.html', true);">Preferences</a>
                 </div>
                 <form class="userParentalControlForm">
-                    
+
+
                     <ul data-role="listview" class="ulForm">
                         <li>
                             <label for="selectMaxParentalRating">Maximum allowed parental rating:</label>
                             <select name="selectMaxParentalRating" id="selectMaxParentalRating"></select>
-                        </li>
-                        <li>
-                            <input type="checkbox" id="chkBlockNotRated" name="chkBlockNotRated" />
-                            <label for="chkBlockNotRated">Hide content with no rating information</label>
+                            <div class="fieldDescription">Content with a higher rating will be hidden from this user.</div>
                         </li>
                     </ul>
+
+                    <div>
+                        <fieldset data-role="controlgroup">
+                            <legend>Hide content with no rating information</legend>
+
+                            <input type="checkbox" data-mini="true" id="chkHideUnratedBooks" name="chkHideUnratedBooks" />
+                            <label for="chkHideUnratedBooks">Books</label>
+
+                            <input type="checkbox" data-mini="true" id="chkHideUnratedGames" name="chkHideUnratedGames" />
+                            <label for="chkHideUnratedGames">Games</label>
+
+                            <input type="checkbox" data-mini="true" id="chkHideUnratedMovies" name="chkHideUnratedMovies" />
+                            <label for="chkHideUnratedMovies">Movies</label>
+
+                            <input type="checkbox" data-mini="true" id="chkHideUnratedMusic" name="chkHideUnratedMusic" />
+                            <label for="chkHideUnratedMusic">Music</label>
+
+                            <input type="checkbox" data-mini="true" id="chkHideUnratedTrailers" name="chkHideUnratedTrailers" />
+                            <label for="chkHideUnratedTrailers">Trailers</label>
+
+                            <input type="checkbox" data-mini="true" id="chkHideUnratedSeries" name="chkHideUnratedSeries" />
+                            <label for="chkHideUnratedSeries">TV Shows</label>
+
+                            <input type="checkbox" data-mini="true" id="chkBlockNotRated" name="chkBlockNotRated" />
+                            <label for="chkBlockNotRated">Other Items</label>
+                        </fieldset>
+
+                    </div>
+                    <br />
+                    <br />
                     <ul data-role="listview" class="ulForm">
                         <li>
                             <button type="submit" data-theme="b" data-icon="check">

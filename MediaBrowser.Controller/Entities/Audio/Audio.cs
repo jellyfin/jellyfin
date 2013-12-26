@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediaBrowser.Model.Configuration;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -130,6 +131,11 @@ namespace MediaBrowser.Controller.Entities.Audio
             }
 
             return base.GetUserDataKey();
+        }
+
+        protected override bool GetBlockUnratedValue(UserConfiguration config)
+        {
+            return config.BlockUnratedMusic;
         }
     }
 }

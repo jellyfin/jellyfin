@@ -7,6 +7,7 @@ using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
@@ -985,7 +986,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (string.IsNullOrEmpty(rating))
             {
-                return !user.Configuration.BlockNotRated;
+                return !GetBlockUnratedValue(user.Configuration);
             }
 
             var value = localizationManager.GetRatingLevel(rating);
@@ -997,6 +998,16 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return value.Value <= maxAllowedRating.Value;
+        }
+
+        /// <summary>
+        /// Gets the block unrated value.
+        /// </summary>
+        /// <param name="config">The configuration.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        protected virtual bool GetBlockUnratedValue(UserConfiguration config)
+        {
+            return config.BlockNotRated;
         }
 
         /// <summary>

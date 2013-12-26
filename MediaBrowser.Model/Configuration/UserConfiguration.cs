@@ -60,6 +60,13 @@ namespace MediaBrowser.Model.Configuration
         public bool DisplayUnairedEpisodes { get; set; }
         public bool EnableRemoteControlOfOtherUsers { get; set; }
 
+        public bool BlockUnratedMovies { get; set; }
+        public bool BlockUnratedTrailers { get; set; }
+        public bool BlockUnratedSeries { get; set; }
+        public bool BlockUnratedMusic { get; set; }
+        public bool BlockUnratedGames { get; set; }
+        public bool BlockUnratedBooks { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="UserConfiguration" /> class.
         /// </summary>
