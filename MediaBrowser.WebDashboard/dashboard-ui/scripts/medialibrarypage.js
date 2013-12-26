@@ -16,6 +16,7 @@
     
     onPageHide: function() {
 
+        var page = this;
         $('#selectUser', page).off('click.reloadLibrary');
     },
 
