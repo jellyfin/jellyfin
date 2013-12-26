@@ -11,7 +11,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
     /// <summary>
     /// Class ReloadLoggerFileTask
     /// </summary>
-    public class ReloadLoggerFileTask : IScheduledTask
+    public class ReloadLoggerFileTask : IScheduledTask, IConfigurableScheduledTask
     {
         /// <summary>
         /// Gets or sets the log manager.
@@ -90,6 +90,11 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
         public string Category
         {
             get { return "Application"; }
+        }
+
+        public bool IsHidden
+        {
+            get { return true; }
         }
     }
 }

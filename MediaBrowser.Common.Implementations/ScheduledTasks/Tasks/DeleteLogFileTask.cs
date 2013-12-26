@@ -13,7 +13,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
     /// <summary>
     /// Deletes old log files
     /// </summary>
-    public class DeleteLogFileTask : IScheduledTask
+    public class DeleteLogFileTask : IScheduledTask, IConfigurableScheduledTask
     {
         /// <summary>
         /// Gets or sets the configuration manager.
@@ -114,6 +114,15 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
             {
                 return "Maintenance";
             }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is hidden.
+        /// </summary>
+        /// <value><c>true</c> if this instance is hidden; otherwise, <c>false</c>.</value>
+        public bool IsHidden
+        {
+            get { return true; }
         }
     }
 }
