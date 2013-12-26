@@ -114,7 +114,13 @@ namespace MediaBrowser.Server.Implementations.Session
 
             if (session != null)
             {
-                var controller = new WebSocketController(session, _appHost);
+                var controller = session.SessionController as WebSocketController;
+
+                if (controller == null)
+                {
+                    controller = new WebSocketController(session, _appHost);
+                }
+
                 controller.Sockets.Add(message.Connection);
 
                 session.SessionController = controller;
