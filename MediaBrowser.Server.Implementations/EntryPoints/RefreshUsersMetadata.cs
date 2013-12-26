@@ -28,7 +28,18 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         /// </summary>
         public async void Run()
         {
+            #if __MonoCS__
+            try
+            {
+                await _userManager.RefreshUsersMetadata(CancellationToken.None).ConfigureAwait(false);
+            }
+            catch
+            {
+                System.Console.WriteLine("RefreshUsersMetadata task error: No users? First time running?");
+            }
+            #else
             await _userManager.RefreshUsersMetadata(CancellationToken.None).ConfigureAwait(false);
+            #endif
         }
 
         /// <summary>

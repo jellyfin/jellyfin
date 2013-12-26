@@ -50,6 +50,7 @@
     <Reference Include="ServiceStack.Interfaces">
       <HintPath>..\ThirdParty\ServiceStack\ServiceStack.Interfaces.dll</HintPath>
     </Reference>
+    <Reference Include="Mono.Posix" Condition=" '$(ConfigurationName)' == 'Release Mono' "/>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\SharedVersion.cs">
@@ -127,8 +128,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="sqlite3.dll">
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\ThirdParty\SQLite3\x86\3.8.2\sqlite3.dll">
+      <Link>sqlite3.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    </Content>
   </ItemGroup>
 </Project>
