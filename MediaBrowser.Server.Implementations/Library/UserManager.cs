@@ -22,39 +22,10 @@ namespace MediaBrowser.Server.Implementations.Library
     public class UserManager : IUserManager
     {
         /// <summary>
-        /// The _users
-        /// </summary>
-        private IEnumerable<User> _users;
-        /// <summary>
-        /// The _user lock
-        /// </summary>
-        private object _usersSyncLock = new object();
-        /// <summary>
-        /// The _users initialized
-        /// </summary>
-        private bool _usersInitialized;
-        /// <summary>
         /// Gets the users.
         /// </summary>
         /// <value>The users.</value>
-        public IEnumerable<User> Users
-        {
-            get
-            {
-                // Call ToList to exhaust the stream because we'll be iterating over this multiple times
-                LazyInitializer.EnsureInitialized(ref _users, ref _usersInitialized, ref _usersSyncLock, LoadUsers);
-                return _users;
-            }
-            internal set
-            {
-                _users = value;
-
-                if (value == null)
-                {
-                    _usersInitialized = false;
-                }
-            }
-        }
+        public IEnumerable<User> Users { get; private set; }
 
         /// <summary>
         /// The _logger
@@ -78,11 +49,13 @@ namespace MediaBrowser.Server.Implementations.Library
         /// </summary>
         /// <param name="logger">The logger.</param>
         /// <param name="configurationManager">The configuration manager.</param>
+        /// <param name="userRepository">The user repository.</param>
         public UserManager(ILogger logger, IServerConfigurationManager configurationManager, IUserRepository userRepository)
         {
             _logger = logger;
             UserRepository = userRepository;
             ConfigurationManager = configurationManager;
+            Users = new List<User>();
         }
 
         #region UserUpdated Event
@@ -130,6 +103,11 @@ namespace MediaBrowser.Server.Implementations.Library
             }
 
             return Users.FirstOrDefault(u => u.Id == id);
+        }
+
+        public async Task Initialize()
+        {
+            Users = await LoadUsers().ConfigureAwait(false);
         }
 
         /// <summary>
@@ -185,7 +163,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// Loads the users from the repository
         /// </summary>
         /// <returns>IEnumerable{User}.</returns>
-        private IEnumerable<User> LoadUsers()
+        private async Task<IEnumerable<User>> LoadUsers()
         {
             var users = UserRepository.RetrieveAllUsers().ToList();
 
@@ -198,10 +176,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 user.DateLastSaved = DateTime.UtcNow;
 
-                var task = UserRepository.SaveUser(user, CancellationToken.None);
-
-                // Hate having to block threads
-                Task.WaitAll(task);
+                await UserRepository.SaveUser(user, CancellationToken.None).ConfigureAwait(false);
 
                 users.Add(user);
             }
@@ -284,7 +259,7 @@ namespace MediaBrowser.Server.Implementations.Library
         }
 
         public event EventHandler<GenericEventArgs<User>> UserCreated;
-        
+
         /// <summary>
         /// Creates the user.
         /// </summary>
@@ -311,11 +286,11 @@ namespace MediaBrowser.Server.Implementations.Library
             Users = list;
 
             user.DateLastSaved = DateTime.UtcNow;
-            
+
             await UserRepository.SaveUser(user, CancellationToken.None).ConfigureAwait(false);
 
             EventHelper.QueueEventIfNotNull(UserCreated, this, new GenericEventArgs<User> { Argument = user }, _logger);
-            
+
             return user;
         }
 
