@@ -292,6 +292,8 @@ namespace MediaBrowser.ServerApplication
             await Task.WhenAll(itemsTask, displayPreferencesTask, userdataTask).ConfigureAwait(false);
             progress.Report(100);
 
+            await ((UserManager) UserManager).Initialize().ConfigureAwait(false);
+
             SetKernelProperties();
         }
 
