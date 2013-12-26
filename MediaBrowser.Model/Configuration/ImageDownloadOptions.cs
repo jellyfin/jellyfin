@@ -1,5 +1,5 @@
 ﻿
-namespace MediaBrowser.Model.Entities
+namespace MediaBrowser.Model.Configuration
 {
     /// <summary>
     /// Class ImageDownloadOptions
@@ -60,6 +60,22 @@ namespace MediaBrowser.Model.Entities
             Disc = true;
             Thumb = true;
             Banner = true;
+        }
+    }
+
+    /// <summary>
+    /// Class MetadataOptions.
+    /// </summary>
+    public class MetadataOptions
+    {
+        public int MaxBackdrops { get; set; }
+
+        public int MinBackdropWidth { get; set; }
+
+        public MetadataOptions()
+        {
+            MaxBackdrops = 3;
+            MinBackdropWidth = 1280;
         }
     }
 }

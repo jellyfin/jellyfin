@@ -238,7 +238,7 @@ namespace MediaBrowser.Providers.TV
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var backdropLimit = ConfigurationManager.Configuration.MaxBackdrops;
+                var backdropLimit = ConfigurationManager.Configuration.TvOptions.MaxBackdrops;
                 if (ConfigurationManager.Configuration.DownloadSeriesImages.Backdrops &&
                     item.BackdropImagePaths.Count < backdropLimit)
                 {

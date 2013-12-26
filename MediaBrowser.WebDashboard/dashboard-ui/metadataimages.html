@@ -11,9 +11,8 @@
             <div class="content-primary">
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
                     <a href="metadata.html" data-role="button">Basics</a>
-                    <a href="metadataimages.html" data-role="button" class="ui-btn-active">Image Downloading</a>
-                    <a href="metadataimageextraction.html" data-role="button">Image Extraction</a>
-                    <a href="advancedmetadata.html" data-role="button">Advanced</a>
+                    <a href="#" data-role="button" class="ui-btn-active">More Options</a>
+                    <a href="metadataadvanced.html" data-role="button">Advanced</a>
                 </div>
 
                 <form id="metadataImagesConfigurationForm">
@@ -26,111 +25,154 @@
                             </select>
                             <div class="fieldDescription">Media Browser recognizes images from most major media applications. Choosing your downloading convention is useful if you also use other products.</div>
                         </li>
-                        <li>
-                            <label for="txtNumbackdrops">Max number of backdrops per item: </label>
-                            <input type="number" id="txtNumbackdrops" name="txtNumbackdrops" pattern="[0-9]*" required="required" min="1" data-mini="true" />
-                        </li>
-                        <li>
-                            <label for="txtMinMovieBackdropDownloadWidth">Minimum movie backdrop download width: </label>
-                            <input type="number" id="txtMinMovieBackdropDownloadWidth" name="txtMinMovieBackdropDownloadWidth" pattern="[0-9]*" required="required" min="1" data-mini="true" />
-                        </li>
-                        <li>
-                            <label for="txtMinSeriesBackdropDownloadWidth">Minimum tv series backdrop download width: </label>
-                            <input type="number" id="txtMinSeriesBackdropDownloadWidth" name="txtMinSeriesBackdropDownloadWidth" pattern="[0-9]*" required="required" min="1" data-mini="true" />
-                        </li>
                     </ul>
-                    <p>Enable additional image downloading:</p>
+                    <p>Customize options per media type</p>
                     <div data-role="collapsible">
                         <h3>Movies</h3>
-                        <div data-role="controlgroup">
-                            <input type="checkbox" data-mini="true" id="chkDownloadMovieArt" name="chkDownloadMovieArt" />
-                            <label for="chkDownloadMovieArt">Movie Art</label>
+                        <div>
 
-                            <input type="checkbox" data-mini="true" id="chkDownloadMovieBackdrops" name="chkDownloadMovieBackdrops" />
-                            <label for="chkDownloadMovieBackdrops">Movie Backdrops</label>
+                            <div style="padding: 1em 0;">
+                                <label for="txtMaxMovieBackdrops">Max number of backdrops per item: </label>
+                                <input type="number" id="txtMaxMovieBackdrops" name="txtMaxMovieBackdrops" pattern="[0-9]*" required="required" min="1" data-mini="true" />
+                            </div>
 
-                            <input type="checkbox" data-mini="true" id="chkDownloadMovieBanner" name="chkDownloadMovieBanner" />
-                            <label for="chkDownloadMovieBanner">Movie Banner</label>
+                            <div style="padding: 1em 0;">
+                                <label for="txtMinMovieBackdropDownloadWidth">Minimum backdrop download width: </label>
+                                <input type="number" id="txtMinMovieBackdropDownloadWidth" name="txtMinMovieBackdropDownloadWidth" pattern="[0-9]*" required="required" min="1" data-mini="true" />
+                            </div>
 
-                            <input type="checkbox" data-mini="true" id="chkDownloadMovieDisc" name="chkDownloadMovieDisc" />
-                            <label for="chkDownloadMovieDisc">Movie Disc</label>
+                            <h3>Download Movie Images</h3>
+                            <div data-role="controlgroup">
+                                <input type="checkbox" data-mini="true" id="chkDownloadMovieArt" name="chkDownloadMovieArt" />
+                                <label for="chkDownloadMovieArt">Movie Art</label>
 
-                            <input type="checkbox" data-mini="true" id="chkDownloadMovieLogo" name="chkDownloadMovieLogo" />
-                            <label for="chkDownloadMovieLogo">Movie Logo</label>
+                                <input type="checkbox" data-mini="true" id="chkDownloadMovieBackdrops" name="chkDownloadMovieBackdrops" />
+                                <label for="chkDownloadMovieBackdrops">Movie Backdrops</label>
 
-                            <input type="checkbox" data-mini="true" id="chkDownloadMovieThumb" name="chkDownloadMovieThumb" />
-                            <label for="chkDownloadMovieThumb">Movie Thumb</label>
+                                <input type="checkbox" data-mini="true" id="chkDownloadMovieBanner" name="chkDownloadMovieBanner" />
+                                <label for="chkDownloadMovieBanner">Movie Banner</label>
+
+                                <input type="checkbox" data-mini="true" id="chkDownloadMovieDisc" name="chkDownloadMovieDisc" />
+                                <label for="chkDownloadMovieDisc">Movie Disc</label>
+
+                                <input type="checkbox" data-mini="true" id="chkDownloadMovieLogo" name="chkDownloadMovieLogo" />
+                                <label for="chkDownloadMovieLogo">Movie Logo</label>
+
+                                <input type="checkbox" data-mini="true" id="chkDownloadMovieThumb" name="chkDownloadMovieThumb" />
+                                <label for="chkDownloadMovieThumb">Movie Thumb</label>
 
 
+                            </div>
                         </div>
                     </div>
-
                     <div data-role="collapsible">
-                        <h3>TV Series</h3>
-                        <div data-role="controlgroup">
-                            <input type="checkbox" data-mini="true" id="chKDownloadTVArt" name="chKDownloadTVArt" />
-                            <label for="chKDownloadTVArt">TV Series Art</label>
+                        <h3>TV</h3>
+                        <div>
 
-                            <input type="checkbox" data-mini="true" id="chkDownloadTVBackdrops" name="chkDownloadTVBackdrops" />
-                            <label for="chkDownloadTVBackdrops">TV Series Backdrops</label>
+                            <div style="padding: 1em 0;">
+                                <label for="txtMaxTvBackdrops">Max number of backdrops per item: </label>
+                                <input type="number" id="txtMaxTvBackdrops" name="txtMaxTvBackdrops" pattern="[0-9]*" required="required" min="1" data-mini="true" />
+                            </div>
 
-                            <input type="checkbox" data-mini="true" id="chkDownloadTVBanner" name="chkDownloadTVBanner" />
-                            <label for="chkDownloadTVBanner">TV Series Banner</label>
+                            <div style="padding: 1em 0;">
+                                <label for="txtMinTvBackdropDownloadWidth">Minimum backdrop download width: </label>
+                                <input type="number" id="txtMinTvBackdropDownloadWidth" name="txtMinTvBackdropDownloadWidth" pattern="[0-9]*" required="required" min="1" data-mini="true" />
+                            </div>
 
-                            <input type="checkbox" data-mini="true" id="chkDownloadTVLogo" name="chkDownloadTVLogo" />
-                            <label for="chkDownloadTVLogo">TV Series Logo</label>
+                            <h3>Download TV Images</h3>
 
-                            <input type="checkbox" data-mini="true" id="chkDownloadTVThumb" name="chkDownloadTVThumb" />
-                            <label for="chkDownloadTVThumb">TV Series Thumb</label>
+                            <div data-role="controlgroup">
+                                <input type="checkbox" data-mini="true" id="chKDownloadTVArt" name="chKDownloadTVArt" />
+                                <label for="chKDownloadTVArt">Series Art</label>
+
+                                <input type="checkbox" data-mini="true" id="chkDownloadTVBackdrops" name="chkDownloadTVBackdrops" />
+                                <label for="chkDownloadTVBackdrops">Series Backdrops</label>
+
+                                <input type="checkbox" data-mini="true" id="chkDownloadTVBanner" name="chkDownloadTVBanner" />
+                                <label for="chkDownloadTVBanner">Series Banner</label>
+
+                                <input type="checkbox" data-mini="true" id="chkDownloadTVLogo" name="chkDownloadTVLogo" />
+                                <label for="chkDownloadTVLogo">Series Logo</label>
+
+                                <input type="checkbox" data-mini="true" id="chkDownloadTVThumb" name="chkDownloadTVThumb" />
+                                <label for="chkDownloadTVThumb">Series Thumb</label>
+                                <input type="checkbox" data-mini="true" id="chkDownloadSeasonBackdrops" name="chkDownloadSeasonBackdrops" />
+                                <label for="chkDownloadSeasonBackdrops">Season Backdrops</label>
+
+                                <input type="checkbox" data-mini="true" id="chkDownloadSeasonBanner" name="chkDownloadSeasonBanner" />
+                                <label for="chkDownloadSeasonBanner">Season Banner</label>
+
+                                <input type="checkbox" data-mini="true" id="chkDownloadSeasonThumb" name="chkDownloadSeasonThumb" />
+                                <label for="chkDownloadSeasonThumb">Season Thumb</label>
+                            </div>
                         </div>
                     </div>
-
-
                     <div data-role="collapsible">
-                        <h3>TV Seasons</h3>
-                        <div data-role="controlgroup">
-                            <input type="checkbox" data-mini="true" id="chkDownloadSeasonBackdrops" name="chkDownloadSeasonBackdrops" />
-                            <label for="chkDownloadSeasonBackdrops">TV Season Backdrops</label>
+                        <h3>Music</h3>
+                        <div>
 
-                            <input type="checkbox" data-mini="true" id="chkDownloadSeasonBanner" name="chkDownloadSeasonBanner" />
-                            <label for="chkDownloadSeasonBanner">TV Season Banner</label>
+                            <div style="padding: 1em 0;">
+                                <label for="txtMaxMusicBackdrops">Max number of backdrops per item: </label>
+                                <input type="number" id="txtMaxMusicBackdrops" name="txtMaxMusicBackdrops" pattern="[0-9]*" required="required" min="1" data-mini="true" />
+                            </div>
 
-                            <input type="checkbox" data-mini="true" id="chkDownloadSeasonThumb" name="chkDownloadSeasonThumb" />
-                            <label for="chkDownloadSeasonThumb">TV Season Thumb</label>
+                            <div style="padding: 1em 0;">
+                                <label for="txtMinMusicBackdropDownloadWidth">Minimum backdrop download width: </label>
+                                <input type="number" id="txtMinMusicBackdropDownloadWidth" name="txtMinMusicBackdropDownloadWidth" pattern="[0-9]*" required="required" min="1" data-mini="true" />
+                            </div>
+
+                            <h3>Download Music Images</h3>
+                            <div data-role="controlgroup">
+                                <input type="checkbox" data-mini="true" id="chkDownloadArtistThumb" name="chkDownloadArtistThumb" />
+                                <label for="chkDownloadArtistThumb">Artist Image</label>
+
+                                <input type="checkbox" data-mini="true" id="chkDownloadArtistBackdrops" name="chkDownloadArtistBackdrops" />
+                                <label for="chkDownloadArtistBackdrops">Artist Backdrops</label>
+
+                                <input type="checkbox" data-mini="true" id="chkDownloadArtistLogo" name="chkDownloadArtistLogo" />
+                                <label for="chkDownloadArtistLogo">Artist Logo</label>
+
+                                <input type="checkbox" data-mini="true" id="chkDownloadArtistBanner" name="chkDownloadArtistBanner" />
+                                <label for="chkDownloadArtistBanner">Artist Banner</label>
+
+                                <input type="checkbox" data-mini="true" id="chkDownloadAlbumPrimary" name="chkDownloadAlbumPrimary" />
+                                <label for="chkDownloadAlbumPrimary">Album Cover</label>
+
+                                <input type="checkbox" data-mini="true" id="chkDownloadAlbumBackdrops" name="chkDownloadAlbumBackdrops" />
+                                <label for="chkDownloadAlbumBackdrops">Album Backdrops</label>
+
+                                <input type="checkbox" data-mini="true" id="chkMusicAlbumDisc" name="chkMusicAlbumDisc" />
+                                <label for="chkMusicAlbumDisc">Album Disc</label>
+                            </div>
                         </div>
-
                     </div>
-
                     <div data-role="collapsible">
-                        <h3>Music Artists</h3>
-                        <div data-role="controlgroup">
-                            <input type="checkbox" data-mini="true" id="chkDownloadArtistThumb" name="chkDownloadArtistThumb" />
-                            <label for="chkDownloadArtistThumb">Music Artist Thumb (primary image)</label>
+                        <h3>Games</h3>
+                        <div>
+                            <div style="padding: 1em 0;">
+                                <label for="txtMaxGameBackdrops">Max number of backdrops per item: </label>
+                                <input type="number" id="txtMaxGameBackdrops" name="txtMaxGameBackdrops" pattern="[0-9]*" required="required" min="1" data-mini="true" />
+                            </div>
 
-                            <input type="checkbox" data-mini="true" id="chkDownloadArtistBackdrops" name="chkDownloadArtistBackdrops" />
-                            <label for="chkDownloadArtistBackdrops">Music Artist Backdrops</label>
-
-                            <input type="checkbox" data-mini="true" id="chkDownloadArtistLogo" name="chkDownloadArtistLogo" />
-                            <label for="chkDownloadArtistLogo">Music Artist Logo</label>
-
-                            <input type="checkbox" data-mini="true" id="chkDownloadArtistBanner" name="chkDownloadArtistBanner" />
-                            <label for="chkDownloadArtistBanner">Music Artist Banner</label>
+                            <div style="padding: 1em 0;">
+                                <label for="txtMinGameBackdropDownloadWidth">Minimum backdrop download width: </label>
+                                <input type="number" id="txtMinGameBackdropDownloadWidth" name="txtMinGameBackdropDownloadWidth" pattern="[0-9]*" required="required" min="1" data-mini="true" />
+                            </div>
                         </div>
-
                     </div>
                     <div data-role="collapsible">
-                        <h3>Music Albums</h3>
-                        <div data-role="controlgroup">
-                            <input type="checkbox" data-mini="true" id="chkDownloadAlbumPrimary" name="chkDownloadAlbumPrimary" />
-                            <label for="chkDownloadAlbumPrimary">Music Album Cover</label>
+                        <h3>Books</h3>
+                        <div>
+                            <div style="padding: 1em 0;">
+                                <label for="txtMaxBookBackdrops">Max number of backdrops per item: </label>
+                                <input type="number" id="txtMaxBookBackdrops" name="txtMaxBookBackdrops" pattern="[0-9]*" required="required" min="1" data-mini="true" />
+                            </div>
 
-                            <input type="checkbox" data-mini="true" id="chkDownloadAlbumBackdrops" name="chkDownloadAlbumBackdrops" />
-                            <label for="chkDownloadAlbumBackdrops">Music Album Backdrops</label>
-
-                            <input type="checkbox" data-mini="true" id="chkMusicAlbumDisc" name="chkMusicAlbumDisc" />
-                            <label for="chkMusicAlbumDisc">Music Album Disc</label>
+                            <div style="padding: 1em 0;">
+                                <label for="txtMinBookBackdropDownloadWidth">Minimum backdrop download width: </label>
+                                <input type="number" id="txtMinBookBackdropDownloadWidth" name="txtMinBookBackdropDownloadWidth" pattern="[0-9]*" required="required" min="1" data-mini="true" />
+                            </div>
                         </div>
-
                     </div>
                     <br />
                     <ul data-role="listview" class="ulForm">

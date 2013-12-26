@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Weather;
+﻿using MediaBrowser.Model.Weather;
 using System;
 
 namespace MediaBrowser.Model.Configuration
@@ -86,12 +85,6 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value>The metadata country code.</value>
         public string MetadataCountryCode { get; set; }
-
-        /// <summary>
-        /// Gets or sets the max backdrops.
-        /// </summary>
-        /// <value>The max backdrops.</value>
-        public int MaxBackdrops { get; set; }
 
         /// <summary>
         /// Options for specific art to download for movies.
@@ -205,18 +198,6 @@ namespace MediaBrowser.Model.Configuration
         public ImageSavingConvention ImageSavingConvention { get; set; }
 
         /// <summary>
-        /// Gets or sets the width of the min movie backdrop.
-        /// </summary>
-        /// <value>The width of the min movie backdrop.</value>
-        public int MinMovieBackdropDownloadWidth { get; set; }
-
-        /// <summary>
-        /// Gets or sets the width of the min series backdrop.
-        /// </summary>
-        /// <value>The width of the min series backdrop.</value>
-        public int MinSeriesBackdropDownloadWidth { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether [enable people prefix sub folders].
         /// </summary>
         /// <value><c>true</c> if [enable people prefix sub folders]; otherwise, <c>false</c>.</value>
@@ -231,6 +212,12 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableMovieChapterImageExtraction { get; set; }
         public bool EnableEpisodeChapterImageExtraction { get; set; }
         public bool EnableOtherVideoChapterImageExtraction { get; set; }
+
+        public MetadataOptions MovieOptions { get; set; }
+        public MetadataOptions TvOptions { get; set; }
+        public MetadataOptions MusicOptions { get; set; }
+        public MetadataOptions GameOptions { get; set; }
+        public MetadataOptions BookOptions { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
@@ -272,7 +259,6 @@ namespace MediaBrowser.Model.Configuration
             };
             DownloadMusicArtistImages = new ImageDownloadOptions();
             DownloadMusicAlbumImages = new ImageDownloadOptions();
-            MaxBackdrops = 3;
 
             SortReplaceCharacters = new[] { ".", "+", "%" };
             SortRemoveCharacters = new[] { ",", "&", "-", "{", "}", "'" };
@@ -280,8 +266,20 @@ namespace MediaBrowser.Model.Configuration
 
             SeasonZeroDisplayName = "Specials";
 
-            MinMovieBackdropDownloadWidth = 1280;
-            MinSeriesBackdropDownloadWidth = 1280;
+            MovieOptions = new MetadataOptions();
+            TvOptions = new MetadataOptions();
+
+            MusicOptions = new MetadataOptions()
+            {
+                MaxBackdrops = 1
+            };
+
+            GameOptions = new MetadataOptions();
+
+            BookOptions = new MetadataOptions
+            {
+                 MaxBackdrops = 1
+            };
         }
     }
 

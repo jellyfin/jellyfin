@@ -300,7 +300,7 @@ namespace MediaBrowser.Providers.Movies
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var backdropLimit = ConfigurationManager.Configuration.MaxBackdrops;
+            var backdropLimit = ConfigurationManager.Configuration.MovieOptions.MaxBackdrops;
             if (ConfigurationManager.Configuration.DownloadMovieImages.Backdrops &&
                 item.BackdropImagePaths.Count < backdropLimit)
             {

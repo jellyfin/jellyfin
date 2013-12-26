@@ -15,6 +15,12 @@
 
     load: function (page, config) {
 
+        $('#chkVIdeoImages', page).checked(config.EnableVideoImageExtraction).checkboxradio("refresh");
+
+        $('#chkMovies', page).checked(config.EnableMovieChapterImageExtraction).checkboxradio("refresh");
+        $('#chkEpisodes', page).checked(config.EnableEpisodeChapterImageExtraction).checkboxradio("refresh");
+        $('#chkOtherVideos', page).checked(config.EnableOtherVideoChapterImageExtraction).checkboxradio("refresh");
+
         $('#chkEnableTmdbPersonUpdates', page).checked(config.EnableTmdbUpdates).checkboxradio("refresh");
         $('#chkEnableTvdbUpdates', page).checked(config.EnableTvDbUpdates).checkboxradio("refresh");
 
@@ -47,6 +53,12 @@
         Dashboard.showLoadingMsg();
 
         ApiClient.getServerConfiguration().done(function (config) {
+
+            config.EnableVideoImageExtraction = $('#chkVIdeoImages', form).checked();
+
+            config.EnableMovieChapterImageExtraction = $('#chkMovies', form).checked();
+            config.EnableEpisodeChapterImageExtraction = $('#chkEpisodes', form).checked();
+            config.EnableOtherVideoChapterImageExtraction = $('#chkOtherVideos', form).checked();
 
             config.EnableTvDbUpdates = $('#chkEnableTvdbUpdates', form).checked();
             config.EnableTmdbUpdates = $('#chkEnableTmdbPersonUpdates', form).checked();

@@ -13,9 +13,25 @@
 
     load: function (page, config) {
 
-        $('#txtNumbackdrops', page).val(config.MaxBackdrops);
-        $('#txtMinMovieBackdropDownloadWidth', page).val(config.MinMovieBackdropDownloadWidth);
-        $('#txtMinSeriesBackdropDownloadWidth', page).val(config.MinSeriesBackdropDownloadWidth);
+        // Movie options
+        $('#txtMaxMovieBackdrops', page).val(config.MovieOptions.MaxBackdrops);
+        $('#txtMinMovieBackdropDownloadWidth', page).val(config.MovieOptions.MinBackdropWidth);
+        
+        // Tv options
+        $('#txtMaxTvBackdrops', page).val(config.TvOptions.MaxBackdrops);
+        $('#txtMinTvBackdropDownloadWidth', page).val(config.TvOptions.MinBackdropWidth);
+
+        // Music options
+        $('#txtMaxMusicBackdrops', page).val(config.MusicOptions.MaxBackdrops);
+        $('#txtMinMusicBackdropDownloadWidth', page).val(config.MusicOptions.MinBackdropWidth);
+
+        // Game options
+        $('#txtMaxGameBackdrops', page).val(config.GameOptions.MaxBackdrops);
+        $('#txtMinGameBackdropDownloadWidth', page).val(config.GameOptions.MinBackdropWidth);
+
+        // Book options
+        $('#txtMaxBookBackdrops', page).val(config.BookOptions.MaxBackdrops);
+        $('#txtMinBookBackdropDownloadWidth', page).val(config.BookOptions.MinBackdropWidth);
 
         $('#chkDownloadMovieArt', page).checked(config.DownloadMovieImages.Art).checkboxradio("refresh");
         $('#chkDownloadMovieBackdrops', page).checked(config.DownloadMovieImages.Backdrops).checkboxradio("refresh");
@@ -56,36 +72,48 @@
         ApiClient.getServerConfiguration().done(function (config) {
 
             config.ImageSavingConvention = $('#selectImageSavingConvention', form).val();
-            
-            config.MaxBackdrops = $('#txtNumbackdrops', form).val();
-            config.MinMovieBackdropDownloadWidth = $('#txtMinMovieBackdropDownloadWidth', form).val();
-            config.MinSeriesBackdropDownloadWidth = $('#txtMinSeriesBackdropDownloadWidth', form).val();
 
+            // Movie options
+            config.MovieOptions.MaxBackdrops = $('#txtMaxMovieBackdrops', form).val();
+            config.MovieOptions.MinBackdropWidth = $('#txtMinMovieBackdropDownloadWidth', form).val();
             config.DownloadMovieImages.Art = $('#chkDownloadMovieArt', form).checked();
             config.DownloadMovieImages.Backdrops = $('#chkDownloadMovieBackdrops', form).checked();
             config.DownloadMovieImages.Banner = $('#chkDownloadMovieBanner', form).checked();
             config.DownloadMovieImages.Disc = $('#chkDownloadMovieDisc', form).checked();
             config.DownloadMovieImages.Logo = $('#chkDownloadMovieLogo', form).checked();
             config.DownloadMovieImages.Thumb = $('#chkDownloadMovieThumb', form).checked();
-            
+
+            // Tv options
+            config.TvOptions.MaxBackdrops = $('#txtMaxTvBackdrops', form).val();
+            config.TvOptions.MinBackdropWidth = $('#txtMinTvBackdropDownloadWidth', form).val();
             config.DownloadSeriesImages.Art = $('#chKDownloadTVArt', form).checked();
             config.DownloadSeriesImages.Backdrops = $('#chkDownloadMovieBackdrops', form).checked();
             config.DownloadSeriesImages.Banner = $('#chkDownloadTVBanner', form).checked();
             config.DownloadSeriesImages.Logo = $('#chkDownloadTVLogo', form).checked();
             config.DownloadSeriesImages.Thumb = $('#chkDownloadTVThumb', form).checked();
-            
             config.DownloadSeasonImages.Banner = $('#chkDownloadSeasonBanner', form).checked();
             config.DownloadSeasonImages.Thumb = $('#chkDownloadSeasonThumb', form).checked();
             config.DownloadSeasonImages.Backdrops = $('#chkDownloadSeasonBackdrops', form).checked();
-            
+
+            // Music options
+            config.MusicOptions.MaxBackdrops = $('#txtMaxMusicBackdrops', form).val();
+            config.MusicOptions.MinBackdropWidth = $('#txtMinMusicBackdropDownloadWidth', form).val();
             config.DownloadMusicArtistImages.Backdrops = $('#chkDownloadArtistBackdrops', form).checked();
             config.DownloadMusicArtistImages.Logo = $('#chkDownloadArtistLogo', form).checked();
             config.DownloadMusicArtistImages.Primary = $('#chkDownloadArtistThumb', form).checked();
             config.DownloadMusicArtistImages.Banner = $('#chkDownloadArtistBanner', form).checked();
-
             config.DownloadMusicAlbumImages.Primary = $('#chkDownloadAlbumPrimary', form).checked();
             config.DownloadMusicAlbumImages.Backdrops = $('#chkDownloadAlbumBackdrops', form).checked();
             config.DownloadMusicAlbumImages.Disc = $('#chkMusicAlbumDisc', form).checked();
+
+            // Game options
+            config.GameOptions.MaxBackdrops = $('#txtMaxGameBackdrops', form).val();
+            config.GameOptions.MinBackdropWidth = $('#txtMinGameBackdropDownloadWidth', form).val();
+
+            // Book options
+            config.BookOptions.MaxBackdrops = $('#txtMaxBookBackdrops', form).val();
+            config.BookOptions.MinBackdropWidth = $('#txtMinBookBackdropDownloadWidth', form).val();
+
 
             ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
         });
