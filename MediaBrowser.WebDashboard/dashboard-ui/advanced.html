@@ -37,6 +37,10 @@
                             <label for="txtWebSocketPortNumber">Web socket port number: </label>
                             <input type="number" id="txtWebSocketPortNumber" name="txtWebSocketPortNumber" pattern="[0-9]*" required="required" min="1" data-mini="true" />
                         </li>
+                        <li>
+                            <input type="checkbox" id="chkDebugLog" name="chkDebugLog" data-mini="true" />
+                            <label for="chkDebugLog">Enable debug logging </label>
+                        </li>
                     </ul>
                     <h2>Cache Path</h2>
                     <ul data-role="listview" class="ulForm">
@@ -57,20 +61,6 @@
                                 Supply a custom cache path. Media Browser Server must have write access to this folder. The location of this folder will directly impact server performance and should ideally be placed on a solid state drive.
                             </div>
                         </li>
-                    </ul>
-                    <h2>Miscellaneous</h2>
-                    <ul data-role="listview" class="ulForm">
-                        <li>
-                            <input type="checkbox" id="chkEnableDeveloperTools" name="chkEnableDeveloperTools" data-mini="true" />
-                            <label for="chkEnableDeveloperTools">Enable developer tools</label>
-                            <div class="fieldDescription">
-                                When enabled, developer tools will be available from the system tray.
-                            </div>
-                        </li>
-                        <li>
-                            <input type="checkbox" id="chkDebugLog" name="chkDebugLog" data-mini="true" />
-                            <label for="chkDebugLog">Enable debug logging </label>
-                        </li>
                         <li>
                             <button type="submit" data-theme="b" data-icon="check" data-mini="true">
                                 Save
@@ -79,6 +69,7 @@
                                 Cancel
                             </button>
                         </li>
+
                     </ul>
                 </form>
             </div>

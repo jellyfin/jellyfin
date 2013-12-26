@@ -106,7 +106,7 @@
 
             html += '<div data-role="content" class="ui-content">';
             html += '<form>';
-            html += '<p class="directoryPickerHeadline">' + options.instruction + ' Network paths can be entered manually in the event the Network button fails to locate your devices. For example, <b>\\\\my-server</b> or <b>\\\\192.168.1.101</b>.</p>';
+            html += '<p class="directoryPickerHeadline">' + options.instruction + '<br/><br/>Network paths can be entered manually in the event the Network button fails to locate your devices. For example, <b>\\\\my-server</b> or <b>\\\\192.168.1.101</b>.</p>';
 
             html += '<div style="margin:0;">';
             html += '<label for="txtDirectoryPickerPath" class="lblDirectoryPickerPath">Current Path:</label>';

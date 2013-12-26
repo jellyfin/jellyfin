@@ -133,14 +133,10 @@ namespace MediaBrowser.ServerApplication
         {
             Dispatcher.InvokeAsync(() =>
             {
-                var developerToolsVisibility = _configurationManager.Configuration.EnableDeveloperTools
-                                                   ? Visibility.Visible
-                                                   : Visibility.Collapsed;
-
-                separatorDeveloperTools.Visibility = developerToolsVisibility;
-                cmdReloadServer.Visibility = developerToolsVisibility;
-                cmOpenExplorer.Visibility = developerToolsVisibility;
-                cmShowLogWindow.Visibility = developerToolsVisibility;
+                separatorDeveloperTools.Visibility = Visibility.Visible;
+                cmdReloadServer.Visibility = Visibility.Visible;
+                cmOpenExplorer.Visibility = Visibility.Visible;
+                cmShowLogWindow.Visibility = Visibility.Visible;
             });
         }
 

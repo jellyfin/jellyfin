@@ -23,7 +23,6 @@
         $('#txtPortNumber', page).val(config.HttpServerPortNumber);
         $('#chkDebugLog', page).checked(config.EnableDebugLevelLogging).checkboxradio("refresh");
 
-        $('#chkEnableDeveloperTools', page).checked(config.EnableDeveloperTools).checkboxradio("refresh");
         $('#chkRunAtStartup', page).checked(config.RunAtStartup).checkboxradio("refresh");
 
 
@@ -136,7 +135,6 @@
                 config.HttpServerPortNumber = $('#txtPortNumber', form).val();
                 config.EnableDebugLevelLogging = $('#chkDebugLog', form).checked();
 
-                config.EnableDeveloperTools = $('#chkEnableDeveloperTools', form).checked();
                 config.RunAtStartup = $('#chkRunAtStartup', form).checked();
                 config.SystemUpdateLevel = $('#selectAutomaticUpdateLevel', form).val();
 
