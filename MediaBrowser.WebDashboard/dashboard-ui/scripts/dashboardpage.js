@@ -85,6 +85,8 @@
         var table = $('.tblConnections', page);
 
         $('.trSession', table).addClass('deadSession');
+        
+        var deviceId = ApiClient.deviceId();
 
         for (var i = 0, length = dashboardInfo.ActiveConnections.length; i < length; i++) {
 
@@ -106,7 +108,16 @@
             html += '</td>';
 
             html += '<td>';
-            html += '<div>' + connection.Client + '</div>';
+
+            html += '<div>';
+            
+            if (deviceId == connection.DeviceId) {
+                html += connection.Client;
+            } else {
+                html += '<a href="#" onclick="RemoteControl.showMenu({sessionId:\'' + connection.Id + '\'});">' + connection.Client + '</a>';
+            }
+            html += '</div>';
+
             html += '<div>' + connection.ApplicationVersion + '</div>';
             html += '<div>' + connection.DeviceName + '</div>';
             html += '</td>';

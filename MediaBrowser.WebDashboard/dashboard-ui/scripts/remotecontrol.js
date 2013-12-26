@@ -653,7 +653,7 @@
         $('.chkSelectItem:first', elem).checked(true);
     }
 
-    function showMenu(sessions) {
+    function showMenu(sessions, options) {
 
         var html = '<div data-role="popup" id="remoteControlFlyout" data-theme="a">';
 
@@ -700,9 +700,9 @@
 
         html += '<div><label for="txtMessage">Message text</label></div>';
 
-        html += '<div style="display:inline-block;width:80%;"><input id="txtMessage" name="txtMessage" type="text" /></div>';
+        html += '<input id="txtMessage" name="txtMessage" type="text" />';
 
-        html += '<button type="button" data-icon="mail" class="btnSendMessage" data-mini="true" data-inline="true">Send</button>';
+        html += '<button type="button" data-icon="mail" class="btnSendMessage" data-mini="true">Send</button>';
 
         html += '</p>';
 
@@ -726,8 +726,8 @@
             $(this).off("popupafterclose").remove();
         });
 
-        renderSessionsInControlMenu(popup, sessions);
-        updateSessionInfo(popup, sessions);
+        renderSessionsInControlMenu(popup, sessions, options);
+        updateSessionInfo(popup, sessions, options);
 
         if (ApiClient.isWebSocketOpen()) {
             ApiClient.sendWebSocketMessage("SessionsStart", "1000,1000");
@@ -983,8 +983,10 @@
         }
     }
 
-    function renderSessionsInControlMenu(popup, sessions) {
+    function renderSessionsInControlMenu(popup, sessions, options) {
 
+        options = options || {};
+        
         var deviceId = ApiClient.deviceId();
 
         // don't display the current session
@@ -994,7 +996,7 @@
 
         var elem = $('#selectSession', popup);
 
-        var currentValue = elem.val();
+        var currentValue = options.sessionId || elem.val();
 
         if (currentValue) {
 
@@ -1044,10 +1046,10 @@
             showMenuForItem(options, ApiClient.getSessions(sessionQuery));
         };
 
-        self.showMenu = function () {
+        self.showMenu = function (options) {
             ApiClient.getSessions(sessionQuery).done(function (sessions) {
 
-                showMenu(sessions);
+                showMenu(sessions, options);
 
             });
         };

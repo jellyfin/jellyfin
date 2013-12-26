@@ -610,7 +610,8 @@ form, .readOnlyContent {
 
 /* Dashboard home */
 .tblConnections td {
-    padding: .5em 0 .5em 1.25em;
+    padding: 1em 0 1em 1.5em;
+    vertical-align: top;
 }
 
     .tblConnections td:first-child {
@@ -618,7 +619,7 @@ form, .readOnlyContent {
     }
 
 .tblConnections img {
-    height: 54px;
+    height: 48px;
 }
 
 .clientNowPlayingImage {
