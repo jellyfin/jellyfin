@@ -139,7 +139,7 @@ namespace MediaBrowser.Server.Implementations.Roku
 
             return _httpClient.Post(new HttpRequestOptions
             {
-                Url = "mb/remotecontrol",
+                Url = "http://" + Session.RemoteEndPoint + "/mb/remotecontrol",
                 CancellationToken = cancellationToken,
                 RequestContent = json,
                 RequestContentType = "application/json"
