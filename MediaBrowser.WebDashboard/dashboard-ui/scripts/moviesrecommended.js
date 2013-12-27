@@ -19,8 +19,7 @@
 
             $('#recentlyAddedItems', page).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                useAverageAspectRatio: true,
-                showNewIndicator: false
+                useAverageAspectRatio: true
             }));
 
         });
@@ -78,8 +77,7 @@
 
             $('#trailerItems', page).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                useAverageAspectRatio: true,
-                showNewIndicator: false
+                useAverageAspectRatio: true
             }));
 
         });

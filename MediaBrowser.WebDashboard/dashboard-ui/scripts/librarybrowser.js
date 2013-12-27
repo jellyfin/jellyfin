@@ -257,7 +257,7 @@
                 if (item.LocationType == "Offline" || item.LocationType == "Virtual") {
                     html += LibraryBrowser.getOfflineIndicatorHtml(item);
                 } else {
-                    html += LibraryBrowser.getNewIndicatorHtml(item);
+                    html += LibraryBrowser.getUnplayedIndicatorHtml(item);
                 }
 
                 html += "</a>";
@@ -916,8 +916,8 @@
                     if (options.showLocationTypeIndicator !== false) {
                         html += LibraryBrowser.getOfflineIndicatorHtml(item);
                     }
-                } else if (options.showNewIndicator !== false) {
-                    html += LibraryBrowser.getNewIndicatorHtml(item);
+                } else if (options.showUnplayedIndicator !== false) {
+                    html += LibraryBrowser.getUnplayedIndicatorHtml(item);
                 }
 
                 html += "</a>";
@@ -1066,7 +1066,8 @@
             }
             return '<div class="posterRibbon missingPosterRibbon">Missing</div>';
         },
-        getNewIndicatorHtml: function (item) {
+        
+        getUnplayedIndicatorHtml: function (item) {
 
             if (item.LocationType == 'Virtual') {
                 return '';
@@ -1074,26 +1075,7 @@
 
             if (item.Type == "Series") {
                 if (item.RecursiveUnplayedItemCount && item.PlayedPercentage) {
-                    return '<div class="posterRibbon">' + item.RecursiveUnplayedItemCount + ' New</div>';
-                }
-            }
-
-            if (!item.IsFolder && item.Type !== "Genre" && item.Type !== "Studio" && item.Type !== "Person" && item.Type !== "MusicArtist" && item.Type !== "MusicGenre" && item.Type !== "GameGenre") {
-
-                var date = item.DateCreated;
-                var isPlayed = item.UserData && item.UserData.Played;
-
-                if (!isPlayed) {
-                    try {
-
-                        var parsedDate = parseISO8601Date(item.PremiereDate, { toLocal: true });
-
-                        if (date && (new Date().getTime() - parsedDate.getTime()) < 604800000) {
-                            return "<div class='posterRibbon'>New</div>";
-                        }
-                    } catch (err) {
-
-                    }
+                    return '<div class="posterRibbon">' + item.RecursiveUnplayedItemCount + ' Unwatched</div>';
                 }
             }
 

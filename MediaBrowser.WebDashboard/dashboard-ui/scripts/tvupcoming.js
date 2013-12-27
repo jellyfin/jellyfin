@@ -67,7 +67,6 @@
             $('#upcomingItems', page).html(LibraryBrowser.getPosterViewHtml({
                 items: missedItems,
                 showLocationTypeIndicator: false,
-                showNewIndicator: false,
                 shape: "backdrop",
                 showTitle: true,
                 showPremiereDate: true,

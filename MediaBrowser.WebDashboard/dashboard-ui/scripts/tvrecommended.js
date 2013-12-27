@@ -21,7 +21,6 @@
             $('#recentlyAddedItems', page).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 useAverageAspectRatio: true,
-                showNewIndicator: false,
                 shape: "backdrop",
                 showTitle: true,
                 showParentTitle: true,

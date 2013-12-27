@@ -348,7 +348,6 @@
             var html = LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 useAverageAspectRatio: true,
-                showNewIndicator: true,
                 shape: item.Type == "MusicAlbum" ? "portrait" : "square"
             });
 
@@ -459,7 +458,6 @@
             var html = LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 useAverageAspectRatio: item.MediaType != "Game",
-                showNewIndicator: true,
                 shape: item.Type == "MusicAlbum" ? "square" : "portrait"
             });
 

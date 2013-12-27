@@ -18,7 +18,6 @@
             $('#recentlyAddedItems', page).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 useAverageAspectRatio: false,
-                showNewIndicator: false,
                 transparent: true,
                 borderless: true
             }));
