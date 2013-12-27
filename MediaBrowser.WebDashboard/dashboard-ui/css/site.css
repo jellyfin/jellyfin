@@ -59,7 +59,7 @@ h1 {
 }
 
 .toolsSidebar h1 {
-    font-size: 36pt;
+    font-size: 40px;
 }
 
 .ui-loader h1 {
@@ -123,7 +123,7 @@ pre, textarea.pre {
     Header
     */
 .header {
-    padding: 15px 0 15px 15px;
+    padding: 10px 0 0 15px;
 }
 
 .imgLogoIcon {
@@ -144,8 +144,8 @@ pre, textarea.pre {
 .headerButtons {
     float: right;
     position: absolute;
-    top: 15px;
-    right: 20px;
+    top: 10px;
+    right: 5px;
 }
 
 .header .imageLink {
@@ -210,13 +210,6 @@ h1 .imageLink {
         cursor: default;
     }
 
-/*
-    Forms
-    */
-form, .readOnlyContent {
-    max-width: 600px;
-}
-
 .fieldDescription {
     font-size: 12px;
     padding-left: 5px;
@@ -251,21 +244,17 @@ form, .readOnlyContent {
     margin-bottom: 0!important;
 }
 
-.content-primary {
-    padding-top: 25px;
-}
-
-
 .content-secondary {
     z-index: 99996;
     background: #262626;
     border: 0;
     margin-top: 40px;
+    display: none;
 }
 
     .content-secondary h1 {
         margin: 0;
-        padding: 20px 0 20px 30px;
+        padding: 20px 0 15px 20px;
         color: #fff;
     }
 
@@ -275,7 +264,7 @@ form, .readOnlyContent {
     text-decoration: none;
     color: #fff!important;
     text-shadow: none!important;
-    font-weight: normal!important;
+    font-weight: 400!important;
     font-size: 17px;
 }
 
@@ -312,6 +301,46 @@ form, .readOnlyContent {
     padding-bottom: 100px;
 }
 
+.dashboardPanelDivider {
+    height: 1px;
+    background: #444;
+    margin: .25em 0;
+}
+
+.dashboardPanelLink {
+    padding: .75em .5em .75em 1.25em;
+    display: block;
+    text-decoration: none;
+    font-size: 14px;
+    color: #fff!important;
+    font-weight: normal !important;
+}
+
+    .dashboardPanelLink:hover {
+        background: #f2f2f2;
+           color: #000!important;
+ }
+
+.selectedDashboardPanelLink {
+    background: #2572EB;
+    color: #fff!important;
+}
+
+.dashboardPanel .ui-panel-inner {
+    padding: 0;
+}
+
+.dashboardPanel {
+    background: #262626!important;
+}
+
+@media all and (min-width: 450px) {
+
+    .currentUsername {
+        display: inline;
+    }
+}
+
 @media all and (min-width: 650px) {
 
     .imgLogoIcon {
@@ -321,14 +350,30 @@ form, .readOnlyContent {
     .imageLink.supporterIcon {
         display: inline-block;
     }
+}
+
+@media all and (min-width: 750px) {
+
+    /*
+    Forms
+    */
+    form, .readOnlyContent {
+        max-width: 600px;
+    }
+
+    .imgLogoText {
+        height: 50px;
+        display: inline;
+    }
+
+    .header {
+        padding-top: 15px;
+        padding-bottom: 15px;
+    }
 
     .headerButtons {
         top: 20px;
-        right: 30px;
-    }
-
-    .currentUsername {
-        display: inline;
+        right: 20px;
     }
 
     .type-interior > .ui-content, .type-interior > .ui-panel-content-wrap > .ui-content {
@@ -340,18 +385,19 @@ form, .readOnlyContent {
 
     .content-secondary {
         text-align: left;
-        width: 45%;
+        width: 34%;
         position: fixed;
         top: 0;
         left: 0;
         bottom: 0;
         margin: 0;
+        display: block;
     }
 
     .content-primary {
-        width: 45%;
+        width: 56%;
         float: right;
-        padding: 40px 6% 3em 0;
+        padding: 10px 6% 3em 0;
         margin: 0;
     }
 
@@ -360,25 +406,16 @@ form, .readOnlyContent {
         }
 }
 
-@media all and (min-width: 750px) {
-
-    .imgLogoText {
-        height: 50px;
-        display: inline;
-    }
-
-    .content-secondary {
-        width: 34%;
-    }
-
-    .content-primary {
-        width: 56%;
-    }
-}
-
 @media all and (min-width: 850px) {
 
     .content-primary {
+        padding-top: 0;
+    }
+}
+
+@media all and (min-width: 900px) {
+
+    .header {
         padding-top: 0;
     }
 }

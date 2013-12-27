@@ -575,10 +575,17 @@ var Dashboard = {
             }
 
             headerHtml += '</a>';
+
+            if (page.hasClass('type-interior')) {
+                headerHtml += '<div>';
+                headerHtml += '<button type="button" data-icon="bars" data-inline="true" data-iconpos="notext" class="ui-alt-icon" onclick="Dashboard.showDashboardMenu();">Menu</button>';
+                headerHtml += '</div>';
+            }
+
             headerHtml += '</div>';
             page.prepend(headerHtml);
 
-            header = $('.header', page);
+            header = $('.header', page).trigger('create');
         }
 
         var imageColor = "black";
@@ -605,14 +612,14 @@ var Dashboard = {
             headerHtml += '</a>';
 
             if (user.Configuration.IsAdministrator) {
-                headerHtml += '<a class="imageLink btnTools" href="dashboard.html"><img src="css/images/tools' + imageColor + '.png" /></a>';
+                headerHtml += '<a class="imageLink btnTools" href="dashboard.html" data-role="button" data-icon="gear" data-inline="true" data-iconpos="notext">Tools</a>';
             }
 
         }
 
         headerHtml += '</div>';
 
-        header.append(headerHtml);
+        header.append(headerHtml).trigger('create');
 
         if (!$('.supporterIcon', header).length) {
 
@@ -647,9 +654,11 @@ var Dashboard = {
 
             var links = Dashboard.getToolsMenuLinks(page);
 
-            for (var i = 0, length = links.length; i < length; i++) {
+            var i, length, link;
 
-                var link = links[i];
+            for (i = 0, length = links.length; i < length; i++) {
+
+                link = links[i];
 
                 if (link.divider) {
                     html += "<div class='sidebarDivider'></div>";
@@ -666,16 +675,47 @@ var Dashboard = {
                 }
             }
 
-            //html += '<a href="edititemmetadata.html">Metadata Manager</a>';
-
             // collapsible
             html += '</div>';
 
             // content-secondary
             html += '</div>';
 
-            $(page).append(html);
+            html += '<div data-role="panel" id="dashboardPanel" class="dashboardPanel" data-position="left" data-display="overlay" data-position-fixed="true" data-theme="b">';
+
+            html += '<a href="index.html" class="imageLink" style="display: inline-block;margin: 20px 0 20px 15px;"><img src="css/images/mblogoicon.png" style="height:24px;" /></a>';
+
+            for (i = 0, length = links.length; i < length; i++) {
+
+                link = links[i];
+
+                if (link.divider) {
+                    html += "<div class='dashboardPanelDivider'></div>";
+                }
+
+                if (link.href) {
+
+                    if (link.selected) {
+                        html += '<a class="selectedDashboardPanelLink dashboardPanelLink" href="' + link.href + '">' + link.name + '</a>';
+                    } else {
+                        html += '<a class="dashboardPanelLink" href="' + link.href + '">' + link.name + '</a>';
+                    }
+
+                }
+            }
+
+            html += '</div>';
+
+            $(page).append(html).trigger('create');
         }
+    },
+
+    showDashboardMenu: function () {
+
+        var page = $.mobile.activePage;
+
+
+        $("#dashboardPanel", page).panel("open");
     },
 
     getToolsMenuLinks: function (page) {
