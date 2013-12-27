@@ -13,7 +13,7 @@
         self.onSubmit = function () {
             Dashboard.showLoadingMsg();
 
-            var page = $.mobile.activePage;
+            var form = this;
 
             ApiClient.getUsers().done(function (users) {
 
@@ -23,13 +23,13 @@
 
                     user = users[0];
 
-                    user.Name = $('#txtUsername', page).val();
+                    user.Name = $('#txtUsername', form).val();
 
                     ApiClient.updateUser(user).done(onSaveComplete);
 
                 } else {
 
-                    user = { Name: $('#txtUsername', page).val() };
+                    user = { Name: $('#txtUsername', form).val() };
 
                     ApiClient.createUser(user).done(onSaveComplete);
                 }

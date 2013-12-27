@@ -1,10 +1,10 @@
 ﻿var PluginsPage = {
 
     onPageShow: function () {
-        PluginsPage.reloadList();
+        PluginsPage.reloadList(this);
     },
 
-    reloadList: function () {
+    reloadList: function (page) {
 
         Dashboard.showLoadingMsg();
 
@@ -14,14 +14,12 @@
 
         $.when(promise1, promise2).done(function(response1, response2) {
 
-            PluginsPage.populateList(response1[0], response2[0]);
+            PluginsPage.populateList(page, response1[0], response2[0]);
 
         });
     },
 
-    populateList: function (plugins, pluginConfigurationPages) {
-
-        var page = $($.mobile.activePage);
+    populateList: function (page, plugins, pluginConfigurationPages) {
 
         plugins = plugins.sort(function (plugin1, plugin2) {
 
@@ -71,6 +69,7 @@
 
     deletePlugin: function (link) {
 
+        var page = $(link).parents('.page');
         var name = link.getAttribute('data-pluginname');
         var uniqueid = link.getAttribute('data-id');
 
@@ -83,7 +82,7 @@
 
                 ApiClient.uninstallPlugin(uniqueid).done(function () {
 
-                    PluginsPage.reloadList();
+                    PluginsPage.reloadList(page);
                 });
             }
         });

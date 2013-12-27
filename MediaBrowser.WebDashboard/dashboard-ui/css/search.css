@@ -1,131 +1,55 @@
-﻿.headerSearch {
-    display: none;
-    margin-right: 1em;
-    position: relative;
-}
-
-.txtSearch {
-    vertical-align: middle;
-    font-size: 14px;
-    margin: 0 .15em 0 0;
-    width: 80px;
-    padding: 0;
-    border: 1px solid #4d90fe;
-}
-
-.btnSearch {
-    vertical-align: middle;
-    background-color: #4d90fe;
-    background-image: -webkit-gradient(linear,left top,left bottom,from(#4d90fe),to(#4787ed));
-    background-image: -webkit-linear-gradient(top,#4d90fe,#4787ed);
-    background-image: -moz-linear-gradient(top,#4d90fe,#4787ed);
-    background-image: -ms-linear-gradient(top,#4d90fe,#4787ed);
-    background-image: -o-linear-gradient(top,#4d90fe,#4787ed);
-    background-image: linear-gradient(top,#4d90fe,#4787ed);
-    border: 1px solid #3079ed;
-    color: #fff!important;
-    margin: 0 0;
-    -moz-border-radius: 2px;
-    -webkit-border-radius: 2px;
-    border-radius: 2px;
-    font-weight: bold;
-    min-width: 54px;
-    padding: 0 4px;
-    text-align: center;
-    text-decoration: none !important;
-    -moz-user-select: none;
-    -webkit-user-select: none;
-}
-
-.txtSearch, .btnSearch {
-    height: 22px;
-    line-height: 22px;
-}
-
-    .btnSearch img {
-        height: 22px;
-        margin: 0 auto;
-        border: 0;
-    }
-
-.searchHints {
-    width: 248px;
-    color: #000;
-    background-color: #fff;
-    border: 1px solid #999;
-    position: absolute;
-    z-index: 998;
-    margin-top: 1px;
-}
-
-.searchHintsContent {
-    padding: 10px;
+﻿.searchHints {
+    margin-top: 1em;
 }
 
 .searchHint {
     display: block;
     text-decoration: none;
-    color: #000;
-    border-bottom: 1px solid #eee;
+    color: #fff;
+    border-bottom: 1px solid #444;
 }
 
     .searchHint:hover {
-        background-color: #eee;
+        background-color: #444;
     }
 
     .searchHint:focus {
-        background-color: #eee;
+        background-color: #444;
     }
 
 .searchHintImage {
     display: inline-block;
-    width: 15%;
+    width: 20%;
     vertical-align: middle;
+    margin: 4px 0;
 }
 
 .searchHintContent {
     vertical-align: top;
     display: inline-block;
-    width: 85%;
+    width: 80%;
 }
 
 .searchHintName {
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
-    font-size: 14px;
-    color: #000;
+    font-size: 12px;
+    color: #fff;
 }
 
 .searchHintSecondaryText {
     font-size: 12px;
-    color: #555;
+    color: #bbb;
     margin-top: 3px;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
+    font-weight: 300;
 }
 
 .searchHintContentInner {
     padding: 2px 5px;
-}
-
-@media all and (min-width: 300px) {
-
-    .headerSearch {
-        display: inline-block;
-    }
-}
-
-@media all and (min-width: 850px) {
-
-    .txtSearch {
-        width: 200px;
-    }
-
-    .searchHints {
-        width: 248px;
-    }
 }
 
 .circle {

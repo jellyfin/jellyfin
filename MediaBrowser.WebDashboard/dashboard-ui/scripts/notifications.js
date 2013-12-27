@@ -26,7 +26,7 @@
 
         var context = this;
 
-        var html = '<div data-role="popup" class="notificationsFlyout" style="min-width:250px;margin-top:30px;margin-right:20px;background: #f8f8f8;">';
+        var html = '<div data-role="popup" class="notificationsFlyout" style="min-width:250px;margin-top:30px;margin-right:20px;" data-theme="a">';
 
         html += '<a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>';
 
@@ -40,7 +40,7 @@
 
         html += '</p>';
 
-        html += '<p style="display:none;" class="btnMarkReadContainer"><button class="btnMarkRead" type="button" data-icon="check" data-mini="true">Mark these read</button></p>';
+        html += '<p style="display:none;" class="btnMarkReadContainer"><button class="btnMarkRead" type="button" data-icon="check" data-mini="true" data-theme="b">Mark these read</button></p>';
         html += '</div>';
 
         html += '</div>';

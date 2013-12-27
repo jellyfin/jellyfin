@@ -4,19 +4,7 @@
 }
 
 .libraryPage {
-    padding-top: 68px !important;
-}
-
-@media all and (min-width: 600px) {
-    .libraryPage:not(.pageViewCount5) {
-        padding-top: 35px !important;
-    }
-}
-
-@media all and (min-width: 690px) {
-    .pageViewCount5 {
-        padding-top: 35px !important;
-    }
+    padding-top: 46px !important;
 }
 
 .ui-panel fieldset + fieldset {
@@ -54,21 +42,24 @@
     padding: 7px .5em 6px;
     display: inline-block;
     vertical-align: middle;
-    font-family: Arial;
 }
 
-    .viewMenuLink:hover {
-        color: #fff;
+.viewMenuBar .btnCurrentUser {
+    padding: 7px 1em 6px;
+}
+
+.viewMenuLink:hover {
+    color: #fff;
+}
+
+    .viewMenuLink:hover img {
+        opacity: .5;
     }
 
-        .viewMenuLink:hover img {
-            opacity: .5;
-        }
-
-    .viewMenuLink img {
-        height: 20px;
-        vertical-align: top;
-    }
+.viewMenuLink img {
+    height: 24px;
+    vertical-align: top;
+}
 
 .viewMenuSecondary {
     float: right;
@@ -590,6 +581,10 @@ a.itemTag:hover {
     .viewMenuLink {
         padding-left: .8em;
         padding-right: .8em;
+    }
+
+    .viewMenuBar .btnCurrentUser {
+        padding-right: 1.5em;
     }
 
     .lnkSibling:not(.hide) {

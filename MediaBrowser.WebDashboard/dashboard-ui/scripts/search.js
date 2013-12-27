@@ -11,43 +11,12 @@
         }
     }
 
-    function createSearchHintsElement(page) {
-
-        $(document.body).off("mousedown.hidesearchhints").on("mousedown.hidesearchhints", function (e) {
-
-            var elem = $(e.target);
-
-            if (!elem.is('#searchHints,#txtSearch,#btnSearch') && !elem.parents('#searchHints,#txtSearch,#btnSearch').length) {
-                hideFlyout(page);
-            }
-
-        });
-
-        return $('#searchHints', page).show();
-    }
-
-    function hideFlyout(page) {
-        $('#searchHints', page).hide();
-
-        $(document.body).off("mousedown.hidesearchhints");
-    }
-
-    function showFlyout(page) {
-
-        var hints = $('#searchHints:visible');
-
-        if (!hints.length) {
-
-            createSearchHintsElement(page);
-        }
-    }
-
-    function updateFlyout(page, searchTerm) {
+    function updateSearchHints(page, searchTerm) {
 
         if (!searchTerm) {
 
+            $('#searchHints', page).empty();
             clearSearchHintTimeout();
-            hideFlyout(page);
             return;
         }
 
@@ -69,11 +38,7 @@
             if (currentTimeout != searchHintTimeout) {
                 return;
             }
-
-            if (!result.TotalRecordCount) {
-                hideFlyout(page);
-                return;
-            }
+            
             renderSearchHintResult(page, result.SearchHints);
         });
     }
@@ -106,7 +71,7 @@
         var html = '';
 
         var context;
-        
+
         if (hint.Type == "Episode" || hint.Type == "Season" || hint.Type == "Series") {
             context = "tv";
         }
@@ -238,38 +203,71 @@
 
         $('#searchHints', page).html(html);
     }
+    
+    function getSearchPanel(page) {
+        
+        var panel = $('#searchPanel', page);
+
+        if (!panel.length) {
+
+            var html = '';
+
+            html += '<div data-role="panel" id="searchPanel" class="searchPanel" data-position="right" data-display="overlay" data-position-fixed="true" data-theme="b">';
+
+            html += '<h3>';
+            html += 'Search';
+            html += '</h3>';
+
+            html += '<input id="txtSearch" class="txtSearch" type="search" data-theme="a" />';
+
+            html += '<div id="searchHints" class="searchHints"></div>';
+
+            html += '</div>';
+
+            $(page).append(html);
+
+            panel = $('#searchPanel', page).panel({}).trigger('create');
+
+            $('#txtSearch', panel).on("keyup", function (e) {
+
+                // Down
+                if (e.keyCode == 40) {
+
+                    var first = $('.searchHint', panel)[0];
+
+                    if (first) {
+                        first.focus();
+                    }
+
+                    return false;
+                }
+
+            }).on("keyup", function (e) {
+
+                if (e.keyCode != 40) {
+                    var value = this.value;
+
+                    updateSearchHints(panel, value);
+                }
+
+            });
+        }
+
+        return panel;
+    }
 
     function search() {
 
         var self = this;
 
-        self.getSearchHtml = function () {
+        self.showSearchPanel = function (page) {
 
-            var html = '<div class="headerSearch"><form id="searchForm" name="searchForm">';
+            var panel = getSearchPanel(page);
 
-            html += '<input id="txtSearch" class="txtSearch" type="search" required="required" />';
-
-            html += '<button id="btnSearch" class="btnSearch" type="submit">';
-            html += '<img src="css/images/searchbutton.png" />';
-            html += '</button>';
-
-            html += '</form>';
-
-            html += '<div id="searchHints" class="searchHints" style="display:none;"><div class="searchHintsContent"><div class="circle"></div><div class="circle1"></div></div></div>';
-
-            html += '</div>';
-
-            return html;
+            $(panel).panel('toggle');
         };
 
         self.onSearchRendered = function (parentElem) {
-
-            $('#searchForm', parentElem).on("submit", function () {
-
-                Dashboard.alert('Coming soon.');
-
-                return false;
-            });
 
             $('#searchHints', parentElem).on("keydown", '.searchHint', function (e) {
 
@@ -298,47 +296,12 @@
                 }
             });
 
-            $('#txtSearch', parentElem).on("keyup", function (e) {
-
-                // Down
-                if (e.keyCode == 40) {
-
-                    var first = $('.searchHint', parentElem)[0];
-
-                    if (first) {
-                        first.focus();
-                    }
-
-                    return false;
-                }
-
-            }).on("keyup", function (e) {
-
-                if (e.keyCode != 40) {
-                    var value = this.value;
-
-                    showFlyout(parentElem);
-                    updateFlyout(parentElem, value);
-                }
-
-            }).on("focus", function () {
-
-                var value = this.value;
-
-                if (value) {
-                    showFlyout(parentElem, value);
-                }
-
-            });
-
         };
     }
 
     window.Search = new search();
 
     $(document).on('pagehide', ".libraryPage", function () {
-
-        hideFlyout(this);
 
         $('#txtSearch', this).val('');
     });

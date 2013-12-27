@@ -265,7 +265,7 @@ var Dashboard = {
 
     showServerRestartWarning: function (systemInfo) {
 
-        var html = '<span style="margin-right: 1em;">Please restart Media Browser Server to finish updating.</span>';
+        var html = '<span style="margin-right: 1em;">Please restart to finish updating.</span>';
 
         if (systemInfo.CanSelfRestart) {
             html += '<button type="button" data-icon="refresh" onclick="$(this).buttonEnabled(false);Dashboard.restartServer();" data-theme="b" data-inline="true" data-mini="true">Restart Server</button>';
@@ -716,7 +716,6 @@ var Dashboard = {
     showDashboardMenu: function () {
 
         var page = $.mobile.activePage;
-
 
         $("#dashboardPanel", page).panel("open");
     },

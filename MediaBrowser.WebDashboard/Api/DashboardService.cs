@@ -590,6 +590,7 @@ namespace MediaBrowser.WebDashboard.Api
             var files = new[]
                                   {
                                       "site.css",
+                                      "mediaplayer.css",
                                       "librarybrowser.css",
                                       "detailtable.css",
                                       "posteritem.css",

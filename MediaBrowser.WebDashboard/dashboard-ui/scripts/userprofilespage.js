@@ -61,6 +61,7 @@
 
     deleteUser: function (link) {
 
+        var page = $.mobile.activePage;
         var name = link.getAttribute('data-username');
 
         var msg = "Are you sure you wish to delete " + name + "?";
@@ -74,7 +75,7 @@
 
                 ApiClient.deleteUser(id).done(function () {
 
-                    Dashboard.validateCurrentUser($.mobile.activePage);
+                    Dashboard.validateCurrentUser(page);
                     UserProfilesPage.loadPageData();
                 });
             }
