@@ -144,7 +144,7 @@ namespace MediaBrowser.Providers.Movies
 
         protected override bool NeedsRefreshBasedOnCompareDate(BaseItem item, BaseProviderInfo providerInfo)
         {
-            var path = MovieDbProvider.Current.GetImagesDataFilePath(item);
+            var path = MovieDbProvider.Current.GetDataFilePath(item);
 
             if (!string.IsNullOrEmpty(path))
             {

@@ -205,13 +205,9 @@ namespace MediaBrowser.Providers.Movies
 
             if (!string.IsNullOrEmpty(path))
             {
-                var imagesFilePath = GetImagesDataFilePath(item);
-
                 var fileInfo = new FileInfo(path);
-                var imagesFileInfo = new FileInfo(imagesFilePath);
 
-                return !fileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(fileInfo) > providerInfo.LastRefreshed ||
-                    !imagesFileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(imagesFileInfo) > providerInfo.LastRefreshed;
+                return !fileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(fileInfo) > providerInfo.LastRefreshed;
             }
 
             return base.NeedsRefreshBasedOnCompareDate(item, providerInfo);
@@ -508,10 +504,10 @@ namespace MediaBrowser.Providers.Movies
 
             var tmdbId = item.GetProviderId(MetadataProviders.Tmdb);
 
-            if (string.IsNullOrEmpty(dataFilePath) || !File.Exists(dataFilePath) || !File.Exists(GetImagesDataFilePath(item)))
-            {
-                var isBoxSet = item is BoxSet;
+            var isBoxSet = item is BoxSet;
 
+            if (string.IsNullOrEmpty(dataFilePath) || !File.Exists(dataFilePath))
+            {
                 var mainResult = await FetchMainResult(id, isBoxSet, language, cancellationToken).ConfigureAwait(false);
 
                 if (mainResult == null) return;
@@ -520,25 +516,18 @@ namespace MediaBrowser.Providers.Movies
 
                 var movieDataPath = GetMovieDataPath(ConfigurationManager.ApplicationPaths, isBoxSet, tmdbId);
 
-                dataFilePath = Path.Combine(movieDataPath, language + ".json");
+                dataFilePath = Path.Combine(movieDataPath, "all.json");
 
                 var directory = Path.GetDirectoryName(dataFilePath);
 
                 Directory.CreateDirectory(directory);
 
                 JsonSerializer.SerializeToFile(mainResult, dataFilePath);
-
-                // Now get the language-less version
-                mainResult = await FetchMainResult(id, isBoxSet, null, cancellationToken).ConfigureAwait(false);
-
-                dataFilePath = Path.Combine(movieDataPath, "default.json");
-
-                JsonSerializer.SerializeToFile(mainResult, dataFilePath);
             }
 
             if (isForcedRefresh || ConfigurationManager.Configuration.EnableTmdbUpdates || !HasAltMeta(item))
             {
-                dataFilePath = GetDataFilePath(item, tmdbId, language);
+                dataFilePath = GetDataFilePath(isBoxSet, tmdbId);
 
                 if (!string.IsNullOrEmpty(dataFilePath))
                 {
@@ -564,16 +553,9 @@ namespace MediaBrowser.Providers.Movies
 
             if (mainResult == null) return;
 
-            var dataFilePath = Path.Combine(dataPath, preferredMetadataLanguage + ".json");
+            var dataFilePath = Path.Combine(dataPath, "all.json");
 
             Directory.CreateDirectory(dataPath);
-
-            JsonSerializer.SerializeToFile(mainResult, dataFilePath);
-
-            // Now get the language-less version
-            mainResult = await FetchMainResult(id, isBoxSet, null, cancellationToken).ConfigureAwait(false);
-
-            dataFilePath = Path.Combine(dataPath, "default.json");
 
             JsonSerializer.SerializeToFile(mainResult, dataFilePath);
         }
@@ -592,28 +574,14 @@ namespace MediaBrowser.Providers.Movies
                 return null;
             }
 
-            return GetDataFilePath(item, id, item.GetPreferredMetadataLanguage());
+            return GetDataFilePath(item is BoxSet, id);
         }
 
-        internal string GetDataFilePath(BaseItem item, string tmdbId, string preferredLanguage)
+        internal string GetDataFilePath(bool isBoxset, string tmdbId)
         {
-            var path = GetMovieDataPath(ConfigurationManager.ApplicationPaths, item is BoxSet, tmdbId);
+            var path = GetMovieDataPath(ConfigurationManager.ApplicationPaths, isBoxset, tmdbId);
 
-            path = Path.Combine(path, preferredLanguage + ".json");
-
-            return path;
-        }
-
-        internal string GetImagesDataFilePath(BaseItem item)
-        {
-            var path = GetDataFilePath(item);
-
-            if (!string.IsNullOrEmpty(path))
-            {
-                path = Path.Combine(Path.GetDirectoryName(path), "default.json");
-            }
-
-            return path;
+            return Path.Combine(path, "all.json");
         }
 
         /// <summary>
@@ -630,9 +598,18 @@ namespace MediaBrowser.Providers.Movies
 
             var url = string.Format(baseUrl, id, ApiKey);
 
+            // Get images in english and with no language
+            url += "&include_image_language=en,null";
+
             if (!string.IsNullOrEmpty(language))
             {
-                url += "&language=" + language;
+                // If preferred language isn't english, get those images too
+                if (!string.Equals(language, "en", StringComparison.OrdinalIgnoreCase))
+                {
+                    url += string.Format(",{0}", language);
+                }
+
+                url += string.Format("&language={0}", language);
             }
 
             CompleteMovieData mainResult;
