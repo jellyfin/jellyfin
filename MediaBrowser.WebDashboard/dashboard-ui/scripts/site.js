@@ -612,7 +612,10 @@ var Dashboard = {
             headerHtml += '</a>';
 
             if (user.Configuration.IsAdministrator) {
-                headerHtml += '<a class="imageLink btnTools" href="dashboard.html" data-role="button" data-icon="gear" data-inline="true" data-iconpos="notext">Tools</a>';
+
+                var href = window.location.toString().toLowerCase().indexOf('dashboard.html') == -1 ? 'dashboard.html' : '#';
+
+                headerHtml += '<a class="imageLink btnTools" href="' + href + '" data-role="button" data-icon="gear" data-inline="true" data-iconpos="notext">Tools</a>';
             }
 
         }

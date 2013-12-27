@@ -352,10 +352,10 @@ namespace MediaBrowser.Server.Implementations.Library
                 }
             }
 
-            OnUserDeleted(user);
-
             // Force this to be lazy loaded again
-            Users = null;
+            Users = await LoadUsers().ConfigureAwait(false);
+
+            OnUserDeleted(user);
         }
 
         /// <summary>
