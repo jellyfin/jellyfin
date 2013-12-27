@@ -8,7 +8,6 @@ using MediaBrowser.Model.Entities;
 using MoreLinq;
 using System;
 using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -365,123 +364,125 @@ namespace MediaBrowser.Controller.Entities
         {
             var locationType = LocationType;
 
-            // Nothing to do here
-            if (locationType == LocationType.Remote || locationType == LocationType.Virtual)
-            {
-                return;
-            }
-
             cancellationToken.ThrowIfCancellationRequested();
 
-            IEnumerable<BaseItem> nonCachedChildren;
-
-            try
-            {
-                nonCachedChildren = GetNonCachedChildren();
-            }
-            catch (IOException ex)
-            {
-                nonCachedChildren = new BaseItem[] { };
-
-                Logger.ErrorException("Error getting file system entries for {0}", ex, Path);
-            }
-
-            if (nonCachedChildren == null) return; //nothing to validate
-
-            progress.Report(5);
-
-            //build a dictionary of the current children we have now by Id so we can compare quickly and easily
-            var currentChildren = ActualChildren.ToDictionary(i => i.Id);
-
-            //create a list for our validated children
             var validChildren = new List<Tuple<BaseItem, bool>>();
-            var newItems = new List<BaseItem>();
 
-            cancellationToken.ThrowIfCancellationRequested();
-
-            foreach (var child in nonCachedChildren)
+            if (locationType != LocationType.Remote && locationType != LocationType.Virtual)
             {
-                BaseItem currentChild;
+                IEnumerable<BaseItem> nonCachedChildren;
 
-                if (currentChildren.TryGetValue(child.Id, out currentChild))
+                try
                 {
-                    currentChild.ResetResolveArgs(child.ResolveArgs);
+                    nonCachedChildren = GetNonCachedChildren();
+                }
+                catch (IOException ex)
+                {
+                    nonCachedChildren = new BaseItem[] {};
 
-                    //existing item - check if it has changed
-                    if (currentChild.HasChanged(child))
+                    Logger.ErrorException("Error getting file system entries for {0}", ex, Path);
+                }
+
+                if (nonCachedChildren == null) return; //nothing to validate
+
+                progress.Report(5);
+
+                //build a dictionary of the current children we have now by Id so we can compare quickly and easily
+                var currentChildren = ActualChildren.ToDictionary(i => i.Id);
+
+                //create a list for our validated children
+                var newItems = new List<BaseItem>();
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                foreach (var child in nonCachedChildren)
+                {
+                    BaseItem currentChild;
+
+                    if (currentChildren.TryGetValue(child.Id, out currentChild))
                     {
-                        var currentChildLocationType = currentChild.LocationType;
-                        if (currentChildLocationType != LocationType.Remote &&
-                            currentChildLocationType != LocationType.Virtual)
+                        currentChild.ResetResolveArgs(child.ResolveArgs);
+
+                        //existing item - check if it has changed
+                        if (currentChild.HasChanged(child))
                         {
-                            EntityResolutionHelper.EnsureDates(FileSystem, currentChild, child.ResolveArgs, false);
+                            var currentChildLocationType = currentChild.LocationType;
+                            if (currentChildLocationType != LocationType.Remote &&
+                                currentChildLocationType != LocationType.Virtual)
+                            {
+                                EntityResolutionHelper.EnsureDates(FileSystem, currentChild, child.ResolveArgs, false);
+                            }
+
+                            validChildren.Add(new Tuple<BaseItem, bool>(currentChild, true));
+                        }
+                        else
+                        {
+                            validChildren.Add(new Tuple<BaseItem, bool>(currentChild, false));
                         }
 
-                        validChildren.Add(new Tuple<BaseItem, bool>(currentChild, true));
+                        currentChild.IsOffline = false;
                     }
                     else
                     {
-                        validChildren.Add(new Tuple<BaseItem, bool>(currentChild, false));
+                        //brand new item - needs to be added
+                        newItems.Add(child);
+
+                        validChildren.Add(new Tuple<BaseItem, bool>(child, true));
+                    }
+                }
+
+                // If any items were added or removed....
+                if (newItems.Count > 0 || currentChildren.Count != validChildren.Count)
+                {
+                    var newChildren = validChildren.Select(c => c.Item1).ToList();
+
+                    // That's all the new and changed ones - now see if there are any that are missing
+                    var itemsRemoved = currentChildren.Values.Except(newChildren).ToList();
+
+                    var actualRemovals = new List<BaseItem>();
+
+                    foreach (var item in itemsRemoved)
+                    {
+                        if (item.LocationType == LocationType.Virtual ||
+                            item.LocationType == LocationType.Remote)
+                        {
+                            // Don't remove these because there's no way to accurately validate them.
+                            validChildren.Add(new Tuple<BaseItem, bool>(item, false));
+                        }
+
+                        else if (!string.IsNullOrEmpty(item.Path) && IsPathOffline(item.Path))
+                        {
+                            item.IsOffline = true;
+
+                            validChildren.Add(new Tuple<BaseItem, bool>(item, false));
+                        }
+                        else
+                        {
+                            item.IsOffline = false;
+                            actualRemovals.Add(item);
+                        }
                     }
 
-                    currentChild.IsOffline = false;
-                }
-                else
-                {
-                    //brand new item - needs to be added
-                    newItems.Add(child);
+                    if (actualRemovals.Count > 0)
+                    {
+                        RemoveChildrenInternal(actualRemovals);
 
-                    validChildren.Add(new Tuple<BaseItem, bool>(child, true));
+                        foreach (var item in actualRemovals)
+                        {
+                            LibraryManager.ReportItemRemoved(item);
+                        }
+                    }
+
+                    await LibraryManager.CreateItems(newItems, cancellationToken).ConfigureAwait(false);
+
+                    AddChildrenInternal(newItems);
+
+                    await ItemRepository.SaveChildren(Id, ActualChildren.Select(i => i.Id).ToList(), cancellationToken).ConfigureAwait(false);
                 }
             }
-
-            // If any items were added or removed....
-            if (newItems.Count > 0 || currentChildren.Count != validChildren.Count)
+            else
             {
-                var newChildren = validChildren.Select(c => c.Item1).ToList();
-
-                // That's all the new and changed ones - now see if there are any that are missing
-                var itemsRemoved = currentChildren.Values.Except(newChildren).ToList();
-
-                var actualRemovals = new List<BaseItem>();
-
-                foreach (var item in itemsRemoved)
-                {
-                    if (item.LocationType == LocationType.Virtual ||
-                        item.LocationType == LocationType.Remote)
-                    {
-                        // Don't remove these because there's no way to accurately validate them.
-                        continue;
-                    }
-                    
-                    if (!string.IsNullOrEmpty(item.Path) && IsPathOffline(item.Path))
-                    {
-                        item.IsOffline = true;
-
-                        validChildren.Add(new Tuple<BaseItem, bool>(item, false));
-                    }
-                    else
-                    {
-                        item.IsOffline = false;
-                        actualRemovals.Add(item);
-                    }
-                }
-
-                if (actualRemovals.Count > 0)
-                {
-                    RemoveChildrenInternal(actualRemovals);
-
-                    foreach (var item in actualRemovals)
-                    {
-                        LibraryManager.ReportItemRemoved(item);
-                    }
-                }
-
-                await LibraryManager.CreateItems(newItems, cancellationToken).ConfigureAwait(false);
-
-                AddChildrenInternal(newItems);
-
-                await ItemRepository.SaveChildren(Id, ActualChildren.Select(i => i.Id).ToList(), cancellationToken).ConfigureAwait(false);
+                validChildren.AddRange(ActualChildren.Select(i => new Tuple<BaseItem, bool>(i, false)));
             }
 
             progress.Report(10);
