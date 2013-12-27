@@ -53,6 +53,13 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Data.SQLite, Version=1.0.90.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\System.Data.SQLite.x86.1.0.90.0\lib\net45\System.Data.SQLite.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data.SQLite.Linq">
+      <HintPath>..\packages\System.Data.SQLite.x86.1.0.90.0\lib\net45\System.Data.SQLite.Linq.dll</HintPath>
+    </Reference>
     <Reference Include="System.Drawing" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
@@ -63,10 +70,6 @@
     </Reference>
     <Reference Include="BDInfo">
       <HintPath>..\packages\MediaBrowser.BdInfo.1.0.0.5\lib\net20\BDInfo.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Data.SQLite" Condition=" '$(ConfigurationName)' != 'Release Mono' ">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\System.Data.SQLite.x86.1.0.89.0\lib\net45\System.Data.SQLite.dll</HintPath>
     </Reference>
     <Reference Include="System.Data.SQLite" Condition=" '$(ConfigurationName)' == 'Release Mono' ">
       <SpecificVersion>False</SpecificVersion>
