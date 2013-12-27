@@ -47,6 +47,7 @@
     overflow: hidden;
     font-size: 12px;
     color: #fff;
+    font-weight: normal !important;
 }
 
 .searchHintSecondaryText {

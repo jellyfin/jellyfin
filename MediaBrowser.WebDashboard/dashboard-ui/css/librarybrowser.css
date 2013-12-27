@@ -26,6 +26,7 @@
     z-index: 1000;
     top: 0;
     border-bottom: 1px solid #111;
+    padding-left: 10px;
 }
 
 .viewMenuLink {
@@ -502,6 +503,13 @@ a.itemTag:hover {
     max-width: 100%;
 }
 
+@media all and (max-width: 550px) {
+
+    .desktopViewMenuLink {
+        display: none;
+    }
+}
+
 @media all and (min-width: 600px) {
     .inlineDetailSection:not(.hide) {
         display: inline-block;
@@ -521,6 +529,10 @@ a.itemTag:hover {
 }
 
 @media all and (max-width: 750px) {
+
+    .editorMenuLink {
+        display: none;
+    }
 
     .itemBackdrop {
         background-image: none!important;

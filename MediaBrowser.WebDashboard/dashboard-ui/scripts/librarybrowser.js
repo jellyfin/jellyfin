@@ -2382,12 +2382,12 @@
 
         var html = '<div class="viewMenuBar">';
 
-        html += '<a class="viewMenuLink homeMenuLink" href="index.html" title="Home"><img src="css/images/mblogoicon.png" alt="Home" /></a>';
+        html += '<a data-role="button" href="index.html" data-icon="bars" data-iconpos="notext" data-inline="true" title="Menu">Menu</a>';
 
-        html += '<a class="viewMenuLink viewMenuImageLink remoteControlMenuLink" href="#" onclick="RemoteControl.showMenu();" title="Remote Control"><img src="css/images/remote.png" alt="Remote Control" /></a>';
+        html += '<button class="viewMenuRemoteControlButton" onclick="RemoteControl.showMenu();" type="button" data-icon="remote" data-inline="true" data-iconpos="notext" title="Remote Control">Remote Control</button>';
 
         if (user.Configuration.IsAdministrator) {
-            html += '<a class="viewMenuLink viewMenuImageLink editorMenuLink" href="edititemmetadata.html" title="Metadata Manager"><img src="css/images/editor.png" alt=""Metadata Manager" /></a>';
+            html += '<a class="editorMenuLink" href="edititemmetadata.html" data-role="button" data-icon="edit" data-inline="true" data-iconpos="notext" title="Metadata Manager">Metadata Manager</a>';
         }
 
         html += '<div class="viewMenuSecondary">';
@@ -2421,7 +2421,7 @@
 
         $(page).prepend(html);
 
-        Search.onSearchRendered($('.viewMenuBar', page).trigger('create'));
+        $('.viewMenuBar', page).trigger('create');
     }
 
     function insertViews(page, user, counts, liveTvServices) {
@@ -2435,26 +2435,26 @@
 
         if (counts.MovieCount || counts.TrailerCount) {
 
-            html += '<a class="viewMenuLink viewMenuTextLink' + (view == 'movies' ? selectedCssClass : '') + '" href="moviesrecommended.html">' + (view == 'movies' ? selectedHtml : '') + '<span class="viewName">Movies</span></a>';
+            html += '<a class="viewMenuLink viewMenuTextLink desktopViewMenuLink' + (view == 'movies' ? selectedCssClass : '') + '" href="moviesrecommended.html">' + (view == 'movies' ? selectedHtml : '') + '<span class="viewName">Movies</span></a>';
         }
 
         if (counts.EpisodeCount || counts.SeriesCount) {
-            html += '<a class="viewMenuLink viewMenuTextLink' + (view == 'tv' ? selectedCssClass : '') + '" href="tvrecommended.html">' + (view == 'tv' ? selectedHtml : '') + '<span class="viewName">TV</span></a>';
+            html += '<a class="viewMenuLink viewMenuTextLink desktopViewMenuLink' + (view == 'tv' ? selectedCssClass : '') + '" href="tvrecommended.html">' + (view == 'tv' ? selectedHtml : '') + '<span class="viewName">TV</span></a>';
         }
 
         if (liveTvServices.length) {
-            html += '<a class="viewMenuLink viewMenuTextLink' + (view == 'livetv' ? selectedCssClass : '') + '" href="livetvchannels.html">' + (view == 'livetv' ? selectedHtml : '') + '<span class="viewName">Live TV</span></a>';
+            html += '<a class="viewMenuLink viewMenuTextLink desktopViewMenuLink' + (view == 'livetv' ? selectedCssClass : '') + '" href="livetvchannels.html">' + (view == 'livetv' ? selectedHtml : '') + '<span class="viewName">Live TV</span></a>';
         }
 
         if (counts.SongCount || counts.MusicVideoCount) {
-            html += '<a class="viewMenuLink viewMenuTextLink' + (view == 'music' ? selectedCssClass : '') + '" href="musicrecommended.html">' + (view == 'music' ? selectedHtml : '') + '<span class="viewName">Music</span></a>';
+            html += '<a class="viewMenuLink viewMenuTextLink desktopViewMenuLink' + (view == 'music' ? selectedCssClass : '') + '" href="musicrecommended.html">' + (view == 'music' ? selectedHtml : '') + '<span class="viewName">Music</span></a>';
         }
 
         if (counts.GameCount) {
-            html += '<a class="viewMenuLink viewMenuTextLink' + (view == 'games' ? selectedCssClass : '') + '" href="gamesrecommended.html">' + (view == 'games' ? selectedHtml : '') + '<span class="viewName">Games</span></a>';
+            html += '<a class="viewMenuLink viewMenuTextLink desktopViewMenuLink' + (view == 'games' ? selectedCssClass : '') + '" href="gamesrecommended.html">' + (view == 'games' ? selectedHtml : '') + '<span class="viewName">Games</span></a>';
         }
 
-        $('.homeMenuLink', page).after(html);
+        $('.viewMenuRemoteControlButton', page).before(html);
     }
 
     $(document).on('pagebeforeshow', ".libraryPage", function () {

@@ -181,6 +181,10 @@
             html += '<div class="searchHintSecondaryText">' + text + '</div>';
         }
 
+        else if (hint.ProductionYear && hint.MediaType != "Audio" && hint.Type != "Episode") {
+            html += '<div class="searchHintSecondaryText">' + hint.ProductionYear + '</div>';
+        }
+        
         else if (hint.RunTimeTicks) {
             html += '<div class="searchHintSecondaryText">' + Dashboard.getDisplayTime(hint.RunTimeTicks) + '</div>';
         }
@@ -251,25 +255,8 @@
                 }
 
             });
-        }
-
-        return panel;
-    }
-
-    function search() {
-
-        var self = this;
-
-        self.showSearchPanel = function (page) {
-
-            var panel = getSearchPanel(page);
-
-            $(panel).panel('toggle');
-        };
-
-        self.onSearchRendered = function (parentElem) {
-
-            $('#searchHints', parentElem).on("keydown", '.searchHint', function (e) {
+            
+            $('#searchHints', page).on("keydown", '.searchHint', function (e) {
 
                 // Down
                 if (e.keyCode == 40) {
@@ -290,12 +277,25 @@
                     if (prev) {
                         prev.focus();
                     } else {
-                        $('#txtSearch', parentElem)[0].focus();
+                        $('#txtSearch', page)[0].focus();
                     }
                     return false;
                 }
             });
+        }
 
+        return panel;
+    }
+
+    function search() {
+
+        var self = this;
+
+        self.showSearchPanel = function (page) {
+
+            var panel = getSearchPanel(page);
+
+            $(panel).panel('toggle');
         };
     }
 
@@ -304,6 +304,7 @@
     $(document).on('pagehide', ".libraryPage", function () {
 
         $('#txtSearch', this).val('');
+        $('#searchHints', this).empty();
     });
 
 

@@ -148,7 +148,8 @@ namespace MediaBrowser.Api
                 MediaType = item.MediaType,
                 MatchedTerm = hintInfo.MatchedTerm,
                 DisplayMediaType = item.DisplayMediaType,
-                RunTimeTicks = item.RunTimeTicks
+                RunTimeTicks = item.RunTimeTicks,
+                ProductionYear = item.ProductionYear
             };
 
             if (item.HasImage(ImageType.Primary))
