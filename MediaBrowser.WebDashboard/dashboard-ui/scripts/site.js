@@ -651,7 +651,9 @@ var Dashboard = {
 
             var html = '<div class="content-secondary ui-bar-a toolsSidebar">';
 
-            html += '<h1><a href="index.html" class="imageLink" style="margin-left: 0;margin-right: 15px;"> <img src="css/images/mblogoicon.png" style="height:28px;" /></a>Tools</h1>';
+            html += '<p class="libraryPanelHeader" style="margin: 30px 0 30px 25px;"><a href="index.html" class="imageLink"><img src="css/images/mblogoicon.png" style="height:28px;" /><span>MEDIA</span><span class="mediaBrowserAccent">BROWSER</span></a></p>';
+
+            html += '<div style="position:absolute;top:20px;right:20px;"><a data-role="button" data-theme="b" data-icon="edit" data-iconpos="notext" href="edititemmetadata.html" title="Metadata Manager">Metadata Manager</a></div>';
 
             html += '<div class="sidebarLinks">';
 
@@ -686,7 +688,7 @@ var Dashboard = {
 
             html += '<div data-role="panel" id="dashboardPanel" class="dashboardPanel" data-position="left" data-display="overlay" data-position-fixed="true" data-theme="b">';
 
-            html += '<a href="index.html" class="imageLink" style="display: inline-block;margin: 20px 0 20px 15px;"><img src="css/images/mblogoicon.png" style="height:24px;" /></a>';
+            html += '<p class="libraryPanelHeader" style="margin: 20px 0 20px 15px;"><a href="index.html" class="imageLink"><img src="css/images/mblogoicon.png" /><span>MEDIA</span><span class="mediaBrowserAccent">BROWSER</span></a></p>';
 
             for (i = 0, length = links.length; i < length; i++) {
 

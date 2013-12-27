@@ -33,6 +33,7 @@
 body {
     overflow-y: scroll!important;
     font-size: 13px;
+    font-family: 'Open Sans', Arial, Helvetica, sans-serif;
 }
 
 .textlink {
@@ -44,22 +45,13 @@ body {
     }
 
 * {
-    font-family: 'Open Sans', Arial, Helvetica, sans-serif;
     text-shadow: none;
     -webkit-font-smoothing: antialiased;
-}
-
-.ui-header .ui-btn-inner, .ui-footer .ui-btn-inner, .ui-mini .ui-btn-inner, .ui-li-desc {
-    font-size: 13px;
 }
 
 h1 {
     font-weight: 300;
     font-size: 2.22em;
-}
-
-.toolsSidebar h1 {
-    font-size: 40px;
 }
 
 .ui-loader h1 {

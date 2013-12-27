@@ -1,11 +1,18 @@
 ﻿.searchPanel {
-    min-width: 250px;
+    width: 250px;
 }
 
-@media all and (min-width: 60px) {
+.ui-panel-dismiss-open.ui-panel-dismiss-position-right[data-panelid=searchPanel] {
+    right: 250px;
+}
 
+@media all and (min-width: 600px) {
     .searchPanel {
-        min-width: 300px;
+        width: 300px;
+    }
+
+    .ui-panel-dismiss-open.ui-panel-dismiss-position-right[data-panelid=searchPanel] {
+        right: 300px;
     }
 }
 
