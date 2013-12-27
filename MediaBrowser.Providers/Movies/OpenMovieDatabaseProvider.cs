@@ -202,6 +202,14 @@ namespace MediaBrowser.Providers.Movies
 
         private bool ShouldFetchGenres(BaseItem item)
         {
+            var lang = item.GetPreferredMetadataLanguage();
+
+            // The data isn't localized and so can only be used for english users
+            if (!string.Equals(lang, "en", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
             // Only fetch if other providers didn't get anything
             if (item is Trailer)
             {

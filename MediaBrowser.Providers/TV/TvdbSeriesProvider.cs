@@ -248,13 +248,13 @@ namespace MediaBrowser.Providers.TV
                 .Select(Path.GetFileName)
                 .ToList();
 
-            var seriesXmlFilename = ConfigurationManager.Configuration.PreferredMetadataLanguage.ToLower() + ".xml";
+            var seriesXmlFilename = series.GetPreferredMetadataLanguage().ToLower() + ".xml";
 
             // Only download if not already there
             // The prescan task will take care of updates so we don't need to re-download here
             if (!files.Contains("banners.xml", StringComparer.OrdinalIgnoreCase) || !files.Contains("actors.xml", StringComparer.OrdinalIgnoreCase) || !files.Contains(seriesXmlFilename, StringComparer.OrdinalIgnoreCase))
             {
-                await DownloadSeriesZip(seriesId, seriesDataPath, null, cancellationToken).ConfigureAwait(false);
+                await DownloadSeriesZip(seriesId, seriesDataPath, null, series.GetPreferredMetadataLanguage(), cancellationToken).ConfigureAwait(false);
             }
 
             // Have to check this here since we prevent the normal enforcement through ProviderManager
@@ -285,11 +285,13 @@ namespace MediaBrowser.Providers.TV
         /// </summary>
         /// <param name="seriesId">The series id.</param>
         /// <param name="seriesDataPath">The series data path.</param>
+        /// <param name="lastTvDbUpdateTime">The last tv database update time.</param>
+        /// <param name="preferredMetadataLanguage">The preferred metadata language.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        internal async Task DownloadSeriesZip(string seriesId, string seriesDataPath, long? lastTvDbUpdateTime, CancellationToken cancellationToken)
+        internal async Task DownloadSeriesZip(string seriesId, string seriesDataPath, long? lastTvDbUpdateTime, string preferredMetadataLanguage, CancellationToken cancellationToken)
         {
-            var url = string.Format(SeriesGetZip, TVUtils.TvdbApiKey, seriesId, ConfigurationManager.Configuration.PreferredMetadataLanguage);
+            var url = string.Format(SeriesGetZip, TVUtils.TvdbApiKey, seriesId, preferredMetadataLanguage);
 
             using (var zipStream = await HttpClient.Get(new HttpRequestOptions
             {
@@ -319,7 +321,7 @@ namespace MediaBrowser.Providers.TV
                 await SanitizeXmlFile(file).ConfigureAwait(false);
             }
 
-            await ExtractEpisodes(seriesDataPath, Path.Combine(seriesDataPath, ConfigurationManager.Configuration.PreferredMetadataLanguage + ".xml"), lastTvDbUpdateTime).ConfigureAwait(false);
+            await ExtractEpisodes(seriesDataPath, Path.Combine(seriesDataPath, preferredMetadataLanguage + ".xml"), lastTvDbUpdateTime).ConfigureAwait(false);
         }
 
         private void DeleteXmlFiles(string path)
@@ -852,7 +854,7 @@ namespace MediaBrowser.Providers.TV
                                 if (!string.IsNullOrWhiteSpace(val))
                                 {
                                     // Only fill this in if there's no existing genres, because Imdb data from Omdb is preferred
-                                    if (!item.LockedFields.Contains(MetadataFields.Genres) && (item.Genres.Count == 0 || !string.Equals(ConfigurationManager.Configuration.PreferredMetadataLanguage, "en", StringComparison.OrdinalIgnoreCase)))
+                                    if (!item.LockedFields.Contains(MetadataFields.Genres) && (item.Genres.Count == 0 || !string.Equals(item.GetPreferredMetadataLanguage(), "en", StringComparison.OrdinalIgnoreCase)))
                                     {
                                         var vals = val
                                             .Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries)

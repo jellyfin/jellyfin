@@ -12,7 +12,7 @@ namespace MediaBrowser.Controller.Entities.Movies
     /// <summary>
     /// Class Movie
     /// </summary>
-    public class Movie : Video, IHasCriticRating, IHasSoundtracks, IHasBudget, IHasTrailers, IHasThemeMedia, IHasTaglines, IHasTags
+    public class Movie : Video, IHasCriticRating, IHasSoundtracks, IHasBudget, IHasTrailers, IHasThemeMedia, IHasTaglines, IHasTags, IHasPreferredMetadataLanguage
     {
         public List<Guid> SpecialFeatureIds { get; set; }
 
@@ -20,6 +20,8 @@ namespace MediaBrowser.Controller.Entities.Movies
 
         public List<Guid> ThemeSongIds { get; set; }
         public List<Guid> ThemeVideoIds { get; set; }
+
+        public string PreferredMetadataLanguage { get; set; }
         
         public Movie()
         {

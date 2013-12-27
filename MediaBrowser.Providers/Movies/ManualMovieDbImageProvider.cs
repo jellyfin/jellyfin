@@ -87,7 +87,7 @@ namespace MediaBrowser.Providers.Movies
                 RatingType = RatingType.Score
             }));
 
-            var language = _config.Configuration.PreferredMetadataLanguage;
+            var language = item.GetPreferredMetadataLanguage();
 
             var isLanguageEn = string.Equals(language, "en", StringComparison.OrdinalIgnoreCase);
 
@@ -123,8 +123,6 @@ namespace MediaBrowser.Providers.Movies
         /// <returns>IEnumerable{MovieDbProvider.Poster}.</returns>
         private IEnumerable<MovieDbProvider.Poster> GetPosters(MovieDbProvider.Images images, IHasImages item)
         {
-            var language = _config.Configuration.PreferredMetadataLanguage;
-
             return images.posters ?? new List<MovieDbProvider.Poster>();
         }
 

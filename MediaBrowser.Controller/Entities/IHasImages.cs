@@ -75,6 +75,12 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The primary image path.</value>
         string PrimaryImagePath { get; set; }
+
+        /// <summary>
+        /// Gets the preferred metadata language.
+        /// </summary>
+        /// <returns>System.String.</returns>
+        string GetPreferredMetadataLanguage();
     }
 
     public static class HasImagesExtensions

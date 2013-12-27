@@ -6,7 +6,6 @@ using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -65,13 +64,13 @@ namespace MediaBrowser.Providers.Movies
 
                 var tmdbImageUrl = tmdbSettings.images.base_url + "original";
 
-                return GetImages(images, tmdbImageUrl);
+                return GetImages(images, item.GetPreferredMetadataLanguage(), tmdbImageUrl);
             }
 
             return new List<RemoteImageInfo>();
         }
 
-        private IEnumerable<RemoteImageInfo> GetImages(MovieDbPersonProvider.Images images, string baseImageUrl)
+        private IEnumerable<RemoteImageInfo> GetImages(MovieDbPersonProvider.Images images, string preferredLanguage, string baseImageUrl)
         {
             var list = new List<RemoteImageInfo>();
 
@@ -88,7 +87,7 @@ namespace MediaBrowser.Providers.Movies
                 }));
             }
 
-            var language = _config.Configuration.PreferredMetadataLanguage;
+            var language = preferredLanguage;
 
             var isLanguageEn = string.Equals(language, "en", StringComparison.OrdinalIgnoreCase);
 

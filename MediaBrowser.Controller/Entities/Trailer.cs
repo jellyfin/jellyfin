@@ -9,9 +9,11 @@ namespace MediaBrowser.Controller.Entities
     /// <summary>
     /// Class Trailer
     /// </summary>
-    public class Trailer : Video, IHasCriticRating, IHasSoundtracks, IHasBudget, IHasTrailers, IHasTaglines, IHasTags
+    public class Trailer : Video, IHasCriticRating, IHasSoundtracks, IHasBudget, IHasTrailers, IHasTaglines, IHasTags, IHasPreferredMetadataLanguage
     {
         public List<Guid> SoundtrackIds { get; set; }
+
+        public string PreferredMetadataLanguage { get; set; }
         
         public Trailer()
         {
