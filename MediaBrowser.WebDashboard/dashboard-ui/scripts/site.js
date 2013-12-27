@@ -128,18 +128,27 @@ var Dashboard = {
         }, 2000);
     },
 
-    alert: function (message) {
+    alert: function (options) {
 
-        $.mobile.loading('show', {
-            theme: "b",
-            text: message,
-            textonly: true,
-            textVisible: true
-        });
+        if (typeof options == "string") {
 
-        setTimeout(function () {
-            $.mobile.loading('hide');
-        }, 4000);
+            var message = options;
+
+            $.mobile.loading('show', {
+                theme: "b",
+                text: message,
+                textonly: true,
+                textVisible: true
+            });
+
+            setTimeout(function () {
+                $.mobile.loading('hide');
+            }, 4000);
+
+            return;
+        }
+
+        Dashboard.confirmInternal(options.message, options.title || 'Alert', false, options.callback);
     },
 
     updateSystemInfo: function (info) {
@@ -372,7 +381,7 @@ var Dashboard = {
         Dashboard.alert("Settings saved.");
     },
 
-    confirm: function (message, title, callback) {
+    confirmInternal: function (message, title, showCancel, callback) {
 
         $('#confirmFlyout').popup("close").remove();
 
@@ -389,7 +398,11 @@ var Dashboard = {
         html += '</div>';
 
         html += '<p><button type="button" data-icon="check" onclick="$(\'#confirmFlyout\')[0].confirm=true;$(\'#confirmFlyout\').popup(\'close\');" data-theme="b">Ok</button></p>';
-        html += '<p><button type="button" data-icon="delete" onclick="$(\'#confirmFlyout\').popup(\'close\');" data-theme="a">Cancel</button></p>';
+
+        if (showCancel) {
+            html += '<p><button type="button" data-icon="delete" onclick="$(\'#confirmFlyout\').popup(\'close\');" data-theme="a">Cancel</button></p>';
+        }
+
         html += '</div>';
 
         html += '</div>';
@@ -404,6 +417,10 @@ var Dashboard = {
 
             $(this).off("popupafterclose").remove();
         });
+    },
+
+    confirm: function (message, title, callback) {
+        Dashboard.confirmInternal(message, title, true, callback);
     },
 
     refreshSystemInfoFromServer: function () {
@@ -633,7 +650,7 @@ var Dashboard = {
             for (var i = 0, length = links.length; i < length; i++) {
 
                 var link = links[i];
-                
+
                 if (link.divider) {
                     html += "<div class='sidebarDivider'></div>";
                 }
@@ -1157,7 +1174,10 @@ var Dashboard = {
                 dialog.close();
 
                 ApiClient.createPackageReview(review).done(function () {
-                    Dashboard.alert("Thank you for your review");
+                    Dashboard.alert({
+                        message: "Thank you for your review",
+                        title: "Thank You"
+                    });
                 });
             }
         });

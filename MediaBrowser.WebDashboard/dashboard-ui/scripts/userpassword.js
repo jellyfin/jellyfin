@@ -82,7 +82,12 @@
                     ApiClient.resetUserPassword(userId).done(function () {
 
                         Dashboard.hideLoadingMsg();
-                        Dashboard.alert("The password has been reset.");
+
+                        Dashboard.alert({
+                            message: "The password has been reset.",
+                            title: "Password Reset"
+                        });
+                        
                         loadUser(page);
 
                     });

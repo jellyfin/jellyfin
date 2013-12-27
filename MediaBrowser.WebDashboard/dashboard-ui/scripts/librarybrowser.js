@@ -963,7 +963,14 @@
                 return "Yesterday";
             }
 
-            return weekday[date.getDay()] + " " + date.toLocaleDateString();
+            var day = weekday[date.getDay()];
+            date = date.toLocaleDateString();
+            
+            if (date.toLowerCase().indexOf(day.toLowerCase()) == -1) {
+                return day + " " + date;
+            }
+
+            return date;
         },
 
         getPremiereDateText: function (item, date) {

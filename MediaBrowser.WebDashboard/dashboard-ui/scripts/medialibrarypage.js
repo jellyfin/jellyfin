@@ -116,8 +116,10 @@
 
     changeCollectionType: function () {
 
-        Dashboard.alert("To change the collection type, please remove and rebuild the collection with the new type.");
-
+        Dashboard.alert({
+            message: "To change the collection type, please remove and rebuild the collection with the new type.",
+            title: "Change Collection Type"
+        });
     },
 
     getVirtualFolderHtml: function (virtualFolder, isCollapsed, index) {
