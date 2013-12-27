@@ -465,6 +465,7 @@ namespace MediaBrowser.WebDashboard.Api
                                       "extensions.js",
                                       "site.js",
                                       "librarybrowser.js",
+                                      "librarymenu.js",
                                       "ratingdialog.js",
                                       "aboutpage.js",
                                       "allusersettings.js",
