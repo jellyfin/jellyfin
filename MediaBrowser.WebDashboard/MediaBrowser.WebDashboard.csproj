@@ -226,19 +226,19 @@
     <Content Include="dashboard-ui\css\images\fresh.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\css\images\items\searchhints\film.png">
+    <Content Include="dashboard-ui\css\images\items\searchhintsv2\film.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\css\images\items\searchhints\game.png">
+    <Content Include="dashboard-ui\css\images\items\searchhintsv2\game.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\css\images\items\searchhints\music.png">
+    <Content Include="dashboard-ui\css\images\items\searchhintsv2\music.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\css\images\items\searchhints\person.png">
+    <Content Include="dashboard-ui\css\images\items\searchhintsv2\person.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\css\images\items\searchhints\tv.png">
+    <Content Include="dashboard-ui\css\images\items\searchhintsv2\tv.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\css\images\media\audioflyout.png">

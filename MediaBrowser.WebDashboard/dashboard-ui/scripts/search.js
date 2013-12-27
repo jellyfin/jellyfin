@@ -97,27 +97,27 @@
         }
         else if (hint.MediaType == "Game") {
 
-            imgUrl = "css/images/items/searchhints/game.png";
+            imgUrl = "css/images/items/searchhintsv2/game.png";
 
         }
         else if (hint.Type == "Episode" || hint.Type == "Season" || hint.Type == "Series") {
 
-            imgUrl = "css/images/items/searchhints/tv.png";
+            imgUrl = "css/images/items/searchhintsv2/tv.png";
 
         }
         else if (hint.Type == "Audio" || hint.Type == "MusicAlbum" || hint.Type == "MusicArtist") {
 
-            imgUrl = "css/images/items/searchhints/music.png";
+            imgUrl = "css/images/items/searchhintsv2/music.png";
 
         }
         else if (hint.Type == "Person") {
 
-            imgUrl = "css/images/items/searchhints/person.png";
+            imgUrl = "css/images/items/searchhintsv2/person.png";
 
         }
         else {
 
-            imgUrl = "css/images/items/searchhints/film.png";
+            imgUrl = "css/images/items/searchhintsv2/film.png";
         }
 
         html += '<img class="searchHintImage" src="' + imgUrl + '" />';

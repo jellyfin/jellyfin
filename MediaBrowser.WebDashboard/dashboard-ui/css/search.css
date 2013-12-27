@@ -1,4 +1,15 @@
-﻿.searchHints {
+﻿.searchPanel {
+    min-width: 250px;
+}
+
+@media all and (min-width: 60px) {
+
+    .searchPanel {
+        min-width: 300px;
+    }
+}
+
+.searchHints {
     margin-top: 1em;
 }
 
