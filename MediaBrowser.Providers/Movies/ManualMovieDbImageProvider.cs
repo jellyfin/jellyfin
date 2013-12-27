@@ -150,7 +150,7 @@ namespace MediaBrowser.Providers.Movies
         /// <returns>Task{MovieImages}.</returns>
         private MovieDbProvider.Images FetchImages(IHasImages item, IJsonSerializer jsonSerializer)
         {
-            var path = MovieDbProvider.Current.GetImagesDataFilePath((BaseItem)item);
+            var path = MovieDbProvider.Current.GetDataFilePath((BaseItem)item);
 
             if (!string.IsNullOrEmpty(path))
             {
