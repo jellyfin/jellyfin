@@ -32,6 +32,12 @@ namespace MediaBrowser.Model.Search
         public int? IndexNumber { get; set; }
 
         /// <summary>
+        /// Gets or sets the production year.
+        /// </summary>
+        /// <value>The production year.</value>
+        public int? ProductionYear { get; set; }
+        
+        /// <summary>
         /// Gets or sets the parent index number.
         /// </summary>
         /// <value>The parent index number.</value>
