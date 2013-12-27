@@ -5,12 +5,14 @@ using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Entities
 {
-    public class Game : BaseItem, IHasSoundtracks, IHasTrailers, IHasThemeMedia, IHasTags, IHasLanguage, IHasScreenshots
+    public class Game : BaseItem, IHasSoundtracks, IHasTrailers, IHasThemeMedia, IHasTags, IHasLanguage, IHasScreenshots, IHasPreferredMetadataLanguage
     {
         public List<Guid> SoundtrackIds { get; set; }
 
         public List<Guid> ThemeSongIds { get; set; }
         public List<Guid> ThemeVideoIds { get; set; }
+
+        public string PreferredMetadataLanguage { get; set; }
 
         public Game()
         {

@@ -64,7 +64,7 @@ namespace MediaBrowser.Providers.TV
 
                 try
                 {
-                    var result = GetImages(path, cancellationToken);
+                    var result = GetImages(path, item.GetPreferredMetadataLanguage(), cancellationToken);
 
                     return Task.FromResult(result);
                 }
@@ -77,7 +77,7 @@ namespace MediaBrowser.Providers.TV
             return Task.FromResult<IEnumerable<RemoteImageInfo>>(new RemoteImageInfo[] { });
         }
 
-        private IEnumerable<RemoteImageInfo> GetImages(string xmlPath, CancellationToken cancellationToken)
+        private IEnumerable<RemoteImageInfo> GetImages(string xmlPath, string preferredLanguage, CancellationToken cancellationToken)
         {
             var settings = new XmlReaderSettings
             {
@@ -122,13 +122,11 @@ namespace MediaBrowser.Providers.TV
                 }
             }
 
-            var language = _config.Configuration.PreferredMetadataLanguage;
-
-            var isLanguageEn = string.Equals(language, "en", StringComparison.OrdinalIgnoreCase);
+            var isLanguageEn = string.Equals(preferredLanguage, "en", StringComparison.OrdinalIgnoreCase);
 
             return list.OrderByDescending(i =>
             {
-                if (string.Equals(language, i.Language, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(preferredLanguage, i.Language, StringComparison.OrdinalIgnoreCase))
                 {
                     return 3;
                 }

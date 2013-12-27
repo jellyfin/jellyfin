@@ -957,6 +957,29 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
+        /// Gets the preferred metadata language.
+        /// </summary>
+        /// <returns>System.String.</returns>
+        public virtual string GetPreferredMetadataLanguage()
+        {
+            string lang = null;
+
+            var hasLang = this as IHasPreferredMetadataLanguage;
+
+            if (hasLang != null)
+            {
+                lang = hasLang.PreferredMetadataLanguage;
+            }
+
+            if (string.IsNullOrEmpty(lang))
+            {
+                lang = ConfigurationManager.Configuration.PreferredMetadataLanguage;
+            }
+
+            return lang;
+        }
+
+        /// <summary>
         /// Determines if a given user has access to this item
         /// </summary>
         /// <param name="user">The user.</param>

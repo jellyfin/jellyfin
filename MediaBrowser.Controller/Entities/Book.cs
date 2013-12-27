@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Entities
 {
-    public class Book : BaseItem, IHasTags
+    public class Book : BaseItem, IHasTags, IHasPreferredMetadataLanguage
     {
         public override string MediaType
         {
@@ -12,6 +12,7 @@ namespace MediaBrowser.Controller.Entities
                 return Model.Entities.MediaType.Book;
             }
         }
+
         /// <summary>
         /// Gets or sets the tags.
         /// </summary>
@@ -19,6 +20,8 @@ namespace MediaBrowser.Controller.Entities
         public List<string> Tags { get; set; }
 
         public string SeriesName { get; set; }
+
+        public string PreferredMetadataLanguage { get; set; }
 
         /// <summary>
         /// 

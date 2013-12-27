@@ -318,7 +318,7 @@ namespace MediaBrowser.Providers.Movies
             var year = item.ProductionYear ?? yearInName;
 
             Logger.Info("MovieDbProvider: Finding id for item: " + name);
-            string language = ConfigurationManager.Configuration.PreferredMetadataLanguage.ToLower();
+            var language = item.GetPreferredMetadataLanguage().ToLower();
 
             //if we are a boxset - look at our first child
             var boxset = item as BoxSet;
@@ -502,7 +502,7 @@ namespace MediaBrowser.Providers.Movies
         {
             // Id could be ImdbId or TmdbId
 
-            var language = ConfigurationManager.Configuration.PreferredMetadataLanguage;
+            var language = item.GetPreferredMetadataLanguage();
 
             var dataFilePath = GetDataFilePath(item);
 
@@ -538,7 +538,7 @@ namespace MediaBrowser.Providers.Movies
 
             if (isForcedRefresh || ConfigurationManager.Configuration.EnableTmdbUpdates || !HasAltMeta(item))
             {
-                dataFilePath = GetDataFilePath(item, tmdbId);
+                dataFilePath = GetDataFilePath(item, tmdbId, language);
 
                 if (!string.IsNullOrEmpty(dataFilePath))
                 {
@@ -555,17 +555,16 @@ namespace MediaBrowser.Providers.Movies
         /// <param name="id">The id.</param>
         /// <param name="isBoxSet">if set to <c>true</c> [is box set].</param>
         /// <param name="dataPath">The data path.</param>
+        /// <param name="preferredMetadataLanguage">The preferred metadata language.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        internal async Task DownloadMovieInfo(string id, bool isBoxSet, string dataPath, CancellationToken cancellationToken)
+        internal async Task DownloadMovieInfo(string id, bool isBoxSet, string dataPath, string preferredMetadataLanguage, CancellationToken cancellationToken)
         {
-            var language = ConfigurationManager.Configuration.PreferredMetadataLanguage;
-
-            var mainResult = await FetchMainResult(id, isBoxSet, language, cancellationToken).ConfigureAwait(false);
+            var mainResult = await FetchMainResult(id, isBoxSet, preferredMetadataLanguage, cancellationToken).ConfigureAwait(false);
 
             if (mainResult == null) return;
 
-            var dataFilePath = Path.Combine(dataPath, language + ".json");
+            var dataFilePath = Path.Combine(dataPath, preferredMetadataLanguage + ".json");
 
             Directory.CreateDirectory(dataPath);
 
@@ -593,16 +592,14 @@ namespace MediaBrowser.Providers.Movies
                 return null;
             }
 
-            return GetDataFilePath(item, id);
+            return GetDataFilePath(item, id, item.GetPreferredMetadataLanguage());
         }
 
-        internal string GetDataFilePath(BaseItem item, string tmdbId)
+        internal string GetDataFilePath(BaseItem item, string tmdbId, string preferredLanguage)
         {
-            var language = ConfigurationManager.Configuration.PreferredMetadataLanguage;
-
             var path = GetMovieDataPath(ConfigurationManager.ApplicationPaths, item is BoxSet, tmdbId);
 
-            path = Path.Combine(path, language + ".json");
+            path = Path.Combine(path, preferredLanguage + ".json");
 
             return path;
         }
@@ -838,15 +835,17 @@ namespace MediaBrowser.Providers.Movies
 
             // genres
             // Movies get this from imdb
-            if (movieData.genres != null && !movie.LockedFields.Contains(MetadataFields.Genres))
+            var genres = movieData.genres ?? new List<GenreItem>();
+            if (!movie.LockedFields.Contains(MetadataFields.Genres))
             {
                 // Only grab them if a boxset or there are no genres.
                 // For movies and trailers we'll use imdb via omdb
-                if (!(movie is Movie) || movie.Genres.Count == 0)
+                // But omdb data is for english users only so fetch if language is not english
+                if (!(movie is Movie) || movie.Genres.Count == 0 || !string.Equals(movie.GetPreferredMetadataLanguage(), "en", StringComparison.OrdinalIgnoreCase))
                 {
                     movie.Genres.Clear();
 
-                    foreach (var genre in movieData.genres.Select(g => g.name))
+                    foreach (var genre in genres.Select(g => g.name))
                     {
                         movie.AddGenre(genre);
                     }

@@ -72,7 +72,7 @@ namespace MediaBrowser.Providers.Music
                 }
             }
 
-            var language = _config.Configuration.PreferredMetadataLanguage;
+            var language = item.GetPreferredMetadataLanguage();
 
             var isLanguageEn = string.Equals(language, "en", StringComparison.OrdinalIgnoreCase);
 

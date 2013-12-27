@@ -14,7 +14,7 @@ namespace MediaBrowser.Controller.Entities.TV
     /// <summary>
     /// Class Series
     /// </summary>
-    public class Series : Folder, IHasSoundtracks, IHasTrailers, IHasTags
+    public class Series : Folder, IHasSoundtracks, IHasTrailers, IHasTags, IHasPreferredMetadataLanguage
     {
         public List<Guid> SpecialFeatureIds { get; set; }
         public List<Guid> SoundtrackIds { get; set; }
@@ -223,5 +223,7 @@ namespace MediaBrowser.Controller.Entities.TV
         {
             return config.BlockUnratedSeries;
         }
+
+        public string PreferredMetadataLanguage { get; set; }
     }
 }

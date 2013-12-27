@@ -2,7 +2,10 @@
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
@@ -37,6 +40,7 @@ namespace MediaBrowser.Providers.Movies
         private readonly IServerConfigurationManager _config;
         private readonly IJsonSerializer _json;
         private readonly IFileSystem _fileSystem;
+        private readonly ILibraryManager _libraryManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MovieUpdatesPreScanTask"/> class.
@@ -45,13 +49,14 @@ namespace MediaBrowser.Providers.Movies
         /// <param name="httpClient">The HTTP client.</param>
         /// <param name="config">The config.</param>
         /// <param name="json">The json.</param>
-        public MovieUpdatesPreScanTask(ILogger logger, IHttpClient httpClient, IServerConfigurationManager config, IJsonSerializer json, IFileSystem fileSystem)
+        public MovieUpdatesPreScanTask(ILogger logger, IHttpClient httpClient, IServerConfigurationManager config, IJsonSerializer json, IFileSystem fileSystem, ILibraryManager libraryManager)
         {
             _logger = logger;
             _httpClient = httpClient;
             _config = config;
             _json = json;
             _fileSystem = fileSystem;
+            _libraryManager = libraryManager;
         }
 
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
@@ -196,15 +201,30 @@ namespace MediaBrowser.Providers.Movies
             var list = ids.ToList();
             var numComplete = 0;
 
+            // Gather all movies into a lookup by tmdb id
+            var allMovies = _libraryManager.RootFolder.RecursiveChildren
+                .Where(i => i is Movie || i is Trailer)
+                .Where(i => !string.IsNullOrEmpty(i.GetProviderId(MetadataProviders.Tmdb)))
+                .ToLookup(i => i.GetProviderId(MetadataProviders.Tmdb));
+
             foreach (var id in list)
             {
-                try
+                // Find the preferred language(s) for the movie in the library
+                var languages = allMovies[id]
+                    .Select(i => i.GetPreferredMetadataLanguage())
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+
+                foreach (var language in languages)
                 {
-                    await UpdateMovie(id, isBoxSet, moviesDataPath, cancellationToken).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error updating tmdb movie id {0}", ex, id);
+                    try
+                    {
+                        await UpdateMovie(id, isBoxSet, moviesDataPath, language, cancellationToken).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.ErrorException("Error updating tmdb movie id {0}, language {1}", ex, id, language);
+                    }
                 }
 
                 numComplete++;
@@ -222,17 +242,18 @@ namespace MediaBrowser.Providers.Movies
         /// <param name="id">The id.</param>
         /// <param name="isBoxSet">if set to <c>true</c> [is box set].</param>
         /// <param name="dataPath">The data path.</param>
+        /// <param name="preferredMetadataLanguage">The preferred metadata language.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        private Task UpdateMovie(string id, bool isBoxSet, string dataPath, CancellationToken cancellationToken)
+        private Task UpdateMovie(string id, bool isBoxSet, string dataPath, string preferredMetadataLanguage, CancellationToken cancellationToken)
         {
-            _logger.Info("Updating movie from tmdb " + id);
+            _logger.Info("Updating movie from tmdb " + id + ", language " + preferredMetadataLanguage);
 
             var itemDataPath = Path.Combine(dataPath, id);
 
             Directory.CreateDirectory(dataPath);
 
-            return MovieDbProvider.Current.DownloadMovieInfo(id, isBoxSet, itemDataPath, cancellationToken);
+            return MovieDbProvider.Current.DownloadMovieInfo(id, isBoxSet, itemDataPath, preferredMetadataLanguage, cancellationToken);
         }
 
         class Result

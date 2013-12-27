@@ -8,7 +8,7 @@ namespace MediaBrowser.Controller.Entities.Movies
     /// <summary>
     /// Class BoxSet
     /// </summary>
-    public class BoxSet : Folder, IHasTrailers, IHasTags
+    public class BoxSet : Folder, IHasTrailers, IHasTags, IHasPreferredMetadataLanguage
     {
         public BoxSet()
         {
@@ -30,6 +30,8 @@ namespace MediaBrowser.Controller.Entities.Movies
         /// </summary>
         /// <value>The tags.</value>
         public List<string> Tags { get; set; }
+
+        public string PreferredMetadataLanguage { get; set; }
 
         protected override bool GetBlockUnratedValue(UserConfiguration config)
         {

@@ -88,7 +88,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The path.</value>
         public string Path { get; set; }
-
+        
         /// <summary>
         /// Gets or sets the official rating.
         /// </summary>

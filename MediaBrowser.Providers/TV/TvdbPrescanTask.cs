@@ -3,6 +3,7 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using System;
@@ -45,6 +46,7 @@ namespace MediaBrowser.Providers.TV
         /// </summary>
         private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
+        private readonly ILibraryManager _libraryManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TvdbPrescanTask"/> class.
@@ -52,12 +54,13 @@ namespace MediaBrowser.Providers.TV
         /// <param name="logger">The logger.</param>
         /// <param name="httpClient">The HTTP client.</param>
         /// <param name="config">The config.</param>
-        public TvdbPrescanTask(ILogger logger, IHttpClient httpClient, IServerConfigurationManager config, IFileSystem fileSystem)
+        public TvdbPrescanTask(ILogger logger, IHttpClient httpClient, IServerConfigurationManager config, IFileSystem fileSystem, ILibraryManager libraryManager)
         {
             _logger = logger;
             _httpClient = httpClient;
             _config = config;
             _fileSystem = fileSystem;
+            _libraryManager = libraryManager;
         }
 
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
@@ -273,19 +276,36 @@ namespace MediaBrowser.Providers.TV
             var list = seriesIds.ToList();
             var numComplete = 0;
 
+            // Gather all series into a lookup by tvdb id
+            var allSeries = _libraryManager.RootFolder.RecursiveChildren
+                .OfType<Series>()
+                .Where(i => !string.IsNullOrEmpty(i.GetProviderId(MetadataProviders.Tvdb)))
+                .ToLookup(i => i.GetProviderId(MetadataProviders.Tvdb));
+
             foreach (var seriesId in list)
             {
-                try
+                // Find the preferred language(s) for the movie in the library
+                var languages = allSeries[seriesId]
+                    .Select(i => i.GetPreferredMetadataLanguage())
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+
+                foreach (var language in languages)
                 {
-                    await UpdateSeries(seriesId, seriesDataPath, lastTvDbUpdateTime, cancellationToken).ConfigureAwait(false);
-                }
-                catch (HttpException ex)
-                {
-                    // Already logged at lower levels, but don't fail the whole operation, unless timed out
-                    // We have to fail this to make it run again otherwise new episode data could potentially be missing
-                    if (ex.IsTimedOut)
+                    try
                     {
-                        throw;
+                        await UpdateSeries(seriesId, seriesDataPath, lastTvDbUpdateTime, language, cancellationToken).ConfigureAwait(false);
+                    }
+                    catch (HttpException ex)
+                    {
+                        _logger.ErrorException("Error updating tvdb series id {0}, language {1}", ex, seriesId, language);
+                        
+                        // Already logged at lower levels, but don't fail the whole operation, unless timed out
+                        // We have to fail this to make it run again otherwise new episode data could potentially be missing
+                        if (ex.IsTimedOut)
+                        {
+                            throw;
+                        }
                     }
                 }
 
@@ -304,17 +324,18 @@ namespace MediaBrowser.Providers.TV
         /// <param name="id">The id.</param>
         /// <param name="seriesDataPath">The series data path.</param>
         /// <param name="lastTvDbUpdateTime">The last tv db update time.</param>
+        /// <param name="preferredMetadataLanguage">The preferred metadata language.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        private Task UpdateSeries(string id, string seriesDataPath, long? lastTvDbUpdateTime, CancellationToken cancellationToken)
+        private Task UpdateSeries(string id, string seriesDataPath, long? lastTvDbUpdateTime, string preferredMetadataLanguage, CancellationToken cancellationToken)
         {
-            _logger.Info("Updating series " + id);
+            _logger.Info("Updating movie from tmdb " + id + ", language " + preferredMetadataLanguage);
 
             seriesDataPath = Path.Combine(seriesDataPath, id);
 
             Directory.CreateDirectory(seriesDataPath);
 
-            return TvdbSeriesProvider.Current.DownloadSeriesZip(id, seriesDataPath, lastTvDbUpdateTime, cancellationToken);
+            return TvdbSeriesProvider.Current.DownloadSeriesZip(id, seriesDataPath, lastTvDbUpdateTime, preferredMetadataLanguage, cancellationToken);
         }
     }
 }

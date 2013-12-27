@@ -378,7 +378,7 @@ namespace MediaBrowser.Server.Implementations.Providers
                 providers = providers.Where(i => string.Equals(i.Name, providerName, StringComparison.OrdinalIgnoreCase));
             }
 
-            var preferredLanguage = ConfigurationManager.Configuration.PreferredMetadataLanguage;
+            var preferredLanguage = item.GetPreferredMetadataLanguage();
 
             var tasks = providers.Select(i => Task.Run(async () =>
             {
