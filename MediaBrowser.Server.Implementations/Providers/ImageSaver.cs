@@ -486,7 +486,7 @@ namespace MediaBrowser.Server.Implementations.Providers
                 {
                     return new[] { GetSavePathForItemInMixedFolder(item, type, "fanart" + outputIndex.ToString(UsCulture), extension) };
                 }
-                
+
                 var extraFanartFilename = GetBackdropSaveFilename(item.BackdropImagePaths, "fanart", "fanart", outputIndex);
 
                 return new[]
@@ -563,6 +563,13 @@ namespace MediaBrowser.Server.Implementations.Providers
 
                     return new[] { Path.Combine(seriesFolder, imageFilename) };
                 }
+
+                if (item.IsInMixedFolder)
+                {
+                    return new[] { GetSavePathForItemInMixedFolder(item, type, "landscape", extension) };
+                }
+
+                return new[] { Path.Combine(item.MetaLocation, "landscape" + extension) };
             }
 
             // All other paths are the same
