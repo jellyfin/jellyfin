@@ -52,6 +52,17 @@ namespace MediaBrowser.Api.LiveTv
 
         [ApiMember(Name = "UserId", Description = "Optional filter by user and attach user data.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string UserId { get; set; }
+
+        [ApiMember(Name = "GroupId", Description = "Optional filter by recording group.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string GroupId { get; set; }
+    }
+
+    [Route("/LiveTv/Recordings/Groups", "GET")]
+    [Api(Description = "Gets live tv recording groups")]
+    public class GetRecordingGroups : IReturn<QueryResult<RecordingInfoDto>>
+    {
+        [ApiMember(Name = "UserId", Description = "Optional filter by user and attach user data.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string UserId { get; set; }
     }
 
     [Route("/LiveTv/Recordings/{Id}", "GET")]
@@ -247,7 +258,8 @@ namespace MediaBrowser.Api.LiveTv
             var result = _liveTvManager.GetRecordings(new RecordingQuery
             {
                 ChannelId = request.ChannelId,
-                UserId = request.UserId
+                UserId = request.UserId,
+                GroupId = request.GroupId
 
             }, CancellationToken.None).Result;
 
@@ -377,6 +389,17 @@ namespace MediaBrowser.Api.LiveTv
             var stream = _liveTvManager.GetRecordingStream(request.Id, CancellationToken.None).Result;
 
             return ToStreamResult(stream.Stream, stream.MimeType);
+        }
+
+        public object Get(GetRecordingGroups request)
+        {
+            var result = _liveTvManager.GetRecordingGroups(new RecordingGroupQuery
+            {
+                UserId = request.UserId
+
+            }, CancellationToken.None).Result;
+
+            return ToOptimizedResult(result);
         }
     }
 }

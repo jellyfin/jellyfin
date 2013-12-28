@@ -445,6 +445,17 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
+        self.getLiveTvRecordingGroups = function (options) {
+
+            var url = self.getUrl("LiveTv/Recordings/Groups", options || {});
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
         self.getLiveTvRecording = function (id, userId) {
 
             if (!id) {

@@ -160,10 +160,30 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return val.Value * 2;
         }
 
+        public string GetStatusName(RecordingStatus status)
+        {
+            if (status == RecordingStatus.InProgress)
+            {
+                return "In Progress";
+            }
+
+            if (status == RecordingStatus.ConflictedNotOk)
+            {
+                return "Conflicted";
+            }
+
+            if (status == RecordingStatus.ConflictedOk)
+            {
+                return "Scheduled";
+            }
+
+            return status.ToString();
+        }
+
         public RecordingInfoDto GetRecordingInfoDto(LiveTvRecording recording, LiveTvChannel channel, ILiveTvService service, User user = null)
         {
             var info = recording.RecordingInfo;
-            
+
             var dto = new RecordingInfoDto
             {
                 Id = GetInternalRecordingId(service.Name, info.Id).ToString("N"),
@@ -176,6 +196,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 ExternalId = info.Id,
                 ChannelId = GetInternalChannelId(service.Name, info.ChannelId).ToString("N"),
                 Status = info.Status,
+                StatusName = GetStatusName(info.Status),
                 Path = info.Path,
                 Genres = info.Genres,
                 IsRepeat = info.IsRepeat,
@@ -219,7 +240,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             {
                 dto.ChannelName = channel.ChannelInfo.Name;
             }
-            
+
             return dto;
         }
 
@@ -263,7 +284,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         public ProgramInfoDto GetProgramInfoDto(LiveTvProgram item, string channelName, User user = null)
         {
             var program = item.ProgramInfo;
-            
+
             var dto = new ProgramInfoDto
             {
                 Id = GetInternalProgramId(item.ServiceName, program.Id).ToString("N"),
@@ -291,8 +312,16 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 IsNews = program.IsNews,
                 IsKids = program.IsKids,
                 IsPremiere = program.IsPremiere,
-                RunTimeTicks = (program.EndDate - program.StartDate).Ticks
+                RunTimeTicks = (program.EndDate - program.StartDate).Ticks,
+                Type = "Program"
             };
+
+            var imageTag = GetImageTag(item);
+
+            if (imageTag.HasValue)
+            {
+                dto.ImageTags[ImageType.Primary] = imageTag.Value;
+            }
 
             if (user != null)
             {

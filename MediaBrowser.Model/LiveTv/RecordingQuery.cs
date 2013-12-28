@@ -22,6 +22,21 @@
         /// </summary>
         /// <value>The identifier.</value>
         public string Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group identifier.
+        /// </summary>
+        /// <value>The group identifier.</value>
+        public string GroupId { get; set; }
+    }
+
+    public class RecordingGroupQuery
+    {
+        /// <summary>
+        /// Gets or sets the user identifier.
+        /// </summary>
+        /// <value>The user identifier.</value>
+        public string UserId { get; set; }
     }
 
     public class TimerQuery

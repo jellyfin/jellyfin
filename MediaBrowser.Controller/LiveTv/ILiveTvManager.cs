@@ -211,5 +211,13 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task CreateSeriesTimer(SeriesTimerInfoDto timer, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the recording groups.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{QueryResult{RecordingGroupDto}}.</returns>
+        Task<QueryResult<RecordingGroupDto>> GetRecordingGroups(RecordingGroupQuery query, CancellationToken cancellationToken);
     }
 }

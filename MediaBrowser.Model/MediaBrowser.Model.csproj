@@ -75,6 +75,7 @@
     <Compile Include="LiveTv\ChannelQuery.cs" />
     <Compile Include="LiveTv\ProgramInfoDto.cs" />
     <Compile Include="LiveTv\ProgramQuery.cs" />
+    <Compile Include="LiveTv\RecordingGroupDto.cs" />
     <Compile Include="LiveTv\RecordingQuery.cs" />
     <Compile Include="LiveTv\RecordingStatus.cs" />
     <Compile Include="LiveTv\SeriesTimerInfoDto.cs" />
@@ -209,7 +210,6 @@
     <PostBuildEvent Condition=" '$(ConfigurationName)' != 'Release Mono' ">if '$(ConfigurationName)' == 'Release' (
 xcopy "$(TargetPath)" "$(SolutionDir)\Nuget\dlls\net45\" /y /d /r /i
 )</PostBuildEvent>
-    <PostBuildEvent Condition=" '$(ConfigurationName)' == 'Release Mono' ">cp -fu "$(MSBuildProjectDirectory)\..\packages\PropertyChanged.Fody.1.41.0.0\PropertyChanged.Fody.dll" "$(MSBuildProjectDirectory)\..\Tools\Fody\"</PostBuildEvent>
   </PropertyGroup>
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition=" '$(ConfigurationName)' != 'Release Mono' " />
   <Import Project="Fody.targets" />

@@ -85,6 +85,12 @@ namespace MediaBrowser.Model.LiveTv
         public RecordingStatus Status { get; set; }
 
         /// <summary>
+        /// Gets or sets the name of the status.
+        /// </summary>
+        /// <value>The name of the status.</value>
+        public string StatusName { get; set; }
+        
+        /// <summary>
         /// Genre of the program.
         /// </summary>
         public List<string> Genres { get; set; }
