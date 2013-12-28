@@ -14,6 +14,12 @@ namespace MediaBrowser.Controller.Entities
         public List<Guid> SoundtrackIds { get; set; }
 
         public string PreferredMetadataLanguage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the preferred metadata country code.
+        /// </summary>
+        /// <value>The preferred metadata country code.</value>
+        public string PreferredMetadataCountryCode { get; set; }
         
         public Trailer()
         {

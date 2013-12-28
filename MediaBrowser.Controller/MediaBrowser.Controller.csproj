@@ -86,7 +86,6 @@
     <Compile Include="Entities\IHasBudget.cs" />
     <Compile Include="Entities\IHasCriticRating.cs" />
     <Compile Include="Entities\IHasImages.cs" />
-    <Compile Include="Entities\IHasLanguage.cs" />
     <Compile Include="Entities\IHasMediaStreams.cs" />
     <Compile Include="Entities\IHasPreferredMetadataLanguage.cs" />
     <Compile Include="Entities\IHasProductionLocations.cs" />

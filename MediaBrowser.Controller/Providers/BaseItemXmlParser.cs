@@ -269,10 +269,10 @@ namespace MediaBrowser.Controller.Providers
                     {
                         var val = reader.ReadElementContentAsString();
 
-                        var hasLanguage = item as IHasLanguage;
+                        var hasLanguage = item as IHasPreferredMetadataLanguage;
                         if (hasLanguage != null)
                         {
-                            hasLanguage.Language = val;
+                            hasLanguage.PreferredMetadataLanguage = val;
                         }
 
                         break;

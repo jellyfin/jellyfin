@@ -499,6 +499,7 @@ namespace MediaBrowser.Providers.Movies
             // Id could be ImdbId or TmdbId
 
             var language = item.GetPreferredMetadataLanguage();
+            var country = item.GetPreferredMetadataCountryCode();
 
             var dataFilePath = GetDataFilePath(item);
 
@@ -514,9 +515,7 @@ namespace MediaBrowser.Providers.Movies
 
                 tmdbId = mainResult.id.ToString(_usCulture);
 
-                var movieDataPath = GetMovieDataPath(ConfigurationManager.ApplicationPaths, isBoxSet, tmdbId);
-
-                dataFilePath = Path.Combine(movieDataPath, "all.json");
+                dataFilePath = GetDataFilePath(isBoxSet, tmdbId, language);
 
                 var directory = Path.GetDirectoryName(dataFilePath);
 
@@ -527,7 +526,7 @@ namespace MediaBrowser.Providers.Movies
 
             if (isForcedRefresh || ConfigurationManager.Configuration.EnableTmdbUpdates || !HasAltMeta(item))
             {
-                dataFilePath = GetDataFilePath(isBoxSet, tmdbId);
+                dataFilePath = GetDataFilePath(isBoxSet, tmdbId, language);
 
                 if (!string.IsNullOrEmpty(dataFilePath))
                 {
@@ -543,19 +542,18 @@ namespace MediaBrowser.Providers.Movies
         /// </summary>
         /// <param name="id">The id.</param>
         /// <param name="isBoxSet">if set to <c>true</c> [is box set].</param>
-        /// <param name="dataPath">The data path.</param>
         /// <param name="preferredMetadataLanguage">The preferred metadata language.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        internal async Task DownloadMovieInfo(string id, bool isBoxSet, string dataPath, string preferredMetadataLanguage, CancellationToken cancellationToken)
+        internal async Task DownloadMovieInfo(string id, bool isBoxSet, string preferredMetadataLanguage, CancellationToken cancellationToken)
         {
             var mainResult = await FetchMainResult(id, isBoxSet, preferredMetadataLanguage, cancellationToken).ConfigureAwait(false);
 
             if (mainResult == null) return;
 
-            var dataFilePath = Path.Combine(dataPath, "all.json");
+            var dataFilePath = GetDataFilePath(isBoxSet, id, preferredMetadataLanguage);
 
-            Directory.CreateDirectory(dataPath);
+            Directory.CreateDirectory(Path.GetDirectoryName(dataFilePath));
 
             JsonSerializer.SerializeToFile(mainResult, dataFilePath);
         }
@@ -574,14 +572,17 @@ namespace MediaBrowser.Providers.Movies
                 return null;
             }
 
-            return GetDataFilePath(item is BoxSet, id);
+            return GetDataFilePath(item is BoxSet, id, item.GetPreferredMetadataLanguage());
         }
 
-        internal string GetDataFilePath(bool isBoxset, string tmdbId)
+        internal string GetDataFilePath(bool isBoxset, string tmdbId, string preferredLanguage)
         {
             var path = GetMovieDataPath(ConfigurationManager.ApplicationPaths, isBoxset, tmdbId);
 
-            return Path.Combine(path, "all.json");
+            var filename = string.Format("all-{0}.json",
+                preferredLanguage ?? string.Empty);
+
+            return Path.Combine(path, filename);
         }
 
         /// <summary>
@@ -730,16 +731,18 @@ namespace MediaBrowser.Providers.Movies
                 movie.VoteCount = movieData.vote_count;
             }
 
+            var preferredCountryCode = movie.GetPreferredMetadataCountryCode();
+
             //release date and certification are retrieved based on configured country and we fall back on US if not there and to minimun release date if still no match
             if (movieData.releases != null && movieData.releases.countries != null)
             {
-                var ourRelease = movieData.releases.countries.FirstOrDefault(c => c.iso_3166_1.Equals(ConfigurationManager.Configuration.MetadataCountryCode, StringComparison.OrdinalIgnoreCase)) ?? new Country();
+                var ourRelease = movieData.releases.countries.FirstOrDefault(c => c.iso_3166_1.Equals(preferredCountryCode, StringComparison.OrdinalIgnoreCase)) ?? new Country();
                 var usRelease = movieData.releases.countries.FirstOrDefault(c => c.iso_3166_1.Equals("US", StringComparison.OrdinalIgnoreCase)) ?? new Country();
                 var minimunRelease = movieData.releases.countries.OrderBy(c => c.release_date).FirstOrDefault() ?? new Country();
 
                 if (!movie.LockedFields.Contains(MetadataFields.OfficialRating))
                 {
-                    var ratingPrefix = ConfigurationManager.Configuration.MetadataCountryCode.Equals("us", StringComparison.OrdinalIgnoreCase) ? "" : ConfigurationManager.Configuration.MetadataCountryCode + "-";
+                    var ratingPrefix = string.Equals(preferredCountryCode, "us", StringComparison.OrdinalIgnoreCase) ? "" : preferredCountryCode + "-";
                     movie.OfficialRating = !string.IsNullOrEmpty(ourRelease.certification)
                                                ? ratingPrefix + ourRelease.certification
                                                : !string.IsNullOrEmpty(usRelease.certification)

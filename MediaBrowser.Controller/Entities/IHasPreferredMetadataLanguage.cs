@@ -11,5 +11,11 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The preferred metadata language.</value>
         string PreferredMetadataLanguage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the preferred metadata country code.
+        /// </summary>
+        /// <value>The preferred metadata country code.</value>
+        string PreferredMetadataCountryCode { get; set; }
     }
 }

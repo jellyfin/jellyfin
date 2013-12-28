@@ -21,6 +21,12 @@ namespace MediaBrowser.Controller.Entities.TV
 
         public int SeasonCount { get; set; }
 
+        /// <summary>
+        /// Gets or sets the preferred metadata country code.
+        /// </summary>
+        /// <value>The preferred metadata country code.</value>
+        public string PreferredMetadataCountryCode { get; set; }
+
         public Series()
         {
             AirDays = new List<DayOfWeek>();

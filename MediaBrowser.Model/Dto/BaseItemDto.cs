@@ -36,6 +36,9 @@ namespace MediaBrowser.Model.Dto
         public int? AbsoluteEpisodeNumber { get; set; }
         public bool? DisplaySpecialsWithSeasons { get; set; }
 
+        public string PreferredMetadataLanguage { get; set; }
+        public string PreferredMetadataCountryCode { get; set; }
+        
         /// <summary>
         /// Gets or sets the DVD season number.
         /// </summary>
@@ -208,12 +211,6 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The provider ids.</value>
         public Dictionary<string, string> ProviderIds { get; set; }
-
-        /// <summary>
-        /// Gets or sets the language.
-        /// </summary>
-        /// <value>The language.</value>
-        public string Language { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is HD.
