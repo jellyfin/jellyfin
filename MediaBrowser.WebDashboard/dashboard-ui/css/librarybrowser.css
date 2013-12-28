@@ -99,7 +99,8 @@
 }
 
 .libraryPage > .ui-content {
-    padding: 10px 0 100px;
+    padding-top: 10px;
+    padding-bottom: 100px;
 }
 
 .libraryPage .currentUsername {
@@ -533,10 +534,17 @@ a.itemTag:hover {
 .libraryPanelCollapsibleHeader a {
     font-size: 16px;
     font-weight: 300!important;
+    font-family: 'Open Sans', Arial, Helvetica, sans-serif;
 }
 
-.selectedLibraryPanelLink a {
+.selectedLibraryPanelLink {
     background: #38c!important;
+}
+
+.libraryPanelLink {
+    font-size: 14px;
+    font-weight: 300!important;
+    font-family: 'Open Sans', Arial, Helvetica, sans-serif;
 }
 
 .desktopHomeLink img {

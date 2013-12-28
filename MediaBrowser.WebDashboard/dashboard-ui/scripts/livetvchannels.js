@@ -4,7 +4,7 @@
 
         var html = '';
 
-        html += '<a class="squareTileItem tileItem" href="livetvchannel.html?id=' + channel.Id + '">';
+        html += '<a class="backdropTileItem tileItem" href="livetvchannel.html?id=' + channel.Id + '">';
 
         var imgUrl;
         var isDefault;

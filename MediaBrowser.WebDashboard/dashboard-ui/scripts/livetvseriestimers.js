@@ -23,46 +23,21 @@
 
         var html = '';
 
-        var cssClass = "detailTable";
+        html += '<ul data-role="listview" data-inset="true">';
 
-        html += '<div class="detailTableContainer"><table class="' + cssClass + '">';
-
-        html += '<tr>';
-
-        html += '<th class="tabletColumn">&nbsp;</th>';
-        html += '<th>Name</th>';
-        html += '<th class="desktopColumn">Channel</th>';
-        html += '<th>Days</th>';
-        html += '<th>Time</th>';
-
-        html += '</tr>';
+        html += '<li data-role="list-divider">Series Recordings</li>';
 
         for (var i = 0, length = timers.length; i < length; i++) {
 
             var timer = timers[i];
 
-            html += '<tr>';
+            html += '<li><a href="livetvseriestimer.html?id=' + timer.Id + '">';
 
-            html += '<td class="tabletColumn">';
-            html += '<button data-timerid="' + timer.Id + '" class="btnDeleteTimer" type="button" data-icon="delete" data-inline="true" data-mini="true" data-iconpos="notext">Delete</button>';
-            html += '</td>';
+            html += '<h3>';
+            html += timer.Name;
+            html += '</h3>';
 
-            html += '<td>';
-            html += '<a href="livetvseriestimer.html?id=' + timer.Id + '">' + timer.Name + '</a>';
-            html += '</td>';
-
-            html += '<td class="desktopColumn">';
-            
-            if (timer.RecordAnyChannel) {
-                html += 'All Channels';
-            }
-            else if (timer.ChannelId) {
-                html += '<a href="livetvchannel.html?id=' + timer.ChannelId + '">' + timer.ChannelName + '</a>';
-            }
-            html += '</td>';
-
-            html += '<td>';
-
+            html += '<p>';
             if (timer.DayPattern) {
                 html += timer.DayPattern;
             }
@@ -71,24 +46,30 @@
 
                 html += days.join(', ');
             }
+            
+            if (timer.RecordAnyTime) {
 
-            html += '</td>';
+                html += ' - Any time.';
+            } else {
+                html += ' - ' + LiveTvHelpers.getDisplayTime(timer.StartDate);
+            }
+            html += '</p>';
 
-            html += '<td>' + LiveTvHelpers.getDisplayTime(timer.StartDate) + '</td>';
+            html += '<p>';
+            if (timer.RecordAnyChannel) {
+                html += 'All Channels';
+            }
+            else if (timer.ChannelId) {
+                html += timer.ChannelName;
+            }
+            html += '</p>';
 
-            html += '</tr>';
+            html += '</li>';
         }
 
-        html += '</table></div>';
+        html += '</a></ul>';
 
-        var elem = $('#items', page).html(html).trigger('create');
-
-        $('.btnDeleteTimer', elem).on('click', function () {
-
-            var id = this.getAttribute('data-timerid');
-
-            deleteTimer(page, id);
-        });
+        $('#items', page).html(html).trigger('create');
 
         Dashboard.hideLoadingMsg();
     }

@@ -117,8 +117,8 @@
     changeCollectionType: function () {
 
         Dashboard.alert({
-            message: "To change the collection type, please remove and rebuild the collection with the new type.",
-            title: "Change Collection Type"
+            message: "To change the folder type, please remove and rebuild the collection with the new type.",
+            title: "Change Folder Type"
         });
     },
 
@@ -137,7 +137,7 @@
 
         typeName = typeName ? typeName.name : "General or mixed content";
 
-        html += '<p style="padding-left:.5em;">Collection type: <b>' + typeName + '</b></p>';
+        html += '<p style="padding-left:.5em;">Folder type: <b>' + typeName + '</b></p>';
 
         html += '<ul class="mediaFolderLocations" data-inset="true" data-role="listview" data-split-icon="minus">';
 
@@ -189,7 +189,7 @@
 
         $('.collectionTypeFieldDescription').show();
 
-        MediaLibraryPage.getTextValue("Add Media Collection", "Name (Movies, Music, TV, etc):", "", true, function (name, type) {
+        MediaLibraryPage.getTextValue("Add Media Folder", "Name (Movies, Music, TV, etc):", "", true, function (name, type) {
 
             var userId = MediaLibraryPage.getCurrentUserId($.mobile.activePage);
 

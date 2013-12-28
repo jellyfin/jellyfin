@@ -16,10 +16,6 @@
             <form class="liveTvSeriesTimerForm" style="margin: 0 auto;">
                 <p><span class="itemName inlineItemName"></span></p>
 
-                <p>
-                    <a id="btnCancelTimer" href="#">Cancel Series</a>
-                </p>
-
                 <p class="channel" style="margin-top: 2em;"></p>
                 <p class="time"></p>
                 <p class="overview"></p>
@@ -94,17 +90,17 @@
                     </div>
                 </div>
                 <br />
-                <br />
-                <ul data-role="listview" class="ulForm">
-                    <li>
-                        <button type="submit" data-theme="b" data-icon="check" data-mini="true">
-                            Save
-                        </button>
-                        <button type="button" onclick="history.back();" data-icon="delete" data-mini="true">
-                            Cancel
-                        </button>
-                    </li>
-                </ul>
+                <div>
+                    <button type="submit" data-theme="a" data-icon="check" data-mini="true">
+                        Save
+                    </button>
+                    <button type="button" onclick="history.back();" data-icon="delete" data-mini="true">
+                        Cancel
+                    </button>
+                </div>
+                <p style="border-top: 1px solid #444; padding-top: .5em; margin-top: 2em;">
+                    <button id="btnCancelTimer" type="button" data-mini="true" data-icon="delete">Cancel Series</button>
+                </p>
             </form>
         </div>
         <script type="text/javascript">

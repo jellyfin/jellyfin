@@ -222,11 +222,10 @@
             var link = links[i];
             
             if (selectedIndex == i) {
-                html += '<li class="selectedLibraryPanelLink">';
+                html += '<li><a class="selectedLibraryPanelLink libraryPanelLink" href="' + link.href + '">' + link.text + '</a></li>';
             } else {
-                html += '<li>';
+                html += '<li><a class="libraryPanelLink" href="' + link.href + '">' + link.text + '</a></li>';
             }
-            html += '<a href="' + link.href + '">' + link.text + '</a></li>';
         }
 
         html += '</ul>';
