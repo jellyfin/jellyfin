@@ -1,6 +1,6 @@
 ﻿var LibraryBrowser = (function (window, document, $, screen, localStorage) {
 
-    var defaultBackground = "#555;";
+    var defaultBackground = "#444";
 
     return {
 
@@ -590,6 +590,9 @@
             if (item.Type == "Person") {
                 return "itembynamedetails.html?person=" + ApiClient.encodeName(item.Name) + "&context=" + itemByNameContext;
             }
+            if (item.Type == "Recording") {
+                return "livetvrecording.html?id=" + id;
+            }
 
             if (item.Type == "MusicArtist") {
                 if (itemByNameContext == "music") {
@@ -745,12 +748,22 @@
                     height = 400;
                     width = primaryImageAspectRatio ? Math.round(height * primaryImageAspectRatio) : null;
 
-                    imgUrl = ApiClient.getImageUrl(item.Id, {
-                        type: "Primary",
-                        height: height,
-                        width: width,
-                        tag: item.ImageTags.Primary
-                    });
+                    if (item.Type == "Recording") {
+                        imgUrl = ApiClient.getUrl("LiveTV/Recordings/" + item.Id + "/Images/Primary", {
+                            type: "Primary",
+                            height: height,
+                            width: width,
+                            tag: item.ImageTags.Primary
+                        });
+
+                    } else {
+                        imgUrl = ApiClient.getImageUrl(item.Id, {
+                            type: "Primary",
+                            height: height,
+                            width: width,
+                            tag: item.ImageTags.Primary
+                        });
+                    }
 
                 }
                 else if (item.AlbumId && item.AlbumPrimaryImageTag) {
@@ -807,8 +820,16 @@
                         imgUrl = 'css/images/items/list/audio.png';
                         background = defaultBackground;
                     } else {
-                        background = '#555';
+                        background = defaultBackground;
                     }
+                }
+                else if (item.Type == "Recording" || item.Type == "Program") {
+
+                    if (item.Name && options.showTitle) {
+                        imgUrl = 'css/images/items/list/collection.png';
+                    }
+
+                    background = defaultBackground;
                 }
                 else if (item.MediaType == "Video" || item.Type == "Season" || item.Type == "Series") {
 
@@ -816,7 +837,7 @@
                         imgUrl = 'css/images/items/list/video.png';
                         background = defaultBackground;
                     } else {
-                        background = '#555';
+                        background = defaultBackground;
                     }
                 }
                 else {
@@ -824,7 +845,7 @@
                         imgUrl = 'css/images/items/list/collection.png';
                         background = LibraryBrowser.getMetroColor(item.Id);
                     } else {
-                        background = '#555';
+                        background = defaultBackground;
                     }
                 }
 
@@ -874,7 +895,7 @@
                 if (options.showParentTitle) {
 
                     html += "<div class='" + cssclass + "'>";
-                    html += item.SeriesName || item.Album || item.AlbumArtist || "&nbsp;";
+                    html += item.EpisodeTitle ? item.Name : (item.SeriesName || item.Album || item.AlbumArtist || "&nbsp;");
                     html += "</div>";
                 }
 
@@ -965,7 +986,7 @@
 
             var day = weekday[date.getDay()];
             date = date.toLocaleDateString();
-            
+
             if (date.toLowerCase().indexOf(day.toLowerCase()) == -1) {
                 return day + " " + date;
             }
@@ -1010,7 +1031,7 @@
 
         getPosterViewDisplayName: function (item, displayAsSpecial) {
 
-            var name = item.Name;
+            var name = item.EpisodeTitle || item.Name;
 
             if (displayAsSpecial && item.Type == "Episode" && item.ParentIndexNumber == 0) {
 
@@ -1066,7 +1087,7 @@
             }
             return '<div class="posterRibbon missingPosterRibbon">Missing</div>';
         },
-        
+
         getUnplayedIndicatorHtml: function (item) {
 
             if (item.LocationType == 'Virtual') {

@@ -18,7 +18,7 @@
 
         });
     }
-    
+
     function loadRecordings(page, elem, groupId) {
 
         var contentElem = $('.recordingList', elem).html('<div class="circle"></div><div class="circle1"></div>');
@@ -39,7 +39,7 @@
 
         var html = '';
 
-        html += '<div data-role="collapsible" class="recordingGroupCollapsible" data-recordinggroupid="' + group.Id + '" style="margin-top:1em" data-mini="true">';
+        html += '<div data-role="collapsible" class="recordingGroupCollapsible" data-recordinggroupid="' + group.Id + '" style="margin-top:1em">';
 
         html += '<h3>' + group.Name + '</h3>';
 
@@ -53,6 +53,12 @@
 
     function renderRecordingGroups(page, groups) {
 
+        if (groups.length) {
+            $('#recordingGroups', page).show();
+        } else {
+            $('#recordingGroups', page).hide();
+        }
+
         var html = '';
 
         for (var i = 0, length = groups.length; i < length; i++) {
@@ -60,7 +66,7 @@
             html += getRecordingGroupHtml(groups[i]);
         }
 
-        var elem = $('#items', page).html(html).trigger('create');
+        var elem = $('#recordingGroupItems', page).html(html).trigger('create');
 
         $('.recordingGroupCollapsible', elem).on('collapsibleexpand.lazyload', function () {
 
@@ -133,6 +139,25 @@
 
         Dashboard.hideLoadingMsg();
     }
+    
+    function renderLatestRecordings(page, recordings) {
+        
+        if (recordings.length) {
+            $('#latestRecordings', page).show();
+        } else {
+            $('#latestRecordings', page).hide();
+        }
+
+        $('#latestRecordingItems', page).html(LibraryBrowser.getPosterViewHtml({
+            items: recordings,
+            useAverageAspectRatio: true,
+            shape: "smallBackdrop",
+            showTitle: true,
+            showParentTitle: true,
+            overlayText: true
+
+        }));
+    }
 
     function reload(page) {
 
@@ -145,6 +170,17 @@
         }).done(function (result) {
 
             renderRecordingGroups(page, result.Items);
+
+        });
+
+        apiClient.getLiveTvRecordings({
+
+            userId: Dashboard.getCurrentUserId(),
+            limit: 6
+
+        }).done(function (result) {
+
+            renderLatestRecordings(page, result.Items);
 
         });
     }

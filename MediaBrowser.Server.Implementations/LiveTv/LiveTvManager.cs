@@ -462,7 +462,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 var guid = new Guid(query.Id);
 
                 var currentServiceName = service.Name;
-                
+
                 list = list
                     .Where(i => _tvDtoService.GetInternalRecordingId(currentServiceName, i.Id) == guid)
                     .ToList();
@@ -476,11 +476,24 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     .ToList();
             }
 
-            var entities = await GetEntities(list, service.Name, cancellationToken).ConfigureAwait(false);
+            IEnumerable<LiveTvRecording> entities = await GetEntities(list, service.Name, cancellationToken).ConfigureAwait(false);
+
+            entities = entities.OrderByDescending(i => i.RecordingInfo.StartDate);
 
             if (user != null)
             {
-                entities = entities.Where(i => i.IsParentalAllowed(user, _localization)).ToArray();
+                var currentUser = user;
+                entities = entities.Where(i => i.IsParentalAllowed(currentUser, _localization));
+            }
+
+            if (query.StartIndex.HasValue)
+            {
+                entities = entities.Skip(query.StartIndex.Value);
+            }
+
+            if (query.Limit.HasValue)
+            {
+                entities = entities.Take(query.Limit.Value);
             }
 
             var returnArray = entities
@@ -489,7 +502,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     var channel = string.IsNullOrEmpty(i.RecordingInfo.ChannelId) ? null : GetInternalChannel(_tvDtoService.GetInternalChannelId(service.Name, i.RecordingInfo.ChannelId));
                     return _tvDtoService.GetRecordingInfoDto(i, channel, service, user);
                 })
-                .OrderByDescending(i => i.StartDate)
                 .ToArray();
 
             return new QueryResult<RecordingInfoDto>
@@ -784,10 +796,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             {
                 list.Add("Others");
             }
-            
+
             return list;
         }
-        
+
         private List<Guid> GetRecordingGroupIds(RecordingInfo recording)
         {
             return GetRecordingGroupNames(recording).Select(i => i.ToLower()

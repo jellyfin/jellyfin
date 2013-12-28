@@ -55,6 +55,12 @@ namespace MediaBrowser.Api.LiveTv
 
         [ApiMember(Name = "GroupId", Description = "Optional filter by recording group.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string GroupId { get; set; }
+
+        [ApiMember(Name = "StartIndex", Description = "Optional. The record index to start at. All items with a lower index will be dropped from the results.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int? StartIndex { get; set; }
+
+        [ApiMember(Name = "Limit", Description = "Optional. The maximum number of records to return", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int? Limit { get; set; }
     }
 
     [Route("/LiveTv/Recordings/Groups", "GET")]
@@ -259,7 +265,9 @@ namespace MediaBrowser.Api.LiveTv
             {
                 ChannelId = request.ChannelId,
                 UserId = request.UserId,
-                GroupId = request.GroupId
+                GroupId = request.GroupId,
+                StartIndex = request.StartIndex,
+                Limit = request.Limit
 
             }, CancellationToken.None).Result;
 
