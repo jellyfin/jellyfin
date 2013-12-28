@@ -67,7 +67,7 @@
             html += '</li>';
         }
 
-        html += '</a></ul>';
+        html += '</ul>';
 
         $('#items', page).html(html).trigger('create');
 

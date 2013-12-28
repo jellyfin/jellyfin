@@ -18,32 +18,77 @@
 
         });
     }
+    
+    function loadRecordings(page, elem, groupId) {
 
-    function renderRecordings(page, recordings) {
+        var contentElem = $('.recordingList', elem).html('<div class="circle"></div><div class="circle1"></div>');
+
+        apiClient.getLiveTvRecordings({
+
+            userId: Dashboard.getCurrentUserId(),
+            groupId: groupId
+
+        }).done(function (result) {
+
+            renderRecordings(page, contentElem, result.Items);
+
+        });
+    }
+
+    function getRecordingGroupHtml(group) {
 
         var html = '';
+
+        html += '<div data-role="collapsible" class="recordingGroupCollapsible" data-recordinggroupid="' + group.Id + '" style="margin-top:1em" data-mini="true">';
+
+        html += '<h3>' + group.Name + '</h3>';
+
+        html += '<div class="recordingList">';
+        html += '</div>';
+
+        html += '</div>';
+
+        return html;
+    }
+
+    function renderRecordingGroups(page, groups) {
+
+        var html = '';
+
+        for (var i = 0, length = groups.length; i < length; i++) {
+
+            html += getRecordingGroupHtml(groups[i]);
+        }
+
+        var elem = $('#items', page).html(html).trigger('create');
+
+        $('.recordingGroupCollapsible', elem).on('collapsibleexpand.lazyload', function () {
+
+            $(this).off('collapsibleexpand.lazyload');
+
+            var groupId = this.getAttribute('data-recordinggroupid');
+
+            loadRecordings(page, this, groupId);
+        });
+
+        Dashboard.hideLoadingMsg();
+    }
+
+    function renderRecordings(page, elem, recordings) {
+
+        var html = '';
+
+        html += '<ul data-role="listview" data-split-icon="delete" data-inset="false">';
 
         for (var i = 0, length = recordings.length; i < length; i++) {
 
             var recording = recordings[i];
 
-            html += '<tr>';
+            html += '<li><a href="livetvrecording.html?id=' + recording.Id + '">';
 
-            html += '<td class="desktopColumn">';
-            html += '<button data-recordingid="' + recording.Id + '" class="btnDeleteRecording" type="button" data-icon="delete" data-inline="true" data-mini="true" data-iconpos="notext">Delete</button>';
-            html += '</td>';
-
-            html += '<td>';
-            html += '<a href="livetvrecording.html?id=' + recording.Id + '">';
-            html += recording.Name || '(blank)';
-            html += '</a>';
-            html += '</td>';
-
-            html += '<td class="desktopColumn">';
-            if (recording.ChannelId) {
-                html += '<a href="livetvchannel.html?id=' + recording.ChannelId + '">' + recording.ChannelName + '</a>';
-            }
-            html += '</td>';
+            html += '<h3>';
+            html += recording.EpisodeTitle || recording.Name;
+            html += '</h3>';
 
             var startDate = recording.StartDate;
 
@@ -55,22 +100,29 @@
 
             }
 
-            html += '<td>' + startDate.toLocaleDateString() + '</td>';
-
-            html += '<td>' + LiveTvHelpers.getDisplayTime(recording.StartDate) + '</td>';
-
             var minutes = recording.RunTimeTicks / 600000000;
 
             minutes = minutes || 1;
 
-            html += '<td class="tabletColumn">' + Math.round(minutes) + 'min</td>';
+            html += '<p>';
+            html += startDate.toLocaleDateString();
+            html += '&nbsp; &#8226; &nbsp;' + Math.round(minutes) + 'min';
+            html += '</p>';
 
-            html += '<td class="tabletColumn">' + (recording.Status || '') + '</td>';
+            if (recording.Status !== 'Completed') {
+                html += '<p class="ui-li-aside"><span style="color:red;">' + recording.StatusName + '</span></p>';
+            }
 
-            html += '</tr>';
+            html += '</a>';
+
+            html += '<a href="#" class="btnDeleteRecording" data-recordingid="' + recording.Id + '">Delete</a>';
+
+            html += '</li>';
         }
 
-        var elem = $('#table-column-toggle tbody', page).html(html).trigger('create');
+        html += '</ul>';
+
+        elem.html(html).trigger('create');
 
         $('.btnDeleteRecording', elem).on('click', function () {
 
@@ -86,9 +138,13 @@
 
         Dashboard.showLoadingMsg();
 
-        apiClient.getLiveTvRecordings().done(function (result) {
+        apiClient.getLiveTvRecordingGroups({
 
-            renderRecordings(page, result.Items);
+            userId: Dashboard.getCurrentUserId()
+
+        }).done(function (result) {
+
+            renderRecordingGroups(page, result.Items);
 
         });
     }
@@ -98,6 +154,12 @@
         var page = this;
 
         reload(page);
+
+    }).on('pagehide', "#liveTvRecordingsPage", function () {
+
+        var page = this;
+
+        $('.recordingGroupCollapsible', page).off('collapsibleexpand.lazyload');
     });
 
 })(jQuery, document, ApiClient);

@@ -226,6 +226,9 @@
     <Compile Include="..\MediaBrowser.Model\LiveTv\ProgramQuery.cs">
       <Link>LiveTv\ProgramQuery.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\LiveTv\RecordingGroupDto.cs">
+      <Link>LiveTv\RecordingGroupDto.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\LiveTv\RecordingInfoDto.cs">
       <Link>LiveTv\RecordingInfoDto.cs</Link>
     </Compile>

@@ -448,15 +448,31 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             if (!string.IsNullOrEmpty(query.ChannelId))
             {
+                var guid = new Guid(query.ChannelId);
+
+                var currentServiceName = service.Name;
+
                 list = list
-                    .Where(i => _tvDtoService.GetInternalChannelId(service.Name, i.ChannelId) == new Guid(query.ChannelId))
+                    .Where(i => _tvDtoService.GetInternalChannelId(currentServiceName, i.ChannelId) == guid)
                     .ToList();
             }
 
             if (!string.IsNullOrEmpty(query.Id))
             {
+                var guid = new Guid(query.Id);
+
+                var currentServiceName = service.Name;
+                
                 list = list
-                    .Where(i => _tvDtoService.GetInternalRecordingId(service.Name, i.Id) == new Guid(query.Id))
+                    .Where(i => _tvDtoService.GetInternalRecordingId(currentServiceName, i.Id) == guid)
+                    .ToList();
+            }
+
+            if (!string.IsNullOrEmpty(query.GroupId))
+            {
+                var guid = new Guid(query.GroupId);
+
+                list = list.Where(i => GetRecordingGroupIds(i).Contains(guid))
                     .ToList();
             }
 
@@ -733,6 +749,119 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             var service = string.IsNullOrEmpty(timer.ServiceName) ? ActiveService : GetServices(timer.ServiceName, null).First();
 
             await service.UpdateSeriesTimerAsync(info, cancellationToken).ConfigureAwait(false);
+        }
+
+        private List<string> GetRecordingGroupNames(RecordingInfo recording)
+        {
+            var list = new List<string>();
+
+            if (recording.IsSeries)
+            {
+                list.Add(recording.Name);
+            }
+
+            if (recording.IsKids)
+            {
+                list.Add("Kids");
+            }
+
+            if (recording.IsMovie)
+            {
+                list.Add("Movies");
+            }
+
+            if (recording.IsNews)
+            {
+                list.Add("News");
+            }
+
+            if (recording.IsPremiere)
+            {
+                list.Add("Sports");
+            }
+
+            if (!recording.IsSports && !recording.IsNews && !recording.IsMovie && !recording.IsKids && !recording.IsSeries)
+            {
+                list.Add("Others");
+            }
+            
+            return list;
+        }
+        
+        private List<Guid> GetRecordingGroupIds(RecordingInfo recording)
+        {
+            return GetRecordingGroupNames(recording).Select(i => i.ToLower()
+                .GetMD5())
+                .ToList();
+        }
+
+        public async Task<QueryResult<RecordingGroupDto>> GetRecordingGroups(RecordingGroupQuery query, CancellationToken cancellationToken)
+        {
+            var recordingResult = await GetRecordings(new RecordingQuery
+            {
+                UserId = query.UserId
+
+            }, cancellationToken).ConfigureAwait(false);
+
+            var recordings = recordingResult.Items;
+
+            var groups = new List<RecordingGroupDto>();
+
+            var series = recordings
+                .Where(i => i.IsSeries)
+                .ToLookup(i => i.Name, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            groups.AddRange(series.OrderBy(i => i.Key).Select(i => new RecordingGroupDto
+            {
+                Name = i.Key,
+                RecordingCount = i.Count()
+            }));
+
+            groups.Add(new RecordingGroupDto
+            {
+                Name = "Kids",
+                RecordingCount = recordings.Count(i => i.IsKids)
+            });
+
+            groups.Add(new RecordingGroupDto
+            {
+                Name = "Movies",
+                RecordingCount = recordings.Count(i => i.IsMovie)
+            });
+
+            groups.Add(new RecordingGroupDto
+            {
+                Name = "News",
+                RecordingCount = recordings.Count(i => i.IsNews)
+            });
+
+            groups.Add(new RecordingGroupDto
+            {
+                Name = "Sports",
+                RecordingCount = recordings.Count(i => i.IsSports)
+            });
+
+            groups.Add(new RecordingGroupDto
+            {
+                Name = "Others",
+                RecordingCount = recordings.Count(i => !i.IsSports && !i.IsNews && !i.IsMovie && !i.IsKids && !i.IsSeries)
+            });
+
+            groups = groups
+                .Where(i => i.RecordingCount > 0)
+                .ToList();
+
+            foreach (var group in groups)
+            {
+                group.Id = group.Name.ToLower().GetMD5().ToString("N");
+            }
+
+            return new QueryResult<RecordingGroupDto>
+            {
+                Items = groups.ToArray(),
+                TotalRecordCount = groups.Count
+            };
         }
     }
 }

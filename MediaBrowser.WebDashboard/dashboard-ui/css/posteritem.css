@@ -62,9 +62,11 @@
     overflow: hidden;
     text-wrap: none;
     white-space: nowrap;
-    padding: 5px 5px 4px;
+    padding: 5px 4px 4px;
     background-color: #222;
     text-shadow: none;
+    font-size: 14px;
+    font-weight: 300;
 }
 
 .posterItemTextOverlay {
