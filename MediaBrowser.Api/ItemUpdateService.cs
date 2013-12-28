@@ -311,10 +311,12 @@ namespace MediaBrowser.Api
 
             SetProductionLocations(item, request);
 
-            var hasLanguage = item as IHasLanguage;
-            if (hasLanguage != null)
+            var hasLang = item as IHasPreferredMetadataLanguage;
+
+            if (hasLang != null)
             {
-                hasLanguage.Language = request.Language;
+                hasLang.PreferredMetadataCountryCode = request.PreferredMetadataCountryCode;
+                hasLang.PreferredMetadataLanguage = request.PreferredMetadataLanguage;
             }
             
             var hasAspectRatio = item as IHasAspectRatio;

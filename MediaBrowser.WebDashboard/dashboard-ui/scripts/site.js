@@ -1249,6 +1249,38 @@ var Dashboard = {
         html += "</div>";
 
         return html;
+    },
+    
+    populateLanguages: function(select, languages) {
+        
+        var html = "";
+
+        html += "<option value=''></option>";
+
+        for (var i = 0, length = languages.length; i < length; i++) {
+
+            var culture = languages[i];
+
+            html += "<option value='" + culture.TwoLetterISOLanguageName + "'>" + culture.DisplayName + "</option>";
+        }
+
+        $(select).html(html).selectmenu("refresh");
+    },
+
+    populateCountries: function (select, allCountries) {
+
+        var html = "";
+
+        html += "<option value=''></option>";
+
+        for (var i = 0, length = allCountries.length; i < length; i++) {
+
+            var culture = allCountries[i];
+
+            html += "<option value='" + culture.TwoLetterISORegionName + "'>" + culture.DisplayName + "</option>";
+        }
+
+        $(select).html(html).selectmenu("refresh");
     }
 };
 

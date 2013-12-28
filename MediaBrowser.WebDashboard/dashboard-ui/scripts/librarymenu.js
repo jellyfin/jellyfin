@@ -220,8 +220,10 @@
         for (i = 0, length = links.length; i < length; i++) {
 
             var link = links[i];
+
+            var href = selectedIndex == i ? '#' : link.href;
             
-            html += '<li><a class="libraryPanelLink" href="' + link.href + '">' + link.text + '</a></li>';
+            html += '<li><a class="libraryPanelLink" href="' + href + '">' + link.text + '</a></li>';
         }
 
         html += '</ul>';

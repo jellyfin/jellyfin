@@ -219,7 +219,7 @@ namespace MediaBrowser.Providers.Movies
                 {
                     try
                     {
-                        await UpdateMovie(id, isBoxSet, moviesDataPath, language, cancellationToken).ConfigureAwait(false);
+                        await UpdateMovie(id, isBoxSet, language, cancellationToken).ConfigureAwait(false);
                     }
                     catch (Exception ex)
                     {
@@ -241,19 +241,14 @@ namespace MediaBrowser.Providers.Movies
         /// </summary>
         /// <param name="id">The id.</param>
         /// <param name="isBoxSet">if set to <c>true</c> [is box set].</param>
-        /// <param name="dataPath">The data path.</param>
         /// <param name="preferredMetadataLanguage">The preferred metadata language.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        private Task UpdateMovie(string id, bool isBoxSet, string dataPath, string preferredMetadataLanguage, CancellationToken cancellationToken)
+        private Task UpdateMovie(string id, bool isBoxSet, string preferredMetadataLanguage, CancellationToken cancellationToken)
         {
             _logger.Info("Updating movie from tmdb " + id + ", language " + preferredMetadataLanguage);
 
-            var itemDataPath = Path.Combine(dataPath, id);
-
-            Directory.CreateDirectory(dataPath);
-
-            return MovieDbProvider.Current.DownloadMovieInfo(id, isBoxSet, itemDataPath, preferredMetadataLanguage, cancellationToken);
+            return MovieDbProvider.Current.DownloadMovieInfo(id, isBoxSet, preferredMetadataLanguage, cancellationToken);
         }
 
         class Result

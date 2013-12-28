@@ -17,7 +17,7 @@
 
         ApiClient.getCultures().done(function (result) {
 
-            MetadataConfigurationPage.populateLanguages(result);
+            Dashboard.populateLanguages($('#selectLanguage', page), result);
 
             allCultures = result;
             MetadataConfigurationPage.load(page, config, allCultures, allCountries);
@@ -25,7 +25,7 @@
 
         ApiClient.getCountries().done(function (result) {
 
-            MetadataConfigurationPage.populateCountries(result);
+            Dashboard.populateCountries($('#selectCountry', page), result);
 
             allCountries = result;
             MetadataConfigurationPage.load(page, config, allCultures, allCountries);
@@ -46,38 +46,6 @@
         Dashboard.hideLoadingMsg();
     },
     
-    populateCountries: function (allCountries) {
-
-        var html = "";
-
-        html += "<option value=''></option>";
-
-        for (var i = 0, length = allCountries.length; i < length; i++) {
-
-            var culture = allCountries[i];
-
-            html += "<option value='" + culture.TwoLetterISORegionName + "'>" + culture.DisplayName + "</option>";
-        }
-
-        $('#selectCountry', '#metadataConfigurationPage').html(html).selectmenu("refresh");
-    },
-
-    populateLanguages: function (allCultures) {
-        
-        var html = "";
-
-        html += "<option value=''></option>";
-
-        for (var i = 0, length = allCultures.length; i < length; i++) {
-
-            var culture = allCultures[i];
-
-            html += "<option value='" + culture.TwoLetterISOLanguageName + "'>" + culture.DisplayName + "</option>";
-        }
-
-        $('#selectLanguage', '#metadataConfigurationPage').html(html).selectmenu("refresh");
-    },
-
     onSubmit: function () {
         var form = this;
 

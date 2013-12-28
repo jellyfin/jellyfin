@@ -443,6 +443,14 @@
 
     var currentItem;
 
+    var languagesPromise;
+    var countriesPromise;
+
+    function ensureLanguagePromises() {
+        languagesPromise = languagesPromise || ApiClient.getCultures();
+        countriesPromise = countriesPromise || ApiClient.getCountries();
+    }
+
     function updateTabs(page, item) {
 
         var query = MetadataEditor.getEditQueryString(item);
@@ -455,7 +463,20 @@
 
         Dashboard.showLoadingMsg();
 
-        MetadataEditor.getItemPromise().done(function (item) {
+        ensureLanguagePromises();
+
+        var promise1 = MetadataEditor.getItemPromise();
+        var promise2 = languagesPromise;
+        var promise3 = countriesPromise;
+
+        $.when(promise1, promise2, promise3).done(function (response1, response2, response3) {
+
+            var item = response1[0];
+            var languages = response2[0];
+            var countries = response3[0];
+
+            Dashboard.populateLanguages($('#selectLanguage', page), languages);
+            Dashboard.populateCountries($('#selectCountry', page), countries);
 
             if (item.LocationType == "Offline") {
                 $('.saveButtonContainer', page).hide();
@@ -763,15 +784,6 @@
 
     function fillItemInfo(page, item) {
 
-        ApiClient.getCultures().done(function (result) {
-
-            var select = $('#selectLanguage', page);
-
-            populateLanguages(result, select);
-
-            select.val(item.Language || "").selectmenu('refresh');
-        });
-
         ApiClient.getParentalRatings().done(function (result) {
 
             var select = $('#selectOfficialRating', page);
@@ -905,6 +917,9 @@
         $('#txtNesBoxName', page).val(providerIds.NesBox || "");
         $('#txtNesBoxRom', page).val(providerIds.NesBoxRom || "");
 
+        $('#selectLanguage', page).val(item.PreferredMetadataLanguage || "").selectmenu('refresh');
+        $('#selectCountry', page).val(item.PreferredMetadataCountryCode || "").selectmenu('refresh');
+
         if (item.RunTimeTicks) {
 
             var minutes = item.RunTimeTicks / 600000000;
@@ -955,22 +970,6 @@
         if (hours < 10) sHours = "0" + sHours;
         if (minutes < 10) sMinutes = "0" + sMinutes;
         return sHours + ":" + sMinutes + " " + ampm;
-    }
-
-    function populateLanguages(allCultures, select) {
-
-        var html = "";
-
-        html += "<option value=''></option>";
-
-        for (var i = 0, length = allCultures.length; i < length; i++) {
-
-            var culture = allCultures[i];
-
-            html += "<option value='" + culture.TwoLetterISOLanguageName + "'>" + culture.DisplayName + "</option>";
-        }
-
-        select.html(html).selectmenu("refresh");
     }
 
     function populateRatings(allParentalRatings, select) {
@@ -1135,7 +1134,6 @@
                 AspectRatio: $('#txtOriginalAspectRatio', form).val(),
                 Video3DFormat: $('#select3dFormat', form).val(),
 
-                Language: $('#selectLanguage', form).val(),
                 OfficialRating: $('#selectOfficialRating', form).val(),
                 CustomRating: $('#selectCustomRating', form).val(),
                 People: currentItem.People,
@@ -1160,6 +1158,9 @@
                     NesBoxRom: $('#txtNesBoxRom', form).val()
                 }
             };
+
+            item.PreferredMetadataLanguage = $('#selectLanguage', form).val();
+            item.PreferredMetadataCountryCode = $('#selectCountry', form).val();
 
             if (currentItem.Type == "Person") {
 

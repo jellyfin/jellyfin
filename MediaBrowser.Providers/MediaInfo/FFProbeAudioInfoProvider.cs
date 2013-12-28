@@ -151,8 +151,6 @@ namespace MediaBrowser.Providers.MediaInfo
             // Disc number
             audio.ParentIndexNumber = GetDictionaryDiscValue(tags, "disc");
 
-            audio.Language = GetDictionaryValue(tags, "language");
-
             audio.ProductionYear = GetDictionaryNumericValue(tags, "date");
 
             // Several different forms of retaildate

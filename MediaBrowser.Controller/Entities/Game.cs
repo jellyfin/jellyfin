@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Entities
 {
-    public class Game : BaseItem, IHasSoundtracks, IHasTrailers, IHasThemeMedia, IHasTags, IHasLanguage, IHasScreenshots, IHasPreferredMetadataLanguage
+    public class Game : BaseItem, IHasSoundtracks, IHasTrailers, IHasThemeMedia, IHasTags, IHasScreenshots, IHasPreferredMetadataLanguage
     {
         public List<Guid> SoundtrackIds { get; set; }
 
@@ -13,6 +13,12 @@ namespace MediaBrowser.Controller.Entities
         public List<Guid> ThemeVideoIds { get; set; }
 
         public string PreferredMetadataLanguage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the preferred metadata country code.
+        /// </summary>
+        /// <value>The preferred metadata country code.</value>
+        public string PreferredMetadataCountryCode { get; set; }
 
         public Game()
         {
@@ -25,12 +31,6 @@ namespace MediaBrowser.Controller.Entities
             Tags = new List<string>();
             ScreenshotImagePaths = new List<string>();
         }
-
-        /// <summary>
-        /// Gets or sets the language.
-        /// </summary>
-        /// <value>The language.</value>
-        public string Language { get; set; }
 
         public List<Guid> LocalTrailerIds { get; set; }
 

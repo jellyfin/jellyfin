@@ -960,7 +960,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets the preferred metadata language.
         /// </summary>
         /// <returns>System.String.</returns>
-        public virtual string GetPreferredMetadataLanguage()
+        public string GetPreferredMetadataLanguage()
         {
             string lang = null;
 
@@ -973,7 +973,44 @@ namespace MediaBrowser.Controller.Entities
 
             if (string.IsNullOrEmpty(lang))
             {
+                lang = Parents.OfType<IHasPreferredMetadataLanguage>()
+                    .Select(i => i.PreferredMetadataLanguage)
+                    .FirstOrDefault(i => !string.IsNullOrEmpty(i));
+            }
+
+            if (string.IsNullOrEmpty(lang))
+            {
                 lang = ConfigurationManager.Configuration.PreferredMetadataLanguage;
+            }
+
+            return lang;
+        }
+
+        /// <summary>
+        /// Gets the preferred metadata language.
+        /// </summary>
+        /// <returns>System.String.</returns>
+        public string GetPreferredMetadataCountryCode()
+        {
+            string lang = null;
+
+            var hasLang = this as IHasPreferredMetadataLanguage;
+
+            if (hasLang != null)
+            {
+                lang = hasLang.PreferredMetadataCountryCode;
+            }
+
+            if (string.IsNullOrEmpty(lang))
+            {
+                lang = Parents.OfType<IHasPreferredMetadataLanguage>()
+                    .Select(i => i.PreferredMetadataCountryCode)
+                    .FirstOrDefault(i => !string.IsNullOrEmpty(i));
+            }
+
+            if (string.IsNullOrEmpty(lang))
+            {
+                lang = ConfigurationManager.Configuration.MetadataCountryCode;
             }
 
             return lang;

@@ -62,7 +62,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             if (program != null)
             {
-                dto.ProgramInfo = GetProgramInfoDto(program);
+                dto.ProgramInfo = GetProgramInfoDto(program, channel.ChannelInfo.Name);
 
                 dto.ProgramInfo.TimerId = dto.Id;
                 dto.ProgramInfo.SeriesTimerId = dto.SeriesTimerId;
@@ -260,7 +260,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return dto;
         }
 
-        public ProgramInfoDto GetProgramInfoDto(LiveTvProgram item, User user = null)
+        public ProgramInfoDto GetProgramInfoDto(LiveTvProgram item, string channelName, User user = null)
         {
             var program = item.ProgramInfo;
             
@@ -283,7 +283,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 AspectRatio = program.AspectRatio,
                 IsRepeat = program.IsRepeat,
                 EpisodeTitle = program.EpisodeTitle,
-                ChannelName = program.ChannelName,
+                ChannelName = channelName,
                 IsMovie = program.IsMovie,
                 IsSeries = program.IsSeries,
                 IsSports = program.IsSports,

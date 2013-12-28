@@ -31,7 +31,7 @@
                                 <div style="margin-top: -15px;"></div>
                             </div>
                             <div style="vertical-align: bottom; display: inline-block;">
-                                <button class="saveButtonContainer btnSave" type="submit" data-theme="b" data-icon="check" data-mini="true" data-inline="true">
+                                <button class="saveButtonContainer btnSave" type="submit" data-theme="a" data-icon="check" data-mini="true" data-inline="true">
                                     Save
                                 </button>
                             </div>
@@ -186,10 +186,6 @@
                                 <label for="txtOriginalAspectRatio">Original aspect ratio:</label>
                                 <input type="text" id="txtOriginalAspectRatio" name="txtOriginalAspectRatio" data-mini="true" />
                             </div>
-                            <div data-role="fieldcontain" style="display: none;">
-                                <label for="selectLanguage">Original language:</label>
-                                <select name="selectLanguage" id="selectLanguage" data-mini="true"></select>
-                            </div>
                             <div data-role="fieldcontain" id="fldPlayers" style="display: none;">
                                 <label for="txtPlayers">Players:</label>
                                 <input type="number" id="txtPlayers" name="txtPlayers" data-mini="true" pattern="[0-9]*" />
@@ -205,7 +201,8 @@
                                 </select>
                             </div>
                         </div>
-                        <div data-role="collapsible" data-mini="true" data-collapsed="false" id="collapsibleDvdEpisodeInfo" style="display: none;" data-content-theme="false">
+                        <br />
+                        <div data-role="collapsible" data-mini="true" data-collapsed="false" id="collapsibleDvdEpisodeInfo" style="display: none;">
                             <h3>Alternate Episode Numbers</h3>
                             <div>
                                 <div data-role="fieldcontain">
@@ -222,7 +219,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div data-role="collapsible" data-mini="true" data-collapsed="false" id="collapsibleSpecialEpisodeInfo" style="display: none;" data-content-theme="false">
+                        <div data-role="collapsible" data-mini="true" data-collapsed="false" id="collapsibleSpecialEpisodeInfo" style="display: none;">
                             <h3>Special Episode Info</h3>
                             <div>
                                 <div data-role="fieldcontain">
@@ -239,16 +236,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div data-role="collapsible" data-mini="true" data-collapsed="false" id="collapsibleSeriesDIsplaySettings" style="display: none;">
-                            <h3>Display Settings</h3>
-                            <div>
-                                <div data-role="fieldcontain">
-                                    <label for="chkDisplaySpecialsInline">Display specials within seasons they aired in.</label>
-                                    <input data-mini="true" type="checkbox" name="chkDisplaySpecialsInline" id="chkDisplaySpecialsInline" />
-                                </div>
-                            </div>
-                        </div>
-                        <div data-role="collapsible" data-mini="true" data-collapsed="false" data-content-theme="false">
+                        <div data-role="collapsible" data-mini="true" data-collapsed="false">
                             <h3>External Id's</h3>
                             <div>
                                 <p id="albumAssociationMessage" style="display: none;">Associate this album with a movie, tv series and/or game, and we'll be able to link it to other items in your library.</p>
@@ -336,7 +324,16 @@
                                 </div>
                             </div>
                         </div>
-                        <div data-role="collapsible" data-mini="true" id="genresCollapsible" style="display: none;" data-content-theme="false">
+                        <div data-role="collapsible" data-mini="true" id="collapsibleSeriesDIsplaySettings" style="display: none;">
+                            <h3>Display Settings</h3>
+                            <div>
+                                <div data-role="fieldcontain">
+                                    <label for="chkDisplaySpecialsInline">Display specials within seasons they aired in.</label>
+                                    <input data-mini="true" type="checkbox" name="chkDisplaySpecialsInline" id="chkDisplaySpecialsInline" />
+                                </div>
+                            </div>
+                        </div>
+                        <div data-role="collapsible" data-mini="true" id="genresCollapsible" style="display: none;">
                             <h3>Genres</h3>
                             <div data-role="editableListviewContainer">
                                 <div data-role="fieldcontain">
@@ -348,7 +345,7 @@
                                 <ul data-role="listview" data-inset="true" data-split-icon="delete" id="listGenres"></ul>
                             </div>
                         </div>
-                        <div data-role="collapsible" data-mini="true" id="studiosCollapsible" style="display: none;" data-content-theme="false">
+                        <div data-role="collapsible" data-mini="true" id="studiosCollapsible" style="display: none;">
                             <h3>Studios</h3>
                             <div data-role="editableListviewContainer">
                                 <div data-role="fieldcontain">
@@ -360,7 +357,7 @@
                                 <ul data-role="listview" data-inset="true" data-split-icon="delete" id="listStudios"></ul>
                             </div>
                         </div>
-                        <div data-mini="true" data-role="collapsible" id="tagsCollapsible" style="display: none;" data-content-theme="false">
+                        <div data-mini="true" data-role="collapsible" id="tagsCollapsible" style="display: none;">
                             <h3>Tags</h3>
                             <div data-role="editableListviewContainer">
                                 <div data-role="fieldcontain">
@@ -372,23 +369,36 @@
                                 <ul data-role="listview" data-inset="true" data-split-icon="delete" id="listTags"></ul>
                             </div>
                         </div>
-                        <div data-role="collapsible" data-mini="true" id="metadataSettingsCollapsible" style="display: none;" data-collapsed="false" data-content-theme="false">
+                        <div data-role="collapsible" data-mini="true" id="metadataSettingsCollapsible" style="display: none;">
                             <h3>Metadata Settings</h3>
                             <div>
                                 <p>
                                     <label for="enableInternetProviders">Enable internet metadata providers for this item.</label>
                                     <input data-mini="true" type="checkbox" name="enableInternetProviders" id="enableInternetProviders" onchange="EditItemMetadataPage.setProviderSettingsContainerVisibility(this)" />
                                 </p>
+                                <div data-role="fieldcontain">
+                                    <label for="selectLanguage">Preferred language: </label>
+                                    <select name="selectLanguage" id="selectLanguage" data-mini="true"></select>
+                                </div>
+                                <div class="fieldDescription editorfieldDescription">Leave empty to inherit settings from a parent item, or the global default value.</div>
+                                <br />
+                                <div data-role="fieldcontain">
+                                    <label for="selectCountry">Country: </label>
+                                    <select name="selectCountry" id="selectCountry" data-mini="true"></select>
+                                </div>
+                                <div class="fieldDescription editorfieldDescription">Leave empty to inherit settings from a parent item, or the global default value.</div>
+                                <br />
                                 <p>
                                     Slide a field to 'off' to lock it and prevent it's data from being changed.
                                 </p>
+
                                 <div id="providerSettingsContainer" style="display: none">
                                 </div>
                             </div>
                         </div>
                         <ul data-role="listview" class="saveButtonContainer ulForm" style="display: none;">
                             <li>
-                                <button class="btnSave" type="submit" data-theme="b" data-icon="check" data-mini="true">
+                                <button class="btnSave" type="submit" data-theme="a" data-icon="check" data-mini="true">
                                     Save
                                 </button>
                             </li>

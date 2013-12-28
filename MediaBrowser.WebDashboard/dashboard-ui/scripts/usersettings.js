@@ -1,29 +1,13 @@
 ﻿(function ($, window, document) {
 
-    function populateLanguages(select, allCultures) {
-
-        var html = "";
-
-        html += "<option value=''>None</option>";
-
-        for (var i = 0, length = allCultures.length; i < length; i++) {
-
-            var culture = allCultures[i];
-
-            html += "<option value='" + culture.ThreeLetterISOLanguageName + "'>" + culture.DisplayName + "</option>";
-        }
-
-        select.html(html).selectmenu("refresh");
-    }
-
     function loadUser(page, user, loggedInUser, allCulturesPromise) {
 
         Dashboard.setPageTitle(user.Name);
 
         allCulturesPromise.done(function (allCultures) {
 
-            populateLanguages($('#selectAudioLanguage', page), allCultures);
-            populateLanguages($('#selectSubtitleLanguage', page), allCultures);
+            Dashboard.populateLanguages($('#selectAudioLanguage', page), allCultures);
+            Dashboard.populateLanguages($('#selectSubtitleLanguage', page), allCultures);
 
             $('#selectAudioLanguage', page).val(user.Configuration.AudioLanguagePreference || "").selectmenu("refresh");
             $('#selectSubtitleLanguage', page).val(user.Configuration.SubtitleLanguagePreference || "").selectmenu("refresh");

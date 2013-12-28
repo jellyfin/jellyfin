@@ -123,11 +123,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         public LiveTvChannel GetInternalChannel(string id)
         {
-            var guid = new Guid(id);
+            return GetInternalChannel(new Guid(id));
+        }
 
+        private LiveTvChannel GetInternalChannel(Guid id)
+        {
             LiveTvChannel channel = null;
 
-            _channels.TryGetValue(guid, out channel);
+            _channels.TryGetValue(id, out channel);
             return channel;
         }
 
@@ -272,11 +275,24 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return item;
         }
 
+        private LiveTvChannel GetChannel(LiveTvProgram program)
+        {
+            var programChannelId = program.ProgramInfo.ChannelId;
+
+            var internalProgramChannelId = _tvDtoService.GetInternalChannelId(program.ServiceName, programChannelId);
+
+            return GetInternalChannel(internalProgramChannelId);
+        }
+
         public async Task<ProgramInfoDto> GetProgram(string id, CancellationToken cancellationToken, User user = null)
         {
             var program = GetInternalProgram(id);
 
-            var dto = _tvDtoService.GetProgramInfoDto(program, user);
+            var channel = GetChannel(program);
+
+            var channelName = channel == null ? null : channel.ChannelInfo.Name;
+
+            var dto = _tvDtoService.GetProgramInfoDto(program, channelName, user);
 
             await AddRecordingInfo(new[] { dto }, cancellationToken).ConfigureAwait(false);
 
@@ -311,7 +327,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var returnArray = programs
                 .OrderBy(i => i.ProgramInfo.StartDate)
-                .Select(i => _tvDtoService.GetProgramInfoDto(i, user))
+                .Select(i =>
+                {
+                    var channel = GetChannel(i);
+
+                    var channelName = channel == null ? null : channel.ChannelInfo.Name;
+
+                    return _tvDtoService.GetProgramInfoDto(i, channelName, user);
+                })
                 .ToArray();
 
             await AddRecordingInfo(returnArray, cancellationToken).ConfigureAwait(false);
@@ -447,7 +470,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             var returnArray = entities
                 .Select(i =>
                 {
-                    var channel = string.IsNullOrEmpty(i.RecordingInfo.ChannelId) ? null : GetInternalChannel(_tvDtoService.GetInternalChannelId(service.Name, i.RecordingInfo.ChannelId).ToString("N"));
+                    var channel = string.IsNullOrEmpty(i.RecordingInfo.ChannelId) ? null : GetInternalChannel(_tvDtoService.GetInternalChannelId(service.Name, i.RecordingInfo.ChannelId));
                     return _tvDtoService.GetRecordingInfoDto(i, channel, service, user);
                 })
                 .OrderByDescending(i => i.StartDate)
@@ -504,7 +527,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 .Select(i =>
                 {
                     var program = string.IsNullOrEmpty(i.ProgramId) ? null : GetInternalProgram(_tvDtoService.GetInternalProgramId(service.Name, i.ProgramId).ToString("N"));
-                    var channel = string.IsNullOrEmpty(i.ChannelId) ? null : GetInternalChannel(_tvDtoService.GetInternalChannelId(service.Name, i.ChannelId).ToString("N"));
+                    var channel = string.IsNullOrEmpty(i.ChannelId) ? null : GetInternalChannel(_tvDtoService.GetInternalChannelId(service.Name, i.ChannelId));
 
                     return _tvDtoService.GetTimerInfoDto(i, service, program, channel);
                 })
@@ -603,7 +626,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     if (!string.IsNullOrEmpty(i.ChannelId))
                     {
                         var internalChannelId = _tvDtoService.GetInternalChannelId(service.Name, i.ChannelId);
-                        var channel = GetInternalChannel(internalChannelId.ToString("N"));
+                        var channel = GetInternalChannel(internalChannelId);
                         channelName = channel == null ? null : channel.ChannelInfo.Name;
                     }
 

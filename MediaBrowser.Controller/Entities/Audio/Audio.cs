@@ -9,18 +9,12 @@ namespace MediaBrowser.Controller.Entities.Audio
     /// <summary>
     /// Class Audio
     /// </summary>
-    public class Audio : BaseItem, IHasMediaStreams, IHasAlbumArtist, IHasArtist, IHasMusicGenres, IHasLanguage
+    public class Audio : BaseItem, IHasMediaStreams, IHasAlbumArtist, IHasArtist, IHasMusicGenres
     {
         public Audio()
         {
             Artists = new List<string>();
         }
-
-        /// <summary>
-        /// Gets or sets the language.
-        /// </summary>
-        /// <value>The language.</value>
-        public string Language { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance has embedded image.

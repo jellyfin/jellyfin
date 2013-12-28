@@ -20,42 +20,10 @@
 
     }
 
-    function populateCountries(page, allCountries) {
-
-        var html = "";
-
-        html += "<option value=''></option>";
-
-        for (var i = 0, length = allCountries.length; i < length; i++) {
-
-            var culture = allCountries[i];
-
-            html += "<option value='" + culture.TwoLetterISORegionName + "'>" + culture.DisplayName + "</option>";
-        }
-
-        $('#selectCountry', page).html(html).selectmenu("refresh");
-    }
-
-    function populateLanguages(page, allCultures) {
-
-        var html = "";
-
-        html += "<option value=''></option>";
-
-        for (var i = 0, length = allCultures.length; i < length; i++) {
-
-            var culture = allCultures[i];
-
-            html += "<option value='" + culture.TwoLetterISOLanguageName + "'>" + culture.DisplayName + "</option>";
-        }
-
-        $('#selectLanguage', page).html(html).selectmenu("refresh");
-    }
-
     function reloadData(page, config, cultures, countries) {
 
-        populateLanguages(page, cultures);
-        populateCountries(page, countries);
+        Dashboard.populateLanguages($('#selectLanguage', page), cultures);
+        Dashboard.populateCountries($('#selectCountry', page), countries);
 
         $('#selectLanguage', page).val(config.PreferredMetadataLanguage).selectmenu("refresh");
         $('#selectCountry', page).val(config.MetadataCountryCode).selectmenu("refresh");

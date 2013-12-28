@@ -739,10 +739,12 @@ namespace MediaBrowser.Server.Implementations.Dto
             dto.MediaType = item.MediaType;
             dto.LocationType = item.LocationType;
 
-            var hasLanguage = item as IHasLanguage;
-            if (hasLanguage != null)
+            var hasLang = item as IHasPreferredMetadataLanguage;
+
+            if (hasLang != null)
             {
-                dto.Language = hasLanguage.Language;
+                dto.PreferredMetadataCountryCode = hasLang.PreferredMetadataCountryCode;
+                dto.PreferredMetadataLanguage = hasLang.PreferredMetadataLanguage;
             }
 
             var hasCriticRating = item as IHasCriticRating;

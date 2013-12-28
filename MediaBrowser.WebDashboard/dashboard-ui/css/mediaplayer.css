@@ -59,6 +59,7 @@
     top: -3px;
     margin-left: 3px;
     margin-right: 2em;
+    font-weight: normal;
 }
 
 @media all and (min-width: 650px) {
@@ -100,6 +101,8 @@
     top: -10px;
     max-width: 110px;
     margin-right: 2em;
+    font-size: 14px;
+    font-weight: normal;
 }
 
 .mediaSlider {

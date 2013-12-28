@@ -71,6 +71,10 @@
     height: 180px;
 }
 
+.editorfieldDescription {
+    color: #ccc;
+}
+
 /* Fixes button running outside of list */
 .btnRemoveFromEditorList .ui-btn-inner {
     padding-right: 0!important;

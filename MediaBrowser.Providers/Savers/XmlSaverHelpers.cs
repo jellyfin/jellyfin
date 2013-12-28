@@ -326,12 +326,12 @@ namespace MediaBrowser.Providers.Savers
                 }
             }
 
-            var hasLanguage = item as IHasLanguage;
+            var hasLanguage = item as IHasPreferredMetadataLanguage;
             if (hasLanguage != null)
             {
-                if (!string.IsNullOrEmpty(hasLanguage.Language))
+                if (!string.IsNullOrEmpty(hasLanguage.PreferredMetadataLanguage))
                 {
-                    builder.Append("<Language>" + SecurityElement.Escape(hasLanguage.Language) + "</Language>");
+                    builder.Append("<Language>" + SecurityElement.Escape(hasLanguage.PreferredMetadataLanguage) + "</Language>");
                 }
             }
 
