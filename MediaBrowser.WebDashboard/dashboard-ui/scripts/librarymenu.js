@@ -10,7 +10,7 @@
 
     function renderHeader(page, user) {
 
-        var html = '<div class="viewMenuBar">';
+        var html = '<div class="viewMenuBar ui-bar-b">';
 
         html += '<button type="button" data-icon="bars" data-iconpos="notext" data-inline="true" title="Menu" class="libraryMenuButton" onclick="LibraryMenu.showLibraryMenu($(this).parents(\'.page\'));">Menu</button>';
 
@@ -221,11 +221,7 @@
 
             var link = links[i];
             
-            if (selectedIndex == i) {
-                html += '<li><a class="selectedLibraryPanelLink libraryPanelLink" href="' + link.href + '">' + link.text + '</a></li>';
-            } else {
-                html += '<li><a class="libraryPanelLink" href="' + link.href + '">' + link.text + '</a></li>';
-            }
+            html += '<li><a class="libraryPanelLink" href="' + link.href + '">' + link.text + '</a></li>';
         }
 
         html += '</ul>';

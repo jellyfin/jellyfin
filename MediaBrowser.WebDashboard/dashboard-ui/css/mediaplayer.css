@@ -1,6 +1,4 @@
-﻿
-
-/* Now playing bar */
+﻿/* Now playing bar */
 .nowPlayingBar {
     padding: 6px 0 12px 0;
     border-top: 2px solid green;
@@ -119,7 +117,7 @@
     width: 130px;
 }
 
-.volumeSliderContainer  {
+.volumeSliderContainer {
     width: 90px;
 }
 
@@ -129,6 +127,9 @@
 
 .sliderContainer .ui-slider-track {
     margin-left: 15px !important;
+}
+
+.highPosition .ui-slider-track {
     z-index: 100000;
 }
 

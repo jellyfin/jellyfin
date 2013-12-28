@@ -4,7 +4,7 @@
 }
 
 .libraryPage {
-    padding-top: 46px !important;
+    padding-top: 48px !important;
 }
 
 .ui-panel fieldset + fieldset {
@@ -17,15 +17,12 @@
 }
 
 .viewMenuBar {
-    background: #404040;
-    background-image: linear-gradient(#404040,#2d2d2d);
     font-weight: bold;
     position: fixed;
     right: 0;
     left: 0;
     z-index: 1000;
     top: 0;
-    border-bottom: 1px solid #111;
     padding-left: 10px;
 }
 
@@ -116,13 +113,14 @@
 
 .libraryViewNav {
     text-align: center;
-    background-image: linear-gradient(#404040,#2d2d2d);
+    background-image: linear-gradient(#333,#333);
     border-bottom: 1px solid #111;
-    border-top: 0;
+    border-top: 1px solid #000;
+    font-family: sans-serif, Arial;
 }
 
     .libraryViewNav .ui-btn-active {
-        border: 0;
+        border: 0!important;
         background-color: #38c;
     }
 
@@ -131,6 +129,7 @@
         padding: .6em 1em;
         color: #eee!important;
         text-decoration: none;
+        margin: 1px 0;
     }
 
         .libraryViewNav a:hover {
@@ -523,7 +522,7 @@ a.itemTag:hover {
     .libraryPanelHeader span {
         color: #fff;
         vertical-align: middle;
-        font-size: 14px;
+        font-size: 15px;
         font-weight: 300;
     }
 
