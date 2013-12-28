@@ -1,45 +1,41 @@
 ﻿
 
 /* Now playing bar */
-#nowPlayingBar {
-    padding: 6px .5em;
+.nowPlayingBar {
+    padding: 6px 0 12px 0;
     border-top: 2px solid green;
 }
 
-    #nowPlayingBar .highPosition {
+    .nowPlayingBar .highPosition {
         z-index: 99999;
         position: relative;
         opacity: 0.5;
     }
 
-        #nowPlayingBar .highPosition:hover:not(.barBackground ) {
+        .nowPlayingBar .highPosition:hover:not(.barBackground ) {
             opacity: 0.9;
         }
 
-    #nowPlayingBar .barBackground {
+    .nowPlayingBar .barBackground {
         border-top: 2px solid green;
-        background: #3c3c3c;
         position: absolute;
         margin: -8px -0.5em !important;
         width: 100%;
         height: 100%;
     }
 
-    #nowPlayingBar > *:not(#mediaElement):not(.mediaFlyoutContainer):not(.barBackground ) {
-        margin: 0 1em;
+    .nowPlayingBar > *:not(#mediaElement):not(.mediaFlyoutContainer):not(.barBackground ) {
         position: relative;
     }
 
 .nowPlayingBarImage {
-    border: 1px solid #a7a7a7!important;
+    border: 1px solid #444!important;
     padding: 1px;
     vertical-align: bottom;
 }
 
 .mediaButton {
-    display: inline-block;
-    position: relative;
-    top: -4px;
+    vertical-align: top;
 }
 
 #mediaElement {
@@ -64,6 +60,7 @@
     position: relative;
     top: -3px;
     margin-left: 3px;
+    margin-right: 2em;
 }
 
 @media all and (min-width: 650px) {
@@ -103,8 +100,8 @@
     display: inline-block;
     position: relative;
     top: -10px;
-    width: 110px;
-    margin-right: .25em;
+    max-width: 110px;
+    margin-right: 2em;
 }
 
 .mediaSlider {
@@ -114,35 +111,29 @@
     cursor: pointer;
 }
 
-@media screen and (-webkit-min-device-pixel-ratio:0) {
-    /* IE10 won't see this (good) '*/
-    .mediaSlider {
-        -webkit-appearance: none;
-        -moz-apperance: none;
-        background: #777;
-        border-radius: 5px;
-        vertical-align: bottom;
-        height: 3px;
-        top: -17px;
-    }
+.sliderContainer {
+    display: inline-block;
 }
 
-
-.mediaSlider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    -moz-apperance: none;
-    width: 15px;
-    height: 15px;
-    -webkit-border-radius: 10px;
-    -moz-border-radius: 10px;
-    -ms-border-radius: 10px;
-    -o-border-radius: 10px;
-    border-radius: 10px;
-    background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0, #fefefe), color-stop(0.49, #dddddd), color-stop(0.51, #d1d1d1), color-stop(1, #a1a1a1) );
-}
-
-.positionSlider {
+.positionSliderContainer {
     width: 130px;
+}
+
+.volumeSliderContainer  {
+    width: 90px;
+}
+
+.sliderContainer .ui-slider {
+    margin: 0 !important;
+}
+
+.sliderContainer .ui-slider-track {
+    margin-left: 15px !important;
+    z-index: 100000;
+}
+
+.volumeSliderContainer .ui-slider-track {
+    margin-left: 5px !important;
 }
 
 .volumeButton {
@@ -173,15 +164,11 @@ input[type="range"]::-ms-fill-upper {
 }
 
 @media all and (max-width: 600px) {
-    .volumeButton, .volumeSlider, .nowPlayingText, .chaptersButton, .audioTracksButton {
+    .volumeButton, .volumeSliderContainer, .nowPlayingText, .chaptersButton, .audioTracksButton {
         display: none!important;
     }
 
-    #nowPlayingBar > *:not(#mediaElement):not(.mediaFlyoutContainer):not(.barBackground ) {
-        margin: 0 .5em;
-    }
-
-    .positionSlider {
+    .positionSliderContainer {
         width: 50px;
     }
 
@@ -191,7 +178,7 @@ input[type="range"]::-ms-fill-upper {
 }
 
 @media all and (max-width: 750px) {
-    .positionSlider {
+    .positionSliderContainer {
         width: 50px;
     }
 }
@@ -296,7 +283,7 @@ input[type="range"]::-ms-fill-upper {
         width: 400px;
     }
 
-    .positionSlider {
+    .positionSliderContainer {
         width: 400px;
     }
 
@@ -310,7 +297,7 @@ input[type="range"]::-ms-fill-upper {
         width: 500px;
     }
 
-    .positionSlider {
+    .positionSliderContainer {
         width: 500px;
     }
 
@@ -324,7 +311,7 @@ input[type="range"]::-ms-fill-upper {
         width: 550px;
     }
 
-    .positionSlider {
+    .positionSliderContainer {
         width: 550px;
     }
 

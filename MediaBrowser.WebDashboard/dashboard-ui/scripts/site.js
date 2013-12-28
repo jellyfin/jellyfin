@@ -1269,37 +1269,45 @@ $(ApiClient).on("websocketmessage", Dashboard.onWebSocketMessageReceived);
 
 $(function () {
 
-    var footerHtml = '<div id="footer" class="ui-bar-a">';
-    footerHtml += '<div id="nowPlayingBar" style="display:none;">';
-    footerHtml += '<div class="barBackground"></div>';
-    footerHtml += '<a id="playlistButton" class="imageButton mediaButton" href="playlist.html"><img src="css/images/media/playlist.png" /></a>';
-    footerHtml += '<button id="previousTrackButton" class="imageButton mediaButton" title="Previous Track" type="button" onclick="MediaPlayer.previousTrack();"><img src="css/images/media/previoustrack.png" /></button>';
-    footerHtml += '<button id="playButton" class="imageButton mediaButton" title="Play" type="button" onclick="MediaPlayer.unpause();"><img src="css/images/media/play.png" /></button>';
-    footerHtml += '<button id="pauseButton" class="imageButton mediaButton" title="Pause" type="button" onclick="MediaPlayer.pause();"><img src="css/images/media/pause.png" /></button>';
-    footerHtml += '<button id="stopButton" class="imageButton mediaButton" title="Stop" type="button" onclick="MediaPlayer.stop();"><img src="css/images/media/stop.png" /></button>';
-    footerHtml += '<button id="nextTrackButton" class="imageButton mediaButton" title="Next Track" type="button" onclick="MediaPlayer.nextTrack();"><img src="css/images/media/nexttrack.png" /></button>';
-    footerHtml += '<input type="range" class="mediaSlider positionSlider" step=".001" min="0" max="100" value="0" />';
+    var footerHtml = '<div id="footer" data-theme="b" class="ui-bar-b">';
+    footerHtml += '<div id="nowPlayingBar" class="nowPlayingBar" style="display:none;">';
+    footerHtml += '<div class="barBackground ui-bar-b"></div>';
+    footerHtml += '<div style="display:inline-block;width:12px;"></div>';
+    footerHtml += '<a id="playlistButton" class="mediaButton" href="playlist.html" data-role="button" data-icon="bullets" data-iconpos="notext" data-inline="true" title="Playlist">Playlist</a>';
+    footerHtml += '<button id="previousTrackButton" class="mediaButton" title="Previous Track" type="button" onclick="MediaPlayer.previousTrack();" data-icon="previous-track" data-iconpos="notext" data-inline="true">Previous Track</button>';
+    footerHtml += '<button id="playButton" class="mediaButton" title="Play" type="button" onclick="MediaPlayer.unpause();" data-icon="play" data-iconpos="notext" data-inline="true">Play</button>';
+    footerHtml += '<button id="pauseButton" class="mediaButton" title="Pause" type="button" onclick="MediaPlayer.pause();" data-icon="pause" data-iconpos="notext" data-inline="true">Pause</button>';
+    footerHtml += '<button id="stopButton" class="mediaButton" title="Stop" type="button" onclick="MediaPlayer.stop();" data-icon="stop" data-iconpos="notext" data-inline="true">Stop</button>';
+    footerHtml += '<button id="nextTrackButton" class="mediaButton" title="Next Track" type="button" onclick="MediaPlayer.nextTrack();" data-icon="next-track" data-iconpos="notext" data-inline="true">Next Track</button>';
+
+    footerHtml += '<div class="positionSliderContainer sliderContainer">';
+    footerHtml += '<input type="range" class="mediaSlider positionSlider slider" step=".001" min="0" max="100" value="0" style="display:none;" data-mini="true" data-theme="a" data-highlight="true" />';
+    footerHtml += '</div>';
+
     footerHtml += '<div class="currentTime"></div>';
     footerHtml += '<div id="mediaElement"></div>';
     footerHtml += '<div class="nowPlayingMediaInfo"></div>';
 
-    footerHtml += '<button id="muteButton" onclick="MediaPlayer.mute();" class="imageButton mediaButton volumeButton" title="Volume" type="button"><img src="css/images/media/volume.png" /></button>';
-    footerHtml += '<button id="unmuteButton" onclick="MediaPlayer.unmute();" class="imageButton mediaButton volumeButton" title="Volume" type="button"><img src="css/images/media/mute.png" /></button>';
-    footerHtml += '<input type="range" class="mediaSlider volumeSlider" step=".05" min="0" max="1" value="0" />';
+    footerHtml += '<button id="muteButton" class="mediaButton" title="Mute" type="button" onclick="MediaPlayer.mute();" data-icon="audio" data-iconpos="notext" data-inline="true">Mute</button>';
+    footerHtml += '<button id="unmuteButton" class="mediaButton" title="Unmute" type="button" onclick="MediaPlayer.unmute();" data-icon="volume-off" data-iconpos="notext" data-inline="true">Unmute</button>';
 
-    footerHtml += '<button onclick="MediaPlayer.showQualityFlyout();" id="qualityButton" class="imageButton mediaButton qualityButton" title="Quality" type="button"><img src="css/images/media/quality.png" /></button>';
+    footerHtml += '<div class="volumeSliderContainer sliderContainer">';
+    footerHtml += '<input type="range" class="mediaSlider volumeSlider slider" step=".05" min="0" max="1" value="0" style="display:none;" data-mini="true" data-theme="a" data-highlight="true" />';
+    footerHtml += '</div>';
+
+    footerHtml += '<button onclick="MediaPlayer.showQualityFlyout();" id="qualityButton" class="mediaButton qualityButton" title="Quality" type="button" data-icon="gear" data-iconpos="notext" data-inline="true">Quality</button>';
     footerHtml += '<div class="mediaFlyoutContainer"><div id="qualityFlyout" style="display:none;" class="mediaPlayerFlyout"></div></div>';
 
-    footerHtml += '<button onclick="MediaPlayer.showAudioTracksFlyout();" id="audioTracksButton" class="imageButton mediaButton audioTracksButton" title="Audio tracks" type="button"><img src="css/images/media/audiotrack.png" /></button>';
+    footerHtml += '<button onclick="MediaPlayer.showAudioTracksFlyout();" id="audioTracksButton" class="imageButton mediaButton audioTracksButton" title="Audio tracks" type="button" data-icon="audiocd" data-iconpos="notext" data-inline="true">Audio Tracks</button>';
     footerHtml += '<div class="mediaFlyoutContainer"><div id="audioTracksFlyout" style="display:none;" class="mediaPlayerFlyout audioTracksFlyout"></div></div>';
 
-    footerHtml += '<button onclick="MediaPlayer.showSubtitleMenu();" id="subtitleButton" class="imageButton mediaButton subtitleButton" title="Subtitles" type="button"><img src="css/images/media/subtitles.png" /></button>';
+    footerHtml += '<button onclick="MediaPlayer.showSubtitleMenu();" id="subtitleButton" class="imageButton mediaButton subtitleButton" title="Subtitles" type="button" data-icon="subtitles" data-iconpos="notext" data-inline="true">Subtitles</button>';
     footerHtml += '<div class="mediaFlyoutContainer"><div id="subtitleFlyout" style="display:none;" class="mediaPlayerFlyout subtitleFlyout"></div></div>';
 
-    footerHtml += '<button onclick="MediaPlayer.showChaptersFlyout();" id="chaptersButton" class="imageButton mediaButton chaptersButton" title="Scenes" type="button"><img src="css/images/media/chapters.png" /></button>';
+    footerHtml += '<button onclick="MediaPlayer.showChaptersFlyout();" id="chaptersButton" class="mediaButton chaptersButton" title="Scenes" type="button" data-icon="video" data-iconpos="notext" data-inline="true">Scenes</button>';
     footerHtml += '<div class="mediaFlyoutContainer"><div id="chaptersFlyout" style="display:none;" class="mediaPlayerFlyout chaptersFlyout"></div></div>';
 
-    footerHtml += '<button onclick="MediaPlayer.toggleFullscreen();" id="fullscreenButton" class="imageButton mediaButton fullscreenButton" title="Fullscreen" type="button"><img src="css/images/media/fullscreen.png" /></button>';
+    footerHtml += '<button onclick="MediaPlayer.toggleFullscreen();" id="fullscreenButton" class="mediaButton fullscreenButton" title="Fullscreen" type="button" data-icon="action" data-iconpos="notext" data-inline="true">Fullscreen</button>';
 
     footerHtml += '</div>';
 
@@ -1307,6 +1315,9 @@ $(function () {
     footerHtml += '</div>';
 
     $(document.body).append(footerHtml);
+
+    var footerElem = $('#footer', document.body);
+    footerElem.trigger('create');
 
     $(window).on("beforeunload", function () {
 

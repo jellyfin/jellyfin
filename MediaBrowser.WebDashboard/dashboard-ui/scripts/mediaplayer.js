@@ -42,11 +42,11 @@
 
         $(document).on('webkitfullscreenchange mozfullscreenchange fullscreenchange', function () {
             var nowPlayingBar = ('#nowPlayingBar');
-            $('.itemVideo').unbind('mousemove keydown scroll', idleHandler);
+            $('.itemVideo').off('mousemove keydown scroll', idleHandler);
             if (isFullScreen()) {
                 $('.itemVideo').addClass('fullscreenVideo');
                 idleState = true;
-                $('.itemVideo').bind('mousemove keydown scroll', idleHandler).trigger('mousemove');
+                $('.itemVideo').on('mousemove keydown scroll', idleHandler).trigger('mousemove');
             } else {
                 $(".mediaButton,.currentTime,.nowPlayingMediaInfo,.mediaSlider,.barBackground", nowPlayingBar).removeClass("highPosition");
                 $('.itemVideo').removeClass('fullscreenVideo');
@@ -216,46 +216,20 @@
 
             currentTimeElement = $('.currentTime');
 
-            volumeSlider = $('.volumeSlider').on('change', function () {
+            volumeSlider = $('.volumeSlider').on('slidestop', function () {
 
+                document.title += '1';
                 var vol = this.value;
+
                 updateVolumeButtons(vol);
                 currentMediaElement.volume = vol;
             });
 
-            $(".jqueryuislider").slider({ orientation: "horizontal" });
-
-            positionSlider = $(".positionSlider").on('mousedown', function () {
+            positionSlider = $(".positionSlider").on('slidestart', function () {
 
                 isPositionSliderActive = true;
 
-            });
-
-            if ($.browser.mozilla) {
-
-                positionSlider.on('change', onPositionSliderChange);
-
-            } else {
-
-                positionSlider.on('change', function () {
-
-                    isPositionSliderActive = true;
-
-                    setCurrentTimePercent(parseInt(this.value), currentItem);
-
-                }).on('changed', onPositionSliderChange);
-            }
-
-
-            (function (el, timeout) {
-                var timer, trig = function () { el.trigger("changed"); };
-                el.bind("change", function () {
-                    if (timer) {
-                        clearTimeout(timer);
-                    }
-                    timer = setTimeout(trig, timeout);
-                });
-            })(positionSlider, 500);
+            }).on('slidestop', onPositionSliderChange);
 
             $('#chaptersFlyout').on('click', '.mediaFlyoutOption', function () {
 
@@ -311,12 +285,6 @@
             return d >= 0 && text.lastIndexOf(pattern) === d;
         }
 
-        function setCurrentTimePercent(percent, item) {
-
-            var position = (percent / 100) * curentDurationTicks;
-            setCurrentTime(position, item, false);
-        }
-
         function setCurrentTime(ticks, item, updateSlider) {
 
             // Convert to ticks
@@ -332,12 +300,10 @@
                     var percent = ticks / curentDurationTicks;
                     percent *= 100;
 
-                    positionSlider.val(percent);
-
-                    positionSlider.removeAttr('disabled');
+                    positionSlider.val(percent).slider('enable').slider('refresh');
                 }
             } else {
-                positionSlider.attr('disabled', 'disabled');
+                positionSlider.slider('disable');
             }
 
             currentTimeElement.html(timeText);
@@ -424,7 +390,7 @@
                 this.volume = initialVolume;
             });
 
-            volumeSlider.val(initialVolume);
+            volumeSlider.val(initialVolume).slider('refresh');
             updateVolumeButtons(initialVolume);
 
             audioElement.on("volumechange", function () {
@@ -481,7 +447,7 @@
             var screenWidth = Math.max(screen.height, screen.width);
 
             var mediaStreams = item.MediaStreams || [];
-            
+
             var baseParams = {
                 audioChannels: 2,
                 audioBitrate: 128000,
@@ -612,7 +578,7 @@
                 this.volume = initialVolume;
             });
 
-            volumeSlider.val(initialVolume);
+            volumeSlider.val(initialVolume).slider('refresh');
             updateVolumeButtons(initialVolume);
 
             videoElement.on("volumechange", function () {
@@ -983,16 +949,16 @@
         self.playById = function (id, itemType, startPositionTicks) {
 
             if (itemType == "Recording") {
-                
+
                 ApiClient.getLiveTvRecording(id, Dashboard.getCurrentUserId()).done(function (item) {
 
                     self.play([item], startPositionTicks);
 
                 });
-                
+
                 return;
             }
-            
+
             if (itemType == "Channel") {
 
                 ApiClient.getLiveTvChannel(id, Dashboard.getCurrentUserId()).done(function (item) {
@@ -1322,7 +1288,7 @@
             if (currentMediaElement) {
                 currentMediaElement.volume = Math.max(currentMediaElement.volume - .02, 0);
 
-                volumeSlider.val(currentMediaElement.volume);
+                volumeSlider.val(currentMediaElement.volume).slider('refresh');
             }
         };
 
@@ -1331,7 +1297,7 @@
             if (currentMediaElement) {
                 currentMediaElement.volume = Math.min(currentMediaElement.volume + .02, 1);
 
-                volumeSlider.val(currentMediaElement.volume);
+                volumeSlider.val(currentMediaElement.volume).slider('refresh');
             }
         };
 

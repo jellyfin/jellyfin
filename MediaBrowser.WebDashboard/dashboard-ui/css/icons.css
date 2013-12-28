@@ -79,3 +79,17 @@
 .ui-nosvg .ui-icon-filter:after {
     background-image: url("images/icons/filter.png");
 }
+.ui-icon-audiocd:after {
+    background-image: url("images/icons/audiocd.png");
+}
+/* Fallback */
+.ui-nosvg .ui-icon-audiocd:after {
+    background-image: url("images/icons/audiocd.png");
+}
+.ui-icon-subtitles:after {
+    background-image: url("images/icons/subtitles.png");
+}
+/* Fallback */
+.ui-nosvg .ui-icon-subtitles:after {
+    background-image: url("images/icons/subtitles.png");
+}
