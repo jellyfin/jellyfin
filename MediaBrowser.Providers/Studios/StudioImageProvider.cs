@@ -4,10 +4,12 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Providers;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -47,7 +49,7 @@ namespace MediaBrowser.Providers.Studios
 
         protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
         {
-            if (!string.IsNullOrEmpty(item.PrimaryImagePath))
+            if (!string.IsNullOrEmpty(item.PrimaryImagePath) && item.BackdropImagePaths.Count == 0)
             {
                 return false;
             }
@@ -67,65 +69,70 @@ namespace MediaBrowser.Providers.Studios
         {
             get
             {
-                return "1";
+                return "3";
             }
         }
 
         public override async Task<bool> FetchAsync(BaseItem item, bool force, BaseProviderInfo providerInfo, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(item.PrimaryImagePath))
+            if (string.IsNullOrEmpty(item.PrimaryImagePath) || item.BackdropImagePaths.Count == 0)
             {
-                var list = GetAvailableImages();
+                var images = await _providerManager.GetAvailableRemoteImages(item, cancellationToken, StudiosManualImageProvider.ProviderName).ConfigureAwait(false);
 
-                var match = FindMatch(item, list);
-
-                if (!string.IsNullOrEmpty(match))
-                {
-                    var url = GetUrl(match);
-
-                    await _providerManager.SaveImage(item, url, _resourcePool, ImageType.Primary, null, cancellationToken).ConfigureAwait(false);
-                }
+                await DownloadImages(item, images.ToList(), cancellationToken).ConfigureAwait(false);
             }
 
             SetLastRefreshed(item, DateTime.UtcNow, providerInfo);
             return true;
         }
 
-        private string FindMatch(BaseItem item, IEnumerable<string> images)
+        private async Task DownloadImages(BaseItem item, List<RemoteImageInfo> images, CancellationToken cancellationToken)
         {
-            var name = GetComparableName(item.Name);
-
-            return images.FirstOrDefault(i => string.Equals(name, GetComparableName(i), StringComparison.OrdinalIgnoreCase));
-        }
-
-        private string GetComparableName(string name)
-        {
-            return name.Replace(" ", string.Empty).Replace(".", string.Empty).Replace("&", string.Empty).Replace("!", string.Empty);
-        }
-
-        private string GetUrl(string image)
-        {
-            return string.Format("https://raw.github.com/MediaBrowser/MediaBrowser.Resources/master/images/studios/{0}/folder.jpg", image);
-        }
-
-        private IEnumerable<string> GetAvailableImages()
-        {
-            var path = GetType().Namespace + ".images.txt";
-
-            using (var stream = GetType().Assembly.GetManifestResourceStream(path))
+            if (!item.LockedFields.Contains(MetadataFields.Images))
             {
-                using (var reader = new StreamReader(stream))
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (!item.HasImage(ImageType.Primary))
                 {
-                    var lines = new List<string>();
+                    await SaveImage(item, images, ImageType.Primary, cancellationToken).ConfigureAwait(false);
+                }
+            }
 
-                    while (!reader.EndOfStream)
+            if (!item.LockedFields.Contains(MetadataFields.Backdrops))
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (item.BackdropImagePaths.Count == 0)
+                {
+                    foreach (var image in images.Where(i => i.Type == ImageType.Backdrop))
                     {
-                        var text = reader.ReadLine();
+                        await _providerManager.SaveImage(item, image.Url, _resourcePool, ImageType.Backdrop, null, cancellationToken)
+                            .ConfigureAwait(false);
 
-                        lines.Add(text);
+                        break;
                     }
+                }
+            }
+        }
 
-                    return lines;
+
+        private async Task SaveImage(BaseItem item, IEnumerable<RemoteImageInfo> images, ImageType type, CancellationToken cancellationToken)
+        {
+            foreach (var image in images.Where(i => i.Type == type))
+            {
+                try
+                {
+                    await _providerManager.SaveImage(item, image.Url, _resourcePool, type, null, cancellationToken).ConfigureAwait(false);
+                    break;
+                }
+                catch (HttpException ex)
+                {
+                    // Sometimes fanart has bad url's in their xml
+                    if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.NotFound)
+                    {
+                        continue;
+                    }
+                    break;
                 }
             }
         }

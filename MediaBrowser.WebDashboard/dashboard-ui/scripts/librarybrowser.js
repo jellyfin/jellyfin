@@ -843,10 +843,8 @@
                 else {
                     if (item.Name && options.showTitle) {
                         imgUrl = 'css/images/items/list/collection.png';
-                        background = LibraryBrowser.getMetroColor(item.Id);
-                    } else {
-                        background = defaultBackground;
                     }
+                    background = defaultBackground;
                 }
 
 

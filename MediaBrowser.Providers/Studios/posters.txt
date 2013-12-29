@@ -115,6 +115,7 @@ Digital Artists
 Digital Rights Group
 Digital Studios
 Discovery Channel
+Discovery
 Distribber
 Diva
 DIY Network
@@ -226,6 +227,7 @@ Indie Crush
 IndieFlix
 itsallinyourhands.tv
 ITV
+ITV1
 Janson Media
 Jim Henson Family TV
 K2
@@ -297,6 +299,7 @@ NBC Sports
 NBC Universal
 NBCU TV
 NCircle
+Netflix
 New Renaissance
 NHL
 Nickelodeon
@@ -386,6 +389,7 @@ SpaceRip
 SPEED
 Speed Racer Enterprises
 Spike
+Spike TV
 Stand Up To Cancer
 Starz
 Strand Releasing
@@ -453,6 +457,7 @@ Universal Television
 Univision
 unwrapped.tv
 USA
+USA Network
 uStudio
 Vanguard Cinema
 Venevision
