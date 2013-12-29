@@ -58,6 +58,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the path.
         /// </summary>
         /// <value>The path.</value>
+        [IgnoreDataMember]
         public override string Path
         {
             get
@@ -267,6 +268,11 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>System.String.</returns>
         private string GetConfigurationDirectoryPath(string username)
         {
+            if (string.IsNullOrEmpty(username))
+            {
+                throw new ArgumentNullException("username");
+            }
+
             var safeFolderName = FileSystem.GetValidFilename(username);
 
             return System.IO.Path.Combine(ConfigurationManager.ApplicationPaths.UserConfigurationDirectoryPath, safeFolderName);

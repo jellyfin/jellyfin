@@ -267,6 +267,8 @@ namespace MediaBrowser.Common.Plugins
         {
             lock (_configurationSaveLock)
             {
+                Directory.CreateDirectory(Path.GetDirectoryName(ConfigurationFilePath));
+                
                 XmlSerializer.SerializeToFile(Configuration, ConfigurationFilePath);
             }
         }

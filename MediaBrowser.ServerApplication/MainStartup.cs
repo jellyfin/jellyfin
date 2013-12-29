@@ -405,6 +405,7 @@ namespace MediaBrowser.ServerApplication
             _logger.ErrorException("UnhandledException", ex);
 
             var path = Path.Combine(_appHost.ServerConfigurationManager.ApplicationPaths.LogDirectoryPath, "unhandled_" + Guid.NewGuid() + ".txt");
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
 
             var builder = LogHelper.GetLogMessage(ex);
 

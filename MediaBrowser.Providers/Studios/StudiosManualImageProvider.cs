@@ -51,7 +51,7 @@ namespace MediaBrowser.Providers.Studios
 
             if (backdrops)
             {
-                list.Add(GetImage(item, "backdrops.txt", ImageType.Backdrop, "backdrop"));
+                //list.Add(GetImage(item, "backdrops.txt", ImageType.Backdrop, "backdrop"));
             }
             
             return Task.FromResult(list.Where(i => i != null));

@@ -454,6 +454,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
             _logger.Debug("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
             var logFilePath = Path.Combine(_appPaths.LogDirectoryPath, "ffmpeg-sub-convert-" + Guid.NewGuid() + ".txt");
+            Directory.CreateDirectory(Path.GetDirectoryName(logFilePath));
 
             var logFileStream = _fileSystem.GetFileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, true);
 
@@ -684,6 +685,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
             _logger.Debug("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
             var logFilePath = Path.Combine(_appPaths.LogDirectoryPath, "ffmpeg-sub-extract-" + Guid.NewGuid() + ".txt");
+            Directory.CreateDirectory(Path.GetDirectoryName(logFilePath));
 
             var logFileStream = _fileSystem.GetFileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, true);
 
