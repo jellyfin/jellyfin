@@ -250,7 +250,7 @@ namespace MediaBrowser.Api.Playback.Progressive
                 AudioSampleRate = state.Request.AudioSampleRate.Value + ":";
             }
 
-            args += string.Format(" -af \"aresample={0}async=1000{1}\"", AudioSampleRate, volParam);
+            args += string.Format(" -af \"aresample={0}async=1{1}\"", AudioSampleRate, volParam);
 
             return args;
         }
