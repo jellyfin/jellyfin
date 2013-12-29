@@ -121,7 +121,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
             {
                 LazyInitializer.EnsureInitialized(ref _lastExecutionResult, ref _lastExecutionResultinitialized, ref _lastExecutionResultSyncLock, () =>
                 {
-                    var path = GetHistoryFilePath(false);
+                    var path = GetHistoryFilePath();
 
                     try
                     {
@@ -432,43 +432,28 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         /// <summary>
         /// Gets the scheduled tasks configuration directory.
         /// </summary>
-        /// <param name="create">if set to <c>true</c> [create].</param>
         /// <returns>System.String.</returns>
-        private string GetScheduledTasksConfigurationDirectory(bool create)
+        private string GetScheduledTasksConfigurationDirectory()
         {
-            var path = Path.Combine(ApplicationPaths.ConfigurationDirectoryPath, "ScheduledTasks");
-
-            if (create)
-            {
-                Directory.CreateDirectory(path);
-            }
-
-            return path;
+            return Path.Combine(ApplicationPaths.ConfigurationDirectoryPath, "ScheduledTasks");
         }
 
         /// <summary>
         /// Gets the scheduled tasks data directory.
         /// </summary>
-        /// <param name="create">if set to <c>true</c> [create].</param>
         /// <returns>System.String.</returns>
-        private string GetScheduledTasksDataDirectory(bool create)
+        private string GetScheduledTasksDataDirectory()
         {
-            var path = Path.Combine(ApplicationPaths.DataPath, "ScheduledTasks");
-
-            if (create)
-            {
-                Directory.CreateDirectory(path);
-            }
-            return path;
+            return Path.Combine(ApplicationPaths.DataPath, "ScheduledTasks");
         }
 
         /// <summary>
         /// Gets the history file path.
         /// </summary>
         /// <value>The history file path.</value>
-        private string GetHistoryFilePath(bool createDirectory)
+        private string GetHistoryFilePath()
         {
-            return Path.Combine(GetScheduledTasksDataDirectory(createDirectory), Id + ".js");
+            return Path.Combine(GetScheduledTasksDataDirectory(), Id + ".js");
         }
 
         /// <summary>
@@ -477,7 +462,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         /// <returns>System.String.</returns>
         private string GetConfigurationFilePath()
         {
-            return Path.Combine(GetScheduledTasksConfigurationDirectory(false), Id + ".js");
+            return Path.Combine(GetScheduledTasksConfigurationDirectory(), Id + ".js");
         }
 
         /// <summary>
@@ -512,9 +497,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         {
             var path = GetConfigurationFilePath();
 
-            var parentPath = Path.GetDirectoryName(path);
-
-            Directory.CreateDirectory(parentPath);
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
 
             JsonSerializer.SerializeToFile(triggers.Select(ScheduledTaskHelpers.GetTriggerInfo), path);
         }
@@ -545,7 +528,10 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
                 result.ErrorMessage = ex.Message;
             }
 
-            JsonSerializer.SerializeToFile(result, GetHistoryFilePath(true));
+            var path = GetHistoryFilePath();
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+
+            JsonSerializer.SerializeToFile(result, path);
 
             LastExecutionResult = result;
 

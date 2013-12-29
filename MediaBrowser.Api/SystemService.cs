@@ -124,9 +124,11 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetConfiguration request)
         {
-            var dateModified = _fileSystem.GetLastWriteTimeUtc(_configurationManager.ApplicationPaths.SystemConfigurationFilePath);
+            var configPath = _configurationManager.ApplicationPaths.SystemConfigurationFilePath;
 
-            var cacheKey = (_configurationManager.ApplicationPaths.SystemConfigurationFilePath + dateModified.Ticks).GetMD5();
+            var dateModified = _fileSystem.GetLastWriteTimeUtc(configPath);
+
+            var cacheKey = (configPath + dateModified.Ticks).GetMD5();
 
             return ToOptimizedResultUsingCache(cacheKey, dateModified, null, () => _configurationManager.Configuration);
         }

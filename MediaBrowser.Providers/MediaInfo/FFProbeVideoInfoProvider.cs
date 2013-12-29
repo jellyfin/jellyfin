@@ -377,7 +377,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                     if (!string.IsNullOrEmpty(genres))
                     {
-                        video.Genres = genres.Split(new[] { ';', '/' }, StringSplitOptions.RemoveEmptyEntries)
+                        video.Genres = genres.Split(new[] { ';', '/', ',' }, StringSplitOptions.RemoveEmptyEntries)
                             .Where(i => !string.IsNullOrWhiteSpace(i))
                             .Select(i => i.Trim())
                             .ToList();

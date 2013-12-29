@@ -1,5 +1,5 @@
 ﻿.posterItem {
-    margin: 6px;
+    margin: 8px;
     text-shadow: none;
     font-weight: normal!important;
     display: inline-block;
@@ -64,8 +64,8 @@
     white-space: nowrap;
     padding: 5px 4px 4px;
     text-shadow: none;
-    font-size: 15px;
-    font-weight: 300;
+    font-size: 13px;
+    font-weight: 400;
 }
 
 .posterItemTextOverlay {
@@ -88,7 +88,7 @@
 
 .posterItemTextOverlay .posterItemText {
     background-color: transparent;
-    padding: 1px 5px 4px !important;
+    padding-left: 5px;
 }
 
     .posterItemTextOverlay .posterItemText:first-child {
@@ -151,7 +151,7 @@
 .posterItemProgress .itemProgressBar {
     height: 10px;
     width: 100%;
-    opacity: .8;
+    opacity: .6;
 }
 
 @media all and (max-width: 400px) {

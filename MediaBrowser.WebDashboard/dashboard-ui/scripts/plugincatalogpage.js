@@ -108,7 +108,7 @@
             
             html += "</div>";
 
-            html += "<div class='posterItemText' style='color:#000;font-weight:400;'>";
+            html += "<div class='posterItemText' style='color:#000;font-weight:400;font-size:15px;'>";
             html += plugin.price > 0 ? "$" + plugin.price.toFixed(2) : "Free";
             html += Dashboard.getStoreRatingHtml(plugin.avgRating, plugin.id, plugin.name);
 

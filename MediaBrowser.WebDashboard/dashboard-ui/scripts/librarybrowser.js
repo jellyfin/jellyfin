@@ -257,7 +257,7 @@
                 if (item.LocationType == "Offline" || item.LocationType == "Virtual") {
                     html += LibraryBrowser.getOfflineIndicatorHtml(item);
                 } else {
-                    html += LibraryBrowser.getUnplayedIndicatorHtml(item);
+                    html += LibraryBrowser.getPlayedIndicatorHtml(item);
                 }
 
                 html += "</a>";
@@ -879,7 +879,7 @@
                         html += LibraryBrowser.getOfflineIndicatorHtml(item);
                     }
                 } else if (options.showUnplayedIndicator !== false) {
-                    html += LibraryBrowser.getUnplayedIndicatorHtml(item);
+                    html += LibraryBrowser.getPlayedIndicatorHtml(item);
                 }
                 html += '</div>';
 
@@ -1087,16 +1087,10 @@
             return '<div class="posterRibbon missingPosterRibbon">Missing</div>';
         },
 
-        getUnplayedIndicatorHtml: function (item) {
+        getPlayedIndicatorHtml: function (item) {
 
-            if (item.LocationType == 'Virtual') {
-                return '';
-            }
-
-            if (item.Type == "Series") {
-                if (item.RecursiveUnplayedItemCount && item.PlayedPercentage) {
-                    return '<div class="posterRibbon">' + item.RecursiveUnplayedItemCount + ' Unwatched</div>';
-                }
+            if (item.RecursiveUnplayedItemCount) {
+                return '<div class="unplayedIndicator">' + item.RecursiveUnplayedItemCount + '</div>';
             }
 
             return '';
@@ -1455,7 +1449,7 @@
             return html;
         },
 
-        getItemProgressBarHtml: function (item, includeText) {
+        getItemProgressBarHtml: function (item) {
 
             var html = '';
 
@@ -1485,10 +1479,6 @@
 
                 html += '<progress title="' + tooltip + '" class="itemProgressBar" min="0" max="100" value="' + pct + '">';
                 html += '</progress>';
-
-                if (includeText) {
-                    html += '<span class="itemProgressText">' + tooltip + '</span>';
-                }
             }
 
             return html;
@@ -1497,10 +1487,6 @@
         getUserDataIconsHtml: function (item) {
 
             var html = '';
-
-            if (item.Type != "Audio" && item.Type != "Season" && item.Type != "Series") {
-                html += LibraryBrowser.getItemProgressBarHtml(item, true);
-            }
 
             var userData = item.UserData || {};
 

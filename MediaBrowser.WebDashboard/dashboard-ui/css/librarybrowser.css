@@ -797,7 +797,7 @@ a.itemTag:hover {
     top: 0;
     right: 0;
     text-align: center;
-    padding: 3px 5px;
+    padding: 5px 5px;
     border-bottom-left-radius: 10px;
     color: #fff;
     background: rgb(0, 143, 187);
@@ -814,6 +814,22 @@ a.itemTag:hover {
 
 .missingPosterRibbon {
     background: rgb(248, 58, 34);
+}
+
+.unplayedIndicator {
+    display: block;
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    text-align: center;
+    vertical-align: middle;
+    width: 28px;
+    height: 23px;
+    padding-top: 5px;
+    border-radius: 50%;
+    color: #fff;
+    background: rgb(82, 181, 75);
+    background: rgba(82, 181, 75, .8);
 }
 
 .itemProgress {
@@ -887,21 +903,21 @@ a.itemTag:hover {
 .itemProgressBar::-moz-progress-bar {
     border-radius: 0;
     background-image: none;
-    background-color: #A92D2D;
+    background-color: #52B54B;
 }
 
 /* Chrome */
 .itemProgressBar::-webkit-progress-value {
     border-radius: 0;
     background-image: none;
-    background-color: #A92D2D;
+    background-color: #52B54B;
 }
 
 /* Polyfill */
 .itemProgressBar[aria-valuenow]:before {
     border-radius: 0;
     background-image: none;
-    background-color: #A92D2D;
+    background-color: #52B54B;
 }
 
 .userDataIcons .itemProgressBar {

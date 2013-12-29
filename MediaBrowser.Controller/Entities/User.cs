@@ -76,14 +76,6 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         private UserRootFolder _rootFolder;
         /// <summary>
-        /// The _user root folder initialized
-        /// </summary>
-        private bool _userRootFolderInitialized;
-        /// <summary>
-        /// The _user root folder sync lock
-        /// </summary>
-        private object _userRootFolderSyncLock = new object();
-        /// <summary>
         /// Gets the root folder.
         /// </summary>
         /// <value>The root folder.</value>
@@ -92,17 +84,11 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                LazyInitializer.EnsureInitialized(ref _rootFolder, ref _userRootFolderInitialized, ref _userRootFolderSyncLock, () => LibraryManager.GetUserRootFolder(RootFolderPath));
-                return _rootFolder;
+                return _rootFolder ?? (LibraryManager.GetUserRootFolder(RootFolderPath));
             }
             private set
             {
                 _rootFolder = value;
-
-                if (_rootFolder == null)
-                {
-                    _userRootFolderInitialized = false;
-                }
             }
         }
 
@@ -154,22 +140,6 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Gets the last date modified of the configuration
-        /// </summary>
-        /// <value>The configuration date last modified.</value>
-        [IgnoreDataMember]
-        public DateTime ConfigurationDateLastModified
-        {
-            get
-            {
-                // Ensure it's been lazy loaded
-                var config = Configuration;
-
-                return FileSystem.GetLastWriteTimeUtc(ConfigurationFilePath);
-            }
-        }
-
-        /// <summary>
         /// Reloads the root media folder
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
@@ -203,13 +173,22 @@ namespace MediaBrowser.Controller.Entities
             {
                 // Move configuration
                 var newConfigDirectory = GetConfigurationDirectoryPath(newName);
+                var oldConfigurationDirectory = ConfigurationDirectoryPath;
 
                 // Exceptions will be thrown if these paths already exist
                 if (Directory.Exists(newConfigDirectory))
                 {
                     Directory.Delete(newConfigDirectory, true);
                 }
-                Directory.Move(ConfigurationDirectoryPath, newConfigDirectory);
+
+                if (Directory.Exists(oldConfigurationDirectory))
+                {
+                    Directory.Move(oldConfigurationDirectory, newConfigDirectory);
+                }
+                else
+                {
+                    Directory.CreateDirectory(newConfigDirectory);
+                }
 
                 var customLibraryPath = GetRootFolderPath(Name);
 
@@ -228,7 +207,6 @@ namespace MediaBrowser.Controller.Entities
             Name = newName;
 
             // Force these to be lazy loaded again
-            _configurationDirectoryPath = null;
             RootFolder = null;
 
             // Kick off a task to validate the media library
@@ -238,25 +216,15 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// The _configuration directory path
-        /// </summary>
-        private string _configurationDirectoryPath;
-        /// <summary>
         /// Gets the path to the user's configuration directory
         /// </summary>
         /// <value>The configuration directory path.</value>
+        [IgnoreDataMember]
         private string ConfigurationDirectoryPath
         {
             get
             {
-                if (_configurationDirectoryPath == null)
-                {
-                    _configurationDirectoryPath = GetConfigurationDirectoryPath(Name);
-
-                    Directory.CreateDirectory(_configurationDirectoryPath);
-                }
-
-                return _configurationDirectoryPath;
+                return GetConfigurationDirectoryPath(Name);
             }
         }
 
@@ -281,6 +249,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets the path to the user's configuration file
         /// </summary>
         /// <value>The configuration file path.</value>
+        [IgnoreDataMember]
         public string ConfigurationFilePath
         {
             get
@@ -294,7 +263,9 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         public void SaveConfiguration(IXmlSerializer serializer)
         {
-            serializer.SerializeToFile(Configuration, ConfigurationFilePath);
+            var xmlPath = ConfigurationFilePath;
+            Directory.CreateDirectory(System.IO.Path.GetDirectoryName(xmlPath));
+            serializer.SerializeToFile(Configuration, xmlPath);
         }
 
         /// <summary>

@@ -141,10 +141,6 @@ namespace MediaBrowser.Common.Implementations
         }
 
         /// <summary>
-        /// The _configuration directory path
-        /// </summary>
-        private string _configurationDirectoryPath;
-        /// <summary>
         /// Gets the path to the application configuration root directory
         /// </summary>
         /// <value>The configuration directory path.</value>
@@ -152,12 +148,7 @@ namespace MediaBrowser.Common.Implementations
         {
             get
             {
-                if (_configurationDirectoryPath == null)
-                {
-                    _configurationDirectoryPath = Path.Combine(ProgramDataPath, "config");
-                    Directory.CreateDirectory(_configurationDirectoryPath);
-                }
-                return _configurationDirectoryPath;
+                return Path.Combine(ProgramDataPath, "config");
             }
         }
 
@@ -218,7 +209,7 @@ namespace MediaBrowser.Common.Implementations
         /// <returns>System.String.</returns>
         private string GetProgramDataPath()
         {
-            var programDataPath = _useDebugPath ? ConfigurationManager.AppSettings["DebugProgramDataPath"] : Path.Combine(ConfigurationManager.AppSettings["ReleaseProgramDataPath"], ConfigurationManager.AppSettings["ProgramDataFolderName"]);
+            var programDataPath = _useDebugPath ? ConfigurationManager.AppSettings["DebugProgramDataPath"] : ConfigurationManager.AppSettings["ReleaseProgramDataPath"];
 
             programDataPath = programDataPath.Replace("%ApplicationData%", Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
 

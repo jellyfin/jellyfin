@@ -1,6 +1,6 @@
 ﻿/* Now playing bar */
 .nowPlayingBar {
-    padding: 6px 0 15px 0;
+    padding: 6px 0 6px 0;
     border-top: 2px solid green;
 }
 
