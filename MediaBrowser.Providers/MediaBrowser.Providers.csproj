@@ -121,6 +121,7 @@
     <Compile Include="Savers\SeriesXmlSaver.cs" />
     <Compile Include="Savers\XmlSaverHelpers.cs" />
     <Compile Include="Studios\StudioImageProvider.cs" />
+    <Compile Include="Studios\StudiosManualImageProvider.cs" />
     <Compile Include="TV\EpisodeImageFromMediaLocationProvider.cs" />
     <Compile Include="TV\EpisodeIndexNumberProvider.cs" />
     <Compile Include="TV\EpisodeProviderFromXml.cs" />
@@ -167,7 +168,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Studios\images.txt" />
+    <EmbeddedResource Include="Studios\backdrops.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Studios\posters.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition=" '$(ConfigurationName)' != 'Release Mono' " />
