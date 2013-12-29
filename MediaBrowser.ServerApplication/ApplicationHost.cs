@@ -542,9 +542,7 @@ namespace MediaBrowser.ServerApplication
         /// <returns>IEnumerable{Assembly}.</returns>
         protected override IEnumerable<Assembly> GetComposablePartAssemblies()
         {
-            var list = Directory.EnumerateFiles(ApplicationPaths.PluginsPath, "*.dll", SearchOption.TopDirectoryOnly)
-                .Select(LoadAssembly)
-                .Where(a => a != null)
+            var list = GetPluginAssemblies()
                 .ToList();
 
             // Gets all plugin assemblies by first reading all bytes of the .dll and calling Assembly.Load against that
@@ -580,6 +578,24 @@ namespace MediaBrowser.ServerApplication
             list.Add(GetType().Assembly);
 
             return list;
+        }
+
+        /// <summary>
+        /// Gets the plugin assemblies.
+        /// </summary>
+        /// <returns>IEnumerable{Assembly}.</returns>
+        private IEnumerable<Assembly> GetPluginAssemblies()
+        {
+            try
+            {
+                return Directory.EnumerateFiles(ApplicationPaths.PluginsPath, "*.dll", SearchOption.TopDirectoryOnly)
+                    .Select(LoadAssembly)
+                    .Where(a => a != null);
+            }
+            catch (DirectoryNotFoundException)
+            {
+                return new List<Assembly>();
+            }
         }
 
         private readonly string _systemId = Environment.MachineName.GetMD5().ToString();

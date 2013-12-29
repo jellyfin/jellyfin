@@ -186,6 +186,8 @@ namespace MediaBrowser.Common.Implementations.Logging
         {
             LogFilePath = Path.Combine(LogDirectory, LogFilePrefix + "-" + decimal.Round(DateTime.Now.Ticks / 10000000) + ".log");
 
+            Directory.CreateDirectory(Path.GetDirectoryName(LogFilePath));
+            
             AddFileTarget(LogFilePath, level);
 
             LogSeverity = level;

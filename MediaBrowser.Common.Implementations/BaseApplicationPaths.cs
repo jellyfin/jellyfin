@@ -93,10 +93,6 @@ namespace MediaBrowser.Common.Implementations
         }
 
         /// <summary>
-        /// The _plugins path
-        /// </summary>
-        private string _pluginsPath;
-        /// <summary>
         /// Gets the path to the plugin directory
         /// </summary>
         /// <value>The plugins path.</value>
@@ -104,20 +100,10 @@ namespace MediaBrowser.Common.Implementations
         {
             get
             {
-                if (_pluginsPath == null)
-                {
-                    _pluginsPath = Path.Combine(ProgramDataPath, "plugins");
-                    Directory.CreateDirectory(_pluginsPath);
-                }
-
-                return _pluginsPath;
+                return Path.Combine(ProgramDataPath, "plugins");
             }
         }
 
-        /// <summary>
-        /// The _plugin configurations path
-        /// </summary>
-        private string _pluginConfigurationsPath;
         /// <summary>
         /// Gets the path to the plugin configurations directory
         /// </summary>
@@ -126,17 +112,10 @@ namespace MediaBrowser.Common.Implementations
         {
             get
             {
-                if (_pluginConfigurationsPath == null)
-                {
-                    _pluginConfigurationsPath = Path.Combine(PluginsPath, "configurations");
-                    Directory.CreateDirectory(_pluginConfigurationsPath);
-                }
-
-                return _pluginConfigurationsPath;
+                return Path.Combine(PluginsPath, "configurations");
             }
         }
 
-        private string _tempUpdatePath;
         /// <summary>
         /// Gets the path to where temporary update files will be stored
         /// </summary>
@@ -145,20 +124,10 @@ namespace MediaBrowser.Common.Implementations
         {
             get
             {
-                if (_tempUpdatePath == null)
-                {
-                    _tempUpdatePath = Path.Combine(ProgramDataPath, "updates");
-                    Directory.CreateDirectory(_tempUpdatePath);
-                }
-
-                return _tempUpdatePath;
+                return Path.Combine(ProgramDataPath, "updates");
             }
         }
 
-        /// <summary>
-        /// The _log directory path
-        /// </summary>
-        private string _logDirectoryPath;
         /// <summary>
         /// Gets the path to the log directory
         /// </summary>
@@ -167,12 +136,7 @@ namespace MediaBrowser.Common.Implementations
         {
             get
             {
-                if (_logDirectoryPath == null)
-                {
-                    _logDirectoryPath = Path.Combine(ProgramDataPath, "logs");
-                    Directory.CreateDirectory(_logDirectoryPath);
-                }
-                return _logDirectoryPath;
+                return Path.Combine(ProgramDataPath, "logs");
             }
         }
 

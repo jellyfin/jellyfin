@@ -528,6 +528,7 @@ namespace MediaBrowser.Common.Implementations.Updates
             // Success - move it to the real target 
             try
             {
+                Directory.CreateDirectory(Path.GetDirectoryName(target));
                 File.Copy(tempFile, target, true);
                 //If it is an archive - write out a version file so we know what it is
                 if (isArchive)

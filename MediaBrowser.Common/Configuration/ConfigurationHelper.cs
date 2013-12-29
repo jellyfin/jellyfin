@@ -42,6 +42,8 @@ namespace MediaBrowser.Common.Configuration
             // If the file didn't exist before, or if something has changed, re-save
             if (buffer == null || !buffer.SequenceEqual(newBytes))
             {
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
+                
                 // Save it after load in case we got new items
                 File.WriteAllBytes(path, newBytes);
             }
