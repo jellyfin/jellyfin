@@ -168,7 +168,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Studios\backdrops.txt" />
+    <EmbeddedResource Include="Studios\thumbs.txt" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Studios\posters.txt" />

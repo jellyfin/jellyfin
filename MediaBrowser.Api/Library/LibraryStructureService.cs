@@ -28,8 +28,8 @@ namespace MediaBrowser.Api.Library
         public string UserId { get; set; }
     }
 
-    [Route("/Library/VirtualFolders/{Name}", "POST")]
-    [Route("/Users/{UserId}/VirtualFolders/{Name}", "POST")]
+    [Route("/Library/VirtualFolders", "POST")]
+    [Route("/Users/{UserId}/VirtualFolders", "POST")]
     public class AddVirtualFolder : IReturnVoid
     {
         /// <summary>
@@ -57,8 +57,8 @@ namespace MediaBrowser.Api.Library
         public bool RefreshLibrary { get; set; }
     }
 
-    [Route("/Library/VirtualFolders/{Name}", "DELETE")]
-    [Route("/Users/{UserId}/VirtualFolders/{Name}", "DELETE")]
+    [Route("/Library/VirtualFolders", "DELETE")]
+    [Route("/Users/{UserId}/VirtualFolders", "DELETE")]
     public class RemoveVirtualFolder : IReturnVoid
     {
         /// <summary>
@@ -80,8 +80,8 @@ namespace MediaBrowser.Api.Library
         public bool RefreshLibrary { get; set; }
     }
 
-    [Route("/Library/VirtualFolders/{Name}/Name", "POST")]
-    [Route("/Users/{UserId}/VirtualFolders/{Name}/Name", "POST")]
+    [Route("/Library/VirtualFolders/Name", "POST")]
+    [Route("/Users/{UserId}/VirtualFolders/Name", "POST")]
     public class RenameVirtualFolder : IReturnVoid
     {
         /// <summary>
@@ -109,8 +109,8 @@ namespace MediaBrowser.Api.Library
         public bool RefreshLibrary { get; set; }
     }
 
-    [Route("/Library/VirtualFolders/{Name}/Paths", "POST")]
-    [Route("/Users/{UserId}/VirtualFolders/{Name}/Paths", "POST")]
+    [Route("/Library/VirtualFolders/Paths", "POST")]
+    [Route("/Users/{UserId}/VirtualFolders/Paths", "POST")]
     public class AddMediaPath : IReturnVoid
     {
         /// <summary>
@@ -138,8 +138,8 @@ namespace MediaBrowser.Api.Library
         public bool RefreshLibrary { get; set; }
     }
 
-    [Route("/Library/VirtualFolders/{Name}/Paths", "DELETE")]
-    [Route("/Users/{UserId}/VirtualFolders/{Name}/Paths", "DELETE")]
+    [Route("/Library/VirtualFolders/Paths", "DELETE")]
+    [Route("/Users/{UserId}/VirtualFolders/Paths", "DELETE")]
     public class RemoveMediaPath : IReturnVoid
     {
         /// <summary>
@@ -243,6 +243,11 @@ namespace MediaBrowser.Api.Library
         /// <param name="request">The request.</param>
         public void Post(AddVirtualFolder request)
         {
+            if (string.IsNullOrWhiteSpace(request.Name))
+            {
+                throw new ArgumentNullException("request");
+            }
+
             var name = _fileSystem.GetValidFilename(request.Name);
 
             string rootFolderPath;
@@ -307,6 +312,16 @@ namespace MediaBrowser.Api.Library
         /// <param name="request">The request.</param>
         public void Post(RenameVirtualFolder request)
         {
+            if (string.IsNullOrWhiteSpace(request.Name))
+            {
+                throw new ArgumentNullException("request");
+            }
+
+            if (string.IsNullOrWhiteSpace(request.NewName))
+            {
+                throw new ArgumentNullException("request");
+            }
+
             string rootFolderPath;
 
             if (string.IsNullOrEmpty(request.UserId))
@@ -380,6 +395,11 @@ namespace MediaBrowser.Api.Library
         /// <param name="request">The request.</param>
         public void Delete(RemoveVirtualFolder request)
         {
+            if (string.IsNullOrWhiteSpace(request.Name))
+            {
+                throw new ArgumentNullException("request");
+            }
+
             string rootFolderPath;
 
             if (string.IsNullOrEmpty(request.UserId))
@@ -435,6 +455,11 @@ namespace MediaBrowser.Api.Library
         /// <param name="request">The request.</param>
         public void Post(AddMediaPath request)
         {
+            if (string.IsNullOrWhiteSpace(request.Name))
+            {
+                throw new ArgumentNullException("request");
+            }
+
             _directoryWatchers.Stop();
 
             try
@@ -476,6 +501,11 @@ namespace MediaBrowser.Api.Library
         /// <param name="request">The request.</param>
         public void Delete(RemoveMediaPath request)
         {
+            if (string.IsNullOrWhiteSpace(request.Name))
+            {
+                throw new ArgumentNullException("request");
+            }
+
             _directoryWatchers.Stop();
 
             try
