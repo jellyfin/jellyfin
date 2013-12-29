@@ -288,11 +288,11 @@ input[type="range"]::-ms-fill-upper {
     }
 
     .positionSliderContainer {
-        width: 400px;
+        width: 300px;
     }
 
     .itemVideo {
-        left: -560px;
+        left: -420px;
     }
 }
 
@@ -301,12 +301,8 @@ input[type="range"]::-ms-fill-upper {
         width: 500px;
     }
 
-    .positionSliderContainer {
-        width: 500px;
-    }
-
     .itemVideo {
-        left: -660px;
+        left: -420px;
     }
 }
 
@@ -315,11 +311,7 @@ input[type="range"]::-ms-fill-upper {
         width: 550px;
     }
 
-    .positionSliderContainer {
-        width: 550px;
-    }
-
     .itemVideo {
-        left: -710px;
+        left: -400px;
     }
 }

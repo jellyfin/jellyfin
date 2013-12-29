@@ -8,7 +8,6 @@
     text-decoration: none;
     text-align: left;
     overflow: hidden;
-    border: 2px solid #1b1b1b;
     -webkit-transition: all 500ms ease;
     -moz-transition: all 500ms ease;
     -o-transition: all 500ms ease;
@@ -17,11 +16,10 @@
 }
 
     .posterItem:hover {
-        -moz-box-shadow: 0 0 20px 3px #2572EB;
-        -webkit-box-shadow: 0 0 20px 3px #2572EB;
-        box-shadow: 0 0 20px 3px #2572EB;
+        -moz-box-shadow: 0 0 20px 3px #52B54B;
+        -webkit-box-shadow: 0 0 20px 3px #52B54B;
+        box-shadow: 0 0 20px 3px #52B54B;
     }
-
 
 
 .smallBackdropPosterItem, .smallPosterItem {
@@ -33,6 +31,8 @@
     background-repeat: no-repeat;
     background-position: center bottom;
     background-color: #000;
+    border: 2px solid #1b1b1b;
+    position: relative;
 }
 
 .transparentPosterItem .posterItemImage {
@@ -43,8 +43,8 @@
     background-color: #999;
 }
 
-.borderlessPosterItem {
-    border: 0;
+.borderlessPosterItem .posterItemImage {
+    border-color: transparent;
 }
 
 .posterItemStoreText {
@@ -63,7 +63,6 @@
     text-wrap: none;
     white-space: nowrap;
     padding: 5px 4px 4px;
-    background-color: #222;
     text-shadow: none;
     font-size: 14px;
     font-weight: 300;
@@ -89,7 +88,7 @@
 
 .posterItemTextOverlay .posterItemText {
     background-color: transparent;
-    padding-top: 1px !important;
+    padding: 1px 5px 4px !important;
 }
 
     .posterItemTextOverlay .posterItemText:first-child {
@@ -114,24 +113,11 @@
 }
 
 .squarePosterItem {
-    width: 150px;
+    width: 154px;
 }
 
     .squarePosterItem .posterItemImage {
         height: 150px;
-    }
-
-.storeItem {
-    display: inline-block;
-    margin: 0 15px 15px 0;
-}
-
-.storeItem, .storePosterItem {
-    width: 160px;
-}
-
-    .storePosterItem .posterItemImage {
-        height: 90px;
     }
 
 .storeReviewCount {
@@ -140,7 +126,7 @@
 
 
 .backdropPosterItem {
-    width: 288px;
+    width: 292px;
 }
 
     .backdropPosterItem .posterItemImage {
@@ -148,20 +134,20 @@
     }
 
 .smallBackdropPosterItem {
-    width: 168px;
+    width: 172px;
 }
 
     .smallBackdropPosterItem .posterItemImage {
         height: 94.5px;
     }
 
-    .portraitPosterItem {
-        width: 102px;
-    }
+.portraitPosterItem {
+    width: 106px;
+}
 
-        .portraitPosterItem .posterItemImage {
-            height: 153px;
-        }
+    .portraitPosterItem .posterItemImage {
+        height: 153px;
+    }
 
 .posterItemProgress .itemProgressBar {
     height: 10px;
@@ -179,7 +165,7 @@
 @media all and (min-width: 540px) {
 
     .backdropPosterItem {
-        width: 256px;
+        width: 260px;
     }
 
         .backdropPosterItem .posterItemImage {
@@ -190,7 +176,7 @@
 @media all and (min-width: 540px) {
 
     .smallBackdropPosterItem {
-        width: 184px;
+        width: 188px;
     }
 
         .smallBackdropPosterItem .posterItemImage {
@@ -201,23 +187,15 @@
 @media all and (min-width: 650px) {
 
     .backdropPosterItem {
-        width: 272px;
+        width: 276px;
     }
 
         .backdropPosterItem .posterItemImage {
             height: 153px;
         }
 
-    .storeItem, .storePosterItem {
-        width: 192px;
-    }
-
-        .storePosterItem .posterItemImage {
-            height: 110px;
-        }
-
     .smallBackdropPosterItem {
-        width: 192px;
+        width: 196px;
     }
 
         .smallBackdropPosterItem .posterItemImage {
@@ -228,7 +206,7 @@
 @media all and (min-width: 750px) {
 
     .portraitPosterItem {
-        width: 108px;
+        width: 112px;
     }
 
         .portraitPosterItem .posterItemImage {
@@ -239,7 +217,7 @@
 @media all and (min-width: 1200px) {
 
     .backdropPosterItem {
-        width: 272px;
+        width: 276px;
     }
 
         .backdropPosterItem .posterItemImage {
@@ -247,7 +225,7 @@
         }
 
     .portraitPosterItem {
-        width: 134px;
+        width: 138px;
     }
 
         .portraitPosterItem .posterItemImage {
@@ -255,24 +233,12 @@
         }
 
     .smallBackdropPosterItem {
-        width: 224px;
+        width: 228px;
     }
 
         .smallBackdropPosterItem .posterItemImage {
             height: 126px;
         }
-
-    .storeItem, .storePosterItem {
-        width: 270px;
-    }
-
-        .storePosterItem .posterItemImage {
-            height: 154px;
-        }
-
-    .posterItemStoreText {
-        font-size: 15px;
-    }
 
     .storeReviewCount {
         display: inline;
@@ -282,7 +248,7 @@
 @media all and (min-width: 1440px) {
 
     .squarePosterItem {
-        width: 170px;
+        width: 174px;
     }
 
         .squarePosterItem .posterItemImage {
@@ -290,7 +256,7 @@
         }
 
     .portraitPosterItem {
-        width: 134px;
+        width: 138px;
     }
 
         .portraitPosterItem .posterItemImage {
@@ -303,7 +269,7 @@
         }
 
     .backdropPosterItem {
-        width: 288px;
+        width: 292px;
     }
 
         .backdropPosterItem .posterItemImage {
@@ -314,7 +280,7 @@
 @media all and (min-width: 1920px) {
 
     .squarePosterItem {
-        width: 200px;
+        width: 204px;
     }
 
         .squarePosterItem .posterItemImage {
@@ -322,7 +288,7 @@
         }
 
     .portraitPosterItem {
-        width: 160px;
+        width: 164px;
     }
 
         .portraitPosterItem .posterItemImage {

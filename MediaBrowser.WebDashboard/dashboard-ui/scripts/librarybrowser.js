@@ -874,7 +874,16 @@
                     style += "background-color:" + background + ";";
                 }
 
-                html += '<div class="posterItemImage" style="' + style + '"></div>';
+                html += '<div class="posterItemImage" style="' + style + '">';
+
+                if (item.LocationType == "Offline" || item.LocationType == "Virtual") {
+                    if (options.showLocationTypeIndicator !== false) {
+                        html += LibraryBrowser.getOfflineIndicatorHtml(item);
+                    }
+                } else if (options.showUnplayedIndicator !== false) {
+                    html += LibraryBrowser.getUnplayedIndicatorHtml(item);
+                }
+                html += '</div>';
 
                 var name = LibraryBrowser.getPosterViewDisplayName(item);
 
@@ -931,14 +940,6 @@
 
                 if (overlayText) {
                     html += "</div>";
-                }
-
-                if (item.LocationType == "Offline" || item.LocationType == "Virtual") {
-                    if (options.showLocationTypeIndicator !== false) {
-                        html += LibraryBrowser.getOfflineIndicatorHtml(item);
-                    }
-                } else if (options.showUnplayedIndicator !== false) {
-                    html += LibraryBrowser.getUnplayedIndicatorHtml(item);
                 }
 
                 html += "</a>";

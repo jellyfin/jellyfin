@@ -1229,13 +1229,13 @@ var Dashboard = {
 
     getStoreRatingHtml: function (rating, id, name, noLinks) {
 
-        var html = "<div style='margin-left: 5px; margin-right: 5px; display: inline-block'>";
+        var html = "<div style='margin-left: 5px; margin-right: 5px; display: inline-block; vertical-align:middle;'>";
         if (!rating) rating = 0;
 
         for (var i = 1; i <= 5; i++) {
             var title = noLinks ? rating + " stars" : "Rate " + i + (i > 1 ? " stars" : " star");
 
-            html += noLinks ? "" : "<a href='#' data-id=" + id + " data-name='" + name + "' data-rating=" + i + " onclick='Dashboard.ratePackage(this);' >";
+            html += noLinks ? "" : "<span data-id=" + id + " data-name='" + name + "' data-rating=" + i + " onclick='Dashboard.ratePackage(this);return false;' >";
             if (rating <= i - 1) {
                 html += "<div class='storeStarRating emptyStarRating' title='" + title + "'></div>";
             } else if (rating < i) {
@@ -1243,7 +1243,7 @@ var Dashboard = {
             } else {
                 html += "<div class='storeStarRating' title='" + title + "'></div>";
             }
-            html += noLinks ? "" : "</a>";
+            html += noLinks ? "" : "</span>";
         }
 
         html += "</div>";

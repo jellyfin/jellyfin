@@ -72,6 +72,7 @@
             //positive
             var html = '<div data-role="collapsible" data-collapsed="true" style="margin-top: 2em;" >';
             html += '<h3>Latest Outstanding Reviews</h3>';
+        
             var positive = response1[0];
             var hasReviews = false;
             if (positive && positive.length > 0) {

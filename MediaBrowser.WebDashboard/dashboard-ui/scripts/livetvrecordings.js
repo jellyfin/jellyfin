@@ -39,7 +39,7 @@
 
         var html = '';
 
-        html += '<div data-role="collapsible" class="recordingGroupCollapsible" data-recordinggroupid="' + group.Id + '" style="margin-top:1em">';
+        html += '<div data-role="collapsible" class="recordingGroupCollapsible" data-recordinggroupid="' + group.Id + '" style="margin-top:1em" data-mini="true" data-content-theme="false">';
 
         html += '<h3>' + group.Name + '</h3>';
 
@@ -84,7 +84,7 @@
 
         var html = '';
 
-        html += '<ul data-role="listview" data-split-icon="delete" data-inset="false">';
+        html += '<ul data-role="listview" data-split-icon="delete" data-inset="true">';
 
         for (var i = 0, length = recordings.length; i < length; i++) {
 
@@ -176,7 +176,7 @@
         apiClient.getLiveTvRecordings({
 
             userId: Dashboard.getCurrentUserId(),
-            limit: 6
+            limit: 8
 
         }).done(function (result) {
 

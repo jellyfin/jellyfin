@@ -70,19 +70,19 @@
             var category = plugin.category || "General";
 
             if (category != currentCategory) {
-                html += '<h2 style="margin: .5em 0 0;">' + category + '</h2>';
+                html += '<h2 class="listHeader">' + category + '</h2>';
                 currentCategory = category;
             }
 
             var href = plugin.externalUrl ? plugin.externalUrl : "addplugin.html?name=" + encodeURIComponent(plugin.name) + "&guid=" + plugin.guid;
             var target = plugin.externalUrl ? ' target="_blank"' : '';
 
-            html += "<div class='storeItem'><a class='posterItem storePosterItem transparentPosterItem borderlessPosterItem' style='background: #D4D4D4!important' href='" + href + "' " + target + ">";
+            html += "<a class='storeItem backdropPosterItem posterItem transparentPosterItem borderlessPosterItem' href='" + href + "' " + target + ">";
 
             if (plugin.thumbImage) {
-                html += '<div class="posterItemImage" style="background-image:url(\'' + plugin.thumbImage + '\');background-size:cover;"></div>';
+                html += '<div class="posterItemImage" style="background-image:url(\'' + plugin.thumbImage + '\');background-size:cover;">';
             } else {
-                html += '<div class="posterItemImage defaultPosterItemImage" style="background-image:url(\'css/images/items/list/collection.png\');"></div>';
+                html += '<div class="posterItemImage defaultPosterItemImage" style="background-image:url(\'css/images/items/list/collection.png\');">';
             }
 
             if (plugin.isPremium) {
@@ -92,24 +92,23 @@
                     html += "<div class='premiumBanner'><img src='css/images/supporter/supporterflag.png' /></div>";
                 }
             }
+            html += "</div>";
 
-            html += "</a>";
-
-            html += "<div class='posterItemStoreText' style='font-weight: bold'>";
+            html += "<div class='posterItemText' style='color:#000;font-weight:400;font-size:16px;'>";
 
             var installedPlugin = plugin.isApp ? null : installedPlugins.filter(function (ip) {
                 return ip.Name == plugin.name;
             })[0];
 
             if (installedPlugin) {
-                html += plugin.name + " (Installed)";
+                html += plugin.name;
             } else {
                 html += plugin.name;
             }
             
             html += "</div>";
 
-            html += "<div class='posterItemStoreText' >";
+            html += "<div class='posterItemText' style='color:#000;font-weight:400;'>";
             html += plugin.price > 0 ? "$" + plugin.price.toFixed(2) : "Free";
             html += Dashboard.getStoreRatingHtml(plugin.avgRating, plugin.id, plugin.name);
 
@@ -118,7 +117,7 @@
             html += "</span>";
 
             html += "</div>";
-            html += "</div>";
+            html += "</a>";
 
             pluginhtml += html;
 

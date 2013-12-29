@@ -52,6 +52,7 @@ body {
 h1 {
     font-weight: 300;
     font-size: 2.22em;
+    text-transform: uppercase;
 }
 
 .ui-loader h1 {

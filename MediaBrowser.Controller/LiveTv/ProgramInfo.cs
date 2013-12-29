@@ -45,12 +45,6 @@ namespace MediaBrowser.Controller.LiveTv
         public DateTime EndDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the aspect ratio.
-        /// </summary>
-        /// <value>The aspect ratio.</value>
-        public string AspectRatio { get; set; }
-
-        /// <summary>
         /// Genre of the program.
         /// </summary>
         public List<string> Genres { get; set; }

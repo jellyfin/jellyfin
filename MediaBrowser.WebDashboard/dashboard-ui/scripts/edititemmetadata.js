@@ -175,7 +175,7 @@
             ParentId: id,
             Fields: 'Settings'
         };
-        
+
         if (itemtype != "Season" && itemtype != "Series") {
             query.SortBy = "SortName";
         }
@@ -818,7 +818,7 @@
             $('#providerSettingsContainer', page).hide();
         }
         populateInternetProviderSettings(page, item, item.LockedFields);
-        
+
         $("#chkDisplaySpecialsInline", page).checked(item.DisplaySpecialsWithSeasons || false).checkboxradio('refresh');
 
         $('#txtPath', page).val(item.Path || '');
@@ -1070,14 +1070,15 @@
         metadatafields.push({ name: "Tags" });
         metadatafields.push({ name: "Images" });
         metadatafields.push({ name: "Backdrops" });
-        
+
         if (item.Type == "Game") {
             metadatafields.push({ name: "Screenshots" });
         }
-        
+
         var html = '';
 
-        html += "<h3>Fields</h3>";
+        html += "<h1>Fields</h1>";
+        html += "<p>Slide a field to 'off' to lock it and prevent it's data from being changed.</p>";
         html += generateSliders(metadatafields, 'Fields');
         container.html(html).trigger('create');
         for (var fieldIndex = 0; fieldIndex < lockedFields.length; fieldIndex++) {

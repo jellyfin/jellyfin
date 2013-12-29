@@ -1,10 +1,9 @@
 ﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
-using MediaBrowser.Providers.Movies;
-using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -50,7 +49,8 @@ namespace MediaBrowser.Providers.Savers
                     return !trailer.IsLocalTrailer;
                 }
 
-                return item is Movie || item is MusicVideo || item is AdultVideo;
+                // Check parent for null to avoid running this against things like video backdrops
+                return item is Video && !(item is Episode) && item.Parent != null;
             }
 
             return false;
