@@ -150,9 +150,9 @@ namespace MediaBrowser.Controller.LiveTv
         /// <summary>
         /// Gets the channel stream.
         /// </summary>
-        /// <param name="recordingId">The recording identifier.</param>
+        /// <param name="channelId">The channel identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{Stream}.</returns>
-        Task<StreamResponseInfo> GetChannelStream(string recordingId, CancellationToken cancellationToken);
+        Task<StreamResponseInfo> GetChannelStream(string channelId, CancellationToken cancellationToken);
     }
 }

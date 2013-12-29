@@ -662,11 +662,11 @@
 
             var html = "";
 
+            var primaryImageAspectRatio = options.useAverageAspectRatio ? LibraryBrowser.getAveragePrimaryImageAspectRatio(items) : null;
+
             for (var i = 0, length = items.length; i < length; i++) {
 
                 var item = items[i];
-
-                var primaryImageAspectRatio = options.useAverageAspectRatio ? LibraryBrowser.getAveragePrimaryImageAspectRatio([item]) : null;
 
                 var futureDateText;
 
@@ -883,7 +883,7 @@
                 }
                 html += '</div>';
 
-                var name = LibraryBrowser.getPosterViewDisplayName(item);
+                var name = LibraryBrowser.getPosterViewDisplayName(item, options.displayAsSpecial);
 
                 if (!imgUrl && !options.showTitle) {
                     html += "<div class='posterItemDefaultText'>";
@@ -1089,8 +1089,23 @@
 
         getPlayedIndicatorHtml: function (item) {
 
-            if (item.RecursiveUnplayedItemCount) {
-                return '<div class="unplayedIndicator">' + item.RecursiveUnplayedItemCount + '</div>';
+            if (item.Type == "Series" || item.Type == "Season" || item.Type == "BoxSet") {
+                if (item.RecursiveUnplayedItemCount) {
+                    return '<div class="unplayedIndicator">' + item.RecursiveUnplayedItemCount + '</div>';
+                }
+            }
+            
+            if (item.PlayedPercentage == 100) {
+                return '<div class="unplayedIndicator"><div class="ui-icon-check ui-btn-icon-notext"></div></div>';
+            }
+
+            if (item.MediaType == "Video") {
+                
+                var userData = item.UserData || {};
+
+                if (userData.Played) {
+                    return '<div class="unplayedIndicator"><div class="ui-icon-check ui-btn-icon-notext"></div></div>';
+                }
             }
 
             return '';

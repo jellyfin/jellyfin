@@ -198,6 +198,13 @@ namespace MediaBrowser.Api.LiveTv
         public string Id { get; set; }
     }
 
+    [Route("/LiveTv/Channels/{Id}/Stream", "GET")]
+    public class GetInternalChannelStream
+    {
+        [ApiMember(Name = "Id", Description = "Channel Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Id { get; set; }
+    }
+
     public class LiveTvService : BaseApiService
     {
         private readonly ILiveTvManager _liveTvManager;
@@ -395,6 +402,13 @@ namespace MediaBrowser.Api.LiveTv
         public object Get(GetInternalRecordingStream request)
         {
             var stream = _liveTvManager.GetRecordingStream(request.Id, CancellationToken.None).Result;
+
+            return ToStreamResult(stream.Stream, stream.MimeType);
+        }
+
+        public object Get(GetInternalChannelStream request)
+        {
+            var stream = _liveTvManager.GetChannelStream(request.Id, CancellationToken.None).Result;
 
             return ToStreamResult(stream.Stream, stream.MimeType);
         }

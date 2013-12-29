@@ -832,6 +832,10 @@ a.itemTag:hover {
     background: rgba(82, 181, 75, .8);
 }
 
+.unplayedIndicator div:after {
+    background-color: transparent !important;
+}
+
 .itemProgress {
     vertical-align: top;
     font-size: 19px;

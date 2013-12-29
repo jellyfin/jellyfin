@@ -458,7 +458,10 @@
             var html = LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 useAverageAspectRatio: item.MediaType != "Game",
-                shape: item.Type == "MusicAlbum" ? "square" : "portrait"
+                shape: item.Type == "MusicAlbum" ? "square" : "portrait",
+                showParentTitle: item.Type == "MusicAlbum",
+                showTitle: item.Type == "MusicAlbum" || item.Type == "Game",
+                borderless: item.Type == "Game"
             });
 
             $('#similarContent', page).html(html);
@@ -521,10 +524,12 @@
 
         var sortBy = item.Type == "BoxSet" ? "ProductionYear,SortName" : "SortName";
 
+        var fields = "ItemCounts,DateCreated,AudioInfo,PrimaryImageAspectRatio";
+        
         var query = {
             ParentId: item.Id,
             SortBy: sortBy,
-            Fields: "ItemCounts,DateCreated,AudioInfo"
+            Fields: fields
         };
 
         var promise;
@@ -533,7 +538,8 @@
 
             promise = ApiClient.getSeasons(item.Id, {
 
-                userId: user.Id
+                userId: user.Id,
+                Fields: fields
             });
         }
         else if (item.Type == "Season") {
@@ -542,7 +548,8 @@
             promise = ApiClient.getEpisodes(item.SeriesId, {
 
                 seasonId: item.Id,
-                userId: user.Id
+                userId: user.Id,
+                Fields: fields
             });
         }
 
@@ -562,13 +569,34 @@
                     shape = "smallBackdrop";
                 }
 
-                var html = LibraryBrowser.getPosterDetailViewHtml({
-                    items: result.Items,
-                    useAverageAspectRatio: true,
-                    shape: shape,
-                    showParentName: false,
-                    displayAsSpecial: item.Type == "Season" && item.IndexNumber
-                });
+                var html;
+
+                if (item.Type == "Series" || item.Type == "BoxSet") {
+                    html = LibraryBrowser.getPosterViewHtml({
+                        items: result.Items,
+                        shape: "portrait",
+                        useAverageAspectRatio: true,
+                        showTitle: true
+                    });
+                }
+                else if (item.Type == "Season") {
+                    html = LibraryBrowser.getPosterViewHtml({
+                        items: result.Items,
+                        shape: "smallBackdrop",
+                        useAverageAspectRatio: true,
+                        showTitle: true,
+                        displayAsSpecial: item.Type == "Season" && item.IndexNumber
+                    });
+                }
+                else {
+                    html = LibraryBrowser.getPosterDetailViewHtml({
+                        items: result.Items,
+                        useAverageAspectRatio: true,
+                        shape: shape,
+                        showParentName: false,
+                        displayAsSpecial: item.Type == "Season" && item.IndexNumber
+                    });
+                }
 
                 $('#childrenContent', page).html(html);
 

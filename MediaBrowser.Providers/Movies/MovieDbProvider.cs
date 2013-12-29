@@ -751,41 +751,13 @@ namespace MediaBrowser.Providers.Movies
                                                            ? minimunRelease.iso_3166_1 + "-" + minimunRelease.certification
                                                            : null;
                 }
-
-                if (ourRelease.release_date != default(DateTime))
-                {
-                    if (ourRelease.release_date.Year != 1)
-                    {
-                        movie.PremiereDate = ourRelease.release_date.ToUniversalTime();
-                        movie.ProductionYear = ourRelease.release_date.Year;
-                    }
-                }
-                else if (usRelease.release_date != default(DateTime))
-                {
-                    if (usRelease.release_date.Year != 1)
-                    {
-                        movie.PremiereDate = usRelease.release_date.ToUniversalTime();
-                        movie.ProductionYear = usRelease.release_date.Year;
-                    }
-                }
-                else if (minimunRelease.release_date != default(DateTime))
-                {
-                    if (minimunRelease.release_date.Year != 1)
-                    {
-
-                        movie.PremiereDate = minimunRelease.release_date.ToUniversalTime();
-                        movie.ProductionYear = minimunRelease.release_date.Year;
-                    }
-                }
             }
-            else
+
+            if (movieData.release_date.Year != 1)
             {
-                if (movieData.release_date.Year != 1)
-                {
-                    //no specific country release info at all
-                    movie.PremiereDate = movieData.release_date.ToUniversalTime();
-                    movie.ProductionYear = movieData.release_date.Year;
-                }
+                //no specific country release info at all
+                movie.PremiereDate = movieData.release_date.ToUniversalTime();
+                movie.ProductionYear = movieData.release_date.Year;
             }
 
             // If that didn't find a rating and we are a boxset, use the one from our first child

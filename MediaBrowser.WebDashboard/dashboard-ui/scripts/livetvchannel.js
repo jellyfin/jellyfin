@@ -271,7 +271,7 @@
 
         $('#btnPlay', page).on('click', function () {
             var userdata = currentItem.UserData || {};
-            LibraryBrowser.showPlayMenu(this, currentItem.Name, currentItem.Type, currentItem.MediaType, userdata.PlaybackPositionTicks);
+            LibraryBrowser.showPlayMenu(this, currentItem.Id, currentItem.Type, currentItem.MediaType, userdata.PlaybackPositionTicks);
         });
 
         $('#btnRemote', page).on('click', function () {

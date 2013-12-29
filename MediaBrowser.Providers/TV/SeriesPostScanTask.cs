@@ -441,7 +441,7 @@ namespace MediaBrowser.Providers.TV
         {
             _logger.Info("Creating Season {0} entry for {1}", seasonNumber, series.Name);
 
-            var name = string.Format("Season {0}", seasonNumber.ToString(UsCulture));
+            var name = seasonNumber == 0 ? _config.Configuration.SeasonZeroDisplayName : string.Format("Season {0}", seasonNumber.ToString(UsCulture));
 
             var season = new Season
             {
