@@ -94,7 +94,7 @@ namespace MediaBrowser.Api.Playback.Hls
                     audioSampleRate = state.Request.AudioSampleRate.Value + ":";
                 }
 
-                args += string.Format(" -af \"adelay=1,aresample={0}async=1000{1}\"", audioSampleRate, volParam);
+                args += string.Format(" -af \"adelay=1,aresample={0}async=1{1}\"", audioSampleRate, volParam);
 
                 return args;
             }
