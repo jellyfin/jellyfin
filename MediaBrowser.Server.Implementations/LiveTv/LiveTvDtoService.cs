@@ -301,7 +301,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 OriginalAirDate = program.OriginalAirDate,
                 Audio = program.Audio,
                 CommunityRating = GetClientCommunityRating(program.CommunityRating),
-                AspectRatio = program.AspectRatio,
                 IsRepeat = program.IsRepeat,
                 EpisodeTitle = program.EpisodeTitle,
                 ChannelName = channelName,

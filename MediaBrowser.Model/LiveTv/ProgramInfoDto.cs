@@ -47,12 +47,6 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value>The community rating.</value>
         public float? CommunityRating { get; set; }
-
-        /// <summary>
-        /// Gets or sets the aspect ratio.
-        /// </summary>
-        /// <value>The aspect ratio.</value>
-        public string AspectRatio { get; set; }
         
         /// <summary>
         /// Gets or sets the official rating.
