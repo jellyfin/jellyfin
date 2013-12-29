@@ -902,6 +902,22 @@ namespace MediaBrowser.Api.Playback
 
                 item = recording;
             }
+            else if (string.Equals(request.Type, "Channel", StringComparison.OrdinalIgnoreCase))
+            {
+                var channel =  LiveTvManager.GetInternalChannel(request.Id);
+
+                state.VideoType = VideoType.VideoFile;
+                state.IsInputVideo = string.Equals(channel.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase);
+                state.PlayableStreamFileNames = new List<string>();
+
+                state.MediaPath = string.Format("http://localhost:{0}/mediabrowser/LiveTv/Channels/{1}/Stream",
+                    ServerConfigurationManager.Configuration.HttpServerPortNumber,
+                    request.Id);
+
+                state.IsRemote = true;
+
+                item = channel;
+            }
             else
             {
                 item = DtoService.GetItemByDtoId(request.Id);
