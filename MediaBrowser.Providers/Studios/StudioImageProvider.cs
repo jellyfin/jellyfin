@@ -49,7 +49,7 @@ namespace MediaBrowser.Providers.Studios
 
         protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
         {
-            if (!string.IsNullOrEmpty(item.PrimaryImagePath) && item.BackdropImagePaths.Count == 0)
+            if (item.HasImage(ImageType.Primary) && item.HasImage(ImageType.Thumb))
             {
                 return false;
             }
@@ -75,12 +75,15 @@ namespace MediaBrowser.Providers.Studios
 
         public override async Task<bool> FetchAsync(BaseItem item, bool force, BaseProviderInfo providerInfo, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(item.PrimaryImagePath) || item.BackdropImagePaths.Count == 0)
+            if (item.HasImage(ImageType.Primary) && item.HasImage(ImageType.Thumb))
             {
-                var images = await _providerManager.GetAvailableRemoteImages(item, cancellationToken, StudiosManualImageProvider.ProviderName).ConfigureAwait(false);
-
-                await DownloadImages(item, images.ToList(), cancellationToken).ConfigureAwait(false);
+                SetLastRefreshed(item, DateTime.UtcNow, providerInfo);
+                return true;
             }
+
+            var images = await _providerManager.GetAvailableRemoteImages(item, cancellationToken, StudiosManualImageProvider.ProviderName).ConfigureAwait(false);
+
+            await DownloadImages(item, images.ToList(), cancellationToken).ConfigureAwait(false);
 
             SetLastRefreshed(item, DateTime.UtcNow, providerInfo);
             return true;
@@ -95,6 +98,12 @@ namespace MediaBrowser.Providers.Studios
                 if (!item.HasImage(ImageType.Primary))
                 {
                     await SaveImage(item, images, ImageType.Primary, cancellationToken).ConfigureAwait(false);
+                }
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (!item.HasImage(ImageType.Thumb))
+                {
+                    await SaveImage(item, images, ImageType.Thumb, cancellationToken).ConfigureAwait(false);
                 }
             }
 

@@ -1328,10 +1328,9 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
 
             var url = userId ? "Users/" + userId + "/VirtualFolders" : "Library/VirtualFolders";
 
-            url += "/" + name;
-
             url = self.getUrl(url, {
-                refreshLibrary: refreshLibrary ? true : false
+                refreshLibrary: refreshLibrary ? true : false,
+                name: name
             });
 
             return self.ajax({
@@ -1357,10 +1356,10 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             }
 
             options.refreshLibrary = refreshLibrary ? true : false;
+            options.name = name;
 
             var url = userId ? "Users/" + userId + "/VirtualFolders" : "Library/VirtualFolders";
 
-            url += "/" + name;
             url = self.getUrl(url, options);
 
             return self.ajax({
@@ -1381,11 +1380,12 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
 
             var url = userId ? "Users/" + userId + "/VirtualFolders" : "Library/VirtualFolders";
 
-            url += "/" + name + "/Name";
+            url += "/Name";
 
             url = self.getUrl(url, {
                 refreshLibrary: refreshLibrary ? true : false,
-                newName: newName
+                newName: newName,
+                name: name
             });
 
             return self.ajax({
@@ -1410,11 +1410,12 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
 
             var url = userId ? "Users/" + userId + "/VirtualFolders" : "Library/VirtualFolders";
 
-            url += "/" + virtualFolderName + "/Paths";
+            url += "/Paths";
 
             url = self.getUrl(url, {
                 refreshLibrary: refreshLibrary ? true : false,
-                path: mediaPath
+                path: mediaPath,
+                name: virtualFolderName
             });
 
             return self.ajax({
@@ -1439,11 +1440,12 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
 
             var url = userId ? "Users/" + userId + "/VirtualFolders" : "Library/VirtualFolders";
 
-            url += "/" + virtualFolderName + "/Paths";
+            url += "/Paths";
 
             url = self.getUrl(url, {
                 refreshLibrary: refreshLibrary ? true : false,
-                path: mediaPath
+                path: mediaPath,
+                name: virtualFolderName
             });
 
             return self.ajax({

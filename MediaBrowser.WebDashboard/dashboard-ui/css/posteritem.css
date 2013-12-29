@@ -64,7 +64,7 @@
     white-space: nowrap;
     padding: 5px 4px 4px;
     text-shadow: none;
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 300;
 }
 
@@ -92,7 +92,6 @@
 }
 
     .posterItemTextOverlay .posterItemText:first-child {
-        font-size: 14px;
         font-weight: bold;
     }
 
