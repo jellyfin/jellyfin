@@ -99,9 +99,13 @@ namespace MediaBrowser.Common.Implementations.Configuration
         /// </summary>
         public void SaveConfiguration()
         {
+            var path = CommonApplicationPaths.SystemConfigurationFilePath;
+
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+
             lock (_configurationSaveLock)
             {
-                XmlSerializer.SerializeToFile(CommonConfiguration, CommonApplicationPaths.SystemConfigurationFilePath);
+                XmlSerializer.SerializeToFile(CommonConfiguration, path);
             }
 
             OnConfigurationUpdated();

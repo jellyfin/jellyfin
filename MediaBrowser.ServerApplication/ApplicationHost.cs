@@ -590,7 +590,8 @@ namespace MediaBrowser.ServerApplication
             {
                 return Directory.EnumerateFiles(ApplicationPaths.PluginsPath, "*.dll", SearchOption.TopDirectoryOnly)
                     .Select(LoadAssembly)
-                    .Where(a => a != null);
+                    .Where(a => a != null)
+                    .ToList();
             }
             catch (DirectoryNotFoundException)
             {

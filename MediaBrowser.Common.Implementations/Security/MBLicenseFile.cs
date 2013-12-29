@@ -11,7 +11,6 @@ namespace MediaBrowser.Common.Implementations.Security
     {
         private readonly IApplicationPaths _appPaths;
 
-        private readonly string _filename;
         public string RegKey
         {
             get { return _regKey; }
@@ -26,6 +25,14 @@ namespace MediaBrowser.Common.Implementations.Security
             }
         }
 
+        private string Filename
+        {
+            get
+            {
+                return Path.Combine(_appPaths.ConfigurationDirectoryPath, "mb.lic");
+            }
+        }
+
         public string LegacyKey { get; set; }
         private Dictionary<Guid, DateTime> UpdateRecords { get; set; }
         private readonly object _lck = new object();
@@ -34,8 +41,6 @@ namespace MediaBrowser.Common.Implementations.Security
         public MBLicenseFile(IApplicationPaths appPaths)
         {
             _appPaths = appPaths;
-
-            _filename = Path.Combine(_appPaths.ConfigurationDirectoryPath, "mb.lic");
 
             UpdateRecords = new Dictionary<Guid, DateTime>();
             Load();
@@ -64,15 +69,16 @@ namespace MediaBrowser.Common.Implementations.Security
         private void Load()
         {
             string[] contents = null;
+            var licenseFile = Filename;
             lock (_lck)
             {
                 try
                 {
-                    contents = File.ReadAllLines(_filename);
+                    contents = File.ReadAllLines(licenseFile);
                 }
                 catch (FileNotFoundException)
                 {
-                    (File.Create(_filename)).Close();
+                    (File.Create(licenseFile)).Close();
                 }
             }
             if (contents != null && contents.Length > 0)
@@ -100,7 +106,9 @@ namespace MediaBrowser.Common.Implementations.Security
                 lines.Add(pair.Value.Ticks.ToString());
             }
 
-            lock(_lck) File.WriteAllLines(_filename, lines);
+            var licenseFile = Filename;
+            Directory.CreateDirectory(Path.GetDirectoryName(licenseFile));
+            lock (_lck) File.WriteAllLines(licenseFile, lines);
         }
     }
 }
