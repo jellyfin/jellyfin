@@ -63,7 +63,7 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <summary>
         /// Occurs when [playback stopped].
         /// </summary>
-        public event EventHandler<PlaybackProgressEventArgs> PlaybackStopped;
+        public event EventHandler<PlaybackStopEventArgs> PlaybackStopped;
 
         private IEnumerable<ISessionControllerFactory> _sessionFactories = new List<ISessionControllerFactory>();
 
@@ -284,7 +284,9 @@ namespace MediaBrowser.Server.Implementations.Session
             EventHelper.QueueEventIfNotNull(PlaybackStart, this, new PlaybackProgressEventArgs
             {
                 Item = item,
-                User = user
+                User = user,
+                UserData = data
+
             }, _logger);
         }
 
@@ -315,10 +317,10 @@ namespace MediaBrowser.Server.Implementations.Session
 
             var user = session.User;
 
+            var data = _userDataRepository.GetUserData(user.Id, key);
+
             if (info.PositionTicks.HasValue)
             {
-                var data = _userDataRepository.GetUserData(user.Id, key);
-
                 UpdatePlayState(info.Item, data, info.PositionTicks.Value);
 
                 await _userDataRepository.SaveUserData(user.Id, info.Item, data, UserDataSaveReason.PlaybackProgress, CancellationToken.None).ConfigureAwait(false);
@@ -328,7 +330,8 @@ namespace MediaBrowser.Server.Implementations.Session
             {
                 Item = info.Item,
                 User = user,
-                PlaybackPositionTicks = info.PositionTicks
+                PlaybackPositionTicks = info.PositionTicks,
+                UserData = data
 
             }, _logger);
         }
@@ -371,10 +374,11 @@ namespace MediaBrowser.Server.Implementations.Session
             var user = session.User;
 
             var data = _userDataRepository.GetUserData(user.Id, key);
+            bool playedToCompletion;
 
             if (info.PositionTicks.HasValue)
             {
-                UpdatePlayState(info.Item, data, info.PositionTicks.Value);
+                playedToCompletion = UpdatePlayState(info.Item, data, info.PositionTicks.Value);
             }
             else
             {
@@ -382,15 +386,19 @@ namespace MediaBrowser.Server.Implementations.Session
                 data.PlayCount++;
                 data.Played = true;
                 data.PlaybackPositionTicks = 0;
+                playedToCompletion = true;
             }
 
             await _userDataRepository.SaveUserData(user.Id, info.Item, data, UserDataSaveReason.PlaybackFinished, CancellationToken.None).ConfigureAwait(false);
 
-            EventHelper.QueueEventIfNotNull(PlaybackStopped, this, new PlaybackProgressEventArgs
+            EventHelper.QueueEventIfNotNull(PlaybackStopped, this, new PlaybackStopEventArgs
             {
                 Item = info.Item,
                 User = user,
-                PlaybackPositionTicks = info.PositionTicks
+                PlaybackPositionTicks = info.PositionTicks,
+                UserData = data,
+                PlayedToCompletion = playedToCompletion
+
             }, _logger);
         }
 
@@ -400,8 +408,10 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <param name="item">The item</param>
         /// <param name="data">User data for the item</param>
         /// <param name="positionTicks">The current playback position</param>
-        private void UpdatePlayState(BaseItem item, UserItemData data, long positionTicks)
+        private bool UpdatePlayState(BaseItem item, UserItemData data, long positionTicks)
         {
+            var playedToCompletion = false;
+
             var hasRuntime = item.RunTimeTicks.HasValue && item.RunTimeTicks > 0;
 
             // If a position has been reported, and if we know the duration
@@ -419,7 +429,7 @@ namespace MediaBrowser.Server.Implementations.Session
                 else if (pctIn > _configurationManager.Configuration.MaxResumePct || positionTicks >= item.RunTimeTicks.Value)
                 {
                     positionTicks = 0;
-                    data.Played = true;
+                    data.Played = playedToCompletion = true;
                 }
 
                 else
@@ -430,14 +440,14 @@ namespace MediaBrowser.Server.Implementations.Session
                     if (durationSeconds < _configurationManager.Configuration.MinResumeDurationSeconds)
                     {
                         positionTicks = 0;
-                        data.Played = true;
+                        data.Played = playedToCompletion = true;
                     }
                 }
             }
             else if (!hasRuntime)
             {
                 // If we don't know the runtime we'll just have to assume it was fully played
-                data.Played = true;
+                data.Played = playedToCompletion = true;
                 positionTicks = 0;
             }
 
@@ -447,6 +457,8 @@ namespace MediaBrowser.Server.Implementations.Session
             }
 
             data.PlaybackPositionTicks = positionTicks;
+
+            return playedToCompletion;
         }
 
         /// <summary>
