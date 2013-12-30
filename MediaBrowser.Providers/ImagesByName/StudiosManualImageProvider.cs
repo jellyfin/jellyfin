@@ -45,7 +45,7 @@ namespace MediaBrowser.Providers.ImagesByName
 
         public Task<IEnumerable<RemoteImageInfo>> GetImages(IHasImages item, ImageType imageType, CancellationToken cancellationToken)
         {
-            return GetImages(item, imageType == ImageType.Primary, imageType == ImageType.Backdrop, cancellationToken);
+            return GetImages(item, imageType == ImageType.Primary, imageType == ImageType.Thumb, cancellationToken);
         }
 
         public Task<IEnumerable<RemoteImageInfo>> GetAllImages(IHasImages item, CancellationToken cancellationToken)
@@ -53,7 +53,7 @@ namespace MediaBrowser.Providers.ImagesByName
             return GetImages(item, true, true, cancellationToken);
         }
 
-        private async Task<IEnumerable<RemoteImageInfo>> GetImages(IHasImages item, bool posters, bool backdrops, CancellationToken cancellationToken)
+        private async Task<IEnumerable<RemoteImageInfo>> GetImages(IHasImages item, bool posters, bool thumbs, CancellationToken cancellationToken)
         {
             var list = new List<RemoteImageInfo>();
 
@@ -68,7 +68,7 @@ namespace MediaBrowser.Providers.ImagesByName
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (backdrops)
+            if (thumbs)
             {
                 var thumbsPath = Path.Combine(_config.ApplicationPaths.CachePath, "imagesbyname", "remotestudiothumbs.txt");
 

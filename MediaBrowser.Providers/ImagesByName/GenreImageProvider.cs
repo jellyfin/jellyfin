@@ -54,6 +54,12 @@ namespace MediaBrowser.Providers.ImagesByName
                 return false;
             }
 
+            // Try again periodically in case new images were added
+            if ((DateTime.UtcNow - providerInfo.LastRefreshed).TotalDays > 14)
+            {
+                return true;
+            }
+
             return base.NeedsRefreshInternal(item, providerInfo);
         }
 
@@ -69,7 +75,7 @@ namespace MediaBrowser.Providers.ImagesByName
         {
             get
             {
-                return "6";
+                return "8";
             }
         }
 
