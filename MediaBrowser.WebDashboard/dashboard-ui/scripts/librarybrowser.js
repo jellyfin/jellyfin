@@ -946,9 +946,13 @@
 
                 if (options.showProgressBar) {
 
-                    html += "<div class='posterItemText posterItemProgress'>";
-                    html += LibraryBrowser.getItemProgressBarHtml(item) || "&nbsp;";
-                    html += "</div>";
+                    var progressHtml = LibraryBrowser.getItemProgressBarHtml(item);
+                    
+                    if (progressHtml || !options.overlayText) {
+                        html += "<div class='posterItemText posterItemProgress'>";
+                        html += progressHtml || "&nbsp;";
+                        html += "</div>";
+                    }
                 }
 
                 if (overlayText) {
@@ -1980,6 +1984,7 @@
 
             var linkToGallery = LibraryBrowser.shouldDisplayGallery(item);
 
+            html += '<div style="position:relative;">';
             if (linkToGallery) {
                 html += "<a class='itemDetailGalleryLink' href='" + href + "'>";
             }
@@ -1989,6 +1994,16 @@
             if (linkToGallery) {
                 html += "</a>";
             }
+
+            var progressHtml = LibraryBrowser.getItemProgressBarHtml(item);
+            
+            if (progressHtml) {
+                html += '<div class="detailImageProgressContainer">';
+                html += progressHtml;
+                html += "</div>";
+            }
+
+            html += "</div>";
 
             return html;
         },

@@ -38,6 +38,7 @@
                 useAverageAspectRatio: true,
                 shape: "backdrop",
                 showTitle: true,
+                showProgressBar: true,
                 showParentTitle: true,
                 overlayText: true
             });

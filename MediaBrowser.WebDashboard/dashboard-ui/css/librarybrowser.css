@@ -551,6 +551,20 @@ a.itemTag:hover {
     margin-right: 5px;
 }
 
+.detailImageProgressContainer {
+    position: absolute;
+    bottom: 6px;
+    right: 0;
+    left: 0;
+    text-align: center;
+}
+
+.detailImageProgressContainer progress {
+    width: 100%;
+    margin: 0 auto;
+    height: 6px;
+}
+
 @media all and (max-width: 550px) {
 
     .desktopViewMenuLink {
