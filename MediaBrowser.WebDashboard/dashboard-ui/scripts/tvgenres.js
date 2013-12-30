@@ -29,9 +29,16 @@
             var checkSortOption = $('.radioSortBy:checked', page);
             $('.viewSummary', page).html(LibraryBrowser.getViewSummaryHtml(query, checkSortOption)).trigger('create');
 
-            html += LibraryBrowser.getPosterDetailViewHtml({
+            html += LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                context: "tv"
+                useAverageAspectRatio: true,
+                shape: "backdrop",
+                showTitle: false,
+                overlayText: false,
+                context: 'tv',
+                preferThumb: true,
+                showItemCounts: true,
+                centerText: true
             });
 
             html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
