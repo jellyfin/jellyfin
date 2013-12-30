@@ -73,7 +73,10 @@ namespace MediaBrowser.Providers.ImagesByName
                 {
                     var text = reader.ReadLine();
 
-                    lines.Add(text);
+                    if (!string.IsNullOrWhiteSpace(text))
+                    {
+                        lines.Add(text);
+                    }
                 }
 
                 return lines;
