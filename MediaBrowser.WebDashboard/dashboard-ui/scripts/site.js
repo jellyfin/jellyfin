@@ -321,7 +321,7 @@ var Dashboard = {
         var onclick = removeOnHide ? "$(\"#" + options.id + "\").remove();" : "$(\"#" + options.id + "\").hide();";
 
         if (options.allowHide !== false) {
-            options.html += "<span style='margin-left: 1em;'><button type='button' onclick='" + onclick + "' data-icon='delete' data-iconpos='notext' data-mini='true' data-inline='true' data-theme='a'>Hide</button></span>";
+            options.html += "<span style='margin-left: 1em;'><button type='button' onclick='" + onclick + "' data-icon='delete' data-iconpos='notext' data-mini='true' data-inline='true' data-theme='b'>Hide</button></span>";
         }
 
         if (options.forceShow) {

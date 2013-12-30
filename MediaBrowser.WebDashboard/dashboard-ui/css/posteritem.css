@@ -16,9 +16,9 @@
 }
 
     .posterItem:hover {
-        -moz-box-shadow: 0 0 20px 3px #52B54B;
-        -webkit-box-shadow: 0 0 20px 3px #52B54B;
-        box-shadow: 0 0 20px 3px #52B54B;
+        -moz-box-shadow: 0 0 15px 8px #2572EB;
+        -webkit-box-shadow: 0 0 25px 8px #2572EB;
+        box-shadow: 0 0 15px 8px #2572EB;
     }
 
 
@@ -31,7 +31,7 @@
     background-repeat: no-repeat;
     background-position: center bottom;
     background-color: #000;
-    border: 2px solid #1b1b1b;
+    border: 2px solid #202020;
     position: relative;
 }
 
@@ -81,19 +81,20 @@
     right: 0;
 }
 
-
-.posterItemText + .posterItemText {
-    padding-top: 2px;
-}
-
-.posterItemTextOverlay .posterItemText {
-    background-color: transparent;
-    padding-left: 5px;
-}
-
-    .posterItemTextOverlay .posterItemText:first-child {
-        font-weight: bold;
+    .posterItemTextOverlay .posterItemText {
+        background-color: transparent;
+        padding-left: 5px;
+        padding: 0 5px 5px;
     }
+
+        .posterItemTextOverlay .posterItemText:first-child {
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .posterItemTextOverlay .posterItemText:last-child {
+            padding-bottom: 8px;
+        }
 
 .posterItemTextCentered {
     text-align: center;

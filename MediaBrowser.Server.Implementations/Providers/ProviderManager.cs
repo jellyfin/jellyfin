@@ -380,33 +380,43 @@ namespace MediaBrowser.Server.Implementations.Providers
 
             var preferredLanguage = item.GetPreferredMetadataLanguage();
 
-            var tasks = providers.Select(i => Task.Run(async () =>
-            {
-                try
-                {
-                    if (type.HasValue)
-                    {
-                        var result = await i.GetImages(item, type.Value, cancellationToken).ConfigureAwait(false);
-
-                        return FilterImages(result, preferredLanguage);
-                    }
-                    else
-                    {
-                        var result = await i.GetAllImages(item, cancellationToken).ConfigureAwait(false);
-                        return FilterImages(result, preferredLanguage);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("{0} failed in GetImages for type {1}", ex, i.GetType().Name, item.GetType().Name);
-                    return new List<RemoteImageInfo>();
-                }
-
-            }, cancellationToken));
+            var tasks = providers.Select(i => GetImages(item, cancellationToken, i, preferredLanguage, type));
 
             var results = await Task.WhenAll(tasks).ConfigureAwait(false);
 
             return results.SelectMany(i => i);
+        }
+
+        /// <summary>
+        /// Gets the images.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="i">The i.</param>
+        /// <param name="preferredLanguage">The preferred language.</param>
+        /// <param name="type">The type.</param>
+        /// <returns>Task{IEnumerable{RemoteImageInfo}}.</returns>
+        private async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken, IImageProvider i, string preferredLanguage, ImageType? type = null)
+        {
+            try
+            {
+                if (type.HasValue)
+                {
+                    var result = await i.GetImages(item, type.Value, cancellationToken).ConfigureAwait(false);
+
+                    return FilterImages(result, preferredLanguage);
+                }
+                else
+                {
+                    var result = await i.GetAllImages(item, cancellationToken).ConfigureAwait(false);
+                    return FilterImages(result, preferredLanguage);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("{0} failed in GetImages for type {1}", ex, i.GetType().Name, item.GetType().Name);
+                return new List<RemoteImageInfo>();
+            }
         }
 
         private IEnumerable<RemoteImageInfo> FilterImages(IEnumerable<RemoteImageInfo> images, string preferredLanguage)

@@ -2,7 +2,7 @@
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Release Mono" />
   <MonoDevelop.Ide.Workbench ActiveDocument="MediaBrowser.Server.Mono\app.config">
     <Files>
-      <File FileName="MediaBrowser.Server.Mono\app.config" Line="11" Column="68" />
+      <File FileName="MediaBrowser.Server.Mono\app.config" Line="5" Column="20" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

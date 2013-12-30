@@ -35,6 +35,16 @@
                 $('.itemVideo').addClass('fullscreenVideo');
             }
         }
+        
+        function exitFullScreen() {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.mozExitFullScreen) {
+                document.mozExitFullScreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            }
+        }
 
         function isFullScreen() {
             return document.fullscreenEnabled || document.mozFullscreenEnabled || document.webkitIsFullScreen || document.mozFullScreen ? true : false;
@@ -1316,6 +1326,9 @@
 
             $('#nowPlayingBar').hide();
 
+            if (isFullScreen()) {
+                exitFullScreen();
+            }
         };
 
         self.isPlaying = function () {

@@ -231,7 +231,11 @@
                 }
                 else if (item.Type == "Genre" || item.Type == "Studio" || item.Type == "Person" || item.Type == "MusicArtist" || item.Type == "MusicGenre" || item.Type == "GameGenre") {
 
-                    html += LibraryBrowser.getItemCountsHtml(options, item);
+                    var itemCountHtml = LibraryBrowser.getItemCountsHtml(options, item);
+                    
+                    if (itemCountHtml) {
+                        html += '<p class="itemMiscInfo">' + itemCountHtml + '</p>';
+                    }
                 }
                 else if (item.Type == "Game") {
 
@@ -335,7 +339,7 @@
                 }
             }
 
-            return counts.length ? '<p class="itemMiscInfo">' + counts.join(' • ') + '</p>' : '';
+            return counts.join(' • ');
         },
 
         getSongHeaderCellHtml: function (text, cssClass, enableSorting, sortField, selectedSortField, sortDirection) {
@@ -727,7 +731,7 @@
                 }
                 else if (options.preferThumb && item.ParentThumbItemId) {
 
-                    imgUrl = ApiClient.getThumbImageUrl(item, {
+                    imgUrl = ApiClient.getThumbImageUrl(item.ParentThumbItemId, {
                         type: "Thumb",
                         maxwidth: 576
                     });
@@ -790,7 +794,7 @@
                 }
                 else if (item.ImageTags && item.ImageTags.Thumb) {
 
-                    imgUrl = ApiClient.getImageUrl(item, {
+                    imgUrl = ApiClient.getImageUrl(item.Id, {
                         type: "Thumb",
                         maxwidth: 576,
                         tag: item.ImageTags.Thumb
@@ -911,6 +915,17 @@
                     html += "<div class='" + cssclass + "'>";
                     html += name;
                     html += "</div>";
+                }
+                
+                if (options.showItemCounts) {
+
+                    var itemCountHtml = LibraryBrowser.getItemCountsHtml(options, item);
+                    
+                    if (itemCountHtml) {
+                        html += "<div class='" + cssclass + "'>";
+                        html += itemCountHtml;
+                        html += "</div>";
+                    }
                 }
 
                 if (options.showPremiereDate && item.PremiereDate) {

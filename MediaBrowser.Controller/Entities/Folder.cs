@@ -413,6 +413,7 @@ namespace MediaBrowser.Controller.Entities
                                 EntityResolutionHelper.EnsureDates(FileSystem, currentChild, child.ResolveArgs, false);
                             }
 
+                            currentChild.IsInMixedFolder = child.IsInMixedFolder;
                             validChildren.Add(new Tuple<BaseItem, bool>(currentChild, true));
                         }
                         else

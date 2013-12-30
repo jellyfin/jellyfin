@@ -145,16 +145,13 @@ namespace MediaBrowser.Api.Playback.Hls
             }
         }
 
-        private void ExtendPlaylistTimer(string playlist)
+        private async void ExtendPlaylistTimer(string playlist)
         {
             ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlist, TranscodingJobType.Hls);
 
-            Task.Run(async () =>
-            {
-                await Task.Delay(20000).ConfigureAwait(false);
+            await Task.Delay(20000).ConfigureAwait(false);
 
-                ApiEntryPoint.Instance.OnTranscodeEndRequest(playlist, TranscodingJobType.Hls);
-            });
+            ApiEntryPoint.Instance.OnTranscodeEndRequest(playlist, TranscodingJobType.Hls);
         }
     }
 }

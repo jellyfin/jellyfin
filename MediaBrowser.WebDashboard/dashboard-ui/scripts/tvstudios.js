@@ -29,19 +29,16 @@
             var checkSortOption = $('.radioSortBy:checked', page);
             $('.viewSummary', page).html(LibraryBrowser.getViewSummaryHtml(query, checkSortOption)).trigger('create');
 
-            //html += LibraryBrowser.getPosterViewHtml({
-            //    items: result.Items,
-            //    useAverageAspectRatio: true,
-            //    shape: "backdrop",
-            //    showTitle: false,
-            //    overlayText: false,
-            //    context: 'tv'
-            //});
-
-            html += LibraryBrowser.getPosterDetailViewHtml({
+            html += LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                context: "tv",
-                shape: "backdrop"
+                useAverageAspectRatio: true,
+                shape: "backdrop",
+                showTitle: false,
+                overlayText: false,
+                context: 'tv',
+                preferThumb: true,
+                showItemCounts: true,
+                centerText: true
             });
 
             html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
