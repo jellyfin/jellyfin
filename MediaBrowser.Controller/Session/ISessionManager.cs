@@ -26,7 +26,7 @@ namespace MediaBrowser.Controller.Session
         /// <summary>
         /// Occurs when [playback stopped].
         /// </summary>
-        event EventHandler<PlaybackProgressEventArgs> PlaybackStopped;
+        event EventHandler<PlaybackStopEventArgs> PlaybackStopped;
 
         /// <summary>
         /// Gets the sessions.
