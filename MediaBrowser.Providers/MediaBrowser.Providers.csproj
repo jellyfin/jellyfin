@@ -66,6 +66,9 @@
     <Compile Include="Games\GameSystemProviderFromXml.cs" />
     <Compile Include="ImageFromMediaLocationProvider.cs" />
     <Compile Include="ImagesByNameProvider.cs" />
+    <Compile Include="ImagesByName\GenreImageProvider.cs" />
+    <Compile Include="ImagesByName\GenresManualImageProvider.cs" />
+    <Compile Include="ImagesByName\ImageUtils.cs" />
     <Compile Include="LiveTv\ChannelProviderFromXml.cs" />
     <Compile Include="MediaInfo\AudioImageProvider.cs" />
     <Compile Include="MediaInfo\BaseFFProbeProvider.cs" />
@@ -120,8 +123,8 @@
     <Compile Include="Savers\SeasonXmlSaver.cs" />
     <Compile Include="Savers\SeriesXmlSaver.cs" />
     <Compile Include="Savers\XmlSaverHelpers.cs" />
-    <Compile Include="Studios\StudioImageProvider.cs" />
-    <Compile Include="Studios\StudiosManualImageProvider.cs" />
+    <Compile Include="ImagesByName\StudioImageProvider.cs" />
+    <Compile Include="ImagesByName\StudiosManualImageProvider.cs" />
     <Compile Include="TV\EpisodeImageFromMediaLocationProvider.cs" />
     <Compile Include="TV\EpisodeIndexNumberProvider.cs" />
     <Compile Include="TV\EpisodeProviderFromXml.cs" />
@@ -166,12 +169,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Studios\thumbs.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Studios\posters.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition=" '$(ConfigurationName)' != 'Release Mono' " />

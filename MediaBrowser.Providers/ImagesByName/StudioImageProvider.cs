@@ -13,7 +13,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Providers.Studios
+namespace MediaBrowser.Providers.ImagesByName
 {
     public class StudioImageProvider : BaseMetadataProvider
     {
@@ -69,7 +69,7 @@ namespace MediaBrowser.Providers.Studios
         {
             get
             {
-                return "5";
+                return "6";
             }
         }
 

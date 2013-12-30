@@ -791,7 +791,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var id = path.GetMBId(type);
 
-            var item = RetrieveItem(id) as T;
+            var item = isNew ? null : RetrieveItem(id) as T;
 
             if (item == null)
             {
