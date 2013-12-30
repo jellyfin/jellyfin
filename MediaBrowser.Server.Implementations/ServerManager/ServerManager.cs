@@ -243,7 +243,7 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         /// <param name="dataFunction">The function that generates the data to send, if there are any connected clients</param>
         public void SendWebSocketMessage<T>(string messageType, Func<T> dataFunction)
         {
-            Task.Run(async () => await SendWebSocketMessageAsync(messageType, dataFunction, CancellationToken.None).ConfigureAwait(false));
+            SendWebSocketMessageAsync(messageType, dataFunction, CancellationToken.None);
         }
 
         /// <summary>

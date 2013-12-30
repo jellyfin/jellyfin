@@ -529,27 +529,26 @@ namespace MediaBrowser.Server.Implementations.IO
                 return;
             }
 
-            await Task.WhenAll(itemsToRefresh.Select(i => Task.Run(async () =>
+            foreach (var item in itemsToRefresh)
             {
-                Logger.Info(i.Name + " (" + i.Path + ") will be refreshed.");
+                Logger.Info(item.Name + " (" + item.Path + ") will be refreshed.");
 
                 try
                 {
-                    await i.ChangedExternally().ConfigureAwait(false);
+                    await item.ChangedExternally().ConfigureAwait(false);
                 }
                 catch (IOException ex)
                 {
                     // For now swallow and log. 
                     // Research item: If an IOException occurs, the item may be in a disconnected state (media unavailable)
                     // Should we remove it from it's parent?
-                    Logger.ErrorException("Error refreshing {0}", ex, i.Name);
+                    Logger.ErrorException("Error refreshing {0}", ex, item.Name);
                 }
                 catch (Exception ex)
                 {
-                    Logger.ErrorException("Error refreshing {0}", ex, i.Name);
+                    Logger.ErrorException("Error refreshing {0}", ex, item.Name);
                 }
-
-            }))).ConfigureAwait(false);
+            }
         }
 
         /// <summary>

@@ -91,31 +91,31 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                 if (args.Path.IndexOf("[trailers]", StringComparison.OrdinalIgnoreCase) != -1 ||
                     string.Equals(collectionType, CollectionType.Trailers, StringComparison.OrdinalIgnoreCase))
                 {
-                    return FindMovie<Trailer>(args.Path, args.FileSystemChildren);
+                    return FindMovie<Trailer>(args.Path, args.Parent, args.FileSystemChildren);
                 }
 
                 if (args.Path.IndexOf("[musicvideos]", StringComparison.OrdinalIgnoreCase) != -1 ||
                     string.Equals(collectionType, CollectionType.MusicVideos, StringComparison.OrdinalIgnoreCase))
                 {
-                    return FindMovie<MusicVideo>(args.Path, args.FileSystemChildren);
+                    return FindMovie<MusicVideo>(args.Path, args.Parent, args.FileSystemChildren);
                 }
 
                 if (args.Path.IndexOf("[adultvideos]", StringComparison.OrdinalIgnoreCase) != -1 ||
                     string.Equals(collectionType, CollectionType.AdultVideos, StringComparison.OrdinalIgnoreCase))
                 {
-                    return FindMovie<AdultVideo>(args.Path, args.FileSystemChildren);
+                    return FindMovie<AdultVideo>(args.Path, args.Parent, args.FileSystemChildren);
                 }
 
                 if (string.Equals(collectionType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase))
                 {
-                    return FindMovie<Video>(args.Path, args.FileSystemChildren);
+                    return FindMovie<Video>(args.Path, args.Parent, args.FileSystemChildren);
                 }
                 
                 if (string.IsNullOrEmpty(collectionType) ||
                     string.Equals(collectionType, CollectionType.Movies, StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(collectionType, CollectionType.BoxSets, StringComparison.OrdinalIgnoreCase))
                 {
-                    return FindMovie<Movie>(args.Path, args.FileSystemChildren);
+                    return FindMovie<Movie>(args.Path, args.Parent, args.FileSystemChildren);
                 }
 
                 return null;
@@ -199,9 +199,10 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="path">The path.</param>
+        /// <param name="parent">The parent.</param>
         /// <param name="fileSystemEntries">The file system entries.</param>
         /// <returns>Movie.</returns>
-        private T FindMovie<T>(string path, IEnumerable<FileSystemInfo> fileSystemEntries)
+        private T FindMovie<T>(string path, Folder parent, IEnumerable<FileSystemInfo> fileSystemEntries)
             where T : Video, new()
         {
             var movies = new List<T>();
@@ -249,7 +250,8 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                 var childArgs = new ItemResolveArgs(_applicationPaths, _libraryManager)
                 {
                     FileInfo = child,
-                    Path = child.FullName
+                    Path = child.FullName,
+                    Parent = parent
                 };
 
                 var item = ResolveVideo<T>(childArgs);

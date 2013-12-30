@@ -1135,6 +1135,11 @@ namespace MediaBrowser.Controller.Entities
             {
                 throw new ArgumentNullException();
             }
+            if (IsInMixedFolder != copy.IsInMixedFolder)
+            {
+                Logger.Debug(Name + " changed due to different value for IsInMixedFolder.");
+                return true;
+            }
 
             var changed = copy.DateModified != DateModified;
             if (changed)

@@ -608,7 +608,7 @@ namespace MediaBrowser.Server.Implementations.Session
                     _logger.ErrorException("Error in SendServerShutdownNotification.", ex);
                 }
 
-            }));
+            }, cancellationToken));
 
             return Task.WhenAll(tasks);
         }
@@ -633,7 +633,7 @@ namespace MediaBrowser.Server.Implementations.Session
                     _logger.ErrorException("Error in SendServerRestartNotification.", ex);
                 }
 
-            }));
+            }, cancellationToken));
 
             return Task.WhenAll(tasks);
         }

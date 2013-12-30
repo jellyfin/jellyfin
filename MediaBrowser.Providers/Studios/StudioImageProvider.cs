@@ -69,7 +69,7 @@ namespace MediaBrowser.Providers.Studios
         {
             get
             {
-                return "3";
+                return "5";
             }
         }
 

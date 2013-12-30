@@ -172,7 +172,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var channel = GetInternalChannel(id);
 
-            return await service.GetRecordingStream(channel.ChannelInfo.Id, cancellationToken).ConfigureAwait(false);
+            return await service.GetChannelStream(channel.ChannelInfo.Id, cancellationToken).ConfigureAwait(false);
         }
 
         private async Task<LiveTvChannel> GetChannel(ChannelInfo channelInfo, string serviceName, CancellationToken cancellationToken)
