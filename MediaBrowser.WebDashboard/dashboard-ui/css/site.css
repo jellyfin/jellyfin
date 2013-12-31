@@ -311,8 +311,8 @@ h1 .imageLink {
 
     .dashboardPanelLink:hover {
         background: #f2f2f2;
-           color: #000!important;
- }
+        color: #000!important;
+    }
 
 .selectedDashboardPanelLink {
     background: #2572EB;
@@ -408,7 +408,7 @@ h1 .imageLink {
 
 @media all and (min-width: 900px) {
 
-    .header {
+    .page:not(.wizardPage) .header {
         padding-top: 0;
     }
 }

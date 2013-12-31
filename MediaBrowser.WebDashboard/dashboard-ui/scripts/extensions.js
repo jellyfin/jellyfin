@@ -34,7 +34,7 @@ $.fn.checked = function (value) {
 
 $.fn.buttonEnabled = function(enabled) {
 
-    return this;
+    return enabled ? this.attr('disabled', '').removeAttr('disabled') : this.attr('disabled', 'disabled');
 };
 
 if (!Array.prototype.filter) {

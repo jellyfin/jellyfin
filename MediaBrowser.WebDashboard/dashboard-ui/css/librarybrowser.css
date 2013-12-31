@@ -176,8 +176,11 @@
     margin-left: 1em;
 }
 
-.labelPageSize, .selectPageSize {
-    display: none;
+
+@media all and (max-width: 650px) {
+    .labelPageSize, .selectPageSize {
+        display: none!important;
+    }
 }
 
 .galleryImageContainer {
@@ -559,11 +562,11 @@ a.itemTag:hover {
     text-align: center;
 }
 
-.detailImageProgressContainer progress {
-    width: 100%;
-    margin: 0 auto;
-    height: 6px;
-}
+    .detailImageProgressContainer progress {
+        width: 100%;
+        margin: 0 auto;
+        height: 6px;
+    }
 
 @media all and (max-width: 550px) {
 
@@ -696,10 +699,6 @@ a.itemTag:hover {
         .viewControls + .listTopPaging {
             margin-left: 1em;
         }
-
-    .labelPageSize, .selectPageSize {
-        display: inline;
-    }
 }
 
 @media all and (min-width: 750px) {
@@ -846,9 +845,9 @@ a.itemTag:hover {
     background: rgba(82, 181, 75, .8);
 }
 
-.unplayedIndicator div:after {
-    background-color: transparent !important;
-}
+    .unplayedIndicator div:after {
+        background-color: transparent !important;
+    }
 
 .itemProgress {
     vertical-align: top;

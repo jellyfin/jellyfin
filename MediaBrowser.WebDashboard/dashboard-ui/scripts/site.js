@@ -117,7 +117,6 @@ var Dashboard = {
     showError: function (message) {
 
         $.mobile.loading('show', {
-            theme: "e",
             text: message,
             textonly: true,
             textVisible: true
@@ -135,7 +134,6 @@ var Dashboard = {
             var message = options;
 
             $.mobile.loading('show', {
-                theme: "b",
                 text: message,
                 textonly: true,
                 textVisible: true

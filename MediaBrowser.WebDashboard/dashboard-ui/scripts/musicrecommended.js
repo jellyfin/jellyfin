@@ -20,7 +20,9 @@
                 items: result.Items,
                 useAverageAspectRatio: true,
                 showUnplayedIndicator: false,
-                shape: "square"
+                shape: "square",
+                showTitle: true,
+                showParentTitle: true
             }));
 
         });

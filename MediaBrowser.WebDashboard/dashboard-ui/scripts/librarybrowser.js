@@ -1108,18 +1108,15 @@
 
         getPlayedIndicatorHtml: function (item) {
 
-            if (item.Type == "Series" || item.Type == "Season" || item.Type == "BoxSet") {
+            if (item.Type == "Series" || item.Type == "Season" || item.Type == "BoxSet" || item.MediaType == "Video") {
                 if (item.RecursiveUnplayedItemCount) {
                     return '<div class="unplayedIndicator">' + item.RecursiveUnplayedItemCount + '</div>';
                 }
-            }
-            
-            if (item.PlayedPercentage == 100) {
-                return '<div class="unplayedIndicator"><div class="ui-icon-check ui-btn-icon-notext"></div></div>';
-            }
 
-            if (item.MediaType == "Video") {
-                
+                if (item.PlayedPercentage == 100) {
+                    return '<div class="unplayedIndicator"><div class="ui-icon-check ui-btn-icon-notext"></div></div>';
+                }
+
                 var userData = item.UserData || {};
 
                 if (userData.Played) {
