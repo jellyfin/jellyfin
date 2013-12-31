@@ -55,7 +55,7 @@ namespace MediaBrowser.Providers.ImagesByName
             }
 
             // Try again periodically in case new images were added
-            if ((DateTime.UtcNow - providerInfo.LastRefreshed).TotalDays > 14)
+            if ((DateTime.UtcNow - providerInfo.LastRefreshed).TotalDays > 7)
             {
                 return true;
             }
