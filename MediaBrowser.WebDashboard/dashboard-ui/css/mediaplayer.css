@@ -198,7 +198,7 @@ input[type="range"]::-ms-fill-upper {
     border: 1px solid #999;
     position: absolute;
     z-index: 99999;
-    bottom: 55px;
+    bottom: 80px;
     margin-left: -50px;
     max-height: 300px;
     overflow-y: auto;

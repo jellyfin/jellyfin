@@ -25,8 +25,9 @@
 
         var cssClass = "detailTable";
 
-        html += '<div class="detailTableContainer"><table class="' + cssClass + '">';
+        html += '<div class="detailTableContainer"><table class="detailTable" >';
 
+        html += '<thead>';
         html += '<tr>';
 
         html += '<th class="tabletColumn">&nbsp;</th>';
@@ -39,6 +40,9 @@
         html += '<th class="desktopColumn">Series</th>';
 
         html += '</tr>';
+        html += '</thead>';
+
+        html += '<tbody>';
 
         for (var i = 0, length = timers.length; i < length; i++) {
 
@@ -47,7 +51,7 @@
             html += '<tr>';
 
             html += '<td class="tabletColumn">';
-            html += '<button data-timerid="' + timer.Id + '" class="btnDeleteTimer" type="button" data-icon="delete" data-inline="true" data-mini="true" data-iconpos="notext">Delete</button>';
+            html += '<button data-timerid="' + timer.Id + '" class="btnDeleteTimer" type="button" data-icon="delete" data-inline="true" data-mini="true" data-iconpos="notext">Cancel</button>';
             html += '</td>';
 
             html += '<td>';
@@ -109,6 +113,7 @@
             html += '</tr>';
         }
 
+        html += '</tbody>';
         html += '</table></div>';
 
         var elem = $('#items', page).html(html).trigger('create');

@@ -46,7 +46,6 @@
             
             $('#resumableItems', page).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                showProgressBar: true,
                 preferBackdrop: true,
                 shape: 'backdrop',
                 overlayText: true,

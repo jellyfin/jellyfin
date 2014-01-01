@@ -81,5 +81,27 @@ namespace MediaBrowser.Common.IO
         /// <param name="file1">The file1.</param>
         /// <param name="file2">The file2.</param>
         void SwapFiles(string file1, string file2);
+
+        /// <summary>
+        /// Determines whether [contains sub path] [the specified parent path].
+        /// </summary>
+        /// <param name="parentPath">The parent path.</param>
+        /// <param name="path">The path.</param>
+        /// <returns><c>true</c> if [contains sub path] [the specified parent path]; otherwise, <c>false</c>.</returns>
+        bool ContainsSubPath(string parentPath, string path);
+
+        /// <summary>
+        /// Determines whether [is root path] [the specified path].
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns><c>true</c> if [is root path] [the specified path]; otherwise, <c>false</c>.</returns>
+        bool IsRootPath(string path);
+
+        /// <summary>
+        /// Normalizes the path.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>System.String.</returns>
+        string NormalizePath(string path);
     }
 }

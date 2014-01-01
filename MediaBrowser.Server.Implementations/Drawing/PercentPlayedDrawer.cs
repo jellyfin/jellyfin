@@ -1,36 +1,34 @@
-﻿using System.Drawing;
-using System.Globalization;
+﻿using System;
+using System.Drawing;
 
 namespace MediaBrowser.Server.Implementations.Drawing
 {
     public class PercentPlayedDrawer
     {
-        private const int IndicatorWidth = 80;
-        private const int IndicatorHeight = 50;
-        private const int FontSize = 30;
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
+        private const int IndicatorHeight = 10;
 
-        public void Process(Graphics graphics, Size imageSize, int percent, int rightOffset)
+        public void Process(Graphics graphics, Size imageSize, double percent)
         {
-            var x = imageSize.Width - IndicatorWidth + rightOffset;
+            var y = imageSize.Height - IndicatorHeight;
 
-            using (var backdroundBrush = new SolidBrush(Color.FromArgb(225, 102, 192, 16)))
+            using (var backdroundBrush = new SolidBrush(Color.FromArgb(225, 0, 0, 0)))
             {
-                graphics.FillRectangle(backdroundBrush, x, 0, IndicatorWidth, IndicatorHeight);
+                const int innerX = 0;
+                var innerY = y;
+                var innerWidth = imageSize.Width;
+                var innerHeight = imageSize.Height;
 
-                var text = string.Format("{0}%", percent.ToString(_usCulture));
+                graphics.FillRectangle(backdroundBrush, innerX, innerY, innerWidth, innerHeight);
 
-                x = imageSize.Width - (percent < 10 ? 66 : 75) + rightOffset;
-
-                using (var font = new Font(FontFamily.GenericSansSerif, FontSize, FontStyle.Regular, GraphicsUnit.Pixel))
+                using (var foregroundBrush = new SolidBrush(Color.FromArgb(82, 181, 75)))
                 {
-                    using (var fontBrush = new SolidBrush(Color.White))
-                    {
-                        graphics.DrawString(text, font, fontBrush, x, 6);
-                    }
+                    double foregroundWidth = innerWidth;
+                    foregroundWidth *= percent;
+                    foregroundWidth /= 100;
+
+                    graphics.FillRectangle(foregroundBrush, innerX, innerY, Convert.ToInt32(Math.Round(foregroundWidth)), innerHeight);
                 }
             }
-
         }
     }
 }

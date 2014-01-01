@@ -172,7 +172,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
             var quality = options.Quality ?? 90;
 
-            var cacheFilePath = GetCacheFilePath(originalImagePath, newSize, quality, dateModified, options.OutputFormat, options.AddPlayedIndicator, options.PercentPlayed, options.BackgroundColor);
+            var cacheFilePath = GetCacheFilePath(originalImagePath, newSize, quality, dateModified, options.OutputFormat, options.AddPlayedIndicator, options.PercentPlayed, options.UnplayedCount, options.BackgroundColor);
 
             try
             {
@@ -241,7 +241,9 @@ namespace MediaBrowser.Server.Implementations.Drawing
                                     thumbnailGraph.SmoothingMode = SmoothingMode.HighQuality;
                                     thumbnailGraph.InterpolationMode = InterpolationMode.HighQualityBicubic;
                                     thumbnailGraph.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                                    thumbnailGraph.CompositingMode = string.IsNullOrEmpty(options.BackgroundColor) && !options.PercentPlayed.HasValue && !options.AddPlayedIndicator ? CompositingMode.SourceCopy : CompositingMode.SourceOver;
+                                    thumbnailGraph.CompositingMode = string.IsNullOrEmpty(options.BackgroundColor) && !options.UnplayedCount.HasValue && !options.AddPlayedIndicator && !options.PercentPlayed.HasValue ? 
+                                        CompositingMode.SourceCopy : 
+                                        CompositingMode.SourceOver;
 
                                     SetBackgroundColor(thumbnailGraph, options);
 
@@ -347,28 +349,31 @@ namespace MediaBrowser.Server.Implementations.Drawing
         /// <param name="options">The options.</param>
         private void DrawIndicator(Graphics graphics, int imageWidth, int imageHeight, ImageProcessingOptions options)
         {
-            if (!options.AddPlayedIndicator && !options.PercentPlayed.HasValue)
+            if (!options.AddPlayedIndicator && !options.UnplayedCount.HasValue && !options.PercentPlayed.HasValue)
             {
                 return;
             }
 
             try
             {
-                var percentOffset = 0;
-
                 if (options.AddPlayedIndicator)
                 {
                     var currentImageSize = new Size(imageWidth, imageHeight);
 
-                    new WatchedIndicatorDrawer().Process(graphics, currentImageSize);
-
-                    percentOffset = 0 - WatchedIndicatorDrawer.IndicatorWidth;
+                    new PlayedIndicatorDrawer().DrawPlayedIndicator(graphics, currentImageSize);
                 }
+                else if (options.UnplayedCount.HasValue)
+                {
+                    var currentImageSize = new Size(imageWidth, imageHeight);
+
+                    new UnplayedCountIndicator().DrawUnplayedCountIndicator(graphics, currentImageSize, options.UnplayedCount.Value);
+                }
+
                 if (options.PercentPlayed.HasValue)
                 {
                     var currentImageSize = new Size(imageWidth, imageHeight);
 
-                    new PercentPlayedDrawer().Process(graphics, currentImageSize, options.PercentPlayed.Value, percentOffset);
+                    new PercentPlayedDrawer().Process(graphics, currentImageSize, options.PercentPlayed.Value);
                 }
             }
             catch (Exception ex)
@@ -466,9 +471,14 @@ namespace MediaBrowser.Server.Implementations.Drawing
         }
 
         /// <summary>
+        /// Increment this when indicator drawings change
+        /// </summary>
+        private const string IndicatorVersion = "1";
+
+        /// <summary>
         /// Gets the cache file path based on a set of parameters
         /// </summary>
-        private string GetCacheFilePath(string originalPath, ImageSize outputSize, int quality, DateTime dateModified, ImageOutputFormat format, bool addPlayedIndicator, int? percentPlayed, string backgroundColor)
+        private string GetCacheFilePath(string originalPath, ImageSize outputSize, int quality, DateTime dateModified, ImageOutputFormat format, bool addPlayedIndicator, double? percentPlayed, int? unwatchedCount, string backgroundColor)
         {
             var filename = originalPath;
 
@@ -485,16 +495,31 @@ namespace MediaBrowser.Server.Implementations.Drawing
                 filename += "f=" + format;
             }
 
+            var hasIndicator = false;
+
             if (addPlayedIndicator)
             {
                 filename += "pl=true";
+                hasIndicator = true;
             }
 
             if (percentPlayed.HasValue)
             {
                 filename += "p=" + percentPlayed.Value;
+                hasIndicator = true;
             }
 
+            if (unwatchedCount.HasValue)
+            {
+                filename += "p=" + unwatchedCount.Value;
+                hasIndicator = true;
+            }
+
+            if (hasIndicator)
+            {
+                filename += "iv=" + IndicatorVersion;
+            }
+            
             if (!string.IsNullOrEmpty(backgroundColor))
             {
                 filename += "b=" + backgroundColor;

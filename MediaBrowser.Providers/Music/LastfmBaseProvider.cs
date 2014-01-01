@@ -68,14 +68,6 @@ namespace MediaBrowser.Providers.Music
         /// <value>The HTTP client.</value>
         protected IHttpClient HttpClient { get; private set; }
 
-        protected virtual bool SaveLocalMeta
-        {
-            get
-            {
-                return ConfigurationManager.Configuration.SaveLocalMeta;
-            }
-        }
-
         /// <summary>
         /// Gets a value indicating whether [requires internet].
         /// </summary>

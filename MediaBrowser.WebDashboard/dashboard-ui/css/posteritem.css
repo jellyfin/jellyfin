@@ -7,7 +7,6 @@
     color: #fff!important;
     text-decoration: none;
     text-align: left;
-    overflow: hidden;
     -webkit-transition: all 500ms ease;
     -moz-transition: all 500ms ease;
     -o-transition: all 500ms ease;
@@ -15,15 +14,9 @@
     transition: all 500ms ease;
 }
 
-    .posterItem:hover {
-        -moz-box-shadow: 0 0 15px 8px #2572EB;
-        -webkit-box-shadow: 0 0 25px 8px #2572EB;
-        box-shadow: 0 0 15px 8px #2572EB;
-    }
-
 
 .smallBackdropPosterItem, .smallPosterItem {
-    margin: 3px;
+    margin: 5px;
 }
 
 .posterItemImage {
@@ -31,8 +24,18 @@
     background-repeat: no-repeat;
     background-position: center bottom;
     background-color: #000;
-    border: 2px solid #202020;
     position: relative;
+}
+
+    .posterItem:hover .posterItemImage {
+        -moz-box-shadow: 0 0 12px 7px #2572EB;
+        -webkit-box-shadow: 0 0 12px 7px #2572EB;
+        box-shadow: 0 0 12px 7px #2572EB;
+    }
+
+.coveredPosterItemImage {
+    background-size: cover;
+    background-position: center center;
 }
 
 .transparentPosterItem .posterItemImage {
@@ -117,7 +120,7 @@
 }
 
     .squarePosterItem .posterItemImage {
-        height: 138px;
+        height: 142px;
     }
 
 .storeReviewCount {
@@ -130,7 +133,7 @@
 }
 
     .backdropPosterItem .posterItemImage {
-        height: 77.625px;
+        height: 79.875px;
     }
 
 .smallBackdropPosterItem {
@@ -138,7 +141,7 @@
 }
 
     .smallBackdropPosterItem .posterItemImage {
-        height: 87.75px;
+        height: 90px;
     }
 
 .portraitPosterItem {
@@ -146,13 +149,23 @@
 }
 
     .portraitPosterItem .posterItemImage {
-        height: 129px;
+        height: 135px;
     }
 
 .posterItemProgress .itemProgressBar {
     height: 10px;
     width: 100%;
     opacity: .6;
+}
+
+.miniPosterItemProgress {
+    /* Make sure it's on top of the fade gradient '*/
+    z-index: 10;
+}
+
+.miniPosterItemProgress .itemProgressBar {
+    height: 7px;
+    opacity: 1;
 }
 
 @media all and (min-width: 540px) {
@@ -162,11 +175,11 @@
     }
 
         .backdropPosterItem .posterItemImage {
-            height: 144px;
+            height: 146.25px;
         }
 
     .smallBackdropPosterItem {
-        width: 188px;
+        width: 184px;
     }
 
         .smallBackdropPosterItem .posterItemImage {
@@ -182,7 +195,7 @@
     }
 
         .squarePosterItem .posterItemImage {
-            height: 160px;
+            height: 164px;
         }
 
     .portraitPosterItem {
@@ -190,7 +203,7 @@
     }
 
         .portraitPosterItem .posterItemImage {
-            height: 177px;
+            height: 183px;
         }
 }
 
@@ -201,7 +214,7 @@
     }
 
         .backdropPosterItem .posterItemImage {
-            height: 153px;
+            height: 155.25px;
         }
 
     .smallBackdropPosterItem {
@@ -209,7 +222,7 @@
     }
 
         .smallBackdropPosterItem .posterItemImage {
-            height: 108px;
+            height: 110.25px;
         }
 }
 
@@ -220,7 +233,7 @@
     }
 
         .portraitPosterItem .posterItemImage {
-            height: 162px;
+            height: 168px;
         }
 }
 
@@ -231,7 +244,7 @@
     }
 
         .backdropPosterItem .posterItemImage {
-            height: 153px;
+            height: 155.25px;
         }
 
     .portraitPosterItem {
@@ -239,7 +252,7 @@
     }
 
         .portraitPosterItem .posterItemImage {
-            height: 201px;
+            height: 207px;
         }
 
     .smallBackdropPosterItem {
@@ -247,7 +260,7 @@
     }
 
         .smallBackdropPosterItem .posterItemImage {
-            height: 126px;
+            height: 128.25px;
         }
 
     .storeReviewCount {
@@ -262,20 +275,7 @@
     }
 
         .squarePosterItem .posterItemImage {
-            height: 170px;
-        }
-
-    .portraitPosterItem {
-        width: 138px;
-    }
-
-        .portraitPosterItem .posterItemImage {
-            height: 201px;
-        }
-
-
-        .portraitPosterItem .itemProgressText {
-            display: inline;
+            height: 174px;
         }
 
     .backdropPosterItem {
@@ -283,7 +283,7 @@
     }
 
         .backdropPosterItem .posterItemImage {
-            height: 162px;
+            height: 164.25px;
         }
 }
 
@@ -294,7 +294,7 @@
     }
 
         .squarePosterItem .posterItemImage {
-            height: 200px;
+            height: 204px;
         }
 
     .portraitPosterItem {
@@ -302,6 +302,6 @@
     }
 
         .portraitPosterItem .posterItemImage {
-            height: 240px;
+            height: 246px;
         }
 }

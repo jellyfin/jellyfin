@@ -60,15 +60,6 @@
 
     function renderChannels(page, channels) {
 
-        //var pagingHtml = LibraryBrowser.getPagingHtml({
-
-        //    StartIndex: 0,
-        //    Limit: channels.length
-
-        //}, channels.length, true);
-
-        //$('.listTopPaging', page).html(pagingHtml).trigger('create');
-
         $('#items', page).html(getChannelsHtml(channels)).trigger('create');
     }
 

@@ -6,13 +6,15 @@
 
         html += '<table class="detailTable">';
 
-        html += '<tr>';
+        html += '<thead><tr>';
         html += '<th></th>';
         html += '<th>Name</th>';
         html += '<th>Album</th>';
         html += '<th>Time</th>';
         html += '<th>Rating</th>';
-        html += '</tr>';
+        html += '</tr></thead>';
+
+        html += '<tbody>';
 
         $.each(MediaPlayer.playlist, function (i, item) {
 
@@ -30,6 +32,7 @@
             html += '</tr>';
         });
 
+        html += '</tbody>';
         html += '</table>';
 
         $("#playlist", page).html(html).trigger('create');

@@ -35,7 +35,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         public override bool Supports(BaseItem item)
         {
-            return item is LiveTvRecording;
+            return item is ILiveTvRecording;
         }
 
         protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
@@ -55,7 +55,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             try
             {
-                changed = await DownloadImage((LiveTvRecording)item, cancellationToken).ConfigureAwait(false);
+                changed = await DownloadImage((ILiveTvRecording)item, cancellationToken).ConfigureAwait(false);
             }
             catch (HttpException ex)
             {
@@ -74,7 +74,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return changed;
         }
 
-        private async Task<bool> DownloadImage(LiveTvRecording item, CancellationToken cancellationToken)
+        private async Task<bool> DownloadImage(ILiveTvRecording item, CancellationToken cancellationToken)
         {
             var recordingInfo = item.RecordingInfo;
 
@@ -133,7 +133,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 // Dummy up the original url
                 var url = item.ServiceName + recordingInfo.Id;
 
-                await _providerManager.SaveImage(item, imageStream, contentType, ImageType.Primary, null, url, cancellationToken).ConfigureAwait(false);
+                await _providerManager.SaveImage((BaseItem)item, imageStream, contentType, ImageType.Primary, null, url, cancellationToken).ConfigureAwait(false);
                 return true;
             }
 

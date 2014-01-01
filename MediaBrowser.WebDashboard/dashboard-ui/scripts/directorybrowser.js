@@ -12,39 +12,34 @@
 
         var promise;
 
+        var parentPathPromise = null;
+
         if (path === "Network") {
             promise = ApiClient.getNetworkDevices();
         }
         else if (path) {
             promise = ApiClient.getDirectoryContents(path, fileOptions);
+            parentPathPromise = ApiClient.getParentPath(path);
         } else {
             promise = ApiClient.getDrives();
         }
 
-        promise.done(function (folders) {
+        if (!parentPathPromise) {
+            parentPathPromise = $.Deferred();
+            parentPathPromise.resolveWith(null, []);
+            parentPathPromise = parentPathPromise.promise();
+        }
+
+        $.when(promise, parentPathPromise).done(function (response1, response2) {
+
+            var folders = response1[0];
+            var parentPath = response2 && response2.length ? response2[0] || '' : '';
 
             $('#txtDirectoryPickerPath', page).val(path || "");
 
             var html = '';
 
             if (path) {
-
-                var parentPath = path;
-
-                if (parentPath.endsWith('\\')) {
-                    parentPath = parentPath.substring(0, parentPath.length - 1);
-                }
-
-                var lastIndex = parentPath.lastIndexOf('\\');
-                parentPath = lastIndex == -1 ? "" : parentPath.substring(0, lastIndex);
-
-                if (parentPath.endsWith(':')) {
-                    parentPath += "\\";
-                }
-
-                if (parentPath == '\\') {
-                    parentPath = "Network";
-                }
 
                 html += '<li><a class="lnkPath lnkDirectory" data-path="' + parentPath + '" href="#">..</a></li>';
             }
@@ -55,7 +50,7 @@
 
                 var cssClass = folder.Type == "File" ? "lnkPath lnkFile" : "lnkPath lnkDirectory";
 
-                html += '<li><a class="' + cssClass + '" data-path="' + folder.Path + '" href="#">' + folder.Name + '</a></li>';
+                html += '<li><a class="' + cssClass + '" data-type="' + folder.Type + '" data-path="' + folder.Path + '" href="#">' + folder.Name + '</a></li>';
             }
 
             if (!path) {

@@ -1,3 +1,4 @@
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using System.Collections.Generic;
 using System.Net;
@@ -35,7 +36,7 @@ namespace MediaBrowser.Common.Net
         /// Gets available devices within the domain
         /// </summary>
         /// <returns>PC's in the Domain</returns>
-        IEnumerable<string> GetNetworkDevices();
+        IEnumerable<FileSystemEntryInfo> GetNetworkDevices();
 
         /// <summary>
         /// Parses the specified endpointstring.

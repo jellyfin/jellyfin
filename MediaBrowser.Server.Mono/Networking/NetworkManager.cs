@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Implementations.Networking;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using System;
 using System.Collections.Generic;
@@ -26,9 +27,9 @@ namespace MediaBrowser.ServerApplication.Networking
         /// Gets a list of network devices
         /// </summary>
         /// PC's in the Domain</returns>
-        public IEnumerable<string> GetNetworkDevices()
+		public IEnumerable<FileSystemEntryInfo> GetNetworkDevices()
         {
-			return new List<string> ();
+			return new List<FileSystemEntryInfo> ();
         }
     }
 }

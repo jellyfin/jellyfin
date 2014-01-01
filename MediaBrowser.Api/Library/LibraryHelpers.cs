@@ -65,17 +65,10 @@ namespace MediaBrowser.Api.Library
                 throw new DirectoryNotFoundException("The path does not exist.");
             }
 
-            // Strip off trailing slash, but not on drives
-            path = path.TrimEnd(Path.DirectorySeparatorChar);
-            if (path.EndsWith(":", StringComparison.OrdinalIgnoreCase))
-            {
-                path += Path.DirectorySeparatorChar;
-            }
-
             var rootFolderPath = user != null ? user.RootFolderPath : appPaths.DefaultUserViewsPath;
             var virtualFolderPath = Path.Combine(rootFolderPath, virtualFolderName);
 
-            ValidateNewMediaPath(fileSystem, rootFolderPath, path, appPaths);
+            ValidateNewMediaPath(fileSystem, rootFolderPath, path);
 
             var shortcutFilename = Path.GetFileNameWithoutExtension(path);
 
@@ -96,25 +89,18 @@ namespace MediaBrowser.Api.Library
         /// <param name="fileSystem">The file system.</param>
         /// <param name="currentViewRootFolderPath">The current view root folder path.</param>
         /// <param name="mediaPath">The media path.</param>
-        /// <param name="appPaths">The app paths.</param>
         /// <exception cref="System.ArgumentException">
         /// </exception>
-        private static void ValidateNewMediaPath(IFileSystem fileSystem, string currentViewRootFolderPath, string mediaPath, IServerApplicationPaths appPaths)
+        private static void ValidateNewMediaPath(IFileSystem fileSystem, string currentViewRootFolderPath, string mediaPath)
         {
-            var duplicate = Directory.EnumerateFiles(appPaths.RootFolderPath, ShortcutFileSearch, SearchOption.AllDirectories)
-                .Select(fileSystem.ResolveShortcut)
-                .FirstOrDefault(p => !IsNewPathValid(mediaPath, p, false));
-
-            if (!string.IsNullOrEmpty(duplicate))
-            {
-                throw new ArgumentException(string.Format("The path cannot be added to the library because {0} already exists.", duplicate));
-            }
+            var pathsInCurrentVIew = Directory.EnumerateFiles(currentViewRootFolderPath, ShortcutFileSearch, SearchOption.AllDirectories)
+                    .Select(fileSystem.ResolveShortcut)
+                    .ToList();
 
             // Don't allow duplicate sub-paths within the same user library, or it will result in duplicate items
             // See comments in IsNewPathValid
-            duplicate = Directory.EnumerateFiles(currentViewRootFolderPath, ShortcutFileSearch, SearchOption.AllDirectories)
-              .Select(fileSystem.ResolveShortcut)
-              .FirstOrDefault(p => !IsNewPathValid(mediaPath, p, true));
+            var duplicate = pathsInCurrentVIew
+              .FirstOrDefault(p => !IsNewPathValid(fileSystem, mediaPath, p));
 
             if (!string.IsNullOrEmpty(duplicate))
             {
@@ -122,9 +108,8 @@ namespace MediaBrowser.Api.Library
             }
             
             // Make sure the current root folder doesn't already have a shortcut to the same path
-            duplicate = Directory.EnumerateFiles(currentViewRootFolderPath, ShortcutFileSearch, SearchOption.AllDirectories)
-                .Select(fileSystem.ResolveShortcut)
-                .FirstOrDefault(p => mediaPath.Equals(p, StringComparison.OrdinalIgnoreCase));
+            duplicate = pathsInCurrentVIew
+                .FirstOrDefault(p => string.Equals(mediaPath, p, StringComparison.OrdinalIgnoreCase));
 
             if (!string.IsNullOrEmpty(duplicate))
             {
@@ -135,30 +120,30 @@ namespace MediaBrowser.Api.Library
         /// <summary>
         /// Validates that a new path can be added based on an existing path
         /// </summary>
+        /// <param name="fileSystem">The file system.</param>
         /// <param name="newPath">The new path.</param>
         /// <param name="existingPath">The existing path.</param>
-        /// <param name="enforceSubPathRestriction">if set to <c>true</c> [enforce sub path restriction].</param>
         /// <returns><c>true</c> if [is new path valid] [the specified new path]; otherwise, <c>false</c>.</returns>
-        private static bool IsNewPathValid(string newPath, string existingPath, bool enforceSubPathRestriction)
+        private static bool IsNewPathValid(IFileSystem fileSystem, string newPath, string existingPath)
         {
             // Example: D:\Movies is the existing path
             // D:\ cannot be added
             // Neither can D:\Movies\Kids
             // A D:\Movies duplicate is ok here since that will be caught later
 
-            if (newPath.Equals(existingPath, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(newPath, existingPath, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
 
             // If enforceSubPathRestriction is true, validate the D:\Movies\Kids scenario
-            if (enforceSubPathRestriction && newPath.StartsWith(existingPath.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+            if (fileSystem.ContainsSubPath(existingPath, newPath))
             {
                 return false;
             }
 
             // Validate the D:\ scenario
-            if (existingPath.StartsWith(newPath.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+            if (fileSystem.ContainsSubPath(newPath, existingPath))
             {
                 return false;
             }

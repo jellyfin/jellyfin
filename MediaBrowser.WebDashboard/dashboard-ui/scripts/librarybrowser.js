@@ -232,7 +232,7 @@
                 else if (item.Type == "Genre" || item.Type == "Studio" || item.Type == "Person" || item.Type == "MusicArtist" || item.Type == "MusicGenre" || item.Type == "GameGenre") {
 
                     var itemCountHtml = LibraryBrowser.getItemCountsHtml(options, item);
-                    
+
                     if (itemCountHtml) {
                         html += '<p class="itemMiscInfo">' + itemCountHtml + '</p>';
                     }
@@ -379,7 +379,7 @@
 
             var cssClass = "detailTable";
 
-            html += '<div class="detailTableContainer"><table class="' + cssClass + '">';
+            html += '<div class="detailTableContainer"><table class="' + cssClass + '"><thead>';
 
             html += '<tr>';
 
@@ -399,7 +399,9 @@
             html += LibraryBrowser.getSongHeaderCellHtml('Plays', 'desktopColumn', options.enableColumnSorting, 'PlayCount,AlbumArtist,Album,SortName', options.sortBy, options.sortOrder);
             html += LibraryBrowser.getSongHeaderCellHtml('', 'desktopColumn userDataCell', options.enableColumnSorting);
 
-            html += '</tr>';
+            html += '</tr></thead>';
+
+            html += '<tbody>';
 
             for (var i = 0, length = items.length; i < length; i++) {
 
@@ -461,6 +463,7 @@
                 html += '</tr>';
             }
 
+            html += '</tbody>';
             html += '</table></div>';
 
             return html;
@@ -876,7 +879,14 @@
                     style += "background-color:" + background + ";";
                 }
 
-                html += '<div class="posterItemImage" style="' + style + '">';
+                var imageCssClass = 'posterItemImage';
+                if (options.coverImage) {
+                    imageCssClass += " coveredPosterItemImage";
+                }
+
+                var progressHtml = LibraryBrowser.getItemProgressBarHtml(item);
+
+                html += '<div class="' + imageCssClass + '" style="' + style + '">';
 
                 if (item.LocationType == "Offline" || item.LocationType == "Virtual") {
                     if (options.showLocationTypeIndicator !== false) {
@@ -884,6 +894,17 @@
                     }
                 } else if (options.showUnplayedIndicator !== false) {
                     html += LibraryBrowser.getPlayedIndicatorHtml(item);
+                }
+
+                if (!options.overlayText) {
+
+                    if (progressHtml) {
+                        html += '<div class="posterItemTextOverlay">';
+                        html += "<div class='posterItemProgress miniPosterItemProgress'>";
+                        html += progressHtml;
+                        html += "</div>";
+                        html += "</div>";
+                    }
                 }
                 html += '</div>';
 
@@ -916,11 +937,11 @@
                     html += name;
                     html += "</div>";
                 }
-                
+
                 if (options.showItemCounts) {
 
                     var itemCountHtml = LibraryBrowser.getItemCountsHtml(options, item);
-                    
+
                     if (itemCountHtml) {
                         html += "<div class='" + cssclass + "'>";
                         html += itemCountHtml;
@@ -944,11 +965,9 @@
 
                 }
 
-                if (options.showProgressBar) {
+                if (options.overlayText) {
 
-                    var progressHtml = LibraryBrowser.getItemProgressBarHtml(item);
-                    
-                    if (progressHtml || !options.overlayText) {
+                    if (progressHtml) {
                         html += "<div class='posterItemText posterItemProgress'>";
                         html += progressHtml || "&nbsp;";
                         html += "</div>";
@@ -1359,11 +1378,6 @@
                 var sortBy = checkedSortOption.siblings('label[for=' + id + ']').text();
 
                 html += 'Sorted by ' + sortBy.trim().toLowerCase() + ', ' + (query.SortOrder || 'ascending').toLowerCase();
-
-                if (!checkedSortOption.hasClass('defaultSort')) {
-                    //html += '<button class="btnChangeToDefaultSort" type="button" data-icon="delete" data-inline="true" data-mini="true" data-iconpos="notext">Remove</button>';
-                }
-
             }
 
             return html;
@@ -1482,37 +1496,19 @@
 
         getItemProgressBarHtml: function (item) {
 
-            var html = '';
+            if (item.UserData && item.UserData.PlaybackPositionTicks && item.RunTimeTicks) {
 
-            var tooltip;
-            var pct;
+                var tooltip = Dashboard.getDisplayTime(item.UserData.PlaybackPositionTicks) + " / " + Dashboard.getDisplayTime(item.RunTimeTicks);
 
-            if (item.PlayedPercentage) {
+                var pct = (item.UserData.PlaybackPositionTicks / item.RunTimeTicks) * 100;
 
-                tooltip = item.PlayedPercentage.toFixed(1).toString().replace(".0", '') + '% ';
+                if (pct && pct < 100) {
 
-                if (item.Type == "Series" || item.Type == "Season" || item.Type == "BoxSet") {
-                    tooltip += "watched";
-                } else {
-                    tooltip += "played";
+                    return '<progress title="' + tooltip + '" class="itemProgressBar" min="0" max="100" value="' + pct + '"></progress>';
                 }
-
-                pct = item.PlayedPercentage;
-            }
-            else if (item.UserData && item.UserData.PlaybackPositionTicks && item.RunTimeTicks) {
-
-                tooltip = Dashboard.getDisplayTime(item.UserData.PlaybackPositionTicks) + " / " + Dashboard.getDisplayTime(item.RunTimeTicks);
-
-                pct = (item.UserData.PlaybackPositionTicks / item.RunTimeTicks) * 100;
             }
 
-            if (pct && pct < 100) {
-
-                html += '<progress title="' + tooltip + '" class="itemProgressBar" min="0" max="100" value="' + pct + '">';
-                html += '</progress>';
-            }
-
-            return html;
+            return null;
         },
 
         getUserDataIconsHtml: function (item) {
@@ -1993,7 +1989,7 @@
             }
 
             var progressHtml = LibraryBrowser.getItemProgressBarHtml(item);
-            
+
             if (progressHtml) {
                 html += '<div class="detailImageProgressContainer">';
                 html += progressHtml;

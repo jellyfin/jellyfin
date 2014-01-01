@@ -357,15 +357,6 @@
         } else {
             $('#itemBirthLocation', page).hide();
         }
-
-        var elem = $('.detailSectionContent', page)[0];
-        var text = elem.textContent || elem.innerText;
-
-        if (!text.trim()) {
-            $('#detailSection', page).hide();
-        } else {
-            $('#detailSection', page).show();
-        }
     }
 
     function renderUserDataIcons(page, item) {
@@ -404,7 +395,7 @@
             SortOrder: "Ascending",
             IncludeItemTypes: "",
             Recursive: true,
-            Fields: "DateCreated,AudioInfo,SeriesInfo,ParentId",
+            Fields: "DateCreated,AudioInfo,SeriesInfo,ParentId,PrimaryImageAspectRatio",
             Limit: LibraryBrowser.getDefaultPageSize(),
             StartIndex: 0
         };
@@ -432,8 +423,53 @@
                     showArtist: true
                 });
 
+            }
+            else if (query.IncludeItemTypes == "Movie" || query.IncludeItemTypes == "Trailer") {
 
-            } else {
+                html = LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: "portrait",
+                    context: 'movies',
+                    useAverageAspectRatio: true,
+                    showTitle: true
+                });
+
+            }
+            else if (query.IncludeItemTypes == "Episode") {
+
+                html += LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    useAverageAspectRatio: true,
+                    shape: "backdrop",
+                    showTitle: true,
+                    showParentTitle: true,
+                    overlayText: true
+                });
+
+            }
+            else if (query.IncludeItemTypes == "Series") {
+
+                html = LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: "backdrop",
+                    preferThumb: true,
+                    context: 'tv'
+                });
+
+            }
+            else if (query.IncludeItemTypes == "MusicAlbum") {
+
+                html = LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: "square",
+                    context: 'music',
+                    useAverageAspectRatio: true,
+                    showTitle: true,
+                    showParentTitle: true
+                });
+
+            }
+            else {
 
                 html += LibraryBrowser.getPosterDetailViewHtml({
                     items: result.Items,

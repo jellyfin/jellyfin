@@ -363,12 +363,14 @@ a.itemTag:hover {
 }
 
 .noBackdrop {
-    height: 280px;
+    height: auto;
     border: 0;
 }
 
     .noBackdrop .itemBackdropContent {
         background-color: transparent;
+        position: static;
+        margin-top: 1em;
     }
 
 .lnkSibling {
@@ -435,13 +437,6 @@ a.itemTag:hover {
         font-weight: normal!important;
     }
 
-.itemBackdrop .parentName {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-}
-
 .inlineItemName {
     font-size: 22px;
 }
@@ -451,8 +446,8 @@ a.itemTag:hover {
 }
 
 .itemOverview {
-    max-height: 70px;
-    overflow-y: auto;
+    /*max-height: 120px;
+    overflow-y: auto;*/
     text-overflow: ellipsis;
 }
 
@@ -612,10 +607,6 @@ a.itemTag:hover {
 
     .itemBackdrop {
         background-image: none!important;
-        height: auto;
-    }
-
-    .noBackdrop {
         height: auto;
     }
 
@@ -836,8 +827,8 @@ a.itemTag:hover {
     right: 5px;
     text-align: center;
     vertical-align: middle;
-    width: 28px;
-    height: 23px;
+    width: 26px;
+    height: 21px;
     padding-top: 5px;
     border-radius: 50%;
     color: #fff;
@@ -970,8 +961,7 @@ a.itemTag:hover {
 .alphabetPicker {
     position: fixed;
     right: 2px;
-    bottom: 0;
-    top: 100px;
+    bottom: 30px;
     width: 27px;
     z-index: 1000;
     text-align: center;
@@ -984,7 +974,7 @@ a.itemTag:hover {
         display: block;
         text-decoration: none;
         padding: 1px 0;
-        color: #eee!important;
+        color: #bbb!important;
     }
 
         .alphabetPicker a:hover:not(.selectedCharacter) {
@@ -1008,35 +998,31 @@ a.itemTag:hover {
     }
 }
 
-@media all and (min-height: 600px) {
-
-    .alphabetPicker a {
-        padding: 2px 0;
-    }
-}
-
-@media all and (min-height: 720px) {
-
-    .alphabetPicker {
-        top: 135px;
-    }
+@media all and (min-height: 800px) {
 
         .alphabetPicker a {
-            padding: 4px 0;
+            padding: 5px 0;
         }
 }
 
-@media all and (min-height: 850px) {
+@media all and (min-height: 900px) {
 
-    .alphabetPicker a {
-        padding: 6px 0;
+    .alphabetPicker {
+        bottom: 120px;
+    }
+}
+
+@media all and (min-height: 1000px) {
+
+    .alphabetPicker {
+        bottom: 200px;
     }
 }
 
 .viewCollageImage {
     display: inline-block;
     margin: 0 1px 0 0;
-    width: 32.6%;
+    width: 32.62%;
     height: 49%;
     background-repeat: no-repeat;
     background-position: center 15%;
@@ -1046,7 +1032,7 @@ a.itemTag:hover {
 @media all and (min-width: 650px) {
 
     .viewCollageImage {
-        width: 32.8%;
+        width: 32.9%;
         height: 49.1%;
     }
 }
@@ -1054,6 +1040,6 @@ a.itemTag:hover {
 @media all and (min-width: 1440px) {
 
     .viewCollageImage {
-        width: 32.9%;
+        width: 32.95%;
     }
 }

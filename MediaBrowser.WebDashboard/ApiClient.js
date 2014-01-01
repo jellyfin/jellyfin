@@ -873,6 +873,47 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         };
 
         /**
+         * Gets shares from a network device
+         */
+        self.getNetworkShares = function (path) {
+
+            if (!path) {
+                throw new Error("null path");
+            }
+
+            var options = {};
+            options.path = path;
+
+            var url = self.getUrl("Environment/NetworkShares", options);
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        /**
+         * Gets the parent of a given path
+         */
+        self.getParentPath = function (path) {
+
+            if (!path) {
+                throw new Error("null path");
+            }
+
+            var options = {};
+            options.path = path;
+
+            var url = self.getUrl("Environment/ParentPath", options);
+
+            return self.ajax({
+                type: "GET",
+                url: url
+            });
+        };
+
+        /**
          * Gets a list of physical drives from the server
          */
         self.getDrives = function () {

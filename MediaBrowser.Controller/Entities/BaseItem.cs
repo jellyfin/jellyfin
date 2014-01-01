@@ -156,7 +156,7 @@ namespace MediaBrowser.Controller.Entities
         public DateTime DateModified { get; set; }
 
         public DateTime DateLastSaved { get; set; }
-        
+
         /// <summary>
         /// The logger
         /// </summary>
@@ -327,21 +327,18 @@ namespace MediaBrowser.Controller.Entities
                 // When resolving the root, we need it's grandchildren (children of user views)
                 var flattenFolderDepth = isPhysicalRoot ? 2 : 0;
 
-                args.FileSystemDictionary = FileData.GetFilteredFileSystemEntries(args.Path, FileSystem, Logger, args, flattenFolderDepth: flattenFolderDepth, resolveShortcuts: isPhysicalRoot || args.IsVf);
+                var fileSystemDictionary = FileData.GetFilteredFileSystemEntries(args.Path, FileSystem, Logger, args, flattenFolderDepth: flattenFolderDepth, resolveShortcuts: isPhysicalRoot || args.IsVf);
 
                 // Need to remove subpaths that may have been resolved from shortcuts
                 // Example: if \\server\movies exists, then strip out \\server\movies\action
                 if (isPhysicalRoot)
                 {
-                    var paths = args.FileSystemDictionary.Keys.ToList();
+                    var paths = LibraryManager.NormalizeRootPathList(fileSystemDictionary.Keys);
 
-                    foreach (var subPath in paths
-                        .Where(subPath => !subPath.EndsWith(":\\", StringComparison.OrdinalIgnoreCase) && paths.Any(i => subPath.StartsWith(i.TrimEnd(System.IO.Path.DirectorySeparatorChar) + System.IO.Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))))
-                    {
-                        Logger.Info("Ignoring duplicate path: {0}", subPath);
-                        args.FileSystemDictionary.Remove(subPath);
-                    }
+                    fileSystemDictionary = paths.Select(i => (FileSystemInfo)new DirectoryInfo(i)).ToDictionary(i => i.FullName);
                 }
+
+                args.FileSystemDictionary = fileSystemDictionary;
             }
 
             //update our dates
@@ -1016,14 +1013,18 @@ namespace MediaBrowser.Controller.Entities
             return lang;
         }
 
+        public virtual bool IsSaveLocalMetadataEnabled()
+        {
+            return ConfigurationManager.Configuration.SaveLocalMeta;
+        }
+
         /// <summary>
         /// Determines if a given user has access to this item
         /// </summary>
         /// <param name="user">The user.</param>
-        /// <param name="localizationManager">The localization manager.</param>
         /// <returns><c>true</c> if [is parental allowed] [the specified user]; otherwise, <c>false</c>.</returns>
         /// <exception cref="System.ArgumentNullException">user</exception>
-        public bool IsParentalAllowed(User user, ILocalizationManager localizationManager)
+        public bool IsParentalAllowed(User user)
         {
             if (user == null)
             {
@@ -1049,7 +1050,7 @@ namespace MediaBrowser.Controller.Entities
                 return !GetBlockUnratedValue(user.Configuration);
             }
 
-            var value = localizationManager.GetRatingLevel(rating);
+            var value = LocalizationManager.GetRatingLevel(rating);
 
             // Could not determine the integer value
             if (!value.HasValue)
@@ -1084,7 +1085,7 @@ namespace MediaBrowser.Controller.Entities
                 throw new ArgumentNullException("user");
             }
 
-            return IsParentalAllowed(user, LocalizationManager);
+            return IsParentalAllowed(user);
         }
 
         /// <summary>

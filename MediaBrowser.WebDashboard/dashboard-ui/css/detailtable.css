@@ -27,14 +27,14 @@
 
 .detailTable td {
     border-spacing: 0;
-    border-top: 1px solid #444;
-    border-bottom: 1px solid #444;
+    border-top: 1px solid #404040;
+    border-bottom: 1px solid #404040;
     padding: 5px 5px;
 }
 
 .detailTable th {
     border-spacing: 0;
-    border-bottom: 1px solid #444;
+    border-bottom: 1px solid #404040;
     padding: 5px;
     font-weight: bold;
     text-align: left;
@@ -72,4 +72,10 @@
     .desktopColumn {
         display: table-cell;
     }
+}
+
+.detailTable tbody tr:nth-child(odd) td,
+.detailTable tbody tr:nth-child(odd) th {
+    background-color: #eeeeee; /* non-RGBA fallback  */
+    background-color: rgba(0,0,0,.1);
 }

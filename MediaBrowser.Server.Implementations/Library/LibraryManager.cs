@@ -499,21 +499,18 @@ namespace MediaBrowser.Server.Implementations.Library
                 // When resolving the root, we need it's grandchildren (children of user views)
                 var flattenFolderDepth = isPhysicalRoot ? 2 : 0;
 
-                args.FileSystemDictionary = FileData.GetFilteredFileSystemEntries(args.Path, _fileSystem, _logger, args, flattenFolderDepth: flattenFolderDepth, resolveShortcuts: isPhysicalRoot || args.IsVf);
+                var fileSystemDictionary = FileData.GetFilteredFileSystemEntries(args.Path, _fileSystem, _logger, args, flattenFolderDepth: flattenFolderDepth, resolveShortcuts: isPhysicalRoot || args.IsVf);
 
                 // Need to remove subpaths that may have been resolved from shortcuts
                 // Example: if \\server\movies exists, then strip out \\server\movies\action
                 if (isPhysicalRoot)
                 {
-                    var paths = args.FileSystemDictionary.Keys.ToList();
+                    var paths = NormalizeRootPathList(fileSystemDictionary.Keys);
 
-                    foreach (var subPath in paths
-                        .Where(subPath => !subPath.EndsWith(":\\", StringComparison.OrdinalIgnoreCase) && paths.Any(i => subPath.StartsWith(i.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))))
-                    {
-                        _logger.Info("Ignoring duplicate path: {0}", subPath);
-                        args.FileSystemDictionary.Remove(subPath);
-                    }
+                    fileSystemDictionary = paths.Select(i => (FileSystemInfo)new DirectoryInfo(i)).ToDictionary(i => i.FullName);
                 }
+
+                args.FileSystemDictionary = fileSystemDictionary;
             }
 
             // Check to see if we should resolve based on our contents
@@ -523,6 +520,23 @@ namespace MediaBrowser.Server.Implementations.Library
             }
 
             return ResolveItem(args);
+        }
+
+        public IEnumerable<string> NormalizeRootPathList(IEnumerable<string> paths)
+        {
+            var list = paths.Select(_fileSystem.NormalizePath)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            var dupes = list.Where(subPath => !subPath.EndsWith(":\\", StringComparison.OrdinalIgnoreCase) && list.Any(i => _fileSystem.ContainsSubPath(i, subPath)))
+                .ToList();
+
+            foreach (var dupe in dupes)
+            {
+                _logger.Info("Found duplicate path: {0}", dupe);
+            }
+
+            return list.Except(dupes, StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>

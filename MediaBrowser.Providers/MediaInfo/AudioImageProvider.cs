@@ -191,7 +191,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             var filename = item.Album ?? string.Empty;
             filename += item.Artists.FirstOrDefault() ?? string.Empty;
-            filename += album == null ? item.Id.ToString("N") + item.DateModified.Ticks : album.Id.ToString("N") + album.DateModified.Ticks + "_primary";
+            filename += album == null ? item.Id.ToString("N") + "_primary" + item.DateModified.Ticks : album.Id.ToString("N") + album.DateModified.Ticks + "_primary";
 
             filename = filename.GetMD5() + ".jpg";
 

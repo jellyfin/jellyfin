@@ -62,14 +62,6 @@
 
             $('#items', page).html(html).trigger('create');
 
-            $('.btnChangeToDefaultSort', page).on('click', function () {
-                query.StartIndex = 0;
-                query.SortOrder = 'Ascending';
-                query.SortBy = $('.defaultSort', page).data('sortby');
-
-                reloadItems(page);
-            });
-
             $('.selectPage', page).on('change', function () {
                 query.StartIndex = (parseInt(this.value) - 1) * query.Limit;
                 reloadItems(page);

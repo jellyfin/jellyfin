@@ -519,85 +519,84 @@ namespace MediaBrowser.Controller.Entities
                     await Task.WhenAll(tasks).ConfigureAwait(false);
                 }
 
-                Tuple<BaseItem, bool> currentTuple = tuple;
-
-                tasks.Add(Task.Run(async () =>
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    var child = currentTuple.Item1;
-                    try
-                    {
-                        //refresh it
-                        await child.RefreshMetadata(cancellationToken, forceSave: currentTuple.Item2, forceRefresh: forceRefreshMetadata, resetResolveArgs: false).ConfigureAwait(false);
-                    }
-                    catch (IOException ex)
-                    {
-                        Logger.ErrorException("Error refreshing {0}", ex, child.Path ?? child.Name);
-                    }
-
-                    // Refresh children if a folder and the item changed or recursive is set to true
-                    var refreshChildren = child.IsFolder && (currentTuple.Item2 || (recursive.HasValue && recursive.Value));
-
-                    if (refreshChildren)
-                    {
-                        // Don't refresh children if explicitly set to false
-                        if (recursive.HasValue && recursive.Value == false)
-                        {
-                            refreshChildren = false;
-                        }
-                    }
-
-                    if (refreshChildren)
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
-
-                        var innerProgress = new ActionableProgress<double>();
-
-                        innerProgress.RegisterAction(p =>
-                        {
-                            lock (percentages)
-                            {
-                                percentages[child.Id] = p / 100;
-
-                                var percent = percentages.Values.Sum();
-                                percent /= list.Count;
-
-                                progress.Report((90 * percent) + 10);
-                            }
-                        });
-
-                        await ((Folder)child).ValidateChildren(innerProgress, cancellationToken, recursive, forceRefreshMetadata).ConfigureAwait(false);
-
-                        try
-                        {
-                            // Some folder providers are unable to refresh until children have been refreshed.
-                            await child.RefreshMetadata(cancellationToken, resetResolveArgs: false).ConfigureAwait(false);
-                        }
-                        catch (IOException ex)
-                        {
-                            Logger.ErrorException("Error refreshing {0}", ex, child.Path ?? child.Name);
-                        }
-                    }
-                    else
-                    {
-                        lock (percentages)
-                        {
-                            percentages[child.Id] = 1;
-
-                            var percent = percentages.Values.Sum();
-                            percent /= list.Count;
-
-                            progress.Report((90 * percent) + 10);
-                        }
-                    }
-
-                }, cancellationToken));
+                tasks.Add(RefreshChild(tuple, progress, percentages, list.Count, cancellationToken, recursive, forceRefreshMetadata));
             }
 
             cancellationToken.ThrowIfCancellationRequested();
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
+        }
+
+        private async Task RefreshChild(Tuple<BaseItem, bool> currentTuple, IProgress<double> progress, Dictionary<Guid, double> percentages, int childCount, CancellationToken cancellationToken, bool? recursive, bool forceRefreshMetadata = false)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var child = currentTuple.Item1;
+            try
+            {
+                //refresh it
+                await child.RefreshMetadata(cancellationToken, forceSave: currentTuple.Item2, forceRefresh: forceRefreshMetadata, resetResolveArgs: false).ConfigureAwait(false);
+            }
+            catch (IOException ex)
+            {
+                Logger.ErrorException("Error refreshing {0}", ex, child.Path ?? child.Name);
+            }
+
+            // Refresh children if a folder and the item changed or recursive is set to true
+            var refreshChildren = child.IsFolder && (currentTuple.Item2 || (recursive.HasValue && recursive.Value));
+
+            if (refreshChildren)
+            {
+                // Don't refresh children if explicitly set to false
+                if (recursive.HasValue && recursive.Value == false)
+                {
+                    refreshChildren = false;
+                }
+            }
+
+            if (refreshChildren)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var innerProgress = new ActionableProgress<double>();
+
+                innerProgress.RegisterAction(p =>
+                {
+                    lock (percentages)
+                    {
+                        percentages[child.Id] = p / 100;
+
+                        var percent = percentages.Values.Sum();
+                        percent /= childCount;
+
+                        progress.Report((90 * percent) + 10);
+                    }
+                });
+
+                await ((Folder)child).ValidateChildren(innerProgress, cancellationToken, recursive, forceRefreshMetadata).ConfigureAwait(false);
+
+                try
+                {
+                    // Some folder providers are unable to refresh until children have been refreshed.
+                    await child.RefreshMetadata(cancellationToken, resetResolveArgs: false).ConfigureAwait(false);
+                }
+                catch (IOException ex)
+                {
+                    Logger.ErrorException("Error refreshing {0}", ex, child.Path ?? child.Name);
+                }
+            }
+            else
+            {
+                lock (percentages)
+                {
+                    percentages[child.Id] = 1;
+
+                    var percent = percentages.Values.Sum();
+                    percent /= childCount;
+
+                    progress.Report((90 * percent) + 10);
+                }
+            }
         }
 
         /// <summary>
@@ -646,7 +645,7 @@ namespace MediaBrowser.Controller.Entities
 
         private bool ContainsPath(string parent, string path)
         {
-            return string.Equals(parent, path, StringComparison.OrdinalIgnoreCase) || path.IndexOf(parent.TrimEnd(System.IO.Path.DirectorySeparatorChar) + System.IO.Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) != -1;
+            return string.Equals(parent, path, StringComparison.OrdinalIgnoreCase) || FileSystem.ContainsSubPath(parent, path);
         }
 
         /// <summary>

@@ -1,5 +1,8 @@
-﻿using MediaBrowser.Common.Implementations.Networking;
+﻿using System.Globalization;
+using System.IO;
+using MediaBrowser.Common.Implementations.Networking;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using System;
 using System.Collections.Generic;
@@ -79,7 +82,7 @@ namespace MediaBrowser.ServerApplication.Networking
         /// </summary>
         /// <returns>Arraylist that represents all the SV_TYPE_WORKSTATION and SV_TYPE_SERVER
         /// PC's in the Domain</returns>
-        public IEnumerable<string> GetNetworkDevices()
+        private IEnumerable<string> GetNetworkDevicesInternal()
         {
             //local fields
             const int MAX_PREFERRED_LENGTH = -1;
@@ -129,6 +132,33 @@ namespace MediaBrowser.ServerApplication.Networking
                 //The NetApiBufferFree function frees 
                 //the memory that the NetApiBufferAllocate function allocates
                 NativeMethods.NetApiBufferFree(buffer);
+            }
+        }
+
+        /// <summary>
+        /// Gets available devices within the domain
+        /// </summary>
+        /// <returns>PC's in the Domain</returns>
+        public IEnumerable<FileSystemEntryInfo> GetNetworkDevices()
+        {
+            return GetNetworkDevicesInternal().Select(c => new FileSystemEntryInfo
+            {
+                Name = c,
+                Path = NetworkPrefix + c,
+                Type = FileSystemEntryType.NetworkComputer
+            });
+        }
+
+        /// <summary>
+        /// Gets the network prefix.
+        /// </summary>
+        /// <value>The network prefix.</value>
+        private string NetworkPrefix
+        {
+            get
+            {
+                var separator = Path.DirectorySeparatorChar.ToString(CultureInfo.InvariantCulture);
+                return separator + separator;
             }
         }
     }

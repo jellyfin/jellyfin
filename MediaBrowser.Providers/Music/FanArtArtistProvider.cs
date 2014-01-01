@@ -86,15 +86,6 @@ namespace MediaBrowser.Providers.Music
         }
 
         /// <summary>
-        /// Gets a value indicating whether [save local meta].
-        /// </summary>
-        /// <value><c>true</c> if [save local meta]; otherwise, <c>false</c>.</value>
-        protected virtual bool SaveLocalMeta
-        {
-            get { return ConfigurationManager.Configuration.SaveLocalMeta; }
-        }
-
-        /// <summary>
         /// Gets a value indicating whether [refresh on version change].
         /// </summary>
         /// <value><c>true</c> if [refresh on version change]; otherwise, <c>false</c>.</value>

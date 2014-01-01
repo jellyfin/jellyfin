@@ -61,6 +61,9 @@ namespace MediaBrowser.Api.LiveTv
 
         [ApiMember(Name = "Limit", Description = "Optional. The maximum number of records to return", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int? Limit { get; set; }
+
+        [ApiMember(Name = "IsRecording", Description = "Optional filter by recordings that are currently active, or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool? IsRecording { get; set; }
     }
 
     [Route("/LiveTv/Recordings/Groups", "GET")]
@@ -274,7 +277,8 @@ namespace MediaBrowser.Api.LiveTv
                 UserId = request.UserId,
                 GroupId = request.GroupId,
                 StartIndex = request.StartIndex,
-                Limit = request.Limit
+                Limit = request.Limit,
+                IsRecording = request.IsRecording
 
             }, CancellationToken.None).Result;
 

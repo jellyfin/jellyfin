@@ -55,7 +55,6 @@
                 shape: "backdrop",
                 showTitle: true,
                 showParentTitle: true,
-                showProgressBar: true,
                 overlayText: true
             }));
 

@@ -124,7 +124,7 @@ var Dashboard = {
 
         setTimeout(function () {
             $.mobile.loading('hide');
-        }, 2000);
+        }, 3000);
     },
 
     alert: function (options) {
@@ -141,7 +141,7 @@ var Dashboard = {
 
             setTimeout(function () {
                 $.mobile.loading('hide');
-            }, 4000);
+            }, 3000);
 
             return;
         }
