@@ -16,8 +16,8 @@ namespace MediaBrowser.Controller.Entities
         /// Gets the path.
         /// </summary>
         /// <value>The path.</value>
-        string Path { get; }
-        
+        string Path { get; set; }
+
         /// <summary>
         /// Gets the identifier.
         /// </summary>
@@ -100,7 +100,7 @@ namespace MediaBrowser.Controller.Entities
         {
             return item.HasImage(imageType, 0);
         }
-        
+
         /// <summary>
         /// Sets the image path.
         /// </summary>

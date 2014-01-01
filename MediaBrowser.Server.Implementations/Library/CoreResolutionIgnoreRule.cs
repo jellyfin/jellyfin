@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
 using System;
@@ -30,6 +31,13 @@ namespace MediaBrowser.Server.Implementations.Library
 
         }.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
 
+        private readonly IFileSystem _fileSystem;
+
+        public CoreResolutionIgnoreRule(IFileSystem fileSystem)
+        {
+            _fileSystem = fileSystem;
+        }
+
         /// <summary>
         /// Shoulds the ignore.
         /// </summary>
@@ -60,21 +68,10 @@ namespace MediaBrowser.Server.Implementations.Library
                     return false;
                 }
 
-                // Drives will sometimes be hidden
-                if (args.Path.EndsWith(Path.VolumeSeparatorChar + "\\", StringComparison.OrdinalIgnoreCase))
+                // Sometimes these are marked hidden
+                if (_fileSystem.IsRootPath(args.Path))
                 {
                     return false;
-                }
-
-                // Shares will sometimes be hidden
-                if (args.Path.StartsWith("\\", StringComparison.OrdinalIgnoreCase))
-                {
-                    // Look for a share, e.g. \\server\movies
-                    // Is there a better way to detect if a path is a share without using native code?
-                    if (args.Path.Substring(2).Split(Path.DirectorySeparatorChar).Length == 2)
-                    {
-                        return false;
-                    }
                 }
 
                 return true;

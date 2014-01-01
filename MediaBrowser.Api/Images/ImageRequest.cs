@@ -59,8 +59,11 @@ namespace MediaBrowser.Api.Images
         [ApiMember(Name = "AddPlayedIndicator", Description = "Optional. Add a played indicator", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool AddPlayedIndicator { get; set; }
 
-        [ApiMember(Name = "PercentPlayed", Description = "Optional percent to render for the percent played overlay", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
-        public int? PercentPlayed { get; set; }
+        [ApiMember(Name = "PercentPlayed", Description = "Optional percent to render for the percent played overlay", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public double? PercentPlayed { get; set; }
+
+        [ApiMember(Name = "UnplayedCount", Description = "Optional unplayed count overlay to render", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int? UnplayedCount { get; set; }
 
         [ApiMember(Name = "BackgroundColor", Description = "Optional. Apply a background color for transparent images.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string BackgroundColor { get; set; }

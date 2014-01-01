@@ -91,6 +91,7 @@ namespace MediaBrowser.Api.Images
                 OutputFormat = Request.Format,
                 AddPlayedIndicator = Request.AddPlayedIndicator,
                 PercentPlayed = Request.PercentPlayed,
+                UnplayedCount = Request.UnplayedCount,
                 BackgroundColor = Request.BackgroundColor
             };
 

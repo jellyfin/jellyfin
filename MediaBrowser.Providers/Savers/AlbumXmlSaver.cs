@@ -32,7 +32,7 @@ namespace MediaBrowser.Providers.Savers
             var wasMetadataDownloaded = (updateType & ItemUpdateType.MetadataDownload) == ItemUpdateType.MetadataDownload;
 
             // If new metadata has been downloaded and save local is on
-            if (_config.Configuration.SaveLocalMeta && (wasMetadataEdited || wasMetadataDownloaded))
+            if (item.IsSaveLocalMetadataEnabled() && (wasMetadataEdited || wasMetadataDownloaded))
             {
                 return item is MusicAlbum;
             }

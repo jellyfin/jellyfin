@@ -6,8 +6,8 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
@@ -31,7 +31,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         private readonly IItemRepository _itemRepo;
         private readonly IUserManager _userManager;
 
-        private readonly ILocalizationManager _localization;
         private readonly LiveTvDtoService _tvDtoService;
 
         private readonly List<ILiveTvService> _services = new List<ILiveTvService>();
@@ -39,16 +38,15 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         private Dictionary<Guid, LiveTvChannel> _channels = new Dictionary<Guid, LiveTvChannel>();
         private Dictionary<Guid, LiveTvProgram> _programs = new Dictionary<Guid, LiveTvProgram>();
 
-        public LiveTvManager(IServerApplicationPaths appPaths, IFileSystem fileSystem, ILogger logger, IItemRepository itemRepo, IImageProcessor imageProcessor, ILocalizationManager localization, IUserDataManager userDataManager, IDtoService dtoService, IUserManager userManager)
+        public LiveTvManager(IServerApplicationPaths appPaths, IFileSystem fileSystem, ILogger logger, IItemRepository itemRepo, IImageProcessor imageProcessor, IUserDataManager userDataManager, IDtoService dtoService, IUserManager userManager)
         {
             _appPaths = appPaths;
             _fileSystem = fileSystem;
             _logger = logger;
             _itemRepo = itemRepo;
-            _localization = localization;
             _userManager = userManager;
 
-            _tvDtoService = new LiveTvDtoService(dtoService, userDataManager, imageProcessor, logger);
+            _tvDtoService = new LiveTvDtoService(dtoService, userDataManager, imageProcessor, logger, _itemRepo);
         }
 
         /// <summary>
@@ -82,7 +80,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             if (user != null)
             {
                 channels = channels
-                    .Where(i => i.IsParentalAllowed(user, _localization))
+                    .Where(i => i.IsParentalAllowed(user))
                     .OrderBy(i =>
                     {
                         double number = 0;
@@ -144,7 +142,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return obj;
         }
 
-        public async Task<LiveTvRecording> GetInternalRecording(string id, CancellationToken cancellationToken)
+        public async Task<ILiveTvRecording> GetInternalRecording(string id, CancellationToken cancellationToken)
         {
             var service = ActiveService;
 
@@ -255,23 +253,46 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return item;
         }
 
-        private async Task<LiveTvRecording> GetRecording(RecordingInfo info, string serviceName, CancellationToken cancellationToken)
+        private async Task<ILiveTvRecording> GetRecording(RecordingInfo info, string serviceName, CancellationToken cancellationToken)
         {
             var isNew = false;
 
             var id = _tvDtoService.GetInternalRecordingId(serviceName, info.Id);
 
-            var item = _itemRepo.RetrieveItem(id) as LiveTvRecording;
+            var item = _itemRepo.RetrieveItem(id) as ILiveTvRecording;
 
             if (item == null)
             {
-                item = new LiveTvRecording
+                if (info.ChannelType == ChannelType.TV)
                 {
-                    Name = info.Name,
-                    Id = id,
-                    DateCreated = DateTime.UtcNow,
-                    DateModified = DateTime.UtcNow
-                };
+                    item = new LiveTvVideoRecording
+                    {
+                        Name = info.Name,
+                        Id = id,
+                        DateCreated = DateTime.UtcNow,
+                        DateModified = DateTime.UtcNow,
+                        VideoType = VideoType.VideoFile
+                    };
+                }
+                else
+                {
+                    item = new LiveTvAudioRecording
+                    {
+                        Name = info.Name,
+                        Id = id,
+                        DateCreated = DateTime.UtcNow,
+                        DateModified = DateTime.UtcNow
+                    };
+                }
+
+                if (!string.IsNullOrEmpty(info.Path))
+                {
+                    item.Path = info.Path;
+                }
+                else if (!string.IsNullOrEmpty(info.Url))
+                {
+                    item.Path = info.Url;
+                }
 
                 isNew = true;
             }
@@ -331,7 +352,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             if (user != null)
             {
-                programs = programs.Where(i => i.IsParentalAllowed(user, _localization));
+                programs = programs.Where(i => i.IsParentalAllowed(user));
             }
 
             var returnArray = programs
@@ -450,10 +471,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var user = string.IsNullOrEmpty(query.UserId) ? null : _userManager.GetUserById(new Guid(query.UserId));
 
-            var list = new List<RecordingInfo>();
-
             var recordings = await service.GetRecordingsAsync(cancellationToken).ConfigureAwait(false);
-            list.AddRange(recordings);
 
             if (!string.IsNullOrEmpty(query.ChannelId))
             {
@@ -461,9 +479,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
                 var currentServiceName = service.Name;
 
-                list = list
-                    .Where(i => _tvDtoService.GetInternalChannelId(currentServiceName, i.ChannelId) == guid)
-                    .ToList();
+                recordings = recordings
+                    .Where(i => _tvDtoService.GetInternalChannelId(currentServiceName, i.ChannelId) == guid);
             }
 
             if (!string.IsNullOrEmpty(query.Id))
@@ -472,27 +489,31 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
                 var currentServiceName = service.Name;
 
-                list = list
-                    .Where(i => _tvDtoService.GetInternalRecordingId(currentServiceName, i.Id) == guid)
-                    .ToList();
+                recordings = recordings
+                    .Where(i => _tvDtoService.GetInternalRecordingId(currentServiceName, i.Id) == guid);
             }
 
             if (!string.IsNullOrEmpty(query.GroupId))
             {
                 var guid = new Guid(query.GroupId);
 
-                list = list.Where(i => GetRecordingGroupIds(i).Contains(guid))
-                    .ToList();
+                recordings = recordings.Where(i => GetRecordingGroupIds(i).Contains(guid));
             }
 
-            IEnumerable<LiveTvRecording> entities = await GetEntities(list, service.Name, cancellationToken).ConfigureAwait(false);
+            if (query.IsRecording.HasValue)
+            {
+                var val = query.IsRecording.Value;
+                recordings = recordings.Where(i => (i.Status == RecordingStatus.InProgress) == val);
+            }
+
+            IEnumerable<ILiveTvRecording> entities = await GetEntities(recordings, service.Name, cancellationToken).ConfigureAwait(false);
 
             entities = entities.OrderByDescending(i => i.RecordingInfo.StartDate);
 
             if (user != null)
             {
                 var currentUser = user;
-                entities = entities.Where(i => i.IsParentalAllowed(currentUser, _localization));
+                entities = entities.Where(i => i.IsParentalAllowed(currentUser));
             }
 
             if (query.StartIndex.HasValue)
@@ -520,7 +541,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             };
         }
 
-        private Task<LiveTvRecording[]> GetEntities(IEnumerable<RecordingInfo> recordings, string serviceName, CancellationToken cancellationToken)
+        private Task<ILiveTvRecording[]> GetEntities(IEnumerable<RecordingInfo> recordings, string serviceName, CancellationToken cancellationToken)
         {
             var tasks = recordings.Select(i => GetRecording(i, serviceName, cancellationToken));
 

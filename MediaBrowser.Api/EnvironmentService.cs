@@ -46,6 +46,18 @@ namespace MediaBrowser.Api
         public bool IncludeHidden { get; set; }
     }
 
+    [Route("/Environment/NetworkShares", "GET")]
+    [Api(Description = "Gets shares from a network device")]
+    public class GetNetworkShares : IReturn<List<FileSystemEntryInfo>>
+    {
+        /// <summary>
+        /// Gets or sets the path.
+        /// </summary>
+        /// <value>The path.</value>
+        [ApiMember(Name = "Path", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string Path { get; set; }
+    }
+
     /// <summary>
     /// Class GetDrives
     /// </summary>
@@ -64,11 +76,25 @@ namespace MediaBrowser.Api
     {
     }
 
+    [Route("/Environment/ParentPath", "GET")]
+    [Api(Description = "Gets the parent path of a given path")]
+    public class GetParentPath : IReturn<string>
+    {
+        /// <summary>
+        /// Gets or sets the path.
+        /// </summary>
+        /// <value>The path.</value>
+        [ApiMember(Name = "Path", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string Path { get; set; }
+    }
+
     /// <summary>
     /// Class EnvironmentService
     /// </summary>
     public class EnvironmentService : BaseApiService
     {
+        const char UncSeparator = '\\';
+
         /// <summary>
         /// The _network manager
         /// </summary>
@@ -105,18 +131,23 @@ namespace MediaBrowser.Api
                 throw new ArgumentNullException("Path");
             }
 
-            // If it's not a drive trim trailing slashes.
-            if (!path.EndsWith(":\\"))
-            {
-                path = path.TrimEnd('\\');
-            }
+            var networkPrefix = UncSeparator.ToString(CultureInfo.InvariantCulture) + UncSeparator.ToString(CultureInfo.InvariantCulture);
 
-            if (path.StartsWith(NetworkPrefix, StringComparison.OrdinalIgnoreCase) && path.LastIndexOf('\\') == 1)
+            if (path.StartsWith(networkPrefix, StringComparison.OrdinalIgnoreCase) && path.LastIndexOf(UncSeparator) == 1)
             {
                 return ToOptimizedResult(GetNetworkShares(path).OrderBy(i => i.Path).ToList());
             }
 
             return ToOptimizedResult(GetFileSystemEntries(request).OrderBy(i => i.Path).ToList());
+        }
+
+        public object Get(GetNetworkShares request)
+        {
+            var path = request.Path;
+
+            var shares = GetNetworkShares(path).OrderBy(i => i.Path).ToList();
+
+            return ToOptimizedResult(shares);
         }
 
         /// <summary>
@@ -154,23 +185,11 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetNetworkDevices request)
         {
-            var result = GetNetworkDevices().OrderBy(i => i.Path).ToList();
+            var result = _networkManager.GetNetworkDevices()
+                .OrderBy(i => i.Path)
+                .ToList();
 
             return ToOptimizedResult(result);
-        }
-
-        /// <summary>
-        /// Gets the network computers.
-        /// </summary>
-        /// <returns>IEnumerable{FileSystemEntryInfo}.</returns>
-        private IEnumerable<FileSystemEntryInfo> GetNetworkDevices()
-        {
-            return _networkManager.GetNetworkDevices().Select(c => new FileSystemEntryInfo
-            {
-                Name = c,
-                Path = NetworkPrefix + c,
-                Type = FileSystemEntryType.NetworkComputer
-            });
         }
 
         /// <summary>
@@ -223,7 +242,7 @@ namespace MediaBrowser.Api
                 {
                     return false;
                 }
-                
+
                 return true;
             });
 
@@ -236,13 +255,27 @@ namespace MediaBrowser.Api
             }).ToList();
         }
 
-        /// <summary>
-        /// Gets the network prefix.
-        /// </summary>
-        /// <value>The network prefix.</value>
-        private string NetworkPrefix
+        public object Get(GetParentPath request)
         {
-            get { return Path.DirectorySeparatorChar.ToString(CultureInfo.InvariantCulture) + Path.DirectorySeparatorChar.ToString(CultureInfo.InvariantCulture); }
+            var parent = Path.GetDirectoryName(request.Path);
+
+            if (string.IsNullOrEmpty(parent))
+            {
+                // Check if unc share
+                var index = request.Path.LastIndexOf(UncSeparator);
+
+                if (index != -1 && request.Path.IndexOf(UncSeparator) == 0)
+                {
+                    parent = request.Path.Substring(0, index);
+
+                    if (string.IsNullOrWhiteSpace(parent.TrimStart(UncSeparator)))
+                    {
+                        parent = null;
+                    }
+                }
+            }
+
+            return parent;
         }
     }
 }

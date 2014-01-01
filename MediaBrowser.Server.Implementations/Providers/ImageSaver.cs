@@ -73,7 +73,7 @@ namespace MediaBrowser.Server.Implementations.Providers
                 throw new ArgumentNullException("mimeType");
             }
 
-            var saveLocally = _config.Configuration.SaveLocalMeta && item.Parent != null && !(item is Audio);
+            var saveLocally = item.IsSaveLocalMetadataEnabled() && item.Parent != null && !(item is Audio);
 
             if (item is IItemByName || item is User)
             {

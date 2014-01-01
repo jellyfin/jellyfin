@@ -108,6 +108,8 @@
     <Compile Include="Library\ItemUpdateType.cs" />
     <Compile Include="Library\IUserDataManager.cs" />
     <Compile Include="Library\UserDataSaveEventArgs.cs" />
+    <Compile Include="LiveTv\ILiveTvRecording.cs" />
+    <Compile Include="LiveTv\LiveTvAudioRecording.cs" />
     <Compile Include="LiveTv\LiveTvChannel.cs" />
     <Compile Include="LiveTv\ChannelInfo.cs" />
     <Compile Include="LiveTv\ILiveTvManager.cs" />
@@ -115,7 +117,7 @@
     <Compile Include="LiveTv\LiveTvException.cs" />
     <Compile Include="LiveTv\StreamResponseInfo.cs" />
     <Compile Include="LiveTv\LiveTvProgram.cs" />
-    <Compile Include="LiveTv\LiveTvRecording.cs" />
+    <Compile Include="LiveTv\LiveTvVideoRecording.cs" />
     <Compile Include="LiveTv\ProgramInfo.cs" />
     <Compile Include="LiveTv\RecordingInfo.cs" />
     <Compile Include="LiveTv\SeriesTimerInfo.cs" />

@@ -31,11 +31,6 @@ namespace MediaBrowser.Providers.Music
 
                 artist.ProductionYear = yearFormed;
             }
-            
-            if (data.tags != null && !artist.LockedFields.Contains(MetadataFields.Tags))
-            {
-                AddTags(artist, data.tags);
-            }
 
             string imageSize;
             artist.LastFmImageUrl = GetImageUrl(data, out imageSize);
@@ -100,28 +95,12 @@ namespace MediaBrowser.Providers.Music
                 }
             }
 
-            if (data.toptags != null && !item.LockedFields.Contains(MetadataFields.Tags))
-            {
-                AddTags(item, data.toptags);
-            }
-
             var album = (MusicAlbum)item;
 
             string imageSize;
 
             album.LastFmImageUrl = GetImageUrl(data, out imageSize);
             album.LastFmImageSize = imageSize;
-        }
-
-        private static void AddTags(BaseItem item, LastfmTags tags)
-        {
-            var itemTags = (from tag in tags.tag where !string.IsNullOrEmpty(tag.name) select tag.name).ToList();
-
-            var hasTags = item as IHasTags;
-            if (hasTags != null)
-            {
-                hasTags.Tags = itemTags;
-            }
         }
     }
 }

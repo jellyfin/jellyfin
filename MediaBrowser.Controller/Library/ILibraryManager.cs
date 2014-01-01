@@ -320,5 +320,12 @@ namespace MediaBrowser.Controller.Library
         /// <param name="items">The items.</param>
         /// <returns>IEnumerable{System.String}.</returns>
         IEnumerable<string> GetAllArtists(IEnumerable<BaseItem> items);
+
+        /// <summary>
+        /// Normalizes the root path list.
+        /// </summary>
+        /// <param name="paths">The paths.</param>
+        /// <returns>IEnumerable{System.String}.</returns>
+        IEnumerable<string> NormalizeRootPathList(IEnumerable<string> paths);
     }
 }

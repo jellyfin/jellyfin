@@ -40,6 +40,12 @@
         /// </summary>
         /// <value>The limit.</value>
         public int? Limit { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is recording.
+        /// </summary>
+        /// <value><c>null</c> if [is recording] contains no value, <c>true</c> if [is recording]; otherwise, <c>false</c>.</value>
+        public bool? IsRecording { get; set; }
     }
 
     public class RecordingGroupQuery

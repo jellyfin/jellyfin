@@ -1,10 +1,9 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.LiveTv;
 
 namespace MediaBrowser.Controller.LiveTv
 {
-    public class LiveTvRecording : BaseItem
+    public class LiveTvAudioRecording : Audio, ILiveTvRecording
     {
         /// <summary>
         /// Gets the user data key.
@@ -23,7 +22,7 @@ namespace MediaBrowser.Controller.LiveTv
         {
             get
             {
-                return RecordingInfo.ChannelType == ChannelType.Radio ? Model.Entities.MediaType.Audio : Model.Entities.MediaType.Video;
+                return Model.Entities.MediaType.Audio;
             }
         }
 
@@ -31,6 +30,11 @@ namespace MediaBrowser.Controller.LiveTv
         {
             get
             {
+                if (!string.IsNullOrEmpty(Path))
+                {
+                    return base.LocationType;
+                }
+
                 return LocationType.Remote;
             }
         }
@@ -38,6 +42,11 @@ namespace MediaBrowser.Controller.LiveTv
         public override string GetClientTypeName()
         {
             return "Recording";
+        }
+
+        public override bool IsSaveLocalMetadataEnabled()
+        {
+            return false;
         }
     }
 }

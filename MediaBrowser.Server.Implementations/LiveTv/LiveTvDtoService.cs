@@ -4,11 +4,13 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -21,13 +23,15 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         private readonly IUserDataManager _userDataManager;
         private readonly IDtoService _dtoService;
+        private readonly IItemRepository _itemRepo;
 
-        public LiveTvDtoService(IDtoService dtoService, IUserDataManager userDataManager, IImageProcessor imageProcessor, ILogger logger)
+        public LiveTvDtoService(IDtoService dtoService, IUserDataManager userDataManager, IImageProcessor imageProcessor, ILogger logger, IItemRepository itemRepo)
         {
             _dtoService = dtoService;
             _userDataManager = userDataManager;
             _imageProcessor = imageProcessor;
             _logger = logger;
+            _itemRepo = itemRepo;
         }
 
         public TimerInfoDto GetTimerInfoDto(TimerInfo info, ILiveTvService service, LiveTvProgram program, LiveTvChannel channel)
@@ -180,7 +184,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return status.ToString();
         }
 
-        public RecordingInfoDto GetRecordingInfoDto(LiveTvRecording recording, LiveTvChannel channel, ILiveTvService service, User user = null)
+        public RecordingInfoDto GetRecordingInfoDto(ILiveTvRecording recording, LiveTvChannel channel, ILiveTvService service, User user = null)
         {
             var info = recording.RecordingInfo;
 
@@ -216,7 +220,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 IsNews = info.IsNews,
                 IsKids = info.IsKids,
                 IsPremiere = info.IsPremiere,
-                RunTimeTicks = (info.EndDate - info.StartDate).Ticks
+                RunTimeTicks = (info.EndDate - info.StartDate).Ticks,
+                LocationType = recording.LocationType,
+
+                MediaStreams = _itemRepo.GetMediaStreams(new MediaStreamQuery
+                {
+                     ItemId = recording.Id
+
+                }).ToList()
             };
 
             var imageTag = GetImageTag(recording);
@@ -330,7 +341,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return dto;
         }
 
-        private Guid? GetImageTag(BaseItem info)
+        private Guid? GetImageTag(IHasImages info)
         {
             var path = info.PrimaryImagePath;
 
@@ -351,39 +362,41 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return null;
         }
 
+        private const string InternalVersionNumber = "2";
+
         public Guid GetInternalChannelId(string serviceName, string externalId)
         {
-            var name = serviceName + externalId;
+            var name = serviceName + externalId + InternalVersionNumber;
 
             return name.ToLower().GetMBId(typeof(LiveTvChannel));
         }
 
         public Guid GetInternalTimerId(string serviceName, string externalId)
         {
-            var name = serviceName + externalId;
+            var name = serviceName + externalId + InternalVersionNumber;
 
             return name.ToLower().GetMD5();
         }
 
         public Guid GetInternalSeriesTimerId(string serviceName, string externalId)
         {
-            var name = serviceName + externalId;
+            var name = serviceName + externalId + InternalVersionNumber;
 
             return name.ToLower().GetMD5();
         }
 
         public Guid GetInternalProgramId(string serviceName, string externalId)
         {
-            var name = serviceName + externalId;
+            var name = serviceName + externalId + InternalVersionNumber;
 
-            return name.ToLower().GetMD5();
+            return name.ToLower().GetMBId(typeof(LiveTvProgram));
         }
 
         public Guid GetInternalRecordingId(string serviceName, string externalId)
         {
-            var name = serviceName + externalId;
+            var name = serviceName + externalId + InternalVersionNumber;
 
-            return name.ToLower().GetMD5();
+            return name.ToLower().GetMBId(typeof(ILiveTvRecording));
         }
 
         public async Task<TimerInfo> GetTimerInfo(TimerInfoDto dto, bool isNew, ILiveTvManager liveTv, CancellationToken cancellationToken)

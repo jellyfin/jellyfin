@@ -197,10 +197,6 @@ namespace MediaBrowser.Api.Playback
             {
                 args += string.Format("-map 0:{0}", state.VideoStream.Index);
             }
-            else if (!state.HasMediaStreams)
-            {
-                args += string.Format("-map 0:{0}", 0);
-            }
             else
             {
                 args += "-map -0:v";
@@ -209,10 +205,6 @@ namespace MediaBrowser.Api.Playback
             if (state.AudioStream != null)
             {
                 args += string.Format(" -map 0:{0}", state.AudioStream.Index);
-            }
-            else if (!state.HasMediaStreams)
-            {
-                args += string.Format(" -map 0:{0}", 1);
             }
 
             else
@@ -871,7 +863,7 @@ namespace MediaBrowser.Api.Playback
                 RequestedUrl = url
             };
 
-            BaseItem item;
+            Guid itemId;
 
             if (string.Equals(request.Type, "Recording", StringComparison.OrdinalIgnoreCase))
             {
@@ -900,7 +892,7 @@ namespace MediaBrowser.Api.Playback
                     state.IsRemote = true;
                 }
 
-                item = recording;
+                itemId = recording.Id;
             }
             else if (string.Equals(request.Type, "Channel", StringComparison.OrdinalIgnoreCase))
             {
@@ -916,11 +908,11 @@ namespace MediaBrowser.Api.Playback
 
                 state.IsRemote = true;
 
-                item = channel;
+                itemId = channel.Id;
             }
             else
             {
-                item = DtoService.GetItemByDtoId(request.Id);
+                var item = DtoService.GetItemByDtoId(request.Id);
 
                 state.MediaPath = item.Path;
                 state.IsRemote = item.LocationType == LocationType.Remote;
@@ -937,13 +929,15 @@ namespace MediaBrowser.Api.Playback
                         ? new List<string>()
                         : video.PlayableStreamFileNames.ToList();
                 }
+
+                itemId = item.Id;
             }
 
             var videoRequest = request as VideoStreamRequest;
 
             var mediaStreams = ItemRepository.GetMediaStreams(new MediaStreamQuery
             {
-                ItemId = item.Id
+                ItemId = itemId
 
             }).ToList();
 

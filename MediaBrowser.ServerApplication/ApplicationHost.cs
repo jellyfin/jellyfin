@@ -272,7 +272,7 @@ namespace MediaBrowser.ServerApplication
             DtoService = new DtoService(Logger, LibraryManager, UserManager, UserDataManager, ItemRepository, ImageProcessor);
             RegisterSingleInstance(DtoService);
 
-            LiveTvManager = new LiveTvManager(ApplicationPaths, FileSystemManager, Logger, ItemRepository, ImageProcessor, LocalizationManager, UserDataManager, DtoService, UserManager);
+            LiveTvManager = new LiveTvManager(ApplicationPaths, FileSystemManager, Logger, ItemRepository, ImageProcessor, UserDataManager, DtoService, UserManager);
             RegisterSingleInstance(LiveTvManager);
             progress.Report(15);
 

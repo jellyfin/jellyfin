@@ -153,7 +153,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="id">The identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>LiveTvRecording.</returns>
-        Task<LiveTvRecording> GetInternalRecording(string id, CancellationToken cancellationToken);
+        Task<ILiveTvRecording> GetInternalRecording(string id, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the recording stream.
