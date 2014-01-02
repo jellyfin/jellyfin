@@ -225,11 +225,25 @@ namespace MediaBrowser.Controller.Entities
         {
             IEnumerable<FileSystemInfo> files;
 
+            var path = Path;
+
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ApplicationException(string.Format("Item {0} has a null path.", Name ?? Id.ToString()));
+            }
+
             if (VideoType == VideoType.BluRay || VideoType == VideoType.Dvd)
             {
-                files = new DirectoryInfo(System.IO.Path.GetDirectoryName(Path))
+                var parentPath = System.IO.Path.GetDirectoryName(path);
+
+                if (string.IsNullOrEmpty(parentPath))
+                {
+                    throw new ApplicationException("Unable to get parent path info from " + path);
+                }
+
+                files = new DirectoryInfo(parentPath)
                     .EnumerateDirectories()
-                    .Where(i => !string.Equals(i.FullName, Path, StringComparison.OrdinalIgnoreCase) && EntityResolutionHelper.IsMultiPartFile(i.Name));
+                    .Where(i => !string.Equals(i.FullName, path, StringComparison.OrdinalIgnoreCase) && EntityResolutionHelper.IsMultiPartFile(i.Name));
             }
             else
             {
@@ -240,7 +254,7 @@ namespace MediaBrowser.Controller.Entities
                         return false;
                     }
 
-                    return !string.Equals(i.FullName, Path, StringComparison.OrdinalIgnoreCase) && EntityResolutionHelper.IsVideoFile(i.FullName) && EntityResolutionHelper.IsMultiPartFile(i.Name);
+                    return !string.Equals(i.FullName, path, StringComparison.OrdinalIgnoreCase) && EntityResolutionHelper.IsVideoFile(i.FullName) && EntityResolutionHelper.IsMultiPartFile(i.Name);
                 });
             }
 
