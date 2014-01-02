@@ -153,18 +153,18 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return await GetRecording(recording, service.Name, cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task<StreamResponseInfo> GetRecordingStream(string id, CancellationToken cancellationToken)
+        public async Task<LiveStreamInfo> GetRecordingStream(string id, CancellationToken cancellationToken)
         {
             var service = ActiveService;
 
             var recordings = await service.GetRecordingsAsync(cancellationToken).ConfigureAwait(false);
 
-            var recording = recordings.FirstOrDefault(i => _tvDtoService.GetInternalRecordingId(service.Name, i.Id) == new Guid(id));
+            var recording = recordings.First(i => _tvDtoService.GetInternalRecordingId(service.Name, i.Id) == new Guid(id));
 
             return await service.GetRecordingStream(recording.Id, cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task<StreamResponseInfo> GetChannelStream(string id, CancellationToken cancellationToken)
+        public async Task<LiveStreamInfo> GetChannelStream(string id, CancellationToken cancellationToken)
         {
             var service = ActiveService;
 

@@ -888,11 +888,18 @@ namespace MediaBrowser.Api.Playback
                 }
                 else
                 {
-                    state.MediaPath = string.Format("http://localhost:{0}/mediabrowser/LiveTv/Recordings/{1}/Stream",
-                        ServerConfigurationManager.Configuration.HttpServerPortNumber,
-                        request.Id);
+                    var streamInfo = await LiveTvManager.GetRecordingStream(request.Id, cancellationToken).ConfigureAwait(false);
 
-                    state.IsRemote = true;
+                    if (!string.IsNullOrEmpty(streamInfo.Path) && File.Exists(streamInfo.Path))
+                    {
+                        state.MediaPath = streamInfo.Path;
+                        state.IsRemote = false;
+                    }
+                    else if (!string.IsNullOrEmpty(streamInfo.Url))
+                    {
+                        state.MediaPath = streamInfo.Url;
+                        state.IsRemote = true;
+                    }
                 }
 
                 itemId = recording.Id;
@@ -905,11 +912,18 @@ namespace MediaBrowser.Api.Playback
                 state.IsInputVideo = string.Equals(channel.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase);
                 state.PlayableStreamFileNames = new List<string>();
 
-                state.MediaPath = string.Format("http://localhost:{0}/mediabrowser/LiveTv/Channels/{1}/Stream",
-                    ServerConfigurationManager.Configuration.HttpServerPortNumber,
-                    request.Id);
+                var streamInfo = await LiveTvManager.GetChannelStream(request.Id, cancellationToken).ConfigureAwait(false);
 
-                state.IsRemote = true;
+                if (!string.IsNullOrEmpty(streamInfo.Path) && File.Exists(streamInfo.Path))
+                {
+                    state.MediaPath = streamInfo.Path;
+                    state.IsRemote = false;
+                }
+                else if (!string.IsNullOrEmpty(streamInfo.Url))
+                {
+                    state.MediaPath = streamInfo.Url;
+                    state.IsRemote = true;
+                }
 
                 itemId = channel.Id;
             }

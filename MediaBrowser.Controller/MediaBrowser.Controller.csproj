@@ -109,6 +109,7 @@
     <Compile Include="Library\IUserDataManager.cs" />
     <Compile Include="Library\UserDataSaveEventArgs.cs" />
     <Compile Include="LiveTv\ILiveTvRecording.cs" />
+    <Compile Include="LiveTv\LiveStreamInfo.cs" />
     <Compile Include="LiveTv\LiveTvAudioRecording.cs" />
     <Compile Include="LiveTv\LiveTvChannel.cs" />
     <Compile Include="LiveTv\ChannelInfo.cs" />
