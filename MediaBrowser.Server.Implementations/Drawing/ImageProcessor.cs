@@ -473,7 +473,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
         /// <summary>
         /// Increment this when indicator drawings change
         /// </summary>
-        private const string IndicatorVersion = "1";
+        private const string IndicatorVersion = "2";
 
         /// <summary>
         /// Gets the cache file path based on a set of parameters
