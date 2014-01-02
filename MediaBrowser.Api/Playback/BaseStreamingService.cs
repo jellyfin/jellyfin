@@ -677,9 +677,12 @@ namespace MediaBrowser.Api.Playback
         /// <returns>Task.</returns>
         protected async Task StartFfMpeg(StreamState state, string outputPath)
         {
-            var parentPath = Path.GetDirectoryName(outputPath);
+            if (!File.Exists(MediaEncoder.EncoderPath))
+            {
+                throw new InvalidOperationException("ffmpeg was not found at " + MediaEncoder.EncoderPath);
+            }
 
-            Directory.CreateDirectory(parentPath);
+            Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
 
             if (state.IsInputVideo && state.VideoType == VideoType.Iso && state.IsoType.HasValue && IsoManager.CanMount(state.MediaPath))
             {

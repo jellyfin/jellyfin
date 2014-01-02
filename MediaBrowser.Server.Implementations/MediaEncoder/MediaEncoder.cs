@@ -863,8 +863,10 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                 throw new ArgumentNullException("outputPath");
             }
 
+            // apply some filters to thumbnail extracted below (below) crop any black lines that we made and get the correct ar then scale to width 600. 
+            // This filter chain may have adverse effects on recorded tv thumbnails if ar changes during presentation ex. commercials @ diff ar
             var vf = "crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,scale=600:600/dar";
-						// apply some filters to thumbnail extracted below (below) crop any black lines that we made and get the correct ar then scale to width 600. This filter chain may have adverse effects on recorded tv thumbnails if ar changes during presentation ex. commercials @ diff ar
+
             if (threedFormat.HasValue)
             {
                 switch (threedFormat.Value)
@@ -888,8 +890,9 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                 }
             }
 
+            // Use ffmpeg to sample 100 (we can drop this if required using thumbnail=50 for 50 frames) frames and pick the best thumbnail. Have a fall back just in case.
             var args = useIFrame ? string.Format("-i {0} -threads 0 -v quiet -vframes 1 -vf \"thumbnail,{2}\" -f image2 \"{1}\"", inputPath, outputPath, vf) :
-                string.Format("-i {0} -threads 0 -v quiet -vframes 1 -vf \"{2}\" -f image2 \"{1}\"", inputPath, outputPath, vf); //use ffmpeg to sample 100 (we can drop this if required using thumbnail=50 for 50 frames) frames and pick the best thumbnail. Have a fall back jic
+                string.Format("-i {0} -threads 0 -v quiet -vframes 1 -vf \"{2}\" -f image2 \"{1}\"", inputPath, outputPath, vf); 
 
             var probeSize = GetProbeSizeArgument(type);
 

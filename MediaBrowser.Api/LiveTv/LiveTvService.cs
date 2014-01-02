@@ -68,7 +68,7 @@ namespace MediaBrowser.Api.LiveTv
 
     [Route("/LiveTv/Recordings/Groups", "GET")]
     [Api(Description = "Gets live tv recording groups")]
-    public class GetRecordingGroups : IReturn<QueryResult<RecordingInfoDto>>
+    public class GetRecordingGroups : IReturn<QueryResult<RecordingGroupDto>>
     {
         [ApiMember(Name = "UserId", Description = "Optional filter by user and attach user data.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string UserId { get; set; }
@@ -205,6 +205,14 @@ namespace MediaBrowser.Api.LiveTv
     public class GetInternalChannelStream
     {
         [ApiMember(Name = "Id", Description = "Channel Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Id { get; set; }
+    }
+
+    [Route("/LiveTv/Recordings/Groups/{Id}", "GET")]
+    [Api(Description = "Gets a recording group")]
+    public class GetRecordingGroup : IReturn<RecordingGroupDto>
+    {
+        [ApiMember(Name = "Id", Description = "Recording group Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Id { get; set; }
     }
 
@@ -426,6 +434,18 @@ namespace MediaBrowser.Api.LiveTv
             }, CancellationToken.None).Result;
 
             return ToOptimizedResult(result);
+        }
+
+        public object Get(GetRecordingGroup request)
+        {
+            var result = _liveTvManager.GetRecordingGroups(new RecordingGroupQuery
+            {
+
+            }, CancellationToken.None).Result;
+
+            var group = result.Items.FirstOrDefault(i => string.Equals(i.Id, request.Id, StringComparison.OrdinalIgnoreCase));
+
+            return ToOptimizedResult(group);
         }
     }
 }
