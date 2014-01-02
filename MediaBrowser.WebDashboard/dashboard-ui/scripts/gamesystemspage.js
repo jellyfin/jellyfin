@@ -1,4 +1,3 @@
-
 (function ($, document) {
 
     // The base query options
@@ -23,17 +22,14 @@
 
             var html = '';
 
-            $('.listTopPaging', page).html(LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, true)).trigger('create');
-
             updateFilterControls(page);
 
-            var checkSortOption = $('.radioSortBy:checked', page);
-            $('.viewSummary', page).html(LibraryBrowser.getViewSummaryHtml(query, checkSortOption)).trigger('create');
-
-            html += LibraryBrowser.getPosterDetailViewHtml({
+            html = LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                context: "games",
-                shape: "backdrop"
+                shape: "backdrop",
+                context: 'games',
+                showTitle: true,
+                overlayText: true
             });
 
             html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
@@ -70,60 +66,9 @@
     function updateFilterControls(page) {
 
         // Reset form values using the last used query
-        $('.radioSortBy', page).each(function () {
-
-            this.checked = (query.SortBy || '').toLowerCase() == this.getAttribute('data-sortby').toLowerCase();
-
-        }).checkboxradio('refresh');
-
-        $('.radioSortOrder', page).each(function () {
-
-            this.checked = (query.SortOrder || '').toLowerCase() == this.getAttribute('data-sortorder').toLowerCase();
-
-        }).checkboxradio('refresh');
-
-        $('.chkStandardFilter', page).each(function () {
-
-            var filters = "," + (query.Filters || "");
-            var filterName = this.getAttribute('data-filter');
-
-            this.checked = filters.indexOf(',' + filterName) != -1;
-
-        }).checkboxradio('refresh');
     }
 
-    $(document).on('pageinit', "#gamesystemsPage", function () {
-
-        var page = this;
-
-        $('.radioSortBy', this).on('click', function () {
-            query.SortBy = this.getAttribute('data-sortby');
-            reloadItems(page);
-        });
-
-        $('.radioSortOrder', this).on('click', function () {
-            query.SortOrder = this.getAttribute('data-sortorder');
-            reloadItems(page);
-        });
-
-        $('.chkStandardFilter', this).on('change', function () {
-
-            var filterName = this.getAttribute('data-filter');
-            var filters = query.Filters || "";
-
-            filters = (',' + filters).replace(',' + filterName, '').substring(1);
-
-            if (this.checked) {
-                filters = filters ? (filters + ',' + filterName) : filterName;
-            }
-
-            query.StartIndex = 0;
-            query.Filters = filters;
-
-            reloadItems(page);
-        });
-
-    }).on('pagebeforeshow', "#gamesystemsPage", function () {
+    $(document).on('pagebeforeshow', "#gamesystemsPage", function () {
 
         var limit = LibraryBrowser.getDefaultPageSize();
 

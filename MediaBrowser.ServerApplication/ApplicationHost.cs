@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Api;
+﻿using System.Globalization;
+using MediaBrowser.Api;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Constants;
@@ -627,8 +628,21 @@ namespace MediaBrowser.ServerApplication
                 OperatingSystem = Environment.OSVersion.ToString(),
                 CanSelfRestart = CanSelfRestart,
                 CanSelfUpdate = CanSelfUpdate,
-                WanAddress = WanAddressEntryPoint.WanAddress
+                WanAddress = GetWanAddress()
             };
+        }
+
+        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
+        private string GetWanAddress()
+        {
+            var ip = WanAddressEntryPoint.WanAddress;
+
+            if (!string.IsNullOrEmpty(ip))
+            {
+                return "http://" + ip + ":" + ServerConfigurationManager.Configuration.HttpServerPortNumber.ToString(_usCulture);
+            }
+
+            return null;
         }
 
         /// <summary>

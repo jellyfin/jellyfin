@@ -958,6 +958,10 @@ a.itemTag:hover {
     margin-bottom: .25em;
 }
 
+.timelineItemsContainer {
+    text-align: left;
+}
+
 .alphabetPicker {
     position: fixed;
     right: 2px;

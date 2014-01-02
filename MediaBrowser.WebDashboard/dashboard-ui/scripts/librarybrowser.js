@@ -397,7 +397,6 @@
 
             html += LibraryBrowser.getSongHeaderCellHtml('Runtime', 'tabletColumn', options.enableColumnSorting, 'Runtime,AlbumArtist,Album,SortName', options.sortBy, options.sortOrder);
             html += LibraryBrowser.getSongHeaderCellHtml('Plays', 'desktopColumn', options.enableColumnSorting, 'PlayCount,AlbumArtist,Album,SortName', options.sortBy, options.sortOrder);
-            html += LibraryBrowser.getSongHeaderCellHtml('', 'desktopColumn userDataCell', options.enableColumnSorting);
 
             html += '</tr></thead>';
 
@@ -409,7 +408,7 @@
 
                 html += '<tr>';
 
-                html += '<td><button class="btnPlay" type="button" data-role="none" onclick="LibraryBrowser.showPlayMenu(this, \'' + item.Id + '\', \'Audio\', \'Audio\');"><img src="css/images/media/playCircle.png" style="height: 20px;"></button></td>';
+                html += '<td><button class="btnPlay" data-icon="play" type="button" data-iconpos="notext" onclick="LibraryBrowser.showPlayMenu(this, \'' + item.Id + '\', \'Audio\', \'Audio\');">Play</button></td>';
 
                 var num = item.IndexNumber;
 
@@ -457,8 +456,6 @@
                 html += '<td class="tabletColumn">' + time + '</td>';
 
                 html += '<td class="desktopColumn">' + (item.UserData ? item.UserData.PlayCount : 0) + '</td>';
-
-                html += '<td class="desktopColumn userDataCell">' + LibraryBrowser.getUserDataIconsHtml(item) + '</td>';
 
                 html += '</tr>';
             }
@@ -695,6 +692,15 @@
 
                         html += '<h2 class="timelineHeader detailSectionHeader" style="text-align:center;">' + val + '</h2>';
                         currentIndexValue = val;
+                    }
+                }
+                else if (options.timeline) {
+                    var year = item.ProductionYear || "Unknown Year";
+
+                    if (year != currentIndexValue) {
+
+                        html += '<h2 class="timelineHeader detailSectionHeader">' + year + '</h2>';
+                        currentIndexValue = year;
                     }
                 }
 

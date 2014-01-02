@@ -48,18 +48,22 @@
                     items: result.Items,
                     shape: "portrait",
                     context: 'tv',
-                    useAverageAspectRatio: true
+                    useAverageAspectRatio: true,
+                    showTitle: true
                 });
                 $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
             else if (view == "Timeline") {
                 
-                html += LibraryBrowser.getPosterDetailViewHtml({
+                html = LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
-                    context: "tv",
-                    timeline: true
+                    shape: "portrait",
+                    context: 'tv',
+                    useAverageAspectRatio: true,
+                    timeline: true,
+                    showTitle: true
                 });
-                
+
                 $('.itemsContainer', page).addClass('timelineItemsContainer');
             }
 
@@ -222,6 +226,7 @@
             if (view == "Timeline") {
 
                 query.SortBy = "PremiereDate";
+                query.SortOrder = "Descending";
                 query.StartIndex = 0;
                 $('#radioPremiereDate', page)[0].click();
 

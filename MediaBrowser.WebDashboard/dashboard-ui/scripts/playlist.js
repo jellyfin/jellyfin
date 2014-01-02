@@ -23,12 +23,12 @@
             var parentName = item.SeriesName || item.Album || item.ProductionYear || '';
 
             html += '<tr>';
-            html += '<td><a href="#" data-index="' + i + '" class="lnkPlay"><img src="css/images/media/playcircle.png" style="height: 20px;" /></a></td>';
+            html += '<td><button type="button" data-index="' + i + '" class="lnkPlay" data-icon="play" data-iconpos="notext">Play</button></td>';
             html += '<td>' + name + '</td>';
             html += '<td>' + parentName + '</td>';
             html += '<td>' + Dashboard.getDisplayTime(item.RunTimeTicks) + '</td>';
             html += '<td>' + LibraryBrowser.getUserDataIconsHtml(item) + '</td>';
-            html += '<td><a href="#" data-index="' + i + '" class="lnkRemove"><img src="css/images/media/remove.png" style="height: 20px;" /></a></td>';
+            html += '<td><button type="button" data-index="' + i + '" class="lnkRemove" data-icon="delete" data-iconpos="notext">Remove</button></td>';
             html += '</tr>';
         });
 

@@ -62,7 +62,7 @@
             selectmenu.val(val).selectmenu('refresh');
         }
     }
-    
+
     function populateReviews(id, page) {
         // Get the latest positive and negative reviews
         var promise1 = ApiClient.getPackageReviews(id, 4, null, 3, true);
@@ -72,7 +72,7 @@
             //positive
             var html = '<div data-role="collapsible" data-collapsed="true" style="margin-top: 2em;" >';
             html += '<h3>Latest Outstanding Reviews</h3>';
-        
+
             var positive = response1[0];
             var hasReviews = false;
             if (positive && positive.length > 0) {
@@ -130,7 +130,7 @@
                     }
                 }
             }
-            
+
             if (!hasReviews) {
                 html += "<p>No Negative Reviews with additional information</p>";
             }
@@ -153,7 +153,7 @@
         populateVersions(pkg, page, installedPlugin);
         populateHistory(pkg, page);
         if (pkg.totalRatings > 0) populateReviews(pkg.id, page);
-        
+
         Dashboard.setPageTitle(pkg.name);
 
         if (pkg.targetSystem == 'Server') {
@@ -208,6 +208,10 @@
 
             if (pluginSecurityInfo.IsMBSupporter) {
                 $('#regInfo', page).html(pkg.regInfo || "");
+
+                $('.premiumDescription', page).hide();
+                $('.supporterDescription', page).hide();
+
                 if (pkg.price > 0) {
                     // Fill in PayPal info
                     $('.premiumHasPrice', page).show();
@@ -231,16 +235,24 @@
                 }
             } else {
 
-                var pluginTypeHtml = pkg.price ? 'This is a <a data-rel="popup" data-position-to="window" href="#premiumPlugins">premium</a> plugin.' : 'This is a <a data-rel="popup" data-position-to="window" href="#supporterPlugins">supporter-only</a> plugin.';
+                if (pkg.price) {
+                    $('.premiumDescription', page).show();
+                    $('.supporterDescription', page).hide();
+                    $('#regInfo', page).html("");
 
-                $('#regInfo', page).html(pluginTypeHtml + '<br/><br/>It will require a <a href="supporter.html">supporter key</a> in order to register after the <strong>14-day free trial</strong>.').trigger('create');
+                } else {
+                    $('.premiumDescription', page).hide();
+                    $('.supporterDescription', page).show();
+                    $('#regInfo', page).html("");
+                }
+
                 $('#ppButton', page).hide();
             }
 
         } else {
             $('.premiumPackage', page).hide();
         }
-        
+
         //Ratings and Reviews
         var ratingHtml = "<strong>Overall </strong>" + Dashboard.getStoreRatingHtml(pkg.avgRating, pkg.id, pkg.name);
         ratingHtml += "<span class='storeReviewCount'>";

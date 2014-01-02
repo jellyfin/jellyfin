@@ -148,9 +148,11 @@
             reloadList(page);
         });
 
-        $('#selectTargetSystem', page).on('change', function () {
+        $('.radioPackageTypes', page).on('change', function () {
 
-            query.TargetSystems = this.value;
+            var val = $('.radioPackageTypes:checked', page).val();
+
+            query.TargetSystems = val;
             reloadList(page);
         });
 
@@ -158,7 +160,11 @@
 
         var page = this;
 
-        $('#selectTargetSystem', page).val(query.TargetSystems).selectmenu('refresh');
+        $(".radioPackageTypes", page).each(function() {
+
+            this.checked = this.value == query.TargetSystems;
+
+        }).checkboxradio('refresh');
 
         // Reset form values using the last used query
         $('.chkPremiumFilter', page).each(function () {

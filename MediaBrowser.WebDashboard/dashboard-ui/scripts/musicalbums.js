@@ -43,10 +43,13 @@
                 $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
             else if (view == "Timeline") {
-                html += LibraryBrowser.getPosterDetailViewHtml({
+                html = LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
-                    context: "music",
                     shape: "square",
+                    context: 'music',
+                    useAverageAspectRatio: true,
+                    showTitle: true,
+                    showParentTitle: true,
                     timeline: true
                 });
                 $('.itemsContainer', page).addClass('timelineItemsContainer');
@@ -155,6 +158,7 @@
             if (view == "Timeline") {
 
                 query.SortBy = "PremiereDate";
+                query.SortOrder = "Descending";
                 query.StartIndex = 0;
                 $('#radioPremiereDate', page)[0].click();
 

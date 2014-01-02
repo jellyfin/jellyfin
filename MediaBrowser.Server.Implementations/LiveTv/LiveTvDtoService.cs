@@ -259,9 +259,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         /// Gets the channel info dto.
         /// </summary>
         /// <param name="info">The info.</param>
+        /// <param name="currentProgram">The current program.</param>
         /// <param name="user">The user.</param>
         /// <returns>ChannelInfoDto.</returns>
-        public ChannelInfoDto GetChannelInfoDto(LiveTvChannel info, User user = null)
+        public ChannelInfoDto GetChannelInfoDto(LiveTvChannel info, LiveTvProgram currentProgram, User user = null)
         {
             var channelInfo = info.ChannelInfo;
 
@@ -287,6 +288,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             if (imageTag.HasValue)
             {
                 dto.ImageTags[ImageType.Primary] = imageTag.Value;
+            }
+
+            if (currentProgram != null)
+            {
+                dto.CurrentProgram = GetProgramInfoDto(currentProgram, channelInfo.Name, user);
             }
 
             return dto;

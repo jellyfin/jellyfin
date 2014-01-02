@@ -13,7 +13,8 @@
             <a href="livetvseriestimers.html">Series</a>
         </div>
         <div data-role="content">
-            <form class="liveTvTimerForm" style="margin: 0 auto;">
+
+            <div class="readOnlyContent" style="margin: 0 auto;">
                 <p><span class="itemName inlineItemName"></span><span class="itemMiscInfo" style="display: inline;"></span></p>
                 <p class="itemEpisodeName"></p>
                 <p class="itemMiscInfo miscTvProgramInfo"></p>
@@ -25,10 +26,11 @@
 
                 <p style="margin-top: 2em;">
                     <span class="status"></span>
-                    <a id="btnCancelTimer" href="#" style="margin-left: 2em;">Cancel Recording</a>
                 </p>
 
-                <br />
+            </div>
+            <br />
+            <form class="liveTvTimerForm" style="margin: 0 auto;">
 
                 <div data-role="collapsible" data-mini="true">
                     <h3>Pre/Post Padding</h3>
@@ -70,7 +72,11 @@
                         </button>
                     </li>
                 </ul>
+                <p style="border-top: 1px solid #444; padding-top: .5em; margin-top: 2em;">
+                    <button id="btnCancelTimer" type="button" data-mini="true" data-icon="delete">Cancel Recording</button>
+                </p>
             </form>
+
         </div>
         <script type="text/javascript">
             $('.liveTvTimerForm').off('submit', LiveTvTimerPage.onSubmit).on('submit', LiveTvTimerPage.onSubmit);

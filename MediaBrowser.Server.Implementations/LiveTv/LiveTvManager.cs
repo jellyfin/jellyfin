@@ -107,7 +107,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 return number;
 
             }).ThenBy(i => i.Name)
-            .Select(i => _tvDtoService.GetChannelInfoDto(i, user))
+            .Select(i => _tvDtoService.GetChannelInfoDto(i, GetCurrentProgram(i.ChannelInfo.Id), user))
             .ToArray();
 
             var result = new QueryResult<ChannelInfoDto>
@@ -705,9 +705,20 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         {
             var channel = GetInternalChannel(id);
 
-            var dto = _tvDtoService.GetChannelInfoDto(channel, user);
+            var dto = _tvDtoService.GetChannelInfoDto(channel, GetCurrentProgram(channel.ChannelInfo.Id), user);
 
             return Task.FromResult(dto);
+        }
+
+        private LiveTvProgram GetCurrentProgram(string externalChannelId)
+        {
+            var now = DateTime.UtcNow;
+
+            return _programs.Values
+                .Where(i => string.Equals(externalChannelId, i.ProgramInfo.ChannelId, StringComparison.OrdinalIgnoreCase))
+                .OrderBy(i => i.ProgramInfo.StartDate)
+                .SkipWhile(i => now >= i.ProgramInfo.EndDate)
+                .FirstOrDefault();
         }
 
         public async Task<SeriesTimerInfoDto> GetNewTimerDefaults(CancellationToken cancellationToken)

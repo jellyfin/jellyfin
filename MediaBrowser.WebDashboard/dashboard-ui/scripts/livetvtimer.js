@@ -28,7 +28,7 @@
 
         var programInfo = item.ProgramInfo || {};
 
-        $('.itemName', page).html(programInfo.Name);
+        $('.itemName', page).html(item.Name);
         
         $('.itemEpisodeName', page).html(programInfo.EpisodeTitle || '');
 

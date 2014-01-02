@@ -5,7 +5,6 @@
 </head>
 <body>
     <div id="pluginCatalogPage" data-role="page" class="page type-interior pluginConfigurationPage">
-
         <div data-role="content">
             <div class="content-primary">
                 <div data-role="controlgroup" data-type="horizontal" data-mini="true">
@@ -17,24 +16,23 @@
                     Types: <a data-rel="popup" data-position-to="origin" href="#freePlugins">Free</a>, 
                         <a data-rel="popup" data-position-to="origin" href="#supporterPlugins">Supporter-Only</a>, and <a data-rel="popup" data-position-to="origin" href="#premiumPlugins">Premium</a>.
                 </p>
+                
+                <fieldset data-role="controlgroup" data-type="horizontal">
+                    <legend>Display plugins for:</legend>
+                    <input type="radio" name="radioPackageTypes" class="radioPackageTypes" id="radioServer" value="Server" data-mini="true">
+                    <label for="radioServer">Server</label>
+                    <input type="radio" name="radioPackageTypes" class="radioPackageTypes" id="radioClassic" value="MBClassic" data-mini="true">
+                    <label for="radioClassic">MB Classic</label>
+                    <input type="radio" name="radioPackageTypes" class="radioPackageTypes" id="radopTheater" value="MBTheater" data-mini="true">
+                    <label for="radopTheater">MB Theater</label>
+                    <input type="radio" name="radioPackageTypes" class="radioPackageTypes" id="radioOthers" value="Apps" data-mini="true">
+                    <label for="radioOthers">Others</label>
+                </fieldset>
 
-                <div style="display: inline-block;">
-                    <label for="selectTargetSystem">Show</label>
-                </div>
-
-                <div style="display: inline-block;">
-                    <select id="selectTargetSystem" data-mini="true" data-inline="true" style="margin-left: .5em;">
-                        <option value="Server">MB Server plugins</option>
-                        <option value="MBTheater">MB Theater plugins</option>
-                        <option value="MBClassic">MB Classic plugins</option>
-                        <option value="Apps">Apps</option>
-                    </select>
-                </div>
-
-                <div style="display: inline-block; vertical-align: bottom; margin-left: 1em;">
-                    <input class="chkPremiumFilter" type="checkbox" data-mini="true" data-inline="true" name="chkPremium" id="chkPremium" data-filter="IsPremium">
+                <p style="display: inline-block;">
+                    <input class="chkPremiumFilter" type="checkbox" data-mini="true" data-inline="true" name="chkPremium" id="chkPremium" data-filter="IsPremium" />
                     <label for="chkPremium">Free Only</label>
-                </div>
+                </p>
 
                 <div id="noPlugins" class="hide">
                     <div style="text-align: center; margin: 10px;">No available plugins</div>

@@ -85,7 +85,7 @@
         var table = $('.tblConnections', page);
 
         $('.trSession', table).addClass('deadSession');
-        
+
         var deviceId = ApiClient.deviceId();
 
         for (var i = 0, length = dashboardInfo.ActiveConnections.length; i < length; i++) {
@@ -110,7 +110,7 @@
             html += '<td>';
 
             html += '<div>';
-            
+
             if (deviceId == connection.DeviceId) {
                 html += connection.Client;
             } else {
@@ -323,21 +323,6 @@
         $('#divRunningTasks', page).html(html).trigger('create');
     },
 
-    bookmarkPageIfSupported: function (url) {
-
-        if (window.sidebar && window.sidebar.addPanel) { // Mozilla Firefox Bookmark
-            window.sidebar.addPanel("Media Browser", url, '');
-
-        } else if (window.external && window.external.AddFavorite) { // IE Favorite
-            window.external.AddFavorite(url, "Media Browser");
-
-        } else { // webkit - safari/chrome
-            return false;
-        }
-
-        return true;
-    },
-
     renderSystemInfo: function (page, dashboardInfo) {
 
         Dashboard.updateSystemInfo(dashboardInfo.SystemInfo);
@@ -376,6 +361,15 @@
             $('.btnRestartContainer', page).removeClass('hide');
         } else {
             $('.btnRestartContainer', page).addClass('hide');
+        }
+
+        if (dashboardInfo.SystemInfo.WanAddress) {
+
+            var externalUrl = dashboardInfo.SystemInfo.WanAddress + "/mediabrowser";
+
+            $('.externalUrl', page).html('External url: <a href="' + externalUrl + '" target="_blank">' + externalUrl + '</a>').show().trigger('create');
+        } else {
+            $('.externalUrl', page).hide();
         }
 
         DashboardPage.renderApplicationUpdateInfo(dashboardInfo);

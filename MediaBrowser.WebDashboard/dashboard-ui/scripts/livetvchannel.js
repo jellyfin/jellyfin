@@ -157,6 +157,12 @@
 
             });
 
+            if (item.CurrentProgram) {
+                $('.currentProgram', page).html('Now playing:&nbsp;&nbsp;&nbsp;<a href="livetvprogram.html?id=' + item.CurrentProgram.Id + '">' + item.CurrentProgram.Name + '</a>').trigger('create');
+            } else {
+                $('.currentProgram', page).html('');
+            }
+
             loadPrograms(page);
 
         });
