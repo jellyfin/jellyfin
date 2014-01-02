@@ -66,6 +66,11 @@ namespace MediaBrowser.Controller.Resolvers
         /// <returns><c>true</c> if [is multi part file] [the specified path]; otherwise, <c>false</c>.</returns>
         public static bool IsMultiPartFile(string path)
         {
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentNullException("path");
+            }
+
             return MultiFileRegex.Match(path).Success || MultiFolderRegex.Match(path).Success;
         }
 
@@ -97,6 +102,11 @@ namespace MediaBrowser.Controller.Resolvers
         /// <returns><c>true</c> if [is audio file] [the specified args]; otherwise, <c>false</c>.</returns>
         public static bool IsAudioFile(string path)
         {
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentNullException("path");
+            }
+
             var extension = Path.GetExtension(path);
 
             if (string.IsNullOrEmpty(extension))
@@ -114,6 +124,11 @@ namespace MediaBrowser.Controller.Resolvers
         /// <returns><c>true</c> if [is video file] [the specified path]; otherwise, <c>false</c>.</returns>
         public static bool IsVideoFile(string path)
         {
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentNullException("path");
+            }
+
             var extension = Path.GetExtension(path);
 
             if (string.IsNullOrEmpty(extension))
