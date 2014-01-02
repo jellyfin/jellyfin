@@ -759,7 +759,7 @@ namespace MediaBrowser.Api.Playback
             // This is arbitrary, but add a little buffer time when internet streaming
             if (state.IsRemote)
             {
-                await Task.Delay(4000).ConfigureAwait(false);
+                await Task.Delay(3000).ConfigureAwait(false);
             }
         }
 
