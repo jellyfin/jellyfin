@@ -70,6 +70,12 @@ namespace MediaBrowser.Model.LiveTv
         /// <value>The user data.</value>
         public UserItemDataDto UserData { get; set; }
 
+        /// <summary>
+        /// Gets or sets the now playing program.
+        /// </summary>
+        /// <value>The now playing program.</value>
+        public ProgramInfoDto CurrentProgram { get; set; }
+
         public ChannelInfoDto()
         {
             ImageTags = new Dictionary<ImageType, Guid>();

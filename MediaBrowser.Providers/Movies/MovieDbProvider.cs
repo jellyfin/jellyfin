@@ -822,14 +822,14 @@ namespace MediaBrowser.Providers.Movies
                 }
             }
 
-            if (movieData.keywords != null && movieData.keywords.keywords != null && !movie.LockedFields.Contains(MetadataFields.Tags))
-            {
-                var hasTags = movie as IHasTags;
-                if (hasTags != null)
-                {
-                    hasTags.Tags = movieData.keywords.keywords.Select(i => i.name).ToList();
-                }
-            }
+            //if (movieData.keywords != null && movieData.keywords.keywords != null && !movie.LockedFields.Contains(MetadataFields.Tags))
+            //{
+            //    var hasTags = movie as IHasTags;
+            //    if (hasTags != null)
+            //    {
+            //        hasTags.Tags = movieData.keywords.keywords.Select(i => i.name).ToList();
+            //    }
+            //}
 
             if (movieData.trailers != null && movieData.trailers.youtube != null &&
                 movieData.trailers.youtube.Count > 0)
