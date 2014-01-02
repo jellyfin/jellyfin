@@ -106,7 +106,7 @@
 }
 
 .tileName {
-    font-weight: bold;
+    font-size: 14px;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;

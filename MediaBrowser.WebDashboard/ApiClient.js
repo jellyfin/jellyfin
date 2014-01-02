@@ -395,10 +395,10 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 throw new Error("null id");
             }
 
-            var options = {                
-                
+            var options = {
+
             };
-            
+
             if (userId) {
                 options.userId = userId;
             }
@@ -448,6 +448,21 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         self.getLiveTvRecordingGroups = function (options) {
 
             var url = self.getUrl("LiveTv/Recordings/Groups", options || {});
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        self.getLiveTvRecordingGroup = function (id) {
+
+            if (!id) {
+                throw new Error("null id");
+            }
+
+            var url = self.getUrl("LiveTv/Recordings/Groups/" + id);
 
             return self.ajax({
                 type: "GET",
@@ -559,7 +574,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         self.getNewLiveTvTimerDefaults = function (options) {
 
             options = options || {};
-            
+
             var url = self.getUrl("LiveTv/Timers/Defaults", options);
 
             return self.ajax({

@@ -23,7 +23,7 @@
             updateFilterControls();
 
             html += LibraryBrowser.getPosterViewHtml({
-                
+
                 items: result.Items,
                 shape: "square",
                 showTitle: true,
@@ -77,6 +77,8 @@
 
     }).on('pagebeforeshow', "#liveTvRecordingListPage", function () {
 
+        var page = this;
+        
         var limit = LibraryBrowser.getDefaultPageSize();
 
         // If the default page size has changed, the start index will have to be reset
@@ -92,7 +94,17 @@
             query.GroupId = groupId;
         }
 
-        reloadItems(this);
+        reloadItems(page);
+
+        if (query.GroupId) {
+
+            ApiClient.getLiveTvRecordingGroup(query.GroupId).done(function (group) {
+                $('.listName', page).show().html(group.Name);
+            });
+
+        } else {
+            $('.listName', page).hide();
+        }
 
     }).on('pageshow', "#liveTvRecordingListPage", function () {
 

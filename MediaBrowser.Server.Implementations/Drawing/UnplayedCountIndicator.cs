@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Drawing;
 
 namespace MediaBrowser.Server.Implementations.Drawing
 {
     public class UnplayedCountIndicator
     {
-        private const int IndicatorHeight = 50;
-        public const int IndicatorWidth = 50;
+        private const int IndicatorHeight = 41;
+        public const int IndicatorWidth = 41;
         private const int OffsetFromTopRightCorner = 10;
 
         public void DrawUnplayedCountIndicator(Graphics graphics, Size imageSize, int count)
@@ -23,13 +18,13 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
                 var text = count.ToString();
 
-                x = imageSize.Width - 50 - OffsetFromTopRightCorner;
-                var y = OffsetFromTopRightCorner + 7;
-                var fontSize = 30;
+                x = imageSize.Width - IndicatorWidth - OffsetFromTopRightCorner;
+                var y = OffsetFromTopRightCorner + 6;
+                var fontSize = 24;
 
                 if (text.Length == 1)
                 {
-                    x += 11;
+                    x += 10;
                 }
                 else if (text.Length == 2)
                 {
@@ -37,9 +32,9 @@ namespace MediaBrowser.Server.Implementations.Drawing
                 }
                 else if (text.Length == 3)
                 {
-                    //x += 1;
-                    y += 3;
-                    fontSize = 24;
+                    x += 1;
+                    y += 1;
+                    fontSize = 20;
                 }
 
                 using (var font = new Font("Sans-Serif", fontSize, FontStyle.Regular, GraphicsUnit.Pixel))

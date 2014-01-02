@@ -408,7 +408,7 @@ h1 .imageLink {
 
 @media all and (min-width: 900px) {
 
-    .page:not(.wizardPage) .header {
+    .page:not(.standalonePage) .header {
         padding-top: 0;
     }
 }

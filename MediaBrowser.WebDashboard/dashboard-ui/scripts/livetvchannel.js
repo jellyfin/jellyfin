@@ -3,14 +3,6 @@
     var currentItem;
     var programs;
 
-    function cancelRecording(page, id) {
-
-    }
-
-    function scheduleRecording(page, id) {
-
-    }
-
     function renderPrograms(page, result) {
 
         var html = '';
@@ -136,8 +128,7 @@
 
             Dashboard.setPageTitle(name);
 
-            $('.itemName', page).html(name);
-            $('.itemChannelNumber', page).html(item.Number);
+            $('.itemName', page).html(item.Number + ' ' + name);
 
             $('.userDataIcons', page).html(LibraryBrowser.getUserDataIconsHtml(item));
 

@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Querying;
 using System;
 using System.Collections.Generic;
 
@@ -18,7 +19,7 @@ namespace MediaBrowser.Controller.Entities.Movies
         }
 
         public List<Guid> LocalTrailerIds { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the remote trailers.
         /// </summary>
@@ -42,6 +43,13 @@ namespace MediaBrowser.Controller.Entities.Movies
         protected override bool GetBlockUnratedValue(UserConfiguration config)
         {
             return config.BlockUnratedMovies;
+        }
+
+        public override IEnumerable<BaseItem> GetChildren(User user, bool includeLinkedChildren)
+        {
+            var children = base.GetChildren(user, includeLinkedChildren);
+
+            return LibraryManager.Sort(children, user, new[] { ItemSortBy.ProductionYear, ItemSortBy.PremiereDate, ItemSortBy.SortName }, SortOrder.Ascending);
         }
     }
 }

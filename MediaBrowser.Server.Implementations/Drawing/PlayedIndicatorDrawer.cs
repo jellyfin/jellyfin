@@ -4,9 +4,9 @@ namespace MediaBrowser.Server.Implementations.Drawing
 {
     public class PlayedIndicatorDrawer
     {
-        private const int IndicatorHeight = 50;
-        public const int IndicatorWidth = 50;
-        private const int FontSize = 50;
+        private const int IndicatorHeight = 40;
+        public const int IndicatorWidth = 40;
+        private const int FontSize = 40;
         private const int OffsetFromTopRightCorner = 10;
 
         public void DrawPlayedIndicator(Graphics graphics, Size imageSize)
@@ -17,7 +17,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
             {
                 graphics.FillEllipse(backdroundBrush, x, OffsetFromTopRightCorner, IndicatorWidth, IndicatorHeight);
 
-                x = imageSize.Width - 55 - OffsetFromTopRightCorner;
+                x = imageSize.Width - 45 - OffsetFromTopRightCorner;
 
                 using (var font = new Font("Webdings", FontSize, FontStyle.Regular, GraphicsUnit.Pixel))
                 {

@@ -522,15 +522,17 @@
 
     function renderChildren(page, item, user) {
 
-        var sortBy = item.Type == "BoxSet" ? "ProductionYear,SortName" : "SortName";
-
         var fields = "ItemCounts,DateCreated,AudioInfo,PrimaryImageAspectRatio";
         
         var query = {
             ParentId: item.Id,
-            SortBy: sortBy,
             Fields: fields
         };
+        
+        // Let the server pre-sort boxsets
+        if (item.Type !== "BoxSet") {
+            query.SortBy = "SortName";
+        }
 
         var promise;
 

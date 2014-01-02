@@ -33,9 +33,7 @@
 
         html += '<div class="tileContent">';
 
-        html += '<div class="tileName">' + channel.Name + '</div>';
-
-        html += '<p class="itemMiscInfo">' + channel.Number + '</p>';
+        html += '<div class="tileName">' + channel.Number + '&nbsp;' + channel.Name + '</div>';
 
         html += '<p class="userDataIcons">' + LibraryBrowser.getUserDataIconsHtml(channel) + '</p>';
 

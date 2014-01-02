@@ -135,9 +135,9 @@
                 html += '<div class="posterItemImage" style="background-color:' + background + ';"></div>';
             }
 
-            html += '<div class="posterItemText">' + user.Name + '</div>';
+            html += '<div class="posterItemText" style="color:#000;">' + user.Name + '</div>';
 
-            html += '<div class="posterItemText">';
+            html += '<div class="posterItemText" style="color:#000;">';
             var lastSeen = LoginPage.getLastSeenText(user.LastActivityDate);
             if (lastSeen != "") {
                 html += lastSeen;
