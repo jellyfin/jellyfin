@@ -40,9 +40,6 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public void Dispose()
         {
-            //BaseItem.LibraryManager.LibraryChanged -= LibraryChanged;
-
-            //LuceneSearch.CloseAll();
         }
 
         /// <summary>

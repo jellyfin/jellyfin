@@ -66,6 +66,10 @@
     <Compile Include="Games\GameSystemProviderFromXml.cs" />
     <Compile Include="ImageFromMediaLocationProvider.cs" />
     <Compile Include="ImagesByNameProvider.cs" />
+    <Compile Include="ImagesByName\MusicGenreImageProvider.cs" />
+    <Compile Include="ImagesByName\MusicGenresManualImageProvider.cs" />
+    <Compile Include="ImagesByName\GameGenreImageProvider.cs" />
+    <Compile Include="ImagesByName\GameGenresManualImageProvider.cs" />
     <Compile Include="ImagesByName\GenreImageProvider.cs" />
     <Compile Include="ImagesByName\GenresManualImageProvider.cs" />
     <Compile Include="ImagesByName\ImageUtils.cs" />

@@ -1,6 +1,6 @@
 ﻿.detailTableContainer {
     width: 100%;
-    max-width: 1100px;
+    max-width: 1050px;
     text-align: center;
     margin: 0 auto;
 }
@@ -27,14 +27,11 @@
 
 .detailTable td {
     border-spacing: 0;
-    border-top: 1px solid #404040;
-    border-bottom: 1px solid #404040;
     padding: 5px 5px;
 }
 
 .detailTable th {
     border-spacing: 0;
-    border-bottom: 1px solid #404040;
     padding: 5px;
     font-weight: bold;
     text-align: left;

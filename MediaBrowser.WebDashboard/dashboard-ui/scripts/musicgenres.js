@@ -29,9 +29,13 @@
             var checkSortOption = $('.radioSortBy:checked', page);
             $('.viewSummary', page).html(LibraryBrowser.getViewSummaryHtml(query, checkSortOption)).trigger('create');
 
-            html += LibraryBrowser.getPosterDetailViewHtml({
+            html = LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                context: "music"
+                shape: "backdrop",
+                preferThumb: true,
+                context: 'music',
+                showItemCounts: true,
+                centerText: true
             });
 
             html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);

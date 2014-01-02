@@ -33,7 +33,7 @@
                 shape: "square",
                 context: 'music',
                 showTitle: true,
-                overlayText: true
+                coverImage: true
             });
 
             html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
