@@ -784,8 +784,8 @@
         if (item.Type == "BoxSet") {
             $('#fldDisplayOrder', page).show();
 
-            $('#labelDisplayOrder', page).html('Movie display order:');
-            $('#selectDisplayOrder', page).html('<option></option><option value="SortName">Sort Name</option><option value="PremiereDate">Release Date</option>').selectmenu('refresh');
+            $('#labelDisplayOrder', page).html('Title display order:');
+            $('#selectDisplayOrder', page).html('<option value="SortName">Sort Name</option><option value="PremiereDate">Release Date</option>').selectmenu('refresh');
         } else {
             $('#fldDisplayOrder', page).hide();
         }
@@ -870,7 +870,7 @@
         $('#txtAlbum', page).val(item.Album || "");
         $('#txtAlbumArtist', page).val(item.AlbumArtist || "");
 
-        $('#selectDisplayOrder', page).val(item.DisplayOrder || "").selectmenu('refresh');
+        $('#selectDisplayOrder', page).val(item.DisplayOrder).selectmenu('refresh');
 
         var artists = item.Artists || [];
         $('#txtArtist', page).val(artists.join(';'));

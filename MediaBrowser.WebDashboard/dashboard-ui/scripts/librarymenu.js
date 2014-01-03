@@ -124,7 +124,7 @@
 
                     { text: 'Suggested', href: 'moviesrecommended.html' },
                     { text: 'Movies', href: 'movies.html' },
-                    { text: 'Box Sets', href: 'boxsets.html' },
+                    { text: 'Collections', href: 'boxsets.html' },
                     { text: 'Trailers', href: 'movietrailers.html' },
                     { text: 'Genres', href: 'moviegenres.html' },
                     { text: 'People', href: 'moviepeople.html' },

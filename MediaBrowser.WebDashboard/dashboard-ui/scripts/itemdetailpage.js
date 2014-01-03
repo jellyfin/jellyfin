@@ -612,7 +612,7 @@
             $('#childrenTitle', page).html('Seasons');
         }
         else if (item.Type == "BoxSet") {
-            $('#childrenTitle', page).html('Movies');
+            $('#childrenTitle', page).html('Titles');
         }
         else if (item.Type == "MusicAlbum") {
             $('#childrenTitle', page).html('Tracks');

@@ -304,7 +304,7 @@
             { name: "Music", value: "music" },
             { name: "TV shows", value: "tvshows" },
             { name: "Books*", value: "books" },
-            { name: "Box sets", value: "boxsets" },
+            { name: "Collections", value: "boxsets" },
             { name: "Games*", value: "games" },
             { name: "Home videos", value: "homevideos" },
             { name: "Music videos", value: "musicvideos" },

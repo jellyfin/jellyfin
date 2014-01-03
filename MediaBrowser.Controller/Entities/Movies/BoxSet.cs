@@ -16,6 +16,8 @@ namespace MediaBrowser.Controller.Entities.Movies
             RemoteTrailers = new List<MediaUrl>();
             LocalTrailerIds = new List<Guid>();
             Tags = new List<string>();
+
+            DisplayOrder = ItemSortBy.PremiereDate;
         }
 
         public List<Guid> LocalTrailerIds { get; set; }
@@ -55,13 +57,13 @@ namespace MediaBrowser.Controller.Entities.Movies
         {
             var children = base.GetChildren(user, includeLinkedChildren);
 
-            if (string.Equals(DisplayOrder, "SortName", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(DisplayOrder, ItemSortBy.SortName, StringComparison.OrdinalIgnoreCase))
             {
                 // Sort by name
                 return LibraryManager.Sort(children, user, new[] { ItemSortBy.SortName }, SortOrder.Ascending);
             }
 
-            if (string.Equals(DisplayOrder, "PremiereDate", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(DisplayOrder, ItemSortBy.PremiereDate, StringComparison.OrdinalIgnoreCase))
             {
                 // Sort by release date
                 return LibraryManager.Sort(children, user, new[] { ItemSortBy.ProductionYear, ItemSortBy.PremiereDate, ItemSortBy.SortName }, SortOrder.Ascending);
