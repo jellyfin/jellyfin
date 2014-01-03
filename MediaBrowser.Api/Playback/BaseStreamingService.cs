@@ -13,6 +13,7 @@ using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.LiveTv;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -539,8 +540,8 @@ namespace MediaBrowser.Api.Playback
         /// <returns>System.String.</returns>
         protected string GetProbeSizeArgument(string mediaPath, bool isVideo, VideoType? videoType, IsoType? isoType)
         {
-            var type = !isVideo ? MediaEncoderHelpers.GetInputType(mediaPath, null, null) :
-                MediaEncoderHelpers.GetInputType(mediaPath, videoType, isoType);
+            var type = !isVideo ? MediaEncoderHelpers.GetInputType(null, null) :
+                MediaEncoderHelpers.GetInputType(videoType, isoType);
 
             return MediaEncoder.GetProbeSizeArgument(type);
         }
@@ -654,6 +655,11 @@ namespace MediaBrowser.Api.Playback
         /// <returns>System.String.</returns>
         protected string GetInputArgument(StreamState state)
         {
+            if (state.SendInputOverStandardInput)
+            {
+                return "-";
+            }
+
             var type = InputType.AudioFile;
 
             var inputPath = new[] { state.MediaPath };
@@ -705,7 +711,9 @@ namespace MediaBrowser.Api.Playback
                     Arguments = GetCommandLineArguments(outputPath, state, true),
 
                     WindowStyle = ProcessWindowStyle.Hidden,
-                    ErrorDialog = false
+                    ErrorDialog = false,
+
+                    RedirectStandardInput = state.SendInputOverStandardInput
                 },
 
                 EnableRaisingEvents = true
@@ -738,6 +746,11 @@ namespace MediaBrowser.Api.Playback
                 throw;
             }
 
+            if (state.SendInputOverStandardInput)
+            {
+                StreamToStandardInput(process, state);
+            }
+
             // MUST read both stdout and stderr asynchronously or a deadlock may occurr
             process.BeginOutputReadLine();
 
@@ -760,6 +773,34 @@ namespace MediaBrowser.Api.Playback
             if (state.IsRemote)
             {
                 await Task.Delay(3000).ConfigureAwait(false);
+            }
+        }
+
+        private async void StreamToStandardInput(Process process, StreamState state)
+        {
+            state.StandardInputCancellationTokenSource = new CancellationTokenSource();
+
+            try
+            {
+                await StreamToStandardInputInternal(process, state).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                Logger.Debug("Stream to standard input closed normally.");
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error writing to standard input", ex);
+            }
+        }
+
+        private async Task StreamToStandardInputInternal(Process process, StreamState state)
+        {
+            state.StandardInputCancellationTokenSource = new CancellationTokenSource();
+
+            using (var fileStream = FileSystem.GetFileStream(state.MediaPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
+            {
+                await new EndlessStreamCopy().CopyStream(fileStream, process.StandardInput.BaseStream, state.StandardInputCancellationTokenSource.Token).ConfigureAwait(false);
             }
         }
 
@@ -829,6 +870,11 @@ namespace MediaBrowser.Api.Playback
             {
                 state.IsoMount.Dispose();
                 state.IsoMount = null;
+            }
+
+            if (state.StandardInputCancellationTokenSource != null)
+            {
+                state.StandardInputCancellationTokenSource.Cancel();
             }
 
             var outputFilePath = GetOutputFilePath(state);
@@ -903,10 +949,11 @@ namespace MediaBrowser.Api.Playback
                 }
 
                 itemId = recording.Id;
+                state.SendInputOverStandardInput = recording.RecordingInfo.Status == RecordingStatus.InProgress;
             }
             else if (string.Equals(request.Type, "Channel", StringComparison.OrdinalIgnoreCase))
             {
-                var channel =  LiveTvManager.GetInternalChannel(request.Id);
+                var channel = LiveTvManager.GetInternalChannel(request.Id);
 
                 state.VideoType = VideoType.VideoFile;
                 state.IsInputVideo = string.Equals(channel.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase);
@@ -926,6 +973,7 @@ namespace MediaBrowser.Api.Playback
                 }
 
                 itemId = channel.Id;
+                state.SendInputOverStandardInput = true;
             }
             else
             {

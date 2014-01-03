@@ -349,25 +349,41 @@ namespace MediaBrowser.Api
             // Also don't cache video
             if (!hasExitedSuccessfully || job.StartTimeTicks.HasValue || job.IsVideo)
             {
-                Logger.Info("Deleting partial stream file(s) {0}", job.Path);
+                DeletePartialStreamFiles(job.Path, job.Type, 0, 1500);
+            }
+        }
 
-                await Task.Delay(1500).ConfigureAwait(false);
+        private async void DeletePartialStreamFiles(string path, TranscodingJobType jobType, int retryCount, int delayMs)
+        {
+            if (retryCount >= 5)
+            {
+                return;
+            }
 
-                try
+            Logger.Info("Deleting partial stream file(s) {0}", path);
+
+            await Task.Delay(delayMs).ConfigureAwait(false);
+
+            try
+            {
+                if (jobType == TranscodingJobType.Progressive)
                 {
-                    if (job.Type == TranscodingJobType.Progressive)
-                    {
-                        DeleteProgressivePartialStreamFiles(job.Path);
-                    }
-                    else
-                    {
-                        DeleteHlsPartialStreamFiles(job.Path);
-                    }
+                    DeleteProgressivePartialStreamFiles(path);
                 }
-                catch (IOException ex)
+                else
                 {
-                    Logger.ErrorException("Error deleting partial stream file(s) {0}", ex, job.Path);
+                    DeleteHlsPartialStreamFiles(path);
                 }
+            }
+            catch (IOException ex)
+            {
+                Logger.ErrorException("Error deleting partial stream file(s) {0}", ex, path);
+
+                DeletePartialStreamFiles(path, jobType, retryCount + 1, 500);
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error deleting partial stream file(s) {0}", ex, path);
             }
         }
 
