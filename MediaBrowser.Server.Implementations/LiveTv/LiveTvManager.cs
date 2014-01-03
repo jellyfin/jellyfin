@@ -79,8 +79,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             if (user != null)
             {
+                // Avoid implicitly captured closure
+                var currentUser = user;
+
                 channels = channels
-                    .Where(i => i.IsParentalAllowed(user))
+                    .Where(i => i.IsParentalAllowed(currentUser))
                     .OrderBy(i =>
                     {
                         double number = 0;
@@ -419,7 +422,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             var allChannelsList = allChannels.ToList();
 
             var list = new List<LiveTvChannel>();
-            var programs = new List<LiveTvProgram>();
 
             var numComplete = 0;
 
@@ -428,13 +430,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 try
                 {
                     var item = await GetChannel(channelInfo.Item2, channelInfo.Item1, cancellationToken).ConfigureAwait(false);
-
-                    var channelPrograms = await service.GetProgramsAsync(channelInfo.Item2.Id, cancellationToken).ConfigureAwait(false);
-
-                    var programTasks = channelPrograms.Select(program => GetProgram(program, item.ChannelInfo.ChannelType, service.Name, cancellationToken));
-                    var programEntities = await Task.WhenAll(programTasks).ConfigureAwait(false);
-
-                    programs.AddRange(programEntities);
 
                     list.Add(item);
                 }
@@ -451,11 +446,45 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 double percent = numComplete;
                 percent /= allChannelsList.Count;
 
+                progress.Report(5 * percent + 10);
+            }
+            _channels = list.ToDictionary(i => i.Id);
+            progress.Report(15);
+
+             numComplete = 0;
+             var programs = new List<LiveTvProgram>();
+
+            foreach (var item in list)
+            {
+                // Avoid implicitly captured closure
+                var currentChannel = item;
+
+                try
+                {
+                    var channelPrograms = await service.GetProgramsAsync(currentChannel.ChannelInfo.Id, cancellationToken).ConfigureAwait(false);
+
+                    var programTasks = channelPrograms.Select(program => GetProgram(program, currentChannel.ChannelInfo.ChannelType, service.Name, cancellationToken));
+                    var programEntities = await Task.WhenAll(programTasks).ConfigureAwait(false);
+
+                    programs.AddRange(programEntities);
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error getting programs for channel {0}", ex, currentChannel.Name);
+                }
+
+                numComplete++;
+                double percent = numComplete;
+                percent /= allChannelsList.Count;
+
                 progress.Report(90 * percent + 10);
             }
 
             _programs = programs.ToDictionary(i => i.Id);
-            _channels = list.ToDictionary(i => i.Id);
         }
 
         private async Task<IEnumerable<Tuple<string, ChannelInfo>>> GetChannels(ILiveTvService service, CancellationToken cancellationToken)

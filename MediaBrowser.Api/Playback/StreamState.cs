@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Entities;
+﻿using System.Threading;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using System.Collections.Generic;
 using System.IO;
@@ -47,5 +48,9 @@ namespace MediaBrowser.Api.Playback
         public List<string> PlayableStreamFileNames { get; set; }
 
         public bool HasMediaStreams { get; set; }
+
+        public bool SendInputOverStandardInput { get; set; }
+
+        public CancellationTokenSource StandardInputCancellationTokenSource { get; set; }
     }
 }

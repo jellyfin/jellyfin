@@ -93,3 +93,10 @@
 .ui-nosvg .ui-icon-subtitles:after {
     background-image: url("images/icons/subtitles.png");
 }
+.ui-icon-tv:after {
+    background-image: url("images/icons/tv.png");
+}
+/* Fallback */
+.ui-nosvg .ui-icon-tv:after {
+    background-image: url("images/icons/tv.png");
+}

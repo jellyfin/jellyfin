@@ -77,15 +77,14 @@ namespace MediaBrowser.Controller.MediaInfo
                 .Where(f => !string.IsNullOrEmpty(f))
                 .ToList();
         }
-        
+
         /// <summary>
         /// Gets the type of the input.
         /// </summary>
-        /// <param name="path">The path.</param>
         /// <param name="videoType">Type of the video.</param>
         /// <param name="isoType">Type of the iso.</param>
         /// <returns>InputType.</returns>
-        public static InputType GetInputType(string path, VideoType? videoType, IsoType? isoType)
+        public static InputType GetInputType(VideoType? videoType, IsoType? isoType)
         {
             var type = InputType.AudioFile;
 

@@ -564,6 +564,9 @@
             if (item.Type == "Channel") {
                 return "livetvchannel.html?id=" + id;
             }
+            if (item.Type == "Program") {
+                return "livetvprogram.html?id=" + id;
+            }
             if (item.Type == "Series") {
                 return "itemdetails.html?id=" + id;
             }
@@ -599,9 +602,7 @@
             }
 
             if (item.Type == "MusicArtist") {
-                if (itemByNameContext == "music") {
-                    return "itembynamedetails.html?musicartist=" + ApiClient.encodeName(item.Name) + "&context=" + (itemByNameContext || "music");
-                }
+                return "itembynamedetails.html?musicartist=" + ApiClient.encodeName(item.Name) + "&context=" + (itemByNameContext || "music");
             }
 
             return item.IsFolder ? (id ? "itemlist.html?parentId=" + id : "#") : "itemdetails.html?id=" + id;

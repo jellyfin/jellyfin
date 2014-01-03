@@ -24,6 +24,7 @@
 
         self.playlist = [];
         var currentPlaylistIndex = 0;
+        var channelsList;
 
         function requestFullScreen(element) {
             // Supports most browsers and their versions.
@@ -35,7 +36,7 @@
                 $('.itemVideo').addClass('fullscreenVideo');
             }
         }
-        
+
         function exitFullScreen() {
             if (document.exitFullscreen) {
                 document.exitFullscreen();
@@ -283,6 +284,16 @@
 
                 hideFlyout($('#qualityFlyout'));
             });
+
+            $('#channelsFlyout').on('click', '.mediaFlyoutOption', function () {
+
+                if (!$(this).hasClass('selectedMediaFlyoutOption')) {
+                    var channelId = this.getAttribute('data-channelid');
+                    self.playById(channelId, 'Channel');
+                }
+
+                hideFlyout($('#channelsFlyout'));
+            });
         });
 
         function endsWith(text, pattern) {
@@ -312,7 +323,7 @@
                     positionSlider.val(percent).slider('enable').slider('refresh');
                 }
             } else {
-                positionSlider.slider('disable');
+                positionSlider.slider('disable').slider('refresh');
             }
 
             currentTimeElement.html(timeText);
@@ -389,6 +400,7 @@
             $('#audioTracksButton', nowPlayingBar).hide();
             $('#subtitleButton', nowPlayingBar).hide();
             $('#chaptersButton', nowPlayingBar).hide();
+            $('#channelsButton', nowPlayingBar).hide();
 
             $('#mediaElement', nowPlayingBar).html(html);
             var audioElement = $("audio", nowPlayingBar);
@@ -485,7 +497,7 @@
                 else if (videoStream.Width >= 720) {
                     baseParams.videoBitrate = 700000;
                 }
-                
+
                 if ((videoStream.Codec || '').toLowerCase().indexOf('h264') != -1) {
 
                 }
@@ -583,6 +595,8 @@
                 $('#fullscreenButton', nowPlayingBar).show();
             }
 
+            var channelsButton = $('#channelsButton', nowPlayingBar).hide();
+
             var videoElement = $("video", nowPlayingBar);
 
             var initialVolume = localStorage.getItem("volume") || 0.5;
@@ -640,6 +654,22 @@
 
             currentItem = item;
             curentDurationTicks = item.RunTimeTicks;
+
+            if (!channelsList) {
+
+                ApiClient.getLiveTvChannels({
+
+                    userId: Dashboard.getCurrentUserId()
+
+                }).done(function (result) {
+
+                    channelsList = result.Items;
+
+                    if (result.Items.length) {
+                        channelsButton.show();
+                    }
+                });
+            }
 
             return videoElement[0];
         };
@@ -919,13 +949,24 @@
                     tag: item.ImageTags.Thumb
                 });
 
-            } else {
+            }
+            else if (item.Type == "Channel" || item.Type == "Recording") {
+                url = "css/images/items/detail/tv.png";
+            }
+            else if (item.MediaType == "Audio") {
+                url = "css/images/items/detail/audio.png";
+            }
+            else {
                 url = "css/images/items/detail/video.png";
             }
 
             var name = item.Name;
             var seriesName = '';
 
+            // Channel number
+            if (item.Number) {
+                name = item.Number + ' ' + name;
+            }
             if (item.IndexNumber != null) {
                 name = item.IndexNumber + " - " + name;
             }
@@ -935,10 +976,15 @@
             if (item.SeriesName || item.Album || item.ProductionYear) {
                 seriesName = item.SeriesName || item.Album || item.ProductionYear;
             }
+            if (item.CurrentProgram) {
+                seriesName = item.CurrentProgram.Name;
+            }
 
-            html += "<div><a href='itemdetails.html?id=" + item.Id + "'><img class='nowPlayingBarImage ' alt='' title='' src='" + url + "' style='height:36px;display:inline-block;' /></a></div>";
+            var href = LibraryBrowser.getHref(item.CurrentProgram || item);
 
-            if (item.SeriesName || item.Album) {
+            html += "<div><a href='" + href + "'><img class='nowPlayingBarImage ' alt='' title='' src='" + url + "' style='height:36px;display:inline-block;' /></a></div>";
+
+            if (item.SeriesName || item.Album || item.CurrentProgram) {
                 html += '<div class="nowPlayingText">' + seriesName + '<br/>' + name + '</div>';
             } else {
                 html += '<div class="nowPlayingText">' + name + '<br/>' + seriesName + '</div>';
@@ -1340,7 +1386,9 @@
         };
 
         function hideFlyout(flyout) {
+
             flyout.hide().empty();
+
             $(document.body).off("mousedown.hidesearchhints");
         }
 
@@ -1579,8 +1627,8 @@
 
             var html = '';
 
-            var videoStream = item.MediaStreams.filter(function (i) {
-                return i.Type == "Video";
+            var videoStream = (item.MediaStreams || []).filter(function (stream) {
+                return stream.Type == "Video";
             })[0];
 
             var currentVideoBitrate = getParameterByName('videoBitrate', currentMediaElement.currentSrc);
@@ -1607,7 +1655,7 @@
             }
 
             if (maxAllowedWidth >= 480) {
-            	 options.push({ name: '480p+', maxWidth: 720, videoBitrate: 700000 });
+                options.push({ name: '480p+', maxWidth: 720, videoBitrate: 700000 });
                 options.push({ name: '480p', maxWidth: 720, videoBitrate: 420000 });
             }
             if (maxAllowedWidth >= 360) {
@@ -1640,6 +1688,58 @@
 
             return html;
         }
+
+        function getChannelsFlyoutHtml(channels) {
+
+            var html = '';
+
+            for (var i = 0, length = channels.length; i < length; i++) {
+
+                var channel = channels[i];
+
+                html += '<div data-channelid="' + channel.Id + '" class="mediaFlyoutOption">';
+
+                var imgUrl;
+
+                if (channel.ImageTags.Primary) {
+
+                    imgUrl = ApiClient.getUrl("LiveTV/Channels/" + channel.Id + "/Images/Primary", {
+                        maxwidth: 200,
+                        tag: channel.ImageTags.Primary,
+                        type: "Primary"
+                    });
+                }
+                else {
+                    imgUrl = "css/images/media/tvflyout.png";
+                }
+
+                html += '<img class="mediaFlyoutOptionImage" src="' + imgUrl + '" />';
+
+                html += '<div class="mediaFlyoutOptionContent">';
+
+                var name = channel.Number + ' ' + channel.Name;
+
+                html += '<div class="mediaFlyoutOptionName">' + name + '</div>';
+                html += '<div class="mediaFlyoutOptionSecondaryText">' + channel.CurrentProgram.Name + '</div>';
+
+                html += '</div>';
+
+                html += "</div>";
+            }
+
+            return html;
+        }
+
+        self.showChannelsFlyout = function () {
+
+            var flyout = $('#channelsFlyout');
+
+            var channels = channelsList || [];
+            
+            showFlyout(flyout, '#channelsButton');
+
+            flyout.html(getChannelsFlyoutHtml(channels)).scrollTop(0);
+        };
 
         self.showAudioTracksFlyout = function () {
 
