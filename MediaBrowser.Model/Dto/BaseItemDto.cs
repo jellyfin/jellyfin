@@ -393,6 +393,12 @@ namespace MediaBrowser.Model.Dto
         public string Album { get; set; }
 
         /// <summary>
+        /// Gets or sets the display order.
+        /// </summary>
+        /// <value>The display order.</value>
+        public string DisplayOrder { get; set; }
+        
+        /// <summary>
         /// Gets or sets the album id.
         /// </summary>
         /// <value>The album id.</value>

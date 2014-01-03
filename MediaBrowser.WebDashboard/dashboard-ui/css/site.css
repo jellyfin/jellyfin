@@ -651,7 +651,7 @@ h1 .imageLink {
 
 /* Dashboard home */
 .tblConnections td {
-    padding: 1em 0 1em 1.5em;
+    padding: 1em 0 1em 1.25em;
     vertical-align: top;
 }
 
@@ -663,9 +663,12 @@ h1 .imageLink {
     height: 48px;
 }
 
+.nowPlayingText {
+    padding-left: .5em!important;
+}
+
 .clientNowPlayingImage {
-    border: 1px solid #aaa;
-    padding: 1px;
+    height: 52px;
 }
 
 /* Footer */

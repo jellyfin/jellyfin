@@ -665,12 +665,6 @@
             $('#fldMusicBrainzReleaseGroupId', page).hide();
         }
 
-        if (item.Type == "Series") {
-            $('#collapsibleSeriesDIsplaySettings', page).show();
-        } else {
-            $('#collapsibleSeriesDIsplaySettings', page).hide();
-        }
-
         if (item.Type == "Episode") {
             $('#collapsibleDvdEpisodeInfo', page).show();
         } else {
@@ -780,6 +774,32 @@
         } else {
             $('#fldParentIndexNumber', page).hide();
         }
+
+        if (item.Type == "Series") {
+            $('#fldDisplaySpecialsInline', page).show();
+        } else {
+            $('#fldDisplaySpecialsInline', page).hide();
+        }
+
+        if (item.Type == "BoxSet") {
+            $('#fldDisplayOrder', page).show();
+
+            $('#labelDisplayOrder', page).html('Movie display order:');
+            $('#selectDisplayOrder', page).html('<option></option><option value="SortName">Sort Name</option><option value="PremiereDate">Release Date</option>').selectmenu('refresh');
+        } else {
+            $('#fldDisplayOrder', page).hide();
+        }
+
+        var displaySettingFields = $('.fldDisplaySetting', page);
+        if (displaySettingFields.filter(function (index) {
+
+            return displaySettingFields[index].style.display != 'none';
+
+        }).length) {
+            $('#collapsibleDisplaySettings', page).show();
+        } else {
+            $('#collapsibleDisplaySettings', page).hide();
+        }
     }
 
     function fillItemInfo(page, item) {
@@ -849,6 +869,8 @@
 
         $('#txtAlbum', page).val(item.Album || "");
         $('#txtAlbumArtist', page).val(item.AlbumArtist || "");
+
+        $('#selectDisplayOrder', page).val(item.DisplayOrder || "").selectmenu('refresh');
 
         var artists = item.Artists || [];
         $('#txtArtist', page).val(artists.join(';'));
@@ -1116,6 +1138,7 @@
                 AirsAfterSeasonNumber: $('#txtAirsAfterSeason', form).val(),
                 AirsBeforeEpisodeNumber: $('#txtAirsBeforeEpisode', form).val(),
                 ParentIndexNumber: $('#txtParentIndexNumber', form).val(),
+                DisplayOrder: $('#selectDisplayOrder', form).val(),
                 Players: $('#txtPlayers', form).val(),
                 Album: $('#txtAlbum', form).val(),
                 AlbumArtist: $('#txtAlbumArtist', form).val(),

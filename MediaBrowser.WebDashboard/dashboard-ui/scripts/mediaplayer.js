@@ -982,7 +982,7 @@
 
             var href = LibraryBrowser.getHref(item.CurrentProgram || item);
 
-            html += "<div><a href='" + href + "'><img class='nowPlayingBarImage ' alt='' title='' src='" + url + "' style='height:36px;display:inline-block;' /></a></div>";
+            html += "<div><a href='" + href + "'><img class='nowPlayingBarImage ' alt='' title='' src='" + url + "' style='height:40px;display:inline-block;' /></a></div>";
 
             if (item.SeriesName || item.Album || item.CurrentProgram) {
                 html += '<div class="nowPlayingText">' + seriesName + '<br/>' + name + '</div>';

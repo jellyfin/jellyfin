@@ -238,7 +238,7 @@ namespace MediaBrowser.Controller.Entities
 
                 if (string.IsNullOrEmpty(parentPath))
                 {
-                    throw new ApplicationException("Unable to get parent path info from " + path);
+                    throw new IOException("Unable to get parent path info from " + path);
                 }
 
                 files = new DirectoryInfo(parentPath)
@@ -247,7 +247,14 @@ namespace MediaBrowser.Controller.Entities
             }
             else
             {
-                files = ResolveArgs.FileSystemChildren.Where(i =>
+                var resolveArgs = ResolveArgs;
+
+                if (resolveArgs == null)
+                {
+                    throw new IOException("ResolveArgs are null for " + path);
+                }
+
+                files = resolveArgs.FileSystemChildren.Where(i =>
                 {
                     if ((i.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
                     {

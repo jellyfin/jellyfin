@@ -60,7 +60,11 @@ namespace MediaBrowser.Providers.ImagesByName
 
         private static string GetComparableName(string name)
         {
-            return name.Replace(" ", string.Empty).Replace(".", string.Empty).Replace("&", string.Empty).Replace("!", string.Empty);
+            return name.Replace(" ", string.Empty)
+                .Replace(".", string.Empty)
+                .Replace("&", string.Empty)
+                .Replace("!", string.Empty)
+                .Replace(",", string.Empty);
         }
 
         public static IEnumerable<string> GetAvailableImages(string file)

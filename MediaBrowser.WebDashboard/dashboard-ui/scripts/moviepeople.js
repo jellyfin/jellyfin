@@ -30,9 +30,14 @@
             var checkSortOption = $('.radioSortBy:checked', page);
             $('.viewSummary', page).html(LibraryBrowser.getViewSummaryHtml(query, checkSortOption)).trigger('create');
 
-            html += LibraryBrowser.getPosterDetailViewHtml({
+            html = LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                context: "movies"
+                shape: "portrait",
+                context: 'movies',
+                useAverageAspectRatio: true,
+                showTitle: true,
+                showItemCounts: true,
+                coverImage: true
             });
 
             html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);

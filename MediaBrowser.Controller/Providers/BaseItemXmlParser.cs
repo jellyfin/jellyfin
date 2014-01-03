@@ -532,6 +532,21 @@ namespace MediaBrowser.Controller.Providers
                         break;
                     }
 
+                case "DisplayOrder":
+                    {
+                        var val = reader.ReadElementContentAsString();
+
+                        var hasDisplayOrder = item as IHasDisplayOrder;
+                        if (hasDisplayOrder != null)
+                        {
+                            if (!string.IsNullOrWhiteSpace(val))
+                            {
+                                hasDisplayOrder.DisplayOrder = val;
+                            }
+                        }
+                        break;
+                    }
+
                 case "Trailers":
                     {
                         using (var subtree = reader.ReadSubtree())

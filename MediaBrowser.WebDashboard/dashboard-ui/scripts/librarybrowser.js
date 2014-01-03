@@ -1,6 +1,6 @@
 ﻿var LibraryBrowser = (function (window, document, $, screen, localStorage) {
 
-    var defaultBackground = "#444";
+    var defaultBackground = "#333";
 
     return {
 
@@ -832,10 +832,9 @@
 
                     if (item.Name && options.showTitle) {
                         imgUrl = 'css/images/items/list/audio.png';
-                        background = defaultBackground;
-                    } else {
-                        background = defaultBackground;
                     }
+                    background = defaultBackground;
+
                 }
                 else if (item.Type == "Recording" || item.Type == "Program") {
 
@@ -849,10 +848,15 @@
 
                     if (item.Name && options.showTitle) {
                         imgUrl = 'css/images/items/list/video.png';
-                        background = defaultBackground;
-                    } else {
-                        background = defaultBackground;
                     }
+                    background = defaultBackground;
+                }
+                else if (item.Type == "Person") {
+
+                    if (item.Name && options.showTitle) {
+                        imgUrl = 'css/images/items/list/person.png';
+                    }
+                    background = defaultBackground;
                 }
                 else {
                     if (item.Name && options.showTitle) {

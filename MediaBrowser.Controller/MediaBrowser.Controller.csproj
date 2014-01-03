@@ -85,6 +85,7 @@
     <Compile Include="Entities\IHasAspectRatio.cs" />
     <Compile Include="Entities\IHasBudget.cs" />
     <Compile Include="Entities\IHasCriticRating.cs" />
+    <Compile Include="Entities\IHasDisplayOrder.cs" />
     <Compile Include="Entities\IHasImages.cs" />
     <Compile Include="Entities\IHasMediaStreams.cs" />
     <Compile Include="Entities\IHasPreferredMetadataLanguage.cs" />
