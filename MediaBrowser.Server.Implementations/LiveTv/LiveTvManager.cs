@@ -857,7 +857,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 list.Add("News");
             }
 
-            if (recording.IsPremiere)
+            if (recording.IsSports)
             {
                 list.Add("Sports");
             }
