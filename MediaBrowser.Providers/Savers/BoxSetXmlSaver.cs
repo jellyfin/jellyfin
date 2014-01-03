@@ -2,8 +2,6 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Providers.Movies;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;

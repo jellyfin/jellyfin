@@ -764,6 +764,12 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.LocalTrailerCount = hasTrailers.LocalTrailerIds.Count;
             }
 
+            var hasDisplayOrder = item as IHasDisplayOrder;
+            if (hasDisplayOrder != null)
+            {
+                dto.DisplayOrder = hasDisplayOrder.DisplayOrder;
+            }
+            
             if (fields.Contains(ItemFields.RemoteTrailers))
             {
                 dto.RemoteTrailers = hasTrailers != null ?

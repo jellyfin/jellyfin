@@ -318,6 +318,12 @@ namespace MediaBrowser.Api
                 hasLang.PreferredMetadataCountryCode = request.PreferredMetadataCountryCode;
                 hasLang.PreferredMetadataLanguage = request.PreferredMetadataLanguage;
             }
+
+            var hasDisplayOrder = item as IHasDisplayOrder;
+            if (hasDisplayOrder != null)
+            {
+                hasDisplayOrder.DisplayOrder = request.DisplayOrder;
+            }
             
             var hasAspectRatio = item as IHasAspectRatio;
             if (hasAspectRatio != null)

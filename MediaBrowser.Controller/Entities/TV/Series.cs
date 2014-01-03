@@ -14,7 +14,7 @@ namespace MediaBrowser.Controller.Entities.TV
     /// <summary>
     /// Class Series
     /// </summary>
-    public class Series : Folder, IHasSoundtracks, IHasTrailers, IHasTags, IHasPreferredMetadataLanguage
+    public class Series : Folder, IHasSoundtracks, IHasTrailers, IHasTags, IHasPreferredMetadataLanguage, IHasDisplayOrder
     {
         public List<Guid> SpecialFeatureIds { get; set; }
         public List<Guid> SoundtrackIds { get; set; }
@@ -45,6 +45,8 @@ namespace MediaBrowser.Controller.Entities.TV
         
         public List<MediaUrl> RemoteTrailers { get; set; }
 
+        public string DisplayOrder { get; set; }
+        
         /// <summary>
         /// Gets or sets the tags.
         /// </summary>

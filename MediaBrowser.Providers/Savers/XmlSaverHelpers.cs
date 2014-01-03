@@ -31,6 +31,7 @@ namespace MediaBrowser.Providers.Savers
                     "CriticRating",
                     "CriticRatingSummary",
                     "DeathDate",
+                    "DisplayOrder",
                     "EndDate",
                     "Genres",
                     "Genre",
@@ -284,6 +285,12 @@ namespace MediaBrowser.Providers.Savers
                 }
             }
 
+            var hasDisplayOrder = item as IHasDisplayOrder;
+            if (hasDisplayOrder != null && !string.IsNullOrEmpty(hasDisplayOrder.DisplayOrder))
+            {
+                builder.Append("<DisplayOrder>" + SecurityElement.Escape(hasDisplayOrder.DisplayOrder) + "</DisplayOrder>");
+            }
+            
             var hasBudget = item as IHasBudget;
             if (hasBudget != null)
             {

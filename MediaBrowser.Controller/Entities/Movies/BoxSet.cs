@@ -9,7 +9,7 @@ namespace MediaBrowser.Controller.Entities.Movies
     /// <summary>
     /// Class BoxSet
     /// </summary>
-    public class BoxSet : Folder, IHasTrailers, IHasTags, IHasPreferredMetadataLanguage
+    public class BoxSet : Folder, IHasTrailers, IHasTags, IHasPreferredMetadataLanguage, IHasDisplayOrder
     {
         public BoxSet()
         {
@@ -40,6 +40,12 @@ namespace MediaBrowser.Controller.Entities.Movies
         /// <value>The preferred metadata country code.</value>
         public string PreferredMetadataCountryCode { get; set; }
 
+        /// <summary>
+        /// Gets or sets the display order.
+        /// </summary>
+        /// <value>The display order.</value>
+        public string DisplayOrder { get; set; }
+
         protected override bool GetBlockUnratedValue(UserConfiguration config)
         {
             return config.BlockUnratedMovies;
@@ -49,6 +55,19 @@ namespace MediaBrowser.Controller.Entities.Movies
         {
             var children = base.GetChildren(user, includeLinkedChildren);
 
+            if (string.Equals(DisplayOrder, "SortName", StringComparison.OrdinalIgnoreCase))
+            {
+                // Sort by name
+                return LibraryManager.Sort(children, user, new[] { ItemSortBy.SortName }, SortOrder.Ascending);
+            }
+
+            if (string.Equals(DisplayOrder, "PremiereDate", StringComparison.OrdinalIgnoreCase))
+            {
+                // Sort by release date
+                return LibraryManager.Sort(children, user, new[] { ItemSortBy.ProductionYear, ItemSortBy.PremiereDate, ItemSortBy.SortName }, SortOrder.Ascending);
+            }
+            
+            // Default sorting
             return LibraryManager.Sort(children, user, new[] { ItemSortBy.ProductionYear, ItemSortBy.PremiereDate, ItemSortBy.SortName }, SortOrder.Ascending);
         }
     }
