@@ -64,7 +64,7 @@ namespace MediaBrowser.Api
         /// <summary>
         /// The _search engine
         /// </summary>
-        private readonly ILibrarySearchEngine _searchEngine;
+        private readonly ISearchEngine _searchEngine;
         private readonly ILibraryManager _libraryManager;
         private readonly IDtoService _dtoService;
         private readonly IImageProcessor _imageProcessor;
@@ -75,7 +75,7 @@ namespace MediaBrowser.Api
         /// <param name="userManager">The user manager.</param>
         /// <param name="searchEngine">The search engine.</param>
         /// <param name="libraryManager">The library manager.</param>
-        public SearchService(IUserManager userManager, ILibrarySearchEngine searchEngine, ILibraryManager libraryManager, IDtoService dtoService, IImageProcessor imageProcessor)
+        public SearchService(IUserManager userManager, ISearchEngine searchEngine, ILibraryManager libraryManager, IDtoService dtoService, IImageProcessor imageProcessor)
         {
             _userManager = userManager;
             _searchEngine = searchEngine;

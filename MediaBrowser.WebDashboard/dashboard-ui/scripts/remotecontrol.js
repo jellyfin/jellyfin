@@ -66,6 +66,8 @@
 
         var html = '<div data-role="popup" id="remoteControlFlyout" data-theme="a">';
 
+        html += '<a href="#" data-rel="back" data-role="button" data-icon="delete" data-iconpos="notext" class="ui-btn-right" data-theme="b">Close</a>';
+
         html += '<div class="ui-bar-b" style="text-align:center;">';
         html += '<div style="margin:.5em 0;">Remote Control</div>';
         html += '</div>';
@@ -89,8 +91,6 @@
         html += '<span id="queueButtonContainer" style="display:none;"><button onclick="$(\'#fldPlayCommand\').val(\'PlayLast\');" type="submit" data-icon="plus" data-mini="true" data-inline="true">Queue</button></span>';
 
         html += '<span id="browseButtonContainer" style="display:none;"><button onclick="$(\'#fldPlayCommand\').val(\'Browse\');" type="submit" data-icon="eye" data-mini="true" data-inline="true">Browse</button></span>';
-
-        html += '<button type="button" data-icon="delete" onclick="$(\'#remoteControlFlyout\').popup(\'close\');" data-mini="true" data-inline="true">Cancel</button>';
 
         html += '</p>';
 
@@ -385,6 +385,7 @@
     function renderPlayFromOptions(elem, item) {
 
         var html = '';
+        var html = '';
 
         html += '<h4 style="margin: 1em 0 .5em;">Play from scene</h4>';
 
@@ -498,11 +499,7 @@
 
         html += '<thead><tr>';
         html += '<th></th>';
-        html += '<th>Client</th>';
         html += '<th>Device</th>';
-        html += '<th>User</th>';
-        html += '<th class="nowPlayingCell">Now Playing</th>';
-        html += '<th class="nowPlayingCell">Time</th>';
         html += '</tr></thead>';
 
         html += '<tbody>';
@@ -514,32 +511,12 @@
             html += '<tr class="trSession" data-queue="' + session.QueueableMediaTypes.join(',') + '" data-sessionid="' + session.Id + '">';
 
             html += '<td class="tdSelectSession"></td>';
-            html += '<td>' + session.Client + '</td>';
-            html += '<td>' + session.DeviceName + '</td>';
+            html += '<td>' + session.DeviceName;
 
-            html += '<td class="tdUserName">';
-
-            html += session.UserName || '';
-
-            html += '</td>';
-
-            if (session.NowPlayingItem) {
-
-                html += '<td class="nowPlayingCell tdNowPlayingName">';
-                html += session.NowPlayingItem ? session.NowPlayingItem.Name : '';
-                html += '</td>';
-
-                html += '<td class="nowPlayingCell tdNowPlayingTime">';
-
-                html += getSessionNowPlayingTime(session);
-
-                html += '</td>';
-
-            } else {
-
-                html += '<td class="nowPlayingCell"></td>';
-                html += '<td class="nowPlayingCell"></td>';
+            if (session.UserName) {
+                html += ' - ' + session.UserName;
             }
+            html += '</td>';
 
             html += '</tr>';
         }
@@ -553,7 +530,7 @@
         elem.html(html).trigger('create');
 
         $('.tdSelectSession', elem).html('<input type="radio" class="chkClient" name="chkClient" />');
-        
+
         $('.chkClient:first', elem).checked(true);
 
         $('#remoteControlFlyout').popup("reposition", { tolerance: 0 });
@@ -986,7 +963,7 @@
     function renderSessionsInControlMenu(popup, sessions, options) {
 
         options = options || {};
-        
+
         var deviceId = ApiClient.deviceId();
 
         // don't display the current session
@@ -1020,7 +997,7 @@
 
             var session = sessions[i];
 
-            var text = session.Client + ' - ' + session.DeviceName;
+            var text = session.DeviceName;
 
             if (session.UserName) {
                 text += ' - ' + session.UserName;

@@ -1,6 +1,6 @@
 ﻿(function ($, document, apiClient) {
 
-    function deleteTimer(page, id) {
+    function deleteSeriesTimer(page, id) {
 
         Dashboard.confirm("Are you sure you wish to cancel this series?", "Confirm Series Cancellation", function (result) {
 
@@ -23,7 +23,7 @@
 
         var html = '';
 
-        html += '<ul data-role="listview" data-inset="true">';
+        html += '<ul data-role="listview" data-inset="true" data-split-icon="delete">';
 
         html += '<li data-role="list-divider">Series Recordings</li>';
 
@@ -46,7 +46,7 @@
 
                 html += days.join(', ');
             }
-            
+
             if (timer.RecordAnyTime) {
 
                 html += ' - Any time.';
@@ -63,13 +63,22 @@
                 html += timer.ChannelName;
             }
             html += '</p>';
+            html += '</a>';
+
+            html += '<a data-seriestimerid="' + timer.Id + '" href="#" title="Cancel Series" class="btnCancelSeries">Cancel Series</a>';
 
             html += '</li>';
         }
 
         html += '</ul>';
 
-        $('#items', page).html(html).trigger('create');
+        var elem = $('#items', page).html(html).trigger('create');
+
+        $('.btnCancelSeries', elem).on('click', function() {
+
+            deleteSeriesTimer(page, this.getAttribute('data-seriestimerid'));
+
+        });
 
         Dashboard.hideLoadingMsg();
     }

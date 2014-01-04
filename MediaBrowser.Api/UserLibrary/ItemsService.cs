@@ -46,13 +46,6 @@ namespace MediaBrowser.Api.UserLibrary
         public string PersonTypes { get; set; }
 
         /// <summary>
-        /// Search characters used to find items
-        /// </summary>
-        /// <value>The index by.</value>
-        [ApiMember(Name = "SearchTerm", Description = "Optional. If specified, results will be filtered based on a search term.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string SearchTerm { get; set; }
-
-        /// <summary>
         /// Limit results to items containing specific genres
         /// </summary>
         /// <value>The genres.</value>
@@ -240,7 +233,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// The _library manager
         /// </summary>
         private readonly ILibraryManager _libraryManager;
-        private readonly ILibrarySearchEngine _searchEngine;
+        private readonly ISearchEngine _searchEngine;
         private readonly ILocalizationManager _localization;
 
         private readonly IDtoService _dtoService;
@@ -252,7 +245,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="searchEngine">The search engine.</param>
         /// <param name="userDataRepository">The user data repository.</param>
-        public ItemsService(IUserManager userManager, ILibraryManager libraryManager, ILibrarySearchEngine searchEngine, IUserDataManager userDataRepository, ILocalizationManager localization, IDtoService dtoService)
+        public ItemsService(IUserManager userManager, ILibraryManager libraryManager, ISearchEngine searchEngine, IUserDataManager userDataRepository, ILocalizationManager localization, IDtoService dtoService)
         {
             _userManager = userManager;
             _libraryManager = libraryManager;
@@ -299,8 +292,6 @@ namespace MediaBrowser.Api.UserLibrary
             items = FilterVirtualEpisodes(request, items, user);
 
             items = items.AsEnumerable();
-
-            items = ApplySearchTerm(request, items);
 
             items = ApplySortOrder(request, items, user, _libraryManager);
 
@@ -1187,24 +1178,6 @@ namespace MediaBrowser.Api.UserLibrary
             }
 
             return item.HasImage(imageType);
-        }
-
-        /// <summary>
-        /// Applies the search term.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <param name="items">The items.</param>
-        /// <returns>IEnumerable{BaseItem}.</returns>
-        private IEnumerable<BaseItem> ApplySearchTerm(GetItems request, IEnumerable<BaseItem> items)
-        {
-            var term = request.SearchTerm;
-
-            if (!string.IsNullOrEmpty(term))
-            {
-                items = _searchEngine.Search(items, request.SearchTerm);
-            }
-
-            return items;
         }
 
         /// <summary>

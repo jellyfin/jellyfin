@@ -103,9 +103,3 @@
         width: 550px;
     }
 }
-
-@media all and (min-width: 700px) {
-    #remoteControlFlyout {
-        width: 650px;
-    }
-}

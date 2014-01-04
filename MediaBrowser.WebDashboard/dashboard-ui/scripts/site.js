@@ -1354,6 +1354,8 @@ $(function () {
 
     footerHtml += '<button onclick="MediaPlayer.toggleFullscreen();" id="fullscreenButton" class="mediaButton fullscreenButton" title="Fullscreen" type="button" data-icon="action" data-iconpos="notext" data-inline="true">Fullscreen</button>';
 
+    footerHtml += '<button onclick="MediaPlayer.showSendMediaMenu();" id="sendMediaButton" class="mediaButton sendMediaButton" title="Cast" type="button" data-icon="wireless" data-iconpos="notext" data-inline="true">Cast</button>';
+
     footerHtml += '</div>';
 
     footerHtml += '<div id="footerNotifications"></div>';

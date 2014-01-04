@@ -94,6 +94,10 @@
 
             Dashboard.hideLoadingMsg();
         });
+
+
+
+        $('#btnEdit', page).attr('href', "edititemmetadata.html?id=" + id);
     }
 
     function setPeopleHeader(page, item) {
@@ -1110,11 +1114,6 @@
         $('#btnPlayExternal', page).on('click', function () {
 
             ApiClient.markPlayed(Dashboard.getCurrentUserId(), currentItem.Id, new Date());
-        });
-
-        $('#btnEdit', page).on('click', function () {
-
-            Dashboard.navigate("edititemmetadata.html?id=" + currentItem.Id);
         });
 
         $('#btnRemote', page).on('click', function () {

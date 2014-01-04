@@ -24,7 +24,24 @@
 
         self.playlist = [];
         var currentPlaylistIndex = 0;
-        var channelsList;
+
+        var channelsListPromise;
+        var channelsListPromiseTime;
+
+        function getChannelsListPromise() {
+
+            var lastUpdateTime = channelsListPromiseTime || 0;
+
+            // Update every three minutes
+            if (!channelsListPromise || !lastUpdateTime || (new Date().getTime() - lastUpdateTime) > 10800000) {
+
+                channelsListPromise = ApiClient.getLiveTvChannels({
+                    userId: Dashboard.getCurrentUserId()
+                });
+            }
+
+            return channelsListPromise;
+        }
 
         function requestFullScreen(element) {
             // Supports most browsers and their versions.
@@ -655,21 +672,12 @@
             currentItem = item;
             curentDurationTicks = item.RunTimeTicks;
 
-            if (!channelsList) {
+            getChannelsListPromise().done(function (result) {
 
-                ApiClient.getLiveTvChannels({
-
-                    userId: Dashboard.getCurrentUserId()
-
-                }).done(function (result) {
-
-                    channelsList = result.Items;
-
-                    if (result.Items.length) {
-                        channelsButton.show();
-                    }
-                });
-            }
+                if (result.Items.length) {
+                    channelsButton.show();
+                }
+            });
 
             return videoElement[0];
         };
@@ -1734,11 +1742,14 @@
 
             var flyout = $('#channelsFlyout');
 
-            var channels = channelsList || [];
-            
-            showFlyout(flyout, '#channelsButton');
+            if (!flyout.is(':visible')) {
+                getChannelsListPromise().done(function (result) {
 
-            flyout.html(getChannelsFlyoutHtml(channels)).scrollTop(0);
+                    showFlyout(flyout, '#channelsButton');
+
+                    flyout.html(getChannelsFlyoutHtml(result.Items)).scrollTop(0);
+                });
+            }
         };
 
         self.showAudioTracksFlyout = function () {
@@ -1798,6 +1809,14 @@
                 });
 
             }
+        };
+
+        self.showSendMediaMenu = function () {
+
+            RemoteControl.showMenuForItem({
+                item: currentItem
+            });
+            
         };
     }
 

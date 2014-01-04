@@ -59,8 +59,6 @@
 
             var name = item.Name;
 
-            $('#itemImage', page).html(LibraryBrowser.getDetailImageHtml(item));
-
             Dashboard.setPageTitle(name);
 
             $('.itemName', page).html(name);
@@ -88,6 +86,9 @@
             }
 
             Dashboard.getCurrentUser().done(function (user) {
+
+                var editImagesHref = user.Configuration.IsAdministrator ? 'edititemimages.html' + window.location.search : null;
+                $('#itemImage', page).html(LibraryBrowser.getDetailImageHtml(item, editImagesHref));
 
                 if (user.Configuration.IsAdministrator && item.LocationType !== "Offline") {
                     $('#editButtonContainer', page).show();
@@ -524,16 +525,13 @@
             RemoteControl.showMenuForItem({ item: currentItem, context: getParameterByName('context') || '' });
         });
 
-        $('#btnEdit', page).on('click', function () {
-
-            Dashboard.navigate("edititemmetadata.html", true);
-        });
-
     }).on('pageshow', "#itemByNameDetailPage", function () {
 
         var page = this;
 
         reload(page);
+
+        $('#btnEdit', page).attr('href', 'edititemmetadata.html' + window.location.search);
 
     }).on('pagehide', "#itemByNameDetailPage", function () {
 

@@ -2,25 +2,6 @@
 
     var currentItem;
 
-    function deleteTimer(page, id) {
-
-        Dashboard.confirm("Are you sure you wish to cancel this series?", "Confirm Series Cancellation", function (result) {
-
-            if (result) {
-
-                Dashboard.showLoadingMsg();
-
-                ApiClient.cancelLiveTvSeriesTimer(id).done(function () {
-
-                    Dashboard.alert('Series cancelled.');
-
-                    reload(page);
-                });
-            }
-
-        });
-    }
-
     function renderTimer(page, item) {
 
         currentItem = item;
@@ -131,17 +112,7 @@
         });
     }
 
-    $(document).on('pageinit', "#liveTvSeriesTimerPage", function () {
-
-        var page = this;
-
-        $('#btnCancelTimer', page).on('click', function () {
-
-            deleteTimer(page, currentItem.Id);
-
-        });
-
-    }).on('pagebeforeshow', "#liveTvSeriesTimerPage", function () {
+    $(document).on('pagebeforeshow', "#liveTvSeriesTimerPage", function () {
 
         var page = this;
 

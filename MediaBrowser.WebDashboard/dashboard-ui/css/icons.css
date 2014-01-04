@@ -100,3 +100,10 @@
 .ui-nosvg .ui-icon-tv:after {
     background-image: url("images/icons/tv.png");
 }
+.ui-icon-wireless:after {
+    background-image: url("images/icons/wireless.png");
+}
+/* Fallback */
+.ui-nosvg .ui-icon-wireless:after {
+    background-image: url("images/icons/wireless.png");
+}
