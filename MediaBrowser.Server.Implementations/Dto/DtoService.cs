@@ -244,7 +244,8 @@ namespace MediaBrowser.Server.Implementations.Dto
                 ApplicationVersion = session.ApplicationVersion,
                 CanSeek = session.CanSeek,
                 QueueableMediaTypes = session.QueueableMediaTypes,
-                RemoteEndPoint = session.RemoteEndPoint
+                RemoteEndPoint = session.RemoteEndPoint,
+                AdditionalUsersPresent = session.AdditionalUsersPresent
             };
 
             if (session.NowPlayingItem != null)
@@ -252,11 +253,11 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.NowPlayingItem = GetBaseItemInfo(session.NowPlayingItem);
             }
 
-            if (session.User != null)
+            if (session.UserId.HasValue)
             {
-                dto.UserId = session.User.Id.ToString("N");
-                dto.UserName = session.User.Name;
+                dto.UserId = session.UserId.Value.ToString("N");
             }
+            dto.UserName = session.UserName;
 
             return dto;
         }
@@ -768,6 +769,12 @@ namespace MediaBrowser.Server.Implementations.Dto
             if (hasDisplayOrder != null)
             {
                 dto.DisplayOrder = hasDisplayOrder.DisplayOrder;
+            }
+
+            var collectionFolder = item as CollectionFolder;
+            if (collectionFolder != null)
+            {
+                dto.CollectionType = collectionFolder.CollectionType;
             }
             
             if (fields.Contains(ItemFields.RemoteTrailers))

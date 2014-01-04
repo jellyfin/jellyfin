@@ -191,7 +191,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
             var session = GetSessionFromMessage(message);
 
-            if (session != null && session.User != null)
+            if (session != null && session.UserId.HasValue)
             {
                 var vals = message.Data.Split('|');
 
@@ -229,7 +229,7 @@ namespace MediaBrowser.Server.Implementations.Session
         {
             var session = GetSessionFromMessage(message);
 
-            if (session != null && session.User != null)
+            if (session != null && session.UserId.HasValue)
             {
                 var vals = message.Data.Split('|');
 
@@ -273,7 +273,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
             var session = GetSessionFromMessage(message);
 
-            if (session != null && session.User != null)
+            if (session != null && session.UserId.HasValue)
             {
                 var vals = message.Data.Split('|');
 

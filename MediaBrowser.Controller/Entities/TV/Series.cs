@@ -45,6 +45,9 @@ namespace MediaBrowser.Controller.Entities.TV
         
         public List<MediaUrl> RemoteTrailers { get; set; }
 
+        /// <summary>
+        /// airdate, dvd or absolute
+        /// </summary>
         public string DisplayOrder { get; set; }
         
         /// <summary>

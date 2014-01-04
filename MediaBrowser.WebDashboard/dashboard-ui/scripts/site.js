@@ -87,6 +87,10 @@ var Dashboard = {
 
     getCurrentUserId: function () {
 
+        if (!window.localStorage) {
+            return null;
+        }
+        
         var userId = localStorage.getItem("userId");
 
         if (!userId) {
@@ -102,13 +106,21 @@ var Dashboard = {
     },
 
     setCurrentUser: function (userId) {
-        localStorage.setItem("userId", userId);
+
+        if (window.localStorage) {
+            localStorage.setItem("userId", userId);
+        }
+        
         ApiClient.currentUserId(userId);
         Dashboard.getUserPromise = null;
     },
 
     logout: function () {
-        localStorage.removeItem("userId");
+
+        if (window.localStorage) {
+            localStorage.removeItem("userId");
+        }
+        
         Dashboard.getUserPromise = null;
         ApiClient.currentUserId(null);
         window.location = "login.html";
@@ -1284,11 +1296,11 @@ var Dashboard = {
 
 if (!window.WebSocket) {
 
-    alert("This browser does not support web sockets. For a better experience, try a newer browser such as Chrome (android, desktop), Firefox, IE10, Safari (iOS) or Opera.");
+    alert("This browser does not support web sockets. For a better experience, try a newer browser such as Chrome, Firefox, IE10+, Safari (iOS) or Opera.");
 }
 
-if (!IsStorageEnabled()) {
-    alert("This browser does not support local storage or is running in private mode. For a better experience, try a newer browser such as Chrome (android, desktop), Firefox, IE10, Safari (iOS) or Opera.");
+else if (!IsStorageEnabled()) {
+    alert("This browser does not support local storage or is running in private mode. For a better experience, try a newer browser such as Chrome, Firefox, IE10+, Safari (iOS) or Opera.");
 }
 
 

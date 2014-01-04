@@ -39,6 +39,7 @@ namespace MediaBrowser.Server.Implementations.Session
         private readonly ILogger _logger;
 
         private readonly ILibraryManager _libraryManager;
+        private readonly IUserManager _userManager;
 
         /// <summary>
         /// Gets or sets the configuration manager.
@@ -75,13 +76,14 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <param name="logger">The logger.</param>
         /// <param name="userRepository">The user repository.</param>
         /// <param name="libraryManager">The library manager.</param>
-        public SessionManager(IUserDataManager userDataRepository, IServerConfigurationManager configurationManager, ILogger logger, IUserRepository userRepository, ILibraryManager libraryManager)
+        public SessionManager(IUserDataManager userDataRepository, IServerConfigurationManager configurationManager, ILogger logger, IUserRepository userRepository, ILibraryManager libraryManager, IUserManager userManager)
         {
             _userDataRepository = userDataRepository;
             _configurationManager = configurationManager;
             _logger = logger;
             _userRepository = userRepository;
             _libraryManager = libraryManager;
+            _userManager = userManager;
         }
 
         /// <summary>
@@ -140,7 +142,10 @@ namespace MediaBrowser.Server.Implementations.Session
 
             var activityDate = DateTime.UtcNow;
 
-            var session = GetSessionInfo(clientType, appVersion, deviceId, deviceName, remoteEndPoint, user);
+            var userId = user == null ? (Guid?)null : user.Id;
+            var username = user == null ? null : user.Name;
+
+            var session = GetSessionInfo(clientType, appVersion, deviceId, deviceName, remoteEndPoint, userId, username);
 
             session.LastActivityDate = activityDate;
 
@@ -209,9 +214,10 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <param name="deviceId">The device id.</param>
         /// <param name="deviceName">Name of the device.</param>
         /// <param name="remoteEndPoint">The remote end point.</param>
-        /// <param name="user">The user.</param>
+        /// <param name="userId">The user identifier.</param>
+        /// <param name="username">The username.</param>
         /// <returns>SessionInfo.</returns>
-        private SessionInfo GetSessionInfo(string clientType, string appVersion, string deviceId, string deviceName, string remoteEndPoint, User user)
+        private SessionInfo GetSessionInfo(string clientType, string appVersion, string deviceId, string deviceName, string remoteEndPoint, Guid? userId, string username)
         {
             var key = clientType + deviceId + appVersion;
 
@@ -224,8 +230,14 @@ namespace MediaBrowser.Server.Implementations.Session
             });
 
             connection.DeviceName = deviceName;
-            connection.User = user;
+            connection.UserId = userId;
+            connection.UserName = username;
             connection.RemoteEndPoint = remoteEndPoint;
+
+            if (!userId.HasValue)
+            {
+                connection.AdditionalUsersPresent.Clear();
+            }
 
             if (connection.SessionController == null)
             {
@@ -235,6 +247,31 @@ namespace MediaBrowser.Server.Implementations.Session
             }
 
             return connection;
+        }
+
+        private List<User> GetUsers(SessionInfo session)
+        {
+            var users = new List<User>();
+
+            if (session.UserId.HasValue)
+            {
+                var user = _userManager.GetUserById(session.UserId.Value);
+
+                if (user == null)
+                {
+                    throw new InvalidOperationException("User not found");
+                }
+
+                users.Add(user);
+
+                var additionalUsers = session.AdditionalUsersPresent
+                    .Select(i => _userManager.GetUserById(new Guid(i.UserId)))
+                    .Where(i => i != null);
+
+                users.AddRange(additionalUsers);
+            }
+
+            return users;
         }
 
         /// <summary>
@@ -265,9 +302,33 @@ namespace MediaBrowser.Server.Implementations.Session
 
             var key = item.GetUserDataKey();
 
-            var user = session.User;
+            var users = GetUsers(session);
 
-            var data = _userDataRepository.GetUserData(user.Id, key);
+            foreach (var user in users)
+            {
+                await OnPlaybackStart(user.Id, key, item).ConfigureAwait(false);
+            }
+
+            // Nothing to save here
+            // Fire events to inform plugins
+            EventHelper.QueueEventIfNotNull(PlaybackStart, this, new PlaybackProgressEventArgs
+            {
+                Item = item,
+                Users = users
+
+            }, _logger);
+        }
+
+        /// <summary>
+        /// Called when [playback start].
+        /// </summary>
+        /// <param name="userId">The user identifier.</param>
+        /// <param name="userDataKey">The user data key.</param>
+        /// <param name="item">The item.</param>
+        /// <returns>Task.</returns>
+        private async Task OnPlaybackStart(Guid userId, string userDataKey, IHasUserData item)
+        {
+            var data = _userDataRepository.GetUserData(userId, userDataKey);
 
             data.PlayCount++;
             data.LastPlayedDate = DateTime.UtcNow;
@@ -277,17 +338,7 @@ namespace MediaBrowser.Server.Implementations.Session
                 data.Played = true;
             }
 
-            await _userDataRepository.SaveUserData(user.Id, info.Item, data, UserDataSaveReason.PlaybackStart, CancellationToken.None).ConfigureAwait(false);
-
-            // Nothing to save here
-            // Fire events to inform plugins
-            EventHelper.QueueEventIfNotNull(PlaybackStart, this, new PlaybackProgressEventArgs
-            {
-                Item = item,
-                User = user,
-                UserData = data
-
-            }, _logger);
+            await _userDataRepository.SaveUserData(userId, item, data, UserDataSaveReason.PlaybackStart, CancellationToken.None).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -315,25 +366,32 @@ namespace MediaBrowser.Server.Implementations.Session
 
             var key = info.Item.GetUserDataKey();
 
-            var user = session.User;
+            var users = GetUsers(session);
 
-            var data = _userDataRepository.GetUserData(user.Id, key);
-
-            if (info.PositionTicks.HasValue)
+            foreach (var user in users)
             {
-                UpdatePlayState(info.Item, data, info.PositionTicks.Value);
-
-                await _userDataRepository.SaveUserData(user.Id, info.Item, data, UserDataSaveReason.PlaybackProgress, CancellationToken.None).ConfigureAwait(false);
+                await OnPlaybackProgress(user.Id, key, info.Item, info.PositionTicks).ConfigureAwait(false);
             }
 
             EventHelper.QueueEventIfNotNull(PlaybackProgress, this, new PlaybackProgressEventArgs
             {
                 Item = info.Item,
-                User = user,
-                PlaybackPositionTicks = info.PositionTicks,
-                UserData = data
+                Users = users,
+                PlaybackPositionTicks = info.PositionTicks
 
             }, _logger);
+        }
+
+        private async Task OnPlaybackProgress(Guid userId, string userDataKey, BaseItem item, long? positionTicks)
+        {
+            var data = _userDataRepository.GetUserData(userId, userDataKey);
+
+            if (positionTicks.HasValue)
+            {
+                UpdatePlayState(item, data, positionTicks.Value);
+
+                await _userDataRepository.SaveUserData(userId, item, data, UserDataSaveReason.PlaybackProgress, CancellationToken.None).ConfigureAwait(false);
+            }
         }
 
         /// <summary>
@@ -371,14 +429,32 @@ namespace MediaBrowser.Server.Implementations.Session
 
             var key = info.Item.GetUserDataKey();
 
-            var user = session.User;
+            var users = GetUsers(session);
 
-            var data = _userDataRepository.GetUserData(user.Id, key);
+            var playedToCompletion = false;
+            foreach (var user in users)
+            {
+                playedToCompletion = await OnPlaybackStopped(user.Id, key, info.Item, info.PositionTicks).ConfigureAwait(false);
+            }
+
+            EventHelper.QueueEventIfNotNull(PlaybackStopped, this, new PlaybackStopEventArgs
+            {
+                Item = info.Item,
+                Users = users,
+                PlaybackPositionTicks = info.PositionTicks,
+                PlayedToCompletion = playedToCompletion
+
+            }, _logger);
+        }
+
+        private async Task<bool> OnPlaybackStopped(Guid userId, string userDataKey, BaseItem item, long? positionTicks)
+        {
+            var data = _userDataRepository.GetUserData(userId, userDataKey);
             bool playedToCompletion;
 
-            if (info.PositionTicks.HasValue)
+            if (positionTicks.HasValue)
             {
-                playedToCompletion = UpdatePlayState(info.Item, data, info.PositionTicks.Value);
+                playedToCompletion = UpdatePlayState(item, data, positionTicks.Value);
             }
             else
             {
@@ -389,19 +465,11 @@ namespace MediaBrowser.Server.Implementations.Session
                 playedToCompletion = true;
             }
 
-            await _userDataRepository.SaveUserData(user.Id, info.Item, data, UserDataSaveReason.PlaybackFinished, CancellationToken.None).ConfigureAwait(false);
+            await _userDataRepository.SaveUserData(userId, item, data, UserDataSaveReason.PlaybackFinished, CancellationToken.None).ConfigureAwait(false);
 
-            EventHelper.QueueEventIfNotNull(PlaybackStopped, this, new PlaybackStopEventArgs
-            {
-                Item = info.Item,
-                User = user,
-                PlaybackPositionTicks = info.PositionTicks,
-                UserData = data,
-                PlayedToCompletion = playedToCompletion
-
-            }, _logger);
+            return playedToCompletion;
         }
-
+        
         /// <summary>
         /// Updates playstate position for an item but does not save
         /// </summary>
@@ -462,12 +530,12 @@ namespace MediaBrowser.Server.Implementations.Session
         }
 
         /// <summary>
-        /// Gets the session for remote control.
+        /// Gets the session.
         /// </summary>
-        /// <param name="sessionId">The session id.</param>
+        /// <param name="sessionId">The session identifier.</param>
         /// <returns>SessionInfo.</returns>
         /// <exception cref="ResourceNotFoundException"></exception>
-        private SessionInfo GetSessionForRemoteControl(Guid sessionId)
+        private SessionInfo GetSession(Guid sessionId)
         {
             var session = Sessions.First(i => i.Id.Equals(sessionId));
 
@@ -475,6 +543,19 @@ namespace MediaBrowser.Server.Implementations.Session
             {
                 throw new ResourceNotFoundException(string.Format("Session {0} not found.", sessionId));
             }
+
+            return session;
+        }
+
+        /// <summary>
+        /// Gets the session for remote control.
+        /// </summary>
+        /// <param name="sessionId">The session id.</param>
+        /// <returns>SessionInfo.</returns>
+        /// <exception cref="ResourceNotFoundException"></exception>
+        private SessionInfo GetSessionForRemoteControl(Guid sessionId)
+        {
+            var session = GetSession(sessionId);
 
             if (!session.SupportsRemoteControl)
             {
@@ -595,7 +676,7 @@ namespace MediaBrowser.Server.Implementations.Session
                     _logger.ErrorException("Error in SendRestartRequiredNotification.", ex);
                 }
 
-            }));
+            }, cancellationToken));
 
             return Task.WhenAll(tasks);
         }
@@ -648,6 +729,69 @@ namespace MediaBrowser.Server.Implementations.Session
             }, cancellationToken));
 
             return Task.WhenAll(tasks);
+        }
+
+
+        /// <summary>
+        /// Adds the additional user.
+        /// </summary>
+        /// <param name="sessionId">The session identifier.</param>
+        /// <param name="userId">The user identifier.</param>
+        /// <exception cref="System.UnauthorizedAccessException">Cannot modify additional users without authenticating first.</exception>
+        /// <exception cref="System.ArgumentException">The requested user is already the primary user of the session.</exception>
+        public void AddAdditionalUser(Guid sessionId, Guid userId)
+        {
+            var session = GetSession(sessionId);
+
+            if (!session.UserId.HasValue)
+            {
+                throw new UnauthorizedAccessException("Cannot modify additional users without authenticating first.");
+            }
+
+            if (session.UserId.Value == userId)
+            {
+                throw new ArgumentException("The requested user is already the primary user of the session.");
+            }
+
+            if (session.AdditionalUsersPresent.All(i => new Guid(i.UserId) != userId))
+            {
+                var user = _userManager.GetUserById(userId);
+
+                session.AdditionalUsersPresent.Add(new SessionUserInfo
+                {
+                    UserId = userId.ToString("N"),
+                    UserName = user.Name
+                });
+            }
+        }
+
+        /// <summary>
+        /// Removes the additional user.
+        /// </summary>
+        /// <param name="sessionId">The session identifier.</param>
+        /// <param name="userId">The user identifier.</param>
+        /// <exception cref="System.UnauthorizedAccessException">Cannot modify additional users without authenticating first.</exception>
+        /// <exception cref="System.ArgumentException">The requested user is already the primary user of the session.</exception>
+        public void RemoveAdditionalUser(Guid sessionId, Guid userId)
+        {
+            var session = GetSession(sessionId);
+
+            if (!session.UserId.HasValue)
+            {
+                throw new UnauthorizedAccessException("Cannot modify additional users without authenticating first.");
+            }
+
+            if (session.UserId.Value == userId)
+            {
+                throw new ArgumentException("The requested user is already the primary user of the session.");
+            }
+
+            var user = session.AdditionalUsersPresent.FirstOrDefault(i => new Guid(i.UserId) == userId);
+
+            if (user != null)
+            {
+                session.AdditionalUsersPresent.Remove(user);
+            }
         }
     }
 }

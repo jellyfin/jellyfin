@@ -1,6 +1,10 @@
 ﻿function IsStorageEnabled() {
+    
+    if (!window.localStorage) {
+        return false;
+    }
     try {
-        localStorage.setItem("__test", "data");
+        window.localStorage.setItem("__test", "data");
     } catch (err) {
         if ((err.name).toUpperCase() == 'QUOTA_EXCEEDED_ERR') {
             return false;

@@ -94,7 +94,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             {
                 var userId = pair.Key;
                 var userSessions = _sessionManager.Sessions
-                    .Where(u => u.User != null && u.User.Id == userId && u.SessionController != null && u.IsActive)
+                    .Where(u => u.UserId.HasValue && u.UserId.Value == userId && u.SessionController != null && u.IsActive)
                     .ToList();
 
                 if (userSessions.Count > 0)

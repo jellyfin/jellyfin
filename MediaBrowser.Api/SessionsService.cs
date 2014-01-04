@@ -172,6 +172,28 @@ namespace MediaBrowser.Api
         public long? TimeoutMs { get; set; }
     }
 
+    [Route("/Sessions/{Id}/Users/{UserId}", "POST")]
+    [Api(("Adds an additional user to a session"))]
+    public class AddUserToSession : IReturnVoid
+    {
+        [ApiMember(Name = "Id", Description = "Session Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public Guid Id { get; set; }
+
+        [ApiMember(Name = "UserId", Description = "UserId Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public Guid UserId { get; set; }
+    }
+
+    [Route("/Sessions/{Id}/Users/{UserId}", "DELETE")]
+    [Api(("Removes an additional user from a session"))]
+    public class RemoveUserFromSession : IReturnVoid
+    {
+        [ApiMember(Name = "Id", Description = "Session Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public Guid Id { get; set; }
+
+        [ApiMember(Name = "UserId", Description = "UserId Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public Guid UserId { get; set; }
+    }
+
     /// <summary>
     /// Class SessionsService
     /// </summary>
@@ -217,7 +239,7 @@ namespace MediaBrowser.Api
 
                 if (!user.Configuration.EnableRemoteControlOfOtherUsers)
                 {
-                    result = result.Where(i => i.User == null || i.User.Id == request.ControllableByUserId.Value);
+                    result = result.Where(i => !i.UserId.HasValue || i.UserId.Value == request.ControllableByUserId.Value);
                 }
             }
 
@@ -302,6 +324,16 @@ namespace MediaBrowser.Api
             var task = _sessionManager.SendPlayCommand(request.Id, command, CancellationToken.None);
 
             Task.WaitAll(task);
+        }
+
+        public void Post(AddUserToSession request)
+        {
+            _sessionManager.AddAdditionalUser(request.Id, request.UserId);
+        }
+
+        public void Delete(RemoveUserFromSession request)
+        {
+            _sessionManager.RemoveAdditionalUser(request.Id, request.UserId);
         }
     }
 }

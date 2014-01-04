@@ -254,7 +254,7 @@ namespace MediaBrowser.ServerApplication
 
             RegisterSingleInstance<ILibrarySearchEngine>(() => new LuceneSearchEngine(ApplicationPaths, LogManager, LibraryManager));
 
-            SessionManager = new SessionManager(UserDataManager, ServerConfigurationManager, Logger, UserRepository, LibraryManager);
+            SessionManager = new SessionManager(UserDataManager, ServerConfigurationManager, Logger, UserRepository, LibraryManager, UserManager);
             RegisterSingleInstance(SessionManager);
 
             HttpServer = ServerFactory.CreateServer(this, LogManager, "Media Browser", "mediabrowser", "dashboard/index.html");

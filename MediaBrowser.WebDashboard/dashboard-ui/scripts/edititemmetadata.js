@@ -787,6 +787,7 @@
             $('#labelDisplayOrder', page).html('Title display order:');
             $('#selectDisplayOrder', page).html('<option value="SortName">Sort Name</option><option value="PremiereDate">Release Date</option>').selectmenu('refresh');
         } else {
+            $('#selectDisplayOrder', page).html('').selectmenu('refresh');
             $('#fldDisplayOrder', page).hide();
         }
 
