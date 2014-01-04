@@ -123,9 +123,7 @@
             html += '</td>';
 
             html += '<td class="username">';
-            if (connection.UserId) {
-                html += '<a href="useredit.html?userid=' + connection.UserId + '">' + connection.UserName + '</a>';
-            }
+            html += DashboardPage.getUsersHtml(connection);
             html += '</td>';
 
             var nowPlayingItem = connection.NowPlayingItem;
@@ -147,15 +145,27 @@
         $('.deadSession', table).remove();
     },
 
+    getUsersHtml: function (session) {
+
+        var html = '';
+
+        if (session.UserId) {
+            html += '<div><a href="useredit.html?userid=' + session.UserId + '">' + session.UserName + '</a><div>';
+        }
+
+        html += session.AdditionalUsers.map(function (currentSession) {
+
+            return '<div><a href="useredit.html?userid=' + currentSession.UserId + '">' + currentSession.UserName + '</a><div>';
+        });
+
+        return html;
+    },
+
     updateSession: function (row, session) {
 
         row.removeClass('deadSession');
 
-        if (session.UserId) {
-            $('.username', row).html('<a href="useredit.html?userid=' + session.UserId + '">' + session.UserName + '</a>').trigger('create');
-        } else {
-            $('.username', row).html('');
-        }
+        $('.username', row).html(DashboardPage.getUsersHtml(session)).trigger('create');
 
         var nowPlayingItem = session.NowPlayingItem;
 

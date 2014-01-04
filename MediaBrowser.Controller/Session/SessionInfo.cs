@@ -2,6 +2,7 @@
 using MediaBrowser.Model.Session;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MediaBrowser.Controller.Session
 {
@@ -14,10 +15,10 @@ namespace MediaBrowser.Controller.Session
         {
             QueueableMediaTypes = new List<string>();
 
-            AdditionalUsersPresent = new List<SessionUserInfo>();
+            AdditionalUsers = new List<SessionUserInfo>();
         }
 
-        public List<SessionUserInfo> AdditionalUsersPresent { get; set; }
+        public List<SessionUserInfo> AdditionalUsers { get; set; }
         
         /// <summary>
         /// Gets or sets the remote end point.
@@ -171,6 +172,11 @@ namespace MediaBrowser.Controller.Session
                 
                 return false;
             }
+        }
+
+        public bool ContainsUser(Guid userId)
+        {
+            return (UserId ?? Guid.Empty) == UserId || AdditionalUsers.Any(i => userId == new Guid(i.UserId));
         }
     }
 }

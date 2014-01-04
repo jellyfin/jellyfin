@@ -236,7 +236,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
             if (!userId.HasValue)
             {
-                connection.AdditionalUsersPresent.Clear();
+                connection.AdditionalUsers.Clear();
             }
 
             if (connection.SessionController == null)
@@ -264,7 +264,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
                 users.Add(user);
 
-                var additionalUsers = session.AdditionalUsersPresent
+                var additionalUsers = session.AdditionalUsers
                     .Select(i => _userManager.GetUserById(new Guid(i.UserId)))
                     .Where(i => i != null);
 
@@ -753,11 +753,11 @@ namespace MediaBrowser.Server.Implementations.Session
                 throw new ArgumentException("The requested user is already the primary user of the session.");
             }
 
-            if (session.AdditionalUsersPresent.All(i => new Guid(i.UserId) != userId))
+            if (session.AdditionalUsers.All(i => new Guid(i.UserId) != userId))
             {
                 var user = _userManager.GetUserById(userId);
 
-                session.AdditionalUsersPresent.Add(new SessionUserInfo
+                session.AdditionalUsers.Add(new SessionUserInfo
                 {
                     UserId = userId.ToString("N"),
                     UserName = user.Name
@@ -786,11 +786,11 @@ namespace MediaBrowser.Server.Implementations.Session
                 throw new ArgumentException("The requested user is already the primary user of the session.");
             }
 
-            var user = session.AdditionalUsersPresent.FirstOrDefault(i => new Guid(i.UserId) == userId);
+            var user = session.AdditionalUsers.FirstOrDefault(i => new Guid(i.UserId) == userId);
 
             if (user != null)
             {
-                session.AdditionalUsersPresent.Remove(user);
+                session.AdditionalUsers.Remove(user);
             }
         }
     }

@@ -239,7 +239,7 @@ namespace MediaBrowser.Api
 
                 if (!user.Configuration.EnableRemoteControlOfOtherUsers)
                 {
-                    result = result.Where(i => !i.UserId.HasValue || i.UserId.Value == request.ControllableByUserId.Value);
+                    result = result.Where(i => !i.UserId.HasValue || i.ContainsUser(request.ControllableByUserId.Value));
                 }
             }
 

@@ -245,7 +245,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 CanSeek = session.CanSeek,
                 QueueableMediaTypes = session.QueueableMediaTypes,
                 RemoteEndPoint = session.RemoteEndPoint,
-                AdditionalUsersPresent = session.AdditionalUsersPresent
+                AdditionalUsers = session.AdditionalUsers
             };
 
             if (session.NowPlayingItem != null)
