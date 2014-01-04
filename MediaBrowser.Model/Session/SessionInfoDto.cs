@@ -47,7 +47,7 @@ namespace MediaBrowser.Model.Session
         /// Gets or sets the additional users present.
         /// </summary>
         /// <value>The additional users present.</value>
-        public List<SessionUserInfo> AdditionalUsersPresent { get; set; }
+        public List<SessionUserInfo> AdditionalUsers { get; set; }
 
         /// <summary>
         /// Gets or sets the application version.
@@ -137,7 +137,7 @@ namespace MediaBrowser.Model.Session
 
         public SessionInfoDto()
         {
-            AdditionalUsersPresent = new List<SessionUserInfo>();
+            AdditionalUsers = new List<SessionUserInfo>();
         }
     }
 
