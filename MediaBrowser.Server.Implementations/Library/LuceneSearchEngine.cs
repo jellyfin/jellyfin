@@ -14,7 +14,7 @@ namespace MediaBrowser.Server.Implementations.Library
     /// Class LuceneSearchEngine
     /// http://www.codeproject.com/Articles/320219/Lucene-Net-ultra-fast-search-for-MVC-or-WebForms
     /// </summary>
-    public class LuceneSearchEngine : ILibrarySearchEngine, IDisposable
+    public class LuceneSearchEngine : ISearchEngine, IDisposable
     {
         private readonly ILibraryManager _libraryManager;
         private readonly ILogger _logger;
@@ -24,18 +24,6 @@ namespace MediaBrowser.Server.Implementations.Library
             _libraryManager = libraryManager;
 
             _logger = logManager.GetLogger("Lucene");
-        }
-
-        /// <summary>
-        /// Searches items and returns them in order of relevance.
-        /// </summary>
-        /// <param name="items">The items.</param>
-        /// <param name="searchTerm">The search term.</param>
-        /// <returns>IEnumerable{BaseItem}.</returns>
-        /// <exception cref="System.ArgumentNullException">searchTerm</exception>
-        public IEnumerable<BaseItem> Search(IEnumerable<BaseItem> items, string searchTerm)
-        {
-            return items;
         }
 
         public void Dispose()
