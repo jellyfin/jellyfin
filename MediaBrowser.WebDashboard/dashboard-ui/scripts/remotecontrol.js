@@ -848,7 +848,7 @@
         html += '<span class="duration"></span>';
         html += '</div>';
 
-        html += '<div class="positionSliderContainer"><input type="range" name="positionSlider" id="positionSlider" min="0" max="100" value="50" step=".1" style="display:none;" /></div>';
+        html += '<div class="remotePositionSliderContainer"><input type="range" name="positionSlider" id="positionSlider" min="0" max="100" value="50" step=".1" style="display:none;" /></div>';
         html += '</div>';
 
         html += '<div style="text-align:center; margin: 0 0 2em;">';
@@ -930,9 +930,9 @@
         }
 
         if (session.CanSeek) {
-            $('.positionSliderContainer', elem).show();
+            $('.remotePositionSliderContainer', elem).show();
         } else {
-            $('.positionSliderContainer', elem).hide();
+            $('.remotePositionSliderContainer', elem).hide();
         }
 
         var time = session.NowPlayingPositionTicks || 0;
