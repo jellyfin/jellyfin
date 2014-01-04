@@ -2,7 +2,7 @@
     window.MediaBrowser = {};
 }
 
-MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, window) {
+MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, window, FileReader) {
 
     /**
      * Creates a new api client instance
@@ -3982,7 +3982,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
 
     };
 
-}(jQuery, navigator, window.JSON, window.WebSocket, setTimeout, window);
+}(jQuery, navigator, window.JSON, window.WebSocket, setTimeout, window, window.FileReader);
 
 /**
  * Provides a friendly way to create an api client instance using information from the browser's current url
@@ -4208,7 +4208,7 @@ MediaBrowser.SHA1 = function (msg) {
     }
 
     if (matched.platform) {
-        browser[matched.platform] = true
+        browser[matched.platform] = true;
     }
 
     // Chrome is Webkit, but Webkit is also Safari.

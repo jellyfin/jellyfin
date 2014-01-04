@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Session;
 using System;
 using System.Collections.Generic;
 
@@ -12,8 +13,12 @@ namespace MediaBrowser.Controller.Session
         public SessionInfo()
         {
             QueueableMediaTypes = new List<string>();
+
+            AdditionalUsersPresent = new List<SessionUserInfo>();
         }
 
+        public List<SessionUserInfo> AdditionalUsersPresent { get; set; }
+        
         /// <summary>
         /// Gets or sets the remote end point.
         /// </summary>
@@ -31,7 +36,7 @@ namespace MediaBrowser.Controller.Session
         /// </summary>
         /// <value>The queueable media types.</value>
         public List<string> QueueableMediaTypes { get; set; }
-
+        
         /// <summary>
         /// Gets or sets the id.
         /// </summary>
@@ -42,7 +47,13 @@ namespace MediaBrowser.Controller.Session
         /// Gets or sets the user id.
         /// </summary>
         /// <value>The user id.</value>
-        public User User { get; set; }
+        public Guid? UserId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the username.
+        /// </summary>
+        /// <value>The username.</value>
+        public string UserName { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the client.

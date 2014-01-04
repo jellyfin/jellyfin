@@ -1,5 +1,6 @@
-﻿using System;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
+using System;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Library
 {
@@ -8,10 +9,14 @@ namespace MediaBrowser.Controller.Library
     /// </summary>
     public class PlaybackProgressEventArgs : EventArgs
     {
-        public User User { get; set; }
+        public List<User> Users { get; set; }
         public long? PlaybackPositionTicks { get; set; }
         public BaseItem Item { get; set; }
-        public UserItemData UserData { get; set; }
+
+        public PlaybackProgressEventArgs()
+        {
+            Users = new List<User>();
+        }
     }
 
     public class PlaybackStopEventArgs : PlaybackProgressEventArgs

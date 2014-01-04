@@ -44,6 +44,12 @@ namespace MediaBrowser.Model.Session
         public string UserName { get; set; }
 
         /// <summary>
+        /// Gets or sets the additional users present.
+        /// </summary>
+        /// <value>The additional users present.</value>
+        public List<SessionUserInfo> AdditionalUsersPresent { get; set; }
+
+        /// <summary>
         /// Gets or sets the application version.
         /// </summary>
         /// <value>The application version.</value>
@@ -128,5 +134,27 @@ namespace MediaBrowser.Model.Session
         public bool SupportsRemoteControl { get; set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
+
+        public SessionInfoDto()
+        {
+            AdditionalUsersPresent = new List<SessionUserInfo>();
+        }
+    }
+
+    /// <summary>
+    /// Class SessionUserInfo.
+    /// </summary>
+    public class SessionUserInfo
+    {
+        /// <summary>
+        /// Gets or sets the user identifier.
+        /// </summary>
+        /// <value>The user identifier.</value>
+        public string UserId { get; set; }
+        /// <summary>
+        /// Gets or sets the name of the user.
+        /// </summary>
+        /// <value>The name of the user.</value>
+        public string UserName { get; set; }
     }
 }

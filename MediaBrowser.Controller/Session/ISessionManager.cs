@@ -141,5 +141,19 @@ namespace MediaBrowser.Controller.Session
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task SendServerRestartNotification(CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Adds the additional user.
+        /// </summary>
+        /// <param name="sessionId">The session identifier.</param>
+        /// <param name="userId">The user identifier.</param>
+        void AddAdditionalUser(Guid sessionId, Guid userId);
+
+        /// <summary>
+        /// Removes the additional user.
+        /// </summary>
+        /// <param name="sessionId">The session identifier.</param>
+        /// <param name="userId">The user identifier.</param>
+        void RemoveAdditionalUser(Guid sessionId, Guid userId);
     }
 }
