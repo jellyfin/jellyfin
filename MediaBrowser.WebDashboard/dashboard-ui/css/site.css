@@ -327,6 +327,14 @@ h1 .imageLink {
     background: #262626!important;
 }
 
+.appLinks a {
+    margin: 0 2px;
+}
+
+.appLinks img {
+    height: 32px;
+}
+
 @media all and (min-width: 450px) {
 
     .currentUsername {

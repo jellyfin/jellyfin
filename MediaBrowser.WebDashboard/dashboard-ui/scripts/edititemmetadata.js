@@ -717,7 +717,7 @@
         }
 
         if (item.MediaType == "Video" && item.Type != "Channel") {
-            $('#fldSourceType', page).show();
+            $('#fldSourceType', page).hide();
         } else {
             $('#fldSourceType', page).hide();
         }

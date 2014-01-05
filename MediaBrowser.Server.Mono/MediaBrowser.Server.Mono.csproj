@@ -22,7 +22,6 @@
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x86</PlatformTarget>
     <Externalconsole>true</Externalconsole>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <DebugType>full</DebugType>
@@ -32,13 +31,11 @@
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x86</PlatformTarget>
     <Externalconsole>true</Externalconsole>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>false</Optimize>
     <OutputPath>bin\Release</OutputPath>
     <WarningLevel>4</WarningLevel>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release Mono|AnyCPU' ">
     <Optimize>false</Optimize>
@@ -50,7 +47,7 @@
     <Reference Include="ServiceStack.Interfaces">
       <HintPath>..\ThirdParty\ServiceStack\ServiceStack.Interfaces.dll</HintPath>
     </Reference>
-    <Reference Include="Mono.Posix" Condition=" '$(ConfigurationName)' == 'Release Mono' "/>
+    <Reference Include="Mono.Posix" Condition=" '$(ConfigurationName)' == 'Release Mono' " />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\SharedVersion.cs">
@@ -78,10 +75,12 @@
     <Compile Include="..\MediaBrowser.ServerApplication\FFMpeg\FFMpegDownloader.cs">
       <Link>FFMpeg\FFMpegDownloader.cs</Link>
     </Compile>
-    <Compile Include="FFMpeg\FFMpegDownloadInfo.cs" />
     <Compile Include="IO\FileSystemFactory.cs" />
     <Compile Include="..\MediaBrowser.ServerApplication\EntryPoints\WanAddressEntryPoint.cs">
       <Link>EntryPoints\WanAddressEntryPoint.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.ServerApplication\FFMpeg\FFMpegDownloadInfo.cs">
+      <Link>FFMpeg\FFMpegDownloadInfo.cs</Link>
     </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
