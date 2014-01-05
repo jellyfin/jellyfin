@@ -945,5 +945,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 TotalRecordCount = groups.Count
             };
         }
+
+        public Task CloseLiveStream(string id, CancellationToken cancellationToken)
+        {
+            return ActiveService.CloseLiveStream(id, cancellationToken);
+        }
     }
 }
