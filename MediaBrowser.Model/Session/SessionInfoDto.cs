@@ -166,4 +166,14 @@ namespace MediaBrowser.Model.Session
         /// <value>The name of the user.</value>
         public string UserName { get; set; }
     }
+
+    public class ClientCapabilities
+    {
+        public List<string> PlayableMediaTypes { get; set; }
+
+        public ClientCapabilities()
+        {
+            PlayableMediaTypes = new List<string>();
+        }
+    }
 }
