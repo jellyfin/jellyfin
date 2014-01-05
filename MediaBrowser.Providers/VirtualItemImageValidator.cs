@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -19,6 +20,22 @@ namespace MediaBrowser.Providers
         public override bool Supports(BaseItem item)
         {
             var locationType = item.LocationType;
+
+            // The regular provider will get virtual seasons
+            if (item.LocationType == LocationType.Virtual)
+            {
+                var season = item as Season;
+
+                if (season != null)
+                {
+                    var series = season.Series;
+
+                    if (series != null && series.LocationType == LocationType.FileSystem)
+                    {
+                        return false;
+                    }
+                }
+            }
 
             return locationType == LocationType.Virtual ||
                    locationType == LocationType.Remote;
