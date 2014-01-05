@@ -52,5 +52,7 @@ namespace MediaBrowser.Api.Playback
         public bool SendInputOverStandardInput { get; set; }
 
         public CancellationTokenSource StandardInputCancellationTokenSource { get; set; }
+
+        public string LiveTvStreamId { get; set; }
     }
 }

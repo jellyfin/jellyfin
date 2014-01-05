@@ -864,7 +864,7 @@ namespace MediaBrowser.Api.Playback
         /// </summary>
         /// <param name="process">The process.</param>
         /// <param name="state">The state.</param>
-        protected void OnFfMpegProcessExited(Process process, StreamState state)
+        protected async void OnFfMpegProcessExited(Process process, StreamState state)
         {
             if (state.IsoMount != null)
             {
@@ -888,6 +888,18 @@ namespace MediaBrowser.Api.Playback
             catch
             {
                 Logger.Info("FFMpeg exited with an error for {0}", outputFilePath);
+            }
+
+            if (!string.IsNullOrEmpty(state.LiveTvStreamId))
+            {
+                try
+                {
+                    await LiveTvManager.CloseLiveStream(state.LiveTvStreamId, CancellationToken.None).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException("Error closing live tv stream", ex);
+                }
             }
         }
 
@@ -936,6 +948,8 @@ namespace MediaBrowser.Api.Playback
                 {
                     var streamInfo = await LiveTvManager.GetRecordingStream(request.Id, cancellationToken).ConfigureAwait(false);
 
+                    state.LiveTvStreamId = streamInfo.Id;
+
                     if (!string.IsNullOrEmpty(streamInfo.Path) && File.Exists(streamInfo.Path))
                     {
                         state.MediaPath = streamInfo.Path;
@@ -960,6 +974,8 @@ namespace MediaBrowser.Api.Playback
                 state.PlayableStreamFileNames = new List<string>();
 
                 var streamInfo = await LiveTvManager.GetChannelStream(request.Id, cancellationToken).ConfigureAwait(false);
+
+                state.LiveTvStreamId = streamInfo.Id;
 
                 if (!string.IsNullOrEmpty(streamInfo.Path) && File.Exists(streamInfo.Path))
                 {

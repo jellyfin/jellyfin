@@ -293,7 +293,7 @@ namespace MediaBrowser.ServerApplication
             await Task.WhenAll(itemsTask, displayPreferencesTask, userdataTask).ConfigureAwait(false);
             progress.Report(100);
 
-            await ((UserManager) UserManager).Initialize().ConfigureAwait(false);
+            await ((UserManager)UserManager).Initialize().ConfigureAwait(false);
 
             SetKernelProperties();
         }
@@ -628,7 +628,8 @@ namespace MediaBrowser.ServerApplication
                 OperatingSystem = Environment.OSVersion.ToString(),
                 CanSelfRestart = CanSelfRestart,
                 CanSelfUpdate = CanSelfUpdate,
-                WanAddress = GetWanAddress()
+                WanAddress = GetWanAddress(),
+                HasUpdateAvailable = _hasUpdateAvailable
             };
         }
 
@@ -699,6 +700,7 @@ namespace MediaBrowser.ServerApplication
             }
         }
 
+        private bool _hasUpdateAvailable;
         /// <summary>
         /// Checks for update.
         /// </summary>
@@ -711,6 +713,8 @@ namespace MediaBrowser.ServerApplication
 
             var version = InstallationManager.GetLatestCompatibleVersion(availablePackages, Constants.MbServerPkgName, null, ApplicationVersion,
                                                            ConfigurationManager.CommonConfiguration.SystemUpdateLevel);
+
+            _hasUpdateAvailable = version != null;
 
             return version != null ? new CheckForUpdateResult { AvailableVersion = version.version, IsUpdateAvailable = version.version > ApplicationVersion, Package = version } :
                        new CheckForUpdateResult { AvailableVersion = ApplicationVersion, IsUpdateAvailable = false };
@@ -726,6 +730,8 @@ namespace MediaBrowser.ServerApplication
         public override async Task UpdateApplication(PackageVersionInfo package, CancellationToken cancellationToken, IProgress<double> progress)
         {
             await InstallationManager.InstallPackage(package, progress, cancellationToken).ConfigureAwait(false);
+
+            _hasUpdateAvailable = false;
 
             OnApplicationUpdated(package.version);
         }

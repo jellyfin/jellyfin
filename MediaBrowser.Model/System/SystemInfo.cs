@@ -123,6 +123,12 @@ namespace MediaBrowser.Model.System
         public string WanAddress { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance has update available.
+        /// </summary>
+        /// <value><c>true</c> if this instance has update available; otherwise, <c>false</c>.</value>
+        public bool HasUpdateAvailable { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="SystemInfo" /> class.
         /// </summary>
         public SystemInfo()
