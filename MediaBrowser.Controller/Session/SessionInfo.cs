@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Session;
 using System;
 using System.Collections.Generic;
@@ -14,12 +15,20 @@ namespace MediaBrowser.Controller.Session
         public SessionInfo()
         {
             QueueableMediaTypes = new List<string>();
+            PlayableMediaTypes = new List<string>
+            {
+                MediaType.Audio,
+                MediaType.Book,
+                MediaType.Game,
+                MediaType.Photo,
+                MediaType.Video
+            };
 
             AdditionalUsers = new List<SessionUserInfo>();
         }
 
         public List<SessionUserInfo> AdditionalUsers { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the remote end point.
         /// </summary>
@@ -37,7 +46,13 @@ namespace MediaBrowser.Controller.Session
         /// </summary>
         /// <value>The queueable media types.</value>
         public List<string> QueueableMediaTypes { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the playable media types.
+        /// </summary>
+        /// <value>The playable media types.</value>
+        public List<string> PlayableMediaTypes { get; set; }
+
         /// <summary>
         /// Gets or sets the id.
         /// </summary>
@@ -169,7 +184,7 @@ namespace MediaBrowser.Controller.Session
                 {
                     return SessionController.SupportsMediaRemoteControl;
                 }
-                
+
                 return false;
             }
         }

@@ -24,6 +24,12 @@ namespace MediaBrowser.Model.Session
         /// </summary>
         /// <value>The queueable media types.</value>
         public List<string> QueueableMediaTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the playable media types.
+        /// </summary>
+        /// <value>The playable media types.</value>
+        public List<string> PlayableMediaTypes { get; set; }
         
         /// <summary>
         /// Gets or sets the id.
@@ -138,6 +144,9 @@ namespace MediaBrowser.Model.Session
         public SessionInfoDto()
         {
             AdditionalUsers = new List<SessionUserInfo>();
+
+            PlayableMediaTypes = new List<string>();
+            QueueableMediaTypes = new List<string>();
         }
     }
 
