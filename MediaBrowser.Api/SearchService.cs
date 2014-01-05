@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Controller;
-using MediaBrowser.Controller.Drawing;
+﻿using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -157,6 +156,9 @@ namespace MediaBrowser.Api
                 result.PrimaryImageTag = _imageProcessor.GetImageCacheTag(item, ImageType.Primary, item.GetImagePath(ImageType.Primary));
             }
 
+            SetThumbImageInfo(result, item);
+            SetBackdropImageInfo(result, item);
+
             var episode = item as Episode;
 
             if (episode != null)
@@ -204,6 +206,52 @@ namespace MediaBrowser.Api
             }
 
             return result;
+        }
+
+        private void SetThumbImageInfo(SearchHint hint, BaseItem item)
+        {
+            var itemWithImage = item.HasImage(ImageType.Thumb) ? item : null;
+
+            if (itemWithImage == null)
+            {
+                if (item is Episode)
+                {
+                    itemWithImage = GetParentWithImage<Series>(item, ImageType.Thumb);
+                }
+            }
+
+            if (itemWithImage == null)
+            {
+                itemWithImage = GetParentWithImage<BaseItem>(item, ImageType.Thumb);
+            }
+
+            if (itemWithImage != null)
+            {
+                hint.ThumbImageTag = _imageProcessor.GetImageCacheTag(itemWithImage, ImageType.Thumb, itemWithImage.GetImagePath(ImageType.Thumb));
+                hint.ThumbImageItemId = itemWithImage.Id.ToString("N");
+            }
+        }
+
+        private void SetBackdropImageInfo(SearchHint hint, BaseItem item)
+        {
+            var itemWithImage = item.HasImage(ImageType.Backdrop) ? item : null;
+
+            if (itemWithImage == null)
+            {
+                itemWithImage = GetParentWithImage<BaseItem>(item, ImageType.Backdrop);
+            }
+
+            if (itemWithImage != null)
+            {
+                hint.BackdropImageTag = _imageProcessor.GetImageCacheTag(itemWithImage, ImageType.Backdrop, itemWithImage.GetImagePath(ImageType.Backdrop, 0));
+                hint.BackdropImageItemId = itemWithImage.Id.ToString("N");
+            }
+        }
+
+        private T GetParentWithImage<T>(BaseItem item, ImageType type)
+            where T : BaseItem
+        {
+            return item.Parents.OfType<T>().FirstOrDefault(i => i.HasImage(type));
         }
     }
 }

@@ -1394,11 +1394,12 @@ namespace MediaBrowser.Controller.Entities
         {
             if (type == ImageType.Backdrop)
             {
-                throw new ArgumentException("Backdrops should be accessed using Item.Backdrops");
+                return BackdropImagePaths.Count > imageIndex;
             }
             if (type == ImageType.Screenshot)
             {
-                throw new ArgumentException("Screenshots should be accessed using Item.Screenshots");
+                var hasScreenshots = this as IHasScreenshots;
+                return hasScreenshots != null && hasScreenshots.ScreenshotImagePaths.Count > imageIndex;
             }
 
             return !string.IsNullOrEmpty(this.GetImagePath(type));

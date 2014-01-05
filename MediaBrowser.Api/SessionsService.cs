@@ -205,7 +205,7 @@ namespace MediaBrowser.Api
         [ApiMember(Name = "Id", Description = "Session Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public Guid Id { get; set; }
 
-        [ApiMember(Name = "PlayableMediaTypes", Description = "A list of playable media types, comma delimited.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
+        [ApiMember(Name = "PlayableMediaTypes", Description = "A list of playable media types, comma delimited. Audio, Video, Book, Game, Photo.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string PlayableMediaTypes { get; set; }
     }
     
