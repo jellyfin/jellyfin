@@ -244,6 +244,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 ApplicationVersion = session.ApplicationVersion,
                 CanSeek = session.CanSeek,
                 QueueableMediaTypes = session.QueueableMediaTypes,
+                PlayableMediaTypes = session.PlayableMediaTypes,
                 RemoteEndPoint = session.RemoteEndPoint,
                 AdditionalUsers = session.AdditionalUsers
             };

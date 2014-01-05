@@ -194,6 +194,21 @@ namespace MediaBrowser.Api
         public Guid UserId { get; set; }
     }
 
+    [Route("/Sessions/{Id}/Capabilities", "POST")]
+    [Api(("Updates capabilities for a device"))]
+    public class PostCapabilities : IReturnVoid
+    {
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Session Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public Guid Id { get; set; }
+
+        [ApiMember(Name = "PlayableMediaTypes", Description = "A list of playable media types, comma delimited.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string PlayableMediaTypes { get; set; }
+    }
+    
     /// <summary>
     /// Class SessionsService
     /// </summary>
@@ -334,6 +349,15 @@ namespace MediaBrowser.Api
         public void Delete(RemoveUserFromSession request)
         {
             _sessionManager.RemoveAdditionalUser(request.Id, request.UserId);
+        }
+
+        public void Post(PostCapabilities request)
+        {
+            var session = _sessionManager.Sessions.First(i => i.Id == request.Id);
+
+            session.PlayableMediaTypes = request.PlayableMediaTypes
+                .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                .ToList();
         }
     }
 }
