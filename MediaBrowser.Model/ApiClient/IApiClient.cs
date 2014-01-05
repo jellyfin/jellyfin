@@ -59,6 +59,15 @@ namespace MediaBrowser.Model.ApiClient
             where T : class;
 
         /// <summary>
+        /// Reports the capabilities.
+        /// </summary>
+        /// <param name="sessionId">The session identifier.</param>
+        /// <param name="capabilities">The capabilities.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task ReportCapabilities(string sessionId, ClientCapabilities capabilities, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Gets the index of the game players.
         /// </summary>
         /// <param name="userId">The user id.</param>
