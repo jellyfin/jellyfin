@@ -616,7 +616,14 @@ namespace MediaBrowser.Server.Implementations.Session
             {
                 if (items.Any(i => !session.QueueableMediaTypes.Contains(i.MediaType, StringComparer.OrdinalIgnoreCase)))
                 {
-                    throw new ArgumentException(string.Format("Session {0} is unable to queue the requested media type.", session.Id));
+                    throw new ArgumentException(string.Format("{0} is unable to queue the requested media type.", session.DeviceName ?? session.Id.ToString()));
+                }
+            }
+            else
+            {
+                if (items.Any(i => !session.PlayableMediaTypes.Contains(i.MediaType, StringComparer.OrdinalIgnoreCase)))
+                {
+                    throw new ArgumentException(string.Format("{0} is unable to play the requested media type.", session.DeviceName ?? session.Id.ToString()));
                 }
             }
 
