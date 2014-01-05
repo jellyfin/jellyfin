@@ -49,17 +49,17 @@ namespace MediaBrowser.Api.UserLibrary
         /// Limit results to items containing specific genres
         /// </summary>
         /// <value>The genres.</value>
-        [ApiMember(Name = "Genres", Description = "Optional. If specified, results will be filtered based on genre. This allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        [ApiMember(Name = "Genres", Description = "Optional. If specified, results will be filtered based on genre. This allows multiple, pipe delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string Genres { get; set; }
 
-        [ApiMember(Name = "AllGenres", Description = "Optional. If specified, results will be filtered based on genre. This allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        [ApiMember(Name = "AllGenres", Description = "Optional. If specified, results will be filtered based on genre. This allows multiple, pipe delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string AllGenres { get; set; }
 
         /// <summary>
         /// Limit results to items containing specific studios
         /// </summary>
         /// <value>The studios.</value>
-        [ApiMember(Name = "Studios", Description = "Optional. If specified, results will be filtered based on studio. This allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        [ApiMember(Name = "Studios", Description = "Optional. If specified, results will be filtered based on studio. This allows multiple, pipe delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string Studios { get; set; }
 
         /// <summary>
@@ -805,21 +805,21 @@ namespace MediaBrowser.Api.UserLibrary
             // Apply genre filter
             if (!string.IsNullOrEmpty(request.Genres))
             {
-                var vals = request.Genres.Split(',');
+                var vals = request.Genres.Split('|');
                 items = items.Where(f => vals.Any(v => f.Genres.Contains(v, StringComparer.OrdinalIgnoreCase)));
             }
 
             // Apply genre filter
             if (!string.IsNullOrEmpty(request.AllGenres))
             {
-                var vals = request.AllGenres.Split(',');
+                var vals = request.AllGenres.Split('|');
                 items = items.Where(f => vals.All(v => f.Genres.Contains(v, StringComparer.OrdinalIgnoreCase)));
             }
 
             // Apply studio filter
             if (!string.IsNullOrEmpty(request.Studios))
             {
-                var vals = request.Studios.Split(',');
+                var vals = request.Studios.Split('|');
                 items = items.Where(f => vals.Any(v => f.Studios.Contains(v, StringComparer.OrdinalIgnoreCase)));
             }
 

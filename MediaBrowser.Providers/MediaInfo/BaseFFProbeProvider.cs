@@ -78,7 +78,7 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             get
             {
-                return MediaEncoder.Version;
+                return "ffmpeg20131209";
             }
         }
 

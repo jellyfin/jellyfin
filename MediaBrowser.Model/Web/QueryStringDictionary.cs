@@ -227,6 +227,39 @@ namespace MediaBrowser.Model.Web
         }
 
         /// <summary>
+        /// Adds the specified name.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="delimiter">The delimiter.</param>
+        /// <exception cref="System.ArgumentNullException">value</exception>
+        public void Add(string name, IEnumerable<string> value, string delimiter)
+        {
+            if (value == null)
+            {
+                throw new ArgumentNullException("value");
+            }
+
+            var paramValue = string.Join(delimiter, value.ToArray());
+
+            Add(name, paramValue);
+        }
+
+        /// <summary>
+        /// Adds if not null.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="delimiter">The delimiter.</param>
+        public void AddIfNotNull(string name, IEnumerable<string> value, string delimiter)
+        {
+            if (value != null)
+            {
+                Add(name, value, delimiter);
+            }
+        }
+
+        /// <summary>
         /// Gets the query string.
         /// </summary>
         /// <returns>System.String.</returns>
