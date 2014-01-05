@@ -10,7 +10,7 @@
         SortOrder: "Ascending",
         MediaTypes: "Game",
         Recursive: true,
-        Fields: "Genres,Studios",
+        Fields: "Genres,Studios,PrimaryImageAspectRatio",
         StartIndex: 0
     };
 
@@ -32,32 +32,14 @@
             var checkSortOption = $('.radioSortBy:checked', page);
             $('.viewSummary', page).html(LibraryBrowser.getViewSummaryHtml(query, checkSortOption)).trigger('create');
 
-            if (view == "Backdrop") {
-                html += LibraryBrowser.getPosterDetailViewHtml({
-                    items: result.Items,
-                    preferBackdrop: true,
-                    context: "games",
-                    shape: "backdrop"
-                });
-                $('.itemsContainer', page).removeClass('timelineItemsContainer');
-            }
-            else if (view == "Poster") {
-                html += LibraryBrowser.getPosterDetailViewHtml({
-                    items: result.Items,
-                    context: "games",
-                    shape: "poster"
-                });
-                $('.itemsContainer', page).removeClass('timelineItemsContainer');
-            }
-            else if (view == "Timeline") {
-                html += LibraryBrowser.getPosterDetailViewHtml({
-                    items: result.Items,
-                    context: "games",
-                    shape: "poster",
-                    timeline: true
-                });
-                $('.itemsContainer', page).addClass('timelineItemsContainer');
-            }
+            html = LibraryBrowser.getPosterViewHtml({
+                items: result.Items,
+                shape: "auto",
+                context: 'games',
+                useAverageAspectRatio: false,
+                showTitle: true,
+                showParentTitle: true
+            });
 
             html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
 

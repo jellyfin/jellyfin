@@ -31,32 +31,13 @@
             var checkSortOption = $('.radioSortBy:checked', page);
             $('.viewSummary', page).html(LibraryBrowser.getViewSummaryHtml(query, checkSortOption)).trigger('create');
 
-            if (view == "Backdrop") {
-                html += LibraryBrowser.getPosterDetailViewHtml({
-                    items: result.Items,
-                    preferBackdrop: true,
-                    context: "music",
-                    shape: "backdrop"
-                });
-                $('.itemsContainer', page).removeClass('timelineItemsContainer');
-            }
-            else if (view == "Poster") {
-                html += LibraryBrowser.getPosterDetailViewHtml({
-                    items: result.Items,
-                    context: "music",
-                    shape: "poster"
-                });
-                $('.itemsContainer', page).removeClass('timelineItemsContainer');
-            }
-            else if (view == "Timeline") {
-                html += LibraryBrowser.getPosterDetailViewHtml({
-                    items: result.Items,
-                    context: "music",
-                    shape: "poster",
-                    timeline: true
-                });
-                $('.itemsContainer', page).addClass('timelineItemsContainer');
-            }
+            html = LibraryBrowser.getPosterViewHtml({
+                items: result.Items,
+                shape: "square",
+                context: 'music',
+                useAverageAspectRatio: true,
+                showTitle: true
+            });
 
             html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
 

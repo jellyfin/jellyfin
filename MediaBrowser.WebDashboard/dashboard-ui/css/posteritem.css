@@ -168,6 +168,13 @@
     opacity: 1;
 }
 
+@media all and (max-width: 600px) {
+
+    .packageReviewText {
+        display: none;
+    }
+}
+
 @media all and (min-width: 540px) {
 
     .backdropPosterItem {

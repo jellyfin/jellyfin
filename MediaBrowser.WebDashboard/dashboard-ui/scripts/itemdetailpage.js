@@ -594,6 +594,15 @@
                         displayAsSpecial: item.Type == "Season" && item.IndexNumber
                     });
                 }
+                else if (item.Type == "GameSystem") {
+                    html = LibraryBrowser.getPosterViewHtml({
+                        items: result.Items,
+                        shape: "auto",
+                        context: 'games',
+                        useAverageAspectRatio: false,
+                        showTitle: true
+                    });
+                }
                 else {
                     html = LibraryBrowser.getPosterDetailViewHtml({
                         items: result.Items,

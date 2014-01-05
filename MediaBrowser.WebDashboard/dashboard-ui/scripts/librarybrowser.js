@@ -667,7 +667,24 @@
 
             var html = "";
 
-            var primaryImageAspectRatio = options.useAverageAspectRatio ? LibraryBrowser.getAveragePrimaryImageAspectRatio(items) : null;
+            var primaryImageAspectRatio = options.useAverageAspectRatio || options.shape == 'auto' ? LibraryBrowser.getAveragePrimaryImageAspectRatio(items) : null;
+            
+            if (options.shape == 'auto') {
+
+                if (primaryImageAspectRatio && Math.abs(primaryImageAspectRatio - 1.777777778) < .3) {
+                    options.shape = 'backdrop';
+                }
+                else if (primaryImageAspectRatio && Math.abs(primaryImageAspectRatio - 1) < .3) {
+                    options.shape = 'square';
+                }
+                else {
+                    options.shape = 'portrait';
+                }
+            }
+            
+            if (!options.useAverageAspectRatio) {
+                primaryImageAspectRatio = null;
+            }
 
             for (var i = 0, length = items.length; i < length; i++) {
 
@@ -938,7 +955,7 @@
                 if (options.showParentTitle) {
 
                     html += "<div class='" + cssclass + "'>";
-                    html += item.EpisodeTitle ? item.Name : (item.SeriesName || item.Album || item.AlbumArtist || "&nbsp;");
+                    html += item.EpisodeTitle ? item.Name : (item.SeriesName || item.Album || item.AlbumArtist || item.GameSystem || "&nbsp;");
                     html += "</div>";
                 }
 
