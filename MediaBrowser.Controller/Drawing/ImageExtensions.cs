@@ -170,7 +170,7 @@ namespace MediaBrowser.Controller.Drawing
             var thumbnail = new Bitmap(croppedWidth, croppedHeight, PixelFormat.Format32bppPArgb);
 
             // Preserve the original resolution
-            thumbnail.SetResolution(bmp.HorizontalResolution, bmp.VerticalResolution);
+            TrySetResolution(thumbnail, bmp.HorizontalResolution, bmp.VerticalResolution);
 
             using (var thumbnailGraph = Graphics.FromImage(thumbnail))
             {
@@ -186,6 +186,20 @@ namespace MediaBrowser.Controller.Drawing
                   GraphicsUnit.Pixel);
             }
             return thumbnail;
+        }
+
+        /// <summary>
+        /// Tries the set resolution.
+        /// </summary>
+        /// <param name="bmp">The BMP.</param>
+        /// <param name="x">The x.</param>
+        /// <param name="y">The y.</param>
+        private static void TrySetResolution(Bitmap bmp, float x, float y)
+        {
+            if (x > 0 && y > 0)
+            {
+                bmp.SetResolution(bmp.HorizontalResolution, bmp.VerticalResolution);
+            }
         }
 
         /// <summary>

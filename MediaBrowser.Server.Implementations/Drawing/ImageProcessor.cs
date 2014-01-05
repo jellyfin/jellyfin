@@ -229,7 +229,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
                             using (var thumbnail = new Bitmap(newWidth, newHeight, PixelFormat.Format32bppPArgb))
                             {
                                 // Mono throw an exeception if assign 0 to SetResolution
-                                if (originalImage.HorizontalResolution >= 0 && originalImage.VerticalResolution >= 0)
+                                if (originalImage.HorizontalResolution > 0 && originalImage.VerticalResolution > 0)
                                 {
                                     // Preserve the original resolution
                                     thumbnail.SetResolution(originalImage.HorizontalResolution, originalImage.VerticalResolution);
