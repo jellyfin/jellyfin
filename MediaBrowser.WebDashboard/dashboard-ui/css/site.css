@@ -44,11 +44,6 @@ body {
         text-decoration: underline;
     }
 
-* {
-    text-shadow: none;
-    -webkit-font-smoothing: antialiased;
-}
-
 h1 {
     font-weight: 300;
     font-size: 2.22em;

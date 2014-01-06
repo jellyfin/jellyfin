@@ -62,7 +62,7 @@
                 html += '<span class="liveTvProgram">LIVE&nbsp;&nbsp;</span>';
             }
             else if (program.IsPremiere) {
-                html += '<span class="liveTvProgram">PREMIERE&nbsp;&nbsp;</span>';
+                html += '<span class="premiereTvProgram">PREMIERE&nbsp;&nbsp;</span>';
             }
             else if (program.IsSeries && !program.IsRepeat) {
                 html += '<span class="newTvProgram">NEW&nbsp;&nbsp;</span>';

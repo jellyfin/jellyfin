@@ -12,15 +12,26 @@
             <a href="livetvtimers.html">Scheduled</a>
             <a href="livetvseriestimers.html">Series</a>
         </div>
-        <div data-role="content">
+        <div data-role="content" style="padding-top: 5px;">
 
             <div>
-                <h2 class="detailSectionHeader tvProgramSectionHeader guideDate"></h2>
+                <div>
+                    <select id="selectDate" data-mini="true" data-icon="calendar">
+                        <option>Today</option>
+                    </select>
+                </div>
 
-                <div style="overflow-x: scroll;overflow-y:scroll;position:absolute;right: 1em;left: 1em;top: 135px;bottom: 30px;">
+                <div>
+                    <div class="channelTimeslotHeader">&nbsp;</div>
+                    <div class="timeslotHeaders"></div>
+                    <div class="channelList"></div>
+                    <div class="programGrid">
+                    </div>
+                </div>
+                <!--                <div style="overflow-x: scroll;overflow-y:scroll;position:absolute;right: 1em;left: 1em;top: 135px;bottom: 30px;">
                     <div class="timeslotHeaders"></div>
                     <div id="guide"></div>
-                </div>
+                </div>-->
             </div>
         </div>
     </div>

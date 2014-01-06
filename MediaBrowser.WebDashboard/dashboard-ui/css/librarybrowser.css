@@ -474,12 +474,11 @@ a.itemTag:hover {
 
 .libraryPage ::-webkit-scrollbar-track-piece {
     background-color: #3b3b3b;
-    -webkit-border-radius: 6px;
 }
 
-.libraryPage ::-webkit-scrollbar-thumb:vertical {
-    -webkit-border-radius: 6px;
-    background: #666 no-repeat center;
+.libraryPage ::-webkit-scrollbar-thumb:vertical, .libraryPage ::-webkit-scrollbar-thumb:horizontal {
+    -webkit-border-radius: 2px;
+    background: #888 no-repeat center;
 }
 
 .detailSection {

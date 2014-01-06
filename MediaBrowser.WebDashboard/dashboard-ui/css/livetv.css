@@ -61,6 +61,10 @@
     color: #64A239;
 }
 
+.premiereTvProgram {
+    color: yellow;
+}
+
 .sportsProgramInfo {
     background-color: #0F2624;
     border-bottom: 2px solid #0A7C33;
@@ -124,36 +128,134 @@
     margin-bottom: 1em;
 }
 
+.channelTimeslotHeader {
+    position: absolute;
+    left: 0;
+}
+
 .timeslotHeaders {
+    position: absolute;
+    right: 13px;
+    overflow-y: hidden;
+    overflow-x: hidden;
     white-space: nowrap;
 }
 
+.channelPrograms {
+    white-space: nowrap;
+    height: 47px;
+}
+
 .timeslotHeader {
-    width: 100px;
     display: inline-block;
-    padding: .5em .5em;
-    background: #38c;
+}
+
+.timeslotHeaderInner {
+    padding: .5em .35em;
 }
 
 .timeslotCell {
-    width: 100px;
     display: inline-block;
-    padding: .5em .5em;
-
-    border: 1px solid #444;
+    border-bottom: 1px solid #444;
+    border-left: 1px solid #444;
     border-collapse: collapse;
-    display: table-cell;
+    position: relative;
 }
 
-.channelTimeslotCell {
-    text-align: center;
+.channelHeaderCell, .channelTimeslotHeader {
     overflow: hidden;
     text-overflow: ellipsis;
+    border-bottom: 1px solid #444;
+    border-left: 1px solid #444;
+    border-right: 1px solid #444;
+    width: 139px;
 }
 
-.channelTimeslotHeader, .channelTimeslotCell {
-    width: 80px;
-    color: #ddd;
+.channelTimeslotHeader, .timeslotHeader {
+    background: #1d1d1d;
+    border-bottom: 1px solid #333;
+    border-left: 1px solid #333;
+    border-top: 1px solid #333;
 }
-.guideChannel {
+
+.timeslotHeader, .channelTimeslotHeader {
+    height: 28px;
+}
+
+.channelHeaderCellInner {
+    padding: .5em .5em;
+}
+
+.channelList {
+    overflow-y: hidden;
+    overflow-x: hidden;
+    position: absolute;
+    left: 0;
+    bottom: 16px;
+}
+
+.programGrid {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    overflow-y: scroll;
+    overflow-x: scroll;
+}
+
+.timeslotCell, .timeslotHeader {
+    width: 180px;
+}
+
+.timeslotCellInner {
+    position: absolute;
+    bottom: 0;
+    overflow: hidden;
+    width: 100%;
+    top: 0;
+}
+
+.timeslotHeaders, .programGrid {
+    left: 141px;
+}
+
+.channelTimeslotHeader, .timeslotHeaders {
+    top: 135px;
+}
+
+.channelList, .programGrid {
+    top: 165px;
+}
+
+.channelHeaderCell, .timeslotCell {
+    height: 46px;
+}
+
+.guideProgramName {
+    padding: .35em .5em;
+}
+
+.guideProgramTime {
+    padding: 0 .5em .35em;
+}
+
+@media (max-width: 600px) {
+
+    .channelHeaderCell, .channelTimeslotHeader {
+        width: 90px;
+    }
+
+    .timeslotHeaders, .programGrid {
+        left: 91px;
+    }
+}
+/* Account for hidden navigation */
+@media (max-width: 750px) {
+
+    .channelTimeslotHeader, .timeslotHeaders {
+        top: 100px;
+    }
+
+    .channelList, .programGrid {
+        top: 130px;
+    }
 }
