@@ -336,6 +336,34 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         {
             IEnumerable<LiveTvProgram> programs = _programs.Values;
 
+            if (query.MinEndDate.HasValue)
+            {
+                var val = query.MinEndDate.Value;
+
+                programs = programs.Where(i => i.ProgramInfo.EndDate >= val);
+            }
+
+            if (query.MinStartDate.HasValue)
+            {
+                var val = query.MinStartDate.Value;
+
+                programs = programs.Where(i => i.ProgramInfo.StartDate >= val);
+            }
+
+            if (query.MaxEndDate.HasValue)
+            {
+                var val = query.MaxEndDate.Value;
+
+                programs = programs.Where(i => i.ProgramInfo.EndDate <= val);
+            }
+
+            if (query.MaxStartDate.HasValue)
+            {
+                var val = query.MaxStartDate.Value;
+
+                programs = programs.Where(i => i.ProgramInfo.StartDate <= val);
+            }
+
             if (query.ChannelIdList.Length > 0)
             {
                 var guids = query.ChannelIdList.Select(i => new Guid(i)).ToList();
@@ -355,7 +383,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             if (user != null)
             {
-                programs = programs.Where(i => i.IsParentalAllowed(user));
+                // Avoid implicitly captured closure
+                var currentUser = user;
+                programs = programs.Where(i => i.IsParentalAllowed(currentUser));
             }
 
             var returnArray = programs

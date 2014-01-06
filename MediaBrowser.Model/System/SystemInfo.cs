@@ -129,6 +129,12 @@ namespace MediaBrowser.Model.System
         public bool HasUpdateAvailable { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [supports automatic run at startup].
+        /// </summary>
+        /// <value><c>true</c> if [supports automatic run at startup]; otherwise, <c>false</c>.</value>
+        public bool SupportsAutoRunAtStartup { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="SystemInfo" /> class.
         /// </summary>
         public SystemInfo()

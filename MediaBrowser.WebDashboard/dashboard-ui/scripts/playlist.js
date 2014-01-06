@@ -1,7 +1,7 @@
 ﻿(function ($, document) {
 
     function reloadPlaylist(page) {
-        
+
         var html = '';
 
         html += '<table class="detailTable">';
@@ -10,8 +10,9 @@
         html += '<th></th>';
         html += '<th>Name</th>';
         html += '<th>Album</th>';
+        html += '<th>Artist</th>';
+        html += '<th>Album Artist</th>';
         html += '<th>Time</th>';
-        html += '<th>Rating</th>';
         html += '</tr></thead>';
 
         html += '<tbody>';
@@ -20,14 +21,32 @@
 
             var name = LibraryBrowser.getPosterViewDisplayName(item);
 
-            var parentName = item.SeriesName || item.Album || item.ProductionYear || '';
+            var parentName = item.SeriesName || item.Album;
 
             html += '<tr>';
             html += '<td><button type="button" data-index="' + i + '" class="lnkPlay" data-icon="play" data-iconpos="notext">Play</button></td>';
-            html += '<td>' + name + '</td>';
-            html += '<td>' + parentName + '</td>';
+            html += '<td>';
+            html += '<a href="itemdetails.html?id=' + item.Id + '">' + name + '</a>';
+            html += '</td>';
+
+            html += '<td>';
+            if (parentName) {
+                var parentId = item.AlbumId || item.SeriesId || item.ParentId;
+                html += '<a href="itemdetails.html?id=' + parentId + '">' + parentName + '</a>';
+            }
+            html += '</td>';
+
+            html += '<td>';
+            html += LibraryBrowser.getArtistLinksHtml(item.Artists || []);
+            html += '</td>';
+
+            html += '<td>';
+            if (item.AlbumArtist) {
+                html += LibraryBrowser.getArtistLinksHtml([item.AlbumArtist]);
+            }
+            html += '</td>';
+
             html += '<td>' + Dashboard.getDisplayTime(item.RunTimeTicks) + '</td>';
-            html += '<td>' + LibraryBrowser.getUserDataIconsHtml(item) + '</td>';
             html += '<td><button type="button" data-index="' + i + '" class="lnkRemove" data-icon="delete" data-iconpos="notext">Remove</button></td>';
             html += '</tr>';
         });
@@ -37,7 +56,7 @@
 
         $("#playlist", page).html(html).trigger('create');
     }
-    
+
     $(document).on('pageinit', "#playlistPage", function () {
 
         var page = this;

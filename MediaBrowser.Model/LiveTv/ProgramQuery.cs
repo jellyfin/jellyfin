@@ -1,4 +1,6 @@
-﻿namespace MediaBrowser.Model.LiveTv
+﻿using System;
+
+namespace MediaBrowser.Model.LiveTv
 {
     /// <summary>
     /// Class ProgramQuery.
@@ -17,6 +19,14 @@
         /// <value>The user identifier.</value>
         public string UserId { get; set; }
 
+        public DateTime? MinStartDate { get; set; }
+
+        public DateTime? MaxStartDate { get; set; }
+
+        public DateTime? MinEndDate { get; set; }
+
+        public DateTime? MaxEndDate { get; set; }
+        
         public ProgramQuery()
         {
             ChannelIdList = new string[] { };

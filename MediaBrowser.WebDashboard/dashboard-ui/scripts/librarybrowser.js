@@ -391,8 +391,8 @@
                 html += LibraryBrowser.getSongHeaderCellHtml('Album', '', options.enableColumnSorting, 'Album,SortName', options.sortBy, options.sortOrder);
             }
             if (options.showArtist) {
-                html += LibraryBrowser.getSongHeaderCellHtml('Album Artist', 'tabletColumn', options.enableColumnSorting, 'AlbumArtist,Album,SortName', options.sortBy, options.sortOrder);
                 html += LibraryBrowser.getSongHeaderCellHtml('Artist', '', options.enableColumnSorting, 'Artist,Album,SortName', options.sortBy, options.sortOrder);
+                html += LibraryBrowser.getSongHeaderCellHtml('Album Artist', 'tabletColumn', options.enableColumnSorting, 'AlbumArtist,Album,SortName', options.sortBy, options.sortOrder);
             }
 
             html += LibraryBrowser.getSongHeaderCellHtml('Runtime', 'tabletColumn', options.enableColumnSorting, 'Runtime,AlbumArtist,Album,SortName', options.sortBy, options.sortOrder);
@@ -429,17 +429,6 @@
 
                 if (options.showArtist) {
 
-                    if (item.AlbumArtist) {
-
-                        html += '<td class="tabletColumn"><a href="itembynamedetails.html?context=music&musicartist=' + ApiClient.encodeName(item.AlbumArtist) + '">' + item.AlbumArtist + '</a></td>';
-
-                    } else {
-                        html += '<td class="tabletColumn"></td>';
-                    }
-                }
-
-                if (options.showArtist) {
-
                     if (item.Artists && item.Artists.length) {
 
                         var artistLinksHtml = LibraryBrowser.getArtistLinksHtml(item.Artists);
@@ -448,6 +437,17 @@
                     }
                     else {
                         html += '<td></td>';
+                    }
+                }
+
+                if (options.showArtist) {
+
+                    if (item.AlbumArtist) {
+
+                        html += '<td class="tabletColumn">' + LibraryBrowser.getArtistLinksHtml([item.AlbumArtist]) + '</td>';
+
+                    } else {
+                        html += '<td class="tabletColumn"></td>';
                     }
                 }
 
@@ -668,7 +668,7 @@
             var html = "";
 
             var primaryImageAspectRatio = options.useAverageAspectRatio || options.shape == 'auto' ? LibraryBrowser.getAveragePrimaryImageAspectRatio(items) : null;
-            
+
             if (options.shape == 'auto') {
 
                 if (primaryImageAspectRatio && Math.abs(primaryImageAspectRatio - 1.777777778) < .3) {
@@ -681,7 +681,7 @@
                     options.shape = 'portrait';
                 }
             }
-            
+
             if (!options.useAverageAspectRatio) {
                 primaryImageAspectRatio = null;
             }

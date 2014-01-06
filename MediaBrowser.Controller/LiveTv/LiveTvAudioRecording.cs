@@ -11,7 +11,14 @@ namespace MediaBrowser.Controller.LiveTv
         /// <returns>System.String.</returns>
         public override string GetUserDataKey()
         {
-            return GetClientTypeName() + "-" + Name;
+            var name = GetClientTypeName();
+
+            if (!string.IsNullOrEmpty(RecordingInfo.ProgramId))
+            {
+                return name + "-" + RecordingInfo.ProgramId;
+            }
+
+            return name + "-" + RecordingInfo.Name + (RecordingInfo.EpisodeTitle ?? string.Empty);
         }
 
         public RecordingInfo RecordingInfo { get; set; }

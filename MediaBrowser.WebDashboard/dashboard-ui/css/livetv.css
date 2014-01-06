@@ -123,3 +123,37 @@
     margin-top: 1em;
     margin-bottom: 1em;
 }
+
+.timeslotHeaders {
+    white-space: nowrap;
+}
+
+.timeslotHeader {
+    width: 100px;
+    display: inline-block;
+    padding: .5em .5em;
+    background: #38c;
+}
+
+.timeslotCell {
+    width: 100px;
+    display: inline-block;
+    padding: .5em .5em;
+
+    border: 1px solid #444;
+    border-collapse: collapse;
+    display: table-cell;
+}
+
+.channelTimeslotCell {
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.channelTimeslotHeader, .channelTimeslotCell {
+    width: 80px;
+    color: #ddd;
+}
+.guideChannel {
+}

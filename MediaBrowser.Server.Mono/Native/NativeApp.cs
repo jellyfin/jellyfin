@@ -46,5 +46,10 @@ namespace MediaBrowser.ServerApplication.Native
 				return MainClass.CanSelfUpdate;
 			}
 		}
+
+		public static bool SupportsAutoRunAtStartup
+		{
+			get { return false; }
+		}
     }
 }

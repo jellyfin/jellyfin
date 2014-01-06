@@ -35,6 +35,18 @@ namespace MediaBrowser.ServerApplication.Native
         }
 
         /// <summary>
+        /// Gets a value indicating whether [supports automatic run at startup].
+        /// </summary>
+        /// <value><c>true</c> if [supports automatic run at startup]; otherwise, <c>false</c>.</value>
+        public static bool SupportsAutoRunAtStartup
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        /// <summary>
         /// Gets a value indicating whether this instance can self update.
         /// </summary>
         /// <value><c>true</c> if this instance can self update; otherwise, <c>false</c>.</value>

@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Library;
+﻿using System.Globalization;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
@@ -118,6 +119,18 @@ namespace MediaBrowser.Api.LiveTv
 
         [ApiMember(Name = "UserId", Description = "Optional filter by user id.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string UserId { get; set; }
+
+        [ApiMember(Name = "MinStartDate", Description = "Optional. The minimum premiere date. Format = yyyyMMddHHmmss", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string MinStartDate { get; set; }
+
+        [ApiMember(Name = "MaxStartDate", Description = "Optional. The maximum premiere date. Format = yyyyMMddHHmmss", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string MaxStartDate { get; set; }
+
+        [ApiMember(Name = "MinEndDate", Description = "Optional. The minimum premiere date. Format = yyyyMMddHHmmss", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string MinEndDate { get; set; }
+
+        [ApiMember(Name = "MaxEndDate", Description = "Optional. The maximum premiere date. Format = yyyyMMddHHmmss", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string MaxEndDate { get; set; }
     }
 
     [Route("/LiveTv/Programs/{Id}", "GET")]
@@ -253,12 +266,33 @@ namespace MediaBrowser.Api.LiveTv
 
         public object Get(GetPrograms request)
         {
-            var result = _liveTvManager.GetPrograms(new ProgramQuery
+            var query = new ProgramQuery
             {
-                ChannelIdList = (request.ChannelIds ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToArray(),
+                ChannelIdList = (request.ChannelIds ?? string.Empty).Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries).ToArray(),
                 UserId = request.UserId
+            };
 
-            }, CancellationToken.None).Result;
+            if (!string.IsNullOrEmpty(request.MinStartDate))
+            {
+                query.MinStartDate = DateTime.ParseExact(request.MinStartDate, "yyyyMMddHHmmss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
+            }
+
+            if (!string.IsNullOrEmpty(request.MinEndDate))
+            {
+                query.MinEndDate = DateTime.ParseExact(request.MinEndDate, "yyyyMMddHHmmss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
+            }
+
+            if (!string.IsNullOrEmpty(request.MaxStartDate))
+            {
+                query.MaxStartDate = DateTime.ParseExact(request.MaxStartDate, "yyyyMMddHHmmss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
+            }
+
+            if (!string.IsNullOrEmpty(request.MaxEndDate))
+            {
+                query.MaxEndDate = DateTime.ParseExact(request.MaxEndDate, "yyyyMMddHHmmss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
+            }
+
+            var result = _liveTvManager.GetPrograms(query, CancellationToken.None).Result;
 
             return ToOptimizedResult(result);
         }

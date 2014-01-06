@@ -9,6 +9,12 @@
         } else {
             $('#windowsStartupDescription', page).hide();
         }
+        
+        if (systemInfo.SupportsAutoRunAtStartup) {
+            $('#fldRunAtStartup', page).show();
+        } else {
+            $('#fldRunAtStartup', page).hide();
+        }
 
         if (systemInfo.SupportsNativeWebSocket) {
 
