@@ -168,7 +168,7 @@
     border-bottom: 1px solid #444;
     border-left: 1px solid #444;
     border-right: 1px solid #444;
-    width: 139px;
+    width: 189px;
 }
 
 .channelTimeslotHeader, .timeslotHeader {
@@ -188,6 +188,7 @@
     text-decoration: none;
     font-weight: normal!important;
     color: #fff!important;
+    position: relative;
 }
 
     .channelHeaderCellInner:hover {
@@ -235,7 +236,7 @@
 }
 
 .timeslotHeaders, .programGrid {
-    left: 141px;
+    left: 191px;
 }
 
 .channelTimeslotHeader, .timeslotHeaders {
@@ -261,6 +262,21 @@
     background-color: #252525;
 }
 
+.guideChannelInfo {
+    display: inline-block;
+    max-width: 110px;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.guideChannelImage {
+    max-width: 60px;
+    max-height: 35px;
+    position: absolute;
+    right: 5px;
+    top: 5px;
+}
+
 @media (max-width: 600px) {
 
     .channelHeaderCell, .channelTimeslotHeader {
@@ -269,6 +285,10 @@
 
     .timeslotHeaders, .programGrid {
         left: 91px;
+    }
+
+    .guideChannelImage {
+        display: none;
     }
 }
 /* Account for hidden navigation */

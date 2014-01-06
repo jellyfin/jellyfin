@@ -786,7 +786,6 @@ namespace MediaBrowser.Api.Images
                 {
                     using (var image = Image.FromStream(validationStream))
                     {
-                        Logger.Info("New image is {0}x{1}", image.Width, image.Height);
                     }
                 }
 

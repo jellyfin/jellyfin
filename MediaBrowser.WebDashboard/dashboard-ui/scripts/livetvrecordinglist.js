@@ -99,11 +99,11 @@
         if (query.GroupId) {
 
             ApiClient.getLiveTvRecordingGroup(query.GroupId).done(function (group) {
-                $('.listName', page).show().html(group.Name);
+                $('.listName', page).html(group.Name);
             });
 
         } else {
-            $('.listName', page).hide();
+            $('.listName', page).html('All Recordings');
         }
 
     }).on('pageshow', "#liveTvRecordingListPage", function () {

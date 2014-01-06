@@ -300,7 +300,21 @@
 
             html += '<div class="channelHeaderCell">';
             html += '<a class="channelHeaderCellInner" href="livetvchannel.html?id=' + channel.Id + '">';
-            html += channel.Name + '<br/>' + channel.Number;
+
+            html += '<div class="guideChannelInfo">' + channel.Name + '<br/>' + channel.Number + '</div>';
+
+            if (channel.ImageTags.Primary) {
+
+                var url = ApiClient.getUrl("LiveTV/Channels/" + channel.Id + "/Images/Primary", {
+                    maxheight: 200,
+                    maxwidth: 200,
+                    tag: channel.ImageTags.Primary,
+                    type: "Primary"
+                });
+
+                html += '<img class="guideChannelImage" src="' + url + '" />';
+            }
+
             html += '</a>';
             html += '</div>';
 
