@@ -527,7 +527,18 @@ namespace MediaBrowser.Api.Playback
                 outputSizeParam = "," + outputSizeParam.Substring(outputSizeParam.IndexOf("scale", StringComparison.OrdinalIgnoreCase));
             }
 
-            return string.Format(" -filter_complex \"[0:{0}]format=yuva444p,lut=u=128:v=128:y=gammaval(.3)[sub] ; [0:{1}] [sub] overlay{2}\"", state.SubtitleStream.Index, state.VideoStream.Index, outputSizeParam);
+            var videoSizeParam = string.Empty;
+
+            if (state.VideoStream != null && state.VideoStream.Width.HasValue && state.VideoStream.Height.HasValue)
+            {
+                videoSizeParam = string.Format(",scale={0}:{1}", state.VideoStream.Width.Value.ToString(UsCulture), state.VideoStream.Height.Value.ToString(UsCulture));
+            }
+
+            return string.Format(" -filter_complex \"[0:{0}]format=yuva444p{3},lut=u=128:v=128:y=gammaval(.3)[sub] ; [0:{1}] [sub] overlay{2}\"", 
+                state.SubtitleStream.Index, 
+                state.VideoStream.Index, 
+                outputSizeParam,
+                videoSizeParam);
         }
 
         /// <summary>
