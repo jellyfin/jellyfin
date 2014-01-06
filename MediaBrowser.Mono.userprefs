@@ -2,9 +2,9 @@
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Release Mono" />
   <MonoDevelop.Ide.Workbench ActiveDocument="MediaBrowser.Server.Mono\Native\NativeApp.cs">
     <Files>
-      <File FileName="MediaBrowser.Server.Mono\app.config" Line="14" Column="3" />
-      <File FileName="MediaBrowser.ServerApplication\ApplicationHost.cs" Line="189" Column="1" />
-      <File FileName="MediaBrowser.Server.Mono\Native\NativeApp.cs" Line="40" Column="17" />
+      <File FileName="MediaBrowser.Server.Mono\app.config" Line="1" Column="1" />
+      <File FileName="MediaBrowser.ServerApplication\ApplicationHost.cs" Line="1" Column="1" />
+      <File FileName="MediaBrowser.Server.Mono\Native\NativeApp.cs" Line="12" Column="23" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
