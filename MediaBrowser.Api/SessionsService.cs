@@ -27,6 +27,9 @@ namespace MediaBrowser.Api
 
         [ApiMember(Name = "ControllableByUserId", Description = "Optional. Filter by sessions that a given user is allowed to remote control.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public Guid? ControllableByUserId { get; set; }
+
+        [ApiMember(Name = "DeviceId", Description = "Optional. Filter by device id.", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
+        public string DeviceId { get; set; }
     }
 
     /// <summary>
@@ -246,6 +249,11 @@ namespace MediaBrowser.Api
             if (request.SupportsRemoteControl.HasValue)
             {
                 result = result.Where(i => i.SupportsRemoteControl == request.SupportsRemoteControl.Value);
+            }
+
+            if (!string.IsNullOrEmpty(request.DeviceId))
+            {
+                result = result.Where(i => string.Equals(i.DeviceId, request.DeviceId, StringComparison.OrdinalIgnoreCase));
             }
 
             if (request.ControllableByUserId.HasValue)
