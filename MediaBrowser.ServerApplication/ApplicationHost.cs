@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using MediaBrowser.Api;
+﻿using MediaBrowser.Api;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Constants;
@@ -58,6 +57,7 @@ using MediaBrowser.ServerApplication.Networking;
 using MediaBrowser.WebDashboard.Api;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -184,6 +184,11 @@ namespace MediaBrowser.ServerApplication
         public override bool CanSelfRestart
         {
             get { return NativeApp.CanSelfRestart; }
+        }
+
+        public bool SupportsAutoRunAtStartup
+        {
+            get { return NativeApp.SupportsAutoRunAtStartup; }
         }
 
         /// <summary>
@@ -629,7 +634,8 @@ namespace MediaBrowser.ServerApplication
                 CanSelfRestart = CanSelfRestart,
                 CanSelfUpdate = CanSelfUpdate,
                 WanAddress = GetWanAddress(),
-                HasUpdateAvailable = _hasUpdateAvailable
+                HasUpdateAvailable = _hasUpdateAvailable,
+                SupportsAutoRunAtStartup = SupportsAutoRunAtStartup
             };
         }
 
@@ -736,9 +742,16 @@ namespace MediaBrowser.ServerApplication
             OnApplicationUpdated(package.version);
         }
 
+        /// <summary>
+        /// Configures the automatic run at startup.
+        /// </summary>
+        /// <param name="autorun">if set to <c>true</c> [autorun].</param>
         protected override void ConfigureAutoRunAtStartup(bool autorun)
         {
-            Autorun.Configure(autorun);
+            if (SupportsAutoRunAtStartup)
+            {
+                Autorun.Configure(autorun);
+            }
         }
     }
 }
