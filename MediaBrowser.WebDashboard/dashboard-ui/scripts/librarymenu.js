@@ -75,7 +75,7 @@
         }
 
         if (liveTvServices.length) {
-            html += '<a class="viewMenuLink viewMenuTextLink desktopViewMenuLink' + (view == 'livetv' ? selectedCssClass : '') + '" href="livetvchannels.html">' + (view == 'livetv' ? selectedHtml : '') + '<span class="viewName">Live TV</span></a>';
+            html += '<a class="viewMenuLink viewMenuTextLink desktopViewMenuLink' + (view == 'livetv' ? selectedCssClass : '') + '" href="livetvsuggested.html">' + (view == 'livetv' ? selectedHtml : '') + '<span class="viewName">Live TV</span></a>';
         }
 
         if (counts.SongCount || counts.MusicVideoCount) {
@@ -149,6 +149,7 @@
             if (liveTvServices.length) {
                 html += getCollapsibleHtml('Live TV', [
 
+                    { text: 'Suggested', href: 'livetvsuggested.html' },
                     { text: 'Guide', href: 'livetvguide.html' },
                     { text: 'Channels', href: 'livetvchannels.html' },
                     { text: 'Recordings', href: 'livetvrecordings.html' },

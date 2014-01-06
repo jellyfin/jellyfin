@@ -1,7 +1,11 @@
 ﻿(function ($, document, apiClient) {
 
     // 30 mins
-    var cellDurationMs = 30 * 60 * 1000;
+    var cellCurationMinutes = 30;
+    var cellDurationMs = cellCurationMinutes * 60 * 1000;
+
+    var gridLocalStartDateMs;
+    var gridLocalEndDateMs;
 
     function formatDigit(i) {
         return i < 10 ? "0" + i : i;
@@ -19,20 +23,16 @@
 
     function normalizeDateToTimeslot(date) {
 
-        var minutesOffset = date.getMinutes() - 30;
+        var minutesOffset = date.getMinutes() - cellCurationMinutes;
 
         if (minutesOffset >= 0) {
 
-            date.setTime(date.getTime() - (minutesOffset * 60 * 1000));
+            date.setHours(date.getHours(), cellCurationMinutes, 0, 0);
 
         } else {
 
-            date.setTime(date.getTime() - (date.getMinutes() * 60 * 1000));
+            date.setHours(date.getHours(), 0, 0, 0);
         }
-
-        date.setTime(date.getTime() - (date.getSeconds() * 1000));
-
-        date.setHours(date.getHours(), date.getMinutes(), 0, 0);
 
         return date;
     }
@@ -136,6 +136,29 @@
         return null;
     }
 
+    function getProgramWidth(program) {
+
+        var end = Math.min(gridLocalEndDateMs, program.EndDateLocal.getTime());
+        var start = Math.max(gridLocalStartDateMs, program.StartDateLocal.getTime());
+
+        var ms = end - start;
+
+        var width = 100 * ms / cellDurationMs;
+
+        // Round to the nearest cell
+        var overlap = width % 100;
+
+        if (overlap) {
+            width = width - overlap + 100;
+        }
+
+        if (width > 300) {
+            width += (width / 100) - 3;
+        }
+
+        return width;
+    }
+
     function getChannelProgramsHtml(page, date, channel, programs) {
 
         var html = '';
@@ -150,7 +173,7 @@
 
         var programIndex = 0;
         var cellIndex = 0;
-        
+
         while (date.getDate() == dateNumber) {
 
             // Add 30 mins
@@ -165,31 +188,51 @@
 
             html += '<div class="timeslotCell">';
 
+            var cellTagName;
+            var href;
             var cssClass = "timeslotCellInner";
+            var style;
 
             if (program) {
                 if (program.IsKids) {
                     cssClass += " childProgramInfo";
-                }
-                else if (program.IsSports) {
+                } else if (program.IsSports) {
                     cssClass += " sportsProgramInfo";
-                }
-                else if (program.IsNews) {
+                } else if (program.IsNews) {
                     cssClass += " newsProgramInfo";
-                }
-                else if (program.IsMovie) {
+                } else if (program.IsMovie) {
                     cssClass += " movieProgramInfo";
                 }
+                else {
+                    cssClass += " plainProgramInfo";
+                }
+
+                cssClass += " timeslotCellInnerWithProgram";
+
+                cellTagName = "a";
+                href = ' href="livetvprogram.html?id=' + program.Id + '"';
+
+                var width = getProgramWidth(program);
+
+                if (width && width != 100) {
+                    style = ' style="width:' + width + '%;"';
+                } else {
+                    style = '';
+                }
+            } else {
+                cellTagName = "div";
+                href = '';
+                style = '';
             }
 
-            html += '<div class="' + cssClass + '">';
-            
+            html += '<' + cellTagName + ' class="' + cssClass + '"' + href + style + '>';
+
             if (program) {
 
                 html += '<div class="guideProgramName">';
                 html += program.Name;
                 html += '</div>';
-                
+
                 html += '<div class="guideProgramTime">';
 
                 if (program.IsLive) {
@@ -206,13 +249,23 @@
                 html += ' - ';
                 html += LiveTvHelpers.getDisplayTime(program.EndDateLocal);
 
+                if (program.SeriesTimerId) {
+                    html += '<div class="timerCircle seriesTimerCircle"></div>';
+                    html += '<div class="timerCircle seriesTimerCircle"></div>';
+                    html += '<div class="timerCircle seriesTimerCircle"></div>';
+                }
+                else if (program.TimerId) {
+
+                    html += '<div class="timerCircle"></div>';
+                }
+
                 html += '</div>';
 
             } else {
                 html += '&nbsp;';
             }
 
-            html += '</div>';
+            html += '</' + cellTagName + '>';
             html += '</div>';
 
             date = cellEndDate;
@@ -245,9 +298,10 @@
 
             html += '<div class="channelHeaderCellContainer">';
 
-            html += '<div class="channelHeaderCell"><div class="channelHeaderCellInner">';
+            html += '<div class="channelHeaderCell">';
+            html += '<a class="channelHeaderCellInner" href="livetvchannel.html?id=' + channel.Id + '">';
             html += channel.Name + '<br/>' + channel.Number;
-            html += '</div>';
+            html += '</a>';
             html += '</div>';
 
             html += '</div>';
@@ -285,6 +339,13 @@
         var page = this;
 
         currentDate = normalizeDateToTimeslot(new Date());
+
+        gridLocalStartDateMs = currentDate.getTime();
+
+        var clone = new Date(gridLocalStartDateMs);
+        clone.setHours(0, 0, 0, 0);
+        clone.setDate(clone.getDate() + 1);
+        gridLocalEndDateMs = clone.getTime() - 1;
 
         reloadGuide(page);
     });

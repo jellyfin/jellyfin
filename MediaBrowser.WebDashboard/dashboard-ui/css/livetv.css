@@ -91,8 +91,8 @@
 
 .timerCircle {
     display: inline-block;
-    width: 16px;
-    height: 16px;
+    width: 12px;
+    height: 12px;
     border-radius: 50%;
     background: #cc0000;
     vertical-align: top;
@@ -103,7 +103,7 @@
 .seriesTimerCircle {
     position: relative;
     margin-left: 0;
-    left: 29px;
+    left: 21px;
     opacity: .3;
 }
 
@@ -118,7 +118,7 @@
 
     .seriesTimerCircle + .seriesTimerCircle + .seriesTimerCircle {
         opacity: 1;
-        left: -29px;
+        left: -21px;
     }
 
 .channelImageContainer .itemDetailImage {
@@ -184,7 +184,15 @@
 
 .channelHeaderCellInner {
     padding: .5em .5em;
+    display: block;
+    text-decoration: none;
+    font-weight: normal!important;
+    color: #fff!important;
 }
+
+    .channelHeaderCellInner:hover {
+        background-color: #38c;
+    }
 
 .channelList {
     overflow-y: hidden;
@@ -212,6 +220,18 @@
     overflow: hidden;
     width: 100%;
     top: 0;
+    display: block;
+    text-decoration: none;
+    font-weight: normal!important;
+    color: #fff!important;
+}
+
+.timeslotCellInnerWithProgram {
+    z-index: 9999;
+}
+
+.timeslotCellInnerWithProgram:hover {
+    background-color: #38c;
 }
 
 .timeslotHeaders, .programGrid {
@@ -236,6 +256,9 @@
 
 .guideProgramTime {
     padding: 0 .5em .35em;
+}
+.plainProgramInfo {
+    background-color: #252525;
 }
 
 @media (max-width: 600px) {
