@@ -107,13 +107,9 @@ namespace MediaBrowser.Model.ApiClient
         /// <summary>
         /// Gets the search hints async.
         /// </summary>
-        /// <param name="userId">The user id.</param>
-        /// <param name="searchTerm">The search term.</param>
-        /// <param name="startIndex">The start index.</param>
-        /// <param name="limit">The limit.</param>
+        /// <param name="query">The query.</param>
         /// <returns>Task{SearchHintResult}.</returns>
-        Task<SearchHintResult> GetSearchHintsAsync(string userId, string searchTerm, int? startIndex = null,
-                                                   int? limit = null);
+        Task<SearchHintResult> GetSearchHintsAsync(SearchQuery query);
 
         /// <summary>
         /// Gets the theme videos async.
@@ -682,8 +678,9 @@ namespace MediaBrowser.Model.ApiClient
         /// <typeparam name="T"></typeparam>
         /// <param name="url">The URL.</param>
         /// <param name="args">The args.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{``0}.</returns>
-        Task<T> PostAsync<T>(string url, Dictionary<string, string> args)
+        Task<T> PostAsync<T>(string url, Dictionary<string, string> args, CancellationToken cancellationToken)
             where T : class;
 
         /// <summary>

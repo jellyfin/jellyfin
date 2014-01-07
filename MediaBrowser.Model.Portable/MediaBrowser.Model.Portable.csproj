@@ -374,6 +374,9 @@
     <Compile Include="..\MediaBrowser.Model\Search\SearchHintResult.cs">
       <Link>Search\SearchHintResult.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Search\SearchQuery.cs">
+      <Link>Search\SearchQuery.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Serialization\IJsonSerializer.cs">
       <Link>Serialization\IJsonSerializer.cs</Link>
     </Compile>
