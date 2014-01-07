@@ -57,6 +57,7 @@ namespace MediaBrowser.Providers.Movies
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="force">if set to <c>true</c> [force].</param>
+        /// <param name="providerInfo">The provider information.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.Boolean}.</returns>
         public override async Task<bool> FetchAsync(BaseItem item, bool force, BaseProviderInfo providerInfo, CancellationToken cancellationToken)
@@ -79,12 +80,10 @@ namespace MediaBrowser.Providers.Movies
                 {
                     XmlParsingResourcePool.Release();
                 }
-
-                SetLastRefreshed(item, DateTime.UtcNow, providerInfo);
-                return true;
             }
 
-            return false;
+            SetLastRefreshed(item, DateTime.UtcNow, providerInfo);
+            return true;
         }
     }
 }

@@ -7,6 +7,7 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
 using System;
@@ -111,7 +112,15 @@ namespace MediaBrowser.Api.Playback.Hls
 
             if (isPlaylistNewlyCreated)
             {
-                await WaitForMinimumSegmentCount(playlist, 3).ConfigureAwait(false);
+                var minimumSegmentCount = 3;
+                var quality = ServerConfigurationManager.Configuration.MediaEncodingQuality;
+
+                if (quality == EncodingQuality.HighSpeed || quality == EncodingQuality.HighQuality)
+                {
+                    minimumSegmentCount = 2;
+                }
+
+                await WaitForMinimumSegmentCount(playlist, minimumSegmentCount).ConfigureAwait(false);
             }
 
             int audioBitrate;

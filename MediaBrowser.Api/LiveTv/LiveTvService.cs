@@ -120,16 +120,16 @@ namespace MediaBrowser.Api.LiveTv
         [ApiMember(Name = "UserId", Description = "Optional filter by user id.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string UserId { get; set; }
 
-        [ApiMember(Name = "MinStartDate", Description = "Optional. The minimum premiere date. Format = yyyyMMddHHmmss", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
+        [ApiMember(Name = "MinStartDate", Description = "Optional. The minimum premiere date. Format = ISO", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string MinStartDate { get; set; }
 
-        [ApiMember(Name = "MaxStartDate", Description = "Optional. The maximum premiere date. Format = yyyyMMddHHmmss", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
+        [ApiMember(Name = "MaxStartDate", Description = "Optional. The maximum premiere date. Format = ISO", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string MaxStartDate { get; set; }
 
-        [ApiMember(Name = "MinEndDate", Description = "Optional. The minimum premiere date. Format = yyyyMMddHHmmss", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
+        [ApiMember(Name = "MinEndDate", Description = "Optional. The minimum premiere date. Format = ISO", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string MinEndDate { get; set; }
 
-        [ApiMember(Name = "MaxEndDate", Description = "Optional. The maximum premiere date. Format = yyyyMMddHHmmss", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
+        [ApiMember(Name = "MaxEndDate", Description = "Optional. The maximum premiere date. Format = ISO", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string MaxEndDate { get; set; }
     }
 
@@ -215,6 +215,12 @@ namespace MediaBrowser.Api.LiveTv
         public string Id { get; set; }
     }
 
+    [Route("/LiveTv/GuideInfo", "GET")]
+    [Api(Description = "Gets guide info")]
+    public class GetGuideInfo : IReturn<GuideInfo>
+    {
+    }
+
     public class LiveTvService : BaseApiService
     {
         private readonly ILiveTvManager _liveTvManager;
@@ -274,22 +280,22 @@ namespace MediaBrowser.Api.LiveTv
 
             if (!string.IsNullOrEmpty(request.MinStartDate))
             {
-                query.MinStartDate = DateTime.ParseExact(request.MinStartDate, "yyyyMMddHHmmss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
+                query.MinStartDate = DateTime.Parse(request.MinStartDate, null, DateTimeStyles.RoundtripKind).ToUniversalTime();
             }
 
             if (!string.IsNullOrEmpty(request.MinEndDate))
             {
-                query.MinEndDate = DateTime.ParseExact(request.MinEndDate, "yyyyMMddHHmmss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
+                query.MinEndDate = DateTime.Parse(request.MinEndDate, null, DateTimeStyles.RoundtripKind).ToUniversalTime();
             }
 
             if (!string.IsNullOrEmpty(request.MaxStartDate))
             {
-                query.MaxStartDate = DateTime.ParseExact(request.MaxStartDate, "yyyyMMddHHmmss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
+                query.MaxStartDate = DateTime.Parse(request.MaxStartDate, null, DateTimeStyles.RoundtripKind).ToUniversalTime();
             }
 
             if (!string.IsNullOrEmpty(request.MaxEndDate))
             {
-                query.MaxEndDate = DateTime.ParseExact(request.MaxEndDate, "yyyyMMddHHmmss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
+                query.MaxEndDate = DateTime.Parse(request.MaxEndDate, null, DateTimeStyles.RoundtripKind).ToUniversalTime();
             }
 
             var result = _liveTvManager.GetPrograms(query, CancellationToken.None).Result;
@@ -452,6 +458,11 @@ namespace MediaBrowser.Api.LiveTv
             var group = result.Items.FirstOrDefault(i => string.Equals(i.Id, request.Id, StringComparison.OrdinalIgnoreCase));
 
             return ToOptimizedResult(group);
+        }
+
+        public object Get(GetGuideInfo request)
+        {
+            return ToOptimizedResult(_liveTvManager.GetGuideInfo());
         }
     }
 }

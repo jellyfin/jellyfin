@@ -257,10 +257,10 @@ namespace MediaBrowser.Api.Playback
         /// Gets the number of threads.
         /// </summary>
         /// <returns>System.Int32.</returns>
-        /// <exception cref="System.Exception">Unrecognized EncodingQuality value.</exception>
+        /// <exception cref="System.Exception">Unrecognized MediaEncodingQuality value.</exception>
         protected int GetNumberOfThreads()
         {
-            var quality = ServerConfigurationManager.Configuration.EncodingQuality;
+            var quality = ServerConfigurationManager.Configuration.MediaEncodingQuality;
 
             switch (quality)
             {
@@ -273,7 +273,7 @@ namespace MediaBrowser.Api.Playback
                 case EncodingQuality.MaxQuality:
                     return 0;
                 default:
-                    throw new Exception("Unrecognized EncodingQuality value.");
+                    throw new Exception("Unrecognized MediaEncodingQuality value.");
             }
         }
 
@@ -706,6 +706,13 @@ namespace MediaBrowser.Api.Playback
                 state.IsoMount = await IsoManager.Mount(state.MediaPath, CancellationToken.None).ConfigureAwait(false);
             }
 
+            var commandLineArgs = GetCommandLineArguments(outputPath, state, true);
+
+            if (ServerConfigurationManager.Configuration.EnableDebugEncodingLogging)
+            {
+                commandLineArgs = "-loglevel debug " + commandLineArgs;
+            }
+
             var process = new Process
             {
                 StartInfo = new ProcessStartInfo
@@ -719,7 +726,7 @@ namespace MediaBrowser.Api.Playback
 
                     FileName = MediaEncoder.EncoderPath,
                     WorkingDirectory = Path.GetDirectoryName(MediaEncoder.EncoderPath),
-                    Arguments = GetCommandLineArguments(outputPath, state, true),
+                    Arguments = commandLineArgs,
 
                     WindowStyle = ProcessWindowStyle.Hidden,
                     ErrorDialog = false,

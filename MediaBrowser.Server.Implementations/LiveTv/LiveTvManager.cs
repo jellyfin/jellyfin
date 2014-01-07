@@ -980,5 +980,19 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         {
             return ActiveService.CloseLiveStream(id, cancellationToken);
         }
+
+        public GuideInfo GetGuideInfo()
+        {
+            var programs = _programs.ToList();
+
+            var startDate = programs.Select(i => i.Value.ProgramInfo.StartDate).Min();
+            var endDate = programs.Select(i => i.Value.ProgramInfo.StartDate).Max();
+
+            return new GuideInfo
+            {
+                StartDate = startDate,
+                EndDate = endDate
+            };
+        }
     }
 }
