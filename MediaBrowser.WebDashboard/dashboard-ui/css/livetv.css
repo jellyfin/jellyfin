@@ -42,6 +42,9 @@
     margin-left: 80px;
     border-left: 1px solid #444;
 }
+.tvProgramCurrentTimeSlot {
+    background-color: green;
+}
 
 .tvProgramName {
     color: #fff;
@@ -171,11 +174,14 @@
     width: 189px;
 }
 
+.channelTimeslotHeader {
+    border-right: 1px solid #4971A7;
+}
+
 .channelTimeslotHeader, .timeslotHeader {
-    background: #1d1d1d;
-    border-bottom: 1px solid #333;
-    border-left: 1px solid #333;
-    border-top: 1px solid #333;
+    background: #4971A7;
+    border-bottom: 1px solid #4971A7;
+    border-left: 1px solid #4971A7;
 }
 
 .timeslotHeader, .channelTimeslotHeader {
@@ -212,7 +218,7 @@
 }
 
 .timeslotCell, .timeslotHeader {
-    width: 180px;
+    width: 190px;
 }
 
 .timeslotCellInner {
@@ -228,7 +234,7 @@
 }
 
 .timeslotCellInnerWithProgram {
-    z-index: 9999;
+    z-index: 99;
 }
 
 .timeslotCellInnerWithProgram:hover {
@@ -273,8 +279,8 @@
     max-width: 60px;
     max-height: 35px;
     position: absolute;
-    right: 5px;
-    top: 5px;
+    right: 7px;
+    top: 7px;
 }
 
 @media (max-width: 600px) {

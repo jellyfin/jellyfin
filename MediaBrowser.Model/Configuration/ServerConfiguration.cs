@@ -207,7 +207,7 @@ namespace MediaBrowser.Model.Configuration
         /// Gets or sets the encoding quality.
         /// </summary>
         /// <value>The encoding quality.</value>
-        public EncodingQuality EncodingQuality { get; set; }
+        public EncodingQuality MediaEncodingQuality { get; set; }
 
         public bool EnableMovieChapterImageExtraction { get; set; }
         public bool EnableEpisodeChapterImageExtraction { get; set; }
@@ -219,12 +219,15 @@ namespace MediaBrowser.Model.Configuration
         public MetadataOptions GameOptions { get; set; }
         public MetadataOptions BookOptions { get; set; }
 
+        public bool EnableDebugEncodingLogging { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>
         public ServerConfiguration()
             : base()
         {
+            MediaEncodingQuality = EncodingQuality.HighSpeed;
             ImageSavingConvention = ImageSavingConvention.Legacy;
             HttpServerPortNumber = 8096;
             LegacyWebSocketPortNumber = 8945;

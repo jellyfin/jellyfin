@@ -109,7 +109,12 @@ namespace MediaBrowser.Api.WebSocket
                 {
                     while (!reader.EndOfStream)
                     {
-                        lines.Add(await reader.ReadLineAsync().ConfigureAwait(false));
+                        var line = await reader.ReadLineAsync().ConfigureAwait(false);
+
+                        if (line.IndexOf(", Debug,", StringComparison.OrdinalIgnoreCase) == -1)
+                        {
+                            lines.Add(line);
+                        }
                     }
                 }
             }

@@ -12,6 +12,10 @@
             currentItem = item;
 
             var name = item.Name;
+            
+            if (item.IsRepeat) {
+                name += ' (R)';
+            }
 
             $('#itemImage', page).html(LibraryBrowser.getDetailImageHtml(item));
 
@@ -44,7 +48,11 @@
                 ApiClient.sendWebSocketMessage("Context", vals.join('|'));
             }
 
-            $('#recordButtonContainer', page).show();
+            if (!item.TimerId && !item.SeriesTimerId) {
+                $('#recordButtonContainer', page).show();
+            } else {
+                $('#recordButtonContainer', page).hide();
+            }
 
             if (MediaPlayer.canPlay(item)) {
                 $('#playButtonContainer', page).show();

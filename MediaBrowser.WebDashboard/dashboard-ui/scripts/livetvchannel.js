@@ -9,21 +9,16 @@
 
         var currentIndexValue;
 
+        var now = new Date();
+
         for (var i = 0, length = result.Items.length; i < length; i++) {
 
             var program = result.Items[i];
 
-            var startDate = program.StartDate;
-            var startDateText = '';
+            var startDate = parseISO8601Date(program.StartDate, { toLocal: true });
+            var startDateText = LibraryBrowser.getFutureDateText(startDate);
 
-            try {
-
-                startDate = parseISO8601Date(startDate, { toLocal: true });
-                startDateText = LibraryBrowser.getFutureDateText(startDate);
-
-            } catch (err) {
-
-            }
+            var endDate = parseISO8601Date(program.EndDate, { toLocal: true });
 
             if (startDateText != currentIndexValue) {
 
@@ -33,11 +28,17 @@
 
             html += '<a href="livetvprogram.html?id=' + program.Id + '" class="tvProgram">';
 
-            html += '<div class="tvProgramTimeSlot">';
+            var cssClass = "tvProgramTimeSlot";
+
+            if (now >= startDate && now < endDate) {
+                cssClass += " tvProgramCurrentTimeSlot";
+            }
+
+            html += '<div class="' + cssClass + '">';
             html += '<div class="tvProgramTimeSlotInner">' + LiveTvHelpers.getDisplayTime(startDate) + '</div>';
             html += '</div>';
 
-            var cssClass = "tvProgramInfo";
+            cssClass = "tvProgramInfo";
 
             if (program.IsKids) {
                 cssClass += " childProgramInfo";
@@ -54,7 +55,12 @@
 
             html += '<div class="' + cssClass + '">';
 
-            html += '<div class="tvProgramName">' + program.Name + '</div>';
+            var name = program.Name;
+            
+            if (program.IsRepeat) {
+                name += " (R)";
+            }
+            html += '<div class="tvProgramName">' + name + '</div>';
 
             html += '<div class="tvProgramTime">';
 
@@ -156,12 +162,6 @@
                 }
 
             });
-
-            if (item.CurrentProgram) {
-                $('.currentProgram', page).html('Now playing:&nbsp;&nbsp;&nbsp;<a href="livetvprogram.html?id=' + item.CurrentProgram.Id + '">' + item.CurrentProgram.Name + '</a>').trigger('create');
-            } else {
-                $('.currentProgram', page).html('');
-            }
 
             loadPrograms(page);
 

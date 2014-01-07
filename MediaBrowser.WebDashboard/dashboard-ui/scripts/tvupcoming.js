@@ -1,19 +1,5 @@
 ﻿(function ($, document) {
 
-    function formatDigit(i) {
-        return i < 10 ? "0" + i : i;
-    }
-
-    function getDateFormat(date) {
-
-        // yyyyMMddHHmmss
-        // Convert to UTC
-        // http://stackoverflow.com/questions/948532/how-do-you-convert-a-javascript-date-to-utc/14610512#14610512
-        var d = new Date(date.getTime());
-        
-        return "" + d.getFullYear() + formatDigit(d.getMonth() + 1) + formatDigit(d.getDate()) + formatDigit(d.getHours()) + formatDigit(d.getMinutes()) + formatDigit(d.getSeconds());
-    }
-
     $(document).on('pagebeforeshow', "#tvUpcomingPage", function () {
 
         var page = this;
@@ -39,7 +25,7 @@
         yesterday.setDate(yesterday.getDate() - 1);
         yesterday.setHours(0, 0, 0, 0);
         
-        missedItemsQuery.MinPremiereDate = getDateFormat(yesterday);
+        missedItemsQuery.MinPremiereDate = yesterday.toISOString();
 
         var unairedQuery = $.extend({
 

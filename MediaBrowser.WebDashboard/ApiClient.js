@@ -389,6 +389,17 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
+        self.getLiveTvGuideInfo = function (options) {
+
+            var url = self.getUrl("LiveTv/GuideInfo", options || {});
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
         self.getLiveTvChannel = function (id, userId) {
 
             if (!id) {

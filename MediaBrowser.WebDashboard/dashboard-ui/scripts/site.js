@@ -766,7 +766,7 @@ var Dashboard = {
             name: "Advanced",
             divider: true,
             href: "advanced.html",
-            selected: pageElem.id == "advancedConfigurationPage"
+            selected: page.hasClass("advancedConfigurationPage")
         }, {
             name: "Scheduled Tasks",
             href: "scheduledtasks.html",

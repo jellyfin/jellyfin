@@ -90,9 +90,7 @@
         LibraryBrowser.loadSavedQueryValues('episodes', query);
 
         var groupId = getParameterByName('groupid');
-        if (groupId) {
-            query.GroupId = groupId;
-        }
+        query.GroupId = groupId;
 
         reloadItems(page);
 

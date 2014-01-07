@@ -1,0 +1,57 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Advanced</title>
+</head>
+<body>
+    <div id="encodingSettingsPage" data-role="page" class="page type-interior advancedConfigurationPage">
+
+        <div data-role="content">
+            <div class="content-primary">
+
+                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                    <a href="advanced.html" data-role="button">General</a>
+                    <a href="#" data-role="button" class="ui-btn-active">Encoding</a>
+                </div>
+
+                <form class="encodingSettingsForm">
+
+                    <fieldset data-role="controlgroup">
+                        <legend>Transcoder Quality:</legend>
+                        <input type="radio" name="radioEncodingQuality" class="radioEncodingQuality" id="radioAuto" value="Auto">
+                        <label for="radioAuto">Auto<br /><span style="font-weight:normal;">The transcoder will decide quality itself.</span></label>
+                        <input type="radio" name="radioEncodingQuality" class="radioEncodingQuality" id="radioHighSpeed" value="HighSpeed">
+                        <label for="radioHighSpeed">Perfer higher speed encoding<br /><span style="font-weight:normal;">Lower quality, but faster transcodes</span></label>
+                        <input type="radio" name="radioEncodingQuality" class="radioEncodingQuality" id="radioHighQuality" value="HighQuality">
+                        <label for="radioHighQuality">Prefer higher quality encoding<br /><span style="font-weight:normal;">Higher quality, but slower transcodes</span></label>
+                        <input type="radio" name="radioEncodingQuality" class="radioEncodingQuality" id="radioMaxQuality" value="MaxQuality">
+                        <label for="radioMaxQuality">Perfer max quality encoding<br /><span style="font-weight:normal;">Best quality with slower transcodes and high CPU usage</span></label>
+                    </fieldset>
+
+                    <br />
+                    <ul data-role="listview" class="ulForm">
+                        <li>
+                            <input type="checkbox" id="chkEnableDebugEncodingLogging" name="chkEnableDebugEncodingLogging" data-mini="true" />
+                            <label for="chkEnableDebugEncodingLogging">Enable debug encoding logging</label>
+                            <div class="fieldDescription">This will create very large log files and is only recommended as needed for troubleshooting purposes.</div>
+                        </li>
+                        <li>
+                            <button type="submit" data-theme="b" data-icon="check" data-mini="true">
+                                Save
+                            </button>
+                            <button type="button" onclick="Dashboard.navigate('dashboard.html');" data-icon="delete" data-mini="true">
+                                Cancel
+                            </button>
+                        </li>
+
+                    </ul>
+                </form>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            $('.encodingSettingsForm').off('submit', EncodingSettingsPage.onSubmit).on('submit', EncodingSettingsPage.onSubmit);
+        </script>
+    </div>
+</body>
+</html>

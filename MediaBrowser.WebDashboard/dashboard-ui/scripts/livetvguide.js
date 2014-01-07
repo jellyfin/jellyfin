@@ -7,19 +7,10 @@
     var gridLocalStartDateMs;
     var gridLocalEndDateMs;
 
-    function formatDigit(i) {
-        return i < 10 ? "0" + i : i;
-    }
+    var currentDate;
+    var channelsPromise;
 
-    function getDateFormat(date) {
-
-        // yyyyMMddHHmmss
-        // Convert to UTC
-        // http://stackoverflow.com/questions/948532/how-do-you-convert-a-javascript-date-to-utc/14610512#14610512
-        var d = new Date(date.getTime());
-
-        return "" + d.getFullYear() + formatDigit(d.getMonth() + 1) + formatDigit(d.getDate()) + formatDigit(d.getHours()) + formatDigit(d.getMinutes()) + formatDigit(d.getSeconds());
-    }
+    var guideInfoPromise;
 
     function normalizeDateToTimeslot(date) {
 
@@ -37,11 +28,10 @@
         return date;
     }
 
-    var currentDate;
-    var channelsPromise;
-
     function reloadGuide(page) {
 
+        Dashboard.showLoadingMsg();
+        
         channelsPromise = channelsPromise || apiClient.getLiveTvChannels({
 
             userId: Dashboard.getCurrentUserId()
@@ -51,14 +41,15 @@
         var date = currentDate;
 
         var nextDay = new Date(date.getTime());
-        nextDay.setDate(nextDay.getDate() + 2);
-        nextDay.setHours(1, 0, 0, 0);
+        nextDay.setHours(0, 0, 0, 0);
+        nextDay.setDate(nextDay.getDate() + 1);
 
         var promise1 = channelsPromise;
         var promise2 = apiClient.getLiveTvPrograms({
 
             UserId: Dashboard.getCurrentUserId(),
-            MaxStartDate: getDateFormat(nextDay)
+            MaxStartDate: nextDay.toISOString(),
+            MinEndDate: date.toISOString()
 
         });
 
@@ -68,6 +59,8 @@
             var programs = response2[0].Items;
 
             renderGuide(page, date, channels, programs);
+            
+            Dashboard.hideLoadingMsg();
         });
     }
 
@@ -231,6 +224,10 @@
 
                 html += '<div class="guideProgramName">';
                 html += program.Name;
+                
+                if (program.IsRepeat) {
+                    html += ' (R)';
+                }
                 html += '</div>';
 
                 html += '<div class="guideProgramTime">';
@@ -339,20 +336,9 @@
         $('.timeslotHeaders', page).scrollLeft(grid.scrollLeft());
     }
 
-    $(document).on('pageinit', "#liveTvGuidePage", function () {
+    function changeDate(page, date) {
 
-        var page = this;
-
-        $('.programGrid', page).on('scroll', function () {
-
-            onProgramGridScroll(page, this);
-        });
-
-    }).on('pagebeforeshow', "#liveTvGuidePage", function () {
-
-        var page = this;
-
-        currentDate = normalizeDateToTimeslot(new Date());
+        currentDate = normalizeDateToTimeslot(date);
 
         gridLocalStartDateMs = currentDate.getTime();
 
@@ -362,6 +348,71 @@
         gridLocalEndDateMs = clone.getTime() - 1;
 
         reloadGuide(page);
+    }
+
+    function setDateRange(page, guideInfo) {
+
+        var today = new Date();
+        today.setHours(today.getHours(), 0, 0, 0);
+
+        var start = parseISO8601Date(guideInfo.StartDate, { toLocal: true });
+        var end = parseISO8601Date(guideInfo.EndDate, { toLocal: true });
+
+        start.setHours(0, 0, 0, 0);
+        end.setHours(0, 0, 0, 0);
+
+        start = new Date(Math.max(today, start));
+
+        var html = '';
+
+        while (start <= end) {
+
+
+            html += '<option value="' + start.getTime() + '">' + LibraryBrowser.getFutureDateText(start) + '</option>';
+
+            start.setDate(start.getDate() + 1);
+            start.setHours(0, 0, 0, 0);
+        }
+
+        var elem = $('#selectDate', page).html(html).selectmenu('refresh');
+    
+        if (currentDate) {
+            elem.val(currentDate.getTime()).selectmenu('refresh');
+        }
+
+        var val = elem.val();
+        var date = new Date();
+        date.setTime(parseInt(val));
+
+        changeDate(page, date);
+    }
+
+    $(document).on('pageinit', "#liveTvGuidePage", function () {
+
+        var page = this;
+
+        $('.programGrid', page).on('scroll', function () {
+
+            onProgramGridScroll(page, this);
+        });
+
+        $('#selectDate', page).on('change', function() {
+            
+            var date = new Date();
+            date.setTime(parseInt(this.value));
+
+            changeDate(page, date);
+
+        });
+
+    }).on('pagebeforeshow', "#liveTvGuidePage", function () {
+
+        var page = this;
+
+        apiClient.getLiveTvGuideInfo().done(function (guideInfo) {
+
+            setDateRange(page, guideInfo);
+        });
     });
 
 })(jQuery, document, ApiClient);

@@ -853,7 +853,7 @@
                     background = defaultBackground;
 
                 }
-                else if (item.Type == "Recording" || item.Type == "Program") {
+                else if (item.Type == "Recording" || item.Type == "Program" || item.Type == "Channel") {
 
                     if (item.Name && options.showTitle) {
                         imgUrl = 'css/images/items/list/collection.png';
@@ -1098,6 +1098,9 @@
 
             var name = item.EpisodeTitle || item.Name;
 
+            if (item.Type == "Channel") {
+                return item.Number + ' ' + name;
+            }
             if (displayAsSpecial && item.Type == "Episode" && item.ParentIndexNumber == 0) {
 
                 name = "Special - " + name;
@@ -1155,6 +1158,9 @@
 
         getPlayedIndicatorHtml: function (item) {
 
+            if (item.Type == "Channel") {
+                return '';
+            }
             if (item.Type == "Series" || item.Type == "Season" || item.Type == "BoxSet" || item.MediaType == "Video") {
                 if (item.RecursiveUnplayedItemCount) {
                     return '<div class="unplayedIndicator">' + item.RecursiveUnplayedItemCount + '</div>';

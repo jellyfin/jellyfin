@@ -4,14 +4,19 @@
     <title>Advanced</title>
 </head>
 <body>
-    <div id="advancedConfigurationPage" data-role="page" class="page type-interior">
+    <div id="advancedConfigurationPage" data-role="page" class="page type-interior advancedConfigurationPage">
 
         <div data-role="content">
             <div class="content-primary">
+
+                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                    <a href="#" data-role="button" class="ui-btn-active">General</a>
+                    <a href="encodingsettings.html" data-role="button">Encoding</a>
+                </div>
                 <form id="advancedConfigurationForm">
 
                     <ul data-role="listview" class="ulForm">
-                        <li id="fldRunAtStartup" style="display:none;">
+                        <li id="fldRunAtStartup" style="display: none;">
                             <input type="checkbox" id="chkRunAtStartup" name="chkRunAtStartup" data-mini="true" />
                             <label for="chkRunAtStartup">Run server at startup</label>
                             <div id="windowsStartupDescription" class="fieldDescription warningFieldDescription" style="display: none;">
