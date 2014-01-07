@@ -1,5 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
-using System.Collections.Generic;
+﻿using MediaBrowser.Model.Querying;
+using MediaBrowser.Model.Search;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Library
@@ -12,9 +12,8 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Gets the search hints.
         /// </summary>
-        /// <param name="inputItems">The input items.</param>
-        /// <param name="searchTerm">The search term.</param>
+        /// <param name="query">The query.</param>
         /// <returns>Task{IEnumerable{SearchHintInfo}}.</returns>
-        Task<IEnumerable<SearchHintInfo>> GetSearchHints(IEnumerable<BaseItem> inputItems, string searchTerm);
+        Task<QueryResult<SearchHintInfo>> GetSearchHints(SearchQuery query);
     }
 }

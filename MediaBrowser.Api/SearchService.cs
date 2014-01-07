@@ -7,9 +7,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Search;
 using ServiceStack;
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -41,7 +38,7 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <value>The user id.</value>
         [ApiMember(Name = "UserId", Description = "Optional. Supply a user id to search within a user's library or omit to search all.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public Guid? UserId { get; set; }
+        public string UserId { get; set; }
 
         /// <summary>
         /// Search characters used to find items
@@ -49,6 +46,31 @@ namespace MediaBrowser.Api
         /// <value>The index by.</value>
         [ApiMember(Name = "SearchTerm", Description = "The search term to filter on", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string SearchTerm { get; set; }
+
+
+        [ApiMember(Name = "IncludePeople", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool IncludePeople { get; set; }
+
+        [ApiMember(Name = "IncludeMedia", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool IncludeMedia { get; set; }
+
+        [ApiMember(Name = "IncludeGenres", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool IncludeGenres { get; set; }
+
+        [ApiMember(Name = "IncludeStudios", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool IncludeStudios { get; set; }
+
+        [ApiMember(Name = "IncludeArtists", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool IncludeArtists { get; set; }
+
+        public GetSearchHints()
+        {
+            IncludeArtists = true;
+            IncludeGenres = true;
+            IncludeMedia = true;
+            IncludePeople = true;
+            IncludeStudios = true;
+        }
     }
 
     /// <summary>
@@ -56,10 +78,6 @@ namespace MediaBrowser.Api
     /// </summary>
     public class SearchService : BaseApiService
     {
-        /// <summary>
-        /// The _user manager
-        /// </summary>
-        private readonly IUserManager _userManager;
         /// <summary>
         /// The _search engine
         /// </summary>
@@ -71,12 +89,12 @@ namespace MediaBrowser.Api
         /// <summary>
         /// Initializes a new instance of the <see cref="SearchService" /> class.
         /// </summary>
-        /// <param name="userManager">The user manager.</param>
         /// <param name="searchEngine">The search engine.</param>
         /// <param name="libraryManager">The library manager.</param>
-        public SearchService(IUserManager userManager, ISearchEngine searchEngine, ILibraryManager libraryManager, IDtoService dtoService, IImageProcessor imageProcessor)
+        /// <param name="dtoService">The dto service.</param>
+        /// <param name="imageProcessor">The image processor.</param>
+        public SearchService(ISearchEngine searchEngine, ILibraryManager libraryManager, IDtoService dtoService, IImageProcessor imageProcessor)
         {
-            _userManager = userManager;
             _searchEngine = searchEngine;
             _libraryManager = libraryManager;
             _dtoService = dtoService;
@@ -102,29 +120,25 @@ namespace MediaBrowser.Api
         /// <returns>Task{IEnumerable{SearchHintResult}}.</returns>
         private async Task<SearchHintResult> GetSearchHintsAsync(GetSearchHints request)
         {
-            var inputItems = GetAllLibraryItems(request.UserId, _userManager, _libraryManager);
-
-            var results = await _searchEngine.GetSearchHints(inputItems, request.SearchTerm).ConfigureAwait(false);
-
-            var searchResultArray = results.ToList();
-
-            IEnumerable<SearchHintInfo> returnResults = searchResultArray;
-
-            if (request.StartIndex.HasValue)
+            var result = await _searchEngine.GetSearchHints(new SearchQuery
             {
-                returnResults = returnResults.Skip(request.StartIndex.Value);
-            }
+                Limit = request.Limit,
+                SearchTerm = request.SearchTerm,
+                IncludeArtists = request.IncludeArtists,
+                IncludeGenres = request.IncludeGenres,
+                IncludeMedia = request.IncludeMedia,
+                IncludePeople = request.IncludePeople,
+                IncludeStudios = request.IncludeStudios,
+                StartIndex = request.StartIndex,
+                UserId = request.UserId
 
-            if (request.Limit.HasValue)
-            {
-                returnResults = returnResults.Take(request.Limit.Value);
-            }
+            }).ConfigureAwait(false);
 
             return new SearchHintResult
             {
-                TotalRecordCount = searchResultArray.Count,
+                TotalRecordCount = result.TotalRecordCount,
 
-                SearchHints = returnResults.Select(GetSearchHintResult).ToArray()
+                SearchHints = result.Items.Select(GetSearchHintResult).ToArray()
             };
         }
 
@@ -189,7 +203,7 @@ namespace MediaBrowser.Api
                 var songs = album.GetRecursiveChildren().OfType<Audio>().ToList();
 
                 result.SongCount = songs.Count;
-                
+
                 result.Artists = _libraryManager.GetAllArtists(songs)
                     .ToArray();
 
