@@ -65,6 +65,9 @@ namespace MediaBrowser.Api.LiveTv
 
         [ApiMember(Name = "IsRecording", Description = "Optional filter by recordings that are currently active, or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool? IsRecording { get; set; }
+
+        [ApiMember(Name = "SeriesTimerId", Description = "Optional filter by recordings belonging to a series timer", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string SeriesTimerId { get; set; }
     }
 
     [Route("/LiveTv/Recordings/Groups", "GET")]
@@ -108,6 +111,9 @@ namespace MediaBrowser.Api.LiveTv
     {
         [ApiMember(Name = "ChannelId", Description = "Optional filter by channel id.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string ChannelId { get; set; }
+
+        [ApiMember(Name = "SeriesTimerId", Description = "Optional filter by timers belonging to a series timer", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string SeriesTimerId { get; set; }
     }
 
     [Route("/LiveTv/Programs", "GET")]
@@ -312,7 +318,8 @@ namespace MediaBrowser.Api.LiveTv
                 GroupId = request.GroupId,
                 StartIndex = request.StartIndex,
                 Limit = request.Limit,
-                IsRecording = request.IsRecording
+                IsRecording = request.IsRecording,
+                SeriesTimerId = request.SeriesTimerId
 
             }, CancellationToken.None).Result;
 
@@ -339,7 +346,8 @@ namespace MediaBrowser.Api.LiveTv
         {
             var result = _liveTvManager.GetTimers(new TimerQuery
             {
-                ChannelId = request.ChannelId
+                ChannelId = request.ChannelId,
+                SeriesTimerId = request.SeriesTimerId
 
             }, CancellationToken.None).Result;
 
