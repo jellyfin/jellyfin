@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System.Text;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Implementations.Archiving;
 using MediaBrowser.Common.Implementations.IO;
@@ -196,14 +197,18 @@ namespace MediaBrowser.Common.Implementations
 
             JsonSerializer = CreateJsonSerializer();
 
+            Logger = LogManager.GetLogger("App");
+
             IsFirstRun = !ConfigurationManager.CommonConfiguration.IsStartupWizardCompleted;
             progress.Report(2);
-
-            Logger = LogManager.GetLogger("App");
 
             LogManager.LogSeverity = ConfigurationManager.CommonConfiguration.EnableDebugLevelLogging
                                          ? LogSeverity.Debug
                                          : LogSeverity.Info;
+
+            // Put the app config in the log for troubleshooting purposes
+            Logger.LogMultiline("Application Configuration:", LogSeverity.Info, new StringBuilder(JsonSerializer.SerializeToString(ConfigurationManager.CommonConfiguration)));
+
             progress.Report(3);
 
             DiscoverTypes();

@@ -68,7 +68,7 @@ namespace MediaBrowser.Providers.MediaInfo
             audio.HasEmbeddedImage = mediaStreams.Any(i => i.Type == MediaStreamType.Video);
 
             // Get the first audio stream
-            var stream = internalStreams.FirstOrDefault(s => s.codec_type.Equals("audio", StringComparison.OrdinalIgnoreCase));
+            var stream = internalStreams.FirstOrDefault(s => string.Equals(s.codec_type, "audio", StringComparison.OrdinalIgnoreCase));
 
             if (stream != null)
             {
