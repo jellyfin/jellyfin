@@ -29,7 +29,7 @@
         var programInfo = item.ProgramInfo || {};
 
         $('.itemName', page).html(item.Name);
-        
+
         $('.itemEpisodeName', page).html(programInfo.EpisodeTitle || '');
 
         if (programInfo.CommunityRating) {
@@ -40,6 +40,22 @@
 
         LibraryBrowser.renderGenres($('.itemGenres', page), programInfo, context);
         LibraryBrowser.renderOverview($('.itemOverview', page), programInfo);
+
+        if (programInfo.ImageTags && programInfo.ImageTags.Primary) {
+
+            var imgUrl = ApiClient.getUrl("LiveTV/Programs/" + programInfo.Id + "/Images/Primary", {
+                maxwidth: 200,
+                maxheight: 200,
+                tag: programInfo.ImageTags.Primary,
+                type: "Primary"
+            });
+
+            $('.timerPageImageContainer', page).css("display", "inline-block")
+                .html('<img src="' + imgUrl + '" />');
+
+        } else {
+            $('.timerPageImageContainer', page).hide();
+        }
 
         $('.itemMiscInfo', page).html(LibraryBrowser.getMiscInfoHtml(item));
 

@@ -14,91 +14,103 @@
             <a href="livetvseriestimers.html" class="ui-btn-active">Series</a>
         </div>
         <div data-role="content">
-            <form class="liveTvSeriesTimerForm" style="margin: 0 auto;">
+            <form class="liveTvSeriesTimerForm" style="margin: 0 auto; max-width: 720px;">
                 <p><span class="itemName inlineItemName"></span></p>
 
                 <p class="channel" style="margin-top: 2em;"></p>
                 <p class="time"></p>
-                <p class="overview"></p>
 
                 <br />
+                <div data-role="controlgroup" data-type="horizontal" data-mini="true" class="seriesTimerTabs">
+                    <input type="radio" name="radioSeriesTimerTab" class="radioSeriesTimerTab" id="radioSettings" value="settings">
+                    <label for="radioSettings">Settings</label>
+                    <input type="radio" name="radioSeriesTimerTab" class="radioSeriesTimerTab" id="radioRecordings" value="recordings">
+                    <label for="radioRecordings">Recordings</label>
+                    <input type="radio" name="radioSeriesTimerTab" class="radioSeriesTimerTab" id="radioScheduled" value="schedule">
+                    <label for="radioScheduled">Schedule</label>
+                </div>
+                <br />
+                <br />
+                <div class="settingsTab tab">
+                    <ul data-role="listview" class="ulForm">
+                        <li>
+                            <h3>Days</h3>
+                            <div data-role="controlgroup">
 
-                <ul data-role="listview" class="ulForm">
-                    <li>
-                        <h3>Days</h3>
-                        <div data-role="controlgroup">
+                                <input type="checkbox" data-mini="true" id="chkSunday" />
+                                <label for="chkSunday">Sunday</label>
 
-                            <input type="checkbox" data-mini="true" id="chkSunday" />
-                            <label for="chkSunday">Sunday</label>
+                                <input type="checkbox" data-mini="true" id="chkMonday" />
+                                <label for="chkMonday">Monday</label>
 
-                            <input type="checkbox" data-mini="true" id="chkMonday" />
-                            <label for="chkMonday">Monday</label>
+                                <input type="checkbox" data-mini="true" id="chkTuesday" />
+                                <label for="chkTuesday">Tuesday</label>
 
-                            <input type="checkbox" data-mini="true" id="chkTuesday" />
-                            <label for="chkTuesday">Tuesday</label>
+                                <input type="checkbox" data-mini="true" id="chkWednesday" />
+                                <label for="chkWednesday">Wednesday</label>
 
-                            <input type="checkbox" data-mini="true" id="chkWednesday" />
-                            <label for="chkWednesday">Wednesday</label>
+                                <input type="checkbox" data-mini="true" id="chkThursday" />
+                                <label for="chkThursday">Thursday</label>
 
-                            <input type="checkbox" data-mini="true" id="chkThursday" />
-                            <label for="chkThursday">Thursday</label>
+                                <input type="checkbox" data-mini="true" id="chkFriday" />
+                                <label for="chkFriday">Friday</label>
 
-                            <input type="checkbox" data-mini="true" id="chkFriday" />
-                            <label for="chkFriday">Friday</label>
-
-                            <input type="checkbox" data-mini="true" id="chkSaturday" />
-                            <label for="chkSaturday">Saturday</label>
+                                <input type="checkbox" data-mini="true" id="chkSaturday" />
+                                <label for="chkSaturday">Saturday</label>
+                            </div>
+                        </li>
+                        <li>
+                            <label for="chkNewOnly">Record only new episodes</label>
+                            <input type="checkbox" id="chkNewOnly" data-mini="true" />
+                        </li>
+                        <li>
+                            <label for="chkAnyTime">Record program at any time</label>
+                            <input type="checkbox" id="chkAnyTime" data-mini="true" />
+                        </li>
+                        <li>
+                            <label for="chkAllChannels">Record program on all channels</label>
+                            <input type="checkbox" id="chkAllChannels" data-mini="true" />
+                        </li>
+                    </ul>
+                    <div data-role="collapsible" data-mini="true">
+                        <h3>Pre/Post Padding</h3>
+                        <div>
+                            <br />
+                            <ul data-role="listview" class="ulForm">
+                                <li>
+                                    <label for="txtPrePaddingSeconds">Pre-padding minutes: </label>
+                                    <input type="number" id="txtPrePaddingSeconds" pattern="[0-9]*" required="required" min="0" max="10" step=".5" />
+                                </li>
+                                <li>
+                                    <input type="checkbox" data-mini="true" id="chkPrePaddingRequired" />
+                                    <label for="chkPrePaddingRequired">Pre-padding is required in order to record.</label>
+                                </li>
+                                <li>
+                                    <div style="height: .5em;"></div>
+                                </li>
+                                <li>
+                                    <label for="txtPostPaddingSeconds">Post-padding minutes: </label>
+                                    <input type="number" id="txtPostPaddingSeconds" pattern="[0-9]*" required="required" min="0" max="10" step=".5" />
+                                </li>
+                                <li>
+                                    <input type="checkbox" data-mini="true" id="chkPostPaddingRequired" />
+                                    <label for="chkPostPaddingRequired">Post-padding is required in order to record.</label>
+                                </li>
+                            </ul>
                         </div>
-                    </li>
-                    <li>
-                        <label for="chkNewOnly">Record only new episodes</label>
-                        <input type="checkbox" id="chkNewOnly" data-mini="true" />
-                    </li>
-                    <li>
-                        <label for="chkAnyTime">Record program at any time</label>
-                        <input type="checkbox" id="chkAnyTime" data-mini="true" />
-                    </li>
-                    <li>
-                        <label for="chkAllChannels">Record program on all channels</label>
-                        <input type="checkbox" id="chkAllChannels" data-mini="true" />
-                    </li>
-                </ul>
-                <div data-role="collapsible" data-mini="true">
-                    <h3>Pre/Post Padding</h3>
+                    </div>
+                    <br />
                     <div>
-                        <br />
-                        <ul data-role="listview" class="ulForm">
-                            <li>
-                                <label for="txtPrePaddingSeconds">Pre-padding minutes: </label>
-                                <input type="number" id="txtPrePaddingSeconds" pattern="[0-9]*" required="required" min="0" max="10" step=".5" />
-                            </li>
-                            <li>
-                                <input type="checkbox" data-mini="true" id="chkPrePaddingRequired" />
-                                <label for="chkPrePaddingRequired">Pre-padding is required in order to record.</label>
-                            </li>
-                            <li>
-                                <div style="height: .5em;"></div>
-                            </li>
-                            <li>
-                                <label for="txtPostPaddingSeconds">Post-padding minutes: </label>
-                                <input type="number" id="txtPostPaddingSeconds" pattern="[0-9]*" required="required" min="0" max="10" step=".5" />
-                            </li>
-                            <li>
-                                <input type="checkbox" data-mini="true" id="chkPostPaddingRequired" />
-                                <label for="chkPostPaddingRequired">Post-padding is required in order to record.</label>
-                            </li>
-                        </ul>
+                        <button type="submit" data-theme="a" data-icon="check" data-mini="true">
+                            Save
+                        </button>
+                        <button type="button" onclick="history.back();" data-icon="delete" data-mini="true">
+                            Cancel
+                        </button>
                     </div>
                 </div>
-                <br />
-                <div>
-                    <button type="submit" data-theme="a" data-icon="check" data-mini="true">
-                        Save
-                    </button>
-                    <button type="button" onclick="history.back();" data-icon="delete" data-mini="true">
-                        Cancel
-                    </button>
-                </div>
+                <div class="recordingsTab tab"></div>
+                <div class="scheduleTab tab"></div>
             </form>
         </div>
         <script type="text/javascript">

@@ -10,8 +10,6 @@
     var currentDate;
     var channelsPromise;
 
-    var guideInfoPromise;
-
     function normalizeDateToTimeslot(date) {
 
         var minutesOffset = date.getMinutes() - cellCurationMinutes;

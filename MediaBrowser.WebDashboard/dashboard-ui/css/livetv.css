@@ -296,6 +296,10 @@
     .guideChannelImage {
         display: none;
     }
+
+    .timerPageImageContainer {
+        display: none !important;
+    }
 }
 /* Account for hidden navigation */
 @media (max-width: 750px) {

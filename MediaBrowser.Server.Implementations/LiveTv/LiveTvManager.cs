@@ -565,6 +565,16 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 recordings = recordings.Where(i => (i.Status == RecordingStatus.InProgress) == val);
             }
 
+            if (!string.IsNullOrEmpty(query.SeriesTimerId))
+            {
+                var guid = new Guid(query.SeriesTimerId);
+
+                var currentServiceName = service.Name;
+
+                recordings = recordings
+                    .Where(i => _tvDtoService.GetInternalSeriesTimerId(currentServiceName, i.SeriesTimerId) == guid);
+            }
+
             IEnumerable<ILiveTvRecording> entities = await GetEntities(recordings, service.Name, cancellationToken).ConfigureAwait(false);
 
             entities = entities.OrderByDescending(i => i.RecordingInfo.StartDate);
@@ -638,6 +648,16 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             {
                 var guid = new Guid(query.ChannelId);
                 timers = timers.Where(i => guid == _tvDtoService.GetInternalChannelId(service.Name, i.ChannelId));
+            }
+
+            if (!string.IsNullOrEmpty(query.SeriesTimerId))
+            {
+                var guid = new Guid(query.SeriesTimerId);
+
+                var currentServiceName = service.Name;
+
+                timers = timers
+                    .Where(i => _tvDtoService.GetInternalSeriesTimerId(currentServiceName, i.SeriesTimerId) == guid);
             }
 
             var returnArray = timers

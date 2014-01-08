@@ -2,12 +2,30 @@
 
     var currentItem;
 
+    function deleteTimer(page, id) {
+
+        Dashboard.confirm("Are you sure you wish to cancel this recording?", "Confirm Recording Cancellation", function (result) {
+
+            if (result) {
+
+                Dashboard.showLoadingMsg();
+
+                ApiClient.cancelLiveTvTimer(id).done(function () {
+
+                    Dashboard.alert('Recording cancelled.');
+
+                    reload(page);
+                });
+            }
+
+        });
+    }
+
     function renderTimer(page, item) {
 
         currentItem = item;
 
         $('.itemName', page).html(item.Name);
-        $('.overview', page).html(item.Overview || '');
 
         $('#txtPrePaddingSeconds', page).val(item.PrePaddingSeconds / 60);
         $('#txtPostPaddingSeconds', page).val(item.PostPaddingSeconds / 60);
@@ -98,6 +116,78 @@
         return false;
 
     }
+    
+    function renderRecordings(page, result) {
+        
+        $('.recordingsTab', page).html(LibraryBrowser.getPosterViewHtml({
+
+            items: result.Items,
+            shape: "smallBackdrop",
+            showTitle: true,
+            showParentTitle: true,
+            overlayText: true,
+            coverImage: true
+
+        }));
+    }
+    
+    function renderSchedule(page, result) {
+
+        var timers = result.Items;
+
+        var html = '';
+
+        html += '<ul data-role="listview" data-inset="true" data-split-icon="delete">';
+
+        for (var i = 0, length = timers.length; i < length; i++) {
+
+            var timer = timers[i];
+
+            var programInfo = timer.ProgramInfo || {};
+            
+            html += '<li><a href="livetvtimer.html?id=' + timer.Id + '">';
+
+            html += '<h3>';
+            html += (programInfo.EpisodeTitle || timer.Name);
+            html += '</h3>';
+
+            var startDate = timer.StartDate;
+
+            try {
+
+                startDate = parseISO8601Date(startDate, { toLocal: true });
+
+            } catch (err) {
+
+            }
+
+            html += '<p>' + startDate.toLocaleDateString() + '</p>';
+
+            html += '<p>';
+            html += LiveTvHelpers.getDisplayTime(timer.StartDate);
+            
+            if (timer.ChannelName) {
+                html += ' on ' + timer.ChannelName;
+            }
+            html += '</p>';
+            
+            html += '</a>';
+
+            html += '<a data-timerid="' + timer.Id + '" href="#" title="Cancel Recording" class="btnCancelTimer">Cancel Recording</a>';
+
+            html += '</li>';
+        }
+
+        html += '</ul>';
+
+        var elem = $('.scheduleTab', page).html(html).trigger('create');
+
+        $('.btnCancelTimer', elem).on('click', function () {
+
+            deleteTimer(page, this.getAttribute('data-timerid'));
+
+        });
+    }
 
     function reload(page) {
 
@@ -110,11 +200,46 @@
             renderTimer(page, result);
 
         });
+
+        apiClient.getLiveTvRecordings({
+
+            userId: Dashboard.getCurrentUserId(),
+            seriesTimerId: id
+
+        }).done(function (result) {
+
+            renderRecordings(page, result);
+
+        });
+
+        apiClient.getLiveTvTimers({
+
+            seriesTimerId: id
+
+        }).done(function (result) {
+
+            renderSchedule(page, result);
+
+        });
     }
 
-    $(document).on('pagebeforeshow', "#liveTvSeriesTimerPage", function () {
+    $(document).on('pageinit', "#liveTvSeriesTimerPage", function () {
 
         var page = this;
+
+        $('.radioSeriesTimerTab', page).on('change', function () {
+
+            $('.tab', page).hide();
+            $('.' + this.value + 'Tab', page).show();
+
+        });
+
+    }).on('pagebeforeshow', "#liveTvSeriesTimerPage", function () {
+
+        var page = this;
+
+        $('.radioSeriesTimerTab', page).checked(false).checkboxradio('refresh');
+        $('#radioSettings', page).checked(true).checkboxradio('refresh').trigger('change');
 
         reload(page);
 

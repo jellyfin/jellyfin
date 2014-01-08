@@ -46,6 +46,12 @@
         /// </summary>
         /// <value><c>null</c> if [is recording] contains no value, <c>true</c> if [is recording]; otherwise, <c>false</c>.</value>
         public bool? IsRecording { get; set; }
+
+        /// <summary>
+        /// Gets or sets the series timer identifier.
+        /// </summary>
+        /// <value>The series timer identifier.</value>
+        public string SeriesTimerId { get; set; }
     }
 
     public class RecordingGroupQuery
@@ -64,6 +70,12 @@
         /// </summary>
         /// <value>The channel identifier.</value>
         public string ChannelId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the series timer identifier.
+        /// </summary>
+        /// <value>The series timer identifier.</value>
+        public string SeriesTimerId { get; set; }
     }
 
     public class SeriesTimerQuery
