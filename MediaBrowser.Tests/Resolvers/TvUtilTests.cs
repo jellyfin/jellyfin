@@ -29,6 +29,8 @@ namespace MediaBrowser.Tests.Resolvers
             Assert.AreEqual(03, TVUtils.GetEpisodeNumberFromFile(@"Season 02\Elementary - 02x03x04x15 - Ep Name.ext", true));
             Assert.AreEqual(23, TVUtils.GetEpisodeNumberFromFile(@"Season 1\Elementary - S01E23-E24-E26 - The Woman.mp4", true));
             Assert.AreEqual(23, TVUtils.GetEpisodeNumberFromFile(@"Season 1\S01E23-E24-E26 - The Woman.mp4", true));
+            Assert.AreEqual(9, TVUtils.GetEpisodeNumberFromFile(@"Season 25\The Simpsons.S25E09.Steal this episode.mp4", true));
+            Assert.AreEqual(8, TVUtils.GetEpisodeNumberFromFile(@"The Simpsons\The Simpsons.S25E08.Steal this episode.mp4", false));
 
             //Four Digits seasons
             Assert.AreEqual(02, TVUtils.GetEpisodeNumberFromFile(@"Season 2009\2009x02 blah.avi", true));
@@ -208,6 +210,7 @@ namespace MediaBrowser.Tests.Resolvers
             Assert.AreEqual(2009, TVUtils.GetSeasonNumberFromEpisodeFile(@"Season 2009\Elementary - 2009x03x04x15 - Ep Name.ext"));
             Assert.AreEqual(2009, TVUtils.GetSeasonNumberFromEpisodeFile(@"Season 2009\Elementary - S2009E23-E24-E26 - The Woman.mp4"));
             Assert.AreEqual(2009, TVUtils.GetSeasonNumberFromEpisodeFile(@"Season 2009\S2009E23-E24-E26 - The Woman.mp4"));
+            Assert.AreEqual(25, TVUtils.GetSeasonNumberFromEpisodeFile(@"Season 25\The Simpsons.S25E09.Steal this episode.mp4"));
 
         }
     }
