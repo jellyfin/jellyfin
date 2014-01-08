@@ -53,11 +53,11 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Data.SQLite, Version=1.0.90.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=x86">
+    <Reference Include="System.Data.SQLite, Version=1.0.90.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=x86" Condition=" '$(ConfigurationName)' != 'Release Mono' ">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\System.Data.SQLite.x86.1.0.90.0\lib\net45\System.Data.SQLite.dll</HintPath>
     </Reference>
-    <Reference Include="System.Data.SQLite.Linq">
+    <Reference Include="System.Data.SQLite.Linq" Condition=" '$(ConfigurationName)' != 'Release Mono' ">
       <HintPath>..\packages\System.Data.SQLite.x86.1.0.90.0\lib\net45\System.Data.SQLite.Linq.dll</HintPath>
     </Reference>
     <Reference Include="System.Drawing" />
@@ -74,6 +74,9 @@
     <Reference Include="System.Data.SQLite" Condition=" '$(ConfigurationName)' == 'Release Mono' ">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\ThirdParty\System.Data.SQLite.ManagedOnly\x86\1.0.90.0\net40\System.Data.SQLite.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data.SQLite.Linq" Condition=" '$(ConfigurationName)' == 'Release Mono' ">
+      <HintPath>..\ThirdParty\System.Data.SQLite.ManagedOnly\x86\1.0.90.0\net40\System.Data.SQLite.Linq.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack">
       <HintPath>..\ThirdParty\ServiceStack\ServiceStack.dll</HintPath>
