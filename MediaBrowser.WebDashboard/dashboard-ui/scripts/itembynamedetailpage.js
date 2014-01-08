@@ -402,6 +402,10 @@
         };
 
         query = $.extend(query, options || {});
+        
+        if (query.IncludeItemTypes == "Audio") {
+            query.SortBy = "Album,SortName";
+        }
 
         addCurrentItemToQuery(query);
 
