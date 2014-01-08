@@ -211,7 +211,7 @@ namespace MediaBrowser.Tests.Resolvers
             Assert.AreEqual(2009, TVUtils.GetSeasonNumberFromEpisodeFile(@"Season 2009\Elementary - S2009E23-E24-E26 - The Woman.mp4"));
             Assert.AreEqual(2009, TVUtils.GetSeasonNumberFromEpisodeFile(@"Season 2009\S2009E23-E24-E26 - The Woman.mp4"));
             Assert.AreEqual(25, TVUtils.GetSeasonNumberFromEpisodeFile(@"Season 25\The Simpsons.S25E09.Steal this episode.mp4"));
-
+            Assert.AreEqual(25, TVUtils.GetSeasonNumberFromEpisodeFile(@"The Simpsons\The Simpsons.S25E09.Steal this episode.mp4"));
         }
     }
 }
