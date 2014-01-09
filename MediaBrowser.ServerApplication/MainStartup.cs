@@ -42,6 +42,7 @@ namespace MediaBrowser.ServerApplication
 
             var logManager = new NlogManager(appPaths.LogDirectoryPath, "server");
             logManager.ReloadLogger(LogSeverity.Debug);
+            logManager.AddConsoleOutput();
 
             var logger = _logger = logManager.GetLogger("Main");
 

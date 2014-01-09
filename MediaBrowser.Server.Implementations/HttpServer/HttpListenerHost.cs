@@ -32,7 +32,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         private string DefaultRedirectPath { get; set; }
 
         private readonly ILogger _logger;
-        public string UrlPrefix { get; private set; }
+        public IEnumerable<string> UrlPrefixes { get; private set; }
 
         private readonly List<IRestfulService> _restServices = new List<IRestfulService>();
 
@@ -66,7 +66,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             _containerAdapter = new ContainerAdapter(applicationHost);
 
-            for (var i = 0; i < 2; i++)
+            for (var i = 0; i < 1; i++)
             {
                 _autoResetEvents.Add(new AutoResetEvent(false));
             }
@@ -145,20 +145,14 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
         public override ServiceStackHost Start(string listeningAtUrlBase)
         {
-            StartListener(listeningAtUrlBase);
+            StartListener();
             return this;
         }
 
         /// <summary>
         /// Starts the Web Service
         /// </summary>
-        /// <param name="listeningAtUrlBase">
-        /// A Uri that acts as the base that the server is listening on.
-        /// Format should be: http://127.0.0.1:8080/ or http://127.0.0.1:8080/somevirtual/
-        /// Note: the trailing slash is required! For more info see the
-        /// HttpListener.Prefixes property on MSDN.
-        /// </param>
-        protected void StartListener(string listeningAtUrlBase)
+        private void StartListener()
         {
             // *** Already running - just leave it in place
             if (IsStarted)
@@ -167,14 +161,13 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             if (Listener == null)
                 Listener = new HttpListener();
 
-            HostContext.Config.HandlerFactoryPath = ListenerRequest.GetHandlerPathIfAny(listeningAtUrlBase);
+            HostContext.Config.HandlerFactoryPath = ListenerRequest.GetHandlerPathIfAny(UrlPrefixes.First());
 
-            UrlPrefix = listeningAtUrlBase;
-
-            Listener.Prefixes.Add(listeningAtUrlBase);
-
-            _logger.Info("Adding HttpListener Prefixes");
-            Listener.Prefixes.Add(listeningAtUrlBase);
+            foreach (var prefix in UrlPrefixes)
+            {
+                _logger.Info("Adding HttpListener prefix " + prefix);
+                Listener.Prefixes.Add(prefix);
+            }
 
             IsStarted = true;
             _logger.Info("Starting HttpListner");
@@ -419,7 +412,10 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         {
             if (Listener != null)
             {
-                Listener.Prefixes.Remove(UrlPrefix);
+                foreach (var prefix in UrlPrefixes)
+                {
+                    Listener.Prefixes.Remove(prefix);
+                }
 
                 Listener.Close();
             }
@@ -516,9 +512,10 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             GC.SuppressFinalize(this);
         }
 
-        public void StartServer(string urlPrefix)
+        public void StartServer(IEnumerable<string> urlPrefixes)
         {
-            Start(urlPrefix);
+            UrlPrefixes = urlPrefixes.ToList();
+            Start(UrlPrefixes.First());
         }
 
         public bool SupportsWebSockets

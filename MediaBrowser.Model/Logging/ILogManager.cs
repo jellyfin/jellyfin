@@ -40,5 +40,15 @@ namespace MediaBrowser.Model.Logging
         /// Flushes this instance.
         /// </summary>
         void Flush();
+
+        /// <summary>
+        /// Adds the console output.
+        /// </summary>
+        void AddConsoleOutput();
+
+        /// <summary>
+        /// Removes the console output.
+        /// </summary>
+        void RemoveConsoleOutput();
     }
 }

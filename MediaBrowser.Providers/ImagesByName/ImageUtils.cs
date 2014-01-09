@@ -64,7 +64,8 @@ namespace MediaBrowser.Providers.ImagesByName
                 .Replace(".", string.Empty)
                 .Replace("&", string.Empty)
                 .Replace("!", string.Empty)
-                .Replace(",", string.Empty);
+                .Replace(",", string.Empty)
+                .Replace("/", string.Empty);
         }
 
         public static IEnumerable<string> GetAvailableImages(string file)

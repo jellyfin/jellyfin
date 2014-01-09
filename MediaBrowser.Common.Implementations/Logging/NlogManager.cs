@@ -187,7 +187,7 @@ namespace MediaBrowser.Common.Implementations.Logging
             LogFilePath = Path.Combine(LogDirectory, LogFilePrefix + "-" + decimal.Round(DateTime.Now.Ticks / 10000000) + ".log");
 
             Directory.CreateDirectory(Path.GetDirectoryName(LogFilePath));
-            
+
             AddFileTarget(LogFilePath, level);
 
             LogSeverity = level;
@@ -211,6 +211,27 @@ namespace MediaBrowser.Common.Implementations.Logging
         public void Flush()
         {
             LogManager.Flush();
+        }
+
+
+        public void AddConsoleOutput()
+        {
+            var target = new ConsoleTarget()
+            {
+                Layout = "${level}, ${logger}, ${message}",
+                Error = false
+            };
+
+            RemoveTarget("ConsoleTarget");
+
+            target.Name = "ConsoleTarget";
+
+            AddLogTarget(target, LogSeverity);
+        }
+
+        public void RemoveConsoleOutput()
+        {
+            RemoveTarget("ConsoleTarget");
         }
     }
 }
