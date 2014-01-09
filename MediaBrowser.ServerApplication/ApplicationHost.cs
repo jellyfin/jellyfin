@@ -94,11 +94,16 @@ namespace MediaBrowser.ServerApplication
         /// Gets the HTTP server URL prefix.
         /// </summary>
         /// <value>The HTTP server URL prefix.</value>
-        public string HttpServerUrlPrefix
+        private IEnumerable<string> HttpServerUrlPrefixes
         {
             get
             {
-                return "http://+:" + ServerConfigurationManager.Configuration.HttpServerPortNumber + "/" + WebApplicationName + "/";
+                var list = new List<string>
+                {
+                    "http://+:" + ServerConfigurationManager.Configuration.HttpServerPortNumber + "/" + WebApplicationName + "/"
+                };
+
+                return list;
             }
         }
 
@@ -212,6 +217,8 @@ namespace MediaBrowser.ServerApplication
                     Logger.ErrorException("Error in {0}", ex, entryPoint.GetType().Name);
                 }
             });
+
+            LogManager.RemoveConsoleOutput();
         }
 
         /// <summary>
@@ -462,7 +469,7 @@ namespace MediaBrowser.ServerApplication
         {
             try
             {
-                ServerManager.Start(HttpServerUrlPrefix, ServerConfigurationManager.Configuration.EnableHttpLevelLogging);
+                ServerManager.Start(HttpServerUrlPrefixes, ServerConfigurationManager.Configuration.EnableHttpLevelLogging);
             }
             catch (Exception ex)
             {
@@ -494,7 +501,7 @@ namespace MediaBrowser.ServerApplication
 
             HttpServer.EnableHttpRequestLogging = ServerConfigurationManager.Configuration.EnableHttpLevelLogging;
 
-            if (!string.Equals(HttpServer.UrlPrefix, HttpServerUrlPrefix, StringComparison.OrdinalIgnoreCase))
+            if (!HttpServer.UrlPrefixes.SequenceEqual(HttpServerUrlPrefixes, StringComparer.OrdinalIgnoreCase))
             {
                 NotifyPendingRestart();
             }
@@ -695,8 +702,10 @@ namespace MediaBrowser.ServerApplication
 
             try
             {
-                ServerAuthorization.AuthorizeServer(ServerConfigurationManager.Configuration.HttpServerPortNumber,
-                    HttpServerUrlPrefix, ServerConfigurationManager.Configuration.LegacyWebSocketPortNumber,
+                ServerAuthorization.AuthorizeServer(
+                    ServerConfigurationManager.Configuration.HttpServerPortNumber,
+                    HttpServerUrlPrefixes.First(), 
+                    ServerConfigurationManager.Configuration.LegacyWebSocketPortNumber,
                     UdpServerEntryPoint.PortNumber,
                     ConfigurationManager.CommonApplicationPaths.TempDirectory);
             }

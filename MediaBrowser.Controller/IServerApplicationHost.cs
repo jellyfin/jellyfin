@@ -21,12 +21,6 @@ namespace MediaBrowser.Controller
         string WebApplicationName { get; }
 
         /// <summary>
-        /// Gets the HTTP server URL prefix.
-        /// </summary>
-        /// <value>The HTTP server URL prefix.</value>
-        string HttpServerUrlPrefix { get; }
-
-        /// <summary>
         /// Gets a value indicating whether [supports automatic run at startup].
         /// </summary>
         /// <value><c>true</c> if [supports automatic run at startup]; otherwise, <c>false</c>.</value>

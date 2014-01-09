@@ -33,6 +33,7 @@ namespace MediaBrowser.Server.Mono
 
 			var logManager = new NlogManager(appPaths.LogDirectoryPath, "server");
 			logManager.ReloadLogger(LogSeverity.Info);
+			logManager.AddConsoleOutput();
 
 			var logger = _logger = logManager.GetLogger("Main");
 
