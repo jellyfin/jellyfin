@@ -1,0 +1,14 @@
+Instruction for compiling sqlite for linux on x86_64
+
+1. Get source(autoconf version) from: http://www.sqlite.org/download.html
+2. Extract somewhere
+3. $ ./configure
+4. $ make
+5. Copy .libs/libsqlite3.so.0.8.6 to ThirdParty/SQLite3/linux/x86_64/3.8.2
+6. $ make clean
+7. $ ./configure --host=i686-linux-gnu "CFLAGS=-m32" "CXXFLAGS=-m32" "LDFLAGS=-m32"
+8. $ make
+9. Copy .libs/libsqlite3.so.0.8.6 to ThirdParty/SQLite3/linux/x86/3.8.2
+
+Don't forget to update System.Data.SQLite.dll.config
+
