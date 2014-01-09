@@ -176,6 +176,23 @@
                 currentProgressInterval = null;
             }
         }
+        
+        function getTranscodingExtension() {
+
+            var media = testableVideoElement;
+            
+            // safari
+            if (media.canPlayType('application/x-mpegURL').replace(/no/, '')) {
+                return '.m3u8';
+            }
+
+            // Chrome or IE with plugin installed
+            if (media.canPlayType('video/webm').replace(/no/, '')) {
+                return '.webm';
+            }
+            
+            return '.mp4';
+        }
 
         function changeStream(ticks, params) {
 
@@ -190,7 +207,7 @@
                 params = params || {};
 
                 var currentSrc = element.currentSrc;
-
+                console.log(currentSrc);
                 currentSrc = replaceQueryString(currentSrc, 'starttimeticks', ticks);
 
                 if (params.AudioStreamIndex != null) {
@@ -205,11 +222,24 @@
                 if (params.VideoBitrate != null) {
                     currentSrc = replaceQueryString(currentSrc, 'VideoBitrate', params.VideoBitrate);
                 }
+                if (params.AudioBitrate != null) {
+                    currentSrc = replaceQueryString(currentSrc, 'AudioBitrate', params.AudioBitrate);
+                }
                 if (params.AudioCodec) {
                     currentSrc = replaceQueryString(currentSrc, 'AudioCodec', params.AudioCodec);
                 }
-                if (params.VideoCodec != null) {
+                if (params.VideoCodec) {
                     currentSrc = replaceQueryString(currentSrc, 'VideoCodec', params.VideoCodec);
+                }
+                if (params.Static != null) {
+                    
+                    currentSrc = replaceQueryString(currentSrc, 'Static', params.Static);
+
+                    if (params.Static == 'true') {
+                        currentSrc = currentSrc.replace('.webm', '.mp4').replace('.m3u8', '.mp4');
+                    } else {
+                        currentSrc = currentSrc.replace('.mp4', getTranscodingExtension());
+                    }
                 }
 
                 clearProgressInterval();
@@ -301,11 +331,13 @@
 
                     var maxWidth = parseInt(this.getAttribute('data-maxwidth'));
                     var videoBitrate = parseInt(this.getAttribute('data-videobitrate'));
+                    var audioBitrate = parseInt(this.getAttribute('data-audiobitrate'));
 
                     var mp4AudioCodec = this.getAttribute('data-mp4audio');
                     var mp4VideoCodec = this.getAttribute('data-mp4video');
+                    var isStatic = this.getAttribute('data-static');
 
-                    localStorage.setItem('preferredVideoBitrate', videoBitrate);
+                    localStorage.setItem('preferredVideoBitrate', videoBitrate + audioBitrate);
 
                     var isMp4 = currentMediaElement.currentSrc.toLowerCase().indexOf('.mp4') != -1;
 
@@ -313,7 +345,8 @@
 
                         MaxWidth: maxWidth,
                         VideoBitrate: videoBitrate,
-                        Static: false,
+                        AudioBitrate: audioBitrate,
+                        Static: isStatic,
                         AudioCodec: isMp4 ? mp4AudioCodec : null,
                         VideoCodec: isMp4 ? mp4VideoCodec : null
                     });
@@ -499,7 +532,7 @@
             return audioElement[0];
         }
 
-        function canPlayVideoStatically(item, videoStream, audioStream) {
+        function canPlayVideoDirect(item, videoStream) {
 
             if (item.VideoType != "VideoFile" || item.LocationType != "FileSystem") {
                 return false;
@@ -507,39 +540,55 @@
             if ((videoStream.Codec || '').toLowerCase().indexOf('h264') == -1) {
                 return false;
             }
-            if ((audioStream.Codec || '').toLowerCase().indexOf('aac') == -1) {
-                return false;
-            }
 
-            if (audioStream.Channels == null || audioStream.Channels > 2) {
-                return false;
-            }
+            var audioStreams = (item.MediaStreams || []).filter(function (stream) {
+                return stream.Type == "Audio";
+            });
 
-            if (audioStream.Channels == null || videoStream.BitRate == null) {
+            if (audioStreams.length && !audioStreams.filter(canPlayAudioStreamDirect).length) {
                 return false;
             }
 
             var extension = item.Path.substring(item.Path.lastIndexOf('.') + 1);
 
-            // It seems chrome can handle other containers
-            if (extension.toLowerCase() != 'mp4') {
+            return extension.toLowerCase() == 'mp4';
+        }
+
+        function canPlayAudioStreamDirect(audioStream) {
+
+            var audioCodec = (audioStream.Codec || '').toLowerCase().replace('-', '');
+            if (audioCodec.indexOf('aac') == -1 &&
+                audioCodec.indexOf('mp3') == -1 &&
+                audioCodec.indexOf('mpeg') == -1) {
                 return false;
             }
 
-            var total = audioStream.BitRate + videoStream.BitRate;
+            if (audioStream.Channels == null) {
+                return false;
+            }
 
-            var maxSetting = parseInt(localStorage.getItem('maxDirectStreamVideoBitrate') || '') || 1200;
+            // IE won't play at all if more than two channels
+            if (audioStream.Channels > 2 && $.browser.msie) {
+                return false;
+            }
 
-            return total <= maxSetting;
+            return true;
         }
 
-        function getVideoQualityOptions(item) {
+        function getVideoQualityOptions(item, audioStreamIndex) {
 
             var videoStream = (item.MediaStreams || []).filter(function (stream) {
                 return stream.Type == "Video";
             })[0];
 
-            var bitrateSetting = parseInt(localStorage.getItem('preferredVideoBitrate') || '') || 700000;
+            var audioStreams = (item.MediaStreams || []).filter(function (stream) {
+                return stream.Type == "Audio";
+            });
+
+            var audioStream = audioStreamIndex == null ? null : audioStreams[audioStreamIndex];
+
+            var canPlayDirect = canPlayVideoDirect(item, videoStream, audioStream);
+            var bitrateSetting = parseInt(localStorage.getItem('preferredVideoBitrate') || '') || 1500000;
 
             var maxAllowedWidth = Math.max(screen.height, screen.width);
 
@@ -551,40 +600,77 @@
                 maxAllowedWidth = videoStream.Width;
             }
 
-            //// Some 1080- videos are reported as 1912?
+            // Some 1080- videos are reported as 1912?
             if (maxAllowedWidth >= 1910) {
-                options.push({ name: '1080p - 8Mbps', maxWidth: 1920, videoBitrate: 8000000 });
-                options.push({ name: '1080p - 7Mbps', maxWidth: 1920, videoBitrate: 7000000 });
-                options.push({ name: '1080p - 6Mbps', maxWidth: 1920, videoBitrate: 6000000 });
-                options.push({ name: '1080p - 5Mbps', maxWidth: 1920, videoBitrate: 5000000 });
+                options.push({ name: '1080p - 10Mbps', maxWidth: 1920, bitrate: 10000000 });
+                options.push({ name: '1080p - 8Mbps', maxWidth: 1920, bitrate: 8000000 });
+                options.push({ name: '1080p - 6Mbps', maxWidth: 1920, bitrate: 6000000 });
+                options.push({ name: '1080p - 5Mbps', maxWidth: 1920, bitrate: 5000000 });
+            }
+            else if (maxAllowedWidth >= 1270) {
+                options.push({ name: '720p - 10Mbps', maxWidth: 1280, bitrate: 10000000 });
+                options.push({ name: '720p - 8Mbps', maxWidth: 1280, bitrate: 8000000 });
+                options.push({ name: '720p - 6Mbps', maxWidth: 1280, bitrate: 6000000 });
+                options.push({ name: '720p - 5Mbps', maxWidth: 1280, bitrate: 5000000 });
+            }
+            else if (maxAllowedWidth >= 470) {
+                options.push({ name: '480p - 1.5Mbps', maxWidth: 720, bitrate: 1500000 });
+                options.push({ name: '480p - 1.0Mbps', maxWidth: 720, bitrate: 1000000 });
             }
 
             if (maxAllowedWidth >= 1270) {
-                options.push({ name: '720p - 4Mbps', maxWidth: 1280, videoBitrate: 4000000 });
-                options.push({ name: '720p - 3Mbps', maxWidth: 1280, videoBitrate: 3000000 });
-                options.push({ name: '720p - 2Mbps', maxWidth: 1280, videoBitrate: 2000000 });
-                options.push({ name: '720p - 1.5Mbps', maxWidth: 1280, videoBitrate: 1500000 });
+                options.push({ name: '720p - 4Mbps', maxWidth: 1280, bitrate: 4000000 });
+                options.push({ name: '720p - 3Mbps', maxWidth: 1280, bitrate: 3000000 });
+                options.push({ name: '720p - 2Mbps', maxWidth: 1280, bitrate: 2000000 });
+                options.push({ name: '720p - 1.5Mbps', maxWidth: 1280, bitrate: 1500000 });
             }
 
-            options.push({ name: '480p - 720 kbps', maxWidth: 480, videoBitrate: 700000 });
-            options.push({ name: '480p - 420 kbps', maxWidth: 480, videoBitrate: 420000 });
-            options.push({ name: '360p', maxWidth: 640, videoBitrate: 400000 });
-            options.push({ name: '240p', maxWidth: 426, videoBitrate: 320000 });
+            options.push({ name: '480p - 720 kbps', maxWidth: 720, bitrate: 700000 });
+            options.push({ name: '480p - 420 kbps', maxWidth: 720, bitrate: 420000 });
+            options.push({ name: '360p', maxWidth: 640, bitrate: 400000 });
+            options.push({ name: '240p', maxWidth: 426, bitrate: 320000 });
 
-            var i, length;
-            for (i = 0, length = options.length; i < length; i++) {
+            var canPlayVideoCodecDirect = (videoStream ? videoStream.Codec : '').toLowerCase().indexOf('h264') != -1;
+            var canPlayAudioDirect = audioStream ? canPlayAudioStreamDirect(audioStream) : false;
 
-                options.mp4VideoCodec = options.mp4VideoCodec || 'h264';
-                options.mp4AudioCodec = options.mp4AudioCodec || 'aac';
-            }
+            var videoBitrate = videoStream ? videoStream.BitRate : null;
+            var audioBitrate = audioStream ? audioStream.BitRate : null;
+            var totalBitrate = (videoBitrate || 0) + (audioBitrate || 0);
+            
+            var videoWidth = videoStream ? videoStream.Width : null;
 
+            var i, length, option;
             var selectedIndex = -1;
             for (i = 0, length = options.length; i < length; i++) {
 
-                if (options[i].videoBitrate <= bitrateSetting) {
+                option = options[i];
+
+                if (selectedIndex == -1 && option.bitrate <= bitrateSetting) {
                     selectedIndex = i;
-                    break;
                 }
+
+                option.audioBitrate = option.bitrate >= 700000 ? 128000 : 64000;
+
+                if (canPlayVideoCodecDirect &&
+                    totalBitrate &&
+                    option.bitrate >= totalBitrate &&
+                    videoWidth &&
+                    option.maxWidth >= videoWidth) {
+
+                    if (canPlayDirect) {
+
+                        option.isStatic = true;
+                        option.mp4VideoCodec = 'copy';
+                        option.mp4AudioCodec = 'copy';
+                    }
+                }
+
+                option.isStatic = option.isStatic || false;
+                option.mp4VideoCodec = option.mp4VideoCodec || 'h264';
+
+                option.mp4AudioCodec = option.mp4AudioCodec || 'aac';
+
+                option.videoBitrate = option.bitrate - option.audioBitrate;
             }
 
             if (selectedIndex == -1) {
@@ -593,6 +679,12 @@
             }
 
             options[selectedIndex].selected = true;
+
+            var firstOption = options[0];
+            
+            if (firstOption.isStatic) {
+                firstOption.name = 'Direct';
+            }
 
             return options;
         }
@@ -603,8 +695,7 @@
 
             var baseParams = {
                 audioChannels: 2,
-                audioBitrate: 128000,
-                StartTimeTicks: 0,
+                StartTimeTicks: startPosition || 0,
                 SubtitleStreamIndex: getInitialSubtitleStreamIndex(mediaStreams, user),
                 AudioStreamIndex: getInitialAudioStreamIndex(mediaStreams, user),
                 deviceId: ApiClient.deviceId(),
@@ -612,47 +703,35 @@
                 Static: false
             };
 
-            var qualityOption = getVideoQualityOptions(item).filter(function (opt) {
+            var qualityOption = getVideoQualityOptions(item, baseParams.AudioStreamIndex).filter(function (opt) {
                 return opt.selected;
             })[0];
 
             baseParams.maxWidth = qualityOption.maxWidth;
             baseParams.videoBitrate = qualityOption.videoBitrate;
+            baseParams.audioBitrate = qualityOption.audioBitrate;
 
             // Webm must be ahead of mp4 due to the issue of mp4 playing too fast in chrome
             var prioritizeWebmOverH264 = $.browser.chrome || $.browser.msie;
 
-            var staticMp4 = false;
-
-            //if (videoStream && videoStream.Width) {
-
-            //    if (canPlayVideoStatically(item, videoStream, audioStream)) {
-
-            //        //staticMp4 = true;
-            //        //prioritizeWebmOverH264 = false;
-            //    }
-            //}
-
-            if (startPosition) {
-                baseParams.StartTimeTicks = startPosition;
-            }
+            var staticMp4 = qualityOption.isStatic;
 
             var mp4VideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.mp4', $.extend({}, baseParams, {
-                videoCodec: qualityOption.mp4VideoCodec,
-                audioCodec: qualityOption.mp4AudioCodec,
+                VideoCodec: qualityOption.mp4VideoCodec,
+                AudioCodec: qualityOption.mp4AudioCodec,
                 profile: 'baseline',
                 level: 3,
                 Static: staticMp4
             }));
 
             var webmVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.webm', $.extend({}, baseParams, {
-                videoCodec: 'vpx',
-                audioCodec: 'Vorbis'
+                VideoCodec: 'vpx',
+                AudioCodec: 'Vorbis'
             }));
 
             var hlsVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.m3u8', $.extend({}, baseParams, {
-                videoCodec: qualityOption.mp4VideoCodec,
-                audioCodec: qualityOption.mp4AudioCodec,
+                VideoCodec: qualityOption.mp4VideoCodec,
+                AudioCodec: qualityOption.mp4AudioCodec,
                 profile: 'baseline',
                 level: 3,
                 timeStampOffsetMs: 0
@@ -755,6 +834,10 @@
                 isStaticStream = duration && !isNaN(duration) && duration != Number.POSITIVE_INFINITY && duration != Number.NEGATIVE_INFINITY;
 
                 videoElement.off("play.once");
+
+                if (startPosition && staticMp4) {
+                    self.seek(startPosition);
+                }
 
                 ApiClient.reportPlaybackStart(Dashboard.getCurrentUserId(), item.Id, true, item.MediaType);
 
@@ -1751,7 +1834,9 @@
 
             var html = '';
 
-            var options = getVideoQualityOptions(item);
+            var currentAudioStreamIndex = getParameterByName('AudioStreamIndex', currentMediaElement.currentSrc);
+
+            var options = getVideoQualityOptions(item, currentAudioStreamIndex);
 
             for (var i = 0, length = options.length; i < length; i++) {
 
@@ -1763,7 +1848,7 @@
                     cssClass += " selectedMediaFlyoutOption";
                 }
 
-                html += '<div data-mp4video="' + option.mp4VideoCodec + '" data-mp4audio="' + option.mp4AudioCodec + '" data-maxwidth="' + option.maxWidth + '" data-videobitrate="' + option.videoBitrate + '" class="' + cssClass + '">';
+                html += '<div data-static="' + option.isStatic + '" data-mp4video="' + option.mp4VideoCodec + '" data-mp4audio="' + option.mp4AudioCodec + '" data-maxwidth="' + option.maxWidth + '" data-videobitrate="' + option.videoBitrate + '" data-audiobitrate="' + option.audioBitrate + '" class="' + cssClass + '">';
 
                 html += '<div class="mediaFlyoutOptionContent">';
 
