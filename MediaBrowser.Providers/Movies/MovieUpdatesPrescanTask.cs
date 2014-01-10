@@ -69,7 +69,7 @@ namespace MediaBrowser.Providers.Movies
         /// <returns>Task.</returns>
         public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            if (!_config.Configuration.EnableInternetProviders)
+            if (!_config.Configuration.EnableInternetProviders && !_config.Configuration.EnableTmdbUpdates)
             {
                 progress.Report(100);
                 return;

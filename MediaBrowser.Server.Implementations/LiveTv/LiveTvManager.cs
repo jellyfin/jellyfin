@@ -98,7 +98,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     });
             }
 
-            var returnChannels = channels.OrderBy(i =>
+            channels = channels.OrderBy(i =>
             {
                 double number = 0;
 
@@ -109,14 +109,29 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
                 return number;
 
-            }).ThenBy(i => i.Name)
-            .Select(i => _tvDtoService.GetChannelInfoDto(i, GetCurrentProgram(i.ChannelInfo.Id), user))
-            .ToArray();
+            }).ThenBy(i => i.Name);
+
+            var allChannels = channels.ToList();
+            IEnumerable<LiveTvChannel> allEnumerable = allChannels;
+
+            if (query.StartIndex.HasValue)
+            {
+                allEnumerable = allEnumerable.Skip(query.StartIndex.Value);
+            }
+
+            if (query.Limit.HasValue)
+            {
+                allEnumerable = allEnumerable.Take(query.Limit.Value);
+            }
+
+            var returnChannels = allEnumerable
+                .Select(i => _tvDtoService.GetChannelInfoDto(i, GetCurrentProgram(i.ChannelInfo.Id), user))
+                .ToArray();
 
             var result = new QueryResult<ChannelInfoDto>
             {
                 Items = returnChannels,
-                TotalRecordCount = returnChannels.Length
+                TotalRecordCount = allChannels.Count
             };
 
             return Task.FromResult(result);
@@ -575,9 +590,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     .Where(i => _tvDtoService.GetInternalSeriesTimerId(currentServiceName, i.SeriesTimerId) == guid);
             }
 
-            IEnumerable<ILiveTvRecording> entities = await GetEntities(recordings, service.Name, cancellationToken).ConfigureAwait(false);
+            recordings = recordings.OrderByDescending(i => i.StartDate);
 
-            entities = entities.OrderByDescending(i => i.RecordingInfo.StartDate);
+            IEnumerable<ILiveTvRecording> entities = await GetEntities(recordings, service.Name, cancellationToken).ConfigureAwait(false);
 
             if (user != null)
             {

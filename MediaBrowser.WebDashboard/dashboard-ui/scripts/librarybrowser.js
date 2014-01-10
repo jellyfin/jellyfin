@@ -1417,7 +1417,7 @@
             return html;
         },
 
-        getPagingHtml: function (query, totalRecordCount, updatePageSizeSetting) {
+        getPagingHtml: function (query, totalRecordCount, updatePageSizeSetting, pageSizes) {
 
             if (query.Limit && updatePageSizeSetting !== false) {
                 localStorage.setItem('pagesize', query.Limit);
@@ -1477,13 +1477,11 @@
                     }
                 }
 
-                options += getOption(20);
-                options += getOption(50);
-                options += getOption(100);
-                options += getOption(200);
-                options += getOption(300);
-                options += getOption(400);
-                options += getOption(500);
+                pageSizes = pageSizes || [20, 50, 100, 200, 300, 400, 500];
+                
+                for (var j = 0, length = pageSizes.length; j < length; j++) {
+                    options += getOption(pageSizes[j]);
+                }
 
                 // Add styles to defeat jquery mobile
                 html += '<label style="display:inline;font-size:inherit;" class="labelPageSize" for="' + id + '">Limit: </label><select class="selectPageSize" id="' + id + '" data-enhance="false" data-role="none">' + options + '</select>';

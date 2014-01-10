@@ -253,25 +253,44 @@ namespace MediaBrowser.Api.Playback
             return returnFirstIfNoIndex ? streams.FirstOrDefault() : null;
         }
 
+        protected EncodingQuality GetQualitySetting()
+        {
+            var quality = ServerConfigurationManager.Configuration.MediaEncodingQuality;
+
+            if (quality == EncodingQuality.Auto)
+            {
+                var cpuCount = Environment.ProcessorCount;
+
+                if (cpuCount >= 4)
+                {
+                    return EncodingQuality.HighQuality;
+                }
+
+                return EncodingQuality.HighSpeed;
+            }
+
+            return quality;
+        }
+
         /// <summary>
         /// Gets the number of threads.
         /// </summary>
         /// <returns>System.Int32.</returns>
         /// <exception cref="System.Exception">Unrecognized MediaEncodingQuality value.</exception>
-        protected int GetNumberOfThreads()
+        protected int GetNumberOfThreads(bool isWebm)
         {
-            var quality = ServerConfigurationManager.Configuration.MediaEncodingQuality;
+            // Webm: http://www.webmproject.org/docs/encoder-parameters/
+            // The decoder will usually automatically use an appropriate number of threads according to how many cores are available but it can only use multiple threads 
+            // for the coefficient data if the encoder selected --token-parts > 0 at encode time.
 
-            switch (quality)
+            switch (GetQualitySetting())
             {
-                case EncodingQuality.Auto:
-                    return 0;
                 case EncodingQuality.HighSpeed:
                     return 2;
                 case EncodingQuality.HighQuality:
-                    return 2;
+                    return isWebm ? Math.Min(3, Environment.ProcessorCount - 1) : 2;
                 case EncodingQuality.MaxQuality:
-                    return 0;
+                    return isWebm ? Math.Max(2, Environment.ProcessorCount - 1) : 0;
                 default:
                     throw new Exception("Unrecognized MediaEncodingQuality value.");
             }
@@ -285,30 +304,74 @@ namespace MediaBrowser.Api.Playback
         /// <returns>System.String.</returns>
         protected string GetVideoQualityParam(StreamState state, string videoCodec)
         {
-            var args = string.Empty;
-
             // webm
             if (videoCodec.Equals("libvpx", StringComparison.OrdinalIgnoreCase))
             {
-                args = "-speed 16 -quality good -profile:v 0 -slices 8";
+                // http://www.webmproject.org/docs/encoder-parameters/
+                return "-speed 16 -quality good -profile:v 0 -slices 8";
             }
 
             // asf/wmv
-            else if (videoCodec.Equals("wmv2", StringComparison.OrdinalIgnoreCase))
+            if (videoCodec.Equals("wmv2", StringComparison.OrdinalIgnoreCase))
             {
-                args = "-g 100 -qmax 15";
+                return "-g 100 -qmax 15";
             }
 
-            else if (videoCodec.Equals("libx264", StringComparison.OrdinalIgnoreCase))
+            if (videoCodec.Equals("libx264", StringComparison.OrdinalIgnoreCase))
             {
-                args = "-preset superfast";
-            }
-            else if (videoCodec.Equals("mpeg4", StringComparison.OrdinalIgnoreCase))
-            {
-                args = "-mbd rd -flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -bf 2";
+                return "-preset superfast";
             }
 
-            return args.Trim();
+            if (videoCodec.Equals("mpeg4", StringComparison.OrdinalIgnoreCase))
+            {
+                return "-mbd rd -flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -bf 2";
+            }
+
+            return string.Empty;
+        }
+
+        protected string GetAudioFilterParam(StreamState state, bool isHls)
+        {
+            var volParam = string.Empty;
+            var audioSampleRate = string.Empty;
+
+            var channels = GetNumAudioChannelsParam(state.Request, state.AudioStream);
+            
+            // Boost volume to 200% when downsampling from 6ch to 2ch
+            if (channels.HasValue && channels.Value <= 2 && state.AudioStream.Channels.HasValue && state.AudioStream.Channels.Value > 5)
+            {
+                volParam = ",volume=2.000000";
+            }
+
+            if (state.Request.AudioSampleRate.HasValue)
+            {
+                audioSampleRate = state.Request.AudioSampleRate.Value + ":";
+            }
+
+            var adelay = isHls ? "adelay=1," : string.Empty;
+
+            var pts = string.Empty;
+
+            if (state.SubtitleStream != null)
+            {
+                if (state.SubtitleStream.Codec.IndexOf("srt", StringComparison.OrdinalIgnoreCase) != -1 ||
+                   state.SubtitleStream.Codec.IndexOf("subrip", StringComparison.OrdinalIgnoreCase) != -1 ||
+                   string.Equals(state.SubtitleStream.Codec, "ass", StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(state.SubtitleStream.Codec, "ssa", StringComparison.OrdinalIgnoreCase))
+                {
+                    var seconds = TimeSpan.FromTicks(state.Request.StartTimeTicks ?? 0).TotalSeconds;
+
+                    pts = string.Format(",asetpts=PTS-{0}/TB",
+                Math.Round(seconds).ToString(UsCulture));
+                }
+            }
+
+            return string.Format("-af \"{0}aresample={1}async=1{2}{3}\"", 
+
+                adelay,
+                audioSampleRate, 
+                volParam,
+                pts);
         }
 
         /// <summary>
@@ -323,6 +386,7 @@ namespace MediaBrowser.Api.Playback
             // http://sonnati.wordpress.com/2012/10/19/ffmpeg-the-swiss-army-knife-of-internet-streaming-part-vi/
 
             var assSubtitleParam = string.Empty;
+            var copyTsParam = string.Empty;
 
             var request = state.VideoRequest;
 
@@ -333,7 +397,8 @@ namespace MediaBrowser.Api.Playback
                     string.Equals(state.SubtitleStream.Codec, "ass", StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(state.SubtitleStream.Codec, "ssa", StringComparison.OrdinalIgnoreCase))
                 {
-                    assSubtitleParam = GetTextSubtitleParam(state, request.StartTimeTicks, performTextSubtitleConversion);
+                    assSubtitleParam = GetTextSubtitleParam(state, performTextSubtitleConversion);
+                    copyTsParam = " -copyts";
                 }
             }
 
@@ -343,7 +408,7 @@ namespace MediaBrowser.Api.Playback
                 var widthParam = request.Width.Value.ToString(UsCulture);
                 var heightParam = request.Height.Value.ToString(UsCulture);
 
-                return string.Format(" -vf \"scale=trunc({0}/2)*2:trunc({1}/2)*2{2}\"", widthParam, heightParam, assSubtitleParam);
+                return string.Format("{3} -vf \"scale=trunc({0}/2)*2:trunc({1}/2)*2{2}\"", widthParam, heightParam, assSubtitleParam, copyTsParam);
             }
 
             var isH264Output = outputVideoCodec.Equals("libx264", StringComparison.OrdinalIgnoreCase);
@@ -354,8 +419,8 @@ namespace MediaBrowser.Api.Playback
                 var widthParam = request.Width.Value.ToString(UsCulture);
 
                 return isH264Output ?
-                    string.Format(" -vf \"scale={0}:trunc(ow/a/2)*2{1}\"", widthParam, assSubtitleParam) :
-                    string.Format(" -vf \"scale={0}:-1{1}\"", widthParam, assSubtitleParam);
+                    string.Format("{2} -vf \"scale={0}:trunc(ow/a/2)*2{1}\"", widthParam, assSubtitleParam, copyTsParam) :
+                    string.Format("{2} -vf \"scale={0}:-1{1}\"", widthParam, assSubtitleParam, copyTsParam);
             }
 
             // If a fixed height was requested
@@ -364,8 +429,8 @@ namespace MediaBrowser.Api.Playback
                 var heightParam = request.Height.Value.ToString(UsCulture);
 
                 return isH264Output ?
-                    string.Format(" -vf \"scale=trunc(oh*a*2)/2:{0}{1}\"", heightParam, assSubtitleParam) :
-                    string.Format(" -vf \"scale=-1:{0}{1}\"", heightParam, assSubtitleParam);
+                    string.Format("{2} -vf \"scale=trunc(oh*a*2)/2:{0}{1}\"", heightParam, assSubtitleParam, copyTsParam) :
+                    string.Format("{2} -vf \"scale=-1:{0}{1}\"", heightParam, assSubtitleParam, copyTsParam);
             }
 
             // If a max width was requested
@@ -374,8 +439,8 @@ namespace MediaBrowser.Api.Playback
                 var maxWidthParam = request.MaxWidth.Value.ToString(UsCulture);
 
                 return isH264Output ?
-                    string.Format(" -vf \"scale=min(iw\\,{0}):trunc(ow/a/2)*2{1}\"", maxWidthParam, assSubtitleParam) :
-                    string.Format(" -vf \"scale=min(iw\\,{0}):-1{1}\"", maxWidthParam, assSubtitleParam);
+                    string.Format("{2} -vf \"scale=min(iw\\,{0}):trunc(ow/a/2)*2{1}\"", maxWidthParam, assSubtitleParam, copyTsParam) :
+                    string.Format("{2} -vf \"scale=min(iw\\,{0}):-1{1}\"", maxWidthParam, assSubtitleParam, copyTsParam);
             }
 
             // If a max height was requested
@@ -384,8 +449,8 @@ namespace MediaBrowser.Api.Playback
                 var maxHeightParam = request.MaxHeight.Value.ToString(UsCulture);
 
                 return isH264Output ?
-                    string.Format(" -vf \"scale=trunc(oh*a*2)/2:min(ih\\,{0}){1}\"", maxHeightParam, assSubtitleParam) :
-                    string.Format(" -vf \"scale=-1:min(ih\\,{0}){1}\"", maxHeightParam, assSubtitleParam);
+                    string.Format("{2} -vf \"scale=trunc(oh*a*2)/2:min(ih\\,{0}){1}\"", maxHeightParam, assSubtitleParam, copyTsParam) :
+                    string.Format("{2} -vf \"scale=-1:min(ih\\,{0}){1}\"", maxHeightParam, assSubtitleParam, copyTsParam);
             }
 
             if (state.VideoStream == null)
@@ -408,45 +473,45 @@ namespace MediaBrowser.Api.Playback
                 var widthParam = outputSize.Width.ToString(UsCulture);
                 var heightParam = outputSize.Height.ToString(UsCulture);
 
-                return string.Format(" -vf \"scale=trunc({0}/2)*2:trunc({1}/2)*2{2}\"", widthParam, heightParam, assSubtitleParam);
+                return string.Format("{3} -vf \"scale=trunc({0}/2)*2:trunc({1}/2)*2{2}\"", widthParam, heightParam, assSubtitleParam, copyTsParam);
             }
 
             // Otherwise use -vf scale since ffmpeg will ensure internally that the aspect ratio is preserved
-            return string.Format(" -vf \"scale={0}:-1{1}\"", Convert.ToInt32(outputSize.Width), assSubtitleParam);
+            return string.Format("{2} -vf \"scale={0}:-1{1}\"", Convert.ToInt32(outputSize.Width), assSubtitleParam, copyTsParam);
         }
 
         /// <summary>
         /// Gets the text subtitle param.
         /// </summary>
         /// <param name="state">The state.</param>
-        /// <param name="startTimeTicks">The start time ticks.</param>
         /// <param name="performConversion">if set to <c>true</c> [perform conversion].</param>
         /// <returns>System.String.</returns>
-        protected string GetTextSubtitleParam(StreamState state, long? startTimeTicks, bool performConversion)
+        protected string GetTextSubtitleParam(StreamState state, bool performConversion)
         {
-            var path = state.SubtitleStream.IsExternal ? GetConvertedAssPath(state.MediaPath, state.SubtitleStream, startTimeTicks, performConversion) :
-                GetExtractedAssPath(state, startTimeTicks, performConversion);
+            var path = state.SubtitleStream.IsExternal ? GetConvertedAssPath(state.MediaPath, state.SubtitleStream, performConversion) :
+                GetExtractedAssPath(state, performConversion);
 
             if (string.IsNullOrEmpty(path))
             {
                 return string.Empty;
             }
 
-            return string.Format(",ass='{0}'", path.Replace('\\', '/').Replace(":/", "\\:/"));
+            var seconds = TimeSpan.FromTicks(state.Request.StartTimeTicks ?? 0).TotalSeconds;
+
+            return string.Format(",ass='{0}',setpts=PTS -{1}/TB", 
+                path.Replace('\\', '/').Replace(":/", "\\:/"),
+                Math.Round(seconds).ToString(UsCulture));
         }
 
         /// <summary>
         /// Gets the extracted ass path.
         /// </summary>
         /// <param name="state">The state.</param>
-        /// <param name="startTimeTicks">The start time ticks.</param>
         /// <param name="performConversion">if set to <c>true</c> [perform conversion].</param>
         /// <returns>System.String.</returns>
-        private string GetExtractedAssPath(StreamState state, long? startTimeTicks, bool performConversion)
+        private string GetExtractedAssPath(StreamState state, bool performConversion)
         {
-            var offset = TimeSpan.FromTicks(startTimeTicks ?? 0);
-
-            var path = FFMpegManager.Instance.GetSubtitleCachePath(state.MediaPath, state.SubtitleStream, offset, ".ass");
+            var path = FFMpegManager.Instance.GetSubtitleCachePath(state.MediaPath, state.SubtitleStream, ".ass");
 
             if (performConversion)
             {
@@ -460,7 +525,7 @@ namespace MediaBrowser.Api.Playback
 
                     Directory.CreateDirectory(parentPath);
 
-                    var task = MediaEncoder.ExtractTextSubtitle(inputPath, type, state.SubtitleStream.Index, offset, path, CancellationToken.None);
+                    var task = MediaEncoder.ExtractTextSubtitle(inputPath, type, state.SubtitleStream.Index, path, CancellationToken.None);
 
                     Task.WaitAll(task);
                 }
@@ -478,14 +543,11 @@ namespace MediaBrowser.Api.Playback
         /// </summary>
         /// <param name="mediaPath">The media path.</param>
         /// <param name="subtitleStream">The subtitle stream.</param>
-        /// <param name="startTimeTicks">The start time ticks.</param>
         /// <param name="performConversion">if set to <c>true</c> [perform conversion].</param>
         /// <returns>System.String.</returns>
-        private string GetConvertedAssPath(string mediaPath, MediaStream subtitleStream, long? startTimeTicks, bool performConversion)
+        private string GetConvertedAssPath(string mediaPath, MediaStream subtitleStream, bool performConversion)
         {
-            var offset = TimeSpan.FromTicks(startTimeTicks ?? 0);
-
-            var path = FFMpegManager.Instance.GetSubtitleCachePath(mediaPath, subtitleStream, offset, ".ass");
+            var path = FFMpegManager.Instance.GetSubtitleCachePath(mediaPath, subtitleStream, ".ass");
 
             if (performConversion)
             {
@@ -495,7 +557,7 @@ namespace MediaBrowser.Api.Playback
 
                     Directory.CreateDirectory(parentPath);
 
-                    var task = MediaEncoder.ConvertTextSubtitleToAss(subtitleStream.Path, path, subtitleStream.Language, offset, CancellationToken.None);
+                    var task = MediaEncoder.ConvertTextSubtitleToAss(subtitleStream.Path, path, subtitleStream.Language, CancellationToken.None);
 
                     Task.WaitAll(task);
                 }
@@ -534,9 +596,9 @@ namespace MediaBrowser.Api.Playback
                 videoSizeParam = string.Format(",scale={0}:{1}", state.VideoStream.Width.Value.ToString(UsCulture), state.VideoStream.Height.Value.ToString(UsCulture));
             }
 
-            return string.Format(" -filter_complex \"[0:{0}]format=yuva444p{3},lut=u=128:v=128:y=gammaval(.3)[sub] ; [0:{1}] [sub] overlay{2}\"", 
-                state.SubtitleStream.Index, 
-                state.VideoStream.Index, 
+            return string.Format(" -filter_complex \"[0:{0}]format=yuva444p{3},lut=u=128:v=128:y=gammaval(.3)[sub] ; [0:{1}] [sub] overlay{2}\"",
+                state.SubtitleStream.Index,
+                state.VideoStream.Index,
                 outputSizeParam,
                 videoSizeParam);
         }

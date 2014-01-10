@@ -83,6 +83,12 @@
                 $('#playButtonContainer', page).hide();
                 $('#playExternalButtonContainer', page).hide();
             }
+            
+            if (item.LocalTrailerCount && item.LocationType !== "Offline") {
+                $('#trailerButtonContainer', page).show();
+            } else {
+                $('#trailerButtonContainer', page).hide();
+            }
 
             $(".autoNumeric").autoNumeric('init');
 
@@ -189,7 +195,7 @@
             $('#scenesCollapsible', page).show();
             renderScenes(page, item, 4);
         }
-        if (!item.LocalTrailerCount && !item.RemoteTrailers.length) {
+        if (item.LocalTrailerCount || !item.RemoteTrailers.length) {
             $('#trailersCollapsible', page).addClass('hide');
         } else {
             $('#trailersCollapsible', page).removeClass('hide');
@@ -1118,6 +1124,24 @@
             }
 
             LibraryBrowser.showPlayMenu(this, currentItem.Id, currentItem.Type, mediaType, userdata.PlaybackPositionTicks);
+        });
+
+        $('#btnPlayTrailer', page).on('click', function () {
+            
+            ApiClient.getLocalTrailers(Dashboard.getCurrentUserId(), currentItem.Id).done(function (trailers) {
+
+                var trailer = trailers[0];
+                var userdata = trailer.UserData || {};
+
+                var mediaType = trailer.MediaType;
+
+                if (trailer.Type == "MusicArtist" || trailer.Type == "MusicAlbum") {
+                    mediaType = "Audio";
+                }
+
+                LibraryBrowser.showPlayMenu(this, trailer.Id, trailer.Type, mediaType, userdata.PlaybackPositionTicks);
+
+            });
         });
 
         $('#btnPlayExternal', page).on('click', function () {

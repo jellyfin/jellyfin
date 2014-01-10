@@ -67,7 +67,7 @@ namespace MediaBrowser.Common.Net
             }
             if (ext.Equals(".avi", StringComparison.OrdinalIgnoreCase))
             {
-                return "video/avi";
+                return "video/x-msvideo";
             }
             if (ext.Equals(".m4v", StringComparison.OrdinalIgnoreCase))
             {

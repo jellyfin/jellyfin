@@ -102,7 +102,7 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             const string vn = " -vn";
 
-            var threads = GetNumberOfThreads();
+            var threads = GetNumberOfThreads(false);
 
             return string.Format("{0} -i {1}{2} -threads {3}{4} {5} -id3v2_version 3 -write_id3v1 1 \"{6}\"",
                 GetFastSeekCommandLineParameter(request),

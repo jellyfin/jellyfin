@@ -133,12 +133,12 @@
 
 .channelTimeslotHeader {
     position: absolute;
-    left: 0;
+    left: 15px;
 }
 
 .timeslotHeaders {
     position: absolute;
-    right: 13px;
+    right: 28px;
     overflow-y: hidden;
     overflow-x: hidden;
     white-space: nowrap;
@@ -205,14 +205,14 @@
     overflow-y: hidden;
     overflow-x: hidden;
     position: absolute;
-    left: 0;
-    bottom: 16px;
+    left: 15px;
+    bottom: 46px;
 }
 
 .programGrid {
     position: absolute;
-    bottom: 0;
-    right: 0;
+    bottom: 30px;
+    right: 15px;
     overflow-y: scroll;
     overflow-x: scroll;
 }
@@ -242,15 +242,15 @@
 }
 
 .timeslotHeaders, .programGrid {
-    left: 191px;
+    left: 206px;
 }
 
 .channelTimeslotHeader, .timeslotHeaders {
-    top: 135px;
+    top: 150px;
 }
 
 .channelList, .programGrid {
-    top: 165px;
+    top: 180px;
 }
 
 .channelHeaderCell, .timeslotCell {
@@ -305,10 +305,10 @@
 @media (max-width: 750px) {
 
     .channelTimeslotHeader, .timeslotHeaders {
-        top: 100px;
+        top: 115px;
     }
 
     .channelList, .programGrid {
-        top: 130px;
+        top: 145px;
     }
 }

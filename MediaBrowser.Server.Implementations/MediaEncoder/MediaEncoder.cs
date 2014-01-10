@@ -96,7 +96,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         {
             return _semaphoreLocks.GetOrAdd(filename, key => new SemaphoreSlim(1, 1));
         }
-        
+
         /// <summary>
         /// Gets the media info.
         /// </summary>
@@ -378,11 +378,9 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// <param name="inputPath">The input path.</param>
         /// <param name="outputPath">The output path.</param>
         /// <param name="language">The language.</param>
-        /// <param name="offset">The offset.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public async Task ConvertTextSubtitleToAss(string inputPath, string outputPath, string language, TimeSpan offset,
-                                                   CancellationToken cancellationToken)
+        public async Task ConvertTextSubtitleToAss(string inputPath, string outputPath, string language, CancellationToken cancellationToken)
         {
             var semaphore = GetLock(outputPath);
 
@@ -392,7 +390,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
             {
                 if (!File.Exists(outputPath))
                 {
-                    await ConvertTextSubtitleToAssInternal(inputPath, outputPath, language, offset).ConfigureAwait(false);
+                    await ConvertTextSubtitleToAssInternal(inputPath, outputPath, language).ConfigureAwait(false);
                 }
             }
             finally
@@ -409,13 +407,12 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// <param name="inputPath">The input path.</param>
         /// <param name="outputPath">The output path.</param>
         /// <param name="language">The language.</param>
-        /// <param name="offset">The offset.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">inputPath
         /// or
         /// outputPath</exception>
         /// <exception cref="System.ApplicationException"></exception>
-        private async Task ConvertTextSubtitleToAssInternal(string inputPath, string outputPath, string language, TimeSpan offset)
+        private async Task ConvertTextSubtitleToAssInternal(string inputPath, string outputPath, string language)
         {
             if (string.IsNullOrEmpty(inputPath))
             {
@@ -427,8 +424,6 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                 throw new ArgumentNullException("outputPath");
             }
 
-            
-            var slowSeekParam = offset.TotalSeconds > 0 ? " -ss " + offset.TotalSeconds.ToString(UsCulture) : string.Empty;
 
             var encodingParam = string.IsNullOrEmpty(language) ? string.Empty :
                 GetSubtitleLanguageEncodingParam(language) + " ";
@@ -444,7 +439,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                             UseShellExecute = false,
                             FileName = FFMpegPath,
                             Arguments =
-                                string.Format("{0} -i \"{1}\" {2} -c:s ass \"{3}\"", encodingParam,  inputPath,  slowSeekParam, outputPath),
+                                string.Format("{0} -i \"{1}\" -c:s ass \"{2}\"", encodingParam, inputPath, outputPath),
 
                             WindowStyle = ProcessWindowStyle.Hidden,
                             ErrorDialog = false
@@ -557,7 +552,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
 
             return string.Empty;
         }
-        
+
         /// <summary>
         /// Gets the subtitle language encoding param.
         /// </summary>
@@ -598,7 +593,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                 case "vie":
                     return "-sub_charenc windows-1258";
                 case "kor":
-                		return "-sub_charenc cp949";
+                    return "-sub_charenc cp949";
                 default:
                     return "-sub_charenc windows-1252";
             }
@@ -610,12 +605,11 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// <param name="inputFiles">The input files.</param>
         /// <param name="type">The type.</param>
         /// <param name="subtitleStreamIndex">Index of the subtitle stream.</param>
-        /// <param name="offset">The offset.</param>
         /// <param name="outputPath">The output path.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentException">Must use inputPath list overload</exception>
-        public async Task ExtractTextSubtitle(string[] inputFiles, InputType type, int subtitleStreamIndex, TimeSpan offset, string outputPath, CancellationToken cancellationToken)
+        public async Task ExtractTextSubtitle(string[] inputFiles, InputType type, int subtitleStreamIndex, string outputPath, CancellationToken cancellationToken)
         {
             var semaphore = GetLock(outputPath);
 
@@ -625,7 +619,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
             {
                 if (!File.Exists(outputPath))
                 {
-                    await ExtractTextSubtitleInternal(GetInputArgument(inputFiles, type), subtitleStreamIndex, offset, outputPath, cancellationToken).ConfigureAwait(false);
+                    await ExtractTextSubtitleInternal(GetInputArgument(inputFiles, type), subtitleStreamIndex, outputPath, cancellationToken).ConfigureAwait(false);
                 }
             }
             finally
@@ -639,7 +633,6 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// </summary>
         /// <param name="inputPath">The input path.</param>
         /// <param name="subtitleStreamIndex">Index of the subtitle stream.</param>
-        /// <param name="offset">The offset.</param>
         /// <param name="outputPath">The output path.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
@@ -649,7 +642,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// or
         /// cancellationToken</exception>
         /// <exception cref="System.ApplicationException"></exception>
-        private async Task ExtractTextSubtitleInternal(string inputPath, int subtitleStreamIndex, TimeSpan offset, string outputPath, CancellationToken cancellationToken)
+        private async Task ExtractTextSubtitleInternal(string inputPath, int subtitleStreamIndex, string outputPath, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(inputPath))
             {
@@ -661,9 +654,6 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                 throw new ArgumentNullException("outputPath");
             }
 
-                        
-            var slowSeekParam = GetSlowSeekCommandLineParameter(offset);
-            var fastSeekParam = GetFastSeekCommandLineParameter(offset);
 
             var process = new Process
             {
@@ -676,7 +666,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                     RedirectStandardError = true,
 
                     FileName = FFMpegPath,
-                    Arguments = string.Format(" {0} -i {1} {2} -map 0:{3} -an -vn -c:s ass \"{4}\"", fastSeekParam, inputPath, slowSeekParam, subtitleStreamIndex, outputPath),
+                    Arguments = string.Format("-i {0} -map 0:{1} -an -vn -c:s ass \"{2}\"", inputPath, subtitleStreamIndex, outputPath),
                     WindowStyle = ProcessWindowStyle.Hidden,
                     ErrorDialog = false
                 }
@@ -872,8 +862,8 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                 switch (threedFormat.Value)
                 {
                     case Video3DFormat.HalfSideBySide:
-                    vf = "crop=iw/2:ih:0:0,scale=(iw*2):ih,setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,scale=600:600/dar";
-                    // hsbs crop width in half,scale to correct size, set the display aspect,crop out any black bars we may have made the scale width to 600. Work out the correct height based on the display aspect it will maintain the aspect where -1 in this case (3d) may not.
+                        vf = "crop=iw/2:ih:0:0,scale=(iw*2):ih,setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,scale=600:600/dar";
+                        // hsbs crop width in half,scale to correct size, set the display aspect,crop out any black bars we may have made the scale width to 600. Work out the correct height based on the display aspect it will maintain the aspect where -1 in this case (3d) may not.
                         break;
                     case Video3DFormat.FullSideBySide:
                         vf = "crop=iw/2:ih:0:0,setdar=dar=a,,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,scale=600:600/dar";
@@ -882,7 +872,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                     case Video3DFormat.HalfTopAndBottom:
                         vf = "crop=iw:ih/2:0:0,scale=(iw*2):ih),setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,scale=600:600/dar";
                         //htab crop heigh in half,scale to correct size, set the display aspect,crop out any black bars we may have made the scale width to 600
-                        break; 
+                        break;
                     case Video3DFormat.FullTopAndBottom:
                         vf = "crop=iw:ih/2:0:0,setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,scale=600:600/dar";
                         // ftab crop heigt in half, set the display aspect,crop out any black bars we may have made the scale width to 600
@@ -892,7 +882,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
 
             // Use ffmpeg to sample 100 (we can drop this if required using thumbnail=50 for 50 frames) frames and pick the best thumbnail. Have a fall back just in case.
             var args = useIFrame ? string.Format("-i {0} -threads 0 -v quiet -vframes 1 -vf \"thumbnail,{2}\" -f image2 \"{1}\"", inputPath, outputPath, vf) :
-                string.Format("-i {0} -threads 0 -v quiet -vframes 1 -vf \"{2}\" -f image2 \"{1}\"", inputPath, outputPath, vf); 
+                string.Format("-i {0} -threads 0 -v quiet -vframes 1 -vf \"{2}\" -f image2 \"{1}\"", inputPath, outputPath, vf);
 
             var probeSize = GetProbeSizeArgument(type);
 

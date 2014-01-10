@@ -40,11 +40,10 @@ namespace MediaBrowser.Common.MediaInfo
         /// <param name="inputFiles">The input files.</param>
         /// <param name="type">The type.</param>
         /// <param name="subtitleStreamIndex">Index of the subtitle stream.</param>
-        /// <param name="offset">The offset.</param>
         /// <param name="outputPath">The output path.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task ExtractTextSubtitle(string[] inputFiles, InputType type, int subtitleStreamIndex, TimeSpan offset, string outputPath, CancellationToken cancellationToken);
+        Task ExtractTextSubtitle(string[] inputFiles, InputType type, int subtitleStreamIndex, string outputPath, CancellationToken cancellationToken);
 
         /// <summary>
         /// Converts the text subtitle to ass.
@@ -52,10 +51,9 @@ namespace MediaBrowser.Common.MediaInfo
         /// <param name="inputPath">The input path.</param>
         /// <param name="outputPath">The output path.</param>
         /// <param name="language">The language.</param>
-        /// <param name="offset">The offset.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task ConvertTextSubtitleToAss(string inputPath, string outputPath, string language, TimeSpan offset, CancellationToken cancellationToken);
+        Task ConvertTextSubtitleToAss(string inputPath, string outputPath, string language, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the media info.

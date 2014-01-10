@@ -1,5 +1,10 @@
 ﻿(function ($, document, apiClient) {
 
+    var query = {
+
+        StartIndex: 0
+    };
+
     function getChannelsHtml(channels) {
 
         return LibraryBrowser.getPosterViewHtml({
@@ -10,23 +15,64 @@
         });
     }
 
-    function renderChannels(page, channels) {
+    function renderChannels(page, result) {
 
-        $('#items', page).html(getChannelsHtml(channels)).trigger('create');
+        $('.listTopPaging', page).html(LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, true)).trigger('create');
+
+        var html = getChannelsHtml(result.Items);
+        
+        html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
+
+        $('#items', page).html(html).trigger('create');
+
+        $('.selectPage', page).on('change', function () {
+            query.StartIndex = (parseInt(this.value) - 1) * query.Limit;
+            reloadItems(page);
+        });
+
+        $('.btnNextPage', page).on('click', function () {
+            query.StartIndex += query.Limit;
+            reloadItems(page);
+        });
+
+        $('.btnPreviousPage', page).on('click', function () {
+            query.StartIndex -= query.Limit;
+            reloadItems(page);
+        });
+
+        $('.selectPageSize', page).on('change', function () {
+            query.Limit = parseInt(this.value);
+            query.StartIndex = 0;
+            reloadItems(page);
+        });
+
+        LibraryBrowser.saveQueryValues('movies', query);
+    }
+    
+    function reloadItems(page) {
+        apiClient.getLiveTvChannels(query).done(function (result) {
+
+            renderChannels(page, result);
+        });
     }
 
     $(document).on('pagebeforeshow', "#liveTvChannelsPage", function () {
 
         var page = this;
 
-        apiClient.getLiveTvChannels({
-            
-            userId: Dashboard.getCurrentUserId()
+        var limit = LibraryBrowser.getDefaultPageSize();
 
-        }).done(function (result) {
+        // If the default page size has changed, the start index will have to be reset
+        if (limit != query.Limit) {
+            query.Limit = limit;
+            query.StartIndex = 0;
+        }
 
-            renderChannels(page, result.Items);
-        });
+        query.UserId = Dashboard.getCurrentUserId();
+
+        LibraryBrowser.loadSavedQueryValues('movies', query);
+
+        reloadItems(page);
     });
 
 })(jQuery, document, ApiClient);

@@ -235,7 +235,7 @@ namespace MediaBrowser.Providers.Movies
         /// <returns>Task.</returns>
         private async Task FetchInfo(Person person, string id, bool isForcedRefresh, CancellationToken cancellationToken)
         {
-            await DownloadPersonInfoIfNeeded(id, cancellationToken).ConfigureAwait(false);
+            await EnsurePersonInfo(id, cancellationToken).ConfigureAwait(false);
 
             if (isForcedRefresh || !HasAltMeta(person))
             {
@@ -249,7 +249,7 @@ namespace MediaBrowser.Providers.Movies
             }
         }
 
-        internal async Task DownloadPersonInfoIfNeeded(string id, CancellationToken cancellationToken)
+        internal async Task EnsurePersonInfo(string id, CancellationToken cancellationToken)
         {
             var personDataPath = GetPersonDataPath(ConfigurationManager.ApplicationPaths, id);
 

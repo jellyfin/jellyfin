@@ -8,6 +8,12 @@
     var gridLocalEndDateMs;
 
     var currentDate;
+
+    var channelQuery = {
+
+        StartIndex: 0,
+        Limit: 20
+    };
     var channelsPromise;
 
     function normalizeDateToTimeslot(date) {
@@ -25,16 +31,19 @@
 
         return date;
     }
+    
+    function reloadChannels(page) {
+        channelsPromise = null;
+        reloadGuide(page);
+    }
 
     function reloadGuide(page) {
 
         Dashboard.showLoadingMsg();
-        
-        channelsPromise = channelsPromise || apiClient.getLiveTvChannels({
 
-            userId: Dashboard.getCurrentUserId()
+        channelQuery.userId = Dashboard.getCurrentUserId();
 
-        });;
+        channelsPromise = channelsPromise || apiClient.getLiveTvChannels(channelQuery);
 
         var date = currentDate;
 
@@ -42,23 +51,45 @@
         nextDay.setHours(0, 0, 0, 0);
         nextDay.setDate(nextDay.getDate() + 1);
 
-        var promise1 = channelsPromise;
-        var promise2 = apiClient.getLiveTvPrograms({
+        channelsPromise.done(function(channelsResult) {
 
-            UserId: Dashboard.getCurrentUserId(),
-            MaxStartDate: nextDay.toISOString(),
-            MinEndDate: date.toISOString()
-
-        });
-
-        $.when(promise1, promise2).done(function (response1, response2) {
-
-            var channels = response1[0].Items;
-            var programs = response2[0].Items;
-
-            renderGuide(page, date, channels, programs);
+            apiClient.getLiveTvPrograms({
+                UserId: Dashboard.getCurrentUserId(),
+                MaxStartDate: nextDay.toISOString(),
+                MinEndDate: date.toISOString(),
+                channelIds: channelsResult.Items.map(function(c) {
+                    return c.Id;
+                }).join(',')
+                
+            }).done(function(programsResult) {
+                
+                renderGuide(page, date, channelsResult.Items, programsResult.Items);
+                Dashboard.hideLoadingMsg();
+            });
             
-            Dashboard.hideLoadingMsg();
+            var channelPagingHtml = LibraryBrowser.getPagingHtml(channelQuery, channelsResult.TotalRecordCount, false, [10, 20, 30, 50, 100]);
+            $('.channelPaging', page).html(channelPagingHtml).trigger('create');
+
+            $('.selectPage', page).on('change', function () {
+                channelQuery.StartIndex = (parseInt(this.value) - 1) * channelQuery.Limit;
+                reloadChannels(page);
+            });
+
+            $('.btnNextPage', page).on('click', function () {
+                channelQuery.StartIndex += channelQuery.Limit;
+                reloadChannels(page);
+            });
+
+            $('.btnPreviousPage', page).on('click', function () {
+                channelQuery.StartIndex -= channelQuery.Limit;
+                reloadChannels(page);
+            });
+
+            $('.selectPageSize', page).on('change', function () {
+                channelQuery.Limit = parseInt(this.value);
+                channelQuery.StartIndex = 0;
+                reloadChannels(page);
+            });
         });
     }
 
@@ -222,7 +253,7 @@
 
                 html += '<div class="guideProgramName">';
                 html += program.Name;
-                
+
                 if (program.IsRepeat) {
                     html += ' (R)';
                 }
@@ -373,7 +404,7 @@
         }
 
         var elem = $('#selectDate', page).html(html).selectmenu('refresh');
-    
+
         if (currentDate) {
             elem.val(currentDate.getTime()).selectmenu('refresh');
         }
@@ -394,8 +425,8 @@
             onProgramGridScroll(page, this);
         });
 
-        $('#selectDate', page).on('change', function() {
-            
+        $('#selectDate', page).on('change', function () {
+
             var date = new Date();
             date.setTime(parseInt(this.value));
 
