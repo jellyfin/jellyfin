@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.IO;
+﻿using System;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
@@ -106,6 +107,7 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             var transferMode = GetHeader("transferMode.dlna.org");
             responseHeaders["transferMode.dlna.org"] = string.IsNullOrEmpty(transferMode) ? "Streaming" : transferMode;
+            responseHeaders["realTimeInfo.dlna.org"] = "DLNA.ORG_TLAG=*";
 
             var contentFeatures = string.Empty;
             var extension = GetOutputFileExtension(state);
@@ -118,22 +120,22 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             const string dlnaflags = ";DLNA.ORG_FLAGS=01500000000000000000000000000000";
 
-            //if (string.Equals(extension, ".mp3", StringComparison.OrdinalIgnoreCase))
-            //{
-            //    contentFeatures = "DLNA.ORG_PN=MP3";
-            //}
-            //else if (string.Equals(extension, ".aac", StringComparison.OrdinalIgnoreCase))
-            //{
-            //    contentFeatures = "DLNA.ORG_PN=AAC_ISO";
-            //}
-            //else if (string.Equals(extension, ".wma", StringComparison.OrdinalIgnoreCase))
-            //{
-            //    contentFeatures = "DLNA.ORG_PN=WMABASE";
-            //}
-            //else if (string.Equals(extension, ".avi", StringComparison.OrdinalIgnoreCase))
-            //{
-            //    contentFeatures = "DLNA.ORG_PN=AVI";
-            //}
+            if (string.Equals(extension, ".mp3", StringComparison.OrdinalIgnoreCase))
+            {
+                contentFeatures = "DLNA.ORG_PN=MP3";
+            }
+            else if (string.Equals(extension, ".aac", StringComparison.OrdinalIgnoreCase))
+            {
+                contentFeatures = "DLNA.ORG_PN=AAC_ISO";
+            }
+            else if (string.Equals(extension, ".wma", StringComparison.OrdinalIgnoreCase))
+            {
+                contentFeatures = "DLNA.ORG_PN=WMABASE";
+            }
+            else if (string.Equals(extension, ".avi", StringComparison.OrdinalIgnoreCase))
+            {
+                contentFeatures = "DLNA.ORG_PN=AVI";
+            }
             //else if (string.Equals(extension, ".mp4", StringComparison.OrdinalIgnoreCase))
             //{
             //    contentFeatures = "DLNA.ORG_PN=MPEG4_P2_SP_AAC";

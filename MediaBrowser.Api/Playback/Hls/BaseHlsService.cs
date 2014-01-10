@@ -113,7 +113,7 @@ namespace MediaBrowser.Api.Playback.Hls
             if (isPlaylistNewlyCreated)
             {
                 var minimumSegmentCount = 3;
-                var quality = ServerConfigurationManager.Configuration.MediaEncodingQuality;
+                var quality = GetQualitySetting();
 
                 if (quality == EncodingQuality.HighSpeed || quality == EncodingQuality.HighQuality)
                 {
@@ -267,9 +267,9 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var itsOffset = itsOffsetMs == 0 ? string.Empty : string.Format("-itsoffset {0} ", TimeSpan.FromMilliseconds(itsOffsetMs).TotalSeconds);
 
-            var threads = GetNumberOfThreads();
+            var threads = GetNumberOfThreads(false);
 
-            var args = string.Format("{0}{1} {2} {3} -i {4}{5} -threads {6} {7} {8} -sc_threshold 0 {9} -hls_time 10 -start_number 0 -hls_list_size 1440 \"{10}\"",
+            var args = string.Format("{0}{1} {2} {3} -i {4}{5} -map_metadata -1 -threads {6} {7} {8} -sc_threshold 0 {9} -hls_time 10 -start_number 0 -hls_list_size 1440 \"{10}\"",
                 itsOffset,
                 probeSize,
                 GetUserAgentParam(state.MediaPath),

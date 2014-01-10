@@ -235,12 +235,11 @@ namespace MediaBrowser.Controller.MediaInfo
         /// </summary>
         /// <param name="mediaPath">The media path.</param>
         /// <param name="subtitleStream">The subtitle stream.</param>
-        /// <param name="offset">The offset.</param>
         /// <param name="outputExtension">The output extension.</param>
         /// <returns>System.String.</returns>
-        public string GetSubtitleCachePath(string mediaPath, MediaStream subtitleStream, TimeSpan? offset, string outputExtension)
+        public string GetSubtitleCachePath(string mediaPath, MediaStream subtitleStream, string outputExtension)
         {
-            var ticksParam = offset.HasValue ? "_" + offset.Value.Ticks : "";
+            var ticksParam = string.Empty;
 
             if (subtitleStream.IsExternal)
             {

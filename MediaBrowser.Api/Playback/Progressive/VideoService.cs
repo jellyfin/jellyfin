@@ -104,9 +104,9 @@ namespace MediaBrowser.Api.Playback.Progressive
                 format = " -f mp4 -movflags frag_keyframe+empty_moov";
             }
 
-            var threads = string.Equals(videoCodec, "libvpx", StringComparison.OrdinalIgnoreCase) ? 2 : GetNumberOfThreads();
+            var threads = GetNumberOfThreads(string.Equals(videoCodec, "libvpx", StringComparison.OrdinalIgnoreCase));
 
-            return string.Format("{0} {1} {2} -i {3}{4}{5} {6} {7} -threads {8} {9}{10} \"{11}\"",
+            return string.Format("{0} {1} {2} -i {3}{4}{5} {6} {7} -map_metadata -1 -threads {8} {9}{10} \"{11}\"",
                 probeSize,
                 GetUserAgentParam(state.MediaPath),
                 GetFastSeekCommandLineParameter(state.Request),
@@ -170,6 +170,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             if (bitrate.HasValue)
             {
                 qualityParam += string.Format(" -b:v {0}", bitrate.Value.ToString(UsCulture));
+                //qualityParam += string.Format(" -maxrate {0} -bufsize {1}", bitrate.Value.ToString(UsCulture), (bitrate.Value * 2).ToString(UsCulture));
             }
 
             if (!string.IsNullOrEmpty(qualityParam))
@@ -238,21 +239,7 @@ namespace MediaBrowser.Api.Playback.Progressive
                 args += " -ab " + bitrate.Value.ToString(UsCulture);
             }
 
-            var volParam = string.Empty;
-            var AudioSampleRate = string.Empty;
-
-            // Boost volume to 200% when downsampling from 6ch to 2ch
-            if (channels.HasValue && channels.Value <= 2 && state.AudioStream.Channels.HasValue && state.AudioStream.Channels.Value > 5)
-            {
-                volParam = ",volume=2.000000";
-            }
-
-            if (state.Request.AudioSampleRate.HasValue)
-            {
-                AudioSampleRate = state.Request.AudioSampleRate.Value + ":";
-            }
-
-            args += string.Format(" -af \"aresample={0}async=1{1}\"", AudioSampleRate, volParam);
+            args += " " + GetAudioFilterParam(state, true);
 
             return args;
         }

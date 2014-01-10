@@ -558,6 +558,31 @@ namespace MediaBrowser.Providers.Movies
             JsonSerializer.SerializeToFile(mainResult, dataFilePath);
         }
 
+        internal Task EnsureMovieInfo(BaseItem item, CancellationToken cancellationToken)
+        {
+            var path = GetDataFilePath(item);
+
+            var fileInfo = _fileSystem.GetFileSystemInfo(path);
+
+            if (fileInfo.Exists)
+            {
+                // If it's recent or automatic updates are enabled, don't re-download
+                if (ConfigurationManager.Configuration.EnableTmdbUpdates || (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 7)
+                {
+                    return Task.FromResult(true);
+                }
+            }
+
+            var id = item.GetProviderId(MetadataProviders.Tmdb);
+
+            if (string.IsNullOrEmpty(id))
+            {
+                return Task.FromResult(true);
+            }
+
+            return DownloadMovieInfo(id, item is BoxSet, item.GetPreferredMetadataLanguage(), cancellationToken);
+        }
+
         /// <summary>
         /// Gets the data file path.
         /// </summary>
@@ -575,7 +600,7 @@ namespace MediaBrowser.Providers.Movies
             return GetDataFilePath(item is BoxSet, id, item.GetPreferredMetadataLanguage());
         }
 
-        internal string GetDataFilePath(bool isBoxset, string tmdbId, string preferredLanguage)
+        private string GetDataFilePath(bool isBoxset, string tmdbId, string preferredLanguage)
         {
             var path = GetMovieDataPath(ConfigurationManager.ApplicationPaths, isBoxset, tmdbId);
 

@@ -90,6 +90,12 @@ namespace MediaBrowser.Server.Implementations.Session
 
             var vals = message.Data.Split('|');
 
+            if (vals.Length < 3)
+            {
+                _logger.Error("Client sent invalid identity message.");
+                return;
+            }
+
             var client = vals[0];
             var deviceId = vals[1];
             var version = vals[2];

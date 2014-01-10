@@ -51,7 +51,7 @@ namespace MediaBrowser.Providers.Movies
         {
             var list = new List<RemoteImageInfo>();
 
-            var results = FetchImages(item, _jsonSerializer);
+            var results = await FetchImages((BaseItem)item, _jsonSerializer, cancellationToken).ConfigureAwait(false);
 
             if (results == null)
             {
@@ -62,7 +62,7 @@ namespace MediaBrowser.Providers.Movies
 
             var tmdbImageUrl = tmdbSettings.images.base_url + "original";
 
-            list.AddRange(GetPosters(results, item).Select(i => new RemoteImageInfo
+            list.AddRange(GetPosters(results).Select(i => new RemoteImageInfo
             {
                 Url = tmdbImageUrl + i.file_path,
                 CommunityRating = i.vote_average,
@@ -75,7 +75,7 @@ namespace MediaBrowser.Providers.Movies
                 RatingType = RatingType.Score
             }));
 
-            list.AddRange(GetBackdrops(results, item).Select(i => new RemoteImageInfo
+            list.AddRange(GetBackdrops(results).Select(i => new RemoteImageInfo
             {
                 Url = tmdbImageUrl + i.file_path,
                 CommunityRating = i.vote_average,
@@ -119,9 +119,8 @@ namespace MediaBrowser.Providers.Movies
         /// Gets the posters.
         /// </summary>
         /// <param name="images">The images.</param>
-        /// <param name="item">The item.</param>
         /// <returns>IEnumerable{MovieDbProvider.Poster}.</returns>
-        private IEnumerable<MovieDbProvider.Poster> GetPosters(MovieDbProvider.Images images, IHasImages item)
+        private IEnumerable<MovieDbProvider.Poster> GetPosters(MovieDbProvider.Images images)
         {
             return images.posters ?? new List<MovieDbProvider.Poster>();
         }
@@ -130,9 +129,8 @@ namespace MediaBrowser.Providers.Movies
         /// Gets the backdrops.
         /// </summary>
         /// <param name="images">The images.</param>
-        /// <param name="item">The item.</param>
         /// <returns>IEnumerable{MovieDbProvider.Backdrop}.</returns>
-        private IEnumerable<MovieDbProvider.Backdrop> GetBackdrops(MovieDbProvider.Images images, IHasImages item)
+        private IEnumerable<MovieDbProvider.Backdrop> GetBackdrops(MovieDbProvider.Images images)
         {
             var eligibleBackdrops = images.backdrops == null ? new List<MovieDbProvider.Backdrop>() :
                 images.backdrops
@@ -147,10 +145,14 @@ namespace MediaBrowser.Providers.Movies
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{MovieImages}.</returns>
-        private MovieDbProvider.Images FetchImages(IHasImages item, IJsonSerializer jsonSerializer)
+        private async Task<MovieDbProvider.Images> FetchImages(BaseItem item, IJsonSerializer jsonSerializer,
+            CancellationToken cancellationToken)
         {
-            var path = MovieDbProvider.Current.GetDataFilePath((BaseItem)item);
+            await MovieDbProvider.Current.EnsureMovieInfo(item, cancellationToken).ConfigureAwait(false);
+
+            var path = MovieDbProvider.Current.GetDataFilePath(item);
 
             if (!string.IsNullOrEmpty(path))
             {

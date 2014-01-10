@@ -52,7 +52,7 @@ namespace MediaBrowser.Providers.Movies
 
             if (!string.IsNullOrEmpty(id))
             {
-                await MovieDbPersonProvider.Current.DownloadPersonInfoIfNeeded(id, cancellationToken).ConfigureAwait(false);
+                await MovieDbPersonProvider.Current.EnsurePersonInfo(id, cancellationToken).ConfigureAwait(false);
 
                 var dataFilePath = MovieDbPersonProvider.GetPersonDataFilePath(_config.ApplicationPaths, id);
 
