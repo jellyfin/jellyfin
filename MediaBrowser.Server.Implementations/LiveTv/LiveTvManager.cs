@@ -502,8 +502,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             _channelIdList = list.Select(i => i.Id).ToList();
             progress.Report(15);
 
-             numComplete = 0;
-             var programs = new List<LiveTvProgram>();
+            numComplete = 0;
+            var programs = new List<LiveTvProgram>();
 
             foreach (var item in list)
             {
@@ -776,6 +776,19 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var timers = await service.GetSeriesTimersAsync(cancellationToken).ConfigureAwait(false);
 
+            if (string.Equals(query.SortBy, "Priority", StringComparison.OrdinalIgnoreCase))
+            {
+                timers = query.SortOrder == SortOrder.Descending ?
+                    timers.OrderBy(i => i.Priority).ThenByDescending(i => i.Name) :
+                    timers.OrderByDescending(i => i.Priority).ThenBy(i => i.Name);
+            }
+            else
+            {
+                timers = query.SortOrder == SortOrder.Descending ?
+                    timers.OrderByDescending(i => i.Name) :
+                    timers.OrderBy(i => i.Name);
+            }
+
             var returnArray = timers
                 .Select(i =>
                 {
@@ -791,7 +804,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     return _tvDtoService.GetSeriesTimerInfoDto(i, service, channelName);
 
                 })
-                .OrderByDescending(i => i.StartDate)
                 .ToArray();
 
             return new QueryResult<SeriesTimerInfoDto>

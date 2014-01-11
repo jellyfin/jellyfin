@@ -323,18 +323,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
-            List<MediaStream> mediaStreams;
-
-            if (data.streams != null)
-            {
-                mediaStreams = data.streams.Select(s => GetMediaStream(s, data.format))
-                    .Where(i => i != null)
-                    .ToList();
-            }
-            else
-            {
-                mediaStreams = new List<MediaStream>();
-            }
+            var mediaStreams = MediaEncoderHelpers.GetMediaStreams(data).ToList();
 
             var chapters = data.Chapters ?? new List<ChapterInfo>();
 

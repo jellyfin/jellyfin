@@ -3,6 +3,7 @@ using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.MediaInfo;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -59,32 +60,31 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <returns>Task.</returns>
         protected Task Fetch(Audio audio, CancellationToken cancellationToken, MediaInfoResult data)
         {
-            var internalStreams = data.streams ?? new MediaStreamInfo[] { };
-
-            var mediaStreams = internalStreams.Select(s => GetMediaStream(s, data.format))
-                .Where(i => i != null)
-                .ToList();
+            var mediaStreams = MediaEncoderHelpers.GetMediaStreams(data).ToList();
 
             audio.HasEmbeddedImage = mediaStreams.Any(i => i.Type == MediaStreamType.Video);
 
-            // Get the first audio stream
-            var stream = internalStreams.FirstOrDefault(s => string.Equals(s.codec_type, "audio", StringComparison.OrdinalIgnoreCase));
-
-            if (stream != null)
+            if (data.streams != null)
             {
-                // Get duration from stream properties
-                var duration = stream.duration;
+                // Get the first audio stream
+                var stream = data.streams.FirstOrDefault(s => string.Equals(s.codec_type, "audio", StringComparison.OrdinalIgnoreCase));
 
-                // If it's not there go into format properties
-                if (string.IsNullOrEmpty(duration))
+                if (stream != null)
                 {
-                    duration = data.format.duration;
-                }
+                    // Get duration from stream properties
+                    var duration = stream.duration;
 
-                // If we got something, parse it
-                if (!string.IsNullOrEmpty(duration))
-                {
-                    audio.RunTimeTicks = TimeSpan.FromSeconds(double.Parse(duration, UsCulture)).Ticks;
+                    // If it's not there go into format properties
+                    if (string.IsNullOrEmpty(duration))
+                    {
+                        duration = data.format.duration;
+                    }
+
+                    // If we got something, parse it
+                    if (!string.IsNullOrEmpty(duration))
+                    {
+                        audio.RunTimeTicks = TimeSpan.FromSeconds(double.Parse(duration, UsCulture)).Ticks;
+                    }
                 }
             }
 

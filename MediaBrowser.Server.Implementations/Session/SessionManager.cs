@@ -800,5 +800,29 @@ namespace MediaBrowser.Server.Implementations.Session
                 session.AdditionalUsers.Remove(user);
             }
         }
+
+        /// <summary>
+        /// Authenticates the new session.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="password">The password.</param>
+        /// <param name="clientType">Type of the client.</param>
+        /// <param name="appVersion">The application version.</param>
+        /// <param name="deviceId">The device identifier.</param>
+        /// <param name="deviceName">Name of the device.</param>
+        /// <param name="remoteEndPoint">The remote end point.</param>
+        /// <returns>Task{SessionInfo}.</returns>
+        /// <exception cref="UnauthorizedAccessException"></exception>
+        public async Task<SessionInfo> AuthenticateNewSession(User user, string password, string clientType, string appVersion, string deviceId, string deviceName, string remoteEndPoint)
+        {
+            var result = await _userManager.AuthenticateUser(user, password).ConfigureAwait(false);
+
+            if (!result)
+            {
+                throw new UnauthorizedAccessException("Invalid user or password entered.");
+            }
+
+            return await LogSessionActivity(clientType, appVersion, deviceId, deviceName, remoteEndPoint, user).ConfigureAwait(false);
+        }
     }
 }

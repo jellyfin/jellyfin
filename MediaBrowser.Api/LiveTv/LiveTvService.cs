@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
 using ServiceStack;
@@ -205,6 +206,11 @@ namespace MediaBrowser.Api.LiveTv
     [Api(Description = "Gets live tv series timers")]
     public class GetSeriesTimers : IReturn<QueryResult<SeriesTimerInfoDto>>
     {
+        [ApiMember(Name = "SortBy", Description = "Optional. Sort by SortName or Priority", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET,POST")]
+        public string SortBy { get; set; }
+
+        [ApiMember(Name = "SortOrder", Description = "Optional. Sort in Ascending or Descending order", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET,POST")]
+        public SortOrder SortOrder { get; set; }
     }
 
     [Route("/LiveTv/SeriesTimers/{Id}", "DELETE")]
@@ -296,7 +302,7 @@ namespace MediaBrowser.Api.LiveTv
         {
             var query = new ProgramQuery
             {
-                ChannelIdList = (request.ChannelIds ?? string.Empty).Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries).ToArray(),
+                ChannelIdList = (request.ChannelIds ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToArray(),
                 UserId = request.UserId
             };
 
@@ -400,6 +406,8 @@ namespace MediaBrowser.Api.LiveTv
         {
             var result = _liveTvManager.GetSeriesTimers(new SeriesTimerQuery
             {
+                SortOrder = request.SortOrder,
+                SortBy = request.SortBy
 
             }, CancellationToken.None).Result;
 
