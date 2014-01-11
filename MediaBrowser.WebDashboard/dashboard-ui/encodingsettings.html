@@ -11,6 +11,7 @@
 
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
                     <a href="advanced.html" data-role="button">General</a>
+                    <a href="advancedserversettings.html" data-role="button">Server</a>
                     <a href="#" data-role="button" class="ui-btn-active">Transcoding</a>
                 </div>
 
@@ -51,17 +52,17 @@
                             <input type="checkbox" id="chkEnableCustomTranscodingTempPath" name="chkEnableCustomTranscodingTempPath" data-mini="true" />
                             <label for="chkEnableCustomTranscodingTempPath">Use custom transcoding temporary path</label>
                             <div class="fieldDescription">
-                                This folder contains server cache files, such as images.
+                                This folder contains working files used by the media browser transcoder.
                             </div>
                         </li>
                         <li id="fldEnterTranscodingTempPath" style="display: none;">
-                            <label for="txtTranscodingTempPath">Server cache path: </label>
+                            <label for="txtTranscodingTempPath">Transcoding temporary path: </label>
                             <div style="display: inline-block; width: 92%;">
                                 <input type="text" id="txtTranscodingTempPath" name="txtTranscodingTempPath" data-mini="true" />
                             </div>
                             <button id="btnSelectTranscodingTempPath" type="button" data-icon="search" data-iconpos="notext" data-inline="true">Select Directory</button>
                             <div class="fieldDescription">
-                                Supply a custom cache path. Media Browser Server must have write access to this folder. The location of this folder will directly impact server performance and should ideally be placed on a solid state drive.
+                                Supply a custom transcoding temporary path. Media Browser Server must have write access to this folder.
                             </div>
                         </li>
                         <li>

@@ -16,17 +16,7 @@
             $('#fldRunAtStartup', page).hide();
         }
 
-        if (systemInfo.SupportsNativeWebSocket) {
-
-            $('#fldWebSocketPortNumber', page).hide();
-        } else {
-            $('#fldWebSocketPortNumber', page).show();
-        }
-
         $('#selectAutomaticUpdateLevel', page).val(config.SystemUpdateLevel).selectmenu('refresh').trigger('change');
-        $('#txtWebSocketPortNumber', page).val(config.LegacyWebSocketPortNumber);
-
-        $('#txtPortNumber', page).val(config.HttpServerPortNumber);
         $('#chkDebugLog', page).checked(config.EnableDebugLevelLogging).checkboxradio("refresh");
 
         $('#chkRunAtStartup', page).checked(config.RunAtStartup).checkboxradio("refresh");
@@ -136,9 +126,6 @@
                     config.CachePath = '';
                 }
 
-                config.LegacyWebSocketPortNumber = $('#txtWebSocketPortNumber', form).val();
-
-                config.HttpServerPortNumber = $('#txtPortNumber', form).val();
                 config.EnableDebugLevelLogging = $('#chkDebugLog', form).checked();
 
                 config.RunAtStartup = $('#chkRunAtStartup', form).checked();
