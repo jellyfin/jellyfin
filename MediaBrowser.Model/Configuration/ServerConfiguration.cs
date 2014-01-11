@@ -222,6 +222,8 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableDebugEncodingLogging { get; set; }
         public string TranscodingTempPath { get; set; }
 
+        public bool EnableAutomaticRestart { get; set; }
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>
@@ -239,6 +241,7 @@ namespace MediaBrowser.Model.Configuration
             EnableMovieChapterImageExtraction = true;
             EnableEpisodeChapterImageExtraction = false;
             EnableOtherVideoChapterImageExtraction = false;
+            EnableAutomaticRestart = true;
 
             MinResumePct = 5;
             MaxResumePct = 90;

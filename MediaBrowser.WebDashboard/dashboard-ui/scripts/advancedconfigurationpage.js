@@ -15,6 +15,13 @@
         } else {
             $('#fldRunAtStartup', page).hide();
         }
+        $('#chkEnableAutomaticRestart', page).checked(config.EnableAutomaticRestart).checkboxradio("refresh");
+
+        if (systemInfo.CanSelfRestart) {
+            $('#fldEnableAutomaticRestart', page).show();
+        } else {
+            $('#fldEnableAutomaticRestart', page).hide();
+        }
 
         $('#selectAutomaticUpdateLevel', page).val(config.SystemUpdateLevel).selectmenu('refresh').trigger('change');
         $('#chkDebugLog', page).checked(config.EnableDebugLevelLogging).checkboxradio("refresh");
@@ -130,6 +137,7 @@
 
                 config.RunAtStartup = $('#chkRunAtStartup', form).checked();
                 config.SystemUpdateLevel = $('#selectAutomaticUpdateLevel', form).val();
+                config.EnableAutomaticRestart = $('#chkEnableAutomaticRestart', form).checked();
 
                 ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
             });

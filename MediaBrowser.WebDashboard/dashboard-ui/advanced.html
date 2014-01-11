@@ -11,7 +11,7 @@
 
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
                     <a href="#" data-role="button" class="ui-btn-active">General</a>
-                    <a href="advancedserversettings.html" data-role="button">Server</a>
+                    <a href="advancedserversettings.html" data-role="button">Http Server</a>
                     <a href="encodingsettings.html" data-role="button">Transcoding</a>
                 </div>
                 <form id="advancedConfigurationForm">
@@ -25,6 +25,13 @@
                             </div>
                         </li>
                         <li>
+                            <input type="checkbox" id="chkDebugLog" name="chkDebugLog" data-mini="true" />
+                            <label for="chkDebugLog">Enable debug logging </label>
+                        </li>
+                    </ul>
+                    <h2>Updates</h2>
+                    <ul data-role="listview" class="ulForm">
+                        <li>
                             <label for="selectAutomaticUpdateLevel">Automatic update level</label>
                             <select name="selectAutomaticUpdateLevel" id="selectAutomaticUpdateLevel" data-mini="true">
                                 <option value="Release">Official Release</option>
@@ -35,9 +42,12 @@
                                 Dev builds are the bleeding edge. Released often, these build have not been tested. The application may crash and entire features may not work at all.                          
                             </div>
                         </li>
-                        <li>
-                            <input type="checkbox" id="chkDebugLog" name="chkDebugLog" data-mini="true" />
-                            <label for="chkDebugLog">Enable debug logging </label>
+                        <li id="fldEnableAutomaticRestart" style="display: none;">
+                            <input type="checkbox" id="chkEnableAutomaticRestart" name="chkEnableAutomaticRestart" data-mini="true" />
+                            <label for="chkEnableAutomaticRestart">Allow the server to restart automatically to apply updates</label>
+                            <div class="fieldDescription">
+                                The server will only restart during idle periods, when no users are active.                       
+                            </div>
                         </li>
                     </ul>
                     <h2>Cache Path</h2>
