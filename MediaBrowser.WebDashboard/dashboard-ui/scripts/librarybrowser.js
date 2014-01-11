@@ -779,22 +779,12 @@
                     height = 400;
                     width = primaryImageAspectRatio ? Math.round(height * primaryImageAspectRatio) : null;
 
-                    if (item.Type == "Recording") {
-                        imgUrl = ApiClient.getUrl("LiveTV/Recordings/" + item.Id + "/Images/Primary", {
-                            type: "Primary",
-                            height: height,
-                            width: width,
-                            tag: item.ImageTags.Primary
-                        });
-
-                    } else {
-                        imgUrl = ApiClient.getImageUrl(item.Id, {
-                            type: "Primary",
-                            height: height,
-                            width: width,
-                            tag: item.ImageTags.Primary
-                        });
-                    }
+                    imgUrl = ApiClient.getImageUrl(item.Id, {
+                        type: "Primary",
+                        height: height,
+                        width: width,
+                        tag: item.ImageTags.Primary
+                    });
 
                 }
                 else if (item.AlbumId && item.AlbumPrimaryImageTag) {
@@ -1784,28 +1774,7 @@
 
             if (imageTags.Primary) {
 
-                if (item.Type == "Channel") {
-                    url = ApiClient.getUrl("LiveTV/Channels/" + item.Id + "/Images/Primary", {
-                        maxheight: imageHeight,
-                        tag: imageTags.Primary,
-                        type: "Primary"
-                    });
-                }
-                else if (item.Type == "Recording") {
-                    url = ApiClient.getUrl("LiveTV/Recordings/" + item.Id + "/Images/Primary", {
-                        maxheight: imageHeight,
-                        tag: imageTags.Primary,
-                        type: "Primary"
-                    });
-                }
-                else if (item.Type == "Program") {
-                    url = ApiClient.getUrl("LiveTV/Programs/" + item.Id + "/Images/Primary", {
-                        maxheight: imageHeight,
-                        tag: imageTags.Primary,
-                        type: "Primary"
-                    });
-                }
-                else if (item.Type == "Person") {
+                if (item.Type == "Person") {
                     url = ApiClient.getPersonImageUrl(item.Name, {
                         maxheight: imageHeight,
                         tag: imageTags.Primary,

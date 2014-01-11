@@ -139,38 +139,59 @@
 
         html += '<ul data-role="listview" data-inset="true" data-split-icon="delete">';
 
+        var index = '';
+
         for (var i = 0, length = timers.length; i < length; i++) {
 
             var timer = timers[i];
 
-            var programInfo = timer.ProgramInfo || {};
-            
-            html += '<li><a href="livetvtimer.html?id=' + timer.Id + '">';
+            var startDateText = LibraryBrowser.getFutureDateText(parseISO8601Date(timer.StartDate, { toLocal: true }));
 
-            html += '<h3>';
-            html += (programInfo.EpisodeTitle || timer.Name);
-            html += '</h3>';
-
-            var startDate = timer.StartDate;
-
-            try {
-
-                startDate = parseISO8601Date(startDate, { toLocal: true });
-
-            } catch (err) {
-
+            if (startDateText != index) {
+                html += '<li data-role="list-divider">' + startDateText + '</li>';
+                index = startDateText;
             }
 
-            html += '<p>' + startDate.toLocaleDateString() + '</p>';
+            html += '<li><a href="livetvtimer.html?id=' + timer.Id + '">';
+
+            var program = timer.ProgramInfo;
+            var imgUrl;
+
+            if (program.ImageTags && program.ImageTags.Primary) {
+
+                imgUrl = ApiClient.getImageUrl(program.Id, {
+                    height: 160,
+                    tag: program.ImageTags.Primary,
+                    type: "Primary"
+                });
+            } else {
+                imgUrl = "css/images/items/searchhintsv2/tv.png";
+            }
+
+            html += '<img src="css/images/items/searchhintsv2/tv.png" style="display:none;">';
+            html += '<div class="ui-li-thumb" style="background-image:url(\'' + imgUrl + '\');width:5em;height:5em;background-repeat:no-repeat;background-position:center center;background-size: cover;"></div>';
+
+            html += '<h3>';
+            html += program.EpisodeTitle || timer.Name;
+            if (program.IsRepeat) {
+                html += ' (R)';
+            }
+            html += '</h3>';
 
             html += '<p>';
             html += LiveTvHelpers.getDisplayTime(timer.StartDate);
-            
-            if (timer.ChannelName) {
-                html += ' on ' + timer.ChannelName;
-            }
+            html += ' - ' + LiveTvHelpers.getDisplayTime(timer.EndDate);
             html += '</p>';
-            
+
+
+            if (timer.SeriesTimerId) {
+                html += '<div class="ui-li-aside" style="right:0;">';
+                html += '<div class="timerCircle seriesTimerCircle"></div>';
+                html += '<div class="timerCircle seriesTimerCircle"></div>';
+                html += '<div class="timerCircle seriesTimerCircle"></div>';
+                html += '</div>';
+            }
+
             html += '</a>';
 
             html += '<a data-timerid="' + timer.Id + '" href="#" title="Cancel Recording" class="btnCancelTimer">Cancel Recording</a>';

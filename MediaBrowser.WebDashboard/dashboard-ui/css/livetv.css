@@ -133,12 +133,12 @@
 
 .channelTimeslotHeader {
     position: absolute;
-    left: 15px;
+    left: 10px;
 }
 
 .timeslotHeaders {
     position: absolute;
-    right: 28px;
+    right: 13px;
     overflow-y: hidden;
     overflow-x: hidden;
     white-space: nowrap;
@@ -146,7 +146,7 @@
 
 .channelPrograms {
     white-space: nowrap;
-    height: 47px;
+    height: 53px;
 }
 
 .timeslotHeader {
@@ -197,7 +197,7 @@
     position: relative;
 }
 
-    .channelHeaderCellInner:hover {
+    .channelHeaderCell:hover {
         background-color: #38c;
     }
 
@@ -205,14 +205,14 @@
     overflow-y: hidden;
     overflow-x: hidden;
     position: absolute;
-    left: 15px;
+    left: 10px;
     bottom: 46px;
 }
 
 .programGrid {
     position: absolute;
     bottom: 30px;
-    right: 15px;
+    right: 0;
     overflow-y: scroll;
     overflow-x: scroll;
 }
@@ -242,7 +242,7 @@
 }
 
 .timeslotHeaders, .programGrid {
-    left: 206px;
+    left: 201px;
 }
 
 .channelTimeslotHeader, .timeslotHeaders {
@@ -254,11 +254,12 @@
 }
 
 .channelHeaderCell, .timeslotCell {
-    height: 46px;
+    height: 52px;
 }
 
 .guideProgramName {
     padding: .35em .5em;
+    font-size: 14px;
 }
 
 .guideProgramTime {
@@ -299,16 +300,5 @@
 
     .timerPageImageContainer {
         display: none !important;
-    }
-}
-/* Account for hidden navigation */
-@media (max-width: 750px) {
-
-    .channelTimeslotHeader, .timeslotHeaders {
-        top: 115px;
-    }
-
-    .channelList, .programGrid {
-        top: 145px;
     }
 }

@@ -327,5 +327,11 @@ namespace MediaBrowser.Controller.Library
         /// <param name="paths">The paths.</param>
         /// <returns>IEnumerable{System.String}.</returns>
         IEnumerable<string> NormalizeRootPathList(IEnumerable<string> paths);
+
+        /// <summary>
+        /// Registers the item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        void RegisterItem(BaseItem item);
     }
 }

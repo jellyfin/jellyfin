@@ -30,21 +30,23 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         private readonly ILogger _logger;
         private readonly IItemRepository _itemRepo;
         private readonly IUserManager _userManager;
+        private readonly ILibraryManager _libraryManager;
 
         private readonly LiveTvDtoService _tvDtoService;
 
         private readonly List<ILiveTvService> _services = new List<ILiveTvService>();
 
-        private Dictionary<Guid, LiveTvChannel> _channels = new Dictionary<Guid, LiveTvChannel>();
+        private List<Guid> _channelIdList = new List<Guid>();
         private Dictionary<Guid, LiveTvProgram> _programs = new Dictionary<Guid, LiveTvProgram>();
 
-        public LiveTvManager(IServerApplicationPaths appPaths, IFileSystem fileSystem, ILogger logger, IItemRepository itemRepo, IImageProcessor imageProcessor, IUserDataManager userDataManager, IDtoService dtoService, IUserManager userManager)
+        public LiveTvManager(IServerApplicationPaths appPaths, IFileSystem fileSystem, ILogger logger, IItemRepository itemRepo, IImageProcessor imageProcessor, IUserDataManager userDataManager, IDtoService dtoService, IUserManager userManager, ILibraryManager libraryManager)
         {
             _appPaths = appPaths;
             _fileSystem = fileSystem;
             _logger = logger;
             _itemRepo = itemRepo;
             _userManager = userManager;
+            _libraryManager = libraryManager;
 
             _tvDtoService = new LiveTvDtoService(dtoService, userDataManager, imageProcessor, logger, _itemRepo);
         }
@@ -75,7 +77,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         {
             var user = string.IsNullOrEmpty(query.UserId) ? null : _userManager.GetUserById(new Guid(query.UserId));
 
-            IEnumerable<LiveTvChannel> channels = _channels.Values;
+            var channels = _channelIdList.Select(_libraryManager.GetItemById)
+                .Where(i => i != null)
+                .OfType<LiveTvChannel>();
 
             if (user != null)
             {
@@ -144,10 +148,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         private LiveTvChannel GetInternalChannel(Guid id)
         {
-            LiveTvChannel channel = null;
-
-            _channels.TryGetValue(id, out channel);
-            return channel;
+            return _libraryManager.GetItemById(id) as LiveTvChannel;
         }
 
         public LiveTvProgram GetInternalProgram(string id)
@@ -320,6 +321,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             await item.RefreshMetadata(cancellationToken, forceSave: isNew, resetResolveArgs: false);
 
+            _libraryManager.RegisterItem((BaseItem)item);
+
             return item;
         }
 
@@ -477,6 +480,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     var item = await GetChannel(channelInfo.Item2, channelInfo.Item1, cancellationToken).ConfigureAwait(false);
 
                     list.Add(item);
+
+                    _libraryManager.RegisterItem(item);
                 }
                 catch (OperationCanceledException)
                 {
@@ -493,7 +498,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
                 progress.Report(5 * percent + 10);
             }
-            _channels = list.ToDictionary(i => i.Id);
+
+            _channelIdList = list.Select(i => i.Id).ToList();
             progress.Report(15);
 
              numComplete = 0;

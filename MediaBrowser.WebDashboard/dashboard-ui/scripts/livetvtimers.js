@@ -23,98 +23,159 @@
 
         var html = '';
 
-        var cssClass = "detailTable";
+        html += '<ul data-role="listview" data-inset="true" data-split-icon="delete">';
 
-        html += '<div class="detailTableContainer"><table class="detailTable" >';
-
-        html += '<thead>';
-        html += '<tr>';
-
-        html += '<th class="tabletColumn">&nbsp;</th>';
-        html += '<th>Name</th>';
-        html += '<th class="desktopColumn">Channel</th>';
-        html += '<th>Date</th>';
-        html += '<th>Time</th>';
-        html += '<th class="tabletColumn">Length</th>';
-        html += '<th class="tabletColumn">Status</th>';
-        html += '<th class="desktopColumn">Series</th>';
-
-        html += '</tr>';
-        html += '</thead>';
-
-        html += '<tbody>';
+        var index = '';
 
         for (var i = 0, length = timers.length; i < length; i++) {
 
             var timer = timers[i];
 
-            html += '<tr>';
+            var startDateText = LibraryBrowser.getFutureDateText(parseISO8601Date(timer.StartDate, { toLocal: true }));
 
-            html += '<td class="tabletColumn">';
-            html += '<button data-timerid="' + timer.Id + '" class="btnDeleteTimer" type="button" data-icon="delete" data-inline="true" data-mini="true" data-iconpos="notext">Cancel</button>';
-            html += '</td>';
-
-            html += '<td>';
-            html += '<a href="livetvtimer.html?id=' + timer.Id + '">' + timer.Name + '</a>';
-            html += '</td>';
-
-            html += '<td class="desktopColumn">';
-            if (timer.ChannelId) {
-                html += '<a href="livetvchannel.html?id=' + timer.ChannelId + '">' + timer.ChannelName + '</a>';
-            }
-            html += '</td>';
-
-            var startDate = timer.StartDate;
-
-            try {
-
-                startDate = parseISO8601Date(startDate, { toLocal: true });
-
-            } catch (err) {
-
+            if (startDateText != index) {
+                html += '<li data-role="list-divider">' + startDateText + '</li>';
+                index = startDateText;
             }
 
-            html += '<td>' + startDate.toLocaleDateString() + '</td>';
+            html += '<li><a href="livetvtimer.html?id=' + timer.Id + '">';
 
-            html += '<td>' + LiveTvHelpers.getDisplayTime(timer.StartDate) + '</td>';
+            var program = timer.ProgramInfo;
+            var imgUrl;
+            
+            if (program.ImageTags && program.ImageTags.Primary) {
 
-            var minutes = timer.RunTimeTicks / 600000000;
-
-            minutes = minutes || 1;
-
-            html += '<td class="tabletColumn">' + Math.round(minutes) + 'min</td>';
-
-            html += '<td class="tabletColumn">';
-
-            if (timer.Status == 'ConflictedNotOk' || timer.Status == 'Error') {
-
-                html += '<span style="color:red;">';
-                html += timer.Status;
-                html += '</span>';
-
+                imgUrl = ApiClient.getImageUrl(program.Id, {
+                    height: 160,
+                    tag: program.ImageTags.Primary,
+                    type: "Primary"
+                });
             } else {
-                html += timer.Status;
+                imgUrl = "css/images/items/searchhintsv2/tv.png";
             }
 
-            html += '</td>';
+            html += '<img src="css/images/items/searchhintsv2/tv.png" style="display:none;">';
+            html += '<div class="ui-li-thumb" style="background-image:url(\'' + imgUrl + '\');width:5em;height:5em;background-repeat:no-repeat;background-position:center center;background-size: cover;"></div>';
 
-            html += '<td class="desktopColumn">';
+            html += '<h3>';
+            html += timer.Name;
+            html += '</h3>';
+
+            html += '<p>';
+            html += LiveTvHelpers.getDisplayTime(timer.StartDate);
+            html += ' - ' + LiveTvHelpers.getDisplayTime(timer.EndDate);
+            html += '</p>';
+
 
             if (timer.SeriesTimerId) {
-                html += '<a href="livetvseriestimer.html?id=' + timer.SeriesTimerId + '" title="View Series Recording">';
+                html += '<div class="ui-li-aside" style="right:0;">';
                 html += '<div class="timerCircle seriesTimerCircle"></div>';
                 html += '<div class="timerCircle seriesTimerCircle"></div>';
                 html += '<div class="timerCircle seriesTimerCircle"></div>';
-                html += '</a>';
+                html += '</div>';
             }
 
-            html += '</td>';
+            html += '</a>';
 
-            html += '</tr>';
+            html += '<a data-timerid="' + timer.Id + '" href="#" title="Cancel Recording" class="btnDeleteTimer">Cancel Recording</a>';
+
+            html += '</li>';
         }
 
-        html += '</tbody>';
-        html += '</table></div>';
+        html += '</ul>';
+
+        //var cssClass = "detailTable";
+
+        //html += '<div class="detailTableContainer"><table class="detailTable" >';
+
+        //html += '<thead>';
+        //html += '<tr>';
+
+        //html += '<th class="tabletColumn">&nbsp;</th>';
+        //html += '<th>Name</th>';
+        //html += '<th class="desktopColumn">Channel</th>';
+        //html += '<th>Date</th>';
+        //html += '<th>Time</th>';
+        //html += '<th class="tabletColumn">Length</th>';
+        //html += '<th class="tabletColumn">Status</th>';
+        //html += '<th class="desktopColumn">Series</th>';
+
+        //html += '</tr>';
+        //html += '</thead>';
+
+        //html += '<tbody>';
+
+        //for (var i = 0, length = timers.length; i < length; i++) {
+
+        //    var timer = timers[i];
+
+        //    html += '<tr>';
+
+        //    html += '<td class="tabletColumn">';
+        //    html += '<button data-timerid="' + timer.Id + '" class="btnDeleteTimer" type="button" data-icon="delete" data-inline="true" data-mini="true" data-iconpos="notext">Cancel</button>';
+        //    html += '</td>';
+
+        //    html += '<td>';
+        //    html += '<a href="livetvtimer.html?id=' + timer.Id + '">' + timer.Name + '</a>';
+        //    html += '</td>';
+
+        //    html += '<td class="desktopColumn">';
+        //    if (timer.ChannelId) {
+        //        html += '<a href="livetvchannel.html?id=' + timer.ChannelId + '">' + timer.ChannelName + '</a>';
+        //    }
+        //    html += '</td>';
+
+        //    var startDate = timer.StartDate;
+
+        //    try {
+
+        //        startDate = parseISO8601Date(startDate, { toLocal: true });
+
+        //    } catch (err) {
+
+        //    }
+
+        //    html += '<td>' + startDate.toLocaleDateString() + '</td>';
+
+        //    html += '<td>' + LiveTvHelpers.getDisplayTime(timer.StartDate) + '</td>';
+
+        //    var minutes = timer.RunTimeTicks / 600000000;
+
+        //    minutes = minutes || 1;
+
+        //    html += '<td class="tabletColumn">' + Math.round(minutes) + 'min</td>';
+
+        //    html += '<td class="tabletColumn">';
+
+        //    if (timer.Status == 'ConflictedNotOk' || timer.Status == 'Error') {
+
+        //        html += '<span style="color:red;">';
+        //        html += timer.Status;
+        //        html += '</span>';
+
+        //    } else {
+        //        html += timer.Status;
+        //    }
+
+        //    html += '</td>';
+
+        //    html += '<td class="desktopColumn">';
+
+        //    if (timer.SeriesTimerId) {
+        //        html += '<a href="livetvseriestimer.html?id=' + timer.SeriesTimerId + '" title="View Series Recording">';
+        //        html += '<div class="timerCircle seriesTimerCircle"></div>';
+        //        html += '<div class="timerCircle seriesTimerCircle"></div>';
+        //        html += '<div class="timerCircle seriesTimerCircle"></div>';
+        //        html += '</a>';
+        //    }
+
+        //    html += '</td>';
+
+        //    html += '</tr>';
+        //}
+
+        //html += '</tbody>';
+        //html += '</table></div>';
 
         var elem = $('#items', page).html(html).trigger('create');
 

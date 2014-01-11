@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.MediaInfo;
+﻿using DvdLib.Ifo;
+using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Localization;
@@ -132,10 +133,28 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (item.VideoType == VideoType.Dvd || (item.IsoType.HasValue && item.IsoType == IsoType.Dvd))
             {
-                PopulateDvdStreamFiles(item, mount);
+                FetchFromDvdLib(item, mount);
             }
 
             base.OnPreFetch(item, mount);
+        }
+
+        private void FetchFromDvdLib(Video item, IIsoMount mount)
+        {
+            var path = mount == null ? item.Path : mount.MountedPath;
+            var dvd = new Dvd(path);
+
+            item.RunTimeTicks = dvd.Titles.Select(GetRuntime).Max();
+
+            PopulateDvdStreamFiles(item, mount);
+        }
+
+        private long GetRuntime(Title title)
+        {
+            return title.ProgramChains
+                    .Select(i => (TimeSpan)i.PlaybackTime)
+                    .Select(i => i.Ticks)
+                    .Sum();
         }
 
         public override async Task<bool> FetchAsync(BaseItem item, bool force, BaseProviderInfo providerInfo, CancellationToken cancellationToken)

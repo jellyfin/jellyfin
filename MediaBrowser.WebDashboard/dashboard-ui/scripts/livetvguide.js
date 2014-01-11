@@ -50,7 +50,7 @@
         var nextDay = new Date(date.getTime());
         nextDay.setHours(0, 0, 0, 0);
         nextDay.setDate(nextDay.getDate() + 1);
-
+        console.log(nextDay);
         channelsPromise.done(function(channelsResult) {
 
             apiClient.getLiveTvPrograms({
@@ -311,7 +311,7 @@
             html.push(getChannelProgramsHtml(page, date, channels[i], programs));
         }
 
-        $('.programGrid', page).html(html.join(''));
+        $('.programGrid', page).html(html.join('')).scrollTop(0).scrollLeft(0);
     }
 
     function renderChannelHeaders(page, channels) {
@@ -331,7 +331,7 @@
 
             if (channel.ImageTags.Primary) {
 
-                var url = ApiClient.getUrl("LiveTV/Channels/" + channel.Id + "/Images/Primary", {
+                var url = ApiClient.getImageUrl(channel.Id, {
                     maxheight: 200,
                     maxwidth: 200,
                     tag: channel.ImageTags.Primary,

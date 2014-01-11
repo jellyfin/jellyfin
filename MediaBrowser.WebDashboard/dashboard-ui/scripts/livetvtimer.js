@@ -43,7 +43,7 @@
 
         if (programInfo.ImageTags && programInfo.ImageTags.Primary) {
 
-            var imgUrl = ApiClient.getUrl("LiveTV/Programs/" + programInfo.Id + "/Images/Primary", {
+            var imgUrl = ApiClient.getImageUrl(programInfo.Id, {
                 maxwidth: 200,
                 maxheight: 200,
                 tag: programInfo.ImageTags.Primary,

@@ -407,6 +407,11 @@ namespace MediaBrowser.Server.Implementations.Library
                 }
             }
 
+            RegisterItem(item);
+        }
+
+        public void RegisterItem(BaseItem item)
+        {
             LibraryItemsCache.AddOrUpdate(item.Id, item, delegate { return item; });
         }
 

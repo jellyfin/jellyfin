@@ -1594,9 +1594,6 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             if (itemType == "Artist") {
                 url = self.getUrl("Artists/" + self.encodeName(itemName) + "/Images");
             }
-            else if (itemType == "Channel") {
-                url = self.getUrl("LiveTv/Channels/" + itemId + "/Images");
-            }
             else if (itemType == "Genre") {
                 url = self.getUrl("Genres/" + self.encodeName(itemName) + "/Images");
             } else if (itemType == "GameGenre") {
@@ -1667,9 +1664,6 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             if (itemType == "Artist") {
                 url = self.getUrl("Artists/" + self.encodeName(itemName) + "/Images/" + imageType + "/" + imageIndex + "/Index", options);
             }
-            else if (itemType == "Channel") {
-                url = self.getUrl("LiveTv/Channels/" + itemId + "/Images/" + imageType + "/" + imageIndex + "/Index", options);
-            }
             else if (itemType == "Genre") {
                 url = self.getUrl("Genres/" + self.encodeName(itemName) + "/Images/" + imageType + "/" + imageIndex + "/Index", options);
             } else if (itemType == "GameGenre") {
@@ -1700,9 +1694,6 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
 
             if (itemType == "Artist") {
                 url = self.getUrl("Artists/" + self.encodeName(itemName) + "/Images");
-            }
-            else if (itemType == "Channel") {
-                url = self.getUrl("LiveTv/Channels/" + itemId + "/Images");
             }
             else if (itemType == "Genre") {
                 url = self.getUrl("Genres/" + self.encodeName(itemName) + "/Images");
@@ -1837,9 +1828,6 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
 
             if (itemType == "Artist") {
                 url = self.getUrl("Artists/" + self.encodeName(itemName) + "/Images");
-            }
-            else if (itemType == "Channel") {
-                url = self.getUrl("LiveTv/Channels/" + itemId + "/Images");
             }
             else if (itemType == "Genre") {
                 url = self.getUrl("Genres/" + self.encodeName(itemName) + "/Images");

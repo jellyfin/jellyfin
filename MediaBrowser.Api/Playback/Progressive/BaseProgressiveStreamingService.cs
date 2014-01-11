@@ -163,6 +163,11 @@ namespace MediaBrowser.Api.Playback.Progressive
             {
                 responseHeaders["ContentFeatures.DLNA.ORG"] = (contentFeatures + orgOp + orgCi + dlnaflags).Trim(';');
             }
+
+            foreach (var item in responseHeaders)
+            {
+                Request.Response.AddHeader(item.Key, item.Value);
+            }
         }
 
         /// <summary>

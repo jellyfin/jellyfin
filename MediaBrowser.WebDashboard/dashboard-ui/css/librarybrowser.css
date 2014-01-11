@@ -156,9 +156,9 @@
 }
 
 .detailButtonsContainer {
-    padding: .75em 0 .75em;
+    padding: .5em 0 .5em;
     text-align: center;
-    border-top: 1px solid #444;
+    border-top: 1px solid #333;
     border-bottom: 1px solid #333;
 }
 

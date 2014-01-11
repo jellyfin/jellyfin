@@ -1910,7 +1910,7 @@
 
                 if (channel.ImageTags.Primary) {
 
-                    imgUrl = ApiClient.getUrl("LiveTV/Channels/" + channel.Id + "/Images/Primary", {
+                    imgUrl = ApiClient.getImageUrl(channel.Id, {
                         maxwidth: 200,
                         tag: channel.ImageTags.Primary,
                         type: "Primary"
