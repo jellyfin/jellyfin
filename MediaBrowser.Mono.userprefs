@@ -4,7 +4,7 @@
     <Files>
       <File FileName="MediaBrowser.Server.Mono\app.config" Line="1" Column="1" />
       <File FileName="MediaBrowser.ServerApplication\ApplicationHost.cs" Line="1" Column="1" />
-      <File FileName="MediaBrowser.Server.Mono\Native\NativeApp.cs" Line="12" Column="23" />
+      <File FileName="MediaBrowser.Server.Mono\Native\NativeApp.cs" Line="1" Column="1" />
       <File FileName="MediaBrowser.Server.Mono\Program.cs" Line="36" Column="34" />
     </Files>
   </MonoDevelop.Ide.Workbench>

@@ -48,6 +48,13 @@
     <Reference Include="Alchemy">
       <HintPath>..\packages\Alchemy.2.2.1\lib\net40\Alchemy.dll</HintPath>
     </Reference>
+    <Reference Include="BDInfo, Version=1.0.5124.611, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\MediaBrowser.BdInfo.1.0.0.7\lib\net35\BDInfo.dll</HintPath>
+    </Reference>
+    <Reference Include="DvdLib">
+      <HintPath>..\packages\MediaBrowser.BdInfo.1.0.0.7\lib\net35\DvdLib.dll</HintPath>
+    </Reference>
     <Reference Include="ServiceStack.Api.Swagger">
       <HintPath>..\ThirdParty\ServiceStack\ServiceStack.Api.Swagger.dll</HintPath>
     </Reference>
@@ -67,9 +74,6 @@
     <Reference Include="System.Xml" />
     <Reference Include="MoreLinq">
       <HintPath>..\packages\morelinq.1.0.16006\lib\net35\MoreLinq.dll</HintPath>
-    </Reference>
-    <Reference Include="BDInfo">
-      <HintPath>..\packages\MediaBrowser.BdInfo.1.0.0.5\lib\net20\BDInfo.dll</HintPath>
     </Reference>
     <Reference Include="System.Data.SQLite" Condition=" '$(ConfigurationName)' == 'Release Mono' ">
       <SpecificVersion>False</SpecificVersion>

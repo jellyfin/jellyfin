@@ -45,6 +45,12 @@
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="BDInfo">
+      <HintPath>..\packages\MediaBrowser.BdInfo.1.0.0.7\lib\net35\BDInfo.dll</HintPath>
+    </Reference>
+    <Reference Include="DvdLib">
+      <HintPath>..\packages\MediaBrowser.BdInfo.1.0.0.7\lib\net35\DvdLib.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Net" />
