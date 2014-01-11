@@ -110,6 +110,7 @@
     <Compile Include="Drawing\PlayedIndicatorDrawer.cs" />
     <Compile Include="Drawing\UnplayedCountIndicator.cs" />
     <Compile Include="Dto\DtoService.cs" />
+    <Compile Include="EntryPoints\AutomaticRestartEntryPoint.cs" />
     <Compile Include="EntryPoints\LibraryChangedNotifier.cs" />
     <Compile Include="EntryPoints\LoadRegistrations.cs" />
     <Compile Include="EntryPoints\Notifications\Notifier.cs" />
