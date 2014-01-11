@@ -56,7 +56,7 @@
             html += '<div class="' + cssClass + '">';
 
             var name = program.Name;
-            
+
             if (program.IsRepeat) {
                 name += " (R)";
             }
@@ -182,11 +182,42 @@
                 }
             }
 
-            date = date.toLocaleTimeString();
+            var lower = date.toLocaleTimeString().toLowerCase();
 
-            date = date.replace('0:00', '0').replace(':00 ', '').replace(' ', '');
+            var hours = date.getHours();
+            var minutes = date.getMinutes();
 
-            return date;
+            var text;
+
+            if (lower.indexOf('am') != -1 || lower.indexOf('pm') != -1) {
+
+                var suffix = hours > 11 ? 'pm' : 'am';
+
+                hours = (hours % 12) || 12;
+
+                text = hours;
+                
+                if (minutes) {
+
+                    text += ':';
+                    if (minutes < 10) {
+                        text += '0';
+                    }
+                    text += minutes;
+                }
+
+                text += suffix;
+
+            } else {
+                text = hours + ':';
+
+                if (minutes < 10) {
+                    text += '0';
+                }
+                text += minutes;
+            }
+
+            return text;
         },
 
         renderMiscProgramInfo: function (elem, obj) {

@@ -1,5 +1,11 @@
 ﻿(function ($, document, apiClient) {
 
+    var query = {
+
+        SortBy: "SortName",
+        SortOrder: "Ascending"
+    };
+
     function deleteSeriesTimer(page, id) {
 
         Dashboard.confirm("Are you sure you wish to cancel this series?", "Confirm Series Cancellation", function (result) {
@@ -87,11 +93,27 @@
 
         Dashboard.showLoadingMsg();
 
-        apiClient.getLiveTvSeriesTimers().done(function (result) {
+        apiClient.getLiveTvSeriesTimers(query).done(function (result) {
 
             renderTimers(page, result.Items);
 
         });
+    }
+
+    function updateFilterControls(page) {
+
+        // Reset form values using the last used query
+        $('.radioSortBy', page).each(function () {
+
+            this.checked = (query.SortBy || '').toLowerCase() == this.getAttribute('data-sortby').toLowerCase();
+
+        }).checkboxradio('refresh');
+
+        $('.radioSortOrder', page).each(function () {
+
+            this.checked = (query.SortOrder || '').toLowerCase() == this.getAttribute('data-sortorder').toLowerCase();
+
+        }).checkboxradio('refresh');
     }
 
     $(document).on('pagebeforeshow', "#liveTvSeriesTimersPage", function () {
@@ -99,6 +121,26 @@
         var page = this;
 
         reload(page);
+        
+    }).on('pageinit', "#liveTvSeriesTimersPage", function () {
+
+        var page = this;
+
+        $('.radioSortBy', this).on('click', function () {
+            query.StartIndex = 0;
+            query.SortBy = this.getAttribute('data-sortby');
+            reload(page);
+        });
+
+        $('.radioSortOrder', this).on('click', function () {
+            query.StartIndex = 0;
+            query.SortOrder = this.getAttribute('data-sortorder');
+            reload(page);
+        });
+
+    }).on('pageshow', "#liveTvSeriesTimersPage", function () {
+
+        updateFilterControls(this);
     });
 
 })(jQuery, document, ApiClient);

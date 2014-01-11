@@ -195,7 +195,7 @@
             $('#scenesCollapsible', page).show();
             renderScenes(page, item, 4);
         }
-        if (item.LocalTrailerCount || !item.RemoteTrailers.length) {
+        if (item.LocalTrailerCount || !item.RemoteTrailers.length || item.Type == "Trailer") {
             $('#trailersCollapsible', page).addClass('hide');
         } else {
             $('#trailersCollapsible', page).removeClass('hide');

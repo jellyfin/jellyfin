@@ -52,7 +52,7 @@
         $('.recordingItems', elem).html(LibraryBrowser.getPosterViewHtml({
             
             items: recordings,
-            shape: "backdrop",
+            shape: "square",
             showTitle: true,
             showParentTitle: true,
             overlayText: true,
@@ -79,7 +79,7 @@
         apiClient.getLiveTvRecordings({
 
             userId: Dashboard.getCurrentUserId(),
-            limit: 12,
+            limit: 15,
             isRecording: false
 
         }).done(function (result) {

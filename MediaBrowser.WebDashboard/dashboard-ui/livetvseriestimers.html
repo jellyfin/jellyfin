@@ -15,9 +15,43 @@
         </div>
         <div data-role="content">
             <div style="max-width: 600px; margin: 0 auto;">
+
+                <div style="text-align: right;">
+                    <button data-mini="true" data-icon="sort" data-inline="true" onclick="$('#sortPanel', $(this).parents('.page')).panel( 'toggle' );">Sort</button>
+                </div>
+
                 <div id="items"></div>
             </div>
         </div>
+        <div data-role="panel" id="sortPanel" data-position="right" data-display="overlay" data-theme="a" data-position-fixed="true">
+
+            <form>
+                <fieldset data-role="controlgroup">
+                    <legend>
+                        <strong>Sort By:</strong>
+                    </legend>
+
+                    <input class="radioSortBy defaultSort" type="radio" name="radioSortBy" id="radioSortName" value="on" checked="checked" data-sortby="SortName" data-mini="true">
+                    <label for="radioSortName">Name</label>
+
+                    <input class="radioSortBy" type="radio" name="radioSortBy" id="radioPriority" value="off" data-sortby="Priority" data-mini="true">
+                    <label for="radioPriority">Priority</label>
+                </fieldset>
+
+                <fieldset data-role="controlgroup">
+                    <legend>
+                        <strong>Sort Order:</strong>
+                    </legend>
+
+                    <input class="radioSortOrder" type="radio" name="radioSortOrder" id="radioAscending" value="on" checked="checked" data-sortorder="Ascending" data-mini="true">
+                    <label for="radioAscending">Ascending</label>
+
+                    <input class="radioSortOrder" type="radio" name="radioSortOrder" id="radioDescending" value="off" data-sortorder="Descending" data-mini="true">
+                    <label for="radioDescending">Descending</label>
+                </fieldset>
+            </form>
+        </div>
+
     </div>
 </body>
 </html>

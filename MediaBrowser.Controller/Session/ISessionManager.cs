@@ -155,5 +155,18 @@ namespace MediaBrowser.Controller.Session
         /// <param name="sessionId">The session identifier.</param>
         /// <param name="userId">The user identifier.</param>
         void RemoveAdditionalUser(Guid sessionId, Guid userId);
+
+        /// <summary>
+        /// Authenticates the new session.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="password">The password.</param>
+        /// <param name="clientType">Type of the client.</param>
+        /// <param name="appVersion">The application version.</param>
+        /// <param name="deviceId">The device identifier.</param>
+        /// <param name="deviceName">Name of the device.</param>
+        /// <param name="remoteEndPoint">The remote end point.</param>
+        /// <returns>Task{SessionInfo}.</returns>
+        Task<SessionInfo> AuthenticateNewSession(User user, string password, string clientType, string appVersion, string deviceId, string deviceName, string remoteEndPoint);
     }
 }
