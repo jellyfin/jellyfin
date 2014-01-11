@@ -472,6 +472,7 @@ namespace MediaBrowser.WebDashboard.Api
                                       "alphapicker.js",
                                       "addpluginpage.js",
                                       "advancedconfigurationpage.js",
+                                      "advancedserversettings.js",
                                       "metadataadvanced.js",
                                       "boxsets.js",
                                       "appsplayback.js",
