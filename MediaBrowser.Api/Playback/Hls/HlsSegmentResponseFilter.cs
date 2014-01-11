@@ -42,7 +42,7 @@ namespace MediaBrowser.Api.Playback.Hls
             Logger.Info("OnEndRequest " + playlistId);
             var normalizedPlaylistId = playlistId.Replace("-low", string.Empty);
 
-            foreach (var playlist in Directory.EnumerateFiles(ApplicationPaths.EncodedMediaCachePath, "*.m3u8")
+            foreach (var playlist in Directory.EnumerateFiles(ApplicationPaths.TranscodingTempPath, "*.m3u8")
                 .Where(i => i.IndexOf(normalizedPlaylistId, StringComparison.OrdinalIgnoreCase) != -1)
                 .ToList())
             {

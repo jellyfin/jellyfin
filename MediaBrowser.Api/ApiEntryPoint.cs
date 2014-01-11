@@ -71,7 +71,7 @@ namespace MediaBrowser.Api
         /// </summary>
         private void DeleteEncodedMediaCache()
         {
-            foreach (var file in Directory.EnumerateFiles(AppPaths.EncodedMediaCachePath)
+            foreach (var file in Directory.EnumerateFiles(AppPaths.TranscodingTempPath)
                 .Where(i => EntityResolutionHelper.VideoFileExtensions.Contains(Path.GetExtension(i)))
                 .ToList())
             {

@@ -89,7 +89,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var file = request.PlaylistId + Path.GetExtension(Request.PathInfo);
 
-            file = Path.Combine(_appPaths.EncodedMediaCachePath, file);
+            file = Path.Combine(_appPaths.TranscodingTempPath, file);
 
             return ResultFactory.GetStaticFileResult(Request, file, FileShare.ReadWrite);
         }
@@ -108,7 +108,7 @@ namespace MediaBrowser.Api.Playback.Hls
         {
             var file = request.SegmentId + Path.GetExtension(Request.PathInfo);
 
-            file = Path.Combine(_appPaths.EncodedMediaCachePath, file);
+            file = Path.Combine(_appPaths.TranscodingTempPath, file);
 
             OnBeginRequest(request.PlaylistId);
 
@@ -124,7 +124,7 @@ namespace MediaBrowser.Api.Playback.Hls
         {
             var file = request.SegmentId + Path.GetExtension(Request.PathInfo);
 
-            file = Path.Combine(_appPaths.EncodedMediaCachePath, file);
+            file = Path.Combine(_appPaths.TranscodingTempPath, file);
 
             return ResultFactory.GetStaticFileResult(Request, file, FileShare.ReadWrite);
         }
@@ -137,7 +137,7 @@ namespace MediaBrowser.Api.Playback.Hls
         {
             var normalizedPlaylistId = playlistId.Replace("-low", string.Empty);
 
-            foreach (var playlist in Directory.EnumerateFiles(_appPaths.EncodedMediaCachePath, "*.m3u8")
+            foreach (var playlist in Directory.EnumerateFiles(_appPaths.TranscodingTempPath, "*.m3u8")
                 .Where(i => i.IndexOf(normalizedPlaylistId, StringComparison.OrdinalIgnoreCase) != -1)
                 .ToList())
             {

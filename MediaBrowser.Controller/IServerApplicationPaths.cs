@@ -95,10 +95,10 @@ namespace MediaBrowser.Controller
         string UserConfigurationDirectoryPath { get; }
 
         /// <summary>
-        /// Gets the FF MPEG stream cache path.
+        /// Gets the transcoding temporary path.
         /// </summary>
-        /// <value>The FF MPEG stream cache path.</value>
-        string EncodedMediaCachePath { get; }
+        /// <value>The transcoding temporary path.</value>
+        string TranscodingTempPath { get; }
 
         /// <summary>
         /// Gets the downloaded images data path.
