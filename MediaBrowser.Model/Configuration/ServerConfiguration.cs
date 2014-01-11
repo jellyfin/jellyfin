@@ -220,6 +220,7 @@ namespace MediaBrowser.Model.Configuration
         public MetadataOptions BookOptions { get; set; }
 
         public bool EnableDebugEncodingLogging { get; set; }
+        public string TranscodingTempPath { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.

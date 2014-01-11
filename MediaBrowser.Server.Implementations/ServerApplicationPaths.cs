@@ -200,15 +200,16 @@ namespace MediaBrowser.Server.Implementations
             }
         }
 
-        /// <summary>
-        /// Gets the FF MPEG stream cache path.
-        /// </summary>
-        /// <value>The FF MPEG stream cache path.</value>
-        public string EncodedMediaCachePath
+        private string _transcodingTempPath;
+        public string TranscodingTempPath
         {
             get
             {
-                return Path.Combine(CachePath, "encoded-media");
+                return _transcodingTempPath ?? (_transcodingTempPath = Path.Combine(ProgramDataPath, "transcoding-temp"));
+            }
+            set
+            {
+                _transcodingTempPath = value;
             }
         }
 

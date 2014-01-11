@@ -60,6 +60,7 @@ namespace MediaBrowser.Server.Implementations.Configuration
         protected override void OnConfigurationUpdated()
         {
             UpdateItemsByNamePath();
+            UpdateTranscodingTempPath();
 
             base.OnConfigurationUpdated();
         }
@@ -75,6 +76,16 @@ namespace MediaBrowser.Server.Implementations.Configuration
         }
 
         /// <summary>
+        /// Updates the transcoding temporary path.
+        /// </summary>
+        private void UpdateTranscodingTempPath()
+        {
+            ((ServerApplicationPaths)ApplicationPaths).TranscodingTempPath = string.IsNullOrEmpty(Configuration.TranscodingTempPath) ?
+                null :
+                Configuration.TranscodingTempPath;
+        }
+
+        /// <summary>
         /// Replaces the configuration.
         /// </summary>
         /// <param name="newConfiguration">The new configuration.</param>
@@ -84,6 +95,7 @@ namespace MediaBrowser.Server.Implementations.Configuration
             var newConfig = (ServerConfiguration) newConfiguration;
 
             ValidateItemByNamePath(newConfig);
+            ValidateTranscodingTempPath(newConfig);
 
             base.ReplaceConfiguration(newConfiguration);
         }
@@ -99,6 +111,26 @@ namespace MediaBrowser.Server.Implementations.Configuration
 
             if (!string.IsNullOrWhiteSpace(newPath)
                 && !string.Equals(Configuration.ItemsByNamePath ?? string.Empty, newPath))
+            {
+                // Validate
+                if (!Directory.Exists(newPath))
+                {
+                    throw new DirectoryNotFoundException(string.Format("{0} does not exist.", newPath));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Validates the transcoding temporary path.
+        /// </summary>
+        /// <param name="newConfig">The new configuration.</param>
+        /// <exception cref="DirectoryNotFoundException"></exception>
+        private void ValidateTranscodingTempPath(ServerConfiguration newConfig)
+        {
+            var newPath = newConfig.TranscodingTempPath;
+
+            if (!string.IsNullOrWhiteSpace(newPath)
+                && !string.Equals(Configuration.TranscodingTempPath ?? string.Empty, newPath))
             {
                 // Validate
                 if (!Directory.Exists(newPath))
