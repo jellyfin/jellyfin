@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace MediaBrowser.Model.Entities
 {
     /// <summary>
     /// Class MediaStream
     /// </summary>
+    [DebuggerDisplay("StreamType = {Type}")]
     public class MediaStream
     {
         /// <summary>
