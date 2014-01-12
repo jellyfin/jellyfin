@@ -54,7 +54,11 @@
                 $('#recordButtonContainer', page).hide();
             }
 
-            if (MediaPlayer.canPlay(item)) {
+            var startDateLocal = parseISO8601Date(item.StartDate, { toLocal: true });
+            var endDateLocal = parseISO8601Date(item.EndDate, { toLocal: true });
+            var now = new Date();
+            
+            if (now >= startDateLocal && now < endDateLocal) {
                 $('#playButtonContainer', page).show();
             } else {
                 $('#playButtonContainer', page).hide();
@@ -86,6 +90,15 @@
             
             Dashboard.navigate('livetvnewrecording.html?programid=' + id);
 
+        });
+
+        $('#btnPlay', page).on('click', function () {
+
+            ApiClient.getLiveTvChannel(currentItem.ChannelId, Dashboard.getCurrentUserId()).done(function (channel) {
+                
+                var userdata = channel.UserData || {};
+                LibraryBrowser.showPlayMenu(this, channel.Id, channel.Type, channel.MediaType, userdata.PlaybackPositionTicks);
+            });
         });
 
     }).on('pageshow', "#liveTvProgramPage", function () {
