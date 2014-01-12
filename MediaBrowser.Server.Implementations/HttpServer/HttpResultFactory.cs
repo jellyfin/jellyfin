@@ -360,19 +360,11 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             var compress = ShouldCompressResponse(requestContext, contentType);
 
-            var hasOptions = GetStaticResult(requestContext, responseHeaders, contentType, factoryFn, compress, isHeadRequest);
+            var hasOptions = GetStaticResult(requestContext, responseHeaders, contentType, factoryFn, compress, isHeadRequest).Result;
 
-            return GetStaticResultTask(hasOptions, responseHeaders);
-        }
+            AddResponseHeaders(hasOptions, responseHeaders);
 
-        private async Task<object> GetStaticResultTask(Task<IHasOptions> optionsTask,
-            IEnumerable<KeyValuePair<string, string>> responseHeaders)
-        {
-            var options = await optionsTask.ConfigureAwait(false);
-
-            AddResponseHeaders(options, responseHeaders);
-
-            return options;
+            return hasOptions;
         }
 
         /// <summary>
