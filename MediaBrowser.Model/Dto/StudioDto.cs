@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.Serialization;
 
 namespace MediaBrowser.Model.Dto
@@ -7,6 +8,7 @@ namespace MediaBrowser.Model.Dto
     /// <summary>
     /// Class StudioDto
     /// </summary>
+    [DebuggerDisplay("Name = {Name}")]
     public class StudioDto
     {
         /// <summary>
