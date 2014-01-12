@@ -240,5 +240,14 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <returns>GuideInfo.</returns>
         GuideInfo GetGuideInfo();
+
+        /// <summary>
+        /// Gets the recommended programs.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{QueryResult{ProgramInfoDto}}.</returns>
+        Task<QueryResult<ProgramInfoDto>> GetRecommendedPrograms(RecommendedProgramQuery query,
+            CancellationToken cancellationToken);
     }
 }

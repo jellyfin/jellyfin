@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.LiveTv;
+using System;
 
 namespace MediaBrowser.Controller.LiveTv
 {
@@ -25,6 +26,26 @@ namespace MediaBrowser.Controller.LiveTv
             get
             {
                 return ChannelType == ChannelType.TV ? Model.Entities.MediaType.Video : Model.Entities.MediaType.Audio;
+            }
+        }
+
+        public bool IsAiring
+        {
+            get
+            {
+                var now = DateTime.UtcNow;
+
+                return now >= ProgramInfo.StartDate && now < ProgramInfo.EndDate;
+            }
+        }
+
+        public bool HasAired
+        {
+            get
+            {
+                var now = DateTime.UtcNow;
+
+                return now >= ProgramInfo.EndDate;
             }
         }
 

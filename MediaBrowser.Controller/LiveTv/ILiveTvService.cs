@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -37,7 +38,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task CancelSeriesTimerAsync(string timerId, CancellationToken cancellationToken);
-        
+
         /// <summary>
         /// Deletes the recording asynchronous.
         /// </summary>
@@ -77,7 +78,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task UpdateSeriesTimerAsync(SeriesTimerInfo info, CancellationToken cancellationToken);
-        
+
         /// <summary>
         /// Gets the channel image asynchronous. This only needs to be implemented if an image path or url cannot be supplied to ChannelInfo
         /// </summary>
@@ -102,7 +103,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{ImageResponseInfo}.</returns>
         Task<StreamResponseInfo> GetProgramImageAsync(string programId, string channelId, CancellationToken cancellationToken);
-        
+
         /// <summary>
         /// Gets the recordings asynchronous.
         /// </summary>
@@ -123,21 +124,23 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{TimerInfo}.</returns>
         Task<SeriesTimerInfo> GetNewTimerDefaultsAsync(CancellationToken cancellationToken);
-        
+
         /// <summary>
         /// Gets the series timers asynchronous.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{IEnumerable{SeriesTimerInfo}}.</returns>
         Task<IEnumerable<SeriesTimerInfo>> GetSeriesTimersAsync(CancellationToken cancellationToken);
-        
+
         /// <summary>
         /// Gets the programs asynchronous.
         /// </summary>
         /// <param name="channelId">The channel identifier.</param>
+        /// <param name="startDateUtc">The start date UTC.</param>
+        /// <param name="endDateUtc">The end date UTC.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{IEnumerable{ProgramInfo}}.</returns>
-        Task<IEnumerable<ProgramInfo>> GetProgramsAsync(string channelId, CancellationToken cancellationToken);
+        Task<IEnumerable<ProgramInfo>> GetProgramsAsync(string channelId, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the recording stream.
@@ -162,5 +165,13 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task CloseLiveStream(string id, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Records the live stream.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task RecordLiveStream(string id, CancellationToken cancellationToken);
     }
 }
