@@ -1,0 +1,61 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Live TV</title>
+</head>
+<body>
+    <div id="liveTvSettingsPage" data-role="page" class="page type-interior liveTvSettingsPage">
+
+        <div data-role="content">
+            <div class="content-primary">
+                <form class="liveTvSettingsForm" style="display: none;">
+
+                    <ul data-role="listview" class="ulForm">
+                        <li>
+                            <label for="selectGuideDays">Number of days of guide data to download: </label>
+                            <select id="selectGuideDays">
+                                <option value="">Auto</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                                <option value="6">6</option>
+                                <option value="7">7</option>
+                                <option value="8">8</option>
+                                <option value="9">9</option>
+                                <option value="10">10</option>
+                                <option value="11">11</option>
+                                <option value="12">12</option>
+                                <option value="13">13</option>
+                                <option value="14">14</option>
+                            </select>
+                            <div class="fieldDescription">Downloading more days worth of guide data provides the ability to schedule out further in advance and view more listings, but it will also take longer to download. Auto will choose based on the number of channels.</div>
+                        </li>
+                        <li>
+                            <button type="submit" data-theme="b" data-icon="check">
+                                Save
+                            </button>
+                            <button type="button" onclick="Dashboard.navigate('dashboard.html');" data-icon="delete">
+                                Cancel
+                            </button>
+                        </li>
+                    </ul>
+
+                </form>
+                <div class="noLiveTvServices" style="display: none;">
+                    <div class="readOnlyContent" style="margin-top: 2em;">
+                        <p>A Live TV service provider plugin is required in order to continue.</p>
+
+                        <p>Please <a href="plugincatalog.html">install</a> one of our available plugins, such as ServerWmc.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            $('.liveTvSettingsForm').off('submit', LiveTvSettingsPage.onSubmit).on('submit', LiveTvSettingsPage.onSubmit);
+        </script>
+    </div>
+</body>
+</html>

@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -27,7 +28,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
     /// </summary>
     public class LiveTvManager : ILiveTvManager, IDisposable
     {
-        private readonly IServerApplicationPaths _appPaths;
+        private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
         private readonly ILogger _logger;
         private readonly IItemRepository _itemRepo;
@@ -46,9 +47,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         private List<Guid> _channelIdList = new List<Guid>();
         private Dictionary<Guid, LiveTvProgram> _programs = new Dictionary<Guid, LiveTvProgram>();
 
-        public LiveTvManager(IServerApplicationPaths appPaths, IFileSystem fileSystem, ILogger logger, IItemRepository itemRepo, IImageProcessor imageProcessor, IUserDataManager userDataManager, IDtoService dtoService, IUserManager userManager, ILibraryManager libraryManager, IMediaEncoder mediaEncoder)
+        public LiveTvManager(IServerConfigurationManager config, IFileSystem fileSystem, ILogger logger, IItemRepository itemRepo, IImageProcessor imageProcessor, IUserDataManager userDataManager, IDtoService dtoService, IUserManager userManager, ILibraryManager libraryManager, IMediaEncoder mediaEncoder)
         {
-            _appPaths = appPaths;
+            _config = config;
             _fileSystem = fileSystem;
             _logger = logger;
             _itemRepo = itemRepo;
@@ -217,7 +218,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         private async Task<LiveTvChannel> GetChannel(ChannelInfo channelInfo, string serviceName, CancellationToken cancellationToken)
         {
-            var path = Path.Combine(_appPaths.ItemsByNamePath, "channels", _fileSystem.GetValidFilename(channelInfo.Name));
+            var path = Path.Combine(_config.ApplicationPaths.ItemsByNamePath, "channels", _fileSystem.GetValidFilename(channelInfo.Name));
 
             var fileInfo = new DirectoryInfo(path);
 
@@ -659,6 +660,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             numComplete = 0;
             var programs = new List<LiveTvProgram>();
 
+            var guideDays = GetGuideDays(list.Count);
+
             foreach (var item in list)
             {
                 // Avoid implicitly captured closure
@@ -666,8 +669,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
                 try
                 {
-                    var start = DateTime.UtcNow;
-                    var end = start.AddDays(3);
+                    var start = DateTime.UtcNow.AddHours(-1);
+                    var end = start.AddDays(guideDays);
 
                     var channelPrograms = await service.GetProgramsAsync(currentChannel.ChannelInfo.Id, start, end, cancellationToken).ConfigureAwait(false);
 
@@ -693,6 +696,23 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
 
             _programs = programs.ToDictionary(i => i.Id);
+        }
+
+        private double GetGuideDays(int channelCount)
+        {
+            if (_config.Configuration.LiveTvOptions.GuideDays.HasValue)
+            {
+                return _config.Configuration.LiveTvOptions.GuideDays.Value;
+            }
+
+            var programsPerDay = channelCount * 48;
+
+            const int maxPrograms = 32000;
+
+            var days = Math.Round(((double)maxPrograms) / programsPerDay);
+
+            // No less than 2, no more than 14
+            return Math.Max(2, Math.Min(days, 14));
         }
 
         private async Task<IEnumerable<Tuple<string, ChannelInfo>>> GetChannels(ILiveTvService service, CancellationToken cancellationToken)

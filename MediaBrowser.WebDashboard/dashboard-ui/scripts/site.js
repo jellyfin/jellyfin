@@ -754,6 +754,10 @@ var Dashboard = {
             href: "plugins.html",
             selected: page.hasClass("pluginConfigurationPage")
         }, {
+            name: "Live TV",
+            href: "livetvsettings.html",
+            selected: page.hasClass("liveTvSettingsPage")
+        }, {
             name: "Users",
             divider: true,
             href: "userprofiles.html",
