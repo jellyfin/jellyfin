@@ -40,7 +40,7 @@
 
             html += '<li><a href="livetvtimer.html?id=' + timer.Id + '">';
 
-            var program = timer.ProgramInfo;
+            var program = timer.ProgramInfo || {};
             var imgUrl;
             
             if (program.ImageTags && program.ImageTags.Primary) {
