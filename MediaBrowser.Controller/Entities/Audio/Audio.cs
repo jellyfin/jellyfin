@@ -109,7 +109,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// <returns>System.String.</returns>
         public override string GetUserDataKey()
         {
-            var parent = Parent as MusicAlbum;
+            var parent = FindParent<MusicAlbum>();
 
             if (parent != null)
             {

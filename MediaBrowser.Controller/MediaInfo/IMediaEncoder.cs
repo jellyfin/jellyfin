@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Entities;
 
-namespace MediaBrowser.Common.MediaInfo
+namespace MediaBrowser.Controller.MediaInfo
 {
     /// <summary>
     /// Interface IMediaEncoder
@@ -27,12 +27,13 @@ namespace MediaBrowser.Common.MediaInfo
         /// </summary>
         /// <param name="inputFiles">The input files.</param>
         /// <param name="type">The type.</param>
+        /// <param name="isAudio">if set to <c>true</c> [is audio].</param>
         /// <param name="threedFormat">The threed format.</param>
         /// <param name="offset">The offset.</param>
         /// <param name="outputPath">The output path.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task ExtractImage(string[] inputFiles, InputType type, Video3DFormat? threedFormat, TimeSpan? offset, string outputPath, CancellationToken cancellationToken);
+        Task ExtractImage(string[] inputFiles, InputType type, bool isAudio, Video3DFormat? threedFormat, TimeSpan? offset, string outputPath, CancellationToken cancellationToken);
 
         /// <summary>
         /// Extracts the text subtitle.
@@ -62,7 +63,7 @@ namespace MediaBrowser.Common.MediaInfo
         /// <param name="type">The type.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task<MediaInfoResult> GetMediaInfo(string[] inputFiles, InputType type, CancellationToken cancellationToken);
+        Task<InternalMediaInfoResult> GetMediaInfo(string[] inputFiles, InputType type, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the probe size argument.
@@ -86,13 +87,9 @@ namespace MediaBrowser.Common.MediaInfo
     public enum InputType
     {
         /// <summary>
-        /// The audio file
+        /// The file
         /// </summary>
-        AudioFile,
-        /// <summary>
-        /// The video file
-        /// </summary>
-        VideoFile,
+        File,
         /// <summary>
         /// The bluray
         /// </summary>

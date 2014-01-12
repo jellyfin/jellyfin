@@ -6,12 +6,14 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Controller.MediaInfo;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -23,7 +25,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
     /// <summary>
     /// Class LiveTvManager
     /// </summary>
-    public class LiveTvManager : ILiveTvManager
+    public class LiveTvManager : ILiveTvManager, IDisposable
     {
         private readonly IServerApplicationPaths _appPaths;
         private readonly IFileSystem _fileSystem;
@@ -31,15 +33,19 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         private readonly IItemRepository _itemRepo;
         private readonly IUserManager _userManager;
         private readonly ILibraryManager _libraryManager;
+        private readonly IMediaEncoder _mediaEncoder;
 
         private readonly LiveTvDtoService _tvDtoService;
 
         private readonly List<ILiveTvService> _services = new List<ILiveTvService>();
 
+        private readonly ConcurrentDictionary<string, LiveStreamInfo> _openStreams =
+            new ConcurrentDictionary<string, LiveStreamInfo>();
+
         private List<Guid> _channelIdList = new List<Guid>();
         private Dictionary<Guid, LiveTvProgram> _programs = new Dictionary<Guid, LiveTvProgram>();
 
-        public LiveTvManager(IServerApplicationPaths appPaths, IFileSystem fileSystem, ILogger logger, IItemRepository itemRepo, IImageProcessor imageProcessor, IUserDataManager userDataManager, IDtoService dtoService, IUserManager userManager, ILibraryManager libraryManager)
+        public LiveTvManager(IServerApplicationPaths appPaths, IFileSystem fileSystem, ILogger logger, IItemRepository itemRepo, IImageProcessor imageProcessor, IUserDataManager userDataManager, IDtoService dtoService, IUserManager userManager, ILibraryManager libraryManager, IMediaEncoder mediaEncoder)
         {
             _appPaths = appPaths;
             _fileSystem = fileSystem;
@@ -47,6 +53,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             _itemRepo = itemRepo;
             _userManager = userManager;
             _libraryManager = libraryManager;
+            _mediaEncoder = mediaEncoder;
 
             _tvDtoService = new LiveTvDtoService(dtoService, userDataManager, imageProcessor, logger, _itemRepo);
         }
@@ -180,7 +187,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var recording = recordings.First(i => _tvDtoService.GetInternalRecordingId(service.Name, i.Id) == new Guid(id));
 
-            return await service.GetRecordingStream(recording.Id, cancellationToken).ConfigureAwait(false);
+            var result = await service.GetRecordingStream(recording.Id, cancellationToken).ConfigureAwait(false);
+
+            if (!string.IsNullOrEmpty(result.Id))
+            {
+                _openStreams.AddOrUpdate(result.Id, result, (key, info) => result);
+            }
+
+            return result;
         }
 
         public async Task<LiveStreamInfo> GetChannelStream(string id, CancellationToken cancellationToken)
@@ -189,12 +203,19 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var channel = GetInternalChannel(id);
 
-            return await service.GetChannelStream(channel.ChannelInfo.Id, cancellationToken).ConfigureAwait(false);
+            var result = await service.GetChannelStream(channel.ChannelInfo.Id, cancellationToken).ConfigureAwait(false);
+
+            if (!string.IsNullOrEmpty(result.Id))
+            {
+                _openStreams.AddOrUpdate(result.Id, result, (key, info) => result);
+            }
+
+            return result;
         }
 
         private async Task<LiveTvChannel> GetChannel(ChannelInfo channelInfo, string serviceName, CancellationToken cancellationToken)
         {
-            var path = Path.Combine(_appPaths.ItemsByNamePath, "channels", _fileSystem.GetValidFilename(serviceName), _fileSystem.GetValidFilename(channelInfo.Name));
+            var path = Path.Combine(_appPaths.ItemsByNamePath, "channels", _fileSystem.GetValidFilename(channelInfo.Name));
 
             var fileInfo = new DirectoryInfo(path);
 
@@ -1046,6 +1067,37 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 StartDate = startDate,
                 EndDate = endDate
             };
+        }
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
+        private readonly object _disposeLock = new object();
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool dispose)
+        {
+            if (dispose)
+            {
+                lock (_disposeLock)
+                {
+                    foreach (var stream in _openStreams.Values.ToList())
+                    {
+                        var task = CloseLiveStream(stream.Id, CancellationToken.None);
+
+                        Task.WaitAll(task);
+                    }
+
+                    _openStreams.Clear();
+                }
+            }
         }
     }
 }
