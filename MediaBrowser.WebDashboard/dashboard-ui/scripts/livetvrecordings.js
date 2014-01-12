@@ -105,11 +105,6 @@
 
         reload(page);
 
-    }).on('pagehide', "#liveTvRecordingsPage", function () {
-
-        var page = this;
-
-        $('.recordingGroupCollapsible', page).off('collapsibleexpand.lazyload');
     });
 
 })(jQuery, document, ApiClient);

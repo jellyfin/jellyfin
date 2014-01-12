@@ -154,6 +154,23 @@ namespace MediaBrowser.Api.LiveTv
         public string MaxEndDate { get; set; }
     }
 
+    [Route("/LiveTv/Programs/Recommended", "GET")]
+    [Api(Description = "Gets available live tv epgs..")]
+    public class GetRecommendedPrograms : IReturn<QueryResult<ProgramInfoDto>>
+    {
+        [ApiMember(Name = "UserId", Description = "Optional filter by user id.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET,POST")]
+        public string UserId { get; set; }
+
+        [ApiMember(Name = "Limit", Description = "Optional. The maximum number of records to return", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int? Limit { get; set; }
+
+        [ApiMember(Name = "IsAiring", Description = "Optional. Filter by programs that are currently airing, or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool? IsAiring { get; set; }
+
+        [ApiMember(Name = "HasAired", Description = "Optional. Filter by programs that have completed airing, or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool? HasAired { get; set; }
+    }
+
     [Route("/LiveTv/Programs/{Id}", "GET")]
     [Api(Description = "Gets a live tv program")]
     public class GetProgram : IReturn<ProgramInfoDto>
@@ -327,6 +344,21 @@ namespace MediaBrowser.Api.LiveTv
             }
 
             var result = _liveTvManager.GetPrograms(query, CancellationToken.None).Result;
+
+            return ToOptimizedResult(result);
+        }
+
+        public object Get(GetRecommendedPrograms request)
+        {
+            var query = new RecommendedProgramQuery
+            {
+                UserId = request.UserId,
+                IsAiring = request.IsAiring,
+                Limit = request.Limit,
+                HasAired = request.HasAired
+            };
+
+            var result = _liveTvManager.GetRecommendedPrograms(query, CancellationToken.None).Result;
 
             return ToOptimizedResult(result);
         }
