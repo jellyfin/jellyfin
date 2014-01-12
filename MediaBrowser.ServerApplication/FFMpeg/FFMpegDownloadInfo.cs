@@ -1,4 +1,7 @@
 ﻿using System;
+#if __MonoCS__
+using System.Runtime.InteropServices;
+#endif
 
 namespace MediaBrowser.ServerApplication.FFMpeg
 {
@@ -35,20 +38,41 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                             return "7z";
                     }
                     break;
+
+                    #if __MonoCS__
                 case PlatformID.Unix:
-                case PlatformID.MacOSX:
-                    switch (arg)
+                    if (IsRunningOnMac())
                     {
-                        case "Version":
-                            return "20140104";
-                        case "FFMpegFilename":
-                            return "ffmpeg";
-                        case "FFProbeFilename":
-                            return "ffprobe";
-                        case "ArchiveType":
-                            return "gz";
+                        switch (arg)
+                        {
+                            case "Version":
+                                return "20131121";
+                            case "FFMpegFilename":
+                                return "ffmpeg";
+                            case "FFProbeFilename":
+                                return "ffprobe";
+                            case "ArchiveType":
+                                return "gz";
+                        }
+                        break;
                     }
-                    break;
+                    else
+                    {
+                        // Linux
+                        switch (arg)
+                        {
+                            case "Version":
+                                return "20140104";
+                            case "FFMpegFilename":
+                                return "ffmpeg";
+                            case "FFProbeFilename":
+                                return "ffprobe";
+                            case "ArchiveType":
+                                return "gz";
+                        }
+                        break;
+                    }
+                    #endif
             }
             return "";
         }
@@ -66,16 +90,54 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                         "https://www.dropbox.com/s/oghurnp5zh292ry/ffmpeg-20140105-git-70937d9-win32-static.7z?dl=1"
                     };
            
+                    #if __MonoCS__
                 case PlatformID.Unix:
-                case PlatformID.MacOSX:
-                    return new[]
+                    if (IsRunningOnMac())
                     {
-                        "http://ffmpeg.gusari.org/static/32bit/ffmpeg.static.32bit.2014-01-04.tar.gz",
-                        "https://www.dropbox.com/s/b7nkg71sil812hp/ffmpeg.static.32bit.2014-01-04.tar.gz?dl=1"
-                    };
+                        // Mac OS X Intel 64bit
+                        return new[]
+                        {
+                            "https://copy.com/ylAUbbQHYE7x/ffall-2.1.1.7z?download=1"
+                        };
+                    }
+                    else
+                    {
+                        // Linux
+                        return new[]
+                        {
+                            "http://ffmpeg.gusari.org/static/32bit/ffmpeg.static.32bit.2014-01-04.tar.gz",
+                            "https://www.dropbox.com/s/b7nkg71sil812hp/ffmpeg.static.32bit.2014-01-04.tar.gz?dl=1"
+                        };
+                    }
+                    #endif
             }
 
             return new string[] {};
         }
+
+        #if __MonoCS__
+        // From mono/mcs/class/Managed.Windows.Forms/System.Windows.Forms/XplatUI.cs
+        [DllImport ("libc")]
+        static extern int uname (IntPtr buf);
+
+        static bool IsRunningOnMac()
+        {
+            IntPtr buf = IntPtr.Zero;
+            try {
+                buf = Marshal.AllocHGlobal (8192);
+                // This is a hacktastic way of getting sysname from uname ()
+                if (uname (buf) == 0) {
+                    string os = Marshal.PtrToStringAnsi (buf);
+                    if (os == "Darwin")
+                        return true;
+                }
+            } catch {
+            } finally {
+                if (buf != IntPtr.Zero)
+                    Marshal.FreeHGlobal (buf);
+            }
+            return false;
+        }
+        #endif
     }
 }
