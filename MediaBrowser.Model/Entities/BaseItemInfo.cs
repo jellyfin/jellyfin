@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Runtime.Serialization;
 
 namespace MediaBrowser.Model.Entities
@@ -6,6 +7,7 @@ namespace MediaBrowser.Model.Entities
     /// <summary>
     /// This is a stub class containing only basic information about an item
     /// </summary>
+    [DebuggerDisplay("Name = {Name}, ID = {Id}, Type = {Type}")]
     public class BaseItemInfo
     {
         /// <summary>
