@@ -1,8 +1,8 @@
-﻿using System.Threading;
-using MediaBrowser.Model.Entities;
+﻿using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 
 namespace MediaBrowser.Api.Playback
 {
@@ -54,5 +54,9 @@ namespace MediaBrowser.Api.Playback
         public CancellationTokenSource StandardInputCancellationTokenSource { get; set; }
 
         public string LiveTvStreamId { get; set; }
+
+        public int SegmentLength = 10;
+
+        public long? RunTimeTicks;
     }
 }
