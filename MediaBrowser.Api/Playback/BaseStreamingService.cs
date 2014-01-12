@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
-using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -733,7 +732,7 @@ namespace MediaBrowser.Api.Playback
                 return "-";
             }
 
-            var type = InputType.AudioFile;
+            var type = InputType.File;
 
             var inputPath = new[] { state.MediaPath };
 

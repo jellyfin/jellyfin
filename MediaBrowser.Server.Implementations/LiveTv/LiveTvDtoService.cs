@@ -368,7 +368,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return null;
         }
 
-        private const string InternalVersionNumber = "2";
+        private const string InternalVersionNumber = "3";
 
         public Guid GetInternalChannelId(string serviceName, string externalId)
         {

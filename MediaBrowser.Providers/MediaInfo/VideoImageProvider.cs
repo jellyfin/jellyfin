@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -255,7 +254,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 var inputPath = MediaEncoderHelpers.GetInputArgument(video.Path, video.LocationType == LocationType.Remote, video.VideoType, video.IsoType, isoMount, video.PlayableStreamFileNames, out type);
 
-                await _mediaEncoder.ExtractImage(inputPath, type, video.Video3DFormat, imageOffset, path, cancellationToken).ConfigureAwait(false);
+                await _mediaEncoder.ExtractImage(inputPath, type, false, video.Video3DFormat, imageOffset, path, cancellationToken).ConfigureAwait(false);
 
                 video.PrimaryImagePath = path;
             }

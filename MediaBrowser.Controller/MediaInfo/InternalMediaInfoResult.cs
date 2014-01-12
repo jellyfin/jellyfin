@@ -1,12 +1,12 @@
-﻿using MediaBrowser.Model.Entities;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using MediaBrowser.Model.Entities;
 
-namespace MediaBrowser.Common.MediaInfo
+namespace MediaBrowser.Controller.MediaInfo
 {
     /// <summary>
     /// Class MediaInfoResult
     /// </summary>
-    public class MediaInfoResult
+    public class InternalMediaInfoResult
     {
         /// <summary>
         /// Gets or sets the streams.

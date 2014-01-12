@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -58,9 +57,9 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="data">The data.</param>
         /// <returns>Task.</returns>
-        protected Task Fetch(Audio audio, CancellationToken cancellationToken, MediaInfoResult data)
+        protected Task Fetch(Audio audio, CancellationToken cancellationToken, InternalMediaInfoResult data)
         {
-            var mediaStreams = MediaEncoderHelpers.GetMediaStreams(data).ToList();
+            var mediaStreams = MediaEncoderHelpers.GetMediaInfo(data).MediaStreams;
 
             audio.HasEmbeddedImage = mediaStreams.Any(i => i.Type == MediaStreamType.Video);
 

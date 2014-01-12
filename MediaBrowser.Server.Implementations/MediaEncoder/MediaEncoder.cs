@@ -1,6 +1,6 @@
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.IO;
-using MediaBrowser.Common.MediaInfo;
+using MediaBrowser.Controller.MediaInfo;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
@@ -104,10 +104,10 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// <param name="type">The type.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public Task<MediaInfoResult> GetMediaInfo(string[] inputFiles, InputType type,
+        public Task<InternalMediaInfoResult> GetMediaInfo(string[] inputFiles, InputType type,
                                                   CancellationToken cancellationToken)
         {
-            return GetMediaInfoInternal(GetInputArgument(inputFiles, type), type != InputType.AudioFile,
+            return GetMediaInfoInternal(GetInputArgument(inputFiles, type), type != InputType.File,
                                         GetProbeSizeArgument(type), cancellationToken);
         }
 
@@ -125,8 +125,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
             switch (type)
             {
                 case InputType.Dvd:
-                case InputType.VideoFile:
-                case InputType.AudioFile:
+                case InputType.File:
                     inputPath = GetConcatInputArgument(inputFiles);
                     break;
                 case InputType.Bluray:
@@ -173,7 +172,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{MediaInfoResult}.</returns>
         /// <exception cref="System.ApplicationException"></exception>
-        private async Task<MediaInfoResult> GetMediaInfoInternal(string inputPath, bool extractChapters,
+        private async Task<InternalMediaInfoResult> GetMediaInfoInternal(string inputPath, bool extractChapters,
                                                                  string probeSizeArgument,
                                                                  CancellationToken cancellationToken)
         {
@@ -206,7 +205,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
 
             await _ffProbeResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-            MediaInfoResult result;
+            InternalMediaInfoResult result;
             string standardError = null;
 
             try
@@ -236,7 +235,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                     process.BeginErrorReadLine();
                 }
 
-                result = _jsonSerializer.DeserializeFromStream<MediaInfoResult>(process.StandardOutput.BaseStream);
+                result = _jsonSerializer.DeserializeFromStream<InternalMediaInfoResult>(process.StandardOutput.BaseStream);
 
                 if (extractChapters)
                 {
@@ -307,7 +306,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// </summary>
         /// <param name="result">The result.</param>
         /// <param name="standardError">The standard error.</param>
-        private void AddChapters(MediaInfoResult result, string standardError)
+        private void AddChapters(InternalMediaInfoResult result, string standardError)
         {
             var lines = standardError.Split('\n').Select(l => l.TrimStart());
 
@@ -797,19 +796,20 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// </summary>
         /// <param name="inputFiles">The input files.</param>
         /// <param name="type">The type.</param>
+        /// <param name="isAudio">if set to <c>true</c> [is audio].</param>
         /// <param name="threedFormat">The threed format.</param>
         /// <param name="offset">The offset.</param>
         /// <param name="outputPath">The output path.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentException">Must use inputPath list overload</exception>
-        public async Task ExtractImage(string[] inputFiles, InputType type, Video3DFormat? threedFormat, TimeSpan? offset, string outputPath, CancellationToken cancellationToken)
+        public async Task ExtractImage(string[] inputFiles, InputType type, bool isAudio, Video3DFormat? threedFormat, TimeSpan? offset, string outputPath, CancellationToken cancellationToken)
         {
-            var resourcePool = type == InputType.AudioFile ? _audioImageResourcePool : _videoImageResourcePool;
+            var resourcePool = isAudio ? _audioImageResourcePool : _videoImageResourcePool;
 
             var inputArgument = GetInputArgument(inputFiles, type);
 
-            if (type != InputType.AudioFile)
+            if (!isAudio)
             {
                 try
                 {
