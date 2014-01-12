@@ -75,18 +75,23 @@ namespace MediaBrowser.Api.Playback.Hls
         /// <returns>System.Object.</returns>
         protected object ProcessRequest(StreamRequest request)
         {
-            var state = GetState(request, CancellationToken.None).Result;
-
-            return ProcessRequestAsync(state).Result;
+            return ProcessRequestAsync(request).Result;
         }
 
         /// <summary>
         /// Processes the request async.
         /// </summary>
-        /// <param name="state">The state.</param>
+        /// <param name="request">The request.</param>
         /// <returns>Task{System.Object}.</returns>
-        public async Task<object> ProcessRequestAsync(StreamState state)
+        /// <exception cref="ArgumentException">
+        /// A video bitrate is required
+        /// or
+        /// An audio bitrate is required
+        /// </exception>
+        private async Task<object> ProcessRequestAsync(StreamRequest request)
         {
+            var state = GetState(request, CancellationToken.None).Result;
+
             if (!state.VideoRequest.VideoBitRate.HasValue && (!state.VideoRequest.VideoCodec.HasValue || state.VideoRequest.VideoCodec.Value != VideoCodecs.Copy))
             {
                 throw new ArgumentException("A video bitrate is required");
@@ -155,7 +160,7 @@ namespace MediaBrowser.Api.Playback.Hls
         /// <param name="state">The state.</param>
         /// <param name="audioBitrate">The audio bitrate.</param>
         /// <param name="videoBitrate">The video bitrate.</param>
-        private void GetPlaylistBitrates(StreamState state, out int audioBitrate, out int videoBitrate)
+        protected void GetPlaylistBitrates(StreamState state, out int audioBitrate, out int videoBitrate)
         {
             var audioBitrateParam = GetAudioBitrateParam(state);
             var videoBitrateParam = GetVideoBitrateParam(state);
@@ -269,7 +274,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var threads = GetNumberOfThreads(false);
 
-            var args = string.Format("{0}{1} {2} {3} -i {4}{5} -map_metadata -1 -threads {6} {7} {8} -sc_threshold 0 {9} -hls_time 10 -start_number 0 -hls_list_size 1440 \"{10}\"",
+            var args = string.Format("{0}{1} {2} {3} -i {4}{5} -map_metadata -1 -threads {6} {7} {8} -sc_threshold 0 {9} -hls_time {10} -start_number 0 -hls_list_size 1440 \"{11}\"",
                 itsOffset,
                 probeSize,
                 GetUserAgentParam(state.MediaPath),
@@ -280,6 +285,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 GetMapArgs(state),
                 GetVideoArguments(state, performSubtitleConversions),
                 GetAudioArguments(state),
+                state.SegmentLength.ToString(UsCulture),
                 outputPath
                 ).Trim();
 
@@ -291,10 +297,11 @@ namespace MediaBrowser.Api.Playback.Hls
 
                     var bitrate = hlsVideoRequest.BaselineStreamAudioBitRate ?? 64000;
 
-                    var lowBitrateParams = string.Format(" -threads {0} -vn -codec:a:0 libmp3lame -ac 2 -ab {2} -hls_time 10 -start_number 0 -hls_list_size 1440 \"{1}\"",
+                    var lowBitrateParams = string.Format(" -threads {0} -vn -codec:a:0 libmp3lame -ac 2 -ab {1} -hls_time {2} -start_number 0 -hls_list_size 1440 \"{3}\"",
                         threads,
-                        lowBitratePath,
-                        bitrate / 2);
+                        bitrate / 2,
+                        state.SegmentLength.ToString(UsCulture),
+                        lowBitratePath);
 
                     args += " " + lowBitrateParams;
                 }

@@ -1042,6 +1042,7 @@ namespace MediaBrowser.Api.Playback
                 }
 
                 itemId = recording.Id;
+                //state.RunTimeTicks = recording.RunTimeTicks;
                 state.SendInputOverStandardInput = recording.RecordingInfo.Status == RecordingStatus.InProgress;
             }
             else if (string.Equals(request.Type, "Channel", StringComparison.OrdinalIgnoreCase))
@@ -1090,6 +1091,7 @@ namespace MediaBrowser.Api.Playback
                         : video.PlayableStreamFileNames.ToList();
                 }
 
+                state.RunTimeTicks = item.RunTimeTicks;
                 itemId = item.Id;
             }
 

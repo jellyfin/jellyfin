@@ -2,6 +2,7 @@
 using ServiceStack.Web;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -13,6 +14,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer
     public class StreamWriter : IStreamWriter, IHasOptions
     {
         private ILogger Logger { get; set; }
+
+        private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
         
         /// <summary>
         /// Gets or sets the source stream.
@@ -50,6 +53,11 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             Logger = logger;
 
             Options["Content-Type"] = contentType;
+
+            if (source.CanSeek)
+            {
+                Options["Content-Length"] = source.Length.ToString(UsCulture);
+            }
         }
 
         /// <summary>
