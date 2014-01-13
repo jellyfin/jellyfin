@@ -25,11 +25,19 @@
                             <input type="checkbox" id="chkIsAdmin" name="chkIsAdmin" />
                             <label for="chkIsAdmin">Allow this user to manage the server</label>
                         </li>
-                        <li id="fldEnableRemoteControlOtherUsers" style="display: none;">
+                    </ul>
+                    <div id="featureAccessFields">
+                        <h2>Feature Access</h2>
+                        <div>
                             <input type="checkbox" id="chkEnableRemoteControlOtherUsers" name="chkEnableRemoteControlOtherUsers" />
                             <label for="chkEnableRemoteControlOtherUsers">Allow this user to remote control other users</label>
-                        </li>
-                    </ul>
+                        </div>
+                        <div>
+                            <input type="checkbox" id="chkManageLiveTv" name="chkManageLiveTv" />
+                            <label for="chkManageLiveTv">Manage live tv recordings</label>
+                        </div>
+                        <br />
+                    </div>
                     <div id="accessControlDiv" style="display: none" data-role="collapsible">
                         <h2>Advanced Control</h2>
                         <div id="fldIsEnabled" style="margin: 1em 0 2em;">

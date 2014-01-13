@@ -81,6 +81,14 @@ namespace MediaBrowser.Api
             return GetAuthorization(auth);
         }
 
+        public static User GetCurrentUser(IRequest httpReq, IUserManager userManager)
+        {
+            var info = GetAuthorization(httpReq);
+
+            return string.IsNullOrEmpty(info.UserId) ? null : 
+                userManager.GetUserById(new Guid(info.UserId));
+        }
+
         /// <summary>
         /// Gets the authorization.
         /// </summary>

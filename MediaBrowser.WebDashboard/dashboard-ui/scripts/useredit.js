@@ -4,12 +4,12 @@
 
         if (!loggedInUser.Configuration.IsAdministrator) {
             $('#fldIsAdmin', page).hide();
-            $('#fldEnableRemoteControlOtherUsers', page).hide();
+            $('#featureAccessFields', page).hide();
             $('#accessControlDiv', page).hide();
         } else {
             $('#accessControlDiv', page).show();
             $('#fldIsAdmin', page).show();
-            $('#fldEnableRemoteControlOtherUsers', page).show();
+            $('#featureAccessFields', page).show();
         }
 
         Dashboard.setPageTitle(user.Name || "Add User");
@@ -22,6 +22,8 @@
         $('#chkDisabled', page).checked(user.Configuration.IsDisabled || false).checkboxradio("refresh");
         $('#chkIsHidden', page).checked(user.Configuration.IsHidden || false).checkboxradio("refresh");
         $('#chkEnableRemoteControlOtherUsers', page).checked(user.Configuration.EnableRemoteControlOfOtherUsers || false).checkboxradio("refresh");
+
+        $('#chkManageLiveTv', page).checked(user.Configuration.EnableLiveTvManagement || false).checkboxradio("refresh");
 
         Dashboard.hideLoadingMsg();
     }
@@ -52,6 +54,7 @@
         user.Configuration.IsHidden = $('#chkIsHidden', page).checked();
         user.Configuration.IsDisabled = $('#chkDisabled', page).checked();
         user.Configuration.EnableRemoteControlOfOtherUsers = $('#chkEnableRemoteControlOtherUsers', page).checked();
+        user.Configuration.EnableLiveTvManagement = $('#chkManageLiveTv', page).checked();
 
         var userId = getParameterByName("userId");
 

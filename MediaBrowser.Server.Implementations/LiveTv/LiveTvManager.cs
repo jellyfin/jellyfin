@@ -1011,24 +1011,31 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 .FirstOrDefault();
         }
 
+        private async Task<SeriesTimerInfo> GetNewTimerDefaultsInternal(CancellationToken cancellationToken, ProgramInfo program = null)
+        {
+            var info = await ActiveService.GetNewTimerDefaultsAsync(cancellationToken, program).ConfigureAwait(false);
+
+            info.Id = null;
+
+            return info;
+        }
+
         public async Task<SeriesTimerInfoDto> GetNewTimerDefaults(CancellationToken cancellationToken)
         {
-            var service = ActiveService;
+            var info = await GetNewTimerDefaultsInternal(cancellationToken).ConfigureAwait(false);
 
-            var info = await service.GetNewTimerDefaultsAsync(cancellationToken).ConfigureAwait(false);
-
-            var obj = _tvDtoService.GetSeriesTimerInfoDto(info, service, null);
-
-            obj.Id = obj.ExternalId = string.Empty;
+            var obj = _tvDtoService.GetSeriesTimerInfoDto(info, ActiveService, null);
 
             return obj;
         }
 
         public async Task<SeriesTimerInfoDto> GetNewTimerDefaults(string programId, CancellationToken cancellationToken)
         {
-            var info = await GetNewTimerDefaults(cancellationToken).ConfigureAwait(false);
+            var program = GetInternalProgram(programId).ProgramInfo;
+            var programDto = await GetProgram(programId, cancellationToken).ConfigureAwait(false);
 
-            var program = await GetProgram(programId, cancellationToken).ConfigureAwait(false);
+            var defaults = await GetNewTimerDefaultsInternal(cancellationToken, program).ConfigureAwait(false);
+            var info = _tvDtoService.GetSeriesTimerInfoDto(defaults, ActiveService, null);
 
             info.Days = new List<DayOfWeek>
             {
@@ -1039,13 +1046,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             info.Name = program.Name;
             info.ChannelId = program.ChannelId;
-            info.ChannelName = program.ChannelName;
+            info.ChannelName = programDto.ChannelName;
             info.EndDate = program.EndDate;
             info.StartDate = program.StartDate;
             info.Name = program.Name;
             info.Overview = program.Overview;
             info.ProgramId = program.Id;
-            info.ExternalProgramId = program.ExternalId;
+            info.ExternalProgramId = programDto.ExternalId;
 
             return info;
         }

@@ -275,6 +275,21 @@ namespace MediaBrowser.Api.LiveTv
             _userManager = userManager;
         }
 
+        private void AssertUserCanManageLiveTv()
+        {
+            var user = AuthorizationRequestFilterAttribute.GetCurrentUser(Request, _userManager);
+
+            if (user == null)
+            {
+                throw new UnauthorizedAccessException("Anonymous live tv management is not allowed.");
+            }
+
+            if (!user.Configuration.EnableLiveTvManagement)
+            {
+                throw new UnauthorizedAccessException("The current user does not have permission to manage live tv.");
+            }
+        }
+
         public object Get(GetServices request)
         {
             var services = _liveTvManager.Services
@@ -415,6 +430,8 @@ namespace MediaBrowser.Api.LiveTv
 
         public void Delete(DeleteRecording request)
         {
+            AssertUserCanManageLiveTv();
+
             var task = _liveTvManager.DeleteRecording(request.Id);
 
             Task.WaitAll(task);
@@ -422,6 +439,8 @@ namespace MediaBrowser.Api.LiveTv
 
         public void Delete(CancelTimer request)
         {
+            AssertUserCanManageLiveTv();
+
             var task = _liveTvManager.CancelTimer(request.Id);
 
             Task.WaitAll(task);
@@ -429,6 +448,8 @@ namespace MediaBrowser.Api.LiveTv
 
         public void Post(UpdateTimer request)
         {
+            AssertUserCanManageLiveTv();
+
             var task = _liveTvManager.UpdateTimer(request, CancellationToken.None);
 
             Task.WaitAll(task);
@@ -455,6 +476,8 @@ namespace MediaBrowser.Api.LiveTv
 
         public void Delete(CancelSeriesTimer request)
         {
+            AssertUserCanManageLiveTv();
+
             var task = _liveTvManager.CancelSeriesTimer(request.Id);
 
             Task.WaitAll(task);
@@ -462,6 +485,8 @@ namespace MediaBrowser.Api.LiveTv
 
         public void Post(UpdateSeriesTimer request)
         {
+            AssertUserCanManageLiveTv();
+
             var task = _liveTvManager.UpdateSeriesTimer(request, CancellationToken.None);
 
             Task.WaitAll(task);
@@ -494,6 +519,8 @@ namespace MediaBrowser.Api.LiveTv
 
         public void Post(CreateSeriesTimer request)
         {
+            AssertUserCanManageLiveTv();
+
             var task = _liveTvManager.CreateSeriesTimer(request, CancellationToken.None);
 
             Task.WaitAll(task);
@@ -501,6 +528,8 @@ namespace MediaBrowser.Api.LiveTv
 
         public void Post(CreateTimer request)
         {
+            AssertUserCanManageLiveTv();
+
             var task = _liveTvManager.CreateTimer(request, CancellationToken.None);
 
             Task.WaitAll(task);
