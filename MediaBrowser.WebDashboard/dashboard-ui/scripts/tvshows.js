@@ -49,7 +49,8 @@
                     shape: "portrait",
                     context: 'tv',
                     useAverageAspectRatio: true,
-                    showTitle: true
+                    showTitle: true,
+                    centerText: true
                 });
                 $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }

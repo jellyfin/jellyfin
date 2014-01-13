@@ -1234,7 +1234,7 @@
     <Content Include="dashboard-ui\playlist.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\scripts\boxsets.js">
+    <Content Include="dashboard-ui\scripts\moviecollections.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\scripts\gamegenrepage.js">

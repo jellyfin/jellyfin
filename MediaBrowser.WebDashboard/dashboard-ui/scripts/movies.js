@@ -46,7 +46,8 @@
                     shape: "portrait",
                     context: 'movies',
                     useAverageAspectRatio: true,
-                    showTitle: true
+                    showTitle: true,
+                    centerText: true
                 });
                 $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
@@ -57,7 +58,8 @@
                     context: 'movies',
                     useAverageAspectRatio: true,
                     showTitle: true,
-                    timeline: true
+                    timeline: true,
+                    centerText: true
                 });
                 $('.itemsContainer', page).addClass('timelineItemsContainer');
             }

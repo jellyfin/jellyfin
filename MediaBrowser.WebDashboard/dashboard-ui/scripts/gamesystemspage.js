@@ -29,7 +29,7 @@
                 shape: "backdrop",
                 context: 'games',
                 showTitle: true,
-                overlayText: true
+                centerText: true
             });
 
             html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
