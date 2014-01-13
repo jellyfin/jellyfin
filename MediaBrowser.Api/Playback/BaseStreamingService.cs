@@ -387,6 +387,7 @@ namespace MediaBrowser.Api.Playback
 
             var assSubtitleParam = string.Empty;
             var copyTsParam = string.Empty;
+            var yadif = "yadif=0:-1:0,";
 
             var request = state.VideoRequest;
 
@@ -408,7 +409,7 @@ namespace MediaBrowser.Api.Playback
                 var widthParam = request.Width.Value.ToString(UsCulture);
                 var heightParam = request.Height.Value.ToString(UsCulture);
 
-                return string.Format("{3} -vf \"scale=trunc({0}/2)*2:trunc({1}/2)*2{2}\"", widthParam, heightParam, assSubtitleParam, copyTsParam);
+                return string.Format("{4} -vf \"{0}scale=trunc({1}/2)*2:trunc({2}/2)*2{3}\"",yadif, widthParam, heightParam, assSubtitleParam, copyTsParam);
             }
 
             var isH264Output = outputVideoCodec.Equals("libx264", StringComparison.OrdinalIgnoreCase);
@@ -419,8 +420,8 @@ namespace MediaBrowser.Api.Playback
                 var widthParam = request.Width.Value.ToString(UsCulture);
 
                 return isH264Output ?
-                    string.Format("{2} -vf \"scale={0}:trunc(ow/a/2)*2{1}\"", widthParam, assSubtitleParam, copyTsParam) :
-                    string.Format("{2} -vf \"scale={0}:-1{1}\"", widthParam, assSubtitleParam, copyTsParam);
+                    string.Format("{3} -vf \"{0}scale={1}:trunc(ow/a/2)*2{2}\"",yadif, widthParam, assSubtitleParam, copyTsParam) :
+                    string.Format("{3} -vf \"{0}scale={1}:-1{2}\"",yadif, widthParam, assSubtitleParam, copyTsParam);
             }
 
             // If a fixed height was requested
@@ -429,8 +430,8 @@ namespace MediaBrowser.Api.Playback
                 var heightParam = request.Height.Value.ToString(UsCulture);
 
                 return isH264Output ?
-                    string.Format("{2} -vf \"scale=trunc(oh*a*2)/2:{0}{1}\"", heightParam, assSubtitleParam, copyTsParam) :
-                    string.Format("{2} -vf \"scale=-1:{0}{1}\"", heightParam, assSubtitleParam, copyTsParam);
+                    string.Format("{3} -vf \"{0}scale=trunc(oh*a*2)/2:{1}{2}\"",yadif, heightParam, assSubtitleParam, copyTsParam) :
+                    string.Format("{3} -vf \"{0}scale=-1:{1}{2}\"",yadif, heightParam, assSubtitleParam, copyTsParam);
             }
 
             // If a max width was requested
@@ -439,8 +440,8 @@ namespace MediaBrowser.Api.Playback
                 var maxWidthParam = request.MaxWidth.Value.ToString(UsCulture);
 
                 return isH264Output ?
-                    string.Format("{2} -vf \"scale=min(iw\\,{0}):trunc(ow/a/2)*2{1}\"", maxWidthParam, assSubtitleParam, copyTsParam) :
-                    string.Format("{2} -vf \"scale=min(iw\\,{0}):-1{1}\"", maxWidthParam, assSubtitleParam, copyTsParam);
+                    string.Format("{3} -vf \"{0}scale=min(iw\\,{1}):trunc(ow/a/2)*2{2}\"", maxWidthParam, assSubtitleParam, copyTsParam) :
+                    string.Format("{3} -vf \"{0}scale=min(iw\\,{1}):-1{2}\"",yadif, maxWidthParam, assSubtitleParam, copyTsParam);
             }
 
             // If a max height was requested
@@ -449,8 +450,8 @@ namespace MediaBrowser.Api.Playback
                 var maxHeightParam = request.MaxHeight.Value.ToString(UsCulture);
 
                 return isH264Output ?
-                    string.Format("{2} -vf \"scale=trunc(oh*a*2)/2:min(ih\\,{0}){1}\"", maxHeightParam, assSubtitleParam, copyTsParam) :
-                    string.Format("{2} -vf \"scale=-1:min(ih\\,{0}){1}\"", maxHeightParam, assSubtitleParam, copyTsParam);
+                    string.Format("{3} -vf \"{0}scale=trunc(oh*a*2)/2:min(ih\\,{1}){2}\"",yadif, maxHeightParam, assSubtitleParam, copyTsParam) :
+                    string.Format("{3} -vf \"{0}scale=-1:min(ih\\,{1}){2}\"",yadif, maxHeightParam, assSubtitleParam, copyTsParam);
             }
 
             if (state.VideoStream == null)
@@ -473,11 +474,11 @@ namespace MediaBrowser.Api.Playback
                 var widthParam = outputSize.Width.ToString(UsCulture);
                 var heightParam = outputSize.Height.ToString(UsCulture);
 
-                return string.Format("{3} -vf \"scale=trunc({0}/2)*2:trunc({1}/2)*2{2}\"", widthParam, heightParam, assSubtitleParam, copyTsParam);
+                return string.Format("{4} -vf \"{0}scale=trunc({1}/2)*2:trunc({2}/2)*2{3}\"",yadif, widthParam, heightParam, assSubtitleParam, copyTsParam);
             }
 
             // Otherwise use -vf scale since ffmpeg will ensure internally that the aspect ratio is preserved
-            return string.Format("{2} -vf \"scale={0}:-1{1}\"", Convert.ToInt32(outputSize.Width), assSubtitleParam, copyTsParam);
+            return string.Format("{3} -vf \"{0}scale={1}:-1{2}\"",yadif, Convert.ToInt32(outputSize.Width), assSubtitleParam, copyTsParam);
         }
 
         /// <summary>
