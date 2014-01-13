@@ -438,7 +438,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
 
             options = options || {};
             
-            if (options.channelIds) {
+            if (options.channelIds && options.channelIds.length > 1800) {
 
                 return self.ajax({
                     type: "POST",
@@ -456,6 +456,17 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                     dataType: "json"
                 });
             }
+        };
+
+        self.getLiveTvRecommendedPrograms = function (options) {
+
+            options = options || {};
+
+            return self.ajax({
+                type: "GET",
+                url: self.getUrl("LiveTv/Programs/Recommended", options),
+                dataType: "json"
+            });
         };
 
         self.getLiveTvRecordings = function (options) {

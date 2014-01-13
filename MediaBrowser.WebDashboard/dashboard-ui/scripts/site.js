@@ -754,6 +754,10 @@ var Dashboard = {
             href: "plugins.html",
             selected: page.hasClass("pluginConfigurationPage")
         }, {
+            name: "Live TV",
+            href: "livetvsettings.html",
+            selected: page.hasClass("liveTvSettingsPage")
+        }, {
             name: "Users",
             divider: true,
             href: "userprofiles.html",
@@ -1319,6 +1323,9 @@ $(function () {
     footerHtml += '<button id="previousTrackButton" class="mediaButton" title="Previous Track" type="button" onclick="MediaPlayer.previousTrack();" data-icon="previous-track" data-iconpos="notext" data-inline="true">Previous Track</button>';
     footerHtml += '<button id="playButton" class="mediaButton" title="Play" type="button" onclick="MediaPlayer.unpause();" data-icon="play" data-iconpos="notext" data-inline="true">Play</button>';
     footerHtml += '<button id="pauseButton" class="mediaButton" title="Pause" type="button" onclick="MediaPlayer.pause();" data-icon="pause" data-iconpos="notext" data-inline="true">Pause</button>';
+
+    footerHtml += '<div id="mediaElement"></div>';
+
     footerHtml += '<button id="stopButton" class="mediaButton" title="Stop" type="button" onclick="MediaPlayer.stop();" data-icon="stop" data-iconpos="notext" data-inline="true">Stop</button>';
     footerHtml += '<button id="nextTrackButton" class="mediaButton" title="Next Track" type="button" onclick="MediaPlayer.nextTrack();" data-icon="next-track" data-iconpos="notext" data-inline="true">Next Track</button>';
 
@@ -1327,7 +1334,6 @@ $(function () {
     footerHtml += '</div>';
 
     footerHtml += '<div class="currentTime"></div>';
-    footerHtml += '<div id="mediaElement"></div>';
     footerHtml += '<div class="nowPlayingMediaInfo"></div>';
 
     footerHtml += '<button id="muteButton" class="mediaButton" title="Mute" type="button" onclick="MediaPlayer.mute();" data-icon="audio" data-iconpos="notext" data-inline="true">Mute</button>';

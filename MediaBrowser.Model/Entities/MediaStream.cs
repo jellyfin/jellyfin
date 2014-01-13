@@ -1,9 +1,12 @@
-﻿
+﻿using System.Collections.Generic;
+using System.Diagnostics;
+
 namespace MediaBrowser.Model.Entities
 {
     /// <summary>
     /// Class MediaStream
     /// </summary>
+    [DebuggerDisplay("StreamType = {Type}")]
     public class MediaStream
     {
         /// <summary>
@@ -144,5 +147,25 @@ namespace MediaBrowser.Model.Entities
         /// The subtitle
         /// </summary>
         Subtitle
+    }
+
+    public class MediaInfo
+    {
+        /// <summary>
+        /// Gets or sets the media streams.
+        /// </summary>
+        /// <value>The media streams.</value>
+        public List<MediaStream> MediaStreams { get; set; }
+
+        /// <summary>
+        /// Gets or sets the format.
+        /// </summary>
+        /// <value>The format.</value>
+        public string Format { get; set; }
+
+        public MediaInfo()
+        {
+            MediaStreams = new List<MediaStream>();
+        }
     }
 }

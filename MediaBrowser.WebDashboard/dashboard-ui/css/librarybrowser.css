@@ -220,6 +220,8 @@
     display: inline-block;
     background-size: cover;
     vertical-align: top;
+    position: relative;
+    top: -1px;
 }
 
 .halfStarRating {
@@ -238,6 +240,8 @@
     background-position: left center;
     background-repeat: no-repeat;
     vertical-align: top;
+    position: relative;
+    top: -1px;
 }
 
 .starRating + .rottentomatoesicon {

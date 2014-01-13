@@ -124,7 +124,6 @@
             items: result.Items,
             shape: "smallBackdrop",
             showTitle: true,
-            showParentTitle: true,
             overlayText: true,
             coverImage: true
 

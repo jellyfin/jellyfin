@@ -223,7 +223,10 @@ namespace MediaBrowser.Model.Configuration
         public string TranscodingTempPath { get; set; }
 
         public bool EnableAutomaticRestart { get; set; }
-        
+
+
+        public LiveTvOptions LiveTvOptions { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>
@@ -287,6 +290,8 @@ namespace MediaBrowser.Model.Configuration
             {
                  MaxBackdrops = 1
             };
+
+            LiveTvOptions = new LiveTvOptions();
         }
     }
 
@@ -302,5 +307,10 @@ namespace MediaBrowser.Model.Configuration
         HighSpeed,
         HighQuality,
         MaxQuality
+    }
+
+    public class LiveTvOptions
+    {
+        public int? GuideDays { get; set; }
     }
 }

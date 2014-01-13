@@ -125,6 +125,8 @@
     <Compile Include="LiveTv\SeriesTimerInfo.cs" />
     <Compile Include="LiveTv\TimerInfo.cs" />
     <Compile Include="Localization\ILocalizationManager.cs" />
+    <Compile Include="MediaInfo\IMediaEncoder.cs" />
+    <Compile Include="MediaInfo\InternalMediaInfoResult.cs" />
     <Compile Include="Net\IHasResultFactory.cs" />
     <Compile Include="Net\IHttpResultFactory.cs" />
     <Compile Include="Net\IHttpServer.cs" />

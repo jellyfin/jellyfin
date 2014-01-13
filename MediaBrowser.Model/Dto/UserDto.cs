@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics;
 using MediaBrowser.Model.Configuration;
 using System;
 using System.Runtime.Serialization;
@@ -8,6 +9,7 @@ namespace MediaBrowser.Model.Dto
     /// <summary>
     /// Class UserDto
     /// </summary>
+    [DebuggerDisplay("Name = {Name}, ID = {Id}, HasPassword = {HasPassword}")]
     public class UserDto : INotifyPropertyChanged, IItemDto
     {
         /// <summary>

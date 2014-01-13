@@ -1,17 +1,20 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Controller.MediaInfo;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -23,30 +26,37 @@ namespace MediaBrowser.Server.Implementations.LiveTv
     /// <summary>
     /// Class LiveTvManager
     /// </summary>
-    public class LiveTvManager : ILiveTvManager
+    public class LiveTvManager : ILiveTvManager, IDisposable
     {
-        private readonly IServerApplicationPaths _appPaths;
+        private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
         private readonly ILogger _logger;
         private readonly IItemRepository _itemRepo;
         private readonly IUserManager _userManager;
+        private readonly IUserDataManager _userDataManager;
         private readonly ILibraryManager _libraryManager;
+        private readonly IMediaEncoder _mediaEncoder;
 
         private readonly LiveTvDtoService _tvDtoService;
 
         private readonly List<ILiveTvService> _services = new List<ILiveTvService>();
 
+        private readonly ConcurrentDictionary<string, LiveStreamInfo> _openStreams =
+            new ConcurrentDictionary<string, LiveStreamInfo>();
+
         private List<Guid> _channelIdList = new List<Guid>();
         private Dictionary<Guid, LiveTvProgram> _programs = new Dictionary<Guid, LiveTvProgram>();
 
-        public LiveTvManager(IServerApplicationPaths appPaths, IFileSystem fileSystem, ILogger logger, IItemRepository itemRepo, IImageProcessor imageProcessor, IUserDataManager userDataManager, IDtoService dtoService, IUserManager userManager, ILibraryManager libraryManager)
+        public LiveTvManager(IServerConfigurationManager config, IFileSystem fileSystem, ILogger logger, IItemRepository itemRepo, IImageProcessor imageProcessor, IUserDataManager userDataManager, IDtoService dtoService, IUserManager userManager, ILibraryManager libraryManager, IMediaEncoder mediaEncoder)
         {
-            _appPaths = appPaths;
+            _config = config;
             _fileSystem = fileSystem;
             _logger = logger;
             _itemRepo = itemRepo;
             _userManager = userManager;
             _libraryManager = libraryManager;
+            _mediaEncoder = mediaEncoder;
+            _userDataManager = userDataManager;
 
             _tvDtoService = new LiveTvDtoService(dtoService, userDataManager, imageProcessor, logger, _itemRepo);
         }
@@ -180,7 +190,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var recording = recordings.First(i => _tvDtoService.GetInternalRecordingId(service.Name, i.Id) == new Guid(id));
 
-            return await service.GetRecordingStream(recording.Id, cancellationToken).ConfigureAwait(false);
+            var result = await service.GetRecordingStream(recording.Id, cancellationToken).ConfigureAwait(false);
+
+            if (!string.IsNullOrEmpty(result.Id))
+            {
+                _openStreams.AddOrUpdate(result.Id, result, (key, info) => result);
+            }
+
+            return result;
         }
 
         public async Task<LiveStreamInfo> GetChannelStream(string id, CancellationToken cancellationToken)
@@ -189,12 +206,19 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var channel = GetInternalChannel(id);
 
-            return await service.GetChannelStream(channel.ChannelInfo.Id, cancellationToken).ConfigureAwait(false);
+            var result = await service.GetChannelStream(channel.ChannelInfo.Id, cancellationToken).ConfigureAwait(false);
+
+            if (!string.IsNullOrEmpty(result.Id))
+            {
+                _openStreams.AddOrUpdate(result.Id, result, (key, info) => result);
+            }
+
+            return result;
         }
 
         private async Task<LiveTvChannel> GetChannel(ChannelInfo channelInfo, string serviceName, CancellationToken cancellationToken)
         {
-            var path = Path.Combine(_appPaths.ItemsByNamePath, "channels", _fileSystem.GetValidFilename(serviceName), _fileSystem.GetValidFilename(channelInfo.Name));
+            var path = Path.Combine(_config.ApplicationPaths.ItemsByNamePath, "channels", _fileSystem.GetValidFilename(channelInfo.Name));
 
             var fileInfo = new DirectoryInfo(path);
 
@@ -407,7 +431,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
 
             var returnArray = programs
-                .OrderBy(i => i.ProgramInfo.StartDate)
                 .Select(i =>
                 {
                     var channel = GetChannel(i);
@@ -427,6 +450,138 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             };
 
             return result;
+        }
+
+        public async Task<QueryResult<ProgramInfoDto>> GetRecommendedPrograms(RecommendedProgramQuery query, CancellationToken cancellationToken)
+        {
+            IEnumerable<LiveTvProgram> programs = _programs.Values;
+
+            var user = _userManager.GetUserById(new Guid(query.UserId));
+
+            // Avoid implicitly captured closure
+            var currentUser = user;
+            programs = programs.Where(i => i.IsParentalAllowed(currentUser));
+
+            if (query.IsAiring.HasValue)
+            {
+                var val = query.IsAiring.Value;
+                programs = programs.Where(i => i.IsAiring == val);
+            }
+
+            if (query.HasAired.HasValue)
+            {
+                var val = query.HasAired.Value;
+                programs = programs.Where(i => i.HasAired == val);
+            }
+
+            var serviceName = ActiveService.Name;
+
+            var programList = programs.ToList();
+
+            var genres = programList.SelectMany(i => i.Genres)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Select(i => _libraryManager.GetGenre(i))
+                .ToDictionary(i => i.Name, StringComparer.OrdinalIgnoreCase);
+
+            programs = programList.OrderByDescending(i => GetRecommendationScore(i.ProgramInfo, user.Id, serviceName, genres))
+                .ThenBy(i => i.ProgramInfo.StartDate);
+
+            if (query.Limit.HasValue)
+            {
+                programs = programs.Take(query.Limit.Value)
+                    .OrderBy(i => i.ProgramInfo.StartDate);
+            }
+
+            var returnArray = programs
+                .Select(i =>
+                {
+                    var channel = GetChannel(i);
+
+                    var channelName = channel == null ? null : channel.ChannelInfo.Name;
+
+                    return _tvDtoService.GetProgramInfoDto(i, channelName, user);
+                })
+                .ToArray();
+
+            await AddRecordingInfo(returnArray, cancellationToken).ConfigureAwait(false);
+
+            var result = new QueryResult<ProgramInfoDto>
+            {
+                Items = returnArray,
+                TotalRecordCount = returnArray.Length
+            };
+
+            return result;
+        }
+
+        private int GetRecommendationScore(ProgramInfo program, Guid userId, string serviceName, Dictionary<string, Genre> genres)
+        {
+            var score = 0;
+
+            if (program.IsLive)
+            {
+                score++;
+            }
+
+            if (program.IsSeries && !program.IsRepeat)
+            {
+                score++;
+            }
+
+            var internalChannelId = _tvDtoService.GetInternalChannelId(serviceName, program.ChannelId);
+            var channel = GetInternalChannel(internalChannelId);
+
+            var channelUserdata = _userDataManager.GetUserData(userId, channel.GetUserDataKey());
+
+            if ((channelUserdata.Likes ?? false))
+            {
+                score += 2;
+            }
+            else if (!(channelUserdata.Likes ?? true))
+            {
+                score -= 2;
+            }
+
+            if (channelUserdata.IsFavorite)
+            {
+                score += 3;
+            }
+
+            score += GetGenreScore(program.Genres, userId, genres);
+
+            return score;
+        }
+
+        private int GetGenreScore(IEnumerable<string> programGenres, Guid userId, Dictionary<string, Genre> genres)
+        {
+            return programGenres.Select(i =>
+            {
+                var score = 0;
+
+                Genre genre;
+
+                if (genres.TryGetValue(i, out genre))
+                {
+                    var genreUserdata = _userDataManager.GetUserData(userId, genre.GetUserDataKey());
+
+                    if ((genreUserdata.Likes ?? false))
+                    {
+                        score++;
+                    }
+                    else if (!(genreUserdata.Likes ?? true))
+                    {
+                        score--;
+                    }
+
+                    if (genreUserdata.IsFavorite)
+                    {
+                        score += 2;
+                    }
+                }
+
+                return score;
+
+            }).Sum();
         }
 
         private async Task AddRecordingInfo(IEnumerable<ProgramInfoDto> programs, CancellationToken cancellationToken)
@@ -505,6 +660,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             numComplete = 0;
             var programs = new List<LiveTvProgram>();
 
+            var guideDays = GetGuideDays(list.Count);
+
             foreach (var item in list)
             {
                 // Avoid implicitly captured closure
@@ -512,7 +669,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
                 try
                 {
-                    var channelPrograms = await service.GetProgramsAsync(currentChannel.ChannelInfo.Id, cancellationToken).ConfigureAwait(false);
+                    var start = DateTime.UtcNow.AddHours(-1);
+                    var end = start.AddDays(guideDays);
+
+                    var channelPrograms = await service.GetProgramsAsync(currentChannel.ChannelInfo.Id, start, end, cancellationToken).ConfigureAwait(false);
 
                     var programTasks = channelPrograms.Select(program => GetProgram(program, currentChannel.ChannelInfo.ChannelType, service.Name, cancellationToken));
                     var programEntities = await Task.WhenAll(programTasks).ConfigureAwait(false);
@@ -536,6 +696,23 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
 
             _programs = programs.ToDictionary(i => i.Id);
+        }
+
+        private double GetGuideDays(int channelCount)
+        {
+            if (_config.Configuration.LiveTvOptions.GuideDays.HasValue)
+            {
+                return _config.Configuration.LiveTvOptions.GuideDays.Value;
+            }
+
+            var programsPerDay = channelCount * 48;
+
+            const int maxPrograms = 32000;
+
+            var days = Math.Round(((double)maxPrograms) / programsPerDay);
+
+            // No less than 2, no more than 14
+            return Math.Max(2, Math.Min(days, 14));
         }
 
         private async Task<IEnumerable<Tuple<string, ChannelInfo>>> GetChannels(ILiveTvService service, CancellationToken cancellationToken)
@@ -1046,6 +1223,37 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 StartDate = startDate,
                 EndDate = endDate
             };
+        }
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
+        private readonly object _disposeLock = new object();
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool dispose)
+        {
+            if (dispose)
+            {
+                lock (_disposeLock)
+                {
+                    foreach (var stream in _openStreams.Values.ToList())
+                    {
+                        var task = CloseLiveStream(stream.Id, CancellationToken.None);
+
+                        Task.WaitAll(task);
+                    }
+
+                    _openStreams.Clear();
+                }
+            }
         }
     }
 }

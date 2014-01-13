@@ -1,9 +1,9 @@
 ﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.MediaInfo;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -163,7 +163,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                         Directory.CreateDirectory(parentPath);
 
-                        await _mediaEncoder.ExtractImage(new[] { item.Path }, InputType.AudioFile, null, null, path, cancellationToken).ConfigureAwait(false);
+                        await _mediaEncoder.ExtractImage(new[] { item.Path }, InputType.File, true, null, null, path, cancellationToken).ConfigureAwait(false);
                     }
                     finally
                     {
