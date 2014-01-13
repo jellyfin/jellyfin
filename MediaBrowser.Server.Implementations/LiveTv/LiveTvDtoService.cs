@@ -161,7 +161,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 return null;
             }
 
-            return val.Value * 2;
+            return val.Value;
         }
 
         public string GetStatusName(RecordingStatus status)
@@ -222,6 +222,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 IsPremiere = info.IsPremiere,
                 RunTimeTicks = (info.EndDate - info.StartDate).Ticks,
                 LocationType = recording.LocationType,
+                OriginalAirDate = info.OriginalAirDate,
 
                 MediaStreams = _itemRepo.GetMediaStreams(new MediaStreamQuery
                 {

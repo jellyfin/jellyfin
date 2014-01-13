@@ -6,7 +6,6 @@ using MediaBrowser.Model.Logging;
 using ServiceStack.Web;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 
 namespace MediaBrowser.Api

@@ -91,6 +91,12 @@ namespace MediaBrowser.Model.LiveTv
         public DateTime EndDate { get; set; }
 
         /// <summary>
+        /// Gets or sets the original air date.
+        /// </summary>
+        /// <value>The original air date.</value>
+        public DateTime? OriginalAirDate { get; set; }
+
+        /// <summary>
         /// Gets or sets the status.
         /// </summary>
         /// <value>The status.</value>
