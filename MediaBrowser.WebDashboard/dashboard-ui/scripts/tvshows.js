@@ -233,6 +233,7 @@
             } else {
                 reloadItems(page);
             }
+            LibraryBrowser.saveViewSetting('tvshows', view);
         });
 
         $('#chkTrailer', this).on('change', function () {
@@ -335,6 +336,7 @@
 
     }).on('pagebeforeshow', "#tvShowsPage", function () {
 
+        var page = this;
         var limit = LibraryBrowser.getDefaultPageSize();
 
         // If the default page size has changed, the start index will have to be reset
@@ -345,7 +347,14 @@
 
         LibraryBrowser.loadSavedQueryValues('tvshows', query);
 
-        reloadItems(this);
+        LibraryBrowser.getSavedViewSetting('tvshows').done(function (val) {
+
+            if (val) {
+                $('#selectView', page).val(val).selectmenu('refresh').trigger('change');
+            } else {
+                reloadItems(page);
+            }
+        });
 
     }).on('pageshow', "#tvShowsPage", function () {
 

@@ -165,6 +165,7 @@
             } else {
                 reloadItems(page);
             }
+            LibraryBrowser.saveViewSetting('musicalbums', view);
         });
 
         $('.alphabetPicker', page).on('alphaselect', function (e, character) {
@@ -191,8 +192,9 @@
 
     }).on('pagebeforeshow', "#musicAlbumsPage", function () {
 
+        var page = this;
         var limit = LibraryBrowser.getDefaultPageSize();
-
+        
         // If the default page size has changed, the start index will have to be reset
         if (limit != query.Limit) {
             query.Limit = limit;
@@ -201,7 +203,14 @@
 
         LibraryBrowser.loadSavedQueryValues('musicalbums', query);
 
-        reloadItems(this);
+        LibraryBrowser.getSavedViewSetting('musicalbums').done(function (val) {
+
+            if (val) {
+                $('#selectView', page).val(val).selectmenu('refresh').trigger('change');
+            } else {
+                reloadItems(page);
+            }
+        });
 
     }).on('pageshow', "#musicAlbumsPage", function () {
 

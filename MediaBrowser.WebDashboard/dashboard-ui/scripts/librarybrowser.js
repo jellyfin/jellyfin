@@ -45,6 +45,20 @@
 
             localStorage.setItem(key + '_' + Dashboard.getCurrentUserId(), JSON.stringify(values));
         },
+        
+        saveViewSetting: function(key, value) {
+            
+            localStorage.setItem(key + '_' + Dashboard.getCurrentUserId() + '_view', value);
+        },
+
+        getSavedViewSetting: function (key) {
+
+            var deferred = $.Deferred();
+            var val = localStorage.getItem(key + '_' + Dashboard.getCurrentUserId() + '_view');
+
+            deferred.resolveWith(null, [val]);
+            return deferred.promise();
+        },
 
         getDateParamValue: function (date) {
 

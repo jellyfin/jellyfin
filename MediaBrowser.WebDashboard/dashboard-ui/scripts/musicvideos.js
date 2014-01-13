@@ -1,7 +1,5 @@
 ﻿(function ($, document) {
 
-    var view = "Poster";
-
     // The base query options
     var query = {
 

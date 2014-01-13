@@ -178,6 +178,8 @@
             view = this.value;
 
             reloadItems(page);
+
+            LibraryBrowser.saveViewSetting(getParameterByName('parentId'), view);
         });
 
         $('#btnEdit', page).on('click', function () {
@@ -201,6 +203,8 @@
 
     }).on('pageshow', "#itemListPage", function () {
 
+        var page = this;
+        
         query.Limit = LibraryBrowser.getDefaultPageSize();
         query.ParentId = getParameterByName('parentId');
         query.Filters = "";
@@ -209,11 +213,19 @@
         query.StartIndex = 0;
         query.NameStartsWithOrGreater = '';
 
-        LibraryBrowser.loadSavedQueryValues(getParameterByName('parentId'), query);
+        var key = getParameterByName('parentId');
+        LibraryBrowser.loadSavedQueryValues(key, query);
 
-        reloadItems(this);
+        LibraryBrowser.getSavedViewSetting(key).done(function (val) {
 
-        updateFilterControls(this);
+            if (val) {
+                $('#selectView', page).val(val).selectmenu('refresh').trigger('change');
+            } else {
+                reloadItems(page);
+            }
+        });
+
+        updateFilterControls(page);
 
     }).on('pagehide', "#itemListPage", function () {
 

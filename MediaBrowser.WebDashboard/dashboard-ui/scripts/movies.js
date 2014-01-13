@@ -212,6 +212,7 @@
                 reloadItems(page);
             }
 
+            LibraryBrowser.saveViewSetting('movies', view);
         });
 
         $('#chk3D', this).on('change', function () {
@@ -346,6 +347,7 @@
 
     }).on('pagebeforeshow', "#moviesPage", function () {
 
+        var page = this;
         var limit = LibraryBrowser.getDefaultPageSize();
 
         // If the default page size has changed, the start index will have to be reset
@@ -356,7 +358,14 @@
 
         LibraryBrowser.loadSavedQueryValues('movies', query);
 
-        reloadItems(this);
+        LibraryBrowser.getSavedViewSetting('movies').done(function (val) {
+
+            if (val) {
+                $('#selectView', page).val(val).selectmenu('refresh').trigger('change');
+            } else {
+                reloadItems(page);
+            }
+        });
 
     }).on('pageshow', "#moviesPage", function () {
 

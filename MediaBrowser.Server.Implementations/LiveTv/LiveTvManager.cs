@@ -9,6 +9,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaInfo;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Logging;
@@ -956,14 +957,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             if (string.Equals(query.SortBy, "Priority", StringComparison.OrdinalIgnoreCase))
             {
                 timers = query.SortOrder == SortOrder.Descending ?
-                    timers.OrderBy(i => i.Priority).ThenByDescending(i => i.Name) :
-                    timers.OrderByDescending(i => i.Priority).ThenBy(i => i.Name);
+                    timers.OrderBy(i => i.Priority).ThenByStringDescending(i => i.Name) :
+                    timers.OrderByDescending(i => i.Priority).ThenByString(i => i.Name);
             }
             else
             {
                 timers = query.SortOrder == SortOrder.Descending ?
-                    timers.OrderByDescending(i => i.Name) :
-                    timers.OrderBy(i => i.Name);
+                    timers.OrderByStringDescending(i => i.Name) :
+                    timers.OrderByString(i => i.Name);
             }
 
             var returnArray = timers
@@ -1154,7 +1155,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 .ToLookup(i => i.Name, StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
-            groups.AddRange(series.OrderBy(i => i.Key).Select(i => new RecordingGroupDto
+            groups.AddRange(series.OrderByString(i => i.Key).Select(i => new RecordingGroupDto
             {
                 Name = i.Key,
                 RecordingCount = i.Count()
