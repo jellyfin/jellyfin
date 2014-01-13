@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Entities;
+﻿using System.Diagnostics;
+using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -10,6 +11,7 @@ namespace MediaBrowser.Model.Dto
     /// This is strictly used as a data transfer object from the api layer.
     /// This holds information about a BaseItem in a format that is convenient for the client.
     /// </summary>
+    [DebuggerDisplay("Name = {Name}, ID = {Id}, Type = {Type}")]
     public class BaseItemDto : IHasProviderIds, INotifyPropertyChanged, IItemDto
     {
         /// <summary>

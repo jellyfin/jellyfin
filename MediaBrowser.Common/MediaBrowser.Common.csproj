@@ -65,8 +65,6 @@
     <Compile Include="IO\IFileSystem.cs" />
     <Compile Include="IO\ProgressStream.cs" />
     <Compile Include="IO\StreamDefaults.cs" />
-    <Compile Include="MediaInfo\MediaInfoResult.cs" />
-    <Compile Include="MediaInfo\IMediaEncoder.cs" />
     <Compile Include="Net\BasePeriodicWebSocketListener.cs" />
     <Compile Include="Configuration\IApplicationPaths.cs" />
     <Compile Include="Net\HttpRequestOptions.cs" />

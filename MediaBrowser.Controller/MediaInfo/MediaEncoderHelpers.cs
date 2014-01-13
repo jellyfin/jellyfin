@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 
@@ -29,7 +28,7 @@ namespace MediaBrowser.Controller.MediaInfo
         {
             var inputPath = isoMount == null ? new[] { videoPath } : new[] { isoMount.MountedPath };
 
-            type = InputType.VideoFile;
+            type = InputType.File;
 
             switch (videoType)
             {
@@ -87,7 +86,7 @@ namespace MediaBrowser.Controller.MediaInfo
         /// <returns>InputType.</returns>
         public static InputType GetInputType(VideoType? videoType, IsoType? isoType)
         {
-            var type = InputType.AudioFile;
+            var type = InputType.File;
 
             if (videoType.HasValue)
             {
@@ -119,12 +118,22 @@ namespace MediaBrowser.Controller.MediaInfo
             return type;
         }
 
-        public static IEnumerable<MediaStream> GetMediaStreams(MediaInfoResult data)
+        public static Model.Entities.MediaInfo GetMediaInfo(InternalMediaInfoResult data)
         {
             var internalStreams = data.streams ?? new MediaStreamInfo[] { };
 
-            return internalStreams.Select(s => GetMediaStream(s, data.format))
-                .Where(i => i != null);
+            var info = new Model.Entities.MediaInfo();
+
+            info.MediaStreams = internalStreams.Select(s => GetMediaStream(s, data.format))
+                .Where(i => i != null)
+                .ToList();
+
+            if (data.format != null)
+            {
+                info.Format = data.format.format_name;
+            }
+
+            return info;
         }
 
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");

@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.MediaInfo;
-using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.MediaInfo;
 using MediaBrowser.Controller.Providers;
@@ -104,11 +103,11 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <exception cref="System.ArgumentNullException">inputPath
         /// or
         /// cache</exception>
-        protected async Task<MediaInfoResult> GetMediaInfo(BaseItem item, IIsoMount isoMount, CancellationToken cancellationToken)
+        protected async Task<InternalMediaInfoResult> GetMediaInfo(BaseItem item, IIsoMount isoMount, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var type = InputType.AudioFile;
+            var type = InputType.File;
             var inputPath = isoMount == null ? new[] { item.Path } : new[] { isoMount.MountedPath };
 
             var video = item as Video;
@@ -146,7 +145,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// Normalizes the FF probe result.
         /// </summary>
         /// <param name="result">The result.</param>
-        protected void NormalizeFFProbeResult(MediaInfoResult result)
+        protected void NormalizeFFProbeResult(InternalMediaInfoResult result)
         {
             if (result.format != null && result.format.tags != null)
             {

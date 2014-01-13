@@ -1,5 +1,4 @@
 ﻿using DvdLib.Ifo;
-using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Localization;
@@ -310,7 +309,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="data">The data.</param>
         /// <param name="isoMount">The iso mount.</param>
         /// <returns>Task.</returns>
-        protected async Task Fetch(Video video, bool force, BaseProviderInfo providerInfo, CancellationToken cancellationToken, MediaInfoResult data, IIsoMount isoMount)
+        protected async Task Fetch(Video video, bool force, BaseProviderInfo providerInfo, CancellationToken cancellationToken, InternalMediaInfoResult data, IIsoMount isoMount)
         {
             if (data.format != null)
             {
@@ -323,7 +322,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
-            var mediaStreams = MediaEncoderHelpers.GetMediaStreams(data).ToList();
+            var mediaStreams = MediaEncoderHelpers.GetMediaInfo(data).MediaStreams;
 
             var chapters = data.Chapters ?? new List<ChapterInfo>();
 
@@ -370,7 +369,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="video">The video.</param>
         /// <param name="force">if set to <c>true</c> [force].</param>
         /// <param name="data">The data.</param>
-        private void FetchWtvInfo(Video video, bool force, MediaInfoResult data)
+        private void FetchWtvInfo(Video video, bool force, InternalMediaInfoResult data)
         {
             if (data.format == null || data.format.tags == null)
             {

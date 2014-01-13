@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
-using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -178,7 +177,7 @@ namespace MediaBrowser.Controller.MediaInfo
 
                             Directory.CreateDirectory(parentPath);
 
-                            await _encoder.ExtractImage(inputPath, type, video.Video3DFormat, time, path, cancellationToken).ConfigureAwait(false);
+                            await _encoder.ExtractImage(inputPath, type, false, video.Video3DFormat, time, path, cancellationToken).ConfigureAwait(false);
                             chapter.ImagePath = path;
                             changesMade = true;
                         }

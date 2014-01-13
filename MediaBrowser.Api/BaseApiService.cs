@@ -1,13 +1,13 @@
-﻿using System.IO;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Logging;
+using ServiceStack.Web;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using ServiceStack.Web;
 
 namespace MediaBrowser.Api
 {
@@ -50,11 +50,6 @@ namespace MediaBrowser.Api
             where T : class
         {
             return ResultFactory.GetOptimizedResult(Request, result);
-        }
-
-        protected object ToStreamResult(Stream stream, string contentType)
-        {
-            return ResultFactory.GetResult(stream, contentType);
         }
 
         /// <summary>

@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
-using MediaBrowser.Common.MediaInfo;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -734,7 +733,7 @@ namespace MediaBrowser.Api.Playback
                 return "-";
             }
 
-            var type = InputType.AudioFile;
+            var type = InputType.File;
 
             var inputPath = new[] { state.MediaPath };
 
@@ -1044,6 +1043,7 @@ namespace MediaBrowser.Api.Playback
                 }
 
                 itemId = recording.Id;
+                //state.RunTimeTicks = recording.RunTimeTicks;
                 state.SendInputOverStandardInput = recording.RecordingInfo.Status == RecordingStatus.InProgress;
             }
             else if (string.Equals(request.Type, "Channel", StringComparison.OrdinalIgnoreCase))
@@ -1092,6 +1092,7 @@ namespace MediaBrowser.Api.Playback
                         : video.PlayableStreamFileNames.ToList();
                 }
 
+                state.RunTimeTicks = item.RunTimeTicks;
                 itemId = item.Id;
             }
 

@@ -1,10 +1,12 @@
-﻿using MediaBrowser.Model.Entities;
+﻿using System.Diagnostics;
+using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 
 namespace MediaBrowser.Model.Session
 {
+    [DebuggerDisplay("Client = {Client}, Username = {UserName}")]
     public class SessionInfoDto : INotifyPropertyChanged
     {
         /// <summary>
