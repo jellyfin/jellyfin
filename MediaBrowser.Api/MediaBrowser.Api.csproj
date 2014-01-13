@@ -99,7 +99,6 @@
     <Compile Include="Playback\EndlessStreamCopy.cs" />
     <Compile Include="Playback\Hls\AudioHlsService.cs" />
     <Compile Include="Playback\Hls\BaseHlsService.cs" />
-    <Compile Include="Playback\Hls\HlsSegmentResponseFilter.cs" />
     <Compile Include="Playback\Hls\HlsSegmentService.cs" />
     <Compile Include="Playback\Hls\VideoHlsService.cs" />
     <Compile Include="Playback\Progressive\AudioService.cs" />

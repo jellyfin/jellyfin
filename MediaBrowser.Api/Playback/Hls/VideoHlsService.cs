@@ -10,6 +10,8 @@ using MediaBrowser.Model.IO;
 using ServiceStack;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -57,6 +59,28 @@ namespace MediaBrowser.Api.Playback.Hls
     }
 
     /// <summary>
+    /// Class GetHlsVideoSegment
+    /// </summary>
+    [Route("/Videos/{Id}/hls/{PlaylistId}/{SegmentId}.ts", "GET")]
+    [Api(Description = "Gets an Http live streaming segment file. Internal use only.")]
+    public class GetHlsVideoSegment
+    {
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        public string Id { get; set; }
+
+        public string PlaylistId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the segment id.
+        /// </summary>
+        /// <value>The segment id.</value>
+        public string SegmentId { get; set; }
+    }
+
+    /// <summary>
     /// Class VideoHlsService
     /// </summary>
     public class VideoHlsService : BaseHlsService
@@ -85,6 +109,22 @@ namespace MediaBrowser.Api.Playback.Hls
             var result = GetPlaylistAsync(request, "baseline").Result;
 
             return result;
+        }
+
+        /// <summary>
+        /// Gets the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>System.Object.</returns>
+        public object Get(GetHlsVideoSegment request)
+        {
+            var file = request.SegmentId + Path.GetExtension(Request.PathInfo);
+
+            file = Path.Combine(ServerConfigurationManager.ApplicationPaths.TranscodingTempPath, file);
+
+            OnBeginRequest(request.PlaylistId);
+
+            return ResultFactory.GetStaticFileResult(Request, file);
         }
 
         private async Task<object> GetPlaylistAsync(VideoStreamRequest request, string name)
@@ -312,6 +352,31 @@ namespace MediaBrowser.Api.Playback.Hls
         protected override string GetSegmentFileExtension(StreamState state)
         {
             return ".ts";
+        }
+
+        /// <summary>
+        /// Called when [begin request].
+        /// </summary>
+        /// <param name="playlistId">The playlist id.</param>
+        protected void OnBeginRequest(string playlistId)
+        {
+            var normalizedPlaylistId = playlistId.Replace("-low", string.Empty);
+
+            foreach (var playlist in Directory.EnumerateFiles(ServerConfigurationManager.ApplicationPaths.TranscodingTempPath, "*.m3u8")
+                .Where(i => i.IndexOf(normalizedPlaylistId, StringComparison.OrdinalIgnoreCase) != -1)
+                .ToList())
+            {
+                ExtendPlaylistTimer(playlist);
+            }
+        }
+
+        private async void ExtendPlaylistTimer(string playlist)
+        {
+            ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlist, TranscodingJobType.Hls);
+
+            await Task.Delay(20000).ConfigureAwait(false);
+
+            ApiEntryPoint.Instance.OnTranscodeEndRequest(playlist, TranscodingJobType.Hls);
         }
     }
 }

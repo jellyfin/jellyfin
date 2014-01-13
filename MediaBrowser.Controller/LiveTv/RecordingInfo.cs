@@ -103,6 +103,12 @@ namespace MediaBrowser.Controller.LiveTv
         public ProgramAudio? Audio { get; set; }
 
         /// <summary>
+        /// Gets or sets the original air date.
+        /// </summary>
+        /// <value>The original air date.</value>
+        public DateTime? OriginalAirDate { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this instance is movie.
         /// </summary>
         /// <value><c>true</c> if this instance is movie; otherwise, <c>false</c>.</value>

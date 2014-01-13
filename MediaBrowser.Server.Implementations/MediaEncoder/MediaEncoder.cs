@@ -249,11 +249,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                 {
                     process.Kill();
                 }
-                catch (InvalidOperationException ex1)
-                {
-                    _logger.ErrorException("Error killing ffprobe", ex1);
-                }
-                catch (Win32Exception ex1)
+                catch (Exception ex1)
                 {
                     _logger.ErrorException("Error killing ffprobe", ex1);
                 }

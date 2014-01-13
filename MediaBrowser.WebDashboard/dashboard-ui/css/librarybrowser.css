@@ -749,19 +749,13 @@ a.itemTag:hover {
 @media all and (min-width: 1440px) {
 
     .ehsContent {
-        max-width: 980px;
+        max-width: 950px;
     }
 }
 
 @media all and (min-width: 1920px) {
     .ehsContent {
         max-width: 1240px;
-    }
-}
-
-@media all and (min-width: 2300px) {
-    .ehsContent {
-        max-width: 1540px;
     }
 }
 

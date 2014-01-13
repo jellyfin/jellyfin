@@ -31,28 +31,6 @@ namespace MediaBrowser.Api.Playback.Hls
     /// <summary>
     /// Class GetHlsVideoSegment
     /// </summary>
-    [Route("/Videos/{Id}/hls/{PlaylistId}/{SegmentId}.ts", "GET")]
-    [Api(Description = "Gets an Http live streaming segment file. Internal use only.")]
-    public class GetHlsVideoSegment
-    {
-        /// <summary>
-        /// Gets or sets the id.
-        /// </summary>
-        /// <value>The id.</value>
-        public string Id { get; set; }
-
-        public string PlaylistId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the segment id.
-        /// </summary>
-        /// <value>The segment id.</value>
-        public string SegmentId { get; set; }
-    }
-
-    /// <summary>
-    /// Class GetHlsVideoSegment
-    /// </summary>
     [Route("/Videos/{Id}/hls/{PlaylistId}/stream.m3u8", "GET")]
     [Api(Description = "Gets an Http live streaming segment file. Internal use only.")]
     public class GetHlsPlaylist
@@ -97,22 +75,6 @@ namespace MediaBrowser.Api.Playback.Hls
         public void Delete(StopEncodingProcess request)
         {
             ApiEntryPoint.Instance.KillTranscodingJobs(request.DeviceId, true);
-        }
-
-        /// <summary>
-        /// Gets the specified request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>System.Object.</returns>
-        public object Get(GetHlsVideoSegment request)
-        {
-            var file = request.SegmentId + Path.GetExtension(Request.PathInfo);
-
-            file = Path.Combine(_appPaths.TranscodingTempPath, file);
-
-            OnBeginRequest(request.PlaylistId);
-
-            return ResultFactory.GetStaticFileResult(Request, file);
         }
 
         /// <summary>

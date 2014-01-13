@@ -2,6 +2,25 @@
 
     var currentItem;
 
+    function deleteTimer(page, id) {
+
+        Dashboard.confirm("Are you sure you wish to cancel this recording?", "Confirm Recording Cancellation", function (result) {
+
+            if (result) {
+
+                Dashboard.showLoadingMsg();
+
+                ApiClient.cancelLiveTvTimer(id).done(function () {
+
+                    Dashboard.alert('Recording cancelled.');
+
+                    reload(page);
+                });
+            }
+
+        });
+    }
+
     function reload(page) {
 
         Dashboard.showLoadingMsg();
@@ -46,6 +65,12 @@
                 vals.push('livetv');
 
                 ApiClient.sendWebSocketMessage("Context", vals.join('|'));
+            }
+
+            if (item.TimerId) {
+                $('#cancelRecordingButtonContainer', page).show();
+            } else {
+                $('#cancelRecordingButtonContainer', page).hide();
             }
 
             if (!item.TimerId && !item.SeriesTimerId) {
@@ -99,6 +124,11 @@
                 var userdata = channel.UserData || {};
                 LibraryBrowser.showPlayMenu(this, channel.Id, channel.Type, channel.MediaType, userdata.PlaybackPositionTicks);
             });
+        });
+
+        $('#btnCancelRecording', page).on('click', function () {
+
+            deleteTimer(page, currentItem.TimerId);
         });
 
     }).on('pageshow', "#liveTvProgramPage", function () {
