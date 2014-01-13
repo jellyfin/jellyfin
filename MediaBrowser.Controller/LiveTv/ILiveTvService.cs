@@ -119,12 +119,13 @@ namespace MediaBrowser.Controller.LiveTv
         Task<IEnumerable<TimerInfo>> GetTimersAsync(CancellationToken cancellationToken);
 
         /// <summary>
-        /// Gets the timer defaults asynchronous.
+        /// Gets the new timer defaults asynchronous.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{TimerInfo}.</returns>
-        Task<SeriesTimerInfo> GetNewTimerDefaultsAsync(CancellationToken cancellationToken);
-
+        /// <param name="program">The program.</param>
+        /// <returns>Task{SeriesTimerInfo}.</returns>
+        Task<SeriesTimerInfo> GetNewTimerDefaultsAsync(CancellationToken cancellationToken, ProgramInfo program = null);
+        
         /// <summary>
         /// Gets the series timers asynchronous.
         /// </summary>

@@ -67,6 +67,8 @@ namespace MediaBrowser.Model.Configuration
         public bool BlockUnratedGames { get; set; }
         public bool BlockUnratedBooks { get; set; }
 
+        public bool EnableLiveTvManagement { get; set; }
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="UserConfiguration" /> class.
         /// </summary>
@@ -75,6 +77,8 @@ namespace MediaBrowser.Model.Configuration
             IsAdministrator = true;
             EnableRemoteControlOfOtherUsers = true;
             BlockNotRated = false;
+
+            EnableLiveTvManagement = true;
         }
     }
 }

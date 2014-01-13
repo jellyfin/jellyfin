@@ -378,6 +378,17 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
+        self.getAuthorizedFeatures = function (options) {
+
+            var url = self.getUrl("Users/AuthorizedFeatures", options || {});
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
         self.getLiveTvServices = function (options) {
 
             var url = self.getUrl("LiveTv/Services", options || {});
