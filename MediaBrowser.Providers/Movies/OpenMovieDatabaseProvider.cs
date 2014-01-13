@@ -172,6 +172,11 @@ namespace MediaBrowser.Providers.Movies
                     item.CommunityRating = imdbRating;
                 }
 
+                if (!string.IsNullOrEmpty(result.Website))
+                {
+                    item.HomePageUrl = result.Website;
+                }
+
                 ParseAdditionalMetadata(item, result);
             }
 
@@ -251,6 +256,11 @@ namespace MediaBrowser.Providers.Movies
             public string Production { get; set; }
             public string Website { get; set; }
             public string Response { get; set; }
+
+            public string Language { get; set; }
+            public string Country { get; set; }
+            public string Awards { get; set; }
+            public string Metascore { get; set; }
         }
     }
 }
