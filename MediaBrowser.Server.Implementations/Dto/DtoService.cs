@@ -131,11 +131,10 @@ namespace MediaBrowser.Server.Implementations.Dto
         {
             if (user == null)
             {
-                //counts = item.ItemCounts;
                 return;
             }
 
-            ItemByNameCounts counts = item.GetItemByNameCounts(user.Id) ?? new ItemByNameCounts();
+            var counts = item.GetItemByNameCounts(user.Id) ?? new ItemByNameCounts();
 
             dto.ChildCount = counts.TotalCount;
 
@@ -1244,7 +1243,7 @@ namespace MediaBrowser.Server.Implementations.Dto
         /// <param name="dto">The dto.</param>
         /// <param name="item">The item.</param>
         /// <returns>Task.</returns>
-        private void AttachPrimaryImageAspectRatio(IItemDto dto, BaseItem item)
+        public void AttachPrimaryImageAspectRatio(IItemDto dto, IHasImages item)
         {
             var path = item.PrimaryImagePath;
 

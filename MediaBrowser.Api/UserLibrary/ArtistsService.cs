@@ -114,5 +114,10 @@ namespace MediaBrowser.Api.UserLibrary
             return LibraryManager.GetAllArtists(items)
                 .Select(name => LibraryManager.GetArtist(name));
         }
+
+        protected override IEnumerable<BaseItem> GetLibraryItems(MusicArtist item, IEnumerable<BaseItem> libraryItems)
+        {
+            return libraryItems.OfType<IHasArtist>().Where(i => i.HasArtist(item.Name)).Cast<BaseItem>();
+        }
     }
 }

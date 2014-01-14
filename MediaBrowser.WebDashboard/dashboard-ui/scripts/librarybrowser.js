@@ -502,7 +502,7 @@
             var isPlaying = MediaPlayer.isPlaying();
 
             if (!isPlaying && !resumePositionTicks && mediaType != "Audio") {
-                MediaPlayer.playById(itemId, itemType);
+                MediaPlayer.playById(itemId);
                 return;
             }
 
@@ -516,7 +516,7 @@
             if (itemType == "MusicArtist") {
                 html += '<li><a href="#" onclick="MediaPlayer.playArtist(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Play</a></li>';
             } else if (itemType != "MusicGenre") {
-                html += '<li><a href="#" onclick="MediaPlayer.playById(\'' + itemId + '\', \'' + itemType + '\');LibraryBrowser.closePlayMenu();">Play</a></li>';
+                html += '<li><a href="#" onclick="MediaPlayer.playById(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Play</a></li>';
             }
 
             if (itemType == "Audio") {
@@ -536,7 +536,7 @@
             }
 
             if (resumePositionTicks) {
-                html += '<li><a href="#" onclick="MediaPlayer.playById(\'' + itemId + '\', \'' + itemType + '\', ' + resumePositionTicks + ');LibraryBrowser.closePlayMenu();">Resume</a></li>';
+                html += '<li><a href="#" onclick="MediaPlayer.playById(\'' + itemId + '\', ' + resumePositionTicks + ');LibraryBrowser.closePlayMenu();">Resume</a></li>';
             }
 
             if (isPlaying) {
@@ -2442,17 +2442,17 @@
         html += LibraryBrowser.getMiscInfoHtml(item);
         html += '</p>';
 
-        html += '<p>';
+        html += '<p style="margin: 1.25em 0;">';
         html += '<span class="itemCommunityRating">';
         html += LibraryBrowser.getRatingHtml(item);
         html += '</span>';
         html += '</p>';
 
-        //html += '<p>';
-        //html += '<span class="userDataIcons">';
-        //html += LibraryBrowser.getUserDataIconsHtml(item);
-        //html += '</span>';
-        //html += '</p>';
+        html += '<p style="margin: 1.25em 0;">';
+        html += '<span class="userDataIcons">';
+        html += LibraryBrowser.getUserDataIconsHtml(item);
+        html += '</span>';
+        html += '</p>';
 
         html += '<p class="itemOverlayHtml">';
         html += (item.OverviewHtml || item.Overview || '');
@@ -2494,14 +2494,26 @@
 
         var popup = $('.itemFlyout').on('mouseenter', onOverlayMouseOver).on('mouseleave', onOverlayMouseOut).popup({ positionTo: elem }).trigger('create').popup("open").on("popupafterclose", function () {
 
-            $(elem).off('mouseleave.overlay', onHoverOut);
             $(this).off("popupafterclose").off("mouseenter").off("mouseleave").remove();
         });
 
         popup.parents().prev('.ui-popup-screen').remove();
         currentPosterItem = elem;
+    }
 
-        $(elem).on('mouseleave.overlay', onHoverOut).on('click.overlay', hideOverlay);
+    function onPosterItemClicked() {
+
+        if (showOverlayTimeout) {
+            clearTimeout(showOverlayTimeout);
+            showOverlayTimeout = null;
+        }
+
+        if (hideOverlayTimeout) {
+            clearTimeout(hideOverlayTimeout);
+            hideOverlayTimeout = null;
+        }
+
+        hideOverlay();
     }
 
     function hideOverlay() {
@@ -2510,7 +2522,7 @@
 
         if (currentPosterItem) {
 
-            $(currentPosterItem).off('mouseleave.overlay').off('click.overlay');
+            $(currentPosterItem).off('click.overlay');
             currentPosterItem = null;
         }
     }
@@ -2535,7 +2547,7 @@
         startHideOverlayTimer();
     }
 
-    $.fn.createPosterItemHoverMenu = function (items) {
+    $.fn.createPosterItemHoverMenu = function () {
 
         function onShowTimerExpired(elem) {
 
@@ -2573,14 +2585,19 @@
             }, 600);
         }
 
-        return this.hoverIntent({
-            over: onHoverIn,
-            out: function () {
+        // https://hacks.mozilla.org/2013/04/detecting-touch-its-the-why-not-the-how/
+        
+        if (('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0)) {
+            /* browser with either Touch Events of Pointer Events
+               running on touch-capable device */
+            return this;
+        }
 
-            },
-            selector: '.posterItem'
+        return this;
 
-        });
+        return this.on('mouseenter', '.posterItem', onHoverIn)
+            .on('mouseleave', '.posterItem', onHoverOut)
+            .on('click', '.posterItem', onPosterItemClicked);
     };
 
 })(jQuery, document, window);

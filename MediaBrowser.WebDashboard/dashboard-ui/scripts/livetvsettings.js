@@ -1,8 +1,8 @@
 ﻿(function ($, document, window) {
 
-    function loadPage(page, config, tvServices) {
+    function loadPage(page, config, liveTvInfo) {
 
-        if (tvServices.length) {
+        if (liveTvInfo.Services.length) {
 
             $('.liveTvSettingsForm', page).show();
             $('.noLiveTvServices', page).hide();
@@ -25,7 +25,7 @@
 
         var promise1 = ApiClient.getServerConfiguration();
 
-        var promise2 = ApiClient.getLiveTvServices();
+        var promise2 = ApiClient.getLiveTvInfo();
 
         $.when(promise1, promise2).done(function (response1, response2) {
 

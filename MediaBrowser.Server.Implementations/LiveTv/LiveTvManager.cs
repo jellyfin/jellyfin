@@ -1045,13 +1045,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             info.DayPattern = _tvDtoService.GetDayPattern(info.Days);
 
             info.Name = program.Name;
-            info.ChannelId = program.ChannelId;
+            info.ChannelId = programDto.ChannelId;
             info.ChannelName = programDto.ChannelName;
             info.EndDate = program.EndDate;
             info.StartDate = program.StartDate;
             info.Name = program.Name;
             info.Overview = program.Overview;
-            info.ProgramId = program.Id;
+            info.ProgramId = programDto.Id;
             info.ExternalProgramId = programDto.ExternalId;
 
             return info;

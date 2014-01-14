@@ -884,7 +884,7 @@ namespace MediaBrowser.Controller.Entities
             // First get using the cached Id
             if (info.ItemId != Guid.Empty)
             {
-                item = LibraryManager.GetItemById(info.ItemId);
+                item = LibraryManager.GetItemById(info.ItemId) as BaseItem;
             }
 
             // If still null, search by path

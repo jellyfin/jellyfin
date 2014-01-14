@@ -14,7 +14,7 @@
 
                     Dashboard.alert('Recording cancelled.');
 
-                    reload(page);
+                    Dashboard.navigate('livetvtimers.html');
                 });
             }
 

@@ -1,11 +1,11 @@
 ﻿(function (window, document, $) {
 
     var itemCountsPromise;
-    var liveTvServicesPromise;
+    var liveTvInfoPromise;
 
     function ensurePromises() {
         itemCountsPromise = itemCountsPromise || ApiClient.getItemCounts(Dashboard.getCurrentUserId());
-        liveTvServicesPromise = liveTvServicesPromise || ApiClient.getLiveTvServices();
+        liveTvInfoPromise = liveTvInfoPromise || ApiClient.getLiveTvInfo();
     }
 
     function renderHeader(page, user) {
@@ -56,7 +56,7 @@
         $('.viewMenuBar', page).trigger('create');
     }
 
-    function insertViews(page, user, counts, liveTvServices) {
+    function insertViews(page, user, counts, liveTvInfo) {
 
         var html = '';
 
@@ -74,7 +74,7 @@
             html += '<a class="viewMenuLink viewMenuTextLink desktopViewMenuLink' + (view == 'tv' ? selectedCssClass : '') + '" href="tvrecommended.html">' + (view == 'tv' ? selectedHtml : '') + '<span class="viewName">TV</span></a>';
         }
 
-        if (liveTvServices.length) {
+        if (liveTvInfo.ActiveServiceName) {
             html += '<a class="viewMenuLink viewMenuTextLink desktopViewMenuLink' + (view == 'livetv' ? selectedCssClass : '') + '" href="livetvsuggested.html">' + (view == 'livetv' ? selectedHtml : '') + '<span class="viewName">Live TV</span></a>';
         }
 
@@ -93,18 +93,18 @@
 
         ensurePromises();
 
-        $.when(itemCountsPromise, liveTvServicesPromise).done(function (response1, response2) {
+        $.when(itemCountsPromise, liveTvInfoPromise).done(function (response1, response2) {
 
             var counts = response1[0];
-            var liveTvServices = response2[0];
+            var liveTvInfo = response2[0];
 
-            var panel = getLibraryMenu(page, counts, liveTvServices);
+            var panel = getLibraryMenu(page, counts, liveTvInfo);
 
             $(panel).panel('toggle');
         });
     }
 
-    function getLibraryMenu(page, counts, liveTvServices) {
+    function getLibraryMenu(page, counts, liveTvInfo) {
 
         var panel = $('#libraryPanel', page);
 
@@ -146,7 +146,7 @@
                 ]);
             }
 
-            if (liveTvServices.length) {
+            if (liveTvInfo.ActiveServiceName) {
                 html += getCollapsibleHtml('Live TV', [
 
                     { text: 'Suggested', href: 'livetvsuggested.html' },
@@ -249,12 +249,12 @@
 
                 ensurePromises();
 
-                $.when(itemCountsPromise, liveTvServicesPromise).done(function (response1, response2) {
+                $.when(itemCountsPromise, liveTvInfoPromise).done(function (response1, response2) {
 
                     var counts = response1[0];
-                    var liveTvServices = response2[0];
+                    var liveTvInfo = response2[0];
 
-                    insertViews(page, user, counts, liveTvServices);
+                    insertViews(page, user, counts, liveTvInfo);
 
 
                 });

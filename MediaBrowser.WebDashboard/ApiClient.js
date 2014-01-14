@@ -378,20 +378,9 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.getAuthorizedFeatures = function (options) {
+        self.getLiveTvInfo = function (options) {
 
-            var url = self.getUrl("Users/AuthorizedFeatures", options || {});
-
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
-        };
-
-        self.getLiveTvServices = function (options) {
-
-            var url = self.getUrl("LiveTv/Services", options || {});
+            var url = self.getUrl("LiveTv/Info", options || {});
 
             return self.ajax({
                 type: "GET",
@@ -2705,22 +2694,6 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             }
 
             var url = self.getUrl("Items/" + item.Id);
-
-            return self.ajax({
-                type: "POST",
-                url: url,
-                data: JSON.stringify(item),
-                contentType: "application/json"
-            });
-        };
-
-        self.updateLiveTvChannel = function (item) {
-
-            if (!item) {
-                throw new Error("null item");
-            }
-
-            var url = self.getUrl("LiveTv/Channels/" + item.Id);
 
             return self.ajax({
                 type: "POST",

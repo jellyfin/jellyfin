@@ -8,7 +8,7 @@ namespace MediaBrowser.Model.LiveTv
     /// <summary>
     /// Class ChannelInfoDto
     /// </summary>
-    public class ChannelInfoDto
+    public class ChannelInfoDto : IItemDto
     {
         /// <summary>
         /// Gets or sets the name.
@@ -76,6 +76,18 @@ namespace MediaBrowser.Model.LiveTv
         /// <value>The now playing program.</value>
         public ProgramInfoDto CurrentProgram { get; set; }
 
+        /// <summary>
+        /// Gets or sets the primary image aspect ratio, after image enhancements.
+        /// </summary>
+        /// <value>The primary image aspect ratio.</value>
+        public double? PrimaryImageAspectRatio { get; set; }
+
+        /// <summary>
+        /// Gets or sets the primary image aspect ratio, before image enhancements.
+        /// </summary>
+        /// <value>The original primary image aspect ratio.</value>
+        public double? OriginalPrimaryImageAspectRatio { get; set; }
+        
         public ChannelInfoDto()
         {
             ImageTags = new Dictionary<ImageType, Guid>();

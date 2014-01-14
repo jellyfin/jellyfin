@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
@@ -108,6 +109,11 @@ namespace MediaBrowser.Api.UserLibrary
                 .SelectMany(i => i.Genres)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .Select(name => LibraryManager.GetGameGenre(name));
+        }
+
+        protected override IEnumerable<BaseItem> GetLibraryItems(GameGenre item, IEnumerable<BaseItem> libraryItems)
+        {
+            return libraryItems.Where(i => (i is Game) && i.Genres.Contains(item.Name, StringComparer.OrdinalIgnoreCase));
         }
     }
 }

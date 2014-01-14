@@ -14,14 +14,6 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Api
 {
-    [Route("/LiveTv/Channels/{ChannelId}", "POST")]
-    [Api(("Updates an item"))]
-    public class UpdateChannel : BaseItemDto, IReturnVoid
-    {
-        [ApiMember(Name = "ChannelId", Description = "The id of the channel", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public string ChannelId { get; set; }
-    }
-
     [Route("/Items/{ItemId}", "POST")]
     [Api(("Updates an item"))]
     public class UpdateItem : BaseItemDto, IReturnVoid
@@ -98,13 +90,6 @@ namespace MediaBrowser.Api
             Task.WaitAll(task);
         }
 
-        public void Post(UpdateChannel request)
-        {
-            var task = UpdateItem(request);
-
-            Task.WaitAll(task);
-        }
-
         private async Task UpdateItem(UpdateItem request)
         {
             var item = _dtoService.GetItemByDtoId(request.ItemId);
@@ -138,15 +123,6 @@ namespace MediaBrowser.Api
         private async Task UpdateItem(UpdatePerson request)
         {
             var item = GetPerson(request.PersonName, _libraryManager);
-
-            UpdateItem(request, item);
-
-            await _libraryManager.UpdateItem(item, ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
-        }
-
-        private async Task UpdateItem(UpdateChannel request)
-        {
-            var item = _liveTv.GetInternalChannel(request.Id);
 
             UpdateItem(request, item);
 

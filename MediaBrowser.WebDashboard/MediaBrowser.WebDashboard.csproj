@@ -496,9 +496,6 @@
     <Content Include="dashboard-ui\thirdparty\jquery-2.0.3.min.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquery.hoverIntent.minified.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="dashboard-ui\thirdparty\jquery.infinite-scroll-helper.min.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

@@ -114,5 +114,19 @@ namespace MediaBrowser.Api.UserLibrary
                 .Distinct()
                 .Select(year => LibraryManager.GetYear(year));
         }
+
+        protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
+        
+        protected override IEnumerable<BaseItem> GetLibraryItems(Year item, IEnumerable<BaseItem> libraryItems)
+        {
+            int year;
+
+            if (!int.TryParse(item.Name, NumberStyles.Integer, UsCulture, out year))
+            {
+                return libraryItems;
+            }
+
+            return libraryItems.Where(i => i.ProductionYear.HasValue && i.ProductionYear.Value == year);
+        }
     }
 }

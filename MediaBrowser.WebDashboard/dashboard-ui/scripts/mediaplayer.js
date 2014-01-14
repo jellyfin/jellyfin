@@ -363,7 +363,7 @@
 
                 if (!$(this).hasClass('selectedMediaFlyoutOption')) {
                     var channelId = this.getAttribute('data-channelid');
-                    self.playById(channelId, 'Channel');
+                    self.playById(channelId);
                 }
 
                 hideFlyout($('#channelsFlyout'));
@@ -1229,29 +1229,7 @@
             return ApiClient.getItems(userId, query);
         };
 
-        self.playById = function (id, itemType, startPositionTicks) {
-
-            if (itemType == "Recording") {
-
-                ApiClient.getLiveTvRecording(id, Dashboard.getCurrentUserId()).done(function (item) {
-
-                    self.play([item], startPositionTicks);
-
-                });
-
-                return;
-            }
-
-            if (itemType == "Channel") {
-
-                ApiClient.getLiveTvChannel(id, Dashboard.getCurrentUserId()).done(function (item) {
-
-                    self.play([item], startPositionTicks);
-
-                });
-
-                return;
-            }
+        self.playById = function (id, startPositionTicks) {
 
             ApiClient.getItem(Dashboard.getCurrentUserId(), id).done(function (item) {
 

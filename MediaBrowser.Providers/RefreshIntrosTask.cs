@@ -89,7 +89,7 @@ namespace MediaBrowser.Providers
                 return;
             }
 
-            var dbItem = _libraryManager.RetrieveItem(item.Id);
+            var dbItem = _libraryManager.GetItemById(item.Id);
             var isNewItem = false;
 
             if (dbItem != null)

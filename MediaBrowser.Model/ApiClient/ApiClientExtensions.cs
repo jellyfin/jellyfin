@@ -1,7 +1,7 @@
-﻿using System.IO;
+﻿using MediaBrowser.Model.Dto;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Dto;
 
 namespace MediaBrowser.Model.ApiClient
 {

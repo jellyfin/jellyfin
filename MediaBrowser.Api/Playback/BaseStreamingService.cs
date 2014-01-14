@@ -1004,9 +1004,9 @@ namespace MediaBrowser.Api.Playback
                 RequestedUrl = url
             };
 
-            Guid itemId;
+            var item = DtoService.GetItemByDtoId(request.Id);
 
-            if (string.Equals(request.Type, "Recording", StringComparison.OrdinalIgnoreCase))
+            if (item is ILiveTvRecording)
             {
                 var recording = await LiveTvManager.GetInternalRecording(request.Id, cancellationToken).ConfigureAwait(false);
 
@@ -1042,11 +1042,10 @@ namespace MediaBrowser.Api.Playback
                     }
                 }
 
-                itemId = recording.Id;
                 //state.RunTimeTicks = recording.RunTimeTicks;
                 state.SendInputOverStandardInput = recording.RecordingInfo.Status == RecordingStatus.InProgress;
             }
-            else if (string.Equals(request.Type, "Channel", StringComparison.OrdinalIgnoreCase))
+            else if (item is LiveTvChannel)
             {
                 var channel = LiveTvManager.GetInternalChannel(request.Id);
 
@@ -1069,13 +1068,10 @@ namespace MediaBrowser.Api.Playback
                     state.IsRemote = true;
                 }
 
-                itemId = channel.Id;
                 state.SendInputOverStandardInput = true;
             }
             else
             {
-                var item = DtoService.GetItemByDtoId(request.Id);
-
                 state.MediaPath = item.Path;
                 state.IsRemote = item.LocationType == LocationType.Remote;
 
@@ -1093,14 +1089,13 @@ namespace MediaBrowser.Api.Playback
                 }
 
                 state.RunTimeTicks = item.RunTimeTicks;
-                itemId = item.Id;
             }
 
             var videoRequest = request as VideoStreamRequest;
 
             var mediaStreams = ItemRepository.GetMediaStreams(new MediaStreamQuery
             {
-                ItemId = itemId
+                ItemId = item.Id
 
             }).ToList();
 
