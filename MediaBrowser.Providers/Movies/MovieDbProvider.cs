@@ -847,7 +847,7 @@ namespace MediaBrowser.Providers.Movies
                 }
             }
 
-            if (movieData.keywords != null && movieData.keywords.keywords != null && !movie.LockedFields.Contains(MetadataFields.Tags))
+            if (movieData.keywords != null && movieData.keywords.keywords != null && !movie.LockedFields.Contains(MetadataFields.Keywords))
             {
                 var hasTags = movie as IHasKeywords;
                 if (hasTags != null)

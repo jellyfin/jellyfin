@@ -15,6 +15,10 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         Genres,
         /// <summary>
+        /// The keywords
+        /// </summary>
+        Keywords,
+        /// <summary>
         /// The production locations
         /// </summary>
         ProductionLocations,
