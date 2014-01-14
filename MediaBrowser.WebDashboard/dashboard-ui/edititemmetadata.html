@@ -334,7 +334,6 @@
                                 <div data-role="fieldcontain" id="fldDisplayOrder" class="fldDisplaySetting">
                                     <label for="selectDisplayOrder" id="labelDisplayOrder">Display order:</label>
                                     <select id="selectDisplayOrder" data-mini="true">
-                                        
                                     </select>
                                 </div>
                             </div>
@@ -373,6 +372,18 @@
                                     <a data-role="button" data-theme="b" data-inline="true" data-mini="true" data-icon="plus" data-iconpos="notext" onclick="EditItemMetadataPage.addElementToEditableListview(this)" style="vertical-align: top;">Add</a>
                                 </div>
                                 <ul data-role="listview" data-inset="true" data-split-icon="delete" id="listTags"></ul>
+                            </div>
+                        </div>
+                        <div data-mini="true" data-role="collapsible" id="keywordsCollapsible" style="display: none;">
+                            <h3>Keywords</h3>
+                            <div data-role="editableListviewContainer">
+                                <div data-role="fieldcontain">
+                                    <div style="display: inline-block; width: 80%;">
+                                        <input type="text" data-mini="true" />
+                                    </div>
+                                    <a data-role="button" data-theme="b" data-inline="true" data-mini="true" data-icon="plus" data-iconpos="notext" onclick="EditItemMetadataPage.addElementToEditableListview(this)" style="vertical-align: top;">Add</a>
+                                </div>
+                                <ul data-role="listview" data-inset="true" data-split-icon="delete" id="listKeywords"></ul>
                             </div>
                         </div>
                         <div data-role="collapsible" data-mini="true" id="metadataSettingsCollapsible" style="display: none;">

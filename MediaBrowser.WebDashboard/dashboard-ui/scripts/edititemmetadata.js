@@ -716,6 +716,12 @@
             $('.fldRefresh', page).show();
         }
 
+        if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "BoxSet") {
+            $('#keywordsCollapsible', page).show();
+        } else {
+            $('#keywordsCollapsible', page).hide();
+        }
+
         if (item.MediaType == "Video" && item.Type != "Channel") {
             $('#fldSourceType', page).hide();
         } else {
@@ -831,6 +837,8 @@
         populateListView($('#listStudios', page), (item.Studios || []).map(function (element) { return element.Name || ''; }));
 
         populateListView($('#listTags', page), item.Tags);
+        populateListView($('#listKeywords', page), item.Keywords);
+
         var enableInternetProviders = (item.EnableInternetProviders || false);
         $("#enableInternetProviders", page).attr('checked', enableInternetProviders).checkboxradio('refresh');
         if (enableInternetProviders) {
@@ -1091,6 +1099,7 @@
 
         metadatafields.push({ name: "Studios" });
         metadatafields.push({ name: "Tags" });
+        metadatafields.push({ name: "Keywords" });
         metadatafields.push({ name: "Images" });
         metadatafields.push({ name: "Backdrops" });
 
@@ -1150,6 +1159,7 @@
                 AirTime: convertTo12HourFormat($('#txtAirTime', form).val()),
                 Genres: editableListViewValues($("#listGenres", form)),
                 Tags: editableListViewValues($("#listTags", form)),
+                Keywords: editableListViewValues($("#listKeywords", form)),
                 Studios: editableListViewValues($("#listStudios", form)).map(function (element) { return { Name: element }; }),
 
                 PremiereDate: $('#txtPremiereDate', form).val() || null,
