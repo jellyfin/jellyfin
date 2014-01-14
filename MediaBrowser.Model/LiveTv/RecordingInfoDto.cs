@@ -107,7 +107,13 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value>The name of the status.</value>
         public string StatusName { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the completion percentage.
+        /// </summary>
+        /// <value>The completion percentage.</value>
+        public double? CompletionPercentage { get; set; }
+
         /// <summary>
         /// Genre of the program.
         /// </summary>

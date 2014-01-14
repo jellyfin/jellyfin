@@ -23,7 +23,7 @@ namespace MediaBrowser.Controller.Entities
     /// <summary>
     /// Class BaseItem
     /// </summary>
-    public abstract class BaseItem : IHasProviderIds, IBaseItem, IHasImages, IHasUserData
+    public abstract class BaseItem : IHasProviderIds, ILibraryItem, IHasImages, IHasUserData
     {
         protected BaseItem()
         {
@@ -503,28 +503,6 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The people.</value>
         public List<PersonInfo> People { get; set; }
-
-        /// <summary>
-        /// Override this if you need to combine/collapse person information
-        /// </summary>
-        /// <value>All people.</value>
-        [IgnoreDataMember]
-        public virtual IEnumerable<PersonInfo> AllPeople
-        {
-            get { return People; }
-        }
-
-        [IgnoreDataMember]
-        public virtual IEnumerable<string> AllStudios
-        {
-            get { return Studios; }
-        }
-
-        [IgnoreDataMember]
-        public virtual IEnumerable<string> AllGenres
-        {
-            get { return Genres; }
-        }
 
         /// <summary>
         /// Gets or sets the studios.

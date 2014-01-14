@@ -1532,6 +1532,12 @@
 
         getItemProgressBarHtml: function (item) {
 
+
+            if (item.Type == "Recording" && item.CompletionPercentage) {
+                
+                return '<progress class="itemProgressBar recordingProgressBar" min="0" max="100" value="' + item.CompletionPercentage + '"></progress>';
+            }
+            
             if (item.UserData && item.UserData.PlaybackPositionTicks && item.RunTimeTicks) {
 
                 var tooltip = Dashboard.getDisplayTime(item.UserData.PlaybackPositionTicks) + " / " + Dashboard.getDisplayTime(item.RunTimeTicks);

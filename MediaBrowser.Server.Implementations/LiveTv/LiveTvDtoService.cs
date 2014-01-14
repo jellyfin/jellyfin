@@ -231,6 +231,18 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 }).ToList()
             };
 
+            if (info.Status == RecordingStatus.InProgress)
+            {
+                var now = DateTime.UtcNow.Ticks;
+                var start = info.StartDate.Ticks;
+                var end = info.EndDate.Ticks;
+
+                var pct = now - start;
+                pct /= end;
+                pct *= 100;
+                dto.CompletionPercentage = pct;
+            }
+
             var imageTag = GetImageTag(recording);
 
             if (imageTag.HasValue)

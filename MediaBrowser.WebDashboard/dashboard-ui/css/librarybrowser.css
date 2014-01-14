@@ -925,6 +925,18 @@ a.itemTag:hover {
     background-color: #52B54B;
 }
 
+.recordingProgressBar::-moz-progress-bar {
+    background-color: #cc3333;
+}
+
+.recordingProgressBar::-webkit-progress-value {
+    background-color: #cc3333;
+}
+
+.recordingProgressBar[aria-valuenow]:before {
+    background-color: #cc3333;
+}
+
 .userDataIcons .itemProgressBar {
     vertical-align: top;
     position: relative;
@@ -1012,9 +1024,9 @@ a.itemTag:hover {
 
 @media all and (min-height: 800px) {
 
-        .alphabetPicker a {
-            padding: 5px 0;
-        }
+    .alphabetPicker a {
+        padding: 5px 0;
+    }
 }
 
 @media all and (min-height: 900px) {

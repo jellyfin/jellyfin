@@ -123,48 +123,6 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         /// <summary>
-        /// Override this if you need to combine/collapse person information
-        /// </summary>
-        /// <value>All people.</value>
-        [IgnoreDataMember]
-        public override IEnumerable<PersonInfo> AllPeople
-        {
-            get
-            {
-                if (People == null) return Series != null ? Series.People : People;
-                return Series != null && Series.People != null ? People.Concat(Series.People) : base.AllPeople;
-            }
-        }
-
-        /// <summary>
-        /// Gets all genres.
-        /// </summary>
-        /// <value>All genres.</value>
-        [IgnoreDataMember]
-        public override IEnumerable<string> AllGenres
-        {
-            get
-            {
-                if (Genres == null) return Series != null ? Series.Genres : Genres;
-                return Series != null && Series.Genres != null ? Genres.Concat(Series.Genres) : base.AllGenres;
-            }
-        }
-
-        /// <summary>
-        /// Gets all studios.
-        /// </summary>
-        /// <value>All studios.</value>
-        [IgnoreDataMember]
-        public override IEnumerable<string> AllStudios
-        {
-            get
-            {
-                if (Studios == null) return Series != null ? Series.Studios : Studios;
-                return Series != null && Series.Studios != null ? Studios.Concat(Series.Studios) : base.AllStudios;
-            }
-        }
-
-        /// <summary>
         /// Our rating comes from our series
         /// </summary>
         [IgnoreDataMember]
