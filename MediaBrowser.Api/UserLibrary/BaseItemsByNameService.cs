@@ -93,6 +93,8 @@ namespace MediaBrowser.Api.UserLibrary
 
             var filteredItems = FilterItems(request, extractedItems, user);
 
+            filteredItems = FilterByLibraryItems(request, filteredItems, user);
+
             filteredItems = ItemsService.ApplySortOrder(request, filteredItems, user, LibraryManager).Cast<TItemType>();
 
             var ibnItemsArray = filteredItems.ToList();
@@ -126,6 +128,39 @@ namespace MediaBrowser.Api.UserLibrary
 
             return result;
         }
+
+        private IEnumerable<TItemType> FilterByLibraryItems(GetItemsByName request, IEnumerable<TItemType> items, User user)
+        {
+            var filters = request.GetFilters().ToList();
+
+            if (filters.Contains(ItemFilter.IsPlayed))
+            {
+                var libraryItems = user.RootFolder.GetRecursiveChildren(user).ToList();
+
+                items = items.Where(i => GetLibraryItems(i, libraryItems).All(l =>
+                {
+                    var userdata = UserDataRepository.GetUserData(user.Id, l.GetUserDataKey());
+                        
+                    return userdata != null && userdata.Played;
+                }));
+            }
+
+            if (filters.Contains(ItemFilter.IsUnplayed))
+            {
+                var libraryItems = user.RootFolder.GetRecursiveChildren(user).ToList();
+
+                items = items.Where(i => GetLibraryItems(i, libraryItems).All(l =>
+                {
+                    var userdata = UserDataRepository.GetUserData(user.Id, l.GetUserDataKey());
+
+                    return userdata == null || !userdata.Played;
+                }));
+            }
+
+            return items;
+        }
+
+        protected abstract IEnumerable<BaseItem> GetLibraryItems(TItemType item, IEnumerable<BaseItem> libraryItems);
 
         /// <summary>
         /// Filters the items.

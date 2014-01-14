@@ -13,9 +13,9 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.LiveTv
 {
-    [Route("/LiveTv/Services", "GET")]
+    [Route("/LiveTv/Info", "GET")]
     [Api(Description = "Gets available live tv services.")]
-    public class GetServices : IReturn<List<LiveTvServiceInfo>>
+    public class GetLiveTvInfo : IReturn<LiveTvInfo>
     {
     }
 
@@ -290,13 +290,19 @@ namespace MediaBrowser.Api.LiveTv
             }
         }
 
-        public object Get(GetServices request)
+        public object Get(GetLiveTvInfo request)
         {
             var services = _liveTvManager.Services
                 .Select(GetServiceInfo)
                 .ToList();
 
-            return ToOptimizedResult(services);
+            var info = new LiveTvInfo
+            {
+                Services = services,
+                ActiveServiceName = _liveTvManager.ActiveService == null ? null : _liveTvManager.ActiveService.Name
+            };
+
+            return ToOptimizedResult(info);
         }
 
         private LiveTvServiceInfo GetServiceInfo(ILiveTvService service)

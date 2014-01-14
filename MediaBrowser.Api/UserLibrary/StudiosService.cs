@@ -114,5 +114,10 @@ namespace MediaBrowser.Api.UserLibrary
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .Select(name => LibraryManager.GetStudio(name));
         }
+
+        protected override IEnumerable<BaseItem> GetLibraryItems(Studio item, IEnumerable<BaseItem> libraryItems)
+        {
+            return libraryItems.Where(i => i.Studios.Contains(item.Name, StringComparer.OrdinalIgnoreCase));
+        }
     }
 }

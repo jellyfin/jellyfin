@@ -23,7 +23,7 @@ namespace MediaBrowser.Controller.Entities
     /// <summary>
     /// Class BaseItem
     /// </summary>
-    public abstract class BaseItem : IHasProviderIds, ILibraryItem, IHasImages, IHasUserData
+    public abstract class BaseItem : IHasProviderIds, IBaseItem, IHasImages, IHasUserData
     {
         protected BaseItem()
         {
@@ -662,7 +662,7 @@ namespace MediaBrowser.Controller.Entities
             return LibraryManager.ResolvePaths<Trailer>(files, null).Select(video =>
             {
                 // Try to retrieve it from the db. If we don't find it, use the resolved version
-                var dbItem = LibraryManager.RetrieveItem(video.Id) as Trailer;
+                var dbItem = LibraryManager.GetItemById(video.Id) as Trailer;
 
                 if (dbItem != null)
                 {
@@ -723,7 +723,7 @@ namespace MediaBrowser.Controller.Entities
             return LibraryManager.ResolvePaths<Audio.Audio>(files, null).Select(audio =>
             {
                 // Try to retrieve it from the db. If we don't find it, use the resolved version
-                var dbItem = LibraryManager.RetrieveItem(audio.Id) as Audio.Audio;
+                var dbItem = LibraryManager.GetItemById(audio.Id) as Audio.Audio;
 
                 if (dbItem != null)
                 {
@@ -781,7 +781,7 @@ namespace MediaBrowser.Controller.Entities
             return LibraryManager.ResolvePaths<Video>(files, null).Select(item =>
             {
                 // Try to retrieve it from the db. If we don't find it, use the resolved version
-                var dbItem = LibraryManager.RetrieveItem(item.Id) as Video;
+                var dbItem = LibraryManager.GetItemById(item.Id) as Video;
 
                 if (dbItem != null)
                 {

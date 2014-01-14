@@ -5,7 +5,7 @@ namespace MediaBrowser.Controller.Entities
     /// <summary>
     /// Interface ILibraryItem
     /// </summary>
-    public interface ILibraryItem
+    public interface IBaseItem
     {
         /// <summary>
         /// Gets the name.

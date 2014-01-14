@@ -58,6 +58,13 @@ namespace MediaBrowser.Controller.Dto
         BaseItem GetItemByDtoId(string id, Guid? userId = null);
 
         /// <summary>
+        /// Attaches the primary image aspect ratio.
+        /// </summary>
+        /// <param name="dto">The dto.</param>
+        /// <param name="item">The item.</param>
+        void AttachPrimaryImageAspectRatio(IItemDto dto, IHasImages item);
+
+        /// <summary>
         /// Gets the base item dto.
         /// </summary>
         /// <param name="item">The item.</param>

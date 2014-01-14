@@ -163,5 +163,10 @@ namespace MediaBrowser.Api.UserLibrary
 
                 people.Where(p => personTypes.Contains(p.Type ?? string.Empty, StringComparer.OrdinalIgnoreCase) || personTypes.Contains(p.Role ?? string.Empty, StringComparer.OrdinalIgnoreCase));
         }
+
+        protected override IEnumerable<BaseItem> GetLibraryItems(Person item, IEnumerable<BaseItem> libraryItems)
+        {
+            return libraryItems.Where(i => i.People.Any(p => string.Equals(p.Name, item.Name, StringComparison.OrdinalIgnoreCase)));
+        }
     }
 }

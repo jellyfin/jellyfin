@@ -99,7 +99,7 @@
     <Compile Include="Entities\IHasTrailers.cs" />
     <Compile Include="Entities\IHasUserData.cs" />
     <Compile Include="Entities\IItemByName.cs" />
-    <Compile Include="Entities\ILibraryItem.cs" />
+    <Compile Include="Entities\IBaseItem.cs" />
     <Compile Include="Entities\ImageSourceInfo.cs" />
     <Compile Include="Entities\LinkedChild.cs" />
     <Compile Include="Entities\MusicVideo.cs" />
