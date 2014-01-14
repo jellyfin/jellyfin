@@ -97,7 +97,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                         // Mac OS X Intel 64bit
                         return new[]
                         {
-                            "https://copy.com/ylAUbbQHYE7x/ffall-2.1.1.7z?download=1"
+                            "https://copy.com/IB0W4efS6t9A/ffall-2.1.1.tar.gz?download=1"
                         };
                     }
                     else
