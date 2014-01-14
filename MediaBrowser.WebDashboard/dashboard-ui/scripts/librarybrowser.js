@@ -45,9 +45,9 @@
 
             localStorage.setItem(key + '_' + Dashboard.getCurrentUserId(), JSON.stringify(values));
         },
-        
-        saveViewSetting: function(key, value) {
-            
+
+        saveViewSetting: function (key, value) {
+
             localStorage.setItem(key + '_' + Dashboard.getCurrentUserId() + '_view', value);
         },
 
@@ -899,7 +899,7 @@
 
                 cssClass += ' ' + options.shape + 'PosterItem';
 
-                html += '<a class="' + cssClass + '" href="' + LibraryBrowser.getHref(item, options.context) + '">';
+                html += '<a data-itemid="' + item.Id + '" class="' + cssClass + '" href="' + LibraryBrowser.getHref(item, options.context) + '">';
 
                 var style = "";
 
@@ -954,18 +954,18 @@
                     html += '<div class="posterItemTextOverlay">';
                 }
 
-                var cssclass = options.centerText ? "posterItemText posterItemTextCentered" : "posterItemText";
+                cssClass = options.centerText ? "posterItemText posterItemTextCentered" : "posterItemText";
 
                 if (options.showParentTitle) {
 
-                    html += "<div class='" + cssclass + "'>";
+                    html += "<div class='" + cssClass + "'>";
                     html += item.EpisodeTitle ? item.Name : (item.SeriesName || item.Album || item.AlbumArtist || item.GameSystem || "&nbsp;");
                     html += "</div>";
                 }
 
                 if (options.showTitle || forceName) {
 
-                    html += "<div class='" + cssclass + "'>";
+                    html += "<div class='" + cssClass + " posterItemName'>";
                     html += name;
                     html += "</div>";
                 }
@@ -975,7 +975,7 @@
                     var itemCountHtml = LibraryBrowser.getItemCountsHtml(options, item);
 
                     if (itemCountHtml) {
-                        html += "<div class='" + cssclass + "'>";
+                        html += "<div class='" + cssClass + "'>";
                         html += itemCountHtml;
                         html += "</div>";
                     }
@@ -1482,7 +1482,7 @@
                 }
 
                 pageSizes = pageSizes || [20, 50, 100, 200, 300, 400, 500];
-                
+
                 for (var j = 0, length = pageSizes.length; j < length; j++) {
                     options += getOption(pageSizes[j]);
                 }
@@ -2412,3 +2412,176 @@
     };
 
 })(window, document, jQuery, screen, localStorage);
+
+(function ($, document, window) {
+
+    var showOverlayTimeout;
+    var hideOverlayTimeout;
+    var currentPosterItem;
+
+    function onOverlayMouseOver() {
+
+        if (hideOverlayTimeout) {
+            clearTimeout(hideOverlayTimeout);
+            hideOverlayTimeout = null;
+        }
+    }
+
+    function onOverlayMouseOut() {
+
+        startHideOverlayTimer();
+    }
+
+    function getOverlayHtml(item) {
+
+        var html = '';
+
+        html += '<div class="itemOverlayContent">';
+
+        html += '<p class="itemMiscInfo">';
+        html += LibraryBrowser.getMiscInfoHtml(item);
+        html += '</p>';
+
+        html += '<p>';
+        html += '<span class="itemCommunityRating">';
+        html += LibraryBrowser.getRatingHtml(item);
+        html += '</span>';
+        html += '</p>';
+
+        //html += '<p>';
+        //html += '<span class="userDataIcons">';
+        //html += LibraryBrowser.getUserDataIconsHtml(item);
+        //html += '</span>';
+        //html += '</p>';
+
+        html += '<p class="itemOverlayHtml">';
+        html += (item.OverviewHtml || item.Overview || '');
+        html += '</p>';
+
+        html += '<p>';
+
+        html += '<button type="button" data-mini="true" data-inline="true" data-icon="play" data-iconpos="notext">Play</button>';
+        html += '<button type="button" data-mini="true" data-inline="true" data-icon="video" data-iconpos="notext">Play</button>';
+        html += '<button type="button" data-mini="true" data-inline="true" data-icon="remote" data-iconpos="notext">Play</button>';
+        html += '<button type="button" data-mini="true" data-inline="true" data-icon="edit" data-iconpos="notext">Play</button>';
+
+        html += '</p>';
+
+        html += '</div>';
+
+        return html;
+    }
+
+    function showOverlay(elem, item) {
+
+        $('.itemFlyout').popup('close').remove();
+
+        var html = '<div data-role="popup" class="itemFlyout" data-theme="b" data-arrow="true" data-history="false">';
+
+        html += '<div class="ui-bar-b" style="text-align:center;">';
+        html += '<h3 style="margin: .5em 0;padding:0 1em;font-weight:normal;">' + LibraryBrowser.getPosterViewDisplayName(item, true) + '</h3>';
+        html += '</div>';
+
+        html += '<div style="padding: 1em;">';
+        html += getOverlayHtml(item);
+        html += '</div>';
+
+        html += '</div>';
+
+        $('.itemFlyout').popup('close').popup('destroy').remove();
+
+        $(document.body).append(html);
+
+        var popup = $('.itemFlyout').on('mouseenter', onOverlayMouseOver).on('mouseleave', onOverlayMouseOut).popup({ positionTo: elem }).trigger('create').popup("open").on("popupafterclose", function () {
+
+            $(elem).off('mouseleave.overlay', onHoverOut);
+            $(this).off("popupafterclose").off("mouseenter").off("mouseleave").remove();
+        });
+
+        popup.parents().prev('.ui-popup-screen').remove();
+        currentPosterItem = elem;
+
+        $(elem).on('mouseleave.overlay', onHoverOut).on('click.overlay', hideOverlay);
+    }
+
+    function hideOverlay() {
+
+        $('.itemFlyout').popup('close').remove();
+
+        if (currentPosterItem) {
+
+            $(currentPosterItem).off('mouseleave.overlay').off('click.overlay');
+            currentPosterItem = null;
+        }
+    }
+
+    function startHideOverlayTimer() {
+
+        if (hideOverlayTimeout) {
+            clearTimeout(hideOverlayTimeout);
+            hideOverlayTimeout = null;
+        }
+
+        hideOverlayTimeout = setTimeout(hideOverlay, 400);
+    }
+
+    function onHoverOut() {
+
+        if (showOverlayTimeout) {
+            clearTimeout(showOverlayTimeout);
+            showOverlayTimeout = null;
+        }
+
+        startHideOverlayTimer();
+    }
+
+    $.fn.createPosterItemHoverMenu = function (items) {
+
+        function onShowTimerExpired(elem) {
+
+            var id = elem.getAttribute('data-itemid');
+
+            ApiClient.getItem(Dashboard.getCurrentUserId(), id).done(function (item) {
+
+                showOverlay(elem, item);
+
+            });
+        }
+
+        function onHoverIn() {
+
+            if (showOverlayTimeout) {
+                clearTimeout(showOverlayTimeout);
+                showOverlayTimeout = null;
+            }
+
+            if (hideOverlayTimeout) {
+                clearTimeout(hideOverlayTimeout);
+                hideOverlayTimeout = null;
+            }
+
+            var elem = this;
+
+            if (currentPosterItem && currentPosterItem == elem) {
+                return;
+            }
+
+            showOverlayTimeout = setTimeout(function () {
+
+                onShowTimerExpired(elem);
+
+            }, 600);
+        }
+
+        return this.hoverIntent({
+            over: onHoverIn,
+            out: function () {
+
+            },
+            selector: '.posterItem'
+
+        });
+    };
+
+})(jQuery, document, window);
+

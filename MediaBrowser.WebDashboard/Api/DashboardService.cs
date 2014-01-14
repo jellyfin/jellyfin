@@ -567,6 +567,7 @@ namespace MediaBrowser.WebDashboard.Api
             await AppendResource(memoryStream, "thirdparty/jquerymobile-1.4.0/jquery.mobile-1.4.0.min.js", newLineBytes).ConfigureAwait(false);
 
             //await AppendResource(memoryStream, "thirdparty/jquery.infinite-scroll-helper.min.js", newLineBytes).ConfigureAwait(false);
+            await AppendResource(memoryStream, "thirdparty/jquery.hoverIntent.minified.js", newLineBytes).ConfigureAwait(false);
 
             var versionString = string.Format("window.dashboardVersion='{0}';", _appHost.ApplicationVersion);
             var versionBytes = Encoding.UTF8.GetBytes(versionString);

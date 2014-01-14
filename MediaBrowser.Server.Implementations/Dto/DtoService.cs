@@ -698,6 +698,20 @@ namespace MediaBrowser.Server.Implementations.Dto
                 }
             }
 
+            if (fields.Contains(ItemFields.Keywords))
+            {
+                var hasTags = item as  IHasKeywords;
+                if (hasTags != null)
+                {
+                    dto.Keywords = hasTags.Keywords;
+                }
+
+                if (dto.Keywords == null)
+                {
+                    dto.Keywords = new List<string>();
+                }
+            }
+
             if (fields.Contains(ItemFields.ProductionLocations))
             {
                 SetProductionLocations(item, dto);

@@ -20,8 +20,8 @@
             $('#recentlyAddedItems', page).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 useAverageAspectRatio: true
-            }));
-
+                
+            })).createPosterItemHoverMenu();
         });
 
 
@@ -50,7 +50,8 @@
                 shape: 'backdrop',
                 overlayText: true,
                 showTitle: true
-            }));
+                
+            })).createPosterItemHoverMenu();
 
         });
 
@@ -77,7 +78,8 @@
             $('#trailerItems', page).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 useAverageAspectRatio: true
-            }));
+                
+            })).createPosterItemHoverMenu();
 
         });
 

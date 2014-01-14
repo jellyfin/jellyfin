@@ -988,6 +988,17 @@ a.itemTag:hover {
     background: #4d90fe;
 }
 
+.itemOverlayContent {
+    max-width: 300px;
+}
+
+.itemOverlayHtml {
+    max-height: 100px;
+    margin-top: 1.5em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 @media all and (min-height: 500px) {
 
     .alphabetPicker {

@@ -30,7 +30,7 @@
                     showParentTitle: true,
                     overlayText: true
 
-                }));
+                })).createPosterItemHoverMenu();
 
             } else {
 

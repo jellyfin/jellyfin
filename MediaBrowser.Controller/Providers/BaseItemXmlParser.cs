@@ -79,6 +79,11 @@ namespace MediaBrowser.Controller.Providers
                 hasTags.Tags.Clear();
             }
 
+            var hasKeywords = item as IHasKeywords;
+            if (hasKeywords != null)
+            {
+                hasKeywords.Keywords.Clear();
+            }
 
             var hasTrailers = item as IHasTrailers;
             if (hasTrailers != null)
@@ -747,6 +752,19 @@ namespace MediaBrowser.Controller.Providers
                         break;
                     }
 
+                case "PlotKeywords":
+                    {
+                        using (var subtree = reader.ReadSubtree())
+                        {
+                            var hasTags = item as IHasKeywords;
+                            if (hasTags != null)
+                            {
+                                FetchFromKeywordsNode(subtree, hasTags);
+                            }
+                        }
+                        break;
+                    }
+
                 case "Persons":
                     {
                         using (var subtree = reader.ReadSubtree())
@@ -900,6 +918,35 @@ namespace MediaBrowser.Controller.Providers
                                 if (!string.IsNullOrWhiteSpace(tag))
                                 {
                                     item.AddTag(tag);
+                                }
+                                break;
+                            }
+
+                        default:
+                            reader.Skip();
+                            break;
+                    }
+                }
+            }
+        }
+
+        private void FetchFromKeywordsNode(XmlReader reader, IHasKeywords item)
+        {
+            reader.MoveToContent();
+
+            while (reader.Read())
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    switch (reader.Name)
+                    {
+                        case "PlotKeyword":
+                            {
+                                var tag = reader.ReadElementContentAsString();
+
+                                if (!string.IsNullOrWhiteSpace(tag))
+                                {
+                                    item.AddKeyword(tag);
                                 }
                                 break;
                             }

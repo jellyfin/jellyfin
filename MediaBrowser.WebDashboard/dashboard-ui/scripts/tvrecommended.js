@@ -25,7 +25,8 @@
                 showTitle: true,
                 showParentTitle: true,
                 overlayText: true
-            }));
+                
+            })).createPosterItemHoverMenu();
 
         });
 
@@ -56,7 +57,8 @@
                 showTitle: true,
                 showParentTitle: true,
                 overlayText: true
-            }));
+                
+            })).createPosterItemHoverMenu();
 
         });
 
