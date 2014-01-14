@@ -288,6 +288,12 @@ namespace MediaBrowser.Api
                 hasTags.Tags = request.Tags;
             }
 
+            var hasKeywords = item as IHasKeywords;
+            if (hasKeywords != null)
+            {
+                hasKeywords.Keywords = request.Keywords;
+            }
+
             if (request.Studios != null)
             {
                 item.Studios = request.Studios.Select(x => x.Name).ToList();

@@ -371,6 +371,12 @@ namespace MediaBrowser.Model.Dto
         public List<string> Tags { get; set; }
 
         /// <summary>
+        /// Gets or sets the keywords.
+        /// </summary>
+        /// <value>The keywords.</value>
+        public List<string> Keywords { get; set; }
+        
+        /// <summary>
         /// Gets or sets the primary image aspect ratio, after image enhancements.
         /// </summary>
         /// <value>The primary image aspect ratio.</value>

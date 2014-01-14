@@ -484,6 +484,22 @@ namespace MediaBrowser.Providers.Savers
                 }
             }
 
+            var hasKeywords = item as IHasKeywords;
+            if (hasKeywords != null)
+            {
+                if (hasKeywords.Keywords.Count > 0)
+                {
+                    builder.Append("<PlotKeywords>");
+
+                    foreach (var tag in hasKeywords.Keywords)
+                    {
+                        builder.Append("<PlotKeyword>" + SecurityElement.Escape(tag) + "</PlotKeyword>");
+                    }
+
+                    builder.Append("</PlotKeywords>");
+                }
+            }
+
             if (item.People.Count > 0)
             {
                 builder.Append("<Persons>");

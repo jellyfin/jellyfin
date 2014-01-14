@@ -35,7 +35,17 @@ namespace MediaBrowser.Controller.Library
         /// <value>The file system children.</value>
         public IEnumerable<FileSystemInfo> FileSystemChildren
         {
-            get { return FileSystemDictionary.Values; }
+            get
+            {
+                var dict = FileSystemDictionary;
+
+                if (dict == null)
+                {
+                    return new List<FileSystemInfo>();
+                }
+
+                return dict.Values;
+            }
         }
 
         /// <summary>

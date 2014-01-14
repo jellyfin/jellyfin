@@ -57,6 +57,11 @@ namespace MediaBrowser.Model.Querying
         IndexOptions,
 
         /// <summary>
+        /// The keywords
+        /// </summary>
+        Keywords,
+
+        /// <summary>
         /// The metadata settings
         /// </summary>
         Settings,
