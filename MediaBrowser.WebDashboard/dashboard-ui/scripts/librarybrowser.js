@@ -916,6 +916,8 @@
                     imageCssClass += " coveredPosterItemImage";
                 }
 
+                html += '<div class="posterItemOverlayTarget"></div>';
+
                 var progressHtml = LibraryBrowser.getItemProgressBarHtml(item);
 
                 html += '<div class="' + imageCssClass + '" style="' + style + '">';
@@ -2498,7 +2500,11 @@
 
         $(document.body).append(html);
 
-        var popup = $('.itemFlyout').on('mouseenter', onOverlayMouseOver).on('mouseleave', onOverlayMouseOut).popup({ positionTo: elem }).trigger('create').popup("open").on("popupafterclose", function () {
+        var popup = $('.itemFlyout').on('mouseenter', onOverlayMouseOver).on('mouseleave', onOverlayMouseOut).popup({
+
+            positionTo: $('.posterItemOverlayTarget', elem)
+            
+        }).trigger('create').popup("open").on("popupafterclose", function () {
 
             $(this).off("popupafterclose").off("mouseenter").off("mouseleave").remove();
         });
@@ -2588,7 +2594,7 @@
 
                 onShowTimerExpired(elem);
 
-            }, 600);
+            }, 500);
         }
 
         // https://hacks.mozilla.org/2013/04/detecting-touch-its-the-why-not-the-how/
@@ -2598,8 +2604,6 @@
                running on touch-capable device */
             return this;
         }
-
-        return this;
 
         return this.on('mouseenter', '.posterItem', onHoverIn)
             .on('mouseleave', '.posterItem', onHoverOut)

@@ -14,6 +14,11 @@
     transition: all 500ms ease;
 }
 
+.posterItemOverlayTarget {
+    position: absolute;
+    right: 0;
+    top: 50%;
+}
 
 .smallBackdropPosterItem, .smallPosterItem {
     margin: 5px;
