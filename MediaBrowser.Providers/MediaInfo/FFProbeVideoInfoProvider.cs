@@ -251,7 +251,9 @@ namespace MediaBrowser.Providers.MediaInfo
 
             // Try to eliminate menus and intros by skipping all files at the front of the list that are less than the minimum size
             // Once we reach a file that is at least the minimum, return all subsequent ones
-            var allVobs = Directory.EnumerateFiles(root, "*.vob", SearchOption.AllDirectories).ToList();
+            var allVobs = Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories)
+                .Where(file => string.Equals(Path.GetExtension(file), ".vob", StringComparison.OrdinalIgnoreCase))
+                .ToList();
 
             // If we didn't find any satisfying the min length, just take them all
             if (allVobs.Count == 0)
