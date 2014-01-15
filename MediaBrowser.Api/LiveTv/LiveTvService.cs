@@ -78,9 +78,12 @@ namespace MediaBrowser.Api.LiveTv
         [ApiMember(Name = "Limit", Description = "Optional. The maximum number of records to return", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int? Limit { get; set; }
 
-        [ApiMember(Name = "IsRecording", Description = "Optional filter by recordings that are currently active, or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
-        public bool? IsRecording { get; set; }
+        [ApiMember(Name = "Status", Description = "Optional filter by recording status.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public RecordingStatus? Status { get; set; }
 
+        [ApiMember(Name = "Status", Description = "Optional filter by recordings that are in progress, or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool? IsInProgress { get; set; }
+        
         [ApiMember(Name = "SeriesTimerId", Description = "Optional filter by recordings belonging to a series timer", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string SeriesTimerId { get; set; }
     }
@@ -398,8 +401,9 @@ namespace MediaBrowser.Api.LiveTv
                 GroupId = request.GroupId,
                 StartIndex = request.StartIndex,
                 Limit = request.Limit,
-                IsRecording = request.IsRecording,
-                SeriesTimerId = request.SeriesTimerId
+                Status = request.Status,
+                SeriesTimerId = request.SeriesTimerId,
+                IsInProgress = request.IsInProgress
 
             }, CancellationToken.None).Result;
 

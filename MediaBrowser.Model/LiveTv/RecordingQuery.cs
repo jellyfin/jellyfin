@@ -44,10 +44,16 @@ namespace MediaBrowser.Model.LiveTv
         public int? Limit { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is recording.
+        /// Gets or sets the status.
         /// </summary>
-        /// <value><c>null</c> if [is recording] contains no value, <c>true</c> if [is recording]; otherwise, <c>false</c>.</value>
-        public bool? IsRecording { get; set; }
+        /// <value>The status.</value>
+        public RecordingStatus? Status { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is in progress.
+        /// </summary>
+        /// <value><c>null</c> if [is in progress] contains no value, <c>true</c> if [is in progress]; otherwise, <c>false</c>.</value>
+        public bool? IsInProgress { get; set; }
 
         /// <summary>
         /// Gets or sets the series timer identifier.
