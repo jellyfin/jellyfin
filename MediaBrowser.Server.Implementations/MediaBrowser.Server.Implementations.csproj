@@ -211,6 +211,7 @@
     <Compile Include="Sorting\EpisodeCountComparer.cs" />
     <Compile Include="Sorting\IsFolderComparer.cs" />
     <Compile Include="Sorting\IsUnplayedComparer.cs" />
+    <Compile Include="Sorting\MetascoreComparer.cs" />
     <Compile Include="Sorting\MovieCountComparer.cs" />
     <Compile Include="Sorting\MusicVideoCountComparer.cs" />
     <Compile Include="Sorting\NameComparer.cs" />

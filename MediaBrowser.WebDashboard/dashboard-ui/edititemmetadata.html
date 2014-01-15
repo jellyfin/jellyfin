@@ -100,11 +100,15 @@
                             </div>
                             <div id="fldCommunityRating" style="display: none;" data-role="fieldcontain">
                                 <label for="txtCommunityRating">Community rating:</label>
-                                <input type="number" id="txtCommunityRating" name="txtCommunityRating" step=".1" data-mini="true" />
+                                <input type="number" id="txtCommunityRating" name="txtCommunityRating" step=".1" min="0" max="10" data-mini="true" />
                             </div>
                             <div id="fldCommunityVoteCount" style="display: none;" data-role="fieldcontain">
                                 <label for="txtCommunityVoteCount">Vote count:</label>
                                 <input type="number" id="txtCommunityVoteCount" name="txtCommunityVoteCount" data-mini="true" />
+                            </div>
+                            <div id="fldMetascore" style="display: none;" data-role="fieldcontain">
+                                <label for="txtMetascore">Metascore:</label>
+                                <input type="number" id="txtMetascore" name="txtMetascore" step="1" min="0" max="100" data-mini="true" />
                             </div>
                             <div data-role="fieldcontain" id="fldCriticRating" style="display: none;">
                                 <label for="txtCriticRating">Critic rating:</label>
@@ -113,6 +117,10 @@
                             <div data-role="fieldcontain" id="fldCriticRatingSummary" style="display: none;">
                                 <label for="txtCriticRatingSummary">Critic rating summary:</label>
                                 <input type="text" id="txtCriticRatingSummary" name="txtCriticRatingSummary" data-mini="true" />
+                            </div>
+                            <div data-role="fieldcontain" id="fldAwardSummary" style="display: none;">
+                                <label for="txtAwardSummary">Award summary:</label>
+                                <input type="text" id="txtAwardSummary" name="txtAwardSummary" data-mini="true" />
                             </div>
                             <div data-role="fieldcontain">
                                 <label for="txtHomePageUrl">Website:</label>

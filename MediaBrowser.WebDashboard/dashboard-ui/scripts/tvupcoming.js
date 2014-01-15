@@ -58,7 +58,7 @@
                 showPremiereDate: true,
                 showPremiereDateIndex: true,
                 preferThumb: true
-            }));
+            })).createPosterItemHoverMenu();
         });
     });
 

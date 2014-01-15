@@ -585,6 +585,18 @@
             $('#fldRottenTomatoes', page).hide();
         }
 
+        if (item.Type == "Movie") {
+            $('#fldAwardSummary', page).show();
+        } else {
+            $('#fldAwardSummary', page).hide();
+        }
+
+        if (item.Type == "Movie" || item.Type == "Trailer") {
+            $('#fldMetascore', page).show();
+        } else {
+            $('#fldMetascore', page).hide();
+        }
+
         if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "Person" || item.Type == "BoxSet" || item.Type == "MusicAlbum") {
             $('#fldTmdb', page).show();
         } else {
@@ -858,6 +870,9 @@
         $('#txtCommunityRating', page).val(item.CommunityRating || "");
         $('#txtCommunityVoteCount', page).val(item.VoteCount || "");
         $('#txtHomePageUrl', page).val(item.HomePageUrl || "");
+
+        $('#txtAwardSummary', page).val(item.AwardSummary || "");
+        $('#txtMetascore', page).val(item.Metascore || "");
 
         $('#txtBudget', page).val(item.Budget || "");
         $('#txtRevenue', page).val(item.Revenue || "");
@@ -1153,6 +1168,8 @@
                 Album: $('#txtAlbum', form).val(),
                 AlbumArtist: $('#txtAlbumArtist', form).val(),
                 Artists: $('#txtArtist', form).val().split(';'),
+                Metascore: $('#txtMetascore', form).val(),
+                AwardSummary: $('#txtAwardSummary', form).val(),
                 Overview: $('#txtOverview', form).val(),
                 Status: $('#selectStatus', form).val(),
                 AirDays: editableListViewValues($("#listAirDays", form)),

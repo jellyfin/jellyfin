@@ -221,7 +221,7 @@
     background-size: cover;
     vertical-align: top;
     position: relative;
-    top: -1px;
+    top: -2px;
 }
 
 .halfStarRating {
@@ -230,6 +230,13 @@
 
 .emptyStarRating {
     background-position: right center;
+}
+
+.starRatingValue {
+    display: inline-block;
+    margin-left: 1px;
+    position: relative;
+    top: -2px;
 }
 
 .rottentomatoesicon {
@@ -241,15 +248,11 @@
     background-repeat: no-repeat;
     vertical-align: top;
     position: relative;
-    top: -1px;
+    top: -2px;
 }
 
-.starRating + .rottentomatoesicon {
+.starRatingValue + .rottentomatoesicon {
     margin-left: 1em;
-}
-
-.smallPosterTileItem .starRating + .rottentomatoesicon {
-    margin-left: .5em;
 }
 
 .fresh {
@@ -258,6 +261,36 @@
 
 .rotten {
     background-image: url(images/rotten.png);
+}
+
+.metascore {
+    font-family: Arial;
+    color: #fff;
+    font-weight: bold;
+    display: inline-block;
+    font-size: 12px;
+    text-align: center;
+    width: 24px;
+    height: 20px;
+    line-height: 20px;
+    position: relative;
+    top: -2px;
+}
+
+.metascorehigh {
+    background-color: rgba(102, 204, 51, .75);
+}
+
+.metascoremid {
+    background-color: rgba(255, 204, 51, .75);
+}
+
+.metascorelow {
+    background-color: rgba(240, 0, 0, .75);
+}
+
+.criticRating + .metascore, .starRatingValue + .metascore {
+    margin-left: 1em;
 }
 
 .criticReview {
@@ -277,11 +310,10 @@
     }
 
 .criticRating {
-    color: #ccc;
-    vertical-align: top;
-    margin-left: 5px;
     display: inline-block;
-    vertical-align: top;
+    margin-left: 1px;
+    position: relative;
+    top: -2px;
 }
 
 .criticRatingSummary {
@@ -346,7 +378,7 @@ a.itemTag:hover {
 }
 
 .itemCommunityRating + .userDataIcons {
-    margin-left: 1.5em;
+    margin-left: 1.25em;
 }
 
 .itemBackdrop {

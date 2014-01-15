@@ -722,6 +722,21 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.AspectRatio = hasAspectRatio.AspectRatio;
             }
 
+            var hasMetascore = item as IHasMetascore;
+            if (hasMetascore != null)
+            {
+                dto.Metascore = hasMetascore.Metascore;
+            }
+
+            if (fields.Contains(ItemFields.AwardSummary))
+            {
+                var hasAwards = item as IHasAwards;
+                if (hasAwards != null)
+                {
+                    dto.AwardSummary = hasAwards.AwardSummary;
+                }
+            }
+
             dto.BackdropImageTags = GetBackdropImageTags(item);
 
             if (fields.Contains(ItemFields.ScreenshotImageTags))

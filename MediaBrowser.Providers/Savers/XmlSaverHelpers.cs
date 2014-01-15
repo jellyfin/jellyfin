@@ -22,6 +22,7 @@ namespace MediaBrowser.Providers.Savers
                
                     "Added",
                     "AspectRatio",
+                    "AwardSummary",
                     "BirthDate",
                     "Budget",
                     "certification",
@@ -44,11 +45,13 @@ namespace MediaBrowser.Providers.Savers
                     "LockData",
                     "LockedFields",
                     "Format3D",
+                    "Metascore",
                     "MPAARating",
                     "MusicbrainzId",
                     "MusicBrainzReleaseGroupId",
                     "Overview",
                     "Persons",
+                    "PlotKeywords",
                     "PremiereDate",
                     "ProductionYear",
                     "Rating",
@@ -289,6 +292,18 @@ namespace MediaBrowser.Providers.Savers
             if (hasDisplayOrder != null && !string.IsNullOrEmpty(hasDisplayOrder.DisplayOrder))
             {
                 builder.Append("<DisplayOrder>" + SecurityElement.Escape(hasDisplayOrder.DisplayOrder) + "</DisplayOrder>");
+            }
+
+            var hasMetascore = item as IHasMetascore;
+            if (hasMetascore != null && hasMetascore.Metascore.HasValue)
+            {
+                builder.Append("<Metascore>" + SecurityElement.Escape(hasMetascore.Metascore.Value.ToString(UsCulture)) + "</Metascore>");
+            }
+
+            var hasAwards = item as IHasAwards;
+            if (hasAwards != null && !string.IsNullOrEmpty(hasAwards.AwardSummary))
+            {
+                builder.Append("<AwardSummary>" + SecurityElement.Escape(hasAwards.AwardSummary) + "</AwardSummary>");
             }
             
             var hasBudget = item as IHasBudget;

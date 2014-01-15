@@ -436,7 +436,8 @@
                     shape: "portrait",
                     context: 'movies',
                     useAverageAspectRatio: true,
-                    showTitle: true
+                    showTitle: true,
+                    centerText: true
                 });
 
             }
@@ -485,7 +486,7 @@
 
             html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
 
-            $('#items', page).html(html).trigger('create');
+            $('#items', page).html(html).trigger('create').createPosterItemHoverMenu();
 
             $('.selectPage', page).on('change', function () {
 

@@ -14,10 +14,25 @@
     transition: all 500ms ease;
 }
 
-.posterItemOverlayTarget {
+/*.posterItemOverlayTarget {
     position: absolute;
     right: 0;
     top: 50%;
+    z-index: 999;
+}*/
+
+.posterItemOverlayTarget {
+    position: absolute;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    background: #111;
+    z-index: 999;
+    display: none;
+}
+
+.posterItemOverlayInner {
+    padding: 15px;
 }
 
 .smallBackdropPosterItem, .smallPosterItem {

@@ -12,7 +12,7 @@ namespace MediaBrowser.Controller.Entities.Movies
     /// <summary>
     /// Class Movie
     /// </summary>
-    public class Movie : Video, IHasCriticRating, IHasSoundtracks, IHasBudget, IHasKeywords, IHasTrailers, IHasThemeMedia, IHasTaglines, IHasTags, IHasPreferredMetadataLanguage
+    public class Movie : Video, IHasCriticRating, IHasSoundtracks, IHasBudget, IHasKeywords, IHasTrailers, IHasThemeMedia, IHasTaglines, IHasTags, IHasPreferredMetadataLanguage, IHasAwards, IHasMetascore
     {
         public List<Guid> SpecialFeatureIds { get; set; }
 
@@ -20,7 +20,7 @@ namespace MediaBrowser.Controller.Entities.Movies
 
         public List<Guid> ThemeSongIds { get; set; }
         public List<Guid> ThemeVideoIds { get; set; }
-
+        
         /// <summary>
         /// Gets or sets the preferred metadata country code.
         /// </summary>
@@ -41,6 +41,10 @@ namespace MediaBrowser.Controller.Entities.Movies
             Tags = new List<string>();
             Keywords = new List<string>();
         }
+
+        public string AwardSummary { get; set; }
+
+        public float? Metascore { get; set; }
 
         public List<Guid> LocalTrailerIds { get; set; }
         public List<string> Keywords { get; set; }

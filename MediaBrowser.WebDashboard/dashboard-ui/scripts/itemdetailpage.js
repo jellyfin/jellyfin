@@ -470,6 +470,7 @@
                 useAverageAspectRatio: item.MediaType != "Game",
                 shape: item.Type == "MusicAlbum" ? "square" : "portrait",
                 showParentTitle: item.Type == "MusicAlbum",
+                centerText: item.Type != "MusicAlbum",
                 showTitle: item.Type == "MusicAlbum" || item.Type == "Game",
                 borderless: item.Type == "Game"
             });
@@ -588,7 +589,8 @@
                         items: result.Items,
                         shape: "portrait",
                         useAverageAspectRatio: true,
-                        showTitle: true
+                        showTitle: true,
+                        centerText: true
                     });
                 }
                 else if (item.Type == "Season") {
@@ -606,7 +608,8 @@
                         shape: "auto",
                         context: 'games',
                         useAverageAspectRatio: false,
-                        showTitle: true
+                        showTitle: true,
+                        centerText: true
                     });
                 }
                 else {
@@ -619,7 +622,7 @@
                     });
                 }
 
-                $('#childrenContent', page).html(html);
+                $('#childrenContent', page).html(html).createPosterItemHoverMenu();
 
             }
         });

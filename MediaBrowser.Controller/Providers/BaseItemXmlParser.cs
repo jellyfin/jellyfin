@@ -212,14 +212,41 @@ namespace MediaBrowser.Controller.Providers
                         break;
                     }
 
+                case "Metascore":
+                    {
+                        var text = reader.ReadElementContentAsString();
+                        var hasMetascore = item as IHasMetascore;
+                        if (hasMetascore != null)
+                        {
+                            float value;
+                            if (float.TryParse(text, NumberStyles.Any, _usCulture, out value))
+                            {
+                                hasMetascore.Metascore = value;
+                            }
+                        }
+
+                        break;
+                    }
+
+                case "AwardSummary":
+                    {
+                        var text = reader.ReadElementContentAsString();
+                        var hasAwards = item as IHasAwards;
+                        if (hasAwards != null)
+                        {
+                            if (!string.IsNullOrWhiteSpace(text))
+                            {
+                                hasAwards.AwardSummary = text;
+                            }
+                        }
+
+                        break;
+                    }
+
                 case "SortTitle":
                     {
                         var val = reader.ReadElementContentAsString();
 
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            item.ForcedSortName = val;
-                        }
 
                         break;
                     }

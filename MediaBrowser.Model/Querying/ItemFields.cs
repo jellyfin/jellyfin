@@ -7,6 +7,11 @@ namespace MediaBrowser.Model.Querying
     public enum ItemFields
     {
         /// <summary>
+        /// The awards summary
+        /// </summary>
+        AwardSummary,
+
+        /// <summary>
         /// The budget
         /// </summary>
         Budget,
