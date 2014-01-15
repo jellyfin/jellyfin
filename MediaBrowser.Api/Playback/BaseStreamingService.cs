@@ -365,7 +365,7 @@ namespace MediaBrowser.Api.Playback
                 }
             }
 
-            return string.Format("-af \"{0}aresample={1}async=1000{2}{3}\"", 
+            return string.Format("-af \"{0}aresample={1}async=1{2}{3}\"", 
 
                 adelay,
                 audioSampleRate, 
