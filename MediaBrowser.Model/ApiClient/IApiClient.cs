@@ -2,6 +2,7 @@
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Notifications;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Querying;
@@ -749,6 +750,22 @@ namespace MediaBrowser.Model.ApiClient
         string GetImageUrl(BaseItemDto item, ImageOptions options);
 
         /// <summary>
+        /// Gets the image URL.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="options">The options.</param>
+        /// <returns>System.String.</returns>
+        string GetImageUrl(ChannelInfoDto item, ImageOptions options);
+
+        /// <summary>
+        /// Gets the image URL.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="options">The options.</param>
+        /// <returns>System.String.</returns>
+        string GetImageUrl(RecordingInfoDto item, ImageOptions options);
+        
+        /// <summary>
         /// Gets an image url that can be used to download an image from the api
         /// </summary>
         /// <param name="itemId">The Id of the item</param>
@@ -918,5 +935,36 @@ namespace MediaBrowser.Model.ApiClient
         /// <returns>System.String.</returns>
         /// <exception cref="ArgumentNullException">options</exception>
         string GetHlsVideoStreamUrl(VideoStreamOptions options);
+
+        /// <summary>
+        /// Gets the live tv information asynchronous.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{LiveTvInfo}.</returns>
+        Task<LiveTvInfo> GetLiveTvInfoAsync(CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the live tv channels asynchronous.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{LiveTvInfo}.</returns>
+        Task<QueryResult<ChannelInfoDto>> GetLiveTvChannelsAsync(ChannelQuery query, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the live tv recordings asynchronous.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{QueryResult{RecordingInfoDto}}.</returns>
+        Task<QueryResult<RecordingInfoDto>> GetLiveTvRecordingsAsync(RecordingQuery query, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the live tv recording groups asynchronous.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{QueryResult{RecordingGroupDto}}.</returns>
+        Task<QueryResult<RecordingGroupDto>> GetLiveTvRecordingGroupsAsync(RecordingGroupQuery query, CancellationToken cancellationToken);
     }
 }

@@ -2674,11 +2674,11 @@
         //html += LibraryBrowser.getMiscInfoHtml(item);
         //html += '</p>';
 
-        //html += '<p>';
-        //html += '<span class="itemCommunityRating">';
-        //html += LibraryBrowser.getRatingHtml(item);
-        //html += '</span>';
-        //html += '</p>';
+        html += '<p>';
+        html += '<span class="itemCommunityRating">';
+        html += LibraryBrowser.getRatingHtml(item);
+        html += '</span>';
+        html += '</p>';
 
         html += '<p>';
         html += '<span class="userDataIcons">';
@@ -2732,7 +2732,7 @@
 
                 onShowTimerExpired(elem);
 
-            }, 300);
+            }, 600);
         }
 
         // https://hacks.mozilla.org/2013/04/detecting-touch-its-the-why-not-the-how/
@@ -2742,7 +2742,7 @@
                running on touch-capable device */
             return this;
         }
-
+        return this;
         return this.on('mouseenter', '.posterItem', onHoverIn).on('mouseleave', '.posterItem', onHoverOut);
     };
 

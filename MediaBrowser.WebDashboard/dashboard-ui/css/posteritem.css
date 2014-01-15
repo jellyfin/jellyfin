@@ -26,7 +26,7 @@
     right: 0;
     left: 0;
     bottom: 0;
-    background: #111;
+    background-color: rgba(0, 0, 0, .9);
     z-index: 999;
     display: none;
 }

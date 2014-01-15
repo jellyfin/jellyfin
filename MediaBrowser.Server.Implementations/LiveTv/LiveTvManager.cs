@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
@@ -37,6 +38,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         private readonly IUserDataManager _userDataManager;
         private readonly ILibraryManager _libraryManager;
         private readonly IMediaEncoder _mediaEncoder;
+        private readonly ITaskManager _taskManager;
 
         private readonly LiveTvDtoService _tvDtoService;
 
@@ -81,7 +83,27 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         {
             _services.AddRange(services);
 
-            ActiveService = _services.FirstOrDefault();
+            SetActiveService(_services.FirstOrDefault());
+        }
+
+        private void SetActiveService(ILiveTvService service)
+        {
+            if (ActiveService != null)
+            {
+                ActiveService.DataSourceChanged -= service_DataSourceChanged;
+            }
+
+            ActiveService = service;
+
+            if (service != null)
+            {
+                service.DataSourceChanged += service_DataSourceChanged;
+            }
+        }
+
+        void service_DataSourceChanged(object sender, EventArgs e)
+        {
+            _taskManager.CancelIfRunningAndQueue<RefreshChannelsScheduledTask>();
         }
 
         public Task<QueryResult<ChannelInfoDto>> GetChannels(ChannelQuery query, CancellationToken cancellationToken)

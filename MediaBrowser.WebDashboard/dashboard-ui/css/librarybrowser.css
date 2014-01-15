@@ -270,9 +270,7 @@
     display: inline-block;
     font-size: 12px;
     text-align: center;
-    width: 24px;
-    height: 20px;
-    line-height: 20px;
+    padding: 2px 4px;
     position: relative;
     top: -2px;
 }

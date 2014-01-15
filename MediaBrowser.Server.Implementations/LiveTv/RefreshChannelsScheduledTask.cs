@@ -42,7 +42,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         {
             return new ITaskTrigger[] 
             { 
-
                 new StartupTrigger(),
 
                 new SystemEventTrigger{ SystemEvent = SystemEvent.WakeFromSleep},

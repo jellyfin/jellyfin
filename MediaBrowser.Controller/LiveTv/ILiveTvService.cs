@@ -11,6 +11,16 @@ namespace MediaBrowser.Controller.LiveTv
     public interface ILiveTvService
     {
         /// <summary>
+        /// Occurs when [data source changed].
+        /// </summary>
+        event EventHandler DataSourceChanged;
+
+        /// <summary>
+        /// Occurs when [recording status changed].
+        /// </summary>
+        event EventHandler<RecordingStatusChangedEventArgs> RecordingStatusChanged;
+
+        /// <summary>
         /// Gets the name.
         /// </summary>
         /// <value>The name.</value>
