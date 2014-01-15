@@ -58,5 +58,7 @@ namespace MediaBrowser.Api.Playback
         public int SegmentLength = 10;
 
         public long? RunTimeTicks;
+
+        public int AudioSync = 1;
     }
 }

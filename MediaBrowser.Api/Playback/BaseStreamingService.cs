@@ -365,12 +365,13 @@ namespace MediaBrowser.Api.Playback
                 }
             }
 
-            return string.Format("-af \"{0}aresample={1}async=1{2}{3}\"", 
+            return string.Format("-af \"{0}aresample={1}async={4}{2}{3}\"", 
 
                 adelay,
                 audioSampleRate, 
                 volParam,
-                pts);
+                pts,
+                state.AudioSync.ToString(UsCulture));
         }
 
         /// <summary>
@@ -1044,6 +1045,7 @@ namespace MediaBrowser.Api.Playback
 
                 //state.RunTimeTicks = recording.RunTimeTicks;
                 state.SendInputOverStandardInput = recording.RecordingInfo.Status == RecordingStatus.InProgress;
+                state.AudioSync = 1000;
             }
             else if (item is LiveTvChannel)
             {
@@ -1069,6 +1071,7 @@ namespace MediaBrowser.Api.Playback
                 }
 
                 state.SendInputOverStandardInput = true;
+                state.AudioSync = 1000;
             }
             else
             {
