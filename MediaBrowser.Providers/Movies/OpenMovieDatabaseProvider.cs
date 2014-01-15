@@ -203,6 +203,24 @@ namespace MediaBrowser.Providers.Movies
                     item.AddGenre(genre);
                 }
             }
+
+            var hasMetascore = item as IHasMetascore;
+            if (hasMetascore != null)
+            {
+                float metascore;
+
+                if (!string.IsNullOrEmpty(result.Metascore) && float.TryParse(result.Metascore, NumberStyles.Any, UsCulture, out metascore) && metascore >= 0)
+                {
+                    hasMetascore.Metascore = metascore;
+                }
+            }
+
+            var hasAwards = item as IHasAwards;
+            if (hasAwards != null && !string.IsNullOrEmpty(result.Awards) && 
+                !string.Equals(result.Awards, "n/a", StringComparison.OrdinalIgnoreCase))
+            {
+                hasAwards.AwardSummary = WebUtility.HtmlDecode(result.Awards);
+            }
         }
 
         private bool ShouldFetchGenres(BaseItem item)

@@ -1,8 +1,8 @@
-﻿using System.Diagnostics;
-using MediaBrowser.Model.Entities;
+﻿using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.Serialization;
 
 namespace MediaBrowser.Model.Dto
@@ -40,6 +40,10 @@ namespace MediaBrowser.Model.Dto
 
         public string PreferredMetadataLanguage { get; set; }
         public string PreferredMetadataCountryCode { get; set; }
+
+        public string AwardSummary { get; set; }
+
+        public float? Metascore { get; set; }
         
         /// <summary>
         /// Gets or sets the DVD season number.

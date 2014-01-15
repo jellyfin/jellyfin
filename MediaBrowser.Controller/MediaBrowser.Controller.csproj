@@ -89,6 +89,7 @@
     <Compile Include="Entities\IHasImages.cs" />
     <Compile Include="Entities\IHasKeywords.cs" />
     <Compile Include="Entities\IHasMediaStreams.cs" />
+    <Compile Include="Entities\IHasMetascore.cs" />
     <Compile Include="Entities\IHasPreferredMetadataLanguage.cs" />
     <Compile Include="Entities\IHasProductionLocations.cs" />
     <Compile Include="Entities\IHasScreenshots.cs" />
@@ -103,6 +104,7 @@
     <Compile Include="Entities\ImageSourceInfo.cs" />
     <Compile Include="Entities\LinkedChild.cs" />
     <Compile Include="Entities\MusicVideo.cs" />
+    <Compile Include="Entities\IHasAwards.cs" />
     <Compile Include="Library\ILibraryPostScanTask.cs" />
     <Compile Include="Library\ILibraryPrescanTask.cs" />
     <Compile Include="Library\IMetadataSaver.cs" />
