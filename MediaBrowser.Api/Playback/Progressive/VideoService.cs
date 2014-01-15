@@ -106,7 +106,7 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             var threads = GetNumberOfThreads(string.Equals(videoCodec, "libvpx", StringComparison.OrdinalIgnoreCase));
 
-            return string.Format("{0} {1} {2} -i {3}{4}{5} {6} {7} -map_metadata -1 -threads {8} {9}{10} \"{11}\"",
+            return string.Format("{0} {1} {2} -fflags genpts -i {3}{4}{5} {6} {7} -map_metadata -1 -threads {8} {9}{10} \"{11}\"",
                 probeSize,
                 GetUserAgentParam(state.MediaPath),
                 GetFastSeekCommandLineParameter(state.Request),
