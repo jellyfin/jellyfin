@@ -52,12 +52,6 @@ namespace MediaBrowser.Model.LiveTv
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the location.
-        /// </summary>
-        /// <value>The type of the location.</value>
-        public LocationType LocationType { get; set; }
-
-        /// <summary>
         /// Gets or sets the media streams.
         /// </summary>
         /// <value>The media streams.</value>
@@ -68,12 +62,6 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value>The path.</value>
         public string Path { get; set; }
-
-        /// <summary>
-        /// Gets or sets the URL.
-        /// </summary>
-        /// <value>The URL.</value>
-        public string Url { get; set; }
 
         /// <summary>
         /// Overview of the recording.

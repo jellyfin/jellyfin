@@ -50,7 +50,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         private List<Guid> _channelIdList = new List<Guid>();
         private Dictionary<Guid, LiveTvProgram> _programs = new Dictionary<Guid, LiveTvProgram>();
 
-        public LiveTvManager(IServerConfigurationManager config, IFileSystem fileSystem, ILogger logger, IItemRepository itemRepo, IImageProcessor imageProcessor, IUserDataManager userDataManager, IDtoService dtoService, IUserManager userManager, ILibraryManager libraryManager, IMediaEncoder mediaEncoder)
+        public LiveTvManager(IServerConfigurationManager config, IFileSystem fileSystem, ILogger logger, IItemRepository itemRepo, IImageProcessor imageProcessor, IUserDataManager userDataManager, IDtoService dtoService, IUserManager userManager, ILibraryManager libraryManager, IMediaEncoder mediaEncoder, ITaskManager taskManager)
         {
             _config = config;
             _fileSystem = fileSystem;
@@ -59,6 +59,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             _userManager = userManager;
             _libraryManager = libraryManager;
             _mediaEncoder = mediaEncoder;
+            _taskManager = taskManager;
             _userDataManager = userDataManager;
 
             _tvDtoService = new LiveTvDtoService(dtoService, userDataManager, imageProcessor, logger, _itemRepo);
@@ -780,10 +781,16 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 recordings = recordings.Where(i => GetRecordingGroupIds(i).Contains(guid));
             }
 
-            if (query.IsRecording.HasValue)
+            if (query.IsInProgress.HasValue)
             {
-                var val = query.IsRecording.Value;
+                var val = query.IsInProgress.Value;
                 recordings = recordings.Where(i => (i.Status == RecordingStatus.InProgress) == val);
+            }
+
+            if (query.Status.HasValue)
+            {
+                var val = query.Status.Value;
+                recordings = recordings.Where(i => (i.Status == val));
             }
 
             if (!string.IsNullOrEmpty(query.SeriesTimerId))

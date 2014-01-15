@@ -212,7 +212,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 Audio = info.Audio,
                 IsHD = info.IsHD,
                 ServiceName = service.Name,
-                Url = info.Url,
                 IsMovie = info.IsMovie,
                 IsSeries = info.IsSeries,
                 IsSports = info.IsSports,
@@ -221,7 +220,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 IsKids = info.IsKids,
                 IsPremiere = info.IsPremiere,
                 RunTimeTicks = (info.EndDate - info.StartDate).Ticks,
-                LocationType = recording.LocationType,
                 OriginalAirDate = info.OriginalAirDate,
 
                 MediaStreams = _itemRepo.GetMediaStreams(new MediaStreamQuery

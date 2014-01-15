@@ -291,7 +291,7 @@ namespace MediaBrowser.ServerApplication
             await RegisterMediaEncoder(innerProgress).ConfigureAwait(false);
             progress.Report(90);
 
-            LiveTvManager = new LiveTvManager(ServerConfigurationManager, FileSystemManager, Logger, ItemRepository, ImageProcessor, UserDataManager, DtoService, UserManager, LibraryManager, MediaEncoder);
+            LiveTvManager = new LiveTvManager(ServerConfigurationManager, FileSystemManager, Logger, ItemRepository, ImageProcessor, UserDataManager, DtoService, UserManager, LibraryManager, MediaEncoder, TaskManager);
             RegisterSingleInstance(LiveTvManager);
 
             var displayPreferencesTask = Task.Run(async () => await ConfigureDisplayPreferencesRepositories().ConfigureAwait(false));

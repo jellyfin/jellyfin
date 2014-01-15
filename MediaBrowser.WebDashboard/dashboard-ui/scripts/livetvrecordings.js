@@ -68,7 +68,7 @@
         apiClient.getLiveTvRecordings({
 
             userId: Dashboard.getCurrentUserId(),
-            isRecording: true
+            IsInProgress: true
 
         }).done(function (result) {
 
@@ -80,7 +80,7 @@
 
             userId: Dashboard.getCurrentUserId(),
             limit: 12,
-            isRecording: false
+            IsInProgress: false
 
         }).done(function (result) {
 
