@@ -137,24 +137,14 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 var libraryItems = user.RootFolder.GetRecursiveChildren(user).ToList();
 
-                items = items.Where(i => GetLibraryItems(i, libraryItems).All(l =>
-                {
-                    var userdata = UserDataRepository.GetUserData(user.Id, l.GetUserDataKey());
-                        
-                    return userdata != null && userdata.Played;
-                }));
+                items = items.Where(i => GetLibraryItems(i, libraryItems).All(l => l.IsPlayed(user)));
             }
 
             if (filters.Contains(ItemFilter.IsUnplayed))
             {
                 var libraryItems = user.RootFolder.GetRecursiveChildren(user).ToList();
 
-                items = items.Where(i => GetLibraryItems(i, libraryItems).All(l =>
-                {
-                    var userdata = UserDataRepository.GetUserData(user.Id, l.GetUserDataKey());
-
-                    return userdata == null || !userdata.Played;
-                }));
+                items = items.Where(i => GetLibraryItems(i, libraryItems).All(l => !l.IsPlayed(user)));
             }
 
             return items;

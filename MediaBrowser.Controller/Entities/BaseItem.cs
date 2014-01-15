@@ -167,6 +167,7 @@ namespace MediaBrowser.Controller.Entities
         public static ILocalizationManager LocalizationManager { get; set; }
         public static IItemRepository ItemRepository { get; set; }
         public static IFileSystem FileSystem { get; set; }
+        public static IUserDataManager UserDataManager { get; set; }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
@@ -1704,6 +1705,13 @@ namespace MediaBrowser.Controller.Entities
 
             // Directory watchers should repeat this, but do a quick refresh first
             return RefreshMetadata(CancellationToken.None, forceSave: true, allowSlowProviders: false);
+        }
+
+        public virtual bool IsPlayed(User user)
+        {
+            var userdata = UserDataManager.GetUserData(user.Id, GetUserDataKey());
+
+            return userdata != null && userdata.Played;
         }
     }
 }

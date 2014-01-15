@@ -32,14 +32,7 @@ namespace MediaBrowser.Server.Implementations.Sorting
         /// <returns>DateTime.</returns>
         private int GetValue(BaseItem x)
         {
-            var userdata = UserDataRepository.GetUserData(User.Id, x.GetUserDataKey());
-
-            if (userdata == null)
-            {
-                return 0;
-            }
-
-            return userdata.Played ? 1 : 0;
+            return x.IsPlayed(User) ? 1 : 0;
         }
 
         /// <summary>
@@ -90,14 +83,7 @@ namespace MediaBrowser.Server.Implementations.Sorting
         /// <returns>DateTime.</returns>
         private int GetValue(BaseItem x)
         {
-            var userdata = UserDataRepository.GetUserData(User.Id, x.GetUserDataKey());
-
-            if (userdata == null)
-            {
-                return 1;
-            }
-
-            return userdata.Played ? 0 : 1;
+            return x.IsPlayed(User) ? 0 : 1;
         }
 
         /// <summary>
