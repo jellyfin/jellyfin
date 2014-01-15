@@ -274,7 +274,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var threads = GetNumberOfThreads(false);
 
-            var args = string.Format("{0}{1} {2} {3} -i {4}{5} -map_metadata -1 -threads {6} {7} {8} -sc_threshold 0 {9} -hls_time {10} -start_number 0 -hls_list_size 1440 \"{11}\"",
+            var args = string.Format("{0}{1} {2} {3} -fflags genpts -i {4}{5} -map_metadata -1 -threads {6} {7} {8} -sc_threshold 0 {9} -hls_time {10} -start_number 0 -hls_list_size 1440 \"{11}\"",
                 itsOffset,
                 probeSize,
                 GetUserAgentParam(state.MediaPath),
