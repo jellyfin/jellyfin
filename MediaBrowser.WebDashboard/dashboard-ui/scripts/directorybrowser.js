@@ -93,7 +93,7 @@
             options.header = options.header || "Select Media Path";
             options.instruction = options.instruction || "Any path will do, but for optimal playback of bluray, dvd folders, and games, <b>network paths (UNC)</b> are recommended.";
 
-            var html = '<div data-role="popup" id="popupDirectoryPicker" class="popup" style="min-width:65%;">';
+            var html = '<div data-transition="fade" data-role="popup" id="popupDirectoryPicker" class="popup" style="min-width:65%;">';
 
             html += '<div class="ui-bar-a" style="text-align: center; padding: 0 20px;">';
             html += '<h3>' + options.header + '</h3>';

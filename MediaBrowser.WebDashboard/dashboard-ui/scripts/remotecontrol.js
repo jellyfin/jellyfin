@@ -64,7 +64,7 @@
 
         var item = options.item;
 
-        var html = '<div data-role="popup" id="remoteControlFlyout" data-theme="a">';
+        var html = '<div data-role="popup" id="remoteControlFlyout" data-transition="slidefade" data-theme="a">';
 
         html += '<a href="#" data-rel="back" data-role="button" data-icon="delete" data-iconpos="notext" class="ui-btn-right" data-theme="b">Close</a>';
 
@@ -632,7 +632,7 @@
 
     function showMenu(sessions, options) {
 
-        var html = '<div data-role="popup" id="remoteControlFlyout" data-theme="a">';
+        var html = '<div data-role="popup" data-transition="slidefade" id="remoteControlFlyout" data-theme="a">';
 
         html += '<a href="#" data-rel="back" data-role="button" data-icon="delete" data-iconpos="notext" class="ui-btn-right" data-theme="b">Close</a>';
 

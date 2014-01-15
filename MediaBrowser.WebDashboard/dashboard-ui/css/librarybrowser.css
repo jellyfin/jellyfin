@@ -156,10 +156,8 @@
 }
 
 .detailButtonsContainer {
-    padding: .5em 0 .5em;
+    padding: .35em 0 .35em;
     text-align: center;
-    border-top: 1px solid #333;
-    border-bottom: 1px solid #333;
 }
 
 .viewSettings {
@@ -272,18 +270,19 @@
     padding: 2px 4px;
     position: relative;
     top: -1px;
+    border-radius: 2px;
 }
 
 .metascorehigh {
-    background-color: rgba(102, 204, 51, .65);
+    background-color: rgba(102, 204, 51, .7);
 }
 
 .metascoremid {
-    background-color: rgba(255, 204, 51, .65);
+    background-color: rgba(255, 204, 51, .7);
 }
 
 .metascorelow {
-    background-color: rgba(240, 0, 0, .65);
+    background-color: rgba(240, 0, 0, .7);
 }
 
 .criticRating + .metascore, .starRatingValue + .metascore {
@@ -771,7 +770,7 @@ a.itemTag:hover {
     }
 
     .primaryDetailPageContent {
-        max-width: 900px;
+        max-width: 850px;
     }
 }
 
@@ -972,24 +971,10 @@ a.itemTag:hover {
     top: 3px;
 }
 
-.userDataIcons .itemProgressText {
-    vertical-align: top;
-    margin-right: 1.5em;
-}
-
 .tileItem .itemProgressBar {
     top: 2px;
     width: 40px;
     margin-right: 1em;
-}
-
-.itemProgressText {
-    color: #ddd;
-    vertical-align: middle;
-}
-
-.tileItem .itemProgressText {
-    display: none;
 }
 
 .timelineHeader {

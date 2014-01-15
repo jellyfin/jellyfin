@@ -53,7 +53,7 @@
                 cssClass += " movieProgramInfo";
             }
 
-            html += '<div class="' + cssClass + '">';
+            html += '<div data-programid="' + program.Id + '" class="' + cssClass + '">';
 
             var name = program.Name;
 
@@ -101,7 +101,7 @@
             html += '</a>';
         }
 
-        $('#programList', page).html(html).trigger('create');
+        $('#programList', page).html(html).trigger('create').createGuideHoverMenu('.tvProgramInfo');
     }
 
     function loadPrograms(page) {
@@ -196,7 +196,7 @@
                 hours = (hours % 12) || 12;
 
                 text = hours;
-                
+
                 if (minutes) {
 
                     text += ':';

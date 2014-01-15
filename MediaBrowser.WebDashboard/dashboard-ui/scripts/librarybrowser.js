@@ -2201,7 +2201,7 @@
             for (var i = 0, length = genres.length; i < length; i++) {
 
                 if (i > 0) {
-                    html += '&nbsp;&nbsp;/&nbsp;&nbsp;';
+                    html += '<span>&nbsp;&nbsp;/&nbsp;&nbsp;</span>';
                 }
 
                 var param = item.Type == "Audio" || item.Type == "MusicArtist" || item.Type == "MusicAlbum" ? "musicgenre" : "genre";

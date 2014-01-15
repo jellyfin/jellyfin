@@ -49,7 +49,7 @@
 
 
 .nowPlayingMediaInfo {
-    display: none;
+    display: inline-block;
 }
 
 .nowPlayingText {
@@ -60,9 +60,9 @@
     font-weight: normal;
 }
 
-@media all and (min-width: 650px) {
+@media all and (max-width: 650px) {
     .nowPlayingMediaInfo {
-        display: inline-block;
+        display: none;
     }
 }
 
@@ -164,19 +164,36 @@ input[type="range"]::-ms-fill-upper {
     display: none; /* display and visibility only */
 }
 
-@media all and (max-width: 600px) {
-    .volumeButton, .volumeSliderContainer, .nowPlayingText, .chaptersButton, .audioTracksButton {
+@media all and (max-width: 800px) {
+    .volumeButton, .volumeSliderContainer, .muteButton, .unmuteButton, .nowPlayingMediaInfo {
         display: none!important;
-    }
-
-    .positionSliderContainer {
-        width: 50px;
     }
 }
 
-@media all and (max-width: 750px) {
+@media all and (max-width: 600px) {
+    .chaptersButton, .audioTracksButton, .sendMediaButton {
+        display: none!important;
+    }
+
+    .positionSliderContainer, .currentTime {
+        top: 0!important;
+        position: relative!important;
+    }
+}
+
+@media all and (max-width: 500px) {
     .positionSliderContainer {
-        width: 50px;
+        width: 80px;
+    }
+
+    .previousTrackButton, .nextTrackButton {
+        display: none!important;
+    }
+}
+
+@media all and (max-width: 400px) {
+    .playlistButton {
+        display: none!important;
     }
 }
 

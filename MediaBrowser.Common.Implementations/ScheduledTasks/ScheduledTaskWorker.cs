@@ -380,6 +380,10 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
             CurrentProgress = null;
 
             OnTaskCompleted(startTime, endTime, status, failureException);
+
+            // Bad practice, i know. But we keep a lot in memory, unfortunately.
+            GC.Collect(2, GCCollectionMode.Forced, true);
+            GC.Collect(2, GCCollectionMode.Forced, true);
         }
 
         /// <summary>
@@ -390,7 +394,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         /// <returns>Task.</returns>
         private Task ExecuteTask(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            return Task.Run(async () => await ScheduledTask.Execute(cancellationToken, progress).ConfigureAwait(false));
+            return Task.Run(async () => await ScheduledTask.Execute(cancellationToken, progress).ConfigureAwait(false), cancellationToken);
         }
 
         /// <summary>
