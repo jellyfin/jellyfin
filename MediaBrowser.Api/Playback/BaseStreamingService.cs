@@ -318,7 +318,17 @@ namespace MediaBrowser.Api.Playback
 
             if (videoCodec.Equals("libx264", StringComparison.OrdinalIgnoreCase))
             {
-                return "-preset superfast";
+                switch (GetQualitySetting())
+                {
+                    case EncodingQuality.HighSpeed:
+                        return "-preset ultrafast";
+                    case EncodingQuality.HighQuality:
+                        return "-preset superfast";
+                    case EncodingQuality.MaxQuality:
+                        return "-preset superfast";
+                    default:
+                        throw new Exception("Unrecognized MediaEncodingQuality value.");
+                }
             }
 
             if (videoCodec.Equals("mpeg4", StringComparison.OrdinalIgnoreCase))
