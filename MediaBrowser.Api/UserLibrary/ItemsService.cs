@@ -386,6 +386,9 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>IEnumerable{BaseItem}.</returns>
         internal static IEnumerable<BaseItem> ApplyFilter(IEnumerable<BaseItem> items, ItemFilter filter, User user, IUserDataManager repository)
         {
+            // Avoid implicitly captured closure
+            var currentUser = user;
+
             switch (filter)
             {
                 case ItemFilter.IsFavoriteOrLikes:
@@ -440,20 +443,10 @@ namespace MediaBrowser.Api.UserLibrary
                     });
 
                 case ItemFilter.IsPlayed:
-                    return items.Where(item =>
-                    {
-                        var userdata = repository.GetUserData(user.Id, item.GetUserDataKey());
-
-                        return userdata != null && userdata.Played;
-                    });
+                    return items.Where(item => item.IsPlayed(currentUser));
 
                 case ItemFilter.IsUnplayed:
-                    return items.Where(item =>
-                    {
-                        var userdata = repository.GetUserData(user.Id, item.GetUserDataKey());
-
-                        return userdata == null || !userdata.Played;
-                    });
+                    return items.Where(item => !item.IsPlayed(currentUser));
 
                 case ItemFilter.IsFolder:
                     return items.Where(item => item.IsFolder);
