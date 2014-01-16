@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
     <metadata>
         <id>MediaBrowser.Common.Internal</id>
-        <version>3.0.302</version>
+        <version>3.0.303</version>
         <title>MediaBrowser.Common.Internal</title>
         <authors>Luke</authors>
         <owners>ebr,Luke,scottisafool</owners>
@@ -12,7 +12,7 @@
         <description>Contains common components shared by Media Browser Theater and Media Browser Server. Not intended for plugin developer consumption.</description>
         <copyright>Copyright © Media Browser 2013</copyright>
         <dependencies>
-            <dependency id="MediaBrowser.Common" version="3.0.302" />
+            <dependency id="MediaBrowser.Common" version="3.0.303" />
             <dependency id="NLog" version="2.1.0" />
             <dependency id="SimpleInjector" version="2.4.0" />
             <dependency id="sharpcompress" version="0.10.2" />

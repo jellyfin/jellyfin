@@ -1130,7 +1130,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             await service.UpdateSeriesTimerAsync(info, cancellationToken).ConfigureAwait(false);
         }
 
-        private List<string> GetRecordingGroupNames(RecordingInfo recording)
+        private IEnumerable<string> GetRecordingGroupNames(RecordingInfo recording)
         {
             var list = new List<string>();
 
@@ -1291,6 +1291,38 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     _openStreams.Clear();
                 }
             }
+        }
+
+        public async Task<IEnumerable<LiveTvServiceInfo>> GetServiceInfos(CancellationToken cancellationToken)
+        {
+            var tasks = Services.Select(i => GetServiceInfo(i, cancellationToken));
+
+            return await Task.WhenAll(tasks).ConfigureAwait(false);
+        }
+
+        private async Task<LiveTvServiceInfo> GetServiceInfo(ILiveTvService service, CancellationToken cancellationToken)
+        {
+            var info = new LiveTvServiceInfo
+            {
+                Name = service.Name
+            };
+
+            try
+            {
+                var statusInfo = await service.GetStatusInfoAsync(cancellationToken).ConfigureAwait(false);
+
+                info.Status = statusInfo.Status;
+                info.StatusMessage = statusInfo.StatusMessage;
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error getting service status info from {0}", ex, service.Name);
+
+                info.Status = LiveTvServiceStatus.Unavailable;
+                info.StatusMessage = ex.Message;
+            }
+
+            return info;
         }
     }
 }

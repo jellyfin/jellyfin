@@ -234,7 +234,7 @@ namespace MediaBrowser.Model.Configuration
             : base()
         {
             MediaEncodingQuality = EncodingQuality.HighSpeed;
-            ImageSavingConvention = ImageSavingConvention.Legacy;
+            ImageSavingConvention = ImageSavingConvention.Compatible;
             HttpServerPortNumber = 8096;
             LegacyWebSocketPortNumber = 8945;
             EnableHttpLevelLogging = true;
