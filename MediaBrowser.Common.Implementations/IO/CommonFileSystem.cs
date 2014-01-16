@@ -82,16 +82,6 @@ namespace MediaBrowser.Common.Implementations.IO
                 throw new ArgumentNullException("target");
             }
 
-            if (string.IsNullOrEmpty(shortcutPath))
-            {
-                throw new ArgumentNullException("shortcutPath");
-            }
-
-            if (string.IsNullOrEmpty(target))
-            {
-                throw new ArgumentNullException("target");
-            }
-
             File.WriteAllText(shortcutPath, target);
         }
 
