@@ -64,12 +64,12 @@
 
         var item = options.item;
 
-        var html = '<div data-role="popup" id="remoteControlFlyout" data-transition="slidefade" data-theme="a">';
+        var html = '<div data-role="popup" id="remoteControlFlyout" data-transition="slidedown" data-theme="a">';
 
         html += '<a href="#" data-rel="back" data-role="button" data-icon="delete" data-iconpos="notext" class="ui-btn-right" data-theme="b">Close</a>';
 
         html += '<div class="ui-bar-b" style="text-align:center;">';
-        html += '<div style="margin:.5em 0;">Remote Control</div>';
+        html += '<div style="margin:.5em 0;">Send to Device</div>';
         html += '</div>';
 
         html += '<div style="padding: 1em;">';
@@ -385,7 +385,6 @@
     function renderPlayFromOptions(elem, item) {
 
         var html = '';
-        var html = '';
 
         html += '<h4 style="margin: 1em 0 .5em;">Play from scene</h4>';
 
@@ -455,33 +454,31 @@
         var html = '';
 
         html += '<div style="margin-top:0;">';
-        html += '<label for="selectCommand">Select command</label>';
+        html += '<label for="selectCommand">Send:</label>';
         html += '<select id="selectCommand" data-mini="true">';
 
-        if (item.LocationType == 'Virtual') {
-            html += '<option value="Play" selected>Browse</label>';
-        } else {
-            html += '<option value="Play" selected>Play</label>';
-        }
+        var mediaLabel = item.MediaType || 'Media';
+        
+        html += '<option value="Play" selected>' + mediaLabel + '</label>';
 
         if (item.Chapters && item.Chapters.length) {
-            html += '<option value="PlayFromChapter">Play from scene</label>';
+            html += '<option value="PlayFromChapter">Scene</label>';
         }
 
         if (item.LocalTrailerCount) {
-            html += '<option value="Trailer">Play trailer</label>';
+            html += '<option value="Trailer">Trailer</label>';
         }
 
         if (item.SpecialFeatureCount) {
-            html += '<option value="SpecialFeature">Play special feature</label>';
+            html += '<option value="SpecialFeature">Special feature</label>';
         }
 
         if (options.themeSongs) {
-            html += '<option value="ThemeSong">Play theme song</label>';
+            html += '<option value="ThemeSong">Theme song</label>';
         }
 
         if (options.themeVideos) {
-            html += '<option value="ThemeVideo">Play theme video</label>';
+            html += '<option value="ThemeVideo">Theme video</label>';
         }
 
         html += '</select>';
@@ -632,7 +629,7 @@
 
     function showMenu(sessions, options) {
 
-        var html = '<div data-role="popup" data-transition="slidefade" id="remoteControlFlyout" data-theme="a">';
+        var html = '<div data-role="popup" data-transition="slidedown" id="remoteControlFlyout" data-theme="a">';
 
         html += '<a href="#" data-rel="back" data-role="button" data-icon="delete" data-iconpos="notext" class="ui-btn-right" data-theme="b">Close</a>';
 

@@ -421,6 +421,7 @@ namespace MediaBrowser.ServerApplication
             LocalizedStrings.ApplicationPaths = ApplicationPaths;
             Folder.UserManager = UserManager;
             BaseItem.FileSystem = FileSystemManager;
+            BaseItem.UserDataManager = UserDataManager;
         }
 
         /// <summary>

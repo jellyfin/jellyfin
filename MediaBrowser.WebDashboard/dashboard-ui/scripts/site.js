@@ -1355,12 +1355,12 @@ $(function () {
     footerHtml += '<button onclick="MediaPlayer.showChaptersFlyout();" id="chaptersButton" class="mediaButton chaptersButton" title="Scenes" type="button" data-icon="video" data-iconpos="notext" data-inline="true">Scenes</button>';
     footerHtml += '<div class="mediaFlyoutContainer"><div id="chaptersFlyout" style="display:none;" class="mediaPlayerFlyout chaptersFlyout"></div></div>';
 
-    footerHtml += '<button onclick="MediaPlayer.showChannelsFlyout();" id="channelsButton" class="mediaButton channelsButton" title="Channels" type="button" data-icon="tv" data-iconpos="notext" data-inline="true">Channels</button>';
-    footerHtml += '<div class="mediaFlyoutContainer"><div id="channelsFlyout" style="display:none;" class="mediaPlayerFlyout channelsFlyout"></div></div>';
-
     footerHtml += '<button onclick="MediaPlayer.toggleFullscreen();" id="fullscreenButton" class="mediaButton fullscreenButton" title="Fullscreen" type="button" data-icon="action" data-iconpos="notext" data-inline="true">Fullscreen</button>';
 
-    footerHtml += '<button onclick="MediaPlayer.showSendMediaMenu();" id="sendMediaButton" class="mediaButton sendMediaButton" title="Cast" type="button" data-icon="wireless" data-iconpos="notext" data-inline="true">Cast</button>';
+    footerHtml += '<button onclick="MediaPlayer.showChannelsFlyout();" id="channelsButton" class="mediaButton channelsButton" title="TV Channels" type="button" data-icon="tv" data-iconpos="notext" data-inline="true">TV Channels</button>';
+    footerHtml += '<div class="mediaFlyoutContainer"><div id="channelsFlyout" style="display:none;" class="mediaPlayerFlyout channelsFlyout"></div></div>';
+
+    footerHtml += '<button onclick="MediaPlayer.showSendMediaMenu();" id="sendMediaButton" class="mediaButton sendMediaButton" title="Send to Device" type="button" data-icon="wireless" data-iconpos="notext" data-inline="true">Send to Device</button>';
 
     footerHtml += '</div>';
 

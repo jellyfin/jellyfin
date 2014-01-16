@@ -5,7 +5,6 @@ using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
 using ServiceStack;
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -83,7 +82,7 @@ namespace MediaBrowser.Api.LiveTv
 
         [ApiMember(Name = "Status", Description = "Optional filter by recordings that are in progress, or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool? IsInProgress { get; set; }
-        
+
         [ApiMember(Name = "SeriesTimerId", Description = "Optional filter by recordings belonging to a series timer", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string SeriesTimerId { get; set; }
     }
@@ -295,25 +294,15 @@ namespace MediaBrowser.Api.LiveTv
 
         public object Get(GetLiveTvInfo request)
         {
-            var services = _liveTvManager.Services
-                .Select(GetServiceInfo)
-                .ToList();
+            var services = _liveTvManager.GetServiceInfos(CancellationToken.None).Result;
 
             var info = new LiveTvInfo
             {
-                Services = services,
+                Services = services.ToList(),
                 ActiveServiceName = _liveTvManager.ActiveService == null ? null : _liveTvManager.ActiveService.Name
             };
 
             return ToOptimizedResult(info);
-        }
-
-        private LiveTvServiceInfo GetServiceInfo(ILiveTvService service)
-        {
-            return new LiveTvServiceInfo
-            {
-                Name = service.Name
-            };
         }
 
         public object Get(GetChannels request)

@@ -1498,7 +1498,7 @@
             return html;
         },
 
-        getRatingHtml: function (item) {
+        getRatingHtml: function (item, metascore) {
 
             var html = "";
 
@@ -1508,7 +1508,7 @@
                 html += '<div class="starRatingValue">';
                 html += item.CommunityRating.toFixed(1);
                 html += '</div>';
-                
+
                 //var rating = item.CommunityRating / 2;
 
                 //for (var i = 1; i <= 5; i++) {
@@ -1535,7 +1535,7 @@
                 html += '<div class="criticRating">' + item.CriticRating + '%</div>';
             }
 
-            if (item.Metascore) {
+            if (item.Metascore && metascore !== false) {
 
                 if (item.Metascore >= 60) {
                     html += '<div class="metascore metascorehigh" title="Metascore">' + item.Metascore + '</div>';
@@ -2508,7 +2508,7 @@
         html += '<h3 style="margin: .5em 0;padding:0 1em;font-weight:normal;">' + LibraryBrowser.getPosterViewDisplayName(item, true) + '</h3>';
         html += '</div>';
 
-        html += '<div style="padding: 1em;">';
+        html += '<div style="padding: .8em 1em;">';
         html += getOverlayHtml(item);
         html += '</div>';
 
@@ -2645,7 +2645,7 @@
 
             var elem = this;
 
-            $(this).animate({ "height": "0" }, function () {
+            $(this).animate({ "height": "0" }, "fast", function () {
 
                 $(elem).hide();
 
@@ -2659,45 +2659,134 @@
 
         });
     }
-    
-    function getOverlayHtml(item) {
+
+    function getOverlayHtml(item, currentUser, posterItem) {
 
         var html = '';
 
         html += '<div class="posterItemOverlayInner">';
 
-        html += '<div style="font-weight:bold;margin-bottom:1.5em;">';
-        html += LibraryBrowser.getPosterViewDisplayName(item, true);
+        var isSmallItem = $(posterItem).hasClass('smallBackdropPosterItem');
+        var isPortrait = $(posterItem).hasClass('portraitPosterItem');
+
+        var parentName = isSmallItem || isPortrait ? null : item.SeriesName;
+        var name = LibraryBrowser.getPosterViewDisplayName(item, true);
+
+        html += '<div style="font-weight:bold;margin-bottom:1em;">';
+        var logoHeight = isPortrait || isSmallItem ? 20 : 22;
+        var maxLogoWidth = isPortrait ? 100 : 200;
+        var imgUrl;
+
+        if (parentName && item.ParentLogoItemId) {
+
+            imgUrl = ApiClient.getImageUrl(item.ParentLogoItemId, {
+                height: logoHeight * 2,
+                type: 'logo',
+                tag: item.ParentLogoImageTag
+            });
+
+            html += '<img src="' + imgUrl + '" style="max-height:' + logoHeight + 'px;max-width:' + maxLogoWidth + 'px;" />';
+
+        }
+        else if (item.ImageTags.Logo) {
+
+            imgUrl = LibraryBrowser.getImageUrl(item, 'Logo', 0, {
+                height: logoHeight * 2,
+            });
+
+            html += '<img src="' + imgUrl + '" style="max-height:' + logoHeight + 'px;max-width:' + maxLogoWidth + 'px;" />';
+        }
+        else {
+            html += parentName || name;
+        }
         html += '</div>';
 
-        //html += '<p class="itemMiscInfo">';
-        //html += LibraryBrowser.getMiscInfoHtml(item);
-        //html += '</p>';
+        if (parentName) {
+            html += '<p>';
+            html += name;
+            html += '</p>';
+        } else if (!isSmallItem) {
+            html += '<p class="itemMiscInfo" style="white-space:nowrap;">';
+            html += LibraryBrowser.getMiscInfoHtml(item);
+            html += '</p>';
+        }
 
-        html += '<p>';
+        html += '<p style="margin:.75em 0;">';
         html += '<span class="itemCommunityRating">';
-        html += LibraryBrowser.getRatingHtml(item);
+        html += LibraryBrowser.getRatingHtml(item, false);
         html += '</span>';
-        html += '</p>';
-
-        html += '<p>';
-        html += '<span class="userDataIcons">';
-        html += LibraryBrowser.getUserDataIconsHtml(item);
-        html += '</span>';
+        
+        if (isPortrait) {
+            html += '<span class="userDataIcons" style="margin-left:0;display:block;margin:1.25em 0;">';
+            html += LibraryBrowser.getUserDataIconsHtml(item);
+            html += '</span>';
+        } else {
+            html += '<span class="userDataIcons" style="margin-left:1em;">';
+            html += LibraryBrowser.getUserDataIconsHtml(item);
+            html += '</span>';
+        }
         html += '</p>';
 
         //html += '<p class="itemOverlayHtml">';
         //html += (item.OverviewHtml || item.Overview || '');
         //html += '</p>';
 
-        html += '<button type="button" data-mini="true" data-inline="true" data-icon="play" data-iconpos="notext">Play</button>';
-        html += '<button type="button" data-mini="true" data-inline="true" data-icon="video" data-iconpos="notext">Play</button>';
-        html += '<button type="button" data-mini="true" data-inline="true" data-icon="remote" data-iconpos="notext">Play</button>';
-        html += '<button type="button" data-mini="true" data-inline="true" data-icon="edit" data-iconpos="notext">Play</button>';
+        html += '<div>';
+
+        var buttonMargin = isPortrait ? "margin:0 7px 0 0;" : "margin:0 10px 0 0;";
+
+        var buttonCount = 0;
+
+        if (MediaPlayer.canPlay(item)) {
+            html += '<button type="button" data-mini="true" data-inline="true" data-icon="play" data-iconpos="notext" title="Play" onclick="MediaPlayer.playById(\'' + item.Id + '\');return false;" style="' + buttonMargin + '">Play</button>';
+            buttonCount++;
+        }
+
+        if (item.LocalTrailerCount) {
+            html += '<button type="button" data-mini="true" data-inline="true" data-icon="video" data-iconpos="notext" class="btnPlayTrailer" data-itemid="' + item.Id + '" title="Play Trailer" style="' + buttonMargin + '">Play Trailer</button>';
+            buttonCount++;
+        }
+
+        if (currentUser.Configuration.IsAdministrator) {
+            html += '<button type="button" data-mini="true" data-inline="true" data-icon="edit" data-iconpos="notext" title="Edit" onclick="Dashboard.navigate(\'edititemmetadata.html?id=' + item.Id + '\');return false;" style="' + buttonMargin + '">Edit</button>';
+            buttonCount++;
+        }
+
+        if (!isPortrait || buttonCount < 3) {
+            html += '<button type="button" data-mini="true" data-inline="true" data-icon="wireless" data-iconpos="notext" title="Send to Device" class="btnRemoteControl" data-itemid="' + item.Id + '" style="' + buttonMargin + '">Send to Device</button>';
+        }
+
+        html += '</div>';
 
         html += '</div>';
 
         return html;
+    }
+
+    function onTrailerButtonClick() {
+
+        var id = this.getAttribute('data-itemid');
+
+        ApiClient.getLocalTrailers(Dashboard.getCurrentUserId(), id).done(function (trailers) {
+            MediaPlayer.play(trailers);
+        });
+
+        return false;
+    }
+
+    function onRemoteControlButtonClick() {
+
+        var id = this.getAttribute('data-itemid');
+
+        ApiClient.getItem(Dashboard.getCurrentUserId(), id).done(function (item) {
+
+            RemoteControl.showMenuForItem({
+                item: item
+            });
+
+        });
+
+        return false;
     }
 
     $.fn.createPosterItemHoverMenu = function () {
@@ -2707,16 +2796,25 @@
             var innerElem = $('.posterItemOverlayTarget', elem);
             var id = elem.getAttribute('data-itemid');
 
-            ApiClient.getItem(Dashboard.getCurrentUserId(), id).done(function (item) {
+            var promise1 = ApiClient.getItem(Dashboard.getCurrentUserId(), id);
+            var promise2 = Dashboard.getCurrentUser();
 
-                innerElem.html(getOverlayHtml(item)).trigger('create');
+            $.when(promise1, promise2).done(function (response1, response2) {
+
+                var item = response1[0];
+                var user = response2[0];
+
+                innerElem.html(getOverlayHtml(item, user, elem)).trigger('create');
+
+                $('.btnPlayTrailer', innerElem).on('click', onTrailerButtonClick);
+                $('.btnRemoteControl', innerElem).on('click', onRemoteControlButtonClick);
             });
 
             innerElem.show().each(function () {
 
                 this.style.height = 0;
 
-            }).animate({ "height": "100%" });
+            }).animate({ "height": "100%" }, "fast");
         }
 
         function onHoverIn() {
@@ -2732,7 +2830,7 @@
 
                 onShowTimerExpired(elem);
 
-            }, 600);
+            }, 800);
         }
 
         // https://hacks.mozilla.org/2013/04/detecting-touch-its-the-why-not-the-how/
@@ -2742,8 +2840,8 @@
                running on touch-capable device */
             return this;
         }
-        return this;
-        return this.on('mouseenter', '.posterItem', onHoverIn).on('mouseleave', '.posterItem', onHoverOut);
+
+        return this.on('mouseenter', '.backdropPosterItem,.smallBackdropPosterItem,.portraitPosterItem', onHoverIn).on('mouseleave', '.backdropPosterItem,.smallBackdropPosterItem,.portraitPosterItem', onHoverOut);
     };
 
 })(jQuery, document, window);

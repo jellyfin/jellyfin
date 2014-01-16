@@ -993,6 +993,9 @@
 
         self.canPlay = function (item) {
 
+            if (item.LocationType == "Virtual") {
+                return false;
+            }
             if (item.Type == "MusicAlbum" || item.Type == "MusicArtist" || item.Type == "MusicGenre") {
                 return true;
             }

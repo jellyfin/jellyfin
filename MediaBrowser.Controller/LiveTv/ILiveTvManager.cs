@@ -25,6 +25,13 @@ namespace MediaBrowser.Controller.LiveTv
         IReadOnlyList<ILiveTvService> Services { get; }
 
         /// <summary>
+        /// Gets the service infos.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{IEnumerable{LiveTvServiceInfo}}.</returns>
+        Task<IEnumerable<LiveTvServiceInfo>> GetServiceInfos(CancellationToken cancellationToken);
+
+        /// <summary>
         /// Gets the new timer defaults asynchronous.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>

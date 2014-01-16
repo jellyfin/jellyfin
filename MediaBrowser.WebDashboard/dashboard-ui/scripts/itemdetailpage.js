@@ -475,7 +475,7 @@
                 borderless: item.Type == "Game"
             });
 
-            $('#similarContent', page).html(html);
+            $('#similarContent', page).html(html).createPosterItemHoverMenu();
         });
     }
 

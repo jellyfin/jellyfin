@@ -13,6 +13,18 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value>The name.</value>
         public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the status.
+        /// </summary>
+        /// <value>The status.</value>
+        public LiveTvServiceStatus Status { get; set; }
+
+        /// <summary>
+        /// Gets or sets the status message.
+        /// </summary>
+        /// <value>The status message.</value>
+        public string StatusMessage { get; set; }
     }
 
     public class GuideInfo
@@ -48,5 +60,11 @@ namespace MediaBrowser.Model.LiveTv
         {
             Services = new List<LiveTvServiceInfo>();
         }
+    }
+
+    public enum LiveTvServiceStatus
+    {
+        Ok = 0,
+        Unavailable = 1
     }
 }

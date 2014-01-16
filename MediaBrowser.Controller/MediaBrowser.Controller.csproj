@@ -121,6 +121,7 @@
     <Compile Include="LiveTv\ILiveTvManager.cs" />
     <Compile Include="LiveTv\ILiveTvService.cs" />
     <Compile Include="LiveTv\LiveTvException.cs" />
+    <Compile Include="LiveTv\LiveTvServiceStatusInfo.cs" />
     <Compile Include="LiveTv\StreamResponseInfo.cs" />
     <Compile Include="LiveTv\LiveTvProgram.cs" />
     <Compile Include="LiveTv\LiveTvVideoRecording.cs" />
