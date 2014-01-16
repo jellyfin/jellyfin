@@ -110,7 +110,8 @@ namespace MediaBrowser.Api.UserLibrary
             var itemsList = items.Where(i => i.ProductionYear != null).ToList();
 
             return itemsList
-                .Select(i => i.ProductionYear.Value)
+                .Select(i => i.ProductionYear ?? 0)
+                .Where(i => i > 0)
                 .Distinct()
                 .Select(year => LibraryManager.GetYear(year));
         }

@@ -703,7 +703,7 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             if (value <= 0)
             {
-                throw new ArgumentOutOfRangeException();
+                throw new ArgumentOutOfRangeException("Years less than or equal to 0 are invalid.");
             }
 
             return GetItemByName<Year>(ConfigurationManager.ApplicationPaths.YearPath, value.ToString(UsCulture));
