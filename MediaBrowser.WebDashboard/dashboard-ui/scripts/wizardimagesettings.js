@@ -11,8 +11,6 @@
             config.ImageSavingConvention = $('#selectImageSavingConvention', page).val();
 
             config.EnableMovieChapterImageExtraction = $('#chkMovies', page).checked();
-            config.EnableEpisodeChapterImageExtraction = $('#chkEpisodes', page).checked();
-            config.EnableOtherVideoChapterImageExtraction = $('#chkOtherVideos', page).checked();
 
             ApiClient.updateServerConfiguration(config).done(function (result) {
 

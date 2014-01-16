@@ -211,7 +211,7 @@
             $('#castCollapsible', page).hide();
         } else {
             $('#castCollapsible', page).show();
-            renderCast(page, item, context, 8);
+            renderCast(page, item, context, 6);
         }
 
         if (!item.PartCount || item.PartCount < 2) {

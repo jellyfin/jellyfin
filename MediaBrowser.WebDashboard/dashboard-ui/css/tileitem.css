@@ -245,10 +245,6 @@
         .squareTileItem .tileImage {
             height: 130px;
         }
-
-    .smallPosterTileItem {
-        width: 22%;
-    }
 }
 
 @media all and (min-width: 1440px) {

@@ -32,7 +32,7 @@
 }
 
 .posterItemOverlayInner {
-    padding: 15px 13px 10px;
+    padding: 13px 13px 10px;
 }
 
 .smallBackdropPosterItem, .smallPosterItem {
@@ -264,6 +264,18 @@
         }
 }
 
+@media all and (min-width: 1000px) {
+
+
+    .smallBackdropPosterItem {
+        width: 202px;
+    }
+
+        .smallBackdropPosterItem .posterItemImage {
+            height: 113.625px;
+        }
+}
+
 @media all and (min-width: 1200px) {
 
     .backdropPosterItem {
@@ -280,14 +292,6 @@
 
         .portraitPosterItem .posterItemImage {
             height: 207px;
-        }
-
-    .smallBackdropPosterItem {
-        width: 228px;
-    }
-
-        .smallBackdropPosterItem .posterItemImage {
-            height: 128.25px;
         }
 
     .storeReviewCount {

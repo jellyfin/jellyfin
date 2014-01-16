@@ -1810,7 +1810,7 @@
 
             var url;
 
-            var imageHeight = 510;
+            var imageHeight = 440;
 
             if (imageTags.Primary) {
 
@@ -2442,197 +2442,6 @@
 (function ($, document, window) {
 
     var showOverlayTimeout;
-    var hideOverlayTimeout;
-    var currentPosterItem;
-
-    function onOverlayMouseOver() {
-
-        if (hideOverlayTimeout) {
-            clearTimeout(hideOverlayTimeout);
-            hideOverlayTimeout = null;
-        }
-    }
-
-    function onOverlayMouseOut() {
-
-        startHideOverlayTimer();
-    }
-
-    function getOverlayHtml(item) {
-
-        var html = '';
-
-        html += '<div class="itemOverlayContent">';
-
-        html += '<p class="itemMiscInfo">';
-        html += LibraryBrowser.getMiscInfoHtml(item);
-        html += '</p>';
-
-        html += '<p style="margin: 1.25em 0;">';
-        html += '<span class="itemCommunityRating">';
-        html += LibraryBrowser.getRatingHtml(item);
-        html += '</span>';
-        html += '</p>';
-
-        html += '<p style="margin: 1.25em 0;">';
-        html += '<span class="userDataIcons">';
-        html += LibraryBrowser.getUserDataIconsHtml(item);
-        html += '</span>';
-        html += '</p>';
-
-        html += '<p class="itemOverlayHtml">';
-        html += (item.OverviewHtml || item.Overview || '');
-        html += '</p>';
-
-        html += '<p>';
-
-        html += '<button type="button" data-mini="true" data-inline="true" data-icon="play" data-iconpos="notext">Play</button>';
-        html += '<button type="button" data-mini="true" data-inline="true" data-icon="video" data-iconpos="notext">Play</button>';
-        html += '<button type="button" data-mini="true" data-inline="true" data-icon="remote" data-iconpos="notext">Play</button>';
-        html += '<button type="button" data-mini="true" data-inline="true" data-icon="edit" data-iconpos="notext">Play</button>';
-
-        html += '</p>';
-
-        html += '</div>';
-
-        return html;
-    }
-
-    function showOverlay(elem, item) {
-
-        $('.itemFlyout').popup('close').remove();
-
-        var html = '<div data-role="popup" class="itemFlyout" data-theme="b" data-arrow="true" data-history="false">';
-
-        html += '<div class="ui-bar-b" style="text-align:center;">';
-        html += '<h3 style="margin: .5em 0;padding:0 1em;font-weight:normal;">' + LibraryBrowser.getPosterViewDisplayName(item, true) + '</h3>';
-        html += '</div>';
-
-        html += '<div style="padding: .8em 1em;">';
-        html += getOverlayHtml(item);
-        html += '</div>';
-
-        html += '</div>';
-
-        $('.itemFlyout').popup('close').popup('destroy').remove();
-
-        $(document.body).append(html);
-
-        var popup = $('.itemFlyout').on('mouseenter', onOverlayMouseOver).on('mouseleave', onOverlayMouseOut).popup({
-
-            positionTo: $('.posterItemOverlayTarget', elem)
-
-        }).trigger('create').popup("open").on("popupafterclose", function () {
-
-            $(this).off("popupafterclose").off("mouseenter").off("mouseleave").remove();
-        });
-
-        popup.parents().prev('.ui-popup-screen').remove();
-        currentPosterItem = elem;
-    }
-
-    function onPosterItemClicked() {
-
-        if (showOverlayTimeout) {
-            clearTimeout(showOverlayTimeout);
-            showOverlayTimeout = null;
-        }
-
-        if (hideOverlayTimeout) {
-            clearTimeout(hideOverlayTimeout);
-            hideOverlayTimeout = null;
-        }
-
-        hideOverlay();
-    }
-
-    function hideOverlay() {
-
-        $('.itemFlyout').popup('close').remove();
-
-        if (currentPosterItem) {
-
-            $(currentPosterItem).off('click.overlay');
-            currentPosterItem = null;
-        }
-    }
-
-    function startHideOverlayTimer() {
-
-        if (hideOverlayTimeout) {
-            clearTimeout(hideOverlayTimeout);
-            hideOverlayTimeout = null;
-        }
-
-        hideOverlayTimeout = setTimeout(hideOverlay, 400);
-    }
-
-    function onHoverOut() {
-
-        if (showOverlayTimeout) {
-            clearTimeout(showOverlayTimeout);
-            showOverlayTimeout = null;
-        }
-
-        startHideOverlayTimer();
-    }
-
-    $.fn.createPosterItemHoverMenu = function () {
-
-        function onShowTimerExpired(elem) {
-
-            var id = elem.getAttribute('data-itemid');
-
-            ApiClient.getItem(Dashboard.getCurrentUserId(), id).done(function (item) {
-
-                showOverlay(elem, item);
-
-            });
-        }
-
-        function onHoverIn() {
-
-            if (showOverlayTimeout) {
-                clearTimeout(showOverlayTimeout);
-                showOverlayTimeout = null;
-            }
-
-            if (hideOverlayTimeout) {
-                clearTimeout(hideOverlayTimeout);
-                hideOverlayTimeout = null;
-            }
-
-            var elem = this;
-
-            if (currentPosterItem && currentPosterItem == elem) {
-                return;
-            }
-
-            showOverlayTimeout = setTimeout(function () {
-
-                onShowTimerExpired(elem);
-
-            }, 300);
-        }
-
-        // https://hacks.mozilla.org/2013/04/detecting-touch-its-the-why-not-the-how/
-
-        if (('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0)) {
-            /* browser with either Touch Events of Pointer Events
-               running on touch-capable device */
-            return this;
-        }
-
-        return this.on('mouseenter', '.posterItem', onHoverIn)
-            .on('mouseleave', '.posterItem', onHoverOut)
-            .on('click', '.posterItem', onPosterItemClicked);
-    };
-
-})(jQuery, document, window);
-
-(function ($, document, window) {
-
-    var showOverlayTimeout;
 
     function onHoverOut() {
 
@@ -2673,7 +2482,7 @@
         var name = LibraryBrowser.getPosterViewDisplayName(item, true);
 
         html += '<div style="font-weight:bold;margin-bottom:1em;">';
-        var logoHeight = isPortrait || isSmallItem ? 20 : 22;
+        var logoHeight = isSmallItem ? 20 : 24;
         var maxLogoWidth = isPortrait ? 100 : 200;
         var imgUrl;
 
@@ -2711,7 +2520,7 @@
             html += '</p>';
         }
 
-        html += '<p style="margin:.75em 0;">';
+        html += '<p style="margin:1.25em 0;">';
         html += '<span class="itemCommunityRating">';
         html += LibraryBrowser.getRatingHtml(item, false);
         html += '</span>';
@@ -2753,7 +2562,7 @@
         }
 
         if (!isPortrait || buttonCount < 3) {
-            html += '<button type="button" data-mini="true" data-inline="true" data-icon="wireless" data-iconpos="notext" title="Send to Device" class="btnRemoteControl" data-itemid="' + item.Id + '" style="' + buttonMargin + '">Send to Device</button>';
+            html += '<button type="button" data-mini="true" data-inline="true" data-icon="wireless" data-iconpos="notext" title="Play On" class="btnRemoteControl" data-itemid="' + item.Id + '" style="' + buttonMargin + '">Play On</button>';
         }
 
         html += '</div>';
@@ -2830,7 +2639,7 @@
 
                 onShowTimerExpired(elem);
 
-            }, 800);
+            }, 1000);
         }
 
         // https://hacks.mozilla.org/2013/04/detecting-touch-its-the-why-not-the-how/

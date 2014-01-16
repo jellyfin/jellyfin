@@ -29,18 +29,9 @@
                 </div>
 
                 <div style="margin: 2em 0;">
-                    <label>Extract chapter images for:</label>
-                    <div data-role="controlgroup">
-                        <input type="checkbox" data-mini="true" id="chkMovies" name="chkMovies" checked="checked" />
-                        <label for="chkMovies">Movies</label>
-
-                        <input type="checkbox" data-mini="true" id="chkEpisodes" name="chkEpisodes" />
-                        <label for="chkEpisodes">Episodes</label>
-
-                        <input type="checkbox" data-mini="true" id="chkOtherVideos" name="chkOtherVideos" />
-                        <label for="chkOtherVideos">Other Videos</label>
-                        <div class="fieldDescription">Extracting chapter images will allow clients to display graphical scene selection menus. The process can be slow, cpu-intensive and may require several gigabytes of space. It runs as a nightly scheduled task at 4am, although this is configurable in the scheduled tasks area. It is not recommended to run this task during peak usage hours.</div>
-                    </div>
+                    <label for="chkMovies">Extract chapter image extraction for Movies</label>
+                    <input id="chkMovies" name="chkMovies" type="checkbox" checked="checked" />
+                    <div class="fieldDescription">Extracting chapter images will allow clients to display graphical scene selection menus. The process can be slow, cpu-intensive and may require several gigabytes of space. It runs as a nightly scheduled task at 4am, although this is configurable in the scheduled tasks area. It is not recommended to run this task during peak usage hours.</div>
                 </div>
 
                 <div class="wizardNavigation">

@@ -69,7 +69,7 @@
         html += '<a href="#" data-rel="back" data-role="button" data-icon="delete" data-iconpos="notext" class="ui-btn-right" data-theme="b">Close</a>';
 
         html += '<div class="ui-bar-b" style="text-align:center;">';
-        html += '<div style="margin:.5em 0;">Send to Device</div>';
+        html += '<div style="margin:.5em 0;">Play On</div>';
         html += '</div>';
 
         html += '<div style="padding: 1em;">';
@@ -90,7 +90,7 @@
 
         html += '<span id="queueButtonContainer" style="display:none;"><button onclick="$(\'#fldPlayCommand\').val(\'PlayLast\');" type="submit" data-icon="plus" data-mini="true" data-inline="true">Queue</button></span>';
 
-        html += '<span id="browseButtonContainer" style="display:none;"><button onclick="$(\'#fldPlayCommand\').val(\'Browse\');" type="submit" data-icon="eye" data-mini="true" data-inline="true">Browse</button></span>';
+        html += '<span id="browseButtonContainer" style="display:none;"><button onclick="$(\'#fldPlayCommand\').val(\'Browse\');" type="submit" data-icon="eye" data-mini="true" data-inline="true">View on Screen</button></span>';
 
         html += '</p>';
 
@@ -454,10 +454,10 @@
         var html = '';
 
         html += '<div style="margin-top:0;">';
-        html += '<label for="selectCommand">Send:</label>';
+        html += '<label for="selectCommand">Play:</label>';
         html += '<select id="selectCommand" data-mini="true">';
 
-        var mediaLabel = item.MediaType || 'Media';
+        var mediaLabel = item.Type;
         
         html += '<option value="Play" selected>' + mediaLabel + '</label>';
 

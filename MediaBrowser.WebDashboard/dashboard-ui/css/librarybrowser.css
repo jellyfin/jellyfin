@@ -436,7 +436,7 @@ a.itemTag:hover {
 }
 
 .itemDetailImage {
-    max-height: 240px;
+    max-height: 220px;
     max-width: 320px;
     -moz-box-shadow: 0px 0 20px #000;
     -webkit-box-shadow: 0px 0 20px #000;
@@ -751,7 +751,7 @@ a.itemTag:hover {
     }
 
     .detailPageContent {
-        max-width: 900px;
+        max-width: 850px;
     }
 
     .primaryDetailPageContent {
@@ -763,10 +763,6 @@ a.itemTag:hover {
 
     .ehsContent {
         max-width: 950px;
-    }
-
-    .detailPageContent {
-        max-width: 1000px;
     }
 
     .primaryDetailPageContent {

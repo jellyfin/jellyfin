@@ -10,10 +10,23 @@
             <div class="content-primary">
                 <form class="liveTvSettingsForm" style="display: none;">
 
+                    <br />
+                    <div>
+                        <p>Current active service: <span id="activeServiceName"></span></p>
+                        <p>Status: <span id="activeServiceStatus"></span></p>
+                    </div>
+                    <br />
                     <ul data-role="listview" class="ulForm">
                         <li>
+                            <label for="selectActiveService">Active service: </label>
+                            <select id="selectActiveService" data-mini="true">
+                            </select>
+                            <div class="fieldDescription">Although multiple tv plugins can be installed only one can be active at a time.</div>
+                        </li>
+
+                        <li>
                             <label for="selectGuideDays">Number of days of guide data to download: </label>
-                            <select id="selectGuideDays">
+                            <select id="selectGuideDays" data-mini="true">
                                 <option value="">Auto</option>
                                 <option value="1">1</option>
                                 <option value="2">2</option>
