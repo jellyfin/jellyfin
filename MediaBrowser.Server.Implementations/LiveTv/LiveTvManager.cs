@@ -409,9 +409,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var channel = GetChannel(program);
 
-            var channelName = channel == null ? null : channel.ChannelInfo.Name;
-
-            var dto = _tvDtoService.GetProgramInfoDto(program, channelName, user);
+            var dto = _tvDtoService.GetProgramInfoDto(program, channel, user);
 
             await AddRecordingInfo(new[] { dto }, cancellationToken).ConfigureAwait(false);
 
@@ -479,9 +477,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 {
                     var channel = GetChannel(i);
 
-                    var channelName = channel == null ? null : channel.ChannelInfo.Name;
-
-                    return _tvDtoService.GetProgramInfoDto(i, channelName, user);
+                    return _tvDtoService.GetProgramInfoDto(i, channel, user);
                 })
                 .ToArray();
 
@@ -541,9 +537,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 {
                     var channel = GetChannel(i);
 
-                    var channelName = channel == null ? null : channel.ChannelInfo.Name;
-
-                    return _tvDtoService.GetProgramInfoDto(i, channelName, user);
+                    return _tvDtoService.GetProgramInfoDto(i, channel, user);
                 })
                 .ToArray();
 
@@ -1342,6 +1336,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
                 info.Status = statusInfo.Status;
                 info.StatusMessage = statusInfo.StatusMessage;
+                info.Version = statusInfo.Version;
+                info.HasUpdateAvailable = statusInfo.HasUpdateAvailable;
+                info.HomePageUrl = service.HomePageUrl;
             }
             catch (Exception ex)
             {
