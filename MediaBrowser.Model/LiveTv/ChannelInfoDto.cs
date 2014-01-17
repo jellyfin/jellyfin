@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Dto;
+﻿using System.ComponentModel;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,7 @@ namespace MediaBrowser.Model.LiveTv
     /// <summary>
     /// Class ChannelInfoDto
     /// </summary>
-    public class ChannelInfoDto : IItemDto
+    public class ChannelInfoDto : INotifyPropertyChanged, IItemDto
     {
         /// <summary>
         /// Gets or sets the name.
@@ -27,19 +28,19 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value>The external identifier.</value>
         public string ExternalId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the image tags.
         /// </summary>
         /// <value>The image tags.</value>
         public Dictionary<ImageType, Guid> ImageTags { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the number.
         /// </summary>
         /// <value>The number.</value>
         public string Number { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the name of the service.
         /// </summary>
@@ -87,10 +88,12 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value>The original primary image aspect ratio.</value>
         public double? OriginalPrimaryImageAspectRatio { get; set; }
-        
+
         public ChannelInfoDto()
         {
             ImageTags = new Dictionary<ImageType, Guid>();
         }
+
+        public event PropertyChangedEventHandler PropertyChanged;
     }
 }

@@ -1087,7 +1087,8 @@ namespace MediaBrowser.Controller.Entities
 
         public override bool IsPlayed(User user)
         {
-            return GetRecursiveChildren(user).Where(i => !i.IsFolder).All(i => i.IsPlayed(user));
+            return GetRecursiveChildren(user).Where(i => !i.IsFolder && i.LocationType != LocationType.Virtual)
+                .All(i => i.IsPlayed(user));
         }
     }
 }

@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace MediaBrowser.Model.LiveTv
 {
-    public class SeriesTimerInfoDto
+    public class SeriesTimerInfoDto : INotifyPropertyChanged
     {
         /// <summary>
         /// Id of the recording.
@@ -134,5 +135,7 @@ namespace MediaBrowser.Model.LiveTv
         {
             Days = new List<DayOfWeek>();
         }
+
+        public event PropertyChangedEventHandler PropertyChanged;
     }
 }

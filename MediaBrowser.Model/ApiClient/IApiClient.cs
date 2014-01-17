@@ -764,6 +764,14 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="options">The options.</param>
         /// <returns>System.String.</returns>
         string GetImageUrl(RecordingInfoDto item, ImageOptions options);
+
+        /// <summary>
+        /// Gets the image URL.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="options">The options.</param>
+        /// <returns>System.String.</returns>
+        string GetImageUrl(ProgramInfoDto item, ImageOptions options);
         
         /// <summary>
         /// Gets an image url that can be used to download an image from the api
@@ -1002,6 +1010,14 @@ namespace MediaBrowser.Model.ApiClient
         /// <returns>Task{QueryResult{TimerInfoDto}}.</returns>
         Task<QueryResult<TimerInfoDto>> GetLiveTvTimersAsync(TimerQuery query, CancellationToken cancellationToken);
 
+        /// <summary>
+        /// Gets the live tv programs asynchronous.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{QueryResult{ProgramInfoDto}}.</returns>
+        Task<QueryResult<ProgramInfoDto>> GetLiveTvProgramsAsync(ProgramQuery query, CancellationToken cancellationToken);
+        
         /// <summary>
         /// Gets the live tv timer asynchronous.
         /// </summary>
