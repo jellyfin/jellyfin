@@ -22,7 +22,8 @@
 
         var service = liveTvInfo.Services.filter(function (s) {
             return s.Name == liveTvInfo.ActiveServiceName;
-        })[0];
+            
+        })[0] || {};
 
         if (service.HomePageUrl) {
             $('#activeServiceName', page).html('<a href="' + service.HomePageUrl + '" target="_blank">' + liveTvInfo.ActiveServiceName + '</a>').trigger('create');

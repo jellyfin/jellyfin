@@ -2524,7 +2524,7 @@
         html += '<span class="itemCommunityRating">';
         html += LibraryBrowser.getRatingHtml(item, false);
         html += '</span>';
-        
+
         if (isPortrait) {
             html += '<span class="userDataIcons" style="margin-left:0;display:block;margin:1.25em 0;">';
             html += LibraryBrowser.getUserDataIconsHtml(item);
@@ -2547,7 +2547,11 @@
         var buttonCount = 0;
 
         if (MediaPlayer.canPlay(item)) {
-            html += '<button type="button" data-mini="true" data-inline="true" data-icon="play" data-iconpos="notext" title="Play" onclick="MediaPlayer.playById(\'' + item.Id + '\');return false;" style="' + buttonMargin + '">Play</button>';
+
+            var resumePosition = (item.UserData || {}).PlaybackPositionTicks || 0;
+            var onPlayClick = 'LibraryBrowser.showPlayMenu(this, \'' + item.Id + '\', \'' + item.Type + '\', \'' + item.MediaType + '\', ' + resumePosition + ');return false;';
+
+            html += '<button type="button" data-mini="true" data-inline="true" data-icon="play" data-iconpos="notext" title="Play" onclick="' + onPlayClick + '" style="' + buttonMargin + '">Play</button>';
             buttonCount++;
         }
 

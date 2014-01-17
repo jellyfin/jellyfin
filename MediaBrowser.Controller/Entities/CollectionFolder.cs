@@ -33,6 +33,7 @@ namespace MediaBrowser.Controller.Entities
         /// Allow different display preferences for each collection folder
         /// </summary>
         /// <value>The display prefs id.</value>
+        [IgnoreDataMember]
         public override Guid DisplayPreferencesId
         {
             get
