@@ -430,7 +430,7 @@
 
         var options = {
             userId: Dashboard.getCurrentUserId(),
-            limit: item.Type == "MusicAlbum" ? 5 : 5,
+            limit: item.Type == "MusicAlbum" ? 4 : 5,
             fields: "PrimaryImageAspectRatio,DateCreated,UserData"
         };
 
