@@ -255,13 +255,15 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 {
                     LogHttpRequest(context, index);
 
-                    if (context.Request.IsWebSocketRequest)
+                    var request = context.Request;
+
+                    if (request.IsWebSocketRequest)
                     {
                         ProcessWebSocketRequest(context);
                         return;
                     }
 
-                    var localPath = context.Request.Url.LocalPath;
+                    var localPath = request.Url.LocalPath;
 
                     if (string.Equals(localPath, "/mediabrowser/", StringComparison.OrdinalIgnoreCase))
                     {
@@ -288,8 +290,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                         return;
                     }
 
-                    var url = context.Request.Url.ToString();
-                    var endPoint = context.Request.RemoteEndPoint;
+                    var url = request.Url.ToString();
+                    var endPoint = request.RemoteEndPoint;
 
                     await ProcessRequestAsync(context).ConfigureAwait(false);
 

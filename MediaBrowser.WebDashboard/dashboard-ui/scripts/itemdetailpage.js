@@ -1133,16 +1133,7 @@
             
             ApiClient.getLocalTrailers(Dashboard.getCurrentUserId(), currentItem.Id).done(function (trailers) {
 
-                var trailer = trailers[0];
-                var userdata = trailer.UserData || {};
-
-                var mediaType = trailer.MediaType;
-
-                if (trailer.Type == "MusicArtist" || trailer.Type == "MusicAlbum") {
-                    mediaType = "Audio";
-                }
-
-                LibraryBrowser.showPlayMenu(this, trailer.Id, trailer.Type, mediaType, userdata.PlaybackPositionTicks);
+                MediaPlayer.play(trailers);
 
             });
         });

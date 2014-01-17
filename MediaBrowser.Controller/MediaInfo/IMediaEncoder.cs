@@ -61,9 +61,10 @@ namespace MediaBrowser.Controller.MediaInfo
         /// </summary>
         /// <param name="inputFiles">The input files.</param>
         /// <param name="type">The type.</param>
+        /// <param name="isAudio">if set to <c>true</c> [is audio].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task<InternalMediaInfoResult> GetMediaInfo(string[] inputFiles, InputType type, CancellationToken cancellationToken);
+        Task<InternalMediaInfoResult> GetMediaInfo(string[] inputFiles, InputType type, bool isAudio, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the probe size argument.
