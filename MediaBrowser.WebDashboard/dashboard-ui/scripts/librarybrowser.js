@@ -2482,7 +2482,7 @@
         var name = LibraryBrowser.getPosterViewDisplayName(item, true);
 
         html += '<div style="font-weight:bold;margin-bottom:1em;">';
-        var logoHeight = isSmallItem ? 20 : 24;
+        var logoHeight = isSmallItem ? 20 : 26;
         var maxLogoWidth = isPortrait ? 100 : 200;
         var imgUrl;
 
@@ -2556,7 +2556,7 @@
             buttonCount++;
         }
 
-        if (currentUser.Configuration.IsAdministrator && item.Type != "Recording") {
+        if (currentUser.Configuration.IsAdministrator && item.Type != "Recording" && item.Type != "Program") {
             html += '<button type="button" data-mini="true" data-inline="true" data-icon="edit" data-iconpos="notext" title="Edit" onclick="Dashboard.navigate(\'edititemmetadata.html?id=' + item.Id + '\');return false;" style="' + buttonMargin + '">Edit</button>';
             buttonCount++;
         }
