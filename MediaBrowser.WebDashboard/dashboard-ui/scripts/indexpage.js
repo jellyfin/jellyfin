@@ -196,7 +196,7 @@
                 html += getViewHtml(views[i]);
             }
 
-            var elem = $('#views', page).html(html);
+            var elem = $('#views', page).html(html).trigger('create');
 
             if (counts.MovieCount || counts.TrailerCount) {
                 renderMovieViewImages(elem, userId);

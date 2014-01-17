@@ -1360,7 +1360,7 @@ $(function () {
     footerHtml += '<button onclick="MediaPlayer.showChannelsFlyout();" id="channelsButton" class="mediaButton channelsButton" title="TV Channels" type="button" data-icon="tv" data-iconpos="notext" data-inline="true">TV Channels</button>';
     footerHtml += '<div class="mediaFlyoutContainer"><div id="channelsFlyout" style="display:none;" class="mediaPlayerFlyout channelsFlyout"></div></div>';
 
-    footerHtml += '<button onclick="MediaPlayer.showSendMediaMenu();" id="sendMediaButton" class="mediaButton sendMediaButton" title="Play On" type="button" data-icon="wireless" data-iconpos="notext" data-inline="true">Play On</button>';
+    footerHtml += '<button onclick="MediaPlayer.showSendMediaMenu();" id="sendMediaButton" class="mediaButton sendMediaButton" title="Remote" type="button" data-icon="wireless" data-iconpos="notext" data-inline="true">Remote</button>';
 
     footerHtml += '</div>';
 

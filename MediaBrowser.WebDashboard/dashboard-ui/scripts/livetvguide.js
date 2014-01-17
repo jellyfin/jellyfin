@@ -498,13 +498,6 @@
         html += (item.OverviewHtml || item.Overview || '');
         html += '</p>';
 
-        //html += '<p>';
-
-        //html += '<button type="button" data-mini="true" data-inline="true" data-icon="play" data-iconpos="notext">Play</button>';
-        //html += '<button type="button" data-mini="true" data-inline="true" data-icon="remote" data-iconpos="notext">Play</button>';
-
-        //html += '</p>';
-
         html += '</div>';
 
         return html;

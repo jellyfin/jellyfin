@@ -381,7 +381,7 @@ a.itemTag:hover {
     background-size: cover;
     background-position: center 15%;
     background-repeat: no-repeat;
-    height: 540px;
+    height: 560px;
     border-bottom: 1px solid #111;
     position: relative;
 }
@@ -481,6 +481,10 @@ a.itemTag:hover {
     /*max-height: 120px;
     overflow-y: auto;*/
     text-overflow: ellipsis;
+}
+
+.desktopOverview {
+    min-width: 500px;
 }
 
 .mobileOverview {

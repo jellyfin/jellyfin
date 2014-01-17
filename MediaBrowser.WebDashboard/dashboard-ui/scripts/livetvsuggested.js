@@ -23,7 +23,7 @@
 
             });
 
-            $('.activeProgramItems', page).html(html);
+            $('.activeProgramItems', page).html(html).createPosterItemHoverMenu();
         });
 
         apiClient.getLiveTvRecommendedPrograms({
@@ -46,7 +46,7 @@
 
             });
 
-            $('.upcomingProgramItems', page).html(html);
+            $('.upcomingProgramItems', page).html(html).createPosterItemHoverMenu();
         });
     }
 

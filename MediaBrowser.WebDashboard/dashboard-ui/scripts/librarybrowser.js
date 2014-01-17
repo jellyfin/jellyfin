@@ -2556,13 +2556,13 @@
             buttonCount++;
         }
 
-        if (currentUser.Configuration.IsAdministrator) {
+        if (currentUser.Configuration.IsAdministrator && item.Type != "Recording") {
             html += '<button type="button" data-mini="true" data-inline="true" data-icon="edit" data-iconpos="notext" title="Edit" onclick="Dashboard.navigate(\'edititemmetadata.html?id=' + item.Id + '\');return false;" style="' + buttonMargin + '">Edit</button>';
             buttonCount++;
         }
 
         if (!isPortrait || buttonCount < 3) {
-            html += '<button type="button" data-mini="true" data-inline="true" data-icon="wireless" data-iconpos="notext" title="Play On" class="btnRemoteControl" data-itemid="' + item.Id + '" style="' + buttonMargin + '">Play On</button>';
+            html += '<button type="button" data-mini="true" data-inline="true" data-icon="wireless" data-iconpos="notext" title="Remote" class="btnRemoteControl" data-itemid="' + item.Id + '" style="' + buttonMargin + '">Remote</button>';
         }
 
         html += '</div>';
