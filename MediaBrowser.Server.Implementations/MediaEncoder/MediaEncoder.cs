@@ -102,12 +102,13 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// </summary>
         /// <param name="inputFiles">The input files.</param>
         /// <param name="type">The type.</param>
+        /// <param name="isAudio">if set to <c>true</c> [is audio].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public Task<InternalMediaInfoResult> GetMediaInfo(string[] inputFiles, InputType type,
+        public Task<InternalMediaInfoResult> GetMediaInfo(string[] inputFiles, InputType type, bool isAudio,
                                                   CancellationToken cancellationToken)
         {
-            return GetMediaInfoInternal(GetInputArgument(inputFiles, type), type != InputType.File,
+            return GetMediaInfoInternal(GetInputArgument(inputFiles, type), !isAudio,
                                         GetProbeSizeArgument(type), cancellationToken);
         }
 
@@ -177,27 +178,27 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                                                                  CancellationToken cancellationToken)
         {
             var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
                 {
-                    StartInfo = new ProcessStartInfo
-                        {
-                            CreateNoWindow = true,
-                            UseShellExecute = false,
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
 
-                            // Must consume both or ffmpeg may hang due to deadlocks. See comments below.   
-                            RedirectStandardOutput = true,
-                            RedirectStandardError = true,
-                            FileName = FFProbePath,
-                            Arguments =
-                                string.Format(
-                                    "{0} -i {1} -threads 0 -v info -print_format json -show_streams -show_format",
-                                    probeSizeArgument, inputPath).Trim(),
+                    // Must consume both or ffmpeg may hang due to deadlocks. See comments below.   
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    FileName = FFProbePath,
+                    Arguments =
+                        string.Format(
+                            "{0} -i {1} -threads 0 -v info -print_format json -show_streams -show_format",
+                            probeSizeArgument, inputPath).Trim(),
 
-                            WindowStyle = ProcessWindowStyle.Hidden,
-                            ErrorDialog = false
-                        },
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    ErrorDialog = false
+                },
 
-                    EnableRaisingEvents = true
-                };
+                EnableRaisingEvents = true
+            };
 
             _logger.Debug("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
 

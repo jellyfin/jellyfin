@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.MediaInfo;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -117,7 +118,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 inputPath = MediaEncoderHelpers.GetInputArgument(video.Path, video.LocationType == LocationType.Remote, video.VideoType, video.IsoType, isoMount, video.PlayableStreamFileNames, out type);
             }
 
-            return await MediaEncoder.GetMediaInfo(inputPath, type, cancellationToken).ConfigureAwait(false);
+            return await MediaEncoder.GetMediaInfo(inputPath, type, item is Audio, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>

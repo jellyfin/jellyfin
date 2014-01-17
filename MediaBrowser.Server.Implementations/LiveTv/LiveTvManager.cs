@@ -206,38 +206,58 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return await GetRecording(recording, service.Name, cancellationToken).ConfigureAwait(false);
         }
 
+        private readonly SemaphoreSlim _liveStreamSemaphore = new SemaphoreSlim(1, 1);
+
         public async Task<LiveStreamInfo> GetRecordingStream(string id, CancellationToken cancellationToken)
         {
-            var service = ActiveService;
+            await _liveStreamSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-            var recordings = await service.GetRecordingsAsync(cancellationToken).ConfigureAwait(false);
-
-            var recording = recordings.First(i => _tvDtoService.GetInternalRecordingId(service.Name, i.Id) == new Guid(id));
-
-            var result = await service.GetRecordingStream(recording.Id, cancellationToken).ConfigureAwait(false);
-
-            if (!string.IsNullOrEmpty(result.Id))
+            try
             {
-                _openStreams.AddOrUpdate(result.Id, result, (key, info) => result);
-            }
+                var service = ActiveService;
 
-            return result;
+                var recordings = await service.GetRecordingsAsync(cancellationToken).ConfigureAwait(false);
+
+                var recording = recordings.First(i => _tvDtoService.GetInternalRecordingId(service.Name, i.Id) == new Guid(id));
+
+                var result = await service.GetRecordingStream(recording.Id, cancellationToken).ConfigureAwait(false);
+
+                if (!string.IsNullOrEmpty(result.Id))
+                {
+                    _openStreams.AddOrUpdate(result.Id, result, (key, info) => result);
+                }
+
+                return result;
+            }
+            finally
+            {
+                _liveStreamSemaphore.Release();
+            }
         }
 
         public async Task<LiveStreamInfo> GetChannelStream(string id, CancellationToken cancellationToken)
         {
-            var service = ActiveService;
+            await _liveStreamSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-            var channel = GetInternalChannel(id);
-
-            var result = await service.GetChannelStream(channel.ChannelInfo.Id, cancellationToken).ConfigureAwait(false);
-
-            if (!string.IsNullOrEmpty(result.Id))
+            try
             {
-                _openStreams.AddOrUpdate(result.Id, result, (key, info) => result);
-            }
+                var service = ActiveService;
 
-            return result;
+                var channel = GetInternalChannel(id);
+
+                var result = await service.GetChannelStream(channel.ChannelInfo.Id, cancellationToken).ConfigureAwait(false);
+
+                if (!string.IsNullOrEmpty(result.Id))
+                {
+                    _openStreams.AddOrUpdate(result.Id, result, (key, info) => result);
+                }
+
+                return result;
+            }
+            finally
+            {
+                _liveStreamSemaphore.Release();
+            }
         }
 
         private async Task<LiveTvChannel> GetChannel(ChannelInfo channelInfo, string serviceName, CancellationToken cancellationToken)
@@ -1243,9 +1263,18 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             };
         }
 
-        public Task CloseLiveStream(string id, CancellationToken cancellationToken)
+        public async Task CloseLiveStream(string id, CancellationToken cancellationToken)
         {
-            return ActiveService.CloseLiveStream(id, cancellationToken);
+            await _liveStreamSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                await ActiveService.CloseLiveStream(id, cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                _liveStreamSemaphore.Release();
+            }
         }
 
         public GuideInfo GetGuideInfo()
