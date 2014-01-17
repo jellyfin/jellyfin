@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Configuration;
+﻿using System.Runtime.Serialization;
+using MediaBrowser.Model.Configuration;
 using System;
 
 namespace MediaBrowser.Controller.Entities
@@ -13,6 +14,7 @@ namespace MediaBrowser.Controller.Entities
         /// Default is based on the type for everything except actual generic folders.
         /// </summary>
         /// <value>The display prefs id.</value>
+        [IgnoreDataMember]
         public override Guid DisplayPreferencesId
         {
             get
