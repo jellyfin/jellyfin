@@ -731,7 +731,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var programsPerDay = channelCount * 48;
 
-            const int maxPrograms = 32000;
+            const int maxPrograms = 24000;
 
             var days = Math.Round(((double)maxPrograms) / programsPerDay);
 
