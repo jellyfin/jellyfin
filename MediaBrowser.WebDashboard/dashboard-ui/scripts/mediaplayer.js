@@ -1846,6 +1846,10 @@
 
             var options = getVideoQualityOptions(item, currentAudioStreamIndex, transcodingExtension);
 
+            if (isStatic) {
+                options[0].name = "Direct";
+            }
+            
             for (var i = 0, length = options.length; i < length; i++) {
 
                 var option = options[i];
