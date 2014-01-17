@@ -172,7 +172,8 @@ namespace MediaBrowser.Providers.Movies
                     item.CommunityRating = imdbRating;
                 }
 
-                if (!string.IsNullOrEmpty(result.Website))
+                if (!string.IsNullOrEmpty(result.Website)
+                        && !string.Equals(result.Website, "n/a", StringComparison.OrdinalIgnoreCase))
                 {
                     item.HomePageUrl = result.Website;
                 }

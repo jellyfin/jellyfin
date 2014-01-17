@@ -1,8 +1,9 @@
 ﻿using System;
+using System.ComponentModel;
 
 namespace MediaBrowser.Model.LiveTv
 {
-    public class TimerInfoDto
+    public class TimerInfoDto : INotifyPropertyChanged
     {
         /// <summary>
         /// Id of the recording.
@@ -128,5 +129,7 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value>The program information.</value>
         public ProgramInfoDto ProgramInfo { get; set; }
+
+        public event PropertyChangedEventHandler PropertyChanged;
     }
 }

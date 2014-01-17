@@ -2,7 +2,7 @@
 
     function loadPage(page, config, liveTvInfo) {
 
-        if (liveTvInfo.Services.length) {
+        if (liveTvInfo.IsEnabled) {
 
             $('.liveTvSettingsForm', page).show();
             $('.noLiveTvServices', page).hide();
@@ -20,19 +20,14 @@
 
         $('#selectActiveService', page).html(serviceOptions).selectmenu('refresh');
 
-        var service = liveTvInfo.Services.filter(function (s) {
-            return s.Name == liveTvInfo.ActiveServiceName;
-        })[0];
-
         $('#activeServiceName', page).html(liveTvInfo.ActiveServiceName);
 
-
-        var status = service.Status;
+        var status = liveTvInfo.Status;
 
         if (status != 'Ok') {
 
-            if (service.StatusMessage) {
-                status += ' (' + service.StatusMessage + ')';
+            if (liveTvInfo.StatusMessage) {
+                status += ' (' + liveTvInfo.StatusMessage + ')';
             }
             status = '<span style="color:red;">' + status + '</span>';
         }

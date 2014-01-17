@@ -295,11 +295,18 @@ namespace MediaBrowser.Api.LiveTv
         public object Get(GetLiveTvInfo request)
         {
             var services = _liveTvManager.GetServiceInfos(CancellationToken.None).Result;
+            var servicesList = services.ToList();
+
+            var activeServiceInfo = _liveTvManager.ActiveService == null ? null :
+                servicesList.FirstOrDefault(i => string.Equals(i.Name, _liveTvManager.ActiveService.Name, StringComparison.OrdinalIgnoreCase));
 
             var info = new LiveTvInfo
             {
-                Services = services.ToList(),
-                ActiveServiceName = _liveTvManager.ActiveService == null ? null : _liveTvManager.ActiveService.Name
+                Services = servicesList.ToList(),
+                ActiveServiceName = activeServiceInfo == null ? null : activeServiceInfo.Name,
+                IsEnabled = _liveTvManager.ActiveService != null,
+                Status = activeServiceInfo == null ? LiveTvServiceStatus.Unavailable : activeServiceInfo.Status,
+                StatusMessage = activeServiceInfo == null ? null : activeServiceInfo.StatusMessage
             };
 
             return ToOptimizedResult(info);

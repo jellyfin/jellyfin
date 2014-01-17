@@ -1,11 +1,12 @@
-﻿using MediaBrowser.Model.Dto;
+﻿using System.ComponentModel;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
 
 namespace MediaBrowser.Model.LiveTv
 {
-    public class RecordingInfoDto
+    public class RecordingInfoDto : INotifyPropertyChanged
     {
         /// <summary>
         /// Id of the recording.
@@ -226,5 +227,7 @@ namespace MediaBrowser.Model.LiveTv
             Genres = new List<string>();
             ImageTags = new Dictionary<ImageType, Guid>();
         }
+
+        public event PropertyChangedEventHandler PropertyChanged;
     }
 }

@@ -1,11 +1,12 @@
-﻿using MediaBrowser.Model.Dto;
+﻿using System.ComponentModel;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
 
 namespace MediaBrowser.Model.LiveTv
 {
-    public class ProgramInfoDto
+    public class ProgramInfoDto : INotifyPropertyChanged
     {
         /// <summary>
         /// Id of the program.
@@ -186,6 +187,8 @@ namespace MediaBrowser.Model.LiveTv
             Genres = new List<string>();
             ImageTags = new Dictionary<ImageType, Guid>();
         }
+
+        public event PropertyChangedEventHandler PropertyChanged;
     }
 
     public enum ProgramAudio
