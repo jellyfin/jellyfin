@@ -38,6 +38,12 @@ namespace MediaBrowser.Model.LiveTv
         public string ChannelId { get; set; }
 
         /// <summary>
+        /// Gets or sets the channel primary image tag.
+        /// </summary>
+        /// <value>The channel primary image tag.</value>
+        public Guid? ChannelPrimaryImageTag { get; set; }
+
+        /// <summary>
         /// Gets or sets the name of the channel.
         /// </summary>
         /// <value>The name of the channel.</value>

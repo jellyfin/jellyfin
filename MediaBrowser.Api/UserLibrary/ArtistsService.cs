@@ -112,7 +112,19 @@ namespace MediaBrowser.Api.UserLibrary
         protected override IEnumerable<MusicArtist> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items)
         {
             return LibraryManager.GetAllArtists(items)
-                .Select(name => LibraryManager.GetArtist(name));
+                .Select(name =>
+                {
+                    try
+                    {
+                        return LibraryManager.GetArtist(name);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.ErrorException("Error getting artist {0}", ex, name);
+                        return null;
+                    }
+
+                }).Where(i => i != null);
         }
 
         protected override IEnumerable<BaseItem> GetLibraryItems(MusicArtist item, IEnumerable<BaseItem> libraryItems)

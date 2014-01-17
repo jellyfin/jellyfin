@@ -66,7 +66,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             if (program != null)
             {
-                dto.ProgramInfo = GetProgramInfoDto(program, channel.ChannelInfo.Name);
+                dto.ProgramInfo = GetProgramInfoDto(program, channel);
 
                 dto.ProgramInfo.TimerId = dto.Id;
                 dto.ProgramInfo.SeriesTimerId = dto.SeriesTimerId;
@@ -260,7 +260,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             if (channel != null)
             {
-                dto.ChannelName = channel.ChannelInfo.Name;
+                dto.ChannelName = channel.Name;
+
+                if (!string.IsNullOrEmpty(channel.PrimaryImagePath))
+                {
+                    dto.ChannelPrimaryImageTag = GetImageTag(channel);
+                }
             }
 
             return dto;
@@ -303,13 +308,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             if (currentProgram != null)
             {
-                dto.CurrentProgram = GetProgramInfoDto(currentProgram, channelInfo.Name, user);
+                dto.CurrentProgram = GetProgramInfoDto(currentProgram, info, user);
             }
 
             return dto;
         }
 
-        public ProgramInfoDto GetProgramInfoDto(LiveTvProgram item, string channelName, User user = null)
+        public ProgramInfoDto GetProgramInfoDto(LiveTvProgram item, LiveTvChannel channel, User user = null)
         {
             var program = item.ProgramInfo;
 
@@ -331,7 +336,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 CommunityRating = GetClientCommunityRating(program.CommunityRating),
                 IsRepeat = program.IsRepeat,
                 EpisodeTitle = program.EpisodeTitle,
-                ChannelName = channelName,
                 IsMovie = program.IsMovie,
                 IsSeries = program.IsSeries,
                 IsSports = program.IsSports,
@@ -342,6 +346,16 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 RunTimeTicks = (program.EndDate - program.StartDate).Ticks,
                 Type = "Program"
             };
+
+            if (channel != null)
+            {
+                dto.ChannelName = channel.Name;
+
+                if (!string.IsNullOrEmpty(channel.PrimaryImagePath))
+                {
+                    dto.ChannelPrimaryImageTag = GetImageTag(channel);
+                }
+            }
 
             var imageTag = GetImageTag(item);
 

@@ -1017,6 +1017,14 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{QueryResult{ProgramInfoDto}}.</returns>
         Task<QueryResult<ProgramInfoDto>> GetLiveTvProgramsAsync(ProgramQuery query, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the recommended live tv programs asynchronous.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{QueryResult{ProgramInfoDto}}.</returns>
+        Task<QueryResult<ProgramInfoDto>> GetRecommendedLiveTvProgramsAsync(RecommendedProgramQuery query, CancellationToken cancellationToken);
         
         /// <summary>
         /// Gets the live tv timer asynchronous.

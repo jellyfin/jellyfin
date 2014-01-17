@@ -1,8 +1,8 @@
-﻿using System.ComponentModel;
-using MediaBrowser.Model.Dto;
+﻿using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace MediaBrowser.Model.LiveTv
 {
@@ -35,6 +35,12 @@ namespace MediaBrowser.Model.LiveTv
         /// ChannelId of the recording.
         /// </summary>
         public string ChannelId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the channel primary image tag.
+        /// </summary>
+        /// <value>The channel primary image tag.</value>
+        public Guid? ChannelPrimaryImageTag { get; set; }
 
         /// <summary>
         /// ChannelName of the recording.

@@ -18,6 +18,12 @@ namespace MediaBrowser.Controller.LiveTv
         public string ChannelId { get; set; }
 
         /// <summary>
+        /// Gets or sets the channel primary image tag.
+        /// </summary>
+        /// <value>The channel primary image tag.</value>
+        public Guid? ChannelPrimaryImageTag { get; set; }
+
+        /// <summary>
         /// Name of the program
         /// </summary>
         public string Name { get; set; }
