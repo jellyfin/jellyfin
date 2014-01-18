@@ -277,6 +277,9 @@
     <Compile Include="..\MediaBrowser.Model\Net\WebSocketState.cs">
       <Link>Net\WebSocketState.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\News\NewsItem.cs">
+      <Link>News\NewsItem.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Notifications\Notification.cs">
       <Link>Notifications\Notification.cs</Link>
     </Compile>

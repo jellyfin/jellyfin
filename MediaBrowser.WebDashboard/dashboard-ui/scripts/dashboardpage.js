@@ -21,6 +21,33 @@
             }
 
         });
+
+        DashboardPage.reloadNews(page);
+    },
+
+    reloadNews: function (page) {
+
+        ApiClient.getProductNews({
+
+            limit: 5
+
+        }).done(function (result) {
+
+            var html = result.Items.map(function (item) {
+
+                var itemHtml = '';
+
+                itemHtml += '<div class="newsItem">';
+                itemHtml += '<a class="newsItemHeader" href="' + item.Link + '" target="_blank">' + item.Title + '</a>';
+                itemHtml += '<div class="newsItemDescription">' + item.Description + '</div>';
+                itemHtml += '</div>';
+
+                return itemHtml;
+            });
+
+            $('.latestNewsItems', page).html(html.join(''));
+        });
+
     },
 
     onPageHide: function () {
