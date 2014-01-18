@@ -198,7 +198,7 @@ namespace MediaBrowser.Controller.Drawing
         {
             if (x > 0 && y > 0)
             {
-                bmp.SetResolution(bmp.HorizontalResolution, bmp.VerticalResolution);
+                bmp.SetResolution(x, y);
             }
         }
 
