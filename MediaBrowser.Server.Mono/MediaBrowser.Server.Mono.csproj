@@ -48,6 +48,9 @@
       <HintPath>..\ThirdParty\ServiceStack\ServiceStack.Interfaces.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Posix" Condition=" '$(ConfigurationName)' == 'Release Mono' " />
+    <Reference Include="MediaBrowser.IsoMounting.Linux">
+      <HintPath>..\ThirdParty\MediaBrowser.IsoMounting.Linux\MediaBrowser.IsoMounting.Linux.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\SharedVersion.cs">
