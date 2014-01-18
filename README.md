@@ -38,7 +38,7 @@ http://mediabrowser3.com/community
 ## Current Versions ##
 
 Release: 3.0.5099.2102<br/>
-Beta: 3.0.5097.16641<br/>
+Beta: 3.0.5131.18923<br/>
 
 ## Images
 
