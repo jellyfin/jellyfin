@@ -1090,5 +1090,11 @@ namespace MediaBrowser.Controller.Entities
             return GetRecursiveChildren(user).Where(i => !i.IsFolder && i.LocationType != LocationType.Virtual)
                 .All(i => i.IsPlayed(user));
         }
+
+        public override bool IsUnplayed(User user)
+        {
+            return GetRecursiveChildren(user).Where(i => !i.IsFolder && i.LocationType != LocationType.Virtual)
+                .All(i => i.IsUnplayed(user));
+        }
     }
 }

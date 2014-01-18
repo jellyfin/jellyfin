@@ -446,7 +446,7 @@ namespace MediaBrowser.Api.UserLibrary
                     return items.Where(item => item.IsPlayed(currentUser));
 
                 case ItemFilter.IsUnplayed:
-                    return items.Where(item => !item.IsPlayed(currentUser));
+                    return items.Where(item => item.IsUnplayed(currentUser));
 
                 case ItemFilter.IsFolder:
                     return items.Where(item => item.IsFolder);

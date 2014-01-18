@@ -17,7 +17,7 @@ namespace MediaBrowser.Api.Playback
 
         [ApiMember(Name = "DeviceId", Description = "The device id of the client requesting. Used to stop encoding processes when needed.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string DeviceId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the audio codec.
         /// </summary>
@@ -65,6 +65,11 @@ namespace MediaBrowser.Api.Playback
         /// No need to put this in api docs since it's dlna only
         /// </summary>
         public bool AlbumArt { get; set; }
+
+        /// <summary>
+        /// For testing purposes
+        /// </summary>
+        public bool ThrowDebugError { get; set; }
     }
 
     public class VideoStreamRequest : StreamRequest

@@ -233,7 +233,7 @@ namespace MediaBrowser.Model.Configuration
         public ServerConfiguration()
             : base()
         {
-            MediaEncodingQuality = EncodingQuality.HighSpeed;
+            MediaEncodingQuality = EncodingQuality.Auto;
             ImageSavingConvention = ImageSavingConvention.Compatible;
             HttpServerPortNumber = 8096;
             LegacyWebSocketPortNumber = 8945;
