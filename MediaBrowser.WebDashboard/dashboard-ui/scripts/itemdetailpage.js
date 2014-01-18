@@ -266,6 +266,7 @@
 
         LibraryBrowser.renderBudget($('#itemBudget', page), item);
         LibraryBrowser.renderRevenue($('#itemRevenue', page), item);
+        LibraryBrowser.renderAwardSummary($('#awardSummary', page), item);
 
         $('.itemMiscInfo', page).html(LibraryBrowser.getMiscInfoHtml(item));
 

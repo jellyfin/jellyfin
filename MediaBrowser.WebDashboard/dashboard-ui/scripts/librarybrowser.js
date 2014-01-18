@@ -2226,6 +2226,7 @@
 
         renderBudget: function (elem, item) {
             if (item.Budget) {
+
                 elem.show().html('Budget:&nbsp;&nbsp;$<span class="autoNumeric" data-a-pad="false">' + item.Budget + '</span>');
             } else {
                 elem.hide();
@@ -2234,7 +2235,16 @@
 
         renderRevenue: function (elem, item) {
             if (item.Revenue) {
+
                 elem.show().html('Revenue:&nbsp;&nbsp;$<span class="autoNumeric" data-a-pad="false">' + item.Revenue + '</span>');
+            } else {
+                elem.hide();
+            }
+        },
+
+        renderAwardSummary: function (elem, item) {
+            if (item.AwardSummary) {
+                elem.show().html('Awards:&nbsp;&nbsp;' + item.AwardSummary);
             } else {
                 elem.hide();
             }
