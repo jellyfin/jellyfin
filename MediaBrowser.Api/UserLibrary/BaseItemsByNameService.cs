@@ -144,7 +144,7 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 var libraryItems = user.RootFolder.GetRecursiveChildren(user).ToList();
 
-                items = items.Where(i => GetLibraryItems(i, libraryItems).All(l => !l.IsPlayed(user)));
+                items = items.Where(i => GetLibraryItems(i, libraryItems).All(l => l.IsUnplayed(user)));
             }
 
             return items;

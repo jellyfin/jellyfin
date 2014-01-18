@@ -255,11 +255,7 @@
 
         LibraryBrowser.renderOverview($('.itemOverview', page), item);
 
-        if (item.CommunityRating || item.CriticRating) {
-            $('.itemCommunityRating', page).html(LibraryBrowser.getRatingHtml(item)).show();
-        } else {
-            $('.itemCommunityRating', page).hide();
-        }
+        $('.itemCommunityRating', page).html(LibraryBrowser.getRatingHtml(item));
 
         if (item.Type != "Episode" && item.Type != "Movie" && item.Type != "Series") {
             var premiereDateElem = $('#itemPremiereDate', page).show();

@@ -42,6 +42,7 @@
     margin-left: 80px;
     border-left: 1px solid #444;
 }
+
 .tvProgramCurrentTimeSlot {
     background-color: green;
 }
@@ -132,13 +133,10 @@
 }
 
 .channelTimeslotHeader {
-    position: absolute;
-    left: 10px;
+    float: left;
 }
 
 .timeslotHeaders {
-    position: absolute;
-    right: 13px;
     overflow-y: hidden;
     overflow-x: hidden;
     white-space: nowrap;
@@ -197,24 +195,25 @@
     position: relative;
 }
 
-    .channelHeaderCell:hover {
-        background-color: #38c;
-    }
+.channelHeaderCell:hover {
+    background-color: #38c;
+}
 
 .channelList {
     overflow-y: hidden;
-    overflow-x: hidden;
-    position: absolute;
-    left: 10px;
-    bottom: 46px;
+    overflow-x: scroll;
+    float: left;
+    border-bottom: 4px solid #3B3B3B;
 }
 
 .programGrid {
-    position: absolute;
-    bottom: 30px;
-    right: 0;
     overflow-y: scroll;
     overflow-x: scroll;
+    padding-bottom: 4px;
+}
+
+.programGrid, .timeslotHeaders {
+    margin-left: 190px;
 }
 
 .timeslotCell, .timeslotHeader {
@@ -237,21 +236,9 @@
     z-index: 99;
 }
 
-.timeslotCellInnerWithProgram:hover {
-    background-color: #38c;
-}
-
-.timeslotHeaders, .programGrid {
-    left: 201px;
-}
-
-.channelTimeslotHeader, .timeslotHeaders {
-    top: 150px;
-}
-
-.channelList, .programGrid {
-    top: 180px;
-}
+    .timeslotCellInnerWithProgram:hover {
+        background-color: #38c;
+    }
 
 .channelHeaderCell, .timeslotCell {
     height: 52px;
@@ -265,6 +252,7 @@
 .guideProgramTime {
     padding: 0 .5em .35em;
 }
+
 .plainProgramInfo {
     background-color: #252525;
 }
@@ -284,15 +272,67 @@
     top: 7px;
 }
 
+.channelList, .programGrid {
+    height: 200px;
+}
+
+@media (min-height: 500px) {
+
+    .channelList, .programGrid {
+        height: 300px;
+    }
+}
+
+@media (min-height: 600px) {
+
+    .channelList, .programGrid {
+        height: 400px;
+    }
+}
+
+@media (min-height: 700px) {
+
+    .channelList, .programGrid {
+        height: 500px;
+    }
+}
+
+@media (min-height: 800px) {
+
+    .channelList, .programGrid {
+        height: 600px;
+    }
+}
+
+@media (min-height: 900px) {
+
+    .channelList, .programGrid {
+        height: 700px;
+    }
+}
+
+@media (min-height: 1000px) {
+
+    .channelList, .programGrid {
+        height: 800px;
+    }
+}
+
+@media (min-height: 1100px) {
+
+    .channelList, .programGrid {
+        height: 900px;
+    }
+}
+
+@media (min-height: 1200px) {
+
+    .channelList, .programGrid {
+        height: 1000px;
+    }
+}
+
 @media (max-width: 600px) {
-
-    .channelHeaderCell, .channelTimeslotHeader {
-        width: 90px;
-    }
-
-    .timeslotHeaders, .programGrid {
-        left: 91px;
-    }
 
     .guideChannelImage {
         display: none;

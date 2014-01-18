@@ -192,7 +192,7 @@
             }
 
             // Chrome or IE with plugin installed
-            if (media.canPlayType('video/webm').replace(/no/, '')) {
+            if (media.canPlayType('video/webm').replace(/no/, '') && !$.browser.mozilla) {
                 return '.webm';
             }
 
@@ -616,6 +616,7 @@
 
             // Some 1080- videos are reported as 1912?
             if (maxAllowedWidth >= 1910) {
+                options.push({ name: '1080p - 15Mbps', maxWidth: 1920, bitrate: 15000000 });
                 options.push({ name: '1080p - 10Mbps', maxWidth: 1920, bitrate: 10000000 });
                 options.push({ name: '1080p - 8Mbps', maxWidth: 1920, bitrate: 8000000 });
                 options.push({ name: '1080p - 6Mbps', maxWidth: 1920, bitrate: 6000000 });
@@ -888,11 +889,11 @@
 
             }).on("error", function () {
 
-
                 var errorCode = this.error ? this.error.code : '';
                 console.log('Html5 Video error code: ' + errorCode);
 
-            }).on("ended.playbackstopped", onPlaybackStopped).on('ended.playnext', playNextAfterEnded);
+            }).on("ended.playbackstopped", onPlaybackStopped)
+                .on('ended.playnext', playNextAfterEnded);
 
             currentItem = item;
             curentDurationTicks = item.RunTimeTicks;

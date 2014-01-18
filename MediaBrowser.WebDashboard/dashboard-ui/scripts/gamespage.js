@@ -36,7 +36,8 @@
                 context: 'games',
                 useAverageAspectRatio: false,
                 showTitle: true,
-                showParentTitle: true
+                showParentTitle: true,
+                centerText: true
             });
 
             html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);

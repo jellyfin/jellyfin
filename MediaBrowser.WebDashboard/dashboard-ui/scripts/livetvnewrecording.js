@@ -12,11 +12,7 @@
 
         $('.itemEpisodeName', page).html(program.EpisodeTitle || '');
 
-        if (program.CommunityRating) {
-            $('.itemCommunityRating', page).html(LibraryBrowser.getRatingHtml(program)).show();
-        } else {
-            $('.itemCommunityRating', page).hide();
-        }
+        $('.itemCommunityRating', page).html(LibraryBrowser.getRatingHtml(program));
 
         LibraryBrowser.renderGenres($('.itemGenres', page), program, context);
         LibraryBrowser.renderOverview($('.itemOverview', page), program);

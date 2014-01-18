@@ -1508,20 +1508,8 @@
                 html += '<div class="starRatingValue">';
                 html += item.CommunityRating.toFixed(1);
                 html += '</div>';
-
-                //var rating = item.CommunityRating / 2;
-
-                //for (var i = 1; i <= 5; i++) {
-                //    if (rating <= i - 1) {
-                //        html += "<div class='starRating emptyStarRating' title='" + item.CommunityRating + "'></div>";
-                //    }
-                //    else if (rating < i) {
-                //        html += "<div class='starRating halfStarRating' title='" + item.CommunityRating + "'></div>";
-                //    }
-                //    else {
-                //        html += "<div class='starRating' title='" + item.CommunityRating + "'></div>";
-                //    }
-                //}
+            } else {
+                html += '<div style="display:inline-block;margin-left:-1.25em;"></div>';
             }
 
             if (item.CriticRating != null) {

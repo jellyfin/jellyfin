@@ -32,11 +32,7 @@
 
         $('.itemEpisodeName', page).html(programInfo.EpisodeTitle || '');
 
-        if (programInfo.CommunityRating) {
-            $('.itemCommunityRating', page).html(LibraryBrowser.getRatingHtml(programInfo)).show();
-        } else {
-            $('.itemCommunityRating', page).hide();
-        }
+        $('.itemCommunityRating', page).html(LibraryBrowser.getRatingHtml(programInfo));
 
         LibraryBrowser.renderGenres($('.itemGenres', page), programInfo, context);
         LibraryBrowser.renderOverview($('.itemOverview', page), programInfo);

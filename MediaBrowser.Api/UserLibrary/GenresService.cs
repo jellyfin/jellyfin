@@ -107,9 +107,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>IEnumerable{Tuple{System.StringFunc{System.Int32}}}.</returns>
         protected override IEnumerable<Genre> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items)
         {
-            var itemsList = items.Where(i => i.Genres != null).ToList();
-
-            return itemsList
+            return items
                 .SelectMany(i => i.Genres)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .Select(name => LibraryManager.GetGenre(name));

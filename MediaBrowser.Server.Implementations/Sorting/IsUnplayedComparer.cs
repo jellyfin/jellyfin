@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Querying;
 
@@ -32,7 +31,7 @@ namespace MediaBrowser.Server.Implementations.Sorting
         /// <returns>DateTime.</returns>
         private int GetValue(BaseItem x)
         {
-            return x.IsPlayed(User) ? 1 : 0;
+            return x.IsUnplayed(User) ? 0 : 1;
         }
 
         /// <summary>

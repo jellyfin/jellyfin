@@ -44,11 +44,7 @@
 
             $('.itemEpisodeName', page).html(item.EpisodeTitle || '');
 
-            if (item.CommunityRating) {
-                $('.itemCommunityRating', page).html(LibraryBrowser.getRatingHtml(item)).show();
-            } else {
-                $('.itemCommunityRating', page).hide();
-            }
+            $('.itemCommunityRating', page).html(LibraryBrowser.getRatingHtml(item));
 
             $('.userDataIcons', page).html(LibraryBrowser.getUserDataIconsHtml(item));
 

@@ -1002,6 +1002,11 @@ namespace MediaBrowser.Api.Playback
         /// <returns>StreamState.</returns>
         protected async Task<StreamState> GetState(StreamRequest request, CancellationToken cancellationToken)
         {
+            if (request.ThrowDebugError)
+            {
+                throw new InvalidOperationException("You asked for a debug error, you got one.");
+            }
+
             var url = Request.PathInfo;
 
             if (!request.AudioCodec.HasValue)

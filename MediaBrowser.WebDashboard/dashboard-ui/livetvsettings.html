@@ -10,19 +10,19 @@
             <div class="content-primary">
                 <form class="liveTvSettingsForm" style="display: none;">
 
-                    <br />
-                    <div>
+                    <div style="margin-top: 2.5em;">
                         <p>Active service: <span id="activeServiceName"></span></p>
                         <p>Status: <span id="activeServiceStatus"></span></p>
                         <p>Version: <span id="activeServiceVersion"></span></p>
                     </div>
+                    <br />
                     <br />
                     <ul data-role="listview" class="ulForm">
                         <li>
                             <label for="selectActiveService">Change active service: </label>
                             <select id="selectActiveService" data-mini="true">
                             </select>
-                            <div class="fieldDescription">Although multiple tv plugins can be installed only one can be active at a time.</div>
+                            <div class="fieldDescription">Multiple tv plugins can be installed but only one can be active at a time.</div>
                         </li>
 
                         <li>
@@ -46,6 +46,9 @@
                             </select>
                             <div class="fieldDescription">Downloading more days worth of guide data provides the ability to schedule out further in advance and view more listings, but it will also take longer to download. Auto will choose based on the number of channels.</div>
                         </li>
+                    </ul>
+                    <br />
+                    <ul data-role="listview" class="ulForm">
                         <li>
                             <button type="submit" data-theme="b" data-icon="check">
                                 Save
