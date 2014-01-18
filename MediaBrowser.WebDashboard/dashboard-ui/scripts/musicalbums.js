@@ -57,7 +57,7 @@
 
             html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
 
-            $('#items', page).html(html).trigger('create');
+            $('#items', page).html(html).trigger('create').createPosterItemHoverMenu();
 
             $('.selectPage', page).on('change', function () {
                 query.StartIndex = (parseInt(this.value) - 1) * query.Limit;

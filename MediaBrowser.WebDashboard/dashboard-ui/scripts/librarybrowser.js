@@ -422,7 +422,10 @@
 
                 html += '<tr>';
 
-                html += '<td><button class="btnPlay" data-icon="play" type="button" data-iconpos="notext" onclick="LibraryBrowser.showPlayMenu(this, \'' + item.Id + '\', \'Audio\', \'Audio\');">Play</button></td>';
+                html += '<td class="detailTableButtonsCell">';
+                html += '<button class="btnPlay" data-icon="play" type="button" data-iconpos="notext" onclick="LibraryBrowser.showPlayMenu(this, \'' + item.Id + '\', \'Audio\', \'Audio\');" data-inline="true" title="Play">Play</button>';
+                html += '<button class="btnQueue" data-icon="plus" type="button" data-iconpos="notext" onclick="MediaPlayer.queue(\'' + item.Id + '\');" data-inline="true" title="Queue">Queue</button>';
+                html += '</td>';
 
                 var num = item.IndexNumber;
 
@@ -2465,6 +2468,7 @@
 
         var isSmallItem = $(posterItem).hasClass('smallBackdropPosterItem');
         var isPortrait = $(posterItem).hasClass('portraitPosterItem');
+        var isSquare = $(posterItem).hasClass('squarePosterItem');
 
         var parentName = isSmallItem || isPortrait ? null : item.SeriesName;
         var name = LibraryBrowser.getPosterViewDisplayName(item, true);
@@ -2530,7 +2534,7 @@
 
         html += '<div>';
 
-        var buttonMargin = isPortrait ? "margin:0 7px 0 0;" : "margin:0 10px 0 0;";
+        var buttonMargin = isPortrait || isSquare ? "margin:0 7px 0 0;" : "margin:0 10px 0 0;";
 
         var buttonCount = 0;
 
@@ -2541,6 +2545,11 @@
 
             html += '<button type="button" data-mini="true" data-inline="true" data-icon="play" data-iconpos="notext" title="Play" onclick="' + onPlayClick + '" style="' + buttonMargin + '">Play</button>';
             buttonCount++;
+
+            if (item.MediaType == "Audio" || item.Type == "MusicAlbum") {
+                html += '<button type="button" data-mini="true" data-inline="true" data-icon="plus" data-iconpos="notext" title="Queue" onclick="MediaPlayer.queue(\'' + item.Id + '\');return false;" style="' + buttonMargin + '">Queue</button>';
+                buttonCount++;
+            }
         }
 
         if (item.LocalTrailerCount) {
@@ -2642,7 +2651,7 @@
             return this;
         }
 
-        return this.on('mouseenter', '.backdropPosterItem,.smallBackdropPosterItem,.portraitPosterItem', onHoverIn).on('mouseleave', '.backdropPosterItem,.smallBackdropPosterItem,.portraitPosterItem', onHoverOut);
+        return this.on('mouseenter', '.backdropPosterItem,.smallBackdropPosterItem,.portraitPosterItem,.squarePosterItem', onHoverIn).on('mouseleave', '.backdropPosterItem,.smallBackdropPosterItem,.portraitPosterItem,.squarePosterItem', onHoverOut);
     };
 
 })(jQuery, document, window);

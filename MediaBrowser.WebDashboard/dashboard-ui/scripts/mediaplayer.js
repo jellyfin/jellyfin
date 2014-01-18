@@ -616,7 +616,6 @@
 
             // Some 1080- videos are reported as 1912?
             if (maxAllowedWidth >= 1910) {
-                options.push({ name: '1080p - 15Mbps', maxWidth: 1920, bitrate: 15000000 });
                 options.push({ name: '1080p - 10Mbps', maxWidth: 1920, bitrate: 10000000 });
                 options.push({ name: '1080p - 8Mbps', maxWidth: 1920, bitrate: 8000000 });
                 options.push({ name: '1080p - 6Mbps', maxWidth: 1920, bitrate: 6000000 });
@@ -891,6 +890,17 @@
 
                 var errorCode = this.error ? this.error.code : '';
                 console.log('Html5 Video error code: ' + errorCode);
+
+                var errorMsg = 'There was an error playing the video.';
+                
+                if (item.Type == "Channel") {
+                    errorMsg += " Please ensure there is an open tuner availalble.";
+                }
+
+                Dashboard.alert({
+                    title: 'Video Error',
+                    message: errorMsg
+                });
 
             }).on("ended.playbackstopped", onPlaybackStopped)
                 .on('ended.playnext', playNextAfterEnded);
@@ -1467,6 +1477,11 @@
 
         self.queue = function (id) {
 
+            if (!currentMediaElement) {
+                self.playById(id);
+                return;
+            }
+            
             ApiClient.getItem(Dashboard.getCurrentUserId(), id).done(function (item) {
 
                 if (item.IsFolder) {

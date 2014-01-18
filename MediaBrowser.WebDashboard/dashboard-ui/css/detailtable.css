@@ -51,6 +51,14 @@
     margin: 0;
 }
 
+.detailTableButtonsCell {
+    white-space: nowrap;
+}
+
+    .detailTableButtonsCell button + button {
+        margin-left: .5em;
+    }
+
 @media all and (min-width: 600px) {
     .tabletColumn {
         display: table-cell;
