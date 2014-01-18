@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using System;
@@ -9,6 +10,7 @@ namespace MediaBrowser.Model.LiveTv
     /// <summary>
     /// Class ChannelInfoDto
     /// </summary>
+    [DebuggerDisplay("Name = {Name}, Number = {Number}")]
     public class ChannelInfoDto : INotifyPropertyChanged, IItemDto
     {
         /// <summary>

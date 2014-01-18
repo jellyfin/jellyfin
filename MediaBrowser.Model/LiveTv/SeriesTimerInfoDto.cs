@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 
 namespace MediaBrowser.Model.LiveTv
 {
+    [DebuggerDisplay("Name = {Name}")]
     public class SeriesTimerInfoDto : INotifyPropertyChanged
     {
         /// <summary>

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using System;
@@ -6,6 +7,7 @@ using System.Collections.Generic;
 
 namespace MediaBrowser.Model.LiveTv
 {
+    [DebuggerDisplay("Name = {Name}, StartTime = {StartDate}, EndTime = {EndDate}")]
     public class ProgramInfoDto : INotifyPropertyChanged
     {
         /// <summary>
