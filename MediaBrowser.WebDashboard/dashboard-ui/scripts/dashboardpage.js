@@ -29,7 +29,7 @@
 
         ApiClient.getProductNews({
 
-            limit: 5
+            limit: 6
 
         }).done(function (result) {
 
@@ -39,6 +39,10 @@
 
                 itemHtml += '<div class="newsItem">';
                 itemHtml += '<a class="newsItemHeader" href="' + item.Link + '" target="_blank">' + item.Title + '</a>';
+
+                var date = parseISO8601Date(item.Date, { toLocal: true });
+                itemHtml += '<div class="newsItemDate">' + date.toLocaleDateString() + '</div>';
+
                 itemHtml += '<div class="newsItemDescription">' + item.Description + '</div>';
                 itemHtml += '</div>';
 

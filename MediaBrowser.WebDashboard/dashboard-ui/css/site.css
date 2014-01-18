@@ -803,6 +803,11 @@ progress {
     text-decoration: none !important;
 }
 
+.newsItemDate {
+    margin: .25em 0;
+    color: green;
+}
+
 @media all and (max-width: 1440px) {
 
     .dashboardHomeRightColumn {
@@ -812,6 +817,7 @@ progress {
 
 .dashboardContent {
     max-width: 1000px;
+    margin-top: -10px;
 }
 
 @media all and (min-width: 1440px) {
