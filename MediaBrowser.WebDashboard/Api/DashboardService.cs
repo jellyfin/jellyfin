@@ -476,6 +476,7 @@ namespace MediaBrowser.WebDashboard.Api
                                       "metadataadvanced.js",
                                       "appsplayback.js",
                                       "appsweather.js",
+                                      "dashboardinfo.js",
                                       "dashboardpage.js",
                                       "directorybrowser.js",
                                       "edititemmetadata.js",

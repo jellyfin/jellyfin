@@ -109,7 +109,13 @@ namespace MediaBrowser.Model.System
         /// </summary>
         /// <value>The log path.</value>
         public string LogPath { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the transcoding temporary path.
+        /// </summary>
+        /// <value>The transcoding temporary path.</value>
+        public string TranscodingTempPath { get; set; }
+
         /// <summary>
         /// Gets or sets the HTTP server port number.
         /// </summary>
