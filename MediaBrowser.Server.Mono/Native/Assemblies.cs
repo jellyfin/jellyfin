@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using MediaBrowser.IsoMounter;
+using System.Collections.Generic;
 using System.Reflection;
 
 namespace MediaBrowser.ServerApplication.Native
@@ -15,6 +16,8 @@ namespace MediaBrowser.ServerApplication.Native
         public static List<Assembly> GetAssembliesWithParts()
         {
             var list = new List<Assembly>();
+
+            list.Add(typeof(LinuxIsoManager).Assembly);
 
             return list;
         }
