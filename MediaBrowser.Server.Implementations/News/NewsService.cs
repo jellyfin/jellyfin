@@ -111,7 +111,7 @@ namespace MediaBrowser.Server.Implementations.News
         {
             var info = _fileSystem.GetFileSystemInfo(path);
 
-            if (!info.Exists || (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(info)).TotalHours > 24)
+            if (!info.Exists || (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(info)).TotalHours > 12)
             {
                 var requestOptions = new HttpRequestOptions
                 {
