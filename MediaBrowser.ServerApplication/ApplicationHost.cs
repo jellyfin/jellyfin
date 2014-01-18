@@ -642,7 +642,8 @@ namespace MediaBrowser.ServerApplication
                 CanSelfUpdate = CanSelfUpdate,
                 WanAddress = GetWanAddress(),
                 HasUpdateAvailable = _hasUpdateAvailable,
-                SupportsAutoRunAtStartup = SupportsAutoRunAtStartup
+                SupportsAutoRunAtStartup = SupportsAutoRunAtStartup,
+                TranscodingTempPath = ApplicationPaths.TranscodingTempPath
             };
         }
 

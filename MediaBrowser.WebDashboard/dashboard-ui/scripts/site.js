@@ -797,7 +797,21 @@ var Dashboard = {
 
         systemInfo = systemInfo || Dashboard.lastSystemInfo;
 
-        ApiClient.openWebSocket(systemInfo.WebSocketPortNumber);
+        var location = window.location;
+
+        var webSocketUrl = "ws://" + location.hostname;
+        
+        if (systemInfo.HttpServerPortNumber != systemInfo.WebSocketPortNumber) {
+
+            if (location.port) {
+                webSocketUrl += ':' + location.port;
+            }
+
+        } else {
+            webSocketUrl += ':' + systemInfo.WebSocketPortNumber;
+        }
+
+        ApiClient.openWebSocket(webSocketUrl);
     },
 
     onWebSocketMessageReceived: function (e, data) {

@@ -8,6 +8,11 @@
 
         <div data-role="content">
             <div class="content-primary">
+                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                    <a href="#" data-role="button" class="ui-btn-active">Home</a>
+                    <a href="dashboardinfopage.html" data-role="button">Info</a>
+                </div>
+
                 <div class="readOnlyContent">
 
                     <div data-role="collapsible" data-collapsed="false" style="margin-top: 2em;">
@@ -65,25 +70,6 @@
                         <div id="divRunningTasks">
                         </div>
                         <p><a href="scheduledtasks.html">Manage Scheduled Tasks</a></p>
-                    </div>
-
-                    <div data-role="collapsible" data-collapsed="true" style="margin-top: 1em;">
-                        <h3>Links</h3>
-                        <div>
-                            <p>Bookmark url: <a id="bookmarkUrl" href="#" data-ajax="false"></a></p>
-                            <p class="externalUrl"></p>
-                            <p><a href="http://mediabrowser3.com/community" target="_blank">Community</a> - Join us!</p>
-                            <p><a href="https://github.com/MediaBrowser/MediaBrowser" target="_blank">Github</a></p>
-                            <p><a href="../swagger-ui/index.html" target="_blank">Api Documentation</a></p>
-                        </div>
-                    </div>
-
-                    <div data-role="collapsible" data-collapsed="true" style="margin-top: 1em;">
-                        <h3>System Paths</h3>
-                        <div>
-                            <p><b>Logs:</b> <span id="logPath"></span></p>
-                            <p><b>Images by name:</b> <span id="imagesByNamePath"></span></p>
-                        </div>
                     </div>
 
                     <div style="display: none; margin-top: 4em;" id="contribute">

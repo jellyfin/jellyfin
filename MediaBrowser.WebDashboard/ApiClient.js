@@ -6,19 +6,14 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
 
     /**
      * Creates a new api client instance
-     * @param {String} serverProtocol
-     * @param {String} serverHostName
-     * @param {String} serverPortNumber
+     * @param {String} serverAddress
      * @param {String} clientName 
      * @param {String} applicationVersion 
      */
-    return function (serverProtocol, serverHostName, serverPortNumber, clientName, applicationVersion) {
+    return function (serverAddress, clientName, applicationVersion) {
 
-        if (!serverProtocol) {
-            throw new Error("Must supply a serverProtocol, e.g. http:");
-        }
-        if (!serverHostName) {
-            throw new Error("Must supply serverHostName, e.g. 192.168.1.1 or myServerName");
+        if (!serverAddress) {
+            throw new Error("Must supply a serverAddress");
         }
 
         var self = this;
@@ -28,11 +23,11 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         var webSocket;
 
         /**
-         * Gets the server host name.
+         * Gets the server address.
          */
-        self.serverHostName = function () {
+        self.serverAddress = function () {
 
-            return serverHostName;
+            return serverAddress;
         };
 
         /**
@@ -133,11 +128,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 throw new Error("Url name cannot be empty");
             }
 
-            var url = serverProtocol + "//" + serverHostName;
-
-            if (serverPortNumber) {
-                url += ":" + serverPortNumber;
-            }
+            var url = serverAddress;
 
             url += "/mediabrowser/" + name;
 
@@ -148,9 +139,9 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             return url;
         };
 
-        self.openWebSocket = function (port) {
+        self.openWebSocket = function (webSocketAddress) {
 
-            var url = "ws://" + serverHostName + ":" + port + "/mediabrowser";
+            var url = webSocketAddress + "/mediabrowser";
 
             webSocket = new WebSocket(url);
 
@@ -3998,7 +3989,13 @@ MediaBrowser.ApiClient.create = function (clientName, applicationVersion) {
 
     var loc = window.location;
 
-    return new MediaBrowser.ApiClient(loc.protocol, loc.hostname, loc.port, clientName, applicationVersion);
+    var address = loc.protocol + '//' + loc.hostname;
+    
+    if (loc.port) {
+        address += ':' + loc.port;
+    }
+
+    return new MediaBrowser.ApiClient(address, clientName, applicationVersion);
 };
 
 /**

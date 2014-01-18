@@ -347,15 +347,6 @@
             $('#ports', page).html('Running on ports <b>' + port + '</b> and <b>' + dashboardInfo.SystemInfo.WebSocketPortNumber + '</b>');
         }
 
-        $('#logPath', page).html(dashboardInfo.SystemInfo.LogPath);
-        $('#imagesByNamePath', page).html(dashboardInfo.SystemInfo.ItemsByNamePath);
-
-        var host = ApiClient.serverHostName();
-
-        var url = "http://" + host + ":" + port + "/mediabrowser";
-
-        $('#bookmarkUrl', page).html(url).attr("href", url);
-
         if (dashboardInfo.RunningTasks.filter(function (task) {
 
             return task.Id == dashboardInfo.ApplicationUpdateTaskId;
@@ -371,15 +362,6 @@
             $('.btnRestartContainer', page).removeClass('hide');
         } else {
             $('.btnRestartContainer', page).addClass('hide');
-        }
-
-        if (dashboardInfo.SystemInfo.WanAddress) {
-
-            var externalUrl = dashboardInfo.SystemInfo.WanAddress + "/mediabrowser";
-
-            $('.externalUrl', page).html('External url: <a href="' + externalUrl + '" target="_blank">' + externalUrl + '</a>').show().trigger('create');
-        } else {
-            $('.externalUrl', page).hide();
         }
 
         DashboardPage.renderApplicationUpdateInfo(dashboardInfo);

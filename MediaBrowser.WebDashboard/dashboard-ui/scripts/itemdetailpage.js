@@ -888,16 +888,16 @@
 
             var attributes = [];
 
-            if (stream.Language) {
+            if (stream.Language && stream.Type != "Video") {
                 attributes.push('<span class="mediaInfoAttribute">' + stream.Language + '</span>');
             }
 
             if (stream.Codec && stream.Codec != "dca") {
-                attributes.push('<span class="mediaInfoAttribute">' + stream.Codec + '</span>');
+                attributes.push('<span class="mediaInfoAttribute">' + stream.Codec.toUpperCase() + '</span>');
             }
 
             if (stream.Profile && stream.Codec == "dca") {
-                attributes.push('<span class="mediaInfoAttribute">' + stream.Profile + '</span>');
+                attributes.push('<span class="mediaInfoAttribute">' + stream.Profile.toUpperCase() + '</span>');
             }
 
             if (stream.Width || stream.Height) {
@@ -919,7 +919,7 @@
                 attributes.push('<span class="mediaInfoAttribute">' + (parseInt(stream.BitRate / 1000)) + ' kbps</span>');
             }
 
-            if (stream.IsDefault) {
+            if (stream.IsDefault && stream.Type != "Video") {
                 attributes.push('<span class="mediaInfoAttribute">Default</span>');
             }
             if (stream.IsForced) {

@@ -1,0 +1,43 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+</head>
+<body>
+    <div id="dashboardInfoPage" data-role="page" class="page type-interior adminPage">
+
+        <div data-role="content">
+            <div class="content-primary">
+                <div class="readOnlyContent">
+
+                    <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                        <a href="dashboard.html" data-role="button">Home</a>
+                        <a href="#" data-role="button" class="ui-btn-active">Info</a>
+                    </div>
+
+                    <div data-role="collapsible" data-collapsed="false" style="margin-top: 1em;">
+                        <h3>Links</h3>
+                        <div>
+                            <p>Bookmark url: <a id="bookmarkUrl" href="#" data-ajax="false"></a></p>
+                            <p class="externalUrl"></p>
+                            <p><a href="http://mediabrowser3.com/community" target="_blank">Community</a> - Join us!</p>
+                            <p><a href="https://github.com/MediaBrowser/MediaBrowser" target="_blank">Github</a></p>
+                            <p><a href="../swagger-ui/index.html" target="_blank">Api Documentation</a></p>
+                        </div>
+                    </div>
+
+                    <div data-role="collapsible" data-collapsed="false" style="margin-top: 1em;">
+                        <h3>System Paths</h3>
+                        <div>
+                            <p><b>Cache:</b> <span id="cachePath"></span></p>
+                            <p><b>Images by name:</b> <span id="imagesByNamePath"></span></p>
+                            <p><b>Logs:</b> <span id="logPath"></span></p>
+                            <p><b>Transcoding temporary files:</b> <span id="transcodingTemporaryPath"></span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
