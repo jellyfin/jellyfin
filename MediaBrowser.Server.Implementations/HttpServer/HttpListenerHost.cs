@@ -95,7 +95,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             container.Adapter = _containerAdapter;
 
             Plugins.Add(new SwaggerFeature());
-            Plugins.Add(new CorsFeature());
+            Plugins.Add(new CorsFeature(allowedHeaders: "Content-Type, Authorization")); 
             HostContext.GlobalResponseFilters.Add(new ResponseFilter(_logger).FilterResponse);
         }
 
