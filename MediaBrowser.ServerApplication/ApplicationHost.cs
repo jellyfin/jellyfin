@@ -19,6 +19,7 @@ using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.MediaInfo;
 using MediaBrowser.Controller.Net;
+using MediaBrowser.Controller.News;
 using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Plugins;
@@ -283,6 +284,10 @@ namespace MediaBrowser.ServerApplication
 
             DtoService = new DtoService(Logger, LibraryManager, UserManager, UserDataManager, ItemRepository, ImageProcessor);
             RegisterSingleInstance(DtoService);
+
+            var newsService = new Server.Implementations.News.NewsService(ApplicationPaths, FileSystemManager, HttpClient);
+            RegisterSingleInstance<INewsService>(newsService);
+
             progress.Report(15);
 
             var innerProgress = new ActionableProgress<double>();

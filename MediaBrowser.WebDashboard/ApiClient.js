@@ -197,6 +197,19 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             return webSocket && (webSocket.readyState === WebSocket.OPEN || webSocket.readyState === WebSocket.CONNECTING);
         };
 
+        self.getProductNews = function (options) {
+
+            options = options || {};
+
+            var url = self.getUrl("News/Product", options);
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
         /**
          * Gets an item from the server
          * Omit itemId to get the root folder.
