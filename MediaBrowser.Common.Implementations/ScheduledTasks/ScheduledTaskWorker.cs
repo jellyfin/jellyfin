@@ -313,6 +313,13 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         {
             var trigger = (ITaskTrigger)sender;
 
+            var configurableTask = ScheduledTask as IConfigurableScheduledTask;
+
+            if (configurableTask != null && !configurableTask.IsEnabled)
+            {
+                return;
+            }
+
             Logger.Info("{0} fired for task: {1}", trigger.GetType().Name, Name);
 
             trigger.Stop();

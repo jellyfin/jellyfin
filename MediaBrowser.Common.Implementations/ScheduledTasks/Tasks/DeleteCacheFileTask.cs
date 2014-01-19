@@ -169,5 +169,10 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
         {
             get { return true; }
         }
+
+        public bool IsEnabled
+        {
+            get { return true; }
+        }
     }
 }

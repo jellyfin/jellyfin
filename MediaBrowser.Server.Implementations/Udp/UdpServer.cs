@@ -135,6 +135,10 @@ namespace MediaBrowser.Server.Implementations.Udp
                 {
                     break;
                 }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error in StartListening", ex);
+                }
             }
         }
 
