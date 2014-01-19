@@ -92,6 +92,12 @@ namespace MediaBrowser.Model.Querying
         public string NameLessThan { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance is played.
+        /// </summary>
+        /// <value><c>null</c> if [is played] contains no value, <c>true</c> if [is played]; otherwise, <c>false</c>.</value>
+        public bool? IsPlayed { get; set; }
+        
+        /// <summary>
         /// Initializes a new instance of the <see cref="ItemsByNameQuery" /> class.
         /// </summary>
         public ItemsByNameQuery()

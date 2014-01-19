@@ -93,6 +93,9 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "SortBy", Description = "Optional. Specify one or more sort orders, comma delimeted. Options: Album, AlbumArtist, Artist, Budget, CommunityRating, CriticRating, DateCreated, DatePlayed, PlayCount, PremiereDate, ProductionYear, SortName, Random, Revenue, Runtime", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string SortBy { get; set; }
 
+        [ApiMember(Name = "IsPlayed", Description = "Optional filter by items that are played, or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool? IsPlayed { get; set; }
+
         /// <summary>
         /// Gets the filters.
         /// </summary>
