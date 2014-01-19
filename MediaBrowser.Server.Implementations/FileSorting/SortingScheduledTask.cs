@@ -1,10 +1,10 @@
-﻿using MediaBrowser.Common.ScheduledTasks;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,12 +15,14 @@ namespace MediaBrowser.Server.Implementations.FileSorting
         private readonly IServerConfigurationManager _config;
         private readonly ILogger _logger;
         private readonly ILibraryManager _libraryManager;
+        private readonly IFileSystem _fileSystem;
 
-        public SortingScheduledTask(IServerConfigurationManager config, ILogger logger, ILibraryManager libraryManager)
+        public SortingScheduledTask(IServerConfigurationManager config, ILogger logger, ILibraryManager libraryManager, IFileSystem fileSystem)
         {
             _config = config;
             _logger = logger;
             _libraryManager = libraryManager;
+            _fileSystem = fileSystem;
         }
 
         public string Name
@@ -45,34 +47,7 @@ namespace MediaBrowser.Server.Implementations.FileSorting
 
         private void SortFiles(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            var numComplete = 0;
-
-            var paths = _config.Configuration.FileSortingOptions.TvWatchLocations.ToList();
-
-            foreach (var path in paths)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                try
-                {
-                    SortFiles(path);
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error sorting files from {0}", ex, path);
-                }
-
-                numComplete++;
-                double percent = numComplete;
-                percent /= paths.Count;
-
-                progress.Report(100 * percent);
-            }
-        }
-
-        private void SortFiles(string path)
-        {
-            new TvFileSorter(_libraryManager, _logger).Sort(path, _config.Configuration.FileSortingOptions);
+            new TvFileSorter(_libraryManager, _logger, _fileSystem).Sort(_config.Configuration.FileSortingOptions, cancellationToken, progress);
         }
 
         public IEnumerable<ITaskTrigger> GetDefaultTriggers()

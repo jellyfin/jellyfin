@@ -331,6 +331,11 @@ namespace MediaBrowser.Model.Configuration
 
         public bool DeleteEmptyFolders { get; set; }
 
+        /// <summary>
+        /// Will log results but will not actually make any changes
+        /// </summary>
+        public bool EnableTrialMode { get; set; }
+
         public FileSortingOptions()
         {
             MinFileSizeMb = 50;
@@ -344,6 +349,8 @@ namespace MediaBrowser.Model.Configuration
 
             SeasonFolderPattern = "Season %s";
             SeasonZeroFolderName = "Season 0";
+
+            EnableTrialMode = true;
         }
     }
 }
