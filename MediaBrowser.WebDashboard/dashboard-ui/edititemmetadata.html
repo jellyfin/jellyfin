@@ -66,10 +66,6 @@
                                 <label for="txtSortName">Sort name:</label>
                                 <input type="text" id="txtSortName" name="txtSortName" data-mini="true" />
                             </div>
-                            <div data-role="fieldcontain" id="fldSourceType" style="display: none;">
-                                <label for="txtDisplayMediaType">Source type:</label>
-                                <input type="text" id="txtDisplayMediaType" name="txtDisplayMediaType" data-mini="true" />
-                            </div>
                             <div data-role="fieldcontain" id="fldDateAdded" style="display: none;">
                                 <label for="txtDateAdded">Date added:</label>
                                 <input type="date" id="txtDateAdded" name="txtDateAdded" data-mini="true" />
@@ -335,6 +331,10 @@
                         <div data-role="collapsible" data-mini="true" id="collapsibleDisplaySettings" style="display: none;">
                             <h3>Display Settings</h3>
                             <div>
+                                <div data-role="fieldcontain" id="fldSourceType" style="display: none;" class="fldDisplaySetting">
+                                    <label for="txtDisplayMediaType">Treat image as:</label>
+                                    <input type="text" id="txtDisplayMediaType" name="txtDisplayMediaType" data-mini="true" />
+                                </div>
                                 <div data-role="fieldcontain" id="fldDisplaySpecialsInline" class="fldDisplaySetting">
                                     <label for="chkDisplaySpecialsInline">Display specials within seasons they aired in.</label>
                                     <input data-mini="true" type="checkbox" name="chkDisplaySpecialsInline" id="chkDisplaySpecialsInline" />

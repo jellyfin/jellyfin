@@ -735,7 +735,7 @@
         }
 
         if (item.MediaType == "Video" && item.Type != "Channel") {
-            $('#fldSourceType', page).hide();
+            $('#fldSourceType', page).show();
         } else {
             $('#fldSourceType', page).hide();
         }
@@ -1200,6 +1200,7 @@
                     Gamesdb: $('#txtGamesDb', form).val(),
                     Imdb: $('#txtImdb', form).val(),
                     Tmdb: $('#txtTmdb', form).val(),
+                    TmdbCollection: $('#txtTmdbCollection', form).val(),
                     Tvdb: $('#txtTvdb', form).val(),
                     Tvcom: $('#txtTvCom', form).val(),
                     Musicbrainz: $('#txtMusicBrainz', form).val(),
