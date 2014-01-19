@@ -193,6 +193,12 @@
     <Compile Include="..\MediaBrowser.Model\Extensions\ModelExtensions.cs">
       <Link>Extensions\ModelExtensions.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\FileSorting\FileSortingResult.cs">
+      <Link>FileSorting\FileSortingResult.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\FileSorting\FileSortingResultQuery.cs">
+      <Link>FileSorting\FileSortingResultQuery.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Games\GameSystem.cs">
       <Link>Games\GameSystem.cs</Link>
     </Compile>

@@ -1,10 +1,12 @@
 ﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.FileSorting;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
@@ -12,6 +14,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.FileSorting
 {
@@ -20,26 +23,29 @@ namespace MediaBrowser.Server.Implementations.FileSorting
         private readonly ILibraryManager _libraryManager;
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
+        private readonly IFileSortingRepository _iFileSortingRepository;
 
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
-        
-        public TvFileSorter(ILibraryManager libraryManager, ILogger logger, IFileSystem fileSystem)
+
+        public TvFileSorter(ILibraryManager libraryManager, ILogger logger, IFileSystem fileSystem, IFileSortingRepository iFileSortingRepository)
         {
             _libraryManager = libraryManager;
             _logger = logger;
             _fileSystem = fileSystem;
+            _iFileSortingRepository = iFileSortingRepository;
         }
 
-        public void Sort(FileSortingOptions options, CancellationToken cancellationToken, IProgress<double> progress)
+        public async Task Sort(FileSortingOptions options, CancellationToken cancellationToken, IProgress<double> progress)
         {
             var minFileBytes = options.MinFileSizeMb * 1024 * 1024;
 
-            var eligibleFiles = options.TvWatchLocations.SelectMany(GetEligibleFiles)
+            var eligibleFiles = options.TvWatchLocations.SelectMany(GetFilesToSort)
+                .OrderBy(_fileSystem.GetCreationTimeUtc)
                 .Where(i => EntityResolutionHelper.IsVideoFile(i.FullName) && i.Length >= minFileBytes)
                 .ToList();
 
             progress.Report(10);
-            
+
             if (eligibleFiles.Count > 0)
             {
                 var allSeries = _libraryManager.RootFolder
@@ -48,16 +54,16 @@ namespace MediaBrowser.Server.Implementations.FileSorting
                     .ToList();
 
                 var numComplete = 0;
-                
+
                 foreach (var file in eligibleFiles)
                 {
-                    SortFile(file.FullName, options, allSeries);
+                    await SortFile(file.FullName, options, allSeries).ConfigureAwait(false);
 
                     numComplete++;
                     double percent = numComplete;
                     percent /= eligibleFiles.Count;
 
-                    progress.Report(100 * percent);
+                    progress.Report(10 + (89 * percent));
                 }
             }
 
@@ -83,7 +89,12 @@ namespace MediaBrowser.Server.Implementations.FileSorting
             progress.Report(100);
         }
 
-        private IEnumerable<FileInfo> GetEligibleFiles(string path)
+        /// <summary>
+        /// Gets the eligible files.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>IEnumerable{FileInfo}.</returns>
+        private IEnumerable<FileInfo> GetFilesToSort(string path)
         {
             try
             {
@@ -95,13 +106,25 @@ namespace MediaBrowser.Server.Implementations.FileSorting
             {
                 _logger.ErrorException("Error getting files from {0}", ex, path);
 
-                return new List<FileInfo>(); 
+                return new List<FileInfo>();
             }
         }
 
-        private void SortFile(string path, FileSortingOptions options, IEnumerable<Series> allSeries)
+        /// <summary>
+        /// Sorts the file.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <param name="options">The options.</param>
+        /// <param name="allSeries">All series.</param>
+        private Task SortFile(string path, FileSortingOptions options, IEnumerable<Series> allSeries)
         {
             _logger.Info("Sorting file {0}", path);
+
+            var result = new FileSortingResult
+            {
+                Date = DateTime.UtcNow,
+                OriginalPath = path
+            };
 
             var seriesName = TVUtils.GetSeriesNameFromEpisodeFile(path);
 
@@ -118,31 +141,55 @@ namespace MediaBrowser.Server.Implementations.FileSorting
                     {
                         _logger.Debug("Extracted information from {0}. Series name {1}, Season {2}, Episode {3}", path, seriesName, season, episode);
 
-                        SortFile(path, seriesName, season.Value, episode.Value, options, allSeries);
+                        SortFile(path, seriesName, season.Value, episode.Value, options, allSeries, result);
                     }
                     else
                     {
-                        _logger.Warn("Unable to determine episode number from {0}", path);
+                        var msg = string.Format("Unable to determine episode number from {0}", path);
+                        result.Status = FileSortingStatus.Failure;
+                        result.ErrorMessage = msg;
+                        _logger.Warn(msg);
                     }
                 }
                 else
                 {
-                    _logger.Warn("Unable to determine season number from {0}", path);
+                    var msg = string.Format("Unable to determine season number from {0}", path);
+                    result.Status = FileSortingStatus.Failure;
+                    result.ErrorMessage = msg;
+                    _logger.Warn(msg);
                 }
             }
             else
             {
-                _logger.Warn("Unable to determine series name from {0}", path);
+                var msg = string.Format("Unable to determine series name from {0}", path);
+                result.Status = FileSortingStatus.Failure;
+                result.ErrorMessage = msg;
+                _logger.Warn(msg);
             }
+
+            return LogResult(result);
         }
 
-        private void SortFile(string path, string seriesName, int seasonNumber, int episodeNumber, FileSortingOptions options, IEnumerable<Series> allSeries)
+        /// <summary>
+        /// Sorts the file.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <param name="seriesName">Name of the series.</param>
+        /// <param name="seasonNumber">The season number.</param>
+        /// <param name="episodeNumber">The episode number.</param>
+        /// <param name="options">The options.</param>
+        /// <param name="allSeries">All series.</param>
+        /// <param name="result">The result.</param>
+        private void SortFile(string path, string seriesName, int seasonNumber, int episodeNumber, FileSortingOptions options, IEnumerable<Series> allSeries, FileSortingResult result)
         {
             var series = GetMatchingSeries(seriesName, allSeries);
 
             if (series == null)
             {
-                _logger.Warn("Unable to find series in library matching name {0}", seriesName);
+                var msg = string.Format("Unable to find series in library matching name {0}", seriesName);
+                result.Status = FileSortingStatus.Failure;
+                result.ErrorMessage = msg;
+                _logger.Warn(msg);
                 return;
             }
 
@@ -153,13 +200,58 @@ namespace MediaBrowser.Server.Implementations.FileSorting
 
             if (string.IsNullOrEmpty(newPath))
             {
-                _logger.Warn("Unable to sort {0} because target path could not be found.", path);
+                var msg = string.Format("Unable to sort {0} because target path could not be determined.", path);
+                result.Status = FileSortingStatus.Failure;
+                result.ErrorMessage = msg;
+                _logger.Warn(msg);
                 return;
             }
 
             _logger.Info("Sorting file {0} to new path {1}", path, newPath);
+            result.TargetPath = newPath;
+
+            if (options.EnableTrialMode)
+            {
+                result.Status = FileSortingStatus.SkippedTrial;
+                return;
+            }
+
+            if (!options.OverwriteExistingEpisodes && File.Exists(result.TargetPath))
+            {
+                result.Status = FileSortingStatus.SkippedExisting;
+                return;
+            }
+
+            PerformFileSorting(options, result);
         }
 
+        /// <summary>
+        /// Performs the file sorting.
+        /// </summary>
+        /// <param name="options">The options.</param>
+        /// <param name="result">The result.</param>
+        private void PerformFileSorting(FileSortingOptions options, FileSortingResult result)
+        {
+        }
+
+        /// <summary>
+        /// Logs the result.
+        /// </summary>
+        /// <param name="result">The result.</param>
+        /// <returns>Task.</returns>
+        private Task LogResult(FileSortingResult result)
+        {
+            return _iFileSortingRepository.SaveResult(result, CancellationToken.None);
+        }
+
+        /// <summary>
+        /// Gets the new path.
+        /// </summary>
+        /// <param name="series">The series.</param>
+        /// <param name="seasonNumber">The season number.</param>
+        /// <param name="episodeNumber">The episode number.</param>
+        /// <param name="options">The options.</param>
+        /// <returns>System.String.</returns>
         private string GetNewPath(Series series, int seasonNumber, int episodeNumber, FileSortingOptions options)
         {
             var currentEpisodes = series.RecursiveChildren.OfType<Episode>()

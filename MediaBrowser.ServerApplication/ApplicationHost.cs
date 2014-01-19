@@ -170,6 +170,7 @@ namespace MediaBrowser.ServerApplication
         internal IDisplayPreferencesRepository DisplayPreferencesRepository { get; set; }
         internal IItemRepository ItemRepository { get; set; }
         private INotificationsRepository NotificationsRepository { get; set; }
+        private IFileSortingRepository FileSortingRepository { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ApplicationHost"/> class.
@@ -251,6 +252,9 @@ namespace MediaBrowser.ServerApplication
 
             ItemRepository = new SqliteItemRepository(ApplicationPaths, JsonSerializer, LogManager);
             RegisterSingleInstance(ItemRepository);
+
+            FileSortingRepository = new SqliteFileSortingRepository();
+            RegisterSingleInstance(FileSortingRepository);
 
             UserManager = new UserManager(Logger, ServerConfigurationManager, UserRepository);
             RegisterSingleInstance(UserManager);
