@@ -45,7 +45,7 @@ namespace MediaBrowser.Server.Implementations.FileSorting
 
         public Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            return new TvFileSorter(_libraryManager, _logger, _fileSystem, _iFileSortingRepository).Sort(_config.Configuration.FileSortingOptions, cancellationToken, progress);
+            return new TvFileSorter(_libraryManager, _logger, _fileSystem, _iFileSortingRepository).Sort(_config.Configuration.TvFileSortingOptions, cancellationToken, progress);
         }
 
         public IEnumerable<ITaskTrigger> GetDefaultTriggers()
@@ -58,12 +58,12 @@ namespace MediaBrowser.Server.Implementations.FileSorting
 
         public bool IsHidden
         {
-            get { return !_config.Configuration.FileSortingOptions.IsEnabled; }
+            get { return !_config.Configuration.TvFileSortingOptions.IsEnabled; }
         }
 
         public bool IsEnabled
         {
-            get { return _config.Configuration.FileSortingOptions.IsEnabled; }
+            get { return _config.Configuration.TvFileSortingOptions.IsEnabled; }
         }
     }
 }

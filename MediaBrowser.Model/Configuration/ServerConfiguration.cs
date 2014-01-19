@@ -224,7 +224,7 @@ namespace MediaBrowser.Model.Configuration
 
         public bool EnableAutomaticRestart { get; set; }
 
-        public FileSortingOptions FileSortingOptions { get; set; }
+        public TvFileSortingOptions TvFileSortingOptions { get; set; }
         public LiveTvOptions LiveTvOptions { get; set; }
 
         /// <summary>
@@ -293,7 +293,7 @@ namespace MediaBrowser.Model.Configuration
 
             LiveTvOptions = new LiveTvOptions();
 
-            FileSortingOptions = new FileSortingOptions();
+            TvFileSortingOptions = new TvFileSortingOptions();
         }
     }
 
@@ -316,12 +316,12 @@ namespace MediaBrowser.Model.Configuration
         public int? GuideDays { get; set; }
     }
 
-    public class FileSortingOptions
+    public class TvFileSortingOptions
     {
         public bool IsEnabled { get; set; }
         public int MinFileSizeMb { get; set; }
         public string[] LeftOverFileExtensionsToDelete { get; set; }
-        public string[] TvWatchLocations { get; set; }
+        public string[] WatchLocations { get; set; }
 
         public string SeasonFolderPattern { get; set; }
 
@@ -336,7 +336,7 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         public bool EnableTrialMode { get; set; }
 
-        public FileSortingOptions()
+        public TvFileSortingOptions()
         {
             MinFileSizeMb = 50;
 
@@ -345,7 +345,7 @@ namespace MediaBrowser.Model.Configuration
                 ".txt"
             };
 
-            TvWatchLocations = new string[] { };
+            WatchLocations = new string[] { };
 
             SeasonFolderPattern = "Season %s";
             SeasonZeroFolderName = "Season 0";
