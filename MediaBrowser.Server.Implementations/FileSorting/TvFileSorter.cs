@@ -1,4 +1,6 @@
-﻿using MediaBrowser.Controller.Entities.TV;
+﻿using System.Globalization;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
@@ -16,7 +18,10 @@ namespace MediaBrowser.Server.Implementations.FileSorting
     {
         private readonly ILibraryManager _libraryManager;
         private readonly ILogger _logger;
+        private readonly IFileSystem _fileSystem;
 
+        private static  CultureInfo _usCulture = new CultureInfo("en-US");
+        
         public TvFileSorter(ILibraryManager libraryManager, ILogger logger)
         {
             _libraryManager = libraryManager;
@@ -32,20 +37,17 @@ namespace MediaBrowser.Server.Implementations.FileSorting
                 .Where(i => EntityResolutionHelper.IsVideoFile(i.FullName) && i.Length >= minFileBytes)
                 .ToList();
 
-            if (eligibleFiles.Count == 0)
+            if (eligibleFiles.Count > 0)
             {
-                // Nothing to do
-                return;
-            }
+                var allSeries = _libraryManager.RootFolder
+                    .RecursiveChildren.OfType<Series>()
+                    .Where(i => i.LocationType == LocationType.FileSystem)
+                    .ToList();
 
-            var allSeries = _libraryManager.RootFolder
-                .RecursiveChildren.OfType<Series>()
-                .Where(i => i.LocationType == LocationType.FileSystem)
-                .ToList();
-
-            foreach (var file in eligibleFiles)
-            {
-                SortFile(file.FullName, options, allSeries);
+                foreach (var file in eligibleFiles)
+                {
+                    SortFile(file.FullName, options, allSeries);
+                }
             }
 
             if (options.LeftOverFileExtensionsToDelete.Length > 0)
@@ -109,6 +111,84 @@ namespace MediaBrowser.Server.Implementations.FileSorting
             _logger.Info("Sorting file {0} into series {1}", path, series.Path);
 
             // Proceed to sort the file
+            var newPath = GetNewPath(series, seasonNumber, episodeNumber, options);
+
+            if (string.IsNullOrEmpty(newPath))
+            {
+                _logger.Warn("Unable to sort {0} because target path could not be found.", path);
+                return;
+            }
+
+            _logger.Info("Sorting file {0} to new path {1}", path, newPath);
+        }
+
+        private string GetNewPath(Series series, int seasonNumber, int episodeNumber, FileSortingOptions options)
+        {
+            var currentEpisodes = series.RecursiveChildren.OfType<Episode>()
+                .Where(i => i.IndexNumber.HasValue && i.IndexNumber.Value == episodeNumber && i.ParentIndexNumber.HasValue && i.ParentIndexNumber.Value == seasonNumber)
+                .ToList();
+
+            if (currentEpisodes.Count == 0)
+            {
+                return null;
+            }
+
+            var newPath = currentEpisodes
+                .Where(i => i.LocationType == LocationType.FileSystem)
+                .Select(i => i.Path)
+                .FirstOrDefault();
+
+            if (string.IsNullOrEmpty(newPath))
+            {
+                newPath = GetSeasonFolderPath(series, seasonNumber, options);
+
+                var episode = currentEpisodes.First();
+
+                var episodeFileName = string.Format("{0} - {1}x{2} - {3}",
+
+                    _fileSystem.GetValidFilename(series.Name),
+                    seasonNumber.ToString(_usCulture),
+                    episodeNumber.ToString("00", _usCulture),
+                    _fileSystem.GetValidFilename(episode.Name)
+                    );
+
+                newPath = Path.Combine(newPath, episodeFileName);
+            }
+
+            return newPath;
+        }
+
+        private string GetSeasonFolderPath(Series series, int seasonNumber, FileSortingOptions options)
+        {
+            // If there's already a season folder, use that
+            var season = series
+                .RecursiveChildren
+                .OfType<Season>()
+                .FirstOrDefault(i => i.LocationType == LocationType.FileSystem && i.IndexNumber.HasValue && i.IndexNumber.Value == seasonNumber);
+
+            if (season != null)
+            {
+                return season.Path;
+            }
+
+            var path = series.Path;
+
+            if (series.ContainsEpisodesWithoutSeasonFolders)
+            {
+                return path;
+            }
+
+            if (seasonNumber == 0)
+            {
+                return Path.Combine(path, _fileSystem.GetValidFilename(options.SeasonZeroFolderName));
+            }
+
+            var seasonFolderName = options.SeasonFolderPattern
+                .Replace("%s", seasonNumber.ToString(_usCulture))
+                .Replace("%0s", seasonNumber.ToString("00", _usCulture))
+                .Replace("%00s", seasonNumber.ToString("000", _usCulture));
+
+            return Path.Combine(path, _fileSystem.GetValidFilename(seasonFolderName));
         }
 
         private Series GetMatchingSeries(string seriesName, IEnumerable<Series> allSeries)
