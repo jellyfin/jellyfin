@@ -216,6 +216,9 @@ namespace MediaBrowser.Api.UserLibrary
 
         [ApiMember(Name = "IsYearMismatched", Description = "Optional filter by items that are potentially misidentified.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool? IsYearMismatched { get; set; }
+
+        [ApiMember(Name = "IsInBoxSet", Description = "Optional filter by items that are in boxsets, or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool? IsInBoxSet { get; set; }
     }
 
     /// <summary>
@@ -969,6 +972,8 @@ namespace MediaBrowser.Api.UserLibrary
 
             if (request.HasParentalRating.HasValue)
             {
+                var val = request.HasParentalRating.Value;
+
                 items = items.Where(i =>
                 {
                     var rating = i.CustomRating;
@@ -978,7 +983,7 @@ namespace MediaBrowser.Api.UserLibrary
                         rating = i.OfficialRating;
                     }
 
-                    if (request.HasParentalRating.Value)
+                    if (val)
                     {
                         return !string.IsNullOrEmpty(rating);
                     }
@@ -991,6 +996,18 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 var val = request.IsHD.Value;
                 items = items.OfType<Video>().Where(i => i.IsHD == val);
+            }
+
+            if (request.IsInBoxSet.HasValue)
+            {
+                var val = request.IsHD.Value;
+                items = items.Where(i => i.Parents.OfType<BoxSet>().Any() == val);
+            }
+
+            if (request.IsPlayed.HasValue)
+            {
+                var val = request.IsPlayed.Value;
+                items = items.Where(i => i.IsPlayed(user) == val);
             }
 
             if (request.ParentIndexNumber.HasValue)

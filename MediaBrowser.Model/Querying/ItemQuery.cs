@@ -249,6 +249,10 @@ namespace MediaBrowser.Model.Querying
         public bool? IsUnaired { get; set; }
 
         public bool? IsVirtualUnaired { get; set; }
+
+        public bool? IsInBoxSet { get; set; }
+
+        public bool? IsPlayed { get; set; }
         
         /// <summary>
         /// Gets or sets the exclude location types.
