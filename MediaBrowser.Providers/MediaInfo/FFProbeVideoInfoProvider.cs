@@ -145,7 +145,18 @@ namespace MediaBrowser.Providers.MediaInfo
 
             item.RunTimeTicks = dvd.Titles.Select(GetRuntime).Max();
 
-            PopulateDvdStreamFiles(item, mount);
+            var primaryTitle = dvd.Titles.OrderByDescending(GetRuntime).FirstOrDefault();
+
+            uint? titleNumber = null;
+
+            if (primaryTitle != null)
+            {
+                titleNumber = primaryTitle.TitleNumber;
+            }
+
+            item.PlayableStreamFileNames = GetPrimaryPlaylistVobFiles(item, mount, titleNumber)
+                .Select(Path.GetFileName)
+                .ToList();
         }
 
         private long GetRuntime(Title title)
@@ -237,12 +248,7 @@ namespace MediaBrowser.Providers.MediaInfo
             return null;
         }
 
-        /// <summary>
-        /// Finds vob files and populates the dvd stream file properties
-        /// </summary>
-        /// <param name="video">The video.</param>
-        /// <param name="isoMount">The iso mount.</param>
-        private void PopulateDvdStreamFiles(Video video, IIsoMount isoMount)
+        private IEnumerable<string> GetPrimaryPlaylistVobFiles(Video video, IIsoMount isoMount, uint? titleNumber)
         {
             // min size 300 mb
             const long minPlayableSize = 314572800;
@@ -259,7 +265,20 @@ namespace MediaBrowser.Providers.MediaInfo
             if (allVobs.Count == 0)
             {
                 Logger.Error("No vobs found in dvd structure.");
-                return;
+                return new List<string>();
+            }
+
+            if (titleNumber.HasValue)
+            {
+                var prefix = string.Format("VTS_0{0}_", titleNumber.Value.ToString(UsCulture));
+                var vobs = allVobs.Where(i => Path.GetFileName(i).StartsWith(prefix, StringComparison.OrdinalIgnoreCase)).ToList();
+
+                if (vobs.Count > 0)
+                {
+                    return vobs;
+                }
+
+                Logger.Debug("Could not determine vob file list for {0} using DvdLib. Will scan using file sizes.", video.Path);
             }
 
             var files = allVobs
@@ -299,7 +318,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
-            video.PlayableStreamFileNames = files.Select(Path.GetFileName).ToList();
+            return files;
         }
 
         /// <summary>
