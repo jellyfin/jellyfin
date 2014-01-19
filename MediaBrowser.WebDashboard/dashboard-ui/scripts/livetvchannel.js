@@ -275,7 +275,7 @@
 
             var airDate = item.OriginalAirDate;
 
-            if (airDate && !item.IsRepeat) {
+            if (airDate && item.IsRepeat) {
 
                 try {
                     airDate = parseISO8601Date(airDate, { toLocal: true }).toLocaleDateString();

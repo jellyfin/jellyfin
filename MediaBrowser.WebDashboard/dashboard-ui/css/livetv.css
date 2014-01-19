@@ -279,56 +279,56 @@
 @media (min-height: 500px) {
 
     .channelList, .programGrid {
-        height: 300px;
+        height: 250px;
     }
 }
 
 @media (min-height: 600px) {
 
     .channelList, .programGrid {
-        height: 400px;
+        height: 350px;
     }
 }
 
 @media (min-height: 700px) {
 
     .channelList, .programGrid {
-        height: 500px;
+        height: 450px;
     }
 }
 
 @media (min-height: 800px) {
 
     .channelList, .programGrid {
-        height: 600px;
+        height: 550px;
     }
 }
 
 @media (min-height: 900px) {
 
     .channelList, .programGrid {
-        height: 700px;
+        height: 650px;
     }
 }
 
 @media (min-height: 1000px) {
 
     .channelList, .programGrid {
-        height: 800px;
+        height: 750px;
     }
 }
 
 @media (min-height: 1100px) {
 
     .channelList, .programGrid {
-        height: 900px;
+        height: 850px;
     }
 }
 
 @media (min-height: 1200px) {
 
     .channelList, .programGrid {
-        height: 1000px;
+        height: 950px;
     }
 }
 

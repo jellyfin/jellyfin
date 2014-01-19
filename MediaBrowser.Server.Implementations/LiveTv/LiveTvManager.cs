@@ -229,6 +229,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
                 return result;
             }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error getting recording stream", ex);
+
+                throw;
+            }
             finally
             {
                 _liveStreamSemaphore.Release();
@@ -245,6 +251,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
                 var channel = GetInternalChannel(id);
 
+                _logger.Info("Opening channel stream from {0}, external channel Id: {1}", service.Name, channel.ChannelInfo.Id);
+
                 var result = await service.GetChannelStream(channel.ChannelInfo.Id, cancellationToken).ConfigureAwait(false);
 
                 if (!string.IsNullOrEmpty(result.Id))
@@ -253,6 +261,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 }
 
                 return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error getting channel stream", ex);
+
+                throw;
             }
             finally
             {
@@ -1261,9 +1275,19 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         {
             await _liveStreamSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
+            var service = ActiveService;
+
+            _logger.Info("Closing live stream from {0}, stream Id: {1}", service.Name, id);
+
             try
             {
-                await ActiveService.CloseLiveStream(id, cancellationToken).ConfigureAwait(false);
+                await service.CloseLiveStream(id, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error closing live stream", ex);
+
+                throw;
             }
             finally
             {

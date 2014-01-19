@@ -1,38 +1,46 @@
 ﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.IO;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.News;
 using MediaBrowser.Model.News;
 using MediaBrowser.Model.Querying;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
-using System.Xml;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Server.Implementations.News
 {
     public class NewsService : INewsService
     {
         private readonly IApplicationPaths _appPaths;
-        private readonly IFileSystem _fileSystem;
-        private readonly IHttpClient _httpClient;
+        private readonly IJsonSerializer _json;
 
-        public NewsService(IApplicationPaths appPaths, IFileSystem fileSystem, IHttpClient httpClient)
+        public NewsService(IApplicationPaths appPaths, IJsonSerializer json)
         {
             _appPaths = appPaths;
-            _fileSystem = fileSystem;
-            _httpClient = httpClient;
+            _json = json;
         }
 
-        public async Task<QueryResult<NewsItem>> GetProductNews(NewsQuery query)
+        public QueryResult<NewsItem> GetProductNews(NewsQuery query)
         {
-            var path = Path.Combine(_appPaths.CachePath, "news.xml");
+            try
+            {
+                return GetProductNewsInternal(query);
+            }
+            catch (FileNotFoundException)
+            {
+                // No biggie
+                return new QueryResult<NewsItem>
+                {
+                    Items = new NewsItem[] { }
+                };
+            }
+        }
 
-            await EnsureNewsFile(path).ConfigureAwait(false);
+        private QueryResult<NewsItem> GetProductNewsInternal(NewsQuery query)
+        {
+            var path = Path.Combine(_appPaths.CachePath, "news.json");
 
-            var items = GetNewsItems(path);
+            var items = GetNewsItems(path).OrderByDescending(i => i.Date);
 
             var itemsArray = items.ToArray();
             var count = itemsArray.Length;
@@ -56,77 +64,7 @@ namespace MediaBrowser.Server.Implementations.News
 
         private IEnumerable<NewsItem> GetNewsItems(string path)
         {
-            var xmlDoc = new XmlDocument();
-
-            xmlDoc.Load(path);
-
-            return ParseRssItems(xmlDoc);
-        }
-
-        private IEnumerable<NewsItem> ParseRssItems(XmlDocument xmlDoc)
-        {
-            var nodes = xmlDoc.SelectNodes("rss/channel/item");
-
-            if (nodes == null)
-            {
-                yield return null;
-            }
-
-            foreach (XmlNode node in nodes)
-            {
-                var newsItem = new NewsItem();
-
-                newsItem.Title = ParseDocElements(node, "title");
-
-                newsItem.Description = ParseDocElements(node, "description");
-
-                newsItem.Link = ParseDocElements(node, "link");
-
-                var date = ParseDocElements(node, "pubDate");
-                DateTime parsedDate;
-
-                if (DateTime.TryParse(date, out parsedDate))
-                {
-                    newsItem.Date = parsedDate;
-                }
-
-                yield return newsItem;
-            }
-        }
-
-        private string ParseDocElements(XmlNode parent, string xPath)
-        {
-            var node = parent.SelectSingleNode(xPath);
-
-            return node != null ? node.InnerText : "Unresolvable";
-        }
-
-
-        /// <summary>
-        /// Ensures the news file.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns>Task.</returns>
-        private async Task EnsureNewsFile(string path)
-        {
-            var info = _fileSystem.GetFileSystemInfo(path);
-
-            if (!info.Exists || (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(info)).TotalHours > 12)
-            {
-                var requestOptions = new HttpRequestOptions
-                {
-                    Url = "http://mediabrowser3.com/community/index.php?/blog/rss/1-media-browser-developers-blog",
-                    Progress = new Progress<double>()
-                };
-
-                using (var stream = await _httpClient.Get(requestOptions).ConfigureAwait(false))
-                {
-                    using (var fileStream = _fileSystem.GetFileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, true))
-                    {
-                        await stream.CopyToAsync(fileStream).ConfigureAwait(false);
-                    }
-                }
-            }
+            return _json.DeserializeFromFile<List<NewsItem>>(path);
         }
     }
 }
