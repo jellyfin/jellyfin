@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
@@ -9,8 +8,10 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading;
 
 namespace MediaBrowser.Server.Implementations.FileSorting
 {
@@ -20,23 +21,25 @@ namespace MediaBrowser.Server.Implementations.FileSorting
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
 
-        private static  CultureInfo _usCulture = new CultureInfo("en-US");
+        private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
         
-        public TvFileSorter(ILibraryManager libraryManager, ILogger logger)
+        public TvFileSorter(ILibraryManager libraryManager, ILogger logger, IFileSystem fileSystem)
         {
             _libraryManager = libraryManager;
             _logger = logger;
+            _fileSystem = fileSystem;
         }
 
-        public void Sort(string path, FileSortingOptions options)
+        public void Sort(FileSortingOptions options, CancellationToken cancellationToken, IProgress<double> progress)
         {
             var minFileBytes = options.MinFileSizeMb * 1024 * 1024;
 
-            var eligibleFiles = new DirectoryInfo(path)
-                .EnumerateFiles("*", SearchOption.AllDirectories)
+            var eligibleFiles = options.TvWatchLocations.SelectMany(GetEligibleFiles)
                 .Where(i => EntityResolutionHelper.IsVideoFile(i.FullName) && i.Length >= minFileBytes)
                 .ToList();
 
+            progress.Report(10);
+            
             if (eligibleFiles.Count > 0)
             {
                 var allSeries = _libraryManager.RootFolder
@@ -44,20 +47,55 @@ namespace MediaBrowser.Server.Implementations.FileSorting
                     .Where(i => i.LocationType == LocationType.FileSystem)
                     .ToList();
 
+                var numComplete = 0;
+                
                 foreach (var file in eligibleFiles)
                 {
                     SortFile(file.FullName, options, allSeries);
+
+                    numComplete++;
+                    double percent = numComplete;
+                    percent /= eligibleFiles.Count;
+
+                    progress.Report(100 * percent);
                 }
             }
 
-            if (options.LeftOverFileExtensionsToDelete.Length > 0)
+            cancellationToken.ThrowIfCancellationRequested();
+            progress.Report(99);
+
+            if (!options.EnableTrialMode)
             {
-                DeleteLeftOverFiles(path, options.LeftOverFileExtensionsToDelete);
+                foreach (var path in options.TvWatchLocations)
+                {
+                    if (options.LeftOverFileExtensionsToDelete.Length > 0)
+                    {
+                        DeleteLeftOverFiles(path, options.LeftOverFileExtensionsToDelete);
+                    }
+
+                    if (options.DeleteEmptyFolders)
+                    {
+                        DeleteEmptyFolders(path);
+                    }
+                }
             }
 
-            if (options.DeleteEmptyFolders)
+            progress.Report(100);
+        }
+
+        private IEnumerable<FileInfo> GetEligibleFiles(string path)
+        {
+            try
             {
-                DeleteEmptyFolders(path);
+                return new DirectoryInfo(path)
+                    .EnumerateFiles("*", SearchOption.AllDirectories)
+                    .ToList();
+            }
+            catch (IOException ex)
+            {
+                _logger.ErrorException("Error getting files from {0}", ex, path);
+
+                return new List<FileInfo>(); 
             }
         }
 
@@ -147,8 +185,8 @@ namespace MediaBrowser.Server.Implementations.FileSorting
                 var episodeFileName = string.Format("{0} - {1}x{2} - {3}",
 
                     _fileSystem.GetValidFilename(series.Name),
-                    seasonNumber.ToString(_usCulture),
-                    episodeNumber.ToString("00", _usCulture),
+                    seasonNumber.ToString(UsCulture),
+                    episodeNumber.ToString("00", UsCulture),
                     _fileSystem.GetValidFilename(episode.Name)
                     );
 
@@ -158,6 +196,13 @@ namespace MediaBrowser.Server.Implementations.FileSorting
             return newPath;
         }
 
+        /// <summary>
+        /// Gets the season folder path.
+        /// </summary>
+        /// <param name="series">The series.</param>
+        /// <param name="seasonNumber">The season number.</param>
+        /// <param name="options">The options.</param>
+        /// <returns>System.String.</returns>
         private string GetSeasonFolderPath(Series series, int seasonNumber, FileSortingOptions options)
         {
             // If there's already a season folder, use that
@@ -184,13 +229,19 @@ namespace MediaBrowser.Server.Implementations.FileSorting
             }
 
             var seasonFolderName = options.SeasonFolderPattern
-                .Replace("%s", seasonNumber.ToString(_usCulture))
-                .Replace("%0s", seasonNumber.ToString("00", _usCulture))
-                .Replace("%00s", seasonNumber.ToString("000", _usCulture));
+                .Replace("%s", seasonNumber.ToString(UsCulture))
+                .Replace("%0s", seasonNumber.ToString("00", UsCulture))
+                .Replace("%00s", seasonNumber.ToString("000", UsCulture));
 
             return Path.Combine(path, _fileSystem.GetValidFilename(seasonFolderName));
         }
 
+        /// <summary>
+        /// Gets the matching series.
+        /// </summary>
+        /// <param name="seriesName">Name of the series.</param>
+        /// <param name="allSeries">All series.</param>
+        /// <returns>Series.</returns>
         private Series GetMatchingSeries(string seriesName, IEnumerable<Series> allSeries)
         {
             int? yearInName;
