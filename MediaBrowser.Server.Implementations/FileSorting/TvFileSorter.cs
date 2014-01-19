@@ -27,14 +27,20 @@ namespace MediaBrowser.Server.Implementations.FileSorting
         {
             var minFileBytes = options.MinFileSizeMb * 1024 * 1024;
 
-            var allSeries = _libraryManager.RootFolder
-                .RecursiveChildren.OfType<Series>()
-                .Where(i => i.LocationType == LocationType.FileSystem)
-                .ToList();
-
             var eligibleFiles = new DirectoryInfo(path)
                 .EnumerateFiles("*", SearchOption.AllDirectories)
                 .Where(i => EntityResolutionHelper.IsVideoFile(i.FullName) && i.Length >= minFileBytes)
+                .ToList();
+
+            if (eligibleFiles.Count == 0)
+            {
+                // Nothing to do
+                return;
+            }
+
+            var allSeries = _libraryManager.RootFolder
+                .RecursiveChildren.OfType<Series>()
+                .Where(i => i.LocationType == LocationType.FileSystem)
                 .ToList();
 
             foreach (var file in eligibleFiles)
@@ -122,23 +128,28 @@ namespace MediaBrowser.Server.Implementations.FileSorting
         {
             var score = 0;
 
-            if (year.HasValue)
-            {
-                if (series.ProductionYear.HasValue && year.Value == series.ProductionYear.Value)
-                {
-                    score++;
-                }
-            }
-
             // TODO: Improve this
             if (string.Equals(sortedName, series.Name, StringComparison.OrdinalIgnoreCase))
             {
                 score++;
+
+                if (year.HasValue)
+                {
+                    if (series.ProductionYear.HasValue && year.Value == series.ProductionYear.Value)
+                    {
+                        score++;
+                    }
+                }
             }
 
             return new Tuple<Series, int>(series, score);
         }
 
+        /// <summary>
+        /// Deletes the left over files.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <param name="extensions">The extensions.</param>
         private void DeleteLeftOverFiles(string path, IEnumerable<string> extensions)
         {
             var eligibleFiles = new DirectoryInfo(path)
@@ -159,6 +170,10 @@ namespace MediaBrowser.Server.Implementations.FileSorting
             }
         }
 
+        /// <summary>
+        /// Deletes the empty folders.
+        /// </summary>
+        /// <param name="path">The path.</param>
         private void DeleteEmptyFolders(string path)
         {
             try
