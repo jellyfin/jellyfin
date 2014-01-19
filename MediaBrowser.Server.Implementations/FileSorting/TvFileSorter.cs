@@ -35,11 +35,13 @@ namespace MediaBrowser.Server.Implementations.FileSorting
             _iFileSortingRepository = iFileSortingRepository;
         }
 
-        public async Task Sort(FileSortingOptions options, CancellationToken cancellationToken, IProgress<double> progress)
+        public async Task Sort(TvFileSortingOptions options, CancellationToken cancellationToken, IProgress<double> progress)
         {
             var minFileBytes = options.MinFileSizeMb * 1024 * 1024;
 
-            var eligibleFiles = options.TvWatchLocations.SelectMany(GetFilesToSort)
+            var watchLocations = options.WatchLocations.ToList();
+
+            var eligibleFiles = watchLocations.SelectMany(GetFilesToSort)
                 .OrderBy(_fileSystem.GetCreationTimeUtc)
                 .Where(i => EntityResolutionHelper.IsVideoFile(i.FullName) && i.Length >= minFileBytes)
                 .ToList();
@@ -72,7 +74,7 @@ namespace MediaBrowser.Server.Implementations.FileSorting
 
             if (!options.EnableTrialMode)
             {
-                foreach (var path in options.TvWatchLocations)
+                foreach (var path in watchLocations)
                 {
                     if (options.LeftOverFileExtensionsToDelete.Length > 0)
                     {
@@ -116,7 +118,7 @@ namespace MediaBrowser.Server.Implementations.FileSorting
         /// <param name="path">The path.</param>
         /// <param name="options">The options.</param>
         /// <param name="allSeries">All series.</param>
-        private Task SortFile(string path, FileSortingOptions options, IEnumerable<Series> allSeries)
+        private Task SortFile(string path, TvFileSortingOptions options, IEnumerable<Series> allSeries)
         {
             _logger.Info("Sorting file {0}", path);
 
@@ -180,7 +182,7 @@ namespace MediaBrowser.Server.Implementations.FileSorting
         /// <param name="options">The options.</param>
         /// <param name="allSeries">All series.</param>
         /// <param name="result">The result.</param>
-        private void SortFile(string path, string seriesName, int seasonNumber, int episodeNumber, FileSortingOptions options, IEnumerable<Series> allSeries, FileSortingResult result)
+        private void SortFile(string path, string seriesName, int seasonNumber, int episodeNumber, TvFileSortingOptions options, IEnumerable<Series> allSeries, FileSortingResult result)
         {
             var series = GetMatchingSeries(seriesName, allSeries);
 
@@ -216,13 +218,14 @@ namespace MediaBrowser.Server.Implementations.FileSorting
                 return;
             }
 
-            if (!options.OverwriteExistingEpisodes && File.Exists(result.TargetPath))
+            var targetExists = File.Exists(result.TargetPath);
+            if (!options.OverwriteExistingEpisodes && targetExists)
             {
                 result.Status = FileSortingStatus.SkippedExisting;
                 return;
             }
 
-            PerformFileSorting(options, result);
+            PerformFileSorting(options, result, targetExists);
         }
 
         /// <summary>
@@ -230,8 +233,40 @@ namespace MediaBrowser.Server.Implementations.FileSorting
         /// </summary>
         /// <param name="options">The options.</param>
         /// <param name="result">The result.</param>
-        private void PerformFileSorting(FileSortingOptions options, FileSortingResult result)
+        /// <param name="copy">if set to <c>true</c> [copy].</param>
+        private void PerformFileSorting(TvFileSortingOptions options, FileSortingResult result, bool copy)
         {
+            try
+            {
+                if (copy)
+                {
+                    File.Copy(result.OriginalPath, result.TargetPath, true);
+                }
+                else
+                {
+                    File.Move(result.OriginalPath, result.TargetPath);
+                }
+            }
+            catch (Exception ex)
+            {
+                var errorMsg = string.Format("Failed to move file from {0} to {1}", result.OriginalPath, result.TargetPath);
+                result.Status = FileSortingStatus.Failure;
+                result.ErrorMessage = errorMsg;
+                _logger.ErrorException(errorMsg, ex);
+                return; 
+            }
+
+            if (copy)
+            {
+                try
+                {
+                    File.Delete(result.OriginalPath);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error deleting {0}", ex, result.OriginalPath);
+                }
+            }
         }
 
         /// <summary>
@@ -252,7 +287,7 @@ namespace MediaBrowser.Server.Implementations.FileSorting
         /// <param name="episodeNumber">The episode number.</param>
         /// <param name="options">The options.</param>
         /// <returns>System.String.</returns>
-        private string GetNewPath(Series series, int seasonNumber, int episodeNumber, FileSortingOptions options)
+        private string GetNewPath(Series series, int seasonNumber, int episodeNumber, TvFileSortingOptions options)
         {
             var currentEpisodes = series.RecursiveChildren.OfType<Episode>()
                 .Where(i => i.IndexNumber.HasValue && i.IndexNumber.Value == episodeNumber && i.ParentIndexNumber.HasValue && i.ParentIndexNumber.Value == seasonNumber)
@@ -295,7 +330,7 @@ namespace MediaBrowser.Server.Implementations.FileSorting
         /// <param name="seasonNumber">The season number.</param>
         /// <param name="options">The options.</param>
         /// <returns>System.String.</returns>
-        private string GetSeasonFolderPath(Series series, int seasonNumber, FileSortingOptions options)
+        private string GetSeasonFolderPath(Series series, int seasonNumber, TvFileSortingOptions options)
         {
             // If there's already a season folder, use that
             var season = series
