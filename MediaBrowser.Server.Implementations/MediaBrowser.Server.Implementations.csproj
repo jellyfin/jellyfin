@@ -179,6 +179,7 @@
     <Compile Include="News\NewsService.cs" />
     <Compile Include="Persistence\SqliteChapterRepository.cs" />
     <Compile Include="Persistence\SqliteExtensions.cs" />
+    <Compile Include="Persistence\SqliteFileSortingRepository.cs" />
     <Compile Include="Persistence\SqliteMediaStreamsRepository.cs" />
     <Compile Include="Persistence\SqliteNotificationsRepository.cs" />
     <Compile Include="Persistence\SqliteProviderInfoRepository.cs" />
