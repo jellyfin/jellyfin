@@ -331,6 +331,30 @@ namespace MediaBrowser.Controller.Library
             return null;
         }
 
+        public static string GetSeriesNameFromEpisodeFile(string fullPath)
+        {
+            var fl = fullPath.ToLower();
+            foreach (var r in EpisodeExpressions)
+            {
+                var m = r.Match(fl);
+                if (m.Success)
+                {
+                    var g = m.Groups["seriesname"];
+                    if (g != null)
+                    {
+                        var val = g.Value;
+
+                        if (!string.IsNullOrWhiteSpace(val))
+                        {
+                            return val;
+                        }
+                    }
+                    return null;
+                }
+            }
+            return null;
+        }
+
         /// <summary>
         /// Gets the air days.
         /// </summary>

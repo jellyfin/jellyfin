@@ -54,5 +54,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         {
             get { return _liveTvManager.ActiveService == null; }
         }
+
+        public bool IsEnabled
+        {
+            get { return true; }
+        }
     }
 }

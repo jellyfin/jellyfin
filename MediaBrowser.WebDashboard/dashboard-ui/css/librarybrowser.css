@@ -523,11 +523,24 @@ a.itemTag:hover {
 }
 
 .detailSectionHeader {
-    padding: .5em .75em;
+    background-clip: border-box;
+    background-color: rgb(51, 51, 51);
+    border-bottom-color: rgb(31, 31, 31);
+    border-bottom-style: solid;
+    border-bottom-width: 1px;
+    border-left-color: rgb(31, 31, 31);
+    border-left-style: solid;
+    border-left-width: 1px;
+    border-right-color: rgb(31, 31, 31);
+    border-right-style: solid;
+    border-right-width: 1px;
+    border-top-color: rgb(31, 31, 31);
+    border-top-style: solid;
+    border-top-width: 1px;
     font-size: 16px;
-    font-weight: normal;
-    border: 1px solid #1b1b1b;
-    background: #1d1d1d;
+    font-weight: 400;
+    padding: .7em 0 .7em 1em;
+    border-radius: 4px;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
