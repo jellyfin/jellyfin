@@ -6,7 +6,7 @@ using ServiceStack;
 namespace MediaBrowser.Api
 {
     [Route("/News/Product", "GET")]
-    [Api(Description = "Gets search hints based on a search term")]
+    [Api(Description = "Gets the latest product news.")]
     public class GetProductNews : IReturn<QueryResult<NewsItem>>
     {
         /// <summary>
@@ -40,7 +40,7 @@ namespace MediaBrowser.Api
                  StartIndex = request.StartIndex,
                  Limit = request.Limit
 
-            }).Result;
+            });
 
             return ToOptimizedResult(result);
         }

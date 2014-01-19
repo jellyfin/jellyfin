@@ -285,7 +285,7 @@ namespace MediaBrowser.ServerApplication
             DtoService = new DtoService(Logger, LibraryManager, UserManager, UserDataManager, ItemRepository, ImageProcessor);
             RegisterSingleInstance(DtoService);
 
-            var newsService = new Server.Implementations.News.NewsService(ApplicationPaths, FileSystemManager, HttpClient);
+            var newsService = new Server.Implementations.News.NewsService(ApplicationPaths, JsonSerializer);
             RegisterSingleInstance<INewsService>(newsService);
 
             progress.Report(15);
