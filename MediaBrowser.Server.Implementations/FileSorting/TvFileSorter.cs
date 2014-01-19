@@ -133,11 +133,16 @@ namespace MediaBrowser.Server.Implementations.FileSorting
             {
                 score++;
 
-                if (year.HasValue)
+                if (year.HasValue && series.ProductionYear.HasValue)
                 {
-                    if (series.ProductionYear.HasValue && year.Value == series.ProductionYear.Value)
+                    if (year.Value == series.ProductionYear.Value)
                     {
                         score++;
+                    }
+                    else
+                    {
+                        // Regardless of name, return a 0 score if the years don't match
+                        return new Tuple<Series, int>(series, 0);
                     }
                 }
             }
