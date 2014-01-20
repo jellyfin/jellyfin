@@ -87,6 +87,7 @@
     <Compile Include="ItemRefreshService.cs" />
     <Compile Include="ItemUpdateService.cs" />
     <Compile Include="LibraryService.cs" />
+    <Compile Include="Library\FileOrganizationService.cs" />
     <Compile Include="Library\LibraryHelpers.cs" />
     <Compile Include="Library\LibraryService.cs" />
     <Compile Include="Library\LibraryStructureService.cs" />

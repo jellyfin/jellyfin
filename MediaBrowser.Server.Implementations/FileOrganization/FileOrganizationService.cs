@@ -2,7 +2,7 @@
 using MediaBrowser.Controller.FileOrganization;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.FileOrganization;
-using System.Collections.Generic;
+using MediaBrowser.Model.Querying;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -30,7 +30,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             return _repo.SaveResult(result, cancellationToken);
         }
 
-        public IEnumerable<FileOrganizationResult> GetResults(FileOrganizationResultQuery query)
+        public QueryResult<FileOrganizationResult> GetResults(FileOrganizationResultQuery query)
         {
             return _repo.GetResults(query);
         }

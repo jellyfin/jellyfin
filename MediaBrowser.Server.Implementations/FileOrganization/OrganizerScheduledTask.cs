@@ -2,6 +2,7 @@
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.FileOrganization;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Logging;
 using System;
@@ -18,14 +19,16 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
         private readonly ILibraryManager _libraryManager;
         private readonly IFileSystem _fileSystem;
         private readonly IFileOrganizationService _iFileSortingRepository;
+        private readonly IDirectoryWatchers _directoryWatchers;
 
-        public OrganizerScheduledTask(IServerConfigurationManager config, ILogger logger, ILibraryManager libraryManager, IFileSystem fileSystem, IFileOrganizationService iFileSortingRepository)
+        public OrganizerScheduledTask(IServerConfigurationManager config, ILogger logger, ILibraryManager libraryManager, IFileSystem fileSystem, IFileOrganizationService iFileSortingRepository, IDirectoryWatchers directoryWatchers)
         {
             _config = config;
             _logger = logger;
             _libraryManager = libraryManager;
             _fileSystem = fileSystem;
             _iFileSortingRepository = iFileSortingRepository;
+            _directoryWatchers = directoryWatchers;
         }
 
         public string Name
@@ -45,7 +48,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
         public Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            return new TvFileSorter(_libraryManager, _logger, _fileSystem, _iFileSortingRepository).Sort(_config.Configuration.TvFileOrganizationOptions, cancellationToken, progress);
+            return new TvFileSorter(_libraryManager, _logger, _fileSystem, _iFileSortingRepository, _directoryWatchers).Sort(_config.Configuration.TvFileOrganizationOptions, cancellationToken, progress);
         }
 
         public IEnumerable<ITaskTrigger> GetDefaultTriggers()
