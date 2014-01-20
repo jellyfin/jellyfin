@@ -60,5 +60,7 @@ namespace MediaBrowser.Api.Playback
         public long? RunTimeTicks;
 
         public int AudioSync = 1;
+
+        public bool DeInterlace { get; set; }
     }
 }

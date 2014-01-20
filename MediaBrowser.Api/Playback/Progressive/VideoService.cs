@@ -169,8 +169,14 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             if (bitrate.HasValue)
             {
-                qualityParam += string.Format(" -b:v {0}", bitrate.Value.ToString(UsCulture));
-                //qualityParam += string.Format(" -maxrate {0} -bufsize {1}", bitrate.Value.ToString(UsCulture), (bitrate.Value * 2).ToString(UsCulture));
+                if (string.Equals(codec, "libvpx", StringComparison.OrdinalIgnoreCase))
+                {
+                    qualityParam += string.Format(" -minrate:v ({0}*.90) -maxrate:v ({0}*1.10) -bufsize:v {0} -b:v {0}", bitrate.Value.ToString(UsCulture));
+                }
+                else
+                {
+                    qualityParam += string.Format(" -b:v {0}", bitrate.Value.ToString(UsCulture));
+                }
             }
 
             if (!string.IsNullOrEmpty(qualityParam))
