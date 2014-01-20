@@ -59,7 +59,7 @@ namespace MediaBrowser.Providers.TV
             await new MissingEpisodeProvider(_logger, _config).Run(seriesGroups, cancellationToken).ConfigureAwait(false);
 
             var numComplete = 0;
-
+            
             foreach (var series in seriesList)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -68,9 +68,7 @@ namespace MediaBrowser.Providers.TV
                     .OfType<Episode>()
                     .ToList();
 
-                series.SpecialFeatureIds = episodes
-                    .Where(i => i.ParentIndexNumber.HasValue && i.ParentIndexNumber.Value == 0)
-                    .Select(i => i.Id)
+                var physicalEpisodes = episodes.Where(i => i.LocationType != LocationType.Virtual)
                     .ToList();
 
                 series.SeasonCount = episodes
@@ -79,7 +77,12 @@ namespace MediaBrowser.Providers.TV
                     .Distinct()
                     .Count();
 
-                series.DateLastEpisodeAdded = episodes.Select(i => i.DateCreated)
+                series.SpecialFeatureIds = physicalEpisodes
+                    .Where(i => i.ParentIndexNumber.HasValue && i.ParentIndexNumber.Value == 0)
+                    .Select(i => i.Id)
+                    .ToList();
+
+                series.DateLastEpisodeAdded = physicalEpisodes.Select(i => i.DateCreated)
                     .OrderByDescending(i => i)
                     .FirstOrDefault();
 
@@ -166,7 +169,7 @@ namespace MediaBrowser.Providers.TV
 
             if (_config.Configuration.EnableInternetProviders)
             {
-                hasNewEpisodes = await AddMissingEpisodes(group, seriesDataPath, episodeLookup, cancellationToken)
+                hasNewEpisodes = await AddMissingEpisodes(group.ToList(), seriesDataPath, episodeLookup, cancellationToken)
                     .ConfigureAwait(false);
             }
 
@@ -225,7 +228,7 @@ namespace MediaBrowser.Providers.TV
         /// <param name="episodeLookup">The episode lookup.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        private async Task<bool> AddMissingEpisodes(IEnumerable<Series> series, string seriesDataPath, IEnumerable<Tuple<int, int>> episodeLookup, CancellationToken cancellationToken)
+        private async Task<bool> AddMissingEpisodes(List<Series> series, string seriesDataPath, IEnumerable<Tuple<int, int>> episodeLookup, CancellationToken cancellationToken)
         {
             var existingEpisodes = series.SelectMany(s => s.RecursiveChildren.OfType<Episode>()).ToList();
 

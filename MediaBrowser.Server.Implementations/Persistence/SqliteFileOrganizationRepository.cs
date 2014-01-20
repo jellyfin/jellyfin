@@ -2,8 +2,8 @@
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.FileOrganization;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Querying;
 using System;
-using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Threading;
@@ -62,9 +62,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
             return Task.FromResult(true);
         }
 
-        public IEnumerable<FileOrganizationResult> GetResults(FileOrganizationResultQuery query)
+        public QueryResult<FileOrganizationResult> GetResults(FileOrganizationResultQuery query)
         {
-            return new List<FileOrganizationResult>();
+            return new QueryResult<FileOrganizationResult>();
         }
 
         /// <summary>

@@ -1,5 +1,5 @@
 ﻿using MediaBrowser.Model.FileOrganization;
-using System.Collections.Generic;
+using MediaBrowser.Model.Querying;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -20,6 +20,6 @@ namespace MediaBrowser.Controller.Persistence
         /// </summary>
         /// <param name="query">The query.</param>
         /// <returns>IEnumerable{FileOrganizationResult}.</returns>
-        IEnumerable<FileOrganizationResult> GetResults(FileOrganizationResultQuery query);
+        QueryResult<FileOrganizationResult> GetResults(FileOrganizationResultQuery query);
     }
 }

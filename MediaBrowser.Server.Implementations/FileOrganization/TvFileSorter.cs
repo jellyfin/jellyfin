@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.FileOrganization;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
@@ -24,15 +25,17 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
         private readonly IFileOrganizationService _iFileSortingRepository;
+        private readonly IDirectoryWatchers _directoryWatchers;
 
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
-        public TvFileSorter(ILibraryManager libraryManager, ILogger logger, IFileSystem fileSystem, IFileOrganizationService iFileSortingRepository)
+        public TvFileSorter(ILibraryManager libraryManager, ILogger logger, IFileSystem fileSystem, IFileOrganizationService iFileSortingRepository, IDirectoryWatchers directoryWatchers)
         {
             _libraryManager = libraryManager;
             _logger = logger;
             _fileSystem = fileSystem;
             _iFileSortingRepository = iFileSortingRepository;
+            _directoryWatchers = directoryWatchers;
         }
 
         public async Task Sort(TvFileOrganizationOptions options, CancellationToken cancellationToken, IProgress<double> progress)
@@ -48,6 +51,8 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
             progress.Report(10);
 
+            var scanLibrary = false;
+
             if (eligibleFiles.Count > 0)
             {
                 var allSeries = _libraryManager.RootFolder
@@ -59,7 +64,12 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
                 foreach (var file in eligibleFiles)
                 {
-                    await SortFile(file.FullName, options, allSeries).ConfigureAwait(false);
+                    var result = await SortFile(file.FullName, options, allSeries).ConfigureAwait(false);
+
+                    if (result.Status == FileSortingStatus.Success)
+                    {
+                        scanLibrary = true;
+                    }
 
                     numComplete++;
                     double percent = numComplete;
@@ -86,6 +96,12 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
                         DeleteEmptyFolders(path);
                     }
                 }
+            }
+
+            if (scanLibrary)
+            {
+                await _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None)
+                        .ConfigureAwait(false);
             }
 
             progress.Report(100);
@@ -118,7 +134,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
         /// <param name="path">The path.</param>
         /// <param name="options">The options.</param>
         /// <param name="allSeries">All series.</param>
-        private Task SortFile(string path, TvFileOrganizationOptions options, IEnumerable<Series> allSeries)
+        private async Task<FileOrganizationResult> SortFile(string path, TvFileOrganizationOptions options, IEnumerable<Series> allSeries)
         {
             _logger.Info("Sorting file {0}", path);
 
@@ -169,7 +185,9 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
                 _logger.Warn(msg);
             }
 
-            return LogResult(result);
+            await LogResult(result).ConfigureAwait(false);
+
+            return result;
         }
 
         /// <summary>
@@ -236,6 +254,8 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
         /// <param name="copy">if set to <c>true</c> [copy].</param>
         private void PerformFileSorting(TvFileOrganizationOptions options, FileOrganizationResult result, bool copy)
         {
+            _directoryWatchers.TemporarilyIgnore(result.TargetPath);
+
             try
             {
                 if (copy)
@@ -250,10 +270,16 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             catch (Exception ex)
             {
                 var errorMsg = string.Format("Failed to move file from {0} to {1}", result.OriginalPath, result.TargetPath);
+
                 result.Status = FileSortingStatus.Failure;
                 result.ErrorMessage = errorMsg;
                 _logger.ErrorException(errorMsg, ex);
+
                 return;
+            }
+            finally
+            {
+                _directoryWatchers.RemoveTempIgnore(result.TargetPath);
             }
 
             if (copy)
