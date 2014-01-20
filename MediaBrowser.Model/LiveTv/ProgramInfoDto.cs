@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics;
+using System.Runtime.Serialization;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using System;
@@ -189,6 +190,16 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value><c>true</c> if this instance is premiere; otherwise, <c>false</c>.</value>
         public bool IsPremiere { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance has primary image.
+        /// </summary>
+        /// <value><c>true</c> if this instance has primary image; otherwise, <c>false</c>.</value>
+        [IgnoreDataMember]
+        public bool HasPrimaryImage
+        {
+            get { return ImageTags != null && ImageTags.ContainsKey(ImageType.Primary); }
+        }
 
         public ProgramInfoDto()
         {

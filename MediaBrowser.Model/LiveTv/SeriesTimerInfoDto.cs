@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Runtime.Serialization;
+using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Model.LiveTv
 {
@@ -133,8 +135,25 @@ namespace MediaBrowser.Model.LiveTv
         /// <value><c>true</c> if this instance is post padding required; otherwise, <c>false</c>.</value>
         public bool IsPostPaddingRequired { get; set; }
 
+        /// <summary>
+        /// Gets or sets the image tags.
+        /// </summary>
+        /// <value>The image tags.</value>
+        public Dictionary<ImageType, Guid> ImageTags { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance has primary image.
+        /// </summary>
+        /// <value><c>true</c> if this instance has primary image; otherwise, <c>false</c>.</value>
+        [IgnoreDataMember]
+        public bool HasPrimaryImage
+        {
+            get { return ImageTags != null && ImageTags.ContainsKey(ImageType.Primary); }
+        }
+
         public SeriesTimerInfoDto()
         {
+            ImageTags = new Dictionary<ImageType, Guid>();
             Days = new List<DayOfWeek>();
         }
 

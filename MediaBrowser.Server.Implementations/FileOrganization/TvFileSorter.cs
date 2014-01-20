@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.IO;
+﻿using System.Text;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.FileOrganization;
 using MediaBrowser.Controller.IO;
@@ -429,9 +430,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
         {
             var score = 0;
 
-            // TODO: Improve this - should ignore spaces, periods, underscores, most likely all symbols and 
-            // possibly remove sorting words like "the", "and", etc.
-            if (string.Equals(sortedName, series.Name, StringComparison.OrdinalIgnoreCase))
+            if (IsNameMatch(sortedName, series.Name))
             {
                 score++;
 
@@ -450,6 +449,49 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             }
 
             return new Tuple<Series, int>(series, score);
+        }
+
+        private bool IsNameMatch(string name1, string name2)
+        {
+            name1 = GetComparableName(name1);
+            name2 = GetComparableName(name2);
+
+            return string.Equals(name1, name2, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private string GetComparableName(string name)
+        {
+            // TODO: Improve this - should ignore spaces, periods, underscores, most likely all symbols and 
+            // possibly remove sorting words like "the", "and", etc.
+
+            name = RemoveDiacritics(name);
+
+            name = " " + name.ToLower() + " ";
+
+            name = name.Replace(".", " ")
+            .Replace("_", " ")
+            .Replace("&", " ")
+            .Replace("!", " ")
+            .Replace(",", " ")
+            .Replace(" a ", string.Empty)
+            .Replace(" the ", string.Empty)
+            .Replace(" ", string.Empty);
+
+            return name.Trim();
+        }
+
+        /// <summary>
+        /// Removes the diacritics.
+        /// </summary>
+        /// <param name="text">The text.</param>
+        /// <returns>System.String.</returns>
+        private string RemoveDiacritics(string text)
+        {
+            return string.Concat(
+                text.Normalize(NormalizationForm.FormD)
+                .Where(ch => CharUnicodeInfo.GetUnicodeCategory(ch) !=
+                                              UnicodeCategory.NonSpacingMark)
+              ).Normalize(NormalizationForm.FormC);
         }
 
         /// <summary>
