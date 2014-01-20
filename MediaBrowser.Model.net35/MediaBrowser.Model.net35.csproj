@@ -193,11 +193,11 @@
     <Compile Include="..\MediaBrowser.Model\Extensions\ModelExtensions.cs">
       <Link>Extensions\ModelExtensions.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\FileSorting\FileSortingResult.cs">
-      <Link>FileSorting\FileSortingResult.cs</Link>
+    <Compile Include="..\MediaBrowser.Model\FileOrganization\FileOrganizationQuery.cs">
+      <Link>FileOrganization\FileOrganizationQuery.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\FileSorting\FileSortingResultQuery.cs">
-      <Link>FileSorting\FileSortingResultQuery.cs</Link>
+    <Compile Include="..\MediaBrowser.Model\FileOrganization\FileOrganizationResult.cs">
+      <Link>FileOrganization\FileOrganizationResult.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Games\GameSystem.cs">
       <Link>Games\GameSystem.cs</Link>
@@ -258,6 +258,9 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Logging\LogSeverity.cs">
       <Link>Logging\LogSeverity.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Logging\NullLogger.cs">
+      <Link>Logging\NullLogger.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\MediaInfo\BlurayDiscInfo.cs">
       <Link>MediaInfo\BlurayDiscInfo.cs</Link>

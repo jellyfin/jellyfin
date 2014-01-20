@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace MediaBrowser.Model.FileSorting
+namespace MediaBrowser.Model.FileOrganization
 {
-    public class FileSortingResult
+    public class FileOrganizationResult
     {
         /// <summary>
         /// Gets or sets the original path.

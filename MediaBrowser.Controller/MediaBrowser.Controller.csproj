@@ -105,6 +105,7 @@
     <Compile Include="Entities\LinkedChild.cs" />
     <Compile Include="Entities\MusicVideo.cs" />
     <Compile Include="Entities\IHasAwards.cs" />
+    <Compile Include="FileOrganization\IFileOrganizationService.cs" />
     <Compile Include="Library\ILibraryPostScanTask.cs" />
     <Compile Include="Library\ILibraryPrescanTask.cs" />
     <Compile Include="Library\IMetadataSaver.cs" />
@@ -139,7 +140,7 @@
     <Compile Include="News\INewsService.cs" />
     <Compile Include="Notifications\INotificationsRepository.cs" />
     <Compile Include="Notifications\NotificationUpdateEventArgs.cs" />
-    <Compile Include="Persistence\IFileSortingRepository.cs" />
+    <Compile Include="Persistence\IFileOrganizationRepository.cs" />
     <Compile Include="Persistence\MediaStreamQuery.cs" />
     <Compile Include="Providers\IDynamicInfoProvider.cs" />
     <Compile Include="Providers\IImageProvider.cs" />

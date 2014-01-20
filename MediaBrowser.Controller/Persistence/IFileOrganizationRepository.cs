@@ -1,11 +1,11 @@
-﻿using MediaBrowser.Model.FileSorting;
+﻿using MediaBrowser.Model.FileOrganization;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Persistence
 {
-    public interface IFileSortingRepository
+    public interface IFileOrganizationRepository
     {
         /// <summary>
         /// Saves the result.
@@ -13,13 +13,13 @@ namespace MediaBrowser.Controller.Persistence
         /// <param name="result">The result.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SaveResult(FileSortingResult result, CancellationToken cancellationToken);
+        Task SaveResult(FileOrganizationResult result, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the results.
         /// </summary>
         /// <param name="query">The query.</param>
-        /// <returns>IEnumerable{FileSortingResult}.</returns>
-        IEnumerable<FileSortingResult> GetResults(FileSortingResultQuery query);
+        /// <returns>IEnumerable{FileOrganizationResult}.</returns>
+        IEnumerable<FileOrganizationResult> GetResults(FileOrganizationResultQuery query);
     }
 }

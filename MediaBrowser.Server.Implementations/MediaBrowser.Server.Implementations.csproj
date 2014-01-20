@@ -117,11 +117,12 @@
     <Compile Include="EntryPoints\Notifications\RemoteNotifications.cs" />
     <Compile Include="EntryPoints\Notifications\WebSocketNotifier.cs" />
     <Compile Include="EntryPoints\RefreshUsersMetadata.cs" />
-    <Compile Include="FileSorting\TvFileSorter.cs" />
+    <Compile Include="FileOrganization\FileOrganizationService.cs" />
+    <Compile Include="FileOrganization\TvFileSorter.cs" />
     <Compile Include="EntryPoints\UdpServerEntryPoint.cs" />
     <Compile Include="EntryPoints\ServerEventNotifier.cs" />
     <Compile Include="EntryPoints\UserDataChangeNotifier.cs" />
-    <Compile Include="FileSorting\SortingScheduledTask.cs" />
+    <Compile Include="FileOrganization\OrganizerScheduledTask.cs" />
     <Compile Include="HttpServer\ContainerAdapter.cs" />
     <Compile Include="HttpServer\HttpListenerHost.cs" />
     <Compile Include="HttpServer\HttpResultFactory.cs" />
@@ -179,7 +180,7 @@
     <Compile Include="News\NewsService.cs" />
     <Compile Include="Persistence\SqliteChapterRepository.cs" />
     <Compile Include="Persistence\SqliteExtensions.cs" />
-    <Compile Include="Persistence\SqliteFileSortingRepository.cs" />
+    <Compile Include="Persistence\SqliteFileOrganizationRepository.cs" />
     <Compile Include="Persistence\SqliteMediaStreamsRepository.cs" />
     <Compile Include="Persistence\SqliteNotificationsRepository.cs" />
     <Compile Include="Persistence\SqliteProviderInfoRepository.cs" />

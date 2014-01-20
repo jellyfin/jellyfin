@@ -1,7 +1,7 @@
 ﻿
-namespace MediaBrowser.Model.FileSorting
+namespace MediaBrowser.Model.FileOrganization
 {
-    public class FileSortingResultQuery
+    public class FileOrganizationResultQuery
     {
         /// <summary>
         /// Skips over a given number of items within the results. Use for paging.
