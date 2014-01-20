@@ -130,6 +130,9 @@ namespace MediaBrowser.Model.LiveTv
         /// <value>The program information.</value>
         public ProgramInfoDto ProgramInfo { get; set; }
 
+        /// <summary>
+        /// Occurs when a property value changes.
+        /// </summary>
         public event PropertyChangedEventHandler PropertyChanged;
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics;
+using System.Runtime.Serialization;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using System;
@@ -90,6 +91,16 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value>The original primary image aspect ratio.</value>
         public double? OriginalPrimaryImageAspectRatio { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance has primary image.
+        /// </summary>
+        /// <value><c>true</c> if this instance has primary image; otherwise, <c>false</c>.</value>
+        [IgnoreDataMember]
+        public bool HasPrimaryImage
+        {
+            get { return ImageTags != null && ImageTags.ContainsKey(ImageType.Primary); }
+        }
 
         public ChannelInfoDto()
         {

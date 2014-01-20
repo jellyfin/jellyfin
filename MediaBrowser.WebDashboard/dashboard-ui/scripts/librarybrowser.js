@@ -1511,9 +1511,7 @@
                 html += '<div class="starRatingValue">';
                 html += item.CommunityRating.toFixed(1);
                 html += '</div>';
-            } else {
-                html += '<div style="display:inline-block;margin-left:-1.25em;"></div>';
-            }
+            } 
 
             if (item.CriticRating != null) {
 
@@ -2522,29 +2520,25 @@
             html += '</p>';
         }
 
-        html += '<p style="margin:1.25em 0;">';
+        html += '<div style="margin:1.25em 0;">';
         html += '<span class="itemCommunityRating">';
         html += LibraryBrowser.getRatingHtml(item, false);
         html += '</span>';
 
         if (isPortrait) {
-            html += '<span class="userDataIcons" style="margin-left:0;display:block;margin:1.25em 0;">';
+            html += '<span class="userDataIcons" style="display:block;margin:1.25em 0;">';
             html += LibraryBrowser.getUserDataIconsHtml(item);
             html += '</span>';
         } else {
-            html += '<span class="userDataIcons" style="margin-left:1em;">';
+            html += '<span class="userDataIcons">';
             html += LibraryBrowser.getUserDataIconsHtml(item);
             html += '</span>';
         }
-        html += '</p>';
-
-        //html += '<p class="itemOverlayHtml">';
-        //html += (item.OverviewHtml || item.Overview || '');
-        //html += '</p>';
+        html += '</div>';
 
         html += '<div>';
 
-        var buttonMargin = isPortrait || isSquare ? "margin:0 7px 0 0;" : "margin:0 10px 0 0;";
+        var buttonMargin = isPortrait || isSquare ? "margin:0 4px 0 0;" : "margin:0 10px 0 0;";
 
         var buttonCount = 0;
 

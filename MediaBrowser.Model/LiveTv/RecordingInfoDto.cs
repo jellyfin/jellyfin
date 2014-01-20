@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Runtime.Serialization;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using System;
@@ -223,6 +224,16 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value>The user data.</value>
         public UserItemDataDto UserData { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance has primary image.
+        /// </summary>
+        /// <value><c>true</c> if this instance has primary image; otherwise, <c>false</c>.</value>
+        [IgnoreDataMember]
+        public bool HasPrimaryImage
+        {
+            get { return ImageTags != null && ImageTags.ContainsKey(ImageType.Primary); }
+        }
 
         /// <summary>
         /// Gets or sets the type.
