@@ -1720,7 +1720,7 @@
                     }
                 }
 
-                html += '<div class="mediaFlyoutOptionName">' + (language || 'Unknown language') + '</div>';
+                html += '<div class="mediaFlyoutOptionName">' + (language || stream.Language || 'Unknown language') + '</div>';
 
                 var options = [];
 

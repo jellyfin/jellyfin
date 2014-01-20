@@ -1,12 +1,12 @@
 ﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.FileOrganization;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.FileSorting;
+using MediaBrowser.Model.FileOrganization;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
@@ -16,18 +16,18 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Server.Implementations.FileSorting
+namespace MediaBrowser.Server.Implementations.FileOrganization
 {
     public class TvFileSorter
     {
         private readonly ILibraryManager _libraryManager;
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
-        private readonly IFileSortingRepository _iFileSortingRepository;
+        private readonly IFileOrganizationService _iFileSortingRepository;
 
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
-        public TvFileSorter(ILibraryManager libraryManager, ILogger logger, IFileSystem fileSystem, IFileSortingRepository iFileSortingRepository)
+        public TvFileSorter(ILibraryManager libraryManager, ILogger logger, IFileSystem fileSystem, IFileOrganizationService iFileSortingRepository)
         {
             _libraryManager = libraryManager;
             _logger = logger;
@@ -35,7 +35,7 @@ namespace MediaBrowser.Server.Implementations.FileSorting
             _iFileSortingRepository = iFileSortingRepository;
         }
 
-        public async Task Sort(TvFileSortingOptions options, CancellationToken cancellationToken, IProgress<double> progress)
+        public async Task Sort(TvFileOrganizationOptions options, CancellationToken cancellationToken, IProgress<double> progress)
         {
             var minFileBytes = options.MinFileSizeMb * 1024 * 1024;
 
@@ -118,11 +118,11 @@ namespace MediaBrowser.Server.Implementations.FileSorting
         /// <param name="path">The path.</param>
         /// <param name="options">The options.</param>
         /// <param name="allSeries">All series.</param>
-        private Task SortFile(string path, TvFileSortingOptions options, IEnumerable<Series> allSeries)
+        private Task SortFile(string path, TvFileOrganizationOptions options, IEnumerable<Series> allSeries)
         {
             _logger.Info("Sorting file {0}", path);
 
-            var result = new FileSortingResult
+            var result = new FileOrganizationResult
             {
                 Date = DateTime.UtcNow,
                 OriginalPath = path
@@ -182,7 +182,7 @@ namespace MediaBrowser.Server.Implementations.FileSorting
         /// <param name="options">The options.</param>
         /// <param name="allSeries">All series.</param>
         /// <param name="result">The result.</param>
-        private void SortFile(string path, string seriesName, int seasonNumber, int episodeNumber, TvFileSortingOptions options, IEnumerable<Series> allSeries, FileSortingResult result)
+        private void SortFile(string path, string seriesName, int seasonNumber, int episodeNumber, TvFileOrganizationOptions options, IEnumerable<Series> allSeries, FileOrganizationResult result)
         {
             var series = GetMatchingSeries(seriesName, allSeries);
 
@@ -198,7 +198,7 @@ namespace MediaBrowser.Server.Implementations.FileSorting
             _logger.Info("Sorting file {0} into series {1}", path, series.Path);
 
             // Proceed to sort the file
-            var newPath = GetNewPath(series, seasonNumber, episodeNumber, options);
+            var newPath = GetNewPath(path, series, seasonNumber, episodeNumber, options);
 
             if (string.IsNullOrEmpty(newPath))
             {
@@ -234,7 +234,7 @@ namespace MediaBrowser.Server.Implementations.FileSorting
         /// <param name="options">The options.</param>
         /// <param name="result">The result.</param>
         /// <param name="copy">if set to <c>true</c> [copy].</param>
-        private void PerformFileSorting(TvFileSortingOptions options, FileSortingResult result, bool copy)
+        private void PerformFileSorting(TvFileOrganizationOptions options, FileOrganizationResult result, bool copy)
         {
             try
             {
@@ -253,7 +253,7 @@ namespace MediaBrowser.Server.Implementations.FileSorting
                 result.Status = FileSortingStatus.Failure;
                 result.ErrorMessage = errorMsg;
                 _logger.ErrorException(errorMsg, ex);
-                return; 
+                return;
             }
 
             if (copy)
@@ -274,7 +274,7 @@ namespace MediaBrowser.Server.Implementations.FileSorting
         /// </summary>
         /// <param name="result">The result.</param>
         /// <returns>Task.</returns>
-        private Task LogResult(FileSortingResult result)
+        private Task LogResult(FileOrganizationResult result)
         {
             return _iFileSortingRepository.SaveResult(result, CancellationToken.None);
         }
@@ -282,12 +282,13 @@ namespace MediaBrowser.Server.Implementations.FileSorting
         /// <summary>
         /// Gets the new path.
         /// </summary>
+        /// <param name="sourcePath">The source path.</param>
         /// <param name="series">The series.</param>
         /// <param name="seasonNumber">The season number.</param>
         /// <param name="episodeNumber">The episode number.</param>
         /// <param name="options">The options.</param>
         /// <returns>System.String.</returns>
-        private string GetNewPath(Series series, int seasonNumber, int episodeNumber, TvFileSortingOptions options)
+        private string GetNewPath(string sourcePath, Series series, int seasonNumber, int episodeNumber, TvFileOrganizationOptions options)
         {
             var currentEpisodes = series.RecursiveChildren.OfType<Episode>()
                 .Where(i => i.IndexNumber.HasValue && i.IndexNumber.Value == episodeNumber && i.ParentIndexNumber.HasValue && i.ParentIndexNumber.Value == seasonNumber)
@@ -309,18 +310,34 @@ namespace MediaBrowser.Server.Implementations.FileSorting
 
                 var episode = currentEpisodes.First();
 
-                var episodeFileName = string.Format("{0} - {1}x{2} - {3}",
-
-                    _fileSystem.GetValidFilename(series.Name),
-                    seasonNumber.ToString(UsCulture),
-                    episodeNumber.ToString("00", UsCulture),
-                    _fileSystem.GetValidFilename(episode.Name)
-                    );
+                var episodeFileName = GetEpisodeFileName(sourcePath, series.Name, seasonNumber, episodeNumber, episode.Name, options);
 
                 newPath = Path.Combine(newPath, episodeFileName);
             }
 
             return newPath;
+        }
+
+        private string GetEpisodeFileName(string sourcePath, string seriesName, int seasonNumber, int episodeNumber, string episodeTitle, TvFileOrganizationOptions options)
+        {
+            seriesName = _fileSystem.GetValidFilename(seriesName);
+            episodeTitle = _fileSystem.GetValidFilename(episodeTitle);
+
+            var sourceExtension = (Path.GetExtension(sourcePath) ?? string.Empty).TrimStart('.');
+
+            return options.EpisodeNamePattern.Replace("%sn", seriesName)
+                .Replace("%s.n", seriesName.Replace(" ", "."))
+                .Replace("%s_n", seriesName.Replace(" ", "_"))
+                .Replace("%s", seasonNumber.ToString(UsCulture))
+                .Replace("%0s", seasonNumber.ToString("00", UsCulture))
+                .Replace("%00s", seasonNumber.ToString("000", UsCulture))
+                .Replace("%ext", sourceExtension)
+                .Replace("%en", episodeTitle)
+                .Replace("%e.n", episodeTitle.Replace(" ", "."))
+                .Replace("%e_n", episodeTitle.Replace(" ", "_"))
+                .Replace("%e", episodeNumber.ToString(UsCulture))
+                .Replace("%0e", episodeNumber.ToString("00", UsCulture))
+                .Replace("%00e", episodeNumber.ToString("000", UsCulture));
         }
 
         /// <summary>
@@ -330,7 +347,7 @@ namespace MediaBrowser.Server.Implementations.FileSorting
         /// <param name="seasonNumber">The season number.</param>
         /// <param name="options">The options.</param>
         /// <returns>System.String.</returns>
-        private string GetSeasonFolderPath(Series series, int seasonNumber, TvFileSortingOptions options)
+        private string GetSeasonFolderPath(Series series, int seasonNumber, TvFileOrganizationOptions options)
         {
             // If there's already a season folder, use that
             var season = series
@@ -386,7 +403,8 @@ namespace MediaBrowser.Server.Implementations.FileSorting
         {
             var score = 0;
 
-            // TODO: Improve this
+            // TODO: Improve this - should ignore spaces, periods, underscores, most likely all symbols and 
+            // possibly remove sorting words like "the", "and", etc.
             if (string.Equals(sortedName, series.Name, StringComparison.OrdinalIgnoreCase))
             {
                 score++;

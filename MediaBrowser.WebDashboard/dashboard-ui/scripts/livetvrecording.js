@@ -107,6 +107,15 @@
         $('#btnDelete', page).on('click', deleteRecording);
         $('#btnPlay', page).on('click', play);
 
+        $('#btnRemote', page).on('click', function () {
+
+            RemoteControl.showMenuForItem({
+
+                item: currentItem,
+                context: 'livetv'
+            });
+        });
+
     }).on('pagebeforeshow', "#liveTvRecordingPage", function () {
 
         var page = this;

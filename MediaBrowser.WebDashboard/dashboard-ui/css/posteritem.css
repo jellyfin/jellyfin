@@ -180,11 +180,11 @@
 
 .miniPosterItemProgress {
     /* Make sure it's on top of the fade gradient '*/
-    z-index: 10;
+    z-index: 1000;
 }
 
     .miniPosterItemProgress .itemProgressBar {
-        height: 7px;
+        height: 8px;
         opacity: 1;
     }
 

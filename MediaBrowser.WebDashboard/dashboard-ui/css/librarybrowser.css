@@ -599,7 +599,7 @@ a.itemTag:hover {
 
 .detailImageProgressContainer {
     position: absolute;
-    bottom: 6px;
+    bottom: 7px;
     right: 0;
     left: 0;
     text-align: center;
@@ -608,7 +608,7 @@ a.itemTag:hover {
     .detailImageProgressContainer progress {
         width: 100%;
         margin: 0 auto;
-        height: 6px;
+        height: 7px;
     }
 
 @media all and (max-width: 550px) {
@@ -976,12 +976,6 @@ a.itemTag:hover {
 
 .recordingProgressBar[aria-valuenow]:before {
     background-color: #cc3333;
-}
-
-.userDataIcons .itemProgressBar {
-    vertical-align: top;
-    position: relative;
-    top: 3px;
 }
 
 .tileItem .itemProgressBar {

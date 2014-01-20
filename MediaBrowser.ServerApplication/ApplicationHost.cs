@@ -13,6 +13,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.FileOrganization;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
@@ -38,6 +39,7 @@ using MediaBrowser.Server.Implementations.Configuration;
 using MediaBrowser.Server.Implementations.Drawing;
 using MediaBrowser.Server.Implementations.Dto;
 using MediaBrowser.Server.Implementations.EntryPoints;
+using MediaBrowser.Server.Implementations.FileOrganization;
 using MediaBrowser.Server.Implementations.HttpServer;
 using MediaBrowser.Server.Implementations.IO;
 using MediaBrowser.Server.Implementations.Library;
@@ -170,7 +172,7 @@ namespace MediaBrowser.ServerApplication
         internal IDisplayPreferencesRepository DisplayPreferencesRepository { get; set; }
         internal IItemRepository ItemRepository { get; set; }
         private INotificationsRepository NotificationsRepository { get; set; }
-        private IFileSortingRepository FileSortingRepository { get; set; }
+        private IFileOrganizationRepository FileOrganizationRepository { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ApplicationHost"/> class.
@@ -253,8 +255,8 @@ namespace MediaBrowser.ServerApplication
             ItemRepository = new SqliteItemRepository(ApplicationPaths, JsonSerializer, LogManager);
             RegisterSingleInstance(ItemRepository);
 
-            FileSortingRepository = new SqliteFileSortingRepository();
-            RegisterSingleInstance(FileSortingRepository);
+            FileOrganizationRepository = await GetFileOrganizationRepository().ConfigureAwait(false);
+            RegisterSingleInstance(FileOrganizationRepository);
 
             UserManager = new UserManager(Logger, ServerConfigurationManager, UserRepository);
             RegisterSingleInstance(UserManager);
@@ -291,6 +293,9 @@ namespace MediaBrowser.ServerApplication
 
             var newsService = new Server.Implementations.News.NewsService(ApplicationPaths, JsonSerializer);
             RegisterSingleInstance<INewsService>(newsService);
+
+            var fileOrganizationService = new FileOrganizationService(TaskManager, FileOrganizationRepository);
+            RegisterSingleInstance<IFileOrganizationService>(fileOrganizationService);
 
             progress.Report(15);
 
@@ -359,6 +364,19 @@ namespace MediaBrowser.ServerApplication
         private async Task<IUserRepository> GetUserRepository()
         {
             var repo = new SqliteUserRepository(JsonSerializer, LogManager, ApplicationPaths);
+
+            await repo.Initialize().ConfigureAwait(false);
+
+            return repo;
+        }
+
+        /// <summary>
+        /// Gets the file organization repository.
+        /// </summary>
+        /// <returns>Task{IUserRepository}.</returns>
+        private async Task<IFileOrganizationRepository> GetFileOrganizationRepository()
+        {
+            var repo = new SqliteFileOrganizationRepository(LogManager, ServerConfigurationManager.ApplicationPaths);
 
             await repo.Initialize().ConfigureAwait(false);
 

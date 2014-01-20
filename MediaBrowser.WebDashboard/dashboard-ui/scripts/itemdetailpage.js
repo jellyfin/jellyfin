@@ -83,7 +83,7 @@
                 $('#playButtonContainer', page).hide();
                 $('#playExternalButtonContainer', page).hide();
             }
-            
+
             if (item.LocalTrailerCount && item.LocationType !== "Offline") {
                 $('#trailerButtonContainer', page).show();
             } else {
@@ -407,15 +407,13 @@
                     continue;
                 }
 
-                var friendlyTypeName = item.Type == "Audio" ? "song" : item.Type.toLowerCase();
-
                 if (curr.IndexNumber < item.IndexNumber) {
 
-                    $('.lnkPreviousItem', page).removeClass('hide').attr('href', 'itemdetails.html?id=' + curr.Id).html('← Previous ' + friendlyTypeName);
+                    $('.lnkPreviousItem', page).removeClass('hide').attr('href', 'itemdetails.html?id=' + curr.Id).html('← Previous');
                 }
                 else if (curr.IndexNumber > item.IndexNumber) {
 
-                    $('.lnkNextItem', page).removeClass('hide').attr('href', 'itemdetails.html?id=' + curr.Id).html('Next ' + friendlyTypeName + ' →');
+                    $('.lnkNextItem', page).removeClass('hide').attr('href', 'itemdetails.html?id=' + curr.Id).html('Next' + ' →');
                 }
             }
         });
@@ -531,12 +529,12 @@
     function renderChildren(page, item, user) {
 
         var fields = "ItemCounts,DateCreated,AudioInfo,PrimaryImageAspectRatio";
-        
+
         var query = {
             ParentId: item.Id,
             Fields: fields
         };
-        
+
         // Let the server pre-sort boxsets
         if (item.Type !== "BoxSet") {
             query.SortBy = "SortName";
@@ -1127,7 +1125,7 @@
         });
 
         $('#btnPlayTrailer', page).on('click', function () {
-            
+
             ApiClient.getLocalTrailers(Dashboard.getCurrentUserId(), currentItem.Id).done(function (trailers) {
 
                 MediaPlayer.play(trailers);

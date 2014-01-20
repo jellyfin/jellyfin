@@ -257,9 +257,6 @@
                 html += '<div class="guideProgramName">';
                 html += program.Name;
 
-                if (program.IsRepeat) {
-                    html += ' (R)';
-                }
                 html += '</div>';
 
                 html += '<div class="guideProgramTime">';

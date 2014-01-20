@@ -57,9 +57,6 @@
 
             var name = program.Name;
 
-            if (program.IsRepeat) {
-                name += " (R)";
-            }
             html += '<div class="tvProgramName">' + name + '</div>';
 
             html += '<div class="tvProgramTime">';

@@ -1,0 +1,173 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Media Library</title>
+</head>
+<body>
+    <div id="libraryFileOrganizerPage" data-role="page" class="page type-interior mediaLibraryPage">
+
+        <div data-role="content">
+            <div class="content-primary">
+                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                    <a href="library.html" data-role="button">Media Folders</a>
+                    <a href="librarysettings.html" data-role="button">Settings</a>
+                    <a href="#" data-role="button" class="ui-btn-active">File Organizer</a>
+                </div>
+
+                <form class="libraryFileOrganizerForm">
+
+                    <p>File organizing allows the server to monitor your download folders for new files and move them to your media directories.</p>
+
+                    <div data-role="controlgroup" data-type="horizontal" data-mini="true" class="sortingTabs" style="display: none;">
+                        <input type="radio" name="radioSortingSettingsTab" class="radioSortingSettingsTab" id="radioTvSortingSettings" value="tv" checked="checked">
+                        <label for="radioTvSortingSettings">TV Sorting</label>
+                        <input type="radio" name="radioSortingSettingsTab" class="radioSortingSettingsTab" id="radioMovieSortingSettings" value="movies">
+                        <label for="radioMovieSortingSettings">Movie Sorting</label>
+                    </div>
+                    <div class="tvTab tab">
+                        <p>TV file organizing will only add episodes to existing series. It will not create new series folders.</p>
+                        <ul data-role="listview" class="ulForm" style="margin-bottom: 0!important;">
+                            <li>
+                                <input type="checkbox" id="chkEnableTvSorting" name="chkEnableTvSorting" />
+                                <label for="chkEnableTvSorting">Enable new episode organization</label>
+                            </li>
+                            <li>
+                                <label for="txtWatchFolder">Watch folder: </label>
+                                <div style="display: inline-block; width: 92%;">
+                                    <input type="text" id="txtWatchFolder" name="txtWatchFolder" />
+                                </div>
+                                <button id="btnSelectWatchFolder" type="button" data-icon="search" data-iconpos="notext" data-inline="true">Select Directory</button>
+                                <div class="fieldDescription">
+                                    The server will poll this folder during the "Organize new media files" <a href="scheduledtasks.html">scheduled task</a>.
+                                </div>
+                            </li>
+                            <li>
+                                <label for="txtMinFileSize">Minimum file size (MB): </label>
+                                <input type="number" id="txtMinFileSize" name="txtMinFileSize" pattern="[0-9]*" required="required" min="0" data-mini="true" />
+                            </li>
+                            <li>
+                                <label for="txtSeasonFolderPattern">Season folder pattern: </label>
+                                <input type="text" id="txtSeasonFolderPattern" name="txtSeasonFolderPattern" required="required" data-mini="true" />
+                                <div class="fieldDescription seasonFolderFieldDescription"></div>
+                            </li>
+                            <li>
+                                <label for="txtSeasonZeroName">Season zero folder name: </label>
+                                <input type="text" id="txtSeasonZeroName" name="txtSeasonZeroName" required="required" data-mini="true" />
+                            </li>
+                        </ul>
+                        <div data-role="collapsible">
+                            <h3>Episode file pattern</h3>
+                            <div>
+                                <br />
+                                <div>
+                                    <label for="txtEpisodePattern">Episode pattern: </label>
+                                    <input type="text" id="txtEpisodePattern" name="txtEpisodePattern" required="required" data-mini="true" />
+                                    <div class="fieldDescription episodePatternDescription"></div>
+                                </div>
+
+                                <p>Supported Patterns</p>
+
+                                <table data-role="table" id="movie-table" data-mode="reflow" class="ui-responsive">
+                                    <thead>
+                                        <tr>
+                                            <th>Term</th>
+                                            <th>Pattern</th>
+                                            <th>Result</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <th>Series Name</th>
+                                            <td>%sn</td>
+                                            <td>Series Name</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Series Name</th>
+                                            <td>%s.n</td>
+                                            <td>Series.Name</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Series Name</th>
+                                            <td>%s_n</td>
+                                            <td>Series_Name</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Season Number</th>
+                                            <td>%s</td>
+                                            <td>1</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Season Number</th>
+                                            <td>%0s</td>
+                                            <td>01</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Episode Number</th>
+                                            <td>%e</td>
+                                            <td>4</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Episode Number</th>
+                                            <td>%0e</td>
+                                            <td>04</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Episode Name</th>
+                                            <td>%en</td>
+                                            <td>Episode Name</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Episode Name</th>
+                                            <td>%e.n</td>
+                                            <td>Episode.Name</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Episode Name</th>
+                                            <td>%e_n</td>
+                                            <td>Episode_Name</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                            </div>
+                        </div>
+                        <br />
+                        <ul data-role="listview" class="ulForm">
+                            <li>
+                                <input type="checkbox" id="chkOverwriteExistingEpisodes" name="chkOverwriteExistingEpisodes" />
+                                <label for="chkOverwriteExistingEpisodes">Overwrite existing episodes</label>
+                            </li>
+                            <li>
+                                <input type="checkbox" id="chkDeleteEmptyFolders" name="chkDeleteEmptyFolders" />
+                                <label for="chkDeleteEmptyFolders">Delete empty folders after organizing</label>
+                            </li>
+                            <li>
+                                <input type="checkbox" id="chkEnableTrialMode" name="chkEnableTrialMode" />
+                                <label for="chkEnableTrialMode">Enable trial mode</label>
+                                <div class="fieldDescription">With trial mode enabled, file organizations will be logged but not executed.</div>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <ul data-role="listview" class="ulForm">
+                        <li>
+                            <button type="submit" data-theme="b" data-icon="check" data-mini="true">
+                                Save
+                            </button>
+                            <button type="button" onclick="Dashboard.navigate('dashboard.html');" data-icon="delete" data-mini="true">
+                                Cancel
+                            </button>
+                        </li>
+
+                    </ul>
+                </form>
+
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            $('.libraryFileOrganizerForm').off('submit', LibraryFileOrganizerPage.onSubmit).on('submit', LibraryFileOrganizerPage.onSubmit);
+        </script>
+    </div>
+</body>
+</html>

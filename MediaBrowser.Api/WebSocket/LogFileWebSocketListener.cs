@@ -111,7 +111,9 @@ namespace MediaBrowser.Api.WebSocket
                     {
                         var line = await reader.ReadLineAsync().ConfigureAwait(false);
 
-                        if (line.IndexOf(", Debug,", StringComparison.OrdinalIgnoreCase) == -1)
+                        if (line.IndexOf(", Info,", StringComparison.OrdinalIgnoreCase) != -1 ||
+                            line.IndexOf(", Warn,", StringComparison.OrdinalIgnoreCase) != -1 ||
+                            line.IndexOf(", Error,", StringComparison.OrdinalIgnoreCase) != -1)
                         {
                             lines.Add(line);
                         }

@@ -172,12 +172,20 @@
 
             html += '<h3>';
             html += program.EpisodeTitle || timer.Name;
-            if (program.IsRepeat) {
-                html += ' (R)';
-            }
             html += '</h3>';
 
             html += '<p>';
+            
+            if (program.IsLive) {
+                html += '<span class="liveTvProgram">LIVE&nbsp;&nbsp;</span>';
+            }
+            else if (program.IsPremiere) {
+                html += '<span class="premiereTvProgram">PREMIERE&nbsp;&nbsp;</span>';
+            }
+            else if (program.IsSeries && !program.IsRepeat) {
+                html += '<span class="newTvProgram">NEW&nbsp;&nbsp;</span>';
+            }
+
             html += LiveTvHelpers.getDisplayTime(timer.StartDate);
             html += ' - ' + LiveTvHelpers.getDisplayTime(timer.EndDate);
             html += '</p>';

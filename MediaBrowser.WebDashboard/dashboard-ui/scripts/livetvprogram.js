@@ -32,10 +32,6 @@
 
             var name = item.Name;
             
-            if (item.IsRepeat) {
-                name += ' (R)';
-            }
-
             $('#itemImage', page).html(LibraryBrowser.getDetailImageHtml(item));
 
             Dashboard.setPageTitle(name);
@@ -125,6 +121,15 @@
         $('#btnCancelRecording', page).on('click', function () {
 
             deleteTimer(page, currentItem.TimerId);
+        });
+
+        $('#btnRemote', page).on('click', function () {
+
+            RemoteControl.showMenuForItem({
+
+                item: currentItem,
+                context: 'livetv'
+            });
         });
 
     }).on('pageshow', "#liveTvProgramPage", function () {

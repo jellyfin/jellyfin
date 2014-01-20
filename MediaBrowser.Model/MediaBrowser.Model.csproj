@@ -71,8 +71,8 @@
     <Compile Include="Dto\ItemCounts.cs" />
     <Compile Include="Dto\ItemIndex.cs" />
     <Compile Include="Entities\PackageReviewInfo.cs" />
-    <Compile Include="FileSorting\FileSortingResult.cs" />
-    <Compile Include="FileSorting\FileSortingResultQuery.cs" />
+    <Compile Include="FileOrganization\FileOrganizationResult.cs" />
+    <Compile Include="FileOrganization\FileOrganizationQuery.cs" />
     <Compile Include="LiveTv\ChannelInfoDto.cs" />
     <Compile Include="LiveTv\ChannelQuery.cs" />
     <Compile Include="LiveTv\ProgramInfoDto.cs" />
@@ -82,6 +82,7 @@
     <Compile Include="LiveTv\RecordingStatus.cs" />
     <Compile Include="LiveTv\SeriesTimerInfoDto.cs" />
     <Compile Include="LiveTv\TimerInfoDto.cs" />
+    <Compile Include="Logging\NullLogger.cs" />
     <Compile Include="News\NewsItem.cs" />
     <Compile Include="Providers\ImageProviderInfo.cs" />
     <Compile Include="Providers\RemoteImageInfo.cs" />
