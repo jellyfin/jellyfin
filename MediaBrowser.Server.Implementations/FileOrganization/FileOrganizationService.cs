@@ -43,7 +43,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
                 throw new ArgumentNullException("result");
             }
 
-            result.Id = (result.OriginalPath + (result.TargetPath ?? string.Empty)).GetMD5().ToString("N");
+            result.Id = result.OriginalPath.GetMD5().ToString("N");
 
             return _repo.SaveResult(result, cancellationToken);
         }

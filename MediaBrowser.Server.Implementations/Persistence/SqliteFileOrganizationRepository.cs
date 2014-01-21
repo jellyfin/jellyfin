@@ -47,7 +47,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             string[] queries = {
 
-                                "create table if not exists organizationresults (ResultId GUID PRIMARY KEY, OriginalPath TEXT, TargetPath TEXT, OrganizationDate datetime, Status TEXT, OrganizationType TEXT, StatusMessage TEXT, ExtractedName TEXT, ExtractedYear int null)",
+                                "create table if not exists organizationresults (ResultId GUID PRIMARY KEY, OriginalPath TEXT, TargetPath TEXT, OrganizationDate datetime, Status TEXT, OrganizationType TEXT, StatusMessage TEXT, ExtractedName TEXT, ExtractedYear int null, ExtractedSeasonNumber int null, ExtractedEpisodeNumber int null, ExtractedEndingEpisodeNumber int null)",
                                 "create index if not exists idx_organizationresults on organizationresults(ResultId)",
 
                                 //pragmas
@@ -66,7 +66,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private void PrepareStatements()
         {
             _saveResultCommand = _connection.CreateCommand();
-            _saveResultCommand.CommandText = "replace into organizationresults (ResultId, OriginalPath, TargetPath, OrganizationDate, Status, OrganizationType, StatusMessage, ExtractedName, ExtractedYear) values (@ResultId, @OriginalPath, @TargetPath, @OrganizationDate, @Status, @OrganizationType, @StatusMessage, @ExtractedName, @ExtractedYear)";
+            _saveResultCommand.CommandText = "replace into organizationresults (ResultId, OriginalPath, TargetPath, OrganizationDate, Status, OrganizationType, StatusMessage, ExtractedName, ExtractedYear, ExtractedSeasonNumber, ExtractedEpisodeNumber, ExtractedEndingEpisodeNumber) values (@ResultId, @OriginalPath, @TargetPath, @OrganizationDate, @Status, @OrganizationType, @StatusMessage, @ExtractedName, @ExtractedYear, @ExtractedSeasonNumber, @ExtractedEpisodeNumber, @ExtractedEndingEpisodeNumber)";
 
             _saveResultCommand.Parameters.Add(_saveResultCommand, "@ResultId");
             _saveResultCommand.Parameters.Add(_saveResultCommand, "@OriginalPath");
@@ -77,6 +77,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _saveResultCommand.Parameters.Add(_saveResultCommand, "@StatusMessage");
             _saveResultCommand.Parameters.Add(_saveResultCommand, "@ExtractedName");
             _saveResultCommand.Parameters.Add(_saveResultCommand, "@ExtractedYear");
+            _saveResultCommand.Parameters.Add(_saveResultCommand, "@ExtractedSeasonNumber");
+            _saveResultCommand.Parameters.Add(_saveResultCommand, "@ExtractedEpisodeNumber");
+            _saveResultCommand.Parameters.Add(_saveResultCommand, "@ExtractedEndingEpisodeNumber");
 
             _deleteResultCommand = _connection.CreateCommand();
             _deleteResultCommand.CommandText = "delete from organizationresults where ResultId = @ResultId";
@@ -110,6 +113,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 _saveResultCommand.GetParameter(6).Value = result.StatusMessage;
                 _saveResultCommand.GetParameter(7).Value = result.ExtractedName;
                 _saveResultCommand.GetParameter(8).Value = result.ExtractedYear;
+                _saveResultCommand.GetParameter(9).Value = result.ExtractedSeasonNumber;
+                _saveResultCommand.GetParameter(10).Value = result.ExtractedEpisodeNumber;
+                _saveResultCommand.GetParameter(11).Value = result.ExtractedEndingEpisodeNumber;
 
                 _saveResultCommand.Transaction = transaction;
 
@@ -211,7 +217,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             using (var cmd = _connection.CreateCommand())
             {
-                cmd.CommandText = "SELECT ResultId, OriginalPath, TargetPath, OrganizationDate, Status, OrganizationType, StatusMessage, ExtractedName, ExtractedYear from organizationresults";
+                cmd.CommandText = "SELECT ResultId, OriginalPath, TargetPath, OrganizationDate, Status, OrganizationType, StatusMessage, ExtractedName, ExtractedYear, ExtractedSeasonNumber, ExtractedEpisodeNumber, ExtractedEndingEpisodeNumber from organizationresults";
 
                 if (query.StartIndex.HasValue && query.StartIndex.Value > 0)
                 {
@@ -263,7 +269,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             using (var cmd = _connection.CreateCommand())
             {
-                cmd.CommandText = "select ResultId, OriginalPath, TargetPath, OrganizationDate, Status, OrganizationType, StatusMessage, ExtractedName, ExtractedYear from organizationresults where ResultId=@Id";
+                cmd.CommandText = "select ResultId, OriginalPath, TargetPath, OrganizationDate, Status, OrganizationType, StatusMessage, ExtractedName, ExtractedYear, ExtractedSeasonNumber, ExtractedEpisodeNumber, ExtractedEndingEpisodeNumber from organizationresults where ResultId=@Id";
 
                 cmd.Parameters.Add(cmd, "@Id", DbType.Guid).Value = guid;
 
@@ -315,6 +321,21 @@ namespace MediaBrowser.Server.Implementations.Persistence
             if (!reader.IsDBNull(8))
             {
                 result.ExtractedYear = reader.GetInt32(8);
+            }
+
+            if (!reader.IsDBNull(9))
+            {
+                result.ExtractedSeasonNumber = reader.GetInt32(9);
+            }
+
+            if (!reader.IsDBNull(10))
+            {
+                result.ExtractedEpisodeNumber = reader.GetInt32(10);
+            }
+
+            if (!reader.IsDBNull(11))
+            {
+                result.ExtractedEndingEpisodeNumber = reader.GetInt32(11);
             }
 
             return result;
