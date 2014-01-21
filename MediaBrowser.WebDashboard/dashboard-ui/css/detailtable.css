@@ -76,3 +76,10 @@
     background-color: #eeeeee; /* non-RGBA fallback  */
     background-color: rgba(0,0,0,.1);
 }
+
+
+.stripedTable tbody tr:nth-child(odd) td,
+.stripedTable tbody tr:nth-child(odd) th {
+    background-color: #eeeeee; /* non-RGBA fallback  */
+    background-color: rgba(0,0,0,.04);
+}

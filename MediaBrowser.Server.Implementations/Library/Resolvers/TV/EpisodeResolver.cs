@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
+using System.Linq;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
 {
@@ -17,7 +18,18 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
         /// <returns>Episode.</returns>
         protected override Episode Resolve(ItemResolveArgs args)
         {
-            var season = args.Parent as Season;
+            var parent = args.Parent;
+            var season = parent as Season;
+
+            // Just in case the user decided to nest episodes. 
+            // Not officially supported but in some cases we can handle it.
+            if (season == null)
+            {
+                if (parent != null)
+                {
+                    season = parent.Parents.OfType<Season>().FirstOrDefault();
+                }
+            }
 
             // If the parent is a Season or Series, then this is an Episode if the VideoResolver returns something
             if (season != null || args.Parent is Series)

@@ -1,0 +1,41 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Auto-Organize</title>
+</head>
+<body>
+    <div id="libraryFileOrganizerLogPage" data-role="page" class="page type-interior adminPage organizePage">
+
+        <div data-role="content">
+            <div class="content-primary">
+
+                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                    <a href="#" data-role="button" class="ui-btn-active">Activity Log</a>
+                    <a href="libraryfileorganizer.html" data-role="button">TV Settings</a>
+                </div>
+
+                <div style="margin: -15px 0 1em;text-align:left;">
+                    <div class="listTopPaging">
+                    </div>
+                </div>
+                <table id="movie-table" data-role="table" data-mode="reflow" class="tblOrganizationResults stripedTable ui-responsive table-stroke">
+                    <thead>
+                        <tr>
+                            <th data-priority="2">Date</th>
+                            <th data-priority="1">Source</th>
+                            <th data-priority="3">Destination</th>
+                            <th data-priority="1">Result</th>
+                            <th data-priority="1"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="resultBody">
+                    </tbody>
+                </table>
+                <br />
+                <div class="listBottomPaging">
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

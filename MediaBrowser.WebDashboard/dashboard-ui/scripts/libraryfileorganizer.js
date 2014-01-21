@@ -52,13 +52,13 @@
 
         var page = this;
 
-        $('#txtSeasonFolderPattern', page).on('change keypress', function() {
+        $('#txtSeasonFolderPattern', page).on('change keyup', function () {
 
             updateSeasonPatternHelp(page, this.value);
 
         });
 
-        $('#txtEpisodePattern', page).on('change keypress', function () {
+        $('#txtEpisodePattern', page).on('change keyup', function () {
 
             updateEpisodePatternHelp(page, this.value);
 

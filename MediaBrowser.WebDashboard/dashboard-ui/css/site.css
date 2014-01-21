@@ -846,3 +846,12 @@ progress {
         max-width: 1100px;
     }
 }
+
+.organizerButtonCell {
+    white-space: nowrap;
+}
+
+.organizerButton {
+    margin-top: 0;
+    margin-bottom: 0;
+}

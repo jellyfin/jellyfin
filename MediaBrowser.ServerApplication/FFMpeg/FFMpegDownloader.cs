@@ -117,9 +117,13 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                     ExtractFFMpeg(tempFile, Path.GetDirectoryName(info.Path));
                     return;
                 }
-                catch (HttpException)
+                catch (HttpException ex)
                 {
-
+                    _logger.ErrorException("Error downloading {0}", ex, url);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error unpacking {0}", ex, url);
                 }
             }
 

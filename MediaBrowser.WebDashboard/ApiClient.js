@@ -441,7 +441,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         self.getLiveTvPrograms = function (options) {
 
             options = options || {};
-            
+
             if (options.channelIds && options.channelIds.length > 1800) {
 
                 return self.ajax({
@@ -453,7 +453,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 });
 
             } else {
-                
+
                 return self.ajax({
                     type: "GET",
                     url: self.getUrl("LiveTv/Programs", options),
@@ -663,6 +663,37 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 type: "GET",
                 url: url,
                 dataType: "json"
+            });
+        };
+
+        self.getFileOrganizationResults = function (options) {
+
+            var url = self.getUrl("Library/FileOrganization", options || {});
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        self.deleteOriginalFileFromOrganizationResult = function (id) {
+
+            var url = self.getUrl("Library/FileOrganizations/" + id + "/File");
+
+            return self.ajax({
+                type: "DELETE",
+                url: url
+            });
+        };
+
+        self.performOrganization = function (id) {
+
+            var url = self.getUrl("Library/FileOrganizations/" + id + "/Organize");
+
+            return self.ajax({
+                type: "POST",
+                url: url
             });
         };
 
@@ -4003,7 +4034,7 @@ MediaBrowser.ApiClient.create = function (clientName, applicationVersion) {
     var loc = window.location;
 
     var address = loc.protocol + '//' + loc.hostname;
-    
+
     if (loc.port) {
         address += ':' + loc.port;
     }

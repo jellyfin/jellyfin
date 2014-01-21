@@ -21,6 +21,20 @@ namespace MediaBrowser.Controller.FileOrganization
         Task SaveResult(FileOrganizationResult result, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Deletes the original file.
+        /// </summary>
+        /// <param name="resultId">The result identifier.</param>
+        /// <returns>Task.</returns>
+        Task DeleteOriginalFile(string resultId);
+
+        /// <summary>
+        /// Performs the organization.
+        /// </summary>
+        /// <param name="resultId">The result identifier.</param>
+        /// <returns>Task.</returns>
+        Task PerformOrganization(string resultId);
+        
+        /// <summary>
         /// Gets the results.
         /// </summary>
         /// <param name="query">The query.</param>
