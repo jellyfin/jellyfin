@@ -1,5 +1,4 @@
-﻿using System.Text;
-using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.FileOrganization;
 using MediaBrowser.Controller.IO;
@@ -15,6 +14,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -22,11 +22,11 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 {
     public class TvFileSorter
     {
+        private readonly IDirectoryWatchers _directoryWatchers;
         private readonly ILibraryManager _libraryManager;
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
         private readonly IFileOrganizationService _iFileSortingRepository;
-        private readonly IDirectoryWatchers _directoryWatchers;
 
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
@@ -67,7 +67,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
                 {
                     var result = await SortFile(file.FullName, options, allSeries).ConfigureAwait(false);
 
-                    if (result.Status == FileSortingStatus.Success)
+                    if (result.Status == FileSortingStatus.Success && !options.EnableTrialMode)
                     {
                         scanLibrary = true;
                     }
@@ -142,7 +142,9 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             var result = new FileOrganizationResult
             {
                 Date = DateTime.UtcNow,
-                OriginalPath = path
+                OriginalPath = path,
+                OriginalFileName = Path.GetFileName(path),
+                Type = FileOrganizerType.Episode
             };
 
             var seriesName = TVUtils.GetSeriesNameFromEpisodeFile(path);
@@ -166,7 +168,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
                     {
                         var msg = string.Format("Unable to determine episode number from {0}", path);
                         result.Status = FileSortingStatus.Failure;
-                        result.ErrorMessage = msg;
+                        result.StatusMessage = msg;
                         _logger.Warn(msg);
                     }
                 }
@@ -174,7 +176,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
                 {
                     var msg = string.Format("Unable to determine season number from {0}", path);
                     result.Status = FileSortingStatus.Failure;
-                    result.ErrorMessage = msg;
+                    result.StatusMessage = msg;
                     _logger.Warn(msg);
                 }
             }
@@ -182,7 +184,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             {
                 var msg = string.Format("Unable to determine series name from {0}", path);
                 result.Status = FileSortingStatus.Failure;
-                result.ErrorMessage = msg;
+                result.StatusMessage = msg;
                 _logger.Warn(msg);
             }
 
@@ -203,13 +205,13 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
         /// <param name="result">The result.</param>
         private void SortFile(string path, string seriesName, int seasonNumber, int episodeNumber, TvFileOrganizationOptions options, IEnumerable<Series> allSeries, FileOrganizationResult result)
         {
-            var series = GetMatchingSeries(seriesName, allSeries);
+            var series = GetMatchingSeries(seriesName, allSeries, result);
 
             if (series == null)
             {
                 var msg = string.Format("Unable to find series in library matching name {0}", seriesName);
                 result.Status = FileSortingStatus.Failure;
-                result.ErrorMessage = msg;
+                result.StatusMessage = msg;
                 _logger.Warn(msg);
                 return;
             }
@@ -223,7 +225,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             {
                 var msg = string.Format("Unable to sort {0} because target path could not be determined.", path);
                 result.Status = FileSortingStatus.Failure;
-                result.ErrorMessage = msg;
+                result.StatusMessage = msg;
                 _logger.Warn(msg);
                 return;
             }
@@ -273,7 +275,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
                 var errorMsg = string.Format("Failed to move file from {0} to {1}", result.OriginalPath, result.TargetPath);
 
                 result.Status = FileSortingStatus.Failure;
-                result.ErrorMessage = errorMsg;
+                result.StatusMessage = errorMsg;
                 _logger.ErrorException(errorMsg, ex);
 
                 return;
@@ -413,11 +415,14 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
         /// <param name="seriesName">Name of the series.</param>
         /// <param name="allSeries">All series.</param>
         /// <returns>Series.</returns>
-        private Series GetMatchingSeries(string seriesName, IEnumerable<Series> allSeries)
+        private Series GetMatchingSeries(string seriesName, IEnumerable<Series> allSeries, FileOrganizationResult result)
         {
             int? yearInName;
             var nameWithoutYear = seriesName;
             NameParser.ParseName(nameWithoutYear, out nameWithoutYear, out yearInName);
+
+            result.ExtractedName = nameWithoutYear;
+            result.ExtractedYear = yearInName;
 
             return allSeries.Select(i => GetMatchScore(nameWithoutYear, yearInName, i))
                 .Where(i => i.Item2 > 0)
@@ -473,6 +478,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             .Replace("&", " ")
             .Replace("!", " ")
             .Replace(",", " ")
+            .Replace("-", " ")
             .Replace(" a ", string.Empty)
             .Replace(" the ", string.Empty)
             .Replace(" ", string.Empty);
