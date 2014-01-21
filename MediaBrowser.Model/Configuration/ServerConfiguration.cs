@@ -328,15 +328,11 @@ namespace MediaBrowser.Model.Configuration
         public string SeasonZeroFolderName { get; set; }
 
         public string EpisodeNamePattern { get; set; }
-        
+        public string MultiEpisodeNamePattern { get; set; }
+
         public bool OverwriteExistingEpisodes { get; set; }
 
         public bool DeleteEmptyFolders { get; set; }
-
-        /// <summary>
-        /// Will log results but will not actually make any changes
-        /// </summary>
-        public bool EnableTrialMode { get; set; }
 
         public TvFileOrganizationOptions()
         {
@@ -347,10 +343,9 @@ namespace MediaBrowser.Model.Configuration
             WatchLocations = new string[] { };
 
             EpisodeNamePattern = "%sn - %sx%0e - %en.%ext";
+            MultiEpisodeNamePattern = "%sn - %sx%0e-x%0ed - %en.%ext";
             SeasonFolderPattern = "Season %s";
             SeasonZeroFolderName = "Season 0";
-
-            EnableTrialMode = true;
         }
     }
 }

@@ -33,6 +33,24 @@ namespace MediaBrowser.Model.FileOrganization
         /// </summary>
         /// <value>The extracted year.</value>
         public int? ExtractedYear { get; set; }
+
+        /// <summary>
+        /// Gets or sets the extracted season number.
+        /// </summary>
+        /// <value>The extracted season number.</value>
+        public int? ExtractedSeasonNumber { get; set; }
+
+        /// <summary>
+        /// Gets or sets the extracted episode number.
+        /// </summary>
+        /// <value>The extracted episode number.</value>
+        public int? ExtractedEpisodeNumber { get; set; }
+
+        /// <summary>
+        /// Gets or sets the extracted ending episode number.
+        /// </summary>
+        /// <value>The extracted ending episode number.</value>
+        public int? ExtractedEndingEpisodeNumber { get; set; }
         
         /// <summary>
         /// Gets or sets the target path.
@@ -69,8 +87,7 @@ namespace MediaBrowser.Model.FileOrganization
     {
         Success,
         Failure,
-        SkippedExisting,
-        SkippedTrial
+        SkippedExisting
     }
 
     public enum FileOrganizerType

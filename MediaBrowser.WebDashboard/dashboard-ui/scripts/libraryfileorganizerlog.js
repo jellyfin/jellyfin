@@ -99,10 +99,7 @@
 
         var color = null;
 
-        if (status == 'SkippedTrial') {
-            status = 'Trial';
-        }
-        else if (status == 'SkippedExisting') {
+        if (status == 'SkippedExisting') {
             status = 'Skipped';
         }
         else if (status == 'Failure') {
@@ -158,7 +155,7 @@
             html += '<td class="organizerButtonCell">';
 
 
-            if (item.Status == 'SkippedTrial' || item.Status == 'SkippedExisting') {
+            if (item.Status == 'SkippedExisting') {
                 html += '<button data-resultid="' + item.Id + '" type="button" data-inline="true" data-icon="action" data-mini="true" data-iconpos="notext" class="btnProcessResult organizerButton" title="Organize File">Process</button>';
             } else {
                 html += '<button style="visibility:hidden;" type="button" data-inline="true" data-icon="info" data-mini="true" data-iconpos="notext" class="organizerButton"></button>';

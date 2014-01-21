@@ -57,7 +57,14 @@
                                 <input type="text" id="txtEpisodePattern" name="txtEpisodePattern" required="required" data-mini="true" />
                                 <div class="fieldDescription episodePatternDescription"></div>
                             </div>
+                            <br />
+                            <div>
+                                <label for="txtMultiEpisodePattern">Multi-Episode pattern: </label>
+                                <input type="text" id="txtMultiEpisodePattern" name="txtMultiEpisodePattern" required="required" data-mini="true" />
+                                <div class="fieldDescription multiEpisodePatternDescription"></div>
+                            </div>
 
+                            <br />
                             <p>Supported Patterns</p>
 
                             <table data-role="table" id="movie-table" data-mode="reflow" class="ui-responsive">
@@ -70,52 +77,62 @@
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td>Series Name</td>
+                                        <td>Series name</td>
                                         <td>%sn</td>
                                         <td>Series Name</td>
                                     </tr>
                                     <tr>
-                                        <td>Series Name</td>
+                                        <td>Series name</td>
                                         <td>%s.n</td>
                                         <td>Series.Name</td>
                                     </tr>
                                     <tr>
-                                        <td>Series Name</td>
+                                        <td>Series name</td>
                                         <td>%s_n</td>
                                         <td>Series_Name</td>
                                     </tr>
                                     <tr>
-                                        <td>Season Number</td>
+                                        <td>Season number</td>
                                         <td>%s</td>
                                         <td>1</td>
                                     </tr>
                                     <tr>
-                                        <td>Season Number</td>
+                                        <td>Season number</td>
                                         <td>%0s</td>
                                         <td>01</td>
                                     </tr>
                                     <tr>
-                                        <td>Episode Number</td>
+                                        <td>Episode number</td>
                                         <td>%e</td>
                                         <td>4</td>
                                     </tr>
                                     <tr>
-                                        <td>Episode Number</td>
+                                        <td>Episode number</td>
                                         <td>%0e</td>
                                         <td>04</td>
                                     </tr>
                                     <tr>
-                                        <td>Episode Name</td>
+                                        <td>Ending episode number</td>
+                                        <td>%ed</td>
+                                        <td>5</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Ending episode number</td>
+                                        <td>%0ed</td>
+                                        <td>05</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Episode name</td>
                                         <td>%en</td>
                                         <td>Episode Name</td>
                                     </tr>
                                     <tr>
-                                        <td>Episode Name</td>
+                                        <td>Episode name</td>
                                         <td>%e.n</td>
                                         <td>Episode.Name</td>
                                     </tr>
                                     <tr>
-                                        <td>Episode Name</td>
+                                        <td>Episode name</td>
                                         <td>%e_n</td>
                                         <td>Episode_Name</td>
                                     </tr>
@@ -133,11 +150,6 @@
                         <li>
                             <input type="checkbox" id="chkDeleteEmptyFolders" name="chkDeleteEmptyFolders" />
                             <label for="chkDeleteEmptyFolders">Delete empty folders after organizing</label>
-                        </li>
-                        <li>
-                            <input type="checkbox" id="chkEnableTrialMode" name="chkEnableTrialMode" />
-                            <label for="chkEnableTrialMode">Enable trial mode</label>
-                            <div class="fieldDescription">With trial mode enabled, file organizations will be logged but not executed.</div>
                         </li>
                     </ul>
 

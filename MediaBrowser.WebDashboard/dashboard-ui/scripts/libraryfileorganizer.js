@@ -6,13 +6,13 @@
 
         $('.seasonFolderFieldDescription', page).html(replacementHtmlResult);
     }
-
-    function updateEpisodePatternHelp(page, value) {
-
+    
+    function getEpisodeFileName(value, enableMultiEpisode) {
+        
         var seriesName = "Series Name";
         var episodeTitle = "Episode Four";
-        
-        value = value.replace('%sn', seriesName)
+
+        var result = value.replace('%sn', seriesName)
             .replace('%s.n', seriesName.replace(' ', '.'))
             .replace('%s_n', seriesName.replace(' ', '_'))
             .replace('%s', '1')
@@ -21,14 +21,37 @@
             .replace('%ext', 'mkv')
             .replace('%en', episodeTitle)
             .replace('%e.n', episodeTitle.replace(' ', '.'))
-            .replace('%e_n', episodeTitle.replace(' ', '_'))
+            .replace('%e_n', episodeTitle.replace(' ', '_'));
+        
+        if (enableMultiEpisode) {
+            result = result
+            .replace('%ed', '5')
+            .replace('%0ed', '05')
+            .replace('%00ed', '005');
+        }
+
+        return result
             .replace('%e', '4')
             .replace('%0e', '04')
             .replace('%00e', '004');
+    }
+
+    function updateEpisodePatternHelp(page, value) {
+
+        value = getEpisodeFileName(value, false);
         
         var replacementHtmlResult = 'Result: ' + value;
 
         $('.episodePatternDescription', page).html(replacementHtmlResult);
+    }
+
+    function updateMultiEpisodePatternHelp(page, value) {
+
+        value = getEpisodeFileName(value, true);
+
+        var replacementHtmlResult = 'Result: ' + value;
+
+        $('.multiEpisodePatternDescription', page).html(replacementHtmlResult);
     }
 
     function loadPage(page, config) {
@@ -38,7 +61,6 @@
         $('#chkEnableTvSorting', page).checked(tvOptions.IsEnabled).checkboxradio('refresh');
         $('#chkOverwriteExistingEpisodes', page).checked(tvOptions.OverwriteExistingEpisodes).checkboxradio('refresh');
         $('#chkDeleteEmptyFolders', page).checked(tvOptions.DeleteEmptyFolders).checkboxradio('refresh');
-        $('#chkEnableTrialMode', page).checked(tvOptions.EnableTrialMode).checkboxradio('refresh');
 
         $('#txtMinFileSize', page).val(tvOptions.MinFileSizeMb);
         $('#txtSeasonFolderPattern', page).val(tvOptions.SeasonFolderPattern).trigger('change');
@@ -46,6 +68,7 @@
         $('#txtWatchFolder', page).val(tvOptions.WatchLocations[0] || '');
 
         $('#txtEpisodePattern', page).val(tvOptions.EpisodeNamePattern).trigger('change');
+        $('#txtMultiEpisodePattern', page).val(tvOptions.MultiEpisodeNamePattern).trigger('change');
     }
     
     $(document).on('pageinit', "#libraryFileOrganizerPage", function () {
@@ -61,6 +84,12 @@
         $('#txtEpisodePattern', page).on('change keyup', function () {
 
             updateEpisodePatternHelp(page, this.value);
+
+        });
+
+        $('#txtMultiEpisodePattern', page).on('change keyup', function () {
+
+            updateMultiEpisodePatternHelp(page, this.value);
 
         });
 
@@ -106,13 +135,13 @@
                 tvOptions.IsEnabled = $('#chkEnableTvSorting', form).checked();
                 tvOptions.OverwriteExistingEpisodes = $('#chkOverwriteExistingEpisodes', form).checked();
                 tvOptions.DeleteEmptyFolders = $('#chkDeleteEmptyFolders', form).checked();
-                tvOptions.EnableTrialMode = $('#chkEnableTrialMode', form).checked();
 
                 tvOptions.MinFileSizeMb = $('#txtMinFileSize', form).val();
                 tvOptions.SeasonFolderPattern = $('#txtSeasonFolderPattern', form).val();
                 tvOptions.SeasonZeroFolderName = $('#txtSeasonZeroName', form).val();
 
                 tvOptions.EpisodeNamePattern = $('#txtEpisodePattern', form).val();
+                tvOptions.MultiEpisodeNamePattern = $('#txtMultiEpisodePattern', form).val();
 
                 var watchLocation = $('#txtWatchFolder', form).val();
                 tvOptions.WatchLocations = watchLocation ? [watchLocation] : [];
