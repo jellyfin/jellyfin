@@ -19,20 +19,23 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
         protected override Episode Resolve(ItemResolveArgs args)
         {
             var parent = args.Parent;
+
+            if (parent == null)
+            {
+                return null;
+            }
+
             var season = parent as Season;
 
             // Just in case the user decided to nest episodes. 
             // Not officially supported but in some cases we can handle it.
             if (season == null)
             {
-                if (parent != null)
-                {
-                    season = parent.Parents.OfType<Season>().FirstOrDefault();
-                }
+                season = parent.Parents.OfType<Season>().FirstOrDefault();
             }
 
             // If the parent is a Season or Series, then this is an Episode if the VideoResolver returns something
-            if (season != null || args.Parent is Series)
+            if (season != null || parent.Parents.OfType<Series>().Any())
             {
                 Episode episode = null;
 

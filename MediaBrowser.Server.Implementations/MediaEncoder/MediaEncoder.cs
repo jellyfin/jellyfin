@@ -956,7 +956,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// <param name="process">The process.</param>
         /// <param name="timeout">The timeout.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        private bool StartAndWaitForProcess(Process process, int timeout = 10000)
+        private bool StartAndWaitForProcess(Process process, int timeout = 12000)
         {
             process.Start();
 

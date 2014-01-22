@@ -687,9 +687,29 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
+        self.clearOrganizationLog = function () {
+
+            var url = self.getUrl("Library/FileOrganizations");
+
+            return self.ajax({
+                type: "DELETE",
+                url: url
+            });
+        };
+
         self.performOrganization = function (id) {
 
             var url = self.getUrl("Library/FileOrganizations/" + id + "/Organize");
+
+            return self.ajax({
+                type: "POST",
+                url: url
+            });
+        };
+
+        self.performEpisodeOrganization = function (id, options) {
+
+            var url = self.getUrl("Library/FileOrganizations/" + id + "/Episode/Organize", options || {});
 
             return self.ajax({
                 type: "POST",
@@ -2984,7 +3004,14 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 throw new Error("null userId");
             }
 
-            var url = self.getUrl("Users/" + userId + "/Items", options);
+            var url;
+
+            if ((typeof userId).toString().toLowerCase() == 'string') {
+                url = self.getUrl("Users/" + userId + "/Items", options);
+            } else {
+                options = userId;
+                url = self.getUrl("Items", options || {});
+            }
 
             return self.ajax({
                 type: "GET",

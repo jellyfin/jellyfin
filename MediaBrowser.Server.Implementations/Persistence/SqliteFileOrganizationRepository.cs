@@ -27,6 +27,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         private IDbCommand _saveResultCommand;
         private IDbCommand _deleteResultCommand;
+        private IDbCommand _deleteAllCommand;
 
         public SqliteFileOrganizationRepository(ILogManager logManager, IServerApplicationPaths appPaths)
         {
@@ -85,6 +86,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _deleteResultCommand.CommandText = "delete from organizationresults where ResultId = @ResultId";
 
             _deleteResultCommand.Parameters.Add(_saveResultCommand, "@ResultId");
+
+            _deleteAllCommand = _connection.CreateCommand();
+            _deleteAllCommand.CommandText = "delete from organizationresults";
         }
 
         public async Task SaveResult(FileOrganizationResult result, CancellationToken cancellationToken)
@@ -188,7 +192,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
             catch (Exception e)
             {
-                _logger.ErrorException("Failed to save FileOrganizationResult:", e);
+                _logger.ErrorException("Failed to delete FileOrganizationResult:", e);
 
                 if (transaction != null)
                 {
@@ -208,6 +212,53 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
         }
 
+        public async Task DeleteAll()
+        {
+            await _writeLock.WaitAsync().ConfigureAwait(false);
+
+            IDbTransaction transaction = null;
+
+            try
+            {
+                transaction = _connection.BeginTransaction();
+                
+                _deleteAllCommand.Transaction = transaction;
+
+                _deleteAllCommand.ExecuteNonQuery();
+
+                transaction.Commit();
+            }
+            catch (OperationCanceledException)
+            {
+                if (transaction != null)
+                {
+                    transaction.Rollback();
+                }
+
+                throw;
+            }
+            catch (Exception e)
+            {
+                _logger.ErrorException("Failed to delete results", e);
+
+                if (transaction != null)
+                {
+                    transaction.Rollback();
+                }
+
+                throw;
+            }
+            finally
+            {
+                if (transaction != null)
+                {
+                    transaction.Dispose();
+                }
+
+                _writeLock.Release();
+            }
+        }
+        
         public QueryResult<FileOrganizationResult> GetResults(FileOrganizationResultQuery query)
         {
             if (query == null)

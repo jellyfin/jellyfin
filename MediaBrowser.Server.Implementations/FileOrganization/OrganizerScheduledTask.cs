@@ -14,21 +14,21 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 {
     public class OrganizerScheduledTask : IScheduledTask, IConfigurableScheduledTask
     {
-        private readonly IServerConfigurationManager _config;
-        private readonly ILogger _logger;
-        private readonly ILibraryManager _libraryManager;
-        private readonly IFileSystem _fileSystem;
-        private readonly IFileOrganizationService _iFileSortingRepository;
         private readonly IDirectoryWatchers _directoryWatchers;
+        private readonly ILibraryManager _libraryManager;
+        private readonly ILogger _logger;
+        private readonly IFileSystem _fileSystem;
+        private readonly IServerConfigurationManager _config;
+        private readonly IFileOrganizationService _organizationService;
 
-        public OrganizerScheduledTask(IServerConfigurationManager config, ILogger logger, ILibraryManager libraryManager, IFileSystem fileSystem, IFileOrganizationService iFileSortingRepository, IDirectoryWatchers directoryWatchers)
+        public OrganizerScheduledTask(IDirectoryWatchers directoryWatchers, ILibraryManager libraryManager, ILogger logger, IFileSystem fileSystem, IServerConfigurationManager config, IFileOrganizationService organizationService)
         {
-            _config = config;
-            _logger = logger;
-            _libraryManager = libraryManager;
-            _fileSystem = fileSystem;
-            _iFileSortingRepository = iFileSortingRepository;
             _directoryWatchers = directoryWatchers;
+            _libraryManager = libraryManager;
+            _logger = logger;
+            _fileSystem = fileSystem;
+            _config = config;
+            _organizationService = organizationService;
         }
 
         public string Name
@@ -48,7 +48,8 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
         public Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            return new TvFileSorter(_libraryManager, _logger, _fileSystem, _iFileSortingRepository, _directoryWatchers).Sort(_config.Configuration.TvFileOrganizationOptions, cancellationToken, progress);
+            return new TvFolderOrganizer(_libraryManager, _logger, _fileSystem, _directoryWatchers, _organizationService, _config)
+                .Organize(_config.Configuration.TvFileOrganizationOptions, cancellationToken, progress);
         }
 
         public IEnumerable<ITaskTrigger> GetDefaultTriggers()

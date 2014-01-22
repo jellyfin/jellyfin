@@ -39,12 +39,6 @@ namespace MediaBrowser.Providers.TV
 
         private async Task RunInternal(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            if (!_config.Configuration.EnableInternetProviders)
-            {
-                progress.Report(100);
-                return;
-            }
-
             var seriesList = _libraryManager.RootFolder
                 .RecursiveChildren
                 .OfType<Series>()
@@ -288,7 +282,7 @@ namespace MediaBrowser.Providers.TV
             return hasChanges;
         }
 
-        private Series DetermineAppropriateSeries(IEnumerable<Series> series, int seasonNumber)
+        private Series DetermineAppropriateSeries(List<Series> series, int seasonNumber)
         {
             return series.FirstOrDefault(s => s.RecursiveChildren.OfType<Season>().Any(season => season.IndexNumber == seasonNumber)) ??
                     series.FirstOrDefault(s => s.RecursiveChildren.OfType<Season>().Any(season => season.IndexNumber == 1)) ??
