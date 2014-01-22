@@ -622,7 +622,7 @@ namespace MediaBrowser.Api.Playback
         /// <param name="videoType">Type of the video.</param>
         /// <param name="isoType">Type of the iso.</param>
         /// <returns>System.String.</returns>
-        protected string GetProbeSizeArgument(string mediaPath, bool isVideo, VideoType? videoType, IsoType? isoType)
+        private string GetProbeSizeArgument(string mediaPath, bool isVideo, VideoType? videoType, IsoType? isoType)
         {
             var type = !isVideo ? MediaEncoderHelpers.GetInputType(null, null) :
                 MediaEncoderHelpers.GetInputType(videoType, isoType);
@@ -918,7 +918,7 @@ namespace MediaBrowser.Api.Playback
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns>System.String.</returns>
-        protected string GetUserAgentParam(string path)
+        private string GetUserAgentParam(string path)
         {
             var useragent = GetUserAgent(path);
 
@@ -1092,6 +1092,8 @@ namespace MediaBrowser.Api.Playback
                 state.AudioSync = 1000;
                 state.DeInterlace = true;
                 state.InputFormat = "mpegts";
+
+                await Task.Delay(1000, cancellationToken).ConfigureAwait(false);
             }
             else
             {
@@ -1147,6 +1149,21 @@ namespace MediaBrowser.Api.Playback
         {
             var inputModifier = string.Empty;
 
+            var probeSize = GetProbeSizeArgument(state.MediaPath, state.IsInputVideo, state.VideoType, state.IsoType);
+            inputModifier += " " + probeSize;
+            inputModifier = inputModifier.Trim();
+         
+            inputModifier += " " + GetUserAgentParam(state.MediaPath);
+            inputModifier = inputModifier.Trim();
+
+            inputModifier += " " + GetFastSeekCommandLineParameter(state.Request);
+            inputModifier = inputModifier.Trim();
+
+            if (state.VideoRequest != null)
+            {
+                inputModifier += " -fflags genpts";
+            }
+
             if (!string.IsNullOrEmpty(state.InputFormat))
             {
                 inputModifier += " -f " + state.InputFormat;
@@ -1161,7 +1178,7 @@ namespace MediaBrowser.Api.Playback
             {
                 inputModifier += " -acodec " + state.InputAudioCodec;
             }
-            
+
             if (state.ReadInputAtNativeFramerate)
             {
                 inputModifier += " -re";
