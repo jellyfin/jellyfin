@@ -20,6 +20,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// <summary>
     /// Class GetItems
     /// </summary>
+    [Route("/Items", "GET")]
     [Route("/Users/{UserId}/Items", "GET")]
     [Api(Description = "Gets items based on a query.")]
     public class GetItems : BaseItemsRequest, IReturn<ItemsResult>
@@ -28,8 +29,8 @@ namespace MediaBrowser.Api.UserLibrary
         /// Gets or sets the user id.
         /// </summary>
         /// <value>The user id.</value>
-        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public Guid UserId { get; set; }
+        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public Guid? UserId { get; set; }
 
         /// <summary>
         /// Limit results to items containing a specific person
@@ -277,7 +278,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>Task{ItemsResult}.</returns>
         private ItemsResult GetItems(GetItems request)
         {
-            var user = _userManager.GetUserById(request.UserId);
+            var user = request.UserId.HasValue ? _userManager.GetUserById(request.UserId.Value) : null;
 
             var items = GetItemsToSerialize(request, user);
 
@@ -328,7 +329,11 @@ namespace MediaBrowser.Api.UserLibrary
         /// <exception cref="System.InvalidOperationException"></exception>
         private IEnumerable<BaseItem> GetItemsToSerialize(GetItems request, User user)
         {
-            var item = string.IsNullOrEmpty(request.ParentId) ? user.RootFolder : _dtoService.GetItemByDtoId(request.ParentId, user.Id);
+            var userId = user == null ? (Guid?)null : user.Id;
+
+            var item = string.IsNullOrEmpty(request.ParentId) ?
+                user == null ? (BaseItem)_libraryManager.RootFolder : user.RootFolder :
+                _dtoService.GetItemByDtoId(request.ParentId, userId);
 
             // Default list type = children
             IEnumerable<BaseItem> items;
@@ -337,16 +342,20 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 var idList = request.Ids.Split(',').ToList();
 
-                items = idList.Select(i => _dtoService.GetItemByDtoId(i, user.Id));
+                items = idList.Select(i => _dtoService.GetItemByDtoId(i, userId));
             }
 
             else if (request.Recursive)
             {
-                items = ((Folder)item).GetRecursiveChildren(user);
+                items = user == null ?
+                    ((Folder)item).RecursiveChildren :
+                    ((Folder)item).GetRecursiveChildren(user);
             }
             else
             {
-                items = ((Folder)item).GetChildren(user, true);
+                items = user == null ?
+                  ((Folder)item).Children :
+                  ((Folder)item).GetChildren(user, true);
             }
 
             if (request.IncludeIndexContainers)
