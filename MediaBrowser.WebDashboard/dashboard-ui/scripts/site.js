@@ -750,6 +750,10 @@ var Dashboard = {
             href: "metadata.html",
             selected: pageElem.id == "metadataConfigurationPage" || pageElem.id == "advancedMetadataConfigurationPage" || pageElem.id == "metadataImagesConfigurationPage"
         }, {
+            name: "Auto-Organize",
+            href: "autoorganizelog.html",
+            selected: page.hasClass("organizePage")
+        }, {
             name: "Plugins",
             href: "plugins.html",
             selected: page.hasClass("pluginConfigurationPage")
