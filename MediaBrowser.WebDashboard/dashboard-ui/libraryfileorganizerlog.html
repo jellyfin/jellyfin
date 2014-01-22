@@ -14,28 +14,89 @@
                     <a href="libraryfileorganizer.html" data-role="button">TV Settings</a>
                 </div>
 
-                <div style="margin: -15px 0 1em;text-align:left;">
-                    <div class="listTopPaging">
+                <div style="margin: -15px 0 1em; text-align: right;">
+                    <div class="listTopPaging" style="float: left; position: relative; top: 15px;">
                     </div>
+
+                    <button style="display: none;" class="btnClearLog" type="button" data-inline="true" data-icon="forbidden" data-mini="true">Clear</button>
+                    <div style="clear: both;"></div>
                 </div>
-                <table id="movie-table" data-role="table" data-mode="reflow" class="tblOrganizationResults stripedTable ui-responsive table-stroke">
+                <table data-role="table" data-mode="reflow" class="tblOrganizationResults stripedTable ui-responsive table-stroke" style="display: table;">
                     <thead>
                         <tr>
+                            <th data-priority="1"></th>
                             <th data-priority="2">Date</th>
                             <th data-priority="1">Source</th>
                             <th data-priority="3">Destination</th>
-                            <th data-priority="1">Result</th>
-                            <th data-priority="1"></th>
                         </tr>
                     </thead>
                     <tbody class="resultBody">
                     </tbody>
                 </table>
                 <br />
+                <div style="text-align: right;" class="legend">
+                    <div style="display: inline-block; height: 10px; width: 10px; background: green;"></div>
+                    <span>Completed</span>
+                    <div style="display: inline-block; height: 10px; width: 10px; background: red; margin-left: 1em;"></div>
+                    <span>Failed</span>
+                    <div style="display: inline-block; height: 10px; width: 10px; background: blue; margin-left: 1em;"></div>
+                    <span>Skipped</span>
+                </div>
                 <div class="listBottomPaging">
                 </div>
             </div>
         </div>
+
+        <div data-role="popup" data-transition="slidefade" class="popup episodeCorrectionPopup">
+
+            <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
+                <h3>Episode Organization</h3>
+            </div>
+
+            <div data-role="content">
+                <form class="episodeCorrectionForm">
+
+                    <p><span class="inputFile"></span></p>
+
+                    <div style="margin: 1em 0 1em; min-width: 250px;">
+                        <label for="selectSeries">Series:</label>
+                        <select id="selectSeries" data-mini="true" required="required"></select>
+                    </div>
+                    <div style="margin: 1em 0;">
+                        <label for="txtSeason">Season number:</label>
+                        <input id="txtSeason" type="number" data-mini="true" pattern="[0-9]*" required="required" min="0" />
+                    </div>
+                    <div style="margin: 1em 0;">
+                        <label for="txtEpisode">Episode number:</label>
+                        <input id="txtEpisode" type="number" data-mini="true" pattern="[0-9]*" required="required" min="0" />
+                    </div>
+                    <div style="margin: 1em 0;">
+                        <label for="txtEndingEpisode">Ending episode number:</label>
+                        <input id="txtEndingEpisode" type="number" data-mini="true" pattern="[0-9]*" min="0" />
+                        <div class="fieldDescription">Only required for multi-episode files</div>
+                    </div>
+
+                    <div style="margin: 1em 0;" id="fldRememberCorrection">
+                        <label for="chkRememberEpisodeCorrection">Remember this correction future episodes of the same series.</label>
+                        <input id="chkRememberEpisodeCorrection" type="checkbox" data-mini="true" />
+                    </div>
+                    <p>
+                        <button type="submit" data-theme="b" data-icon="check" data-mini="true">
+                            Ok
+                        </button>
+                        <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');" data-mini="true">
+                            Cancel
+                        </button>
+                    </p>
+                    <input id="hfResultId" type="hidden" />
+                </form>
+            </div>
+
+        </div>
+
+        <script type="text/javascript">
+            $('.episodeCorrectionForm').off('submit', OrganizerLogPage.onEpisodeCorrectionFormSubmit).on('submit', OrganizerLogPage.onEpisodeCorrectionFormSubmit);
+        </script>
     </div>
 </body>
 </html>

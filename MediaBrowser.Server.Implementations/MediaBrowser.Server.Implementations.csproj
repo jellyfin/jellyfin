@@ -117,8 +117,10 @@
     <Compile Include="EntryPoints\Notifications\RemoteNotifications.cs" />
     <Compile Include="EntryPoints\Notifications\WebSocketNotifier.cs" />
     <Compile Include="EntryPoints\RefreshUsersMetadata.cs" />
+    <Compile Include="FileOrganization\EpisodeFileOrganizer.cs" />
     <Compile Include="FileOrganization\FileOrganizationService.cs" />
-    <Compile Include="FileOrganization\TvFileSorter.cs" />
+    <Compile Include="FileOrganization\NameUtils.cs" />
+    <Compile Include="FileOrganization\TvFolderOrganizer.cs" />
     <Compile Include="EntryPoints\UdpServerEntryPoint.cs" />
     <Compile Include="EntryPoints\ServerEventNotifier.cs" />
     <Compile Include="EntryPoints\UserDataChangeNotifier.cs" />

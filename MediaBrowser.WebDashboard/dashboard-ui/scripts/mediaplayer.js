@@ -21,6 +21,8 @@
         var timeout;
         var idleState = true;
 
+        var msieWebmMessage = "For more reliable video playback with Internet Explorer desktop edition, please install google's webm plugin for IE.<br/><br/><a target='_blank' href='https://tools.google.com/dlpage/webmmf'>https://tools.google.com/dlpage/webmmf</a>";
+
         self.playlist = [];
         var currentPlaylistIndex = 0;
 
@@ -180,6 +182,11 @@
                 currentProgressInterval = null;
             }
         }
+        
+        function canPlayWebm() {
+            
+            return testableVideoElement.canPlayType('video/webm').replace(/no/, '');
+        }
 
         function getTranscodingExtension() {
 
@@ -192,7 +199,7 @@
             }
 
             // Chrome or IE with plugin installed
-            if (media.canPlayType('video/webm').replace(/no/, '') && !$.browser.mozilla) {
+            if (canPlayWebm() && !$.browser.mozilla) {
                 return '.webm';
             }
 
@@ -896,6 +903,10 @@
                 if (item.Type == "Channel") {
                     errorMsg += " Please ensure there is an open tuner availalble.";
                 }
+                
+                if ($.browser.msie && !canPlayWebm()) {
+                    errorMsg += " " + msieWebmMessage;
+                }
 
                 Dashboard.alert({
                     title: 'Video Error',
@@ -1079,9 +1090,9 @@
                         return;
                     }
                 }
-                else if ($.browser.msie && videoType) {
+                else if ($.browser.msie && videoType && !canPlayWebm()) {
 
-                    self.playWithWarning(items, startPosition, user, "iewebmplugin", "Internet Explorer Playback", "For optimal video playback of Internet Explorer desktop edition, please install google's webm plugin for IE.<br/><br/><a target='_blank' href='https://tools.google.com/dlpage/webmmf'>https://tools.google.com/dlpage/webmmf</a>");
+                    self.playWithWarning(items, startPosition, user, "iewebmplugin", "Internet Explorer Playback", msieWebmMessage);
                     return;
 
                 }
@@ -1093,7 +1104,9 @@
 
         self.playWithWarning = function (items, startPosition, user, localStorageKeyName, header, text) {
 
-            localStorageKeyName += new Date().getMonth();
+            // Increment this version when changes are made and we want users to see the prompts again
+            var warningVersion = "2";
+            localStorageKeyName += new Date().getMonth() + warningVersion;
 
             if (localStorage.getItem(localStorageKeyName) == "1") {
 

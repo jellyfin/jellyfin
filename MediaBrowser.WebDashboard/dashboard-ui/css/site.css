@@ -828,11 +828,18 @@ progress {
     }
 
     .latestNewsItems {
-        max-width: 300px;
+        max-width: 280px;
     }
 
     .dashboardHomeRightColumn {
         float: right;
+    }
+}
+
+@media all and (min-width: 1500px) {
+
+    .latestNewsItems {
+        max-width: 300px;
     }
 }
 
@@ -855,3 +862,12 @@ progress {
     margin-top: 0;
     margin-bottom: 0;
 }
+
+.btnShowStatusMessage {
+    font-weight: normal!important;
+    text-decoration: none;
+}
+
+    .btnShowStatusMessage:hover {
+        text-decoration: underline;
+    }

@@ -35,5 +35,11 @@ namespace MediaBrowser.Controller.Persistence
         /// <param name="query">The query.</param>
         /// <returns>IEnumerable{FileOrganizationResult}.</returns>
         QueryResult<FileOrganizationResult> GetResults(FileOrganizationResultQuery query);
+
+        /// <summary>
+        /// Deletes all.
+        /// </summary>
+        /// <returns>Task.</returns>
+        Task DeleteAll();
     }
 }

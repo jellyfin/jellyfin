@@ -1,5 +1,7 @@
 ﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.ScheduledTasks;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.FileOrganization;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
@@ -21,14 +23,18 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
         private readonly ILogger _logger;
         private readonly IDirectoryWatchers _directoryWatchers;
         private readonly ILibraryManager _libraryManager;
+        private readonly IServerConfigurationManager _config;
+        private readonly IFileSystem _fileSystem;
 
-        public FileOrganizationService(ITaskManager taskManager, IFileOrganizationRepository repo, ILogger logger, IDirectoryWatchers directoryWatchers, ILibraryManager libraryManager)
+        public FileOrganizationService(ITaskManager taskManager, IFileOrganizationRepository repo, ILogger logger, IDirectoryWatchers directoryWatchers, ILibraryManager libraryManager, IServerConfigurationManager config, IFileSystem fileSystem)
         {
             _taskManager = taskManager;
             _repo = repo;
             _logger = logger;
             _directoryWatchers = directoryWatchers;
             _libraryManager = libraryManager;
+            _config = config;
+            _fileSystem = fileSystem;
         }
 
         public void BeginProcessNewFiles()
@@ -51,6 +57,11 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
         public QueryResult<FileOrganizationResult> GetResults(FileOrganizationResultQuery query)
         {
             return _repo.GetResults(query);
+        }
+
+        public FileOrganizationResult GetResult(string id)
+        {
+            return _repo.GetResult(id);
         }
 
         public Task DeleteOriginalFile(string resultId)
@@ -79,44 +90,27 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
                 throw new ArgumentException("No target path available.");
             }
 
-            _logger.Info("Moving {0} to {1}", result.OriginalPath, result.TargetPath);
+            var organizer = new EpisodeFileOrganizer(this, _config, _fileSystem, _logger, _libraryManager,
+                _directoryWatchers);
 
-            _directoryWatchers.TemporarilyIgnore(result.TargetPath);
+            await organizer.OrganizeEpisodeFile(result.OriginalPath, _config.Configuration.TvFileOrganizationOptions, true)
+                    .ConfigureAwait(false);
 
-            var copy = File.Exists(result.TargetPath);
+            await _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None)
+                    .ConfigureAwait(false);
+        }
 
-            try
-            {
-                if (copy)
-                {
-                    File.Copy(result.OriginalPath, result.TargetPath, true);
-                }
-                else
-                {
-                    File.Move(result.OriginalPath, result.TargetPath);
-                }
-            }
-            finally
-            {
-                _directoryWatchers.RemoveTempIgnore(result.TargetPath);
-            }
+        public Task ClearLog()
+        {
+            return _repo.DeleteAll();
+        }
 
-            if (copy)
-            {
-                try
-                {
-                    File.Delete(result.OriginalPath);
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error deleting {0}", ex, result.OriginalPath);
-                }
-            }
+        public async Task PerformEpisodeOrganization(EpisodeFileOrganizationRequest request)
+        {
+            var organizer = new EpisodeFileOrganizer(this, _config, _fileSystem, _logger, _libraryManager,
+                _directoryWatchers);
 
-            result.Status = FileSortingStatus.Success;
-            result.StatusMessage = string.Empty;
-
-            await SaveResult(result, CancellationToken.None).ConfigureAwait(false);
+            await organizer.OrganizeWithCorrection(request, _config.Configuration.TvFileOrganizationOptions).ConfigureAwait(false);
 
             await _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None)
                     .ConfigureAwait(false);
