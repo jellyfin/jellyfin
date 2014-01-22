@@ -1,6 +1,8 @@
 ﻿using System;
 #if __MonoCS__
-using System.Runtime.InteropServices;
+using Mono.Unix.Native;
+using System.Text.RegularExpressions;
+using System.IO;
 #endif
 
 namespace MediaBrowser.ServerApplication.FFMpeg
@@ -39,40 +41,63 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                     }
                     break;
 
-                    #if __MonoCS__
+                #if __MonoCS__
                 case PlatformID.Unix:
-                    if (IsRunningOnMac())
+                    if (PlatformDetection.IsMac)
                     {
-                        switch (arg)
+                        if (PlatformDetection.IsX86_64)
                         {
-                            case "Version":
-                                return "20131121";
-                            case "FFMpegFilename":
-                                return "ffmpeg";
-                            case "FFProbeFilename":
-                                return "ffprobe";
-                            case "ArchiveType":
-                                return "gz";
+                            switch (arg)
+                            {
+                                case "Version":
+                                    return "20131121";
+                                case "FFMpegFilename":
+                                    return "ffmpeg";
+                                case "FFProbeFilename":
+                                    return "ffprobe";
+                                case "ArchiveType":
+                                    return "gz";
+                            }
+                            break;
                         }
-                        break;
                     }
-                    else
+                    if (PlatformDetection.IsLinux)
                     {
-                        // Linux
-                        switch (arg)
+                        if (PlatformDetection.IsX86)
                         {
-                            case "Version":
-                                return "20140104";
-                            case "FFMpegFilename":
-                                return "ffmpeg";
-                            case "FFProbeFilename":
-                                return "ffprobe";
-                            case "ArchiveType":
-                                return "gz";
+                            switch (arg)
+                            {
+                                case "Version":
+                                    return "linux_x86_20140118";
+                                case "FFMpegFilename":
+                                    return "ffmpeg";
+                                case "FFProbeFilename":
+                                    return "ffprobe";
+                                case "ArchiveType":
+                                    return "gz";
+                            }
+                            break;
                         }
-                        break;
+                        else if (PlatformDetection.IsX86_64)
+                        {
+                            // Linux on x86 or x86_64
+                            switch (arg)
+                            {
+                                case "Version":
+                                    return "linux_x86_64_20140118";
+                                case "FFMpegFilename":
+                                    return "ffmpeg";
+                                case "FFProbeFilename":
+                                    return "ffprobe";
+                                case "ArchiveType":
+                                    return "gz";
+                            }
+                            break;
+                        }
                     }
-                    #endif
+                    // Unsupported Unix platform
+                    return "";
+                #endif
             }
             return "";
         }
@@ -91,53 +116,82 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                     };
            
                     #if __MonoCS__
-                case PlatformID.Unix:
-                    if (IsRunningOnMac())
+                case PlatformID.Unix: 
+                    if (PlatformDetection.IsMac && PlatformDetection.IsX86_64)
                     {
-                        // Mac OS X Intel 64bit
                         return new[]
                         {
                             "https://copy.com/IB0W4efS6t9A/ffall-2.1.1.tar.gz?download=1"
                         };
                     }
-                    else
+
+                    if (PlatformDetection.IsLinux)
                     {
-                        // Linux
-                        return new[]
+                        if (PlatformDetection.IsX86)
                         {
-                            "http://ffmpeg.gusari.org/static/32bit/ffmpeg.static.32bit.2014-01-04.tar.gz",
-                            "https://www.dropbox.com/s/b7nkg71sil812hp/ffmpeg.static.32bit.2014-01-04.tar.gz?dl=1"
-                        };
+                            return new[]
+                            {
+                                "http://ffmpeg.gusari.org/static/32bit/ffmpeg.static.32bit.2014-01-18.tar.gz",
+                                "https://www.dropbox.com/s/b7nkg71sil812hp/ffmpeg.static.32bit.2014-01-04.tar.gz?dl=1"
+                            };
+                        }
+
+                        if (PlatformDetection.IsX86_64)
+                        {
+                            return new[]
+                            {
+                                "http://ffmpeg.gusari.org/static/64bit/ffmpeg.static.64bit.2014-01-18.tar.gz"
+                            };
+                        }
+
                     }
+
+                    //No Unix version available 
+                    return new string[] {};
                     #endif
             }
-
             return new string[] {};
         }
-
-        #if __MonoCS__
-        // From mono/mcs/class/Managed.Windows.Forms/System.Windows.Forms/XplatUI.cs
-        [DllImport ("libc")]
-        static extern int uname (IntPtr buf);
-
-        static bool IsRunningOnMac()
-        {
-            IntPtr buf = IntPtr.Zero;
-            try {
-                buf = Marshal.AllocHGlobal (8192);
-                // This is a hacktastic way of getting sysname from uname ()
-                if (uname (buf) == 0) {
-                    string os = Marshal.PtrToStringAnsi (buf);
-                    if (os == "Darwin")
-                        return true;
-                }
-            } catch {
-            } finally {
-                if (buf != IntPtr.Zero)
-                    Marshal.FreeHGlobal (buf);
-            }
-            return false;
-        }
-        #endif
     }
+
+    #if __MonoCS__
+    public static class PlatformDetection
+    {
+        public readonly static bool IsWindows;
+        public readonly static bool IsMac;
+        public readonly static bool IsLinux;
+        public readonly static bool IsX86;
+        public readonly static bool IsX86_64;
+        public readonly static bool IsArm;
+
+        static PlatformDetection ()
+        {
+            IsWindows = Path.DirectorySeparatorChar == '\\';
+
+            //Don't call uname on windows
+            if (!IsWindows)
+            {
+                Utsname uname;
+                var callResult = Syscall.uname(out uname);
+                if (callResult == 0)
+                {
+                    IsMac = uname.sysname == "Darwin";
+                    IsLinux = !IsMac && uname.sysname == "Linux";
+
+                    Regex archX86 = new Regex("(i|I)[3-6]86");
+                    IsX86 = archX86.IsMatch(uname.machine);
+                    IsX86_64 = !IsX86 && uname.machine == "x86_64";
+                    IsArm = !IsX86 && !IsX86 && uname.machine.StartsWith("arm");
+                }
+            }
+            else
+            {
+                if (System.Environment.Is64BitOperatingSystem)
+                    IsX86_64 = true;
+                else
+                    IsX86 = true;
+            }
+        }
+    }
+    #endif
 }
