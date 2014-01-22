@@ -104,8 +104,11 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             var threads = GetNumberOfThreads(false);
 
-            return string.Format("{0} -i {1}{2} -threads {3}{4} {5} -id3v2_version 3 -write_id3v1 1 \"{6}\"",
+            var inputModifier = GetInputModifier(state);
+
+            return string.Format("{0}{1} -i {2}{3} -threads {4}{5} {6} -id3v2_version 3 -write_id3v1 1 \"{7}\"",
                 GetFastSeekCommandLineParameter(request),
+                inputModifier,
                 GetInputArgument(state),
                 GetSlowSeekCommandLineParameter(request),
                 threads,

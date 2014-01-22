@@ -62,5 +62,13 @@ namespace MediaBrowser.Api.Playback
         public int AudioSync = 1;
 
         public bool DeInterlace { get; set; }
+
+        public bool ReadInputAtNativeFramerate { get; set; }
+
+        public string InputFormat { get; set; }
+
+        public string InputVideoCodec { get; set; }
+
+        public string InputAudioCodec { get; set; }
     }
 }

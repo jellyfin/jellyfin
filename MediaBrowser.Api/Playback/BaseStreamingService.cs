@@ -1059,9 +1059,10 @@ namespace MediaBrowser.Api.Playback
                 }
 
                 //state.RunTimeTicks = recording.RunTimeTicks;
-                state.SendInputOverStandardInput = recording.RecordingInfo.Status == RecordingStatus.InProgress;
+                state.ReadInputAtNativeFramerate = recording.RecordingInfo.Status == RecordingStatus.InProgress;
                 state.AudioSync = 1000;
                 state.DeInterlace = true;
+                state.InputFormat = "mpegts";
             }
             else if (item is LiveTvChannel)
             {
@@ -1087,8 +1088,10 @@ namespace MediaBrowser.Api.Playback
                 }
 
                 state.SendInputOverStandardInput = true;
+                state.ReadInputAtNativeFramerate = true;
                 state.AudioSync = 1000;
                 state.DeInterlace = true;
+                state.InputFormat = "mpegts";
             }
             else
             {
@@ -1138,6 +1141,33 @@ namespace MediaBrowser.Api.Playback
             state.HasMediaStreams = mediaStreams.Count > 0;
 
             return state;
+        }
+
+        protected string GetInputModifier(StreamState state)
+        {
+            var inputModifier = string.Empty;
+
+            if (!string.IsNullOrEmpty(state.InputFormat))
+            {
+                inputModifier += " -f " + state.InputFormat;
+            }
+
+            if (!string.IsNullOrEmpty(state.InputVideoCodec))
+            {
+                inputModifier += " -vcodec " + state.InputVideoCodec;
+            }
+
+            if (!string.IsNullOrEmpty(state.InputAudioCodec))
+            {
+                inputModifier += " -acodec " + state.InputAudioCodec;
+            }
+            
+            if (state.ReadInputAtNativeFramerate)
+            {
+                inputModifier += " -re";
+            }
+
+            return inputModifier;
         }
 
         /// <summary>
