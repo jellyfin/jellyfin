@@ -21,8 +21,6 @@
         var timeout;
         var idleState = true;
 
-        var msieWebmMessage = "For more reliable video playback with Internet Explorer desktop edition, please install google's webm plugin for IE.<br/><br/><a target='_blank' href='https://tools.google.com/dlpage/webmmf'>https://tools.google.com/dlpage/webmmf</a>";
-
         self.playlist = [];
         var currentPlaylistIndex = 0;
 
@@ -713,7 +711,6 @@
                 SubtitleStreamIndex: getInitialSubtitleStreamIndex(mediaStreams, user),
                 AudioStreamIndex: getInitialAudioStreamIndex(mediaStreams, user),
                 deviceId: ApiClient.deviceId(),
-                Type: item.Type,
                 Static: false
             };
 
@@ -903,10 +900,6 @@
                 if (item.Type == "Channel") {
                     errorMsg += " Please ensure there is an open tuner availalble.";
                 }
-                
-                if ($.browser.msie && !canPlayWebm()) {
-                    errorMsg += " " + msieWebmMessage;
-                }
 
                 Dashboard.alert({
                     title: 'Video Error',
@@ -1089,12 +1082,6 @@
                         self.playWithWarning(items, startPosition, user, "blurayisostreamconfirmed", "Blu-ray Iso Streaming", expirementalText);
                         return;
                     }
-                }
-                else if ($.browser.msie && videoType && !canPlayWebm()) {
-
-                    self.playWithWarning(items, startPosition, user, "iewebmplugin", "Internet Explorer Playback", msieWebmMessage);
-                    return;
-
                 }
 
                 self.playInternal(items[0], startPosition, user);

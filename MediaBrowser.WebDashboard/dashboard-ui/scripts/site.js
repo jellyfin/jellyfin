@@ -801,7 +801,7 @@ var Dashboard = {
 
         var webSocketUrl = "ws://" + location.hostname;
         
-        if (systemInfo.HttpServerPortNumber != systemInfo.WebSocketPortNumber) {
+        if (systemInfo.HttpServerPortNumber == systemInfo.WebSocketPortNumber) {
 
             if (location.port) {
                 webSocketUrl += ':' + location.port;

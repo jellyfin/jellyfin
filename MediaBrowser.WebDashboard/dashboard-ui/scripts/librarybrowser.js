@@ -1170,7 +1170,7 @@
             if (item.Type == "Channel") {
                 return '';
             }
-            if (item.Type == "Series" || item.Type == "Season" || item.Type == "BoxSet" || item.MediaType == "Video") {
+            if (item.Type == "Series" || item.Type == "Season" || item.Type == "BoxSet" || item.MediaType == "Video" || item.MediaType == "Game" || item.MediaType == "Book") {
                 if (item.RecursiveUnplayedItemCount) {
                     return '<div class="unplayedIndicator">' + item.RecursiveUnplayedItemCount + '</div>';
                 }
