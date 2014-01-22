@@ -274,11 +274,14 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var threads = GetNumberOfThreads(false);
 
-            var args = string.Format("{0}{1} {2} {3} -fflags genpts -i {4}{5} -map_metadata -1 -threads {6} {7} {8} -sc_threshold 0 {9} -hls_time {10} -start_number 0 -hls_list_size 1440 \"{11}\"",
+            var inputModifier = GetInputModifier(state);
+            
+            var args = string.Format("{0}{1} {2} {3} -fflags genpts{4} -i {5}{6} -map_metadata -1 -threads {7} {8} {9} -sc_threshold 0 {10} -hls_time {11} -start_number 0 -hls_list_size 1440 \"{12}\"",
                 itsOffset,
                 probeSize,
                 GetUserAgentParam(state.MediaPath),
                 GetFastSeekCommandLineParameter(state.Request),
+                inputModifier,
                 GetInputArgument(state),
                 GetSlowSeekCommandLineParameter(state.Request),
                 threads,
