@@ -103,4 +103,12 @@ namespace MediaBrowser.Model.LiveTv
         Ok = 0,
         Unavailable = 1
     }
+
+    public enum LiveTvTunerStatus
+    {
+        Available = 0,
+        Disabled = 1,
+        RecordingTv = 2,
+        LiveTv = 3
+    }
 }

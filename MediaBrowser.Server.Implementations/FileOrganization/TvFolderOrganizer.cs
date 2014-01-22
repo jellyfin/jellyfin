@@ -86,7 +86,10 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
                 if (options.DeleteEmptyFolders)
                 {
-                    DeleteEmptyFolders(path);
+                    foreach (var subfolder in GetDirectories(path).ToList())
+                    {
+                        DeleteEmptyFolders(subfolder);
+                    }
                 }
             }
 
@@ -97,6 +100,27 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             }
 
             progress.Report(100);
+        }
+
+        /// <summary>
+        /// Gets the directories.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>IEnumerable{System.String}.</returns>
+        private IEnumerable<string> GetDirectories(string path)
+        {
+            try
+            {
+                return Directory
+                    .EnumerateDirectories(path, "*", SearchOption.TopDirectoryOnly)
+                    .ToList();
+            }
+            catch (IOException ex)
+            {
+                _logger.ErrorException("Error getting files from {0}", ex, path);
+
+                return new List<string>();
+            }
         }
 
         /// <summary>
@@ -164,6 +188,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
                 {
                     try
                     {
+                        _logger.Debug("Deleting empty directory {0}", path);
                         Directory.Delete(path);
                     }
                     catch (UnauthorizedAccessException) { }
