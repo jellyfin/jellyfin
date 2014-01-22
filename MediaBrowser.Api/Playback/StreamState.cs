@@ -14,7 +14,7 @@ namespace MediaBrowser.Api.Playback
 
         public VideoStreamRequest VideoRequest
         {
-            get { return (VideoStreamRequest) Request; }
+            get { return Request as VideoStreamRequest; }
         }
         
         /// <summary>

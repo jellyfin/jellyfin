@@ -25,9 +25,15 @@ namespace MediaBrowser.Api.Library
         public int? Limit { get; set; }
     }
 
+    [Route("/Library/FileOrganizations", "DELETE")]
+    [Api(Description = "Clears the activity log")]
+    public class ClearOrganizationLog : IReturnVoid
+    {
+    }
+
     [Route("/Library/FileOrganizations/{Id}/File", "DELETE")]
     [Api(Description = "Deletes the original file of a organizer result")]
-    public class DeleteOriginalFile : IReturn<QueryResult<FileOrganizationResult>>
+    public class DeleteOriginalFile : IReturnVoid
     {
         /// <summary>
         /// Gets or sets the id.
@@ -48,7 +54,30 @@ namespace MediaBrowser.Api.Library
         [ApiMember(Name = "Id", Description = "Result Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public string Id { get; set; }
     }
-    
+
+    [Route("/Library/FileOrganizations/{Id}/Episode/Organize", "POST")]
+    [Api(Description = "Performs an organization")]
+    public class OrganizeEpisode
+    {
+        [ApiMember(Name = "Id", Description = "Result Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public string Id { get; set; }
+
+        [ApiMember(Name = "SeriesId", Description = "Series Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string SeriesId { get; set; }
+
+        [ApiMember(Name = "SeasonNumber", IsRequired = true, DataType = "int", ParameterType = "query", Verb = "POST")]
+        public int SeasonNumber { get; set; }
+
+        [ApiMember(Name = "EpisodeNumber", IsRequired = true, DataType = "int", ParameterType = "query", Verb = "POST")]
+        public int EpisodeNumber { get; set; }
+
+        [ApiMember(Name = "EndingEpisodeNumber", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "POST")]
+        public int? EndingEpisodeNumber { get; set; }
+
+        [ApiMember(Name = "RememberCorrection", Description = "Whether or not to apply the same correction to future episodes of the same series.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "POST")]
+        public bool RememberCorrection { get; set; }
+    }
+
     public class FileOrganizationService : BaseApiService
     {
         private readonly IFileOrganizationService _iFileOrganizationService;
@@ -76,9 +105,31 @@ namespace MediaBrowser.Api.Library
             Task.WaitAll(task);
         }
 
+        public void Delete(ClearOrganizationLog request)
+        {
+            var task = _iFileOrganizationService.ClearLog();
+
+            Task.WaitAll(task);
+        }
+
         public void Post(PerformOrganization request)
         {
             var task = _iFileOrganizationService.PerformOrganization(request.Id);
+
+            Task.WaitAll(task);
+        }
+
+        public void Post(OrganizeEpisode request)
+        {
+            var task = _iFileOrganizationService.PerformEpisodeOrganization(new EpisodeFileOrganizationRequest
+            {
+                EndingEpisodeNumber = request.EndingEpisodeNumber,
+                EpisodeNumber = request.EpisodeNumber,
+                RememberCorrection = request.RememberCorrection,
+                ResultId = request.Id,
+                SeasonNumber = request.SeasonNumber,
+                SeriesId = request.SeriesId
+            });
 
             Task.WaitAll(task);
         }

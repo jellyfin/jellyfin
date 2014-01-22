@@ -1062,7 +1062,6 @@ namespace MediaBrowser.Api.Playback
                 state.ReadInputAtNativeFramerate = recording.RecordingInfo.Status == RecordingStatus.InProgress;
                 state.AudioSync = 1000;
                 state.DeInterlace = true;
-                state.InputFormat = "mpegts";
             }
             else if (item is LiveTvChannel)
             {
@@ -1091,9 +1090,6 @@ namespace MediaBrowser.Api.Playback
                 state.ReadInputAtNativeFramerate = true;
                 state.AudioSync = 1000;
                 state.DeInterlace = true;
-                state.InputFormat = "mpegts";
-
-                await Task.Delay(1000, cancellationToken).ConfigureAwait(false);
             }
             else
             {
