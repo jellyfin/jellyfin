@@ -253,13 +253,13 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             {
                 try
                 {
-                    LogHttpRequest(context, index);
-
                     var request = context.Request;
+
+                    LogHttpRequest(request, index);
 
                     if (request.IsWebSocketRequest)
                     {
-                        ProcessWebSocketRequest(context);
+                        await ProcessWebSocketRequest(context).ConfigureAwait(false);
                         return;
                     }
 
@@ -299,7 +299,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
                     if (EnableHttpRequestLogging)
                     {
-                        LoggerUtils.LogResponse(_logger, context, url, endPoint, duration);
+                        LoggerUtils.LogResponse(_logger, context.Response, url, endPoint, duration);
                     }
                 }
                 catch (Exception ex)
@@ -315,10 +315,11 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <summary>
         /// Logs the HTTP request.
         /// </summary>
-        /// <param name="ctx">The CTX.</param>
-        private void LogHttpRequest(HttpListenerContext ctx, int index)
+        /// <param name="request">The request.</param>
+        /// <param name="index">The index.</param>
+        private void LogHttpRequest(HttpListenerRequest request, int index)
         {
-            var endpoint = ctx.Request.LocalEndPoint;
+            var endpoint = request.LocalEndPoint;
 
             if (endpoint != null)
             {
@@ -329,7 +330,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             if (EnableHttpRequestLogging)
             {
-                LoggerUtils.LogRequest(_logger, ctx, index);
+                LoggerUtils.LogRequest(_logger, request, index);
             }
         }
 

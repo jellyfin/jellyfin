@@ -1060,6 +1060,7 @@ namespace MediaBrowser.Api.Playback
 
                 //state.RunTimeTicks = recording.RunTimeTicks;
                 state.ReadInputAtNativeFramerate = recording.RecordingInfo.Status == RecordingStatus.InProgress;
+                state.SendInputOverStandardInput = recording.RecordingInfo.Status == RecordingStatus.InProgress;
                 state.AudioSync = 1000;
                 state.DeInterlace = true;
             }
