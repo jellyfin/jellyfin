@@ -1,0 +1,40 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Live TV</title>
+</head>
+<body>
+    <div id="liveTvStatusPage" data-role="page" class="page type-interior liveTvSettingsPage">
+
+        <div data-role="content">
+            <div class="content-primary">
+
+                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                    <a href="#" data-role="button" class="ui-btn-active">Status</a>
+                    <a href="livetvsettings.html" data-role="button">Settings</a>
+                </div>
+
+                <div class="readOnlyContent" style="margin-top: 2em;">
+
+                    <div class="liveTvStatusContent" style="display: none;">
+
+                        <div style="margin-top: 2.5em;">
+                            <p>Service: <span id="activeServiceName"></span></p>
+                            <p>Status: <span id="activeServiceStatus"></span></p>
+                            <p>Version: <span id="activeServiceVersion"></span></p>
+                        </div>
+
+                    </div>
+
+                    <div class="noLiveTvServices" style="display: none;">
+
+                        <p>A Live TV service provider plugin is required in order to continue.</p>
+
+                        <p>Please <a href="plugincatalog.html">install</a> one of our available plugins, such as ServerWmc.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

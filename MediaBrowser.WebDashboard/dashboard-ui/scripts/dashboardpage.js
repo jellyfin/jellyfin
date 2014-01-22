@@ -1,9 +1,13 @@
 ﻿var DashboardPage = {
 
+    newsStartIndex: 0,
+
     onPageShow: function () {
 
         var page = this;
 
+        DashboardPage.newsStartIndex = 0;
+        
         Dashboard.showLoadingMsg();
         DashboardPage.pollForInfo(page);
         DashboardPage.startInterval();
@@ -27,11 +31,12 @@
 
     reloadNews: function (page) {
 
-        ApiClient.getProductNews({
+        var query = {
+            StartIndex: DashboardPage.newsStartIndex,
+            Limit: 5
+        };
 
-            limit: 6
-
-        }).done(function (result) {
+        ApiClient.getProductNews(query).done(function (result) {
 
             var html = result.Items.map(function (item) {
 
@@ -49,7 +54,24 @@
                 return itemHtml;
             });
 
-            $('.latestNewsItems', page).html(html.join(''));
+            var pagingHtml = '';
+            pagingHtml += '<div>';
+            pagingHtml += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, false, [], false);
+            pagingHtml += '</div>';
+            
+            html = html.join('') + pagingHtml;
+
+            var elem = $('.latestNewsItems', page).html(html).trigger('create');
+
+            $('.btnNextPage', elem).on('click', function () {
+                DashboardPage.newsStartIndex += query.Limit;
+                DashboardPage.reloadNews(page);
+            });
+
+            $('.btnPreviousPage', elem).on('click', function () {
+                DashboardPage.newsStartIndex -= query.Limit;
+                DashboardPage.reloadNews(page);
+            });
         });
 
     },

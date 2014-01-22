@@ -70,11 +70,6 @@
             var channelPagingHtml = LibraryBrowser.getPagingHtml(channelQuery, channelsResult.TotalRecordCount, false, [10, 20, 30, 50, 100]);
             $('.channelPaging', page).html(channelPagingHtml).trigger('create');
 
-            $('.selectPage', page).on('change', function () {
-                channelQuery.StartIndex = (parseInt(this.value) - 1) * channelQuery.Limit;
-                reloadChannels(page);
-            });
-
             $('.btnNextPage', page).on('click', function () {
                 channelQuery.StartIndex += channelQuery.Limit;
                 reloadChannels(page);

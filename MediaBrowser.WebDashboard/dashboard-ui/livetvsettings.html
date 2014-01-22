@@ -8,18 +8,17 @@
 
         <div data-role="content">
             <div class="content-primary">
+
+                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                    <a href="livetvstatus.html" data-role="button">Status</a>
+                    <a href="#" data-role="button" class="ui-btn-active">Settings</a>
+                </div>
+
                 <form class="liveTvSettingsForm" style="display: none;">
 
-                    <div style="margin-top: 2.5em;">
-                        <p>Active service: <span id="activeServiceName"></span></p>
-                        <p>Status: <span id="activeServiceStatus"></span></p>
-                        <p>Version: <span id="activeServiceVersion"></span></p>
-                    </div>
-                    <br />
-                    <br />
                     <ul data-role="listview" class="ulForm">
                         <li>
-                            <label for="selectActiveService">Change active service: </label>
+                            <label for="selectActiveService">Active service: </label>
                             <select id="selectActiveService" data-mini="true">
                             </select>
                             <div class="fieldDescription">Multiple tv plugins can be installed but only one can be active at a time.</div>

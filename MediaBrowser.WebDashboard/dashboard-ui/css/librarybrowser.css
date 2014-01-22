@@ -172,11 +172,15 @@
 
 .labelPageSize {
     margin-left: 1em!important;
+    display: inline !important;
 }
 
+.pageSizeContainer {
+    display: inline-block;
+}
 
 @media all and (max-width: 650px) {
-    .labelPageSize, .selectPageSize {
+    .pageSizeContainer {
         display: none!important;
     }
 }

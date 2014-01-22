@@ -755,7 +755,7 @@ var Dashboard = {
             selected: page.hasClass("pluginConfigurationPage")
         }, {
             name: "Live TV",
-            href: "livetvsettings.html",
+            href: "livetvstatus.html",
             selected: page.hasClass("liveTvSettingsPage")
         }, {
             name: "Users",

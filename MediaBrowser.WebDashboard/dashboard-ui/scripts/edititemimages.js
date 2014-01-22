@@ -92,11 +92,6 @@
 
         $('.availableImagesList', page).html(html).trigger('create');
 
-        $('.selectPage', page).on('change', function () {
-            browsableImageStartIndex = (parseInt(this.value) - 1) * browsableImagePageSize;
-            reloadBrowsableImages(page);
-        });
-
         $('.btnNextPage', page).on('click', function () {
             browsableImageStartIndex += browsableImagePageSize;
             reloadBrowsableImages(page);
@@ -228,20 +223,6 @@
 
         var html = '';
 
-        var pageCount = Math.ceil(totalRecordCount / limit);
-        var pageNumber = (startIndex / limit) + 1;
-
-        var dropdownHtml = '<select class="selectPage" data-enhance="false" data-role="none">';
-        for (var i = 1; i <= pageCount; i++) {
-
-            if (i == pageNumber) {
-                dropdownHtml += '<option value="' + i + '" selected="selected">' + i + '</option>';
-            } else {
-                dropdownHtml += '<option value="' + i + '">' + i + '</option>';
-            }
-        }
-        dropdownHtml += '</select>';
-
         var recordsEnd = Math.min(startIndex + limit, totalRecordCount);
 
         // 20 is the minimum page size
@@ -254,16 +235,14 @@
         var startAtDisplay = totalRecordCount ? startIndex + 1 : 0;
         html += startAtDisplay + '-' + recordsEnd + ' of ' + totalRecordCount;
 
-        if (showControls) {
-            html += ', page ' + dropdownHtml + ' of ' + pageCount;
-        }
-
         html += '</span>';
 
         if (showControls) {
+            html += '<div data-role="controlgroup" data-type="horizontal" style="display:inline-block;">';
             html += '<button data-icon="arrow-l" data-iconpos="notext" data-inline="true" data-mini="true" class="btnPreviousPage" ' + (startIndex ? '' : 'disabled') + '>Previous Page</button>';
 
             html += '<button data-icon="arrow-r" data-iconpos="notext" data-inline="true" data-mini="true" class="btnNextPage" ' + (startIndex + limit > totalRecordCount ? 'disabled' : '') + '>Next Page</button>';
+            html += '</div>';
         }
 
         html += '</div>';

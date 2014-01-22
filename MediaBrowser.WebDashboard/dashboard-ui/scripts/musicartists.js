@@ -41,11 +41,6 @@
 
             $('#items', page).html(html).trigger('create').createPosterItemHoverMenu();
 
-            $('.selectPage', page).on('change', function () {
-                query.StartIndex = (parseInt(this.value) - 1) * query.Limit;
-                reloadItems(page);
-            });
-
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;
                 reloadItems(page);
