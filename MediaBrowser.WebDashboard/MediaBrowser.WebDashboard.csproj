@@ -169,10 +169,10 @@
     <Content Include="dashboard-ui\encodingsettings.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\libraryfileorganizer.html">
+    <Content Include="dashboard-ui\autoorganizetv.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\libraryfileorganizerlog.html">
+    <Content Include="dashboard-ui\autoorganizelog.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\livetvchannel.html">
@@ -427,10 +427,10 @@
     <Content Include="dashboard-ui\scripts\encodingsettings.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\scripts\libraryfileorganizer.js">
+    <Content Include="dashboard-ui\scripts\autoorganizetv.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\scripts\libraryfileorganizerlog.js">
+    <Content Include="dashboard-ui\scripts\autoorganizelog.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\scripts\librarymenu.js">
