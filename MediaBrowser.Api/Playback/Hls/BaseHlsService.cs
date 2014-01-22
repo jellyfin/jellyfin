@@ -262,8 +262,6 @@ namespace MediaBrowser.Api.Playback.Hls
         /// <returns>System.String.</returns>
         protected override string GetCommandLineArguments(string outputPath, StreamState state, bool performSubtitleConversions)
         {
-            var probeSize = GetProbeSizeArgument(state.MediaPath, state.IsInputVideo, state.VideoType, state.IsoType);
-
             var hlsVideoRequest = state.VideoRequest as GetHlsVideoStream;
 
             var itsOffsetMs = hlsVideoRequest == null
@@ -276,11 +274,8 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var inputModifier = GetInputModifier(state);
             
-            var args = string.Format("{0}{1} {2} {3} -fflags genpts{4} -i {5}{6} -map_metadata -1 -threads {7} {8} {9} -sc_threshold 0 {10} -hls_time {11} -start_number 0 -hls_list_size 1440 \"{12}\"",
+            var args = string.Format("{0} {1} -i {2}{3} -map_metadata -1 -threads {4} {5} {6} -sc_threshold 0 {7} -hls_time {8} -start_number 0 -hls_list_size 1440 \"{9}\"",
                 itsOffset,
-                probeSize,
-                GetUserAgentParam(state.MediaPath),
-                GetFastSeekCommandLineParameter(state.Request),
                 inputModifier,
                 GetInputArgument(state),
                 GetSlowSeekCommandLineParameter(state.Request),
