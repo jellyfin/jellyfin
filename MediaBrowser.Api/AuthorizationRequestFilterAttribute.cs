@@ -98,17 +98,20 @@ namespace MediaBrowser.Api
         {
             var auth = GetAuthorizationDictionary(httpReq);
 
-            string userId;
-            string deviceId;
-            string device;
-            string client;
-            string version;
+            string userId = null;
+            string deviceId = null;
+            string device = null;
+            string client = null;
+            string version = null;
 
-            auth.TryGetValue("UserId", out userId);
-            auth.TryGetValue("DeviceId", out deviceId);
-            auth.TryGetValue("Device", out device);
-            auth.TryGetValue("Client", out client);
-            auth.TryGetValue("Version", out version);
+            if (auth != null)
+            {
+                auth.TryGetValue("UserId", out userId);
+                auth.TryGetValue("DeviceId", out deviceId);
+                auth.TryGetValue("Device", out device);
+                auth.TryGetValue("Client", out client);
+                auth.TryGetValue("Version", out version);
+            }
 
             return new AuthorizationInfo
             {
