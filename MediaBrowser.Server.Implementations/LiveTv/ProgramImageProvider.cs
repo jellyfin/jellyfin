@@ -76,22 +76,20 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         private async Task<bool> DownloadImage(LiveTvProgram item, CancellationToken cancellationToken)
         {
-            var programInfo = item.ProgramInfo;
-
             Stream imageStream = null;
             string contentType = null;
 
-            if (!string.IsNullOrEmpty(programInfo.ImagePath))
+            if (!string.IsNullOrEmpty(item.ProviderImagePath))
             {
-                contentType = "image/" + Path.GetExtension(programInfo.ImagePath).ToLower();
-                imageStream = _fileSystem.GetFileStream(programInfo.ImagePath, FileMode.Open, FileAccess.Read, FileShare.Read, true);
+                contentType = "image/" + Path.GetExtension(item.ProviderImagePath).ToLower();
+                imageStream = _fileSystem.GetFileStream(item.ProviderImagePath, FileMode.Open, FileAccess.Read, FileShare.Read, true);
             }
-            else if (!string.IsNullOrEmpty(programInfo.ImageUrl))
+            else if (!string.IsNullOrEmpty(item.ProviderImageUrl))
             {
                 var options = new HttpRequestOptions
                 {
                     CancellationToken = cancellationToken,
-                    Url = programInfo.ImageUrl
+                    Url = item.ProviderImageUrl
                 };
 
                 var response = await _httpClient.GetResponse(options).ConfigureAwait(false);
@@ -105,7 +103,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 imageStream = response.Content;
                 contentType = response.ContentType;
             }
-            else if (programInfo.HasImage ?? true)
+            else if (item.HasProviderImage ?? true)
             {
                 var service = _liveTvManager.Services.FirstOrDefault(i => string.Equals(i.Name, item.ServiceName, StringComparison.OrdinalIgnoreCase));
 
@@ -113,7 +111,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 {
                     try
                     {
-                        var response = await service.GetProgramImageAsync(programInfo.Id, programInfo.ChannelId, cancellationToken).ConfigureAwait(false);
+                        var response = await service.GetProgramImageAsync(item.ExternalId, item.ExternalChannelId, cancellationToken).ConfigureAwait(false);
 
                         if (response != null)
                         {
@@ -131,7 +129,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             if (imageStream != null)
             {
                 // Dummy up the original url
-                var url = item.ServiceName + programInfo.Id;
+                var url = item.ServiceName + item.ExternalId;
 
                 await _providerManager.SaveImage(item, imageStream, contentType, ImageType.Primary, null, url, cancellationToken).ConfigureAwait(false);
                 return true;

@@ -117,15 +117,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             if (isPlaylistNewlyCreated)
             {
-                var minimumSegmentCount = 3;
-                var quality = GetQualitySetting();
-
-                if (quality == EncodingQuality.HighSpeed || quality == EncodingQuality.HighQuality)
-                {
-                    minimumSegmentCount = 2;
-                }
-
-                await WaitForMinimumSegmentCount(playlist, minimumSegmentCount).ConfigureAwait(false);
+                await WaitForMinimumSegmentCount(playlist, GetSegmentWait()).ConfigureAwait(false);
             }
 
             int audioBitrate;
@@ -152,6 +144,23 @@ namespace MediaBrowser.Api.Playback.Hls
             {
                 ApiEntryPoint.Instance.OnTranscodeEndRequest(playlist, TranscodingJobType.Hls);
             }
+        }
+
+        /// <summary>
+        /// Gets the segment wait.
+        /// </summary>
+        /// <returns>System.Int32.</returns>
+        protected int GetSegmentWait()
+        {
+            var minimumSegmentCount = 3;
+            var quality = GetQualitySetting();
+
+            if (quality == EncodingQuality.HighSpeed || quality == EncodingQuality.HighQuality)
+            {
+                minimumSegmentCount = 2;
+            }
+
+            return minimumSegmentCount;
         }
 
         /// <summary>
@@ -210,7 +219,7 @@ namespace MediaBrowser.Api.Playback.Hls
             return builder.ToString();
         }
 
-        private async Task WaitForMinimumSegmentCount(string playlist, int segmentCount)
+        protected async Task WaitForMinimumSegmentCount(string playlist, int segmentCount)
         {
             while (true)
             {
@@ -273,8 +282,11 @@ namespace MediaBrowser.Api.Playback.Hls
             var threads = GetNumberOfThreads(false);
 
             var inputModifier = GetInputModifier(state);
+
+            // If performSubtitleConversions is true we're actually starting ffmpeg
+            var startNumberParam = performSubtitleConversions ? GetStartNumber(state).ToString(UsCulture) : "0";
             
-            var args = string.Format("{0} {1} -i {2}{3} -map_metadata -1 -threads {4} {5} {6} -sc_threshold 0 {7} -hls_time {8} -start_number 0 -hls_list_size 1440 \"{9}\"",
+            var args = string.Format("{0} {1} -i {2}{3} -map_metadata -1 -threads {4} {5} {6} -sc_threshold 0 {7} -hls_time {8} -start_number {9} -hls_list_size 1440 \"{10}\"",
                 itsOffset,
                 inputModifier,
                 GetInputArgument(state),
@@ -284,6 +296,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 GetVideoArguments(state, performSubtitleConversions),
                 GetAudioArguments(state),
                 state.SegmentLength.ToString(UsCulture),
+                startNumberParam,
                 outputPath
                 ).Trim();
 
@@ -295,10 +308,11 @@ namespace MediaBrowser.Api.Playback.Hls
 
                     var bitrate = hlsVideoRequest.BaselineStreamAudioBitRate ?? 64000;
 
-                    var lowBitrateParams = string.Format(" -threads {0} -vn -codec:a:0 libmp3lame -ac 2 -ab {1} -hls_time {2} -start_number 0 -hls_list_size 1440 \"{3}\"",
+                    var lowBitrateParams = string.Format(" -threads {0} -vn -codec:a:0 libmp3lame -ac 2 -ab {1} -hls_time {2} -start_number {3} -hls_list_size 1440 \"{4}\"",
                         threads,
                         bitrate / 2,
                         state.SegmentLength.ToString(UsCulture),
+                        startNumberParam,
                         lowBitratePath);
 
                     args += " " + lowBitrateParams;
@@ -306,6 +320,11 @@ namespace MediaBrowser.Api.Playback.Hls
             }
 
             return args;
+        }
+
+        protected virtual int GetStartNumber(StreamState state)
+        {
+            return 0;
         }
     }
 }

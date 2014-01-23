@@ -621,6 +621,8 @@
 
             // Some 1080- videos are reported as 1912?
             if (maxAllowedWidth >= 1910) {
+                options.push({ name: '1080p - 20Mbps', maxWidth: 1920, bitrate: 20000000 });
+                options.push({ name: '1080p - 15Mbps', maxWidth: 1920, bitrate: 15000000 });
                 options.push({ name: '1080p - 10Mbps', maxWidth: 1920, bitrate: 10000000 });
                 options.push({ name: '1080p - 8Mbps', maxWidth: 1920, bitrate: 8000000 });
                 options.push({ name: '1080p - 6Mbps', maxWidth: 1920, bitrate: 6000000 });
@@ -916,6 +918,8 @@
 
                 if (result.Items.length) {
                     channelsButton.show();
+                } else {
+                    channelsButton.hide();
                 }
             });
 

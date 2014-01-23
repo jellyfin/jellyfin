@@ -18,12 +18,6 @@ namespace MediaBrowser.Controller.LiveTv
         public string ChannelId { get; set; }
 
         /// <summary>
-        /// Gets or sets the channel primary image tag.
-        /// </summary>
-        /// <value>The channel primary image tag.</value>
-        public Guid? ChannelPrimaryImageTag { get; set; }
-
-        /// <summary>
         /// Name of the program
         /// </summary>
         public string Name { get; set; }
@@ -104,6 +98,12 @@ namespace MediaBrowser.Controller.LiveTv
         public string ImageUrl { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance has image.
+        /// </summary>
+        /// <value><c>null</c> if [has image] contains no value, <c>true</c> if [has image]; otherwise, <c>false</c>.</value>
+        public bool? HasImage { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this instance is movie.
         /// </summary>
         /// <value><c>true</c> if this instance is movie; otherwise, <c>false</c>.</value>
@@ -144,12 +144,6 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value><c>true</c> if this instance is premiere; otherwise, <c>false</c>.</value>
         public bool IsPremiere { get; set;  }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance has image.
-        /// </summary>
-        /// <value><c>null</c> if [has image] contains no value, <c>true</c> if [has image]; otherwise, <c>false</c>.</value>
-        public bool? HasImage { get; set; }
 
         public ProgramInfo()
         {

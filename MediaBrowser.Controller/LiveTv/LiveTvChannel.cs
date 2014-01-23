@@ -25,17 +25,51 @@ namespace MediaBrowser.Controller.LiveTv
         [IgnoreDataMember]
         public List<ItemByNameCounts> UserItemCountList { get; set; }
 
-        public ChannelInfo ChannelInfo { get; set; }
+        /// <summary>
+        /// Gets or sets the number.
+        /// </summary>
+        /// <value>The number.</value>
+        public string Number { get; set; }
+
+        /// <summary>
+        /// Gets or sets the external identifier.
+        /// </summary>
+        /// <value>The external identifier.</value>
+        public string ExternalId { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the type of the channel.
+        /// </summary>
+        /// <value>The type of the channel.</value>
+        public ChannelType ChannelType { get; set; }
 
         public string ServiceName { get; set; }
+
+        /// <summary>
+        /// Supply the image path if it can be accessed directly from the file system
+        /// </summary>
+        /// <value>The image path.</value>
+        public string ProviderImagePath { get; set; }
+
+        /// <summary>
+        /// Supply the image url if it can be downloaded
+        /// </summary>
+        /// <value>The image URL.</value>
+        public string ProviderImageUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance has image.
+        /// </summary>
+        /// <value><c>null</c> if [has image] contains no value, <c>true</c> if [has image]; otherwise, <c>false</c>.</value>
+        public bool? HasProviderImage { get; set; }
 
         protected override string CreateSortName()
         {
             double number = 0;
 
-            if (!string.IsNullOrEmpty(ChannelInfo.Number))
+            if (!string.IsNullOrEmpty(Number))
             {
-                double.TryParse(ChannelInfo.Number, out number);
+                double.TryParse(Number, out number);
             }
 
             return number.ToString("000-") + (Name ?? string.Empty);
@@ -45,7 +79,7 @@ namespace MediaBrowser.Controller.LiveTv
         {
             get
             {
-                return ChannelInfo.ChannelType == ChannelType.Radio ? Model.Entities.MediaType.Audio : Model.Entities.MediaType.Video;
+                return ChannelType == ChannelType.Radio ? Model.Entities.MediaType.Audio : Model.Entities.MediaType.Video;
             }
         }
 
