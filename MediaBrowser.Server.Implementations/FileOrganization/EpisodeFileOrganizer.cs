@@ -1,20 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.FileOrganization;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.FileOrganization;
 using MediaBrowser.Model.Logging;
+using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.FileOrganization
@@ -28,7 +29,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
         private readonly IFileOrganizationService _organizationService;
         private readonly IServerConfigurationManager _config;
 
-        private  readonly CultureInfo _usCulture = new CultureInfo("en-US");
+        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
         public EpisodeFileOrganizer(IFileOrganizationService organizationService, IServerConfigurationManager config, IFileSystem fileSystem, ILogger logger, ILibraryManager libraryManager, IDirectoryWatchers directoryWatchers)
         {
@@ -154,9 +155,10 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             _logger.Info("Sorting file {0} to new path {1}", sourcePath, newPath);
             result.TargetPath = newPath;
 
-            var existing = GetDuplicatePaths(result.TargetPath, series, seasonNumber, episodeNumber);
+            var fileExists = File.Exists(result.TargetPath);
+            var otherDuplicatePaths = GetOtherDuplicatePaths(result.TargetPath, series, seasonNumber, episodeNumber, endingEpiosdeNumber);
 
-            if (!overwriteExisting && existing.Count > 0)
+            if (!overwriteExisting && (fileExists || otherDuplicatePaths.Count > 0))
             {
                 result.Status = FileSortingStatus.SkippedExisting;
                 result.StatusMessage = string.Empty;
@@ -164,18 +166,67 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             }
 
             PerformFileSorting(options, result);
+
+            if (overwriteExisting)
+            {
+                foreach (var path in otherDuplicatePaths)
+                {
+                    _logger.Debug("Removing duplicate episode {0}", path);
+
+                    try
+                    {
+                        File.Delete(path);
+                    }
+                    catch (IOException ex)
+                    {
+                        _logger.ErrorException("Error removing duplicate episode", ex, path);
+                    }
+                }
+            }
         }
 
-        private List<string> GetDuplicatePaths(string targetPath, Series series, int seasonNumber, int episodeNumber)
+        private List<string> GetOtherDuplicatePaths(string targetPath, Series series, int seasonNumber, int episodeNumber, int? endingEpisodeNumber)
         {
-            var list = new List<string>();
+            var episodePaths = series.RecursiveChildren
+                .OfType<Episode>()
+                .Where(i =>
+                {
+                    var locationType = i.LocationType;
 
-            if (File.Exists(targetPath))
-            {
-                list.Add(targetPath);
-            }
+                    // Must be file system based and match exactly
+                    if (locationType != LocationType.Remote &&
+                        locationType != LocationType.Virtual &&
+                        i.ParentIndexNumber.HasValue &&
+                        i.ParentIndexNumber.Value == seasonNumber &&
+                        i.IndexNumber.HasValue &&
+                        i.IndexNumber.Value == episodeNumber)
+                    {
 
-            return list;
+                        if (endingEpisodeNumber.HasValue || i.IndexNumberEnd.HasValue)
+                        {
+                            return endingEpisodeNumber.HasValue && i.IndexNumberEnd.HasValue &&
+                                   endingEpisodeNumber.Value == i.IndexNumberEnd.Value;
+                        }
+
+                        return true;
+                    }
+
+                    return false;
+                })
+                .Select(i => i.Path)
+                .ToList();
+
+            var folder = Path.GetDirectoryName(targetPath);
+            var targetFileNameWithoutExtension = Path.GetFileNameWithoutExtension(targetPath);
+
+            var filesOfOtherExtensions = Directory.EnumerateFiles(folder, "*", SearchOption.TopDirectoryOnly)
+                .Where(i => EntityResolutionHelper.IsVideoFile(i) && string.Equals(Path.GetFileNameWithoutExtension(i), targetFileNameWithoutExtension, StringComparison.OrdinalIgnoreCase));
+
+            episodePaths.AddRange(filesOfOtherExtensions);
+
+            return episodePaths.Where(i => !string.Equals(i, targetPath, StringComparison.OrdinalIgnoreCase))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
         }
 
         private void PerformFileSorting(TvFileOrganizationOptions options, FileOrganizationResult result)
@@ -185,7 +236,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             Directory.CreateDirectory(Path.GetDirectoryName(result.TargetPath));
 
             var copy = File.Exists(result.TargetPath);
-            
+
             try
             {
                 if (copy)

@@ -74,11 +74,17 @@ namespace MediaBrowser.Controller.LiveTv
         public string ChannelId { get; set; }
 
         /// <summary>
-        /// Gets or sets the timer identifier.
+        /// Gets or sets the recording identifier.
         /// </summary>
-        /// <value>The timer identifier.</value>
-        public string TimerId { get; set; }
+        /// <value>The recording identifier.</value>
+        public string RecordingId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the name of the program.
+        /// </summary>
+        /// <value>The name of the program.</value>
+        public string ProgramName { get; set; }
+        
         /// <summary>
         /// Gets or sets the clients.
         /// </summary>
