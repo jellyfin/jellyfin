@@ -106,6 +106,14 @@ namespace MediaBrowser.Api.LiveTv
         public string UserId { get; set; }
     }
 
+    [Route("/LiveTv/Tuners/{Id}/Reset", "POST")]
+    [Api(Description = "Resets a tv tuner")]
+    public class ResetTuner : IReturnVoid
+    {
+        [ApiMember(Name = "Id", Description = "Tuner Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Id { get; set; }
+    }
+
     [Route("/LiveTv/Timers/{Id}", "GET")]
     [Api(Description = "Gets a live tv timer")]
     public class GetTimer : IReturn<TimerInfoDto>
@@ -294,25 +302,7 @@ namespace MediaBrowser.Api.LiveTv
 
         public object Get(GetLiveTvInfo request)
         {
-            var services = _liveTvManager.GetServiceInfos(CancellationToken.None).Result;
-            var servicesList = services.ToList();
-
-            var activeServiceInfo = _liveTvManager.ActiveService == null ? null :
-                servicesList.FirstOrDefault(i => string.Equals(i.Name, _liveTvManager.ActiveService.Name, StringComparison.OrdinalIgnoreCase));
-
-            var info = new LiveTvInfo
-            {
-                Services = servicesList.ToList(),
-                ActiveServiceName = activeServiceInfo == null ? null : activeServiceInfo.Name,
-                IsEnabled = _liveTvManager.ActiveService != null,
-                Status = activeServiceInfo == null ? LiveTvServiceStatus.Unavailable : activeServiceInfo.Status,
-                StatusMessage = activeServiceInfo == null ? null : activeServiceInfo.StatusMessage
-            };
-
-            info.EnabledUsers = _userManager.Users
-                .Where(i => i.Configuration.EnableLiveTvAccess && info.IsEnabled)
-                .Select(i => i.Id.ToString("N"))
-                .ToList();
+            var info = _liveTvManager.GetLiveTvInfo(CancellationToken.None).Result;
 
             return ToOptimizedResult(info);
         }
@@ -572,6 +562,15 @@ namespace MediaBrowser.Api.LiveTv
         public object Get(GetGuideInfo request)
         {
             return ToOptimizedResult(_liveTvManager.GetGuideInfo());
+        }
+
+        public void Post(ResetTuner request)
+        {
+            AssertUserCanManageLiveTv();
+
+            var task = _liveTvManager.ResetTuner(request.Id, CancellationToken.None);
+
+            Task.WaitAll(task);
         }
     }
 }

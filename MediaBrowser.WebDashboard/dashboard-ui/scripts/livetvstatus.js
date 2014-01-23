@@ -1,5 +1,76 @@
 ﻿(function ($, document, window) {
 
+    function resetTuner(page, id) {
+
+        var message = 'Are you sure you wish to reset this tuner? Any active players or recordings will be abruptly stopped.';
+
+        Dashboard.confirm(message, "Reset Tuner", function (confirmResult) {
+
+            if (confirmResult) {
+
+                Dashboard.showLoadingMsg();
+
+                ApiClient.resetLiveTvTuner(id).done(function () {
+
+                    Dashboard.hideLoadingMsg();
+
+                    reload(page);
+                });
+            }
+        });
+    }
+
+    function renderTuners(page, tuners) {
+
+        var html = '';
+
+        for (var i = 0, length = tuners.length; i < length; i++) {
+
+            var tuner = tuners[i];
+
+            html += '<tr>';
+
+            html += '<td>';
+            html += tuner.Name;
+            html += '</td>';
+
+            html += '<td>';
+            html += tuner.SourceType;
+            html += '</td>';
+
+            html += '<td>';
+            html += tuner.Status;
+            html += '</td>';
+
+            html += '<td>';
+
+            if (tuner.ProgramName) {
+                html += tuner.ProgramName;
+            }
+
+            html += '</td>';
+
+            html += '<td>';
+            html += tuner.Clients.join('<br/>');
+            html += '</td>';
+
+            html += '<td>';
+            html += '<button data-tunerid="' + tuner.Id + '" type="button" data-inline="true" data-icon="refresh" data-mini="true" data-iconpos="notext" class="btnResetTuner organizerButton" title="Reset Tuner">Reset</button>';
+            html += '</td>';
+
+            html += '</tr>';
+        }
+
+        var elem = $('.tunersResultBody', page).html(html).parents('.tblTuners').table("refresh").trigger('create');
+
+        $('.btnResetTuner', elem).on('click', function () {
+
+            var id = this.getAttribute('data-tunerid');
+
+            resetTuner(page, id);
+        });
+    }
+
     function loadPage(page, liveTvInfo) {
 
         if (liveTvInfo.IsEnabled) {
@@ -29,7 +100,7 @@
         else {
             versionHtml += '<img src="css/images/checkmarkgreen.png" style="height: 17px; margin-left: 10px; margin-right: 0; position: relative; top: 4px;" /> Up to date!';
         }
-        
+
         $('#activeServiceVersion', page).html(versionHtml);
 
         var status = liveTvInfo.Status;
@@ -48,20 +119,27 @@
 
         $('#activeServiceStatus', page).html(status);
 
+        renderTuners(page, service.Tuners || []);
+
         Dashboard.hideLoadingMsg();
     }
 
-    $(document).on('pageshow', "#liveTvStatusPage", function () {
+    function reload(page) {
 
         Dashboard.showLoadingMsg();
-
-        var page = this;
 
         ApiClient.getLiveTvInfo().done(function (liveTvInfo) {
 
             loadPage(page, liveTvInfo);
 
         });
+    }
+
+    $(document).on('pageshow', "#liveTvStatusPage", function () {
+
+        var page = this;
+
+        reload(page);
 
     });
 

@@ -224,7 +224,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
                 MediaStreams = _itemRepo.GetMediaStreams(new MediaStreamQuery
                 {
-                     ItemId = recording.Id
+                    ItemId = recording.Id
 
                 }).ToList()
             };
@@ -266,6 +266,31 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 {
                     dto.ChannelPrimaryImageTag = GetImageTag(channel);
                 }
+            }
+
+            return dto;
+        }
+
+        public LiveTvTunerInfoDto GetTunerInfoDto(string serviceName, LiveTvTunerInfo info)
+        {
+            var dto = new LiveTvTunerInfoDto
+            {
+                Name = info.Name,
+                Id = info.Id,
+                Clients = info.Clients,
+                ProgramName = info.ProgramName,
+                SourceType = info.SourceType,
+                Status = info.Status
+            };
+
+            if (!string.IsNullOrEmpty(info.ChannelId))
+            {
+                dto.ChannelId = GetInternalChannelId(serviceName, info.ChannelId).ToString("N");
+            }
+
+            if (!string.IsNullOrEmpty(info.RecordingId))
+            {
+                dto.RecordingId = GetInternalRecordingId(serviceName, info.RecordingId).ToString("N");
             }
 
             return dto;

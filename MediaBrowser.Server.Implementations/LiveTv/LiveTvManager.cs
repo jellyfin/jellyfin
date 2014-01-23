@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.ScheduledTasks;
-using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
@@ -1412,7 +1411,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
         }
 
-        public async Task<IEnumerable<LiveTvServiceInfo>> GetServiceInfos(CancellationToken cancellationToken)
+        private async Task<IEnumerable<LiveTvServiceInfo>> GetServiceInfos(CancellationToken cancellationToken)
         {
             var tasks = Services.Select(i => GetServiceInfo(i, cancellationToken));
 
@@ -1435,6 +1434,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 info.Version = statusInfo.Version;
                 info.HasUpdateAvailable = statusInfo.HasUpdateAvailable;
                 info.HomePageUrl = service.HomePageUrl;
+
+                info.Tuners = statusInfo.Tuners.Select(i => _tvDtoService.GetTunerInfoDto(service.Name, i)).ToList();
             }
             catch (Exception ex)
             {
@@ -1445,6 +1446,42 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
 
             return info;
+        }
+
+        public async Task<LiveTvInfo> GetLiveTvInfo(CancellationToken cancellationToken)
+        {
+            var services = await GetServiceInfos(CancellationToken.None).ConfigureAwait(false);
+            var servicesList = services.ToList();
+
+            var activeServiceInfo = ActiveService == null ? null :
+                servicesList.FirstOrDefault(i => string.Equals(i.Name, ActiveService.Name, StringComparison.OrdinalIgnoreCase));
+
+            var info = new LiveTvInfo
+            {
+                Services = servicesList.ToList(),
+                ActiveServiceName = activeServiceInfo == null ? null : activeServiceInfo.Name,
+                IsEnabled = ActiveService != null,
+                Status = activeServiceInfo == null ? LiveTvServiceStatus.Unavailable : activeServiceInfo.Status,
+                StatusMessage = activeServiceInfo == null ? null : activeServiceInfo.StatusMessage
+            };
+
+            info.EnabledUsers = _userManager.Users
+                .Where(i => i.Configuration.EnableLiveTvAccess && info.IsEnabled)
+                .Select(i => i.Id.ToString("N"))
+                .ToList();
+
+            return info;
+        }
+
+        /// <summary>
+        /// Resets the tuner.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        public Task ResetTuner(string id, CancellationToken cancellationToken)
+        {
+            return ActiveService.ResetTuner(id, cancellationToken);
         }
     }
 }

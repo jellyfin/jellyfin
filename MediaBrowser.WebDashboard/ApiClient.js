@@ -655,6 +655,20 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
+        self.resetLiveTvTuner = function (id) {
+
+            if (!id) {
+                throw new Error("null id");
+            }
+
+            var url = self.getUrl("LiveTv/Tuners/" + id + "/Reset");
+
+            return self.ajax({
+                type: "POST",
+                url: url
+            });
+        };
+
         self.getLiveTvSeriesTimers = function (options) {
 
             var url = self.getUrl("LiveTv/SeriesTimers", options || {});
