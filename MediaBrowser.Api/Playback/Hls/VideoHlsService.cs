@@ -5,15 +5,11 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaInfo;
 using MediaBrowser.Controller.Persistence;
-using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
 using ServiceStack;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.Playback.Hls
@@ -35,35 +31,12 @@ namespace MediaBrowser.Api.Playback.Hls
         public int TimeStampOffsetMs { get; set; }
     }
 
-    [Route("/Videos/{Id}/master.m3u8", "GET")]
-    [Api(Description = "Gets a video stream using HTTP live streaming.")]
-    public class GetMasterHlsVideoStream : VideoStreamRequest
-    {
-        [ApiMember(Name = "BaselineStreamAudioBitRate", Description = "Optional. Specify the audio bitrate for the baseline stream.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
-        public int? BaselineStreamAudioBitRate { get; set; }
-
-        [ApiMember(Name = "AppendBaselineStream", Description = "Optional. Whether or not to include a baseline audio-only stream in the master playlist.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
-        public bool AppendBaselineStream { get; set; }
-    }
-
-    [Route("/Videos/{Id}/main.m3u8", "GET")]
-    [Api(Description = "Gets a video stream using HTTP live streaming.")]
-    public class GetMainHlsVideoStream : VideoStreamRequest
-    {
-    }
-
-    [Route("/Videos/{Id}/baseline.m3u8", "GET")]
-    [Api(Description = "Gets a video stream using HTTP live streaming.")]
-    public class GetBaselineHlsVideoStream : VideoStreamRequest
-    {
-    }
-
     /// <summary>
     /// Class GetHlsVideoSegment
     /// </summary>
     [Route("/Videos/{Id}/hls/{PlaylistId}/{SegmentId}.ts", "GET")]
     [Api(Description = "Gets an Http live streaming segment file. Internal use only.")]
-    public class GetHlsVideoSegment
+    public class GetHlsVideoSegment : VideoStreamRequest
     {
         /// <summary>
         /// Gets or sets the id.
@@ -90,27 +63,6 @@ namespace MediaBrowser.Api.Playback.Hls
         {
         }
 
-        public object Get(GetMasterHlsVideoStream request)
-        {
-            var result = GetAsync(request).Result;
-
-            return result;
-        }
-
-        public object Get(GetMainHlsVideoStream request)
-        {
-            var result = GetPlaylistAsync(request, "main").Result;
-
-            return result;
-        }
-
-        public object Get(GetBaselineHlsVideoStream request)
-        {
-            var result = GetPlaylistAsync(request, "baseline").Result;
-
-            return result;
-        }
-
         /// <summary>
         /// Gets the specified request.
         /// </summary>
@@ -127,105 +79,29 @@ namespace MediaBrowser.Api.Playback.Hls
             return ResultFactory.GetStaticFileResult(Request, file);
         }
 
-        private async Task<object> GetPlaylistAsync(VideoStreamRequest request, string name)
+        /// <summary>
+        /// Called when [begin request].
+        /// </summary>
+        /// <param name="playlistId">The playlist id.</param>
+        protected void OnBeginRequest(string playlistId)
         {
-            var state = await GetState(request, CancellationToken.None).ConfigureAwait(false);
+            var normalizedPlaylistId = playlistId.Replace("-low", string.Empty);
 
-            var builder = new StringBuilder();
-
-            builder.AppendLine("#EXTM3U");
-            builder.AppendLine("#EXT-X-VERSION:3");
-            builder.AppendLine("#EXT-X-TARGETDURATION:" + state.SegmentLength.ToString(UsCulture));
-            builder.AppendLine("#EXT-X-MEDIA-SEQUENCE:0");
-
-            var queryStringIndex = Request.RawUrl.IndexOf('?');
-            var queryString = queryStringIndex == -1 ? string.Empty : Request.RawUrl.Substring(queryStringIndex);
-            
-            var seconds = TimeSpan.FromTicks(state.RunTimeTicks ?? 0).TotalSeconds;
-
-            var index = 0;
-
-            while (seconds > 0)
+            foreach (var playlist in Directory.EnumerateFiles(ServerConfigurationManager.ApplicationPaths.TranscodingTempPath, "*.m3u8")
+                .Where(i => i.IndexOf(normalizedPlaylistId, StringComparison.OrdinalIgnoreCase) != -1)
+                .ToList())
             {
-                var length = seconds >= state.SegmentLength ? state.SegmentLength : seconds;
-
-                builder.AppendLine("#EXTINF:" + length.ToString(UsCulture));
-
-                builder.AppendLine(string.Format("hls/{0}/{1}.ts{2}" ,
-
-                    name,
-                    index.ToString(UsCulture),
-                    queryString));
-
-                seconds -= state.SegmentLength;
-                index++;
+                ExtendPlaylistTimer(playlist);
             }
-
-            builder.AppendLine("#EXT-X-ENDLIST");
-
-            var playlistText = builder.ToString();
-
-            return ResultFactory.GetResult(playlistText, MimeTypes.GetMimeType("playlist.m3u8"), new Dictionary<string, string>());
         }
 
-        private async Task<object> GetAsync(GetMasterHlsVideoStream request)
+        private async void ExtendPlaylistTimer(string playlist)
         {
-            var state = await GetState(request, CancellationToken.None).ConfigureAwait(false);
+            ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlist, TranscodingJobType.Hls);
 
-            if (!state.VideoRequest.VideoBitRate.HasValue && (!state.VideoRequest.VideoCodec.HasValue || state.VideoRequest.VideoCodec.Value != VideoCodecs.Copy))
-            {
-                throw new ArgumentException("A video bitrate is required");
-            }
-            if (!state.Request.AudioBitRate.HasValue && (!state.Request.AudioCodec.HasValue || state.Request.AudioCodec.Value != AudioCodecs.Copy))
-            {
-                throw new ArgumentException("An audio bitrate is required");
-            }
+            await Task.Delay(20000).ConfigureAwait(false);
 
-            int audioBitrate;
-            int videoBitrate;
-            GetPlaylistBitrates(state, out audioBitrate, out videoBitrate);
-
-            var appendBaselineStream = false;
-            var baselineStreamBitrate = 64000;
-
-            var hlsVideoRequest = state.VideoRequest as GetMasterHlsVideoStream;
-            if (hlsVideoRequest != null)
-            {
-                appendBaselineStream = hlsVideoRequest.AppendBaselineStream;
-                baselineStreamBitrate = hlsVideoRequest.BaselineStreamAudioBitRate ?? baselineStreamBitrate;
-            }
-
-            var playlistText = GetMasterPlaylistFileText(videoBitrate + audioBitrate, appendBaselineStream, baselineStreamBitrate);
-
-            return ResultFactory.GetResult(playlistText, MimeTypes.GetMimeType("playlist.m3u8"), new Dictionary<string, string>());
-        }
-
-        private string GetMasterPlaylistFileText(int bitrate, bool includeBaselineStream, int baselineStreamBitrate)
-        {
-            var builder = new StringBuilder();
-
-            builder.AppendLine("#EXTM3U");
-
-            // Pad a little to satisfy the apple hls validator
-            var paddedBitrate = Convert.ToInt32(bitrate * 1.05);
-
-            var queryStringIndex = Request.RawUrl.IndexOf('?');
-            var queryString = queryStringIndex == -1 ? string.Empty : Request.RawUrl.Substring(queryStringIndex);
-
-            // Main stream
-            builder.AppendLine("#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=" + paddedBitrate.ToString(UsCulture));
-            var playlistUrl = "main.m3u8" + queryString;
-            builder.AppendLine(playlistUrl);
-
-            // Low bitrate stream
-            if (includeBaselineStream)
-            {
-                builder.AppendLine("#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=" + baselineStreamBitrate.ToString(UsCulture));
-                playlistUrl = "baseline.m3u8" + queryString;
-                builder.AppendLine(playlistUrl);
-            }
-
-            return builder.ToString();
+            ApiEntryPoint.Instance.OnTranscodeEndRequest(playlist, TranscodingJobType.Hls);
         }
 
         /// <summary>
@@ -352,31 +228,6 @@ namespace MediaBrowser.Api.Playback.Hls
         protected override string GetSegmentFileExtension(StreamState state)
         {
             return ".ts";
-        }
-
-        /// <summary>
-        /// Called when [begin request].
-        /// </summary>
-        /// <param name="playlistId">The playlist id.</param>
-        protected void OnBeginRequest(string playlistId)
-        {
-            var normalizedPlaylistId = playlistId.Replace("-low", string.Empty);
-
-            foreach (var playlist in Directory.EnumerateFiles(ServerConfigurationManager.ApplicationPaths.TranscodingTempPath, "*.m3u8")
-                .Where(i => i.IndexOf(normalizedPlaylistId, StringComparison.OrdinalIgnoreCase) != -1)
-                .ToList())
-            {
-                ExtendPlaylistTimer(playlist);
-            }
-        }
-
-        private async void ExtendPlaylistTimer(string playlist)
-        {
-            ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlist, TranscodingJobType.Hls);
-
-            await Task.Delay(20000).ConfigureAwait(false);
-
-            ApiEntryPoint.Instance.OnTranscodeEndRequest(playlist, TranscodingJobType.Hls);
         }
     }
 }

@@ -126,9 +126,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     {
                         double number = 0;
 
-                        if (!string.IsNullOrEmpty(i.ChannelInfo.Number))
+                        if (!string.IsNullOrEmpty(i.Number))
                         {
-                            double.TryParse(i.ChannelInfo.Number, out number);
+                            double.TryParse(i.Number, out number);
                         }
 
                         return number;
@@ -140,9 +140,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             {
                 double number = 0;
 
-                if (!string.IsNullOrEmpty(i.ChannelInfo.Number))
+                if (!string.IsNullOrEmpty(i.Number))
                 {
-                    double.TryParse(i.ChannelInfo.Number, out number);
+                    double.TryParse(i.Number, out number);
                 }
 
                 return number;
@@ -163,7 +163,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
 
             var returnChannels = allEnumerable
-                .Select(i => _tvDtoService.GetChannelInfoDto(i, GetCurrentProgram(i.ChannelInfo.Id), user))
+                .Select(i => _tvDtoService.GetChannelInfoDto(i, GetCurrentProgram(i.ExternalId), user))
                 .ToArray();
 
             var result = new QueryResult<ChannelInfoDto>
@@ -251,9 +251,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
                 var channel = GetInternalChannel(id);
 
-                _logger.Info("Opening channel stream from {0}, external channel Id: {1}", service.Name, channel.ChannelInfo.Id);
+                _logger.Info("Opening channel stream from {0}, external channel Id: {1}", service.Name, channel.ExternalId);
 
-                var result = await service.GetChannelStream(channel.ChannelInfo.Id, cancellationToken).ConfigureAwait(false);
+                var result = await service.GetChannelStream(channel.ExternalId, cancellationToken).ConfigureAwait(false);
 
                 if (!string.IsNullOrEmpty(result.Id))
                 {
@@ -313,8 +313,18 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 isNew = true;
             }
 
-            item.ChannelInfo = channelInfo;
+            item.ChannelType = channelInfo.ChannelType;
+            item.ProviderImageUrl = channelInfo.ImageUrl;
+            item.HasProviderImage = channelInfo.HasImage;
+            item.ProviderImagePath = channelInfo.ImagePath;
+            item.ExternalId = channelInfo.Id;
             item.ServiceName = serviceName;
+            item.Number = channelInfo.Number;
+
+            if (string.IsNullOrEmpty(item.Name))
+            {
+                item.Name = channelInfo.Name;
+            }
 
             // Set this now so we don't cause additional file system access during provider executions
             item.ResetResolveArgs(fileInfo);
@@ -346,8 +356,33 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
 
             item.ChannelType = channelType;
-            item.ProgramInfo = info;
             item.ServiceName = serviceName;
+
+            item.Audio = info.Audio;
+            item.ExternalChannelId = info.ChannelId;
+            item.CommunityRating = info.CommunityRating;
+            item.EndDate = info.EndDate;
+            item.EpisodeTitle = info.EpisodeTitle;
+            item.ExternalId = info.Id;
+            item.Genres = info.Genres;
+            item.HasProviderImage = info.HasImage;
+            item.IsHD = info.IsHD;
+            item.IsKids = info.IsKids;
+            item.IsLive = info.IsLive;
+            item.IsMovie = info.IsMovie;
+            item.IsNews = info.IsNews;
+            item.IsPremiere = info.IsPremiere;
+            item.IsRepeat = info.IsRepeat;
+            item.IsSeries = info.IsSeries;
+            item.IsSports = info.IsSports;
+            item.Name = info.Name;
+            item.OfficialRating = info.OfficialRating;
+            item.Overview = info.Overview;
+            item.PremiereDate = info.OriginalAirDate;
+            item.ProviderImagePath = info.ImagePath;
+            item.ProviderImageUrl = info.ImageUrl;
+            item.RunTimeTicks = (info.EndDate - info.StartDate).Ticks;
+            item.StartDate = info.StartDate;
 
             await item.RefreshMetadata(cancellationToken, forceSave: isNew, resetResolveArgs: false);
 
@@ -410,7 +445,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         private LiveTvChannel GetChannel(LiveTvProgram program)
         {
-            var programChannelId = program.ProgramInfo.ChannelId;
+            var programChannelId = program.ExternalChannelId;
 
             var internalProgramChannelId = _tvDtoService.GetInternalChannelId(program.ServiceName, programChannelId);
 
@@ -438,28 +473,28 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             {
                 var val = query.MinEndDate.Value;
 
-                programs = programs.Where(i => i.ProgramInfo.EndDate >= val);
+                programs = programs.Where(i => i.EndDate.HasValue && i.EndDate.Value >= val);
             }
 
             if (query.MinStartDate.HasValue)
             {
                 var val = query.MinStartDate.Value;
 
-                programs = programs.Where(i => i.ProgramInfo.StartDate >= val);
+                programs = programs.Where(i => i.StartDate >= val);
             }
 
             if (query.MaxEndDate.HasValue)
             {
                 var val = query.MaxEndDate.Value;
 
-                programs = programs.Where(i => i.ProgramInfo.EndDate <= val);
+                programs = programs.Where(i => i.EndDate.HasValue && i.EndDate.Value <= val);
             }
 
             if (query.MaxStartDate.HasValue)
             {
                 var val = query.MaxStartDate.Value;
 
-                programs = programs.Where(i => i.ProgramInfo.StartDate <= val);
+                programs = programs.Where(i => i.StartDate <= val);
             }
 
             if (query.ChannelIdList.Length > 0)
@@ -469,7 +504,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
                 programs = programs.Where(i =>
                 {
-                    var programChannelId = i.ProgramInfo.ChannelId;
+                    var programChannelId = i.ExternalChannelId;
 
                     var internalProgramChannelId = _tvDtoService.GetInternalChannelId(serviceName, programChannelId);
 
@@ -537,13 +572,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 .Select(i => _libraryManager.GetGenre(i))
                 .ToDictionary(i => i.Name, StringComparer.OrdinalIgnoreCase);
 
-            programs = programList.OrderByDescending(i => GetRecommendationScore(i.ProgramInfo, user.Id, serviceName, genres))
-                .ThenBy(i => i.ProgramInfo.StartDate);
+            programs = programList.OrderByDescending(i => GetRecommendationScore(i, user.Id, serviceName, genres))
+                .ThenBy(i => i.StartDate);
 
             if (query.Limit.HasValue)
             {
                 programs = programs.Take(query.Limit.Value)
-                    .OrderBy(i => i.ProgramInfo.StartDate);
+                    .OrderBy(i => i.StartDate);
             }
 
             var returnArray = programs
@@ -566,7 +601,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return result;
         }
 
-        private int GetRecommendationScore(ProgramInfo program, Guid userId, string serviceName, Dictionary<string, Genre> genres)
+        private int GetRecommendationScore(LiveTvProgram program, Guid userId, string serviceName, Dictionary<string, Genre> genres)
         {
             var score = 0;
 
@@ -580,7 +615,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 score++;
             }
 
-            var internalChannelId = _tvDtoService.GetInternalChannelId(serviceName, program.ChannelId);
+            var internalChannelId = _tvDtoService.GetInternalChannelId(serviceName, program.ExternalChannelId);
             var channel = GetInternalChannel(internalChannelId);
 
             var channelUserdata = _userDataManager.GetUserData(userId, channel.GetUserDataKey());
@@ -724,9 +759,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     var start = DateTime.UtcNow.AddHours(-1);
                     var end = start.AddDays(guideDays);
 
-                    var channelPrograms = await service.GetProgramsAsync(currentChannel.ChannelInfo.Id, start, end, cancellationToken).ConfigureAwait(false);
+                    var channelPrograms = await service.GetProgramsAsync(currentChannel.ExternalId, start, end, cancellationToken).ConfigureAwait(false);
 
-                    var programTasks = channelPrograms.Select(program => GetProgram(program, currentChannel.ChannelInfo.ChannelType, service.Name, cancellationToken));
+                    var programTasks = channelPrograms.Select(program => GetProgram(program, currentChannel.ChannelType, service.Name, cancellationToken));
                     var programEntities = await Task.WhenAll(programTasks).ConfigureAwait(false);
 
                     programs.AddRange(programEntities);
@@ -1033,7 +1068,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     {
                         var internalChannelId = _tvDtoService.GetInternalChannelId(service.Name, i.ChannelId);
                         var channel = GetInternalChannel(internalChannelId);
-                        channelName = channel == null ? null : channel.ChannelInfo.Name;
+                        channelName = channel == null ? null : channel.Name;
                     }
 
                     return _tvDtoService.GetSeriesTimerInfoDto(i, service, channelName);
@@ -1052,7 +1087,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         {
             var channel = GetInternalChannel(id);
 
-            var dto = _tvDtoService.GetChannelInfoDto(channel, GetCurrentProgram(channel.ChannelInfo.Id), user);
+            var dto = _tvDtoService.GetChannelInfoDto(channel, GetCurrentProgram(channel.ExternalId), user);
 
             return Task.FromResult(dto);
         }
@@ -1062,15 +1097,48 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             var now = DateTime.UtcNow;
 
             return _programs.Values
-                .Where(i => string.Equals(externalChannelId, i.ProgramInfo.ChannelId, StringComparison.OrdinalIgnoreCase))
-                .OrderBy(i => i.ProgramInfo.StartDate)
-                .SkipWhile(i => now >= i.ProgramInfo.EndDate)
+                .Where(i => string.Equals(externalChannelId, i.ExternalChannelId, StringComparison.OrdinalIgnoreCase))
+                .OrderBy(i => i.StartDate)
+                .SkipWhile(i => now >= (i.EndDate ?? DateTime.MinValue))
                 .FirstOrDefault();
         }
 
-        private async Task<SeriesTimerInfo> GetNewTimerDefaultsInternal(CancellationToken cancellationToken, ProgramInfo program = null)
+        private async Task<SeriesTimerInfo> GetNewTimerDefaultsInternal(CancellationToken cancellationToken, LiveTvProgram program = null)
         {
-            var info = await ActiveService.GetNewTimerDefaultsAsync(cancellationToken, program).ConfigureAwait(false);
+            ProgramInfo programInfo = null;
+
+            if (program != null)
+            {
+                programInfo = new ProgramInfo
+                {
+                    Audio = program.Audio,
+                    ChannelId = program.ExternalChannelId,
+                    CommunityRating = program.CommunityRating,
+                    EndDate = program.EndDate ?? DateTime.MinValue,
+                    EpisodeTitle = program.EpisodeTitle,
+                    Genres = program.Genres,
+                    HasImage = program.HasProviderImage,
+                    Id = program.ExternalId,
+                    IsHD = program.IsHD,
+                    IsKids = program.IsKids,
+                    IsLive = program.IsLive,
+                    IsMovie = program.IsMovie,
+                    IsNews = program.IsNews,
+                    IsPremiere = program.IsPremiere,
+                    IsRepeat = program.IsRepeat,
+                    IsSeries = program.IsSeries,
+                    IsSports = program.IsSports,
+                    OriginalAirDate = program.PremiereDate,
+                    Overview = program.Overview,
+                    StartDate = program.StartDate,
+                    ImagePath = program.ProviderImagePath,
+                    ImageUrl = program.ProviderImageUrl,
+                    Name = program.Name,
+                    OfficialRating = program.OfficialRating
+                };
+            }
+
+            var info = await ActiveService.GetNewTimerDefaultsAsync(cancellationToken, programInfo).ConfigureAwait(false);
 
             info.Id = null;
 
@@ -1088,7 +1156,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         public async Task<SeriesTimerInfoDto> GetNewTimerDefaults(string programId, CancellationToken cancellationToken)
         {
-            var program = GetInternalProgram(programId).ProgramInfo;
+            var program = GetInternalProgram(programId);
             var programDto = await GetProgram(programId, cancellationToken).ConfigureAwait(false);
 
             var defaults = await GetNewTimerDefaultsInternal(cancellationToken, program).ConfigureAwait(false);
@@ -1104,12 +1172,16 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             info.Name = program.Name;
             info.ChannelId = programDto.ChannelId;
             info.ChannelName = programDto.ChannelName;
-            info.EndDate = program.EndDate;
             info.StartDate = program.StartDate;
             info.Name = program.Name;
             info.Overview = program.Overview;
             info.ProgramId = programDto.Id;
             info.ExternalProgramId = programDto.ExternalId;
+
+            if (program.EndDate.HasValue)
+            {
+                info.EndDate = program.EndDate.Value;
+            }
 
             return info;
         }
@@ -1299,8 +1371,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         {
             var programs = _programs.ToList();
 
-            var startDate = programs.Select(i => i.Value.ProgramInfo.StartDate).Min();
-            var endDate = programs.Select(i => i.Value.ProgramInfo.StartDate).Max();
+            var startDate = programs.Select(i => i.Value.StartDate).Min();
+            var endDate = programs.Select(i => i.Value.StartDate).Max();
 
             return new GuideInfo
             {
