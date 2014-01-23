@@ -16,6 +16,12 @@ using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using System.Reflection;
+// MONOMKBUNDLE: For the embedded version, mkbundle tool
+#if MONOMKBUNDLE
+using Mono.Unix;
+using Mono.Unix.Native;
+using System.Text;
+#endif
 
 namespace MediaBrowser.Server.Mono
 {
@@ -27,7 +33,12 @@ namespace MediaBrowser.Server.Mono
 
 		public static void Main (string[] args)
 		{
+			//GetEntryAssembly is empty when running from a mkbundle package
+			#if MONOMKBUNDLE
+			var applicationPath = GetExecutablePath();
+			#else
 			var applicationPath = Assembly.GetEntryAssembly ().Location;
+			#endif
 
 			var appPaths = CreateApplicationPaths(applicationPath);
 
@@ -201,6 +212,19 @@ namespace MediaBrowser.Server.Mono
 			// Right now this method will just shutdown, but not restart
 			Shutdown ();
 		}
+
+		// Return the running process path
+		#if MONOMKBUNDLE
+		public static string GetExecutablePath() 
+		{ 
+			var builder = new StringBuilder (8192); 
+			if (Syscall.readlink("/proc/self/exe", builder) >= 0)
+				return builder.ToString (); 
+			else 
+				return null; 
+		}
+		#endif
+
 	}
 
 	class NoCheckCertificatePolicy : ICertificatePolicy
