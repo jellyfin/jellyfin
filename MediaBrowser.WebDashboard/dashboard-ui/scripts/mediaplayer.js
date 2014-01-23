@@ -999,8 +999,12 @@
             }, 4000);
         }
 
-        self.canPlay = function (item) {
+        self.canPlay = function (item, user) {
 
+            if (!user.Configuration.EnableMediaPlayback) {
+                return false;
+            }
+            
             if (item.LocationType == "Virtual") {
                 return false;
             }

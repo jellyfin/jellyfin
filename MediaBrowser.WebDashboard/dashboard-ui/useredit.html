@@ -29,24 +29,28 @@
                     <div id="featureAccessFields">
                         <h2>Feature Access</h2>
                         <div>
-                            <input type="checkbox" id="chkEnableRemoteControlOtherUsers" name="chkEnableRemoteControlOtherUsers" />
+                            <input type="checkbox" id="chkEnableMediaPlayback" name="chkEnableMediaPlayback" data-mini="true" />
+                            <label for="chkEnableMediaPlayback">Allow media playback</label>
+                        </div>
+                        <div>
+                            <input type="checkbox" id="chkEnableRemoteControlOtherUsers" name="chkEnableRemoteControlOtherUsers" data-mini="true" />
                             <label for="chkEnableRemoteControlOtherUsers">Allow this user to remote control other users</label>
                         </div>
                         <div>
-                            <input type="checkbox" id="chkManageLiveTv" name="chkManageLiveTv" />
-                            <label for="chkManageLiveTv">Manage live tv recordings</label>
+                            <input type="checkbox" id="chkManageLiveTv" name="chkManageLiveTv" data-mini="true" />
+                            <label for="chkManageLiveTv">Allow this user to schedule tv recordings</label>
                         </div>
                         <br />
                     </div>
                     <div id="accessControlDiv" style="display: none" data-role="collapsible">
                         <h2>Advanced Control</h2>
                         <div id="fldIsEnabled" style="margin: 1em 0 2em;">
-                            <input type="checkbox" id="chkDisabled" name="chkDisabled" />
+                            <input type="checkbox" id="chkDisabled" name="chkDisabled" data-mini="true" />
                             <label for="chkDisabled">Disable this user</label>
                             <div class="fieldDescription">If disabled the server will not allow any connections from this user. Existing connections will be abruptly terminated.</div>
                         </div>
                         <p id="fldIsHidden">
-                            <input type="checkbox" id="chkIsHidden" name="chkIsHidden" />
+                            <input type="checkbox" id="chkIsHidden" name="chkIsHidden" data-mini="true" />
                             <label for="chkIsHidden">Hide this user from login screens</label>
 
                         </p>
@@ -54,10 +58,10 @@
                     <br />
                     <ul data-role="listview" class="ulForm">
                         <li>
-                            <button type="submit" data-theme="b" data-icon="check">
+                            <button type="submit" data-theme="b" data-icon="check" data-mini="true">
                                 Save
                             </button>
-                            <button type="button" onclick="history.back();" data-icon="delete">
+                            <button type="button" onclick="history.back();" data-icon="delete" data-mini="true">
                                 Cancel
                             </button>
                         </li>

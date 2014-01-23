@@ -2527,7 +2527,7 @@
 
         var buttonCount = 0;
 
-        if (MediaPlayer.canPlay(item)) {
+        if (MediaPlayer.canPlay(item, currentUser)) {
 
             var resumePosition = (item.UserData || {}).PlaybackPositionTicks || 0;
             var onPlayClick = 'LibraryBrowser.showPlayMenu(this, \'' + item.Id + '\', \'' + item.Type + '\', \'' + item.MediaType + '\', ' + resumePosition + ');return false;';
@@ -2541,7 +2541,7 @@
             }
         }
 
-        if (item.LocalTrailerCount) {
+        if (item.LocalTrailerCount && currentUser.Configuration.EnableMediaPlayback) {
             html += '<button type="button" data-mini="true" data-inline="true" data-icon="video" data-iconpos="notext" class="btnPlayTrailer" data-itemid="' + item.Id + '" title="Play Trailer" style="' + buttonMargin + '">Play Trailer</button>';
             buttonCount++;
         }

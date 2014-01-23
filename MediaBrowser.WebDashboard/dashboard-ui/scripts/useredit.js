@@ -22,6 +22,7 @@
         $('#chkDisabled', page).checked(user.Configuration.IsDisabled || false).checkboxradio("refresh");
         $('#chkIsHidden', page).checked(user.Configuration.IsHidden || false).checkboxradio("refresh");
         $('#chkEnableRemoteControlOtherUsers', page).checked(user.Configuration.EnableRemoteControlOfOtherUsers || false).checkboxradio("refresh");
+        $('#chkEnableMediaPlayback', page).checked(user.Configuration.EnableMediaPlayback || false).checkboxradio("refresh");
 
         $('#chkManageLiveTv', page).checked(user.Configuration.EnableLiveTvManagement || false).checkboxradio("refresh");
 
@@ -55,6 +56,7 @@
         user.Configuration.IsDisabled = $('#chkDisabled', page).checked();
         user.Configuration.EnableRemoteControlOfOtherUsers = $('#chkEnableRemoteControlOtherUsers', page).checked();
         user.Configuration.EnableLiveTvManagement = $('#chkManageLiveTv', page).checked();
+        user.Configuration.EnableMediaPlayback = $('#chkEnableMediaPlayback', page).checked();
 
         var userId = getParameterByName("userId");
 

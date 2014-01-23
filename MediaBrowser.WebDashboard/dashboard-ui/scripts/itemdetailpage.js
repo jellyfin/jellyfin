@@ -35,6 +35,30 @@
                     $('#editButtonContainer', page).hide();
                 }
 
+                if (MediaPlayer.canPlay(item, user) && item.LocationType !== "Offline" && item.LocationType !== "Virtual") {
+
+                    var url = MediaPlayer.getPlayUrl(item);
+
+                    if (url) {
+                        $('#playExternalButtonContainer', page).show();
+                        $('#playButtonContainer', page).hide();
+                    } else {
+                        $('#playButtonContainer', page).show();
+                        $('#playExternalButtonContainer', page).hide();
+                    }
+
+                    $('#btnPlayExternal', page).attr('href', url || '#');
+
+                } else {
+                    $('#playButtonContainer', page).hide();
+                    $('#playExternalButtonContainer', page).hide();
+                }
+
+                if (item.LocalTrailerCount && item.LocationType !== "Offline" && user.Configuration.EnableMediaPlayback) {
+                    $('#trailerButtonContainer', page).show();
+                } else {
+                    $('#trailerButtonContainer', page).hide();
+                }
             });
 
             if (item.LocationType == "Offline") {
@@ -63,31 +87,6 @@
             }
             else {
                 $('#missingIndicator', page).hide();
-            }
-
-            if (MediaPlayer.canPlay(item) && item.LocationType !== "Offline" && item.LocationType !== "Virtual") {
-
-                var url = MediaPlayer.getPlayUrl(item);
-
-                if (url) {
-                    $('#playExternalButtonContainer', page).show();
-                    $('#playButtonContainer', page).hide();
-                } else {
-                    $('#playButtonContainer', page).show();
-                    $('#playExternalButtonContainer', page).hide();
-                }
-
-                $('#btnPlayExternal', page).attr('href', url || '#');
-
-            } else {
-                $('#playButtonContainer', page).hide();
-                $('#playExternalButtonContainer', page).hide();
-            }
-
-            if (item.LocalTrailerCount && item.LocationType !== "Offline") {
-                $('#trailerButtonContainer', page).show();
-            } else {
-                $('#trailerButtonContainer', page).hide();
             }
 
             $(".autoNumeric").autoNumeric('init');

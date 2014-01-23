@@ -144,13 +144,13 @@
                 ApiClient.sendWebSocketMessage("Context", vals.join('|'));
             }
 
-            if (MediaPlayer.canPlay(item)) {
-                $('#playButtonContainer', page).show();
-            } else {
-                $('#playButtonContainer', page).hide();
-            }
-
             Dashboard.getCurrentUser().done(function (user) {
+
+                if (MediaPlayer.canPlay(item, user)) {
+                    $('#playButtonContainer', page).show();
+                } else {
+                    $('#playButtonContainer', page).hide();
+                }
 
                 if (user.Configuration.IsAdministrator && item.LocationType !== "Offline") {
                     $('#editButtonContainer', page).show();

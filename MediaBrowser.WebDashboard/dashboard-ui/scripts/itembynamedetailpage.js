@@ -79,13 +79,13 @@
                 ApiClient.sendWebSocketMessage("Context", vals.join('|'));
             }
 
-            if (MediaPlayer.canPlay(item)) {
-                $('#playButtonContainer', page).show();
-            } else {
-                $('#playButtonContainer', page).hide();
-            }
-
             Dashboard.getCurrentUser().done(function (user) {
+
+                if (MediaPlayer.canPlay(item, user)) {
+                    $('#playButtonContainer', page).show();
+                } else {
+                    $('#playButtonContainer', page).hide();
+                }
 
                 var editImagesHref = user.Configuration.IsAdministrator ? 'edititemimages.html' + window.location.search : null;
                 $('#itemImage', page).html(LibraryBrowser.getDetailImageHtml(item, editImagesHref));
