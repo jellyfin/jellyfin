@@ -25,13 +25,6 @@ namespace MediaBrowser.Controller.LiveTv
         IReadOnlyList<ILiveTvService> Services { get; }
 
         /// <summary>
-        /// Gets the service infos.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{IEnumerable{LiveTvServiceInfo}}.</returns>
-        Task<IEnumerable<LiveTvServiceInfo>> GetServiceInfos(CancellationToken cancellationToken);
-
-        /// <summary>
         /// Gets the new timer defaults asynchronous.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
@@ -256,5 +249,20 @@ namespace MediaBrowser.Controller.LiveTv
         /// <returns>Task{QueryResult{ProgramInfoDto}}.</returns>
         Task<QueryResult<ProgramInfoDto>> GetRecommendedPrograms(RecommendedProgramQuery query,
             CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the live tv information.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{LiveTvInfo}.</returns>
+        Task<LiveTvInfo> GetLiveTvInfo(CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Resets the tuner.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task ResetTuner(string id, CancellationToken cancellationToken);
     }
 }
