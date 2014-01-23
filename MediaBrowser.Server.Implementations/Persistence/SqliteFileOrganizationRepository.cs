@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -48,8 +49,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             string[] queries = {
 
-                                "create table if not exists organizationresults (ResultId GUID PRIMARY KEY, OriginalPath TEXT, TargetPath TEXT, OrganizationDate datetime, Status TEXT, OrganizationType TEXT, StatusMessage TEXT, ExtractedName TEXT, ExtractedYear int null, ExtractedSeasonNumber int null, ExtractedEpisodeNumber int null, ExtractedEndingEpisodeNumber int null)",
-                                "create index if not exists idx_organizationresults on organizationresults(ResultId)",
+                                "create table if not exists OrganizerResults (ResultId GUID PRIMARY KEY, OriginalPath TEXT, TargetPath TEXT, OrganizationDate datetime, Status TEXT, OrganizationType TEXT, StatusMessage TEXT, ExtractedName TEXT, ExtractedYear int null, ExtractedSeasonNumber int null, ExtractedEpisodeNumber int null, ExtractedEndingEpisodeNumber, DuplicatePaths TEXT int null)",
+                                "create index if not exists idx_OrganizerResults on OrganizerResults(ResultId)",
 
                                 //pragmas
                                 "pragma temp_store = memory",
@@ -67,7 +68,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private void PrepareStatements()
         {
             _saveResultCommand = _connection.CreateCommand();
-            _saveResultCommand.CommandText = "replace into organizationresults (ResultId, OriginalPath, TargetPath, OrganizationDate, Status, OrganizationType, StatusMessage, ExtractedName, ExtractedYear, ExtractedSeasonNumber, ExtractedEpisodeNumber, ExtractedEndingEpisodeNumber) values (@ResultId, @OriginalPath, @TargetPath, @OrganizationDate, @Status, @OrganizationType, @StatusMessage, @ExtractedName, @ExtractedYear, @ExtractedSeasonNumber, @ExtractedEpisodeNumber, @ExtractedEndingEpisodeNumber)";
+            _saveResultCommand.CommandText = "replace into OrganizerResults (ResultId, OriginalPath, TargetPath, OrganizationDate, Status, OrganizationType, StatusMessage, ExtractedName, ExtractedYear, ExtractedSeasonNumber, ExtractedEpisodeNumber, ExtractedEndingEpisodeNumber, DuplicatePaths) values (@ResultId, @OriginalPath, @TargetPath, @OrganizationDate, @Status, @OrganizationType, @StatusMessage, @ExtractedName, @ExtractedYear, @ExtractedSeasonNumber, @ExtractedEpisodeNumber, @ExtractedEndingEpisodeNumber, @DuplicatePaths)";
 
             _saveResultCommand.Parameters.Add(_saveResultCommand, "@ResultId");
             _saveResultCommand.Parameters.Add(_saveResultCommand, "@OriginalPath");
@@ -81,14 +82,15 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _saveResultCommand.Parameters.Add(_saveResultCommand, "@ExtractedSeasonNumber");
             _saveResultCommand.Parameters.Add(_saveResultCommand, "@ExtractedEpisodeNumber");
             _saveResultCommand.Parameters.Add(_saveResultCommand, "@ExtractedEndingEpisodeNumber");
+            _saveResultCommand.Parameters.Add(_saveResultCommand, "@DuplicatePaths");
 
             _deleteResultCommand = _connection.CreateCommand();
-            _deleteResultCommand.CommandText = "delete from organizationresults where ResultId = @ResultId";
+            _deleteResultCommand.CommandText = "delete from OrganizerResults where ResultId = @ResultId";
 
             _deleteResultCommand.Parameters.Add(_saveResultCommand, "@ResultId");
 
             _deleteAllCommand = _connection.CreateCommand();
-            _deleteAllCommand.CommandText = "delete from organizationresults";
+            _deleteAllCommand.CommandText = "delete from OrganizerResults";
         }
 
         public async Task SaveResult(FileOrganizationResult result, CancellationToken cancellationToken)
@@ -120,6 +122,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 _saveResultCommand.GetParameter(9).Value = result.ExtractedSeasonNumber;
                 _saveResultCommand.GetParameter(10).Value = result.ExtractedEpisodeNumber;
                 _saveResultCommand.GetParameter(11).Value = result.ExtractedEndingEpisodeNumber;
+                _saveResultCommand.GetParameter(12).Value = string.Join("|", result.DuplicatePaths.ToArray());
 
                 _saveResultCommand.Transaction = transaction;
 
@@ -268,11 +271,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             using (var cmd = _connection.CreateCommand())
             {
-                cmd.CommandText = "SELECT ResultId, OriginalPath, TargetPath, OrganizationDate, Status, OrganizationType, StatusMessage, ExtractedName, ExtractedYear, ExtractedSeasonNumber, ExtractedEpisodeNumber, ExtractedEndingEpisodeNumber from organizationresults";
+                cmd.CommandText = "SELECT ResultId, OriginalPath, TargetPath, OrganizationDate, Status, OrganizationType, StatusMessage, ExtractedName, ExtractedYear, ExtractedSeasonNumber, ExtractedEpisodeNumber, ExtractedEndingEpisodeNumber, DuplicatePaths from OrganizerResults";
 
                 if (query.StartIndex.HasValue && query.StartIndex.Value > 0)
                 {
-                    cmd.CommandText += string.Format(" WHERE ResultId NOT IN (SELECT ResultId FROM organizationresults ORDER BY OrganizationDate desc LIMIT {0})",
+                    cmd.CommandText += string.Format(" WHERE ResultId NOT IN (SELECT ResultId FROM OrganizerResults ORDER BY OrganizationDate desc LIMIT {0})",
                         query.StartIndex.Value.ToString(_usCulture));
                 }
 
@@ -283,7 +286,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     cmd.CommandText += " LIMIT " + query.Limit.Value.ToString(_usCulture);
                 }
 
-                cmd.CommandText += "; select count (ResultId) from organizationresults";
+                cmd.CommandText += "; select count (ResultId) from OrganizerResults";
 
                 var list = new List<FileOrganizationResult>();
                 var count = 0;
@@ -320,7 +323,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             using (var cmd = _connection.CreateCommand())
             {
-                cmd.CommandText = "select ResultId, OriginalPath, TargetPath, OrganizationDate, Status, OrganizationType, StatusMessage, ExtractedName, ExtractedYear, ExtractedSeasonNumber, ExtractedEpisodeNumber, ExtractedEndingEpisodeNumber from organizationresults where ResultId=@Id";
+                cmd.CommandText = "select ResultId, OriginalPath, TargetPath, OrganizationDate, Status, OrganizationType, StatusMessage, ExtractedName, ExtractedYear, ExtractedSeasonNumber, ExtractedEpisodeNumber, ExtractedEndingEpisodeNumber, DuplicatePaths from OrganizerResults where ResultId=@Id";
 
                 cmd.Parameters.Add(cmd, "@Id", DbType.Guid).Value = guid;
 
@@ -387,6 +390,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
             if (!reader.IsDBNull(11))
             {
                 result.ExtractedEndingEpisodeNumber = reader.GetInt32(11);
+            }
+
+            if (!reader.IsDBNull(12))
+            {
+                result.DuplicatePaths = reader.GetString(12).Split('|').Where(i => !string.IsNullOrEmpty(i)).ToList();
             }
 
             return result;

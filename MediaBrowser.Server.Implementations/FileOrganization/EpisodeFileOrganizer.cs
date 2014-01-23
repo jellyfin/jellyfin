@@ -162,6 +162,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             {
                 result.Status = FileSortingStatus.SkippedExisting;
                 result.StatusMessage = string.Empty;
+                result.DuplicatePaths = otherDuplicatePaths;
                 return;
             }
 

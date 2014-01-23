@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Model.FileOrganization
 {
@@ -81,6 +82,17 @@ namespace MediaBrowser.Model.FileOrganization
         /// </summary>
         /// <value>The type.</value>
         public FileOrganizerType Type { get; set; }
+
+        /// <summary>
+        /// Gets or sets the duplicate paths.
+        /// </summary>
+        /// <value>The duplicate paths.</value>
+        public List<string> DuplicatePaths { get; set; }
+
+        public FileOrganizationResult()
+        {
+            DuplicatePaths = new List<string>();
+        }
     }
 
     public enum FileSortingStatus

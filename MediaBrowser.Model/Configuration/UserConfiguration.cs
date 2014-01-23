@@ -68,6 +68,7 @@ namespace MediaBrowser.Model.Configuration
         public bool BlockUnratedBooks { get; set; }
 
         public bool EnableLiveTvManagement { get; set; }
+        public bool EnableLiveTvAccess { get; set; }
 
         public bool EnableMediaPlayback { get; set; }
         
@@ -82,6 +83,7 @@ namespace MediaBrowser.Model.Configuration
 
             EnableLiveTvManagement = true;
             EnableMediaPlayback = true;
+            EnableLiveTvAccess = true;
         }
     }
 }

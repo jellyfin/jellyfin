@@ -74,7 +74,7 @@
             html += '<a class="viewMenuLink viewMenuTextLink desktopViewMenuLink' + (view == 'tv' ? selectedCssClass : '') + '" href="tvrecommended.html">' + (view == 'tv' ? selectedHtml : '') + '<span class="viewName">TV</span></a>';
         }
 
-        if (liveTvInfo.ActiveServiceName) {
+        if (liveTvInfo.EnabledUsers.indexOf(user.Id) != -1) {
             html += '<a class="viewMenuLink viewMenuTextLink desktopViewMenuLink' + (view == 'livetv' ? selectedCssClass : '') + '" href="livetvsuggested.html">' + (view == 'livetv' ? selectedHtml : '') + '<span class="viewName">Live TV</span></a>';
         }
 
@@ -146,7 +146,7 @@
                 ]);
             }
 
-            if (liveTvInfo.ActiveServiceName) {
+            if (liveTvInfo.EnabledUsers.indexOf(Dashboard.getCurrentUserId()) != -1) {
                 html += getCollapsibleHtml('Live TV', [
 
                     { text: 'Suggested', href: 'livetvsuggested.html' },
@@ -223,7 +223,7 @@
             var link = links[i];
 
             var href = selectedIndex == i ? '#' : link.href;
-            
+
             html += '<li><a class="libraryPanelLink" href="' + href + '">' + link.text + '</a></li>';
         }
 

@@ -30,7 +30,7 @@
 
         })[0];
 
-        var message = 'The following file will be deleted:<p style="word-wrap:break-word;">' + item.OriginalPath + '</p><p>Are you sure you wish to proceed?</p>';
+        var message = 'The following file will be <b>deleted</b>:<p style="word-wrap:break-word;">' + item.OriginalPath + '</p><p>Are you sure you wish to proceed?</p>';
 
         Dashboard.confirm(message, "Delete File", function (confirmResult) {
 
@@ -79,7 +79,7 @@
         $('#txtEndingEpisode', popup).val(item.ExtractedEndingEpisodeNumber);
 
         $('#hfResultId', popup).val(item.Id);
-        
+
         if (item.ExtractedName) {
             $('#fldRememberCorrection', popup).hide();
         } else {
@@ -115,7 +115,15 @@
             return;
         }
 
-        var message = 'The following file will be moved from:<p style="word-wrap:break-word;">' + item.OriginalPath + '</p><p>to:</p><p style="word-wrap:break-word;">' + item.TargetPath + '</p><p>Are you sure you wish to proceed?</p>';
+        var message = 'The following file will be moved from:<p style="word-wrap:break-word;">' + item.OriginalPath + '</p><p>to:</p><p style="word-wrap:break-word;">' + item.TargetPath + '</p>';
+
+        if (item.DuplicatePaths.length) {
+            message += '<p><b>In addition the following dupliates will be deleted:</b></p>';
+
+            message += '<p style="word-wrap:break-word;">' + item.DuplicatePaths.join('<br/>') + '</p>';
+        }
+
+        message += '<p>Are you sure you wish to proceed?</p>';
 
         Dashboard.confirm(message, "Organize File", function (confirmResult) {
 

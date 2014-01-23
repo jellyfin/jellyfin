@@ -25,6 +25,7 @@
         $('#chkEnableMediaPlayback', page).checked(user.Configuration.EnableMediaPlayback || false).checkboxradio("refresh");
 
         $('#chkManageLiveTv', page).checked(user.Configuration.EnableLiveTvManagement || false).checkboxradio("refresh");
+        $('#chkEnableLiveTvAccess', page).checked(user.Configuration.EnableLiveTvAccess || false).checkboxradio("refresh");
 
         Dashboard.hideLoadingMsg();
     }
@@ -57,6 +58,7 @@
         user.Configuration.EnableRemoteControlOfOtherUsers = $('#chkEnableRemoteControlOtherUsers', page).checked();
         user.Configuration.EnableLiveTvManagement = $('#chkManageLiveTv', page).checked();
         user.Configuration.EnableMediaPlayback = $('#chkEnableMediaPlayback', page).checked();
+        user.Configuration.EnableLiveTvAccess = $('#chkEnableLiveTvAccess', page).checked();
 
         var userId = getParameterByName("userId");
 

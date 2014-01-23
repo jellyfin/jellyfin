@@ -309,6 +309,11 @@ namespace MediaBrowser.Api.LiveTv
                 StatusMessage = activeServiceInfo == null ? null : activeServiceInfo.StatusMessage
             };
 
+            info.EnabledUsers = _userManager.Users
+                .Where(i => i.Configuration.EnableLiveTvAccess && info.IsEnabled)
+                .Select(i => i.Id.ToString("N"))
+                .ToList();
+
             return ToOptimizedResult(info);
         }
 
