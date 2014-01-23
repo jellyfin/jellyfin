@@ -81,6 +81,12 @@ namespace MediaBrowser.Model.LiveTv
         public bool IsEnabled { get; set; }
 
         /// <summary>
+        /// Gets or sets the enabled users.
+        /// </summary>
+        /// <value>The enabled users.</value>
+        public List<string> EnabledUsers { get; set; }
+
+        /// <summary>
         /// Gets or sets the status.
         /// </summary>
         /// <value>The status.</value>
@@ -95,6 +101,7 @@ namespace MediaBrowser.Model.LiveTv
         public LiveTvInfo()
         {
             Services = new List<LiveTvServiceInfo>();
+            EnabledUsers = new List<string>();
         }
     }
 

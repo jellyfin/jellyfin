@@ -197,5 +197,13 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task RecordLiveStream(string id, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Resets the tuner.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task ResetTuner(string id, CancellationToken cancellationToken);
     }
 }
