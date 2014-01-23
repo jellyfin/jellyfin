@@ -68,6 +68,8 @@ namespace MediaBrowser.Model.Configuration
         public bool BlockUnratedBooks { get; set; }
 
         public bool EnableLiveTvManagement { get; set; }
+
+        public bool EnableMediaPlayback { get; set; }
         
         /// <summary>
         /// Initializes a new instance of the <see cref="UserConfiguration" /> class.
@@ -79,6 +81,7 @@ namespace MediaBrowser.Model.Configuration
             BlockNotRated = false;
 
             EnableLiveTvManagement = true;
+            EnableMediaPlayback = true;
         }
     }
 }

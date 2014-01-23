@@ -604,6 +604,16 @@ namespace MediaBrowser.Server.Implementations.Session
         {
             var session = GetSessionForRemoteControl(sessionId);
 
+            if (session.UserId.HasValue)
+            {
+                var user = _userManager.GetUserById(session.UserId.Value);
+
+                if (!user.Configuration.EnableMediaPlayback)
+                {
+                    throw new ArgumentException(string.Format("{0} is not allowed to play media.", user.Name));
+                }
+            }
+
             var items = command.ItemIds.Select(i => _libraryManager.GetItemById(new Guid(i)))
                 .ToList();
 

@@ -1007,6 +1007,13 @@ namespace MediaBrowser.Api.Playback
                 throw new InvalidOperationException("You asked for a debug error, you got one.");
             }
 
+            var user = AuthorizationRequestFilterAttribute.GetCurrentUser(Request, UserManager);
+
+            if (user != null && !user.Configuration.EnableMediaPlayback)
+            {
+                throw new ArgumentException(string.Format("{0} is not allowed to play media.", user.Name));
+            }
+
             var url = Request.PathInfo;
 
             if (!request.AudioCodec.HasValue)
