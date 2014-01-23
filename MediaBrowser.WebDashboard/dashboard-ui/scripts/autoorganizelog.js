@@ -307,10 +307,8 @@
 
         if (result.TotalRecordCount) {
             $('.btnClearLog', page).show();
-            $('.legend', page).show();
         } else {
             $('.btnClearLog', page).hide();
-            $('.legend', page).hide();
         }
     }
 

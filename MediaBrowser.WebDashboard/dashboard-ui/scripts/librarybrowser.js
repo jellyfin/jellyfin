@@ -684,7 +684,7 @@
 
             var html = "";
 
-            var primaryImageAspectRatio = options.useAverageAspectRatio || options.shape == 'auto' ? LibraryBrowser.getAveragePrimaryImageAspectRatio(items) : null;
+            var primaryImageAspectRatio = options.shape == 'auto' ? LibraryBrowser.getAveragePrimaryImageAspectRatio(items) : null;
 
             if (options.shape == 'auto') {
 
@@ -699,13 +699,11 @@
                 }
             }
 
-            if (!options.useAverageAspectRatio) {
-                primaryImageAspectRatio = null;
-            }
-
             for (var i = 0, length = items.length; i < length; i++) {
 
                 var item = items[i];
+
+                primaryImageAspectRatio = options.useAverageAspectRatio ? LibraryBrowser.getAveragePrimaryImageAspectRatio([item]) : null;
 
                 var futureDateText;
 
@@ -1498,7 +1496,7 @@
                 html += '<div class="starRatingValue">';
                 html += item.CommunityRating.toFixed(1);
                 html += '</div>';
-            } 
+            }
 
             if (item.CriticRating != null) {
 
