@@ -252,11 +252,11 @@ namespace MediaBrowser.Providers.Savers
             {
                 if (item is Person)
                 {
-                    builder.Append("<BirthDate>" + SecurityElement.Escape(item.PremiereDate.Value.ToString("yyyy-MM-dd")) + "</BirthDate>");
+                    builder.Append("<BirthDate>" + SecurityElement.Escape(item.PremiereDate.Value.ToLocalTime().ToString("yyyy-MM-dd")) + "</BirthDate>");
                 }
                 else if (!(item is Episode))
                 {
-                    builder.Append("<PremiereDate>" + SecurityElement.Escape(item.PremiereDate.Value.ToString("yyyy-MM-dd")) + "</PremiereDate>");
+                    builder.Append("<PremiereDate>" + SecurityElement.Escape(item.PremiereDate.Value.ToLocalTime().ToString("yyyy-MM-dd")) + "</PremiereDate>");
                 }
             }
 
@@ -358,7 +358,7 @@ namespace MediaBrowser.Providers.Savers
             }
 
             // Use original runtime here, actual file runtime later in MediaInfo
-            var runTimeTicks = item.OriginalRunTimeTicks ?? item.RunTimeTicks;
+            var runTimeTicks = item.RunTimeTicks;
 
             if (runTimeTicks.HasValue)
             {

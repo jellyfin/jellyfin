@@ -95,7 +95,7 @@ namespace MediaBrowser.Providers.Savers
 
             if (series.PremiereDate.HasValue)
             {
-                builder.Append("<FirstAired>" + SecurityElement.Escape(series.PremiereDate.Value.ToString("yyyy-MM-dd")) + "</FirstAired>");
+                builder.Append("<FirstAired>" + SecurityElement.Escape(series.PremiereDate.Value.ToLocalTime().ToString("yyyy-MM-dd")) + "</FirstAired>");
             }
             
             XmlSaverHelpers.AddCommonNodes(item, builder);
