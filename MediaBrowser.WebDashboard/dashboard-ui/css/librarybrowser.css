@@ -411,7 +411,7 @@ a.itemTag:hover {
 
 .lnkSibling {
     position: absolute;
-    top: 10px;
+    top: 0;
     text-decoration: none;
     font-weight: normal!important;
     display: none;
@@ -425,18 +425,19 @@ a.itemTag:hover {
         text-decoration: underline;
     }
 
-.noBackdrop .lnkSibling {
-    background-color: transparent;
-    border-radius: 0;
-    padding: 0;
+@media all and (max-width: 1000px) {
+
+    .lnkSibling {
+        display: none!important;
+    }
 }
 
 .lnkPreviousItem {
-    left: 15px;
+    left: 5px;
 }
 
 .lnkNextItem {
-    right: 15px;
+    right: 0;
 }
 
 .itemDetailImage {
@@ -461,20 +462,13 @@ a.itemTag:hover {
 }
 
 .parentName {
-    padding: .5em;
-    text-align: center;
-    font-size: 16px;
-    border: 0;
-    background-color: rgba(0,0,0,0.7);
+    font-size: 15px;
+    display: block;
+    margin-bottom: .4em;
 }
 
-    .parentName a {
-        color: #fff!important;
-        font-weight: normal!important;
-    }
-
 .inlineItemName {
-    font-size: 22px;
+    font-size: 20px;
 }
 
 .itemName + .itemMiscInfo {
@@ -482,19 +476,19 @@ a.itemTag:hover {
 }
 
 .itemOverview {
-    /*max-height: 120px;
-    overflow-y: auto;*/
     text-overflow: ellipsis;
 }
 
 .desktopOverview {
     min-width: 500px;
+    max-height: 100px;
+    overflow-y: auto;
+    padding-right: 1em;
 }
 
 .mobileOverview {
     display: none;
     padding: 0 1em;
-    max-height: initial;
 }
 
 .mobileGenres {
@@ -666,10 +660,6 @@ a.itemTag:hover {
         position: static;
         padding: 1em 1em 0;
         background-color: transparent;
-    }
-
-    .parentName {
-        position: static!important;
     }
 
     .itemDetailImage {

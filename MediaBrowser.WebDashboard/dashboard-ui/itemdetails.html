@@ -102,8 +102,6 @@
             </div>
         </div>
         <div id="itemBackdrop" class="itemBackdrop noBackdrop">
-            <div class="parentName" style="display: none;">
-            </div>
             <div class="itemBackdropContent">
                 <table class="detailPageContent primaryDetailPageContent">
                     <tr>
@@ -114,7 +112,7 @@
                             </div>
                         </td>
                         <td style="vertical-align: top; padding: 0; position: relative;">
-                            <p><span class="itemName inlineItemName"></span><span class="itemMiscInfo" style="display: inline;"></span></p>
+                            <p><span class="parentName"></span><span class="itemName inlineItemName"></span><span class="itemMiscInfo" style="display: inline;"></span></p>
                             <p>
                                 <span class="itemCommunityRating"></span>
                                 <span class="userDataIcons"></span>
@@ -126,8 +124,8 @@
                     </tr>
                 </table>
             </div>
-            <a href="#" id="lnkPreviousItem" class="lnkPreviousItem lnkSibling hide">← Previous</a>
-            <a href="#" id="lnkNextItem" class="lnkNextItem lnkSibling hide">Next →</a>
+            <a href="#" id="lnkPreviousItem" class="lnkPreviousItem lnkSibling hide" data-role="button" title="Previous" data-icon="carat-l" data-mini="true" data-inline="true" data-iconpos="notext">Previous</a>
+            <a href="#" id="lnkNextItem" class="lnkNextItem lnkSibling hide" data-role="button" title="Next" data-icon="carat-r" data-mini="true" data-inline="true" data-iconpos="notext">Next</a>
             <p class="itemGenres mobileGenres"></p>
             <p class="itemOverview mobileOverview"></p>
         </div>
@@ -141,7 +139,7 @@
             <span id="playButtonContainer" style="display: none;">
                 <button id="btnPlay" type="button" data-icon="play" data-inline="true" data-mini="true">Play</button>
             </span>
-            <span id="trailerButtonContainer">
+            <span id="trailerButtonContainer" style="display: none;">
                 <button id="btnPlayTrailer" type="button" data-icon="video" data-inline="true" data-mini="true">Trailer</button>
             </span>
             <span id="playExternalButtonContainer" style="display: none;">

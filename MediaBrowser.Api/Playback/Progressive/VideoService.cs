@@ -156,9 +156,10 @@ namespace MediaBrowser.Api.Playback.Progressive
                 }
             }
 
-            if (request.Framerate.HasValue)
+            var framerate = GetFramerateParam(state);
+            if (framerate.HasValue)
             {
-                args += string.Format(" -r {0}", request.Framerate.Value);
+                args += string.Format(" -r {0}", framerate.Value.ToString(UsCulture));
             }
 
             var qualityParam = GetVideoQualityParam(state, codec);
@@ -169,11 +170,13 @@ namespace MediaBrowser.Api.Playback.Progressive
             {
                 if (string.Equals(codec, "libvpx", StringComparison.OrdinalIgnoreCase))
                 {
-                    qualityParam += string.Format(" -minrate:v ({0}*.90) -maxrate:v ({0}*1.10) -bufsize:v {0} -b:v {0}", bitrate.Value.ToString(UsCulture));
+                    qualityParam += string.Format(" -b:v {0}", bitrate.Value.ToString(UsCulture));
                 }
                 else
                 {
-                    qualityParam += string.Format(" -b:v {0}", bitrate.Value.ToString(UsCulture));
+                    qualityParam += string.Format(" -maxrate {0} -bufsize {1}", 
+                        bitrate.Value.ToString(UsCulture),
+                        (bitrate.Value * 2).ToString(UsCulture));
                 }
             }
 
@@ -182,7 +185,10 @@ namespace MediaBrowser.Api.Playback.Progressive
                 args += " " + qualityParam.Trim();
             }
 
-            args += " -vsync vfr";
+            if (!string.IsNullOrEmpty(state.VideoSync))
+            {
+                args += " -vsync " + state.VideoSync;
+            }
 
             if (!string.IsNullOrEmpty(state.VideoRequest.Profile))
             {

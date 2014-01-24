@@ -307,7 +307,7 @@ namespace MediaBrowser.Api.Playback
             if (videoCodec.Equals("libvpx", StringComparison.OrdinalIgnoreCase))
             {
                 // http://www.webmproject.org/docs/encoder-parameters/
-                return "-speed 16 -quality good -profile:v 0 -slices 8";
+                return "-speed 16 -quality good -profile:v 0 -slices 8 -crf 18";
             }
 
             // asf/wmv
@@ -321,11 +321,11 @@ namespace MediaBrowser.Api.Playback
                 switch (GetQualitySetting())
                 {
                     case EncodingQuality.HighSpeed:
-                        return "-preset ultrafast";
+                        return "-preset ultrafast -crf 18";
                     case EncodingQuality.HighQuality:
-                        return "-preset superfast";
+                        return "-preset superfast -crf 18";
                     case EncodingQuality.MaxQuality:
-                        return "-preset superfast";
+                        return "-preset superfast -crf 18";
                     default:
                         throw new Exception("Unrecognized MediaEncodingQuality value.");
                 }
@@ -381,7 +381,7 @@ namespace MediaBrowser.Api.Playback
                 audioSampleRate,
                 volParam,
                 pts,
-                state.AudioSync.ToString(UsCulture));
+                state.AudioSync);
         }
 
         /// <summary>
@@ -994,6 +994,26 @@ namespace MediaBrowser.Api.Playback
             }
         }
 
+        protected double? GetFramerateParam(StreamState state)
+        {
+            if (state.VideoRequest != null && state.VideoRequest.Framerate.HasValue)
+            {
+                return state.VideoRequest.Framerate.Value;
+            }
+
+            if (state.VideoStream != null)
+            {
+                var contentRate = state.VideoStream.AverageFrameRate ?? state.VideoStream.RealFrameRate;
+
+                if (contentRate.HasValue && contentRate.Value > 23.976)
+                {
+                    return 23.976;
+                }
+            }
+
+            return null;
+        }
+
         /// <summary>
         /// Gets the state.
         /// </summary>
@@ -1068,7 +1088,7 @@ namespace MediaBrowser.Api.Playback
                 //state.RunTimeTicks = recording.RunTimeTicks;
                 state.ReadInputAtNativeFramerate = recording.RecordingInfo.Status == RecordingStatus.InProgress;
                 state.SendInputOverStandardInput = recording.RecordingInfo.Status == RecordingStatus.InProgress;
-                state.AudioSync = 1000;
+                state.AudioSync = "1000";
                 state.DeInterlace = true;
             }
             else if (item is LiveTvChannel)
@@ -1096,7 +1116,7 @@ namespace MediaBrowser.Api.Playback
 
                 state.SendInputOverStandardInput = true;
                 state.ReadInputAtNativeFramerate = true;
-                state.AudioSync = 1000;
+                state.AudioSync = "1000";
                 state.DeInterlace = true;
             }
             else

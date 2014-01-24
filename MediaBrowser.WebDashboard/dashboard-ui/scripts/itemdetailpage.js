@@ -408,11 +408,11 @@
 
                 if (curr.IndexNumber < item.IndexNumber) {
 
-                    $('.lnkPreviousItem', page).removeClass('hide').attr('href', 'itemdetails.html?id=' + curr.Id).html('← Previous');
+                    $('.lnkPreviousItem', page).removeClass('hide').attr('href', 'itemdetails.html?id=' + curr.Id);
                 }
                 else if (curr.IndexNumber > item.IndexNumber) {
 
-                    $('.lnkNextItem', page).removeClass('hide').attr('href', 'itemdetails.html?id=' + curr.Id).html('Next' + ' →');
+                    $('.lnkNextItem', page).removeClass('hide').attr('href', 'itemdetails.html?id=' + curr.Id);
                 }
             }
         });
@@ -1169,8 +1169,16 @@
         }).on("click.moreCriticReviews", ".moreCriticReviews", function () {
 
             renderCriticReviews(page, currentItem);
+            
+        }).on('swipeleft.sibling', function() {
 
+            $('.lnkNextItem', page)[0].click();
+            
+        }).on('swiperight.sibling', function () {
+
+            $('.lnkPreviousItem', page)[0].click();
         });
+        
 
         reload(page);
 
@@ -1180,7 +1188,7 @@
 
         var page = this;
 
-        $(page).off("click.moreScenes").off("click.morePeople").off("click.moreSpecials").off("click.moreCriticReviews");
+        $(page).off("click.moreScenes").off("click.morePeople").off("click.moreSpecials").off("click.moreCriticReviews").off("swipeleft.sibling").off("swiperight.sibling");
     });
 
     function itemDetailPage() {

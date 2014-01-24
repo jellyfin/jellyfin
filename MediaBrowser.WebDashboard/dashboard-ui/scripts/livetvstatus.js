@@ -39,7 +39,29 @@
             html += '</td>';
 
             html += '<td>';
-            html += tuner.Status;
+
+            if (tuner.Status == 'RecordingTv') {
+                if (tuner.ChannelName) {
+
+                    html += '<a href="livetvchannel.html?id=' + tuner.ChannelId + '">Recording ' + tuner.ChannelName + '</a>';
+                } else {
+
+                    html += 'Recording';
+                }
+            }
+            else if (tuner.Status == 'LiveTv') {
+
+                if (tuner.ChannelName) {
+
+                    html += '<a href="livetvchannel.html?id=' + tuner.ChannelId + '">Watching ' + tuner.ChannelName + '</a>';
+                } else {
+
+                    html += 'Watching';
+                }
+            }
+            else {
+                html += tuner.Status;
+            }
             html += '</td>';
 
             html += '<td>';

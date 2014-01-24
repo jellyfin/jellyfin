@@ -1101,7 +1101,7 @@
             return day;
         },
 
-        getPosterViewDisplayName: function (item, displayAsSpecial) {
+        getPosterViewDisplayName: function (item, displayAsSpecial, includeParentInfo) {
 
             var name = item.EpisodeTitle || item.Name;
 
@@ -1117,7 +1117,11 @@
 
                 var displayIndexNumber = item.IndexNumber;
 
-                var number = "S" + item.ParentIndexNumber + ", E" + displayIndexNumber;
+                var number = "E" + displayIndexNumber;
+                
+                if (includeParentInfo !== false) {
+                    number = "S" + item.ParentIndexNumber + ", " + number;
+                }
 
                 if (item.IndexNumberEnd) {
 
@@ -1127,14 +1131,6 @@
 
                 name = number + " - " + name;
 
-            }
-            else {
-                if (item.IndexNumber != null && item.Type !== "Season") {
-                    name = item.IndexNumber + " - " + name;
-                }
-                if (item.ParentIndexNumber != null && item.Type != "Episode") {
-                    name = item.ParentIndexNumber + "." + name;
-                }
             }
 
             return name;
@@ -1269,7 +1265,7 @@
 
         renderName: function (item, nameElem, linkToElement) {
 
-            var name = LibraryBrowser.getPosterViewDisplayName(item);
+            var name = LibraryBrowser.getPosterViewDisplayName(item, false, false);
 
             Dashboard.setPageTitle(name);
 
