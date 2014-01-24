@@ -1435,7 +1435,20 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 info.HasUpdateAvailable = statusInfo.HasUpdateAvailable;
                 info.HomePageUrl = service.HomePageUrl;
 
-                info.Tuners = statusInfo.Tuners.Select(i => _tvDtoService.GetTunerInfoDto(service.Name, i)).ToList();
+                info.Tuners = statusInfo.Tuners.Select(i =>
+                {
+                    string channelName = null;
+
+                    if (!string.IsNullOrEmpty(i.ChannelId))
+                    {
+                        var internalChannelId = _tvDtoService.GetInternalChannelId(service.Name, i.ChannelId);
+                        var channel = GetInternalChannel(internalChannelId);
+                        channelName = channel == null ? null : channel.Name;
+                    }
+
+                    return _tvDtoService.GetTunerInfoDto(service.Name, i, channelName);
+
+                }).ToList();
             }
             catch (Exception ex)
             {

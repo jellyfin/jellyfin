@@ -194,12 +194,16 @@ namespace MediaBrowser.Api.Playback.Hls
                 }
             }
 
-            if (state.VideoRequest.Framerate.HasValue)
+            var framerate = GetFramerateParam(state);
+            if (framerate.HasValue)
             {
-                args += string.Format(" -r {0}", state.VideoRequest.Framerate.Value);
+                args += string.Format(" -r {0}", framerate.Value.ToString(UsCulture));
             }
 
-            args += " -vsync vfr";
+            if (!string.IsNullOrEmpty(state.VideoSync))
+            {
+                args += " -vsync " + state.VideoSync;
+            }
 
             if (!string.IsNullOrEmpty(state.VideoRequest.Profile))
             {

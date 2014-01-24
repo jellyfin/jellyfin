@@ -649,11 +649,6 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.DateCreated = item.DateCreated;
             }
 
-            if (fields.Contains(ItemFields.OriginalRunTimeTicks))
-            {
-                dto.OriginalRunTimeTicks = item.OriginalRunTimeTicks;
-            }
-
             dto.DisplayMediaType = item.DisplayMediaType;
 
             if (fields.Contains(ItemFields.Settings))

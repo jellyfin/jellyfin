@@ -423,11 +423,7 @@ namespace MediaBrowser.Controller.Providers
                             if (int.TryParse(text.Split(' ')[0], NumberStyles.Integer, _usCulture, out runtime))
                             {
                                 // For audio and video don't replace ffmpeg data
-                                if (item is Video || item is Audio)
-                                {
-                                    item.OriginalRunTimeTicks = TimeSpan.FromMinutes(runtime).Ticks;
-                                }
-                                else
+                                if (!(item is Video || item is Audio))
                                 {
                                     item.RunTimeTicks = TimeSpan.FromMinutes(runtime).Ticks;
                                 }

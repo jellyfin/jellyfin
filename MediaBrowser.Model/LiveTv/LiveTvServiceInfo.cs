@@ -145,6 +145,12 @@ namespace MediaBrowser.Model.LiveTv
         public string ChannelId { get; set; }
 
         /// <summary>
+        /// Gets or sets the name of the channel.
+        /// </summary>
+        /// <value>The name of the channel.</value>
+        public string ChannelName { get; set; }
+        
+        /// <summary>
         /// Gets or sets the recording identifier.
         /// </summary>
         /// <value>The recording identifier.</value>

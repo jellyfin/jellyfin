@@ -796,9 +796,6 @@ namespace MediaBrowser.Providers.Movies
                 boxset.OfficialRating = firstChild != null ? firstChild.OfficialRating : null;
             }
 
-            if (movieData.runtime > 0)
-                movie.OriginalRunTimeTicks = TimeSpan.FromMinutes(movieData.runtime).Ticks;
-
             //studios
             if (movieData.production_companies != null && !movie.LockedFields.Contains(MetadataFields.Studios))
             {

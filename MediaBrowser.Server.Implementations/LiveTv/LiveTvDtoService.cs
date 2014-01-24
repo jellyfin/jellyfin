@@ -271,7 +271,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return dto;
         }
 
-        public LiveTvTunerInfoDto GetTunerInfoDto(string serviceName, LiveTvTunerInfo info)
+        public LiveTvTunerInfoDto GetTunerInfoDto(string serviceName, LiveTvTunerInfo info, string channelName)
         {
             var dto = new LiveTvTunerInfoDto
             {
@@ -280,7 +280,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 Clients = info.Clients,
                 ProgramName = info.ProgramName,
                 SourceType = info.SourceType,
-                Status = info.Status
+                Status = info.Status,
+                ChannelName = channelName
             };
 
             if (!string.IsNullOrEmpty(info.ChannelId))
