@@ -536,7 +536,11 @@ namespace MediaBrowser.Api.Playback
 
                     Directory.CreateDirectory(parentPath);
 
-                    var task = MediaEncoder.ExtractTextSubtitle(inputPath, type, state.SubtitleStream.Index, path, CancellationToken.None);
+                    // Don't re-encode ass/ssa to ass because ffmpeg ass encoder fails if there's more than one ass rectangle. Affect Anime mostly.
+                    // See https://lists.ffmpeg.org/pipermail/ffmpeg-cvslog/2013-April/063616.html
+                    bool isAssSubtitle = string.Equals(state.SubtitleStream.Codec, "ass", StringComparison.OrdinalIgnoreCase) || string.Equals(state.SubtitleStream.Codec, "ssa", StringComparison.OrdinalIgnoreCase);
+
+                    var task = MediaEncoder.ExtractTextSubtitle(inputPath, type, state.SubtitleStream.Index, isAssSubtitle, path, CancellationToken.None);
 
                     Task.WaitAll(task);
                 }

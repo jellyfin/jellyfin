@@ -601,11 +601,12 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// <param name="inputFiles">The input files.</param>
         /// <param name="type">The type.</param>
         /// <param name="subtitleStreamIndex">Index of the subtitle stream.</param>
+        /// <param name="copySubtitleStream">if set to true, copy stream instead of converting.</param>
         /// <param name="outputPath">The output path.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentException">Must use inputPath list overload</exception>
-        public async Task ExtractTextSubtitle(string[] inputFiles, InputType type, int subtitleStreamIndex, string outputPath, CancellationToken cancellationToken)
+        public async Task ExtractTextSubtitle(string[] inputFiles, InputType type, int subtitleStreamIndex, bool copySubtitleStream, string outputPath, CancellationToken cancellationToken)
         {
             var semaphore = GetLock(outputPath);
 
@@ -615,7 +616,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
             {
                 if (!File.Exists(outputPath))
                 {
-                    await ExtractTextSubtitleInternal(GetInputArgument(inputFiles, type), subtitleStreamIndex, outputPath, cancellationToken).ConfigureAwait(false);
+                    await ExtractTextSubtitleInternal(GetInputArgument(inputFiles, type), subtitleStreamIndex, copySubtitleStream, outputPath, cancellationToken).ConfigureAwait(false);
                 }
             }
             finally
@@ -629,6 +630,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// </summary>
         /// <param name="inputPath">The input path.</param>
         /// <param name="subtitleStreamIndex">Index of the subtitle stream.</param>
+        /// <param name="copySubtitleStream">if set to true, copy stream instead of converting.</param>
         /// <param name="outputPath">The output path.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
@@ -638,7 +640,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// or
         /// cancellationToken</exception>
         /// <exception cref="System.ApplicationException"></exception>
-        private async Task ExtractTextSubtitleInternal(string inputPath, int subtitleStreamIndex, string outputPath, CancellationToken cancellationToken)
+        private async Task ExtractTextSubtitleInternal(string inputPath, int subtitleStreamIndex, bool copySubtitleStream, string outputPath, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(inputPath))
             {
@@ -650,6 +652,12 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                 throw new ArgumentNullException("outputPath");
             }
 
+            string processArgs = string.Format("-i {0} -map 0:{1} -an -vn -c:s ass \"{2}\"", inputPath, subtitleStreamIndex, outputPath);
+
+            if (copySubtitleStream)
+            {
+                processArgs = string.Format("-i {0} -map 0:{1} -an -vn -c:s copy \"{2}\"", inputPath, subtitleStreamIndex, outputPath);
+            }
 
             var process = new Process
             {
@@ -662,7 +670,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                     RedirectStandardError = true,
 
                     FileName = FFMpegPath,
-                    Arguments = string.Format("-i {0} -map 0:{1} -an -vn -c:s ass \"{2}\"", inputPath, subtitleStreamIndex, outputPath),
+                    Arguments = processArgs,
                     WindowStyle = ProcessWindowStyle.Hidden,
                     ErrorDialog = false
                 }
