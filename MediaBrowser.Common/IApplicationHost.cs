@@ -14,6 +14,12 @@ namespace MediaBrowser.Common
     public interface IApplicationHost
     {
         /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        string Name { get; }
+
+        /// <summary>
         /// Occurs when [application updated].
         /// </summary>
         event EventHandler<GenericEventArgs<Version>> ApplicationUpdated;
