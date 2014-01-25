@@ -35,7 +35,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
             }
 
             // If the parent is a Season or Series, then this is an Episode if the VideoResolver returns something
-            if (season != null || parent.Parents.OfType<Series>().Any())
+            if (season != null || parent is Series || parent.Parents.OfType<Series>().Any())
             {
                 Episode episode = null;
 
