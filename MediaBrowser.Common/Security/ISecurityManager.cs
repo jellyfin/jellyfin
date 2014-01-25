@@ -28,8 +28,9 @@ namespace MediaBrowser.Common.Security
         /// </summary>
         /// <param name="feature">The feature.</param>
         /// <param name="mb2Equivalent">The MB2 equivalent.</param>
+        /// <param name="version">The version of the feature</param>
         /// <returns>Task{MBRegistrationRecord}.</returns>
-        Task<MBRegistrationRecord> GetRegistrationStatus(string feature, string mb2Equivalent = null);
+        Task<MBRegistrationRecord> GetRegistrationStatus(string feature, string mb2Equivalent = null, string version = null);
 
         /// <summary>
         /// Load all registration info for all entities that require registration

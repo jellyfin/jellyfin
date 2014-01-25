@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
@@ -13,10 +14,11 @@ namespace MediaBrowser.Common.Implementations.Security
     {
 
         private static MBLicenseFile _licenseFile;
-        private const string MBValidateUrl = "http://mb3admin.com/admin/service/registration/validate";
+        private const string MBValidateUrl = Constants.Constants.MbAdminUrl+"service/registration/validate";
 
         private static IApplicationPaths _appPaths;
         private static INetworkManager _networkManager;
+        private static ILogger _logger;
 
         private static MBLicenseFile LicenseFile
         {
@@ -35,37 +37,46 @@ namespace MediaBrowser.Common.Implementations.Security
             set { LicenseFile.LegacyKey = value; LicenseFile.Save(); }
         }
 
-        public static void Init(IApplicationPaths appPaths, INetworkManager networkManager)
+        public static void Init(IApplicationPaths appPaths, INetworkManager networkManager, ILogManager logManager)
         {
             // Ugly alert (static init)
 
             _appPaths = appPaths;
             _networkManager = networkManager;
+            _logger = logManager.GetLogger("SecurityManager");
         }
 
-        public static async Task<MBRegistrationRecord> GetRegistrationStatus(IHttpClient httpClient, IJsonSerializer jsonSerializer, string feature, string mb2Equivalent = null)
+        public static async Task<MBRegistrationRecord> GetRegistrationStatus(IHttpClient httpClient, IJsonSerializer jsonSerializer, string feature, string mb2Equivalent = null, string version = null)
         {
-            var mac = _networkManager.GetMacAddress();
-            var data = new Dictionary<string, string> {{"feature", feature}, {"key",SupporterKey}, {"mac",mac}, {"mb2equiv",mb2Equivalent}, {"legacykey", LegacyKey} };
+            //check the reg file first to alleviate strain on the MB admin server - must actually check in every 30 days tho
+            var reg = new RegRecord {/*registered = LicenseFile.LastChecked(feature) > DateTime.UtcNow.AddDays(-30)*/};
 
-            var reg = new RegRecord();
-            try
+            if (!reg.registered)
             {
-                using (var json = await httpClient.Post(MBValidateUrl, data, CancellationToken.None).ConfigureAwait(false))
-                {
-                    reg = jsonSerializer.DeserializeFromStream<RegRecord>(json);
-                }
+                var mac = _networkManager.GetMacAddress();
+                var data = new Dictionary<string, string> { { "feature", feature }, { "key", SupporterKey }, { "mac", mac }, { "mb2equiv", mb2Equivalent }, { "legacykey", LegacyKey }, { "ver", version }, { "platform", Environment.OSVersion.VersionString } };
 
-                if (reg.registered)
+                try
                 {
-                    LicenseFile.AddRegCheck(feature);
-                }
+                    using (var json = await httpClient.Post(MBValidateUrl, data, CancellationToken.None).ConfigureAwait(false))
+                    {
+                        reg = jsonSerializer.DeserializeFromStream<RegRecord>(json);
+                    }
 
-            }
-            catch (Exception)
-            {
-                //if we have trouble obtaining from web - allow it if we've validated in the past 30 days
-                reg.registered = LicenseFile.LastChecked(feature) > DateTime.UtcNow.AddDays(-30);
+                    if (reg.registered)
+                    {
+                        LicenseFile.AddRegCheck(feature);
+                    }
+                    else
+                    {
+                        LicenseFile.RemoveRegCheck(feature);
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    _logger.ErrorException("Error checking registration status of {0}", e, feature);
+                }
             }
 
             return new MBRegistrationRecord {IsRegistered = reg.registered, ExpirationDate = reg.expDate, RegChecked = true};

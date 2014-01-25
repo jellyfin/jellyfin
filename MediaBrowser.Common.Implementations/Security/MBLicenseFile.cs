@@ -56,6 +56,16 @@ namespace MediaBrowser.Common.Implementations.Security
 
         }
 
+        public void RemoveRegCheck(string featureId)
+        {
+            using (var provider = new MD5CryptoServiceProvider())
+            {
+                UpdateRecords.Remove(new Guid(provider.ComputeHash(Encoding.Unicode.GetBytes(featureId))));
+                Save();
+            }
+
+        }
+
         public DateTime LastChecked(string featureId)
         {
             using (var provider = new MD5CryptoServiceProvider())

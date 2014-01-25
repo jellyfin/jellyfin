@@ -2,6 +2,7 @@
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Security;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
@@ -37,7 +38,7 @@ namespace MediaBrowser.Common.Implementations.Security
         {
             get
             {
-                LazyInitializer.EnsureInitialized(ref _isMbSupporter, ref _isMbSupporterInitialized, ref _isMbSupporterSyncLock, () => GetRegistrationStatus("MBSupporter").Result.IsRegistered);
+                LazyInitializer.EnsureInitialized(ref _isMbSupporter, ref _isMbSupporterInitialized, ref _isMbSupporterSyncLock, () => GetRegistrationStatus("MBSupporter", null, _appHost.ApplicationVersion.ToString()).Result.IsRegistered);
                 return _isMbSupporter.Value;
             }
         }
@@ -60,7 +61,8 @@ namespace MediaBrowser.Common.Implementations.Security
         /// <summary>
         /// Initializes a new instance of the <see cref="PluginSecurityManager" /> class.
         /// </summary>
-        public PluginSecurityManager(IApplicationHost appHost, IHttpClient httpClient, IJsonSerializer jsonSerializer, IApplicationPaths appPaths, INetworkManager networkManager)
+        public PluginSecurityManager(IApplicationHost appHost, IHttpClient httpClient, IJsonSerializer jsonSerializer,
+            IApplicationPaths appPaths, INetworkManager networkManager, ILogManager logManager)
         {
             if (httpClient == null)
             {
@@ -72,6 +74,7 @@ namespace MediaBrowser.Common.Implementations.Security
             _appHost = appHost;
             _httpClient = httpClient;
             _jsonSerializer = jsonSerializer;
+            MBRegistration.Init(_applciationPaths, _networkManager, logManager);
         }
 
         /// <summary>
@@ -92,13 +95,11 @@ namespace MediaBrowser.Common.Implementations.Security
         /// </summary>
         /// <param name="feature">The feature.</param>
         /// <param name="mb2Equivalent">The MB2 equivalent.</param>
+        /// <param name="version">The version of this feature</param>
         /// <returns>Task{MBRegistrationRecord}.</returns>
-        public async Task<MBRegistrationRecord> GetRegistrationStatus(string feature, string mb2Equivalent = null)
+        public async Task<MBRegistrationRecord> GetRegistrationStatus(string feature, string mb2Equivalent = null, string version = null)
         {
-            // Do this on demend instead of in the constructor to delay the external assembly load
-            // Todo: Refactor external methods to take app paths as a param
-            MBRegistration.Init(_applciationPaths, _networkManager);
-            return await MBRegistration.GetRegistrationStatus(_httpClient, _jsonSerializer, feature, mb2Equivalent).ConfigureAwait(false);
+            return await MBRegistration.GetRegistrationStatus(_httpClient, _jsonSerializer, feature, mb2Equivalent, version).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -109,16 +110,10 @@ namespace MediaBrowser.Common.Implementations.Security
         {
             get
             {
-                // Do this on demend instead of in the constructor to delay the external assembly load
-                // Todo: Refactor external methods to take app paths as a param
-                MBRegistration.Init(_applciationPaths, _networkManager);
                 return MBRegistration.SupporterKey;
             }
             set
             {
-                // Do this on demend instead of in the constructor to delay the external assembly load
-                // Todo: Refactor external methods to take app paths as a param
-                MBRegistration.Init(_applciationPaths, _networkManager);
                 if (value != MBRegistration.SupporterKey)
                 {
                     MBRegistration.SupporterKey = value;
@@ -136,16 +131,10 @@ namespace MediaBrowser.Common.Implementations.Security
         {
             get
             {
-                // Do this on demend instead of in the constructor to delay the external assembly load
-                // Todo: Refactor external methods to take app paths as a param
-                MBRegistration.Init(_applciationPaths, _networkManager);
                 return MBRegistration.LegacyKey;
             }
             set
             {
-                // Do this on demend instead of in the constructor to delay the external assembly load
-                // Todo: Refactor external methods to take app paths as a param
-                MBRegistration.Init(_applciationPaths, _networkManager);
                 if (value != MBRegistration.LegacyKey)
                 {
                     MBRegistration.LegacyKey = value;
