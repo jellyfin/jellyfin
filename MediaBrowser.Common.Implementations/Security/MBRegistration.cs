@@ -49,7 +49,7 @@ namespace MediaBrowser.Common.Implementations.Security
         public static async Task<MBRegistrationRecord> GetRegistrationStatus(IHttpClient httpClient, IJsonSerializer jsonSerializer, string feature, string mb2Equivalent = null, string version = null)
         {
             //check the reg file first to alleviate strain on the MB admin server - must actually check in every 30 days tho
-            var reg = new RegRecord {/*registered = LicenseFile.LastChecked(feature) > DateTime.UtcNow.AddDays(-30)*/};
+            var reg = new RegRecord {registered = LicenseFile.LastChecked(feature) > DateTime.UtcNow.AddDays(-30)};
 
             if (!reg.registered)
             {
