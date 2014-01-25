@@ -41,10 +41,11 @@ namespace MediaBrowser.Controller.MediaInfo
         /// <param name="inputFiles">The input files.</param>
         /// <param name="type">The type.</param>
         /// <param name="subtitleStreamIndex">Index of the subtitle stream.</param>
+        /// <param name="copySubtitleStream">if set to true, copy stream instead of converting.</param>
         /// <param name="outputPath">The output path.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task ExtractTextSubtitle(string[] inputFiles, InputType type, int subtitleStreamIndex, string outputPath, CancellationToken cancellationToken);
+        Task ExtractTextSubtitle(string[] inputFiles, InputType type, int subtitleStreamIndex, bool copySubtitleStream, string outputPath, CancellationToken cancellationToken);
 
         /// <summary>
         /// Converts the text subtitle to ass.
