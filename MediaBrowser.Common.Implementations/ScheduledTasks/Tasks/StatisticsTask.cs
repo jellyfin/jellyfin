@@ -74,7 +74,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
 
             progress.Report(0);
             var mac = NetworkManager.GetMacAddress();
-            var data = new Dictionary<string, string> { { "feature", Assembly.GetExecutingAssembly().GetName().ToString() }, { "mac", mac }, { "ver", ApplicationHost.ApplicationVersion.ToString() }, { "platform", Environment.OSVersion.VersionString } };
+            var data = new Dictionary<string, string> { { "feature", ApplicationHost.Name }, { "mac", mac }, { "ver", ApplicationHost.ApplicationVersion.ToString() }, { "platform", Environment.OSVersion.VersionString } };
             await HttpClient.Post(Constants.Constants.MbAdminUrl + "service/registration/ping", data, CancellationToken.None).ConfigureAwait(false);
             progress.Report(100);
 
