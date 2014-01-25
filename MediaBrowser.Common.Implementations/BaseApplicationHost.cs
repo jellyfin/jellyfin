@@ -166,6 +166,12 @@ namespace MediaBrowser.Common.Implementations
         protected IIsoManager IsoManager { get; private set; }
 
         /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        public abstract string Name { get; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="BaseApplicationHost{TApplicationPathsType}"/> class.
         /// </summary>
         protected BaseApplicationHost(TApplicationPathsType applicationPaths, ILogManager logManager)

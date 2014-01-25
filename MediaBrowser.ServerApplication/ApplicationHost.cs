@@ -186,6 +186,18 @@ namespace MediaBrowser.ServerApplication
         }
 
         /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        public override string Name
+        {
+            get
+            {
+                return "Media Browser Server";
+            }
+        }
+
+        /// <summary>
         /// Gets a value indicating whether this instance can self restart.
         /// </summary>
         /// <value><c>true</c> if this instance can self restart; otherwise, <c>false</c>.</value>
@@ -732,7 +744,7 @@ namespace MediaBrowser.ServerApplication
             {
                 ServerAuthorization.AuthorizeServer(
                     ServerConfigurationManager.Configuration.HttpServerPortNumber,
-                    HttpServerUrlPrefixes.First(), 
+                    HttpServerUrlPrefixes.First(),
                     ServerConfigurationManager.Configuration.LegacyWebSocketPortNumber,
                     UdpServerEntryPoint.PortNumber,
                     ConfigurationManager.CommonApplicationPaths.TempDirectory);
