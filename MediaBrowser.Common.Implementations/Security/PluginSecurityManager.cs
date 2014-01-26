@@ -92,12 +92,24 @@ namespace MediaBrowser.Common.Implementations.Security
 
         /// <summary>
         /// Gets the registration status.
+        /// This overload supports existing plug-ins.
+        /// </summary>
+        /// <param name="feature">The feature.</param>
+        /// <param name="mb2Equivalent">The MB2 equivalent.</param>
+        /// <returns>Task{MBRegistrationRecord}.</returns>
+        public async Task<MBRegistrationRecord> GetRegistrationStatus(string feature, string mb2Equivalent = null)
+        {
+            return await MBRegistration.GetRegistrationStatus(_httpClient, _jsonSerializer, feature, mb2Equivalent).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Gets the registration status.
         /// </summary>
         /// <param name="feature">The feature.</param>
         /// <param name="mb2Equivalent">The MB2 equivalent.</param>
         /// <param name="version">The version of this feature</param>
         /// <returns>Task{MBRegistrationRecord}.</returns>
-        public async Task<MBRegistrationRecord> GetRegistrationStatus(string feature, string mb2Equivalent = null, string version = null)
+        public async Task<MBRegistrationRecord> GetRegistrationStatus(string feature, string mb2Equivalent, string version)
         {
             return await MBRegistration.GetRegistrationStatus(_httpClient, _jsonSerializer, feature, mb2Equivalent, version).ConfigureAwait(false);
         }
