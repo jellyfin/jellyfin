@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.ScheduledTasks;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -72,11 +73,21 @@ namespace MediaBrowser.Server.Implementations.IO
 
         public void ReportFileSystemChangeBeginning(string path)
         {
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentNullException("path");
+            }
+
             TemporarilyIgnore(path);
         }
 
         public void ReportFileSystemChangeComplete(string path, bool refreshPath)
         {
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentNullException("path");
+            }
+
             RemoveTempIgnore(path);
 
             if (refreshPath)
@@ -99,6 +110,8 @@ namespace MediaBrowser.Server.Implementations.IO
 
         private ILibraryManager LibraryManager { get; set; }
         private IServerConfigurationManager ConfigurationManager { get; set; }
+
+        private IFileSystem _fileSystem;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryMonitor" /> class.
@@ -350,6 +363,11 @@ namespace MediaBrowser.Server.Implementations.IO
 
         public void ReportFileSystemChanged(string path)
         {
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentNullException("path");
+            }
+            
             var filename = Path.GetFileName(path);
 
             // Ignore certain files
@@ -369,30 +387,29 @@ namespace MediaBrowser.Server.Implementations.IO
                     return true;
                 }
 
-                // Go up a level
-                var parent = Path.GetDirectoryName(i);
-                if (string.Equals(parent, path, StringComparison.OrdinalIgnoreCase))
+                if (_fileSystem.ContainsSubPath(i, path))
                 {
                     Logger.Debug("Ignoring change to {0}", path);
                     return true;
                 }
 
-                // Go up another level
+                // Go up a level
+                var parent = Path.GetDirectoryName(i);
                 if (!string.IsNullOrEmpty(parent))
                 {
+                    if (string.Equals(parent, path, StringComparison.OrdinalIgnoreCase))
+                    {
+                        Logger.Debug("Ignoring change to {0}", path);
+                        return true;
+                    }
+
+                    // Go up another level
                     parent = Path.GetDirectoryName(i);
                     if (string.Equals(parent, path, StringComparison.OrdinalIgnoreCase))
                     {
                         Logger.Debug("Ignoring change to {0}", path);
                         return true;
                     }
-                }
-
-                if (i.StartsWith(path, StringComparison.OrdinalIgnoreCase) ||
-                    path.StartsWith(i, StringComparison.OrdinalIgnoreCase))
-                {
-                    Logger.Debug("Ignoring change to {0}", path);
-                    return true;
                 }
 
                 return false;
