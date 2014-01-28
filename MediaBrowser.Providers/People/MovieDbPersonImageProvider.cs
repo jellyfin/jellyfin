@@ -1,26 +1,30 @@
-﻿using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
+using MediaBrowser.Providers.Movies;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Providers.Movies
+namespace MediaBrowser.Providers.People
 {
-    public class ManualMovieDbPersonImageProvider : IImageProvider
+    public class MovieDbPersonImageProvider : IRemoteImageProvider
     {
         private readonly IServerConfigurationManager _config;
         private readonly IJsonSerializer _jsonSerializer;
+        private readonly IHttpClient _httpClient;
 
-        public ManualMovieDbPersonImageProvider(IServerConfigurationManager config, IJsonSerializer jsonSerializer)
+        public MovieDbPersonImageProvider(IServerConfigurationManager config, IJsonSerializer jsonSerializer, IHttpClient httpClient)
         {
             _config = config;
             _jsonSerializer = jsonSerializer;
+            _httpClient = httpClient;
         }
 
         public string Name
@@ -36,6 +40,14 @@ namespace MediaBrowser.Providers.Movies
         public bool Supports(IHasImages item)
         {
             return item is Person;
+        }
+
+        public IEnumerable<ImageType> GetSupportedImages(IHasImages item)
+        {
+            return new List<ImageType>
+            {
+                ImageType.Primary
+            };
         }
 
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(IHasImages item, ImageType imageType, CancellationToken cancellationToken)
@@ -120,9 +132,19 @@ namespace MediaBrowser.Providers.Movies
             return profile.iso_639_1 == null ? null : profile.iso_639_1.ToString();
         }
 
-        public int Priority
+        public int Order
         {
             get { return 0; }
+        }
+
+        public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
+        {
+            return _httpClient.GetResponse(new HttpRequestOptions
+            {
+                CancellationToken = cancellationToken,
+                Url = url,
+                ResourcePool = MovieDbProvider.Current.MovieDbResourcePool
+            });
         }
     }
 }

@@ -3,6 +3,7 @@ using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
 using MoreLinq;
@@ -535,7 +536,13 @@ namespace MediaBrowser.Controller.Entities
             try
             {
                 //refresh it
-                await child.RefreshMetadata(cancellationToken, forceSave: currentTuple.Item2, forceRefresh: forceRefreshMetadata, resetResolveArgs: false).ConfigureAwait(false);
+                await child.RefreshMetadata(new MetadataRefreshOptions
+                {
+                    ForceSave = currentTuple.Item2,
+                    ReplaceAllMetadata = forceRefreshMetadata,
+                    ResetResolveArgs = false
+
+                }, cancellationToken).ConfigureAwait(false);
             }
             catch (IOException ex)
             {
@@ -907,9 +914,9 @@ namespace MediaBrowser.Controller.Entities
             return item;
         }
 
-        public override async Task<bool> RefreshMetadata(CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false, bool allowSlowProviders = true, bool resetResolveArgs = true)
+        public override async Task<bool> RefreshMetadataDirect(CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false)
         {
-            var changed = await base.RefreshMetadata(cancellationToken, forceSave, forceRefresh, allowSlowProviders, resetResolveArgs).ConfigureAwait(false);
+            var changed = await base.RefreshMetadataDirect(cancellationToken, forceSave, forceRefresh).ConfigureAwait(false);
 
             return (SupportsShortcutChildren && LocationType == LocationType.FileSystem && RefreshLinkedChildren()) || changed;
         }

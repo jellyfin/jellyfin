@@ -118,7 +118,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                         if (response != null)
                         {
                             imageStream = response.Stream;
-                            contentType = response.MimeType;
+                            contentType = "image/" + response.Format.ToString().ToLower();
                         }
                     }
                     catch (NotImplementedException)

@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
 using ServiceStack;
 using System;
 using System.Linq;
@@ -131,7 +132,11 @@ namespace MediaBrowser.Api
 
             try
             {
-                await item.RefreshMetadata(cancellationToken, forceRefresh: request.Forced).ConfigureAwait(false);
+                await item.RefreshMetadata(new MetadataRefreshOptions
+                {
+                    ReplaceAllMetadata = request.Forced,
+
+                }, CancellationToken.None).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -152,7 +157,11 @@ namespace MediaBrowser.Api
 
             try
             {
-                await item.RefreshMetadata(CancellationToken.None, forceRefresh: request.Forced).ConfigureAwait(false);
+                await item.RefreshMetadata(new MetadataRefreshOptions
+                {
+                    ReplaceAllMetadata = request.Forced,
+
+                }, CancellationToken.None).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -173,7 +182,11 @@ namespace MediaBrowser.Api
 
             try
             {
-                await item.RefreshMetadata(CancellationToken.None, forceRefresh: request.Forced).ConfigureAwait(false);
+                await item.RefreshMetadata(new MetadataRefreshOptions
+                {
+                    ReplaceAllMetadata = request.Forced,
+
+                }, CancellationToken.None).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -194,7 +207,11 @@ namespace MediaBrowser.Api
 
             try
             {
-                await item.RefreshMetadata(CancellationToken.None, forceRefresh: request.Forced).ConfigureAwait(false);
+                await item.RefreshMetadata(new MetadataRefreshOptions
+                {
+                    ReplaceAllMetadata = request.Forced,
+
+                }, CancellationToken.None).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -215,7 +232,11 @@ namespace MediaBrowser.Api
 
             try
             {
-                await item.RefreshMetadata(CancellationToken.None, forceRefresh: request.Forced).ConfigureAwait(false);
+                await item.RefreshMetadata(new MetadataRefreshOptions
+                {
+                    ReplaceAllMetadata = request.Forced,
+
+                }, CancellationToken.None).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -236,7 +257,11 @@ namespace MediaBrowser.Api
 
             try
             {
-                await item.RefreshMetadata(CancellationToken.None, forceRefresh: request.Forced).ConfigureAwait(false);
+                await item.RefreshMetadata(new MetadataRefreshOptions
+                {
+                    ReplaceAllMetadata = request.Forced,
+
+                }, CancellationToken.None).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -266,7 +291,11 @@ namespace MediaBrowser.Api
 
             try
             {
-                await item.RefreshMetadata(CancellationToken.None, forceRefresh: request.Forced).ConfigureAwait(false);
+                await item.RefreshMetadata(new MetadataRefreshOptions
+                {
+                    ReplaceAllMetadata = request.Forced,
+
+                }, CancellationToken.None).ConfigureAwait(false);
 
                 if (item.IsFolder)
                 {
@@ -301,7 +330,11 @@ namespace MediaBrowser.Api
         {
             foreach (var child in collectionFolder.Children.ToList())
             {
-                await child.RefreshMetadata(CancellationToken.None, forceRefresh: request.Forced).ConfigureAwait(false);
+                await child.RefreshMetadata(new MetadataRefreshOptions
+                {
+                    ReplaceAllMetadata = request.Forced,
+
+                }, CancellationToken.None).ConfigureAwait(false);
 
                 if (child.IsFolder)
                 {

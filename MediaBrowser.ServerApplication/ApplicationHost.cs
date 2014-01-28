@@ -33,6 +33,7 @@ using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Updates;
 using MediaBrowser.Providers;
+using MediaBrowser.Providers.Manager;
 using MediaBrowser.Server.Implementations;
 using MediaBrowser.Server.Implementations.BdInfo;
 using MediaBrowser.Server.Implementations.Configuration;
@@ -47,7 +48,6 @@ using MediaBrowser.Server.Implementations.LiveTv;
 using MediaBrowser.Server.Implementations.Localization;
 using MediaBrowser.Server.Implementations.MediaEncoder;
 using MediaBrowser.Server.Implementations.Persistence;
-using MediaBrowser.Server.Implementations.Providers;
 using MediaBrowser.Server.Implementations.ServerManager;
 using MediaBrowser.Server.Implementations.Session;
 using MediaBrowser.Server.Implementations.WebSocket;
@@ -491,7 +491,7 @@ namespace MediaBrowser.ServerApplication
                                     GetExports<IPeoplePrescanTask>(),
                                     GetExports<IMetadataSaver>());
 
-            ProviderManager.AddParts(GetExports<BaseMetadataProvider>(), GetExports<IImageProvider>());
+            ProviderManager.AddParts(GetExports<BaseMetadataProvider>(), GetExports<IImageProvider>(), GetExports<IMetadataService>(), GetExports<IMetadataProvider>());
 
             ImageProcessor.AddParts(GetExports<IImageEnhancer>());
 

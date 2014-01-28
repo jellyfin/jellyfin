@@ -15,14 +15,22 @@ namespace MediaBrowser.Controller.Providers
     public interface IProviderManager
     {
         /// <summary>
+        /// Refreshes the metadata.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="options">The options.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task RefreshMetadata(IHasMetadata item, MetadataRefreshOptions options, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Executes the metadata providers.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="force">if set to <c>true</c> [force].</param>
-        /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
         /// <returns>Task{System.Boolean}.</returns>
-        Task<ItemUpdateType?> ExecuteMetadataProviders(BaseItem item, CancellationToken cancellationToken, bool force = false, bool allowSlowProviders = true);
+        Task<ItemUpdateType?> ExecuteMetadataProviders(BaseItem item, CancellationToken cancellationToken, bool force = false);
 
         /// <summary>
         /// Saves the image.
@@ -54,7 +62,9 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         /// <param name="providers">The providers.</param>
         /// <param name="imageProviders">The image providers.</param>
-        void AddParts(IEnumerable<BaseMetadataProvider> providers, IEnumerable<IImageProvider> imageProviders);
+        /// <param name="metadataServices">The metadata services.</param>
+        /// <param name="metadataProviders">The metadata providers.</param>
+        void AddParts(IEnumerable<BaseMetadataProvider> providers, IEnumerable<IImageProvider> imageProviders, IEnumerable<IMetadataService> metadataServices, IEnumerable<IMetadataProvider> metadataProviders);
 
         /// <summary>
         /// Gets the available remote images.
@@ -70,7 +80,7 @@ namespace MediaBrowser.Controller.Providers
         /// Gets the image providers.
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <returns>IEnumerable{IImageProvider}.</returns>
-        IEnumerable<IImageProvider> GetImageProviders(BaseItem item);
+        /// <returns>IEnumerable{ImageProviderInfo}.</returns>
+        IEnumerable<ImageProviderInfo> GetImageProviderInfo(BaseItem item);
     }
 }

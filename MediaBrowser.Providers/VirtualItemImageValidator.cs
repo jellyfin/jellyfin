@@ -44,14 +44,6 @@ namespace MediaBrowser.Providers
         public override Task<bool> FetchAsync(BaseItem item, bool force, BaseProviderInfo providerInfo, CancellationToken cancellationToken)
         {
             item.ValidateImages();
-            item.ValidateBackdrops();
-
-            var hasScreenshots = item as IHasScreenshots;
-
-            if (hasScreenshots != null)
-            {
-                hasScreenshots.ValidateScreenshots();
-            }
 
             SetLastRefreshed(item, DateTime.UtcNow, providerInfo);
             return TrueTaskResult;

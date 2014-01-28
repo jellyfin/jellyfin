@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Model.Entities;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Entities
@@ -10,7 +11,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets the name.
         /// </summary>
         /// <value>The name.</value>
-        string Name { get; }
+        string Name { get; set; }
 
         /// <summary>
         /// Gets the path.
@@ -23,6 +24,12 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The identifier.</value>
         Guid Id { get; }
+
+        /// <summary>
+        /// Gets the type of the location.
+        /// </summary>
+        /// <value>The type of the location.</value>
+        LocationType LocationType { get; }
 
         /// <summary>
         /// Gets the image path.
@@ -81,6 +88,24 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <returns>System.String.</returns>
         string GetPreferredMetadataLanguage();
+
+        /// <summary>
+        /// Validates the images and returns true or false indicating if any were removed.
+        /// </summary>
+        bool ValidateImages();
+
+        /// <summary>
+        /// Gets or sets the backdrop image paths.
+        /// </summary>
+        /// <value>The backdrop image paths.</value>
+        List<string> BackdropImagePaths { get; set; }
+
+        /// <summary>
+        /// Determines whether [contains image with source URL] [the specified URL].
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <returns><c>true</c> if [contains image with source URL] [the specified URL]; otherwise, <c>false</c>.</returns>
+        bool ContainsImageWithSourceUrl(string url);
     }
 
     public static class HasImagesExtensions

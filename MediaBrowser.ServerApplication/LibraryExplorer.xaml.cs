@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
@@ -220,14 +221,14 @@ namespace MediaBrowser.ServerApplication
                 if (item is IHasMediaStreams)
                 {
                     var mediaStreams = _itemRepository.GetMediaStreams(new MediaStreamQuery
-                    { 
+                    {
                         ItemId = item.Id
 
                     }).ToList();
 
                     if (mediaStreams.Count > 0)
                     {
-                        json += "\n\nMedia Streams:\n\n"+FormatJson(_jsonSerializer.SerializeToString(mediaStreams));
+                        json += "\n\nMedia Streams:\n\n" + FormatJson(_jsonSerializer.SerializeToString(mediaStreams));
                     }
                 }
 
@@ -356,7 +357,7 @@ namespace MediaBrowser.ServerApplication
                 var item = ((TreeViewItem)tvwLibrary.SelectedItem).Tag as BaseItem;
                 if (item != null)
                 {
-                    item.RefreshMetadata(CancellationToken.None, forceRefresh: cbxForce.IsChecked.Value);
+                    item.RefreshMetadata(new MetadataRefreshOptions { ReplaceAllMetadata = cbxForce.IsChecked.Value }, CancellationToken.None);
                     tvwLibrary_SelectedItemChanged(this, null);
                 }
             }

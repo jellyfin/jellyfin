@@ -46,7 +46,7 @@ namespace MediaBrowser.Server.Implementations.Library
             }
 
             // Make sure the item has a name
-            EnsureName(item);
+            EnsureName(item, args);
 
             item.DontFetchMeta = item.Path.IndexOf("[dontfetchmeta]", StringComparison.OrdinalIgnoreCase) != -1 ||
                 item.Parents.Any(i => i.DontFetchMeta);
@@ -59,13 +59,13 @@ namespace MediaBrowser.Server.Implementations.Library
         /// Ensures the name.
         /// </summary>
         /// <param name="item">The item.</param>
-        private static void EnsureName(BaseItem item)
+        private static void EnsureName(BaseItem item, ItemResolveArgs args)
         {
             // If the subclass didn't supply a name, add it here
             if (string.IsNullOrEmpty(item.Name) && !string.IsNullOrEmpty(item.Path))
             {
                 //we use our resolve args name here to get the name of the containg folder, not actual video file
-                item.Name = GetMBName(item.ResolveArgs.FileInfo.Name, (item.ResolveArgs.FileInfo.Attributes & FileAttributes.Directory) == FileAttributes.Directory);
+                item.Name = GetMBName(args.FileInfo.Name, (args.FileInfo.Attributes & FileAttributes.Directory) == FileAttributes.Directory);
             }
         }
 

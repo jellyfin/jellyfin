@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
@@ -16,14 +17,16 @@ using System.Xml;
 
 namespace MediaBrowser.Providers.Movies
 {
-    public class ManualFanartMovieImageProvider : IImageProvider
+    public class ManualFanartMovieImageProvider : IRemoteImageProvider
     {
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly IServerConfigurationManager _config;
+        private readonly IHttpClient _httpClient;
 
-        public ManualFanartMovieImageProvider(IServerConfigurationManager config)
+        public ManualFanartMovieImageProvider(IServerConfigurationManager config, IHttpClient httpClient)
         {
             _config = config;
+            _httpClient = httpClient;
         }
 
         public string Name
@@ -39,6 +42,20 @@ namespace MediaBrowser.Providers.Movies
         public bool Supports(IHasImages item)
         {
             return FanArtMovieProvider.SupportsItem(item);
+        }
+
+        public IEnumerable<ImageType> GetSupportedImages(IHasImages item)
+        {
+            return new List<ImageType>
+            {
+                ImageType.Primary, 
+                ImageType.Thumb,
+                ImageType.Art,
+                ImageType.Logo,
+                ImageType.Disc,
+                ImageType.Banner,
+                ImageType.Backdrop
+            };
         }
 
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(IHasImages item, ImageType imageType, CancellationToken cancellationToken)
@@ -294,9 +311,19 @@ namespace MediaBrowser.Providers.Movies
             }
         }
 
-        public int Priority
+        public int Order
         {
             get { return 1; }
+        }
+
+        public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
+        {
+            return _httpClient.GetResponse(new HttpRequestOptions
+            {
+                CancellationToken = cancellationToken,
+                Url = url,
+                ResourcePool = FanartBaseProvider.FanArtResourcePool
+            });
         }
     }
 }

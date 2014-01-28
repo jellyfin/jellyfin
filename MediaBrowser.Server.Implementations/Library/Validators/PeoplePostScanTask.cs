@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
@@ -88,7 +89,14 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
 
                     var itemByName = _libraryManager.GetPerson(name);
 
-                    await itemByName.RefreshMetadata(cancellationToken, allowSlowProviders: false).ConfigureAwait(false);
+                    // The only purpose here is to be able to react to image changes without running the people task. 
+                    // All other metadata can wait for that.
+                    await itemByName.RefreshMetadata(new MetadataRefreshOptions
+                    {
+                        ImageRefreshMode = MetadataRefreshMode.None,
+                        MetadataRefreshMode = MetadataRefreshMode.None
+
+                    }, cancellationToken).ConfigureAwait(false);
 
                     foreach (var libraryId in counts.Keys)
                     {
