@@ -137,7 +137,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private IEnumerable<IMetadataSaver> _savers;
 
-        private readonly Func<IDirectoryWatchers> _directoryWatchersFactory;
+        private readonly Func<ILibraryMonitor> _libraryMonitorFactory;
 
         /// <summary>
         /// The _library items cache
@@ -180,14 +180,14 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="userManager">The user manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="userDataRepository">The user data repository.</param>
-        public LibraryManager(ILogger logger, ITaskManager taskManager, IUserManager userManager, IServerConfigurationManager configurationManager, IUserDataManager userDataRepository, Func<IDirectoryWatchers> directoryWatchersFactory, IFileSystem fileSystem)
+        public LibraryManager(ILogger logger, ITaskManager taskManager, IUserManager userManager, IServerConfigurationManager configurationManager, IUserDataManager userDataRepository, Func<ILibraryMonitor> libraryMonitorFactory, IFileSystem fileSystem)
         {
             _logger = logger;
             _taskManager = taskManager;
             _userManager = userManager;
             ConfigurationManager = configurationManager;
             _userDataRepository = userDataRepository;
-            _directoryWatchersFactory = directoryWatchersFactory;
+            _libraryMonitorFactory = libraryMonitorFactory;
             _fileSystem = fileSystem;
             ByReferenceItems = new ConcurrentDictionary<Guid, BaseItem>();
 
@@ -934,7 +934,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>Task.</returns>
         public async Task ValidateMediaLibraryInternal(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            _directoryWatchersFactory().Stop();
+            _libraryMonitorFactory().Stop();
 
             try
             {
@@ -942,7 +942,7 @@ namespace MediaBrowser.Server.Implementations.Library
             }
             finally
             {
-                _directoryWatchersFactory().Start();
+                _libraryMonitorFactory().Start();
             }
         }
 
@@ -1462,13 +1462,13 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 var semaphore = _fileLocks.GetOrAdd(path, key => new SemaphoreSlim(1, 1));
 
-                var directoryWatchers = _directoryWatchersFactory();
+                var directoryWatchers = _libraryMonitorFactory();
 
                 await semaphore.WaitAsync().ConfigureAwait(false);
 
                 try
                 {
-                    directoryWatchers.TemporarilyIgnore(path);
+                    directoryWatchers.ReportFileSystemChangeBeginning(path);
                     saver.Save(item, CancellationToken.None);
                 }
                 catch (Exception ex)
@@ -1477,7 +1477,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 }
                 finally
                 {
-                    directoryWatchers.RemoveTempIgnore(path);
+                    directoryWatchers.ReportFileSystemChangeComplete(path, false);
                     semaphore.Release();
                 }
             }

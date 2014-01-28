@@ -137,7 +137,7 @@
     <Compile Include="HttpServer\StreamWriter.cs" />
     <Compile Include="HttpServer\SwaggerService.cs" />
     <Compile Include="Drawing\ImageProcessor.cs" />
-    <Compile Include="IO\DirectoryWatchers.cs" />
+    <Compile Include="IO\LibraryMonitor.cs" />
     <Compile Include="Library\CoreResolutionIgnoreRule.cs" />
     <Compile Include="Library\LibraryManager.cs" />
     <Compile Include="Library\SearchEngine.cs" />

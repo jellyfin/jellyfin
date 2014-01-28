@@ -14,16 +14,16 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 {
     public class OrganizerScheduledTask : IScheduledTask, IConfigurableScheduledTask
     {
-        private readonly IDirectoryWatchers _directoryWatchers;
+        private readonly ILibraryMonitor _libraryMonitor;
         private readonly ILibraryManager _libraryManager;
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
         private readonly IServerConfigurationManager _config;
         private readonly IFileOrganizationService _organizationService;
 
-        public OrganizerScheduledTask(IDirectoryWatchers directoryWatchers, ILibraryManager libraryManager, ILogger logger, IFileSystem fileSystem, IServerConfigurationManager config, IFileOrganizationService organizationService)
+        public OrganizerScheduledTask(ILibraryMonitor libraryMonitor, ILibraryManager libraryManager, ILogger logger, IFileSystem fileSystem, IServerConfigurationManager config, IFileOrganizationService organizationService)
         {
-            _directoryWatchers = directoryWatchers;
+            _libraryMonitor = libraryMonitor;
             _libraryManager = libraryManager;
             _logger = logger;
             _fileSystem = fileSystem;
@@ -48,7 +48,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
         public Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            return new TvFolderOrganizer(_libraryManager, _logger, _fileSystem, _directoryWatchers, _organizationService, _config)
+            return new TvFolderOrganizer(_libraryManager, _logger, _fileSystem, _libraryMonitor, _organizationService, _config)
                 .Organize(_config.Configuration.TvFileOrganizationOptions, cancellationToken, progress);
         }
 

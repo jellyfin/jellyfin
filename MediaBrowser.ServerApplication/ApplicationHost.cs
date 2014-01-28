@@ -137,7 +137,7 @@ namespace MediaBrowser.ServerApplication
         /// Gets or sets the directory watchers.
         /// </summary>
         /// <value>The directory watchers.</value>
-        private IDirectoryWatchers DirectoryWatchers { get; set; }
+        private ILibraryMonitor LibraryMonitor { get; set; }
         /// <summary>
         /// Gets or sets the provider manager.
         /// </summary>
@@ -273,13 +273,13 @@ namespace MediaBrowser.ServerApplication
             UserManager = new UserManager(Logger, ServerConfigurationManager, UserRepository);
             RegisterSingleInstance(UserManager);
 
-            LibraryManager = new LibraryManager(Logger, TaskManager, UserManager, ServerConfigurationManager, UserDataManager, () => DirectoryWatchers, FileSystemManager);
+            LibraryManager = new LibraryManager(Logger, TaskManager, UserManager, ServerConfigurationManager, UserDataManager, () => LibraryMonitor, FileSystemManager);
             RegisterSingleInstance(LibraryManager);
 
-            DirectoryWatchers = new DirectoryWatchers(LogManager, TaskManager, LibraryManager, ServerConfigurationManager, FileSystemManager);
-            RegisterSingleInstance(DirectoryWatchers);
+            LibraryMonitor = new LibraryMonitor(LogManager, TaskManager, LibraryManager, ServerConfigurationManager);
+            RegisterSingleInstance(LibraryMonitor);
 
-            ProviderManager = new ProviderManager(HttpClient, ServerConfigurationManager, DirectoryWatchers, LogManager, FileSystemManager, ItemRepository);
+            ProviderManager = new ProviderManager(HttpClient, ServerConfigurationManager, LibraryMonitor, LogManager, FileSystemManager, ItemRepository);
             RegisterSingleInstance(ProviderManager);
 
             RegisterSingleInstance<ISearchEngine>(() => new SearchEngine(LogManager, LibraryManager, UserManager));
@@ -306,7 +306,7 @@ namespace MediaBrowser.ServerApplication
             var newsService = new Server.Implementations.News.NewsService(ApplicationPaths, JsonSerializer);
             RegisterSingleInstance<INewsService>(newsService);
 
-            var fileOrganizationService = new FileOrganizationService(TaskManager, FileOrganizationRepository, Logger, DirectoryWatchers, LibraryManager, ServerConfigurationManager, FileSystemManager);
+            var fileOrganizationService = new FileOrganizationService(TaskManager, FileOrganizationRepository, Logger, LibraryMonitor, LibraryManager, ServerConfigurationManager, FileSystemManager);
             RegisterSingleInstance<IFileOrganizationService>(fileOrganizationService);
 
             progress.Report(15);

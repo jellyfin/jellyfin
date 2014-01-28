@@ -36,7 +36,7 @@ namespace MediaBrowser.Providers.Manager
         /// <summary>
         /// The _directory watchers
         /// </summary>
-        private readonly IDirectoryWatchers _directoryWatchers;
+        private readonly ILibraryMonitor _libraryMonitor;
 
         /// <summary>
         /// Gets or sets the configuration manager.
@@ -57,23 +57,23 @@ namespace MediaBrowser.Providers.Manager
 
         private readonly IItemRepository _itemRepo;
 
-        private IMetadataService[] _metadataServices = {};
+        private IMetadataService[] _metadataServices = { };
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ProviderManager" /> class.
         /// </summary>
         /// <param name="httpClient">The HTTP client.</param>
         /// <param name="configurationManager">The configuration manager.</param>
-        /// <param name="directoryWatchers">The directory watchers.</param>
+        /// <param name="libraryMonitor">The directory watchers.</param>
         /// <param name="logManager">The log manager.</param>
         /// <param name="fileSystem">The file system.</param>
         /// <param name="itemRepo">The item repo.</param>
-        public ProviderManager(IHttpClient httpClient, IServerConfigurationManager configurationManager, IDirectoryWatchers directoryWatchers, ILogManager logManager, IFileSystem fileSystem, IItemRepository itemRepo)
+        public ProviderManager(IHttpClient httpClient, IServerConfigurationManager configurationManager, ILibraryMonitor libraryMonitor, ILogManager logManager, IFileSystem fileSystem, IItemRepository itemRepo)
         {
             _logger = logManager.GetLogger("ProviderManager");
             _httpClient = httpClient;
             ConfigurationManager = configurationManager;
-            _directoryWatchers = directoryWatchers;
+            _libraryMonitor = libraryMonitor;
             _fileSystem = fileSystem;
             _itemRepo = itemRepo;
         }
@@ -315,7 +315,7 @@ namespace MediaBrowser.Providers.Manager
             }
 
             //Tell the watchers to ignore
-            _directoryWatchers.TemporarilyIgnore(path);
+            _libraryMonitor.ReportFileSystemChangeBeginning(path);
 
             if (dataToSave.CanSeek)
             {
@@ -338,7 +338,7 @@ namespace MediaBrowser.Providers.Manager
             finally
             {
                 //Remove the ignore
-                _directoryWatchers.RemoveTempIgnore(path);
+                _libraryMonitor.ReportFileSystemChangeComplete(path, false);
             }
         }
 
@@ -380,7 +380,7 @@ namespace MediaBrowser.Providers.Manager
         /// <returns>Task.</returns>
         public Task SaveImage(BaseItem item, Stream source, string mimeType, ImageType type, int? imageIndex, string sourceUrl, CancellationToken cancellationToken)
         {
-            return new ImageSaver(ConfigurationManager, _directoryWatchers, _fileSystem, _logger).SaveImage(item, source, mimeType, type, imageIndex, sourceUrl, cancellationToken);
+            return new ImageSaver(ConfigurationManager, _libraryMonitor, _fileSystem, _logger).SaveImage(item, source, mimeType, type, imageIndex, sourceUrl, cancellationToken);
         }
 
         /// <summary>
