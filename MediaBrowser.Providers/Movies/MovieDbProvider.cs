@@ -697,7 +697,8 @@ namespace MediaBrowser.Providers.Movies
             }
             if (!movie.LockedFields.Contains(MetadataFields.Overview))
             {
-                movie.Overview = WebUtility.HtmlDecode(movieData.overview);
+                // Bug in Mono: WebUtility.HtmlDecode should return null if the string is null but in Mono it generate an System.ArgumentNullException.
+                movie.Overview = movieData.overview != null ? WebUtility.HtmlDecode(movieData.overview) : null;
                 movie.Overview = movie.Overview != null ? movie.Overview.Replace("\n\n", "\n") : null;
             }
             movie.HomePageUrl = movieData.homepage;
