@@ -187,7 +187,7 @@ namespace MediaBrowser.Api.Library
         /// </summary>
         private readonly ILibraryManager _libraryManager;
 
-        private readonly IDirectoryWatchers _directoryWatchers;
+        private readonly ILibraryMonitor _libraryMonitor;
 
         private readonly IFileSystem _fileSystem;
         private readonly ILogger _logger;
@@ -199,7 +199,7 @@ namespace MediaBrowser.Api.Library
         /// <param name="userManager">The user manager.</param>
         /// <param name="libraryManager">The library manager.</param>
         /// <exception cref="System.ArgumentNullException">appPaths</exception>
-        public LibraryStructureService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, IDirectoryWatchers directoryWatchers, IFileSystem fileSystem, ILogger logger)
+        public LibraryStructureService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, ILibraryMonitor libraryMonitor, IFileSystem fileSystem, ILogger logger)
         {
             if (appPaths == null)
             {
@@ -209,7 +209,7 @@ namespace MediaBrowser.Api.Library
             _userManager = userManager;
             _appPaths = appPaths;
             _libraryManager = libraryManager;
-            _directoryWatchers = directoryWatchers;
+            _libraryMonitor = libraryMonitor;
             _fileSystem = fileSystem;
             _logger = logger;
         }
@@ -270,8 +270,7 @@ namespace MediaBrowser.Api.Library
                 throw new ArgumentException("There is already a media collection with the name " + name + ".");
             }
 
-            _directoryWatchers.Stop();
-            _directoryWatchers.TemporarilyIgnore(virtualFolderPath);
+            _libraryMonitor.Stop();
 
             try
             {
@@ -294,10 +293,8 @@ namespace MediaBrowser.Api.Library
                 // No need to start if scanning the library because it will handle it
                 if (!request.RefreshLibrary)
                 {
-                    _directoryWatchers.Start();
+                    _libraryMonitor.Start();
                 }
-
-                _directoryWatchers.RemoveTempIgnore(virtualFolderPath);
             }
 
             if (request.RefreshLibrary)
@@ -348,9 +345,7 @@ namespace MediaBrowser.Api.Library
                 throw new ArgumentException("There is already a media collection with the name " + newPath + ".");
             }
 
-            _directoryWatchers.Stop();
-            _directoryWatchers.TemporarilyIgnore(currentPath);
-            _directoryWatchers.TemporarilyIgnore(newPath);
+            _libraryMonitor.Stop();
 
             try
             {
@@ -376,11 +371,8 @@ namespace MediaBrowser.Api.Library
                 // No need to start if scanning the library because it will handle it
                 if (!request.RefreshLibrary)
                 {
-                    _directoryWatchers.Start();
+                    _libraryMonitor.Start();
                 }
-
-                _directoryWatchers.RemoveTempIgnore(currentPath);
-                _directoryWatchers.RemoveTempIgnore(newPath);
             }
 
             if (request.RefreshLibrary)
@@ -420,8 +412,7 @@ namespace MediaBrowser.Api.Library
                 throw new DirectoryNotFoundException("The media folder does not exist");
             }
 
-            _directoryWatchers.Stop();
-            _directoryWatchers.TemporarilyIgnore(path);
+            _libraryMonitor.Stop();
 
             try
             {
@@ -437,10 +428,8 @@ namespace MediaBrowser.Api.Library
                 // No need to start if scanning the library because it will handle it
                 if (!request.RefreshLibrary)
                 {
-                    _directoryWatchers.Start();
+                    _libraryMonitor.Start();
                 }
-
-                _directoryWatchers.RemoveTempIgnore(path);
             }
 
             if (request.RefreshLibrary)
@@ -460,7 +449,7 @@ namespace MediaBrowser.Api.Library
                 throw new ArgumentNullException("request");
             }
 
-            _directoryWatchers.Stop();
+            _libraryMonitor.Stop();
 
             try
             {
@@ -485,7 +474,7 @@ namespace MediaBrowser.Api.Library
                 // No need to start if scanning the library because it will handle it
                 if (!request.RefreshLibrary)
                 {
-                    _directoryWatchers.Start();
+                    _libraryMonitor.Start();
                 }
             }
 
@@ -506,7 +495,7 @@ namespace MediaBrowser.Api.Library
                 throw new ArgumentNullException("request");
             }
 
-            _directoryWatchers.Stop();
+            _libraryMonitor.Stop();
 
             try
             {
@@ -531,7 +520,7 @@ namespace MediaBrowser.Api.Library
                 // No need to start if scanning the library because it will handle it
                 if (!request.RefreshLibrary)
                 {
-                    _directoryWatchers.Start();
+                    _libraryMonitor.Start();
                 }
             }
 

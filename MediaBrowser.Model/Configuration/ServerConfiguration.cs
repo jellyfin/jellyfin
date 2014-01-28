@@ -165,7 +165,7 @@ namespace MediaBrowser.Model.Configuration
         /// different directories and files.
         /// </summary>
         /// <value>The file watcher delay.</value>
-        public int FileWatcherDelay { get; set; }
+        public int RealtimeWatcherDelay { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [enable dashboard response caching].
@@ -250,7 +250,7 @@ namespace MediaBrowser.Model.Configuration
             MaxResumePct = 90;
             MinResumeDurationSeconds = Convert.ToInt32(TimeSpan.FromMinutes(5).TotalSeconds);
 
-            FileWatcherDelay = 8;
+            RealtimeWatcherDelay = 20;
 
             RecentItemDays = 10;
 

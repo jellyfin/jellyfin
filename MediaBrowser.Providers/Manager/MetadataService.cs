@@ -38,7 +38,6 @@ namespace MediaBrowser.Providers.Manager
         public void AddParts(IEnumerable<IMetadataProvider> providers, IEnumerable<IImageProvider> imageProviders)
         {
             _providers = providers.OfType<IMetadataProvider<TItemType>>()
-                .OrderBy(GetSortOrder)
                 .ToArray();
 
             _imageProviders = imageProviders.OrderBy(i => i.Order).ToArray();
@@ -180,21 +179,6 @@ namespace MediaBrowser.Providers.Manager
         }
 
         /// <summary>
-        /// Gets the sort order.
-        /// </summary>
-        /// <param name="provider">The provider.</param>
-        /// <returns>System.Int32.</returns>
-        protected virtual int GetSortOrder(IMetadataProvider<TItemType> provider)
-        {
-            if (provider is IRemoteMetadataProvider)
-            {
-                return 1;
-            }
-
-            return 0;
-        }
-
-        /// <summary>
         /// Determines whether this instance can refresh the specified provider.
         /// </summary>
         /// <param name="provider">The provider.</param>
@@ -217,7 +201,7 @@ namespace MediaBrowser.Providers.Manager
 
         protected abstract Task SaveItem(TItemType item, ItemUpdateType reason, CancellationToken cancellationToken);
 
-        protected virtual ItemId GetId(TItemType item)
+        protected virtual ItemId GetId(IHasMetadata item)
         {
             return new ItemId
             {

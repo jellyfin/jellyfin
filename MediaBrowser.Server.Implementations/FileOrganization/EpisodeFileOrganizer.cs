@@ -22,7 +22,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 {
     public class EpisodeFileOrganizer
     {
-        private readonly IDirectoryWatchers _directoryWatchers;
+        private readonly ILibraryMonitor _libraryMonitor;
         private readonly ILibraryManager _libraryManager;
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
@@ -31,14 +31,14 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
-        public EpisodeFileOrganizer(IFileOrganizationService organizationService, IServerConfigurationManager config, IFileSystem fileSystem, ILogger logger, ILibraryManager libraryManager, IDirectoryWatchers directoryWatchers)
+        public EpisodeFileOrganizer(IFileOrganizationService organizationService, IServerConfigurationManager config, IFileSystem fileSystem, ILogger logger, ILibraryManager libraryManager, ILibraryMonitor libraryMonitor)
         {
             _organizationService = organizationService;
             _config = config;
             _fileSystem = fileSystem;
             _logger = logger;
             _libraryManager = libraryManager;
-            _directoryWatchers = directoryWatchers;
+            _libraryMonitor = libraryMonitor;
         }
 
         public async Task<FileOrganizationResult> OrganizeEpisodeFile(string path, TvFileOrganizationOptions options, bool overwriteExisting)
@@ -174,6 +174,8 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
                 {
                     _logger.Debug("Removing duplicate episode {0}", path);
 
+                    _libraryMonitor.ReportFileSystemChangeBeginning(path);
+
                     try
                     {
                         File.Delete(path);
@@ -181,6 +183,10 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
                     catch (IOException ex)
                     {
                         _logger.ErrorException("Error removing duplicate episode", ex, path);
+                    }
+                    finally
+                    {
+                        _libraryMonitor.ReportFileSystemChangeComplete(path, true);
                     }
                 }
             }
@@ -232,7 +238,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
         private void PerformFileSorting(TvFileOrganizationOptions options, FileOrganizationResult result)
         {
-            _directoryWatchers.TemporarilyIgnore(result.TargetPath);
+            _libraryMonitor.ReportFileSystemChangeBeginning(result.TargetPath);
 
             Directory.CreateDirectory(Path.GetDirectoryName(result.TargetPath));
 
@@ -264,7 +270,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             }
             finally
             {
-                _directoryWatchers.RemoveTempIgnore(result.TargetPath);
+                _libraryMonitor.ReportFileSystemChangeComplete(result.TargetPath, true);
             }
 
             if (copy)

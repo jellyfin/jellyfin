@@ -18,19 +18,19 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 {
     public class TvFolderOrganizer
     {
-        private readonly IDirectoryWatchers _directoryWatchers;
+        private readonly ILibraryMonitor _libraryMonitor;
         private readonly ILibraryManager _libraryManager;
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
         private readonly IFileOrganizationService _organizationService;
         private readonly IServerConfigurationManager _config;
 
-        public TvFolderOrganizer(ILibraryManager libraryManager, ILogger logger, IFileSystem fileSystem, IDirectoryWatchers directoryWatchers, IFileOrganizationService organizationService, IServerConfigurationManager config)
+        public TvFolderOrganizer(ILibraryManager libraryManager, ILogger logger, IFileSystem fileSystem, ILibraryMonitor libraryMonitor, IFileOrganizationService organizationService, IServerConfigurationManager config)
         {
             _libraryManager = libraryManager;
             _logger = logger;
             _fileSystem = fileSystem;
-            _directoryWatchers = directoryWatchers;
+            _libraryMonitor = libraryMonitor;
             _organizationService = organizationService;
             _config = config;
         }
@@ -57,7 +57,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
                 foreach (var file in eligibleFiles)
                 {
                     var organizer = new EpisodeFileOrganizer(_organizationService, _config, _fileSystem, _logger, _libraryManager,
-                        _directoryWatchers);
+                        _libraryMonitor);
 
                     var result = await organizer.OrganizeEpisodeFile(file.FullName, options, false).ConfigureAwait(false);
 

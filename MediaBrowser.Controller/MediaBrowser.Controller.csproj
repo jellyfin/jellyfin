@@ -182,7 +182,7 @@
     <Compile Include="Entities\Video.cs" />
     <Compile Include="Entities\CollectionFolder.cs" />
     <Compile Include="Entities\Year.cs" />
-    <Compile Include="IO\IDirectoryWatchers.cs" />
+    <Compile Include="Library\ILibraryMonitor.cs" />
     <Compile Include="IServerApplicationHost.cs" />
     <Compile Include="IServerApplicationPaths.cs" />
     <Compile Include="Library\SearchHintInfo.cs" />
