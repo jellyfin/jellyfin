@@ -167,6 +167,16 @@ namespace MediaBrowser.Api.Library
         public bool RefreshLibrary { get; set; }
     }
 
+    [Route("/Library/Changes/Path", "POST")]
+    public class ReportChangedPath : IReturnVoid
+    {
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        public string Path { get; set; }
+    }
+    
     /// <summary>
     /// Class LibraryStructureService
     /// </summary>
@@ -212,6 +222,21 @@ namespace MediaBrowser.Api.Library
             _libraryMonitor = libraryMonitor;
             _fileSystem = fileSystem;
             _logger = logger;
+        }
+
+        /// <summary>
+        /// Posts the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <exception cref="System.ArgumentException">Please supply a Path</exception>
+        public void Post(ReportChangedPath request)
+        {
+            if (string.IsNullOrEmpty(request.Path))
+            {
+                throw new ArgumentException("Please supply a Path");
+            }
+
+            _libraryMonitor.ReportFileSystemChanged(request.Path);
         }
 
         /// <summary>
