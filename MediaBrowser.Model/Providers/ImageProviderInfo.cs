@@ -12,9 +12,9 @@
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the priority.
+        /// Gets or sets the order.
         /// </summary>
-        /// <value>The priority.</value>
-        public int Priority { get; set; }
+        /// <value>The order.</value>
+        public int Order { get; set; }
     }
 }

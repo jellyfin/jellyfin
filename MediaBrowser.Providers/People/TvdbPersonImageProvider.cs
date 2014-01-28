@@ -1,10 +1,12 @@
-﻿using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
+using MediaBrowser.Providers.TV;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,17 +16,19 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 
-namespace MediaBrowser.Providers.TV
+namespace MediaBrowser.Providers.People
 {
-    public class ManualTvdbPersonImageProvider : IImageProvider
+    public class TvdbPersonImageProvider : IRemoteImageProvider
     {
         private readonly IServerConfigurationManager _config;
         private readonly ILibraryManager _library;
+        private readonly IHttpClient _httpClient;
 
-        public ManualTvdbPersonImageProvider(IServerConfigurationManager config, ILibraryManager library)
+        public TvdbPersonImageProvider(IServerConfigurationManager config, ILibraryManager library, IHttpClient httpClient)
         {
             _config = config;
             _library = library;
+            _httpClient = httpClient;
         }
 
         public string Name
@@ -40,6 +44,14 @@ namespace MediaBrowser.Providers.TV
         public bool Supports(IHasImages item)
         {
             return item is Person;
+        }
+
+        public IEnumerable<ImageType> GetSupportedImages(IHasImages item)
+        {
+            return new List<ImageType>
+            {
+                ImageType.Primary
+            };
         }
 
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(IHasImages item, ImageType imageType, CancellationToken cancellationToken)
@@ -184,9 +196,19 @@ namespace MediaBrowser.Providers.TV
             return null;
         }
 
-        public int Priority
+        public int Order
         {
-            get { return 0; }
+            get { return 1; }
+        }
+
+        public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
+        {
+            return _httpClient.GetResponse(new HttpRequestOptions
+            {
+                CancellationToken = cancellationToken,
+                Url = url,
+                ResourcePool = TvdbSeriesProvider.Current.TvDbResourcePool
+            });
         }
     }
 }

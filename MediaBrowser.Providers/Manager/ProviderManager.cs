@@ -2,7 +2,6 @@
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
@@ -17,7 +16,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Server.Implementations.Providers
+namespace MediaBrowser.Providers.Manager
 {
     /// <summary>
     /// Class ProviderManager
@@ -51,10 +50,14 @@ namespace MediaBrowser.Server.Implementations.Providers
         /// <value>The metadata providers enumerable.</value>
         private BaseMetadataProvider[] MetadataProviders { get; set; }
 
+        private IRemoteImageProvider[] RemoteImageProviders { get; set; }
         private IImageProvider[] ImageProviders { get; set; }
+
         private readonly IFileSystem _fileSystem;
 
         private readonly IItemRepository _itemRepo;
+
+        private IMetadataService[] _metadataServices = {};
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ProviderManager" /> class.
@@ -63,6 +66,8 @@ namespace MediaBrowser.Server.Implementations.Providers
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="directoryWatchers">The directory watchers.</param>
         /// <param name="logManager">The log manager.</param>
+        /// <param name="fileSystem">The file system.</param>
+        /// <param name="itemRepo">The item repo.</param>
         public ProviderManager(IHttpClient httpClient, IServerConfigurationManager configurationManager, IDirectoryWatchers directoryWatchers, ILogManager logManager, IFileSystem fileSystem, IItemRepository itemRepo)
         {
             _logger = logManager.GetLogger("ProviderManager");
@@ -78,11 +83,34 @@ namespace MediaBrowser.Server.Implementations.Providers
         /// </summary>
         /// <param name="providers">The providers.</param>
         /// <param name="imageProviders">The image providers.</param>
-        public void AddParts(IEnumerable<BaseMetadataProvider> providers, IEnumerable<IImageProvider> imageProviders)
+        /// <param name="metadataServices">The metadata services.</param>
+        /// <param name="metadataProviders">The metadata providers.</param>
+        public void AddParts(IEnumerable<BaseMetadataProvider> providers, IEnumerable<IImageProvider> imageProviders, IEnumerable<IMetadataService> metadataServices, IEnumerable<IMetadataProvider> metadataProviders)
         {
             MetadataProviders = providers.OrderBy(e => e.Priority).ToArray();
 
-            ImageProviders = imageProviders.OrderByDescending(i => i.Priority).ToArray();
+            ImageProviders = imageProviders.OrderBy(i => i.Order).ToArray();
+            RemoteImageProviders = ImageProviders.OfType<IRemoteImageProvider>().ToArray();
+
+            _metadataServices = metadataServices.OrderBy(i => i.Order).ToArray();
+
+            var providerList = metadataProviders.ToList();
+            foreach (var service in _metadataServices)
+            {
+                service.AddParts(providerList, ImageProviders);
+            }
+        }
+
+        public Task RefreshMetadata(IHasMetadata item, MetadataRefreshOptions options, CancellationToken cancellationToken)
+        {
+            var service = _metadataServices.FirstOrDefault(i => i.CanRefresh(item));
+
+            if (service != null)
+            {
+                return service.RefreshMetadata(item, options, cancellationToken);
+            }
+
+            return ((BaseItem)item).RefreshMetadataDirect(cancellationToken, options.ForceSave, options.ReplaceAllMetadata);
         }
 
         /// <summary>
@@ -91,9 +119,9 @@ namespace MediaBrowser.Server.Implementations.Providers
         /// <param name="item">The item.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="force">if set to <c>true</c> [force].</param>
-        /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
         /// <returns>Task{System.Boolean}.</returns>
-        public async Task<ItemUpdateType?> ExecuteMetadataProviders(BaseItem item, CancellationToken cancellationToken, bool force = false, bool allowSlowProviders = true)
+        /// <exception cref="System.ArgumentNullException">item</exception>
+        public async Task<ItemUpdateType?> ExecuteMetadataProviders(BaseItem item, CancellationToken cancellationToken, bool force = false)
         {
             if (item == null)
             {
@@ -122,12 +150,6 @@ namespace MediaBrowser.Server.Implementations.Providers
 
                 // Skip if internet providers are currently disabled
                 if (provider.RequiresInternet && !enableInternetProviders)
-                {
-                    continue;
-                }
-
-                // Skip if is slow and we aren't allowing slow ones
-                if (provider.IsSlow && !allowSlowProviders)
                 {
                     continue;
                 }
@@ -371,7 +393,7 @@ namespace MediaBrowser.Server.Implementations.Providers
         /// <returns>Task{IEnumerable{RemoteImageInfo}}.</returns>
         public async Task<IEnumerable<RemoteImageInfo>> GetAvailableRemoteImages(BaseItem item, CancellationToken cancellationToken, string providerName = null, ImageType? type = null)
         {
-            var providers = GetImageProviders(item);
+            var providers = GetRemoteImageProviders(item);
 
             if (!string.IsNullOrEmpty(providerName))
             {
@@ -396,7 +418,7 @@ namespace MediaBrowser.Server.Implementations.Providers
         /// <param name="preferredLanguage">The preferred language.</param>
         /// <param name="type">The type.</param>
         /// <returns>Task{IEnumerable{RemoteImageInfo}}.</returns>
-        private async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken, IImageProvider i, string preferredLanguage, ImageType? type = null)
+        private async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken, IRemoteImageProvider i, string preferredLanguage, ImageType? type = null)
         {
             try
             {
@@ -414,7 +436,7 @@ namespace MediaBrowser.Server.Implementations.Providers
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("{0} failed in GetImages for type {1}", ex, i.GetType().Name, item.GetType().Name);
+                _logger.ErrorException("{0} failed in GetImageInfos for type {1}", ex, i.GetType().Name, item.GetType().Name);
                 return new List<RemoteImageInfo>();
             }
         }
@@ -430,14 +452,9 @@ namespace MediaBrowser.Server.Implementations.Providers
             return images;
         }
 
-        /// <summary>
-        /// Gets the supported image providers.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns>IEnumerable{IImageProvider}.</returns>
-        public IEnumerable<IImageProvider> GetImageProviders(BaseItem item)
+        private IEnumerable<IRemoteImageProvider> GetRemoteImageProviders(BaseItem item)
         {
-            return ImageProviders.Where(i =>
+            return RemoteImageProviders.Where(i =>
             {
                 try
                 {
@@ -448,6 +465,22 @@ namespace MediaBrowser.Server.Implementations.Providers
                     _logger.ErrorException("{0} failed in Supports for type {1}", ex, i.GetType().Name, item.GetType().Name);
                     return false;
                 }
+
+            });
+        }
+
+        /// <summary>
+        /// Gets the supported image providers.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns>IEnumerable{IImageProvider}.</returns>
+        public IEnumerable<ImageProviderInfo> GetImageProviderInfo(BaseItem item)
+        {
+            return GetRemoteImageProviders(item).Select(i => new ImageProviderInfo
+            {
+                Name = i.Name,
+                Order = i.Order
+
             });
         }
     }

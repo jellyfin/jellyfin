@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -11,8 +12,15 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.Music
 {
-    public class ManualLastFmImageProvider : IImageProvider
+    public class ManualLastFmImageProvider : IRemoteImageProvider
     {
+        private readonly IHttpClient _httpClient;
+
+        public ManualLastFmImageProvider(IHttpClient httpClient)
+        {
+            _httpClient = httpClient;
+        }
+
         public string Name
         {
             get { return ProviderName; }
@@ -26,6 +34,14 @@ namespace MediaBrowser.Providers.Music
         public bool Supports(IHasImages item)
         {
             return item is MusicAlbum || item is MusicArtist;
+        }
+
+        public IEnumerable<ImageType> GetSupportedImages(IHasImages item)
+        {
+            return new List<ImageType>
+            {
+                ImageType.Primary
+            };
         }
 
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(IHasImages item, ImageType imageType, CancellationToken cancellationToken)
@@ -72,7 +88,8 @@ namespace MediaBrowser.Providers.Music
             var info = new RemoteImageInfo
             {
                 ProviderName = Name,
-                Url = url
+                Url = url,
+                Type = ImageType.Primary
             };
 
             if (string.Equals(size, "mega", StringComparison.OrdinalIgnoreCase))
@@ -95,9 +112,19 @@ namespace MediaBrowser.Providers.Music
             return info;
         }
 
-        public int Priority
+        public int Order
         {
-            get { return 0; }
+            get { return 1; }
+        }
+
+        public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
+        {
+            return _httpClient.GetResponse(new HttpRequestOptions
+            {
+                CancellationToken = cancellationToken,
+                Url = url,
+                ResourcePool = LastfmBaseProvider.LastfmResourcePool
+            });
         }
     }
 }

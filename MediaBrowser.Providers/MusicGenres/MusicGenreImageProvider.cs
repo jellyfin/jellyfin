@@ -2,18 +2,21 @@
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
+using MediaBrowser.Providers.Genres;
+using MediaBrowser.Providers.ImagesByName;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Providers.ImagesByName
+namespace MediaBrowser.Providers.MusicGenres
 {
-    public class GameGenresManualImageProvider : IImageProvider
+    public class MusicGenreImageProvider : IRemoteImageProvider
     {
         private readonly IServerConfigurationManager _config;
         private readonly IHttpClient _httpClient;
@@ -21,7 +24,7 @@ namespace MediaBrowser.Providers.ImagesByName
 
         private readonly SemaphoreSlim _listResourcePool = new SemaphoreSlim(1, 1);
 
-        public GameGenresManualImageProvider(IServerConfigurationManager config, IHttpClient httpClient, IFileSystem fileSystem)
+        public MusicGenreImageProvider(IServerConfigurationManager config, IHttpClient httpClient, IFileSystem fileSystem)
         {
             _config = config;
             _httpClient = httpClient;
@@ -40,7 +43,16 @@ namespace MediaBrowser.Providers.ImagesByName
 
         public bool Supports(IHasImages item)
         {
-            return item is GameGenre;
+            return item is MusicGenre;
+        }
+
+        public IEnumerable<ImageType> GetSupportedImages(IHasImages item)
+        {
+            return new List<ImageType>
+            {
+                ImageType.Primary, 
+                ImageType.Thumb
+            };
         }
 
         public Task<IEnumerable<RemoteImageInfo>> GetImages(IHasImages item, ImageType imageType, CancellationToken cancellationToken)
@@ -59,7 +71,7 @@ namespace MediaBrowser.Providers.ImagesByName
 
             if (posters)
             {
-                var posterPath = Path.Combine(_config.ApplicationPaths.CachePath, "imagesbyname", "remotegamegenreposters.txt");
+                var posterPath = Path.Combine(_config.ApplicationPaths.CachePath, "imagesbyname", "remotemusicgenreposters.txt");
 
                 await EnsurePosterList(posterPath, cancellationToken).ConfigureAwait(false);
 
@@ -70,7 +82,7 @@ namespace MediaBrowser.Providers.ImagesByName
 
             if (thumbs)
             {
-                var thumbsPath = Path.Combine(_config.ApplicationPaths.CachePath, "imagesbyname", "remotegamegenrethumbs.txt");
+                var thumbsPath = Path.Combine(_config.ApplicationPaths.CachePath, "imagesbyname", "remotemusicgenrethumbs.txt");
 
                 await EnsureThumbsList(thumbsPath, cancellationToken).ConfigureAwait(false);
 
@@ -103,26 +115,36 @@ namespace MediaBrowser.Providers.ImagesByName
 
         private string GetUrl(string image, string filename)
         {
-            return string.Format("https://raw.github.com/MediaBrowser/MediaBrowser.Resources/master/images/imagesbyname/gamegenres/{0}/{1}.jpg", image, filename);
+            return string.Format("https://raw.github.com/MediaBrowser/MediaBrowser.Resources/master/images/imagesbyname/musicgenres/{0}/{1}.jpg", image, filename);
         }
 
         private Task EnsureThumbsList(string file, CancellationToken cancellationToken)
         {
-            const string url = "https://raw.github.com/MediaBrowser/MediaBrowser.Resources/master/images/imagesbyname/gamegenrethumbs.txt";
+            const string url = "https://raw.github.com/MediaBrowser/MediaBrowser.Resources/master/images/imagesbyname/musicgenrethumbs.txt";
 
             return ImageUtils.EnsureList(url, file, _httpClient, _fileSystem, _listResourcePool, cancellationToken);
         }
 
         private Task EnsurePosterList(string file, CancellationToken cancellationToken)
         {
-            const string url = "https://raw.github.com/MediaBrowser/MediaBrowser.Resources/master/images/imagesbyname/gamegenreposters.txt";
+            const string url = "https://raw.github.com/MediaBrowser/MediaBrowser.Resources/master/images/imagesbyname/musicgenreposters.txt";
 
             return ImageUtils.EnsureList(url, file, _httpClient, _fileSystem, _listResourcePool, cancellationToken);
         }
 
-        public int Priority
+        public int Order
         {
             get { return 0; }
+        }
+
+        public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
+        {
+            return _httpClient.GetResponse(new HttpRequestOptions
+            {
+                CancellationToken = cancellationToken,
+                Url = url,
+                ResourcePool = GenreImageProvider.ImageDownloadResourcePool
+            });
         }
     }
 }

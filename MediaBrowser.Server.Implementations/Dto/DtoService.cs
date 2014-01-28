@@ -1024,6 +1024,11 @@ namespace MediaBrowser.Server.Implementations.Dto
                 {
                     dto.SpecialFeatureCount = specialFeatureCount;
                 }
+
+                if (fields.Contains(ItemFields.TmdbCollectionName))
+                {
+                    dto.TmdbCollectionName = movie.TmdbCollectionName;
+                }
             }
 
             // Add EpisodeInfo

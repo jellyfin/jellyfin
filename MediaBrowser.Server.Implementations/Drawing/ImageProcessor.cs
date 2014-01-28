@@ -388,18 +388,18 @@ namespace MediaBrowser.Server.Implementations.Drawing
         /// <param name="image">The image.</param>
         /// <param name="outputFormat">The output format.</param>
         /// <returns>ImageFormat.</returns>
-        private ImageFormat GetOutputFormat(Image image, ImageOutputFormat outputFormat)
+        private System.Drawing.Imaging.ImageFormat GetOutputFormat(Image image, ImageOutputFormat outputFormat)
         {
             switch (outputFormat)
             {
                 case ImageOutputFormat.Bmp:
-                    return ImageFormat.Bmp;
+                    return System.Drawing.Imaging.ImageFormat.Bmp;
                 case ImageOutputFormat.Gif:
-                    return ImageFormat.Gif;
+                    return System.Drawing.Imaging.ImageFormat.Gif;
                 case ImageOutputFormat.Jpg:
-                    return ImageFormat.Jpeg;
+                    return System.Drawing.Imaging.ImageFormat.Jpeg;
                 case ImageOutputFormat.Png:
-                    return ImageFormat.Png;
+                    return System.Drawing.Imaging.ImageFormat.Png;
                 default:
                     return image.RawFormat;
             }
@@ -787,7 +787,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
                                 //And then save it in the cache
                                 using (var outputStream = _fileSystem.GetFileStream(enhancedImagePath, FileMode.Create, FileAccess.Write, FileShare.Read, false))
                                 {
-                                    newImage.Save(ImageFormat.Png, outputStream, 100);
+                                    newImage.Save(System.Drawing.Imaging.ImageFormat.Png, outputStream, 100);
                                 }
                             }
                         }

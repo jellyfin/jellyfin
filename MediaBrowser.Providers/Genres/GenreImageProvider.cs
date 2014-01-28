@@ -5,15 +5,16 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
+using MediaBrowser.Providers.ImagesByName;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Providers.ImagesByName
+namespace MediaBrowser.Providers.Genres
 {
-    public class GenresManualImageProvider : IImageProvider
+    public class GenreImageProvider : IRemoteImageProvider
     {
         private readonly IServerConfigurationManager _config;
         private readonly IHttpClient _httpClient;
@@ -21,7 +22,9 @@ namespace MediaBrowser.Providers.ImagesByName
 
         private readonly SemaphoreSlim _listResourcePool = new SemaphoreSlim(1, 1);
 
-        public GenresManualImageProvider(IServerConfigurationManager config, IHttpClient httpClient, IFileSystem fileSystem)
+        public static SemaphoreSlim ImageDownloadResourcePool = new SemaphoreSlim(5, 5);
+
+        public GenreImageProvider(IServerConfigurationManager config, IHttpClient httpClient, IFileSystem fileSystem)
         {
             _config = config;
             _httpClient = httpClient;
@@ -41,6 +44,15 @@ namespace MediaBrowser.Providers.ImagesByName
         public bool Supports(IHasImages item)
         {
             return item is Genre;
+        }
+
+        public IEnumerable<ImageType> GetSupportedImages(IHasImages item)
+        {
+            return new List<ImageType>
+            {
+                ImageType.Primary, 
+                ImageType.Thumb
+            };
         }
 
         public Task<IEnumerable<RemoteImageInfo>> GetImages(IHasImages item, ImageType imageType, CancellationToken cancellationToken)
@@ -120,9 +132,19 @@ namespace MediaBrowser.Providers.ImagesByName
             return ImageUtils.EnsureList(url, file, _httpClient, _fileSystem, _listResourcePool, cancellationToken);
         }
 
-        public int Priority
+        public int Order
         {
             get { return 0; }
+        }
+
+        public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
+        {
+            return _httpClient.GetResponse(new HttpRequestOptions
+            {
+                CancellationToken = cancellationToken,
+                Url = url,
+                ResourcePool = ImageDownloadResourcePool
+            });
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
 using System;
@@ -164,13 +165,11 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="forceSave">if set to <c>true</c> [is new item].</param>
         /// <param name="forceRefresh">if set to <c>true</c> [force].</param>
-        /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
-        /// <param name="resetResolveArgs">The reset resolve args.</param>
         /// <returns>true if a provider reports we changed</returns>
-        public override async Task<bool> RefreshMetadata(CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false, bool allowSlowProviders = true, bool resetResolveArgs = true)
+        public override async Task<bool> RefreshMetadataDirect(CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false)
         {
             // Kick off a task to refresh the main item
-            var result = await base.RefreshMetadata(cancellationToken, forceSave, forceRefresh, allowSlowProviders, resetResolveArgs).ConfigureAwait(false);
+            var result = await base.RefreshMetadataDirect(cancellationToken, forceSave, forceRefresh).ConfigureAwait(false);
 
             var additionalPartsChanged = false;
 
@@ -181,7 +180,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 try
                 {
-                    additionalPartsChanged = await RefreshAdditionalParts(cancellationToken, forceSave, forceRefresh, allowSlowProviders).ConfigureAwait(false);
+                    additionalPartsChanged = await RefreshAdditionalParts(cancellationToken, forceSave, forceRefresh).ConfigureAwait(false);
                 }
                 catch (IOException ex)
                 {
@@ -208,7 +207,12 @@ namespace MediaBrowser.Controller.Entities
 
             var itemsChanged = !AdditionalPartIds.SequenceEqual(newItemIds);
 
-            var tasks = newItems.Select(i => i.RefreshMetadata(cancellationToken, forceSave, forceRefresh, allowSlowProviders));
+            var tasks = newItems.Select(i => i.RefreshMetadata(new MetadataRefreshOptions
+            {
+                ForceSave = forceSave,
+                ReplaceAllMetadata = forceRefresh
+
+            }, cancellationToken));
 
             var results = await Task.WhenAll(tasks).ConfigureAwait(false);
 

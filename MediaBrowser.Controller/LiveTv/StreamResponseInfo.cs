@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using MediaBrowser.Controller.Drawing;
+using System.IO;
 
 namespace MediaBrowser.Controller.LiveTv
 {
@@ -14,6 +15,6 @@ namespace MediaBrowser.Controller.LiveTv
         /// Gets or sets the type of the MIME.
         /// </summary>
         /// <value>The type of the MIME.</value>
-        public string MimeType { get; set; }
+        public ImageFormat Format { get; set; }
     }
 }

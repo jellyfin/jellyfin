@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Serialization;
 using System;
@@ -212,7 +213,12 @@ namespace MediaBrowser.Controller.Entities
             // Kick off a task to validate the media library
             Task.Run(() => ValidateMediaLibrary(new Progress<double>(), CancellationToken.None));
 
-            return RefreshMetadata(CancellationToken.None, forceSave: true, forceRefresh: true);
+            return RefreshMetadata(new MetadataRefreshOptions
+            {
+                ForceSave = true,
+                ReplaceAllMetadata = true
+
+            }, CancellationToken.None);
         }
 
         /// <summary>
@@ -275,17 +281,13 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="forceSave">if set to <c>true</c> [is new item].</param>
         /// <param name="forceRefresh">if set to <c>true</c> [force].</param>
-        /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
         /// <returns>true if a provider reports we changed</returns>
-        public override async Task<bool> RefreshMetadata(CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false, bool allowSlowProviders = true, bool resetResolveArgs = true)
+        public override async Task<bool> RefreshMetadataDirect(CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false)
         {
-            if (resetResolveArgs)
-            {
-                // Reload this
-                ResetResolveArgs();
-            }
+            // Reload this
+            ResetResolveArgs();
 
-            var updateReason = await ProviderManager.ExecuteMetadataProviders(this, cancellationToken, forceRefresh, allowSlowProviders).ConfigureAwait(false);
+            var updateReason = await ProviderManager.ExecuteMetadataProviders(this, cancellationToken, forceRefresh).ConfigureAwait(false);
 
             var changed = updateReason.HasValue;
 
