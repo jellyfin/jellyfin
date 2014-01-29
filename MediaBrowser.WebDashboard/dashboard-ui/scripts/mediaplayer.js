@@ -180,9 +180,9 @@
                 currentProgressInterval = null;
             }
         }
-        
+
         function canPlayWebm() {
-            
+
             return testableVideoElement.canPlayType('video/webm').replace(/no/, '');
         }
 
@@ -218,12 +218,12 @@
 
                 var currentSrc = element.currentSrc;
                 currentSrc = replaceQueryString(currentSrc, 'starttimeticks', ticks);
-                
+
                 if (params.AudioStreamIndex != null) {
                     currentSrc = replaceQueryString(currentSrc, 'AudioStreamIndex', params.AudioStreamIndex);
                 }
                 if (params.SubtitleStreamIndex != null) {
-                    currentSrc = replaceQueryString(currentSrc, 'SubtitleStreamIndex', params.SubtitleStreamIndex);
+                    currentSrc = replaceQueryString(currentSrc, 'SubtitleStreamIndex', (params.SubtitleStreamIndex == -1 ? '' : params.SubtitleStreamIndex));
                 }
 
                 var maxWidth = params.MaxWidth || getParameterByName('MaxWidth', currentSrc);
@@ -539,7 +539,7 @@
                 console.log('Transcoding because the content is not a video file');
                 return false;
             }
-            
+
             if ((videoStream.Codec || '').toLowerCase().indexOf('h264') == -1) {
                 console.log('Transcoding because the content is not h264');
                 return false;
@@ -554,15 +554,15 @@
                 console.log('Transcoding because subtitles are required');
                 return false;
             }
-            
+
             if (!videoStream.Width || videoStream.Width > maxWidth) {
                 console.log('Transcoding because resolution is too high');
                 return false;
             }
-            
+
             var videoBitrate = videoStream.BitRate || 0;
             var audioBitrate = audioStream ? audioStream.BitRate || 0 : null;
-            
+
             if ((videoBitrate + audioBitrate) > bitrate) {
                 console.log('Transcoding because bitrate is too high');
                 return false;
@@ -682,9 +682,9 @@
             })[0];
 
             var subtitleStream = (item.MediaStreams || []).filter(function (stream) {
-                return stream.Index === subtitleStreamIndex ;
+                return stream.Index === subtitleStreamIndex;
             })[0];
-            
+
             var canPlayDirect = canPlayVideoDirect(item, videoStream, audioStream, subtitleStream, maxWidth, bitrate);
 
             var audioBitrate = bitrate >= 700000 ? 128000 : 64000;
@@ -897,7 +897,7 @@
                 console.log('Html5 Video error code: ' + errorCode);
 
                 var errorMsg = 'There was an error playing the video.';
-                
+
                 if (item.Type == "Channel") {
                     errorMsg += " Please ensure there is an open tuner availalble.";
                 }
@@ -1007,7 +1007,7 @@
             if (!user.Configuration.EnableMediaPlayback) {
                 return false;
             }
-            
+
             if (item.LocationType == "Virtual") {
                 return false;
             }
@@ -1488,7 +1488,7 @@
                 self.playById(id);
                 return;
             }
-            
+
             ApiClient.getItem(Dashboard.getCurrentUserId(), id).done(function (item) {
 
                 if (item.IsFolder) {
@@ -1781,6 +1781,11 @@
 
             var html = '';
 
+            streams.unshift({
+                Index: -1,
+                Language: "Off"
+            });
+
             for (var i = 0, length = streams.length; i < length; i++) {
 
                 var stream = streams[i];
@@ -1791,13 +1796,22 @@
                     html += '<div data-index="' + stream.Index + '" class="mediaFlyoutOption">';
                 }
 
-                html += '<img class="mediaFlyoutOptionImage" src="css/images/media/subtitleflyout.png" />';
+                if (stream.Index != -1) {
+                    html += '<img class="mediaFlyoutOptionImage" src="css/images/media/subtitleflyout.png" />';
+                } else {
+                    html += '<div class="mediaFlyoutOptionImage"></div>';
+                }
 
                 html += '<div class="mediaFlyoutOptionContent">';
 
                 var language = null;
+                var options = [];
 
-                if (stream.Language && stream.Language != "und") {
+                if (stream.Language == "Off") {
+                    language = "Off";
+                    options.push('&nbsp;');
+                }
+                else if (stream.Language && stream.Language != "und") {
 
                     var culture = cultures.filter(function (current) {
                         return current.ThreeLetterISOLanguageName.toLowerCase() == stream.Language.toLowerCase();
@@ -1809,8 +1823,6 @@
                 }
 
                 html += '<div class="mediaFlyoutOptionName">' + (language || 'Unknown language') + '</div>';
-
-                var options = [];
 
                 if (stream.Codec) {
                     options.push(stream.Codec);
@@ -1860,7 +1872,7 @@
             if (isStatic) {
                 options[0].name = "Direct";
             }
-            
+
             for (var i = 0, length = options.length; i < length; i++) {
 
                 var option = options[i];

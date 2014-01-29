@@ -18,7 +18,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         {
             var log = new StringBuilder();
 
-            log.AppendLine("Ip: " + request.RemoteEndPoint + ". Headers: " + string.Join(",", request.Headers.AllKeys.Select(k => k + "=" + request.Headers[k])));
+            var headers = string.Join(",", request.Headers.AllKeys.Where(i => !string.Equals(i, "cookie", StringComparison.OrdinalIgnoreCase) && !string.Equals(i, "Referer", StringComparison.OrdinalIgnoreCase)).Select(k => k + "=" + request.Headers[k]));
+
+            log.AppendLine("Ip: " + request.RemoteEndPoint + ". Headers: " + headers);
 
             var type = request.IsWebSocketRequest ? "Web Socket" : "HTTP " + request.HttpMethod;
 

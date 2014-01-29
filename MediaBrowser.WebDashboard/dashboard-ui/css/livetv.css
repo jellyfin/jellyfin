@@ -273,55 +273,55 @@
 }
 
 .channelList, .programGrid {
-    height: 200px;
+    height: 220px;
 }
 
 @media (min-height: 500px) {
 
     .channelList, .programGrid {
-        height: 250px;
+        height: 290px;
     }
 }
 
 @media (min-height: 600px) {
 
     .channelList, .programGrid {
-        height: 350px;
+        height: 390px;
     }
 }
 
 @media (min-height: 700px) {
 
     .channelList, .programGrid {
-        height: 450px;
+        height: 490px;
     }
 }
 
 @media (min-height: 800px) {
 
     .channelList, .programGrid {
-        height: 550px;
+        height: 590px;
     }
 }
 
 @media (min-height: 900px) {
 
     .channelList, .programGrid {
-        height: 650px;
+        height: 690px;
     }
 }
 
 @media (min-height: 1000px) {
 
     .channelList, .programGrid {
-        height: 750px;
+        height: 790px;
     }
 }
 
 @media (min-height: 1100px) {
 
     .channelList, .programGrid {
-        height: 850px;
+        height: 890px;
     }
 }
 
