@@ -105,7 +105,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         public bool HasChanged(IHasMetadata item, DateTime date)
         {
-            return !item.HasImage(ImageType.Primary) && (DateTime.UtcNow - date).TotalHours >= 12;
+            return !item.HasImage(ImageType.Primary) && (DateTime.UtcNow - date).TotalHours >= 6;
         }
     }
 }
