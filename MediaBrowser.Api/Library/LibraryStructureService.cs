@@ -174,6 +174,7 @@ namespace MediaBrowser.Api.Library
         /// Gets or sets the name.
         /// </summary>
         /// <value>The name.</value>
+        [ApiMember(Name = "Path", Description = "The path that was changed.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string Path { get; set; }
     }
     

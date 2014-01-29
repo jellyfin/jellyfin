@@ -111,12 +111,12 @@ namespace MediaBrowser.Server.Implementations.IO
         private ILibraryManager LibraryManager { get; set; }
         private IServerConfigurationManager ConfigurationManager { get; set; }
 
-        private IFileSystem _fileSystem;
+        private readonly IFileSystem _fileSystem;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryMonitor" /> class.
         /// </summary>
-        public LibraryMonitor(ILogManager logManager, ITaskManager taskManager, ILibraryManager libraryManager, IServerConfigurationManager configurationManager)
+        public LibraryMonitor(ILogManager logManager, ITaskManager taskManager, ILibraryManager libraryManager, IServerConfigurationManager configurationManager, IFileSystem fileSystem)
         {
             if (taskManager == null)
             {
@@ -127,6 +127,7 @@ namespace MediaBrowser.Server.Implementations.IO
             TaskManager = taskManager;
             Logger = logManager.GetLogger(GetType().Name);
             ConfigurationManager = configurationManager;
+            _fileSystem = fileSystem;
 
             SystemEvents.PowerModeChanged += SystemEvents_PowerModeChanged;
         }
