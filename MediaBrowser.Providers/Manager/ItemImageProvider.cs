@@ -87,27 +87,22 @@ namespace MediaBrowser.Providers.Manager
 
             try
             {
-                var images = provider.GetImageInfos(item);
+                var images = provider.GetSupportedImages(item);
 
-                foreach (var image in images)
+                foreach (var imageType in images)
                 {
-                    if (!item.HasImage(image.Type))
+                    if (!item.HasImage(imageType))
                     {
-                        var imageSource = await provider.GetImage(item, image).ConfigureAwait(false);
+                        var response = await provider.GetImage(item, imageType, cancellationToken).ConfigureAwait(false);
 
-                        // See if the provider returned an image path or a stream
-                        if (!string.IsNullOrEmpty(imageSource.Path))
+                        if (response.HasImage)
                         {
-                            item.SetImagePath(image.Type, imageSource.Path);
-                        }
-                        else
-                        {
-                            var mimeType = "image/" + imageSource.Format.ToString().ToLower();
+                            var mimeType = "image/" + response.Format.ToString().ToLower();
 
-                            await _providerManager.SaveImage((BaseItem)item, imageSource.Stream, mimeType, image.Type, null, Guid.NewGuid().ToString(), cancellationToken).ConfigureAwait(false);
-                        }
+                            await _providerManager.SaveImage((BaseItem)item, response.Stream, mimeType, imageType, null, Guid.NewGuid().ToString(), cancellationToken).ConfigureAwait(false);
 
-                        result.UpdateType = result.UpdateType | ItemUpdateType.ImageUpdate;
+                            result.UpdateType = result.UpdateType | ItemUpdateType.ImageUpdate;
+                        }
                     }
                 }
             }

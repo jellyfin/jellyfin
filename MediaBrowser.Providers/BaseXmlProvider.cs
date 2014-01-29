@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Providers;
 using System;
+using System.IO;
 using System.Threading;
 
 namespace MediaBrowser.Providers
@@ -23,6 +24,11 @@ namespace MediaBrowser.Providers
             var path = GetXmlPath(item.Path);
 
             return FileSystem.GetLastWriteTimeUtc(path) > date;
+        }
+
+        public bool HasLocalMetadata(IHasMetadata item)
+        {
+            return File.Exists(GetXmlPath(item.Path));
         }
     }
 }

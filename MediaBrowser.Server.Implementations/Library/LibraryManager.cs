@@ -1462,13 +1462,13 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 var semaphore = _fileLocks.GetOrAdd(path, key => new SemaphoreSlim(1, 1));
 
-                var directoryWatchers = _libraryMonitorFactory();
+                var libraryMonitor = _libraryMonitorFactory();
 
                 await semaphore.WaitAsync().ConfigureAwait(false);
 
                 try
                 {
-                    directoryWatchers.ReportFileSystemChangeBeginning(path);
+                    libraryMonitor.ReportFileSystemChangeBeginning(path);
                     saver.Save(item, CancellationToken.None);
                 }
                 catch (Exception ex)
@@ -1477,7 +1477,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 }
                 finally
                 {
-                    directoryWatchers.ReportFileSystemChangeComplete(path, false);
+                    libraryMonitor.ReportFileSystemChangeComplete(path, false);
                     semaphore.Release();
                 }
             }

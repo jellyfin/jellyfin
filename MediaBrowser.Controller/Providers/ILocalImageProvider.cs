@@ -3,6 +3,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Providers
@@ -28,19 +29,20 @@ namespace MediaBrowser.Controller.Providers
     public interface IDynamicImageProvider : ILocalImageProvider
     {
         /// <summary>
-        /// Gets the images.
+        /// Gets the supported images.
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <returns>List{DynamicImageInfo}.</returns>
-        List<DynamicImageInfo> GetImageInfos(IHasImages item);
+        /// <returns>IEnumerable{ImageType}.</returns>
+        IEnumerable<ImageType> GetSupportedImages(IHasImages item);
 
         /// <summary>
         /// Gets the image.
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <param name="info">The information.</param>
+        /// <param name="type">The type.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{DynamicImageResponse}.</returns>
-        Task<DynamicImageResponse> GetImage(IHasImages item, DynamicImageInfo info);
+        Task<DynamicImageResponse> GetImage(IHasImages item, ImageType type, CancellationToken cancellationToken);
     }
 
     public class DynamicImageInfo
@@ -54,5 +56,11 @@ namespace MediaBrowser.Controller.Providers
         public string Path { get; set; }
         public Stream Stream { get; set; }
         public ImageFormat Format { get; set; }
+        public bool HasImage { get; set; }
+
+        public void SetFormatFromMimeType(string mimeType)
+        {
+            
+        }
     }
 }
