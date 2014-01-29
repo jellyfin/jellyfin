@@ -239,14 +239,13 @@
                 currentSrc = replaceQueryString(currentSrc, 'MaxWidth', finalParams.maxWidth);
                 currentSrc = replaceQueryString(currentSrc, 'VideoBitrate', finalParams.videoBitrate);
                 currentSrc = replaceQueryString(currentSrc, 'AudioBitrate', finalParams.audioBitrate);
+                currentSrc = replaceQueryString(currentSrc, 'Static', finalParams.isStatic);
 
                 if (finalParams.isStatic) {
                     currentSrc = currentSrc.replace('.webm', '.mp4').replace('.m3u8', '.mp4');
                 } else {
-                    currentSrc = currentSrc.replace('.mp4', getTranscodingExtension());
+                    currentSrc = currentSrc.replace('.mp4', transcodingExtension);
                 }
-
-                currentSrc = replaceQueryString(currentSrc, 'Static', finalParams.isStatic);
 
                 clearProgressInterval();
 
@@ -1852,19 +1851,7 @@
             var currentSrc = currentMediaElement.currentSrc.toLowerCase();
             var isStatic = currentSrc.indexOf('static=true') != -1;
 
-            var transcodingExtension = isStatic ? getTranscodingExtension() : null;
-
-            if (!transcodingExtension) {
-                if (currentSrc.indexOf('.m3u8') != -1) {
-                    transcodingExtension = '.m3u8';
-                }
-                else if (currentSrc.indexOf('.webm') != -1) {
-                    transcodingExtension = '.webm';
-                }
-                else {
-                    transcodingExtension = '.mp4';
-                }
-            }
+            var transcodingExtension = getTranscodingExtension();
 
             var currentAudioStreamIndex = getParameterByName('AudioStreamIndex', currentMediaElement.currentSrc);
 

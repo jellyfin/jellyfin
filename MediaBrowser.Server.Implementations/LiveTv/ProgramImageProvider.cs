@@ -1,154 +1,111 @@
-﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Model.Net;
 using System;
-using System.IO;
+using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.LiveTv
 {
-    public class ProgramImageProvider : BaseMetadataProvider
+    public class ProgramImageProvider : IDynamicImageProvider, IHasChangeMonitor
     {
         private readonly ILiveTvManager _liveTvManager;
-        private readonly IProviderManager _providerManager;
-        private readonly IFileSystem _fileSystem;
         private readonly IHttpClient _httpClient;
+        private readonly ILogger _logger;
 
-        public ProgramImageProvider(ILogManager logManager, IServerConfigurationManager configurationManager, ILiveTvManager liveTvManager, IProviderManager providerManager, IFileSystem fileSystem, IHttpClient httpClient)
-            : base(logManager, configurationManager)
+        public ProgramImageProvider(ILiveTvManager liveTvManager, IHttpClient httpClient, ILogger logger)
         {
             _liveTvManager = liveTvManager;
-            _providerManager = providerManager;
-            _fileSystem = fileSystem;
             _httpClient = httpClient;
+            _logger = logger;
         }
 
-        public override bool Supports(BaseItem item)
+        public IEnumerable<ImageType> GetSupportedImages(IHasImages item)
         {
-            return item is LiveTvProgram;
+            return new[] { ImageType.Primary };
         }
 
-        protected override bool NeedsRefreshInternal(BaseItem item, BaseProviderInfo providerInfo)
+        public async Task<DynamicImageResponse> GetImage(IHasImages item, ImageType type, CancellationToken cancellationToken)
         {
-            return !item.HasImage(ImageType.Primary);
-        }
+            var liveTvItem = (LiveTvProgram)item;
 
-        public override async Task<bool> FetchAsync(BaseItem item, bool force, BaseProviderInfo providerInfo, CancellationToken cancellationToken)
-        {
-            if (item.HasImage(ImageType.Primary))
+            var imageResponse = new DynamicImageResponse();
+
+            if (!string.IsNullOrEmpty(liveTvItem.ProviderImagePath))
             {
-                SetLastRefreshed(item, DateTime.UtcNow, providerInfo);
-                return true;
+                imageResponse.Path = liveTvItem.ProviderImagePath;
+                imageResponse.HasImage = true;
             }
-
-            var changed = true;
-
-            try
-            {
-                changed = await DownloadImage((LiveTvProgram)item, cancellationToken).ConfigureAwait(false);
-            }
-            catch (HttpException ex)
-            {
-                // Don't fail the provider on a 404
-                if (!ex.StatusCode.HasValue || ex.StatusCode.Value != HttpStatusCode.NotFound)
-                {
-                    throw;
-                }
-            }
-
-            if (changed)
-            {
-                SetLastRefreshed(item, DateTime.UtcNow, providerInfo);
-            }
-
-            return changed;
-        }
-
-        private async Task<bool> DownloadImage(LiveTvProgram item, CancellationToken cancellationToken)
-        {
-            Stream imageStream = null;
-            string contentType = null;
-
-            if (!string.IsNullOrEmpty(item.ProviderImagePath))
-            {
-                contentType = "image/" + Path.GetExtension(item.ProviderImagePath).ToLower();
-                imageStream = _fileSystem.GetFileStream(item.ProviderImagePath, FileMode.Open, FileAccess.Read, FileShare.Read, true);
-            }
-            else if (!string.IsNullOrEmpty(item.ProviderImageUrl))
+            else if (!string.IsNullOrEmpty(liveTvItem.ProviderImageUrl))
             {
                 var options = new HttpRequestOptions
                 {
                     CancellationToken = cancellationToken,
-                    Url = item.ProviderImageUrl
+                    Url = liveTvItem.ProviderImageUrl
                 };
 
                 var response = await _httpClient.GetResponse(options).ConfigureAwait(false);
 
-                if (!response.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+                if (response.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
                 {
-                    Logger.Error("Provider did not return an image content type.");
-                    return false;
+                    imageResponse.HasImage = true;
+                    imageResponse.Stream = response.Content;
+                    imageResponse.SetFormatFromMimeType(response.ContentType);
                 }
-
-                imageStream = response.Content;
-                contentType = response.ContentType;
+                else
+                {
+                    _logger.Error("Provider did not return an image content type.");
+                }
             }
-            else if (item.HasProviderImage ?? true)
+            else if (liveTvItem.HasProviderImage ?? true)
             {
-                var service = _liveTvManager.Services.FirstOrDefault(i => string.Equals(i.Name, item.ServiceName, StringComparison.OrdinalIgnoreCase));
+                var service = _liveTvManager.Services.FirstOrDefault(i => string.Equals(i.Name, liveTvItem.ServiceName, StringComparison.OrdinalIgnoreCase));
 
                 if (service != null)
                 {
                     try
                     {
-                        var response = await service.GetProgramImageAsync(item.ExternalId, item.ExternalChannelId, cancellationToken).ConfigureAwait(false);
+                        var response = await service.GetProgramImageAsync(liveTvItem.ExternalId, liveTvItem.ExternalChannelId, cancellationToken).ConfigureAwait(false);
 
                         if (response != null)
                         {
-                            imageStream = response.Stream;
-                            contentType = response.MimeType;
+                            imageResponse.HasImage = true;
+                            imageResponse.Stream = response.Stream;
+                            imageResponse.Format = response.Format;
                         }
                     }
                     catch (NotImplementedException)
                     {
-                        return false;
                     }
                 }
             }
 
-            if (imageStream != null)
-            {
-                // Dummy up the original url
-                var url = item.ServiceName + item.ExternalId;
-
-                await _providerManager.SaveImage(item, imageStream, contentType, ImageType.Primary, null, url, cancellationToken).ConfigureAwait(false);
-                return true;
-            }
-
-            return false;
+            return imageResponse;
         }
 
-        public override MetadataProviderPriority Priority
+        public string Name
         {
-            get { return MetadataProviderPriority.Second; }
+            get { return "Live TV Service Provider"; }
         }
 
-        public override ItemUpdateType ItemUpdateType
+        public bool Supports(IHasImages item)
         {
-            get
-            {
-                return ItemUpdateType.ImageUpdate;
-            }
+            return item is LiveTvProgram;
+        }
+
+        public int Order
+        {
+            get { return 0; }
+        }
+
+        public bool HasChanged(IHasMetadata item, DateTime date)
+        {
+            return !item.HasImage(ImageType.Primary) && (DateTime.UtcNow - date).TotalHours >= 12;
         }
     }
 }

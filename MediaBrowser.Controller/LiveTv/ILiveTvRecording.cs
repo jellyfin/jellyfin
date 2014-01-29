@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,8 +12,6 @@ namespace MediaBrowser.Controller.LiveTv
 
         string MediaType { get; }
 
-        LocationType LocationType { get; }
-
         RecordingInfo RecordingInfo { get; set; }
 
         string GetClientTypeName();
@@ -21,6 +20,6 @@ namespace MediaBrowser.Controller.LiveTv
 
         bool IsParentalAllowed(User user);
 
-        Task<bool> RefreshMetadata(CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false, bool allowSlowProviders = true, bool resetResolveArgs = true);
+        Task<bool> RefreshMetadata(MetadataRefreshOptions options, CancellationToken cancellationToken);
     }
 }

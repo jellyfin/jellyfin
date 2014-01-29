@@ -3,7 +3,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.IO;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -15,7 +15,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Server.Implementations.Providers
+namespace MediaBrowser.Providers.Manager
 {
     /// <summary>
     /// Class ImageSaver
@@ -36,7 +36,7 @@ namespace MediaBrowser.Server.Implementations.Providers
         /// <summary>
         /// The _directory watchers
         /// </summary>
-        private readonly IDirectoryWatchers _directoryWatchers;
+        private readonly ILibraryMonitor _libraryMonitor;
         private readonly IFileSystem _fileSystem;
         private readonly ILogger _logger;
 
@@ -44,11 +44,11 @@ namespace MediaBrowser.Server.Implementations.Providers
         /// Initializes a new instance of the <see cref="ImageSaver"/> class.
         /// </summary>
         /// <param name="config">The config.</param>
-        /// <param name="directoryWatchers">The directory watchers.</param>
-        public ImageSaver(IServerConfigurationManager config, IDirectoryWatchers directoryWatchers, IFileSystem fileSystem, ILogger logger)
+        /// <param name="libraryMonitor">The directory watchers.</param>
+        public ImageSaver(IServerConfigurationManager config, ILibraryMonitor libraryMonitor, IFileSystem fileSystem, ILogger logger)
         {
             _config = config;
-            _directoryWatchers = directoryWatchers;
+            _libraryMonitor = libraryMonitor;
             _fileSystem = fileSystem;
             _logger = logger;
             _remoteImageCache = new FileSystemRepository(config.ApplicationPaths.DownloadedImagesDataPath);
@@ -160,7 +160,7 @@ namespace MediaBrowser.Server.Implementations.Providers
             // Delete the current path
             if (!string.IsNullOrEmpty(currentPath) && !paths.Contains(currentPath, StringComparer.OrdinalIgnoreCase))
             {
-                _directoryWatchers.TemporarilyIgnore(currentPath);
+                _libraryMonitor.ReportFileSystemChangeBeginning(currentPath);
 
                 try
                 {
@@ -179,7 +179,7 @@ namespace MediaBrowser.Server.Implementations.Providers
                 }
                 finally
                 {
-                    _directoryWatchers.RemoveTempIgnore(currentPath);
+                    _libraryMonitor.ReportFileSystemChangeComplete(currentPath, false);
                 }
             }
         }
@@ -197,8 +197,8 @@ namespace MediaBrowser.Server.Implementations.Providers
 
             var parentFolder = Path.GetDirectoryName(path);
 
-            _directoryWatchers.TemporarilyIgnore(path);
-            _directoryWatchers.TemporarilyIgnore(parentFolder);
+            _libraryMonitor.ReportFileSystemChangeBeginning(path);
+            _libraryMonitor.ReportFileSystemChangeBeginning(parentFolder);
 
             try
             {
@@ -223,8 +223,8 @@ namespace MediaBrowser.Server.Implementations.Providers
             }
             finally
             {
-                _directoryWatchers.RemoveTempIgnore(path);
-                _directoryWatchers.RemoveTempIgnore(parentFolder);
+                _libraryMonitor.ReportFileSystemChangeComplete(path, false);
+                _libraryMonitor.ReportFileSystemChangeComplete(parentFolder, false);
             }
         }
 
@@ -347,6 +347,9 @@ namespace MediaBrowser.Server.Implementations.Providers
             {
                 case ImageType.Art:
                     filename = "clearart";
+                    break;
+                case ImageType.BoxRear:
+                    filename = "back";
                     break;
                 case ImageType.Disc:
                     filename = item is MusicAlbum ? "cdart" : "disc";

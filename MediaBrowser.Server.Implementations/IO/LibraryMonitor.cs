@@ -2,7 +2,6 @@
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -18,10 +17,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.IO
 {
-    /// <summary>
-    /// Class DirectoryWatchers
-    /// </summary>
-    public class DirectoryWatchers : IDirectoryWatchers
+    public class LibraryMonitor : ILibraryMonitor
     {
         /// <summary>
         /// The file system watchers
@@ -55,17 +51,28 @@ namespace MediaBrowser.Server.Implementations.IO
         /// Add the path to our temporary ignore list.  Use when writing to a path within our listening scope.
         /// </summary>
         /// <param name="path">The path.</param>
-        public void TemporarilyIgnore(string path)
+        private void TemporarilyIgnore(string path)
         {
             _tempIgnoredPaths[path] = path;
         }
 
-        /// <summary>
-        /// Removes the temp ignore.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        public async void RemoveTempIgnore(string path)
+        public void ReportFileSystemChangeBeginning(string path)
         {
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentNullException("path");
+            }
+
+            TemporarilyIgnore(path);
+        }
+
+        public async void ReportFileSystemChangeComplete(string path, bool refreshPath)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentNullException("path");
+            }
+
             // This is an arbitraty amount of time, but delay it because file system writes often trigger events after RemoveTempIgnore has been called. 
             // Seeing long delays in some situations, especially over the network.
             // Seeing delays up to 40 seconds, but not going to ignore changes for that long.
@@ -73,6 +80,11 @@ namespace MediaBrowser.Server.Implementations.IO
 
             string val;
             _tempIgnoredPaths.TryRemove(path, out val);
+
+            if (refreshPath)
+            {
+                ReportFileSystemChanged(path);
+            }
         }
 
         /// <summary>
@@ -91,11 +103,11 @@ namespace MediaBrowser.Server.Implementations.IO
         private IServerConfigurationManager ConfigurationManager { get; set; }
 
         private readonly IFileSystem _fileSystem;
-        
+
         /// <summary>
-        /// Initializes a new instance of the <see cref="DirectoryWatchers" /> class.
+        /// Initializes a new instance of the <see cref="LibraryMonitor" /> class.
         /// </summary>
-        public DirectoryWatchers(ILogManager logManager, ITaskManager taskManager, ILibraryManager libraryManager, IServerConfigurationManager configurationManager, IFileSystem fileSystem)
+        public LibraryMonitor(ILogManager logManager, ITaskManager taskManager, ILibraryManager libraryManager, IServerConfigurationManager configurationManager, IFileSystem fileSystem)
         {
             if (taskManager == null)
             {
@@ -104,7 +116,7 @@ namespace MediaBrowser.Server.Implementations.IO
 
             LibraryManager = libraryManager;
             TaskManager = taskManager;
-            Logger = logManager.GetLogger("DirectoryWatchers");
+            Logger = logManager.GetLogger(GetType().Name);
             ConfigurationManager = configurationManager;
             _fileSystem = fileSystem;
 
@@ -328,31 +340,30 @@ namespace MediaBrowser.Server.Implementations.IO
             {
                 OnWatcherChanged(e);
             }
-            catch (IOException ex)
+            catch (Exception ex)
             {
-                Logger.ErrorException("IOException in watcher changed. Path: {0}", ex, e.FullPath);
+                Logger.ErrorException("Exception in watcher changed. Path: {0}", ex, e.FullPath);
             }
         }
 
         private void OnWatcherChanged(FileSystemEventArgs e)
         {
-            var name = e.Name;
+            Logger.Debug("Watcher sees change of type " + e.ChangeType + " to " + e.FullPath);
+
+            ReportFileSystemChanged(e.FullPath);
+        }
+
+        public void ReportFileSystemChanged(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentNullException("path");
+            }
+            
+            var filename = Path.GetFileName(path);
 
             // Ignore certain files
-            if (_alwaysIgnoreFiles.Contains(name, StringComparer.OrdinalIgnoreCase))
-            {
-                return;
-            }
-
-            var nameFromFullPath = Path.GetFileName(e.FullPath);
-            // Ignore certain files
-            if (!string.IsNullOrEmpty(nameFromFullPath) && _alwaysIgnoreFiles.Contains(nameFromFullPath, StringComparer.OrdinalIgnoreCase))
-            {
-                return;
-            }
-
-            // Ignore when someone manually creates a new folder
-            if (e.ChangeType == WatcherChangeTypes.Created && name == "New folder")
+            if (!string.IsNullOrEmpty(filename) && _alwaysIgnoreFiles.Contains(filename, StringComparer.OrdinalIgnoreCase))
             {
                 return;
             }
@@ -362,36 +373,35 @@ namespace MediaBrowser.Server.Implementations.IO
             // If the parent of an ignored path has a change event, ignore that too
             if (tempIgnorePaths.Any(i =>
             {
-                if (string.Equals(i, e.FullPath, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(i, path, StringComparison.OrdinalIgnoreCase))
                 {
-                    Logger.Debug("Watcher ignoring change to {0}", e.FullPath);
+                    Logger.Debug("Ignoring change to {0}", path);
+                    return true;
+                }
+
+                if (_fileSystem.ContainsSubPath(i, path))
+                {
+                    Logger.Debug("Ignoring change to {0}", path);
                     return true;
                 }
 
                 // Go up a level
                 var parent = Path.GetDirectoryName(i);
-                if (string.Equals(parent, e.FullPath, StringComparison.OrdinalIgnoreCase))
-                {
-                    Logger.Debug("Watcher ignoring change to {0}", e.FullPath);
-                    return true;
-                }
-
-                // Go up another level
                 if (!string.IsNullOrEmpty(parent))
                 {
-                    parent = Path.GetDirectoryName(i);
-                    if (string.Equals(parent, e.FullPath, StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(parent, path, StringComparison.OrdinalIgnoreCase))
                     {
-                        Logger.Debug("Watcher ignoring change to {0}", e.FullPath);
+                        Logger.Debug("Ignoring change to {0}", path);
                         return true;
                     }
-                }
 
-                if (i.StartsWith(e.FullPath, StringComparison.OrdinalIgnoreCase) || 
-                    e.FullPath.StartsWith(i, StringComparison.OrdinalIgnoreCase))
-                {
-                    Logger.Debug("Watcher ignoring change to {0}", e.FullPath);
-                    return true;
+                    // Go up another level
+                    parent = Path.GetDirectoryName(i);
+                    if (string.Equals(parent, path, StringComparison.OrdinalIgnoreCase))
+                    {
+                        Logger.Debug("Ignoring change to {0}", path);
+                        return true;
+                    }
                 }
 
                 return false;
@@ -401,22 +411,19 @@ namespace MediaBrowser.Server.Implementations.IO
                 return;
             }
 
-            Logger.Info("Watcher sees change of type " + e.ChangeType + " to " + e.FullPath);
-
-            //Since we're watching created, deleted and renamed we always want the parent of the item to be the affected path
-            var affectedPath = e.FullPath;
-
-            _affectedPaths.AddOrUpdate(affectedPath, affectedPath, (key, oldValue) => affectedPath);
+            // Avoid implicitly captured closure
+            var affectedPath = path;
+            _affectedPaths.AddOrUpdate(path, path, (key, oldValue) => affectedPath);
 
             lock (_timerLock)
             {
                 if (_updateTimer == null)
                 {
-                    _updateTimer = new Timer(TimerStopped, null, TimeSpan.FromSeconds(ConfigurationManager.Configuration.FileWatcherDelay), TimeSpan.FromMilliseconds(-1));
+                    _updateTimer = new Timer(TimerStopped, null, TimeSpan.FromSeconds(ConfigurationManager.Configuration.RealtimeWatcherDelay), TimeSpan.FromMilliseconds(-1));
                 }
                 else
                 {
-                    _updateTimer.Change(TimeSpan.FromSeconds(ConfigurationManager.Configuration.FileWatcherDelay), TimeSpan.FromMilliseconds(-1));
+                    _updateTimer.Change(TimeSpan.FromSeconds(ConfigurationManager.Configuration.RealtimeWatcherDelay), TimeSpan.FromMilliseconds(-1));
                 }
             }
         }
@@ -427,24 +434,9 @@ namespace MediaBrowser.Server.Implementations.IO
         /// <param name="stateInfo">The state info.</param>
         private async void TimerStopped(object stateInfo)
         {
-            lock (_timerLock)
-            {
-                // Extend the timer as long as any of the paths are still being written to.
-                if (_affectedPaths.Any(p => IsFileLocked(p.Key)))
-                {
-                    Logger.Info("Timer extended.");
-                    _updateTimer.Change(TimeSpan.FromSeconds(ConfigurationManager.Configuration.FileWatcherDelay), TimeSpan.FromMilliseconds(-1));
-                    return;
-                }
+            Logger.Debug("Timer stopped.");
 
-                Logger.Info("Timer stopped.");
-
-                if (_updateTimer != null)
-                {
-                    _updateTimer.Dispose();
-                    _updateTimer = null;
-                }
-            }
+            DisposeTimer();
 
             var paths = _affectedPaths.Keys.ToList();
             _affectedPaths.Clear();
@@ -452,58 +444,15 @@ namespace MediaBrowser.Server.Implementations.IO
             await ProcessPathChanges(paths).ConfigureAwait(false);
         }
 
-        /// <summary>
-        /// Try and determine if a file is locked
-        /// This is not perfect, and is subject to race conditions, so I'd rather not make this a re-usable library method.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns><c>true</c> if [is file locked] [the specified path]; otherwise, <c>false</c>.</returns>
-        private bool IsFileLocked(string path)
+        private void DisposeTimer()
         {
-            try
+            lock (_timerLock)
             {
-                var data = _fileSystem.GetFileSystemInfo(path);
-
-                if (!data.Exists
-                    || data.Attributes.HasFlag(FileAttributes.Directory)
-                    || data.Attributes.HasFlag(FileAttributes.ReadOnly))
+                if (_updateTimer != null)
                 {
-                    return false;
+                    _updateTimer.Dispose();
+                    _updateTimer = null;
                 }
-            }
-            catch (IOException)
-            {
-                return false;
-            }
-
-            try
-            {
-                using (_fileSystem.GetFileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite))
-                {
-                    //file is not locked
-                    return false;
-                }
-            }
-            catch (DirectoryNotFoundException)
-            {
-                return false;
-            }
-            catch (FileNotFoundException)
-            {
-                return false;
-            }
-            catch (IOException)
-            {
-                //the file is unavailable because it is:
-                //still being written to
-                //or being processed by another thread
-                //or does not exist (has already been processed)
-                Logger.Debug("{0} is locked.", path);
-                return true;
-            }
-            catch
-            {
-                return false;
             }
         }
 
@@ -599,14 +548,7 @@ namespace MediaBrowser.Server.Implementations.IO
                 watcher.Dispose();
             }
 
-            lock (_timerLock)
-            {
-                if (_updateTimer != null)
-                {
-                    _updateTimer.Dispose();
-                    _updateTimer = null;
-                }
-            }
+            DisposeTimer();
 
             _fileSystemWatchers.Clear();
             _affectedPaths.Clear();

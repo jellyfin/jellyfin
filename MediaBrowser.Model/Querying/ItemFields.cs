@@ -150,6 +150,11 @@ namespace MediaBrowser.Model.Querying
         /// The tags
         /// </summary>
         Tags,
+
+        /// <summary>
+        /// The TMDB collection name
+        /// </summary>
+        TmdbCollectionName,
         
         /// <summary>
         /// The trailer url of the item

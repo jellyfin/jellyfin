@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
@@ -17,14 +18,16 @@ using System.Xml;
 
 namespace MediaBrowser.Providers.Music
 {
-    public class ManualFanartAlbumProvider : IImageProvider
+    public class ManualFanartAlbumProvider : IRemoteImageProvider
     {
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly IServerConfigurationManager _config;
+        private readonly IHttpClient _httpClient;
 
-        public ManualFanartAlbumProvider(IServerConfigurationManager config)
+        public ManualFanartAlbumProvider(IServerConfigurationManager config, IHttpClient httpClient)
         {
             _config = config;
+            _httpClient = httpClient;
         }
 
         public string Name
@@ -40,6 +43,15 @@ namespace MediaBrowser.Providers.Music
         public bool Supports(IHasImages item)
         {
             return item is MusicAlbum;
+        }
+
+        public IEnumerable<ImageType> GetSupportedImages(IHasImages item)
+        {
+            return new List<ImageType>
+            {
+                ImageType.Primary, 
+                ImageType.Disc
+            };
         }
 
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(IHasImages item, ImageType imageType, CancellationToken cancellationToken)
@@ -325,9 +337,19 @@ namespace MediaBrowser.Providers.Music
             list.Add(info);
         }
 
-        public int Priority
+        public int Order
         {
-            get { return 1; }
+            get { return 0; }
+        }
+
+        public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
+        {
+            return _httpClient.GetResponse(new HttpRequestOptions
+            {
+                CancellationToken = cancellationToken,
+                Url = url,
+                ResourcePool = FanartBaseProvider.FanArtResourcePool
+            });
         }
     }
 }

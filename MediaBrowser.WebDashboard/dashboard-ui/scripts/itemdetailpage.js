@@ -1170,16 +1170,8 @@
 
             renderCriticReviews(page, currentItem);
             
-        }).on('swipeleft.sibling', function() {
-
-            $('.lnkNextItem', page)[0].click();
-            
-        }).on('swiperight.sibling', function () {
-
-            $('.lnkPreviousItem', page)[0].click();
         });
         
-
         reload(page);
 
     }).on('pagehide', "#itemDetailPage", function () {
@@ -1188,7 +1180,7 @@
 
         var page = this;
 
-        $(page).off("click.moreScenes").off("click.morePeople").off("click.moreSpecials").off("click.moreCriticReviews").off("swipeleft.sibling").off("swiperight.sibling");
+        $(page).off("click.moreScenes").off("click.morePeople").off("click.moreSpecials").off("click.moreCriticReviews");
     });
 
     function itemDetailPage() {

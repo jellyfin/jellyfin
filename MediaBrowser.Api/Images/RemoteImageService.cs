@@ -9,13 +9,13 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
 using ServiceStack;
+using ServiceStack.Text.Controller;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using ServiceStack.Text.Controller;
 
 namespace MediaBrowser.Api.Images
 {
@@ -193,12 +193,7 @@ namespace MediaBrowser.Api.Images
 
         private List<ImageProviderInfo> GetImageProviders(BaseItem item)
         {
-            return _providerManager.GetImageProviders(item).Select(i => new ImageProviderInfo
-            {
-                Name = i.Name,
-                Priority = i.Priority
-
-            }).ToList();
+            return _providerManager.GetImageProviderInfo(item).ToList();
         }
 
         public object Get(GetRemoteImages request)
@@ -229,7 +224,9 @@ namespace MediaBrowser.Api.Images
             var result = new RemoteImageResult
             {
                 TotalRecordCount = imagesList.Count,
-                Providers = _providerManager.GetImageProviders(item).Select(i => i.Name).ToList()
+                Providers = images.Select(i => i.ProviderName)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList()
             };
 
             if (request.StartIndex.HasValue)
@@ -284,8 +281,13 @@ namespace MediaBrowser.Api.Images
         {
             await _providerManager.SaveImage(item, request.ImageUrl, null, request.Type, null, CancellationToken.None).ConfigureAwait(false);
 
-            await item.RefreshMetadata(CancellationToken.None, forceSave: true, allowSlowProviders: false)
-                    .ConfigureAwait(false);
+            await item.RefreshMetadata(new MetadataRefreshOptions
+            {
+                ForceSave = true,
+                ImageRefreshMode = MetadataRefreshMode.None,
+                MetadataRefreshMode = MetadataRefreshMode.None
+
+            }, CancellationToken.None).ConfigureAwait(false);
         }
 
         /// <summary>

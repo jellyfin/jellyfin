@@ -9,6 +9,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaInfo;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
@@ -328,7 +329,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             // Set this now so we don't cause additional file system access during provider executions
             item.ResetResolveArgs(fileInfo);
 
-            await item.RefreshMetadata(cancellationToken, forceSave: isNew, resetResolveArgs: false);
+            await item.RefreshMetadata(new MetadataRefreshOptions
+            {
+                ForceSave = isNew,
+                ResetResolveArgs = false
+
+            }, cancellationToken);
 
             return item;
         }
@@ -383,7 +389,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             item.RunTimeTicks = (info.EndDate - info.StartDate).Ticks;
             item.StartDate = info.StartDate;
 
-            await item.RefreshMetadata(cancellationToken, forceSave: isNew, resetResolveArgs: false);
+            await item.RefreshMetadata(new MetadataRefreshOptions
+            {
+                ForceSave = isNew,
+                ResetResolveArgs = false
+
+            }, cancellationToken);
 
             return item;
         }
@@ -435,7 +446,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             item.RecordingInfo = info;
             item.ServiceName = serviceName;
 
-            await item.RefreshMetadata(cancellationToken, forceSave: isNew, resetResolveArgs: false);
+            await item.RefreshMetadata(new MetadataRefreshOptions
+            {
+                ForceSave = isNew,
+                ResetResolveArgs = false
+
+            }, cancellationToken);
 
             _libraryManager.RegisterItem((BaseItem)item);
 

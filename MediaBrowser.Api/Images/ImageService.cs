@@ -66,7 +66,7 @@ namespace MediaBrowser.Api.Images
         [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Id { get; set; }
     }
-    
+
     /// <summary>
     /// Class UpdateItemImageIndex
     /// </summary>
@@ -799,7 +799,12 @@ namespace MediaBrowser.Api.Images
 
                 await _providerManager.SaveImage(entity, memoryStream, mimeType, imageType, null, null, CancellationToken.None).ConfigureAwait(false);
 
-                await entity.RefreshMetadata(CancellationToken.None, forceRefresh: true, forceSave: true, allowSlowProviders: false).ConfigureAwait(false);
+                await entity.RefreshMetadata(new MetadataRefreshOptions
+                {
+                    ImageRefreshMode = MetadataRefreshMode.None,
+                    ForceSave = true
+
+                }, CancellationToken.None).ConfigureAwait(false);
             }
         }
     }

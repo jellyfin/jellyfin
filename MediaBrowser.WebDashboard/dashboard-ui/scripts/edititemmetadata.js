@@ -498,7 +498,7 @@
                 $('#fldRecursive', page).hide();
             }
 
-            if (item.LocationType == "Virtual" || item.LocationType == "Remote") {
+            if (item.Type != "Channel" && item.Type != "Genre" && item.Type != "Studio" && item.Type != "MusicGenre" && item.Type != "GameGenre" && item.Type != "Person" && item.Type != "MusicArtist") {
                 $('#fldDelete', page).show();
             } else {
                 $('#fldDelete', page).hide();
@@ -1494,7 +1494,15 @@
 
         $('#btnDelete', this).on('click', function () {
 
-            Dashboard.confirm("Are you sure you wish to delete this item?", "Confirm Deletion", function (result) {
+            var msg = "<p>Are you sure you wish to delete this item from your library?</p>";
+
+            if (currentItem.LocationType != "Remote" && currentItem.LocationType != "Virtual") {
+                msg = "<p>The following media location will be deleted:</p>";
+                msg += "<p>" + currentItem.Path + "</p>";
+                msg += "<p>Are you sure you wish to continue?</p>";
+            }
+
+            Dashboard.confirm(msg, "Confirm Deletion", function (result) {
 
                 if (result) {
 

@@ -145,17 +145,6 @@ namespace MediaBrowser.Providers
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            // Make sure current backdrop paths still exist
-            item.ValidateBackdrops();
-
-            var hasScreenshots = item as IHasScreenshots;
-            if (hasScreenshots != null)
-            {
-                hasScreenshots.ValidateScreenshots();
-            }
-
-            cancellationToken.ThrowIfCancellationRequested();
-
             var args = GetResolveArgsContainingImages(item);
 
             PopulateBaseItemImages(item, args);

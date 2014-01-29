@@ -462,13 +462,13 @@ a.itemTag:hover {
 }
 
 .parentName {
-    font-size: 15px;
+    font-size: 14px;
     display: block;
-    margin-bottom: .4em;
+    margin-bottom: .5em;
 }
 
 .inlineItemName {
-    font-size: 20px;
+    font-size: 22px;
 }
 
 .itemName + .itemMiscInfo {

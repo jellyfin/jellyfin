@@ -14,7 +14,6 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.FileOrganization;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Localization;
@@ -33,6 +32,7 @@ using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Updates;
 using MediaBrowser.Providers;
+using MediaBrowser.Providers.Manager;
 using MediaBrowser.Server.Implementations;
 using MediaBrowser.Server.Implementations.BdInfo;
 using MediaBrowser.Server.Implementations.Configuration;
@@ -47,7 +47,6 @@ using MediaBrowser.Server.Implementations.LiveTv;
 using MediaBrowser.Server.Implementations.Localization;
 using MediaBrowser.Server.Implementations.MediaEncoder;
 using MediaBrowser.Server.Implementations.Persistence;
-using MediaBrowser.Server.Implementations.Providers;
 using MediaBrowser.Server.Implementations.ServerManager;
 using MediaBrowser.Server.Implementations.Session;
 using MediaBrowser.Server.Implementations.WebSocket;
@@ -137,7 +136,7 @@ namespace MediaBrowser.ServerApplication
         /// Gets or sets the directory watchers.
         /// </summary>
         /// <value>The directory watchers.</value>
-        private IDirectoryWatchers DirectoryWatchers { get; set; }
+        private ILibraryMonitor LibraryMonitor { get; set; }
         /// <summary>
         /// Gets or sets the provider manager.
         /// </summary>
@@ -173,6 +172,7 @@ namespace MediaBrowser.ServerApplication
         internal IItemRepository ItemRepository { get; set; }
         private INotificationsRepository NotificationsRepository { get; set; }
         private IFileOrganizationRepository FileOrganizationRepository { get; set; }
+        private IProviderRepository ProviderRepository { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ApplicationHost"/> class.
@@ -267,19 +267,22 @@ namespace MediaBrowser.ServerApplication
             ItemRepository = new SqliteItemRepository(ApplicationPaths, JsonSerializer, LogManager);
             RegisterSingleInstance(ItemRepository);
 
+            ProviderRepository = new SqliteProviderInfoRepository(ApplicationPaths, LogManager);
+            RegisterSingleInstance(ProviderRepository);
+
             FileOrganizationRepository = await GetFileOrganizationRepository().ConfigureAwait(false);
             RegisterSingleInstance(FileOrganizationRepository);
 
             UserManager = new UserManager(Logger, ServerConfigurationManager, UserRepository);
             RegisterSingleInstance(UserManager);
 
-            LibraryManager = new LibraryManager(Logger, TaskManager, UserManager, ServerConfigurationManager, UserDataManager, () => DirectoryWatchers, FileSystemManager);
+            LibraryManager = new LibraryManager(Logger, TaskManager, UserManager, ServerConfigurationManager, UserDataManager, () => LibraryMonitor, FileSystemManager);
             RegisterSingleInstance(LibraryManager);
 
-            DirectoryWatchers = new DirectoryWatchers(LogManager, TaskManager, LibraryManager, ServerConfigurationManager, FileSystemManager);
-            RegisterSingleInstance(DirectoryWatchers);
+            LibraryMonitor = new LibraryMonitor(LogManager, TaskManager, LibraryManager, ServerConfigurationManager, FileSystemManager);
+            RegisterSingleInstance(LibraryMonitor);
 
-            ProviderManager = new ProviderManager(HttpClient, ServerConfigurationManager, DirectoryWatchers, LogManager, FileSystemManager, ItemRepository);
+            ProviderManager = new ProviderManager(HttpClient, ServerConfigurationManager, LibraryMonitor, LogManager, FileSystemManager, ProviderRepository);
             RegisterSingleInstance(ProviderManager);
 
             RegisterSingleInstance<ISearchEngine>(() => new SearchEngine(LogManager, LibraryManager, UserManager));
@@ -306,7 +309,7 @@ namespace MediaBrowser.ServerApplication
             var newsService = new Server.Implementations.News.NewsService(ApplicationPaths, JsonSerializer);
             RegisterSingleInstance<INewsService>(newsService);
 
-            var fileOrganizationService = new FileOrganizationService(TaskManager, FileOrganizationRepository, Logger, DirectoryWatchers, LibraryManager, ServerConfigurationManager, FileSystemManager);
+            var fileOrganizationService = new FileOrganizationService(TaskManager, FileOrganizationRepository, Logger, LibraryMonitor, LibraryManager, ServerConfigurationManager, FileSystemManager);
             RegisterSingleInstance<IFileOrganizationService>(fileOrganizationService);
 
             progress.Report(15);
@@ -427,6 +430,8 @@ namespace MediaBrowser.ServerApplication
         {
             await ItemRepository.Initialize().ConfigureAwait(false);
 
+            await ProviderRepository.Initialize().ConfigureAwait(false);
+            
             ((LibraryManager)LibraryManager).ItemRepository = ItemRepository;
         }
 
@@ -491,7 +496,7 @@ namespace MediaBrowser.ServerApplication
                                     GetExports<IPeoplePrescanTask>(),
                                     GetExports<IMetadataSaver>());
 
-            ProviderManager.AddParts(GetExports<BaseMetadataProvider>(), GetExports<IImageProvider>());
+            ProviderManager.AddParts(GetExports<BaseMetadataProvider>(), GetExports<IImageProvider>(), GetExports<IMetadataService>(), GetExports<IMetadataProvider>());
 
             ImageProcessor.AddParts(GetExports<IImageEnhancer>());
 

@@ -21,6 +21,17 @@ namespace MediaBrowser.Model.Entities
     public static class ProviderIdsExtensions
     {
         /// <summary>
+        /// Determines whether [has provider identifier] [the specified instance].
+        /// </summary>
+        /// <param name="instance">The instance.</param>
+        /// <param name="provider">The provider.</param>
+        /// <returns><c>true</c> if [has provider identifier] [the specified instance]; otherwise, <c>false</c>.</returns>
+        public static bool HasProviderId(this IHasProviderIds instance, MetadataProviders provider)
+        {
+            return !string.IsNullOrEmpty(instance.GetProviderId(provider.ToString()));
+        }
+        
+        /// <summary>
         /// Gets a provider id
         /// </summary>
         /// <param name="instance">The instance.</param>

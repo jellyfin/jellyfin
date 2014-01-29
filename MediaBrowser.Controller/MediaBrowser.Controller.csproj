@@ -69,6 +69,7 @@
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
     <Compile Include="Drawing\IImageProcessor.cs" />
+    <Compile Include="Drawing\ImageFormat.cs" />
     <Compile Include="Drawing\ImageProcessingOptions.cs" />
     <Compile Include="Dto\IDtoService.cs" />
     <Compile Include="Entities\AdultVideo.cs" />
@@ -143,8 +144,17 @@
     <Compile Include="Persistence\IFileOrganizationRepository.cs" />
     <Compile Include="Persistence\MediaStreamQuery.cs" />
     <Compile Include="Providers\IDynamicInfoProvider.cs" />
+    <Compile Include="Providers\IHasMetadata.cs" />
     <Compile Include="Providers\IImageProvider.cs" />
+    <Compile Include="Providers\IProviderRepository.cs" />
+    <Compile Include="Providers\IRemoteImageProvider.cs" />
+    <Compile Include="Providers\ILocalImageProvider.cs" />
+    <Compile Include="Providers\IMetadataProvider.cs" />
+    <Compile Include="Providers\IMetadataService.cs" />
+    <Compile Include="Providers\ItemId.cs" />
+    <Compile Include="Providers\MetadataRefreshOptions.cs" />
     <Compile Include="Providers\NameParser.cs" />
+    <Compile Include="Providers\MetadataStatus.cs" />
     <Compile Include="Session\ISessionManager.cs" />
     <Compile Include="Drawing\ImageExtensions.cs" />
     <Compile Include="Entities\AggregateFolder.cs" />
@@ -174,7 +184,7 @@
     <Compile Include="Entities\Video.cs" />
     <Compile Include="Entities\CollectionFolder.cs" />
     <Compile Include="Entities\Year.cs" />
-    <Compile Include="IO\IDirectoryWatchers.cs" />
+    <Compile Include="Library\ILibraryMonitor.cs" />
     <Compile Include="IServerApplicationHost.cs" />
     <Compile Include="IServerApplicationPaths.cs" />
     <Compile Include="Library\SearchHintInfo.cs" />

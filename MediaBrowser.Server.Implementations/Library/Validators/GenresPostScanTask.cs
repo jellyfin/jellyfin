@@ -16,7 +16,6 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         /// Initializes a new instance of the <see cref="ArtistsPostScanTask" /> class.
         /// </summary>
         /// <param name="libraryManager">The library manager.</param>
-        /// <param name="userManager">The user manager.</param>
         public GenresPostScanTask(ILibraryManager libraryManager)
         {
             _libraryManager = libraryManager;
