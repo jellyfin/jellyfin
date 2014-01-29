@@ -47,7 +47,7 @@ namespace MediaBrowser.Common.Implementations.Updates
             File.Copy(source, Path.Combine(Path.GetTempPath(), "SharpCompress.dll"), true);
 
             logger.Info("Starting updater process.");
-            Process.Start(tempUpdater, string.Format("product={0} archive=\"{1}\" caller={2} pismo=false version={3} service={4} installpath={5}", product, archive, Process.GetCurrentProcess().Id, version, restartServiceName ?? string.Empty, appPaths.ApplicationPath));
+            Process.Start(tempUpdater, string.Format("product={0} archive=\"{1}\" caller={2} pismo=false version={3} service={4} installpath={5}", product, archive, Process.GetCurrentProcess().Id, version, restartServiceName ?? string.Empty, appPaths.ProgramDataPath));
 
             // That's it.  The installer will do the work once we exit
         }
