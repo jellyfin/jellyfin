@@ -23,7 +23,7 @@ namespace MediaBrowser.Controller.Entities
     /// <summary>
     /// Class BaseItem
     /// </summary>
-    public abstract class BaseItem : IHasProviderIds, ILibraryItem, IHasImages, IHasUserData
+    public abstract class BaseItem : IHasProviderIds, ILibraryItem, IHasImages, IHasUserData, IHasMetadata
     {
         protected BaseItem()
         {
@@ -364,11 +364,16 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        private string _forcedSortName;
         /// <summary>
         /// Gets or sets the name of the forced sort.
         /// </summary>
         /// <value>The name of the forced sort.</value>
-        public string ForcedSortName { get; set; }
+        public string ForcedSortName
+        {
+            get { return _forcedSortName; }
+            set { _forcedSortName = value; _sortName = null; }
+        }
 
         private string _sortName;
         /// <summary>
@@ -767,25 +772,35 @@ namespace MediaBrowser.Controller.Entities
             }).ToList();
         }
 
+        public Task<bool> RefreshMetadata(CancellationToken cancellationToken, bool resetResolveArgs = true)
+        {
+            return RefreshMetadata(new MetadataRefreshOptions { ResetResolveArgs = resetResolveArgs }, cancellationToken);
+        }
+
         /// <summary>
         /// Overrides the base implementation to refresh metadata for local trailers
         /// </summary>
+        /// <param name="options">The options.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="forceSave">if set to <c>true</c> [is new item].</param>
-        /// <param name="forceRefresh">if set to <c>true</c> [force].</param>
-        /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
-        /// <param name="resetResolveArgs">if set to <c>true</c> [reset resolve args].</param>
         /// <returns>true if a provider reports we changed</returns>
-        public virtual async Task<bool> RefreshMetadata(CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false, bool allowSlowProviders = true, bool resetResolveArgs = true)
+        public async Task<bool> RefreshMetadata(MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
-            if (resetResolveArgs)
+            if (options.ResetResolveArgs)
             {
                 // Reload this
                 ResetResolveArgs();
             }
 
+            await ProviderManager.RefreshMetadata(this, options, cancellationToken).ConfigureAwait(false);
+
+            return false;
+        }
+
+        [Obsolete]
+        public virtual async Task<bool> RefreshMetadataDirect(CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false)
+        {
             // Refresh for the item
-            var itemRefreshTask = ProviderManager.ExecuteMetadataProviders(this, cancellationToken, forceRefresh, allowSlowProviders);
+            var itemRefreshTask = ProviderManager.ExecuteMetadataProviders(this, cancellationToken, forceRefresh);
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -800,15 +815,15 @@ namespace MediaBrowser.Controller.Entities
                 var hasThemeMedia = this as IHasThemeMedia;
                 if (hasThemeMedia != null)
                 {
-                    themeSongsChanged = await RefreshThemeSongs(hasThemeMedia, cancellationToken, forceSave, forceRefresh, allowSlowProviders).ConfigureAwait(false);
+                    themeSongsChanged = await RefreshThemeSongs(hasThemeMedia, cancellationToken, forceSave, forceRefresh).ConfigureAwait(false);
 
-                    themeVideosChanged = await RefreshThemeVideos(hasThemeMedia, cancellationToken, forceSave, forceRefresh, allowSlowProviders).ConfigureAwait(false);
+                    themeVideosChanged = await RefreshThemeVideos(hasThemeMedia, cancellationToken, forceSave, forceRefresh).ConfigureAwait(false);
                 }
 
                 var hasTrailers = this as IHasTrailers;
                 if (hasTrailers != null)
                 {
-                    localTrailersChanged = await RefreshLocalTrailers(hasTrailers, cancellationToken, forceSave, forceRefresh, allowSlowProviders).ConfigureAwait(false);
+                    localTrailersChanged = await RefreshLocalTrailers(hasTrailers, cancellationToken, forceSave, forceRefresh).ConfigureAwait(false);
                 }
             }
 
@@ -829,14 +844,20 @@ namespace MediaBrowser.Controller.Entities
             return changed;
         }
 
-        private async Task<bool> RefreshLocalTrailers(IHasTrailers item, CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false, bool allowSlowProviders = true)
+        private async Task<bool> RefreshLocalTrailers(IHasTrailers item, CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false)
         {
             var newItems = LoadLocalTrailers().ToList();
             var newItemIds = newItems.Select(i => i.Id).ToList();
 
             var itemsChanged = !item.LocalTrailerIds.SequenceEqual(newItemIds);
 
-            var tasks = newItems.Select(i => i.RefreshMetadata(cancellationToken, forceSave, forceRefresh, allowSlowProviders, resetResolveArgs: false));
+            var tasks = newItems.Select(i => i.RefreshMetadata(new MetadataRefreshOptions
+            {
+                ForceSave = forceSave,
+                ReplaceAllMetadata = forceRefresh,
+                ResetResolveArgs = false
+
+            }, cancellationToken));
 
             var results = await Task.WhenAll(tasks).ConfigureAwait(false);
 
@@ -845,14 +866,20 @@ namespace MediaBrowser.Controller.Entities
             return itemsChanged || results.Contains(true);
         }
 
-        private async Task<bool> RefreshThemeVideos(IHasThemeMedia item, CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false, bool allowSlowProviders = true)
+        private async Task<bool> RefreshThemeVideos(IHasThemeMedia item, CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false)
         {
             var newThemeVideos = LoadThemeVideos().ToList();
             var newThemeVideoIds = newThemeVideos.Select(i => i.Id).ToList();
 
             var themeVideosChanged = !item.ThemeVideoIds.SequenceEqual(newThemeVideoIds);
 
-            var tasks = newThemeVideos.Select(i => i.RefreshMetadata(cancellationToken, forceSave, forceRefresh, allowSlowProviders, resetResolveArgs: false));
+            var tasks = newThemeVideos.Select(i => i.RefreshMetadata(new MetadataRefreshOptions
+            {
+                ForceSave = forceSave,
+                ReplaceAllMetadata = forceRefresh,
+                ResetResolveArgs = false
+
+            }, cancellationToken));
 
             var results = await Task.WhenAll(tasks).ConfigureAwait(false);
 
@@ -864,14 +891,20 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Refreshes the theme songs.
         /// </summary>
-        private async Task<bool> RefreshThemeSongs(IHasThemeMedia item, CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false, bool allowSlowProviders = true)
+        private async Task<bool> RefreshThemeSongs(IHasThemeMedia item, CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false)
         {
             var newThemeSongs = LoadThemeSongs().ToList();
             var newThemeSongIds = newThemeSongs.Select(i => i.Id).ToList();
 
             var themeSongsChanged = !item.ThemeSongIds.SequenceEqual(newThemeSongIds);
 
-            var tasks = newThemeSongs.Select(i => i.RefreshMetadata(cancellationToken, forceSave, forceRefresh, allowSlowProviders, resetResolveArgs: false));
+            var tasks = newThemeSongs.Select(i => i.RefreshMetadata(new MetadataRefreshOptions
+            {
+                ForceSave = forceSave,
+                ReplaceAllMetadata = forceRefresh,
+                ResetResolveArgs = false
+
+            }, cancellationToken));
 
             var results = await Task.WhenAll(tasks).ConfigureAwait(false);
 
@@ -1456,7 +1489,13 @@ namespace MediaBrowser.Controller.Entities
 
             // Refresh metadata
             // Need to disable slow providers or the image might get re-downloaded
-            return RefreshMetadata(CancellationToken.None, forceSave: true, allowSlowProviders: false);
+            return RefreshMetadata(new MetadataRefreshOptions
+            {
+                ForceSave = true,
+                ImageRefreshMode = MetadataRefreshMode.None,
+                MetadataRefreshMode = MetadataRefreshMode.None
+
+            }, CancellationToken.None);
         }
 
         /// <summary>
@@ -1482,8 +1521,10 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Validates that images within the item are still on the file system
         /// </summary>
-        public void ValidateImages()
+        public bool ValidateImages()
         {
+            var changed = false;
+
             // Only validate paths from the same directory - need to copy to a list because we are going to potentially modify the collection below
             var deletedKeys = Images
                 .Where(image => !File.Exists(image.Value))
@@ -1494,14 +1535,28 @@ namespace MediaBrowser.Controller.Entities
             foreach (var key in deletedKeys)
             {
                 Images.Remove(key);
+                changed = true;
             }
+
+            if (ValidateBackdrops())
+            {
+                changed = true;
+            }
+            if (ValidateScreenshots())
+            {
+                changed = true;
+            }
+
+            return changed;
         }
 
         /// <summary>
         /// Validates that backdrops within the item are still on the file system
         /// </summary>
-        public void ValidateBackdrops()
+        private bool ValidateBackdrops()
         {
+            var changed = false;
+
             // Only validate paths from the same directory - need to copy to a list because we are going to potentially modify the collection below
             var deletedImages = BackdropImagePaths
                 .Where(path => !File.Exists(path))
@@ -1513,7 +1568,11 @@ namespace MediaBrowser.Controller.Entities
                 BackdropImagePaths.Remove(path);
 
                 RemoveImageSourceForPath(path);
+
+                changed = true;
             }
+
+            return changed;
         }
 
         /// <summary>
@@ -1593,9 +1652,16 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Validates the screenshots.
         /// </summary>
-        public void ValidateScreenshots()
+        private bool ValidateScreenshots()
         {
-            var hasScreenshots = (IHasScreenshots)this;
+            var changed = false;
+
+            var hasScreenshots = this as IHasScreenshots;
+
+            if (hasScreenshots == null)
+            {
+                return changed;
+            }
 
             // Only validate paths from the same directory - need to copy to a list because we are going to potentially modify the collection below
             var deletedImages = hasScreenshots.ScreenshotImagePaths
@@ -1606,7 +1672,10 @@ namespace MediaBrowser.Controller.Entities
             foreach (var path in deletedImages)
             {
                 hasScreenshots.ScreenshotImagePaths.Remove(path);
+                changed = true;
             }
+
+            return changed;
         }
 
         /// <summary>
@@ -1699,7 +1768,12 @@ namespace MediaBrowser.Controller.Entities
             FileSystem.SwapFiles(file1, file2);
 
             // Directory watchers should repeat this, but do a quick refresh first
-            return RefreshMetadata(CancellationToken.None, forceSave: true, allowSlowProviders: false);
+            return RefreshMetadata(new MetadataRefreshOptions
+            {
+                ForceSave = true,
+                MetadataRefreshMode = MetadataRefreshMode.None
+
+            }, CancellationToken.None);
         }
 
         public virtual bool IsPlayed(User user)

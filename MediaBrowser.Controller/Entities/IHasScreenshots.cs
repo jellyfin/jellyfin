@@ -14,8 +14,10 @@ namespace MediaBrowser.Controller.Entities
         List<string> ScreenshotImagePaths { get; set; }
 
         /// <summary>
-        /// Validates the screenshots.
+        /// Determines whether [contains image with source URL] [the specified URL].
         /// </summary>
-        void ValidateScreenshots();
+        /// <param name="url">The URL.</param>
+        /// <returns><c>true</c> if [contains image with source URL] [the specified URL]; otherwise, <c>false</c>.</returns>
+        bool ContainsImageWithSourceUrl(string url);
     }
 }

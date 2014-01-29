@@ -137,7 +137,7 @@
     <Compile Include="HttpServer\StreamWriter.cs" />
     <Compile Include="HttpServer\SwaggerService.cs" />
     <Compile Include="Drawing\ImageProcessor.cs" />
-    <Compile Include="IO\DirectoryWatchers.cs" />
+    <Compile Include="IO\LibraryMonitor.cs" />
     <Compile Include="Library\CoreResolutionIgnoreRule.cs" />
     <Compile Include="Library\LibraryManager.cs" />
     <Compile Include="Library\SearchEngine.cs" />
@@ -189,8 +189,6 @@
     <Compile Include="Persistence\SqliteShrinkMemoryTimer.cs" />
     <Compile Include="Persistence\TypeMapper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Providers\ImageSaver.cs" />
-    <Compile Include="Providers\ProviderManager.cs" />
     <Compile Include="Roku\RokuControllerFactory.cs" />
     <Compile Include="ScheduledTasks\PeopleValidationTask.cs" />
     <Compile Include="ScheduledTasks\ChapterImagesTask.cs" />

@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -20,11 +21,13 @@ namespace MediaBrowser.Providers.Music
         internal static MusicBrainzAlbumProvider Current;
 
         private readonly IHttpClient _httpClient;
+        private readonly IApplicationHost _appHost;
 
-        public MusicBrainzAlbumProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IHttpClient httpClient)
+        public MusicBrainzAlbumProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IHttpClient httpClient, IApplicationHost appHost)
             : base(logManager, configurationManager)
         {
             _httpClient = httpClient;
+            _appHost = appHost;
 
             Current = this;
         }
@@ -83,7 +86,7 @@ namespace MediaBrowser.Providers.Music
 
         private async Task<ReleaseResult> GetReleaseResult(string albumName, string artistId, CancellationToken cancellationToken)
         {
-            var url = string.Format("http://www.musicbrainz.org/ws/2/release/?query=\"{0}\" and arid:{1}",
+            var url = string.Format("http://www.musicbrainz.org/ws/2/release/?query=\"{0}\" AND arid:{1}",
                 WebUtility.UrlEncode(albumName),
                 artistId);
 
@@ -94,7 +97,7 @@ namespace MediaBrowser.Providers.Music
 
         private async Task<ReleaseResult> GetReleaseResultByArtistName(string albumName, string artistName, CancellationToken cancellationToken)
         {
-            var url = string.Format("http://www.musicbrainz.org/ws/2/release/?query=\"{0}\" and artist:\"{1}\"",
+            var url = string.Format("http://www.musicbrainz.org/ws/2/release/?query=\"{0}\" AND artist:\"{1}\"",
                 WebUtility.UrlEncode(albumName),
                 WebUtility.UrlEncode(artistName));
 
@@ -189,11 +192,13 @@ namespace MediaBrowser.Providers.Music
 
                 var doc = new XmlDocument();
 
+                var userAgent = _appHost.Name + "/" + _appHost.ApplicationVersion;
+
                 using (var xml = await _httpClient.Get(new HttpRequestOptions
                 {
                     Url = url,
                     CancellationToken = cancellationToken,
-                    UserAgent = Environment.MachineName
+                    UserAgent = userAgent
 
                 }).ConfigureAwait(false))
                 {

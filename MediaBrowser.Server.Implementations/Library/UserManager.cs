@@ -4,6 +4,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
@@ -192,7 +193,11 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>Task.</returns>
         public Task RefreshUsersMetadata(CancellationToken cancellationToken, bool force = false)
         {
-            var tasks = Users.Select(user => user.RefreshMetadata(cancellationToken, forceRefresh: force)).ToList();
+            var tasks = Users.Select(user => user.RefreshMetadata(new MetadataRefreshOptions
+            {
+                ReplaceAllMetadata = force
+
+            }, cancellationToken)).ToList();
 
             return Task.WhenAll(tasks);
         }

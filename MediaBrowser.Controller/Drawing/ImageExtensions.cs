@@ -18,17 +18,17 @@ namespace MediaBrowser.Controller.Drawing
         /// <param name="image">The image.</param>
         /// <param name="toStream">To stream.</param>
         /// <param name="quality">The quality.</param>
-        public static void Save(this Image image, ImageFormat outputFormat, Stream toStream, int quality)
+        public static void Save(this Image image, System.Drawing.Imaging.ImageFormat outputFormat, Stream toStream, int quality)
         {
             // Use special save methods for jpeg and png that will result in a much higher quality image
             // All other formats use the generic Image.Save
-            if (ImageFormat.Jpeg.Equals(outputFormat))
+            if (System.Drawing.Imaging.ImageFormat.Jpeg.Equals(outputFormat))
             {
                 SaveAsJpeg(image, toStream, quality);
             }
-            else if (ImageFormat.Png.Equals(outputFormat))
+            else if (System.Drawing.Imaging.ImageFormat.Png.Equals(outputFormat))
             {
-                image.Save(toStream, ImageFormat.Png);
+                image.Save(toStream, System.Drawing.Imaging.ImageFormat.Png);
             }
             else
             {

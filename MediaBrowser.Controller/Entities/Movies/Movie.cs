@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Configuration;
+﻿using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
@@ -108,13 +109,11 @@ namespace MediaBrowser.Controller.Entities.Movies
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="forceSave">if set to <c>true</c> [is new item].</param>
         /// <param name="forceRefresh">if set to <c>true</c> [force].</param>
-        /// <param name="allowSlowProviders">if set to <c>true</c> [allow slow providers].</param>
-        /// <param name="resetResolveArgs">The reset resolve args.</param>
         /// <returns>Task{System.Boolean}.</returns>
-        public override async Task<bool> RefreshMetadata(CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false, bool allowSlowProviders = true, bool resetResolveArgs = true)
+        public override async Task<bool> RefreshMetadataDirect(CancellationToken cancellationToken, bool forceSave = false, bool forceRefresh = false)
         {
             // Kick off a task to refresh the main item
-            var result = await base.RefreshMetadata(cancellationToken, forceSave, forceRefresh, allowSlowProviders, resetResolveArgs).ConfigureAwait(false);
+            var result = await base.RefreshMetadataDirect(cancellationToken, forceSave, forceRefresh).ConfigureAwait(false);
 
             var specialFeaturesChanged = false;
 
@@ -122,7 +121,7 @@ namespace MediaBrowser.Controller.Entities.Movies
             // In other words, it must be part of the Parent/Child tree
             if (LocationType == LocationType.FileSystem && Parent != null && !IsInMixedFolder)
             {
-                specialFeaturesChanged = await RefreshSpecialFeatures(cancellationToken, forceSave, forceRefresh, allowSlowProviders).ConfigureAwait(false);
+                specialFeaturesChanged = await RefreshSpecialFeatures(cancellationToken, forceSave, forceRefresh).ConfigureAwait(false);
             }
 
             return specialFeaturesChanged || result;
@@ -135,7 +134,13 @@ namespace MediaBrowser.Controller.Entities.Movies
 
             var itemsChanged = !SpecialFeatureIds.SequenceEqual(newItemIds);
 
-            var tasks = newItems.Select(i => i.RefreshMetadata(cancellationToken, forceSave, forceRefresh, allowSlowProviders, resetResolveArgs: false));
+            var tasks = newItems.Select(i => i.RefreshMetadata(new MetadataRefreshOptions
+            {
+                ForceSave = forceSave,
+                ReplaceAllMetadata = forceRefresh,
+                ResetResolveArgs = false
+
+            }, cancellationToken));
 
             var results = await Task.WhenAll(tasks).ConfigureAwait(false);
 

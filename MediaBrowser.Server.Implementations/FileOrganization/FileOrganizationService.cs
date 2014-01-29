@@ -21,17 +21,17 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
         private readonly ITaskManager _taskManager;
         private readonly IFileOrganizationRepository _repo;
         private readonly ILogger _logger;
-        private readonly IDirectoryWatchers _directoryWatchers;
+        private readonly ILibraryMonitor _libraryMonitor;
         private readonly ILibraryManager _libraryManager;
         private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
 
-        public FileOrganizationService(ITaskManager taskManager, IFileOrganizationRepository repo, ILogger logger, IDirectoryWatchers directoryWatchers, ILibraryManager libraryManager, IServerConfigurationManager config, IFileSystem fileSystem)
+        public FileOrganizationService(ITaskManager taskManager, IFileOrganizationRepository repo, ILogger logger, ILibraryMonitor libraryMonitor, ILibraryManager libraryManager, IServerConfigurationManager config, IFileSystem fileSystem)
         {
             _taskManager = taskManager;
             _repo = repo;
             _logger = logger;
-            _directoryWatchers = directoryWatchers;
+            _libraryMonitor = libraryMonitor;
             _libraryManager = libraryManager;
             _config = config;
             _fileSystem = fileSystem;
@@ -91,12 +91,9 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             }
 
             var organizer = new EpisodeFileOrganizer(this, _config, _fileSystem, _logger, _libraryManager,
-                _directoryWatchers);
+                _libraryMonitor);
 
             await organizer.OrganizeEpisodeFile(result.OriginalPath, _config.Configuration.TvFileOrganizationOptions, true)
-                    .ConfigureAwait(false);
-
-            await _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None)
                     .ConfigureAwait(false);
         }
 
@@ -108,12 +105,9 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
         public async Task PerformEpisodeOrganization(EpisodeFileOrganizationRequest request)
         {
             var organizer = new EpisodeFileOrganizer(this, _config, _fileSystem, _logger, _libraryManager,
-                _directoryWatchers);
+                _libraryMonitor);
 
             await organizer.OrganizeWithCorrection(request, _config.Configuration.TvFileOrganizationOptions).ConfigureAwait(false);
-
-            await _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None)
-                    .ConfigureAwait(false);
         }
     }
 }
