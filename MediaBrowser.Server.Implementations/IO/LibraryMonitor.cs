@@ -130,14 +130,27 @@ namespace MediaBrowser.Server.Implementations.IO
         /// <param name="e">The <see cref="PowerModeChangedEventArgs"/> instance containing the event data.</param>
         void SystemEvents_PowerModeChanged(object sender, PowerModeChangedEventArgs e)
         {
+            Restart();
+        }
+
+        private void Restart()
+        {
             Stop();
             Start();
+        }
+
+        public void Start()
+        {
+            if (ConfigurationManager.Configuration.EnableRealtimeMonitor)
+            {
+                StartInternal();
+            }
         }
 
         /// <summary>
         /// Starts this instance.
         /// </summary>
-        public void Start()
+        private void StartInternal()
         {
             LibraryManager.ItemAdded += LibraryManager_ItemAdded;
             LibraryManager.ItemRemoved += LibraryManager_ItemRemoved;
@@ -359,7 +372,7 @@ namespace MediaBrowser.Server.Implementations.IO
             {
                 throw new ArgumentNullException("path");
             }
-            
+
             var filename = Path.GetFileName(path);
 
             // Ignore certain files

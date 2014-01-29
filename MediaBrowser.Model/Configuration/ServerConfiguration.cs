@@ -227,6 +227,8 @@ namespace MediaBrowser.Model.Configuration
         public TvFileOrganizationOptions TvFileOrganizationOptions { get; set; }
         public LiveTvOptions LiveTvOptions { get; set; }
 
+        public bool EnableRealtimeMonitor { get; set; }
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>
@@ -294,6 +296,8 @@ namespace MediaBrowser.Model.Configuration
             LiveTvOptions = new LiveTvOptions();
 
             TvFileOrganizationOptions = new TvFileOrganizationOptions();
+
+            EnableRealtimeMonitor = true;
         }
     }
 

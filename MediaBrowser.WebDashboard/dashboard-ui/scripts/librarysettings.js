@@ -17,6 +17,8 @@
 
         $('#txtSeasonZeroName', page).val(config.SeasonZeroDisplayName);
 
+        $('#chkEnableRealtimeMonitor', page).checked(config.EnableRealtimeMonitor).checkboxradio("refresh");
+
         Dashboard.hideLoadingMsg();
     }
 
@@ -90,6 +92,8 @@
                 }
 
                 config.SeasonZeroDisplayName = $('#txtSeasonZeroName', form).val();
+
+                config.EnableRealtimeMonitor = $('#chkEnableRealtimeMonitor', form).checked();
 
                 ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
             });
