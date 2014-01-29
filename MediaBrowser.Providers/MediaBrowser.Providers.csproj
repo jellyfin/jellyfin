@@ -67,6 +67,9 @@
     <Compile Include="All\LocalImageProvider.cs" />
     <Compile Include="GameGenres\GameGenreMetadataService.cs" />
     <Compile Include="Genres\GenreMetadataService.cs" />
+    <Compile Include="LiveTv\ChannelMetadataService.cs" />
+    <Compile Include="LiveTv\ChannelXmlProvider.cs" />
+    <Compile Include="LiveTv\ProgramMetadataService.cs" />
     <Compile Include="Manager\ImageSaver.cs" />
     <Compile Include="Manager\ItemImageProvider.cs" />
     <Compile Include="Manager\ProviderManager.cs" />
@@ -84,7 +87,6 @@
     <Compile Include="GameGenres\GameGenreImageProvider.cs" />
     <Compile Include="Genres\GenreImageProvider.cs" />
     <Compile Include="ImagesByName\ImageUtils.cs" />
-    <Compile Include="LiveTv\ChannelProviderFromXml.cs" />
     <Compile Include="MediaInfo\AudioImageProvider.cs" />
     <Compile Include="MediaInfo\BaseFFProbeProvider.cs" />
     <Compile Include="MediaInfo\FFProbeAudioInfoProvider.cs" />
