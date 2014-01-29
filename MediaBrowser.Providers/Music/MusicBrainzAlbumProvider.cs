@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -20,11 +21,13 @@ namespace MediaBrowser.Providers.Music
         internal static MusicBrainzAlbumProvider Current;
 
         private readonly IHttpClient _httpClient;
+        private readonly IApplicationHost _appHost;
 
-        public MusicBrainzAlbumProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IHttpClient httpClient)
+        public MusicBrainzAlbumProvider(ILogManager logManager, IServerConfigurationManager configurationManager, IHttpClient httpClient, IApplicationHost appHost)
             : base(logManager, configurationManager)
         {
             _httpClient = httpClient;
+            _appHost = appHost;
 
             Current = this;
         }
@@ -189,11 +192,13 @@ namespace MediaBrowser.Providers.Music
 
                 var doc = new XmlDocument();
 
+                var userAgent = _appHost.Name + "/" + _appHost.ApplicationVersion;
+
                 using (var xml = await _httpClient.Get(new HttpRequestOptions
                 {
                     Url = url,
                     CancellationToken = cancellationToken,
-                    UserAgent = Environment.MachineName
+                    UserAgent = userAgent
 
                 }).ConfigureAwait(false))
                 {
