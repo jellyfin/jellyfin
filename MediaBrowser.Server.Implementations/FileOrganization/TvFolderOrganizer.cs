@@ -79,9 +79,15 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
             foreach (var path in watchLocations)
             {
-                if (options.LeftOverFileExtensionsToDelete.Length > 0)
+                var deleteExtensions = options.LeftOverFileExtensionsToDelete
+                    .Select(i => i.Trim().TrimStart('.'))
+                    .Where(i => !string.IsNullOrEmpty(i))
+                    .Select(i => "." + i)
+                    .ToList();
+
+                if (deleteExtensions.Count > 0)
                 {
-                    DeleteLeftOverFiles(path, options.LeftOverFileExtensionsToDelete);
+                    DeleteLeftOverFiles(path, deleteExtensions);
                 }
 
                 if (options.DeleteEmptyFolders)
