@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
@@ -18,16 +19,18 @@ namespace MediaBrowser.Providers.Manager
         protected readonly IServerConfigurationManager ServerConfigurationManager;
         protected readonly ILogger Logger;
         protected readonly IProviderManager ProviderManager;
+        private readonly IProviderRepository _providerRepo;
 
         private IMetadataProvider<TItemType>[] _providers = { };
 
         private IImageProvider[] _imageProviders = { };
 
-        protected MetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager)
+        protected MetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo)
         {
             ServerConfigurationManager = serverConfigurationManager;
             Logger = logger;
             ProviderManager = providerManager;
+            _providerRepo = providerRepo;
         }
 
         /// <summary>
@@ -48,9 +51,9 @@ namespace MediaBrowser.Providers.Manager
         /// </summary>
         /// <param name="result">The result.</param>
         /// <returns>Task.</returns>
-        protected Task SaveProviderResult(ProviderResult result)
+        protected Task SaveProviderResult(MetadataStatus result)
         {
-            return Task.FromResult(true);
+            return _providerRepo.SaveMetadataStatus(result, CancellationToken.None);
         }
 
         /// <summary>
@@ -58,12 +61,9 @@ namespace MediaBrowser.Providers.Manager
         /// </summary>
         /// <param name="itemId">The item identifier.</param>
         /// <returns>ProviderResult.</returns>
-        protected ProviderResult GetLastResult(Guid itemId)
+        protected MetadataStatus GetLastResult(Guid itemId)
         {
-            return new ProviderResult
-            {
-                ItemId = itemId
-            };
+            return _providerRepo.GetMetadataStatus(itemId) ?? new MetadataStatus { ItemId = itemId };
         }
 
         public async Task RefreshMetadata(IHasMetadata item, MetadataRefreshOptions options, CancellationToken cancellationToken)
@@ -72,7 +72,9 @@ namespace MediaBrowser.Providers.Manager
 
             var updateType = ItemUpdateType.Unspecified;
             var lastResult = GetLastResult(item.Id);
-            var refreshResult = new ProviderResult { ItemId = item.Id };
+            var refreshResult = lastResult;
+            refreshResult.LastErrorMessage = string.Empty;
+            refreshResult.LastStatus = ProviderRefreshStatus.Success;
 
             var imageProviders = GetImageProviders(item).ToList();
             var itemImageProvider = new ItemImageProvider(Logger, ProviderManager, ServerConfigurationManager);
@@ -97,7 +99,7 @@ namespace MediaBrowser.Providers.Manager
             // Next run metadata providers
             if (options.MetadataRefreshMode != MetadataRefreshMode.None)
             {
-                var providers = GetProviders(item, lastResult.HasRefreshedMetadata, options).ToList();
+                var providers = GetProviders(item, lastResult.DateLastMetadataRefresh.HasValue, options).ToList();
 
                 if (providers.Count > 0)
                 {
@@ -105,22 +107,23 @@ namespace MediaBrowser.Providers.Manager
 
                     updateType = updateType | result.UpdateType;
                     refreshResult.AddStatus(result.Status, result.ErrorMessage);
+                    refreshResult.SetDateLastMetadataRefresh(DateTime.UtcNow);
+                    refreshResult.AddImageProvidersRefreshed(result.Providers);
                 }
-
-                refreshResult.HasRefreshedMetadata = true;
             }
 
             // Next run remote image providers, but only if local image providers didn't throw an exception
             if (!localImagesFailed)
             {
-                if ((options.ImageRefreshMode == MetadataRefreshMode.EnsureMetadata && !lastResult.HasRefreshedImages) ||
+                if ((options.ImageRefreshMode == MetadataRefreshMode.EnsureMetadata && !lastResult.DateLastImagesRefresh.HasValue) ||
                                             options.ImageRefreshMode == MetadataRefreshMode.FullRefresh)
                 {
-                    var imagesReult = await itemImageProvider.RefreshImages(itemOfType, imageProviders, options, cancellationToken).ConfigureAwait(false);
+                    var result = await itemImageProvider.RefreshImages(itemOfType, imageProviders, options, cancellationToken).ConfigureAwait(false);
 
-                    updateType = updateType | imagesReult.UpdateType;
-                    refreshResult.AddStatus(imagesReult.Status, imagesReult.ErrorMessage);
-                    refreshResult.HasRefreshedImages = true;
+                    updateType = updateType | result.UpdateType;
+                    refreshResult.AddStatus(result.Status, result.ErrorMessage);
+                    refreshResult.SetDateLastImagesRefresh(DateTime.UtcNow);
+                    refreshResult.AddImageProvidersRefreshed(result.Providers);
                 }
             }
 
@@ -137,9 +140,8 @@ namespace MediaBrowser.Providers.Manager
                 await SaveItem(itemOfType, updateType, cancellationToken);
             }
 
-            if (providersHadChanges)
+            if (providersHadChanges || refreshResult.IsDirty)
             {
-                refreshResult.DateLastRefreshed = DateTime.UtcNow;
                 await SaveProviderResult(refreshResult).ConfigureAwait(false);
             }
         }
@@ -165,7 +167,7 @@ namespace MediaBrowser.Providers.Manager
                 var currentItem = item;
 
                 var providersWithChanges = providers.OfType<IHasChangeMonitor>()
-                    .Where(i => i.HasChanged(currentItem, item.DateLastSaved))
+                    .Where(i => i.HasChanged(currentItem, currentItem.DateLastSaved))
                     .ToList();
 
                 // If local providers are the only ones with changes, then just run those
@@ -219,7 +221,11 @@ namespace MediaBrowser.Providers.Manager
 
         protected virtual async Task<RefreshResult> RefreshWithProviders(TItemType item, MetadataRefreshOptions options, List<IMetadataProvider> providers, CancellationToken cancellationToken)
         {
-            var refreshResult = new RefreshResult { UpdateType = ItemUpdateType.Unspecified };
+            var refreshResult = new RefreshResult
+            {
+                UpdateType = ItemUpdateType.Unspecified,
+                Providers = providers.Select(i => i.GetType().FullName.GetMD5()).ToList()
+            };
 
             var temp = new TItemType();
 
@@ -347,5 +353,6 @@ namespace MediaBrowser.Providers.Manager
         public ItemUpdateType UpdateType { get; set; }
         public ProviderRefreshStatus Status { get; set; }
         public string ErrorMessage { get; set; }
+        public List<Guid> Providers { get; set; }
     }
 }

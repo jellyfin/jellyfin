@@ -55,7 +55,7 @@ namespace MediaBrowser.Providers.Manager
 
         private readonly IFileSystem _fileSystem;
 
-        private readonly IItemRepository _itemRepo;
+        private readonly IProviderRepository _providerRepo;
 
         private IMetadataService[] _metadataServices = { };
 
@@ -67,15 +67,15 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="libraryMonitor">The directory watchers.</param>
         /// <param name="logManager">The log manager.</param>
         /// <param name="fileSystem">The file system.</param>
-        /// <param name="itemRepo">The item repo.</param>
-        public ProviderManager(IHttpClient httpClient, IServerConfigurationManager configurationManager, ILibraryMonitor libraryMonitor, ILogManager logManager, IFileSystem fileSystem, IItemRepository itemRepo)
+        /// <param name="providerRepo">The provider repo.</param>
+        public ProviderManager(IHttpClient httpClient, IServerConfigurationManager configurationManager, ILibraryMonitor libraryMonitor, ILogManager logManager, IFileSystem fileSystem, IProviderRepository providerRepo)
         {
             _logger = logManager.GetLogger("ProviderManager");
             _httpClient = httpClient;
             ConfigurationManager = configurationManager;
             _libraryMonitor = libraryMonitor;
             _fileSystem = fileSystem;
-            _itemRepo = itemRepo;
+            _providerRepo = providerRepo;
         }
 
         /// <summary>
@@ -136,7 +136,7 @@ namespace MediaBrowser.Providers.Manager
 
             var providerHistories = item.DateLastSaved == default(DateTime) ?
                 new List<BaseProviderInfo>() :
-                _itemRepo.GetProviderHistory(item.Id).ToList();
+                _providerRepo.GetProviderHistory(item.Id).ToList();
 
             // Run the normal providers sequentially in order of priority
             foreach (var provider in MetadataProviders)
@@ -201,7 +201,7 @@ namespace MediaBrowser.Providers.Manager
 
             if (result.HasValue || force)
             {
-                await _itemRepo.SaveProviderHistory(item.Id, providerHistories, cancellationToken);
+                await _providerRepo.SaveProviderHistory(item.Id, providerHistories, cancellationToken);
             }
 
             return result;

@@ -58,7 +58,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         private SqliteChapterRepository _chapterRepository;
         private SqliteMediaStreamsRepository _mediaStreamsRepository;
-        private SqliteProviderInfoRepository _providerInfoRepository;
 
         private IDbCommand _deleteChildrenCommand;
         private IDbCommand _saveChildrenCommand;
@@ -99,10 +98,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
             var mediaStreamsDbFile = Path.Combine(_appPaths.DataPath, "mediainfo.db");
             var mediaStreamsConnection = SqliteExtensions.ConnectToDb(mediaStreamsDbFile, _logger).Result;
             _mediaStreamsRepository = new SqliteMediaStreamsRepository(mediaStreamsConnection, logManager);
-
-            var providerInfosDbFile = Path.Combine(_appPaths.DataPath, "providerinfo.db");
-            var providerInfoConnection = SqliteExtensions.ConnectToDb(providerInfosDbFile, _logger).Result;
-            _providerInfoRepository = new SqliteProviderInfoRepository(providerInfoConnection, logManager);
         }
 
         /// <summary>
@@ -134,7 +129,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
             PrepareStatements();
 
             _mediaStreamsRepository.Initialize();
-            _providerInfoRepository.Initialize();
             _chapterRepository.Initialize();
 
             _shrinkMemoryTimer = new SqliteShrinkMemoryTimer(_connection, _writeLock, _logger);
@@ -436,12 +430,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
                             _mediaStreamsRepository.Dispose();
                             _mediaStreamsRepository = null;
                         }
-
-                        if (_providerInfoRepository != null)
-                        {
-                            _providerInfoRepository.Dispose();
-                            _providerInfoRepository = null;
-                        }
                     }
                 }
                 catch (Exception ex)
@@ -555,16 +543,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
         public Task SaveMediaStreams(Guid id, IEnumerable<MediaStream> streams, CancellationToken cancellationToken)
         {
             return _mediaStreamsRepository.SaveMediaStreams(id, streams, cancellationToken);
-        }
-
-        public IEnumerable<BaseProviderInfo> GetProviderHistory(Guid itemId)
-        {
-            return _providerInfoRepository.GetBaseProviderInfos(itemId);
-        }
-
-        public Task SaveProviderHistory(Guid id, IEnumerable<BaseProviderInfo> history, CancellationToken cancellationToken)
-        {
-            return _providerInfoRepository.SaveProviderInfos(id, history, cancellationToken);
         }
     }
 }

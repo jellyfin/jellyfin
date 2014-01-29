@@ -15,8 +15,8 @@ namespace MediaBrowser.Providers.MusicGenres
     {
         private readonly ILibraryManager _libraryManager;
 
-        public MusicGenreMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, ILibraryManager libraryManager)
-            : base(serverConfigurationManager, logger, providerManager)
+        public MusicGenreMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, ILibraryManager libraryManager)
+            : base(serverConfigurationManager, logger, providerManager, providerRepo)
         {
             _libraryManager = libraryManager;
         }

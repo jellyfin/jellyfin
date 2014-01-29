@@ -15,8 +15,8 @@ namespace MediaBrowser.Providers.GameGenres
     {
         private readonly ILibraryManager _libraryManager;
 
-        public GameGenreMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, ILibraryManager libraryManager)
-            : base(serverConfigurationManager, logger, providerManager)
+        public GameGenreMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, ILibraryManager libraryManager)
+            : base(serverConfigurationManager, logger, providerManager, providerRepo)
         {
             _libraryManager = libraryManager;
         }
