@@ -19,7 +19,7 @@
         Dashboard.getPluginSecurityInfo().done(function (pluginSecurityInfo) {
 
             if (pluginSecurityInfo.IsMBSupporter) {
-                $('#contribute', page).hide();
+                $('#contribute', page).show();
             } else {
                 $('#contribute', page).show();
             }
