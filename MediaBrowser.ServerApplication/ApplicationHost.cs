@@ -276,7 +276,7 @@ namespace MediaBrowser.ServerApplication
             LibraryManager = new LibraryManager(Logger, TaskManager, UserManager, ServerConfigurationManager, UserDataManager, () => LibraryMonitor, FileSystemManager);
             RegisterSingleInstance(LibraryManager);
 
-            LibraryMonitor = new LibraryMonitor(LogManager, TaskManager, LibraryManager, ServerConfigurationManager);
+            LibraryMonitor = new LibraryMonitor(LogManager, TaskManager, LibraryManager, ServerConfigurationManager, FileSystemManager);
             RegisterSingleInstance(LibraryMonitor);
 
             ProviderManager = new ProviderManager(HttpClient, ServerConfigurationManager, LibraryMonitor, LogManager, FileSystemManager, ItemRepository);
