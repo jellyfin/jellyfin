@@ -348,6 +348,9 @@ namespace MediaBrowser.Providers.Manager
                 case ImageType.Art:
                     filename = "clearart";
                     break;
+                case ImageType.BoxRear:
+                    filename = "back";
+                    break;
                 case ImageType.Disc:
                     filename = item is MusicAlbum ? "cdart" : "disc";
                     break;
