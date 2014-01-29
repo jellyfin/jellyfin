@@ -1,6 +1,4 @@
-﻿using MediaBrowser.Model.Entities;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -52,19 +50,12 @@ namespace MediaBrowser.Controller.Providers
     public interface IHasChangeMonitor
     {
         /// <summary>
-        /// Determines whether the specified date has changed.
+        /// Determines whether the specified item has changed.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="date">The date.</param>
-        /// <returns><c>true</c> if the specified date has changed; otherwise, <c>false</c>.</returns>
+        /// <returns><c>true</c> if the specified item has changed; otherwise, <c>false</c>.</returns>
         bool HasChanged(IHasMetadata item, DateTime date);
-    }
-
-    public enum MetadataProviderType
-    {
-        Embedded = 0,
-        Local = 1,
-        Remote = 2
     }
 
     public class MetadataResult<T>
@@ -74,17 +65,4 @@ namespace MediaBrowser.Controller.Providers
         public T Item { get; set; }
     }
 
-    public class ItemId : IHasProviderIds
-    {
-        public string Name { get; set; }
-        public string MetadataLanguage { get; set; }
-        public string MetadataCountryCode { get; set; }
-
-        public Dictionary<string, string> ProviderIds { get; set; }
-
-        public ItemId()
-        {
-            ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        }
-    }
 }

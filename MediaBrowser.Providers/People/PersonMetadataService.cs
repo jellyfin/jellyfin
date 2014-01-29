@@ -15,8 +15,8 @@ namespace MediaBrowser.Providers.People
     {
         private readonly ILibraryManager _libraryManager;
 
-        public PersonMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, ILibraryManager libraryManager)
-            : base(serverConfigurationManager, logger, providerManager)
+        public PersonMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, ILibraryManager libraryManager)
+            : base(serverConfigurationManager, logger, providerManager, providerRepo)
         {
             _libraryManager = libraryManager;
         }

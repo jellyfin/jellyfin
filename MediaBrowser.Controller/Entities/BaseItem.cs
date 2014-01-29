@@ -364,11 +364,16 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        private string _forcedSortName;
         /// <summary>
         /// Gets or sets the name of the forced sort.
         /// </summary>
         /// <value>The name of the forced sort.</value>
-        public string ForcedSortName { get; set; }
+        public string ForcedSortName
+        {
+            get { return _forcedSortName; }
+            set { _forcedSortName = value; _sortName = null; }
+        }
 
         private string _sortName;
         /// <summary>

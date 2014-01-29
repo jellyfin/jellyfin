@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
@@ -51,15 +52,23 @@ namespace MediaBrowser.Providers.Manager
 
             var providers = GetImageProviders(item, imageProviders).ToList();
 
+            var providerIds = new List<Guid>();
+
             foreach (var provider in providers.OfType<IRemoteImageProvider>())
             {
                 await RefreshFromProvider(item, provider, options, result, cancellationToken).ConfigureAwait(false);
+
+                providerIds.Add(provider.GetType().FullName.GetMD5());
             }
 
             foreach (var provider in providers.OfType<IDynamicImageProvider>())
             {
                 await RefreshFromProvider(item, provider, result, cancellationToken).ConfigureAwait(false);
+
+                providerIds.Add(provider.GetType().FullName.GetMD5());
             }
+
+            result.Providers = providerIds;
 
             return result;
         }

@@ -56,21 +56,6 @@ namespace MediaBrowser.Server.Implementations.IO
             _tempIgnoredPaths[path] = path;
         }
 
-        /// <summary>
-        /// Removes the temp ignore.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        private async void RemoveTempIgnore(string path)
-        {
-            // This is an arbitraty amount of time, but delay it because file system writes often trigger events after RemoveTempIgnore has been called. 
-            // Seeing long delays in some situations, especially over the network.
-            // Seeing delays up to 40 seconds, but not going to ignore changes for that long.
-            await Task.Delay(1500).ConfigureAwait(false);
-
-            string val;
-            _tempIgnoredPaths.TryRemove(path, out val);
-        }
-
         public void ReportFileSystemChangeBeginning(string path)
         {
             if (string.IsNullOrEmpty(path))
@@ -81,14 +66,20 @@ namespace MediaBrowser.Server.Implementations.IO
             TemporarilyIgnore(path);
         }
 
-        public void ReportFileSystemChangeComplete(string path, bool refreshPath)
+        public async void ReportFileSystemChangeComplete(string path, bool refreshPath)
         {
             if (string.IsNullOrEmpty(path))
             {
                 throw new ArgumentNullException("path");
             }
 
-            RemoveTempIgnore(path);
+            // This is an arbitraty amount of time, but delay it because file system writes often trigger events after RemoveTempIgnore has been called. 
+            // Seeing long delays in some situations, especially over the network.
+            // Seeing delays up to 40 seconds, but not going to ignore changes for that long.
+            await Task.Delay(1500).ConfigureAwait(false);
+
+            string val;
+            _tempIgnoredPaths.TryRemove(path, out val);
 
             if (refreshPath)
             {

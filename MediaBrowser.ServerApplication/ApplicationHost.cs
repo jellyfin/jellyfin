@@ -14,7 +14,6 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.FileOrganization;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Localization;
@@ -173,6 +172,7 @@ namespace MediaBrowser.ServerApplication
         internal IItemRepository ItemRepository { get; set; }
         private INotificationsRepository NotificationsRepository { get; set; }
         private IFileOrganizationRepository FileOrganizationRepository { get; set; }
+        private IProviderRepository ProviderRepository { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ApplicationHost"/> class.
@@ -267,6 +267,9 @@ namespace MediaBrowser.ServerApplication
             ItemRepository = new SqliteItemRepository(ApplicationPaths, JsonSerializer, LogManager);
             RegisterSingleInstance(ItemRepository);
 
+            ProviderRepository = new SqliteProviderInfoRepository(ApplicationPaths, LogManager);
+            RegisterSingleInstance(ProviderRepository);
+
             FileOrganizationRepository = await GetFileOrganizationRepository().ConfigureAwait(false);
             RegisterSingleInstance(FileOrganizationRepository);
 
@@ -279,7 +282,7 @@ namespace MediaBrowser.ServerApplication
             LibraryMonitor = new LibraryMonitor(LogManager, TaskManager, LibraryManager, ServerConfigurationManager, FileSystemManager);
             RegisterSingleInstance(LibraryMonitor);
 
-            ProviderManager = new ProviderManager(HttpClient, ServerConfigurationManager, LibraryMonitor, LogManager, FileSystemManager, ItemRepository);
+            ProviderManager = new ProviderManager(HttpClient, ServerConfigurationManager, LibraryMonitor, LogManager, FileSystemManager, ProviderRepository);
             RegisterSingleInstance(ProviderManager);
 
             RegisterSingleInstance<ISearchEngine>(() => new SearchEngine(LogManager, LibraryManager, UserManager));
@@ -427,6 +430,8 @@ namespace MediaBrowser.ServerApplication
         {
             await ItemRepository.Initialize().ConfigureAwait(false);
 
+            await ProviderRepository.Initialize().ConfigureAwait(false);
+            
             ((LibraryManager)LibraryManager).ItemRepository = ItemRepository;
         }
 
