@@ -10,12 +10,48 @@
             <div class="content-primary">
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
                     <a href="library.html" data-role="button">Media Folders</a>
-                    <a href="#" data-role="button" class="ui-btn-active">Path Mapping</a>
+                    <a href="#" data-role="button" class="ui-btn-active">Path Substitution</a>
                     <a href="librarysettings.html" data-role="button">Advanced</a>
                 </div>
 
-                <form id="libraryPathMappingForm">
+                <div class="readOnlyContent">
+                    <p>Path substitutions are used for mapping a path on the server to a path that clients are able to access. By allowing clients direct access to media on the server they may be able to play them directly over the network and avoid using server resources to stream and transcode them.</p>
+                </div>
 
+                <table id="tblPaths" data-role="table" data-mode="reflow" class="ui-responsive">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>From</th>
+                            <th>To</th>
+                        </tr>
+                    </thead>
+                    <tbody class="tbodyPathSubstitutions">
+                    </tbody>
+                </table>
+
+                <br />
+
+                <form class="libraryPathMappingForm">
+
+                    <div>
+                        <h3 class="ui-bar-a" style="padding: .7em 1em;">Add Substitution</h3>
+                        <div>
+                            <label for="txtFrom">From:</label>
+                            <input id="txtFrom" type="text" required="required" data-mini="true" />
+                            <div class="fieldDescription">Example: D:\Movies (on the server)</div>
+                        </div>
+                        <br />
+                        <div>
+                            <label for="txtTo">To:</label>
+                            <input id="txtTo" type="text" required="required" data-mini="true" />
+                            <div class="fieldDescription">Example: \\MyServer\Movies (a path clients can access)</div>
+                        </div>
+                        <br />
+                        <p>
+                            <button type="submit" data-mini="true" data-icon="plus">Add</button>
+                        </p>
+                    </div>
 
                 </form>
 

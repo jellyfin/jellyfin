@@ -91,7 +91,7 @@
             }
 
             options.header = options.header || "Select Media Path";
-            options.instruction = options.instruction || "Any path will do, but for optimal playback of bluray, dvd folders, and games, <b>network paths (UNC)</b> are recommended.";
+            options.instruction = options.instruction || "";
 
             var html = '<div data-transition="fade" data-role="popup" id="popupDirectoryPicker" class="popup" style="min-width:65%;">';
 
@@ -101,9 +101,12 @@
 
             html += '<div data-role="content" class="ui-content">';
             html += '<form>';
-            html += '<p class="directoryPickerHeadline">' + options.instruction + '<br/><br/>Network paths can be entered manually in the event the Network button fails to locate your devices. For example, <b>\\\\my-server</b> or <b>\\\\192.168.1.101</b>.</p>';
 
-            html += '<div style="margin:0;">';
+            var instruction = options.instruction ? options.instruction + '<br/><br/>' : '';
+            
+            html += '<p class="directoryPickerHeadline">' + instruction + 'Network paths can be entered manually in the event the Network button fails to locate your devices. For example, <b>\\\\my-server</b> or <b>\\\\192.168.1.101</b>.</p>';
+
+            html += '<div style="margin:20px 0 0;">';
             html += '<label for="txtDirectoryPickerPath" class="lblDirectoryPickerPath">Current Path:</label>';
             html += '<div style="width:92%;display:inline-block;"><input id="txtDirectoryPickerPath" name="txtDirectoryPickerPath" type="text" required="required" style="font-weight:bold;" /></div>';
             html += '<button class="btnRefreshDirectories" type="button" data-icon="refresh" data-inline="true" data-mini="true" data-iconpos="notext">Refresh</button>';

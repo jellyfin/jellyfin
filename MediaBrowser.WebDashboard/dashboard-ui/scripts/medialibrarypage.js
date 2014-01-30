@@ -155,6 +155,8 @@
         }
         html += '</ul>';
 
+        html += '<p>Use <a href="librarypathmapping.html">path substitution</a> to map server paths to network shares that clients are able to access.</p>';
+
         html += '<p>';
         html += '<button type="button" data-inline="true" data-icon="minus" data-folderindex="' + index + '" onclick="MediaLibraryPage.deleteVirtualFolder(this);" data-mini="true">Remove</button>';
         html += '<button type="button" data-inline="true" data-icon="edit" data-folderindex="' + index + '" onclick="MediaLibraryPage.renameVirtualFolder(this);" data-mini="true">Rename</button>';
